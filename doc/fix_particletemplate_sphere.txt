@@ -1,0 +1,57 @@
+"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix particletemplate/sphere command :h3
+
+[Syntax:]
+
+fix ID group-ID particletemplate/sphere seed keyword values ...  :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+particletemplate/sphere = style name of this fix command  :l
+seed = random number generator seed (integer value) :l
+n_spheres = number of spheres in the template :l
+zero or more keyword/value pairs can be appended :l
+keyword = {atom_type} or {density} or {radius} :l
+{atom_type} value = atom type assigned to this particle template
+{density} values = random_style param1 (param2)
+  random_style = 'constant' or 'uniform' or 'gaussian'
+  param1 = density for 'constant', low value of density for 'uniform', expectancy value for 'gaussian'
+    param2 = omitted for 'constant', high value of density for 'uniform', sigma value for 'gaussian'
+{radius} values = random_style param1 (param2)
+  random_style = 'constant' or 'uniform' 
+  param1 = radius for 'constant', low value of radius for 'uniform'
+    param2 = omitted for 'constant', high value of radius for 'uniform' :pre
+:ule
+
+[Examples:]
+
+fix pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0015 :pre
+
+[LIGGGHTS vs. LAMMPS Info:]
+
+This LIGGGHTS command is not available in LAMMPS.
+
+[Description:]
+
+Define a particle that is used as input for a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html command. You can choose the atom type, density and radius of the particles. For density and radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. It is thus possible to define a uniform or gaussian distribution on top of the discrete distribution defined by "fix_particledistribution_discrete"_fix_particledistribution_discrete.html.
+
+IMPORTANT NOTE: As opposed to the number-based distributions used by "fix_pour"_fix_pour.html and "fix_pour_legacy"_fix_pour_legacy.html, this fix uses the more common distribution based on mass-% for the radius distribution (as does "fix_particledistribution_discrete"_fix_particledistribution_discrete.html).
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+Information about the random state in this fix is written to "binary restart files"_restart.html so you can restart a simulation with the same particles being chosen for insertion. None of the "fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. This fix is not invoked during "energy minimization"_minimize.html. 
+
+[Restrictions:] none
+
+[Related commands:]
+
+"fix_particletemplate_sphere"_fix_particletemplate_sphere.html "fix_pour_dev"_fix_pour_dev.html
+
+[Default:] radius = 1.0, density = 1.0, atom_type = 1 

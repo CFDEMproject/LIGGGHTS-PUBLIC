@@ -1,0 +1,122 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>fix mesh command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group-ID mesh/gran file filename type walltype mesh_keywords values 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>mesh = style name of this fix command  
+
+<LI>file = obligatory keyword
+filename = name of STL or VTK file containing the triangle mesh data 
+
+<LI>type = obligatory keyword
+walltype = atom type (material type) of the wall imported from the STL file 
+
+<LI>zero or more mesh_keywords/value pairs may be appended 
+
+<LI>mesh_keyword = <I>scale</I> or <I>move</I> or <I>rotate</I> or <I>surface_vel</I> or <I>surface_ang_vel</I> or <I>curvature</I> or <I>temperature</I> 
+
+<PRE>  <I>scale</I> value = factor
+    factor = factor to scale the mesh in x-, y-, and z-direction (double value)
+  <I>move</I> values = mx my mz
+    mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
+  <I>rotate</I> values = axis ax ay az angle ang
+    axis = obligatory keyword 
+    ax, ay, az = axis vector for rotation (length units) 
+    angle = obligatory keyword 
+    ang = angle to rotate the geometry around the specified axis (in degrees) 
+  <I>surface_vel</I> values = vx vy vz
+    vx vy vz = conveyor belt surface velocity  (velocity units)
+  <I>surface_ang_vel</I> values = origin ox oy oz axis ax ay az omega om
+    origin = mandatory keyword
+    ox oy oz = origin of rotation (length units)
+    axis = mandatory keyword
+    ax ay az = axis vector for rotation (length units) 
+    omega = mandatory keyword
+    om = rotaional velocity around specifyied axis (rad/time units)
+  <I>curvature value</I> = c
+    c = maximum angle between mesh faces belonging to the same surface (in degree)
+  <I>temperature</I> value = T0
+    T0 = Temperature of the wall (temperature units) 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix cad all mesh file mesh.stl type 1 
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info:</B>
+</P>
+<P>This command is not available in LAMMPS.
+</P>
+<P><B>Description:</B>
+</P>
+<P>This fix allows the import of triangual mesh wall geometry for granular simulations from 
+ASCII STL files or legacy ASCII VTK files. You can apply offset, scaling and rotation to 
+the imported mesh. Operations are applied in the order as they are specified. The group-ID
+is ignored for this command.
+</P>
+<P>One fix represents one wall with a specific material, where the material is identified 
+via keyword <I>type</I>. If multiple meshes with different materials are desired, the respective 
+meshes must be imported with different fix mesh commands.
+</P>
+<P>IMPORTANT NOTE: For periodic boundaries, the mesh is NOT mapped. Instead, a warning is 
+generated if a vertex lies outside the simulation box.
+</P>
+<P>With the optional <I>surface_vel</I> keyword, you can specify the imported mesh as conveyor belt. 
+The velocity direction for each mesh face is given by the projection of the conveyor 
+belt velocity parallel to the mesh face, the velocity magnitude for each mesh face is 
+equal to the conveyor belt velocity. This ensures the model makes sense also in case 
+the mesh is curved. Likewise, the optional rotation model activated via keyword
+<I>surface_ang_vel</I> mimics rotational motion of the mesh (e.g. for modeling a shear cell)
+</P>
+<P>With the <I>temperature</I> keyword, you can define a constant temperature for a mesh in 
+conjunction with heat conduction via <A HREF = "fix_heat_gran.html">fix heat/gran</A>. Note that the 
+actual calculation of the heat transfer happens only if you use the mesh in conjunction 
+with a granular wall, see <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
+</P>
+<P>The curvature keyword lets you specify up to which angle between two triangles the 
+triangles should be treated as belonging to the same surface (e.g. useful for bends). 
+This angle is used to decide if (a) contact history is copied from one triangle to 
+the other as the contact point proceeds and (b) if edge and corner interaction is 
+calculated.
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>This fix writes the STL data to binary <A HREF = "restart.html">restart files</A> to be able to 
+correctly resume the simulation in case the mesh is moved. None of the 
+<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global 
+scalar or vector or per-atom quantities are stored by this fix for access by 
+various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this fix 
+can be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command. 
+This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>To date, only ASCII STL and VTK files can be read (binary is not supported). 
+In the current implementation, each processor allocates memory for the whole 
+geometry, which may lead to memory issues for very large geometries . 
+It is not supported to use both the moving mesh and the conveyor belt feature.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_wall_gran.html">fix wall/gran</A>, <A HREF = "fix_mesh_stressanalysis.html">fix mesh/stressanalysis</A> , <A HREF = "fix_mesh_6dof.html">fix mesh/6dof</A>
+</P>
+<P><B>Default:</B> c = 0 degrees
+</P>
+</HTML>

@@ -1,0 +1,668 @@
+/* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
+   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+   http://lammps.sandia.gov, Sandia National Laboratories
+   Steve Plimpton, sjplimp@sandia.gov
+
+   Copyright (2003) Sandia Corporation.  Under the terms of Contract
+   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+   certain rights in this software.  This software is distributed under
+   the GNU General Public License.
+
+   See the README file in the top-level directory.
+------------------------------------------------------------------------- */
+
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include "fix_wall_gran.h"
+#include "atom.h"
+#include "domain.h"
+#include "update.h"
+#include "force.h"
+#include "pair_gran.h"
+#include "fix_rigid.h"
+#include "fix_mesh.h"
+#include "fix_contact_history.h"
+#include "modify.h"
+#include "respa.h"
+#include "memory.h"
+#include "comm.h"
+#include "error.h"
+#include "fix_property_atom.h"
+#include "math_extra.h"
+#include "math_extra_liggghts.h"
+#include "compute_pair_gran_local.h"
+#include "fix_neighlist_mesh.h"
+#include "fix_mesh.h"
+#include "primitive_wall.h"
+#include "tri_mesh.h"
+#include "primitive_wall_definitions.h"
+#include "mympi.h"
+#include "neighbor.h"
+
+using namespace LAMMPS_NS;
+using namespace FixConst;
+using namespace LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS;
+
+/* ---------------------------------------------------------------------- */
+
+FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
+  Fix(lmp, narg, arg)
+{
+    // wall/gran requires gran properties
+    // sph not
+    if (strncmp(style,"wall/gran",9) == 0 && (!atom->radius_flag || !atom->omega_flag || !atom->torque_flag))
+        error->fix_error(FLERR,this,"requires atom attributes radius, omega, torque");
+
+    // defaults
+    store_force_ = 1;
+    n_FixMesh_ = 0;
+    dnum_ = 0;
+
+    r0_ = 0.;
+
+    wiggle_ = shear_ = 0;
+
+    atom_type_wall_ = 1; // will be overwritten during execution, but other fixes require a value here
+
+    // initializations
+    pairgran_ = NULL;
+    fix_wallforce_ = NULL;
+    heattransfer_flag_ = false;
+
+    FixMesh_list_ = NULL;
+    primitiveWall_ = NULL;
+    laststep_ = 0;
+
+    rebuildPrimitiveNeighlist_ = false;
+
+    addflag_ = 1;
+    cwl_ = NULL;
+
+    laststep_ = -1;
+    meshwall_ = -1;
+
+    // parse args
+    style = new char[strlen(arg[2])+2];
+    strcpy(style,arg[2]);
+
+    iarg_ = 3;
+
+    bool hasargs = true;
+    while(iarg_ < narg && hasargs)
+    {
+        hasargs = false;
+
+        if (strcmp(arg[iarg_],"primitive") == 0) {
+           iarg_++;
+           meshwall_ = 0;
+
+           if (meshwall_ == 1)
+             error->fix_error(FLERR,this,"'mesh' and 'primitive' are incompatible, choose either of them");
+
+           if (strcmp(arg[iarg_++],"type"))
+             error->fix_error(FLERR,this,"expecting keyword 'type'");
+           atom_type_wall_ = atoi(arg[iarg_++]);
+           if (atom_type_wall_ < 1 || atom_type_wall_ > atom->ntypes)
+             error->fix_error(FLERR,this,"1 <= type <= max type as defined in create_box'");
+
+           char *wallstyle = arg[iarg_++];
+           int nPrimitiveArgs = PRIMITIVE_WALL_DEFINITIONS::numArgsPrimitiveWall(wallstyle);
+           
+           if(narg-iarg_ < nPrimitiveArgs)
+            error->fix_error(FLERR,this,"not enough arguments for primitive wall");
+
+           double argVec[nPrimitiveArgs];
+           for(int i=0;i<nPrimitiveArgs;i++)
+           {
+             
+             argVec[i] = force->numeric(arg[iarg_++]);
+           }
+
+           bool setflag = false;
+           for(int w=0;w<(int)PRIMITIVE_WALL_DEFINITIONS::NUM_WTYPE;w++)
+           {
+             
+             if(strcmp(wallstyle,PRIMITIVE_WALL_DEFINITIONS::wallString[w]) == 0)
+             {
+               primitiveWall_ = new PrimitiveWall(lmp,(PRIMITIVE_WALL_DEFINITIONS::WallType)w,nPrimitiveArgs,argVec);
+               setflag = true;
+               break;
+             }
+           }
+           if(!setflag) error->fix_error(FLERR,this,"unknown primitive wall style");
+           hasargs = true;
+        } else if (strcmp(arg[iarg_],"mesh") == 0) {
+           hasargs = true;
+           meshwall_ = 1;
+           iarg_ += 1;
+        } else if (strcmp(arg[iarg_],"store_force") == 0) {
+           if (iarg_+2 > narg)
+              error->fix_error(FLERR,this," not enough arguments");
+           if (strcmp(arg[iarg_+1],"yes") == 0) store_force_ = 1;
+           else if (strcmp(arg[iarg_+1],"no") == 0) store_force_ = 0;
+           else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'store_force'");
+           hasargs = true;
+           iarg_ += 2;
+        } else if (strcmp(arg[iarg_],"n_meshes") == 0) {
+          if (meshwall_ != 1)
+             error->fix_error(FLERR,this,"have to use keyword 'mesh' before using 'n_meshes'");
+          if (iarg_+2 > narg)
+             error->fix_error(FLERR,this,"not enough arguments");
+          n_FixMesh_ = atoi(arg[iarg_+1]);
+          if(n_FixMesh_ < 1)
+              error->fix_error(FLERR,this,"'n_meshes' > 0 required");
+          hasargs = true;
+          iarg_ += 2;
+        } else if (strcmp(arg[iarg_],"meshes") == 0) {
+          if (meshwall_ != 1)
+             error->fix_error(FLERR,this,"have to use keyword 'mesh' before using 'meshes'");
+          if(n_FixMesh_ == 0)
+              error->fix_error(FLERR,this,"have to define 'n_meshes' before 'meshes'");
+          if (narg < iarg_+1+n_FixMesh_)
+              error->fix_error(FLERR,this,"not enough arguments");
+
+          FixMesh_list_ = new FixMesh*[n_FixMesh_];
+          for(int i = 1; i <= n_FixMesh_; i++)
+          {
+              int f_i = modify->find_fix(arg[iarg_+i]);
+              if (f_i == -1)
+                  error->fix_error(FLERR,this,"could not find fix mesh id you provided");
+              if (strncmp(modify->fix[f_i]->style,"mesh",4))
+                  error->fix_error(FLERR,this,"the fix belonging to the id you provided is not of type mesh");
+              FixMesh_list_[i-1] = static_cast<FixMesh*>(modify->fix[f_i]);
+              
+          }
+          hasargs = true;
+          iarg_ += 1+n_FixMesh_;
+        }
+    }
+
+    if(meshwall_ == -1 && primitiveWall_ == 0)
+        error->fix_error(FLERR,this,"Need to use define style 'mesh' or 'primitive'");
+
+    if(meshwall_ == 1 && !FixMesh_list_)
+        error->fix_error(FLERR,this,"Need to provide the number and a list of meshes by using 'n_meshes' and 'meshes'");
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixWallGran::post_create()
+{
+    // case granular
+    if(strncmp(style,"wall/gran",9) == 0)
+    {
+        //check if wall style and pair style fit together
+        char *pairstyle = new char[strlen(style)-9+1];
+        strcpy(pairstyle,&style[9]);
+
+        PairGran *oldpair = pairgran_;
+        pairgran_ = (PairGran*)force->pair_match(pairstyle,0);
+        bool pair_changed = (pairgran_!=oldpair);
+
+        if (!pairgran_)
+          error->fix_error(FLERR,this,"Fix wall/gran style and pair/gran style have to match, you have to define the wall after the pair style");
+
+        if(dnum_ && dnum_ != pairgran_->dnum_pair())
+          error->fix_error(FLERR,this,"Number of contact history values of pair style and wall style does not match");
+        else dnum_ = pairgran_->dnum_pair();
+
+        delete []pairstyle;
+    }
+    // case non-granular (sph)
+    else
+        dnum_ = 0;
+
+    // register storage for wall force if required
+    if(store_force_)
+    {
+          char *wallforce_name = new char[strlen(style)+1+6];
+          strcpy(wallforce_name,"force_");
+          strcat(wallforce_name,id);
+          char **fixarg = new char*[11];
+          fixarg[0] = wallforce_name;
+          fixarg[1] = (char *) "all";
+          fixarg[2] = (char *) "property/atom";
+          fixarg[3] = wallforce_name;
+          fixarg[4] = (char *) "vector";
+          fixarg[5] = (char *) "no";    // restart
+          fixarg[6] = (char *) "no";    // communicate ghost
+          fixarg[7] = (char *) "no";    // communicate rev
+          fixarg[8] = (char *) "0.";
+          fixarg[9] = (char *) "0.";
+          fixarg[10] = (char *) "0.";
+          modify->add_fix(11,fixarg);
+          fix_wallforce_ =
+              static_cast<FixPropertyAtom*>(modify->find_fix_property(wallforce_name,"property/atom","vector",3,0,style));
+          delete []fixarg;
+          delete []wallforce_name;
+   }
+
+   // create neighbor list for each mesh
+   // also create contact tracker
+   for(int i=0;i<n_FixMesh_;i++)
+   {
+      FixMesh_list_[i]->createNeighList();
+      if(dnum()>0)FixMesh_list_[i]->createContactHistory(dnum());
+   }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixWallGran::pre_delete(bool unfixflag)
+{
+    if(store_force_) modify->delete_fix(fix_wallforce_->id);
+}
+
+/* ---------------------------------------------------------------------- */
+
+FixWallGran::~FixWallGran()
+{
+    if(primitiveWall_ != 0) delete primitiveWall_;
+    if(FixMesh_list_) delete []FixMesh_list_;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixWallGran::setmask()
+{
+    int mask = 0;
+    mask |= PRE_NEIGHBOR;
+    mask |= PRE_FORCE;
+    mask |= POST_FORCE;
+    mask |= POST_FORCE_RESPA;
+    return mask;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixWallGran::min_type()
+{
+    return atom_type_wall_;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixWallGran::max_type()
+{
+    return atom_type_wall_;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixWallGran::init()
+{
+    dt_ = update->dt;
+
+    // case granular
+    if(strncmp(style,"wall/gran",9) == 0)
+    {
+        //check if wall style and pair style fit together
+        char *pairstyle = new char[strlen(style)-9+1];
+        strcpy(pairstyle,&style[9]);
+
+        PairGran *oldpair = pairgran_;
+        pairgran_ = (PairGran*)force->pair_match(pairstyle,0);
+        bool pair_changed = (pairgran_ != oldpair);
+
+        // re-initialize history if pair style has changed
+        if(pair_changed)
+        {
+            if(dnum_ != pairgran_->dnum_pair())
+                error->fix_error(FLERR,this,"Can not change to this pair style with fix wall/gran being active");
+        //    fix_contact_tracker_->reset_history();
+        }
+
+        // check if a fix rigid is registered - important for damp
+        fr_ = pairgran_->fr_pair();
+
+        if (strcmp(update->integrate_style,"respa") == 0)
+          nlevels_respa_ = ((Respa *) update->integrate)->nlevels;
+
+        // init for derived classes
+        init_granular();
+    }
+
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixWallGran::setup(int vflag)
+{
+    if (strcmp(update->integrate_style,"verlet") == 0)
+    {
+      pre_neighbor();
+      pre_force(vflag);
+      post_force(vflag);
+    }
+    else
+    {
+      ((Respa *) update->integrate)->copy_flevel_f(nlevels_respa_-1);
+      post_force_respa(vflag,nlevels_respa_-1,0);
+      ((Respa *) update->integrate)->copy_f_flevel(nlevels_respa_-1);
+    }
+
+    init_heattransfer();
+}
+
+/* ----------------------------------------------------------------------
+   neighbor list via fix wall/gran is only relevant for primitive walls
+------------------------------------------------------------------------- */
+
+void FixWallGran::pre_neighbor()
+{
+    rebuildPrimitiveNeighlist_ = (primitiveWall_ != 0);
+}
+
+void FixWallGran::pre_force(int vflag)
+{
+    double halfskin = neighbor->skin*0.5;
+    int nlocal = atom->nlocal;
+
+    x_ = atom->x;
+    radius_ = atom->radius;
+    cutneighmax_ = neighbor->cutneighmax;
+
+    // build neighlist for primitive walls
+    
+    if(rebuildPrimitiveNeighlist_)
+      primitiveWall_->buildNeighList(radius_ ? halfskin:(r0_+halfskin),x_,radius_,nlocal);
+
+    rebuildPrimitiveNeighlist_ = false;
+}
+
+/* ----------------------------------------------------------------------
+   force on each atom calculated via post_force
+   called via verlet
+------------------------------------------------------------------------- */
+
+void FixWallGran::post_force(int vflag)
+{
+    post_force(vflag,1);
+}
+
+/* ----------------------------------------------------------------------
+   force on each atom calculated via post_force
+   called via compute wall/gran
+------------------------------------------------------------------------- */
+
+void FixWallGran::post_force(int vflag,int addflag)
+{
+  // set pointers and values appropriately
+  nlocal_ = atom->nlocal;
+  int *mask = atom->mask;
+  x_ = atom->x;
+  f_ = atom->f;
+  radius_ = atom->radius;
+  rmass_ = atom->rmass;
+  wallforce_ = fix_wallforce_->array_atom;
+  cutneighmax_ = neighbor->cutneighmax;
+
+  if(nlocal_ && !radius_ && r0_ == 0.)
+    error->fix_error(FLERR,this,"need either per-atom radius or r0_ being set");
+
+  addflag_ = addflag;
+
+  if (update->ntimestep > laststep_)
+    shearupdate_ = 1;
+  else
+    shearupdate_ = 0;
+
+  if(meshwall_ == 1)
+    post_force_mesh(vflag);
+  else
+    post_force_primitive(vflag);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixWallGran::post_force_respa(int vflag, int ilevel, int iloop)
+{
+    if (ilevel == nlevels_respa_-1) post_force(vflag);
+}
+
+/* ----------------------------------------------------------------------
+   post_force for mesh wall
+------------------------------------------------------------------------- */
+
+void FixWallGran::post_force_mesh(int vflag)
+{
+    // contact properties
+    double force_old[3],force_wall[3],v_wall[3],bary[3];
+    double delta[3],deltan;
+    double *c_history = 0;
+    MultiVectorContainer<double,3,3> *vMeshC;
+    double ***vMesh;
+    int nlocal = atom->nlocal;
+    int nTriAll, iPart;
+
+    for(int iMesh = 0; iMesh < n_FixMesh_; iMesh++)
+    {
+      TriMesh *mesh = FixMesh_list_[iMesh]->mesh();
+      nTriAll = mesh->sizeLocal() + mesh->sizeGhost();
+      FixContactHistory *fix_contact = FixMesh_list_[iMesh]->contactHistory();
+      int *neighborList  = 0, *numNeigh = 0;
+
+      // get neighborList and numNeigh
+      FixMesh_list_[iMesh]->meshNeighlist()->getPointers(neighborList, numNeigh);
+
+      vectorZeroize3D(v_wall);
+      vMeshC = mesh->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
+
+      atom_type_wall_ = FixMesh_list_[iMesh]->atomTypeWall();
+
+      // moving mesh
+      if(vMeshC)
+      {
+        vMesh = vMeshC->begin();
+        // loop owned and ghost triangles
+        for(int iTri = 0; iTri < nTriAll; iTri++)
+        {
+          for(int iCont = 0; iCont < numNeigh[iTri]; iCont++,neighborList++)
+          {
+            
+            int iPart = *neighborList;
+
+            // do not need to handle ghost particles
+            if(iPart >= nlocal) continue;
+
+            int idTri = mesh->id(iTri);
+            
+            deltan = mesh->resolveTriSphereContactBary(iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary);
+
+            if(deltan > 0.)
+            {
+                
+              if(fix_contact) fix_contact->handleNoContact(iPart,idTri);
+            }
+            else
+            {
+                
+              if(fix_contact) fix_contact->handleContact(iPart,idTri,c_history);
+              for(int i = 0; i < 3; i++)
+                v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
+
+              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,mesh);
+            }
+
+          }
+        }
+      }
+      // non-moving mesh
+      // don't calculate v_wall,use standard distance function
+      else
+      {
+        // loop owned and ghost particles
+        for(int iTri = 0; iTri < nTriAll; iTri++)
+        {
+          
+          for(int iCont=0;iCont<numNeigh[iTri];iCont++,neighborList++)
+          {
+            int iPart = *neighborList;
+
+            // do not need to handle ghost particles
+            if(iPart >= nlocal) continue;
+
+            int idTri = mesh->id(iTri);
+            
+            double bary[3];
+            deltan = mesh->resolveTriSphereContact(iTri,radius_ ? radius_[iPart]:r0_,x_[iPart],delta);
+
+            if(deltan > 0.)
+            {
+              if(fix_contact) fix_contact->handleNoContact(iPart,idTri);
+            }
+            else 
+            {
+              if(fix_contact) fix_contact->handleContact(iPart,idTri,c_history);
+              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,mesh);
+            }
+          }
+        }
+      }
+
+      // clean-up
+      if(fix_contact) fix_contact->cleanUpContacts();
+    }
+
+}
+
+/* ----------------------------------------------------------------------
+   post_force for primitive wall
+------------------------------------------------------------------------- */
+
+void FixWallGran::post_force_primitive(int vflag)
+{
+  // contact properties
+  double force_old[3],force_wall[3];
+  double delta[3],deltan;
+  double *c_history = 0, v_wall[] = {0.,0.,0.};
+
+  int *neighborList;
+  int nNeigh = primitiveWall_->getNeighbors(neighborList);
+  if(dnum() > 0) primitiveWall_->setContactHistorySize(atom->nlocal);
+
+  for (int iCont = 0; iCont < nNeigh ; iCont++, neighborList++)
+  {
+    int iPart = *neighborList;
+    deltan = primitiveWall_->resolveContact(x_[iPart],radius_?radius_[iPart]:r0_,delta);
+
+    if(deltan > 0.)
+    {
+      if(dnum() > 0) primitiveWall_->handleNoContact(iPart);
+    }
+    else
+    {
+      if(dnum() > 0) primitiveWall_->handleContact(iPart,c_history);
+      post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,NULL);
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------
+   actually calculate force, called for both mesh and primitive
+------------------------------------------------------------------------- */
+
+inline void FixWallGran::post_force_eval_contact(int iPart, double deltan, double *delta,
+     double *v_wall, double *c_history, TriMesh *mesh)
+{
+
+  double delr = (radius_ ? radius_[iPart] : r0_) + deltan;
+  double rsqr = delr*delr;
+  double dx = -delta[0]*delr;
+  double dy = -delta[1]*delr;
+  double dz = -delta[2]*delr;
+  double mass = rmass_ ? rmass_[iPart] : atom->mass[atom->type[iPart]];
+
+  double force_old[] = {0.,0.,0.};
+
+  // if force should be stored - remember old force
+  if(store_force_) vectorCopy3D(f_[iPart],force_old);
+
+  // deltan > 0 in compute_force
+  // but negative in distance algorithm
+  compute_force(iPart, -deltan,rsqr,mass, dx, dy, dz, v_wall, c_history, 1.);
+
+  // if force should be stored - evaluate force
+  if(store_force_)
+    vectorSubtract3D(f_[iPart],force_old,wallforce_[iPart]);
+
+  // add heat flux
+  if(heattransfer_flag_)
+    addHeatFlux(mesh,iPart,radius_[iPart]*radius_[iPart],1.);
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixWallGran::is_moving()
+{
+    int i, flag;
+    flag = 0;
+
+    if (is_mesh_wall())
+    {
+        for(i = 0; i < n_FixMesh_; i++)
+            if(FixMesh_list_[i]->mesh()->isMoving())
+               flag = 1;
+    }
+    else flag = wiggle_ || shear_;
+
+    return flag;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixWallGran::n_contacts()
+{
+    if (!is_mesh_wall() || dnum() == 0) return 0;
+
+    int ncontacts = 0;
+    for(int i = 0; i < n_FixMesh_; i++)
+        ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts();
+
+    MyMPI::My_MPI_Sum_Scalar(ncontacts,world);
+    return ncontacts;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixWallGran::n_contacts(int contact_groupbit)
+{
+    if (!is_mesh_wall() || dnum() == 0) return 0;
+
+    int ncontacts = 0;
+    for(int i = 0; i < n_FixMesh_; i++)
+        ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts(contact_groupbit);
+
+    MyMPI::My_MPI_Sum_Scalar(ncontacts,world);
+    return ncontacts;
+}
+
+/* ----------------------------------------------------------------------
+   register and unregister callback to compute
+------------------------------------------------------------------------- */
+
+void FixWallGran::register_compute_wall_local(ComputePairGranLocal *ptr,int &dnum_compute)
+{
+   if(cwl_ != NULL)
+    error->fix_error(FLERR,this,"Fix wall/gran allows only one compute of type wall/gran/local");
+   cwl_ = ptr;
+   dnum_compute = dnum_; //history values
+}
+
+void FixWallGran::unregister_compute_wall_local(ComputePairGranLocal *ptr)
+{
+   if(cwl_ != ptr)
+    error->fix_error(FLERR,this,"Illegal situation in FixWallGran::unregister_compute_wall_local");
+   cwl_ = NULL;
+}

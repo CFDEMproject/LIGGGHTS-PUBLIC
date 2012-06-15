@@ -1,0 +1,29 @@
+This directory contains libraries that can be linked with when
+building LAMMPS, if particular packages are included in a LAMMPS
+build.  The library itself must be built first, so that a lib*.a file
+exists for LAMMPS to link against.
+
+Each library directory contains a README with additional info about
+how to build the library.  This may require you to edit one of the
+provided Makefiles to make it suitable for your machine.
+
+The libraries included in the LAMMPS distribution are the following:
+
+atc           atomistic-to-continuum methods, USER-ATC package
+                from Reese Jones, Jeremy Templeton, Jon Zimmerman (Sandia)
+awpmd         antisymmetrized wave packet molecular dynamics, AWPMD package
+                from Ilya Valuev (JIHT RAS)
+cuda	      NVIDIA GPU routines, USER-CUDA package
+                from Christian Trott (U Tech Ilmenau)
+gpu	      graphical processor (GPU) routines, GPU package
+	        from Mike Brown (ORNL)
+kim           interface to link with OpenKIM library
+	        from Valeriu Smirichinski, www.openkim.org
+linalg        set of BLAS and LAPACK routines needed by USER-ATC package
+	        from Axel Kohlmeyer (Temple U)
+poems	      POEMS rigid-body integration package, POEMS package
+                from Rudranarayan Mukherjee (RPI)
+meam	      modified embedded atom method (MEAM) potential, MEAM package
+                from Greg Wagner (Sandia)
+reax          ReaxFF potential, REAX package
+	        from Adri van Duin (Penn State) and Aidan Thompson (Sandia)

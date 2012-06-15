@@ -1,0 +1,46 @@
+LAMMPS pre- and post-processing tools
+
+This directory contains several stand-alone tools for creating LAMMPS
+input files and massaging LAMMPS output data.  Instructions on how to
+use the tools are discussed in the "Additional Tools" section of the
+LAMMPS documentation.
+
+Tools that are single source files in this directory have additional
+comments that may be useful at the top of the source file.  Tools that
+reside in their own sub-directories have README files you should look
+at.
+
+These are the included tools:
+
+amber2lmp	       python scripts for using AMBER to setup LAMMPS input
+binary2txt	       convert a LAMMPS dump file from binary to ASCII text
+ch2lmp		       convert CHARMM files to LAMMPS input
+chain		       create a data file of bead-spring chains
+createatoms	       generate lattices of atoms within a geometry
+data2xmovie	       convert a data file to a snapshot that xmovie can viz
+eam_database	       one tool to generate EAM alloy potential files
+eam_generate	       2nd tool to generate EAM alloy potential files
+eff		       scripts for working with the eFF (electron force field)
+emacs		       add-ons to EMACS editor for editing LAMMPS input scripts
+ipp		       input pre-processor Perl tool for creating input scripts
+lmp2arc		       convert LAMMPS output to Accelrys Insight format
+lmp2cfg		       convert LAMMPS output to CFG files for AtomEye viz
+lmp2traj	       convert LAMMPS output to contour, density profiles
+lmp2vmd                tools for visualizing and analyzing LAMMPS data with VMD
+matlab		       MatLab scripts for post-processing LAMMPS output
+micelle2d	       create a data file of small lipid chains in solvent
+msi2lmp		       use Accelrys Insight code to setup LAMMPS input
+pymol_asphere	       convert LAMMPS output of ellipsoids to PyMol format
+python		       Python scripts for post-processing LAMMPS output
+reax	       	       Tools for analyzing output of ReaxFF simulations
+restart2data	       convert a binary restart file to an input data file
+thermo_extract	       C program for extracting thermo info from log file
+vim		       add-ons to VIM editor for editing LAMMPS input scripts
+xmovie		       a quick/simple viz package (2d projections of 3d)
+
+For tools that are single C, C++, or Fortran files, a Makefile for
+building them is included in this directory.  You may need to edit it
+for the compilers and paths on your system.
+
+For tools in their own sub-directories, see their README file for info
+on how to build and use it.

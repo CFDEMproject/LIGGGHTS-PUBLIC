@@ -1,0 +1,126 @@
+<HTML>
+<CENTER><A HREF="http://www.liggghts.com/">LIGGGHTS WWW Site</A> - <A HREF="Manual.html">LIGGGHTS Documentation</A> - <A HREF="Section_commands.html#comm">LIGGGHTS Commands</A>
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>pair_style sph command
+</H3>
+<P><B>Syntax:</B> 
+</P>
+<PRE">pair_style sph kernelstyle args keyword values ... </PRE>
+<UL>
+	<LI>sph = name of this pair_style command
+	<LI>kernelstyle = <I>cubicspline</I> or <I>wendland</I>
+	<LI>args = list of arguments for a particular style
+	<PRE> <I>cubicspline</I> or <I>wendland</I> args = h
+    h = smoothing length</PRE>
+	<LI>zero or more keyword/value pairs may be appended to args 
+	<LI>keyword = <I>artVisc</I> or <I>tensCorr</I>
+	<PRE>  <I>artVisc</I> values = alpha beta cAB eta
+    alpha = free parameter to control shear viscosity
+    beta = free parameter to control bulk viscosity
+    cAB = average speed of sound (velocity units)
+    eta = coefficient to avoid singularities
+  <I>tensCorr</I> values = epsilon
+    epsilon = free parameter </PRE>
+</UL>
+<P><B>Examples:</B> 
+</P>
+<PRE>pair_style sph wendland 0.001 artVisc 1e-4 0 1484. 1e-8
+pair_style sph cubicspline 0.001 artVisc 1e-4 0 480 1e-8 tensCorr 0.2
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info: </B>
+</P>
+<P>This command is not available in LAMMPS.
+</P>
+<P><B>Description:</B> 
+</P>
+<P>The <i>sph</i> style use the smoothed particle hydrodynamics (SPH)
+method according to Monaghan: &quot;Smoothed Particle Hydrodynamics&quot;, J. J.
+Monaghan, Annual Review of Astronomy and Astrophysics (1992), Volume 30, Pages
+543-574. The acting force is calculated from the acceleration as stated in the
+equation:
+</P>
+<CENTER><IMG SRC="pair_sph_eq1.gif">
+</CENTER>
+<P>Whereas the indices a and b stand for particles, P<sub>j</sub> stands 
+for pressure and &#961;<sub>j</sub> for the density. W<sub>ab</sub> represents the
+kernel, which is defined by the kernelstyle.
+</P>
+<P>For kernelstyle <I>cubicspline</I> a piecewise defined, 3-order kernel is used:
+</P>
+<CENTER><IMG SRC="pair_sph_eq2.gif">
+</CENTER>
+<P>The <I>wendland</I> kernel (Wendland,1995) is defined as
+</P>
+<CENTER><IMG SRC="pair_sph_eq3.gif">
+</CENTER>
+<P>The smoothing length h is the most important parameter for SPH-calculations. It depends on initial particle spacing,
+initial density &#961;<SUB>0</SUB> and mass per particle m<SUB>j</SUB>. In case that the smoothing length is about 1.2 
+times the initial particle spacing and it is a 3-dimensional cubic lattice (therefore the summation is over 57 particles), 
+you can use the following equation (Liu and Liu, 2003, p. 211-213):
+</P>
+<CENTER><IMG SRC="pair_sph_eq4.gif">
+</CENTER>
+<P>For further details on the basics of the SPH-method we recommend the papers from Monaghan 1992,1994, etc.
+</P>
+<P>Optionally, this pairstyle can take into account the artificial viscosity proposed my Monaghan (1985), if the 
+<I>artVisc</I> keyword is appended. In this case, &#928;<SUB>ab</SUB> is added to the bracket term in the above 
+acceleration equation, where &#928;<SUB>ab</SUB> is given by
+</P>
+<CENTER><IMG SRC="pair_sph_eq5.gif">
+</CENTER>
+<P>and
+</P>
+<CENTER><IMG SRC="pair_sph_eq6.gif">
+</CENTER>
+<P>This expression produces a shear and bulk viscosity. The quadratic term enables simulation of high Mach number shocks.
+The parameter &#951;<SUP>2</SUP> prevents singularities. A good choice is normally &#951;<SUP>2</SUP>=0.01h<SUP>2</SUP>.<BR>
+The choice of &#945; and &#946; should not be critical, although there are some aspects which you should take into account:
+<PRE>  In case of negligible changes in the density (weakly compressible SPH) it is almost only shear viscosity with a viscosity coefficient approximately &#945;hc. (Monaghan, 1994)
+</PRE>
+</P>
+<P>Bar-parameters like c<SUB>ab</SUB> and &#961;<SUB>ab</SUB> are mean values of particle a and b.<BR>
+NOTE: &#961;<SUB>ab</SUB> is calculated, whereas c<SUB>ab</SUB> is a given parameter. In a next version speed of sound should be added as atom property. 
+</P>
+<P>By appending the keyword <I>tensCorr</I> you enable the tensile correction algorithm (Monaghan, 2000) which improves results in combination with negative pressures (e.g. EOS like Tait's equation). 
+This method adds R*(f<SUB>ab</SUB>)<SUP>n</SUP> to the bracket term, where the factor R is related to the pressure and can be calculated by R=R<SUB>a</SUB> + R<SUB>b</SUB>.
+In case of negative pressures (P<SUB>a</SUB> &lt; 0) we use the rule
+</P>
+<CENTER><IMG SRC="pair_sph_eq7.gif">
+</CENTER>
+<P>otherwise R<SUB>a</SUB> is zero. Typical values of <I>epsilon</I> are about 0.2.<BR>
+f<SUB>ab</SUB> is calculated by
+</P>
+<CENTER><IMG SRC="pair_sph_eq8.gif">
+</CENTER>
+<P>where &Delta;p denotes the initial particle spacing.<BR>
+NOTE: In a next version this calculation should be improved too.
+</P>
+<P><B>Restart info:</B>
+</P>
+<P>Until now there is no restart option implemented.
+</P>
+<P><B>Restrictions:</B> 
+</P>
+<P>...
+</P>
+<P><B>Related commands:</B> 
+</P>
+<P><A HREF="pair_coeff.html">pair_coeff</A>
+<P><B>Default:</B> none 
+</P>
+<HR>
+<P><A NAME="Monaghan1992"></A><B>(Monaghan1992)</B> J. J. Monaghan, Annu. Rev. Astron. Astrophys., 30, p. 543-574 (1992).
+</P>
+<P><A NAME="Monaghan1994"></A><B>(Monaghan1994)</B> J. J. Monaghan, Journal of Computational Physics, 110, p. 399-406 (1994).
+</P>
+<P><A NAME="Monaghan2000"></A><B>(Monaghan2000)</B> J. J. Monaghan, Journal of Computational Physics, 159, p. 290-311 (2000).
+</P>
+</HTML>

@@ -1,0 +1,52 @@
+#Contact model example
+
+atom_style	granular
+atom_modify	map array
+boundary	m m m
+newton		off
+
+communicate	single vel yes
+
+units		si
+
+region		reg block -0.05 0.05 -0.05 0.05 0. 0.15 units box
+create_box	1 reg
+
+neighbor	0.002 bin
+neigh_modify	delay 0
+
+pair_style 	gran/hertz/history 266000.0 NULL 500.0 NULL 0.5 1			
+pair_coeff	* *
+
+timestep	0.00001
+
+fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+fix		zwalls all wall/gran 266000.0 NULL 500.0 NULL 0.5 1 zplane 0.0 0.15 
+fix		cylwalls all wall/gran 266000.0 NULL 500.0 NULL 0.5 1 zcylinder 0.05 
+
+#region and insertion
+region		bc cylinder z 0.01 0.01 0.025 0.14 0.145 units box
+group		nve_group region reg
+fix		ins nve_group pour 1000 1 1 vol 0.7 1000 diam 0.003 0.003 dens 2500 2500 vel 0. 0. 0. 0. -1. region bc
+
+#apply nve integration to all particles that are inserted as single particles
+fix		integr nve_group nve/sphere
+
+#output settings, include total thermal energy
+compute		1 all erotate/sphere
+thermo_style	custom step atoms ke c_1 vol
+thermo		1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+run		1
+dump		dmp all custom 800 dump.myOldModels id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+
+#insert particles
+run		2000
+unfix		ins
+
+#run
+run		50000 upto

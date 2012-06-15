@@ -1,0 +1,74 @@
+"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix mesh/6dof command :h3
+
+[Syntax:]
+
+fix ID group-ID mesh/gran filename walltype scalefactor xoff yoff zoff phix phiy phiz
+keywords values ...  :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+mesh/gran/6dof = style name of this fix command  :l
+filename, walltype, scalefactor, xoff, yoff,zoff , phix, phiy, phiz are documented in "fix mesh"_fix_mesh.html.
+Please not the restrictions that apply! :l
+keyword s= {mass} (obligatory), {com} (obligatory), {vcm} (optional), {angmom} (optional), {moi} (obligatory) :l
+{mass} value = mass
+   mass = mass of the rigid body (mass units)
+{com} values = x, y, z
+    x, y, z = coordinates of the center of mass of the body (distance units)
+{vcm} values = vx, vy, vz
+    vx, vy, vz = velocities of the center of mass of the body (velocity units)
+{angmom} values = ax, ay, az
+    ax, ay, az = initial angular momentum around x-, y-, and z-axis
+{moi} values = Ixx, Iyy, Izz, Ixy, Ixz, Iyz
+    Ixx, Iyy, Izz, Ixy, Ixz, Iyz = moments of inertia around the given axis :pre
+:ule
+
+[Examples:]
+
+fix cad all mesh/gran/6dof box.stl 1 1. 0. 0. 0. 0. 0. 0. &
+mass 40 com 0. 0. 0. vcm 0. 0. -0.5 angmom 1. 0. 0. &
+moi 0.266666 0.266666 0.266666 0. 0. 0. :pre
+
+[LIGGGHTS vs. LAMMPS Info:]
+
+This command is not available in LAMMPS.
+
+[Description:]
+
+This fix is does the same as "fix mesh"_fix_mesh.html but it additionally integrates the motion of the mesh assuming it to be a rigid body with the given com (center of mass) and moi (moments of inertia). Optionally, you can specify an initial velocity and angular momentum of the rigid body. Please note the difference between angular velocity omega and angular momentum (which is I*omega)
+
+IMPORTANT NOTE:
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+This fix stores a global vector with 6 components for access by various "output commands"_Section_howto.html#4_15. The first 3 components are equal to the total force on the mesh, the last 3 components store the total torque on the body exerted by the particles. Other info see "fix mesh"_fix_mesh.html. Furthermore, this fix writes the state of the rigid body (translational and rotational) to binary restart files so that a simulation can continue correctly. Other infos see "fix mesh"_fix_mesh.html.
+
+[Restrictions:]
+
+This fix is not part of the public LIGGGHTS release. For more information, send a message to "contact@liggghts.com"_mailto:contact@liggghts.com.
+
+When using this fix, it is not possible to scale or rotate the body, so the first args have to be:
+
+scalefactor = 1.0
+xoff = 0.0
+yoff = 0.0
+zoff = 0.0
+phix = 0.0
+phiy = 0.0
+phiz = 0.0 :pre
+
+We might relax this restriction in the future.
+
+[Related commands:]
+
+"fix wall/gran"_fix_wall_gran.html
+
+[Default:] none

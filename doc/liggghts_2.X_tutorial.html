@@ -1,0 +1,216 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H1>LIGGGHTS 2.X vs. LIGGGHTS 1.5.3 - syntax changes 
+</H1>
+<H2>Introduction: 
+</H2>
+<P>This is a short outline of the most important changes in LIGGGHTS 2.X 
+compared to LIGGGHTS 1.5.3 regarding the syntax of major commands. The 
+motivation for these changes was to make the script language more readable and to 
+improve extendability (in the sense of object oriented programming) with respect 
+to modelling approaches.
+</P>
+<H2>Commands covered by this tutorial: 
+</H2>
+<LI>atom_style sphere (formerly atom_style granular)  
+
+<LI>dump mesh/stl (formerly dump stl) 
+
+<LI>dump mesh/vtk (formerly dump mesh/gran/VTK) 
+
+<LI>fix heat/gran 
+
+<LI>fix mesh (formerly fix mesh/gran) 
+
+<LI>fix mesh/stressanalysis (formerly fix mesh/gran/stressanalysis) 
+
+<LI>fix move/mesh (formerly fix move/mesh/gran)  
+
+<LI>fix wall/gran/* 
+
+<LI>pair_style gran/* 
+
+
+</UL>
+<H2>Changes in syntax for each command: 
+</H2>
+<P>Changes are indicated as follows
+</P>
+<PRE>OLD: old_syntax
+NEW: new_syntax  
+</PRE>
+<P>where <I>old_syntax</I> refers to the syntax used in LIGGGHTS 1.5.3 and before,
+and <I>new_syntax</I> refers to the syntax used in LIGGGHTS 2.X
+</P>
+<HR>
+
+<P><B>atom_style sphere (formerly atom_style granular):</B>
+</P>
+<PRE>OLD: atom_style granular 
+NEW: atom_style sphere  
+</PRE>
+<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+</P>
+<P>For details, see <A HREF = "atom_style.html">atom_style sphere</A>.
+</P>
+<HR>
+
+<P><B>dump mesh/stl:</B>
+</P>
+<PRE>OLD: dmpstl all stl 300 post/dump*.stl
+NEW: dmpstl all mesh/stl 300 post/dump*.stl  
+</PRE>
+<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+</P>
+<HR>
+
+<P><B>dump mesh/vtk:</B>
+</P>
+<PRE>OLD: dmpstl all mesh/gran/VTK 300 post/dump*.stl id
+NEW: dmpstl all mesh/vtk 300 post/dump*.stl id  
+</PRE>
+<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+</P>
+<HR>
+
+<P><B>fix heat/gran:</B>
+</P>
+<PRE>OLD: fix ID group-ID heat/gran 273.15
+NEW: fix ID group-ID heat/gran initial_temperature 273.15 
+</PRE>
+<PRE>OLD: fix ID group-ID heat/gran 273.15 + activate area correction via fix property/global
+NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction on 
+</PRE>
+<HR>
+
+<P><B>fix mesh (formerly fix mesh/gran):</B>
+</P>
+<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. 
+NEW: fix ID group-ID mesh file mesh.stl type 1 
+</PRE>
+<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 0.001 0. 0. 0. -90. 0. 0.
+NEW: fix ID group-ID mesh file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90. 
+</PRE>
+<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0. 
+NEW: fix ID group-ID mesh file mesh.stl type 1 move 1. 2. 3 
+</PRE>
+<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. conveyor 5. 0. 0.
+NEW: fix ID group-ID mesh file mesh.stl type 1 surface_vel 5. 0. 0. 
+</PRE>
+<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5. 
+NEW: fix ID group-ID mesh file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5. 
+</PRE>
+<P>NOTE: For compatibility reasons, the command name <I>fix mesh/gran</I> can be 
+used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax.
+</P>
+<P>For details, see <A HREF = "fix_mesh.html">fix mesh</A>.
+</P>
+<HR>
+
+<P><B>fix mesh/stressanalysis (formerly fix mesh/gran/stressanalysis):</B>
+</P>
+<PRE>OLD: fix ID group-ID mesh/gran/stressanalysis mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. finnie yes
+NEW: fix ID group-ID mesh/stressanalysis file mesh.stl type 1 wear finnie 
+</PRE>
+<P>NOTE: For compatibility reasons, the command name <I>fix mesh/gran/stressanalysis</I> can be 
+used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax.
+</P>
+<P>For details, see <A HREF = "fix_mesh_stressanalysis.html">fix mesh/stressanalysis</A>.
+</P>
+<HR>
+
+<P><B>fix move/mesh (formerly fix move/mesh/gran):</B>
+</P>
+<PRE>OLD: fix ID group-ID move/mesh/gran wiggle -0.1 0. 0. 0.02 cad1 1
+NEW: fix ID group-ID move/mesh mesh cad1 wiggle amplitude -0.1 0. 0. period 0.02 
+</PRE>
+<PRE>OLD: fix ID group-ID move/mesh/gran rotate 0. 0. 0. 0. 0. 1. 0.05 cad1 1
+NEW: fix ID group-ID move/mesh mesh cad1 rotate origin 0. 0. 0. axis  0. 0. 1. period 0.05 
+</PRE>
+<PRE>OLD: fix ID group-ID move/mesh/gran linear 20. 20. 0. cad1 1
+NEW: fix ID group-ID move/mesh mesh cad1 linear 20. 20. 0. 
+</PRE>
+NOTES: 
+</UL>
+<LI>The trailing "1" for the <I>old_syntax</I> was no longer used in LIGGGHTS 1.5.3 
+
+<LI>For compatibility reasons, the command name <I>fix move/mesh/gran</I> can be 
+used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax. 
+
+<P>For details, see <A HREF = "fix_move_mesh.html">fix move/mesh</A>.
+</P>
+<HR>
+
+<P><B>fix wall/gran/*:</B>
+</P>
+<PRE>OLD: fix ID group-ID wall/gran/hertz/history 1 0 mesh/gran 2 cad1 cad2
+NEW: fix ID group-ID wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2 
+</PRE>
+<PRE>OLD: fix ID group-ID wall/gran/hertz/history 1 0 xplane -0.5 0.5 1
+NEW: fix ID1 group-ID wall/gran/hertz/history type 1 xplane -0.5
+     fix ID2 group-ID wall/gran/hertz/history type 1 xplane 0.5 
+</PRE>
+<PRE>OLD: fix ID group-ID wall/gran/hertz/history 3 0 xplane -0.5 0.5 1
+NEW: fix ID1 group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 rolling_friction cdt
+     fix ID2 group-ID wall/gran/hertz/history primitive type 1 xplane  0.5 rolling_friction cdt 
+</PRE>
+<PRE>OLD: fix ID group-ID wall/gran/hertz/history 1 1 xplane -0.5 0.5 1
+NEW: fix ID group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 0.5 cohesion sjkr 
+</PRE>
+<PRE>OLD: fix ID group-ID wall/gran/hertz/history 0 0 zcylinder 0.05 1
+NEW: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off 
+</PRE>
+NOTES: 
+</UL>
+<LI>Same applies for hooke/history, hooke, hooke/history/simple, hertz/history/simple 
+
+<LI><I>sjkr</I> stands for 'simplified JKR (Johnson-Kendall-Roberts)' model, and <I>cdt</I> for 
+'constant directional torque' model 
+
+<LI>styles <I>xplane</I>, <I>yplane</I>, <I>zplane</I> take only one arg now (the wall position), if 
+you want two walls you have to use two fix commands 
+
+<LI>in addition to the existing style <I>zcylinder</I>, there is now <I>xcylinder</I> and 
+<I>ycylinder</I> as well 
+
+<LI><I>xcylinder</I> <I>ycylinder</I> and <I>zcylinder</I> take 3 args: the cylinder radius, and 
+the location of the axis in the other two dimensions 
+
+<P>For details, see <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
+</P>
+<HR>
+
+<P><B>pair_style gran/*:</B>
+</P>
+<PRE>OLD: pair_style gran/hertz/history 1 0
+NEW: pair_style gran/hertz/history 
+</PRE>
+<PRE>OLD: pair_style gran/hertz/history 3 0
+NEW: pair_style gran/hertz/history rolling_friction cdt  
+</PRE>
+<PRE>OLD: pair_style gran/hertz/history 1 1
+NEW: pair_style gran/hertz/history cohesion sjkr   
+</PRE>
+<PRE>OLD: pair_style gran/hertz/history 0 0
+NEW: pair_style gran/hertz/history tangential_damping off 
+</PRE>
+NOTES: 
+</UL>
+<LI>Same applies for hooke/history, hooke, hooke/history/simple, hertz/history/simple 
+
+<LI><I>sjkr</I> stands for "simplified JKR (Johnson-Kendall-Roberts)" model, and <I>cdt</I> for "constant directional torque" model 
+
+<P>For details, see <A HREF = "pair_gran.html">pair_style gran</A>.
+</P>
+</HTML>

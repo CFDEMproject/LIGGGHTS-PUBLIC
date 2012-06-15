@@ -1,0 +1,88 @@
+<HTML>
+<CENTER><A HREF="http://www.liggghts.com/">LIGGGHTS WWW Site</A> - <A HREF="Manual.html">LIGGGHTS Documentation</A> - <A HREF="Section_commands.html#comm">LIGGGHTS Commands</A>
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix sph/pressure command
+</H3>
+<P><B>Syntax:</B> 
+</P>
+<PRE>fix ID group-ID sph/pressure style args 
+</PRE>
+<UL>
+	<LI>ID, group-ID are documented in <A HREF="fix.html">fix</A> command
+	<LI>sph/pressure = style name of this fix command 
+	<LI>style = <I>absolut</I> or <I>Tait</I>
+	<LI>args = list of arguments for a particular style 
+	<PRE>  <I>absolut</I> args = NULL
+  <I>Tait</I> args = B density0 gamma
+    B = coefficient
+    density0 = reference density
+    gamma = isentropic exponent</PRE>
+</UL>
+<P><B>Examples:</B> 
+</P>
+<PRE>fix pressure all sph/pressure absolut
+fix pressure all sph/pressure Tait 2000000. 1000. 7.
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info: </B>
+</P>
+<P>This command is not available in LAMMPS.
+</P>
+<P><B>Description:</B> 
+</P>
+<P>The equation of state (EOS) for the SPH calculation is the link between the density field and the pressure field. 
+A lot of different equations can be found in the literature. 
+</P>
+<P>The <I>absolut</I> style was the first implemented EOS. Based on &quot;An initiation to SPH&quot; from Lucas Braune and Thomas Lewiner 
+this simple equation
+</P>
+<CENTER><IMG SRC="fix_sph_pressure_eq1.gif">
+</CENTER>
+<P>is implemented, where &rho;<SUB>a</SUB> is the density of particle a.
+</P>
+<P>In case of <I>Tait</I> style the rule
+</P>
+<CENTER><IMG SRC="fix_sph_pressure_eq2.gif">
+</CENTER>
+<P>is applied. B denotes the pressure prefactor which is calculated by
+</P>
+<CENTER><IMG SRC="fix_sph_pressure_eq3.gif">
+</CENTER>
+<P>where c<SUB>0</SUB> is the speed of sound of the material. &rho;<SUB>0</SUB> is the reference density and &gamma; is the isentropic exponent defined as c<SUB>p</SUB>/c<SUB>v</SUB>.
+</P>
+<P>NOTE: Monaghan has found that the speed of sound could be artificially reduced. (Monaghan, 1994) Therefore, we can choose a greater time step. He argues that the minimum sound speed 
+should be about ten times greater than the maximum expected flow speed. (&Delta;&rho; &lt; 1%)
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>No information about this fix is written to <A HREF = "restart.html">binary restart files</A>.
+</P>
+<P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix.
+</P>
+<P>No global scalar or vector or per-atom quantities are stored by this fix 
+for access by various <A HREF = "Section_howto.html#4_15">output commands</A>.
+</P>
+<P>No parameter of this fix can be used with the <I>start/stop</I> keywords 
+of the <A HREF = "run.html">run</A> command.
+</P>
+<P>This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+</P>
+<P><B>Restrictions:</B> 
+</P>
+<P>One fix sph/density/summation (only dev-version) or sph/denstiy/continuity has to exist.
+</P>
+<P><B>Related commands:</B> 
+</P>
+<P><A HREF="pair_sph.html">pair_style sph</A>, 
+<A HREF="fix_sph_density_continuity.html">fix sph/density/continuity</A>
+</P>
+<P><B>Default:</B> none 
+</P>
+</HTML>

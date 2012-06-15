@@ -1,0 +1,79 @@
+#Heat transfer example
+
+atom_style	granular
+atom_modify	map array
+boundary	m m m
+newton		off
+
+communicate	single vel yes
+
+units		si
+
+region		reg block -0.05 0.05 -0.05 0.05 0. 0.15 units box
+create_box	1 reg
+
+neighbor	0.002 bin
+neigh_modify	delay 0
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.7
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.05
+#fix 		m5 all property/global characteristicVelocity scalar 2.
+
+
+#New pair style
+pair_style 	gran/hertz/history #Hertzian without cohesion
+pair_coeff	* *
+
+timestep	0.000025
+
+fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+fix		zwalls1 all wall/gran/hertz/history   primitive type 1  zplane 0.0
+fix		zwalls2 all wall/gran/hertz/history   primitive type 1  zplane 0.15
+fix		cylwalls all wall/gran/hertz/history primitive type 1  zcylinder 0.05 0. 0.
+
+#heat transfer
+fix 		ftco all property/global thermalConductivity peratomtype 100.
+fix 		ftca all property/global thermalCapacity peratomtype 10.
+fix             heattransfer all heat/gran initial_temperature 300.
+
+#region of insertion
+region		bc cylinder z 0. 0. 0.045 0.00 0.15 units box
+
+#particle distributions and insertion
+fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 8000 radius constant 0.004
+fix		pdd1 all particledistribution/discrete 1.  1 pts1 1.0
+
+fix		ins all insert/pack seed 100001 distributiontemplate pdd1 vel constant 0. 0. -0.3 &
+		insert_every once overlapcheck yes all_in yes volumefraction_region 0.3 region bc
+
+#fix		ins nve_group pour/legacy 500 1 1 vol 0.7 1000 diam 0.008 0.008 dens 8000 8000 vel 0. 0. 0. 0. -0.3 region bc
+
+#apply nve integration to all particles
+fix		integr all nve/sphere
+
+#output settings, include total thermal energy
+compute		rke all erotate/sphere
+thermo_style	custom step atoms ke c_rke f_heattransfer vol
+thermo		1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+run		1
+dump		dmp all custom 800 post/dump*.heatGran id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius f_Temp[0] f_heatFlux[0]
+unfix		ins
+
+#let the particles settle
+run		20000 upto
+
+#set particle temperature for half the bed
+region		halfbed block 0 INF INF INF INF INF units box 
+set             region halfbed property/atom Temp 800.
+
+#run to see heat transfer
+run		50000 upto

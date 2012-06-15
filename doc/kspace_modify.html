@@ -1,0 +1,131 @@
+<HTML>
+<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>kspace_modify command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>kspace_modify keyword value ... 
+</PRE>
+<UL><LI>one or more keyword/value pairs may be listed 
+
+<LI>keyword = <I>mesh</I> or <I>order</I> or <I>gewald</I> or <I>slab</I> 
+
+<PRE>  <I>mesh</I> value = x y z
+    x,y,z = PPPM FFT grid size in each dimension
+  <I>order</I> value = N
+    N = grid extent of Gaussian for PPPM mapping of each charge
+  <I>force</I> value = accuracy (force units)
+  <I>gewald</I> value = rinv (1/distance units)
+    rinv = PPPM G-ewald parameter
+  <I>slab</I> value = volfactor
+    volfactor = ratio of the total extended volume used in the
+      2d approximation compared with the volume of the simulation domain
+  <I>compute</I> value = <I>yes</I> or <I>no</I> 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>kspace_modify mesh 24 24 30 order 6
+kspace_modify slab 3.0 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Set parameters used by the kspace solvers defined by the
+<A HREF = "kspace_style.html">kspace_style</A> command.  Not all parameters are
+relevant to all kspace styles.
+</P>
+<P>The <I>mesh</I> keyword sets the 3d FFT grid size for kspace style pppm.
+Each dimension must be factorizable into powers of 2, 3, and 5.  When
+this option is not set, the PPPM solver chooses its own grid size,
+consistent with the user-specified accuracy and pairwise cutoff.
+Values for x,y,z of 0,0,0 unset the option.
+</P>
+<P>The <I>order</I> keyword determines how many grid spacings an atom's charge
+extends when it is mapped to the FFT grid in kspace style pppm.  The
+default for this parameter is 5, which means each charge spans 5 grid
+cells in each dimension.  The larger the value of this parameter, the
+smaller the FFT grid will need to be to achieve the requested
+precision.  Conversely, the smaller the order value, the larger the
+grid will be.  Note that there is an inherent trade-off involved: a
+small grid will lower the cost of FFTs, but a large order parameter
+will increase the cost of intepolating charge/fields to/from the grid.
+And vice versa.
+</P>
+<P>The order parameter may be reset by LAMMPS when it sets up the PPPM
+FFT grid if the implied grid stencil extends beyond the grid cells
+owned by neighboring processors.  Typically this will only occur when
+small problems are run on large numbers of processors.  A warning will
+be generated indicating the order parameter is being reduced to allow
+LAMMPS to run the problem.
+</P>
+<P>The <I>force</I> keyword overrides the relative accuracy parameter set by
+the <A HREF = "kspace_style.html">kspace_style</A> command with an absolute
+accuracy.  The accuracy determines the RMS error in per-atom forces
+calculated by the long-range solver and is thus specified in force
+units.  A negative value for the accuracy setting means to use the
+relative accuracy parameter.  The accuracy setting is used in
+conjunction with the pairwise cutoff to determine the number of
+K-space vectors for style <I>ewald</I> or the FFT grid size for style
+<I>pppm</I>.
+</P>
+<P>The <I>gewald</I> keyword sets the value of the Ewald or PPPM G-ewald
+parameter as <I>rinv</I> in reciprocal distance units.  Without this
+setting, LAMMPS chooses the parameter automatically as a function of
+cutoff, precision, grid spacing, etc.  This means it can vary from one
+simulation to the next which may not be desirable for matching a
+KSpace solver to a pre-tabulated pairwise potential.  This setting can
+also be useful if Ewald or PPPM fails to choose a good grid spacing
+and G-ewald parameter automatically.  If the value is set to 0.0,
+LAMMPS will choose the G-ewald parameter automatically.
+</P>
+<P>The <I>slab</I> keyword allows an Ewald or PPPM solver to be used for a
+systems that are periodic in x,y but non-periodic in z - a
+<A HREF = "boundary.html">boundary</A> setting of "boundary p p f".  This is done by
+treating the system as if it were periodic in z, but inserting empty
+volume between atom slabs and removing dipole inter-slab interactions
+so that slab-slab interactions are effectively turned off.  The
+volfactor value sets the ratio of the extended dimension in z divided
+by the actual dimension in z.  The recommended value is 3.0.  A larger
+value is inefficient; a smaller value introduces unwanted slab-slab
+interactions.  The use of fixed boundaries in z means that the user
+must prevent particle migration beyond the initial z-bounds, typically
+by providing a wall-style fix.  The methodology behind the <I>slab</I>
+option is explained in the paper by <A HREF = "#Yeh">(Yeh)</A>.
+</P>
+<P>The <I>compute</I> keyword allows Kspace computations to be turned off,
+even though a <A HREF = "kspace_style.html">kspace_style</A> is defined.  This is
+not useful for running a real simulation, but can be useful for
+debugging purposes or for computing only partial forces that do not
+include the Kspace contribution.  You can also do this by simply not
+defining a <A HREF = "kspace_style.html">kspace_style</A>, but a Kspace-compatible
+<A HREF = "pair_style.html">pair_style</A> requires a kspace_style to be defined.
+This keyword gives you that option.
+</P>
+<P><B>Restrictions:</B> none
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "kspace_style.html">kspace_style</A>, <A HREF = "boundary.html">boundary</A>
+</P>
+<P><B>Default:</B>
+</P>
+<P>The option defaults are mesh = 0 0 0, order = 5, force = -1.0, gewald
+= 0.0, slab = 1.0, and compute = yes.
+</P>
+<HR>
+
+<A NAME = "Yeh"></A>
+
+<P><B>(Yeh)</B> Yeh and Berkowitz, J Chem Phys, 111, 3155 (1999).
+</P>
+</HTML>

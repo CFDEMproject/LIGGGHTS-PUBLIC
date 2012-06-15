@@ -1,0 +1,45 @@
+"CFDEMproject WWW Site"_lws - "CFDEM Commands"_lc :c
+
+:link(lws,http://www.cfdem.com)
+:link(lc,CFDEMcoupling_Manual.html#comm)
+:link(github,http://github.com)
+:link(gitHelp,http://help.github.com/linux-set-up-git)
+
+:line
+githubAccess_public :h3
+:line
+
+[Description:]
+
+This routine describes how to setup a github account and pull repositories of the CFDEMproject.
+
+[Procedure:]
+
+Basically the following steps have to be performed:
+{git clone} the desired repository :ulb,l
+update your repositories by {git pull} :l
+:ule
+
+[{git clone} the desired repository:]
+
+To clone the public LIGGGHTS repository, open a terminal and execute:
+
+git clone git://github.com:CFDEMproject/LIGGGHTS-PUBLIC.git :pre
+
+Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively:
+
+git clone https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git :pre
+
+To clone the public CFDEMcoupling repository, open a terminal and execute:
+
+git clone git://github.com:CFDEMproject/CFDEMcoupling-PUBLIC.git :pre
+
+Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively:
+
+git clone https://github.com/CFDEMproject/CFDEMcoupling-PUBLIC.git :pre
+
+[Update your repositories by {git pull}:]
+
+To get the latest version, open a terminal, go to the location of your local installation and type:
+
+git pull :pre

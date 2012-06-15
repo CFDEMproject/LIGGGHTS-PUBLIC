@@ -1,0 +1,187 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>fix insert/pack command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group-ID insert/pack   seed seed_value distributiontemplate dist-ID general_keywords general_values pack_keywords pack_values ... 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>insert/pack = style names of this fix command 
+
+<LI>seed = obligatory keyword 
+
+<LI>seed_value = random # seed (positive integer) 
+
+<LI>distributiontemplate = obligatory keyword 
+
+<LI>dist-ID = ID of a <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> to be used for particle insertion 
+
+<LI>one or more general keyword/value pairs can be appended 
+
+<LI>general_keywords = <I>maxattampt</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>vel</I> or <I>omega</I> 
+
+<PRE>  <I>maxattempt</I> value = ma
+    ma = max # of insertion attempts per atom (positive integer)
+  <I>insert_every</I> value = once or ie
+    once = value to signalise that isertion takes place only once (the step after the fix is issued)
+    ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
+  <I>start</I> value = ts
+    ts = time-step at which insertion should start (positive integer larger than current time-step)
+  <I>overlapcheck</I> value = yes or no
+  <I>all_in</I> value = yes or no
+  <I>vel</I> values = vx vy vz
+    vx = x-velocity at insertion (velocity units)
+    vy = y-velocity at insertion (velocity units)
+    vz = z-velocity at insertion (velocity units)
+  <I>omega</I> values = omegax omegay omegaz
+    omegax = x-comonent of angular velocity (1/time units)
+    omegay = y-comonent of angular velocity (1/time units)
+    omegaz = z-comonent of angular velocity (1/time units) 
+</PRE>
+<LI>following the general keyword/value section, one or more pack keyword/value pairs can be appended for the fix insert/pack command 
+
+<LI>pack_keywords = <I>region</I> or <I>volumefraction_region</I> or <I>particles_in_region</I> or <I>mass_in_region</I> or <I>ntry_mc</I> 
+
+<PRE>pack_keywords = where exactly one out of <I>volumefraction_region</I> or <I>particles_in_region</I> or <I>mass_in_region</I> has to be defined:l
+  <I>region</I> value = region-ID
+    region-ID = ID of the region where the particles will be generated (positive integer)
+  <I>volumefraction_region</I> values = vol
+    vol =  desired volume fraction for the region (positive float, 0 < vol < 1)
+  <I>particles_in_region</I> values = np
+    np =  desired number of particles in the region (positive integer)
+  <I>mass_in_region</I> values = m
+    m =  desired mass in the region (positive float, m > 0)
+  <I>ntry_mc</I> values = n
+    n = number of Monte-Carlo steps for calculating the region's volume  (positive integer) 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix ins all insert/pack seed 1001 distributiontemplate pdd1 insert_every once overlapcheck yes volumefraction_region 0.3 region mysphere ntry_mc 10000 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Insert particles into a granular run either once or every few timesteps 
+within the specified region, as defined via the <I>region</I> keyword.
+</P>
+<P>This command must use the distributiontemplate keyword to refer to a 
+<A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> (defined by dist-fix-ID) that defines the properties of the 
+inserted particles.
+</P>
+<P>At each insertion step, fix insert/pack tries inserts as many particles as
+needed to reach a defined target, which can be either a region volume 
+fraction (keyword <I>volumefraction_region</I>), the total number of particles
+in the region (keyword <I>particles_in_region</I>), or the total particle mass
+in the region (keyword <I>mass_in_region</I>). Exactly one out of the keywords 
+<I>volumefraction_region</I>, <I>particles_in_region</I>, <I>mass_in_region</I> must 
+be defined.
+</P>
+<P>The frequency of the particle insertion can be controlled by the 
+keyword <I>insert_every</I>, which defines  the number of time-steps between 
+two insertions. Alternatively, by specifying <I>insert_every once</I>, 
+particles are inserted only once. 
+</P>
+<P>The <I>start</I> keyword can be used to set the time-step at which the insertion 
+should start.
+</P>
+<P>Inserted particles are assigned the atom type specified by the 
+particledistribution defined via the <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> and
+are assigned to 4 groups: the default group "all" and the group
+specified in the fix insert command, as well as the groups specified 
+in the <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> and <A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A>
+command (all of which can also be "all").
+</P>
+<P>The keyword <I>overlapcheck</I> controls if overlap is checked for at insertion,
+both within the inserted particle package and with other existig particles. 
+If this option is turned off, insertion will scale very well in parallel, 
+otherwise not. Be aware that in case of no overlap check, highly overlapping
+configurations will be produced, so you will have to relax these configurations.
+</P>
+<P>If overlapcheck if performed, the number of insertion attempts per 
+particle can be specified via the <I>maxattempt</I> keyword. Each timestep 
+particles are inserted, the command will make up to a total of M tries 
+to insert the new particles without overlaps, where 
+M = # of inserted particles * ma.  If unsuccessful at completing all 
+insertions, a warning will be printed.
+</P>
+<P>The <I>all_in</I> flag determines if the particle is completely contained 
+in the insertion region (<I>all_in yes</I>) or only the particle center 
+(<I>all_in no</I>). Currently <I>all_in yes</I> is not yet supported for all
+types of insertion.
+</P>
+<P>The initial velocity and rotational velocity can be controlled via the
+<I>vel</I> and <I>omega</I> keywords.
+</P>
+<P><B>Description for fix insert/pack:</B>
+</P>
+<P>This command must use the <I>region</I> keyword to define an insertion
+volume. The specified region must have been previously defined with a
+<A HREF = "region.html">region</A> command. Dynamic regions are not supported as insertion region.
+Each timestep particles are inserted, they are placed randomly inside the 
+insertion volume. 
+</P>
+<P>The <I>volumefraction</I> option specifies what volume fraction of the insertion
+volume will be filled with particles. The higher the value, the more
+particles are inserted each timestep. Since inserted particles should not
+overlap, the maximum volume fraction should be no higher than about 0.6. 
+</P>
+<P>To determine the volume of the insertion region, a Monte Carlo approach
+might be used for some cases where the volume is difficult to calculate
+or where the volume calculation is simply not implemented by the region.
+The <I>ntry_mc</I> keyword is used to control the number of MC tries that
+are used for the volume calculation.
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>Information about this fix is written to <A HREF = "restart.html">binary restart
+files</A>.  This means you can restart a simulation simulation
+while inserting particles, when the restart file was written during the
+insertion operation. 
+</P>
+<P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this
+fix.  No global scalar or vector or per-atom quantities are stored by
+this fix for access by various <A HREF = "Section_howto.html#4_15">output
+commands</A>.  No parameter of this fix can be
+used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
+This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>The <I>overlapcheck</I> = 'yes' option performs an inherently serial operation
+and will thus not scale well in parallel. For this reason, if you
+want to generate large systems, you are advised to turn <I>overlapcheck</I> 
+off and let the packing relax afterwards to generate a valid packing.
+</P>
+<P>Keywords <I>duration</I> and <I>extrude_length</I> can not be used together.
+</P>
+<P>Currently <I>all_in yes</I> is not yet supported for all types of insertion.
+</P>
+<P>Dynamic regions are not supported as insertion region.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_insert_stream.html">fix_insert_stream</A>, <A HREF = "fix_insert_rate_region.html">fix_insert_rate_region</A>,
+<A HREF = "fix_deposit.html">fix_deposit</A>, <A HREF = "region.html">region</A>, 
+<A HREF = "fix_pour_dev.html">fix_pour_dev</A>, <A HREF = "fix_pour.html">fix_pour</A>
+</P>
+<P><B>Default:</B>
+</P>
+<P>The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
+vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
+duration = insert_every,  ntry_mc = 100000
+</P>
+</HTML>

@@ -1,0 +1,72 @@
+This directory has source files to build a library that LAMMPS
+links against when using the POEMS package.
+
+When you are done building this library, two files should
+exist in this directory:
+
+libpoems.a		the library LAMMPS will link against
+Makefile.lammps		settings the LAMMPS Makefile will import
+
+The latter file will have settings like this (can be omitted if blank):
+
+poems_SYSINC =
+poems_SYSLIB =
+poems_SYSPATH =
+
+SYSINC is for settings needed to compile LAMMPS source files
+SYSLIB is for additional system libraries needed by this package
+SYSPATH is the path(s) to where those libraries are
+
+You must insure these settings are correct for your system, else
+the LAMMPS build will likely fail.
+
+-------------------------------------------------------------------------
+
+POEMS (Parallelizable Open source Efficient Multibody Software) library
+
+Rudranarayan Mukherjee, RPI
+mukher at rpi.edu
+June 2006
+
+--------------
+
+This is version 1.0 of the POEMS library, general purpose distributed
+multibody dynamics software, which is able to simulate the dynamics of
+articulated body systems.
+
+This library must be built with a C++ compiler, before LAMMPS is
+built, so LAMMPS can link against it.
+
+Build the library using one of the provided Makefiles or creating your
+own, specific to your compiler and system.  For example:
+
+make -f Makefile.g++
+
+If the build is successful, you should end up with a libpoems.a file.
+
+--------------
+
+POEMS is supported by the funding agencies listed in the Grants' List.
+POEMS is an open source program distributed under the Rensselaer
+Scorec License.
+
+The Authors as listed in Authors' List reserve the right to reject the
+request on technical supports of the POEMS freely obtained.
+
+We are open to hear from you about bugs, an idea for improvement, and
+suggestions, etc. We keep improving the POEMS. Check the POEMS web
+site (www.rpi.edu/~anderk5/POEMS) for the recent changes.
+
+All correspondence regarding the POEMS should be sent to:
+
+By email: (preferred)
+Prof. Kurt Anderson (anderk5@rpi.edu) or
+Rudranarayan Mukherjee (mukher@rpi.edu) - include "[POEMS]" in the subject
+
+or by mail:
+Prof. Kurt S. Anderson
+4006 Jonsson Engineering Center 	
+Rensselaer Polytechnic Institute
+110 8th Street,
+Troy, NY 12180-3510, U.S.A.
+

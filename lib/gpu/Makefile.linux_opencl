@@ -1,0 +1,16 @@
+# /* ----------------------------------------------------------------------   
+#  Generic Linux Makefile for OpenCL 
+# ------------------------------------------------------------------------- */
+
+OCL_CPP = mpic++ -O3 -DMPI_GERYON -DUCL_NO_EXIT -DMPICH_IGNORE_CXX_SEEK
+OCL_LINK = -lOpenCL
+OCL_PREC = -D_SINGLE_SINGLE
+
+BIN_DIR = ./
+OBJ_DIR = ./
+LIB_DIR = ./
+AR = ar
+BSH = /bin/sh
+
+include Opencl.makefile
+

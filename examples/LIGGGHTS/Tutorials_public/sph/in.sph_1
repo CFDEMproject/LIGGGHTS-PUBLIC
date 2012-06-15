@@ -1,0 +1,90 @@
+# SPH example
+# Andreas Aigner (CD Lab Particulate FLow Modelling, JKU)
+# andreas.aigner@jku.at
+
+#variables
+variable      mass universe 0.001
+variable      h universe 0.012
+
+variable      lat equal $h/1.2
+variable      lathalf equal ${lat}*0.5
+variable      wallpos equal 0.1+${lathalf}
+variable      skin equal $h*0.25
+variable      eta equal 0.01*$h*$h
+
+variable      ins01 equal 0.1-${lat}
+variable      ins05 equal 0.5-${lat}
+
+
+atom_style    sph 
+atom_modify   map array sort 0 0
+communicate   single vel yes
+
+boundary      f f f
+newton        off
+
+
+units         si
+lattice       sc ${lat}
+
+region        reg block 0. 0.5     0. 0.1    0. 0.5 units box
+create_box    1 reg
+
+region        insreg block ${lat} 0.1   ${lat} ${ins01}   ${lat} 0.1 units box
+region        insreg2 block 0.10001 ${ins05}   ${lat} ${ins01}   ${lat} 0.05 units box
+create_atoms  1 region insreg
+create_atoms  1 region insreg2
+mass          1 ${mass}
+
+neighbor      ${skin} bin
+
+#sph pair style
+# mhu = 1e-3 (water) ~ alpha * cAB * h
+# for c=20 (10*vMax) and h=0.012 --> alpha=0.004166667
+# pair_style    sph kernel_style h [artVisc alpha beta cAB eta] [tensCorr epsilon]
+# artifical viscosity [Monaghan and Gingold (1983)] and tensile correction [Monaghan (2000)]
+
+pair_style 	  sph cubicspline $h artVisc 4.1666e-3 0. 20.0 ${eta} tensCorr 0.2
+pair_coeff	  * *
+
+#sph fixes
+# density
+fix           density all sph/density/continuity
+fix           corr all sph/density/corr shepard every 30
+set           group all density 1000
+
+# pressure
+# fix         id group style type [if Tait: B rho0 gamma] (according to Monaghan 1994)
+# B = c^2*rho0/gamma
+# for c=20 --> B~60000
+fix		        pressure all sph/pressure Tait 60000. 1000. 7.
+
+#wall
+region        boxw block 0. 0.5  0. 0.1  0. 0.5 units box
+# fix         id group wall/region/sph region_id r0 D (repulsive force similar to Lennard-Jones potential p1=4, p2=2)
+fix           boxwall_reg all wall/region/sph boxw ${lat} 5.0
+#fix         id group wall/sph args (e.g: xplane lo hi) r0 D
+fix           wall all wall/sph xplane  ${wallpos} NULL ${lathalf} 1.0
+
+# time integration
+# for c=20 --> dt~1e-5
+timestep      1e-5
+fix           integr all nve
+
+#gravity
+fix           gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+#output settings, include total thermal energy
+thermo_style	custom step atoms ke vol cpu
+thermo          1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+run           1
+dump	      dmp all custom 1000 post/dump*.sph id type type x y z ix iy iz vx vy vz fx fy fz vx vy vz q q density
+run           5000
+
+unfix         wall
+
+run           200000
+

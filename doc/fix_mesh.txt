@@ -1,0 +1,111 @@
+"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix mesh command :h3
+
+[Syntax:]
+
+fix ID group-ID mesh/gran file filename type walltype mesh_keywords values :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+mesh = style name of this fix command  :l
+file = obligatory keyword
+filename = name of STL or VTK file containing the triangle mesh data :l
+type = obligatory keyword
+walltype = atom type (material type) of the wall imported from the STL file :l
+zero or more mesh_keywords/value pairs may be appended :l
+mesh_keyword = {scale} or {move} or {rotate} or {surface_vel} or {surface_ang_vel} or {curvature} or {temperature} :l
+
+  {scale} value = factor
+    factor = factor to scale the mesh in x-, y-, and z-direction (double value)
+  {move} values = mx my mz
+    mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
+  {rotate} values = axis ax ay az angle ang
+    axis = obligatory keyword 
+    ax, ay, az = axis vector for rotation (length units) 
+    angle = obligatory keyword 
+    ang = angle to rotate the geometry around the specified axis (in degrees) 
+  {surface_vel} values = vx vy vz
+    vx vy vz = conveyor belt surface velocity  (velocity units)
+  {surface_ang_vel} values = origin ox oy oz axis ax ay az omega om
+    origin = mandatory keyword
+    ox oy oz = origin of rotation (length units)
+    axis = mandatory keyword
+    ax ay az = axis vector for rotation (length units) 
+    omega = mandatory keyword
+    om = rotaional velocity around specifyied axis (rad/time units)
+  {curvature value} = c
+    c = maximum angle between mesh faces belonging to the same surface (in degree)
+  {temperature} value = T0
+    T0 = Temperature of the wall (temperature units) :pre
+
+:ule
+
+[Examples:]
+
+fix cad all mesh file mesh.stl type 1 :pre
+
+[LIGGGHTS vs. LAMMPS Info:]
+
+This command is not available in LAMMPS.
+
+[Description:]
+
+This fix allows the import of triangual mesh wall geometry for granular simulations from 
+ASCII STL files or legacy ASCII VTK files. You can apply offset, scaling and rotation to 
+the imported mesh. Operations are applied in the order as they are specified. The group-ID
+is ignored for this command.
+
+One fix represents one wall with a specific material, where the material is identified 
+via keyword {type}. If multiple meshes with different materials are desired, the respective 
+meshes must be imported with different fix mesh commands.
+
+IMPORTANT NOTE: For periodic boundaries, the mesh is NOT mapped. Instead, a warning is 
+generated if a vertex lies outside the simulation box.
+
+With the optional {surface_vel} keyword, you can specify the imported mesh as conveyor belt. 
+The velocity direction for each mesh face is given by the projection of the conveyor 
+belt velocity parallel to the mesh face, the velocity magnitude for each mesh face is 
+equal to the conveyor belt velocity. This ensures the model makes sense also in case 
+the mesh is curved. Likewise, the optional rotation model activated via keyword
+{surface_ang_vel} mimics rotational motion of the mesh (e.g. for modeling a shear cell)
+
+With the {temperature} keyword, you can define a constant temperature for a mesh in 
+conjunction with heat conduction via "fix heat/gran"_fix_heat_gran.html. Note that the 
+actual calculation of the heat transfer happens only if you use the mesh in conjunction 
+with a granular wall, see "fix wall/gran"_fix_wall_gran.html.
+
+The curvature keyword lets you specify up to which angle between two triangles the 
+triangles should be treated as belonging to the same surface (e.g. useful for bends). 
+This angle is used to decide if (a) contact history is copied from one triangle to 
+the other as the contact point proceeds and (b) if edge and corner interaction is 
+calculated.
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+This fix writes the STL data to binary "restart files"_restart.html to be able to 
+correctly resume the simulation in case the mesh is moved. None of the 
+"fix_modify"_fix_modify.html options are relevant to this fix. No global 
+scalar or vector or per-atom quantities are stored by this fix for access by 
+various "output commands"_Section_howto.html#4_15. No parameter of this fix 
+can be used with the {start/stop} keywords of the "run"_run.html command. 
+This fix is not invoked during "energy minimization"_minimize.html.
+
+[Restrictions:]
+
+To date, only ASCII STL and VTK files can be read (binary is not supported). 
+In the current implementation, each processor allocates memory for the whole 
+geometry, which may lead to memory issues for very large geometries . 
+It is not supported to use both the moving mesh and the conveyor belt feature.
+
+[Related commands:]
+
+"fix wall/gran"_fix_wall_gran.html, "fix mesh/stressanalysis"_fix_mesh_stressanalysis.html , "fix mesh/6dof"_fix_mesh_6dof.html
+
+[Default:] c = 0 degrees

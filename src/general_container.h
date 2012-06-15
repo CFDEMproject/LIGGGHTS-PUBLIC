@@ -1,0 +1,128 @@
+/* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   Christoph Kloss, christoph.kloss@cfdem.com
+   Copyright 2009-2012 JKU Linz
+   Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS is based on LAMMPS
+   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+   http://lammps.sandia.gov, Sandia National Laboratories
+   Steve Plimpton, sjplimp@sandia.gov
+
+   This software is distributed under the GNU General Public License.
+
+   See the README file in the top-level directory.
+------------------------------------------------------------------------- */
+
+/* ----------------------------------------------------------------------
+   Contributing authors:
+   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
+   Philippe Seil (JKU Linz)
+------------------------------------------------------------------------- */
+
+#ifndef LMP_GENERAL_CONTAINER
+#define LMP_GENERAL_CONTAINER
+
+#include "container_base.h"
+#include "memory_ns.h"
+#include "math_extra_liggghts.h"
+#include <string.h>
+
+#define GROW 100
+
+using namespace LAMMPS_MEMORY_NS;
+
+namespace LAMMPS_NS
+{
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  class GeneralContainer : public ContainerBase
+  {
+      public:
+
+          virtual void add(T** elem);
+          void del(int n);
+          void delForward(int n,bool scale,bool translate,bool rotate);
+          void get(int n, T** elem);
+          void setAll(T def);
+          void set(int n, T** elem);
+          T**& operator()(int n);
+          T** const& operator()(int n) const;
+          T*** begin();
+
+          inline void scale(double factor);
+          inline void move(double *dx);
+          inline void moveElement(int i,double *dx);
+          inline void rotate(double *dQ);
+
+          // all push and pop functions return number of bytes taken from / added to buf
+          // all push and pop functions expect buf to point to first element with usable data
+
+          // push / pop all elements
+          
+          inline int pushToBuffer(double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false);
+          inline int popFromBuffer(double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false);
+
+          // push / pop a list elements
+          
+          inline int listBufSize(int n, int operation = OPERATION_UNDEFINED,
+                            bool scale=false,bool translate=false, bool rotate=false);
+          inline int pushListToBuffer(int n, int *list, double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false);
+          inline int popListFromBuffer(int first, int n, double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false);
+
+          // push / pop one single element
+          
+          inline int elemBufSize(int operation = OPERATION_UNDEFINED,
+                            bool scale=false,bool translate=false, bool rotate=false);
+          inline int pushElemToBuffer(int i, double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false);
+          inline int popElemFromBuffer(double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false);
+
+          void addUninitialized(int n);
+
+          inline int size()
+          { return numElem_; }
+
+          inline int nVec()
+          { return NUM_VEC; }
+
+          inline int lenVec()
+          { return LEN_VEC; }
+
+          inline int capacity()
+          { return maxElem_; }
+
+          inline void empty()
+          { numElem_ = 0; }
+
+      protected:
+
+          GeneralContainer();
+          GeneralContainer(char *_id, char* _comm, char* _ref,int _scalePower = 1);
+          GeneralContainer(GeneralContainer<T,NUM_VEC,LEN_VEC> const &orig);
+          virtual ~GeneralContainer();
+
+          // shall return the size of an entry in bytes
+          int getElemSize();
+
+          int numElem_, maxElem_;
+
+          T*** arr_;
+  };
+
+  // *************************************
+  #include "general_container_I.h"
+  // *************************************
+
+} /* LAMPPS_NS */
+#endif /* CONTAINERBASE_H_ */

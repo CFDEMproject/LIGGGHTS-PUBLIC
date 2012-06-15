@@ -1,0 +1,96 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>fix_property/global_and_fix_property/atom  command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix id group property/atom variablename style restartvalue comm_ghost_value comm_reverse_ghost_value defaultvalue(s)...
+fix id group property/global variablename style stylearg defaultvalue(s)... 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>property/global or property/peratom = style name of this fix command   
+
+<LI>variablename = a valid C++ string 
+
+<LI>restartvalues = 'yes' or 'no' 
+
+<LI>comm_ghost_value = 'yes' or 'no' 
+
+<LI>comm_reverse_ghost_value = 'yes' or 'no' 
+
+
+</UL>
+<P>fix property/global:
+</P>
+<UL><LI>style = scalar or vector or matrix or atomtype or atomtypepair 
+
+<PRE>  stylearg for scalar/vector: none
+  stylearg for matrix: nCols 
+</PRE>
+
+</UL>
+<P>fix property/peratom:
+</P>
+<UL><LI>    style = scalar or vector  
+
+<LI>    restartvalue = yes or no 
+
+<LI>    communicate_ghost_value = yes or no 
+
+<LI>    communicate_reverse_ghost_value = yes or no 
+
+ 
+</UL>
+<P><B>LIGGGHTS vs. LAMMPS Info:</B>
+</P>
+<P>This LIGGGHTS command is not available in LAMMPS.
+</P>
+<P><B>Description:</B>
+</P>
+<P><B>Fix property/atom</B> reserves per-atom properties to be accessed by the user or other fixes. Style scalar reserves one value per atom, style vector multiple values per atoms, where the number of defaultvalues (that are assigned to the atoms at creation) determines the length of the vector . The group of atoms the fix is applied to is always "all", irrespective of which group is used for the fix command . If you want to assign different values for different groups, you can use the set command with keyword 'property/atom'.
+</P>
+<P><B>Fix property/global</B> reserves global properties to be accessed by the user or other fixes or pair styles. The number of defaultvalues determines the length of the vector / the number of matrix components . For style vector or atomtype, the user provides the number of vector components . For style matrix or atomtypepair, the user provides the number of matrix columns (nCols) .
+</P>
+<P>Example: nCols= 2 and defaultvalues = 1 2 3 4 5 6 would be mapped into a matrix like
+</P>
+<P>[ 1 2 ]
+</P>
+<P>[ 3 4 ]
+</P>
+<P>[ 5 6 ]
+</P>
+<P>Note that the number of default values must thus be a multiple of nCols.
+Note that vector and atomtype do the same thing, atomtype is just provided to make input scripts more readable .
+Note that matrix and atomtypepair do the same thing, atomtype is just provided to make input scripts more readable .
+</P>
+<P>Note that the group of atoms the fix is applied to is ignored (as the fix is not applied to atoms, but defines values of global scope).
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> if you set 'restartvalue' to “yes”.
+</P>
+<P>The <A HREF = "fix_modify.html">fix_modify</A> <I>energy</I> option is supported by this fix to add the potential "energy" inferred by the added force to the system's potential energy as part of <A HREF = "thermo_style.html">thermodynamic output</A>. This is a fictitious quantity but is needed so that the "minimize<A HREF = "minimize.html"></A> command can include the forces added by this fix in a consistent manner. I.e. there is a decrease in potential energy when atoms move in the direction of the added force. 
+</P>
+<P><B>Fix property/atom</B> computes a scalar (for style scalar) or a vector of values (for style vector), which can be accessed by various <A HREF = "Section_howto.html#4_15">output commands</A>. 
+</P>
+<P><B>Restrictions:</B> none
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "set.html">set</A> <A HREF = "pair_gran.html">pair_gran</A>
+</P>
+<P><B>Default:</B> none
+</P>
+</HTML>

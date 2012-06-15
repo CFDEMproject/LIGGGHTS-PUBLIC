@@ -1,0 +1,68 @@
+<HTML>
+<CENTER><A HREF="http://www.liggghts.com/">LIGGGHTS WWW Site</A> - <A HREF="Manual.html">LIGGGHTS Documentation</A> - <A HREF="Section_commands.html#comm">LIGGGHTS Commands</A>
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix sph/density/continuity command
+</H3>
+<P><B>Syntax:</B> 
+</P>
+<PRE>fix ID group-ID sph/density/continuity 
+</PRE>
+<UL>
+	<LI>ID, group-ID are documented in <A HREF="fix.html">fix</A> command 
+	<LI>sph/density/continuity = style name of this fix command
+</UL>
+<P><B>Examples:</B> 
+</P>
+<PRE>fix density all sph/density/continuity
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info: </B>
+</P>
+<P>This command is not available in LAMMPS.</P>
+<P><B>Description:</B> 
+</P>
+<P>Based on the continuity equation in the form
+</P>
+<CENTER><IMG SRC="fix_sph_density_continuity_eq1.gif">
+</CENTER>
+<P>this fix calculates the density of each particle by the rule
+</P>
+<CENTER><IMG SRC="fix_sph_density_continuity_eq2.gif">
+</CENTER>
+<P>where the summation is over all particles b other than particle a, m is the mass, <B>v</B> is the velocity, 
+W<SUB>ab</SUB> is the interpolating kernel (see <A HREF="pair_sph.html">pair_style sph</A>) and &nabla;<SUB>a</SUB> is the gradient of W<SUB>ab</SUB>.
+</P>
+
+
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>No information about this fix is written to <A HREF = "restart.html">binary restart files</A>.
+</P>
+<P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix.
+</P>
+<P>No global scalar or vector or per-atom quantities are stored by this fix 
+for access by various <A HREF = "Section_howto.html#4_15">output commands</A>.
+</P>
+<P>No parameter of this fix can be used with the <I>start/stop</I> keywords 
+of the <A HREF = "run.html">run</A> command.
+<P>This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+</P>
+<P><B>Restrictions:</B> 
+</P>
+<P>There can be only one fix sph/density.
+</P>
+<P><B>Related commands:</B> 
+</P>
+<P><A HREF="pair_sph.html">pair_style sph</A>, <A HREF="fix_sph_pressure.html">fix sph/pressure</A>, 
+<A HREF="fix_sph_density_corr.html">fix sph/density/corr</A>
+</P>
+<P><B>Default:</B> none 
+</P>
+</HTML>

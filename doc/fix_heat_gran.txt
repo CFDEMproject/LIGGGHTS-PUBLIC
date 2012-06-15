@@ -1,0 +1,115 @@
+"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix heat/gran command :h3
+
+[Syntax:]
+
+fix ID group-ID heat/gran initial_temperature T0 keyword values :pre
+
+ID, group-ID are documented in "fix"_fix.html command :l
+heat/gran = style name of this fix command :l
+initial_temperature = obligatory keyword :l
+T0 = initial (default) temperature for the particles :l
+zero or more keyword/value pairs may be appended :l
+keyword = {area_correction} :l
+  {area_correction} values = {on} or {off} :pre
+
+
+[Examples:]
+
+fix 3 hg heat/gran temperature 273.15 :pre
+
+[LIGGGHTS vs. LAMMPS info:]
+
+This command is not available in LAMMPS.
+
+[Description:]
+
+Calculates heat conduction between particles in contact and temperature update according to 
+
+:c,image(Eqs/heat_gran.png)
+
+It is assumed that the temperature within the particles is uniform. 
+To make particles adiabatic (so they do not change the temperature), 
+do not include them in the fix group. However, heat transfer is calculated 
+between particles in the group and particles not in the group (but 
+temperature update is not performed for particles not in the group).
+Thermal conductivity and specific thermal capacity must be defined for 
+each atom type used in the simulation by means of 
+"fix property/global"_fix_property.html commands:
+
+fix id all property/global thermalConductivity peratomtype value_1 value_2 ... 
+(value_i=value for thermal conductivity of atom type i) :pre
+
+fix id all property/global thermalCapacity peratomtype value_1 value_2 ...
+(value_i=value for thermal capacity of atom type i) :pre
+
+To set the temperature for a group of particles, you can use the set command 
+with keyword {property/atom} and values {Temp T}. {T} is the 
+temperature value you want the particles to have. To set heat sources 
+(or sinks) for a group of particles, you can also use the set command 
+with the set keyword: {property/atom} and the set values: {heatSource h} 
+where {h} is the heat source value you want the particles to have (in Energy/time 
+units). A negative value means it is a heat sink. Examples would be: 
+
+set region halfbed property/peratom Temp 800.
+set region srcreg property/peratom heatSource 0.5 :pre
+
+:line
+
+Area correction:
+
+Fix heat/gran can perform an area correction via keyword {area_correction}
+to account for the fact that the Young's modulus might have been decreased in order to speed-up 
+the simulation. In this case, you have to specify the original 
+Young's modulus of each material by means of a 
+"fix property/global"_fix_property.html command:
+
+fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ... 
+(value_i=value for original Young's modulus of atom type i) :pre
+
+This area correction is performed by scaling the contact area with 
+(Y*/Y*,orig)^a, where Y* and Y*,orig are calculated as defined in 
+"pair_style gran"_pair_gran.html . 
+The scaling factor is given as a=1 for pair/gran/hooke/* and a=2/3 for 
+pair/gran/hertz/*.
+
+[Output info:]
+
+You can visualize the heat sources by accessing f_heatSource\[0\], and the 
+heatFluxes by f_heatFlux\[0\] . With f_Temp\[0\] you can access the per-particle 
+temperature. You can also access the total thermal energy of the fix group 
+(useful for the thermo command) with f_id .
+
+[Restart, fix_modify, run start/stop, minimize info:]
+
+The particle temperature and heat source is written is written to 
+"binary restart files"_restart.html so simulations can continue properly. 
+None of the "fix_modify"_fix_modify.html options are relevant to this fix.
+
+This fix computes a scalar which can be accessed by various "output
+commands"_Section_howto.html#4_15.  This scalar is the total thermal energy
+of the fix group
+
+No parameter of this fix can be used with the {start/stop} keywords of
+the "run"_run.html command.  This fix is not invoked during "energy
+minimization"_minimize.html.
+
+[Restrictions:] 
+
+Area correction currently only works with pair styles pair/gran/hooke/* and pair/gran/hertz/*
+
+[Related commands:]
+
+"compute temp"_compute_temp.html, "compute
+temp/region"_compute_temp_region.html
+
+[Default:] {area_correction} = {off}
+

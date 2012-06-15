@@ -1,0 +1,75 @@
+#Conveyor
+atom_style	granular
+atom_modify	map array
+boundary	m m m
+newton		off
+
+communicate	single vel yes
+
+units		si
+
+region		reg block -0.5 0.5 -0.2 0.2 -0.2 0.35 units box
+create_box	1 reg
+
+neighbor	0.01 bin
+neigh_modify	delay 0
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.3
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.5
+
+#New pair style
+pair_style 	gran/hertz/history  #Hertzian without cohesion
+pair_coeff	* *
+
+timestep	0.00001
+
+fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+#granular walls
+fix		cv all mesh file conveyor.stl type 1 surface_vel -5. 0. 0.
+fix		bx all mesh file box.stl      type 1 
+fix		inface all mesh file insertion_face.stl type 1
+fix		wall all wall/gran/hertz/history mesh n_meshes 2 meshes bx cv 
+
+#distributions for insertion
+fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.015
+fix		pts2 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.025
+fix		pdd1 all particledistribution/discrete 1.  2 pts1 0.3 pts2 0.7
+
+#region for insertion
+group		nve_group region reg
+region		bc block 0.3 0.5 -0.2 0.2 0.1 0.2 units box
+
+#deprecated pour command
+#fix		ins nve_group pour/dev mass 30. 1 distributiontemplate pdd1 vol 0.25 200 massflowrate 30. vel uniform 0. 0. 0. 0. 0.0 region bc
+
+#particle insertion
+fix			ins nve_group insert/stream seed 5330 distributiontemplate pdd1 &
+				maxattempt 100 mass 30. massrate 30. overlapcheck yes vel constant 0. 0. -1.0&
+				insertion_face inface extrude_length 0.1
+
+#apply nve integration to all particles that are inserted as single particles
+fix		integr nve_group nve/sphere
+
+
+#output settings, include total thermal energy
+fix				ts all check/timestep/gran 1000 0.1 0.1
+compute			rke all erotate/sphere
+thermo_style	custom step atoms ke c_rke f_ts[1] f_ts[2] vol
+thermo			1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+run			1
+dump		dmp all custom 400 post/dump*.conveyor id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius 
+
+#insert particles
+run			140000 upto
+unfix		ins
+
+ 

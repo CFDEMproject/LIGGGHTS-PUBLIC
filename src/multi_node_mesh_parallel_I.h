@@ -1,0 +1,868 @@
+/* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   Christoph Kloss, christoph.kloss@cfdem.com
+   Copyright 2009-2012 JKU Linz
+   Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS is based on LAMMPS
+   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+   http://lammps.sandia.gov, Sandia National Laboratories
+   Steve Plimpton, sjplimp@sandia.gov
+
+   This software is distributed under the GNU General Public License.
+
+   See the README file in the top-level directory.
+------------------------------------------------------------------------- */
+
+#ifndef LMP_MULTI_NODE_MESH_PARALLEL_I_H
+#define LMP_MULTI_NODE_MESH_PARALLEL_I_H
+
+#define BIG_MNMP 1.0e20
+#define BUFFACTOR_MNMP 1.5
+#define BUFMIN_MNMP 2000
+#define BUFEXTRA_MNMP 2000
+
+  /* ----------------------------------------------------------------------
+   consturctors
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  MultiNodeMeshParallel<NUM_NODES>::MultiNodeMeshParallel(LAMMPS *lmp)
+  : MultiNodeMesh<NUM_NODES>(lmp),
+    nLocal_(0), nGhost_(0), nGlobal_(0),
+    maxsend_(0), maxrecv_(0),
+    buf_send_(0), buf_recv_(0),
+    half_atom_cut_(0.),
+    size_exchange_(0),
+    size_forward_(0),
+    size_border_(0),
+    maxforward_(0),maxreverse_(0),
+    nswap_(0),
+    maxswap_(0),
+    sendnum_(0),recvnum_(0),
+    firstrecv_(0),
+    sendproc_(0),recvproc_(0),
+    size_forward_recv_(0),
+    slablo_(0),slabhi_(0),
+    sendlist_(0),
+    maxsendlist_(0),
+    pbc_flag_(0),
+    pbc_(0)
+  {
+      // initialize comm buffers & exchange memory
+      
+      maxsend_ = BUFMIN_MNMP;
+      this->memory->create(buf_send_,maxsend_+BUFEXTRA_MNMP,"MultiNodeMeshParallel:buf_send");
+      maxrecv_ = BUFMIN_MNMP;
+      this->memory->create(buf_recv_,maxrecv_,"MultiNodeMeshParallel:buf_recv");
+
+      maxswap_ = 6;
+      allocate_swap(maxswap_);
+
+      sendlist_ = (int **) this->memory->smalloc(maxswap_*sizeof(int *),"MultiNodeMeshParallel:sendlist");
+      this->memory->create(maxsendlist_,maxswap_,"MultiNodeMeshParallel:maxsendlist");
+      for (int i = 0; i < maxswap_; i++) {
+        maxsendlist_[i] = BUFMIN_MNMP;
+        this->memory->create(sendlist_[i],BUFMIN_MNMP,"MultiNodeMeshParallel:sendlist[i]");
+      }
+  }
+
+  /* ----------------------------------------------------------------------
+   destructor
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  MultiNodeMeshParallel<NUM_NODES>::~MultiNodeMeshParallel()
+  {
+  }
+
+  /* ----------------------------------------------------------------------
+   add and delete elements
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::addElement(double **nodeToAdd)
+  {
+    MultiNodeMesh<NUM_NODES>::addElement(nodeToAdd);
+    nLocal_++;
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::deleteElement(int n)
+  {
+    MultiNodeMesh<NUM_NODES>::deleteElement(n);
+    nLocal_--;
+  }
+
+  /* ----------------------------------------------------------------------
+   completely clear ghosts - called in borders()
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::clearGhosts()
+  {
+      // delete ghost data from container classes
+      // deleteElement() decreases nLocal so need to increase it again
+      // decrease nGhost
+
+      while(nGhost_ > 0)
+      {
+        deleteElement(nLocal_);
+        nLocal_++;
+        nGhost_--;
+      }
+  }
+
+  /* ----------------------------------------------------------------------
+   clear ghost data that is communicated via forward comm - called in forw comm
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::clearGhostForward(bool scale,bool translate,bool rotate)
+  {
+      // delete ghost data from container classes
+      // delete only data that is communicated afterwards
+
+      for(int i = this->sizeLocal()+this->sizeGhost()-1; i >= this->sizeLocal(); i--)
+      {
+          // clear ghost data that belongs to this class
+          // must match push/pop implementation for forward comm in this class
+          if(translate || rotate || scale)
+          {
+            this->node_.del(i);
+            this->center_.del(i);
+          }
+          if(scale)
+            this->rBound_.del(i);
+      }
+  }
+
+  /* ----------------------------------------------------------------------
+   check if all elements are in domain
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  bool MultiNodeMeshParallel<NUM_NODES>::allNodesInsideSimulationBox()
+  {
+    int flag = 0;
+    for(int i=0;i<sizeLocal();i++)
+      for(int j=0;j<NUM_NODES;j++)
+      {
+        
+        if(!this->domain->is_in_domain(this->node_(i)[j]))
+        {
+            flag = 1;
+            break;
+        }
+      }
+
+    MyMPI::My_MPI_Max_Scalar(flag,this->world);
+    if(flag) return false;
+    else return true;
+  }
+
+  /* ----------------------------------------------------------------------
+   setup of communication
+  ------------------------------------------------------------------------- */
+
+   template<int NUM_NODES>
+   void MultiNodeMeshParallel<NUM_NODES>::setup()
+   {
+       double sublo[3],subhi[3], cut, extent_acc;
+       double rBound_max, cut_ghost;
+       double **sublo_all, **subhi_all;
+
+       int nprocs = this->comm->nprocs;
+       int me = this->comm->me;
+       int myloc[3], loc_dim, nextproc, need_this;
+
+       // get required size of communication per element
+       bool scale = this->isScaling();
+       bool translate = this->isTranslating();
+       bool rotate = this->isRotating();
+
+       size_exchange_ = elemBufSize(OPERATION_COMM_EXCHANGE,scale,translate,rotate);
+       size_border_ = elemBufSize(OPERATION_COMM_BORDERS,scale,translate,rotate);
+       size_forward_ = elemBufSize(OPERATION_COMM_FORWARD,scale,translate,rotate);
+       
+       maxforward_ = MathExtraLiggghts::max(size_exchange_,size_border_,size_forward_);
+       
+       maxreverse_ = 0;
+
+       // copy comm and domain data
+       vectorCopy3D(this->comm->myloc,myloc);
+       vectorCopy3D(this->domain->sublo,sublo);
+       vectorCopy3D(this->domain->subhi,subhi);
+
+       this->memory->create(sublo_all,nprocs,3,"MultiNodeMeshParallel::setup() sublo_all");
+       this->memory->create(subhi_all,nprocs,3,"MultiNodeMeshParallel::setup() subhi_all");
+
+       // ghost elements are for computing interaction with owned particles
+       // so need to aquire ghost elements that overlap my subbox extened by
+       // half neigh cutoff
+       
+       half_atom_cut_ = this->neighbor->cutneighmax / 2.;
+
+       if(this->isMoving())
+         half_atom_cut_+= this->neighbor->skin / 2.;
+
+       // calculate maximum bounding radius of elements across all procs
+       rBound_max = 0.;
+       for(int i = 0; i < sizeLocal(); i++)
+           rBound_max = MathExtraLiggghts::max(this->rBound_(i),rBound_max);
+       MyMPI::My_MPI_Max_Scalar(rBound_max,this->world);
+
+       // mesh element ghost cutoff is element bounding radius plus half atom neigh cut
+       cut_ghost = rBound_max + half_atom_cut_;
+
+       // set up maxneed_, sendneed_
+       // account for non-uniform boundaries due to load-balancing
+       // so aquire sub-box bounds from all processors
+
+       MPI_Allgather(sublo,3,MPI_DOUBLE,&(sublo_all[0][0]),3,MPI_DOUBLE,this->world);
+       MPI_Allgather(subhi,3,MPI_DOUBLE,&(subhi_all[0][0]),3,MPI_DOUBLE,this->world);
+
+       // set up maxneed_ and sendneed_
+       // assume element with max bound radius is in my subbox
+       
+       for(int dim = 0; dim < 3; dim++)
+       {
+           bool is_x = dim == 0 ? true : false;
+           bool is_y = dim == 1 ? true : false;
+           bool is_z = dim == 2 ? true : false;
+
+           // go each direction (N-S-E-W-UP-DN)
+           
+           maxneed_[dim] = 0;
+           for(int way = -1; way <= 1; way += 2)
+           {
+               // start from location of myself
+               // reset accumulated extent
+               loc_dim = myloc[dim];
+               extent_acc = 0.;
+               need_this = 0;
+               sendneed_[dim][way == -1 ? 0 : 1] = 0;
+
+               while(extent_acc < cut_ghost)
+               {
+                   // increase or decrease location
+                   loc_dim += way;
+
+                   // break if at dead end and non-pbc
+                   if( (loc_dim < 0 && !this->domain->periodicity[dim]) ||
+                       (loc_dim > this->comm->procgrid[dim]-1 && !this->domain->periodicity[dim]) )
+                           break;
+
+                   // wrap around PBCs
+                   if(loc_dim < 0 && this->domain->periodicity[dim])
+                      loc_dim = this->comm->procgrid[dim]-1;
+
+                   if(loc_dim > this->comm->procgrid[dim]-1)
+                      loc_dim = 0;
+
+                   // increase counters
+                   need_this++;
+                   sendneed_[dim][way == -1 ? 0 : 1]++;
+
+                   // go to next proc in proc grid and add its extent
+                   nextproc = this->comm->grid2proc[is_x ? loc_dim : myloc[0]]
+                                                   [is_y ? loc_dim : myloc[1]]
+                                                   [is_z ? loc_dim : myloc[2]];
+                   extent_acc += subhi_all[nextproc][dim] - sublo_all[nextproc][dim];
+               }
+
+               maxneed_[dim] = MathExtraLiggghts::max(maxneed_[dim],need_this);
+           }
+
+           // limit maxneed for non-pbc
+           
+           if(maxneed_[dim] > this->comm->procgrid[dim]-1 && !this->domain->periodicity[dim])
+               maxneed_[dim] = this->comm->procgrid[dim]-1;
+       }
+
+       // maxneed_ summed accross all processors
+       MyMPI::My_MPI_Max_Vector(maxneed_,3,this->world);
+
+       destroy(sublo_all);
+       destroy(subhi_all);
+
+       // allocate comm memory
+       
+       nswap_ = 2 * (maxneed_[0]+maxneed_[1]+maxneed_[2]);
+       if (nswap_ > maxswap_) grow_swap(nswap_);
+
+       // setup parameters for each exchange:
+       //   slablo_/slabhi_ = boundaries for slab of elements to send at each swap
+       //   use -BIG/midpt/BIG to insure all elements included even if round-off occurs
+       //   if round-off, atoms elements across PBC can be < or > than subbox boundary
+       //   note that borders() only loops over subset of elements during each swap
+
+       // treat all as PBC here, non-PBC is handled in borders() via r/s need[][]
+       // pbc_flag_: 0 = nothing across a boundary, 1 = something across a boundary
+       // pbc_ = -1/0/1 for PBC factor in each of 3/6 orthogonal/triclinic dirs
+       // 1st part of if statement is sending to the west/south/down
+       // 2nd part of if statement is sending to the east/north/up
+
+       int dim,ineed;
+
+       int iswap = 0;
+       for (dim = 0; dim < 3; dim++)
+       {
+         for (ineed = 0; ineed < 2*maxneed_[dim]; ineed++)
+         {
+           pbc_flag_[iswap] = 0;
+           vectorZeroizeN(pbc_[iswap],6);
+
+           // send left, receive right
+           if (ineed % 2 == 0)
+           {
+               sendproc_[iswap] = this->comm->procneigh[dim][0];
+               recvproc_[iswap] = this->comm->procneigh[dim][1];
+
+               if (ineed < 2) slablo_[iswap] = -BIG_MNMP;
+               else slablo_[iswap] = 0.5 * (this->domain->sublo[dim] + this->domain->subhi[dim]);
+
+               // use half cut here, since rBound is used (added) in checkBorderElement()
+               slabhi_[iswap] = this->domain->sublo[dim] + half_atom_cut_;
+
+               if (myloc[dim] == 0)
+               {
+                   pbc_flag_[iswap] = 1;
+                   pbc_[iswap][dim] = 1;
+               }
+           }
+           // send right, receive left
+           else
+           {
+               sendproc_[iswap] = this->comm->procneigh[dim][1];
+               recvproc_[iswap] = this->comm->procneigh[dim][0];
+
+               // use half cut here, since rBound is used (added) in checkBorderElement()
+               slablo_[iswap] = this->domain->subhi[dim] -  half_atom_cut_;
+               if (ineed < 2) slabhi_[iswap] = BIG_MNMP;
+               else slabhi_[iswap] = 0.5 * (this->domain->sublo[dim] + this->domain->subhi[dim]);
+
+               if (myloc[dim] == this->comm->procgrid[dim]-1)
+               {
+                   pbc_flag_[iswap] = 1;
+                   pbc_[iswap][dim] = -1;
+               }
+           }
+           iswap++;
+         }
+       }
+   }
+
+/* ----------------------------------------------------------------------
+   realloc the buffers needed for communication and swaps
+------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::grow_swap(int n)
+  {
+      free_swap();
+      allocate_swap(n);
+
+      sendlist_ = (int **)
+        this->memory->srealloc(sendlist_,n*sizeof(int *),"MultiNodeMeshParallel:sendlist_");
+      this->memory->grow(maxsendlist_,n,"MultiNodeMeshParallel:maxsendlist_");
+      for (int i = maxswap_; i < n; i++)
+      {
+        maxsendlist_[i] = BUFMIN_MNMP;
+        this->memory->create(sendlist_[i],BUFMIN_MNMP,"MultiNodeMeshParallel:sendlist_[i]");
+      }
+      maxswap_ = n;
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::allocate_swap(int n)
+  {
+      this->memory->create(sendnum_,n,"MultiNodeMeshParallel:sendnum_");
+      this->memory->create(recvnum_,n,"MultiNodeMeshParallel:recvnum_");
+      this->memory->create(sendproc_,n,"MultiNodeMeshParallel:sendproc_");
+      this->memory->create(recvproc_,n,"MultiNodeMeshParallel:recvproc_");
+      this->memory->create(size_forward_recv_,n,"MultiNodeMeshParallel:size");
+//      this->memory->create(size_reverse_send,n,"MultiNodeMeshParallel:size");
+//      this->memory->create(size_reverse_recv,n,"MultiNodeMeshParallel:size");
+      this->memory->create(slablo_,n,"MultiNodeMeshParallel:slablo_");
+      this->memory->create(slabhi_,n,"MultiNodeMeshParallel:slabhi_");
+      this->memory->create(firstrecv_,n,"MultiNodeMeshParallel:firstrecv");
+      this->memory->create(pbc_flag_,n,"MultiNodeMeshParallel:pbc_flag_");
+      this->memory->create(pbc_,n,6,"MultiNodeMeshParallel:pbc_");
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::free_swap()
+  {
+      this->memory->destroy(sendnum_);
+      this->memory->destroy(recvnum_);
+      this->memory->destroy(sendproc_);
+      this->memory->destroy(recvproc_);
+      this->memory->destroy(size_forward_recv_);
+//      this->memory->destroy(size_reverse_send);
+//      this->memory->destroy(size_reverse_recv);
+      this->memory->destroy(slablo_);
+      this->memory->destroy(slabhi_);
+      this->memory->destroy(firstrecv_);
+      this->memory->destroy(pbc_flag_);
+      this->memory->destroy(pbc_);
+  }
+
+  /* ----------------------------------------------------------------------
+   realloc the size of the send buffer as needed with BUFFACTOR & BUFEXTRA
+   if flag = 1, realloc
+   if flag = 0, don't need to realloc with copy, just free/malloc
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::grow_send(int n, int flag)
+  {
+      maxsend_ = static_cast<int> (BUFFACTOR_MNMP * n);
+      
+      if (flag)
+        this->memory->grow(buf_send_,(maxsend_+BUFEXTRA_MNMP),"MultiNodeMeshParallel:buf_send");
+      else {
+        this->memory->destroy(buf_send_);
+        this->memory->create(buf_send_,maxsend_+BUFEXTRA_MNMP,"MultiNodeMeshParallel:buf_send");
+      }
+  }
+
+  /* ----------------------------------------------------------------------
+   free/malloc the size of the recv buffer as needed with BUFFACTOR
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::grow_recv(int n)
+  {
+      maxrecv_ = static_cast<int> (BUFFACTOR_MNMP * n);
+      this->memory->destroy(buf_recv_);
+      this->memory->create(buf_recv_,maxrecv_,"MultiNodeMeshParallel:buf_recv");
+  }
+
+  /* ----------------------------------------------------------------------
+   realloc the size of the iswap sendlist as needed with BUFFACTOR
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::grow_list(int iswap, int n)
+  {
+    maxsendlist_[iswap] = static_cast<int> (BUFFACTOR_MNMP * n);
+    this->memory->grow(sendlist_[iswap],maxsendlist_[iswap],"MultiNodeMeshParallel:sendlist[iswap]");
+  }
+
+  /* ----------------------------------------------------------------------
+   parallelization -
+   initially, all processes have read the whole data
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::initalSetup()
+  {
+      // delete all elements that do not belong to this processor
+      deleteUnowned();
+
+      // set-up mesh parallelism
+      setup();
+
+      // re-calculate properties for owned particles
+      
+      refreshOwned();
+
+      // identify elements that are near borders
+      // forward communicate them
+      
+      borders();
+
+      // re-calculate properties for ghost particles
+      refreshGhosts();
+
+      // build mesh topology and neigh list
+      
+      buildNeighbours();
+
+  }
+
+  /* ----------------------------------------------------------------------
+   parallelization - aggregates pbc, exchange and borders
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::pbcExchangeBorders()
+  {
+      // need not do this for non-moving mesh and non-changing simulation box
+      
+      if(!this->isMoving() && !this->domain->box_change) return;
+
+      // set-up mesh parallelism
+      setup();
+
+      // enforce pbc
+      pbc();
+
+      // communicate particles
+      exchange();
+
+      // re-calculate properties for owned particles
+      
+      refreshOwned();
+
+      // identify elements that are near borders
+      // forward communicate them
+      
+      borders();
+
+      // re-calculate properties for ghosts
+      refreshGhosts();
+
+  }
+
+  /* ----------------------------------------------------------------------
+   delete all particles which are not owned on this proc
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::deleteUnowned()
+  {
+      
+      int i = 0;
+
+      while(i < nLocal_)
+      {
+          if(!this->domain->is_in_subdomain(this->center_(i)))
+              this->deleteElement(i);
+          else i++;
+      }
+
+      // calculate nGlobal for the first time
+      MyMPI::My_MPI_Sum_Scalar(nLocal_,nGlobal_,this->world);
+
+  }
+
+  /* ----------------------------------------------------------------------
+   enforce periodic boundary conditions
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::pbc()
+  {
+      double centerNew[3], delta[3];
+
+      for(int i = 0; i < this->sizeLocal(); i++)
+      {
+          vectorCopy3D(this->center_(i),centerNew);
+          this->domain->remap(centerNew);
+          vectorSubtract3D(centerNew,this->center_(i),delta);
+
+          // move element i incremental
+          if(vectorMag3DSquared(delta) > 1e-9)
+            this->moveElement(i,delta);
+      }
+  }
+
+  /* ----------------------------------------------------------------------
+   exchange elements with nearby processors
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::exchange()
+  {
+      int nrecv, nsend = 0;
+      int nrecv1,nrecv2;
+      double *buf;
+      MPI_Request request;
+      MPI_Status status;
+      MPI_Comm world = this->world;
+
+      int nprocs = this->comm->nprocs;
+      int *procgrid = this->comm->procgrid;
+      int procneigh[3][2];
+
+      // clear global->local map for owned and ghost atoms
+      
+      clearMap();
+
+      // clear old ghosts
+      
+      clearGhosts();
+
+      // copy procneigh
+      for (int i = 0; i < 3; i++)
+        for( int j = 0; j < 2; j++)
+            procneigh[i][j] = this->comm->procneigh[i][j];
+
+      for (int dim = 0; dim < 3; dim++)
+      {
+          // push data to buffer
+          
+          nsend = pushExchange(dim,buf_send_);
+
+          // send/recv in both directions
+          // if 1 proc in dimension, no send/recv, set recv buf to send buf
+          // if 2 procs in dimension, single send/recv
+          // if more than 2 procs in dimension, send/recv to both neighbors
+
+          if (procgrid[dim] == 1)
+          {
+            nrecv = nsend;
+            buf = buf_send_;
+          }
+          else
+          {
+            MPI_Sendrecv(&nsend,1,MPI_INT,procneigh[dim][0],0,&nrecv1,1,MPI_INT,procneigh[dim][1],0,world,&status);
+            nrecv = nrecv1;
+
+            if (this->comm->procgrid[dim] > 2)
+            {
+                MPI_Sendrecv(&nsend,1,MPI_INT,procneigh[dim][1],0,&nrecv2,1,MPI_INT,procneigh[dim][0],0,world,&status);
+                nrecv += nrecv2;
+            }
+
+            if (nrecv > maxrecv_) grow_recv(nrecv);
+
+            MPI_Irecv(buf_recv_,nrecv1,MPI_DOUBLE,procneigh[dim][1],0,world,&request);
+            MPI_Send(buf_send_,nsend,MPI_DOUBLE,procneigh[dim][0],0,world);
+            MPI_Wait(&request,&status);
+
+            if (procgrid[dim] > 2)
+            {
+                MPI_Irecv(&buf_recv_[nrecv1],nrecv2,MPI_DOUBLE,procneigh[dim][0],0,world,&request);
+                MPI_Send(buf_send_,nsend,MPI_DOUBLE,procneigh[dim][1],0,world);
+                MPI_Wait(&request,&status);
+            }
+
+            buf = buf_recv_;
+          }
+
+          // check incoming elements to see if they are in my box
+          // if so, add on this proc
+
+          popExchange(nrecv, buf);
+          
+      }
+
+      // re-calculate nGlobal as some element might have been lost
+      MyMPI::My_MPI_Sum_Scalar(nLocal_,nGlobal_,world);
+  }
+
+  /* ----------------------------------------------------------------------
+   generate ghost elements, refresh global map
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::borders()
+  {
+      int iswap, twoneed, nfirst, nlast, n, nsend, nrecv, smax, rmax;
+      bool sendflag, dummy = false;
+      double *buf;
+      double lo,hi;
+      MPI_Request request;
+      MPI_Status status;
+
+      iswap = 0;
+      smax = rmax = 0;
+
+      for (int dim = 0; dim < 3; dim++)
+      {
+          nlast = 0;
+
+          // need to go left and right in each dim
+          twoneed = 2*maxneed_[dim];
+          for (int ineed = 0; ineed < twoneed; ineed++)
+          {
+              lo = slablo_[iswap];
+              hi = slabhi_[iswap];
+
+              // find elements within slab boundaries lo/hi using <= and >=
+              
+              if (ineed % 2 == 0)
+              {
+                  nfirst = nlast;
+                  nlast = sizeLocal() + sizeGhost();
+              }
+
+              nsend = 0;
+
+              // sendflag = 0 if I do not send on this swap
+              
+              sendflag = true;
+              
+              if(ineed % 2 == 0 && this->comm->myloc[dim] == 0)
+                sendflag = false;
+
+              if(ineed % 2 == 1 && this->comm->myloc[dim] == this->comm->procgrid[dim]-1)
+                sendflag = false;
+
+              // find send elements
+              if(sendflag)
+              {
+                  
+                  for (int i = nfirst; i < nlast; i++)
+                  {
+                      if( ((ineed % 2 == 0) && checkBorderElementLeft(i,dim,lo,hi))  ||
+                          ((ineed % 2 != 0) && checkBorderElementRight(i,dim,lo,hi))  )
+                      {
+                          if (nsend == maxsendlist_[iswap])
+                              grow_list(iswap,nsend);
+                          sendlist_[iswap][nsend++] = i;
+
+                      }
+                  }
+              }
+
+              // pack up list of border elements
+
+              if(nsend*size_border_ > maxsend_)
+                grow_send(nsend*size_border_,0);
+
+              n = pushListToBuffer(nsend, sendlist_[iswap], buf_send_, OPERATION_COMM_BORDERS,dummy,dummy,dummy);
+
+              // swap atoms with other proc
+              // no MPI calls except SendRecv if nsend/nrecv = 0
+              // put incoming ghosts at end of my atom arrays
+              // if swapping with self, simply copy, no messages
+
+              if (sendproc_[iswap] != this->comm->me)
+              {
+                  MPI_Sendrecv(&nsend,1,MPI_INT,sendproc_[iswap],0,&nrecv,1,MPI_INT,recvproc_[iswap],0,this->world,&status);
+                  if (nrecv*size_border_ > maxrecv_)
+                      grow_recv(nrecv*size_border_);
+                  if (nrecv)
+                      MPI_Irecv(buf_recv_,nrecv*size_border_,MPI_DOUBLE,recvproc_[iswap],0,this->world,&request);
+
+                  if (n)
+                      MPI_Send(buf_send_,n,MPI_DOUBLE,sendproc_[iswap],0,this->world);
+
+                  if (nrecv)
+                      MPI_Wait(&request,&status);
+
+                  buf = buf_recv_;
+              }
+              else
+              {
+                  nrecv = nsend;
+                  buf = buf_send_;
+              }
+
+              // unpack buffer
+
+              n = popListFromBuffer(nLocal_+nGhost_,nrecv,buf_recv_,OPERATION_COMM_BORDERS,dummy,dummy,dummy);
+
+              // set pointers & counters
+
+              smax = MAX(smax,nsend);
+              rmax = MAX(rmax,nrecv);
+              sendnum_[iswap] = nsend;
+              recvnum_[iswap] = nrecv;
+              size_forward_recv_[iswap] = nrecv*size_forward_;
+              //size_reverse_send[iswap] = nrecv*size_reverse;
+              //size_reverse_recv[iswap] = nsend*size_reverse;
+              firstrecv_[iswap] = nLocal_+nGhost_;
+              nGhost_ += nrecv;
+              iswap++;
+          }
+      }
+
+      // insure send/recv buffers are long enough for all forward & reverse comm
+      int max = MAX(maxforward_*smax,maxreverse_*rmax);
+      if (max > maxsend_) grow_send(max,0);
+      max = MAX(maxforward_*rmax,maxreverse_*smax);
+      if (max > maxrecv_) grow_recv(max);
+
+      // build global-local map
+      this->generateMap();
+  }
+
+  /* ----------------------------------------------------------------------
+   check if element qualifies as ghost
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  inline bool MultiNodeMeshParallel<NUM_NODES>::checkBorderElementLeft(int i,int dim,double lo, double hi)
+  {
+      
+      if (this->center_(i)[dim] >= lo                     &&
+          this->center_(i)[dim] <= hi + this->rBound_(i)     )
+        return true;
+
+      return false;
+
+  }
+
+  template<int NUM_NODES>
+  inline bool MultiNodeMeshParallel<NUM_NODES>::checkBorderElementRight(int i,int dim,double lo, double hi)
+  {
+      if (this->center_(i)[dim] >= lo - this->rBound_(i) &&
+          this->center_(i)[dim] <= hi                       )
+        return true;
+
+      return false;
+
+  }
+
+  /* ----------------------------------------------------------------------
+   communicate properties to ghost elements
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::forwardComm()
+  {
+      int n,iElem;
+      MPI_Request request;
+      MPI_Status status;
+      int me = this->comm->me;
+
+      bool scale = this->isScaling();
+      bool translate = this->isTranslating();
+      bool rotate = this->isRotating();
+
+      // exit here if no forward communication at all
+      
+      if(size_forward_ == 0)
+        return;
+
+      // exchange data with another proc
+      // if other proc is self, just copy
+
+      for (int iswap = 0; iswap < nswap_; iswap++)
+      {
+          if (sendproc_[iswap] != me)
+          {
+                if (size_forward_recv_[iswap])
+                    MPI_Irecv(buf_recv_,size_forward_recv_[iswap],MPI_DOUBLE,recvproc_[iswap],0,this->world,&request);
+
+                n = pushListToBuffer(sendnum_[iswap],sendlist_[iswap],buf_send_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+                
+                if (n)
+                    MPI_Send(buf_send_,n,MPI_DOUBLE,sendproc_[iswap],0,this->world);
+
+                if (size_forward_recv_[iswap])
+                    MPI_Wait(&request,&status);
+
+                n = popListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+                
+          }
+          else
+          {
+              n = pushListToBuffer(sendnum_[iswap],sendlist_[iswap],buf_send_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+
+              n = popListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+          }
+      }
+  }
+
+  /* ----------------------------------------------------------------------
+   communicate properties from ghost elements
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::reverseComm()
+  {
+      
+  }
+
+#endif

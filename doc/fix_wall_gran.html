@@ -1,0 +1,231 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>fix wall/gran/hooke command 
+</H3>
+<H3>fix wall/gran/hooke/history command 
+</H3>
+<H3>fix wall/gran/hooke/history/stiffness command 
+</H3>
+<H3>fix wall/gran/hertz/history command 
+</H3>
+<H3>fix wall/gran/hertz/history/stiffness command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group-ID style wallstyle wallstyleargs keyword values ... 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>style = <I>gran/hooke</I> or <I>gran/hooke/history</I> or <I>gran/hertz/history</I> or <I>gran/hooke/history/simple</I> or <I>gran/hertz/history/simple</I> 
+
+<LI>wallstyle = <I>mesh</I> or <I>primitive</I> 
+
+<LI>wallstyle args for wallstyle <I>mesh</I> = <I>n_meshes</I> and <I>meshes</I> 
+
+<PRE>  <I>n_meshes</I> value = nm
+    nm = # of meshes (see <A HREF = "fix_mesh.html">fix mesh</A>) to use for the wall (positive integer)
+  <I>meshes</I> values = meshlist
+    meshlist =  id(s) of the mesh(es) (see <A HREF = "fix_mesh.html">fix mesh</A>) to be used. These must be defined before 
+</PRE>
+<LI>wallstyle args for wallstyle <I>primitive</I> = <I>type</I> or <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>zcylinder</I> or <I>zcone</I> 
+
+<PRE>  <I>type</I> args = tp
+    tp = atom_type (material type) of the wall
+  <I>xplane</I> or <I>yplane</I> or <I>zplane</I> args = lo hi
+    lo,hi = position of lower and upper plane (distance units), either can be NULL)
+  <I>zcylinder</I> args = radius
+    radius = cylinder radius (distance units)
+  <I>zcone</I> args = lo hi radiuslo radiushi
+    lo = z-coordinate where the cone starts (distance units)
+    hi = z-coordinate where the cone ends (distance units)
+    radiuslo = cone radius at lo (distance units)
+    radiushi = cone radius at hi (distance units) 
+</PRE>
+<LI>zero or more keyword/value pairs may be appended 
+
+<LI>keyword = <I>rolling_friction</I> or <I>cohesion</I> or <I>tangential_damping</I> or <I>wiggle</I> or <I>shear</I> or <I>temperature</I> or <I>store_force</I> 
+
+<PRE>  <I>rolling_friction</I> values = 'cdt' or 'off'
+    cdt = activates constant directional rolling friction model
+    off = no rolling friction model
+  <I>cohesion</I> values = 'sjkr' or 'off'
+    sjkr = activates simplified JKR cohesion model
+    off = no cohesion model
+  <I>tangential_damping</I> values = 'on' or 'off'
+    on = activates tangential damping
+    off = no tangential damping
+  <I>wiggle</I> values = dim amplitude period
+    dim = <I>x</I> or <I>y</I> or <I>z</I>
+    amplitude = size of oscillation (distance units)
+    period = time of oscillation (time units)
+  <I>shear</I> values = dim vshear
+    dim = <I>x</I> or <I>y</I> or <I>z</I>
+    vshear = magnitude of shear velocity (velocity units)
+  <I>temperature</I> value = T0
+    T0 = Temperature of the wall (temperature units)
+  <I>store_force</I> value = 'yes' or 'no'
+    yes, no = determines if the wall force exerted on the particles is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID) is the id of the fix wall/gran command. 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix zwalls all wall/gran/hertz/history primitive type 1 zplane 0.0 0.15
+fix meshwalls all wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2  
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info:</B>
+</P>
+<P>This command has been improved in accordance with the overhauled
+<A HREF = "pair_gran.html">pair gran</A> styles. Furthermore, it offers the new
+<I>wallstyle mesh</I>, which enables fix wall/gran to handle complex
+wall geometries imported from CAD.
+</P>
+<P><B>Description:</B>
+</P>
+<P>Bound the simulation domain of a granular system with a frictional wall.
+All particles in the group interact with the wall when they are close enough
+to touch it. The equation for the force between the wall and particles
+touching it is the same as the corresponding equation on the
+<A HREF = "pair_gran.html">pair_style granular</A> doc page, in the limit of one of the
+ two particles going to infinite radius and mass (flat wall).
+</P>
+<P>You must choose the <I>wallstyle</I> matching the pair style used, otherwise
+an error is created (e.g.: "pair gran/hertz/history is incompatible with
+fix wall/gran/hooke"). As with <A HREF = "pair_gran.html">pair_style granular</A>, you have
+to define the mechanical properties for each material you are used in the
+simulation with fix property commands. See <A HREF = "pair_gran.html">pair_style gran</A>
+ for more details. Also, for style hooke/history simple the wall implementation 
+uses absolute damping if keyword <I>absolute_damping</I> is set to 'on' in 
+<A HREF = "pair_gran.html">pair_style gran</A>.
+</P>
+<P>For <I>wallstyle mesh</I>, triangle-particle neighbor lists are built to efficiently 
+track particle-triangle contacts. Particle-tri neighbor list build is triggered 
+if any particle moves
+more than half the skin distance or (in case of moving mesh) if the mesh
+itself moves more than half the skin distance since the last build. A warning
+is generated if a dangerous particle-tri neigh list build is detected
+(e.g. if particles are inserted too close to a wall, see section 'Restrictions').
+For style <I>mesh</I>, the atom_type (material type) is inherited from the atom style provided
+in the <A HREF = "fix_mesh.html">fix mesh</A> command. fix_id1, fix_id2 etc. must
+be IDs of valid fixes of type <A HREF = "fix_mesh.html">fix mesh</A>, defining
+the granular mesh to be used for the wall.
+</P>
+<P>For <I>wallstyle primitive</I>, the atom_type (material type) has to be provided via
+keyword <I>type</I>. Primitve walls can be <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>cylindrical</I>
+or <I>conical</I>. The 3 planar options specify a pair of walls in a dimension.
+Wall positions are given by values for lo and hi. Either of the values
+can be specified as NULL if a single wall is desired. For a <I>zcylinder</I>
+wallstyle, the cylinder's axis is at x = y = 0.0, and the radius of the
+cylinder is specified. Likewise, a <I>zcone</I> wallstyle can be used, with
+the axis at x = y = 0.0, and the hi and lo radii being specified.
+</P>
+<HR>
+
+<P>Optionally, planar or cylindrical or conical walls can be moving, if
+the wiggle or shear keywords are appended. Both keywords cannot be used together.
+</P>
+<P>For the <I>wiggle</I> keyword, the wall oscillates sinusoidally, similar to the
+oscillations of frozen particles specified by the <A HREF = "fix_wiggle.html">fix wiggle</A>
+command. This is useful in packing simulations of granular particles. The
+arguments to the <I>wiggle</I> keyword specify a dimension for the motion, as
+well as it's amplitude and period. Note that if the dimension is in the
+plane of the wall, this is effectively a shearing motion. If the dimension
+is perpendicular to the wall, it is more of a shaking motion.
+A <I>zcylinder</I> or <I>zcone</I> wall can only be wiggled in the z dimension.
+</P>
+<P>Each timestep, the position of a wiggled wall in the appropriate dim is set according to this equation:
+</P>
+<PRE>position = coord + A - A cos (omega * delta) 
+</PRE>
+<P>where <I>coord</I> is the specified initial position of the wall, <I>A</I> is the
+amplitude, <I>omega</I> is 2 PI / period, and <I>delta</I> is the time elapsed since
+the fix was specified. The velocity of the wall is set to the derivative of
+this expression.
+</P>
+<P>For the <I>shear</I> keyword, the wall moves continuously in the specified dimension
+with velocity vshear. The dimension must be tangential to walls with a planar
+wallstyle, e.g. in the y or z directions for an <I>xplane</I> wall. For <I>zcylinder</I>
+walls, a dimension of z means the cylinder is moving in the z-direction along
+it's axis. A dimension of x or y means the cylinder is spinning around the
+z-axis, either in the clockwise direction for vshear > 0 or counter-clockwise
+for vshear < 0. In this case, vshear is the tangential velocity of the wall
+at whatever radius has been defined.
+</P>
+<P>NOTE: The keywords wiggle or shear can NOT be used for <I>wallstyle mesh</I>.
+For a moving a granular wall with <I>wallstyle mesh</I>, use the more flexible
+command "fix move/mesh"fix_move_mesh.html, or use the keywords <I>velocity</I>
+or <I>angular_velocity</I> in <A HREF = "fix_mesh.html">fix mesh</A>..
+</P>
+<P>The keyword <I>temperature</I> is used to assign a constant temperature to the wall.
+This setting gets effective in conjunction with heat conduction via
+<A HREF = "fix_heat_gran.html">fix heat/gran</A>. For <I>wallstyle mesh</I>, the value
+for the temperature given in this command is ignored and the temperature
+value is specified per mesh via <A HREF = "fix_mesh.html">fix mesh</A>.
+</P>
+<P>By specifying <I>store_force</I> = 'yes', you can instruct the command to
+store the wall force exerted on the particles in a
+<A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID)
+is the id of the fix wall/gran command.
+</P>
+<P>The effect of keyword <I>rolling_friction</I>, <I>cohesion</I>, <I>tangential_damping</I>
+and <I>absolute_damping</I> is explanted in <A HREF = "pair_gran.html">pair gran</A>
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>If applicable, contact history is written to <A HREF = "restart.html">binary restart files</A>
+so simulations can continue properly.
+None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix.
+No global scalar or vector or are stored by this fix.
+If <I>store_force</I> = 'yes' is specified, the per-atom wall force can be
+accessed by the various output commands via f_force(ID)<B>1</B>, f_force(ID)<B>2</B>,
+f_force(ID)<B>3</B>. (ID) is the id of the fix wall/gran command.
+No parameter of this fix can be used with the start/stop keywords of the
+<A HREF = "run.html">run</A> command. This fix is not invoked during <A HREF = "minimize.html">energy minimization</A> .
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>There can be only one fix wall/gran command with style <I>mesh</I>. Note that
+this is not really a restriction because you can include multiple fixes
+of type <A HREF = "fix_mesh.html">fix mesh</A> in the fix wall/gran command.
+</P>
+<P>When using style style <I>mesh</I>, you have to use the style <I>bin</I> for
+the <A HREF = "neighbor.html">neighbor command</A>.
+</P>
+<P>Style <I>mesh</I> can not be used in conjunction with triclinic simulation boxes.
+</P>
+<P>When using style <I>mesh</I>' in combination with a particle insertion
+command, you always have to keep a minimum distance between the wall and the
+insertion region that is equal to maximum particle radius + half the skin
+defined in the <A HREF = "neighbor.html">neighbor command</A>. Otherwise, newly inserted
+particles interpenetrate the walls before a triangle neighbor list is built
+the first time.
+</P>
+<P>The keywords wiggle or shear can NOT be used for style <I>mesh</I>.
+For moving granular wall with style mesh, use "fix move/mesh"fix_move_mesh.html.
+</P>
+<P>Any dimension (xyz) that has a planar granular wall must be non-periodic.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_move.html">fix_move</A>, <A HREF = "pair_gran.html">pair_style granular</A>
+</P>
+<P><B>Default:</B>
+</P>
+<P><I>rolling_friction</I> = 'off'
+<I>cohesion</I> = 'off'
+<I>tangential_damping</I> = 'on'
+<I>absolute_damping</I> = 'off'
+<I>store_force</I> = 'no'
+</P>
+</HTML>

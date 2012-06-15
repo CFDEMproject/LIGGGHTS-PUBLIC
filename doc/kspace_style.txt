@@ -1,0 +1,227 @@
+"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+kspace_style command :h3
+
+[Syntax:]
+
+kspace_style style value :pre
+
+style = {none} or {ewald} or {pppm} or {pppm/cg} or {pppm/tip4p} or {ewald/n} or {pppm/gpu} or {ewald/omp} or {pppm/omp} or {pppm/cg/omp} or {pppm/tip4p/omp} or {pppm/proxy} or {pppm/tip4p/proxy} :ulb,l
+  {none} value = none
+  {ewald} value = accuracy
+    accuracy = desired relative error in forces
+  {pppm} value = accuracy
+    accuracy = desired relative error in forces
+  {pppm/cg} value = accuracy (smallq)
+    accuracy = desired relative error in forces
+    smallq = cutoff for charges to be considered (optional) (charge units)
+  {pppm/tip4p} value = accuracy
+    accuracy = desired relative error in forces
+  {ewald/n} value = accuracy
+    accuracy = desired relative error in forces
+  {pppm/gpu} value = accuracy
+    accuracy = desired relative error in forces
+  {ewald/omp} value = accuracy
+    accuracy = desired relative error in forces
+  {pppm/omp} value = accuracy
+    accuracy = desired relative error in forces
+  {pppm/tip4p/omp} value = accuracy
+    accuracy = desired relative error in forces
+  {pppm/proxy} value = accuracy
+    accuracy = desired relative error in forces :pre
+  {pppm/tip4p/proxy} value = accuracy
+    accuracy = desired relative error in forces :pre
+:ule
+
+[Examples:]
+
+kspace_style pppm 1.0e-4
+kspace_style pppm/cg 1.0e-5 1.0e-6
+kspace_style none :pre
+
+[Description:]
+
+Define a K-space solver for LAMMPS to use each timestep to compute
+long-range Coulombic interactions or long-range 1/r^N interactions.
+When such a solver is used in conjunction with an appropriate pair
+style, the cutoff for Coulombic or other 1/r^N interactions is
+effectively infinite; each charge in the system interacts with charges
+in an infinite array of periodic images of the simulation domain.
+
+The {ewald} style performs a standard Ewald summation as described in
+any solid-state physics text.
+
+The {pppm} style invokes a particle-particle particle-mesh solver
+"(Hockney)"_#Hockney which maps atom charge to a 3d mesh, uses 3d FFTs
+to solve Poisson's equation on the mesh, then interpolates electric
+fields on the mesh points back to the atoms.  It is closely related to
+the particle-mesh Ewald technique (PME) "(Darden)"_#Darden used in
+AMBER and CHARMM.  The cost of traditional Ewald summation scales as
+N^(3/2) where N is the number of atoms in the system.  The PPPM solver
+scales as Nlog(N) due to the FFTs, so it is almost always a faster
+choice "(Pollock)"_#Pollock.
+
+The {pppm/cg} style is identical to the {pppm} style except that it
+has an optimization for systems where most particles are uncharged.
+The optional {smallq} argument defines the cutoff for the absolute
+charge value which determines whether a particle is considered charged
+or not.  Its default value is 1.0e-5.
+
+The {pppm/tip4p} style is identical to the {pppm} style except that it
+adds a charge at the massless 4th site in each TIP4P water molecule.
+It should be used with "pair styles"_pair_style.html with a
+{long/tip4p} in their style name.
+
+The {ewald/n} style augments {ewald} by adding long-range dispersion
+sum capabilities for 1/r^N potentials and is useful for simulation of
+interfaces "(Veld)"_#Veld.  It also performs standard coulombic Ewald
+summations, but in a more efficient manner than the {ewald} style.
+The 1/r^N capability means that Lennard-Jones or Buckingham potentials
+can be used with {ewald/n} without a cutoff, i.e. they become full
+long-range potentials.
+
+Currently, only the {ewald/n} style can be used with non-orthogonal
+(triclinic symmetry) simulation boxes.
+
+The {pppm/proxy} style is a special variant for calculations 
+in hybrid OpenMP/MPI parallel mode. It is functionally equivalent
+with {pppm}, but it its force computation is being executed 
+as a single thread concurrently with a multi-threaded non-bonded
+calculation for a pair style with {pppm/omp} suffix. For calcuations
+across many multi-core nodes, this can have a performance benefit
+over performing the real and reciprocal space part separately,
+specifically when otherwise the time spent on the pair style
+would slightly less than in {pppm} without threading.
+
+Note that the PPPM styles can be used with single-precision FFTs by
+using the compiler switch -DFFT_SINGLE for the FFT_INC setting in your
+lo-level Makefile.  This setting also changes some of the PPPM
+operations (e.g. mapping charge to mesh and interpolating electric
+fields to particles) to be performed in single precision.  This option
+can speed-up long-range calulations, particularly in parallel or on
+GPUs.  The use of the -DFFT_SINGLE flag is discussed in "this
+section"_Section_start.html#start_2_4 of the manual.
+
+:line
+
+When a kspace style is used, a pair style that includes the
+short-range correction to the pairwise Coulombic or other 1/r^N forces
+must also be selected.  For Coulombic interactions, these styles are
+ones that have a {coul/long} in their style name.  For 1/r^6
+dispersion forces in a Lennard-Jones or Buckingham potential, see the
+"pair_style lj/coul"_pair_lj_coul.html or "pair_style
+buck/coul"_pair_buck_coul.html commands.
+
+The specified {accuracy} determines the relative RMS error in per-atom
+forces calculated by the long-range solver.  It is set as a
+dimensionless number, relative to the force that two unit point
+charges (e.g. 2 monovalent ions) exert on each other at a distance of
+1 Angstrom.  This reference value was chosen as representative of the
+magnitude of electrostatic forces in atomic systems.  Thus an accuracy
+value of 1.0e-4 means that the RMS error will be a factor of 10000
+smaller than the reference force.
+
+The accuracy setting is used in conjunction with the pairwise cutoff
+to determine the number of K-space vectors for style {ewald} or the
+FFT grid size for style {pppm}.
+
+RMS force errors in real space for {ewald} and {pppm} are estimated
+using equation 18 of "(Kolafa)"_#Kolafa, which is also referenced as
+equation 9 of "(Petersen)"_#Petersen. RMS force errors in K-space for
+{ewald} are estimated using equation 11 of "(Petersen)"_#Petersen,
+which is similar to equation 32 of "(Kolafa)"_#Kolafa. RMS force
+errors in K-space for {pppm} are estimated using equation 38 of
+"(Deserno)"_#Deserno.
+
+See the "kspace_modify"_kspace_modify.html command for additional
+options of the K-space solvers that can be set, including a {force}
+option for setting an absoulte RMS error in forces, as opposed to a
+relative RMS error.
+
+:line
+
+Styles with a {cuda}, {gpu}, {omp}, or {opt} suffix are functionally
+the same as the corresponding style without the suffix.  They have
+been optimized to run faster, depending on your available hardware, as
+discussed in "Section_accelerate"_Section_accelerate.html of the
+manual.  The accelerated styles take the same arguments and should
+produce the same results, except for round-off and precision issues.
+
+More specifically, the {pppm/gpu} style performs charge assignment and
+force interpolation calculations on the GPU.  These processes are
+performed either in single or double precision, depending on whether
+the -DFFT_SINGLE setting was specified in your lo-level Makefile, as
+discussed above.  The FFTs themselves are still calculated on the CPU.
+If {pppm/gpu} is used with a GPU-enabled pair style, part of the PPPM
+calculation can be performed concurrently on the GPU while other
+calculations for non-bonded and bonded force calculation are performed
+on the CPU.
+
+These accelerated styles are part of the USER-CUDA, GPU, USER-OMP, and
+OPT packages respectively.  They are only enabled if LAMMPS was built
+with those packages.  See the "Making LAMMPS"_Section_start.html#start_3
+section for more info.
+
+See "Section_accelerate"_Section_accelerate.html of the manual for
+more instructions on how to use the accelerated styles effectively.
+
+[Restrictions:]
+
+A simulation must be 3d and periodic in all dimensions to use an Ewald
+or PPPM solver.  The only exception is if the slab option is set with
+"kspace_modify"_kspace_modify.html, in which case the xy dimensions
+must be periodic and the z dimension must be non-periodic.
+
+Kspace styles are part of the KSPACE package.  They are only enabled
+if LAMMPS was built with that package.  See the "Making
+LAMMPS"_Section_start.html#start_3 section for more info.
+
+The {ewald/n} style is part of the USER-EWALDN package.  It is only
+enabled if LAMMPS was built with that package.  See the "Making
+LAMMPS"_Section_start.html#start_3 section for more info.
+
+When using a long-range pairwise TIP4P potential, you must use kspace
+style {pppm/tip4p} and vice versa.
+
+[Related commands:]
+
+"kspace_modify"_kspace_modify.html, "pair_style
+lj/cut/coul/long"_pair_lj.html, "pair_style
+lj/charmm/coul/long"_pair_charmm.html, "pair_style
+lj/coul"_pair_lj_coul.html, "pair_style buck/coul/long"_pair_buck.html
+
+[Default:]
+
+kspace_style none :pre
+
+:line
+
+:link(Darden)
+[(Darden)] Darden, York, Pedersen, J Chem Phys, 98, 10089 (1993).
+
+:link(Deserno)
+[(Deserno)] Deserno and Holm, J Chem Phys, 109, 7694 (1998).
+
+:link(Hockney) 
+[(Hockney)] Hockney and Eastwood, Computer Simulation Using Particles,
+Adam Hilger, NY (1989).
+
+:link(Kolafa)
+[(Kolafa)] Kolafa and Perram, Molecular Simualtion, 9, 351 (1992).
+
+:link(Petersen)
+[(Petersen)] Petersen, J Chem Phys, 103, 3668 (1995).
+
+:link(Pollock)
+[(Pollock)] Pollock and Glosli, Comp Phys Comm, 95, 93 (1996).
+
+:link(Veld)
+[(Veld)] In 't Veld, Ismail, Grest, J Chem Phys, in press (2007).
+
+

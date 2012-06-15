@@ -1,0 +1,8 @@
+#!/bin/bash -i
+
+shopt -s expand_aliases
+cd post
+lpp dump*.cohesion
+lpp dump*.noCohesion
+
+
