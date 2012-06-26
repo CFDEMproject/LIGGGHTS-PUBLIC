@@ -37,7 +37,7 @@
 #include "modify.h"
 #include "respa.h"
 #include "memory.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "error.h"
 #include "fix_rigid.h"
 #include "compute_pair_gran_local.h"
@@ -74,6 +74,9 @@ void FixWallGranHooke::compute_force(int ip, double deltan, double rsq,double me
   double radius = atom->radius[ip];
   double mass = atom->rmass[ip];
   double cr = radius - 0.5*deltan;
+
+  if(fix_rigid_ && body_[ip] >= 0)
+    mass = masstotal_[body_[ip]];
 
   //get the parameters needed to resolve the contact
   //deltan > 0 needed in this function

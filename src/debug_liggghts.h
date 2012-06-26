@@ -26,7 +26,7 @@
 #include "string.h"
 #include "stdlib.h"
 #include "style_fix.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 
 namespace LAMMPS_NS {
 

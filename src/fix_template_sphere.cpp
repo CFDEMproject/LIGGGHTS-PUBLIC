@@ -34,7 +34,7 @@
 #include "region.h"
 #include "domain.h"
 #include "comm.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "fix_region_variable.h"
 
 using namespace LAMMPS_NS;

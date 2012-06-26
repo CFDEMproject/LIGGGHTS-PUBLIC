@@ -23,7 +23,6 @@
 #define LMP_ABSTRACT_MESH_H
 
 #include "pointers.h"
-//#include "custom_value_tracker.h"
 
 namespace LAMMPS_NS
 {
@@ -33,6 +32,7 @@ namespace LAMMPS_NS
       friend class MeshMover;
 
       public:
+
         // scale mesh
         virtual void scale(double factor) = 0;
 
@@ -54,6 +54,19 @@ namespace LAMMPS_NS
         virtual bool registerMove(bool _scale, bool _translate, bool _rotate) = 0;
         virtual void unregisterMove(bool _scale, bool _translate, bool _rotate) = 0;
 
+        virtual bool isMoving() = 0;
+
+        virtual void initalSetup() = 0;
+        virtual void pbcExchangeBorders(int setupFlag) = 0;
+        virtual void forwardComm() = 0;
+        virtual void reverseComm() = 0;
+
+        virtual void writeRestart(FILE *fp) = 0;
+        virtual void restart(double *list) = 0;
+
+        virtual void buildNeighbours() = 0;
+        virtual bool allNodesInsideSimulationBox() = 0;
+
         virtual int numNodes() = 0;
 
         virtual inline class CustomValueTracker& prop() = 0;
@@ -68,13 +81,13 @@ namespace LAMMPS_NS
         virtual int sizeGhost() = 0;
         virtual int sizeGlobal() = 0;
 
+        virtual ~AbstractMesh()
+        {}
+
       protected:
 
           AbstractMesh(LAMMPS *lmp)
           : Pointers(lmp)
-          {}
-
-          virtual ~AbstractMesh()
           {}
 
       private:

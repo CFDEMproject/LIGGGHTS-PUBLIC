@@ -1,0 +1,896 @@
+==660== Memcheck, a memory error detector
+==660== Copyright (C) 2002-2009, and GNU GPL'd, by Julian Seward et al.
+==660== Using Valgrind-3.6.0.SVN-Debian and LibVEX; rerun with -h for copyright info
+==660== Command: liggghts2
+==660== 
+==661== Memcheck, a memory error detector
+==661== Copyright (C) 2002-2009, and GNU GPL'd, by Julian Seward et al.
+==661== Using Valgrind-3.6.0.SVN-Debian and LibVEX; rerun with -h for copyright info
+==661== Command: liggghts2
+==661== 
+==664== Memcheck, a memory error detector
+==664== Copyright (C) 2002-2009, and GNU GPL'd, by Julian Seward et al.
+==664== Using Valgrind-3.6.0.SVN-Debian and LibVEX; rerun with -h for copyright info
+==664== Command: liggghts2
+==664== 
+==659== Memcheck, a memory error detector
+==659== Copyright (C) 2002-2009, and GNU GPL'd, by Julian Seward et al.
+==659== Using Valgrind-3.6.0.SVN-Debian and LibVEX; rerun with -h for copyright info
+==659== Command: liggghts2
+==659== 
+==659== Syscall param sched_setaffinity(mask) points to unaddressable byte(s)
+==659==    at 0x6885E49: syscall (syscall.S:39)
+==659==    by 0x6F276A5: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==659==    by 0x6F27A84: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==659==    by 0x6F27BC9: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==659==    by 0x6F2752F: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==659==    by 0x5894593: opal_paffinity_base_select (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==659==    by 0x586A8C4: opal_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==659==    by 0x5619A5C: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==659==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==659==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==659==    by 0x700A6C: main (main.cpp:27)
+==659==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==659== 
+==660== Syscall param sched_setaffinity(mask) points to unaddressable byte(s)
+==660==    at 0x6885E49: syscall (syscall.S:39)
+==660==    by 0x6F276A5: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==660==    by 0x6F27A84: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==660==    by 0x6F27BC9: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==660==    by 0x6F2752F: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==661== Syscall param sched_setaffinity(mask) points to unaddressable byte(s)
+==661==    at 0x6885E49: syscall (syscall.S:39)
+==661==    by 0x6F276A5: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==660==    by 0x5894593: opal_paffinity_base_select (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==660==    by 0x586A8C4: opal_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==660==    by 0x5619A5C: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==660==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==660==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==660==    by 0x700A6C: main (main.cpp:27)
+==660==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==660== 
+==661==    by 0x6F27A84: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==661==    by 0x6F27BC9: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==661==    by 0x6F2752F: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==661==    by 0x5894593: opal_paffinity_base_select (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586A8C4: opal_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5619A5C: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==661== 
+==664== Syscall param sched_setaffinity(mask) points to unaddressable byte(s)
+==664==    at 0x6885E49: syscall (syscall.S:39)
+==664==    by 0x6F276A5: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==664==    by 0x6F27A84: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==664==    by 0x6F27BC9: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==664==    by 0x6F2752F: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==664==    by 0x5894593: opal_paffinity_base_select (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==664==    by 0x586A8C4: opal_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==664==    by 0x5619A5C: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==664==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==664==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==664==    by 0x700A6C: main (main.cpp:27)
+==664==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==664== 
+LIGGGHTS (Version LIGGGHTS-MASTER 2.0RCplusplus, compiled 2012-06-25-11:03:33 by ckloss based on LAMMPS 20 Apr 2012)
+Created orthogonal box = (-0.05 -0.05 0) to (0.05 0.05 0.15)
+  1 by 2 by 2 MPI processor grid
+Fix particledistribution/discrete (id pdd1): distribution based on mass%:
+    pts1: d=8.000000e-03 (max. bounding sphere) mass%=100.000000%
+Fix particledistribution/discrete (id pdd1): distribution based on number%:
+    pts1: d=8.000000e-03 (max. bounding sphere) number%=100.000000%
+Setting up run ...
+INFO: Resetting random generator for region bc
+Memory usage per processor = 9.96298 Mbytes
+Step Atoms KinEng rke heattran Volume 
+       0        0           -0            0            0       0.0015 
+Particle insertion: inserted 3588 particle templates (mass 7.695042) at step 1
+ - a total of 3588 particle templates (mass 7.695042) inserted so far.
+WARNING: Particle insertion: Less insertions than requested (fix_insert.cpp:551)
+       1      897  0.086640009            0    5771.2816       0.0015 
+Loop time of 1.8075 on 4 procs for 1 steps with 897 atoms
+
+Pair  time (%) = 0.00488049 (0.270013)
+Neigh time (%) = 0.0215036 (1.18969)
+Comm  time (%) = 0.0632815 (3.50105)
+Outpt time (%) = 0.019131 (1.05842)
+Other time (%) = 1.6987 (93.9808)
+
+Nlocal:    224.25 ave 227 max 222 min
+Histogram: 1 0 1 0 0 0 1 0 0 1
+Nghost:    89.25 ave 90 max 89 min
+Histogram: 3 0 0 0 0 0 0 0 0 1
+Neighs:    364.75 ave 373 max 356 min
+Histogram: 1 1 0 0 0 0 0 0 1 1
+
+Total # of neighbors = 1459
+Ave neighs/atom = 1.62653
+Neighbor list builds = 1
+Dangerous builds = 0
+Setting up run ...
+Memory usage per processor = 10.7293 Mbytes
+Step Atoms KinEng rke heattran Volume 
+       1      897  0.086640009            0    5771.2816       0.0015 
+==661== Invalid read of size 2
+==661==    at 0x68A0FEF: __fprintf_chk (fprintf_chk.c:32)
+==661==    by 0x5E7569: void LAMMPS_NS::FixHeatGran::post_force_eval<1>(int, int) (stdio2.h:99)
+==661==    by 0x723090: LAMMPS_NS::Modify::post_force(int) (modify.cpp:336)
+==661==    by 0x821E92: LAMMPS_NS::Verlet::run(int) (verlet.cpp:323)
+==661==    by 0x7E3B27: LAMMPS_NS::Run::command(int, char**) (run.cpp:174)
+==661==    by 0x6EBC2D: LAMMPS_NS::Input::execute_command() (run.h:16)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==661== 
+[fluid38:00661] *** Process received signal ***
+[fluid38:00661] Signal: Segmentation fault (11)
+[fluid38:00661] Signal code: Address not mapped (1)
+[fluid38:00661] Failing at address: (nil)
+[fluid38:00661] [ 0] /lib/libpthread.so.0(+0xf8f0) [0x65958f0]
+[fluid38:00661] [ 1] /lib/libc.so.6(__fprintf_chk+0x5f) [0x68a0fef]
+[fluid38:00661] [ 2] liggghts2(_ZN9LAMMPS_NS11FixHeatGran15post_force_evalILi1EEEvii+0x49a) [0x5e756a]
+[fluid38:00661] [ 3] liggghts2(_ZN9LAMMPS_NS6Modify10post_forceEi+0x51) [0x723091]
+[fluid38:00661] [ 4] liggghts2(_ZN9LAMMPS_NS6Verlet3runEi+0x353) [0x821e93]
+[fluid38:00661] [ 5] liggghts2(_ZN9LAMMPS_NS3Run7commandEiPPc+0x298) [0x7e3b28]
+[fluid38:00661] [ 6] liggghts2(_ZN9LAMMPS_NS5Input15execute_commandEv+0xa2e) [0x6ebc2e]
+[fluid38:00661] [ 7] liggghts2(_ZN9LAMMPS_NS5Input4fileEv+0x3c8) [0x6ec4d8]
+[fluid38:00661] [ 8] liggghts2(main+0x49) [0x700a99]
+[fluid38:00661] [ 9] /lib/libc.so.6(__libc_start_main+0xfd) [0x67c1c4d]
+[fluid38:00661] [10] liggghts2() [0x486159]
+[fluid38:00661] *** End of error message ***
+==661== 
+==661== Process terminating with default action of signal 11 (SIGSEGV)
+==661==  Access not within mapped region at address 0x0
+==661==    at 0x68A0FEF: __fprintf_chk (fprintf_chk.c:32)
+==661==    by 0x5E7569: void LAMMPS_NS::FixHeatGran::post_force_eval<1>(int, int) (stdio2.h:99)
+==661==    by 0x723090: LAMMPS_NS::Modify::post_force(int) (modify.cpp:336)
+==661==    by 0x821E92: LAMMPS_NS::Verlet::run(int) (verlet.cpp:323)
+==661==    by 0x7E3B27: LAMMPS_NS::Run::command(int, char**) (run.cpp:174)
+==661==    by 0x6EBC2D: LAMMPS_NS::Input::execute_command() (run.h:16)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661==  If you believe this happened as a result of a stack
+==661==  overflow in your program's main thread (unlikely but
+==661==  possible), you can try to increase the size of the
+==661==  main thread stack using the --main-stacksize= flag.
+==661==  The main thread stack size used in this run was 8388608.
+==661== 
+==661== HEAP SUMMARY:
+==661==     in use at exit: 15,804,972 bytes in 8,119 blocks
+==661==   total heap usage: 16,604 allocs, 8,485 frees, 30,346,184 bytes allocated
+==661== 
+==661== 1 bytes in 1 blocks are definitely lost in loss record 23 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CD96: mca_base_param_reg_string_name (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xA3C9A71: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 1 bytes in 1 blocks are definitely lost in loss record 24 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CB52: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CD96: mca_base_param_reg_string_name (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D92D4: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 2 bytes in 1 blocks are definitely lost in loss record 30 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CCEF: mca_base_param_reg_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABF9632: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 4 bytes in 1 blocks are definitely lost in loss record 434 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587BABF: mca_base_param_set_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5393EAD: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 4 bytes in 1 blocks are definitely lost in loss record 435 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CCEF: mca_base_param_reg_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABF9301: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 4 bytes in 1 blocks are definitely lost in loss record 436 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x587E213: opal_argv_join (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABFE009: ???
+==661==    by 0xABF9F34: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 5 bytes in 1 blocks are definitely lost in loss record 622 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x588B967: opal_crs_base_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586B36D: opal_cr_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586A9C1: opal_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5619A5C: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 5 bytes in 1 blocks are definitely lost in loss record 623 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x5624DDE: orte_session_dir_get_name (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5624F6E: orte_session_dir (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5631189: orte_ess_base_app_setup (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x7D35A2E: ??? (in /usr/lib/openmpi/lib/openmpi/mca_ess_env.so)
+==661==    by 0x5619BC2: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 5 bytes in 1 blocks are definitely lost in loss record 624 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x564424E: orte_snapc_base_select (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5631233: orte_ess_base_app_setup (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x7D35A2E: ??? (in /usr/lib/openmpi/lib/openmpi/mca_ess_env.so)
+==661==    by 0x5619BC2: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 5 bytes in 1 blocks are definitely lost in loss record 625 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CCEF: mca_base_param_reg_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xA7D54CF: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 5 bytes in 1 blocks are definitely lost in loss record 626 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CCEF: mca_base_param_reg_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABF94E0: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 5 bytes in 1 blocks are definitely lost in loss record 627 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587C5E9: mca_base_param_lookup_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABF94EA: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 5 bytes in 1 blocks are definitely lost in loss record 628 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x53D25E9: ompi_crcp_base_select (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5394068: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 6 bytes in 1 blocks are definitely lost in loss record 692 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CCEF: mca_base_param_reg_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x834629E: ??? (in /usr/lib/openmpi/lib/openmpi/mca_oob_tcp.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x563C730: mca_oob_base_open (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x813DB28: ??? (in /usr/lib/openmpi/lib/openmpi/mca_rml_oob.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x56430BD: orte_rml_base_open (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5630FCA: orte_ess_base_app_setup (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661== 
+==661== 7 bytes in 1 blocks are definitely lost in loss record 803 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587C5E9: mca_base_param_lookup_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xA3C9A0D: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 16 bytes in 1 blocks are definitely lost in loss record 1,294 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x586F7DD: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586E67B: opal_dss_unpack_buffer (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586F72F: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5631D37: orte_ess_base_build_nidmap (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x7D35B81: ??? (in /usr/lib/openmpi/lib/openmpi/mca_ess_env.so)
+==661==    by 0x5619BC2: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 16 bytes in 1 blocks are definitely lost in loss record 1,295 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x586F7DD: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586E67B: opal_dss_unpack_buffer (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586F72F: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5631D77: orte_ess_base_build_nidmap (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x7D35B81: ??? (in /usr/lib/openmpi/lib/openmpi/mca_ess_env.so)
+==661==    by 0x5619BC2: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 24 bytes in 1 blocks are possibly lost in loss record 1,479 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x6B9C02: LAMMPS_NS::PrimitiveWall::PrimitiveWall(LAMMPS_NS::LAMMPS*, LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS::WallType, int, double*) (primitive_wall.h:76)
+==661==    by 0x6BAF42: LAMMPS_NS::FixWallGran::FixWallGran(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran.cpp:145)
+==661==    by 0x6C111D: LAMMPS_NS::FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hooke_history.cpp:63)
+==661==    by 0x6BEA18: LAMMPS_NS::FixWallGranHertzHistory::FixWallGranHertzHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hertz_history.cpp:54)
+==661==    by 0x72D080: LAMMPS_NS::Modify::add_fix(int, char**, char*) (fix_wall_gran_hertz_history.h:28)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,617 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x68A2257: __vasprintf_chk (vasprintf_chk.c:82)
+==661==    by 0x68A20F2: __asprintf_chk (asprintf_chk.c:34)
+==661==    by 0x564570A: orte_snapc_base_unique_global_snapshot_name (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x564419B: orte_snapc_base_open (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x56311FB: orte_ess_base_app_setup (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x7D35A2E: ??? (in /usr/lib/openmpi/lib/openmpi/mca_ess_env.so)
+==661==    by 0x5619BC2: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,618 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668AFF: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,619 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668B0D: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,620 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668B1B: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,621 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668B29: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,622 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668B37: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,623 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668B45: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,624 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668B53: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,625 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668B61: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 30 bytes in 1 blocks are definitely lost in loss record 1,626 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x668B6F: LAMMPS_NS::FixScalarTransportEquation::post_create() (fix_scalar_transport_equation.cpp:151)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x5E634A: LAMMPS_NS::FixHeatGran::post_create() (fix_heat_gran.cpp:140)
+==661==    by 0x7297B6: LAMMPS_NS::Modify::add_fix(int, char**, char*) (modify.cpp:712)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 40 bytes in 1 blocks are definitely lost in loss record 2,099 of 3,398
+==661==    at 0x4C267CC: calloc (vg_replace_malloc.c:467)
+==661==    by 0xABFE0BC: ???
+==661==    by 0xABF9F34: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 48 bytes in 1 blocks are definitely lost in loss record 2,493 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x587A261: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CF7F5: mca_bml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 52 bytes in 1 blocks are definitely lost in loss record 2,580 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CCEF: mca_base_param_reg_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABF92A3: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 52 bytes in 1 blocks are definitely lost in loss record 2,581 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587C5E9: mca_base_param_lookup_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABF92C5: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 55 bytes in 1 blocks are definitely lost in loss record 2,622 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CD96: mca_base_param_reg_string_name (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x58843AC: opal_net_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586A784: opal_init_util (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5393CAE: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 61 bytes in 5 blocks are definitely lost in loss record 2,730 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x586F937: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586E67B: opal_dss_unpack_buffer (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x586F72F: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x56344FD: orte_grpcomm_base_update_modex_entries (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x7F39322: ??? (in /usr/lib/openmpi/lib/openmpi/mca_grpcomm_bad.so)
+==661==    by 0x53941D1: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 72 bytes in 1 blocks are possibly lost in loss record 2,807 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x4C27522: realloc (vg_replace_malloc.c:525)
+==661==    by 0x53CF413: mca_bml_base_btl_array_reserve (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0xA5CDDC0: ??? (in /usr/lib/openmpi/lib/openmpi/mca_bml_r2.so)
+==661==    by 0xA1B558B: ??? (in /usr/lib/openmpi/lib/openmpi/mca_pml_ob1.so)
+==661==    by 0x53942BE: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 72 bytes in 1 blocks are possibly lost in loss record 2,808 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x4C27522: realloc (vg_replace_malloc.c:525)
+==661==    by 0x53CF413: mca_bml_base_btl_array_reserve (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0xA5CDDD0: ??? (in /usr/lib/openmpi/lib/openmpi/mca_bml_r2.so)
+==661==    by 0xA1B558B: ??? (in /usr/lib/openmpi/lib/openmpi/mca_pml_ob1.so)
+==661==    by 0x53942BE: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 72 bytes in 1 blocks are possibly lost in loss record 2,809 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x4C27522: realloc (vg_replace_malloc.c:525)
+==661==    by 0x53CF413: mca_bml_base_btl_array_reserve (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0xA5CDDE3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_bml_r2.so)
+==661==    by 0xA1B558B: ??? (in /usr/lib/openmpi/lib/openmpi/mca_pml_ob1.so)
+==661==    by 0x53942BE: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 72 bytes in 3 blocks are definitely lost in loss record 2,810 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x563439E: orte_grpcomm_base_get_proc_attr (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x539657F: ompi_modex_recv (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0xB22BA1C: ??? (in /usr/lib/openmpi/lib/openmpi/mca_btl_tcp.so)
+==661==    by 0xB22744B: ??? (in /usr/lib/openmpi/lib/openmpi/mca_btl_tcp.so)
+==661==    by 0xA5CD8E6: ??? (in /usr/lib/openmpi/lib/openmpi/mca_bml_r2.so)
+==661==    by 0xA1B558B: ??? (in /usr/lib/openmpi/lib/openmpi/mca_pml_ob1.so)
+==661==    by 0x53942BE: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 72 bytes in 3 blocks are definitely lost in loss record 2,811 of 3,398
+==661==    at 0x4C27939: operator new[](unsigned long) (vg_replace_malloc.c:305)
+==661==    by 0x5876D3: LAMMPS_NS::Fix::Fix(LAMMPS_NS::LAMMPS*, int, char**) (fix.cpp:55)
+==661==    by 0x6BA811: LAMMPS_NS::FixWallGran::FixWallGran(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran.cpp:64)
+==661==    by 0x6C111D: LAMMPS_NS::FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hooke_history.cpp:63)
+==661==    by 0x6BEA18: LAMMPS_NS::FixWallGranHertzHistory::FixWallGranHertzHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hertz_history.cpp:54)
+==661==    by 0x72D080: LAMMPS_NS::Modify::add_fix(int, char**, char*) (fix_wall_gran_hertz_history.h:28)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 74 bytes in 1 blocks are definitely lost in loss record 2,813 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CA06: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587CCEF: mca_base_param_reg_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABF9D5E: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 74 bytes in 1 blocks are definitely lost in loss record 2,814 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x6825FD1: strdup (strdup.c:43)
+==661==    by 0x587C3A7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x587C5E9: mca_base_param_lookup_string (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0xABF9D68: ???
+==661==    by 0xABED606: ???
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661== 
+==661== 96 (48 direct, 48 indirect) bytes in 1 blocks are definitely lost in loss record 2,950 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x587A261: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53CFC6A: mca_btl_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x9FA1DF3: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 176 bytes in 1 blocks are definitely lost in loss record 3,126 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x83483ED: ??? (in /usr/lib/openmpi/lib/openmpi/mca_oob_tcp.so)
+==661==    by 0x563C94B: mca_oob_base_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x813E36A: ??? (in /usr/lib/openmpi/lib/openmpi/mca_rml_oob.so)
+==661==    by 0x5642DC9: orte_rml_base_select (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5631024: orte_ess_base_app_setup (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x7D35A2E: ??? (in /usr/lib/openmpi/lib/openmpi/mca_ess_env.so)
+==661==    by 0x5619BC2: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 232 bytes in 1 blocks are possibly lost in loss record 3,157 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0xA5CDD3F: ??? (in /usr/lib/openmpi/lib/openmpi/mca_bml_r2.so)
+==661==    by 0xA1B558B: ??? (in /usr/lib/openmpi/lib/openmpi/mca_pml_ob1.so)
+==661==    by 0x53942BE: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 300 (60 direct, 240 indirect) bytes in 1 blocks are definitely lost in loss record 3,187 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x689DDCA: nss_parse_service_list (nsswitch.c:622)
+==661==    by 0x689E6ED: __nss_database_lookup (nsswitch.c:164)
+==661==    by 0x87583CF: ???
+==661==    by 0x875A244: ???
+==661==    by 0x684C9FC: getpwuid_r@@GLIBC_2.2.5 (getXXbyYY_r.c:253)
+==661==    by 0x684C2EE: getpwuid (getXXbyYY.c:117)
+==661==    by 0x56249C4: orte_session_dir_get_name (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5624F6E: orte_session_dir (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x5631189: orte_ess_base_app_setup (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661==    by 0x7D35A2E: ??? (in /usr/lib/openmpi/lib/openmpi/mca_ess_env.so)
+==661==    by 0x5619BC2: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==661== 
+==661== 319 bytes in 7 blocks are possibly lost in loss record 3,191 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x4007960: expand_dynamic_string_token (dl-load.c:162)
+==661==    by 0x4008281: _dl_map_object (dl-load.c:2185)
+==661==    by 0x40135D7: dl_open_worker (dl-open.c:225)
+==661==    by 0x400E9C5: _dl_catch_error (dl-error.c:178)
+==661==    by 0x4012FF9: _dl_open (dl-open.c:554)
+==661==    by 0x5ACBF65: dlopen_doit (dlopen.c:67)
+==661==    by 0x400E9C5: _dl_catch_error (dl-error.c:178)
+==661==    by 0x5ACC2AB: _dlerror_run (dlerror.c:164)
+==661==    by 0x5ACBEE0: dlopen@@GLIBC_2.2.5 (dlopen.c:88)
+==661==    by 0x5874711: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5872546: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661== 
+==661== 319 bytes in 7 blocks are possibly lost in loss record 3,192 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x400B742: _dl_new_object (dl-object.c:153)
+==661==    by 0x40063E5: _dl_map_object_from_fd (dl-load.c:979)
+==661==    by 0x4008329: _dl_map_object (dl-load.c:2250)
+==661==    by 0x40135D7: dl_open_worker (dl-open.c:225)
+==661==    by 0x400E9C5: _dl_catch_error (dl-error.c:178)
+==661==    by 0x4012FF9: _dl_open (dl-open.c:554)
+==661==    by 0x5ACBF65: dlopen_doit (dlopen.c:67)
+==661==    by 0x400E9C5: _dl_catch_error (dl-error.c:178)
+==661==    by 0x5ACC2AB: _dlerror_run (dlerror.c:164)
+==661==    by 0x5ACBEE0: dlopen@@GLIBC_2.2.5 (dlopen.c:88)
+==661==    by 0x5874711: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661== 
+==661== 400 bytes in 1 blocks are possibly lost in loss record 3,211 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x60AF47: int*** LAMMPS_MEMORY_NS::create<int>(int***&, int, int, int) (memory_ns.h:135)
+==661==    by 0x60B675: LAMMPS_NS::ScalarContainer<int>::ScalarContainer() (general_container_I.h:41)
+==661==    by 0x6B9BC6: LAMMPS_NS::PrimitiveWall::PrimitiveWall(LAMMPS_NS::LAMMPS*, LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS::WallType, int, double*) (primitive_wall.h:74)
+==661==    by 0x6BAF42: LAMMPS_NS::FixWallGran::FixWallGran(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran.cpp:145)
+==661==    by 0x6C111D: LAMMPS_NS::FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hooke_history.cpp:63)
+==661==    by 0x6BEA18: LAMMPS_NS::FixWallGranHertzHistory::FixWallGranHertzHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hertz_history.cpp:54)
+==661==    by 0x72D080: LAMMPS_NS::Modify::add_fix(int, char**, char*) (fix_wall_gran_hertz_history.h:28)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 720 bytes in 7 blocks are possibly lost in loss record 3,260 of 3,398
+==661==    at 0x4C267CC: calloc (vg_replace_malloc.c:467)
+==661==    by 0x40106D3: _dl_check_map_versions (dl-version.c:299)
+==661==    by 0x40138B8: dl_open_worker (dl-open.c:268)
+==661==    by 0x400E9C5: _dl_catch_error (dl-error.c:178)
+==661==    by 0x4012FF9: _dl_open (dl-open.c:554)
+==661==    by 0x5ACBF65: dlopen_doit (dlopen.c:67)
+==661==    by 0x400E9C5: _dl_catch_error (dl-error.c:178)
+==661==    by 0x5ACC2AB: _dlerror_run (dlerror.c:164)
+==661==    by 0x5ACBEE0: dlopen@@GLIBC_2.2.5 (dlopen.c:88)
+==661==    by 0x5874711: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5872546: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5872DF7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661== 
+==661== 800 bytes in 1 blocks are possibly lost in loss record 3,266 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x60AF62: int*** LAMMPS_MEMORY_NS::create<int>(int***&, int, int, int) (memory_ns.h:137)
+==661==    by 0x60B675: LAMMPS_NS::ScalarContainer<int>::ScalarContainer() (general_container_I.h:41)
+==661==    by 0x6B9BC6: LAMMPS_NS::PrimitiveWall::PrimitiveWall(LAMMPS_NS::LAMMPS*, LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS::WallType, int, double*) (primitive_wall.h:74)
+==661==    by 0x6BAF42: LAMMPS_NS::FixWallGran::FixWallGran(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran.cpp:145)
+==661==    by 0x6C111D: LAMMPS_NS::FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hooke_history.cpp:63)
+==661==    by 0x6BEA18: LAMMPS_NS::FixWallGranHertzHistory::FixWallGranHertzHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hertz_history.cpp:54)
+==661==    by 0x72D080: LAMMPS_NS::Modify::add_fix(int, char**, char*) (fix_wall_gran_hertz_history.h:28)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 800 bytes in 1 blocks are possibly lost in loss record 3,267 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x60AF73: int*** LAMMPS_MEMORY_NS::create<int>(int***&, int, int, int) (memory_ns.h:139)
+==661==    by 0x60B675: LAMMPS_NS::ScalarContainer<int>::ScalarContainer() (general_container_I.h:41)
+==661==    by 0x6B9BC6: LAMMPS_NS::PrimitiveWall::PrimitiveWall(LAMMPS_NS::LAMMPS*, LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS::WallType, int, double*) (primitive_wall.h:74)
+==661==    by 0x6BAF42: LAMMPS_NS::FixWallGran::FixWallGran(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran.cpp:145)
+==661==    by 0x6C111D: LAMMPS_NS::FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hooke_history.cpp:63)
+==661==    by 0x6BEA18: LAMMPS_NS::FixWallGranHertzHistory::FixWallGranHertzHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hertz_history.cpp:54)
+==661==    by 0x72D080: LAMMPS_NS::Modify::add_fix(int, char**, char*) (fix_wall_gran_hertz_history.h:28)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 800 bytes in 1 blocks are possibly lost in loss record 3,268 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x5FA3BF: double*** LAMMPS_MEMORY_NS::create<double>(double***&, int, int, int) (memory_ns.h:137)
+==661==    by 0x6BE2C5: LAMMPS_NS::VectorContainer<double, 3>::VectorContainer() (general_container_I.h:41)
+==661==    by 0x6B9BE4: LAMMPS_NS::PrimitiveWall::PrimitiveWall(LAMMPS_NS::LAMMPS*, LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS::WallType, int, double*) (primitive_wall.h:74)
+==661==    by 0x6BAF42: LAMMPS_NS::FixWallGran::FixWallGran(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran.cpp:145)
+==661==    by 0x6C111D: LAMMPS_NS::FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hooke_history.cpp:63)
+==661==    by 0x6BEA18: LAMMPS_NS::FixWallGranHertzHistory::FixWallGranHertzHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hertz_history.cpp:54)
+==661==    by 0x72D080: LAMMPS_NS::Modify::add_fix(int, char**, char*) (fix_wall_gran_hertz_history.h:28)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 800 bytes in 1 blocks are possibly lost in loss record 3,269 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x5FA3D1: double*** LAMMPS_MEMORY_NS::create<double>(double***&, int, int, int) (memory_ns.h:139)
+==661==    by 0x6BE2C5: LAMMPS_NS::VectorContainer<double, 3>::VectorContainer() (general_container_I.h:41)
+==661==    by 0x6B9BE4: LAMMPS_NS::PrimitiveWall::PrimitiveWall(LAMMPS_NS::LAMMPS*, LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS::WallType, int, double*) (primitive_wall.h:74)
+==661==    by 0x6BAF42: LAMMPS_NS::FixWallGran::FixWallGran(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran.cpp:145)
+==661==    by 0x6C111D: LAMMPS_NS::FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hooke_history.cpp:63)
+==661==    by 0x6BEA18: LAMMPS_NS::FixWallGranHertzHistory::FixWallGranHertzHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hertz_history.cpp:54)
+==661==    by 0x72D080: LAMMPS_NS::Modify::add_fix(int, char**, char*) (fix_wall_gran_hertz_history.h:28)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 856 bytes in 7 blocks are possibly lost in loss record 3,271 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x400D334: _dl_map_object_deps (dl-deps.c:506)
+==661==    by 0x4013634: dl_open_worker (dl-open.c:262)
+==661==    by 0x400E9C5: _dl_catch_error (dl-error.c:178)
+==661==    by 0x4012FF9: _dl_open (dl-open.c:554)
+==661==    by 0x5ACBF65: dlopen_doit (dlopen.c:67)
+==661==    by 0x400E9C5: _dl_catch_error (dl-error.c:178)
+==661==    by 0x5ACC2AB: _dlerror_run (dlerror.c:164)
+==661==    by 0x5ACBEE0: dlopen@@GLIBC_2.2.5 (dlopen.c:88)
+==661==    by 0x5874711: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5872546: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5872DF7: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661== 
+==661== 1,095 bytes in 1 blocks are definitely lost in loss record 3,282 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x68A2B4E: backtrace_symbols (backtracesyms.c:72)
+==661==    by 0x588AD59: opal_backtrace_buffer (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x5889235: ??? (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x65958EF: ??? (in /lib/libpthread-2.11.1.so)
+==661==    by 0x68A0FEE: __fprintf_chk (fprintf_chk.c:28)
+==661==    by 0x5E7569: void LAMMPS_NS::FixHeatGran::post_force_eval<1>(int, int) (stdio2.h:99)
+==661==    by 0x723090: LAMMPS_NS::Modify::post_force(int) (modify.cpp:336)
+==661==    by 0x821E92: LAMMPS_NS::Verlet::run(int) (verlet.cpp:323)
+==661==    by 0x7E3B27: LAMMPS_NS::Run::command(int, char**) (run.cpp:174)
+==661==    by 0x6EBC2D: LAMMPS_NS::Input::execute_command() (run.h:16)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661== 
+==661== 1,300 bytes in 1 blocks are possibly lost in loss record 3,292 of 3,398
+==661==    at 0x4C275A2: realloc (vg_replace_malloc.c:525)
+==661==    by 0x60B139: int*** LAMMPS_MEMORY_NS::grow<int>(int***&, int, int, int) (memory_ns.h:166)
+==661==    by 0x60B3ED: LAMMPS_NS::GeneralContainer<int, 1, 1>::addUninitialized(int) (general_container_I.h:100)
+==661==    by 0x6B93AC: LAMMPS_NS::PrimitiveWall::setContactHistorySize(int) (primitive_wall.h:134)
+==661==    by 0x6B9670: LAMMPS_NS::FixWallGran::post_force_primitive(int) (fix_wall_gran.cpp:601)
+==661==    by 0x723090: LAMMPS_NS::Modify::post_force(int) (modify.cpp:336)
+==661==    by 0x821E92: LAMMPS_NS::Verlet::run(int) (verlet.cpp:323)
+==661==    by 0x7E3B27: LAMMPS_NS::Run::command(int, char**) (run.cpp:174)
+==661==    by 0x6EBC2D: LAMMPS_NS::Input::execute_command() (run.h:16)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 2,400 bytes in 1 blocks are possibly lost in loss record 3,305 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x5FA3AF: double*** LAMMPS_MEMORY_NS::create<double>(double***&, int, int, int) (memory_ns.h:135)
+==661==    by 0x6BE2C5: LAMMPS_NS::VectorContainer<double, 3>::VectorContainer() (general_container_I.h:41)
+==661==    by 0x6B9BE4: LAMMPS_NS::PrimitiveWall::PrimitiveWall(LAMMPS_NS::LAMMPS*, LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS::WallType, int, double*) (primitive_wall.h:74)
+==661==    by 0x6BAF42: LAMMPS_NS::FixWallGran::FixWallGran(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran.cpp:145)
+==661==    by 0x6C111D: LAMMPS_NS::FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hooke_history.cpp:63)
+==661==    by 0x6BEA18: LAMMPS_NS::FixWallGranHertzHistory::FixWallGranHertzHistory(LAMMPS_NS::LAMMPS*, int, char**) (fix_wall_gran_hertz_history.cpp:54)
+==661==    by 0x72D080: LAMMPS_NS::Modify::add_fix(int, char**, char*) (fix_wall_gran_hertz_history.h:28)
+==661==    by 0x6EBE6D: LAMMPS_NS::Input::execute_command() (input.cpp:473)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 2,480 (80 direct, 2,400 indirect) bytes in 1 blocks are definitely lost in loss record 3,308 of 3,398
+==661==    at 0x4C274A8: malloc (vg_replace_malloc.c:236)
+==661==    by 0x8F7A98C: ??? (in /usr/lib/openmpi/lib/openmpi/mca_allocator_bucket.so)
+==661==    by 0x9FA1DE2: ??? (in /usr/lib/openmpi/lib/openmpi/mca_topo_unity.so)
+==661==    by 0x587A097: mca_base_components_open (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==661==    by 0x53D9238: mca_pml_base_open (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x5393F90: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==661==    by 0x700A6C: main (main.cpp:27)
+==661== 
+==661== 2,600 bytes in 1 blocks are possibly lost in loss record 3,310 of 3,398
+==661==    at 0x4C275A2: realloc (vg_replace_malloc.c:525)
+==661==    by 0x60B15A: int*** LAMMPS_MEMORY_NS::grow<int>(int***&, int, int, int) (memory_ns.h:168)
+==661==    by 0x60B3ED: LAMMPS_NS::GeneralContainer<int, 1, 1>::addUninitialized(int) (general_container_I.h:100)
+==661==    by 0x6B93AC: LAMMPS_NS::PrimitiveWall::setContactHistorySize(int) (primitive_wall.h:134)
+==661==    by 0x6B9670: LAMMPS_NS::FixWallGran::post_force_primitive(int) (fix_wall_gran.cpp:601)
+==661==    by 0x723090: LAMMPS_NS::Modify::post_force(int) (modify.cpp:336)
+==661==    by 0x821E92: LAMMPS_NS::Verlet::run(int) (verlet.cpp:323)
+==661==    by 0x7E3B27: LAMMPS_NS::Run::command(int, char**) (run.cpp:174)
+==661==    by 0x6EBC2D: LAMMPS_NS::Input::execute_command() (run.h:16)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== 2,600 bytes in 1 blocks are possibly lost in loss record 3,311 of 3,398
+==661==    at 0x4C275A2: realloc (vg_replace_malloc.c:525)
+==661==    by 0x60B16E: int*** LAMMPS_MEMORY_NS::grow<int>(int***&, int, int, int) (memory_ns.h:170)
+==661==    by 0x60B3ED: LAMMPS_NS::GeneralContainer<int, 1, 1>::addUninitialized(int) (general_container_I.h:100)
+==661==    by 0x6B93AC: LAMMPS_NS::PrimitiveWall::setContactHistorySize(int) (primitive_wall.h:134)
+==661==    by 0x6B9670: LAMMPS_NS::FixWallGran::post_force_primitive(int) (fix_wall_gran.cpp:601)
+==661==    by 0x723090: LAMMPS_NS::Modify::post_force(int) (modify.cpp:336)
+==661==    by 0x821E92: LAMMPS_NS::Verlet::run(int) (verlet.cpp:323)
+==661==    by 0x7E3B27: LAMMPS_NS::Run::command(int, char**) (run.cpp:174)
+==661==    by 0x6EBC2D: LAMMPS_NS::Input::execute_command() (run.h:16)
+==661==    by 0x6EC4D7: LAMMPS_NS::Input::file() (input.cpp:211)
+==661==    by 0x700A98: main (main.cpp:30)
+==661== 
+==661== LEAK SUMMARY:
+==661==    definitely lost: 2,455 bytes in 50 blocks
+==661==    indirectly lost: 2,688 bytes in 12 blocks
+==661==      possibly lost: 15,186 bytes in 42 blocks
+==661==    still reachable: 15,784,643 bytes in 8,015 blocks
+==661==         suppressed: 0 bytes in 0 blocks
+==661== Reachable blocks (those to which a pointer was found) are not shown.
+==661== To see them, rerun with: --leak-check=full --show-reachable=yes
+==661== 
+==661== For counts of detected and suppressed errors, rerun with: -v
+==661== ERROR SUMMARY: 63 errors from 62 contexts (suppressed: 4 from 4)
+--------------------------------------------------------------------------
+mpirun noticed that process rank 2 with PID 661 on node fluid38 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------

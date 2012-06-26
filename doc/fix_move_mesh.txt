@@ -17,7 +17,7 @@ ID is documented in "fix"_fix.html command, group-ID is ignored :ulb,l
 move/mesh = style name of this fix command :l
 mesh = obligatory keyword :l
 mesh-ID = ID for the fix mesh that the fix move/mesh is applied to :l
-style = {linear} or {wiggle} or {rotate} :l
+style = {linear} or {wiggle} or {riggle} or {rotate} :l
   {linear} args = Vx Vy Vz
     Vx,Vy,Vz = components of velocity vector (velocity units)
   {wiggle} args = amplitude Ax Ay Az period per
@@ -54,7 +54,7 @@ This command is not available in LAMMPS.
 [Description:]
 
 Perform updates of position and velocity for mesh elements which are 
-part of the "fix_mesh"_fix_mesh.html with ID {mesh-ID}
+part of the "fix_mesh_surface"_fix_mesh_surface.html with ID {mesh-ID}
 using the specified settings or formulas. The fix group is ignored
 for this command.
 
@@ -143,7 +143,9 @@ minimization"_minimize.html.
 If multiple fix move/mesh movements are superposed onto one mesh, 
 they have to be deleted in reverse order of their creation
 
-[Related commands:] none
+[Related commands:] 
+
+"fix mesh/surface"_fix_mesh_surface.html
 
 [Default:] none
 

@@ -46,7 +46,8 @@ FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
     mesh_(0),
     move_(0),
     neighListFresh_(false),
-    time_(0)
+    time_(0),
+    time_since_setup_(0)
 {
     if(narg < 6)
       error->all(FLERR,"Illegal fix move/mesh command, you need to specify a mesh");
@@ -74,6 +75,8 @@ FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
     restart_global = 1;
 
     force_reneighbor = 1;
+
+    next_reneighbor = -1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -92,23 +95,25 @@ void FixMoveMesh::pre_delete(bool unfixflag)
         if(nmove > 1 && move_->isFirst())
         error->all(FLERR,"Illegal deletion of a fix move/mesh. There is another fix move/mesh command active on the same mesh. "
                            "Superposed fix move/mesh commands must be unfixed in reverse order of creation");
+
+        move_->pre_delete();
+
+        // do not delete property v, as a dump command may still refer to it
+        // set velocity to zero
+        
+        MultiVectorContainer<double,3,3> *v;
+        v = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
+        if(v) v->setAll(0.);
     }
 
     delete move_;
-
-    // do not delete property v, as a dump command may still refer to it
-    // set velocity to zero
-    
-    MultiVectorContainer<double,3,3> *v;
-    v = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
-    if(v) v->setAll(0.);
 }
 
 /* ---------------------------------------------------------------------- */
 
 FixMoveMesh::~FixMoveMesh()
 {
-
+    
 }
 
 /* ---------------------------------------------------------------------- */
@@ -127,7 +132,8 @@ int FixMoveMesh::setmask()
 
 void FixMoveMesh::setup_pre_force(int vflag)
 {
-    
+    time_since_setup_ = 0.;
+
     pre_neighbor();
     pre_force(0);
 }
@@ -138,7 +144,7 @@ void FixMoveMesh::setup(int vflag)
 {
     if(!mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v"))
     {
-        mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_general");
+        mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_general","restart_no");
         
     }
 }
@@ -151,6 +157,7 @@ void FixMoveMesh::initial_integrate(int dummy)
 
     double dt = update->dt;
     time_ += update->dt;
+    time_since_setup_ += update->dt;
 
     if(move_->isFirst())
     {
@@ -159,7 +166,7 @@ void FixMoveMesh::initial_integrate(int dummy)
     }
 
     // integration
-    move_->initial_integrate(time_,dt);
+    move_->initial_integrate(time_since_setup_,dt);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -258,7 +265,7 @@ bool FixMoveMesh::decide_rebuild()
     }
 
     // allreduce result
-    MyMPI::My_MPI_Max_Scalar(flag,this->world);
+   MPI_Max_Scalar(flag,this->world);
 
     if(flag) return true;
     else     return false;

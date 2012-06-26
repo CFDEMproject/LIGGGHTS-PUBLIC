@@ -42,6 +42,7 @@ namespace LAMMPS_NS
 
         virtual void initial_integrate(double dT,double dt) = 0;
         virtual void final_integrate(double dT,double dt) {};
+        virtual void pre_delete() = 0;
         inline bool isFirst()
         { return isFirst_; }
 
@@ -76,8 +77,9 @@ namespace LAMMPS_NS
         MeshMoverLinear(LAMMPS *lmp,AbstractMesh *_mesh,double vx, double vy, double vz);
         virtual ~MeshMoverLinear();
 
-        virtual void initial_integrate(double dT,double dt);
-        virtual void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dT,double dt);
+        void final_integrate(double dT,double dt) {}
+        void pre_delete();
 
       private:
         double vel_[3];
@@ -93,8 +95,9 @@ namespace LAMMPS_NS
                         double T);
         virtual ~MeshMoverWiggle();
 
-        virtual void initial_integrate(double dT,double dt);
-        virtual void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dT,double dt);
+        void final_integrate(double dT,double dt) {}
+        void pre_delete();
 
       private:
         double amplitude[3],omega;
@@ -111,8 +114,9 @@ namespace LAMMPS_NS
                             double T);
         virtual ~MeshMoverRotate();
 
-        virtual void initial_integrate(double dT,double dt);
-        virtual void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dT,double dt);
+        void final_integrate(double dT,double dt) {}
+        void pre_delete();
 
       private:
         double axis[3], p[3], omega;
@@ -129,8 +133,9 @@ namespace LAMMPS_NS
                             double T, double ampl);
         virtual ~MeshMoverRiggle();
 
-        virtual void initial_integrate(double dT,double dt);
-        virtual void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dT,double dt);
+        void final_integrate(double dT,double dt) {}
+        void pre_delete();
 
       private:
         double axis[3], p[3], omega, amplitude;

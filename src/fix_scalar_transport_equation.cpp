@@ -40,7 +40,7 @@
 #include "respa.h"
 #include "mech_param_gran.h"
 #include "pair_gran.h"
-#include "mympi.h"
+#include "mpi_liggghts.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -106,6 +106,8 @@ FixScalarTransportEquation::~FixScalarTransportEquation()
     delete []source_name;
     delete []capacity_name;
     delete []equation_id;
+
+    if(capacity) delete []capacity;
     
 }
 
@@ -122,9 +124,10 @@ void FixScalarTransportEquation::pre_delete(bool unfixflag)
 int FixScalarTransportEquation::setmask()
 {
   int mask = 0;
-  mask |= FINAL_INTEGRATE;
   mask |= INITIAL_INTEGRATE_RESPA;
   mask |= INITIAL_INTEGRATE;
+  mask |= PRE_FORCE;
+  mask |= FINAL_INTEGRATE;
   return mask;
 }
 
@@ -145,7 +148,7 @@ void FixScalarTransportEquation::post_create()
 {
   char **fixarg;
   fixarg=new char*[9];
-  for (int kk=0;kk<9;kk++) fixarg[kk]=new char[30];
+  for (int kk=0;kk<9;kk++) fixarg[kk] = new char[30];
 
   if (fix_quantity==NULL) {
   //register Temp as property/atom
@@ -248,6 +251,15 @@ void FixScalarTransportEquation::initial_integrate(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
+void FixScalarTransportEquation::pre_force(int vflag)
+{
+    
+    if(neighbor->ago == 0)
+        fix_quantity->do_forward_comm();
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixScalarTransportEquation::final_integrate()
 {
     double dt = update->dt;
@@ -298,15 +310,16 @@ double FixScalarTransportEquation::compute_scalar()
 {
     double *rmass = atom->rmass;
     int *type = atom->type;
+    int nlocal = atom->nlocal;
     double capacity;
 
     updatePtrs();
-
+    
     double quantity_sum = 0.;
 
     if(capacity_flag)
     {
-        for (int i = 0; i < atom->nlocal; i++)
+        for (int i = 0; i < nlocal; i++)
         {
            capacity = fix_capacity->compute_vector(type[i]-1);
            quantity_sum += capacity * rmass[i] * quantity[i];
@@ -314,13 +327,13 @@ double FixScalarTransportEquation::compute_scalar()
     }
     else
     {
-        for (int i = 0; i < atom->nlocal; i++)
+        for (int i = 0; i < nlocal; i++)
         {
            quantity_sum += quantity[i];
         }
     }
 
-    MyMPI::My_MPI_Sum_Scalar(quantity_sum,world);
+   MPI_Sum_Scalar(quantity_sum,world);
     return quantity_sum;
 }
 

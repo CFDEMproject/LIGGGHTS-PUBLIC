@@ -27,16 +27,20 @@
 
 namespace LAMMPS_NS {
 
-class InputMeshTri : protected Input {
- public:
+class InputMeshTri : protected Input
+{
+  public:
 
-  InputMeshTri(class LAMMPS *, int, char **);
-  ~InputMeshTri();
+    InputMeshTri(class LAMMPS *, int, char **);
+    ~InputMeshTri();
 
-  void meshtrifile(const char *,class TriMesh *);
+    void meshtrifile(const char *,class TriMesh *);
 
-  void meshtrifile_vtk(class TriMesh *);
-  void meshtrifile_stl(class TriMesh *);
+  private:
+
+    void meshtrifile_vtk(class TriMesh *);
+    void meshtrifile_stl(class TriMesh *);
+    inline void addTriangle(class TriMesh *mesh,double *a, double *b, double *c);
 
 };
 

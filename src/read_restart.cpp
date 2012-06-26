@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -71,7 +71,7 @@ void ReadRestart::command(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal read_restart command");
 
-  if (domain->box_exist) 
+  if (domain->box_exist)
     error->all(FLERR,"Cannot read_restart after simulation box is defined");
 
   MPI_Comm_rank(world,&me);
@@ -198,7 +198,7 @@ void ReadRestart::command(int narg, char **arg)
 	  domain->x2lamda(x,lamda);
 	  coord = lamda;
 	} else coord = x;
-	
+
 	if (coord[0] >= sublo[0] && coord[0] < subhi[0] &&
 	    coord[1] >= sublo[1] && coord[1] < subhi[1] &&
 	    coord[2] >= sublo[2] && coord[2] < subhi[2]) {
@@ -310,7 +310,7 @@ void ReadRestart::command(int narg, char **arg)
     if (logfile) fprintf(logfile,"  " BIGINT_FORMAT " atoms\n",natoms);
   }
 
-  if (natoms != atom->natoms) 
+  if (natoms != atom->natoms)
     error->all(FLERR,"Did not assign all atoms correctly");
 
   if (me == 0) {
@@ -414,7 +414,7 @@ void ReadRestart::file_search(char *infile, char *outfile)
 
   struct dirent *ep;
   DIR *dp = opendir(dirname);
-  if (dp == NULL) 
+  if (dp == NULL)
     error->one(FLERR,"Cannot open dir to search for restart file");
   while (ep = readdir(dp)) {
     if (strstr(ep->d_name,begin) != ep->d_name) continue;
@@ -448,7 +448,7 @@ void ReadRestart::file_search(char *infile, char *outfile)
 }
 
 /* ----------------------------------------------------------------------
-   read header of restart file 
+   read header of restart file
 ------------------------------------------------------------------------- */
 
 void ReadRestart::header()
@@ -468,12 +468,12 @@ void ReadRestart::header()
       char *version = read_char();
       if (strcmp(version,universe->version) != 0 && me == 0) {
 	error->warning(FLERR,
-		       "Restart file version does not match LAMMPS version");
-	if (screen) fprintf(screen,"  restart file = %s, LAMMPS = %s\n",
+		       "Restart file version does not match LIGGGHTS version"); 
+	if (screen) fprintf(screen,"   --> restart file = %s\n   --> LIGGGHTS = %s\n", 
 			    version,universe->version);
       }
       delete [] version;
-      
+
       // check lmptype.h sizes, error if different
 
     } else if (flag == SMALLINT) {
@@ -524,8 +524,8 @@ void ReadRestart::header()
       py = read_int();
     } else if (flag == PROCGRID_2) {
       pz = read_int();
-      if (comm->user_procgrid[0] != 0 && 
-	  (px != comm->user_procgrid[0] || py != comm->user_procgrid[1] || 
+      if (comm->user_procgrid[0] != 0 &&
+	  (px != comm->user_procgrid[0] || py != comm->user_procgrid[1] ||
 	   pz != comm->user_procgrid[2]) && me == 0)
 	error->warning(FLERR,"Restart file used different 3d processor grid");
 
@@ -575,8 +575,8 @@ void ReadRestart::header()
     } else if (flag == BOUNDARY_21) {
       boundary[2][1] = read_int();
 
-      if (domain->boundary[0][0] || domain->boundary[0][1] || 
-	  domain->boundary[1][0] || domain->boundary[1][1] || 
+      if (domain->boundary[0][0] || domain->boundary[0][1] ||
+	  domain->boundary[1][0] || domain->boundary[1][1] ||
 	  domain->boundary[2][0] || domain->boundary[2][1]) {
 	if (boundary[0][0] != domain->boundary[0][0] ||
 	    boundary[0][1] != domain->boundary[0][1] ||
@@ -584,7 +584,7 @@ void ReadRestart::header()
 	    boundary[1][1] != domain->boundary[1][1] ||
 	    boundary[2][0] != domain->boundary[2][0] ||
 	    boundary[2][1] != domain->boundary[2][1]) {
-	  if (me == 0) 
+	  if (me == 0)
 	    error->warning(FLERR,
 			   "Restart file used different boundary settings, "
 			   "using restart file values");
@@ -601,7 +601,7 @@ void ReadRestart::header()
       domain->periodicity[0] = domain->xperiodic = xperiodic;
       domain->periodicity[1] = domain->yperiodic = yperiodic;
       domain->periodicity[2] = domain->zperiodic = zperiodic;
-  
+
       domain->nonperiodic = 0;
       if (xperiodic == 0 || yperiodic == 0 || zperiodic == 0) {
 	domain->nonperiodic = 1;
@@ -752,7 +752,7 @@ void ReadRestart::force_fields()
       style = new char[n];
       if (me == 0) nread_char(style,n,fp);
       MPI_Bcast(style,n,MPI_CHAR,0,world);
-      
+
       force->create_bond(style);
       delete [] style;
       force->bond->read_restart(fp);

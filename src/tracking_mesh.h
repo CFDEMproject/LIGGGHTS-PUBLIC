@@ -71,8 +71,8 @@ namespace LAMMPS_NS{
 
         void clearGhostForward(bool scale,bool translate,bool rotate);
 
-        virtual void refreshOwned() = 0;
-        virtual void refreshGhosts() = 0;
+        virtual void refreshOwned(int setupFlag);
+        virtual void refreshGhosts(int setupFlag);
 
         void clearMap();
         void generateMap();
@@ -84,13 +84,17 @@ namespace LAMMPS_NS{
 
         // buffer operations
 
-        inline int listBufSize(int n,int operation,bool scale,bool translate,bool rotate);
-        inline int pushListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int popListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
+        inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate,bool rotate);
         inline int popElemFromBuffer(double *buf, int operation,bool scale,bool translate,bool rotate);
+
+        int meshPropsBufSize(int operation,bool scale,bool translate,bool rotate);
+        int pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+        int popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
       private:
 

@@ -80,7 +80,7 @@ namespace LAMMPS_NS
 
   PrimitiveWall::~PrimitiveWall()
   {
-    delete [] param;
+    delete []param;
   }
 
   double PrimitiveWall::resolveContact(double *x, double r, double *en0)

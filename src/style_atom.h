@@ -3,5 +3,6 @@
 #include "atom_vec_ellipsoid.h"
 #include "atom_vec_hybrid.h"
 #include "atom_vec_line.h"
+#include "atom_vec_sph.h"
 #include "atom_vec_sphere.h"
 #include "atom_vec_tri.h"

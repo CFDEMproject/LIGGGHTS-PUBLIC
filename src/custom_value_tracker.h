@@ -43,7 +43,7 @@ namespace LAMMPS_NS
         // per mesh-element properties
 
         template<typename T>
-        T* addElementProperty(char *_id, char* _comm, char* _ref,int _scalePower = 1);
+        T* addElementProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower = 1);
 
         template<typename T>
         T* getElementProperty(char *_id);
@@ -66,18 +66,22 @@ namespace LAMMPS_NS
 
         // buffer operations
 
-        inline int listBufSize(int n,int operation,bool scale,bool translate,bool rotate);
-        inline int pushListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int popListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
+        inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
+        inline int meshPropsBufSize(int operation,bool scale,bool translate,bool rotate);
+        inline int pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+
         // scalar mesh properties
 
         template<typename T>
-        T* addMeshProperty(char *_id, char* _comm, char* _ref, int _scalePower = 1);
+        T* addMeshProperty(char *_id, char* _comm, char* _ref,char *_restart, int _scalePower = 1);
 
         template<typename T>
         T* getMeshProperty(char *_id);

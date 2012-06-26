@@ -39,7 +39,7 @@ fix		boxwalls_z1 all wall/gran/hooke/history primitive type 1 zplane -0.5
 fix		boxwalls_z2 all wall/gran/hooke/history primitive type 1 zplane +0.5 
 
 #import mesh from cad:
-fix		cad1 all mesh/gran file bucket.stl type 1  move -50. -250. 0. &
+fix		cad1 all mesh/surface file bucket.stl type 1  move -50. -250. 0. &
 		scale 0.002  rotate axis 0. 1. 0. angle 90.  rotate axis 0. 0. 1. angle 90.
 
 #particle insertion

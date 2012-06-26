@@ -36,8 +36,10 @@
 #include "error.h"
 #include "fix_particledistribution_discrete.h"
 #include "fix_template_sphere.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "particleToInsert.h"
+
+#define SEED_OFFSET 12
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -61,13 +63,28 @@ void FixInsertRateRegion::calc_insertion_properties()
 {
     double dt = update->dt;
 
+    // error check on region
+    if(!ins_region)
+        error->fix_error(FLERR,this,"must define an insertion region");
+    ins_region->reset_random(seed + SEED_OFFSET);
+    ins_region->volume_mc(ntry_mc,region_volume,region_volume_local);
+    if(region_volume <= 0. || region_volume_local < 0. || region_volume_local > region_volume)
+        error->one(FLERR,"Fix insert: Region volume calculation with MC failed");
+
+    if(ins_region->dynamic_check())
+        error->fix_error(FLERR,this,"dynamic regions are not allowed");
+
+    // error check on insert_every
+    if(insert_every < 0)
+        error->fix_error(FLERR,this,"must define 'insert_every'");
+    if(insert_every == 0)
+        error->fix_error(FLERR,this,"'insert_every' = once not allowed");
+
     // some error checks
     if(nflowrate > 0. && massflowrate > 0.)
         error->fix_error(FLERR,this,"both 'nflowrate' and 'massflowrate' not allowed");
     if(ninsert > 0 && massinsert > 0.)
         error->fix_error(FLERR,this,"must not define both 'nparticles' and 'mass'");
-    if(insert_every == 0)
-        error->fix_error(FLERR,this,"'insert_every' = once not allowed");
 
     // ninsert - either defined defined directly or calculated
     if(ninsert == 0)
@@ -85,9 +102,6 @@ void FixInsertRateRegion::calc_insertion_properties()
     else massflowrate = nflowrate * fix_distribution->mass_expect();
 
     ninsert_per = nflowrate*(static_cast<double>(insert_every)*dt);
-
-    if(ins_region->dynamic_check())
-        error->fix_error(FLERR,this,"dynamic regions are not allowed");
 }
 
 /* ---------------------------------------------------------------------- */

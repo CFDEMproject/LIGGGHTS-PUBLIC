@@ -42,7 +42,7 @@
 #include "fix_property_atom.h"
 #include "mech_param_gran.h"
 #include "fix_rigid.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "fix_mesh.h"
 #include "container.h"
 
@@ -223,6 +223,9 @@ void FixWallGranHookeHistory::compute_force(int ip, double deltan, double rsq,do
   double radius = atom->radius[ip];
   double mass = atom->rmass[ip];
   double cr = radius - 0.5*deltan;
+
+  if(fix_rigid_ && body_[ip] >= 0)
+    mass = masstotal_[body_[ip]];
 
   //get the parameters needed to resolve the contact
   deriveContactModelParams(ip,deltan,meff_wall,kn,kt,gamman,gammat,xmu,rmu);

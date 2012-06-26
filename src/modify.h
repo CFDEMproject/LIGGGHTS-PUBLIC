@@ -112,6 +112,7 @@ class FixPropertyGlobal* add_fix_property_global(int narg,char **arg,const char 
   bigint memory_usage();
 
   int fix_restart_in_progress();
+  bool have_restart_data(Fix *f);
 
  protected:
 

@@ -25,16 +25,18 @@
 
 <LI>class data members , both <I>x_particle_</I> and <I>xParticle_</I> are allowed 
 
-<LI>template params with LARGE_CAPS 
+<LI>template params should be written in LARGE_CAPS 
 
 <LI>file names like fix_mesh_gran.cpp, mesh_mover.h 
 
 <LI>fix style fix move/mesh/gran is in file fix_move_mesh_gran.cpp/h 
 
-<LI>header guard in file fix_foo_mode.h like LMP_FIX_FOO_MODEL 
+<LI>header guard in file fix_foo_model.h like LMP_FIX_FOO_MODEL_H 
 
-<P>coding format should be ANSI
-</P>
-<H2>Files which are especially beuatiful 
+<LI>coding format should be ANSI 
+
+<LI>for fixes, use error->fix_error to throw error messages in constructors, this enhances object orientation 
+
+<H2>Files which are especially 
 </H2>
 </HTML>

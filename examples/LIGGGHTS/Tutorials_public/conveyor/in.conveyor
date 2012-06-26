@@ -30,9 +30,9 @@ timestep	0.00001
 fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
 
 #granular walls
-fix		cv all mesh file conveyor.stl type 1 surface_vel -5. 0. 0.
-fix		bx all mesh file box.stl      type 1 
-fix		inface all mesh file insertion_face.stl type 1
+fix		cv all mesh/surface file conveyor.stl type 1 surface_vel -5. 0. 0.
+fix		bx all mesh/surface file box.stl      type 1 
+fix		inface all mesh/surface file insertion_face.stl type 1
 fix		wall all wall/gran/hertz/history mesh n_meshes 2 meshes bx cv 
 
 #distributions for insertion

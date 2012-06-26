@@ -27,7 +27,7 @@
 
 #include "mesh_mover.h"
 #include "math.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "math_extra_liggghts.h"
 
 using namespace LAMMPS_NS;
@@ -46,9 +46,14 @@ MeshMoverLinear::MeshMoverLinear(LAMMPS *lmp,AbstractMesh *_mesh, double vx, dou
     isFirst_ = mesh_->registerMove(false,true,false);
 }
 
+void MeshMoverLinear::pre_delete()
+{
+    mesh_->unregisterMove(false,true,true);
+}
+
 MeshMoverLinear::~MeshMoverLinear()
 {
-    mesh_->unregisterMove(false,true,false);
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -89,9 +94,14 @@ MeshMoverWiggle::MeshMoverWiggle(LAMMPS *lmp,AbstractMesh *_mesh,
     isFirst_ = mesh_->registerMove(false,true,false);
 }
 
+void MeshMoverWiggle::pre_delete()
+{
+    mesh_->unregisterMove(false,true,true);
+}
+
 MeshMoverWiggle::~MeshMoverWiggle()
 {
-    mesh_->unregisterMove(false,true,false);
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -145,9 +155,14 @@ MeshMoverRotate::MeshMoverRotate(LAMMPS *lmp,AbstractMesh *_mesh,
     isFirst_ = mesh_->registerMove(false,true,true);
 }
 
-MeshMoverRotate::~MeshMoverRotate()
+void MeshMoverRotate::pre_delete()
 {
     mesh_->unregisterMove(false,true,true);
+}
+
+MeshMoverRotate::~MeshMoverRotate()
+{
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -165,7 +180,7 @@ void MeshMoverRotate::initial_integrate(double dT,double dt)
     double ***nodes = get_nodes();
 
     // rotate the mesh
-    static_cast<AbstractMesh*>(mesh_)->rotate(totalPhi,incrementalPhi,axis,p);
+    mesh_->rotate(totalPhi,incrementalPhi,axis,p);
 
     // set mesh velocity, w x rPA
     vectorScalarMult3D(axis,omega,omegaVec);
@@ -204,9 +219,14 @@ MeshMoverRiggle::MeshMoverRiggle(LAMMPS *lmp,AbstractMesh *_mesh,
     isFirst_ = mesh_->registerMove(false,true,true);
 }
 
+void MeshMoverRiggle::pre_delete()
+{
+    mesh_->unregisterMove(false,true,true);
+}
+
 MeshMoverRiggle::~MeshMoverRiggle()
 {
-    mesh_->registerMove(false,true,true);
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -232,7 +252,7 @@ void MeshMoverRiggle::initial_integrate(double dT,double dt)
     double incrementalPhi = cosine*omega*dt;
 
     // rotate the mesh
-    static_cast<AbstractMesh*>(mesh_)->rotate(totalPhi,incrementalPhi,axis,p);
+    mesh_->rotate(totalPhi,incrementalPhi,axis,p);
 
     // set mesh velocity, vel_prefactor * w/|w| x rPA
     vectorScalarMult3D(axis,vel_prefactor,omegaVec);

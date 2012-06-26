@@ -40,9 +40,10 @@ class FixScalarTransportEquation : public Fix {
   void pre_delete(bool unfixflag);
   void init();
   void updatePtrs();
-  void final_integrate();
   void initial_integrate_respa(int,int,int);
   void initial_integrate(int);
+  void pre_force(int vflag);
+  void final_integrate();
   double compute_scalar();
   bool match_equation_id(const char*);
 

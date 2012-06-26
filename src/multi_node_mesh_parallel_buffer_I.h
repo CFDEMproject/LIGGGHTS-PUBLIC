@@ -30,7 +30,7 @@
   int MultiNodeMeshParallel<NUM_NODES>::pushExchange(int dim,double *buf)
   {
       // scale translate rotate not needed here
-      bool dummy = false, is_in_subdom;
+      bool dummy = false;
       double checklo,checkhi;
 
       checklo = this->domain->sublo[dim];
@@ -87,6 +87,144 @@
   }
 
   /* ----------------------------------------------------------------------
+   restart functionality - write all required data into restart buffer
+   executed on all processes, but only proc 0 writes into writebuf
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::writeRestart(FILE *fp)
+  {
+      this->error->all(FLERR,"Restart functionality for fix mesh is not yet available in LIGGGHTS 2.0");
+
+      int size_this;
+
+      // # elements
+      int nlocal = this->sizeLocal();
+      int nglobal = sizeGlobal();
+
+      // buffer sizes
+      int sizeMesh, sizeElements, sizeElements_all;
+
+      sizeMesh = sizeRestartMesh();
+      sizeElements = nlocal * (sizeRestartElement() + 1); 
+
+      double *bufMesh = NULL, *sendbufElems = NULL, *recvbufElems = NULL;
+      bool dummy = false;
+
+      // pack global data into buffer
+      // do this only on proc 0
+      if(this->comm->me == 0)
+      {
+          this->memory->create(bufMesh,sizeMesh,"MultiNodeMeshParallel::writeRestart:bufMesh");
+          pushMeshPropsToBuffer(bufMesh, OPERATION_RESTART,dummy,dummy,dummy);
+      }
+
+      // allocate send buffer and pack element data
+      // all local elements are in list
+      this->memory->create(sendbufElems,sizeElements,"MultiNodeMeshParallel::writeRestart:sendbuf");
+      sizeElements = 0;
+      for(int i = 0; i < nlocal; i++)
+      {
+          size_this = pushElemToBuffer(i,&(sendbufElems[sizeElements+1]),OPERATION_RESTART,dummy,dummy,dummy);
+          sendbufElems[sizeElements] = static_cast<double>(size_this+1);
+          sizeElements += (size_this+1);
+      }
+
+      // gather the pre-element data
+      
+      sizeElements_all = MPI_Gather0_Vector(sendbufElems,sizeElements,recvbufElems,this->world);
+
+      // actually write data to restart file
+      // do this only on proc 0
+      if(this->comm->me == 0)
+      {
+        double nG = static_cast<double>(nglobal);
+
+        // for error check
+        double sE = static_cast<double>(sizeRestartElement());
+        double sM = static_cast<double>(sizeRestartMesh());
+
+        // size with 3 extra values
+        int size = (sizeMesh+sizeElements_all+3) * sizeof(double);
+
+        // write size
+        fwrite(&size,sizeof(int),1,fp);
+
+        // write 3 extra values
+        fwrite(&nG,sizeof(double),1,fp);
+        fwrite(&sE,sizeof(double),1,fp);
+        fwrite(&sM,sizeof(double),1,fp);
+
+        // write per-element and mesh data
+        fwrite(recvbufElems,sizeof(double),sizeElements_all,fp);
+        fwrite(bufMesh,sizeof(double),sizeMesh,fp);
+      }
+
+      // free mem
+
+      if(bufMesh)
+        this->memory->destroy(bufMesh);
+
+      this->memory->destroy(sendbufElems);
+
+      if(recvbufElems)
+        delete []recvbufElems;
+  }
+
+  /* ----------------------------------------------------------------------
+   restart functionality - write all required data into restart buffer
+   executed on all processes, but only proc 0 writes into writebuf
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::restart(double *list)
+  {
+      this->error->all(FLERR,"Restart functionality for fix mesh is not yet available in LIGGGHTS 2.0");
+
+      int m, nglobal, nrecv_this, nO, sE, sM;
+      bool dummy = false;
+
+      m = 0;
+
+      nglobal = static_cast<int> (list[m++]);
+      sE = static_cast<int> (list[m++]);
+      sM = static_cast<int> (list[m++]);
+
+      if(sE != sizeRestartElement() || sM != sizeRestartMesh())
+          this->error->all(FLERR,"Incompatible mesh restart file - mesh has different properties in restarted simulation");
+
+      for(int i = 0; i < nglobal; i++)
+      {
+          nrecv_this = static_cast<int>(list[m]);
+          
+          popElemFromBuffer(&(list[m+1]),OPERATION_RESTART,dummy,dummy,dummy);
+          m += nrecv_this;
+      }
+
+      popMeshPropsFromBuffer(&list[m],OPERATION_RESTART,dummy,dummy,dummy);
+  }
+
+  /* ----------------------------------------------------------------------
+   size of restart data
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  int MultiNodeMeshParallel<NUM_NODES>::sizeRestartMesh()
+  {
+      
+      bool dummy = false;
+      return meshPropsBufSize(OPERATION_RESTART,dummy,dummy,dummy);
+  }
+
+  template<int NUM_NODES>
+  int MultiNodeMeshParallel<NUM_NODES>::sizeRestartElement()
+  {
+      
+      bool dummy = false;
+      return elemBufSize(OPERATION_RESTART,dummy,dummy,dummy);
+  }
+
+  /* ----------------------------------------------------------------------
    return required buffer size for a list of elements for borders(),forwardComm()
    must match push / pop implementation
    depending on operation and if mesh scales, translates or rotates,
@@ -94,7 +232,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::listBufSize(int n,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate)
   {
       return n*elemBufSize(operation,scale,translate,rotate);
   }
@@ -106,7 +244,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::pushListToBuffer(int n, int *list, double *buf,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBuffer(int n, int *list, double *buf,int operation,bool scale,bool translate,bool rotate)
   {
       
       int nsend = 0;
@@ -117,33 +255,20 @@
         return nsend;
       }
 
-      if(operation == OPERATION_RESTART)
-      {
-          this->error->one(FLERR,"TODO here");
-          nsend += MultiNodeMesh<NUM_NODES>::node_.pushListToBuffer(n,list,&(buf[nsend]),operation);
-          if(this->node_orig_)
-            nsend += this->node_orig_->pushListToBuffer(n,list,&(buf[nsend]),operation);
-
-          return nsend;
-      }
-
       if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
       {
           
-          nsend += MultiNodeMesh<NUM_NODES>::center_.pushListToBuffer(n,list,&(buf[nsend]),operation);
-          nsend += MultiNodeMesh<NUM_NODES>::node_.pushListToBuffer(n,list,&(buf[nsend]),operation);
-          nsend += MultiNodeMesh<NUM_NODES>::rBound_.pushListToBuffer(n,list,&(buf[nsend]),operation);
+          nsend += MultiNodeMesh<NUM_NODES>::center_.pushElemListToBuffer(n,list,&(buf[nsend]),operation);
+          nsend += MultiNodeMesh<NUM_NODES>::node_.pushElemListToBuffer(n,list,&(buf[nsend]),operation);
+          nsend += MultiNodeMesh<NUM_NODES>::rBound_.pushElemListToBuffer(n,list,&(buf[nsend]),operation);
           if(this->node_orig_)
-              nsend += this->node_orig_->pushListToBuffer(n,list,&(buf[nsend]),operation);
+              nsend += this->node_orig_->pushElemListToBuffer(n,list,&(buf[nsend]),operation);
           return nsend;
       }
 
       if(operation == OPERATION_COMM_FORWARD)
       {
           
-          // node_orig cannot change during a run
-          //if(translate || rotate || scale)
-          //  nsend += MultiNodeMesh<NUM_NODES>::node_.pushListToBuffer(n,list,&(buf[nsend]),operation);
           return nsend;
       }
 
@@ -158,7 +283,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::popListFromBuffer(int first, int n, double *buf,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBuffer(int first, int n, double *buf,int operation,bool scale,bool translate,bool rotate)
   {
       int nrecv = 0;
 
@@ -168,33 +293,20 @@
         return nrecv;
       }
 
-      if(operation == OPERATION_RESTART)
-      {
-          this->error->one(FLERR,"TODO here - add, recalc properties etc");
-          nrecv += MultiNodeMesh<NUM_NODES>::node_.popListFromBuffer(first,n,&(buf[nrecv]),operation);
-          if(MultiNodeMesh<NUM_NODES>::node_orig_)
-            nrecv += MultiNodeMesh<NUM_NODES>::node_orig_->popListFromBuffer(first,n,&(buf[nrecv]),operation);
-
-          return nrecv;
-      }
-
       if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
       {
-          nrecv += MultiNodeMesh<NUM_NODES>::center_.popListFromBuffer(first,n,&(buf[nrecv]),operation);
-          nrecv += MultiNodeMesh<NUM_NODES>::node_.popListFromBuffer(first,n,&(buf[nrecv]),operation);
-          nrecv += MultiNodeMesh<NUM_NODES>::rBound_.popListFromBuffer(first,n,&(buf[nrecv]),operation);
+          nrecv += MultiNodeMesh<NUM_NODES>::center_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
+          nrecv += MultiNodeMesh<NUM_NODES>::node_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
+          nrecv += MultiNodeMesh<NUM_NODES>::rBound_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
           if(MultiNodeMesh<NUM_NODES>::node_orig_)
-            nrecv += MultiNodeMesh<NUM_NODES>::node_orig_->popListFromBuffer(first,n,&(buf[nrecv]),operation);
-
+            nrecv += MultiNodeMesh<NUM_NODES>::node_orig_->popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
           return nrecv;
       }
 
       if(operation == OPERATION_COMM_FORWARD)
       {
-          // node_orig cannot change during a run
-          //if(translate || rotate || scale)
+          
           //    nrecv += MultiNodeMesh<NUM_NODES>::node_.popListFromBuffer(first,n,&(buf[nrecv]),operation);
-
           return nrecv;
       }
 
@@ -222,12 +334,7 @@
 
       if(operation == OPERATION_RESTART)
       {
-          this->error->one(FLERR,"TODO here - add, recalc properties etc");
-          this->error->one(FLERR,"TODO PUSH and POP random seed, maybe do this via fix mesh?");
           size_buf += MultiNodeMesh<NUM_NODES>::node_.elemBufSize();
-          if(MultiNodeMesh<NUM_NODES>::node_orig_)
-            size_buf += MultiNodeMesh<NUM_NODES>::node_orig_->elemBufSize();
-
           return size_buf;
       }
 
@@ -238,16 +345,12 @@
           size_buf += MultiNodeMesh<NUM_NODES>::rBound_.elemBufSize();
           if(MultiNodeMesh<NUM_NODES>::node_orig_)
             size_buf += MultiNodeMesh<NUM_NODES>::node_orig_->elemBufSize();
-
           return size_buf;
       }
 
       if(operation == OPERATION_COMM_FORWARD)
       {
-          // node_orig cannot change during a run
-          //if(translate || rotate || scale)
-          //  size_buf += MultiNodeMesh<NUM_NODES>::node_.elemBufSize();
-
+          
           return size_buf;
       }
 
@@ -266,18 +369,9 @@
   {
       int nsend = 0;
 
-      if(operation == OPERATION_COMM_REVERSE)
-      {
-        this->error->one(FLERR,"TODO here");
-        return nsend;
-      }
-
       if(operation == OPERATION_RESTART)
       {
-          this->error->one(FLERR,"TODO here");
           nsend += MultiNodeMesh<NUM_NODES>::node_.pushElemToBuffer(i,&(buf[nsend]),operation);
-          if(this->node_orig_)
-            nsend += this->node_orig_->pushElemToBuffer(i,&(buf[nsend]),operation);
 
           return nsend;
       }
@@ -290,16 +384,6 @@
           nsend += MultiNodeMesh<NUM_NODES>::rBound_.pushElemToBuffer(i,&(buf[nsend]),operation);
           if(this->node_orig_)
               nsend += this->node_orig_->pushElemToBuffer(i,&(buf[nsend]),operation);
-          return nsend;
-      }
-
-      if(operation == OPERATION_COMM_FORWARD)
-      {
-          
-          // node_orig cannot change during a run
-          //if(translate || rotate || scale)
-          //    nsend += MultiNodeMesh<NUM_NODES>::node_.pushElemToBuffer(i,&(buf[nsend]),operation);
-
           return nsend;
       }
 
@@ -318,18 +402,12 @@
   {
       int nrecv = 0;
 
-      if(operation == OPERATION_COMM_REVERSE)
-      {
-        this->error->one(FLERR,"TODO here");
-        return nrecv;
-      }
-
       if(operation == OPERATION_RESTART)
       {
-          this->error->one(FLERR,"TODO here - add, recalc properties etc");
-          nrecv += MultiNodeMesh<NUM_NODES>::node_.popElemFromBuffer(&(buf[nrecv]),operation);
-          if(MultiNodeMesh<NUM_NODES>::node_orig_)
-            nrecv += MultiNodeMesh<NUM_NODES>::node_orig_->popElemFromBuffer(&(buf[nrecv]),operation);
+          MultiVectorContainer<double,NUM_NODES,3> nodeTmp;
+          
+          nrecv += nodeTmp.popElemFromBuffer(&(buf[nrecv]),operation);
+          this->addElement(nodeTmp.begin()[0]);
 
           return nrecv;
       }
@@ -341,16 +419,6 @@
           nrecv += MultiNodeMesh<NUM_NODES>::rBound_.popElemFromBuffer(&(buf[nrecv]),operation);
           if(MultiNodeMesh<NUM_NODES>::node_orig_)
             nrecv += MultiNodeMesh<NUM_NODES>::node_orig_->popElemFromBuffer(&(buf[nrecv]),operation);
-
-          return nrecv;
-      }
-
-      if(operation == OPERATION_COMM_FORWARD)
-      {
-          // node_orig cannot change during a run
-          //if(translate || rotate || scale)
-          //    nrecv += MultiNodeMesh<NUM_NODES>::node_.popElemFromBuffer(&(buf[nrecv]),operation);
-
           return nrecv;
       }
 

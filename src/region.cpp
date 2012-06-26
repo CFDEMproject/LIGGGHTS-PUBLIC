@@ -32,8 +32,8 @@
 #include "variable.h"
 #include "error.h"
 #include "random_park.h"
-#include "myvector.h"
-#include "mympi.h"
+#include "vector_liggghts.h"
+#include "mpi_liggghts.h"
 #include "comm.h"
 
 #define SMALL 1e-8
@@ -545,7 +545,7 @@ void Region::volume_mc(int n_test,double &vol_global, double &vol_local)
         }
     }
 
-    MyMPI::My_MPI_Sum_Scalar(n_in_global,world);
+   MPI_Sum_Scalar(n_in_global,world);
     if(n_in_global == 0)
         error->all(FLERR,"Unable to calculate region volume - are you operating on a 2d region?");
 

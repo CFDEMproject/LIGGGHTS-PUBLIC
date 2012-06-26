@@ -386,6 +386,7 @@ void Set::command(int narg, char **arg)
             updFix=(FixPropertyAtom*)(lmp->modify->fix[ifix]);
         }
       }
+      delete []variablename;
       if (updFix==NULL)
         error->all(FLERR,"Could not identify the per-atom property you want to set");
 
@@ -396,6 +397,7 @@ void Set::command(int narg, char **arg)
       for(int j=0;j<nUpdValues ;j++)
         updValues[j]=atof(arg[iarg+1+1+j]);
       set(PROPERTYPERATOM);
+      delete []updValues;
       iarg += (2+nUpdValues);
     } else error->all(FLERR,"Illegal set command");
 

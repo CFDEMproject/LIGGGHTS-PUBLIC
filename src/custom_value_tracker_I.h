@@ -33,7 +33,7 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  T* CustomValueTracker::addElementProperty(char *_id, char* _comm, char* _ref,int _scalePower)
+  T* CustomValueTracker::addElementProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower)
   {
      // error if property exists already
      if(elementProperties_.getPointerById<T>(_id))
@@ -45,7 +45,7 @@
      }
 
      // add property
-     elementProperties_.add<T>(_id,_comm,_ref,_scalePower);
+     elementProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
 
      // check if properties were set correctly
      // error here since ContainerBase not derived from Pointers
@@ -66,7 +66,7 @@
   }
 
   template<typename T>
-  T* CustomValueTracker::addMeshProperty(char *_id, char* _comm, char* _ref,int _scalePower)
+  T* CustomValueTracker::addMeshProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower)
   {
      // error if property exists already
      if(meshProperties_.getPointerById<T>(_id))
@@ -78,7 +78,7 @@
      }
 
      // add property
-     meshProperties_.add<T>(_id,_comm,_ref,_scalePower);
+     meshProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
 
      // check if properties were set correctly
      // error here since ContainerBase not derived from Pointers
@@ -166,22 +166,22 @@
   }
 
   /* ----------------------------------------------------------------------
-   push / pop for list
+   push / pop for list of elements
   ------------------------------------------------------------------------- */
 
-  int CustomValueTracker::listBufSize(int n,int operation,bool scale,bool translate,bool rotate)
+  int CustomValueTracker::elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate)
   {
-    return elementProperties_.listBufSize(n,operation,scale,translate,rotate);
+    return elementProperties_.elemListBufSize(n,operation,scale,translate,rotate);
   }
 
-  int CustomValueTracker::pushListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int CustomValueTracker::pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
   {
-    return elementProperties_.pushListToBuffer(n,list,buf,operation,scale,translate,rotate);
+    return elementProperties_.pushElemListToBuffer(n,list,buf,operation,scale,translate,rotate);
   }
 
-  int CustomValueTracker::popListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int CustomValueTracker::popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
   {
-    return elementProperties_.popListFromBuffer(first,n,buf,operation,scale,translate,rotate);
+    return elementProperties_.popElemListFromBuffer(first,n,buf,operation,scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------
@@ -202,6 +202,25 @@
   int CustomValueTracker::popElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
     return elementProperties_.popElemFromBuffer(buf,operation,scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
+   push / pop for mesh properties
+  ------------------------------------------------------------------------- */
+
+  int CustomValueTracker::meshPropsBufSize(int operation,bool scale,bool translate,bool rotate)
+  {
+    return meshProperties_.bufSize(operation,scale,translate,rotate);
+  }
+
+  int CustomValueTracker::pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    return meshProperties_.pushToBuffer(buf,operation,scale,translate,rotate);
+  }
+
+  int CustomValueTracker::popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    return meshProperties_.popFromBuffer(buf,operation,scale,translate,rotate);
   }
 
 #endif

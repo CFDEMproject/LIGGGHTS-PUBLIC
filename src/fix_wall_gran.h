@@ -30,7 +30,7 @@
 #ifndef LMP_FIX_WALL_GRAN_H
 #define LMP_FIX_WALL_GRAN_H
 
-#include "fix.h"
+#include "fix_mesh_surface.h"
 
 namespace LAMMPS_NS {
 
@@ -62,7 +62,7 @@ class FixWallGran : public Fix {
   inline int n_meshes()
   { return n_FixMesh_; }
 
-  inline class FixMesh ** mesh_list()
+  inline class FixMeshSurface ** mesh_list()
   { return FixMesh_list_; }
 
   inline int atom_type_wall()
@@ -112,7 +112,9 @@ class FixWallGran : public Fix {
   // pair style, fix rigid for correct damping
   char *pairstyle_;
   class PairGran *pairgran_;
-  class FixRigid *fr_;
+  class FixRigid *fix_rigid_;
+  int *body_;
+  double *masstotal_;
 
  private:
 
@@ -127,7 +129,7 @@ class FixWallGran : public Fix {
 
   // references to mesh walls
   int n_FixMesh_;
-  class FixMesh **FixMesh_list_;
+  class FixMeshSurface **FixMesh_list_;
 
   class PrimitiveWall *primitiveWall_;
 

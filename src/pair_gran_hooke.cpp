@@ -31,7 +31,7 @@
 #include "force.h"
 #include "neigh_list.h"
 #include "error.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "fix_rigid.h"
 #include "compute_pair_gran_local.h"
 
@@ -152,10 +152,10 @@ void PairGranHooke::compute(int eflag, int vflag,int addflag)
           mi=mass[itype];
           mj=mass[jtype];
         }
-        if (fr)
+        if (fix_rigid)
         {
-           if(fr->body[i]>=0) double mi=fr->masstotal[fr->body[i]];  
-           if(fr->body[j]>=0) double mj=fr->masstotal[fr->body[j]];  
+           if(body[i] >= 0) mi = masstotal[body[i]];
+           if(body[j] >= 0) mj = masstotal[body[j]];
         }
         meff=mi*mj/(mi+mj);
         if (mask[i] & freeze_group_bit) meff = mj;

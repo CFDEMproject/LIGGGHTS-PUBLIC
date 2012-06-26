@@ -30,7 +30,7 @@
 #include "memory.h"
 #include "modify.h"
 #include "math.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "fix_property_atom.h"
 #include "fix_property_global.h"
 #include "fix_cfd_coupling.h"

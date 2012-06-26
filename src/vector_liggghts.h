@@ -19,13 +19,14 @@
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
-#ifndef LMP_MYVECTOR_H
-#define LMP_MYVECTOR_H
+#ifndef LMP_VECTOR_LIGGGHTS_H
+#define LMP_VECTOR_LIGGGHTS_H
 
 #include<cmath>
 #include "lammps.h"
 
 namespace LAMMPS_NS {
+
 //================================================
 //SOME VERY SIMPLE VECTOR OPERATIONS
 //================================================
@@ -42,6 +43,14 @@ inline void vectorConstruct3D(int *v,int x, int y, int z)
   v[0] = x;
   v[1] = y;
   v[2] = z;
+}
+
+inline void vectorNormalize3D(double *v)
+{
+    double norm = std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    v[0] /= norm;
+    v[1] /= norm;
+    v[2] /= norm;
 }
 
 inline double vectorMag3D(double *v)
@@ -69,6 +78,17 @@ inline double vectorDot3D(double *v1,double *v2)
   return (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2]);
 }
 
+inline double vectorDot2D(double *v1,double *v2)
+{
+  return (v1[0]*v2[0]+v1[1]*v2[1]);
+}
+
+inline void vectorCopy2D(double *from,double *to)
+{
+  to[0]=from[0];
+  to[1]=from[1];
+}
+
 inline void vectorCopy3D(double *from,double *to)
 {
   to[0]=from[0];
@@ -89,7 +109,7 @@ inline void vectorCopy3D(int *from,int *to)
   to[2]=from[2];
 }
 
-inline double vectorAbs3D(double *v)
+inline void vectorAbs3D(double *v)
 {
     if(v[0] < 0) v[0] = -v[0];
     if(v[1] < 0) v[1] = -v[1];

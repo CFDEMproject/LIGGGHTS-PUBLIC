@@ -46,7 +46,7 @@
 #include "fix_property_global.h"
 #include "mech_param_gran.h"
 #include "compute_pair_gran_local.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "math_extra_liggghts.h"
 
 using namespace LAMMPS_NS;
@@ -78,7 +78,14 @@ PairGranHookeHistory::PairGranHookeHistory(LAMMPS *lmp) : PairGran(lmp)
 
 PairGranHookeHistory::~PairGranHookeHistory()
 {
-
+    memory->destroy(Yeff);
+    memory->destroy(Geff);
+    memory->destroy(betaeff);
+    memory->destroy(veff);
+    memory->destroy(cohEnergyDens);
+    memory->destroy(coeffRestLog);
+    memory->destroy(coeffFrict);
+    memory->destroy(coeffRollFrict);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -257,10 +264,10 @@ void PairGranHookeHistory::compute(int eflag, int vflag,int addflag)
           mi = mass[itype];
           mj = mass[jtype];
         }
-        if (fr)
+        if (fix_rigid)
         {
-           if(fr->body[i] >= 0) mi = fr->masstotal[fr->body[i]];  
-           if(fr->body[j] >= 0) mj = fr->masstotal[fr->body[j]];  
+           if(body[i] >= 0) mi = masstotal[body[i]];
+           if(body[j] >= 0) mj = masstotal[body[j]];
         }
 
         meff = mi*mj/(mi+mj);

@@ -37,19 +37,28 @@ using namespace LAMMPS_NS;
   ------------------------------------------------------------------------- */
 
   ContainerBase::ContainerBase()
-  : id_(0), communicationType_(COMM_TYPE_MANUAL), refFrame_(REF_FRAME_UNDEFINED),
+  : id_(0),
+    communicationType_(COMM_TYPE_MANUAL),
+    refFrame_(REF_FRAME_UNDEFINED),
+    restartType_(RESTART_TYPE_UNDEFINED),
     scalePower_(-1)
   {
   }
 
-  ContainerBase::ContainerBase(char *_id, char* _comm, char* _ref,int _scalePower)
-  : id_(0), communicationType_(COMM_TYPE_MANUAL), refFrame_(REF_FRAME_UNDEFINED)
+  ContainerBase::ContainerBase(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower)
+  : id_(0),
+    communicationType_(COMM_TYPE_MANUAL),
+    restartType_(RESTART_TYPE_UNDEFINED),
+    refFrame_(REF_FRAME_UNDEFINED)
   {
-          setProperties(_id, _comm, _ref,_scalePower);
+          setProperties(_id, _comm, _ref,_restart,_scalePower);
   }
 
   ContainerBase::ContainerBase(ContainerBase const &orig)
-  :  id_(0), communicationType_(orig.communicationType_), refFrame_(orig.refFrame_),
+  :  id_(0),
+     communicationType_(orig.communicationType_),
+     refFrame_(orig.refFrame_),
+     restartType_(orig.restartType_),
      scalePower_(orig.scalePower_)
   {
 
@@ -64,32 +73,40 @@ using namespace LAMMPS_NS;
    set comm and reference properties
   ------------------------------------------------------------------------- */
 
-  void ContainerBase::setProperties(char *_id, char* _comm, char* _ref, int _scalePower)
+  void ContainerBase::setProperties(char *_id, char* _comm, char* _ref, char *_restart, int _scalePower)
   {
       id_ = new char[strlen(_id)+1];
       strcpy(id_,_id);
 
       if      (strcmp(_comm,"comm_forward") == 0) communicationType_ = COMM_TYPE_FORWARD;
-      else if      (strcmp(_comm,"comm_forward_from_frame") == 0) communicationType_ = COMM_TYPE_FORWARD_FROM_FRAME;
+      else if (strcmp(_comm,"comm_forward_from_frame") == 0) communicationType_ = COMM_TYPE_FORWARD_FROM_FRAME;
       else if (strcmp(_comm,"comm_reverse") == 0) communicationType_ = COMM_TYPE_REVERSE;
       else if (strcmp(_comm,"comm_none") == 0) communicationType_ = COMM_TYPE_NONE;
       else if (strcmp(_comm,"comm_manual") == 0) communicationType_ = COMM_TYPE_MANUAL;
       else communicationType_ = COMM_TYPE_UNDEFINED;
 
       if      (strcmp(_ref,"frame_invariant") == 0) refFrame_ = REF_FRAME_INVARIANT;
-      else if      (strcmp(_ref,"frame_trans_rot_invariant") == 0) refFrame_ = REF_FRAME_TRANS_ROT_INVARIANT;
-      else if      (strcmp(_ref,"frame_scale_trans_invariant") == 0) refFrame_ = REF_FRAME_SCALE_TRANS_INVARIANT;
-      else if      (strcmp(_ref,"frame_trans_invariant") == 0) refFrame_ = REF_FRAME_TRANS_INVARIANT;
-      else if      (strcmp(_ref,"frame_general") == 0) refFrame_ = REF_FRAME_GENERAL;
+      else if (strcmp(_ref,"frame_trans_rot_invariant") == 0) refFrame_ = REF_FRAME_TRANS_ROT_INVARIANT;
+      else if (strcmp(_ref,"frame_scale_trans_invariant") == 0) refFrame_ = REF_FRAME_SCALE_TRANS_INVARIANT;
+      else if (strcmp(_ref,"frame_trans_invariant") == 0) refFrame_ = REF_FRAME_TRANS_INVARIANT;
+      else if (strcmp(_ref,"frame_general") == 0) refFrame_ = REF_FRAME_GENERAL;
       else refFrame_ = REF_FRAME_UNDEFINED;
+
+      if      (strcmp(_restart,"restart_yes") == 0) restartType_ = RESTART_TYPE_YES;
+      else if (strcmp(_restart,"restart_no") == 0) restartType_ = RESTART_TYPE_NO;
+      else restartType_ = RESTART_TYPE_UNDEFINED;
 
       scalePower_ = _scalePower;
   }
 
   bool ContainerBase::propertiesSetCorrectly()
   {
-      if(refFrame_ == REF_FRAME_UNDEFINED || communicationType_ == COMM_TYPE_UNDEFINED || scalePower_ < 0)
-        return false;
+      if(refFrame_ == REF_FRAME_UNDEFINED ||
+        communicationType_ == COMM_TYPE_UNDEFINED ||
+        restartType_ == RESTART_TYPE_UNDEFINED ||
+        scalePower_ < 0)
+            return false;
+
       return true;
   }
 

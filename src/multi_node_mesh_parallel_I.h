@@ -79,6 +79,17 @@
   template<int NUM_NODES>
   MultiNodeMeshParallel<NUM_NODES>::~MultiNodeMeshParallel()
   {
+      free_swap();
+
+      if (sendlist_)
+        for (int i = 0; i < maxswap_; i++)
+            this->memory->destroy(sendlist_[i]);
+
+      this->memory->sfree(sendlist_);
+      this->memory->destroy(maxsendlist_);
+
+      this->memory->destroy(buf_send_);
+      this->memory->destroy(buf_recv_);
   }
 
   /* ----------------------------------------------------------------------
@@ -95,8 +106,32 @@
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::deleteElement(int n)
   {
+    
+    if(n < nLocal_ && nGhost_ != 0)
+        this->error->one(FLERR,"Illegal call to MultiNodeMeshParallel<NUM_NODES>::deleteElement");
+
     MultiNodeMesh<NUM_NODES>::deleteElement(n);
-    nLocal_--;
+
+    if(n >= nLocal_)
+        nGhost_--;
+    else
+        nLocal_--;
+  }
+
+  /* ----------------------------------------------------------------------
+   recalculate properties on setup (on start and during simulation)
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::refreshOwned(int setupFlag)
+  {
+    MultiNodeMesh<NUM_NODES>::refreshOwned(setupFlag);
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::refreshGhosts(int setupFlag)
+  {
+    MultiNodeMesh<NUM_NODES>::refreshGhosts(setupFlag);
   }
 
   /* ----------------------------------------------------------------------
@@ -107,14 +142,11 @@
   void MultiNodeMeshParallel<NUM_NODES>::clearGhosts()
   {
       // delete ghost data from container classes
-      // deleteElement() decreases nLocal so need to increase it again
-      // decrease nGhost
 
       while(nGhost_ > 0)
       {
-        deleteElement(nLocal_);
-        nLocal_++;
-        nGhost_--;
+          
+          deleteElement(nLocal_);
       }
   }
 
@@ -161,7 +193,7 @@
         }
       }
 
-    MyMPI::My_MPI_Max_Scalar(flag,this->world);
+   MPI_Max_Scalar(flag,this->world);
     if(flag) return false;
     else return true;
   }
@@ -215,7 +247,7 @@
        rBound_max = 0.;
        for(int i = 0; i < sizeLocal(); i++)
            rBound_max = MathExtraLiggghts::max(this->rBound_(i),rBound_max);
-       MyMPI::My_MPI_Max_Scalar(rBound_max,this->world);
+      MPI_Max_Scalar(rBound_max,this->world);
 
        // mesh element ghost cutoff is element bounding radius plus half atom neigh cut
        cut_ghost = rBound_max + half_atom_cut_;
@@ -286,7 +318,7 @@
        }
 
        // maxneed_ summed accross all processors
-       MyMPI::My_MPI_Max_Vector(maxneed_,3,this->world);
+      MPI_Max_Vector(maxneed_,3,this->world);
 
        destroy(sublo_all);
        destroy(subhi_all);
@@ -471,7 +503,7 @@
 
       // re-calculate properties for owned particles
       
-      refreshOwned();
+      refreshOwned(1);
 
       // identify elements that are near borders
       // forward communicate them
@@ -479,7 +511,7 @@
       borders();
 
       // re-calculate properties for ghost particles
-      refreshGhosts();
+      refreshGhosts(1);
 
       // build mesh topology and neigh list
       
@@ -492,7 +524,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMeshParallel<NUM_NODES>::pbcExchangeBorders()
+  void MultiNodeMeshParallel<NUM_NODES>::pbcExchangeBorders(int setupFlag)
   {
       // need not do this for non-moving mesh and non-changing simulation box
       
@@ -509,7 +541,7 @@
 
       // re-calculate properties for owned particles
       
-      refreshOwned();
+      refreshOwned(setupFlag);
 
       // identify elements that are near borders
       // forward communicate them
@@ -517,7 +549,7 @@
       borders();
 
       // re-calculate properties for ghosts
-      refreshGhosts();
+      refreshGhosts(setupFlag);
 
   }
 
@@ -539,7 +571,7 @@
       }
 
       // calculate nGlobal for the first time
-      MyMPI::My_MPI_Sum_Scalar(nLocal_,nGlobal_,this->world);
+     MPI_Sum_Scalar(nLocal_,nGlobal_,this->world);
 
   }
 
@@ -646,7 +678,7 @@
       }
 
       // re-calculate nGlobal as some element might have been lost
-      MyMPI::My_MPI_Sum_Scalar(nLocal_,nGlobal_,world);
+     MPI_Sum_Scalar(nLocal_,nGlobal_,world);
   }
 
   /* ----------------------------------------------------------------------
@@ -719,7 +751,7 @@
               if(nsend*size_border_ > maxsend_)
                 grow_send(nsend*size_border_,0);
 
-              n = pushListToBuffer(nsend, sendlist_[iswap], buf_send_, OPERATION_COMM_BORDERS,dummy,dummy,dummy);
+              n = pushElemListToBuffer(nsend, sendlist_[iswap], buf_send_, OPERATION_COMM_BORDERS,dummy,dummy,dummy);
 
               // swap atoms with other proc
               // no MPI calls except SendRecv if nsend/nrecv = 0
@@ -750,7 +782,7 @@
 
               // unpack buffer
 
-              n = popListFromBuffer(nLocal_+nGhost_,nrecv,buf_recv_,OPERATION_COMM_BORDERS,dummy,dummy,dummy);
+              n = popElemListFromBuffer(nLocal_+nGhost_,nrecv,buf_recv_,OPERATION_COMM_BORDERS,dummy,dummy,dummy);
 
               // set pointers & counters
 
@@ -835,7 +867,7 @@
                 if (size_forward_recv_[iswap])
                     MPI_Irecv(buf_recv_,size_forward_recv_[iswap],MPI_DOUBLE,recvproc_[iswap],0,this->world,&request);
 
-                n = pushListToBuffer(sendnum_[iswap],sendlist_[iswap],buf_send_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+                n = pushElemListToBuffer(sendnum_[iswap],sendlist_[iswap],buf_send_,OPERATION_COMM_FORWARD,scale,translate,rotate);
                 
                 if (n)
                     MPI_Send(buf_send_,n,MPI_DOUBLE,sendproc_[iswap],0,this->world);
@@ -843,14 +875,14 @@
                 if (size_forward_recv_[iswap])
                     MPI_Wait(&request,&status);
 
-                n = popListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+                n = popElemListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD,scale,translate,rotate);
                 
           }
           else
           {
-              n = pushListToBuffer(sendnum_[iswap],sendlist_[iswap],buf_send_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+              n = pushElemListToBuffer(sendnum_[iswap],sendlist_[iswap],buf_send_,OPERATION_COMM_FORWARD,scale,translate,rotate);
 
-              n = popListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+              n = popElemListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD,scale,translate,rotate);
           }
       }
   }

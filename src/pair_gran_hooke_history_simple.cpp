@@ -48,7 +48,17 @@ PairGranHookeHistorySimple::PairGranHookeHistorySimple(LAMMPS *lmp) : PairGranHo
 /* ---------------------------------------------------------------------- */
 
 PairGranHookeHistorySimple::~PairGranHookeHistorySimple()
-{}
+{
+    memory->destroy(k_n);
+    memory->destroy(k_t);
+    memory->destroy(gamma_n);
+    memory->destroy(gamma_t);
+
+    memory->destroy(coeffFrict);
+    memory->destroy(coeffRollFrict);
+
+    memory->destroy(cohEnergyDens);
+}
 
 /* ----------------------------------------------------------------------
    global settings

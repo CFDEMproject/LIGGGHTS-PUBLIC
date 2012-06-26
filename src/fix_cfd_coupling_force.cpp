@@ -29,8 +29,8 @@
 #include "modify.h"
 #include "comm.h"
 #include "math.h"
-#include "myvector.h"
-#include "mympi.h"
+#include "vector_liggghts.h"
+#include "mpi_liggghts.h"
 #include "fix_cfd_coupling_force.h"
 #include "fix_property_atom.h"
 
@@ -171,6 +171,6 @@ void FixCfdCouplingForce::post_force(int vflag)
 
 double FixCfdCouplingForce::compute_vector(int n)
 {
-  MyMPI::My_MPI_Sum_Vector(dragforce_total,3,world);
+ MPI_Sum_Vector(dragforce_total,3,world);
   return dragforce_total[n];
 }

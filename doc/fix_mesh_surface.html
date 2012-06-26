@@ -11,15 +11,15 @@
 
 <HR>
 
-<H3>fix mesh command 
+<H3>fix mesh/surface command 
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID mesh/gran file filename type walltype mesh_keywords values 
+<PRE>fix ID group-ID mesh/surface file filename type walltype mesh_keywords mesh_values surface_keyword surface_values 
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
-<LI>mesh = style name of this fix command  
+<LI>mesh/surface = style name of this fix command  
 
 <LI>file = obligatory keyword
 filename = name of STL or VTK file containing the triangle mesh data 
@@ -27,11 +27,11 @@ filename = name of STL or VTK file containing the triangle mesh data
 <LI>type = obligatory keyword
 walltype = atom type (material type) of the wall imported from the STL file 
 
-<LI>zero or more mesh_keywords/value pairs may be appended 
+<LI>zero or more mesh_keywords/mesh_value pairs may be appended 
 
-<LI>mesh_keyword = <I>scale</I> or <I>move</I> or <I>rotate</I> or <I>surface_vel</I> or <I>surface_ang_vel</I> or <I>curvature</I> or <I>temperature</I> 
+<LI>mesh_keyword = <I>scale</I> or <I>move</I> or <I>rotate</I> or <I>temperature</I> 
 
-<PRE>  <I>scale</I> value = factor
+<LI>  <I>scale</I> value = factor
     factor = factor to scale the mesh in x-, y-, and z-direction (double value)
   <I>move</I> values = mx my mz
     mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
@@ -40,7 +40,13 @@ walltype = atom type (material type) of the wall imported from the STL file
     ax, ay, az = axis vector for rotation (length units) 
     angle = obligatory keyword 
     ang = angle to rotate the geometry around the specified axis (in degrees) 
-  <I>surface_vel</I> values = vx vy vz
+  <I>temperature</I> value = T0
+    T0 = Temperature of the wall (temperature units)
+zero or more surface_keywords/surface_value pairs may be appended 
+
+<LI>surface_keyword = <I>surface_vel</I> or <I>surface_ang_vel</I> or <I>curvature</I> 
+
+<PRE>  <I>surface_vel</I> values = vx vy vz
     vx vy vz = conveyor belt surface velocity  (velocity units)
   <I>surface_ang_vel</I> values = origin ox oy oz axis ax ay az omega om
     origin = mandatory keyword
@@ -50,15 +56,13 @@ walltype = atom type (material type) of the wall imported from the STL file
     omega = mandatory keyword
     om = rotaional velocity around specifyied axis (rad/time units)
   <I>curvature value</I> = c
-    c = maximum angle between mesh faces belonging to the same surface (in degree)
-  <I>temperature</I> value = T0
-    T0 = Temperature of the wall (temperature units) 
+    c = maximum angle between mesh faces belonging to the same surface (in degree) 
 </PRE>
 
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>fix cad all mesh file mesh.stl type 1 
+<PRE>fix cad all mesh/surface file mesh.stl type 1 
 </PRE>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>
 </P>
@@ -66,17 +70,22 @@ walltype = atom type (material type) of the wall imported from the STL file
 </P>
 <P><B>Description:</B>
 </P>
-<P>This fix allows the import of triangual mesh wall geometry for granular simulations from 
-ASCII STL files or legacy ASCII VTK files. You can apply offset, scaling and rotation to 
-the imported mesh. Operations are applied in the order as they are specified. The group-ID
-is ignored for this command.
-</P>
-<P>One fix represents one wall with a specific material, where the material is identified 
-via keyword <I>type</I>. If multiple meshes with different materials are desired, the respective 
-meshes must be imported with different fix mesh commands.
+<P>This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from 
+ASCII STL files or legacy ASCII VTK files. You can apply scaling, offset and rotation to 
+the imported mesh via keywords <I>scale</I>, <I>move</I>, <I>rotate</I>. Operations are applied in the 
+order as they are specified. The group-ID is ignored for this command.
 </P>
 <P>IMPORTANT NOTE: For periodic boundaries, the mesh is NOT mapped. Instead, a warning is 
 generated if a vertex lies outside the simulation box.
+</P>
+<P>One fix represents one wall with a specific material, where the material is identified 
+via keyword <I>type</I>. If multiple meshes with different materials are desired, the respective 
+meshes must be imported with different fix mesh/surface commands.
+</P>
+<P>With the <I>temperature</I> keyword, you can define a constant temperature for a mesh in 
+conjunction with heat conduction via <A HREF = "fix_heat_gran.html">fix heat/gran</A>. Note that the 
+actual calculation of the heat transfer happens only if you use the mesh in conjunction 
+with a granular wall, see <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
 </P>
 <P>With the optional <I>surface_vel</I> keyword, you can specify the imported mesh as conveyor belt. 
 The velocity direction for each mesh face is given by the projection of the conveyor 
@@ -84,11 +93,6 @@ belt velocity parallel to the mesh face, the velocity magnitude for each mesh fa
 equal to the conveyor belt velocity. This ensures the model makes sense also in case 
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 <I>surface_ang_vel</I> mimics rotational motion of the mesh (e.g. for modeling a shear cell)
-</P>
-<P>With the <I>temperature</I> keyword, you can define a constant temperature for a mesh in 
-conjunction with heat conduction via <A HREF = "fix_heat_gran.html">fix heat/gran</A>. Note that the 
-actual calculation of the heat transfer happens only if you use the mesh in conjunction 
-with a granular wall, see <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
 </P>
 <P>The curvature keyword lets you specify up to which angle between two triangles the 
 triangles should be treated as belonging to the same surface (e.g. useful for bends). 
@@ -115,7 +119,7 @@ It is not supported to use both the moving mesh and the conveyor belt feature.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "fix_wall_gran.html">fix wall/gran</A>, <A HREF = "fix_mesh_stressanalysis.html">fix mesh/stressanalysis</A> , <A HREF = "fix_mesh_6dof.html">fix mesh/6dof</A>
+<P><A HREF = "fix_wall_gran.html">fix wall/gran</A>
 </P>
 <P><B>Default:</B> c = 0 degrees
 </P>

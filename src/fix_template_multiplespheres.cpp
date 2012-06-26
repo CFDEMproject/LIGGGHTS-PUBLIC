@@ -31,7 +31,7 @@ a Fortran version of the MC integrator
 #include "fix_template_multiplespheres.h"
 #include "math_extra.h"
 #include "math_extra_liggghts.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "domain.h"

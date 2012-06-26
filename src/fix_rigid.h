@@ -34,17 +34,10 @@ FixStyle(rigid,FixRigid)
 namespace LAMMPS_NS {
 
 class FixRigid : public Fix {
- friend class FixMeshGran6DOF;
  friend class FixTemplateMultisphere;
  friend class FixGravity; 
+ friend class PairGran; 
  friend class FixWallGran; 
- friend class PairGranHookeHistory; 
- friend class PairGranHookeHistoryAndre; 
- friend class PairGranHookeHistoryEnergySubstep; 
- friend class PairGranHertzIncrementalEnergySubstep; 
- friend class PairGranHookeHistoryEnergyEDEM; 
- friend class PairGranHookeHistoryEnergyLAMMPS; 
- friend class PairGranHooke; 
 
  public:
   FixRigid(class LAMMPS *, int, char **);

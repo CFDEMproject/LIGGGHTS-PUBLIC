@@ -59,7 +59,13 @@
         // no comm at all
         COMM_TYPE_NONE,
         // undefined state for error check
-        COMM_TYPE_UNDEFINED};
+        COMM_TYPE_UNDEFINED};  // communication types
+
+  // restart types
+
+  enum{ RESTART_TYPE_UNDEFINED,
+        RESTART_TYPE_YES,
+        RESTART_TYPE_NO};
 
   /* ----------------------------------------------------------------------
    decide if property is pushed or pulled
@@ -73,7 +79,11 @@
         return true;
 
       if(operation == OPERATION_RESTART)
-        return true;
+      {
+          if(restartType_ == RESTART_TYPE_YES)
+            return true;
+          return false;
+      }
 
       if(operation == OPERATION_COMM_BORDERS ||
          operation == OPERATION_COMM_EXCHANGE )

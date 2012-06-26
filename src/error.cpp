@@ -27,6 +27,7 @@
 #include "universe.h"
 #include "output.h"
 #include "fix.h" 
+#include "string.h" 
 
 using namespace LAMMPS_NS;
 

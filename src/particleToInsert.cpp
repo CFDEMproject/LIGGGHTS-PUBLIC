@@ -27,7 +27,7 @@
 #include "atom.h"
 #include "atom_vec.h"
 #include "fix.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "modify.h"
 
 using namespace LAMMPS_NS;

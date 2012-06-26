@@ -26,7 +26,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "error.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "math_extra.h"
 
 #define TOLERANCE_ORTHO 1e-10

@@ -30,7 +30,7 @@
 
 #include "abstract_mesh.h"
 #include "domain.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "math_extra_liggghts.h"
 #include "update.h"
 #include "container.h"
@@ -111,8 +111,13 @@ namespace LAMMPS_NS
 
         MultiNodeMesh(LAMMPS *lmp);
         virtual ~MultiNodeMesh();
+
         virtual void addElement(double **nodeToAdd);
         virtual void deleteElement(int n);
+
+        virtual void refreshOwned(int setupFlag);
+        virtual void refreshGhosts(int setupFlag);
+
         bool nodesAreEqual(int iSurf, int iNode, int jSurf, int jNode);
         void extendToElem(int const nElem) const;
 
@@ -153,6 +158,9 @@ namespace LAMMPS_NS
         // reset mesh nodes to original position
         // called via mesh move functions
         void resetNodesToOrig();
+
+        // store current node position for use by moving mesh
+        void storeNodePos(int ilo, int ihi);
 
         // step when nodes have been reset the last time
         // only relevant for moving mesh

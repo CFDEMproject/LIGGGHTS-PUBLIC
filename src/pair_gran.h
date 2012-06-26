@@ -54,6 +54,8 @@ class PairGran : public Pair {
   virtual void init_granular() {} 
   virtual void init_list(int, class NeighList *);
   virtual double init_one(int, int);
+  int pack_comm(int n, int *list,double *buf, int pbc_flag, int *pbc);
+  void unpack_comm(int n, int first, double *buf);
   virtual void write_restart(FILE *);
   virtual void read_restart(FILE *);
   virtual void write_restart_settings(FILE *){}
@@ -64,7 +66,8 @@ class PairGran : public Pair {
 
   int is_history(){return history;}
   int dnum_pair(){return dnum;}
-  class FixRigid* fr_pair(){return fr;}
+  class FixRigid* fr_pair()
+  { return fix_rigid; }
 
   class MechParamGran *mpg;
 
@@ -97,7 +100,9 @@ class PairGran : public Pair {
   int cpl_enable;
   class ComputePairGranLocal *cpl;
 
-  class FixRigid* fr;
+  class FixRigid* fix_rigid;
+  int *body;
+  double *masstotal;
 
   double dt;
   int freeze_group_bit;

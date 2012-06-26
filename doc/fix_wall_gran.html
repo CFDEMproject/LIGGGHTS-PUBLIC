@@ -27,25 +27,26 @@
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
-<LI>style = <I>gran/hooke</I> or <I>gran/hooke/history</I> or <I>gran/hertz/history</I> or <I>gran/hooke/history/simple</I> or <I>gran/hertz/history/simple</I> 
+<LI>style = <I>wall/gran/hooke</I> or <I>wall/gran/hooke/history</I> or <I>wall/gran/hertz/history</I> or <I>wall/gran/hooke/history/simple</I> or <I>wall/gran/hertz/history/simple</I> 
 
 <LI>wallstyle = <I>mesh</I> or <I>primitive</I> 
 
 <LI>wallstyle args for wallstyle <I>mesh</I> = <I>n_meshes</I> and <I>meshes</I> 
 
 <PRE>  <I>n_meshes</I> value = nm
-    nm = # of meshes (see <A HREF = "fix_mesh.html">fix mesh</A>) to use for the wall (positive integer)
+    nm = # of meshes (see <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>) to use for the wall (positive integer)
   <I>meshes</I> values = meshlist
-    meshlist =  id(s) of the mesh(es) (see <A HREF = "fix_mesh.html">fix mesh</A>) to be used. These must be defined before 
+    meshlist =  id(s) of the mesh(es) (see <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>) to be used. These must be defined before 
 </PRE>
-<LI>wallstyle args for wallstyle <I>primitive</I> = <I>type</I> or <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>zcylinder</I> or <I>zcone</I> 
+<LI>wallstyle args for wallstyle <I>primitive</I> = <I>type</I> or <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>xcylinder</I> or <I>ycylinder</I> or <I>zcylinder</I> 
 
 <PRE>  <I>type</I> args = tp
     tp = atom_type (material type) of the wall
   <I>xplane</I> or <I>yplane</I> or <I>zplane</I> args = lo hi
     lo,hi = position of lower and upper plane (distance units), either can be NULL)
-  <I>zcylinder</I> args = radius
+  <I>xcylinder</I> or <I>ycylinder</I> or <I>zcylinder</I> args = radius c1 c2
     radius = cylinder radius (distance units)
+    c1,c2 = coordinates of center axis in other 2 dims (distance units)
   <I>zcone</I> args = lo hi radiuslo radiushi
     lo = z-coordinate where the cone starts (distance units)
     hi = z-coordinate where the cone ends (distance units)
@@ -109,17 +110,16 @@ simulation with fix property commands. See <A HREF = "pair_gran.html">pair_style
 uses absolute damping if keyword <I>absolute_damping</I> is set to 'on' in 
 <A HREF = "pair_gran.html">pair_style gran</A>.
 </P>
-<P>For <I>wallstyle mesh</I>, triangle-particle neighbor lists are built to efficiently 
+<P>For wallstyle <I>mesh</I>, fix_id1, fix_id2 etc. must be IDs of valid fixes of 
+type <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>, defining the granular mesh 
+to be used for the wall. Triangle-particle neighbor lists are built to efficiently 
 track particle-triangle contacts. Particle-tri neighbor list build is triggered 
-if any particle moves
-more than half the skin distance or (in case of moving mesh) if the mesh
+if any particle moves more than half the skin distance or (in case of moving mesh) if the mesh
 itself moves more than half the skin distance since the last build. A warning
 is generated if a dangerous particle-tri neigh list build is detected
 (e.g. if particles are inserted too close to a wall, see section 'Restrictions').
 For style <I>mesh</I>, the atom_type (material type) is inherited from the atom style provided
-in the <A HREF = "fix_mesh.html">fix mesh</A> command. fix_id1, fix_id2 etc. must
-be IDs of valid fixes of type <A HREF = "fix_mesh.html">fix mesh</A>, defining
-the granular mesh to be used for the wall.
+in the <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command. 
 </P>
 <P>For <I>wallstyle primitive</I>, the atom_type (material type) has to be provided via
 keyword <I>type</I>. Primitve walls can be <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>cylindrical</I>
@@ -165,13 +165,13 @@ at whatever radius has been defined.
 <P>NOTE: The keywords wiggle or shear can NOT be used for <I>wallstyle mesh</I>.
 For a moving a granular wall with <I>wallstyle mesh</I>, use the more flexible
 command "fix move/mesh"fix_move_mesh.html, or use the keywords <I>velocity</I>
-or <I>angular_velocity</I> in <A HREF = "fix_mesh.html">fix mesh</A>..
+or <I>angular_velocity</I> in <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>.
 </P>
 <P>The keyword <I>temperature</I> is used to assign a constant temperature to the wall.
 This setting gets effective in conjunction with heat conduction via
 <A HREF = "fix_heat_gran.html">fix heat/gran</A>. For <I>wallstyle mesh</I>, the value
 for the temperature given in this command is ignored and the temperature
-value is specified per mesh via <A HREF = "fix_mesh.html">fix mesh</A>.
+value is specified per mesh via <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>.
 </P>
 <P>By specifying <I>store_force</I> = 'yes', you can instruct the command to
 store the wall force exerted on the particles in a
@@ -197,7 +197,7 @@ No parameter of this fix can be used with the start/stop keywords of the
 </P>
 <P>There can be only one fix wall/gran command with style <I>mesh</I>. Note that
 this is not really a restriction because you can include multiple fixes
-of type <A HREF = "fix_mesh.html">fix mesh</A> in the fix wall/gran command.
+of type <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> in the fix wall/gran command.
 </P>
 <P>When using style style <I>mesh</I>, you have to use the style <I>bin</I> for
 the <A HREF = "neighbor.html">neighbor command</A>.
@@ -218,7 +218,7 @@ For moving granular wall with style mesh, use "fix move/mesh"fix_move_mesh.html.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "fix_move.html">fix_move</A>, <A HREF = "pair_gran.html">pair_style granular</A>
+<P><A HREF = "fix_mesh_surface.html">fix mesh/surface</A>, <A HREF = "fix_move_mesh.html">fix_move_mesh</A>, <A HREF = "pair_gran.html">pair_style granular</A>
 </P>
 <P><B>Default:</B>
 </P>

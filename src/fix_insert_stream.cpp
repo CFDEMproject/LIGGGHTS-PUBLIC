@@ -23,14 +23,14 @@
 #include "stdlib.h"
 #include "string.h"
 #include "fix_insert_stream.h"
-#include "fix_mesh.h"
+#include "fix_mesh_surface.h"
 #include "atom.h"
 #include "atom_vec.h"
 #include "force.h"
 #include "update.h"
 #include "comm.h"
 #include "modify.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "domain.h"
 #include "random_park.h"
 #include "memory.h"
@@ -66,7 +66,7 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
       if (f_i == -1) error->fix_error(FLERR,this,"Could not find fix mesh/gran id you provided for the fix insert/stream command");
       if (strncmp(modify->fix[f_i]->style,"mesh",4))
         error->fix_error(FLERR,this,"The fix belonging to the id you provided is not of type mesh");
-      ins_face = (static_cast<FixMesh*>(modify->fix[f_i]))->mesh();
+      ins_face = (static_cast<FixMeshSurface*>(modify->fix[f_i]))->triMesh();
       ins_face->useAsInsertionMesh();
       face_style = FACE_MESH;
       iarg += 2;

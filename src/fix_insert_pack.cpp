@@ -36,8 +36,8 @@
 #include "error.h"
 #include "fix_particledistribution_discrete.h"
 #include "fix_template_sphere.h"
-#include "myvector.h"
-#include "mympi.h"
+#include "vector_liggghts.h"
+#include "mpi_liggghts.h"
 #include "particleToInsert.h"
 #include "fix_rigid_multisphere.h"
 
@@ -134,16 +134,21 @@ void FixInsertPack::calc_insertion_properties()
         error->fix_error(FLERR,this,"must define an insertion region");
     ins_region->reset_random(seed + SEED_OFFSET);
     ins_region->volume_mc(ntry_mc,region_volume,region_volume_local);
+    if(region_volume <= 0. || region_volume_local < 0. || region_volume_local > region_volume)
+        error->one(FLERR,"Fix insert: Region volume calculation with MC failed");
+
+    if(ins_region->dynamic_check())
+        error->fix_error(FLERR,this,"dynamic regions are not allowed");
+
+    // error check on insert_every
+    if(insert_every < 0)
+        error->fix_error(FLERR,this,"must define 'insert_every'");
 
     // error checks to disallow args from FixInsert
     if(ninsert > 0 || massinsert > 0.)
         error->fix_error(FLERR,this,"specifying 'nparticles' or 'mass' not allowed");
     if(nflowrate > 0. || massflowrate > 0.)
         error->fix_error(FLERR,this,"specifying 'nflowrate' or 'massflowrate' not allowed");
-
-    // error check on insert_every
-    if(insert_every < 0)
-        error->fix_error(FLERR,this,"must define 'insert_every'");
 
     // error check if exactly one target is specified
     int n_defined = 0;
@@ -154,8 +159,6 @@ void FixInsertPack::calc_insertion_properties()
     if(n_defined != 1)
         error->fix_error(FLERR,this,"must define exactly one keyword out of 'volumefraction_region', 'particles_in_region', and 'mass_in_region'");
 
-    if(ins_region->dynamic_check())
-        error->fix_error(FLERR,this,"dynamic regions are not allowed");
 }
 
 /* ----------------------------------------------------------------------
@@ -237,17 +240,17 @@ int FixInsertPack::calc_ninsert_this()
 
   if(volumefraction_region > 0.)
   {
-      MyMPI::My_MPI_Sum_Scalar(vol_region,world);
+     MPI_Sum_Scalar(vol_region,world);
       ninsert_this = static_cast<int>((volumefraction_region*region_volume - vol_region) / fix_distribution->vol_expect() + random->uniform());
   }
   else if(ntotal_region > 0)
   {
-      MyMPI::My_MPI_Sum_Scalar(np_region,world);
+     MPI_Sum_Scalar(np_region,world);
       ninsert_this = ntotal_region - np_region;
   }
   else if(masstotal_region > 0.)
   {
-      MyMPI::My_MPI_Sum_Scalar(mass_region,world);
+     MPI_Sum_Scalar(mass_region,world);
       ninsert_this = static_cast<int>((masstotal_region - mass_region) / fix_distribution->mass_expect() + random->uniform());
   }
   else error->one(FLERR,"Internal error in FixInsertPack::calc_ninsert_this()");

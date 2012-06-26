@@ -7,21 +7,20 @@
 
 :line
 
-fix mesh command :h3
+fix mesh/surface command :h3
 
 [Syntax:]
 
-fix ID group-ID mesh/gran file filename type walltype mesh_keywords values :pre
+fix ID group-ID mesh/surface file filename type walltype mesh_keywords mesh_values surface_keyword surface_values :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
-mesh = style name of this fix command  :l
+mesh/surface = style name of this fix command  :l
 file = obligatory keyword
 filename = name of STL or VTK file containing the triangle mesh data :l
 type = obligatory keyword
 walltype = atom type (material type) of the wall imported from the STL file :l
-zero or more mesh_keywords/value pairs may be appended :l
-mesh_keyword = {scale} or {move} or {rotate} or {surface_vel} or {surface_ang_vel} or {curvature} or {temperature} :l
-
+zero or more mesh_keywords/mesh_value pairs may be appended :l
+mesh_keyword = {scale} or {move} or {rotate} or {temperature} :l
   {scale} value = factor
     factor = factor to scale the mesh in x-, y-, and z-direction (double value)
   {move} values = mx my mz
@@ -31,6 +30,10 @@ mesh_keyword = {scale} or {move} or {rotate} or {surface_vel} or {surface_ang_ve
     ax, ay, az = axis vector for rotation (length units) 
     angle = obligatory keyword 
     ang = angle to rotate the geometry around the specified axis (in degrees) 
+  {temperature} value = T0
+    T0 = Temperature of the wall (temperature units)
+zero or more surface_keywords/surface_value pairs may be appended :l
+surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} :l
   {surface_vel} values = vx vy vz
     vx vy vz = conveyor belt surface velocity  (velocity units)
   {surface_ang_vel} values = origin ox oy oz axis ax ay az omega om
@@ -41,15 +44,13 @@ mesh_keyword = {scale} or {move} or {rotate} or {surface_vel} or {surface_ang_ve
     omega = mandatory keyword
     om = rotaional velocity around specifyied axis (rad/time units)
   {curvature value} = c
-    c = maximum angle between mesh faces belonging to the same surface (in degree)
-  {temperature} value = T0
-    T0 = Temperature of the wall (temperature units) :pre
+    c = maximum angle between mesh faces belonging to the same surface (in degree) :pre
 
 :ule
 
 [Examples:]
 
-fix cad all mesh file mesh.stl type 1 :pre
+fix cad all mesh/surface file mesh.stl type 1 :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 
@@ -57,17 +58,23 @@ This command is not available in LAMMPS.
 
 [Description:]
 
-This fix allows the import of triangual mesh wall geometry for granular simulations from 
-ASCII STL files or legacy ASCII VTK files. You can apply offset, scaling and rotation to 
-the imported mesh. Operations are applied in the order as they are specified. The group-ID
-is ignored for this command.
-
-One fix represents one wall with a specific material, where the material is identified 
-via keyword {type}. If multiple meshes with different materials are desired, the respective 
-meshes must be imported with different fix mesh commands.
+This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from 
+ASCII STL files or legacy ASCII VTK files. You can apply scaling, offset and rotation to 
+the imported mesh via keywords {scale}, {move}, {rotate}. Operations are applied in the 
+order as they are specified. The group-ID is ignored for this command.
 
 IMPORTANT NOTE: For periodic boundaries, the mesh is NOT mapped. Instead, a warning is 
 generated if a vertex lies outside the simulation box.
+
+One fix represents one wall with a specific material, where the material is identified 
+via keyword {type}. If multiple meshes with different materials are desired, the respective 
+meshes must be imported with different fix mesh/surface commands.
+
+With the {temperature} keyword, you can define a constant temperature for a mesh in 
+conjunction with heat conduction via "fix heat/gran"_fix_heat_gran.html. Note that the 
+actual calculation of the heat transfer happens only if you use the mesh in conjunction 
+with a granular wall, see "fix wall/gran"_fix_wall_gran.html.
+
 
 With the optional {surface_vel} keyword, you can specify the imported mesh as conveyor belt. 
 The velocity direction for each mesh face is given by the projection of the conveyor 
@@ -75,11 +82,6 @@ belt velocity parallel to the mesh face, the velocity magnitude for each mesh fa
 equal to the conveyor belt velocity. This ensures the model makes sense also in case 
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 {surface_ang_vel} mimics rotational motion of the mesh (e.g. for modeling a shear cell)
-
-With the {temperature} keyword, you can define a constant temperature for a mesh in 
-conjunction with heat conduction via "fix heat/gran"_fix_heat_gran.html. Note that the 
-actual calculation of the heat transfer happens only if you use the mesh in conjunction 
-with a granular wall, see "fix wall/gran"_fix_wall_gran.html.
 
 The curvature keyword lets you specify up to which angle between two triangles the 
 triangles should be treated as belonging to the same surface (e.g. useful for bends). 
@@ -106,6 +108,6 @@ It is not supported to use both the moving mesh and the conveyor belt feature.
 
 [Related commands:]
 
-"fix wall/gran"_fix_wall_gran.html, "fix mesh/stressanalysis"_fix_mesh_stressanalysis.html , "fix mesh/6dof"_fix_mesh_6dof.html
+"fix wall/gran"_fix_wall_gran.html
 
 [Default:] c = 0 degrees

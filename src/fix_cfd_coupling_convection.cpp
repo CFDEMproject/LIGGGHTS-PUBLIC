@@ -30,7 +30,7 @@
 #include "group.h"
 #include "comm.h"
 #include "math.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "fix_cfd_coupling_convection.h"
 #include "fix_property_atom.h"
 

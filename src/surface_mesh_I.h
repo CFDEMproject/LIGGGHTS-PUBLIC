@@ -43,20 +43,20 @@ SurfaceMesh<NUM_NODES>::SurfaceMesh(LAMMPS *lmp)
     curvature_(1.-EPSILON_CURVATURE),
 
     // TODO should keep areaMeshSubdomain up-to-date more often for insertion faces
-    areaMesh_     (*this->prop().template addMeshProperty   < ScalarContainer<double> >                   ("areaMesh",     "comm_none","frame_trans_rot_invariant",2)),
+    areaMesh_     (*this->prop().template addMeshProperty   < ScalarContainer<double> >                   ("areaMesh",     "comm_none","frame_trans_rot_invariant","restart_no",2)),
 
-    area_         (*this->prop().template addElementProperty< ScalarContainer<double> >                   ("area",         "comm_none","frame_trans_rot_invariant",2)),
-    areaAcc_      (*this->prop().template addElementProperty< ScalarContainer<double> >                   ("areaAcc",      "comm_none","frame_trans_rot_invariant",2)),
-    edgeLen_      (*this->prop().template addElementProperty< VectorContainer<double,NUM_NODES> >         ("edgeLen",      "comm_none","frame_trans_rot_invariant")),
-    edgeVec_      (*this->prop().template addElementProperty< MultiVectorContainer<double,NUM_NODES,3> >  ("edgeVec",      "comm_none","frame_scale_trans_invariant")),
-    edgeNorm_     (*this->prop().template addElementProperty< MultiVectorContainer<double,NUM_NODES,3> >  ("edgeNorm",     "comm_none","frame_scale_trans_invariant")),
-    surfaceNorm_  (*this->prop().template addElementProperty< VectorContainer<double,3> >                 ("surfaceNorm",  "comm_none","frame_scale_trans_invariant")),
-    edgeActive_   (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("edgeActive",   "comm_none","frame_invariant")),
-    cornerActive_ (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("cornerActive", "comm_none","frame_invariant")),
-    hasNonCoplanarSharedNode_(*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >("hasNonCoplanarSharedNode","comm_none","frame_invariant")),
-    nNeighs_      (*this->prop().template addElementProperty< ScalarContainer<int> >                      ("nNeighs",      "comm_none","frame_invariant")),
+    area_         (*this->prop().template addElementProperty< ScalarContainer<double> >                   ("area",         "comm_none","frame_trans_rot_invariant", "restart_no",2)),
+    areaAcc_      (*this->prop().template addElementProperty< ScalarContainer<double> >                   ("areaAcc",      "comm_none","frame_trans_rot_invariant", "restart_no",2)),
+    edgeLen_      (*this->prop().template addElementProperty< VectorContainer<double,NUM_NODES> >         ("edgeLen",      "comm_none","frame_trans_rot_invariant", "restart_no")),
+    edgeVec_      (*this->prop().template addElementProperty< MultiVectorContainer<double,NUM_NODES,3> >  ("edgeVec",      "comm_none","frame_scale_trans_invariant","restart_no")),
+    edgeNorm_     (*this->prop().template addElementProperty< MultiVectorContainer<double,NUM_NODES,3> >  ("edgeNorm",     "comm_none","frame_scale_trans_invariant","restart_no")),
+    surfaceNorm_  (*this->prop().template addElementProperty< VectorContainer<double,3> >                 ("surfaceNorm",  "comm_none","frame_scale_trans_invariant","restart_no")),
+    edgeActive_   (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("edgeActive",   "comm_none","frame_invariant",            "restart_no")),
+    cornerActive_ (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("cornerActive", "comm_none","frame_invariant",            "restart_no")),
+    hasNonCoplanarSharedNode_(*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >("hasNonCoplanarSharedNode","comm_none","frame_invariant", "restart_no")),
+    nNeighs_      (*this->prop().template addElementProperty< ScalarContainer<int> >                      ("nNeighs",      "comm_none","frame_invariant",            "restart_no")),
     
-    neighFaces_   (*this->prop().template addElementProperty< VectorContainer<int,NUM_NODES> >            ("neighFaces",   "comm_none","frame_invariant"))
+    neighFaces_   (*this->prop().template addElementProperty< VectorContainer<int,NUM_NODES> >            ("neighFaces",   "comm_none","frame_invariant",            "restart_no"))
 {
     // create properties
     // all properties have reference frame "invariant", so are not rotated automatically
@@ -79,7 +79,7 @@ SurfaceMesh<NUM_NODES>::~SurfaceMesh()
 
 template<int NUM_NODES>
 void SurfaceMesh<NUM_NODES>::setCurvature(double _curvature)
-{
+ {
     curvature_ = _curvature;
 }
 
@@ -116,16 +116,19 @@ void SurfaceMesh<NUM_NODES>::deleteElement(int n)
 ------------------------------------------------------------------------- */
 
 template<int NUM_NODES>
-void SurfaceMesh<NUM_NODES>::refreshOwned()
+void SurfaceMesh<NUM_NODES>::refreshOwned(int setupFlag)
 {
+    TrackingMesh<NUM_NODES>::refreshOwned(setupFlag);
     // (re)calculate all properties for owned elements
     
     recalcLocalSurfProperties();
 }
 
 template<int NUM_NODES>
-void SurfaceMesh<NUM_NODES>::refreshGhosts()
+void SurfaceMesh<NUM_NODES>::refreshGhosts(int setupFlag)
 {
+    TrackingMesh<NUM_NODES>::refreshGhosts(setupFlag);
+
     recalcGhostSurfProperties();
 }
 
@@ -162,7 +165,7 @@ void SurfaceMesh<NUM_NODES>::recalcLocalSurfProperties()
     }
 
     // mesh area must be summed up
-    MyMPI::My_MPI_Sum_Scalar(areaMesh_(1),areaMesh_(0),this->world);
+   MPI_Sum_Scalar(areaMesh_(1),areaMesh_(0),this->world);
 
 }
 
@@ -220,7 +223,7 @@ void SurfaceMesh<NUM_NODES>::recalcGhostSurfProperties()
             n_iter++;
             areaMesh_(3) = static_cast<double>(n_succ)/static_cast<double>(NTRY_MC_SURFACE_MESH_I_H*n_iter) * (areaMeshOwned()+areaMeshGhost());
 
-            MyMPI::My_MPI_Sum_Scalar(areaMesh_(3),areaCheck,this->world);
+           MPI_Sum_Scalar(areaMesh_(3),areaCheck,this->world);
         }
 
         if(fabs((areaCheck-areaMeshGlobal()))/areaMeshGlobal() > TOLERANCE_MC_SURFACE_MESH_I_H)
@@ -603,7 +606,7 @@ bool SurfaceMesh<NUM_NODES>::isPlanar()
         }
     }
 
-    MyMPI::My_MPI_Max_Scalar(flag,this->world);
+   MPI_Max_Scalar(flag,this->world);
 
     if(flag) return false;
     return true;

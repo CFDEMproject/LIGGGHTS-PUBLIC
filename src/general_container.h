@@ -65,6 +65,8 @@ namespace LAMMPS_NS
 
           // push / pop all elements
           
+          inline int bufSize(int operation = OPERATION_UNDEFINED,
+                            bool scale=false,bool translate=false, bool rotate=false);
           inline int pushToBuffer(double *buf, int operation,
                            bool scale=false,bool translate=false, bool rotate=false);
           inline int popFromBuffer(double *buf, int operation,
@@ -72,11 +74,11 @@ namespace LAMMPS_NS
 
           // push / pop a list elements
           
-          inline int listBufSize(int n, int operation = OPERATION_UNDEFINED,
+          inline int elemListBufSize(int n, int operation = OPERATION_UNDEFINED,
                             bool scale=false,bool translate=false, bool rotate=false);
-          inline int pushListToBuffer(int n, int *list, double *buf, int operation,
+          inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,
                            bool scale=false,bool translate=false, bool rotate=false);
-          inline int popListFromBuffer(int first, int n, double *buf, int operation,
+          inline int popElemListFromBuffer(int first, int n, double *buf, int operation,
                            bool scale=false,bool translate=false, bool rotate=false);
 
           // push / pop one single element
@@ -108,7 +110,7 @@ namespace LAMMPS_NS
       protected:
 
           GeneralContainer();
-          GeneralContainer(char *_id, char* _comm, char* _ref,int _scalePower = 1);
+          GeneralContainer(char *_id, char *_comm, char *_ref, char *_restart, int _scalePower = 1);
           GeneralContainer(GeneralContainer<T,NUM_VEC,LEN_VEC> const &orig);
           virtual ~GeneralContainer();
 

@@ -27,28 +27,17 @@
 
 #ifdef FIX_CLASS
 
-FixStyle(mesh,FixMesh)
-
-// for backward compatibility
-FixStyle(mesh/gran,FixMesh)
-
 #else
 
 #ifndef LMP_FIX_MESH_H
 #define LMP_FIX_MESH_H
 
 #include "fix.h"
-#include "tri_mesh.h"
-#include "fix_contact_history.h"
-#include "fix_neighlist_mesh.h"
-#include "custom_value_tracker.h"
 
 namespace LAMMPS_NS
 {
   class FixMesh : public Fix
   {
-      //friend class FixContactTracker;
-
       public:
 
         FixMesh(LAMMPS *lmp, int narg, char **arg);
@@ -60,52 +49,40 @@ namespace LAMMPS_NS
         virtual int setmask();
         void setup_pre_force(int);
 
-        int min_type();
-        int max_type();
+        void write_restart(FILE *fp);
+        void restart(char *buf);
 
         virtual void pre_exchange();
         virtual void pre_force(int);
 
-        void createNeighList();
-        void createContactHistory(int dnum);
+        int min_type();
+        int max_type();
 
-        int atomTypeWall()
-        { return atom_type_wall_;}
-
-        class FixContactHistory* contactHistory()
-        { return fix_contact_history_;}
-
-        class FixNeighlistMesh* meshNeighlist()
-        { return fix_mesh_neighlist_;}
-
-        class TriMesh *mesh()
+        class AbstractMesh* mesh()
         { return mesh_; }
 
-        bool surfaceVel()
-        { return surfaceVel_; }
+        virtual bool surfaceVel()
+        { return false; }
 
       protected:
 
+        void create_mesh(char *mesh_fname);
+        void create_mesh_restart();
+
         int iarg_;
 
-        class TriMesh *mesh_;
+        class AbstractMesh *mesh_;
 
-        bool surfaceVel_;
-
-        int atom_type_wall_;
-        class FixContactHistory *fix_contact_history_;
-        class FixNeighlistMesh *fix_mesh_neighlist_;
+        int atom_type_mesh_;
 
       private:
 
         void initialSetup();
 
+        // mesh manipulation upon creation
         void moveMesh(double const dx, double const dy, double const dz);
         void rotateMesh(double const axisX, double const axisY, double const axisZ, double const phi);
         void scaleMesh(double const factor);
-
-        void initVel(double *conv_vel);
-        void initAngVel(double *origin,double *axis,double omega);
 
         // flag if mesh is already setup
         bool setupFlag_;
@@ -113,9 +90,10 @@ namespace LAMMPS_NS
         // decides if parallel operations needed for
         // mesh on this time-step
         bool pOpFlag_;
+
   };
 
 } /* namespace LAMMPS_NS */
 
-#endif /* LMP_FIX_MESH_H */
-#endif /* FIX_CLASS */
+#endif
+#endif

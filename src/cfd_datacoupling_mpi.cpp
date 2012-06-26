@@ -29,7 +29,7 @@
 #include "comm.h"
 #include "modify.h"
 #include "math.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "fix_cfd_coupling.h"
 #include "fix_rigid_multisphere.h"
 #include "cfd_datacoupling_mpi.h"

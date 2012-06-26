@@ -108,6 +108,7 @@ FixHeatGran::FixHeatGran(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg
 FixHeatGran::~FixHeatGran()
 {
     
+    if(conductivity) delete []conductivity;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -152,6 +153,7 @@ int FixHeatGran::setmask()
   mask |= POST_FORCE;
   return mask;
 }
+
 /* ---------------------------------------------------------------------- */
 void FixHeatGran::updatePtrs()
 {
@@ -259,7 +261,7 @@ void FixHeatGran::cpl_evaluate(ComputePairGranLocal *caller)
 template <int HISTFLAG>
 void FixHeatGran::post_force_eval(int vflag,int cpl_flag)
 {
-  double hc,contactArea,delta_n;
+  double hc,contactArea,delta_n,flux;
   int i,j,ii,jj,inum,jnum;
   double xtmp,ytmp,ztmp,delx,dely,delz;
   double radi,radj,radsum,rsq,r,rinv,rsqinv,tcoi,tcoj;
@@ -343,13 +345,15 @@ void FixHeatGran::post_force_eval(int vflag,int cpl_flag)
          if (tcoi < SMALL || tcoj < SMALL) hc = 0.;
          else hc = 4.*tcoi*tcoj/(tcoi+tcoj)*sqrt(contactArea);
 
+         flux = (Temp[j]-Temp[i])*hc;
+
          if(!cpl_flag)
          {
-             heatFlux[i] += (Temp[j]-Temp[i])*hc;
-             if (newton_pair || j < nlocal) heatFlux[j] += (Temp[i]-Temp[j])*hc;
+             heatFlux[i] += flux;
+             if (newton_pair || j < nlocal) heatFlux[j] -= flux;
          }
 
-         if(cpl_flag && cpl) cpl->add_heat(i,j,(Temp[j]-Temp[i])*hc);
+         if(cpl_flag && cpl) cpl->add_heat(i,j,flux);
       }
     }
   }

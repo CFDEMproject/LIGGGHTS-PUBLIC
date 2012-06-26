@@ -38,7 +38,7 @@
     customValues_(*(new CustomValueTracker(lmp,*this))),
     mapArray_(0),
     mapTagMax_(0),
-    id_ (*this->prop().template addElementProperty< ScalarContainer<int> >("id","comm_none"/*ID does never change*/,"frame_invariant"))
+    id_ (*this->prop().template addElementProperty< ScalarContainer<int> >("id","comm_none"/*ID does never change*/,"frame_invariant","restart_yes"))
   {
   }
 
@@ -50,6 +50,9 @@
   TrackingMesh<NUM_NODES>::~TrackingMesh()
   {
      delete &customValues_;
+
+     // deallocate map memory if exists
+      if(mapArray_) clearMap();
   }
 
   /* ----------------------------------------------------------------------
@@ -82,6 +85,22 @@
   }
 
   /* ----------------------------------------------------------------------
+   recalculate properties on setup (on start and during simulation)
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void TrackingMesh<NUM_NODES>::refreshOwned(int setupFlag)
+  {
+    MultiNodeMeshParallel<NUM_NODES>::refreshOwned(setupFlag);
+  }
+
+  template<int NUM_NODES>
+  void TrackingMesh<NUM_NODES>::refreshGhosts(int setupFlag)
+  {
+    MultiNodeMeshParallel<NUM_NODES>::refreshGhosts(setupFlag);
+  }
+
+  /* ----------------------------------------------------------------------
    clear and generate a global map for global-local lookup
   ------------------------------------------------------------------------- */
 
@@ -101,7 +120,7 @@
 
       // get max ID of all proc
       int idmax = id_.max();
-      MyMPI::My_MPI_Max_Scalar(idmax,mapTagMax_,this->world);
+     MPI_Max_Scalar(idmax,mapTagMax_,this->world);
 
       // alocate and initialize new array
       // IDs start at 0, so have to use mapTagMax_+1
@@ -138,29 +157,29 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int TrackingMesh<NUM_NODES>::listBufSize(int n,int operation,bool scale,bool translate,bool rotate)
+  int TrackingMesh<NUM_NODES>::elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate)
   {
     int buf_size = 0;
-    buf_size += MultiNodeMeshParallel<NUM_NODES>::listBufSize(n,operation,scale,translate,rotate);
-    buf_size += customValues_.listBufSize(n,operation,scale,translate,rotate);
+    buf_size += MultiNodeMeshParallel<NUM_NODES>::elemListBufSize(n,operation,scale,translate,rotate);
+    buf_size += customValues_.elemListBufSize(n,operation,scale,translate,rotate);
     return buf_size;
   }
 
   template<int NUM_NODES>
-  int TrackingMesh<NUM_NODES>::pushListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int TrackingMesh<NUM_NODES>::pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
   {
     int nsend = 0;
-    nsend += MultiNodeMeshParallel<NUM_NODES>::pushListToBuffer(n,list,&buf[nsend],operation,scale,translate,rotate);
-    nsend += customValues_.pushListToBuffer(n,list,&buf[nsend],operation,scale,translate,rotate);
+    nsend += MultiNodeMeshParallel<NUM_NODES>::pushElemListToBuffer(n,list,&buf[nsend],operation,scale,translate,rotate);
+    nsend += customValues_.pushElemListToBuffer(n,list,&buf[nsend],operation,scale,translate,rotate);
     return nsend;
   }
 
   template<int NUM_NODES>
-  int TrackingMesh<NUM_NODES>::popListFromBuffer(int first, int n,double *buf, int operation,bool scale,bool translate, bool rotate)
+  int TrackingMesh<NUM_NODES>::popElemListFromBuffer(int first, int n,double *buf, int operation,bool scale,bool translate, bool rotate)
   {
     int nrecv = 0;
-    nrecv += MultiNodeMeshParallel<NUM_NODES>::popListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
-    nrecv += customValues_.popListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
+    nrecv += MultiNodeMeshParallel<NUM_NODES>::popElemListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
+    nrecv += customValues_.popElemListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
     return nrecv;
   }
 
@@ -194,6 +213,35 @@
     int nrecv = 0;
     nrecv += MultiNodeMeshParallel<NUM_NODES>::popElemFromBuffer(&buf[nrecv],operation,scale,translate,rotate);
     nrecv += customValues_.popElemFromBuffer(&buf[nrecv],operation,scale,translate,rotate);
+    return nrecv;
+  }
+
+  /* ----------------------------------------------------------------------
+   push / pop functions for mesh properties
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  int TrackingMesh<NUM_NODES>::meshPropsBufSize(int operation,bool scale,bool translate,bool rotate)
+  {
+    int buf_size = 0;
+    buf_size += customValues_.meshPropsBufSize(operation,scale,translate,rotate);
+    
+    return buf_size;
+  }
+
+  template<int NUM_NODES>
+  int TrackingMesh<NUM_NODES>::pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    int nsend = 0;
+    nsend += customValues_.pushMeshPropsToBuffer(&buf[nsend],operation,scale,translate,rotate);
+    return nsend;
+  }
+
+  template<int NUM_NODES>
+  int TrackingMesh<NUM_NODES>::popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    int nrecv = 0;
+    nrecv += customValues_.popMeshPropsFromBuffer(&buf[nrecv],operation,scale,translate,rotate);
     return nrecv;
   }
 

@@ -29,6 +29,7 @@
 #define LMP_CFD_DATACOUPLING_MPI_H
 
 #include "cfd_datacoupling.h"
+#include "error.h"
 #include "mpi.h"
 
 namespace LAMMPS_NS {
@@ -229,7 +230,8 @@ void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
 template<typename T>
 inline MPI_Datatype CfdDatacouplingMPI::mpi_type_dc()
 {
-    return MPI_UNDEFINED;
+    error->all(FLERR,"Illegal call to mpi_type_dc(), valid types are int and double");
+    return 0;
 }
 
 template<>

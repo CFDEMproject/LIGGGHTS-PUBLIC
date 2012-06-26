@@ -1,0 +1,236 @@
+==3425== Memcheck, a memory error detector
+==3425== Copyright (C) 2002-2009, and GNU GPL'd, by Julian Seward et al.
+==3425== Using Valgrind-3.6.0.SVN-Debian and LibVEX; rerun with -h for copyright info
+==3425== Command: liggghts2
+==3425== 
+==3426== Memcheck, a memory error detector
+==3426== Copyright (C) 2002-2009, and GNU GPL'd, by Julian Seward et al.
+==3426== Using Valgrind-3.6.0.SVN-Debian and LibVEX; rerun with -h for copyright info
+==3426== Command: liggghts2
+==3426== 
+==3425== Syscall param sched_setaffinity(mask) points to unaddressable byte(s)
+==3425==    at 0x6885E49: syscall (syscall.S:39)
+==3425==    by 0x6F276A5: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==3425==    by 0x6F27A84: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==3425==    by 0x6F27BC9: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==3425==    by 0x6F2752F: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==3425==    by 0x5894593: opal_paffinity_base_select (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==3425==    by 0x586A8C4: opal_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==3425==    by 0x5619A5C: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==3425==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==3425==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==3425==    by 0x7014CC: main (main.cpp:27)
+==3425==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==3425== 
+==3426== Syscall param sched_setaffinity(mask) points to unaddressable byte(s)
+==3426==    at 0x6885E49: syscall (syscall.S:39)
+==3426==    by 0x6F276A5: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==3426==    by 0x6F27A84: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==3426==    by 0x6F27BC9: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==3426==    by 0x6F2752F: ??? (in /usr/lib/openmpi/lib/openmpi/mca_paffinity_linux.so)
+==3426==    by 0x5894593: opal_paffinity_base_select (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==3426==    by 0x586A8C4: opal_init (in /usr/lib/openmpi/lib/libopen-pal.so.0.0.0)
+==3426==    by 0x5619A5C: orte_init (in /usr/lib/openmpi/lib/libopen-rte.so.0.0.0)
+==3426==    by 0x5393DB6: ??? (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==3426==    by 0x53B532F: PMPI_Init (in /usr/lib/openmpi/lib/libmpi.so.0.0.1)
+==3426==    by 0x7014CC: main (main.cpp:27)
+==3426==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+==3426== 
+LIGGGHTS (Version LIGGGHTS-MASTER 2.0RCplusplus, compiled 2012-06-26-20:42:44 by ckloss based on LAMMPS 20 Apr 2012)
+Created orthogonal box = (-1 -0.5 -0.5) to (1 0.5 0.5)
+  2 by 1 by 1 MPI processor grid
+
+Reading STL file 'bucket.stl' 
+Solid body detected in STL file
+End of solid body detected in STL file.
+0 atoms in group nve_group
+Particle insertion: 94 every 441 steps, 1500 by step 6616
+Setting up run ...
+Import and parallelization of mesh cad1 containing 28 triangle(s) successful
+Memory usage per processor = 10.4042 Mbytes
+Step Atoms KinEng 1 Volume 
+       0        0           -0            0            2 
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+    1000      211    105.41018            0            2 
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+    2000      363    268.80793            0            2 
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+    3000      484    524.16557            0            2 
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+    4000      691    927.06324            0            2 
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+    5000      816    1222.4834   0.47790287            2 
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+    6000      952    1086.0336    16.664759            2 
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+    7000     1083    970.78354    25.868286            2 
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+WARNING: Less insertions than requested (fix_pour.cpp:433)
+    8000     1258    841.17078     28.45286            2 
+Loop time of 118.085 on 2 procs for 8000 steps with 1258 atoms
+
+Pair  time (%) = 18.2615 (15.4648)
+Neigh time (%) = 0.952458 (0.806589)
+Comm  time (%) = 7.04845 (5.96898)
+Outpt time (%) = 28.0888 (23.787)
+Other time (%) = 63.7334 (53.9726)
+
+Nlocal:    629 ave 635 max 623 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Nghost:    86.5 ave 93 max 80 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Neighs:    3371.5 ave 3421 max 3322 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 6743
+Ave neighs/atom = 5.3601
+Neighbor list builds = 53
+Dangerous builds = 0
+Setting up run ...
+Memory usage per processor = 11.1751 Mbytes
+Step Atoms KinEng 1 Volume 
+    8000     1258    841.17078     28.45286            2 
+    9000     1258    655.66854    27.636111            2 
+   10000     1258     432.3647    23.577639            2 
+   11000     1258    254.87465    17.752513            2 
+   12000     1258    141.59914    13.198388            2 
+   13000     1258    95.650814    9.6713065            2 
+   14000     1258    79.456103    7.2451075            2 
+   15000     1258    67.622774    5.6662182            2 
+   16000     1258    48.694267    4.6143819            2 
+   17000     1258    32.361968    3.6274532            2 
+   18000     1258    22.462154     2.808892            2 
+   19000     1258    15.678541    2.2015252            2 
+   20000     1258     10.32457    1.6517699            2 
+   21000     1258    6.5341933    1.2557213            2 
+   22000     1258    4.5727164   0.88100459            2 
+   23000     1258    3.0195424   0.68346004            2 
+   24000     1258    2.3606621   0.51623921            2 
+   25000     1258    1.4407144   0.37505002            2 
+   26000     1258    1.0392712   0.28841971            2 
+   27000     1258   0.80763283   0.22842699            2 
+   28000     1258   0.64638531   0.19233052            2 
+   29000     1258   0.43121326   0.16551944            2 
+   29999     1258   0.24188026   0.10858137            2 
+Loop time of 855.271 on 2 procs for 21999 steps with 1258 atoms
+
+Pair  time (%) = 466.752 (54.5736)
+Neigh time (%) = 1.56782 (0.183312)
+Comm  time (%) = 30.4232 (3.55714)
+Outpt time (%) = 142.83 (16.7)
+Other time (%) = 213.698 (24.986)
+
+Nlocal:    629 ave 630 max 628 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Nghost:    84 ave 87 max 81 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Neighs:    4563 ave 4564 max 4562 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 9126
+Ave neighs/atom = 7.25437
+Neighbor list builds = 48
+Dangerous builds = 0
+Setting up run ...
+Memory usage per processor = 12.2432 Mbytes
+Step Atoms KinEng 1 Volume 
+   29999     1258   0.24188026   0.10858137            2 
+   30000     1258   0.24146945   0.10844638            2 
+Loop time of 0.843809 on 2 procs for 1 steps with 1258 atoms
+
+Pair  time (%) = 0.0245016 (2.90369)
+Neigh time (%) = 0 (0)
+Comm  time (%) = 0.00081408 (0.0964769)
+Outpt time (%) = 0.810736 (96.0806)
+Other time (%) = 0.00775683 (0.919264)
+
+Nlocal:    629 ave 630 max 628 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Nghost:    83.5 ave 87 max 80 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Neighs:    4566 ave 4567 max 4565 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 9132
+Ave neighs/atom = 7.25914
+Neighbor list builds = 0
+Dangerous builds = 0
+Setting up run ...
+Memory usage per processor = 12.2432 Mbytes
+Step Atoms KinEng 1 Volume 
+   30000     1258   0.24146945   0.10844638            2 
+   31000     1258   0.19108573   0.06966093            2 
+   32000     1258   0.15003896  0.053912064            2 
+   33000     1258  0.089101072  0.043545291            2 
+   34000     1258  0.045405361  0.025013008            2 
+   35000     1258  0.038857537  0.019002498            2 
+   36000     1258   0.44898978  0.046143807            2 
+   37000     1258     3.549908   0.33957599            2 
+   38000     1258    6.6457897   0.71677274            2 
+   39000     1258    4.5018112   0.64866169            2 
+   40000     1258    3.9188091   0.51858871            2 
+   41000     1258    3.8285619   0.58850956            2 
+   42000     1258    5.7469863   0.79483053            2 
+   43000     1258    7.5775402    0.9109495            2 
+   44000     1258    5.9830145   0.94360547            2 
+   45000     1258    7.7128058   0.97251168            2 
+Loop time of 502.359 on 2 procs for 15000 steps with 1258 atoms
+
+Pair  time (%) = 310.053 (61.7194)
+Neigh time (%) = 0.311507 (0.0620089)
+Comm  time (%) = 12.0409 (2.39686)
+Outpt time (%) = 60.8584 (12.1145)
+Other time (%) = 119.095 (23.7072)
+
+Nlocal:    629 ave 630 max 628 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Nghost:    71.5 ave 72 max 71 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Neighs:    4481.5 ave 4509 max 4454 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 8963
+Ave neighs/atom = 7.1248
+Neighbor list builds = 16
+Dangerous builds = 0
+Setting up run ...
+Memory usage per processor = 12.2432 Mbytes
+Step Atoms KinEng 1 Volume 
+   45000     1258    7.7128058   0.97251168            2 
+   46000     1258    23.793641    1.5031734            2 
+   47000     1258    21.193949    1.5625998            2 
+   48000     1258    18.573973    1.5087003            2 
+   49000     1258    18.162249    1.4141562            2 
+   50000     1258     16.95456    1.3007209            2 
+   51000     1258    16.206817    1.2006675            2 
+   52000     1258    13.433812    1.1839538            2 
+   53000     1258    13.123371    1.1481633            2 
+   54000     1258    12.400486    1.1733577            2 
+   55000     1258    10.014792    1.0999732            2 
+   56000     1258    9.9555297    0.9743729            2 
+   57000     1258    9.6789987    0.8965924            2 
+   58000     1258    9.1969254   0.86135241            2 
+   59000     1258    7.6877054   0.85147653            2 
+   60000     1258    6.7090236   0.76439609            2 
+   61000     1258    6.3781085   0.61684661            2 
+   62000     1258    6.4844577    0.5292736            2 
+   63000     1258    7.1451972   0.43393433            2 
+   64000     1258    7.7514615   0.37551471            2 
+   65000     1258    7.4952159   0.36185068            2 
+mpirun: killing job...
+
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 3425 on node fluid38 exited on signal 0 (Unknown signal 0).
+--------------------------------------------------------------------------
+mpirun: clean termination accomplished
+
+2 total processes killed (some possibly by mpirun during cleanup)

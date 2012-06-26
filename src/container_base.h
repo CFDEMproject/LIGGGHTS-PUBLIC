@@ -45,7 +45,7 @@ namespace LAMMPS_NS
 
           virtual ~ContainerBase();
 
-          void setProperties(char *_id, char* _comm, char* _ref,int _scalePower = 1);
+          void setProperties(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower = 1);
           bool propertiesSetCorrectly();
           void id(char *_id);
           bool matches_id(char *_id);
@@ -65,10 +65,19 @@ namespace LAMMPS_NS
 
           // buffer functions for parallelization
 
+          virtual int bufSize(int operation = OPERATION_UNDEFINED,
+                            bool scale=false,bool translate=false, bool rotate=false) = 0;
           virtual int popFromBuffer(double *buf,int operation,
                             bool scale=false,bool translate=false, bool rotate=false) = 0;
           virtual int pushToBuffer(double *buf,int operation,
                             bool scale=false,bool translate=false, bool rotate=false) = 0;
+
+          virtual int elemListBufSize(int n, int operation = OPERATION_UNDEFINED,
+                            bool scale=false,bool translate=false, bool rotate=false) = 0;
+          virtual int pushElemListToBuffer(int n, int *list, double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false) = 0;
+          virtual int popElemListFromBuffer(int first, int n, double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false) = 0;
 
           virtual int elemBufSize(int operation = OPERATION_UNDEFINED,
                             bool scale=false,bool translate=false, bool rotate=false) = 0;
@@ -77,17 +86,10 @@ namespace LAMMPS_NS
           virtual int popElemFromBuffer(double *buf,int operation,
                             bool scale=false,bool translate=false, bool rotate=false) = 0;
 
-          virtual int listBufSize(int n, int operation = OPERATION_UNDEFINED,
-                            bool scale=false,bool translate=false, bool rotate=false) = 0;
-          virtual int pushListToBuffer(int n, int *list, double *buf, int operation,
-                           bool scale=false,bool translate=false, bool rotate=false) = 0;
-          virtual int popListFromBuffer(int first, int n, double *buf, int operation,
-                           bool scale=false,bool translate=false, bool rotate=false) = 0;
-
       protected:
 
           ContainerBase();
-          ContainerBase(char *_id, char* _comm, char* _ref,int _scalePower);
+          ContainerBase(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower);
           ContainerBase(ContainerBase const &orig);
 
           inline bool isScaleInvariant();
@@ -100,6 +102,7 @@ namespace LAMMPS_NS
           int communicationType_;
           int refFrame_;
           int scalePower_;
+          int restartType_;
   };
 
   // *************************************

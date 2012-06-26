@@ -17,21 +17,22 @@ fix wall/gran/hertz/history/stiffness command :h3
 
 fix ID group-ID style wallstyle wallstyleargs keyword values ... :pre
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
-style = {gran/hooke} or {gran/hooke/history} or {gran/hertz/history} or {gran/hooke/history/simple} or {gran/hertz/history/simple} :l
+style = {wall/gran/hooke} or {wall/gran/hooke/history} or {wall/gran/hertz/history} or {wall/gran/hooke/history/simple} or {wall/gran/hertz/history/simple} :l
 wallstyle = {mesh} or {primitive} :l
 wallstyle args for wallstyle {mesh} = {n_meshes} and {meshes} :l
   {n_meshes} value = nm
-    nm = # of meshes (see "fix mesh"_fix_mesh.html) to use for the wall (positive integer)
+    nm = # of meshes (see "fix mesh/surface"_fix_mesh_surface.html) to use for the wall (positive integer)
   {meshes} values = meshlist
-    meshlist =  id(s) of the mesh(es) (see "fix mesh"_fix_mesh.html) to be used. These must be defined before :pre
+    meshlist =  id(s) of the mesh(es) (see "fix mesh/surface"_fix_mesh_surface.html) to be used. These must be defined before :pre
 
-wallstyle args for wallstyle {primitive} = {type} or {xplane} or {yplane} or {zplane} or {zcylinder} or {zcone} :l
+wallstyle args for wallstyle {primitive} = {type} or {xplane} or {yplane} or {zplane} or {xcylinder} or {ycylinder} or {zcylinder} :l
   {type} args = tp
     tp = atom_type (material type) of the wall
   {xplane} or {yplane} or {zplane} args = lo hi
     lo,hi = position of lower and upper plane (distance units), either can be NULL)
-  {zcylinder} args = radius
+  {xcylinder} or {ycylinder} or {zcylinder} args = radius c1 c2
     radius = cylinder radius (distance units)
+    c1,c2 = coordinates of center axis in other 2 dims (distance units)
   {zcone} args = lo hi radiuslo radiushi
     lo = z-coordinate where the cone starts (distance units)
     hi = z-coordinate where the cone ends (distance units)
@@ -92,17 +93,16 @@ simulation with fix property commands. See "pair_style gran"_pair_gran.html
 uses absolute damping if keyword {absolute_damping} is set to 'on' in 
 "pair_style gran"_pair_gran.html.
 
-For {wallstyle mesh}, triangle-particle neighbor lists are built to efficiently 
+For wallstyle {mesh}, fix_id1, fix_id2 etc. must be IDs of valid fixes of 
+type "fix mesh/surface"_fix_mesh_surface.html, defining the granular mesh 
+to be used for the wall. Triangle-particle neighbor lists are built to efficiently 
 track particle-triangle contacts. Particle-tri neighbor list build is triggered 
-if any particle moves
-more than half the skin distance or (in case of moving mesh) if the mesh
+if any particle moves more than half the skin distance or (in case of moving mesh) if the mesh
 itself moves more than half the skin distance since the last build. A warning
 is generated if a dangerous particle-tri neigh list build is detected
 (e.g. if particles are inserted too close to a wall, see section 'Restrictions').
 For style {mesh}, the atom_type (material type) is inherited from the atom style provided
-in the "fix mesh"_fix_mesh.html command. fix_id1, fix_id2 etc. must
-be IDs of valid fixes of type "fix mesh"_fix_mesh.html, defining
-the granular mesh to be used for the wall.
+in the "fix mesh/surface"_fix_mesh_surface.html command. 
 
 For {wallstyle primitive}, the atom_type (material type) has to be provided via
 keyword {type}. Primitve walls can be {xplane} or {yplane} or {zplane} or {cylindrical}
@@ -148,13 +148,13 @@ at whatever radius has been defined.
 NOTE: The keywords wiggle or shear can NOT be used for {wallstyle mesh}.
 For a moving a granular wall with {wallstyle mesh}, use the more flexible
 command "fix move/mesh"fix_move_mesh.html, or use the keywords {velocity}
-or {angular_velocity} in "fix mesh"_fix_mesh.html..
+or {angular_velocity} in "fix mesh/surface"_fix_mesh_surface.html.
 
 The keyword {temperature} is used to assign a constant temperature to the wall.
 This setting gets effective in conjunction with heat conduction via
 "fix heat/gran"_fix_heat_gran.html. For {wallstyle mesh}, the value
 for the temperature given in this command is ignored and the temperature
-value is specified per mesh via "fix mesh"_fix_mesh.html.
+value is specified per mesh via "fix mesh/surface"_fix_mesh_surface.html.
 
 By specifying {store_force} = 'yes', you can instruct the command to
 store the wall force exerted on the particles in a
@@ -180,7 +180,7 @@ No parameter of this fix can be used with the start/stop keywords of the
 
 There can be only one fix wall/gran command with style {mesh}. Note that
 this is not really a restriction because you can include multiple fixes
-of type "fix mesh"_fix_mesh.html in the fix wall/gran command.
+of type "fix mesh/surface"_fix_mesh_surface.html in the fix wall/gran command.
 
 When using style style {mesh}, you have to use the style {bin} for
 the "neighbor command"_neighbor.html.
@@ -201,7 +201,7 @@ Any dimension (xyz) that has a planar granular wall must be non-periodic.
 
 [Related commands:]
 
-"fix_move"_fix_move.html, "pair_style granular"_pair_gran.html
+"fix mesh/surface"_fix_mesh_surface.html, "fix_move_mesh"_fix_move_mesh.html, "pair_style granular"_pair_gran.html
 
 [Default:]
 

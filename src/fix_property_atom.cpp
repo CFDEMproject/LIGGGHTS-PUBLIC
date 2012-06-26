@@ -34,7 +34,7 @@
 #include "timer.h"
 #include "neighbor.h"
 #include "fix_property_atom.h"
-#include "mympi.h"
+#include "mpi_liggghts.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -117,8 +117,10 @@ FixPropertyAtom::FixPropertyAtom(LAMMPS *lmp, int narg, char **arg) :
         for (int i = 0; i < nlocal; i++)
         {
           if (data_style)
+          {
             for (int m = 0; m < nvalues; m++)
                 array_atom[i][m] = defaultvalues[m];
+          }
           else vector_atom[i] = defaultvalues[0];
         }
     }
@@ -250,7 +252,7 @@ void FixPropertyAtom::grow_arrays(int nmax)
 
 void FixPropertyAtom::copy_arrays(int i, int j)
 {
-    if (data_style) for(int k=0;k<nvalues;k++) array_atom[j][k]=array_atom[i][k];
+    if (data_style) for(int k=0;k<nvalues;k++) array_atom[j][k] = array_atom[i][k];
     else vector_atom[j]=vector_atom[i];
 }
 
@@ -283,7 +285,7 @@ int FixPropertyAtom::pack_exchange(int i, double *buf)
 
 int FixPropertyAtom::unpack_exchange(int nlocal, double *buf)
 {
-    if (data_style) for(int k=0;k<nvalues;k++) array_atom[nlocal][k]=buf[k];
+    if (data_style) for(int k=0;k<nvalues;k++) array_atom[nlocal][k] = buf[k];
     else vector_atom[nlocal]=buf[0];
     return nvalues;
 }
@@ -415,6 +417,6 @@ double FixPropertyAtom::compute_vector(int n)
       }
   }
 
-  MyMPI::My_MPI_Sum_Scalar(value,world);
+ MPI_Sum_Scalar(value,world);
   return value;
 }

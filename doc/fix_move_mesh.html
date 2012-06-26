@@ -25,7 +25,7 @@
 
 <LI>mesh-ID = ID for the fix mesh that the fix move/mesh is applied to 
 
-<LI>style = <I>linear</I> or <I>wiggle</I> or <I>rotate</I> 
+<LI>style = <I>linear</I> or <I>wiggle</I> or <I>riggle</I> or <I>rotate</I> 
 
 <PRE>  <I>linear</I> args = Vx Vy Vz
     Vx,Vy,Vz = components of velocity vector (velocity units)
@@ -64,7 +64,7 @@ fix move all move/mesh mesh cad1 linear 5. 5. 0.
 <P><B>Description:</B>
 </P>
 <P>Perform updates of position and velocity for mesh elements which are 
-part of the <A HREF = "fix_mesh.html">fix_mesh</A> with ID <I>mesh-ID</I>
+part of the <A HREF = "fix_mesh_surface.html">fix_mesh_surface</A> with ID <I>mesh-ID</I>
 using the specified settings or formulas. The fix group is ignored
 for this command.
 </P>
@@ -152,7 +152,9 @@ minimization</A>.
 <P>If multiple fix move/mesh movements are superposed onto one mesh, 
 they have to be deleted in reverse order of their creation
 </P>
-<P><B>Related commands:</B> none
+<P><B>Related commands:</B> 
+</P>
+<P><A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
 </P>
 <P><B>Default:</B> none
 </P>

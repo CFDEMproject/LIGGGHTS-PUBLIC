@@ -34,21 +34,27 @@
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer()
-  : ContainerBase(), numElem_(0), maxElem_(GROW)
+  : ContainerBase(),
+    numElem_(0),
+    maxElem_(GROW)
   {
           create<T>(arr_,GROW,NUM_VEC,LEN_VEC);
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(char *_id, char* _comm, char* _ref,int _scalePower)
-  : ContainerBase(_id, _comm, _ref,_scalePower), numElem_(0), maxElem_(GROW)
+  GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(char *_id, char *_comm, char *_ref, char *_restart, int _scalePower)
+  : ContainerBase(_id, _comm, _ref, _restart, _scalePower),
+    numElem_(0),
+    maxElem_(GROW)
   {
           create<T>(arr_,GROW,NUM_VEC,LEN_VEC);
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(GeneralContainer<T,NUM_VEC,LEN_VEC> const &orig)
-  : ContainerBase(orig), numElem_(orig.numElem_),maxElem_(orig.numElem_)
+  : ContainerBase(orig),
+    numElem_(orig.numElem_),
+    maxElem_(orig.numElem_)
   {
           create<T>(arr_,maxElem_,NUM_VEC,LEN_VEC);
           for(int i=0;i<maxElem_;i++)
@@ -239,8 +245,17 @@
   }
 
   /* ----------------------------------------------------------------------
-   push / pop
+   buffer size for all elements, push / pop for all elements
   ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  int GeneralContainer<T,NUM_VEC,LEN_VEC>::bufSize(int operation,bool scale,bool translate,bool rotate)
+  {
+      if(!this->decideBufferOperation(operation,scale,translate,rotate))
+            return 0;
+
+      return (1 + size()*NUM_VEC*LEN_VEC);
+  }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   int GeneralContainer<T,NUM_VEC,LEN_VEC>::pushToBuffer(double *buf,int operation,bool scale,bool translate, bool rotate)
@@ -289,11 +304,11 @@
   }
 
   /* ----------------------------------------------------------------------
-   push / pop a list of elements
+   buffer size for a list of elements, push / pop a list of elements
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  int GeneralContainer<T,NUM_VEC,LEN_VEC>::listBufSize(int n,int operation,bool scale,bool translate,bool rotate)
+  int GeneralContainer<T,NUM_VEC,LEN_VEC>::elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate)
   {
       if(!this->decideBufferOperation(operation,scale,translate,rotate))
             return 0;
@@ -302,7 +317,7 @@
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  int GeneralContainer<T,NUM_VEC,LEN_VEC>::pushListToBuffer(int n, int *list,double *buf,int operation,bool scale,bool translate, bool rotate)
+  int GeneralContainer<T,NUM_VEC,LEN_VEC>::pushElemListToBuffer(int n, int *list,double *buf,int operation,bool scale,bool translate, bool rotate)
   {
         int i,m = 0;
 
@@ -321,7 +336,7 @@
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  int GeneralContainer<T,NUM_VEC,LEN_VEC>::popListFromBuffer(int first, int n, double *buf,int operation,bool scale,bool translate, bool rotate)
+  int GeneralContainer<T,NUM_VEC,LEN_VEC>::popElemListFromBuffer(int first, int n, double *buf,int operation,bool scale,bool translate, bool rotate)
   {
         int i,m = 0;
 
@@ -346,8 +361,7 @@
   }
 
   /* ----------------------------------------------------------------------
-   buffer size per element
-   push / pop per element
+   buffer size for a single element, push / pop a single element
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>

@@ -22,11 +22,11 @@
 #ifndef LMP_MULTI_NODE_MESH_PARALLEL_H
 #define LMP_MULTI_NODE_MESH_PARALLEL_H
 
-#include "mympi.h"
+#include "mpi_liggghts.h"
 #include "multi_node_mesh.h"
 #include "comm.h"
 #include "error.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "neighbor.h"
 #include "math_extra_liggghts.h"
 
@@ -37,15 +37,17 @@ namespace LAMMPS_NS
   {
       public:
 
-        virtual void initalSetup();
-        virtual void pbcExchangeBorders();
-        virtual void forwardComm();
-        virtual void reverseComm();
+        void initalSetup();
+        void pbcExchangeBorders(int setupFlag);
+        void forwardComm();
+        void reverseComm();
+
+        void writeRestart(FILE *fp);
+        void restart(double *list);
 
         virtual void buildNeighbours() = 0;
 
         bool allNodesInsideSimulationBox();
-        void init();
 
         inline int sizeLocal()
         { return nLocal_; }
@@ -66,21 +68,26 @@ namespace LAMMPS_NS
         virtual void addElement(double **nodeToAdd);
         virtual void deleteElement(int n);
 
-        virtual void refreshOwned() = 0;
-        virtual void refreshGhosts() = 0;
+        virtual void refreshOwned(int setupFlag);
+        virtual void refreshGhosts(int setupFlag);
+
         virtual void clearMap() = 0;
         virtual void generateMap() = 0;
         virtual void clearGhostForward(bool scale,bool translate,bool rotate);
 
         // lo-level parallelization also used by derived classes
 
-        virtual int listBufSize(int n,int operation,bool scale,bool translate,bool rotate);
-        virtual int pushListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
-        virtual int popListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        virtual int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
+        virtual int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
+        virtual int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         virtual int elemBufSize(int operation,bool scale,bool translate,bool rotate);
         virtual int pushElemToBuffer(int i, double *buf,int operation,bool scale,bool translate,bool rotate);
         virtual int popElemFromBuffer(double *buf,int operation,bool scale,bool translate,bool rotate);
+
+        virtual int meshPropsBufSize(int operation,bool scale,bool translate,bool rotate) = 0;
+        virtual int pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate) = 0;
+        virtual int popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate) = 0;
 
       private:
 
@@ -99,6 +106,9 @@ namespace LAMMPS_NS
         // lo-level parallelization
         int pushExchange(int dim,double *buf);
         void popExchange(int nrecv,double *buf);
+
+        int sizeRestartMesh();
+        int sizeRestartElement();
 
         // number of local and ghost elements
         int nLocal_;

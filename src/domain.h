@@ -27,7 +27,7 @@
 #include "pointers.h"
 #include "error.h" 
 #include "comm.h" 
-#include "myvector.h" 
+#include "vector_liggghts.h" 
 
 #define SMALL_DMBRDR 1.0e-8 
 

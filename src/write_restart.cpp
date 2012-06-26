@@ -75,6 +75,8 @@ WriteRestart::WriteRestart(LAMMPS *lmp) : Pointers(lmp)
 {
   MPI_Comm_rank(world,&me);
   MPI_Comm_size(world,&nprocs);
+
+  region = NULL; 
 }
 
 /* ----------------------------------------------------------------------
@@ -107,6 +109,7 @@ void WriteRestart::command(int narg, char **arg)
       if (iregion == -1) error->all(FLERR,"Write_restart region ID does not exist");
       else region = domain->regions[iregion];
   }
+  else region = NULL;
 
   // init entire system since comm->exchange is done
   // comm::init needs neighbor::init needs pair::init needs kspace::init, etc

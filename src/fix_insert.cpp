@@ -37,8 +37,8 @@
 #include "fix_template_sphere.h"
 #include "fix_insert.h"
 #include "math_extra_liggghts.h"
-#include "mympi.h"
-#include "myvector.h"
+#include "mpi_liggghts.h"
+#include "vector_liggghts.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -447,7 +447,7 @@ void FixInsert::pre_exchange()
   
   ninsert_this_local = fix_distribution->randomize_list(ninsert_this_local,groupbit,truncate);
 
-  MyMPI::My_MPI_Sum_Scalar(ninsert_this_local,ninsert_this,world);
+ MPI_Sum_Scalar(ninsert_this_local,ninsert_this,world);
 
   if(ninsert_this == 0)
   {
@@ -460,10 +460,11 @@ void FixInsert::pre_exchange()
         next_reneighbor += insert_every;
       return;
   }
-  if(ninsert_this < 0)
+  else if(ninsert_this < 0)
   {
       error->one(FLERR,"Particle insertion: Internal error");
   }
+
   // warn if max # insertions exceeded by random processes
   if (ninsert_exists && ninserted + ninsert_this > ninsert)
   {
@@ -517,13 +518,13 @@ void FixInsert::pre_exchange()
   }
 
   // tally stats
-  MyMPI::My_MPI_Sum_Scalar(ninserted_this_local,ninserted_this,world);
+ MPI_Sum_Scalar(ninserted_this_local,ninserted_this,world);
   ninserted += ninserted_this;
-  MyMPI::My_MPI_Sum_Scalar(mass_inserted_this_local,mass_inserted_this,world);
+ MPI_Sum_Scalar(mass_inserted_this_local,mass_inserted_this,world);
   massinserted += mass_inserted_this;
   print_stats_during(ninserted_this,mass_inserted_this);
 
-  if(ninserted_this < ninsert_this)
+  if(ninserted_this < ninsert_this && comm->me == 0)
       error->warning(FLERR,"Particle insertion: Less insertions than requested");
 
   // free local memory

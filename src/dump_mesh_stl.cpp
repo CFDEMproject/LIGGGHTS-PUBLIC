@@ -34,7 +34,7 @@
 #include "group.h"
 #include "error.h"
 #include "fix.h"
-#include "fix_mesh.h"
+#include "fix_mesh_surface.h"
 #include "modify.h"
 #include "comm.h"
 #include <stdint.h>
@@ -80,7 +80,7 @@ DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
     } else error->all(FLERR,"Illegal dump mesh/stl command, unknown keyword");
   }
 
-  nMesh_ = modify->n_fixes_style("mesh");
+  nMesh_ = modify->n_fixes_style("mesh/surface");
   
   if (nMesh_ == 0)
     error->warning(FLERR,"Dump mesh/stl cannot find any fix of type 'mesh/gran' to dump");
@@ -89,7 +89,7 @@ DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   for (int iMesh = 0; iMesh < nMesh_; iMesh++)
   {
       
-      meshList_[iMesh] =static_cast<FixMesh*>(modify->find_fix_style("mesh",iMesh))->mesh();
+      meshList_[iMesh] =static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
   }
 }
 

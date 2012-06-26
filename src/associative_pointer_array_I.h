@@ -54,12 +54,12 @@
   ------------------------------------------------------------------------- */
 
   template<typename T> template<typename U>
-  U* AssociativePointerArray<T>::add(char *_id, char* _comm, char* _ref,int _scalePower)
+  U* AssociativePointerArray<T>::add(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower)
   {
     if(numElem_ == maxElem_)
       growArrays();
 
-    content_[numElem_] = static_cast<T*>(new U(_id,_comm,_ref,_scalePower));
+    content_[numElem_] = static_cast<T*>(new U(_id,_comm,_ref,_restart,_scalePower));
 
     numElem_++;
 
@@ -234,33 +234,64 @@
   }
 
   /* ----------------------------------------------------------------------
-   buf size, push, pop for list
+   buf size, push, pop for all elements
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  int AssociativePointerArray<T>::listBufSize(int n,int operation,bool scale,bool translate,bool rotate)
+  int AssociativePointerArray<T>::bufSize(int operation,bool scale,bool translate,bool rotate)
   {
     int buf_size = 0;
     for(int i=0;i<numElem_;i++)
-      buf_size += getBasePointerByIndex(i)->listBufSize(n,operation,scale,translate,rotate);
+      buf_size += getBasePointerByIndex(i)->bufSize(operation,scale,translate,rotate);
     return buf_size;
   }
 
   template<typename T>
-  int AssociativePointerArray<T>::pushListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int AssociativePointerArray<T>::pushToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
     int nsend = 0;
     for(int i=0;i<numElem_;i++)
-      nsend += getBasePointerByIndex(i)->pushListToBuffer(n,list,&buf[nsend],operation,scale,translate,rotate);
+      nsend += getBasePointerByIndex(i)->pushToBuffer(&buf[nsend],operation,scale,translate,rotate);
     return nsend;
   }
 
   template<typename T>
-  int AssociativePointerArray<T>::popListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int AssociativePointerArray<T>::popFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
     int nrecv = 0;
     for(int i=0;i<numElem_;i++)
-      nrecv += getBasePointerByIndex(i)->popListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
+      nrecv += getBasePointerByIndex(i)->popFromBuffer(&buf[nrecv],operation,scale,translate,rotate);
+    return nrecv;
+  }
+
+  /* ----------------------------------------------------------------------
+   buf size, push, pop for list of elements
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  int AssociativePointerArray<T>::elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate)
+  {
+    int buf_size = 0;
+    for(int i=0;i<numElem_;i++)
+      buf_size += getBasePointerByIndex(i)->elemListBufSize(n,operation,scale,translate,rotate);
+    return buf_size;
+  }
+
+  template<typename T>
+  int AssociativePointerArray<T>::pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    int nsend = 0;
+    for(int i=0;i<numElem_;i++)
+      nsend += getBasePointerByIndex(i)->pushElemListToBuffer(n,list,&buf[nsend],operation,scale,translate,rotate);
+    return nsend;
+  }
+
+  template<typename T>
+  int AssociativePointerArray<T>::popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    int nrecv = 0;
+    for(int i=0;i<numElem_;i++)
+      nrecv += getBasePointerByIndex(i)->popElemListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
     return nrecv;
   }
 

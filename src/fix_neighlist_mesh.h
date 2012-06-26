@@ -65,7 +65,7 @@ class FixNeighlistMesh : public Fix
     void getBinBoundariesFromBoundingBox(class BoundingBox &b,
         int &ixMin,int &ixMax,int &iyMin,int &iyMax,int &izMin,int &izMax);
 
-    class FixMesh *caller_;
+    class FixMeshSurface *caller_;
     class TriMesh *mesh_;
 
     bool buildNeighList;

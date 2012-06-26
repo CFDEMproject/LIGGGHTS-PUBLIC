@@ -26,13 +26,13 @@
 ------------------------------------------------------------------------- */
 
 #include "fix_neighlist_mesh.h"
-#include "fix_mesh.h"
+#include "fix_mesh_surface.h"
 #include "modify.h"
 #include "container.h"
 #include "bounding_box.h"
 #include "neighbor.h"
 #include "atom.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "update.h"
 #include <stdio.h>
 
@@ -42,10 +42,15 @@ using namespace FixConst;
 #define SMALL_DELTA skin/(70.*M_PI)
 
 FixNeighlistMesh::FixNeighlistMesh(LAMMPS *lmp, int narg, char **arg)
-: Fix(lmp,narg,arg), buildNeighList(false), movingMesh(false)
+: Fix(lmp,narg,arg),
+  buildNeighList(false),
+  movingMesh(false)
 {
-    caller_ = static_cast<FixMesh*>(modify->find_fix_id(arg[3]));
-    mesh_ = caller_->mesh();
+    if(!modify->find_fix_id(arg[3]) || strcmp(modify->find_fix_id(arg[3])->style,"mesh/surface"))
+        error->fix_error(FLERR,this,"illegal caller");
+
+    caller_ = static_cast<FixMeshSurface*>(modify->find_fix_id(arg[3]));
+    mesh_ = caller_->triMesh();
 }
 
 /* ---------------------------------------------------------------------- */

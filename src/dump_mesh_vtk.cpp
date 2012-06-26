@@ -28,7 +28,7 @@
 #include "group.h"
 #include "error.h"
 #include "fix.h"
-#include "fix_mesh.h"
+#include "fix_mesh_surface.h"
 #include "modify.h"
 #include "comm.h"
 #include <stdint.h>
@@ -58,7 +58,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
 
   format_default = NULL;
 
-  nMesh_ = modify->n_fixes_style("mesh");
+  nMesh_ = modify->n_fixes_style("mesh/surface");
   
   if (nMesh_ == 0)
     error->warning(FLERR,"Dump mesh/vtk cannot find any fix of type 'mesh/gran' to dump");
@@ -67,7 +67,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   for (int iMesh = 0; iMesh < nMesh_; iMesh++)
   {
       
-      meshList_[iMesh] =static_cast<FixMesh*>(modify->find_fix_style("mesh",iMesh))->mesh();
+      meshList_[iMesh] = static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
   }
 
   int iarg = 5;
@@ -130,6 +130,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
 DumpMeshVTK::~DumpMeshVTK()
 {
   delete[] meshList_;
+  memory->destroy(buf_all_);
 }
 
 /* ---------------------------------------------------------------------- */

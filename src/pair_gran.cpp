@@ -191,7 +191,7 @@ void PairGran::init_style()
 
   // check if a fix rigid is registered - important for damp
   
-  fr = static_cast<FixRigid*>(modify->find_fix_style("rigid",0));
+  fix_rigid = static_cast<FixRigid*>(modify->find_fix_style("rigid",0));
 
   if(modify->n_fixes_style("rigid") > 1)
     error->warning(FLERR,"Pair gran does currently not support more than one fix rigid. This may result in under-damping.");
@@ -440,7 +440,39 @@ double PairGran::init_one(int i, int j)
 
 void PairGran::compute(int eflag, int vflag)
 {
-    compute(eflag,vflag,1);
+   if (fix_rigid && neighbor->ago == 0) {
+     body = fix_rigid->body;
+     masstotal = fix_rigid->masstotal;
+     comm->forward_comm_pair(this);
+   }
+
+   compute(eflag,vflag,1);
+}
+
+/* ---------------------------------------------------------------------- */
+
+int PairGran::pack_comm(int n, int *list,double *buf, int pbc_flag, int *pbc)
+{
+  int i,j,m;
+
+  m = 0;
+  for (i = 0; i < n; i++) {
+    j = list[i];
+    buf[m++] = body[j];
+  }
+  return 1;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void PairGran::unpack_comm(int n, int first, double *buf)
+{
+  int i,m,last;
+
+  m = 0;
+  last = first + n;
+  for (i = first; i < last; i++)
+    body[i] = static_cast<int> (buf[m++]);
 }
 
 /* ----------------------------------------------------------------------

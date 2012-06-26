@@ -17,7 +17,7 @@
 </PRE>
 <UL><LI>ID = user-assigned name for the region 
 
-<LI>style = <I>delete</I> or <I>block</I> or <I>cone</I> or <I>cylinder</I> or <I>plane</I> or <I>prism</I> or <I>sphere</I> or <I>union</I> or <I>intersect</I> 
+<LI>style = <I>delete</I> or <I>block</I> or <I>cone</I> or <I>cylinder</I> or <I>plane</I> or <I>prism</I> or <I>sphere</I> or <I>union</I> or <I>intersect</I> or <I>wedge</I> 
 
 <PRE>  <I>delete</I> = no args
   <I>block</I> args = xlo xhi ylo yhi zlo zhi
@@ -43,6 +43,30 @@
   <I>sphere</I> args = x y z radius
     x,y,z = center of sphere (distance units)
     radius = radius of sphere (distance units)
+  <I>wedge</I> args = axis dim center c1 c2 radius r bounds lo hi angle0 alpha0 angle alpha
+    axis = obligatory keyword
+    dim = x or y or z ... wedge is aligned to this dimension
+    center = obligatory keyword
+    c1 = first center-coordinate
+           if dim == x then y-coord
+           if dim == y then z-coord
+           if dim == z then x-coord
+    c2 = second center-coordinate 
+           if dim == x then z-coord
+           if dim == y then x-coord
+           if dim == z then y-coord
+    radius = obligatory keyword
+    r = radius of cylinder
+    bounds = obligatory keyword
+    lo = dim-coord of lower flat face of cylinder of wedge
+    hi = dim-coord of higher flat face of cylinder of wedge
+    angle0 = obligatory keyword
+    alpha0 = mathematically positive angle of the wedge's starting face
+               if axis == x then starting from y-axis
+               if axis == y then starting from z-axis
+               if axis == z then starting from x=axis
+    angle = obligatory keyword
+    alpha = mathematically positive angle between the wedge's starting and ending face in degrees 
   <I>union</I> args = N reg-ID1 reg-ID2 ...
     N = # of regions to follow, must be 2 or greater
     reg-ID1,reg-ID2, ... = IDs of regions to join together
@@ -76,7 +100,8 @@ region 2 sphere 0.0 0.0 0.0 5 side out
 region void cylinder y 2 3 5 -5.0 EDGE units box
 region 1 prism 0 10 0 10 0 10 2 0 0
 region outside union 4 side1 side2 side3 side4
-region 2 sphere 0.0 0.0 0.0 5 side out move v_left v_up NULL 
+region 2 sphere 0.0 0.0 0.0 5 side out move v_left v_up NULL
+region 1 wedge axis y  center 0 0  radius 10 bounds 0 10 angle0 -22.5 angle 45 units box side in 
 </PRE>
 <P><B>Description:</B>
 </P>

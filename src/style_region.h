@@ -6,3 +6,4 @@
 #include "region_prism.h"
 #include "region_sphere.h"
 #include "region_union.h"
+#include "region_wedge.h"

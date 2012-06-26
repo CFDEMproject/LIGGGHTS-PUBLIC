@@ -37,7 +37,7 @@
 #include "domain.h"
 #include "fix_heat_gran.h"
 #include "fix_wall_gran.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 
 using namespace LAMMPS_NS;
 

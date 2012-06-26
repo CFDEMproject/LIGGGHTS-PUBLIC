@@ -26,7 +26,7 @@
 ------------------------------------------------------------------------- */
 
 #include "bounding_box.h"
-#include "mympi.h"
+#include "mpi_liggghts.h"
 
 namespace LAMMPS_NS
 {
@@ -70,7 +70,7 @@ namespace LAMMPS_NS
       limit[4] = -zLo;
       limit[5] =  zHi;
 
-      MyMPI::My_MPI_Max_Vector(limit,6,comm);
+     MPI_Max_Vector(limit,6,comm);
 
       xLo = -limit[0];
       xHi =  limit[1];

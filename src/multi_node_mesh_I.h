@@ -118,6 +118,28 @@
   }
 
   /* ----------------------------------------------------------------------
+   recalculate properties on setup (on start and during simulation)
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::refreshOwned(int setupFlag)
+  {
+      if(node_orig_ && setupFlag)
+        storeNodePos(0,sizeLocal());
+
+      // nothing more to do here, necessary initialitation done in addElement()
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::refreshGhosts(int setupFlag)
+  {
+      if(node_orig_ && setupFlag)
+        storeNodePos(sizeLocal(),sizeLocal()+sizeGhost());
+
+      // nothing more to do here, necessary initialitation done in addElement()
+  }
+
+  /* ----------------------------------------------------------------------
    comparison
   ------------------------------------------------------------------------- */
 
@@ -150,8 +172,12 @@
       if(isFirst)
       {
           int nall = sizeLocal()+sizeGhost();
+          
           double **tmp;
           this->memory->create<double>(tmp,NUM_NODES,3,"MultiNodeMesh:tmp");
+
+          if(node_orig_)
+            error->one(FLERR,"Illegal situation in MultiNodeMesh<NUM_NODES>::registerMove");
 
           node_orig_ = new MultiVectorContainer<double,NUM_NODES,3>;
           for(int i = 0; i < nall; i++)
@@ -188,6 +214,24 @@
   }
 
   /* ----------------------------------------------------------------------
+   store current node position for use by moving mesh
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::storeNodePos(int ilo, int ihi)
+  {
+    if(!node_orig_)
+        error->one(FLERR,"Internal error in MultiNodeMesh<NUM_NODES>::storeNodePos");
+
+    for(int i = ilo; i < ihi; i++)
+        for(int j = 0; j < NUM_NODES; j++)
+        {
+            vectorCopy3D(node_(i)[j],node_orig(i)[j]);
+            
+        }
+  }
+
+  /* ----------------------------------------------------------------------
    reset mesh nodes to original position, done before movements are added
   ------------------------------------------------------------------------- */
 
@@ -201,9 +245,9 @@
 
     if(stepLastReset_ < ntimestep)
     {
-        int n = sizeLocal() + sizeGhost();
+        int nall = sizeLocal() + sizeGhost();
         stepLastReset_ = ntimestep;
-        for(int i = 0; i < n; i++)
+        for(int i = 0; i < nall; i++)
             for(int j = 0; j < NUM_NODES; j++)
                 vectorCopy3D(node_orig(i)[j],node_(i)[j]);
     }

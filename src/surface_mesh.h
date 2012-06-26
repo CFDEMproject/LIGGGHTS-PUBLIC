@@ -32,10 +32,10 @@
 #include "container.h"
 #include "container.h"
 #include "random_park.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "random_park.h"
 #include "memory_ns.h"
-#include "mympi.h"
+#include "mpi_liggghts.h"
 #include "comm.h"
 #include <cmath>
 #include "math_extra_liggghts.h"
@@ -101,8 +101,8 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         void deleteElement(int n);
 
-        void refreshOwned();
-        void refreshGhosts();
+        void refreshOwned(int setupFlag);
+        void refreshGhosts(int setupFlag);
 
         // (re)calculate properties
         inline void recalcVectors(); 

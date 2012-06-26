@@ -31,7 +31,7 @@ fix		1 all nve/sphere
 fix		2 all gravity 9.81 vector 0.0 0.0 -1.0
 
 #import triangular mesh
-fix		cad all mesh file mesh.stl type 1 scale 0.001 move 0. 0. 0. rotate axis 1. 0. 0. angle -90. #temperature 100.
+fix		cad all mesh/surface file mesh.stl type 1 scale 0.001 move 0. 0. 0. rotate axis 1. 0. 0. angle -90. #temperature 100.
 
 #use the imported mesh as granular wall
 fix		granwalls all wall/gran/hooke/history mesh n_meshes 1 meshes cad
@@ -40,7 +40,7 @@ fix		granwalls all wall/gran/hooke/history mesh n_meshes 1 meshes cad
 #region		bc block 0.21 0.25 -0.045 -0.005 -0.015 -0.00 units box
 
 #definition of insertion face
-fix		inface all mesh file insertion_face.stl type 1
+fix		inface all mesh/surface file insertion_face.stl type 1
 
 #distributions for insertion
 fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.005

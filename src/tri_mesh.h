@@ -38,6 +38,7 @@ namespace LAMMPS_NS
   class TriMesh : public SurfaceMesh<3>
   {
       public:
+
         TriMesh(LAMMPS *lmp);
         virtual ~TriMesh();
 
@@ -54,11 +55,11 @@ namespace LAMMPS_NS
         int generateRandomSubboxWithin(double *pos,double delta);
 
       protected:
+
         double calcArea(int n);
         bool isInElement(double *pos,int i);
 
       private:
-        void calcTriProperties();
 
         double calcDist(double *cs, double *closestPoint, double *en0);
         double calcDistToPlane(double *p, double *pPlane, double *nPlane);

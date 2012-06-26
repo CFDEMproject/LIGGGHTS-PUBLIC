@@ -19,20 +19,7 @@
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
-------------------------------------------------------------------------- */
-
 #include "tri_mesh.h"
-#include <stdio.h>
-#include <cstring>
-#include <cstdlib>
-#include "memory.h"
-#include "myvector.h"
-
-using namespace LAMMPS_NS;
 
 /* ----------------------------------------------------------------------
    constructor, destructor
@@ -45,39 +32,3 @@ TriMesh::TriMesh(LAMMPS *lmp) : SurfaceMesh<3>(lmp)
 TriMesh::~TriMesh()
 {
 }
-
-/* ----------------------------------------------------------------------
-   add a new triangle to mesh
-------------------------------------------------------------------------- */
-
-void TriMesh::addTriangle(double *a, double *b, double *c)
-{
-    double **nodeTmp = create<double>(nodeTmp,3,3);
-    for(int i=0;i<3;i++){
-      nodeTmp[0][i] = a[i];
-      nodeTmp[1][i] = b[i];
-      nodeTmp[2][i] = c[i];
-    }
-    addElement(nodeTmp);
-    destroy<double>(nodeTmp);
-}
-
-/* ----------------------------------------------------------------------
-   delete a triangle
-------------------------------------------------------------------------- */
-
-void TriMesh::deleteTriangle(int n)
-{
-    SurfaceMesh<3>::deleteElement(n);
-    // triangle-specific code comes here
-}
-
-/* ----------------------------------------------------------------------
-   stub
-------------------------------------------------------------------------- */
-
-void TriMesh::calcTriProperties()
-{
-
-}
-

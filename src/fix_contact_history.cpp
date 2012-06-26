@@ -29,7 +29,7 @@
 #include "pair_gran.h"
 #include "force.h"
 #include "update.h"
-#include "fix_mesh.h"
+#include "fix_mesh_surface.h"
 #include "modify.h"
 #include "memory.h"
 #include "error.h"
@@ -64,9 +64,9 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
   if(!is_pair)
   {
       Fix *f = modify->find_fix_id(arg[iarg++]);
-      if(!f || strncmp(f->style,"mesh",4) )
-        error->fix_error(FLERR,this,"wrong ID for fix mesh");
-      mesh_ = (static_cast<FixMesh*>(f))->mesh();
+      if(!f || strncmp(f->style,"mesh/surface",12) )
+        error->fix_error(FLERR,this,"wrong ID for fix mesh/surface");
+      mesh_ = (static_cast<FixMeshSurface*>(f))->triMesh();
   }
 
   //read dnum
@@ -241,7 +241,7 @@ void FixContactHistory::pre_exchange_pair()
   NeighList *list = pair_gran->list;
   int nlocal = atom->nlocal;
 
-  //if (list->inum)
+  if (list->inum)
     for (i = 0; i < nlocal; i++)
       npartner[i] = 0;
 
@@ -363,6 +363,7 @@ void FixContactHistory::grow_arrays_maxtouch(int nmax)
           for (int k = 0 ; k < dnum; k++)
             contacthistory_g[i][j][k] = contacthistory_g[i][j][k];
       }
+
   }
 
   maxtouch += delta;

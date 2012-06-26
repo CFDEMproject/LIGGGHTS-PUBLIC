@@ -33,9 +33,9 @@
 #include "comm.h"
 #include "modify.h"
 #include "fix_wall_gran.h"
-#include "fix_mesh.h"
+#include "fix_mesh_surface.h"
 #include "neighbor.h"
-#include "mympi.h"
+#include "mpi_liggghts.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -186,12 +186,12 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
     }
   }
 
-  MyMPI::My_MPI_Min_Scalar(r_min,world);
-  MyMPI::My_MPI_Max_Scalar(vmax,world);
-  MyMPI::My_MPI_Min_Scalar(rayleigh_time,world);
+ MPI_Min_Scalar(r_min,world);
+ MPI_Max_Scalar(vmax,world);
+ MPI_Min_Scalar(rayleigh_time,world);
 
   // get vmax of geometry
-  FixMesh ** mesh_list;
+  FixMeshSurface ** mesh_list;
   TriMesh * mesh;
   double *v_node;
   double vmax_mesh=0.;
@@ -201,7 +201,7 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
       mesh_list = fwg->mesh_list();
       for(int imesh = 0; imesh < fwg->n_meshes(); imesh++)
       {
-          mesh = (mesh_list[imesh])->mesh();
+          mesh = (mesh_list[imesh])->triMesh();
           if(mesh->isMoving())
           {
               // loop local elements only
@@ -216,7 +216,7 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
       }
   }
 
-  MyMPI::My_MPI_Max_Scalar(vmax_mesh,world);
+ MPI_Max_Scalar(vmax_mesh,world);
 
   // decide vmax - either particle-particle or particle-mesh contact
   vmax = fmax(2.*vmax,vmax+vmax_mesh);
@@ -250,7 +250,7 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
       }
   }
 
-  MyMPI::My_MPI_Min_Scalar(hertz_time_min,world);
+ MPI_Min_Scalar(hertz_time_min,world);
   hertz_time = hertz_time_min;
 }
 

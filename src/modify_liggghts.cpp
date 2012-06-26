@@ -40,6 +40,7 @@ using namespace LAMMPS_NS;
    
    add a fix property
 ------------------------------------------------------------------------- */
+
 FixPropertyGlobal* Modify::add_fix_property_global(int narg,char **arg,const char *caller)
 {
     if(narg < 5) error->all(FLERR,"Not enough arguments to add a fix property");
@@ -214,3 +215,24 @@ int Modify::fix_restart_in_progress()
     return  nfix_restart_global || nfix_restart_peratom;
 }
 
+/* ----------------------------------------------------------------------
+   check if restart data available for this fix
+------------------------------------------------------------------------- */
+
+bool Modify::have_restart_data(Fix *f)
+{
+  
+  // check if Fix is in restart_global list
+
+  for (int i = 0; i < nfix_restart_global; i++)
+    if (strcmp(id_restart_global[i],f->id) == 0 && strcmp(style_restart_global[i],f->style) == 0)
+      return true;
+
+  // check if Fix is in restart_peratom list
+
+  for (int i = 0; i < nfix_restart_peratom; i++)
+    if (strcmp(id_restart_peratom[i],f->id) == 0 &&	strcmp(style_restart_peratom[i],f->style) == 0)
+      return true;
+
+  return false;
+}

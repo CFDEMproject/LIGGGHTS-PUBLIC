@@ -43,7 +43,7 @@ class AssociativePointerArray
         ~AssociativePointerArray();
 
         template <typename U>
-        U* add(char *_id, char* _comm, char* _ref,int _scalePower = 1);
+        U* add(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower = 1);
 
         //T* add(char *_id,int _scalePower = 1);
 
@@ -68,9 +68,13 @@ class AssociativePointerArray
         void moveElement(int i,double *delta);
         void scale(double factor);
 
-        inline int listBufSize(int n,int operation,bool scale,bool translate,bool rotate);
-        inline int pushListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int popListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int bufSize(int operation,bool scale,bool translate,bool rotate);
+        inline int pushToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+
+        inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
+        inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);

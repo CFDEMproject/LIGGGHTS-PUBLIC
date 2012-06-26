@@ -43,11 +43,11 @@
 #include "math_extra_liggghts.h"
 #include "compute_pair_gran_local.h"
 #include "fix_neighlist_mesh.h"
-#include "fix_mesh.h"
+#include "fix_mesh_surface.h"
 #include "primitive_wall.h"
 #include "tri_mesh.h"
 #include "primitive_wall_definitions.h"
-#include "mympi.h"
+#include "mpi_liggghts.h"
 #include "neighbor.h"
 
 using namespace LAMMPS_NS;
@@ -172,15 +172,15 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
           if (narg < iarg_+1+n_FixMesh_)
               error->fix_error(FLERR,this,"not enough arguments");
 
-          FixMesh_list_ = new FixMesh*[n_FixMesh_];
+          FixMesh_list_ = new FixMeshSurface*[n_FixMesh_];
           for(int i = 1; i <= n_FixMesh_; i++)
           {
               int f_i = modify->find_fix(arg[iarg_+i]);
               if (f_i == -1)
                   error->fix_error(FLERR,this,"could not find fix mesh id you provided");
-              if (strncmp(modify->fix[f_i]->style,"mesh",4))
+              if (strncmp(modify->fix[f_i]->style,"mesh/surface",12))
                   error->fix_error(FLERR,this,"the fix belonging to the id you provided is not of type mesh");
-              FixMesh_list_[i-1] = static_cast<FixMesh*>(modify->fix[f_i]);
+              FixMesh_list_[i-1] = static_cast<FixMeshSurface*>(modify->fix[f_i]);
               
           }
           hasargs = true;
@@ -210,14 +210,14 @@ void FixWallGran::post_create()
         pairgran_ = (PairGran*)force->pair_match(pairstyle,0);
         bool pair_changed = (pairgran_!=oldpair);
 
+        delete []pairstyle;
+
         if (!pairgran_)
           error->fix_error(FLERR,this,"Fix wall/gran style and pair/gran style have to match, you have to define the wall after the pair style");
 
         if(dnum_ && dnum_ != pairgran_->dnum_pair())
           error->fix_error(FLERR,this,"Number of contact history values of pair style and wall style does not match");
         else dnum_ = pairgran_->dnum_pair();
-
-        delete []pairstyle;
     }
     // case non-granular (sph)
     else
@@ -315,6 +315,8 @@ void FixWallGran::init()
         pairgran_ = (PairGran*)force->pair_match(pairstyle,0);
         bool pair_changed = (pairgran_ != oldpair);
 
+        delete []pairstyle;
+
         // re-initialize history if pair style has changed
         if(pair_changed)
         {
@@ -324,7 +326,7 @@ void FixWallGran::init()
         }
 
         // check if a fix rigid is registered - important for damp
-        fr_ = pairgran_->fr_pair();
+        fix_rigid_ = pairgran_->fr_pair();
 
         if (strcmp(update->integrate_style,"respa") == 0)
           nlevels_respa_ = ((Respa *) update->integrate)->nlevels;
@@ -388,6 +390,12 @@ void FixWallGran::pre_force(int vflag)
 
 void FixWallGran::post_force(int vflag)
 {
+    if(fix_rigid_)
+    {
+        body_ = fix_rigid_->body;
+        masstotal_ = fix_rigid_->masstotal;
+    }
+
     post_force(vflag,1);
 }
 
@@ -448,7 +456,7 @@ void FixWallGran::post_force_mesh(int vflag)
 
     for(int iMesh = 0; iMesh < n_FixMesh_; iMesh++)
     {
-      TriMesh *mesh = FixMesh_list_[iMesh]->mesh();
+      TriMesh *mesh = FixMesh_list_[iMesh]->triMesh();
       nTriAll = mesh->sizeLocal() + mesh->sizeGhost();
       FixContactHistory *fix_contact = FixMesh_list_[iMesh]->contactHistory();
       int *neighborList  = 0, *numNeigh = 0;
@@ -465,6 +473,7 @@ void FixWallGran::post_force_mesh(int vflag)
       if(vMeshC)
       {
         vMesh = vMeshC->begin();
+
         // loop owned and ghost triangles
         for(int iTri = 0; iTri < nTriAll; iTri++)
         {
@@ -477,7 +486,7 @@ void FixWallGran::post_force_mesh(int vflag)
             if(iPart >= nlocal) continue;
 
             int idTri = mesh->id(iTri);
-            
+
             deltan = mesh->resolveTriSphereContactBary(iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary);
 
             if(deltan > 0.)
@@ -630,7 +639,7 @@ int FixWallGran::n_contacts()
     for(int i = 0; i < n_FixMesh_; i++)
         ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts();
 
-    MyMPI::My_MPI_Sum_Scalar(ncontacts,world);
+   MPI_Sum_Scalar(ncontacts,world);
     return ncontacts;
 }
 
@@ -644,7 +653,7 @@ int FixWallGran::n_contacts(int contact_groupbit)
     for(int i = 0; i < n_FixMesh_; i++)
         ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts(contact_groupbit);
 
-    MyMPI::My_MPI_Sum_Scalar(ncontacts,world);
+   MPI_Sum_Scalar(ncontacts,world);
     return ncontacts;
 }
 

@@ -71,11 +71,11 @@ namespace LAMMPS_NS
 
         class FixMesh *fix_mesh_;
         class MeshMover *move_;
-        class TriMesh *mesh_;
+        class AbstractMesh *mesh_;
 
         bool neighListFresh_;
 
-        double time_;
+        double time_, time_since_setup_;
         class MultiVectorContainer<double,3,3> oldNodes;
   };
 } /* namespace LAMMPS_NS */

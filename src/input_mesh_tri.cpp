@@ -31,7 +31,7 @@
 #include "error.h"
 #include "domain.h"
 #include "math.h"
-#include "myvector.h"
+#include "vector_liggghts.h"
 #include "input_mesh_tri.h"
 #include "tri_mesh.h"
 
@@ -233,7 +233,7 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
   for(int i = 0; i < ncells; i++)
   {
       if(cells[i][0] == -1) continue;
-      mesh->addTriangle(points[cells[i][0]],points[cells[i][1]],points[cells[i][2]]);
+      addTriangle(mesh,points[cells[i][0]],points[cells[i][1]],points[cells[i][2]]);
   }
 
   memory->destroy<double>(points);
@@ -286,16 +286,16 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
       error->all(FLERR,str);
     }
 
-    //parse one line from the stl file
+    // parse one line from the stl file
     parse_nonlammps();
 
-    //skip empty lines
+    // skip empty lines
     if(narg==0){
          if (me == 0) fprintf(screen,"Note: Skipping empty line in STL file\n");
       continue;
     }
 
-    //detect begin and end of a solid object, facet and vertices
+    // detect begin and end of a solid object, facet and vertices
     if (strcmp(arg[0],"solid") == 0)
     {
       if (insideSolidObject) error->all(FLERR,"Corrupt or unknown STL file: New solid object begins without closing prior solid object.");
@@ -313,17 +313,17 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
        }
     }
 
-    //detect begin and end of a facet within a solids object
+    // detect begin and end of a facet within a solids object
     else if (strcmp(arg[0],"facet") == 0)
     {
       if (insideFacet) error->all(FLERR,"Corrupt or unknown STL file: New facet begins without closing prior facet.");
       if (!insideSolidObject) error->all(FLERR,"Corrupt or unknown STL file: New facet begins outside solid object.");
       insideFacet = true;
 
-      //check for keyword normal belonging to facet
+      // check for keyword normal belonging to facet
       if (strcmp(arg[1],"normal")!=0) error->all(FLERR,"Corrupt or unknown STL file: Facet normal not defined.");
 
-      //do not import facet normal (is calculated later)
+      // do not import facet normal (is calculated later)
     }
     else if (strcmp(arg[0],"endfacet") == 0)
     {
@@ -335,7 +335,7 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
       //printVec3D(screen,"vertex",vertices[0]);
       //printVec3D(screen,"vertex",vertices[1]);
       //printVec3D(screen,"vertex",vertices[2]);
-      mesh->addTriangle(vertices[0],vertices[1],vertices[2]);
+      addTriangle(mesh,vertices[0],vertices[1],vertices[2]);
 
        if (me == 0) {
          //fprintf(screen,"  End of facet detected in in solid body.\n");
@@ -381,3 +381,18 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
   }
 }
 
+/* ----------------------------------------------------------------------
+   add a triangle to the mesh
+------------------------------------------------------------------------- */
+
+void InputMeshTri::addTriangle(TriMesh *mesh,double *a, double *b, double *c)
+{
+    double **nodeTmp = create<double>(nodeTmp,3,3);
+    for(int i=0;i<3;i++){
+      nodeTmp[0][i] = a[i];
+      nodeTmp[1][i] = b[i];
+      nodeTmp[2][i] = c[i];
+    }
+    mesh->addElement(nodeTmp);
+    destroy<double>(nodeTmp);
+}
