@@ -60,7 +60,7 @@ quantities.
 {full} | molecular + charge | bio-molecules |
 {line} | end points, angular velocity | rigid bodies |
 {meso} | rho, e, cv | SPH particles |
-{sph}  | SPH particles |
+{sph}  | q(pressure), density | SPH particles |
 {molecular} | bonds, angles, dihedrals, impropers | uncharged molecules |
 {peri} | mass, volume | mesocopic Peridynamic models |
 {sphere or granular} | diameter, mass, angular velocity | granular models |

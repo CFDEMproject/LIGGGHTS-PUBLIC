@@ -57,6 +57,7 @@ namespace LAMMPS_NS
 
           virtual void del(int n) = 0;
           virtual void delForward(int n,bool scale,bool translate,bool rotate) = 0;
+          virtual void delRestart(int n,bool scale,bool translate,bool rotate) = 0;
 
           virtual void scale(double factor) = 0;
           virtual void move(double *dx) = 0;

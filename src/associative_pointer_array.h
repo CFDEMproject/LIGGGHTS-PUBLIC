@@ -62,6 +62,7 @@ class AssociativePointerArray
         int size();
         void deleteElement(int n);
         void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
+        void deleteRestartElement(int n,bool scale,bool translate,bool rotate);
 
         void rotate(double *dQ);
         void move(double *delta);

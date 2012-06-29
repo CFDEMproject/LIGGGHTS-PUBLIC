@@ -850,7 +850,7 @@ int AtomVecSphere::size_restart()
   int i;
 
   int nlocal = atom->nlocal;
-  int n = 16 * nlocal;
+  int n = 17 * nlocal; 
 
   if (atom->nextra_restart)
     for (int iextra = 0; iextra < atom->nextra_restart; iextra++)
@@ -882,6 +882,7 @@ int AtomVecSphere::pack_restart(int i, double *buf)
 
   buf[m++] = radius[i];
   buf[m++] = rmass[i];
+  buf[m++] = density[i]; 
   buf[m++] = omega[i][0];
   buf[m++] = omega[i][1];
   buf[m++] = omega[i][2];
@@ -921,8 +922,7 @@ int AtomVecSphere::unpack_restart(double *buf)
 
   radius[nlocal] = buf[m++];
   rmass[nlocal] = buf[m++];
-  rmass[nlocal] = 4.0*MY_PI/3.0 *
-      radius[nlocal]*radius[nlocal]*radius[nlocal] * density[nlocal];   
+  density[nlocal] = buf[m++]; 
   omega[nlocal][0] = buf[m++];
   omega[nlocal][1] = buf[m++];
   omega[nlocal][2] = buf[m++];

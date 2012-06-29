@@ -31,7 +31,7 @@ to modelling approaches.
 
 <LI>fix heat/gran 
 
-<LI>fix mesh (formerly fix mesh/gran) 
+<LI>fix mesh/surface (formerly fix mesh/gran) 
 
 <LI>fix mesh/stressanalysis (formerly fix mesh/gran/stressanalysis) 
 
@@ -94,27 +94,24 @@ NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction on
 </PRE>
 <HR>
 
-<P><B>fix mesh (formerly fix mesh/gran):</B>
+<P><B>fix mesh/surface (formerly fix mesh/gran):</B>
 </P>
 <PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. 
-NEW: fix ID group-ID mesh file mesh.stl type 1 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 
 </PRE>
 <PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 0.001 0. 0. 0. -90. 0. 0.
-NEW: fix ID group-ID mesh file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90. 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90. 
 </PRE>
 <PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0. 
-NEW: fix ID group-ID mesh file mesh.stl type 1 move 1. 2. 3 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 move 1. 2. 3 
 </PRE>
 <PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. conveyor 5. 0. 0.
-NEW: fix ID group-ID mesh file mesh.stl type 1 surface_vel 5. 0. 0. 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_vel 5. 0. 0. 
 </PRE>
 <PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5. 
-NEW: fix ID group-ID mesh file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5. 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5. 
 </PRE>
-<P>NOTE: For compatibility reasons, the command name <I>fix mesh/gran</I> can be 
-used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax.
-</P>
-<P>For details, see <A HREF = "fix_mesh.html">fix mesh</A>.
+<P>For details, see <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>.
 </P>
 <HR>
 

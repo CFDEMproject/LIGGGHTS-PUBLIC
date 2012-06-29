@@ -157,6 +157,15 @@
   }
 
   /* ----------------------------------------------------------------------
+   delete restart properties of element i
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::deleteRestartElement(int i,bool scale,bool translate,bool rotate)
+  {
+      elementProperties_.deleteRestartElement(i,scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
    move element i
   ------------------------------------------------------------------------- */
 

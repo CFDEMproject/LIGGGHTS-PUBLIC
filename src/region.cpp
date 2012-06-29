@@ -445,6 +445,10 @@ void Region::generate_random_shrinkby_cut(double *pos,double cut)
 {
     if(!bboxflag)
         error->all(FLERR,"Impossible to generate random points on region with incomputable bounding box");
+    if((extent_xhi-extent_xlo < 2.*cut) ||
+       (extent_yhi-extent_ylo < 2.*cut) ||
+       (extent_zhi-extent_zlo < 2.*cut))
+        error->all(FLERR,"Impossible to generate random points within region - region too small");
     // point has to be within bounding box
     do
     {
@@ -470,7 +474,7 @@ void Region::generate_random_expandby_cut(double *pos,double cut)
         pos[1] = extent_ylo + random->uniform() * (extent_yhi - extent_ylo);
         pos[2] = extent_zlo + random->uniform() * (extent_zhi - extent_zlo);
     }
-    while( !(match(pos[0],pos[1],pos[2]) || match_cut(pos,cut)) );
+    while( !(match(pos[0],pos[1],pos[2]) || !match_cut(pos,cut)) );
 }
 
 /* ---------------------------------------------------------------------- */

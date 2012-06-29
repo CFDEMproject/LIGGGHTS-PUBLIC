@@ -183,6 +183,17 @@
   }
 
   /* ----------------------------------------------------------------------
+   delete restart properties of element i
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  void AssociativePointerArray<T>::deleteRestartElement(int n,bool scale,bool translate,bool rotate)
+  {
+      for(int i=0;i<numElem_;i++)
+        content_[i]->delRestart(n,scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
    id 2 index
   ------------------------------------------------------------------------- */
 

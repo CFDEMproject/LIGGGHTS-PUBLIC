@@ -188,6 +188,7 @@ void FixMoveMesh::pre_force(int vflag)
     if(neighListFresh_)
     {
         store_node_pos();
+        neighListFresh_ = false;
 
     }
     // check for re-build of neigh list
@@ -265,7 +266,7 @@ bool FixMoveMesh::decide_rebuild()
     }
 
     // allreduce result
-   MPI_Max_Scalar(flag,this->world);
+    MPI_Max_Scalar(flag,this->world);
 
     if(flag) return true;
     else     return false;

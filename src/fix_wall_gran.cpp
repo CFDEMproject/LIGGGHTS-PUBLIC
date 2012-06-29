@@ -93,8 +93,8 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     meshwall_ = -1;
 
     // parse args
-    style = new char[strlen(arg[2])+2];
-    strcpy(style,arg[2]);
+    //style = new char[strlen(arg[2])+2];
+    //strcpy(style,arg[2]);
 
     iarg_ = 3;
 

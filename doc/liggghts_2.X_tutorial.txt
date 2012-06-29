@@ -23,7 +23,7 @@ atom_style sphere (formerly atom_style granular)  :l
 dump mesh/stl (formerly dump stl) :l
 dump mesh/vtk (formerly dump mesh/gran/VTK) :l
 fix heat/gran :l
-fix mesh (formerly fix mesh/gran) :l
+fix mesh/surface (formerly fix mesh/gran) :l
 fix mesh/stressanalysis (formerly fix mesh/gran/stressanalysis) :l
 fix move/mesh (formerly fix move/mesh/gran)  :l
 fix wall/gran/* :l
@@ -81,27 +81,24 @@ NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction on :pr
 
 :line
 
-[fix mesh (formerly fix mesh/gran):]
+[fix mesh/surface (formerly fix mesh/gran):]
 
 OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. 
-NEW: fix ID group-ID mesh file mesh.stl type 1 :pre 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 :pre 
 
 OLD: fix ID group-ID mesh/gran mesh.stl 1 0.001 0. 0. 0. -90. 0. 0.
-NEW: fix ID group-ID mesh file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90. :pre 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90. :pre 
 
 OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0. 
-NEW: fix ID group-ID mesh file mesh.stl type 1 move 1. 2. 3 :pre 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 move 1. 2. 3 :pre 
 
 OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. conveyor 5. 0. 0.
-NEW: fix ID group-ID mesh file mesh.stl type 1 surface_vel 5. 0. 0. :pre 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_vel 5. 0. 0. :pre 
 
 OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5. 
-NEW: fix ID group-ID mesh file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5. :pre 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5. :pre 
 
-NOTE: For compatibility reasons, the command name {fix mesh/gran} can be 
-used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax.
-
-For details, see "fix mesh"_fix_mesh.html.
+For details, see "fix mesh/surface"_fix_mesh_surface.html.
 
 :line
 

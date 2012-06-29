@@ -61,7 +61,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   nMesh_ = modify->n_fixes_style("mesh/surface");
   
   if (nMesh_ == 0)
-    error->warning(FLERR,"Dump mesh/vtk cannot find any fix of type 'mesh/gran' to dump");
+    error->warning(FLERR,"Dump mesh/vtk cannot find any fix of type 'mesh/surface' to dump");
 
   meshList_ = new TriMesh*[nMesh_];
   for (int iMesh = 0; iMesh < nMesh_; iMesh++)

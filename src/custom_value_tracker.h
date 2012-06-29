@@ -56,8 +56,9 @@ namespace LAMMPS_NS
         // operation with
         // per mesh-element properties
 
-        inline void deleteElement(int n);
-        inline void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
+        inline void deleteElement(int i);
+        inline void deleteForwardElement(int i,bool scale,bool translate,bool rotate);
+        inline void deleteRestartElement(int i,bool scale,bool translate,bool rotate);
 
         void move(double *delta);
         inline void moveElement(int i, double *delta);

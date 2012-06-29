@@ -46,11 +46,16 @@ namespace LAMMPS_NS
       public:
 
           virtual void add(T** elem);
+
           void del(int n);
           void delForward(int n,bool scale,bool translate,bool rotate);
+          void delRestart(int n,bool scale,bool translate,bool rotate);
+
           void get(int n, T** elem);
+
           void setAll(T def);
           void set(int n, T** elem);
+
           T**& operator()(int n);
           T** const& operator()(int n) const;
           T*** begin();

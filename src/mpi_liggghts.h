@@ -214,7 +214,7 @@ inline int MPI_Gather0_Vector(double *vector, int size ,double *&vector_0,MPI_Co
     if(me == 0)
         vector_0 = new double[size_0];
     else
-        vector_0 = NULL;
+        vector_0 = 0;
 
     MPI_Gatherv(vector,size,MPI_DOUBLE,vector_0, recvcnts, displs, MPI_DOUBLE,0, comm);
 

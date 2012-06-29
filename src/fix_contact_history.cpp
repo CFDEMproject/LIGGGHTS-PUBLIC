@@ -361,7 +361,7 @@ void FixContactHistory::grow_arrays_maxtouch(int nmax)
           partner_g[i][j] = partner[i][j];
           delflag_g[i][j] = delflag[i][j];
           for (int k = 0 ; k < dnum; k++)
-            contacthistory_g[i][j][k] = contacthistory_g[i][j][k];
+            contacthistory_g[i][j][k] = contacthistory[i][j][k];
       }
 
   }

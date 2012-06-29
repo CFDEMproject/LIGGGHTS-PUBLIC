@@ -200,8 +200,8 @@ int FixInsertPack::calc_ninsert_this()
       if(fix_rm && fix_rm->belongs_to(i) >= 0) continue;
       if
       (
-        !all_in_flag && ins_region->match(x[i][0],x[i][1],x[i][2])  ||
-        all_in_flag && ins_region->match_shrinkby_cut(x[i],radius[i])
+        ((!all_in_flag) && ins_region->match(x[i][0],x[i][1],x[i][2]))    ||
+        (( all_in_flag) && ins_region->match_shrinkby_cut(x[i],radius[i]))
       )
       {
           np_region++;

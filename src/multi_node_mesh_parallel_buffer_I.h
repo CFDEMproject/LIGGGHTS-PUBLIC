@@ -94,8 +94,6 @@
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::writeRestart(FILE *fp)
   {
-      this->error->all(FLERR,"Restart functionality for fix mesh is not yet available in LIGGGHTS 2.0");
-
       int size_this;
 
       // # elements
@@ -179,8 +177,6 @@
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::restart(double *list)
   {
-      this->error->all(FLERR,"Restart functionality for fix mesh is not yet available in LIGGGHTS 2.0");
-
       int m, nglobal, nrecv_this, nO, sE, sM;
       bool dummy = false;
 
@@ -408,6 +404,8 @@
           
           nrecv += nodeTmp.popElemFromBuffer(&(buf[nrecv]),operation);
           this->addElement(nodeTmp.begin()[0]);
+
+          this->prop().deleteRestartElement(nLocal_-1,false,false,false);
 
           return nrecv;
       }

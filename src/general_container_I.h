@@ -135,6 +135,24 @@
   }
 
   /* ----------------------------------------------------------------------
+   delete an element
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::delRestart(int n,bool scale,bool translate,bool rotate)
+  {
+          // do only delete property if it is a forward comm property
+          if(!decideBufferOperation(OPERATION_RESTART, scale, translate, rotate))
+            return;
+
+          numElem_--;
+          if(numElem_ == n) return;
+          for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                          arr_[n][i][j] = arr_[numElem_][i][j];
+  }
+
+  /* ----------------------------------------------------------------------
    get an element
   ------------------------------------------------------------------------- */
 
