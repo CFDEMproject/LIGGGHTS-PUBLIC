@@ -168,8 +168,8 @@ RegWedge::RegWedge(LAMMPS *lmp, int narg, char **arg) : Region(lmp, narg, arg)
 
   if(iarg != 16)
     error->all(FLERR,"Illegal region wedge implementation, adapt options() call");
-  printf("debug wedge: region id wedge %c %f %f %f %f %f %f %f\n",
-         axis,c1,c2,radius,lo,hi,angle1,dang);
+  //  fprintf(screen,"debug wedge: region id wedge %c %f %f %f %f %f %f %f\n",
+  //       axis,c1,c2,radius,lo,hi,angle1,dang);
 
   // error checks
   if (radius <= 0.0) error->all(FLERR,"Illegal region cylinder command");

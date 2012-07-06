@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -115,7 +115,7 @@ void Pair::modify_params(int narg, char **arg)
     } else if (strcmp(arg[iarg],"table") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal pair_modify command");
       ncoultablebits = atoi(arg[iarg+1]);
-      if (ncoultablebits > sizeof(float)*CHAR_BIT) 
+      if (ncoultablebits > sizeof(float)*CHAR_BIT)
         error->all(FLERR,"Too many total bits for bitmapped lookup table");
       iarg += 2;
     } else if (strcmp(arg[iarg],"tabinner") == 0) {
@@ -177,12 +177,12 @@ void Pair::init()
       cutsq[i][j] = cutsq[j][i] = cut*cut;
       cutforce = MAX(cutforce,cut);
       if (tail_flag) {
-	etail += etail_ij;
-	ptail += ptail_ij;
-	if (i != j) {
-	  etail += etail_ij;
-	  ptail += ptail_ij;
-	}
+        etail += etail_ij;
+        ptail += ptail_ij;
+        if (i != j) {
+          etail += etail_ij;
+          ptail += ptail_ij;
+        }
       }
     }
 }
@@ -203,12 +203,12 @@ void Pair::reinit()
     for (j = i; j <= atom->ntypes; j++) {
       tmp = init_one(i,j);
       if (tail_flag) {
-	etail += etail_ij;
-	ptail += ptail_ij;
-	if (i != j) {
-	  etail += etail_ij;
-	  ptail += ptail_ij;
-	}
+        etail += etail_ij;
+        ptail += ptail_ij;
+        if (i != j) {
+          etail += etail_ij;
+          ptail += ptail_ij;
+        }
       }
     }
 }
@@ -353,27 +353,27 @@ void Pair::ev_setup(int eflag, int vflag)
 ------------------------------------------------------------------------- */
 
 void Pair::ev_tally(int i, int j, int nlocal, int newton_pair,
-		    double evdwl, double ecoul, double fpair,
-		    double delx, double dely, double delz)
+                    double evdwl, double ecoul, double fpair,
+                    double delx, double dely, double delz)
 {
   double evdwlhalf,ecoulhalf,epairhalf,v[6];
 
   if (eflag_either) {
     if (eflag_global) {
       if (newton_pair) {
-	eng_vdwl += evdwl;
-	eng_coul += ecoul;
+        eng_vdwl += evdwl;
+        eng_coul += ecoul;
       } else {
-	evdwlhalf = 0.5*evdwl;
-	ecoulhalf = 0.5*ecoul;
-	if (i < nlocal) {
-	  eng_vdwl += evdwlhalf;
-	  eng_coul += ecoulhalf;
-	}
-	if (j < nlocal) {
-	  eng_vdwl += evdwlhalf;
-	  eng_coul += ecoulhalf;
-	}
+        evdwlhalf = 0.5*evdwl;
+        ecoulhalf = 0.5*ecoul;
+        if (i < nlocal) {
+          eng_vdwl += evdwlhalf;
+          eng_coul += ecoulhalf;
+        }
+        if (j < nlocal) {
+          eng_vdwl += evdwlhalf;
+          eng_coul += ecoulhalf;
+        }
       }
     }
     if (eflag_atom) {
@@ -393,59 +393,59 @@ void Pair::ev_tally(int i, int j, int nlocal, int newton_pair,
 
     if (vflag_global) {
       if (newton_pair) {
-	virial[0] += v[0];
-	virial[1] += v[1];
-	virial[2] += v[2];
-	virial[3] += v[3];
-	virial[4] += v[4];
-	virial[5] += v[5];
+        virial[0] += v[0];
+        virial[1] += v[1];
+        virial[2] += v[2];
+        virial[3] += v[3];
+        virial[4] += v[4];
+        virial[5] += v[5];
       } else {
-	if (i < nlocal) {
-	  virial[0] += 0.5*v[0];
-	  virial[1] += 0.5*v[1];
-	  virial[2] += 0.5*v[2];
-	  virial[3] += 0.5*v[3];
-	  virial[4] += 0.5*v[4];
-	  virial[5] += 0.5*v[5];
-	}
-	if (j < nlocal) {
-	  virial[0] += 0.5*v[0];
-	  virial[1] += 0.5*v[1];
-	  virial[2] += 0.5*v[2];
-	  virial[3] += 0.5*v[3];
-	  virial[4] += 0.5*v[4];
-	  virial[5] += 0.5*v[5];
-	}
+        if (i < nlocal) {
+          virial[0] += 0.5*v[0];
+          virial[1] += 0.5*v[1];
+          virial[2] += 0.5*v[2];
+          virial[3] += 0.5*v[3];
+          virial[4] += 0.5*v[4];
+          virial[5] += 0.5*v[5];
+        }
+        if (j < nlocal) {
+          virial[0] += 0.5*v[0];
+          virial[1] += 0.5*v[1];
+          virial[2] += 0.5*v[2];
+          virial[3] += 0.5*v[3];
+          virial[4] += 0.5*v[4];
+          virial[5] += 0.5*v[5];
+        }
       }
     }
 
     if (vflag_atom) {
       if (newton_pair || i < nlocal) {
-	vatom[i][0] += 0.5*v[0];
-	vatom[i][1] += 0.5*v[1];
-	vatom[i][2] += 0.5*v[2];
-	vatom[i][3] += 0.5*v[3];
-	vatom[i][4] += 0.5*v[4];
-	vatom[i][5] += 0.5*v[5];
+        vatom[i][0] += 0.5*v[0];
+        vatom[i][1] += 0.5*v[1];
+        vatom[i][2] += 0.5*v[2];
+        vatom[i][3] += 0.5*v[3];
+        vatom[i][4] += 0.5*v[4];
+        vatom[i][5] += 0.5*v[5];
       }
       if (newton_pair || j < nlocal) {
-	vatom[j][0] += 0.5*v[0];
-	vatom[j][1] += 0.5*v[1];
-	vatom[j][2] += 0.5*v[2];
-	vatom[j][3] += 0.5*v[3];
-	vatom[j][4] += 0.5*v[4];
-	vatom[j][5] += 0.5*v[5];
+        vatom[j][0] += 0.5*v[0];
+        vatom[j][1] += 0.5*v[1];
+        vatom[j][2] += 0.5*v[2];
+        vatom[j][3] += 0.5*v[3];
+        vatom[j][4] += 0.5*v[4];
+        vatom[j][5] += 0.5*v[5];
       }
     }
   }
 }
 
-/* ---------------------------------------------------------------------- 
+/* ----------------------------------------------------------------------
    tally eng_vdwl and virial into global and per-atom accumulators
    can use this version with full neighbor lists
 ------------------------------------------------------------------------- */
 
-void Pair::ev_tally_full(int i, double evdwl, double ecoul, double fpair, 
+void Pair::ev_tally_full(int i, double evdwl, double ecoul, double fpair,
                          double delx, double dely, double delz)
 {
   double v[6];
@@ -492,28 +492,28 @@ void Pair::ev_tally_full(int i, double evdwl, double ecoul, double fpair,
 ------------------------------------------------------------------------- */
 
 void Pair::ev_tally_xyz(int i, int j, int nlocal, int newton_pair,
-			double evdwl, double ecoul,
-			double fx, double fy, double fz,
-			double delx, double dely, double delz)
+                        double evdwl, double ecoul,
+                        double fx, double fy, double fz,
+                        double delx, double dely, double delz)
 {
   double evdwlhalf,ecoulhalf,epairhalf,v[6];
-  
+
   if (eflag_either) {
     if (eflag_global) {
       if (newton_pair) {
-	eng_vdwl += evdwl;
-	eng_coul += ecoul;
+        eng_vdwl += evdwl;
+        eng_coul += ecoul;
       } else {
-	evdwlhalf = 0.5*evdwl;
-	ecoulhalf = 0.5*ecoul;
-	if (i < nlocal) {
-	  eng_vdwl += evdwlhalf;
-	  eng_coul += ecoulhalf;
-	}
-	if (j < nlocal) {
-	  eng_vdwl += evdwlhalf;
-	  eng_coul += ecoulhalf;
-	}
+        evdwlhalf = 0.5*evdwl;
+        ecoulhalf = 0.5*ecoul;
+        if (i < nlocal) {
+          eng_vdwl += evdwlhalf;
+          eng_coul += ecoulhalf;
+        }
+        if (j < nlocal) {
+          eng_vdwl += evdwlhalf;
+          eng_coul += ecoulhalf;
+        }
       }
     }
     if (eflag_atom) {
@@ -533,48 +533,48 @@ void Pair::ev_tally_xyz(int i, int j, int nlocal, int newton_pair,
 
     if (vflag_global) {
       if (newton_pair) {
-	virial[0] += v[0];
-	virial[1] += v[1];
-	virial[2] += v[2];
-	virial[3] += v[3];
-	virial[4] += v[4];
-	virial[5] += v[5];
+        virial[0] += v[0];
+        virial[1] += v[1];
+        virial[2] += v[2];
+        virial[3] += v[3];
+        virial[4] += v[4];
+        virial[5] += v[5];
       } else {
-	if (i < nlocal) {
-	  virial[0] += 0.5*v[0];
-	  virial[1] += 0.5*v[1];
-	  virial[2] += 0.5*v[2];
-	  virial[3] += 0.5*v[3];
-	  virial[4] += 0.5*v[4];
-	  virial[5] += 0.5*v[5];
-	}
-	if (j < nlocal) {
-	  virial[0] += 0.5*v[0];
-	  virial[1] += 0.5*v[1];
-	  virial[2] += 0.5*v[2];
-	  virial[3] += 0.5*v[3];
-	  virial[4] += 0.5*v[4];
-	  virial[5] += 0.5*v[5];
-	}
+        if (i < nlocal) {
+          virial[0] += 0.5*v[0];
+          virial[1] += 0.5*v[1];
+          virial[2] += 0.5*v[2];
+          virial[3] += 0.5*v[3];
+          virial[4] += 0.5*v[4];
+          virial[5] += 0.5*v[5];
+        }
+        if (j < nlocal) {
+          virial[0] += 0.5*v[0];
+          virial[1] += 0.5*v[1];
+          virial[2] += 0.5*v[2];
+          virial[3] += 0.5*v[3];
+          virial[4] += 0.5*v[4];
+          virial[5] += 0.5*v[5];
+        }
       }
     }
 
     if (vflag_atom) {
       if (newton_pair || i < nlocal) {
-	vatom[i][0] += 0.5*v[0];
-	vatom[i][1] += 0.5*v[1];
-	vatom[i][2] += 0.5*v[2];
-	vatom[i][3] += 0.5*v[3];
-	vatom[i][4] += 0.5*v[4];
-	vatom[i][5] += 0.5*v[5];
+        vatom[i][0] += 0.5*v[0];
+        vatom[i][1] += 0.5*v[1];
+        vatom[i][2] += 0.5*v[2];
+        vatom[i][3] += 0.5*v[3];
+        vatom[i][4] += 0.5*v[4];
+        vatom[i][5] += 0.5*v[5];
       }
       if (newton_pair || j < nlocal) {
-	vatom[j][0] += 0.5*v[0];
-	vatom[j][1] += 0.5*v[1];
-	vatom[j][2] += 0.5*v[2];
-	vatom[j][3] += 0.5*v[3];
-	vatom[j][4] += 0.5*v[4];
-	vatom[j][5] += 0.5*v[5];
+        vatom[j][0] += 0.5*v[0];
+        vatom[j][1] += 0.5*v[1];
+        vatom[j][2] += 0.5*v[2];
+        vatom[j][3] += 0.5*v[3];
+        vatom[j][4] += 0.5*v[4];
+        vatom[j][5] += 0.5*v[5];
       }
     }
   }
@@ -587,11 +587,11 @@ void Pair::ev_tally_xyz(int i, int j, int nlocal, int newton_pair,
 ------------------------------------------------------------------------- */
 
 void Pair::ev_tally_xyz_full(int i, double evdwl, double ecoul,
-			     double fx, double fy, double fz,
-			     double delx, double dely, double delz)
+                             double fx, double fy, double fz,
+                             double delx, double dely, double delz)
 {
   double evdwlhalf,ecoulhalf,epairhalf,v[6];
-  
+
   if (eflag_either) {
     if (eflag_global) {
       evdwlhalf = 0.5*evdwl;
@@ -621,7 +621,7 @@ void Pair::ev_tally_xyz_full(int i, double evdwl, double ecoul,
       virial[4] += v[4];
       virial[5] += v[5];
     }
-    
+
     if (vflag_atom) {
       vatom[i][0] += v[0];
       vatom[i][1] += v[1];
@@ -640,7 +640,7 @@ void Pair::ev_tally_xyz_full(int i, double evdwl, double ecoul,
  ------------------------------------------------------------------------- */
 
 void Pair::ev_tally3(int i, int j, int k, double evdwl, double ecoul,
-		     double *fj, double *fk, double *drji, double *drki)
+                     double *fj, double *fk, double *drji, double *drki)
 {
   double epairthird,v[6];
 
@@ -664,7 +664,7 @@ void Pair::ev_tally3(int i, int j, int k, double evdwl, double ecoul,
     v[3] = drji[0]*fj[1] + drki[0]*fk[1];
     v[4] = drji[0]*fj[2] + drki[0]*fk[2];
     v[5] = drji[1]*fj[2] + drki[1]*fk[2];
-      
+
     if (vflag_global) {
       virial[0] += v[0];
       virial[1] += v[1];
@@ -676,7 +676,7 @@ void Pair::ev_tally3(int i, int j, int k, double evdwl, double ecoul,
 
     if (vflag_atom) {
       vatom[i][0] += THIRD*v[0]; vatom[i][1] += THIRD*v[1];
-      vatom[i][2] += THIRD*v[2]; vatom[i][3] += THIRD*v[3]; 
+      vatom[i][2] += THIRD*v[2]; vatom[i][3] += THIRD*v[3];
       vatom[i][4] += THIRD*v[4]; vatom[i][5] += THIRD*v[5];
 
       vatom[j][0] += THIRD*v[0]; vatom[j][1] += THIRD*v[1];
@@ -696,8 +696,8 @@ void Pair::ev_tally3(int i, int j, int k, double evdwl, double ecoul,
  ------------------------------------------------------------------------- */
 
 void Pair::ev_tally4(int i, int j, int k, int m, double evdwl,
-		     double *fi, double *fj, double *fk,
-		     double *drim, double *drjm, double *drkm)
+                     double *fi, double *fj, double *fk,
+                     double *drim, double *drjm, double *drkm)
 {
   double epairfourth,v[6];
 
@@ -719,7 +719,7 @@ void Pair::ev_tally4(int i, int j, int k, int m, double evdwl,
     v[3] = 0.25 * (drim[0]*fi[1] + drjm[0]*fj[1] + drkm[0]*fk[1]);
     v[4] = 0.25 * (drim[0]*fi[2] + drjm[0]*fj[2] + drkm[0]*fk[2]);
     v[5] = 0.25 * (drim[1]*fi[2] + drjm[1]*fj[2] + drkm[1]*fk[2]);
-    
+
     vatom[i][0] += v[0]; vatom[i][1] += v[1]; vatom[i][2] += v[2];
     vatom[i][3] += v[3]; vatom[i][4] += v[4]; vatom[i][5] += v[5];
     vatom[j][0] += v[0]; vatom[j][1] += v[1]; vatom[j][2] += v[2];
@@ -767,13 +767,13 @@ void Pair::ev_tally_list(int n, int *list, double ecoul, double *v)
       v[4] /= n;
       v[5] /= n;
       for (i = 0; i < n; i++) {
-	j = list[i];
-	vatom[j][0] += v[0];
-	vatom[j][1] += v[1];
-	vatom[j][2] += v[2];
-	vatom[j][3] += v[3];
-	vatom[j][4] += v[4];
-	vatom[j][5] += v[5];
+        j = list[i];
+        vatom[j][0] += v[0];
+        vatom[j][1] += v[1];
+        vatom[j][2] += v[2];
+        vatom[j][3] += v[3];
+        vatom[j][4] += v[4];
+        vatom[j][5] += v[5];
       }
     }
   }
@@ -788,7 +788,7 @@ void Pair::ev_tally_list(int n, int *list, double ecoul, double *v)
 void Pair::v_tally2(int i, int j, double fpair, double *drij)
 {
   double v[6];
-  
+
   v[0] = 0.5 * drij[0]*drij[0]*fpair;
   v[1] = 0.5 * drij[1]*drij[1]*fpair;
   v[2] = 0.5 * drij[2]*drij[2]*fpair;
@@ -808,10 +808,10 @@ void Pair::v_tally2(int i, int j, double fpair, double *drij)
 ------------------------------------------------------------------------- */
 
 void Pair::v_tally3(int i, int j, int k,
-		    double *fi, double *fj, double *drik, double *drjk)
+                    double *fi, double *fj, double *drik, double *drjk)
 {
   double v[6];
-  
+
   v[0] = THIRD * (drik[0]*fi[0] + drjk[0]*fj[0]);
   v[1] = THIRD * (drik[1]*fi[1] + drjk[1]*fj[1]);
   v[2] = THIRD * (drik[2]*fi[2] + drjk[2]*fj[2]);
@@ -833,8 +833,8 @@ void Pair::v_tally3(int i, int j, int k,
 ------------------------------------------------------------------------- */
 
 void Pair::v_tally4(int i, int j, int k, int m,
-		    double *fi, double *fj, double *fk,
-		    double *drim, double *drjm, double *drkm)
+                    double *fi, double *fj, double *fk,
+                    double *drim, double *drjm, double *drkm)
 {
   double v[6];
 
@@ -861,8 +861,8 @@ void Pair::v_tally4(int i, int j, int k, int m,
 ------------------------------------------------------------------------- */
 
 void Pair::v_tally_tensor(int i, int j, int nlocal, int newton_pair,
-			  double vxx, double vyy, double vzz,
-			  double vxy, double vxz, double vyz)
+                          double vxx, double vyy, double vzz,
+                          double vxy, double vxz, double vyz)
 {
   double v[6];
 
@@ -872,7 +872,7 @@ void Pair::v_tally_tensor(int i, int j, int nlocal, int newton_pair,
   v[3] = vxy;
   v[4] = vxz;
   v[5] = vyz;
-  
+
   if (vflag_global) {
     if (newton_pair) {
       virial[0] += v[0];
@@ -883,20 +883,20 @@ void Pair::v_tally_tensor(int i, int j, int nlocal, int newton_pair,
       virial[5] += v[5];
     } else {
       if (i < nlocal) {
-	virial[0] += 0.5*v[0];
-	virial[1] += 0.5*v[1];
-	virial[2] += 0.5*v[2];
-	virial[3] += 0.5*v[3];
-	virial[4] += 0.5*v[4];
-	virial[5] += 0.5*v[5];
+        virial[0] += 0.5*v[0];
+        virial[1] += 0.5*v[1];
+        virial[2] += 0.5*v[2];
+        virial[3] += 0.5*v[3];
+        virial[4] += 0.5*v[4];
+        virial[5] += 0.5*v[5];
       }
       if (j < nlocal) {
-	virial[0] += 0.5*v[0];
-	virial[1] += 0.5*v[1];
-	virial[2] += 0.5*v[2];
-	virial[3] += 0.5*v[3];
-	virial[4] += 0.5*v[4];
-	virial[5] += 0.5*v[5];
+        virial[0] += 0.5*v[0];
+        virial[1] += 0.5*v[1];
+        virial[2] += 0.5*v[2];
+        virial[3] += 0.5*v[3];
+        virial[4] += 0.5*v[4];
+        virial[5] += 0.5*v[5];
       }
     }
   }
@@ -977,7 +977,7 @@ void Pair::virial_fdotr_compute()
 void Pair::write_file(int narg, char **arg)
 {
   if (narg < 8) error->all(FLERR,"Illegal pair_write command");
-  if (single_enable == 0) 
+  if (single_enable == 0)
     error->all(FLERR,"Pair style does not support pair_write");
 
   // parse arguments
@@ -1010,10 +1010,10 @@ void Pair::write_file(int narg, char **arg)
     fp = fopen(arg[6],"a");
     if (fp == NULL) error->one(FLERR,"Cannot open pair_write file");
     fprintf(fp,"# Pair potential %s for atom types %d %d: i,r,energy,force\n",
-	    force->pair_style,itype,jtype);
-    if (style == R) 
+            force->pair_style,itype,jtype);
+    if (style == R)
       fprintf(fp,"\n%s\nN %d R %g %g\n\n",arg[7],n,inner,outer);
-    if (style == RSQ) 
+    if (style == RSQ)
       fprintf(fp,"\n%s\nN %d RSQ %g %g\n\n",arg[7],n,inner,outer);
   }
 
@@ -1057,7 +1057,7 @@ void Pair::write_file(int narg, char **arg)
     n = ntable;
   }
 
-  double r,e,f,rsq;  
+  double r,e,f,rsq;
   union_int_float_t rsq_lookup;
 
   for (int i = 0; i < n; i++) {
@@ -1090,7 +1090,7 @@ void Pair::write_file(int narg, char **arg)
   double *tmp;
   if (epair) epair->swap_eam(eamfp_hold,&tmp);
   if (atom->q) atom->q = q_hold;
-  
+
   if (me == 0) fclose(fp);
 }
 
@@ -1098,19 +1098,19 @@ void Pair::write_file(int narg, char **arg)
    define bitmap parameters based on inner and outer cutoffs
 ------------------------------------------------------------------------- */
 
-void Pair::init_bitmap(double inner, double outer, int ntablebits, 
+void Pair::init_bitmap(double inner, double outer, int ntablebits,
              int &masklo, int &maskhi, int &nmask, int &nshiftbits)
 {
   if (sizeof(int) != sizeof(float))
     error->all(FLERR,"Bitmapped lookup tables require int/float be same size");
-  
-  if (ntablebits > sizeof(float)*CHAR_BIT) 
+
+  if (ntablebits > sizeof(float)*CHAR_BIT)
     error->all(FLERR,"Too many total bits for bitmapped lookup table");
-          
+
   if (inner >= outer) error->warning(FLERR,"Table inner cutoff >= outer cutoff");
-    
+
   int nlowermin = 1;
-  while (!((pow(double(2),nlowermin) <= inner*inner) && 
+  while (!((pow(double(2),nlowermin) <= inner*inner) &&
            (pow(double(2),nlowermin+1) > inner*inner))) {
     if (pow(double(2),nlowermin) <= inner*inner) nlowermin++;
     else nlowermin--;
@@ -1119,15 +1119,15 @@ void Pair::init_bitmap(double inner, double outer, int ntablebits,
   int nexpbits = 0;
   double required_range = outer*outer / pow(double(2),nlowermin);
   double available_range = 2.0;
-  
+
   while (available_range < required_range) {
     nexpbits++;
     available_range = pow(double(2),pow(double(2),nexpbits));
   }
-     
+
   int nmantbits = ntablebits - nexpbits;
 
-  if (nexpbits > sizeof(float)*CHAR_BIT - FLT_MANT_DIG) 
+  if (nexpbits > sizeof(float)*CHAR_BIT - FLT_MANT_DIG)
     error->all(FLERR,"Too many exponent bits for lookup table");
   if (nmantbits+1 > FLT_MANT_DIG)
     error->all(FLERR,"Too many mantissa bits for lookup table");

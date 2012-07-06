@@ -214,13 +214,13 @@ int FixInsertPack::calc_ninsert_this()
   double x_bound_body[3], mass_body, r_bound_body, density_body;
   if(fix_rm)
   {
-      nbody = fix_rm->n_bodies();
+      nbody = multisphere->n_body();
 
       for(int ibody = 0; ibody < nbody; ibody++)
       {
 
-          fix_rm->x_bound_body(x_bound_body,ibody);
-          r_bound_body = fix_rm->r_bound_body(ibody);
+          multisphere->x_bound(x_bound_body,ibody);
+          r_bound_body = multisphere->r_bound(ibody);
           if
           (
               !all_in_flag && ins_region->match(x_bound_body[0],x_bound_body[1],x_bound_body[2])  ||
@@ -228,8 +228,8 @@ int FixInsertPack::calc_ninsert_this()
           )
           {
               np_region++;
-              mass_body = fix_rm->mass_body(ibody);
-              density_body = fix_rm->density_body(ibody);
+              mass_body = multisphere->mass(ibody);
+              density_body = multisphere->density(ibody);
               vol_region += mass_body/density_body;
               mass_region += mass_body;
           }
@@ -265,6 +265,7 @@ int FixInsertPack::calc_ninsert_this()
 
 double FixInsertPack::insertion_fraction()
 {
+    
     return region_volume_local/region_volume;
 }
 
@@ -308,8 +309,8 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             pti = fix_distribution->pti_list[ninserted_this_local];
             double rbound = pti->r_bound_ins;
 
-            if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound);
-            else ins_region->generate_random(pos);
+            if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
+            else ins_region->generate_random(pos,true);
 
             // could ramdonize vel, omega, quat here
 
@@ -328,7 +329,7 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
     {
         int ntry = 0;
         int maxtry = ninsert_this_local * maxattempt;
-
+        
         while(ntry < maxtry && ninserted_this_local < ninsert_this_local)
         {
             
@@ -338,13 +339,14 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             int nins = 0;
             while(nins == 0 && ntry < maxtry)
             {
-                do
-                {
-                    if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound);
-                    else ins_region->generate_random(pos);
+                
+                //do
+                //{
+                    if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
+                    else ins_region->generate_random(pos,true);
                     ntry++;
-                }
-                while(ntry < maxtry && domain->dist_subbox_borders(pos) < rbound);
+                //}
+                //while(ntry < maxtry && domain->dist_subbox_borders(pos) < rbound);
 
                 // could ramdonize vel, omega, quat here
 

@@ -76,4 +76,3 @@ class FixScalarTransportEquation : public Fix {
 
 #endif
 #endif
-

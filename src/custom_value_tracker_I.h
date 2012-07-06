@@ -58,7 +58,9 @@
      }
 
      // allocate memory and initialize
-     elementProperties_.getPointerById<T>(_id)->addUninitialized(owner_.sizeLocal()+owner_.sizeGhost());
+     
+     if(ownerMesh_)
+        elementProperties_.getPointerById<T>(_id)->addUninitialized(ownerMesh_->sizeLocal()+ownerMesh_->sizeGhost());
      elementProperties_.getPointerById<T>(_id)->setAll(0);
 
      // return pointer
@@ -66,35 +68,35 @@
   }
 
   template<typename T>
-  T* CustomValueTracker::addMeshProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower)
+  T* CustomValueTracker::addGlobalProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower)
   {
      // error if property exists already
-     if(meshProperties_.getPointerById<T>(_id))
+     if(globalProperties_.getPointerById<T>(_id))
      {
          char *errmsg = new char[strlen(_id)+200];
-         sprintf(errmsg,"Illegal command, features are incompatible - mesh property '%s' exists already",_id);
+         sprintf(errmsg,"Illegal command, features are incompatible - global property '%s' exists already",_id);
          error->all(FLERR,errmsg);
          delete []errmsg;
      }
 
      // add property
-     meshProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
+     globalProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
 
      // check if properties were set correctly
      // error here since ContainerBase not derived from Pointers
-     if(!meshProperties_.getPointerById<T>(_id)->propertiesSetCorrectly())
+     if(!globalProperties_.getPointerById<T>(_id)->propertiesSetCorrectly())
      {
          char *errmsg = new char[strlen(_id)+200];
-         sprintf(errmsg,"Illegal mesh property, comm or frame property not set correctly for property '%s'",_id);
+         sprintf(errmsg,"Illegal global property, comm or frame property not set correctly for property '%s'",_id);
          error->all(FLERR,errmsg);
          delete []errmsg;
      }
 
      // allocate memory
-     meshProperties_.getPointerById<T>(_id)->addUninitialized(capacityElement_);
+     globalProperties_.getPointerById<T>(_id)->addUninitialized(capacityElement_);
 
      // return pointer
-     return meshProperties_.getPointerById<T>(_id);
+     return globalProperties_.getPointerById<T>(_id);
   }
 
   /* ----------------------------------------------------------------------
@@ -118,9 +120,9 @@
   }
 
   template<typename T>
-  T* CustomValueTracker::getMeshProperty(char *_id)
+  T* CustomValueTracker::getGlobalProperty(char *_id)
   {
-     return meshProperties_.getPointerById<T>(_id);
+     return globalProperties_.getPointerById<T>(_id);
   }
 
   /* ----------------------------------------------------------------------
@@ -130,12 +132,22 @@
   template<typename T, typename U>
   void CustomValueTracker::setElementProperty(char *_id, U def)
   {
-     elementProperties_.getPointerById<T>(_id)->setAll(def);
+     elementProperties_.getPointerById<T>(_id)->set(def);
   }
   template<typename T, typename U>
-  void CustomValueTracker::setMeshProperty(char *_id, U def)
+  void CustomValueTracker::setGlobalProperty(char *_id, U def)
   {
-     meshProperties_.getPointerById<T>(_id)->setAll(def);
+     
+     globalProperties_.getPointerById<T>(_id)->set(0,def);
+  }
+
+  /* ----------------------------------------------------------------------
+   copy data from element from to element to
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::copyElement(int from, int to)
+  {
+      elementProperties_.copyElement(from,to);
   }
 
   /* ----------------------------------------------------------------------
@@ -214,22 +226,22 @@
   }
 
   /* ----------------------------------------------------------------------
-   push / pop for mesh properties
+   push / pop for global properties
   ------------------------------------------------------------------------- */
 
-  int CustomValueTracker::meshPropsBufSize(int operation,bool scale,bool translate,bool rotate)
+  int CustomValueTracker::globalPropsBufSize(int operation,bool scale,bool translate,bool rotate)
   {
-    return meshProperties_.bufSize(operation,scale,translate,rotate);
+    return globalProperties_.bufSize(operation,scale,translate,rotate);
   }
 
-  int CustomValueTracker::pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  int CustomValueTracker::pushGlobalPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
-    return meshProperties_.pushToBuffer(buf,operation,scale,translate,rotate);
+    return globalProperties_.pushToBuffer(buf,operation,scale,translate,rotate);
   }
 
-  int CustomValueTracker::popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  int CustomValueTracker::popGlobalPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
-    return meshProperties_.popFromBuffer(buf,operation,scale,translate,rotate);
+    return globalProperties_.popFromBuffer(buf,operation,scale,translate,rotate);
   }
 
 #endif

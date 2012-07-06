@@ -60,7 +60,7 @@ PairGranHookeHistory::PairGranHookeHistory(LAMMPS *lmp) : PairGran(lmp)
 {
     //flag that we intend to use contact history
     history = 1;
-    dnum = 3;
+    dnum_pairgran = 3;
 
     Yeff = NULL;
     Geff = NULL;
@@ -211,10 +211,10 @@ void PairGranHookeHistory::compute(int eflag, int vflag,int addflag)
 
       if (rsq >= radsum*radsum) {
 
-	// unset non-touching neighbors
+        // unset non-touching neighbors
 
         touch[jj] = 0;
-        shear = &allshear[dnum*jj];
+        shear = &allshear[dnum_pairgran*jj];
         shear[0] = 0.0;
         shear[1] = 0.0;
         shear[2] = 0.0;
@@ -274,7 +274,7 @@ void PairGranHookeHistory::compute(int eflag, int vflag,int addflag)
         if (mask[i] & freeze_group_bit) meff = mj;
         if (mask[j] & freeze_group_bit) meff = mi;
 
-        deriveContactModelParams(i,j,meff,deltan,kn,kt,gamman,gammat,xmu,rmu);	 //modified C.K
+        deriveContactModelParams(i,j,meff,deltan,kn,kt,gamman,gammat,xmu,rmu);         //modified C.K
 
         damp = gamman*vnnr*rsqinv;  
         ccel = kn*(radsum-r)*rinv - damp;
@@ -296,7 +296,7 @@ void PairGranHookeHistory::compute(int eflag, int vflag,int addflag)
 
         touch[jj] = 1;
 
-        shear = &allshear[dnum*jj];
+        shear = &allshear[dnum_pairgran*jj];
 
         if (shearupdate && addflag)
         {

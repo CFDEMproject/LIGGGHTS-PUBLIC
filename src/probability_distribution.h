@@ -111,9 +111,9 @@ namespace LMP_PROBABILITY_NS {
 
   template<> inline void PDF::set_params<RANDOM_CONSTANT>(double val)
   {
-	 rand_style_ = RANDOM_CONSTANT;
-	 mu_ = val;
-	 set_min_max(mu_,mu_);
+         rand_style_ = RANDOM_CONSTANT;
+         mu_ = val;
+         set_min_max(mu_,mu_);
   }
 
   template<> inline double expectancy_value<RANDOM_CONSTANT>(PDF *pdf)
@@ -133,8 +133,8 @@ namespace LMP_PROBABILITY_NS {
 
   template<> inline void PDF::set_params<RANDOM_UNIFORM>(double min, double max)
   {
-	 rand_style_ = RANDOM_UNIFORM;
-	 set_min_max(min,max);
+         rand_style_ = RANDOM_UNIFORM;
+         set_min_max(min,max);
   }
 
   template<> inline double expectancy_value<RANDOM_UNIFORM>(PDF *pdf)
@@ -156,12 +156,12 @@ namespace LMP_PROBABILITY_NS {
 
   template<> inline void PDF::set_params<RANDOM_GAUSSIAN>(double mu, double sigma)
   {
-	 rand_style_ = RANDOM_GAUSSIAN;
-	 mu_ = mu;
-	 sigma_ = sigma;
+         rand_style_ = RANDOM_GAUSSIAN;
+         mu_ = mu;
+         sigma_ = sigma;
 
-	 //set min-max to +- 3 sigma (99.73% of all values)
-	 set_min_max(mu_-3.*sigma_, mu_+3.*sigma_);
+         //set min-max to +- 3 sigma (99.73% of all values)
+         set_min_max(mu_-3.*sigma_, mu_+3.*sigma_);
   }
 
   template<> inline double expectancy_value<RANDOM_GAUSSIAN>(PDF *pdf)
@@ -188,14 +188,14 @@ namespace LMP_PROBABILITY_NS {
   template<> inline void PDF::set_params<RANDOM_LOGNORMAL>(double mu, double sigma)
   {
       rand_style_ = RANDOM_LOGNORMAL;
-	  mu_ = mu;
-	  sigma_ = sigma;
+          mu_ = mu;
+          sigma_ = sigma;
 
-	  //also here, take +- 3 sigma as min/max
-	  //change in expectancy considered negligable
-	  double min =  pow(MATH_E,mu_ - 3. * sigma_);
-	  double max =  pow(MATH_E,mu_ + 3. * sigma_);
-	  set_min_max(min, max);
+          //also here, take +- 3 sigma as min/max
+          //change in expectancy considered negligable
+          double min =  pow(MATH_E,mu_ - 3. * sigma_);
+          double max =  pow(MATH_E,mu_ + 3. * sigma_);
+          set_min_max(min, max);
   }
 
   template<> inline double expectancy_value<RANDOM_LOGNORMAL>(PDF *pdf)

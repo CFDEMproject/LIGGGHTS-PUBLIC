@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -45,6 +45,8 @@ class LAMMPS {
   char *suffix;                  // suffix to add to input script style names
   int suffix_enable;             // 1 if suffix enabled, 0 if disabled
   class Cuda *cuda;              // CUDA accelerator class
+
+  bool wedgeflag;
 
   LAMMPS(int, char **, MPI_Comm);
   ~LAMMPS();

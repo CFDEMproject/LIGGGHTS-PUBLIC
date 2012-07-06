@@ -38,6 +38,7 @@ class FixHeatGran : public Fix {
   ~FixHeatGran();
   int setmask();
   void post_create();
+  void pre_delete(bool unfixflag);
   void init();
   void updatePtrs();
   void post_force(int);
@@ -76,4 +77,3 @@ class FixHeatGran : public Fix {
 
 #endif
 #endif
-

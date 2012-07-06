@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -112,7 +112,7 @@ void DumpXYZ::write_data(int n, double *mybuf)
   int m = 0;
   for (int i = 0; i < n; i++) {
     fprintf(fp,format,
-	    static_cast<int> (mybuf[m+1]),mybuf[m+2],mybuf[m+3],mybuf[m+4]);
+            static_cast<int> (mybuf[m+1]),mybuf[m+2],mybuf[m+3],mybuf[m+4]);
     m += size_one;
   }
 }

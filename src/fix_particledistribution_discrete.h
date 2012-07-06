@@ -54,10 +54,10 @@ class FixParticledistributionDiscrete : public Fix {
   int max_nspheres();
 
   int random_init_single(int);         
-  class Region* randomize_single();             
+  class Region* randomize_single();    
 
   void random_init_list(int);
-  int randomize_list(int,int,int);        
+  int randomize_list(int,int,int);     
 
   void finalize_insertion();
 
@@ -87,7 +87,7 @@ class FixParticledistributionDiscrete : public Fix {
 
   int iarg;
 
-  //particle templates
+  // particle templates
   int ntemplates;
   double *distweight;
   double *cumweight;
@@ -95,18 +95,18 @@ class FixParticledistributionDiscrete : public Fix {
   int *distorder;
   class FixTemplateSphere **templates;
 
-  //mass and volume expectancy of this discrete distribution
+  // mass and volume expectancy of this discrete distribution
   double volexpect;
   double massexpect;
 
-  //min/maximum particle type to be inserted
+  // min/maximum particle type to be inserted
   int maxtype;
   int mintype;
 
-  //maximum number of spheres a template has
+  // maximum number of spheres a template has
   int maxnspheres;
 
-  //maximum radius and bounding sphere radius
+  // maximum radius and bounding sphere radius
   double maxrad,maxrbound;
 };
 
@@ -114,4 +114,3 @@ class FixParticledistributionDiscrete : public Fix {
 
 #endif
 #endif
-

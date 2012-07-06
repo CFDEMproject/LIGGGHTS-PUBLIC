@@ -31,7 +31,7 @@
 
 <LI>one or more general keyword/value pairs can be appended 
 
-<LI>general_keywords = <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>vel</I> or <I>omega</I> 
+<LI>general_keywords = <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel</I> or <I>omega</I> 
 
 <PRE>  <I>maxattempt</I> value = ma
     ma = max # of insertion attempts per atom (positive integer)
@@ -50,6 +50,7 @@
     ts = time-step at which insertion should start (positive integer larger than current time-step)
   <I>overlapcheck</I> value = yes or no
   <I>all_in</I> value = yes or no
+  <I>random_distribute</I> = exact or uncorrelated
   <I>vel</I> values = vx vy vz
     vx = x-velocity at insertion (velocity units)
     vy = y-velocity at insertion (velocity units)
@@ -129,6 +130,24 @@ in the insertion region (<I>all_in yes</I>) or only the particle center
 (<I>all_in no</I>). Currently <I>all_in yes</I> is not yet supported for all
 types of insertion.
 </P>
+<P>Keyword <I>random_distribute</I> controls how the number of particles to
+be inserted is distributed among parallel processors and among the
+particle templates in the particle distribution. For style <I>exact</I>,
+the number of particles to be inserted each step is matched exactly.
+For style <I>uncorrelated</I>, the number of particles to be inserted
+for each particle template will be rounded in an uncorrelated way,
+so the total number of inserted particles may vary for each insertion
+step. However, statistically both ways should produce the same 
+result. Style <I>uncorrelated</I> may be faster in parallel since it 
+does not need global MPI operations.
+Please note that if the # of particles to be inserted is calculated
+e.g. from a particle mass to be inserted, the number of particles
+to be inserted each insertion step will vary by 1, irrespective of
+the <I>random_distribute</I> settings. This is because in this case the
+# of particles to insert in each step will be a floating point number,
+and applying a simple floor/ceil rounding operation would lead to a 
+statistical bias.
+</P>
 <P>The initial velocity and rotational velocity can be controlled via the
 <I>vel</I> and <I>omega</I> keywords.
 </P>
@@ -169,6 +188,6 @@ off and let the packing relax afterwards to generate a valid packing.
 </P>
 <P>The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
-duration = insert_every, ntry_mc = 100000
+duration = insert_every, ntry_mc = 100000, random_distribute = exact
 </P>
 </HTML>

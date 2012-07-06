@@ -1,229 +1,122 @@
-/*
- * VolumeMesh.h
- *
- *  Created on: 12.09.2011
- *      Author: phil
- */
+/* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
 
-#ifndef LMP_VOLUME_MESH_H_
-#define LMP_VOLUME_MESH_H_
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   Christoph Kloss, christoph.kloss@cfdem.com
+   Copyright 2009-2012 JKU Linz
+   Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS is based on LAMMPS
+   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+   http://lammps.sandia.gov, Sandia National Laboratories
+   Steve Plimpton, sjplimp@sandia.gov
+
+   This software is distributed under the GNU General Public License.
+
+   See the README file in the top-level directory.
+------------------------------------------------------------------------- */
+
+/* ----------------------------------------------------------------------
+   Contributing authors:
+   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
+   Philippe Seil (JKU Linz)
+------------------------------------------------------------------------- */
+
+#ifndef LMP_VOLUME_MESH_H
+#define LMP_VOLUME_MESH_H
 
 #include "tracking_mesh.h"
 #include "container.h"
 
 namespace LAMMPS_NS{
 
-template<int NUM_NODES>
+template<int NUM_NODES,int N_NEIGHS>
 class VolumeMesh : public TrackingMesh<NUM_NODES>
 {
   public:
 
-    void calcVolPropertiesOfNewElement();
+    void useAsInsertionMesh();
+
+    void addElement(double **nodeToAdd);
+    void buildNeighbours();
+
     bool isInside(double *p);
-    void generateRandom(double *p);
-    double volume();
-    virtual void move(double *vec);
+
+    virtual int generateRandomOwnedGhost(double *pos) = 0;
+    virtual int generateRandomSubbox(double *pos) = 0;
+    virtual int generateRandomSubboxWithin(double *pos,double delta) = 0;
+
+    // public inline access
+
+    // area of total mesh - all elements (all processes)
+    
+    inline double volMeshGlobal()
+    { return volMesh_(0);}
+
+    // area of owned elements
+    inline double volMeshOwned()
+    { return volMesh_(1);}
+
+    // area of ghost elements
+    inline double volMeshGhost()
+    { return volMesh_(2);}
+
+    // area of owned and ghost elements in my subdomain
+    inline double volMeshSubdomain()
+    { return volMesh_(3);}
 
   protected:
+
     VolumeMesh();
     virtual ~VolumeMesh();
+
+    void deleteElement(int n);
+
+    void refreshOwned(int setupFlag);
+    void refreshGhosts(int setupFlag);
+
+    inline void recalcLocalVolProperties();
+    inline void recalcGhostVolProperties();
+
+    void calcVolPropertiesOfNewElement();
 
     virtual bool isInside(int nElem, double *p) =0;
     virtual double calcVol(int nElem) =0;
     virtual double calcCenter(int nElem) =0;
 
-    int randomElement();
-    virtual void generateRandom(int n, double *p) =0;
+    int randomOwnedGhostElement();
 
-    virtual void rotate(double *totalQ, double *dQ,double *displacement);
+    // inline access
+    inline double&  vol(int i)         {return (vol_)(i);}
+    inline double&  volAcc(int i)      {return (volAcc_)(i);}
 
     // mesh properties
-    double volMesh;
+
+    ScalarContainer<double>& volMesh_; 
 
     // per-element properties
 
-    // add more properties as they are needed, such as
-    // surface area, edge length ...
-    ScalarContainer<double> &vol;
-    ScalarContainer<double> &volAcc;
+    ScalarContainer<double> &vol_;
+    ScalarContainer<double> &volAcc_;
+
+    // neighbor topology
+    ScalarContainer<int>& nNeighs_;
+    VectorContainer<int,NUM_NODES>& neighFaces_;
+
+  private:
+
+    int searchElementByVolAcc(double vol,int lo, int hi);
+
+    // flag indicating usage as insertion mesh
+    bool isInsertionMesh_;
 };
 
-/* ----------------------------------------------------------------------
-   constructor(s), destructor
-------------------------------------------------------------------------- */
-
-template<int NUM_NODES>
-VolumeMesh<NUM_NODES>::VolumeMesh()
-: TrackingMesh<NUM_NODES>(),
-  vol_         (this->template addProperty< ScalarContainer<double> >("vol","comm_none","ref_trans_rot_invariant")),
-  volAcc_      (this->template addProperty< ScalarContainer<double> >("volAcc","comm_none","ref_trans_rot_invariant")),
-{
-
-}
-
-template<int NUM_NODES>
-VolumeMesh<NUM_NODES>::~VolumeMesh()
-{
-
-}
-
-/* ----------------------------------------------------------------------
-   add / delete element
-------------------------------------------------------------------------- */
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::addElement(double **nodeToAdd)
-{
-    TrackingMesh<NUM_NODES>::addElement(nodeToAdd);
-    calcVolPropertiesOfNewElement();
-}
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::deleteElement(int n)
-{
-    TrackingMesh<NUM_NODES>::deleteElement(n);
-}
-
-/* ----------------------------------------------------------------------
-   calculate properties when adding new element
-------------------------------------------------------------------------- */
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::calcVolPropertiesOfNewElement()
-{
-    double *vecTmp3 = create<double>(vecTmp3,3);
-
-    int n = MultiNodeMesh<NUM_NODES>::node.size()-1;
-
-    // calc volume
-    double vol_elem = calcVol(n);
-    volMesh += vol_elem;
-    vol.set(n,vol_elem);
-    volAcc.set(n,area_elem);
-    if(n > 0) volAcc(n) += volAcc(n-1);
-
-    destroy<double>(vecTmp3);
-}
-
-/* ----------------------------------------------------------------------
-   re-calculate properties during simulation
-------------------------------------------------------------------------- */
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::recalcVolProperties()
-{
-    recalcVol();
-    recalcCenter();
-}
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::recalcVol()
-{
-    volMesh = 0.;
-
-    for(int i=0;i<size();i++){
-      vol(i) = calcVol(i);
-      volAcc(i) = vol(i);
-      if(i > 0) volAcc(i) += volAcc(i-1);
-      volMesh += area(i);
-    }
-}
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::recalcCenter()
-{
-    for(int i=0;i<center.size();i++){
-      calcCenter(i, center(i));
-    }
-}
-
-/* ----------------------------------------------------------------------
-   isInside etc
-------------------------------------------------------------------------- */
-
-template<int NUM_NODES>
-bool VolumeMesh<NUM_NODES>::isInside(double *p)
-{
-    // check subdomain
-    if(!domain->is_in_subdomain(p)) return false;
-
-    // check bbox
-    if(!box_.isInside(p) return false;
-
-    // brute force
-    for(int i=0;i<size();i++)
-        if(isInside(i,p)) return true;
-
-    return false;
-}
-
-template<int NUM_NODES>
-double VolumeMesh<NUM_NODES>::volume()
-{
-    return volMesh;
-}
-
-/* ----------------------------------------------------------------------
-   random generation functions
-------------------------------------------------------------------------- */
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::generateRandom(double *p)
-{
-    int n = randomElement();
-
-}
-
-template<int NUM_NODES>
-int VolumeMesh<NUM_NODES>::randomElement()
-{
-    // primitive implementation, could do a binary search here
-    double rd = volMesh * random->uniform();
-    int chosen = 0;
-    while (rd > volAcc(chosen) && chosen < size()-1)
-        chosen++;
-    return chosen;
-}
-
-/* ----------------------------------------------------------------------
-   functions for altering the mesh on loading
-------------------------------------------------------------------------- */
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::move(double *vec)
-{
-    TrackingMesh<NUM_NODES>::move(vec);
-    // specific stuff to come here
-    // center needs to be moved
-    // other properties are translation-invariant
-    for(int i=0;i<center.size();i++)
-    {
-      vectorAdd3D(center(i),vec,center(i));
-    }
-}
-
-template<int NUM_NODES>
-void SurfaceMesh<NUM_NODES>::scale(double factorX, double factorY, double factorZ)
-{
-    TrackingMesh<NUM_NODES>::scale(factorX,factorY,factorZ);
-    areaMesh = 0.;
-    for(int i=0;i<center.size();i++){
-      calcEdgeVecLen(i, edgeLen(i), edgeVec(i));
-      calcSurfaceNorm(i, surfaceNorm(i));
-      calcCenter(i, center(i));
-      calcEdgeNormals(i, edgeNorm(i));
-      area(i) = calcArea(i);
-      areaMesh += area(i);
-      areaAcc(i) = area(i);
-      if(i > 0) areaAcc(i) += areaAcc(i-1);
-    }
-}
-
-template<int NUM_NODES>
-void VolumeMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *displacement)
-{
-      TrackingMesh<NUM_NODES>::rotate(totalQ, dQ, displacement);
-}
+// *************************************
+#include "volume_mesh_I.h"
+// *************************************
 
 } /* LAMMPS_NS */
 

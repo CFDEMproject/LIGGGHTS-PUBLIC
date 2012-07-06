@@ -238,6 +238,13 @@ inline void vectorAdd3D(const double *v1,const double *v2, double *result)
   result[2]=v1[2]+v2[2];
 }
 
+inline void vectorAddMultiple3D(const double *v1,double v2factor,const double *v2, double *result)
+{
+  result[0]=v1[0]+v2factor*v2[0];
+  result[1]=v1[1]+v2factor*v2[1];
+  result[2]=v1[2]+v2factor*v2[2];
+}
+
 inline void vectorSubtract3D(const double *v1,const double *v2, double *result)
 {
   result[0]=v1[0]-v2[0];

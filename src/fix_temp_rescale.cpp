@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -94,7 +94,7 @@ int FixTempRescale::setmask()
 void FixTempRescale::init()
 {
   int icompute = modify->find_compute(id_temp);
-  if (icompute < 0) 
+  if (icompute < 0)
     error->all(FLERR,"Temperature ID for fix temp/rescale does not exist");
   temperature = modify->compute[icompute];
 
@@ -132,21 +132,21 @@ void FixTempRescale::end_of_step()
 
     if (which == NOBIAS) {
       for (int i = 0; i < nlocal; i++) {
-	if (mask[i] & groupbit) {
-	  v[i][0] *= factor;
-	  v[i][1] *= factor;
-	  v[i][2] *= factor;
-	}
+        if (mask[i] & groupbit) {
+          v[i][0] *= factor;
+          v[i][1] *= factor;
+          v[i][2] *= factor;
+        }
       }
     } else {
       for (int i = 0; i < nlocal; i++) {
-	if (mask[i] & groupbit) {
-	  temperature->remove_bias(i,v[i]);
-	  v[i][0] *= factor;
-	  v[i][1] *= factor;
-	  v[i][2] *= factor;
-	  temperature->restore_bias(i,v[i]);
-	}
+        if (mask[i] & groupbit) {
+          temperature->remove_bias(i,v[i]);
+          v[i][0] *= factor;
+          v[i][1] *= factor;
+          v[i][2] *= factor;
+          temperature->restore_bias(i,v[i]);
+        }
       }
     }
 
@@ -169,7 +169,7 @@ int FixTempRescale::modify_param(int narg, char **arg)
     strcpy(id_temp,arg[1]);
 
     int icompute = modify->find_compute(id_temp);
-    if (icompute < 0) 
+    if (icompute < 0)
       error->all(FLERR,"Could not find fix_modify temperature ID");
     temperature = modify->compute[icompute];
 

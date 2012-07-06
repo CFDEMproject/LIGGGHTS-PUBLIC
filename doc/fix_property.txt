@@ -24,9 +24,9 @@ comm_reverse_ghost_value = 'yes' or 'no' :l
 
 fix property/global:
 
-style = scalar or vector or matrix or atomtype or atomtypepair :ulb,l
-  stylearg for scalar/vector: none
-  stylearg for matrix: nCols :pre
+    style = scalar or vector or atomtype or matrix or atomtypepair :ulb,l
+    stylearg for scalar/vector: none
+    stylearg for matrix/atomtypepair: nCols :pre
 :ule
 
 fix property/peratom:
@@ -58,13 +58,13 @@ Example: nCols= 2 and defaultvalues = 1 2 3 4 5 6 would be mapped into a matrix 
 
 Note that the number of default values must thus be a multiple of nCols.
 Note that vector and atomtype do the same thing, atomtype is just provided to make input scripts more readable .
-Note that matrix and atomtypepair do the same thing, atomtype is just provided to make input scripts more readable .
+Note that matrix and atomtypepair both refer to a matrix of global values. However, a matrix defined via 'atomtypepair' is required to be symmetric.
 
 Note that the group of atoms the fix is applied to is ignored (as the fix is not applied to atoms, but defines values of global scope).
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
-Information about this fix is written to "binary restart files"_restart.html if you set 'restartvalue' to “yes”.
+Information about this fix is written to "binary restart files"_restart.html if you set 'restartvalue' to 'yes'.
 
 The "fix_modify"_fix_modify.html {energy} option is supported by this fix to add the potential "energy" inferred by the added force to the system's potential energy as part of "thermodynamic output"_thermo_style.html. This is a fictitious quantity but is needed so that the "minimize""_minimize.html command can include the forces added by this fix in a consistent manner. I.e. there is a decrease in potential energy when atoms move in the direction of the added force. 
 

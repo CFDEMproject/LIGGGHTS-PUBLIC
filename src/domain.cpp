@@ -124,8 +124,8 @@ void Domain::init()
     if (strcmp(modify->fix[i]->style,"deform") == 0) {
       deform_flag = 1;
       if (((FixDeform *) modify->fix[i])->remapflag == V_REMAP) {
-	deform_vremap = 1;
-	deform_groupbit = modify->fix[i]->groupbit;
+        deform_vremap = 1;
+        deform_groupbit = modify->fix[i]->groupbit;
       }
     }
 
@@ -335,67 +335,67 @@ void Domain::reset_box()
 
     if (triclinic == 0) {
       if (xperiodic == 0) {
-	if (boundary[0][0] == 2) boxlo[0] = -all[0][0] - small[0];
-	else if (boundary[0][0] == 3)
-	  boxlo[0] = MIN(-all[0][0]-small[0],minxlo);
-	if (boundary[0][1] == 2) boxhi[0] = all[0][1] + small[0];
-	else if (boundary[0][1] == 3) boxhi[0] = MAX(all[0][1]+small[0],minxhi);
-	if (boxlo[0] > boxhi[0]) error->all(FLERR,"Illegal simulation box");
+        if (boundary[0][0] == 2) boxlo[0] = -all[0][0] - small[0];
+        else if (boundary[0][0] == 3)
+          boxlo[0] = MIN(-all[0][0]-small[0],minxlo);
+        if (boundary[0][1] == 2) boxhi[0] = all[0][1] + small[0];
+        else if (boundary[0][1] == 3) boxhi[0] = MAX(all[0][1]+small[0],minxhi);
+        if (boxlo[0] > boxhi[0]) error->all(FLERR,"Illegal simulation box");
       }
       if (yperiodic == 0) {
-	if (boundary[1][0] == 2) boxlo[1] = -all[1][0] - small[1];
-	else if (boundary[1][0] == 3)
-	  boxlo[1] = MIN(-all[1][0]-small[1],minylo);
-	if (boundary[1][1] == 2) boxhi[1] = all[1][1] + small[1];
-	else if (boundary[1][1] == 3) boxhi[1] = MAX(all[1][1]+small[1],minyhi);
-	if (boxlo[1] > boxhi[1]) error->all(FLERR,"Illegal simulation box");
+        if (boundary[1][0] == 2) boxlo[1] = -all[1][0] - small[1];
+        else if (boundary[1][0] == 3)
+          boxlo[1] = MIN(-all[1][0]-small[1],minylo);
+        if (boundary[1][1] == 2) boxhi[1] = all[1][1] + small[1];
+        else if (boundary[1][1] == 3) boxhi[1] = MAX(all[1][1]+small[1],minyhi);
+        if (boxlo[1] > boxhi[1]) error->all(FLERR,"Illegal simulation box");
       }
       if (zperiodic == 0) {
-	if (boundary[2][0] == 2) boxlo[2] = -all[2][0] - small[2];
-	else if (boundary[2][0] == 3)
-	  boxlo[2] = MIN(-all[2][0]-small[2],minzlo);
-	if (boundary[2][1] == 2) boxhi[2] = all[2][1] + small[2];
-	else if (boundary[2][1] == 3) boxhi[2] = MAX(all[2][1]+small[2],minzhi);
-	if (boxlo[2] > boxhi[2]) error->all(FLERR,"Illegal simulation box");
+        if (boundary[2][0] == 2) boxlo[2] = -all[2][0] - small[2];
+        else if (boundary[2][0] == 3)
+          boxlo[2] = MIN(-all[2][0]-small[2],minzlo);
+        if (boundary[2][1] == 2) boxhi[2] = all[2][1] + small[2];
+        else if (boundary[2][1] == 3) boxhi[2] = MAX(all[2][1]+small[2],minzhi);
+        if (boxlo[2] > boxhi[2]) error->all(FLERR,"Illegal simulation box");
       }
 
     } else {
       double lo[3],hi[3];
       if (xperiodic == 0) {
-	lo[0] = -all[0][0]; lo[1] = 0.0; lo[2] = 0.0;
-	lamda2x(lo,lo);
-	hi[0] = all[0][1]; hi[1] = 0.0; hi[2] = 0.0;
-	lamda2x(hi,hi);
-	if (boundary[0][0] == 2) boxlo[0] = lo[0] - small[0];
-	else if (boundary[0][0] == 3) boxlo[0] = MIN(lo[0]-small[0],minxlo);
-	if (boundary[0][1] == 2) boxhi[0] = hi[0] + small[0];
-	else if (boundary[0][1] == 3) boxhi[0] = MAX(hi[0]+small[0],minxhi);
-	if (boxlo[0] > boxhi[0]) error->all(FLERR,"Illegal simulation box");
+        lo[0] = -all[0][0]; lo[1] = 0.0; lo[2] = 0.0;
+        lamda2x(lo,lo);
+        hi[0] = all[0][1]; hi[1] = 0.0; hi[2] = 0.0;
+        lamda2x(hi,hi);
+        if (boundary[0][0] == 2) boxlo[0] = lo[0] - small[0];
+        else if (boundary[0][0] == 3) boxlo[0] = MIN(lo[0]-small[0],minxlo);
+        if (boundary[0][1] == 2) boxhi[0] = hi[0] + small[0];
+        else if (boundary[0][1] == 3) boxhi[0] = MAX(hi[0]+small[0],minxhi);
+        if (boxlo[0] > boxhi[0]) error->all(FLERR,"Illegal simulation box");
       }
       if (yperiodic == 0) {
-	lo[0] = 0.0; lo[1] = -all[1][0]; lo[2] = 0.0;
-	lamda2x(lo,lo);
-	hi[0] = 0.0; hi[1] = all[1][1]; hi[2] = 0.0;
-	lamda2x(hi,hi);
-	if (boundary[1][0] == 2) boxlo[1] = lo[1] - small[1];
-	else if (boundary[1][0] == 3) boxlo[1] = MIN(lo[1]-small[1],minylo);
-	if (boundary[1][1] == 2) boxhi[1] = hi[1] + small[1];
-	else if (boundary[1][1] == 3) boxhi[1] = MAX(hi[1]+small[1],minyhi);
-	if (boxlo[1] > boxhi[1]) error->all(FLERR,"Illegal simulation box");
-	//xy *= (boxhi[1]-boxlo[1]) / yprd;
+        lo[0] = 0.0; lo[1] = -all[1][0]; lo[2] = 0.0;
+        lamda2x(lo,lo);
+        hi[0] = 0.0; hi[1] = all[1][1]; hi[2] = 0.0;
+        lamda2x(hi,hi);
+        if (boundary[1][0] == 2) boxlo[1] = lo[1] - small[1];
+        else if (boundary[1][0] == 3) boxlo[1] = MIN(lo[1]-small[1],minylo);
+        if (boundary[1][1] == 2) boxhi[1] = hi[1] + small[1];
+        else if (boundary[1][1] == 3) boxhi[1] = MAX(hi[1]+small[1],minyhi);
+        if (boxlo[1] > boxhi[1]) error->all(FLERR,"Illegal simulation box");
+        //xy *= (boxhi[1]-boxlo[1]) / yprd;
       }
       if (zperiodic == 0) {
-	lo[0] = 0.0; lo[1] = 0.0; lo[2] = -all[2][0];
-	lamda2x(lo,lo);
-	hi[0] = 0.0; hi[1] = 0.0; hi[2] = all[2][1];
-	lamda2x(hi,hi);
-	if (boundary[2][0] == 2) boxlo[2] = lo[2] - small[2];
-	else if (boundary[2][0] == 3) boxlo[2] = MIN(lo[2]-small[2],minzlo);
-	if (boundary[2][1] == 2) boxhi[2] = hi[2] + small[2];
-	else if (boundary[2][1] == 3) boxhi[2] = MAX(hi[2]+small[2],minzhi);
-	if (boxlo[2] > boxhi[2]) error->all(FLERR,"Illegal simulation box");
-	//xz *= (boxhi[2]-boxlo[2]) / xprd;
-	//yz *= (boxhi[2]-boxlo[2]) / yprd;
+        lo[0] = 0.0; lo[1] = 0.0; lo[2] = -all[2][0];
+        lamda2x(lo,lo);
+        hi[0] = 0.0; hi[1] = 0.0; hi[2] = all[2][1];
+        lamda2x(hi,hi);
+        if (boundary[2][0] == 2) boxlo[2] = lo[2] - small[2];
+        else if (boundary[2][0] == 3) boxlo[2] = MIN(lo[2]-small[2],minzlo);
+        if (boundary[2][1] == 2) boxhi[2] = hi[2] + small[2];
+        else if (boundary[2][1] == 3) boxhi[2] = MAX(hi[2]+small[2],minzhi);
+        if (boxlo[2] > boxhi[2]) error->all(FLERR,"Illegal simulation box");
+        //xz *= (boxhi[2]-boxlo[2]) / xprd;
+        //yz *= (boxhi[2]-boxlo[2]) / yprd;
       }
     }
   }
@@ -449,81 +449,81 @@ void Domain::pbc()
   for (i = 0; i < nlocal; i++) {
     if (xperiodic) {
       if (x[i][0] < lo[0]) {
-	x[i][0] += period[0];
-	if (deform_vremap && mask[i] & deform_groupbit) v[i][0] += h_rate[0];
-	idim = image[i] & 1023;
+        x[i][0] += period[0];
+        if (deform_vremap && mask[i] & deform_groupbit) v[i][0] += h_rate[0];
+        idim = image[i] & 1023;
         otherdims = image[i] ^ idim;
-	idim--;
-	idim &= 1023;
-	image[i] = otherdims | idim;
+        idim--;
+        idim &= 1023;
+        image[i] = otherdims | idim;
       }
       if (x[i][0] >= hi[0]) {
-	x[i][0] -= period[0];
-	x[i][0] = MAX(x[i][0],lo[0]);
-	if (deform_vremap && mask[i] & deform_groupbit) v[i][0] -= h_rate[0];
-	idim = image[i] & 1023;
-	otherdims = image[i] ^ idim;
-	idim++;
-	idim &= 1023;
-	image[i] = otherdims | idim;
+        x[i][0] -= period[0];
+        x[i][0] = MAX(x[i][0],lo[0]);
+        if (deform_vremap && mask[i] & deform_groupbit) v[i][0] -= h_rate[0];
+        idim = image[i] & 1023;
+        otherdims = image[i] ^ idim;
+        idim++;
+        idim &= 1023;
+        image[i] = otherdims | idim;
       }
     }
 
     if (yperiodic) {
       if (x[i][1] < lo[1]) {
-	x[i][1] += period[1];
-	if (deform_vremap && mask[i] & deform_groupbit) {
-	  v[i][0] += h_rate[5];
-	  v[i][1] += h_rate[1];
-	}
-	idim = (image[i] >> 10) & 1023;
+        x[i][1] += period[1];
+        if (deform_vremap && mask[i] & deform_groupbit) {
+          v[i][0] += h_rate[5];
+          v[i][1] += h_rate[1];
+        }
+        idim = (image[i] >> 10) & 1023;
         otherdims = image[i] ^ (idim << 10);
-	idim--;
-	idim &= 1023;
-	image[i] = otherdims | (idim << 10);
+        idim--;
+        idim &= 1023;
+        image[i] = otherdims | (idim << 10);
       }
       if (x[i][1] >= hi[1]) {
-	x[i][1] -= period[1];
-	x[i][1] = MAX(x[i][1],lo[1]);
-	if (deform_vremap && mask[i] & deform_groupbit) {
-	  v[i][0] -= h_rate[5];
-	  v[i][1] -= h_rate[1];
-	}
-	idim = (image[i] >> 10) & 1023;
+        x[i][1] -= period[1];
+        x[i][1] = MAX(x[i][1],lo[1]);
+        if (deform_vremap && mask[i] & deform_groupbit) {
+          v[i][0] -= h_rate[5];
+          v[i][1] -= h_rate[1];
+        }
+        idim = (image[i] >> 10) & 1023;
         otherdims = image[i] ^ (idim << 10);
-	idim++;
-	idim &= 1023;
-	image[i] = otherdims | (idim << 10);
+        idim++;
+        idim &= 1023;
+        image[i] = otherdims | (idim << 10);
       }
     }
 
     if (zperiodic) {
       if (x[i][2] < lo[2]) {
-	x[i][2] += period[2];
-	if (deform_vremap && mask[i] & deform_groupbit) {
-	  v[i][0] += h_rate[4];
-	  v[i][1] += h_rate[3];
-	  v[i][2] += h_rate[2];
-	}
-	idim = image[i] >> 20;
+        x[i][2] += period[2];
+        if (deform_vremap && mask[i] & deform_groupbit) {
+          v[i][0] += h_rate[4];
+          v[i][1] += h_rate[3];
+          v[i][2] += h_rate[2];
+        }
+        idim = image[i] >> 20;
         otherdims = image[i] ^ (idim << 20);
-	idim--;
-	idim &= 1023;
-	image[i] = otherdims | (idim << 20);
+        idim--;
+        idim &= 1023;
+        image[i] = otherdims | (idim << 20);
       }
       if (x[i][2] >= hi[2]) {
-	x[i][2] -= period[2];
-	x[i][2] = MAX(x[i][2],lo[2]);
-	if (deform_vremap && mask[i] & deform_groupbit) {
-	  v[i][0] -= h_rate[4];
-	  v[i][1] -= h_rate[3];
-	  v[i][2] -= h_rate[2];
-	}
-	idim = image[i] >> 20;
+        x[i][2] -= period[2];
+        x[i][2] = MAX(x[i][2],lo[2]);
+        if (deform_vremap && mask[i] & deform_groupbit) {
+          v[i][0] -= h_rate[4];
+          v[i][1] -= h_rate[3];
+          v[i][2] -= h_rate[2];
+        }
+        idim = image[i] >> 20;
         otherdims = image[i] ^ (idim << 20);
-	idim++;
-	idim &= 1023;
-	image[i] = otherdims | (idim << 20);
+        idim++;
+        idim &= 1023;
+        image[i] = otherdims | (idim << 20);
       }
     }
   }
@@ -553,52 +553,52 @@ void Domain::minimum_image(double &dx, double &dy, double &dz)
   if (triclinic == 0) {
     if (xperiodic) {
       if (fabs(dx) > xprd_half) {
-	if (dx < 0.0) dx += xprd;
-	else dx -= xprd;
+        if (dx < 0.0) dx += xprd;
+        else dx -= xprd;
       }
     }
     if (yperiodic) {
       if (fabs(dy) > yprd_half) {
-	if (dy < 0.0) dy += yprd;
-	else dy -= yprd;
+        if (dy < 0.0) dy += yprd;
+        else dy -= yprd;
       }
     }
     if (zperiodic) {
       if (fabs(dz) > zprd_half) {
-	if (dz < 0.0) dz += zprd;
-	else dz -= zprd;
+        if (dz < 0.0) dz += zprd;
+        else dz -= zprd;
       }
     }
 
   } else {
     if (zperiodic) {
       if (fabs(dz) > zprd_half) {
-	if (dz < 0.0) {
-	  dz += zprd;
-	  dy += yz;
-	  dx += xz;
-	} else {
-	  dz -= zprd;
-	  dy -= yz;
-	  dx -= xz;
-	}
+        if (dz < 0.0) {
+          dz += zprd;
+          dy += yz;
+          dx += xz;
+        } else {
+          dz -= zprd;
+          dy -= yz;
+          dx -= xz;
+        }
       }
     }
     if (yperiodic) {
       if (fabs(dy) > yprd_half) {
-	if (dy < 0.0) {
-	  dy += yprd;
-	  dx += xy;
-	} else {
-	  dy -= yprd;
-	  dx -= xy;
-	}
+        if (dy < 0.0) {
+          dy += yprd;
+          dx += xy;
+        } else {
+          dy -= yprd;
+          dx -= xy;
+        }
       }
     }
     if (xperiodic) {
       if (fabs(dx) > xprd_half) {
-	if (dx < 0.0) dx += xprd;
-	else dx -= xprd;
+        if (dx < 0.0) dx += xprd;
+        else dx -= xprd;
       }
     }
   }
@@ -615,52 +615,52 @@ void Domain::minimum_image(double *delta)
   if (triclinic == 0) {
     if (xperiodic) {
       if (fabs(delta[0]) > xprd_half) {
-	if (delta[0] < 0.0) delta[0] += xprd;
-	else delta[0] -= xprd;
+        if (delta[0] < 0.0) delta[0] += xprd;
+        else delta[0] -= xprd;
       }
     }
     if (yperiodic) {
       if (fabs(delta[1]) > yprd_half) {
-	if (delta[1] < 0.0) delta[1] += yprd;
-	else delta[1] -= yprd;
+        if (delta[1] < 0.0) delta[1] += yprd;
+        else delta[1] -= yprd;
       }
     }
     if (zperiodic) {
       if (fabs(delta[2]) > zprd_half) {
-	if (delta[2] < 0.0) delta[2] += zprd;
-	else delta[2] -= zprd;
+        if (delta[2] < 0.0) delta[2] += zprd;
+        else delta[2] -= zprd;
       }
     }
 
   } else {
     if (zperiodic) {
       if (fabs(delta[2]) > zprd_half) {
-	if (delta[2] < 0.0) {
-	  delta[2] += zprd;
-	  delta[1] += yz;
-	  delta[0] += xz;
-	} else {
-	  delta[2] -= zprd;
-	  delta[1] -= yz;
-	  delta[0] -= xz;
-	}
+        if (delta[2] < 0.0) {
+          delta[2] += zprd;
+          delta[1] += yz;
+          delta[0] += xz;
+        } else {
+          delta[2] -= zprd;
+          delta[1] -= yz;
+          delta[0] -= xz;
+        }
       }
     }
     if (yperiodic) {
       if (fabs(delta[1]) > yprd_half) {
-	if (delta[1] < 0.0) {
-	  delta[1] += yprd;
-	  delta[0] += xy;
-	} else {
-	  delta[1] -= yprd;
-	  delta[0] -= xy;
-	}
+        if (delta[1] < 0.0) {
+          delta[1] += yprd;
+          delta[0] += xy;
+        } else {
+          delta[1] -= yprd;
+          delta[0] -= xy;
+        }
       }
     }
     if (xperiodic) {
       if (fabs(delta[0]) > xprd_half) {
-	if (delta[0] < 0.0) delta[0] += xprd;
-	else delta[0] -= xprd;
+        if (delta[0] < 0.0) delta[0] += xprd;
+        else delta[0] -= xprd;
       }
     }
   }
@@ -672,7 +672,7 @@ void Domain::minimum_image(double *delta)
 ------------------------------------------------------------------------- */
 
 void Domain::closest_image(const double * const xi, const double * const xj,
-			   double * const xjimage)
+                           double * const xjimage)
 {
   double dx = xj[0] - xi[0];
   double dy = xj[1] - xi[1];
@@ -681,86 +681,86 @@ void Domain::closest_image(const double * const xi, const double * const xj,
   if (triclinic == 0) {
     if (xperiodic) {
       if (dx < 0.0) {
-	while (dx < 0.0) dx += xprd;
-	if (dx > xprd_half) dx -= xprd;
+        while (dx < 0.0) dx += xprd;
+        if (dx > xprd_half) dx -= xprd;
       } else {
-	while (dx > 0.0) dx -= xprd;
-	if (dx < -xprd_half) dx += xprd;
+        while (dx > 0.0) dx -= xprd;
+        if (dx < -xprd_half) dx += xprd;
       }
     }
     if (yperiodic) {
       if (dy < 0.0) {
-	while (dy < 0.0) dy += yprd;
-	if (dy > yprd_half) dy -= yprd;
+        while (dy < 0.0) dy += yprd;
+        if (dy > yprd_half) dy -= yprd;
       } else {
-	while (dy > 0.0) dy -= yprd;
-	if (dy < -yprd_half) dy += yprd;
+        while (dy > 0.0) dy -= yprd;
+        if (dy < -yprd_half) dy += yprd;
       }
     }
     if (zperiodic) {
       if (dz < 0.0) {
-	while (dz < 0.0) dz += zprd;
-	if (dz > zprd_half) dz -= zprd;
+        while (dz < 0.0) dz += zprd;
+        if (dz > zprd_half) dz -= zprd;
       } else {
-	while (dz > 0.0) dz -= zprd;
-	if (dz < -zprd_half) dz += zprd;
+        while (dz > 0.0) dz -= zprd;
+        if (dz < -zprd_half) dz += zprd;
       }
     }
 
   } else {
     if (zperiodic) {
       if (dz < 0.0) {
-	while (dz < 0.0) {
-	  dz += zprd;
-	  dy += yz;
-	  dx += xz;
-	}
-	if (dz > zprd_half) {
-	  dz -= zprd;
-	  dy -= yz;
-	  dx -= xz;
-	}
+        while (dz < 0.0) {
+          dz += zprd;
+          dy += yz;
+          dx += xz;
+        }
+        if (dz > zprd_half) {
+          dz -= zprd;
+          dy -= yz;
+          dx -= xz;
+        }
       } else {
-	while (dz > 0.0) {
-	  dz -= zprd;
-	  dy -= yz;
-	  dx -= xz;
-	}
-	if (dz < -zprd_half) {
-	  dz += zprd;
-	  dy += yz;
-	  dx += xz;
-	}
+        while (dz > 0.0) {
+          dz -= zprd;
+          dy -= yz;
+          dx -= xz;
+        }
+        if (dz < -zprd_half) {
+          dz += zprd;
+          dy += yz;
+          dx += xz;
+        }
       }
     }
     if (yperiodic) {
       if (dy < 0.0) {
-	while (dy < 0.0) {
-	  dy += yprd;
-	  dx += xy;
-	}
-	if (dy > yprd_half) {
-	  dy -= yprd;
-	  dx -= xy;
-	}
+        while (dy < 0.0) {
+          dy += yprd;
+          dx += xy;
+        }
+        if (dy > yprd_half) {
+          dy -= yprd;
+          dx -= xy;
+        }
       } else {
-	while (dy > 0.0) {
-	  dy -= yprd;
-	  dx -= xy;
-	}
-	if (dy < -yprd_half) {
-	  dy += yprd;
-	  dx += xy;
-	}
+        while (dy > 0.0) {
+          dy -= yprd;
+          dx -= xy;
+        }
+        if (dy < -yprd_half) {
+          dy += yprd;
+          dx += xy;
+        }
       }
     }
     if (xperiodic) {
       if (dx < 0.0) {
-	while (dx < 0.0) dx += xprd;
-	if (dx > xprd_half) dx -= xprd;
+        while (dx < 0.0) dx += xprd;
+        if (dx > xprd_half) dx -= xprd;
       } else {
-	while (dx > 0.0) dx -= xprd;
-	if (dx < -xprd_half) dx += xprd;
+        while (dx > 0.0) dx -= xprd;
+        if (dx < -xprd_half) dx += xprd;
       }
     }
   }
@@ -1171,14 +1171,14 @@ void Domain::set_boundary(int narg, char **arg, int flag)
       else if (c == 's') boundary[idim][iside] = 2;
       else if (c == 'm') boundary[idim][iside] = 3;
       else {
-	if (flag == 0) error->all(FLERR,"Illegal boundary command");
-	if (flag == 1) error->all(FLERR,"Illegal change_box command");
+        if (flag == 0) error->all(FLERR,"Illegal boundary command");
+        if (flag == 1) error->all(FLERR,"Illegal change_box command");
       }
     }
 
   for (int idim = 0; idim < 3; idim++)
     if ((boundary[idim][0] == 0 && boundary[idim][1]) ||
-	(boundary[idim][0] && boundary[idim][1] == 0))
+        (boundary[idim][0] && boundary[idim][1] == 0))
       error->all(FLERR,"Both sides of boundary must be periodic");
 
   if (boundary[0][0] == 0) xperiodic = 1;
@@ -1196,8 +1196,8 @@ void Domain::set_boundary(int narg, char **arg, int flag)
   if (xperiodic == 0 || yperiodic == 0 || zperiodic == 0) {
     nonperiodic = 1;
     if (boundary[0][0] >= 2 || boundary[0][1] >= 2 ||
-	boundary[1][0] >= 2 || boundary[1][1] >= 2 ||
-	boundary[2][0] >= 2 || boundary[2][1] >= 2) nonperiodic = 2;
+        boundary[1][0] >= 2 || boundary[1][1] >= 2 ||
+        boundary[2][0] >= 2 || boundary[2][1] >= 2) nonperiodic = 2;
   }
 }
 
@@ -1210,26 +1210,26 @@ void Domain::print_box(const char *str)
   if (comm->me == 0) {
     if (screen) {
       if (triclinic == 0)
-	fprintf(screen,"%sorthogonal box = (%g %g %g) to (%g %g %g)\n",
-		str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2]);
+        fprintf(screen,"%sorthogonal box = (%g %g %g) to (%g %g %g)\n",
+                str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2]);
       else {
-	char *format = (char *)
-	  "%striclinic box = (%g %g %g) to (%g %g %g) with tilt (%g %g %g)\n";
-	fprintf(screen,format,
-		str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2],
-		xy,xz,yz);
+        char *format = (char *)
+          "%striclinic box = (%g %g %g) to (%g %g %g) with tilt (%g %g %g)\n";
+        fprintf(screen,format,
+                str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2],
+                xy,xz,yz);
       }
     }
     if (logfile) {
       if (triclinic == 0)
-	fprintf(logfile,"%sorthogonal box = (%g %g %g) to (%g %g %g)\n",
-		str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2]);
+        fprintf(logfile,"%sorthogonal box = (%g %g %g) to (%g %g %g)\n",
+                str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2]);
       else {
-	char *format = (char *)
-	  "%striclinic box = (%g %g %g) to (%g %g %g) with tilt (%g %g %g)\n";
-	fprintf(logfile,format,
-		str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2],
-		xy,xz,yz);
+        char *format = (char *)
+          "%striclinic box = (%g %g %g) to (%g %g %g) with tilt (%g %g %g)\n";
+        fprintf(logfile,format,
+                str,boxlo[0],boxlo[1],boxlo[2],boxhi[0],boxhi[1],boxhi[2],
+                xy,xz,yz);
       }
     }
   }
@@ -1311,7 +1311,7 @@ void Domain::x2lamda(double *x, double *lamda)
 ------------------------------------------------------------------------- */
 
 void Domain::x2lamda(double *x, double *lamda,
-		     double *my_boxlo, double *my_h_inv)
+                     double *my_boxlo, double *my_h_inv)
 {
   double delta[3];
   delta[0] = x[0] - my_boxlo[0];

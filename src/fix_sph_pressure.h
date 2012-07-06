@@ -57,4 +57,3 @@ class FixSPHPressure : public FixSPH {
 
 #endif
 #endif
-

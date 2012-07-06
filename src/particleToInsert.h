@@ -64,4 +64,3 @@ namespace LAMMPS_NS {
 }
 
 #endif
-

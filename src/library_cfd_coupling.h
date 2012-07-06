@@ -49,4 +49,3 @@ void allocate_external_double(double **&data, int len2,char *,  double initvalue
 #ifdef __cplusplus
 //}
 #endif
-

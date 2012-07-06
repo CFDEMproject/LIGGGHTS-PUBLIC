@@ -90,4 +90,3 @@ class FixTemplateSphere : public Fix {
 
 #endif
 #endif
-

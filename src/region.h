@@ -55,17 +55,19 @@ class Region : protected Pointers {
   int match(double, double, double);
   int surface(double, double, double, double);
 
-  // reset random gen - is called ot of restart by fix that uses region
+  // reset random gen - is called out of restart by fix that uses region
   void reset_random(int);
 
+  inline void rand_bounds(bool subdomain_flag, double *lo, double *hi);
+
   // generates a random point within the region
-  virtual void generate_random(double *);
+  virtual void generate_random(double *,bool subdomain_flag);
 
   // generate a point inside region OR within a minimum distance from surface
-  virtual void generate_random_expandby_cut(double *,double);
+  virtual void generate_random_expandby_cut(double *,double,bool subdomain_flag);
 
   // generate a point inside region AND further away from surface than cut
-  virtual void generate_random_shrinkby_cut(double *,double);
+  virtual void generate_random_shrinkby_cut(double *,double,bool subdomain_flag);
 
   // inside region AND within a minimum distance from surface
   int match_cut(double *,double);

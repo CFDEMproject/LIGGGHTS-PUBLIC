@@ -45,7 +45,7 @@ namespace LAMMPS_NS
           void add(T elem);
           T get(int n);
           void set(int n, T elem);
-          void setAll(T elem);
+          void setAll(T def);
           T* begin();
           T& operator() (int n);
           T const& operator() (int n) const;
@@ -132,10 +132,10 @@ namespace LAMMPS_NS
   }
 
   template<typename T>
-  void ScalarContainer<T>::setAll(T elem)
+  void ScalarContainer<T>::setAll(T def)
   {
       for(int n=0;n<this->size();n++)
-          this->arr_[n][0][0] = elem;
+          this->arr_[n][0][0] = def;
   }
 
   template<typename T>

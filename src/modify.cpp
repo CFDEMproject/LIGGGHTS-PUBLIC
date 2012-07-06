@@ -141,15 +141,15 @@ void Modify::init()
   list_init_thermo_energy(THERMO_ENERGY,n_thermo_energy,list_thermo_energy);
 
   list_init(INITIAL_INTEGRATE_RESPA,
-	    n_initial_integrate_respa,list_initial_integrate_respa);
+            n_initial_integrate_respa,list_initial_integrate_respa);
   list_init(POST_INTEGRATE_RESPA,
-	    n_post_integrate_respa,list_post_integrate_respa);
+            n_post_integrate_respa,list_post_integrate_respa);
   list_init(POST_FORCE_RESPA,
-	    n_post_force_respa,list_post_force_respa);
+            n_post_force_respa,list_post_force_respa);
   list_init(PRE_FORCE_RESPA,
-	    n_pre_force_respa,list_pre_force_respa);
+            n_pre_force_respa,list_pre_force_respa);
   list_init(FINAL_INTEGRATE_RESPA,
-	    n_final_integrate_respa,list_final_integrate_respa);
+            n_final_integrate_respa,list_final_integrate_respa);
 
   list_init(MIN_PRE_EXCHANGE,n_min_pre_exchange,list_min_pre_exchange);
   list_init(MIN_PRE_FORCE,n_min_pre_force,list_min_pre_force);
@@ -674,14 +674,14 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
 
   for (int i = 0; i < nfix_restart_global; i++)
     if (strcmp(id_restart_global[i],fix[ifix]->id) == 0 &&
-	strcmp(style_restart_global[i],fix[ifix]->style) == 0) {
+        strcmp(style_restart_global[i],fix[ifix]->style) == 0) {
       fix[ifix]->restart(state_restart_global[i]);
       fix[ifix]->recent_restart = 1; 
       if (comm->me == 0) {
-	char *str = (char *) ("Resetting global state of Fix %s Style %s "
-			      "from restart file info\n");
-	if (screen) fprintf(screen,str,fix[ifix]->id,fix[ifix]->style);
-	if (logfile) fprintf(logfile,str,fix[ifix]->id,fix[ifix]->style);
+        char *str = (char *) ("Resetting global state of Fix %s Style %s "
+                              "from restart file info\n");
+        if (screen) fprintf(screen,str,fix[ifix]->id,fix[ifix]->style);
+        if (logfile) fprintf(logfile,str,fix[ifix]->id,fix[ifix]->style);
       }
     }
 
@@ -690,15 +690,15 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
 
   for (int i = 0; i < nfix_restart_peratom; i++)
     if (strcmp(id_restart_peratom[i],fix[ifix]->id) == 0 &&
-	strcmp(style_restart_peratom[i],fix[ifix]->style) == 0) {
+        strcmp(style_restart_peratom[i],fix[ifix]->style) == 0) {
       for (int j = 0; j < atom->nlocal; j++)
-	fix[ifix]->unpack_restart(j,index_restart_peratom[i]);
-	fix[ifix]->recent_restart = 1; 
+        fix[ifix]->unpack_restart(j,index_restart_peratom[i]);
+        fix[ifix]->recent_restart = 1; 
       if (comm->me == 0) {
-	char *str = (char *) ("Resetting per-atom state of Fix %s Style %s "
-		     "from restart file info\n");
-	if (screen) fprintf(screen,str,fix[ifix]->id,fix[ifix]->style);
-	if (logfile) fprintf(logfile,str,fix[ifix]->id,fix[ifix]->style);
+        char *str = (char *) ("Resetting per-atom state of Fix %s Style %s "
+                     "from restart file info\n");
+        if (screen) fprintf(screen,str,fix[ifix]->id,fix[ifix]->style);
+        if (logfile) fprintf(logfile,str,fix[ifix]->id,fix[ifix]->style);
       }
     }
 
@@ -930,12 +930,12 @@ void Modify::write_restart(FILE *fp)
   for (int i = 0; i < nfix; i++)
     if (fix[i]->restart_global) {
       if (me == 0) {
-	n = strlen(fix[i]->id) + 1;
-	fwrite(&n,sizeof(int),1,fp);
-	fwrite(fix[i]->id,sizeof(char),n,fp);
-	n = strlen(fix[i]->style) + 1;
-	fwrite(&n,sizeof(int),1,fp);
-	fwrite(fix[i]->style,sizeof(char),n,fp);
+        n = strlen(fix[i]->id) + 1;
+        fwrite(&n,sizeof(int),1,fp);
+        fwrite(fix[i]->id,sizeof(char),n,fp);
+        n = strlen(fix[i]->style) + 1;
+        fwrite(&n,sizeof(int),1,fp);
+        fwrite(fix[i]->style,sizeof(char),n,fp);
       }
       fix[i]->write_restart(fp);
     }
@@ -949,14 +949,14 @@ void Modify::write_restart(FILE *fp)
   for (int i = 0; i < nfix; i++)
     if (fix[i]->restart_peratom) {
       if (me == 0) {
-	n = strlen(fix[i]->id) + 1;
-	fwrite(&n,sizeof(int),1,fp);
-	fwrite(fix[i]->id,sizeof(char),n,fp);
-	n = strlen(fix[i]->style) + 1;
-	fwrite(&n,sizeof(int),1,fp);
-	fwrite(fix[i]->style,sizeof(char),n,fp);
-	n = fix[i]->maxsize_restart();
-	fwrite(&n,sizeof(int),1,fp);
+        n = strlen(fix[i]->id) + 1;
+        fwrite(&n,sizeof(int),1,fp);
+        fwrite(fix[i]->id,sizeof(char),n,fp);
+        n = strlen(fix[i]->style) + 1;
+        fwrite(&n,sizeof(int),1,fp);
+        fwrite(fix[i]->style,sizeof(char),n,fp);
+        n = fix[i]->maxsize_restart();
+        fwrite(&n,sizeof(int),1,fp);
       }
     }
 }

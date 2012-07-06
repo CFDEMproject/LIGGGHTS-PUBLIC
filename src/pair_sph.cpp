@@ -207,7 +207,7 @@ void PairSPH::init_style()
 
   // set once WdeltaPinv
   WdeltaPinv = 1./SPH_KERNEL_NS::sph_kernel(kernel_id,domain->lattice->xlattice * hinv, h, hinv);
-  if (WdeltaPinv < 0. || isnan(WdeltaPinv)) error->all(FLERR,"Wrong kernel calculation for tensile correction. Check inital lattice.");
+  if (WdeltaPinv < 0. || std::isnan(WdeltaPinv)) error->all(FLERR,"Wrong kernel calculation for tensile correction. Check inital lattice.");
 
 }
 
@@ -391,14 +391,14 @@ void PairSPH::read_restart(FILE *fp)
       if (me == 0) fread(&setflag[i][j],sizeof(int),1,fp);
       MPI_Bcast(&setflag[i][j],1,MPI_INT,0,world);
       if (setflag[i][j]) {
-	if (me == 0) {
-	  fread(&epsilon[i][j],sizeof(double),1,fp);
-	  fread(&sigma[i][j],sizeof(double),1,fp);
-	  fread(&cut[i][j],sizeof(double),1,fp);
-	}
-	MPI_Bcast(&epsilon[i][j],1,MPI_DOUBLE,0,world);
-	MPI_Bcast(&sigma[i][j],1,MPI_DOUBLE,0,world);
-	MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
+        if (me == 0) {
+          fread(&epsilon[i][j],sizeof(double),1,fp);
+          fread(&sigma[i][j],sizeof(double),1,fp);
+          fread(&cut[i][j],sizeof(double),1,fp);
+        }
+        MPI_Bcast(&epsilon[i][j],1,MPI_DOUBLE,0,world);
+        MPI_Bcast(&sigma[i][j],1,MPI_DOUBLE,0,world);
+        MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
       }
     }*/
 }

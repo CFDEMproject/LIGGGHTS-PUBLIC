@@ -414,8 +414,8 @@ int DumpCustom::count()
   if (ncompute) {
     for (i = 0; i < ncompute; i++)
       if (!(compute[i]->invoked_flag & INVOKED_PERATOM)) {
-	compute[i]->compute_peratom();
-	compute[i]->invoked_flag |= INVOKED_PERATOM;
+        compute[i]->compute_peratom();
+        compute[i]->invoked_flag |= INVOKED_PERATOM;
       }
   }
 
@@ -435,7 +435,7 @@ int DumpCustom::count()
     int *mask = atom->mask;
     for (i = 0; i < nlocal; i++)
       if (!(mask[i] & groupbit))
-	choose[i] = 0;
+        choose[i] = 0;
   }
 
   // un-choose if not in region
@@ -445,7 +445,7 @@ int DumpCustom::count()
     double **x = atom->x;
     for (i = 0; i < nlocal; i++)
       if (choose[i] && region->match(x[i][0],x[i][1],x[i][2]) == 0)
-	choose[i] = 0;
+        choose[i] = 0;
   }
 
   // un-choose if any threshhold criterion isn't met
@@ -461,423 +461,423 @@ int DumpCustom::count()
       // customize by adding to if statement
 
       if (thresh_array[ithresh] == ID) {
-	int *tag = atom->tag;
-	for (i = 0; i < nlocal; i++) dchoose[i] = tag[i];
-	ptr = dchoose;
-	nstride = 1;
+        int *tag = atom->tag;
+        for (i = 0; i < nlocal; i++) dchoose[i] = tag[i];
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == MOL) {
-	if (!atom->molecule_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	int *molecule = atom->molecule;
-	for (i = 0; i < nlocal; i++) dchoose[i] = molecule[i];
-	ptr = dchoose;
-	nstride = 1;
+        if (!atom->molecule_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        int *molecule = atom->molecule;
+        for (i = 0; i < nlocal; i++) dchoose[i] = molecule[i];
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == TYPE) {
-	int *type = atom->type;
-	for (i = 0; i < nlocal; i++) dchoose[i] = type[i];
-	ptr = dchoose;
-	nstride = 1;
+        int *type = atom->type;
+        for (i = 0; i < nlocal; i++) dchoose[i] = type[i];
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == ELEMENT) {
-	int *type = atom->type;
-	for (i = 0; i < nlocal; i++) dchoose[i] = type[i];
-	ptr = dchoose;
-	nstride = 1;
+        int *type = atom->type;
+        for (i = 0; i < nlocal; i++) dchoose[i] = type[i];
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == MASS) {
-	if (atom->rmass) {
-	  ptr = atom->rmass;
-	  nstride = 1;
-	} else {
-	  double *mass = atom->mass;
-	  int *type = atom->type;
-	  for (i = 0; i < nlocal; i++) dchoose[i] = mass[type[i]];
-	  ptr = dchoose;
-	  nstride = 1;
-	}
+        if (atom->rmass) {
+          ptr = atom->rmass;
+          nstride = 1;
+        } else {
+          double *mass = atom->mass;
+          int *type = atom->type;
+          for (i = 0; i < nlocal; i++) dchoose[i] = mass[type[i]];
+          ptr = dchoose;
+          nstride = 1;
+        }
 
       } else if (thresh_array[ithresh] == X) {
-	ptr = &atom->x[0][0];
-	nstride = 3;
+        ptr = &atom->x[0][0];
+        nstride = 3;
       } else if (thresh_array[ithresh] == Y) {
-	ptr = &atom->x[0][1];
-	nstride = 3;
+        ptr = &atom->x[0][1];
+        nstride = 3;
       } else if (thresh_array[ithresh] == Z) {
-	ptr = &atom->x[0][2];
-	nstride = 3;
+        ptr = &atom->x[0][2];
+        nstride = 3;
 
       } else if (thresh_array[ithresh] == XS) {
         double **x = atom->x;
-	double boxxlo = domain->boxlo[0];
-	double invxprd = 1.0/domain->xprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = (x[i][0] - boxxlo) * invxprd;
-	ptr = dchoose;
-	nstride = 1;
+        double boxxlo = domain->boxlo[0];
+        double invxprd = 1.0/domain->xprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = (x[i][0] - boxxlo) * invxprd;
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == YS) {
         double **x = atom->x;
-	double boxylo = domain->boxlo[1];
-	double invyprd = 1.0/domain->yprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = (x[i][1] - boxylo) * invyprd;
-	ptr = dchoose;
-	nstride = 1;
+        double boxylo = domain->boxlo[1];
+        double invyprd = 1.0/domain->yprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = (x[i][1] - boxylo) * invyprd;
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == ZS) {
         double **x = atom->x;
-	double boxzlo = domain->boxlo[2];
-	double invzprd = 1.0/domain->zprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = (x[i][2] - boxzlo) * invzprd;
-	ptr = dchoose;
-	nstride = 1;
+        double boxzlo = domain->boxlo[2];
+        double invzprd = 1.0/domain->zprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = (x[i][2] - boxzlo) * invzprd;
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == XSTRI) {
         double **x = atom->x;
-	double *boxlo = domain->boxlo;
-	double *h_inv = domain->h_inv;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = h_inv[0]*(x[i][0]-boxlo[0]) +
-	    h_inv[5]*(x[i][1]-boxlo[1]) + h_inv[4]*(x[i][2]-boxlo[2]);
-	ptr = dchoose;
-	nstride = 1;
+        double *boxlo = domain->boxlo;
+        double *h_inv = domain->h_inv;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = h_inv[0]*(x[i][0]-boxlo[0]) +
+            h_inv[5]*(x[i][1]-boxlo[1]) + h_inv[4]*(x[i][2]-boxlo[2]);
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == YSTRI) {
         double **x = atom->x;
-	double *boxlo = domain->boxlo;
-	double *h_inv = domain->h_inv;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = h_inv[1]*(x[i][1]-boxlo[1]) +
-	    h_inv[3]*(x[i][2]-boxlo[2]);
-	ptr = dchoose;
-	nstride = 1;
+        double *boxlo = domain->boxlo;
+        double *h_inv = domain->h_inv;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = h_inv[1]*(x[i][1]-boxlo[1]) +
+            h_inv[3]*(x[i][2]-boxlo[2]);
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == ZSTRI) {
         double **x = atom->x;
-	double *boxlo = domain->boxlo;
-	double *h_inv = domain->h_inv;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = h_inv[2]*(x[i][2]-boxlo[2]);
-	ptr = dchoose;
-	nstride = 1;
+        double *boxlo = domain->boxlo;
+        double *h_inv = domain->h_inv;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = h_inv[2]*(x[i][2]-boxlo[2]);
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == XU) {
         double **x = atom->x;
-	int *image = atom->image;
-	double xprd = domain->xprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = x[i][0] + ((image[i] & 1023) - 512) * xprd;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double xprd = domain->xprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = x[i][0] + ((image[i] & 1023) - 512) * xprd;
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == YU) {
         double **x = atom->x;
-	int *image = atom->image;
-	double yprd = domain->yprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = x[i][1] + ((image[i] >> 10 & 1023) - 512) * yprd;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double yprd = domain->yprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = x[i][1] + ((image[i] >> 10 & 1023) - 512) * yprd;
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == ZU) {
         double **x = atom->x;
-	int *image = atom->image;
-	double zprd = domain->zprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = x[i][2] + ((image[i] >> 20) - 512) * zprd;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double zprd = domain->zprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = x[i][2] + ((image[i] >> 20) - 512) * zprd;
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == XUTRI) {
         double **x = atom->x;
-	int *image = atom->image;
-	double *h = domain->h;
-	int xbox,ybox,zbox;
-	for (i = 0; i < nlocal; i++) {
-	  xbox = (image[i] & 1023) - 512;
-	  ybox = (image[i] >> 10 & 1023) - 512;
-	  zbox = (image[i] >> 20) - 512;
-	  dchoose[i] = x[i][0] + h[0]*xbox + h[5]*ybox + h[4]*zbox;
-	}
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double *h = domain->h;
+        int xbox,ybox,zbox;
+        for (i = 0; i < nlocal; i++) {
+          xbox = (image[i] & 1023) - 512;
+          ybox = (image[i] >> 10 & 1023) - 512;
+          zbox = (image[i] >> 20) - 512;
+          dchoose[i] = x[i][0] + h[0]*xbox + h[5]*ybox + h[4]*zbox;
+        }
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == YUTRI) {
         double **x = atom->x;
-	int *image = atom->image;
-	double *h = domain->h;
-	int ybox,zbox;
-	for (i = 0; i < nlocal; i++) {
-	  ybox = (image[i] >> 10 & 1023) - 512;
-	  zbox = (image[i] >> 20) - 512;
-	  dchoose[i] = x[i][1] + h[1]*ybox + h[3]*zbox;
-	}
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double *h = domain->h;
+        int ybox,zbox;
+        for (i = 0; i < nlocal; i++) {
+          ybox = (image[i] >> 10 & 1023) - 512;
+          zbox = (image[i] >> 20) - 512;
+          dchoose[i] = x[i][1] + h[1]*ybox + h[3]*zbox;
+        }
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == ZUTRI) {
         double **x = atom->x;
-	int *image = atom->image;
-	double *h = domain->h;
-	int zbox;
-	for (i = 0; i < nlocal; i++) {
-	  zbox = (image[i] >> 20) - 512;
-	  dchoose[i] = x[i][2] + h[2]*zbox;
-	}
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double *h = domain->h;
+        int zbox;
+        for (i = 0; i < nlocal; i++) {
+          zbox = (image[i] >> 20) - 512;
+          dchoose[i] = x[i][2] + h[2]*zbox;
+        }
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == XSU) {
         double **x = atom->x;
-	int *image = atom->image;
-	double boxxlo = domain->boxlo[0];
-	double invxprd = 1.0/domain->xprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = (x[i][0] - boxxlo) * invxprd + (image[i] & 1023) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double boxxlo = domain->boxlo[0];
+        double invxprd = 1.0/domain->xprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = (x[i][0] - boxxlo) * invxprd + (image[i] & 1023) - 512;
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == YSU) {
         double **x = atom->x;
-	int *image = atom->image;
-	double boxylo = domain->boxlo[1];
-	double invyprd = 1.0/domain->yprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] =
-	    (x[i][1] - boxylo) * invyprd + (image[i] >> 10 & 1023) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double boxylo = domain->boxlo[1];
+        double invyprd = 1.0/domain->yprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] =
+            (x[i][1] - boxylo) * invyprd + (image[i] >> 10 & 1023) - 512;
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == ZSU) {
         double **x = atom->x;
-	int *image = atom->image;
-	double boxzlo = domain->boxlo[2];
-	double invzprd = 1.0/domain->zprd;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = (x[i][2] - boxzlo) * invzprd + (image[i] >> 20) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double boxzlo = domain->boxlo[2];
+        double invzprd = 1.0/domain->zprd;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = (x[i][2] - boxzlo) * invzprd + (image[i] >> 20) - 512;
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == XSUTRI) {
         double **x = atom->x;
-	int *image = atom->image;
-	double *boxlo = domain->boxlo;
-	double *h_inv = domain->h_inv;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = h_inv[0]*(x[i][0]-boxlo[0]) +
-	    h_inv[5]*(x[i][1]-boxlo[1]) +
-	    h_inv[4]*(x[i][2]-boxlo[2]) +
-	    (image[i] & 1023) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double *boxlo = domain->boxlo;
+        double *h_inv = domain->h_inv;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = h_inv[0]*(x[i][0]-boxlo[0]) +
+            h_inv[5]*(x[i][1]-boxlo[1]) +
+            h_inv[4]*(x[i][2]-boxlo[2]) +
+            (image[i] & 1023) - 512;
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == YSUTRI) {
         double **x = atom->x;
-	int *image = atom->image;
-	double *boxlo = domain->boxlo;
-	double *h_inv = domain->h_inv;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = h_inv[1]*(x[i][1]-boxlo[1]) +
-	    h_inv[3]*(x[i][2]-boxlo[2]) +
-	    (image[i] >> 10 & 1023) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double *boxlo = domain->boxlo;
+        double *h_inv = domain->h_inv;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = h_inv[1]*(x[i][1]-boxlo[1]) +
+            h_inv[3]*(x[i][2]-boxlo[2]) +
+            (image[i] >> 10 & 1023) - 512;
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == ZSUTRI) {
         double **x = atom->x;
-	int *image = atom->image;
-	double *boxlo = domain->boxlo;
-	double *h_inv = domain->h_inv;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = h_inv[2]*(x[i][2]-boxlo[2]) +
-	    (image[i] >> 20) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        double *boxlo = domain->boxlo;
+        double *h_inv = domain->h_inv;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = h_inv[2]*(x[i][2]-boxlo[2]) +
+            (image[i] >> 20) - 512;
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == IX) {
-	int *image = atom->image;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = (image[i] & 1023) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = (image[i] & 1023) - 512;
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == IY) {
-	int *image = atom->image;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = (image[i] >> 10 & 1023) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = (image[i] >> 10 & 1023) - 512;
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == IZ) {
-	int *image = atom->image;
-	for (i = 0; i < nlocal; i++)
-	  dchoose[i] = (image[i] >> 20) - 512;
-	ptr = dchoose;
-	nstride = 1;
+        int *image = atom->image;
+        for (i = 0; i < nlocal; i++)
+          dchoose[i] = (image[i] >> 20) - 512;
+        ptr = dchoose;
+        nstride = 1;
 
       } else if (thresh_array[ithresh] == VX) {
-	ptr = &atom->v[0][0];
-	nstride = 3;
+        ptr = &atom->v[0][0];
+        nstride = 3;
       } else if (thresh_array[ithresh] == VY) {
-	ptr = &atom->v[0][1];
-	nstride = 3;
+        ptr = &atom->v[0][1];
+        nstride = 3;
       } else if (thresh_array[ithresh] == VZ) {
-	ptr = &atom->v[0][2];
-	nstride = 3;
+        ptr = &atom->v[0][2];
+        nstride = 3;
       } else if (thresh_array[ithresh] == FX) {
-	ptr = &atom->f[0][0];
-	nstride = 3;
+        ptr = &atom->f[0][0];
+        nstride = 3;
       } else if (thresh_array[ithresh] == FY) {
-	ptr = &atom->f[0][1];
-	nstride = 3;
+        ptr = &atom->f[0][1];
+        nstride = 3;
       } else if (thresh_array[ithresh] == FZ) {
-	ptr = &atom->f[0][2];
-	nstride = 3;
+        ptr = &atom->f[0][2];
+        nstride = 3;
 
       } else if (thresh_array[ithresh] == Q) {
-	if (!atom->q_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = atom->q;
-	nstride = 1;
+        if (!atom->q_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = atom->q;
+        nstride = 1;
       } else if (thresh_array[ithresh] == DENSITY) {
-	if (!atom->density_flag)
-	  error->all(FLERR,"Threshhold for an atom property that isn't allocated");
-	ptr = atom->density;
-	nstride = 1;
+        if (!atom->density_flag)
+          error->all(FLERR,"Threshhold for an atom property that isn't allocated");
+        ptr = atom->density;
+        nstride = 1;
       } else if (thresh_array[ithresh] == MUX) {
-	if (!atom->mu_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->mu[0][0];
-	nstride = 4;
+        if (!atom->mu_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->mu[0][0];
+        nstride = 4;
       } else if (thresh_array[ithresh] == MUY) {
-	if (!atom->mu_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->mu[0][1];
-	nstride = 4;
+        if (!atom->mu_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->mu[0][1];
+        nstride = 4;
       } else if (thresh_array[ithresh] == MUZ) {
-	if (!atom->mu_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->mu[0][2];
-	nstride = 4;
+        if (!atom->mu_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->mu[0][2];
+        nstride = 4;
       } else if (thresh_array[ithresh] == MU) {
-	if (!atom->mu_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->mu[0][3];
-	nstride = 4;
+        if (!atom->mu_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->mu[0][3];
+        nstride = 4;
 
       } else if (thresh_array[ithresh] == RADIUS) {
-	if (!atom->radius_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = atom->radius;
-	nstride = 1;
+        if (!atom->radius_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = atom->radius;
+        nstride = 1;
       } else if (thresh_array[ithresh] == DIAMETER) {
-	if (!atom->radius_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	double *radius = atom->radius;
-	for (i = 0; i < nlocal; i++) dchoose[i] = 2.0*radius[i];
-	ptr = dchoose;
-	nstride = 1;
+        if (!atom->radius_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        double *radius = atom->radius;
+        for (i = 0; i < nlocal; i++) dchoose[i] = 2.0*radius[i];
+        ptr = dchoose;
+        nstride = 1;
       } else if (thresh_array[ithresh] == OMEGAX) {
-	if (!atom->omega_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->omega[0][0];
-	nstride = 3;
+        if (!atom->omega_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->omega[0][0];
+        nstride = 3;
       } else if (thresh_array[ithresh] == OMEGAY) {
-	if (!atom->omega_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->omega[0][1];
-	nstride = 3;
+        if (!atom->omega_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->omega[0][1];
+        nstride = 3;
       } else if (thresh_array[ithresh] == OMEGAZ) {
-	if (!atom->omega_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->omega[0][2];
-	nstride = 3;
+        if (!atom->omega_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->omega[0][2];
+        nstride = 3;
       } else if (thresh_array[ithresh] == ANGMOMX) {
-	if (!atom->angmom_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->angmom[0][0];
-	nstride = 3;
+        if (!atom->angmom_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->angmom[0][0];
+        nstride = 3;
       } else if (thresh_array[ithresh] == ANGMOMY) {
-	if (!atom->angmom_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->angmom[0][1];
-	nstride = 3;
+        if (!atom->angmom_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->angmom[0][1];
+        nstride = 3;
       } else if (thresh_array[ithresh] == ANGMOMZ) {
-	if (!atom->angmom_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->angmom[0][2];
-	nstride = 3;
+        if (!atom->angmom_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->angmom[0][2];
+        nstride = 3;
       } else if (thresh_array[ithresh] == TQX) {
-	if (!atom->torque_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->torque[0][0];
-	nstride = 3;
+        if (!atom->torque_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->torque[0][0];
+        nstride = 3;
       } else if (thresh_array[ithresh] == TQY) {
-	if (!atom->torque_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->torque[0][1];
-	nstride = 3;
+        if (!atom->torque_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->torque[0][1];
+        nstride = 3;
       } else if (thresh_array[ithresh] == TQZ) {
-	if (!atom->torque_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
-	ptr = &atom->torque[0][2];
-	nstride = 3;
+        if (!atom->torque_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
+        ptr = &atom->torque[0][2];
+        nstride = 3;
 
       } else if (thresh_array[ithresh] == SPIN) {
-	if (!atom->spin_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
+        if (!atom->spin_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
         int *spin = atom->spin;
         for (i = 0; i < nlocal; i++) dchoose[i] = spin[i];
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == ERADIUS) {
-	if (!atom->eradius_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
+        if (!atom->eradius_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
         ptr = atom->eradius;
         nstride = 1;
       } else if (thresh_array[ithresh] == ERVEL) {
-	if (!atom->ervel_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
+        if (!atom->ervel_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
         ptr = atom->ervel;
         nstride = 1;
       } else if (thresh_array[ithresh] == ERFORCE) {
-	if (!atom->erforce_flag)
-	  error->all(FLERR,
-		     "Threshhold for an atom property that isn't allocated");
+        if (!atom->erforce_flag)
+          error->all(FLERR,
+                     "Threshhold for an atom property that isn't allocated");
         ptr = atom->erforce;
         nstride = 1;
 
       } else if (thresh_array[ithresh] == COMPUTE) {
-	i = nfield + ithresh;
-	if (argindex[i] == 0) {
-	  ptr = compute[field2index[i]]->vector_atom;
-	  nstride = 1;
-	} else {
-	  ptr = &compute[field2index[i]]->array_atom[0][argindex[i]-1];
-	  nstride = compute[field2index[i]]->size_peratom_cols;
-	}
+        i = nfield + ithresh;
+        if (argindex[i] == 0) {
+          ptr = compute[field2index[i]]->vector_atom;
+          nstride = 1;
+        } else {
+          ptr = &compute[field2index[i]]->array_atom[0][argindex[i]-1];
+          nstride = compute[field2index[i]]->size_peratom_cols;
+        }
 
       } else if (thresh_array[ithresh] == FIX) {
-	i = nfield + ithresh;
-	if (argindex[i] == 0) {
-	  ptr = fix[field2index[i]]->vector_atom;
-	  nstride = 1;
-	} else {
-	  ptr = &fix[field2index[i]]->array_atom[0][argindex[i]-1];
-	  nstride = fix[field2index[i]]->size_peratom_cols;
-	}
+        i = nfield + ithresh;
+        if (argindex[i] == 0) {
+          ptr = fix[field2index[i]]->vector_atom;
+          nstride = 1;
+        } else {
+          ptr = &fix[field2index[i]]->array_atom[0][argindex[i]-1];
+          nstride = fix[field2index[i]]->size_peratom_cols;
+        }
 
       } else if (thresh_array[ithresh] == VARIABLE) {
-	i = nfield + ithresh;
-	ptr = vbuf[field2index[i]];
-	nstride = 1;
+        i = nfield + ithresh;
+        ptr = vbuf[field2index[i]];
+        nstride = 1;
       }
 
       // unselect atoms that don't meet threshhold criterion
@@ -885,23 +885,23 @@ int DumpCustom::count()
       value = thresh_value[ithresh];
 
       if (thresh_op[ithresh] == LT) {
-	for (i = 0; i < nlocal; i++, ptr += nstride)
-	  if (choose[i] && *ptr >= value) choose[i] = 0;
+        for (i = 0; i < nlocal; i++, ptr += nstride)
+          if (choose[i] && *ptr >= value) choose[i] = 0;
       } else if (thresh_op[ithresh] == LE) {
-	for (i = 0; i < nlocal; i++, ptr += nstride)
-	  if (choose[i] && *ptr > value) choose[i] = 0;
+        for (i = 0; i < nlocal; i++, ptr += nstride)
+          if (choose[i] && *ptr > value) choose[i] = 0;
       } else if (thresh_op[ithresh] == GT) {
-	for (i = 0; i < nlocal; i++, ptr += nstride)
-	  if (choose[i] && *ptr <= value) choose[i] = 0;
+        for (i = 0; i < nlocal; i++, ptr += nstride)
+          if (choose[i] && *ptr <= value) choose[i] = 0;
       } else if (thresh_op[ithresh] == GE) {
-	for (i = 0; i < nlocal; i++, ptr += nstride)
-	  if (choose[i] && *ptr < value) choose[i] = 0;
+        for (i = 0; i < nlocal; i++, ptr += nstride)
+          if (choose[i] && *ptr < value) choose[i] = 0;
       } else if (thresh_op[ithresh] == EQ) {
-	for (i = 0; i < nlocal; i++, ptr += nstride)
-	  if (choose[i] && *ptr != value) choose[i] = 0;
+        for (i = 0; i < nlocal; i++, ptr += nstride)
+          if (choose[i] && *ptr != value) choose[i] = 0;
       } else if (thresh_op[ithresh] == NEQ) {
-	for (i = 0; i < nlocal; i++, ptr += nstride)
-	  if (choose[i] && *ptr == value) choose[i] = 0;
+        for (i = 0; i < nlocal; i++, ptr += nstride)
+          if (choose[i] && *ptr == value) choose[i] = 0;
       }
     }
   }
@@ -957,7 +957,7 @@ void DumpCustom::write_text(int n, double *mybuf)
       if (vtype[j] == INT) fprintf(fp,vformat[j],static_cast<int> (mybuf[m]));
       else if (vtype[j] == DOUBLE) fprintf(fp,vformat[j],mybuf[m]);
       else if (vtype[j] == STRING)
-	fprintf(fp,vformat[j],typenames[(int) mybuf[m]]);
+        fprintf(fp,vformat[j],typenames[(int) mybuf[m]]);
       m++;
     }
     fprintf(fp,"\n");
@@ -979,7 +979,7 @@ int DumpCustom::parse_fields(int narg, char **arg)
       vtype[i] = INT;
     } else if (strcmp(arg[iarg],"mol") == 0) {
       if (!atom->molecule_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_molecule;
       vtype[i] = INT;
     } else if (strcmp(arg[iarg],"type") == 0) {
@@ -1068,88 +1068,88 @@ int DumpCustom::parse_fields(int narg, char **arg)
 
     } else if (strcmp(arg[iarg],"q") == 0) {
       if (!atom->q_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_q;
       vtype[i] = DOUBLE;
    } else if (strcmp(arg[iarg],"density") == 0) {
       if (!atom->density_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_density;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"mux") == 0) {
       if (!atom->mu_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_mux;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"muy") == 0) {
       if (!atom->mu_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_muy;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"muz") == 0) {
       if (!atom->mu_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_muz;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"mu") == 0) {
       if (!atom->mu_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_mu;
       vtype[i] = DOUBLE;
 
     } else if (strcmp(arg[iarg],"radius") == 0) {
       if (!atom->radius_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_radius;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"diameter") == 0) {
       if (!atom->radius_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_diameter;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"omegax") == 0) {
       if (!atom->omega_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_omegax;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"omegay") == 0) {
       if (!atom->omega_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_omegay;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"omegaz") == 0) {
       if (!atom->omega_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_omegaz;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"angmomx") == 0) {
       if (!atom->angmom_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_angmomx;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"angmomy") == 0) {
       if (!atom->angmom_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_angmomy;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"angmomz") == 0) {
       if (!atom->angmom_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_angmomz;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"tqx") == 0) {
       if (!atom->torque_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_tqx;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"tqy") == 0) {
       if (!atom->torque_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_tqy;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"tqz") == 0) {
       if (!atom->torque_flag)
-	error->all(FLERR,"Dumping an atom property that isn't allocated");
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_tqz;
       vtype[i] = DOUBLE;
 
@@ -1187,23 +1187,23 @@ int DumpCustom::parse_fields(int narg, char **arg)
 
       char *ptr = strchr(suffix,'[');
       if (ptr) {
-	if (suffix[strlen(suffix)-1] != ']')
-	  error->all(FLERR,"Invalid attribute in dump custom command");
-	argindex[i] = atoi(ptr+1);
-	*ptr = '\0';
+        if (suffix[strlen(suffix)-1] != ']')
+          error->all(FLERR,"Invalid attribute in dump custom command");
+        argindex[i] = atoi(ptr+1);
+        *ptr = '\0';
       } else argindex[i] = 0;
 
       n = modify->find_compute(suffix);
       if (n < 0) error->all(FLERR,"Could not find dump custom compute ID");
       if (modify->compute[n]->peratom_flag == 0)
-	error->all(FLERR,"Dump custom compute does not compute per-atom info");
+        error->all(FLERR,"Dump custom compute does not compute per-atom info");
       if (argindex[i] == 0 && modify->compute[n]->size_peratom_cols > 0)
-	error->all(FLERR,"Dump custom compute does not calculate per-atom vector");
+        error->all(FLERR,"Dump custom compute does not calculate per-atom vector");
       if (argindex[i] > 0 && modify->compute[n]->size_peratom_cols == 0)
-	error->all(FLERR,"Dump custom compute does not calculate per-atom array");
+        error->all(FLERR,"Dump custom compute does not calculate per-atom array");
       if (argindex[i] > 0 &&
-	  argindex[i] > modify->compute[n]->size_peratom_cols)
-	error->all(FLERR,"Dump custom compute vector is accessed out-of-range");
+          argindex[i] > modify->compute[n]->size_peratom_cols)
+        error->all(FLERR,"Dump custom compute vector is accessed out-of-range");
 
       field2index[i] = add_compute(suffix);
       delete [] suffix;
@@ -1221,23 +1221,23 @@ int DumpCustom::parse_fields(int narg, char **arg)
 
       char *ptr = strchr(suffix,'[');
       if (ptr) {
-	if (suffix[strlen(suffix)-1] != ']')
-	  error->all(FLERR,"Invalid attribute in dump custom command");
-	argindex[i] = atoi(ptr+1);
-	*ptr = '\0';
+        if (suffix[strlen(suffix)-1] != ']')
+          error->all(FLERR,"Invalid attribute in dump custom command");
+        argindex[i] = atoi(ptr+1);
+        *ptr = '\0';
       } else argindex[i] = 0;
 
       n = modify->find_fix(suffix);
       if (n < 0) error->all(FLERR,"Could not find dump custom fix ID");
       if (modify->fix[n]->peratom_flag == 0)
-	error->all(FLERR,"Dump custom fix does not compute per-atom info");
+        error->all(FLERR,"Dump custom fix does not compute per-atom info");
       if (argindex[i] == 0 && modify->fix[n]->size_peratom_cols > 0)
-	error->all(FLERR,"Dump custom fix does not compute per-atom vector");
+        error->all(FLERR,"Dump custom fix does not compute per-atom vector");
       if (argindex[i] > 0 && modify->fix[n]->size_peratom_cols == 0)
-	error->all(FLERR,"Dump custom fix does not compute per-atom array");
+        error->all(FLERR,"Dump custom fix does not compute per-atom array");
       if (argindex[i] > 0 &&
-	  argindex[i] > modify->fix[n]->size_peratom_cols)
-	error->all(FLERR,"Dump custom fix vector is accessed out-of-range");
+          argindex[i] > modify->fix[n]->size_peratom_cols)
+        error->all(FLERR,"Dump custom fix vector is accessed out-of-range");
 
       field2index[i] = add_fix(suffix);
       delete [] suffix;
@@ -1257,7 +1257,7 @@ int DumpCustom::parse_fields(int narg, char **arg)
       n = input->variable->find(suffix);
       if (n < 0) error->all(FLERR,"Could not find dump custom variable name");
       if (input->variable->atomstyle(n) == 0)
-	error->all(FLERR,"Dump custom variable is not atom-style variable");
+        error->all(FLERR,"Dump custom variable is not atom-style variable");
 
       field2index[i] = add_variable(suffix);
       delete [] suffix;
@@ -1333,7 +1333,7 @@ int DumpCustom::add_variable(char *id)
 
   id_variable = (char **)
     memory->srealloc(id_variable,(nvariable+1)*sizeof(char *),
-		     "dump:id_variable");
+                     "dump:id_variable");
   delete [] variable;
   variable = new int[nvariable+1];
   delete [] vbuf;
@@ -1357,7 +1357,7 @@ int DumpCustom::modify_param(int narg, char **arg)
     else {
       iregion = domain->find_region(arg[1]);
       if (iregion == -1)
-	error->all(FLERR,"Dump_modify region ID does not exist");
+        error->all(FLERR,"Dump_modify region ID does not exist");
       int n = strlen(arg[1]) + 1;
       idregion = new char[n];
       strcpy(idregion,arg[1]);
@@ -1388,12 +1388,12 @@ int DumpCustom::modify_param(int narg, char **arg)
     if (narg < 2) error->all(FLERR,"Illegal dump_modify command");
     if (strcmp(arg[1],"none") == 0) {
       if (nthresh) {
-	memory->destroy(thresh_array);
-	memory->destroy(thresh_op);
-	memory->destroy(thresh_value);
-	thresh_array = NULL;
-	thresh_op = NULL;
-	thresh_value = NULL;
+        memory->destroy(thresh_array);
+        memory->destroy(thresh_op);
+        memory->destroy(thresh_value);
+        thresh_array = NULL;
+        thresh_op = NULL;
+        thresh_value = NULL;
       }
       nthresh = 0;
       return 2;
@@ -1506,29 +1506,29 @@ int DumpCustom::modify_param(int narg, char **arg)
 
       char *ptr = strchr(suffix,'[');
       if (ptr) {
-	if (suffix[strlen(suffix)-1] != ']')
-	  error->all(FLERR,"Invalid attribute in dump modify command");
-	argindex[nfield+nthresh] = atoi(ptr+1);
-	*ptr = '\0';
+        if (suffix[strlen(suffix)-1] != ']')
+          error->all(FLERR,"Invalid attribute in dump modify command");
+        argindex[nfield+nthresh] = atoi(ptr+1);
+        *ptr = '\0';
       } else argindex[nfield+nthresh] = 0;
 
       n = modify->find_compute(suffix);
       if (n < 0) error->all(FLERR,"Could not find dump modify compute ID");
 
       if (modify->compute[n]->peratom_flag == 0)
-	error->all(FLERR,
-		   "Dump modify compute ID does not compute per-atom info");
+        error->all(FLERR,
+                   "Dump modify compute ID does not compute per-atom info");
       if (argindex[nfield+nthresh] == 0 &&
-	  modify->compute[n]->size_peratom_cols > 0)
-	error->all(FLERR,
-		   "Dump modify compute ID does not compute per-atom vector");
+          modify->compute[n]->size_peratom_cols > 0)
+        error->all(FLERR,
+                   "Dump modify compute ID does not compute per-atom vector");
       if (argindex[nfield+nthresh] > 0 &&
-	  modify->compute[n]->size_peratom_cols == 0)
-	error->all(FLERR,
-		   "Dump modify compute ID does not compute per-atom array");
+          modify->compute[n]->size_peratom_cols == 0)
+        error->all(FLERR,
+                   "Dump modify compute ID does not compute per-atom array");
       if (argindex[nfield+nthresh] > 0 &&
-	  argindex[nfield+nthresh] > modify->compute[n]->size_peratom_cols)
-	error->all(FLERR,"Dump modify compute ID vector is not large enough");
+          argindex[nfield+nthresh] > modify->compute[n]->size_peratom_cols)
+        error->all(FLERR,"Dump modify compute ID vector is not large enough");
 
       field2index[nfield+nthresh] = add_compute(suffix);
       delete [] suffix;
@@ -1547,26 +1547,26 @@ int DumpCustom::modify_param(int narg, char **arg)
 
       char *ptr = strchr(suffix,'[');
       if (ptr) {
-	if (suffix[strlen(suffix)-1] != ']')
-	  error->all(FLERR,"Invalid attribute in dump modify command");
-	argindex[nfield+nthresh] = atoi(ptr+1);
-	*ptr = '\0';
+        if (suffix[strlen(suffix)-1] != ']')
+          error->all(FLERR,"Invalid attribute in dump modify command");
+        argindex[nfield+nthresh] = atoi(ptr+1);
+        *ptr = '\0';
       } else argindex[nfield+nthresh] = 0;
 
       n = modify->find_fix(suffix);
       if (n < 0) error->all(FLERR,"Could not find dump modify fix ID");
 
       if (modify->fix[n]->peratom_flag == 0)
-	error->all(FLERR,"Dump modify fix ID does not compute per-atom info");
+        error->all(FLERR,"Dump modify fix ID does not compute per-atom info");
       if (argindex[nfield+nthresh] == 0 &&
-	  modify->fix[n]->size_peratom_cols > 0)
-	error->all(FLERR,"Dump modify fix ID does not compute per-atom vector");
+          modify->fix[n]->size_peratom_cols > 0)
+        error->all(FLERR,"Dump modify fix ID does not compute per-atom vector");
       if (argindex[nfield+nthresh] > 0 &&
-	  modify->fix[n]->size_peratom_cols == 0)
-	error->all(FLERR,"Dump modify fix ID does not compute per-atom array");
+          modify->fix[n]->size_peratom_cols == 0)
+        error->all(FLERR,"Dump modify fix ID does not compute per-atom array");
       if (argindex[nfield+nthresh] > 0 &&
-	  argindex[nfield+nthresh] > modify->fix[n]->size_peratom_cols)
-	error->all(FLERR,"Dump modify fix ID vector is not large enough");
+          argindex[nfield+nthresh] > modify->fix[n]->size_peratom_cols)
+        error->all(FLERR,"Dump modify fix ID vector is not large enough");
 
       field2index[nfield+nthresh] = add_fix(suffix);
       delete [] suffix;
@@ -1587,7 +1587,7 @@ int DumpCustom::modify_param(int narg, char **arg)
       n = input->variable->find(suffix);
       if (n < 0) error->all(FLERR,"Could not find dump modify variable name");
       if (input->variable->atomstyle(n) == 0)
-	error->all(FLERR,"Dump modify variable is not atom-style variable");
+        error->all(FLERR,"Dump modify variable is not atom-style variable");
 
       field2index[nfield+nthresh] = add_variable(suffix);
       delete [] suffix;

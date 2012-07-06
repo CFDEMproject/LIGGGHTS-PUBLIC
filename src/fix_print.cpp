@@ -51,13 +51,13 @@ FixPrint::FixPrint(LAMMPS *lmp, int narg, char **arg) :
     if (strcmp(arg[iarg],"file") == 0 || strcmp(arg[iarg],"append") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix print command");
       if (me == 0) {
-	if (strcmp(arg[iarg],"file") == 0) fp = fopen(arg[iarg+1],"w");
-	else fp = fopen(arg[iarg+1],"a");
-	if (fp == NULL) {
-	  char str[128];
-	  sprintf(str,"Cannot open fix print file %s",arg[iarg+1]);
-	  error->one(FLERR,str);
-	}
+        if (strcmp(arg[iarg],"file") == 0) fp = fopen(arg[iarg+1],"w");
+        else fp = fopen(arg[iarg+1],"a");
+        if (fp == NULL) {
+          char str[128];
+          sprintf(str,"Cannot open fix print file %s",arg[iarg+1]);
+          error->one(FLERR,str);
+        }
       }
       iarg += 2;
     } else if (strcmp(arg[iarg],"screen") == 0) {

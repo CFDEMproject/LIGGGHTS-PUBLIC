@@ -96,11 +96,11 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
       npnt = 0;
       npage++;
       if (npage == list->maxpage) {
-	pages = list->add_pages();
-	if (fix_history) {
-	  pages_touch = listgranhistory->add_pages();
-	  pages_shear = listgranhistory->dpages;
-	}
+        pages = list->add_pages();
+        if (fix_history) {
+          pages_touch = listgranhistory->add_pages();
+          pages_shear = listgranhistory->dpages;
+        }
       }
     }
 
@@ -131,32 +131,32 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
       cutsq = (radsum+skin) * (radsum+skin);
 
       if (rsq <= cutsq) {
-	neighptr[n] = j;
+        neighptr[n] = j;
 
-	if (fix_history) {
-	  if (rsq < radsum*radsum) {
-	    for (m = 0; m < npartner[i]; m++)
-	      if (partner[i][m] == tag[j]) break;
-	    if (m < npartner[i]) {
-	      touchptr[n] = 1;
-	      for (d = 0; d < dnum; d++) {  
-	        shearptr[nn++] = contacthistory[i][m][d];
-	      }
-	    } else {
-	      touchptr[n] = 0;
-	      for (d = 0; d < dnum; d++) {  
-	        shearptr[nn++] = 0.0;
-	      }
-	    }
-	  } else {
-	    touchptr[n] = 0;
-	    for (d = 0; d < dnum; d++) {  
-	      shearptr[nn++] = 0.0;
-	    }
-	  }
-	}
+        if (fix_history) {
+          if (rsq < radsum*radsum) {
+            for (m = 0; m < npartner[i]; m++)
+              if (partner[i][m] == tag[j]) break;
+            if (m < npartner[i]) {
+              touchptr[n] = 1;
+              for (d = 0; d < dnum; d++) {  
+                shearptr[nn++] = contacthistory[i][m][d];
+              }
+            } else {
+              touchptr[n] = 0;
+              for (d = 0; d < dnum; d++) {  
+                shearptr[nn++] = 0.0;
+              }
+            }
+          } else {
+            touchptr[n] = 0;
+            for (d = 0; d < dnum; d++) {  
+              shearptr[nn++] = 0.0;
+            }
+          }
+        }
 
-	n++;
+        n++;
       }
     }
 
@@ -236,18 +236,18 @@ void Neighbor::granular_nsq_newton(NeighList *list)
       if (includegroup && !(mask[j] & bitmask)) continue;
 
       if (j >= nlocal) {
-	jtag = tag[j];
-	if (itag > jtag) {
-	  if ((itag+jtag) % 2 == 0) continue;
-	} else if (itag < jtag) {
-	  if ((itag+jtag) % 2 == 1) continue;
-	} else {
-	  if (x[j][2] < ztmp) continue;
-	  if (x[j][2] == ztmp) {
-	    if (x[j][1] < ytmp) continue;
-	    if (x[j][1] == ytmp && x[j][0] < xtmp) continue;
-	  }
-	}
+        jtag = tag[j];
+        if (itag > jtag) {
+          if ((itag+jtag) % 2 == 0) continue;
+        } else if (itag < jtag) {
+          if ((itag+jtag) % 2 == 1) continue;
+        } else {
+          if (x[j][2] < ztmp) continue;
+          if (x[j][2] == ztmp) {
+            if (x[j][1] < ytmp) continue;
+            if (x[j][1] == ytmp && x[j][0] < xtmp) continue;
+          }
+        }
       }
 
       if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
@@ -344,11 +344,11 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
       npnt = 0;
       npage++;
       if (npage == list->maxpage) {
-	pages = list->add_pages();
-	if (fix_history) {
-	  pages_touch = listgranhistory->add_pages();
-	  pages_shear = listgranhistory->dpages;
-	}
+        pages = list->add_pages();
+        if (fix_history) {
+          pages_touch = listgranhistory->add_pages();
+          pages_shear = listgranhistory->dpages;
+        }
       }
     }
 
@@ -373,44 +373,44 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
 
     for (k = 0; k < nstencil; k++) {
       for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
-	if (j <= i) continue;
-	if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
+        if (j <= i) continue;
+        if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
 
-	delx = xtmp - x[j][0];
-	dely = ytmp - x[j][1];
-	delz = ztmp - x[j][2];
-	rsq = delx*delx + dely*dely + delz*delz;
-	radsum = radi + radius[j];
-	cutsq = (radsum+skin) * (radsum+skin);
+        delx = xtmp - x[j][0];
+        dely = ytmp - x[j][1];
+        delz = ztmp - x[j][2];
+        rsq = delx*delx + dely*dely + delz*delz;
+        radsum = radi + radius[j];
+        cutsq = (radsum+skin) * (radsum+skin);
 
-	if (rsq <= cutsq) {
-	  neighptr[n] = j;
+        if (rsq <= cutsq) {
+          neighptr[n] = j;
 
-	  if (fix_history) {
-	    if (rsq < radsum*radsum) {
-	      for (m = 0; m < npartner[i]; m++)
-		if (partner[i][m] == tag[j]) break;
-	      if (m < npartner[i]) {
-		touchptr[n] = 1;
+          if (fix_history) {
+            if (rsq < radsum*radsum) {
+              for (m = 0; m < npartner[i]; m++)
+                if (partner[i][m] == tag[j]) break;
+              if (m < npartner[i]) {
+                touchptr[n] = 1;
                 for (d = 0; d < dnum; d++) { 
                   shearptr[nn++] = contacthistory[i][m][d];
                 }
-	      } else {
-		      touchptr[n] = 0;
-              for (d = 0; d < dnum; d++) { 
-		         shearptr[nn++] = 0.0;
+              } else {
+                 touchptr[n] = 0;
+                 for (d = 0; d < dnum; d++) { 
+                         shearptr[nn++] = 0.0;
+                 }
               }
-	      }
-	    } else {
-	      touchptr[n] = 0;
-	      for (d = 0; d < dnum; d++) { 
-	        shearptr[nn++] = 0.0;
-	      }
-	    }
-	  }
+            } else {
+              touchptr[n] = 0;
+              for (d = 0; d < dnum; d++) { 
+                shearptr[nn++] = 0.0;
+              }
+            }
+          }
 
-	  n++;
-	}
+          n++;
+        }
       }
     }
 
@@ -491,11 +491,11 @@ void Neighbor::granular_bin_newton(NeighList *list)
 
     for (j = bins[i]; j >= 0; j = bins[j]) {
       if (j >= nlocal) {
-	if (x[j][2] < ztmp) continue;
-	if (x[j][2] == ztmp) {
-	  if (x[j][1] < ytmp) continue;
-	  if (x[j][1] == ytmp && x[j][0] < xtmp) continue;
-	}
+        if (x[j][2] < ztmp) continue;
+        if (x[j][2] == ztmp) {
+          if (x[j][1] < ytmp) continue;
+          if (x[j][1] == ytmp && x[j][0] < xtmp) continue;
+        }
       }
 
       if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
@@ -515,16 +515,16 @@ void Neighbor::granular_bin_newton(NeighList *list)
     ibin = coord2bin(x[i]);
     for (k = 0; k < nstencil; k++) {
       for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
-	if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
+        if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
 
-	delx = xtmp - x[j][0];
-	dely = ytmp - x[j][1];
-	delz = ztmp - x[j][2];
-	rsq = delx*delx + dely*dely + delz*delz;
-	radsum = radi + radius[j];
-	cutsq = (radsum+skin) * (radsum+skin);
+        delx = xtmp - x[j][0];
+        dely = ytmp - x[j][1];
+        delz = ztmp - x[j][2];
+        rsq = delx*delx + dely*dely + delz*delz;
+        radsum = radi + radius[j];
+        cutsq = (radsum+skin) * (radsum+skin);
 
-	if (rsq <= cutsq) neighptr[n++] = j;
+        if (rsq <= cutsq) neighptr[n++] = j;
       }
     }
 
@@ -604,25 +604,25 @@ void Neighbor::granular_bin_newton_tri(NeighList *list)
     ibin = coord2bin(x[i]);
     for (k = 0; k < nstencil; k++) {
       for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
-	if (x[j][2] < ztmp) continue;
-	if (x[j][2] == ztmp) {
-	  if (x[j][1] < ytmp) continue;
-	  if (x[j][1] == ytmp) {
-	    if (x[j][0] < xtmp) continue;
-	    if (x[j][0] == xtmp && j <= i) continue;
-	  }
-	}
+        if (x[j][2] < ztmp) continue;
+        if (x[j][2] == ztmp) {
+          if (x[j][1] < ytmp) continue;
+          if (x[j][1] == ytmp) {
+            if (x[j][0] < xtmp) continue;
+            if (x[j][0] == xtmp && j <= i) continue;
+          }
+        }
 
-	if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
+        if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
 
-	delx = xtmp - x[j][0];
-	dely = ytmp - x[j][1];
-	delz = ztmp - x[j][2];
-	rsq = delx*delx + dely*dely + delz*delz;
-	radsum = radi + radius[j];
-	cutsq = (radsum+skin) * (radsum+skin);
+        delx = xtmp - x[j][0];
+        dely = ytmp - x[j][1];
+        delz = ztmp - x[j][2];
+        rsq = delx*delx + dely*dely + delz*delz;
+        radsum = radi + radius[j];
+        cutsq = (radsum+skin) * (radsum+skin);
 
-	if (rsq <= cutsq) neighptr[n++] = j;
+        if (rsq <= cutsq) neighptr[n++] = j;
       }
     }
 

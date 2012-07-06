@@ -53,13 +53,18 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
     int n = strlen(arg[3]) + 1;
     variablename = new char[n];
     strcpy(variablename,arg[3]);
+    is_symmetric = false;
 
     if (strcmp(arg[4],"scalar") == 0) data_style = FIXPROPERTY_GLOBAL_SCALAR;
     else if (strcmp(arg[4],"vector") == 0) data_style = FIXPROPERTY_GLOBAL_VECTOR;
     else if (strcmp(arg[4],"peratomtype") == 0 || strcmp(arg[4],"atomtype") == 0) data_style = FIXPROPERTY_GLOBAL_VECTOR;
     else if (strcmp(arg[4],"matrix") == 0) data_style = FIXPROPERTY_GLOBAL_MATRIX;
-    else if (strcmp(arg[4],"peratomtypepair") == 0 || strcmp(arg[4],"atomtypepair") == 0) data_style = FIXPROPERTY_GLOBAL_MATRIX;
-    else error->fix_error(FLERR,this,"Unknown style. Valid styles are scalar or vector/peratomtype or matrix/peratomtypepair");
+    else if (strcmp(arg[4],"peratomtypepair") == 0 || strcmp(arg[4],"atomtypepair") == 0)
+    {
+        data_style = FIXPROPERTY_GLOBAL_MATRIX;
+        is_symmetric = true;
+    }
+    else error->fix_error(FLERR,this,"Unknown style. Valid styles are scalar, vector, atomtype/peratomtype, matrix, or atomtypepair/peratomtypepair");
 
     int darg = 0;
     if (data_style == FIXPROPERTY_GLOBAL_MATRIX) darg = 1;
@@ -85,7 +90,7 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
         array_flag = 1;
         size_array_cols = myAtoi(arg[5]);
         if (fmod(static_cast<double>(nvalues),size_array_cols) != 0.)
-          error->fix_error(FLERR,this,"The number of default values must thus be a multiple of the nCols.");
+          error->fix_error(FLERR,this,"the number of default values must thus be a multiple of the nCols.");
         size_array_rows = static_cast<int>(static_cast<double>(nvalues)/size_array_cols);
     }
 
@@ -104,6 +109,23 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
         array_recomputed = (double**)memory->smalloc(size_array_rows*sizeof(double**),"FixPropGlob:array_recomputed");
         for(int i = 0; i < size_array_rows; i++) array[i] = &values[i*size_array_cols];
         for(int i = 0; i < size_array_rows; i++) array_recomputed[i] = &values_recomputed[i*size_array_cols];
+    }
+
+    // error check if matrix is symmetric (if required)
+    if(is_symmetric)
+    {
+        if(size_array_rows != size_array_cols)
+            error->fix_error(FLERR,this,"per-atomtype property matrix  must be symmetric, i.e. N atom types "
+                                        "require you to define N columns and N rows with N*N total values");
+
+        int sflag = true;
+        for(int i = 0; i < size_array_rows; i++)
+            for(int j = 0; j < size_array_cols; j++)
+                if(array[i][j] != array[j][i])
+                    sflag = false;
+
+        if(!sflag)
+            error->fix_error(FLERR,this,"per-atomtype property matrix must be symmetric");
     }
 }
 

@@ -60,9 +60,11 @@ class AssociativePointerArray
         void grow(int to);
 
         int size();
-        void deleteElement(int n);
-        void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
-        void deleteRestartElement(int n,bool scale,bool translate,bool rotate);
+
+        inline void copyElement(int from, int to);
+        inline void deleteElement(int n);
+        inline void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
+        inline void deleteRestartElement(int n,bool scale,bool translate,bool rotate);
 
         void rotate(double *dQ);
         void move(double *delta);

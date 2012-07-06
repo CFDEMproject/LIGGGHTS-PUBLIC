@@ -230,4 +230,3 @@ void FixCfdCoupling::add_pull_property(char *name,char *type)
 {
     dc_->add_pull_property(name,type);
 }
-

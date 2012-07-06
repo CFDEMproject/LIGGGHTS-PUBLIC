@@ -73,9 +73,10 @@ class FixPropertyGlobal : public Fix {
 
   void grow(int,int);
 
-  char *variablename;   // name of the variable (used for identification by other fixes)
-  int data_style;         // 0 if a scalar is registered, 1 if vector, 2 if 2d array (matrix)
+  char *variablename;        // name of the variable (used for identification by other fixes)
+  int data_style;            // 0 if a scalar is registered, 1 if vector, 2 if 2d array (matrix)
   int nvalues;
+  bool is_symmetric;         // flag if values must be symmetric (only applicable for matrix)
   double *values;            // original values to be stored in this fix
   double *values_recomputed; // values to be stored in this fix, recomputed by eg another fix
   double **array;
@@ -86,4 +87,3 @@ class FixPropertyGlobal : public Fix {
 }
 #endif
 #endif
-

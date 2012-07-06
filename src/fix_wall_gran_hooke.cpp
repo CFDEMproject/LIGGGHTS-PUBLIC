@@ -158,10 +158,10 @@ void FixWallGranHooke::compute_force(int ip, double deltan, double rsq,double me
   vectorZeroize3D(r_torque);
   if(rollingflag)
   {
-	    wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
-	    if (wrmag > 0.)
-	    {
-	        r_torque[0] = rmu*kn*(radius-r)*wr1/wrmag*cr;
+            wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
+            if (wrmag > 0.)
+            {
+                r_torque[0] = rmu*kn*(radius-r)*wr1/wrmag*cr;
             r_torque[1] = rmu*kn*(radius-r)*wr2/wrmag*cr;
             r_torque[2] = rmu*kn*(radius-r)*wr3/wrmag*cr;
 
@@ -171,7 +171,7 @@ void FixWallGranHooke::compute_force(int ip, double deltan, double rsq,double me
             r_torque_n[1] = dy * rtorque_dot_delta * rsqinv;
             r_torque_n[2] = dz * rtorque_dot_delta * rsqinv;
             vectorSubtract3D(r_torque,r_torque_n,r_torque);
-	    }
+            }
   }
 
   if(addflag_)
@@ -183,4 +183,3 @@ void FixWallGranHooke::compute_force(int ip, double deltan, double rsq,double me
   else if(cwl_)
     cwl_->add_wall_2(ip,fx,fy,fz,tor1*area_ratio,tor2*area_ratio,tor3*area_ratio,c_history,rsq);
 }
-

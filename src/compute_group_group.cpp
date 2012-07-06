@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -32,7 +32,7 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeGroupGroup::ComputeGroupGroup(LAMMPS *lmp, int narg, char **arg) : 
+ComputeGroupGroup::ComputeGroupGroup(LAMMPS *lmp, int narg, char **arg) :
   Compute(lmp, narg, arg)
 {
   if (narg != 4) error->all(FLERR,"Illegal compute group/group command");
@@ -47,7 +47,7 @@ ComputeGroupGroup::ComputeGroupGroup(LAMMPS *lmp, int narg, char **arg) :
   strcpy(group2,arg[3]);
 
   jgroup = group->find(group2);
-  if (jgroup == -1) 
+  if (jgroup == -1)
     error->all(FLERR,"Compute group/group group ID does not exist");
   jgroupbit = group->bitmask[jgroup];
 
@@ -81,7 +81,7 @@ void ComputeGroupGroup::init()
   // recheck that group 2 has not been deleted
 
   jgroup = group->find(group2);
-  if (jgroup == -1) 
+  if (jgroup == -1)
     error->all(FLERR,"Compute group/group group ID does not exist");
   jgroupbit = group->bitmask[jgroup];
 
@@ -179,35 +179,35 @@ void ComputeGroupGroup::interact()
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-	eng = pair->single(i,j,itype,jtype,rsq,factor_coul,factor_lj,fpair);
+        eng = pair->single(i,j,itype,jtype,rsq,factor_coul,factor_lj,fpair);
 
-	// energy only computed once so tally full amount
-	// force tally is jgroup acting on igroup
+        // energy only computed once so tally full amount
+        // force tally is jgroup acting on igroup
 
-	if (newton_pair || j < nlocal) {
-	  one[0] += eng;
-	  if (othergroupbit == jgroupbit) {
-	    one[1] += delx*fpair;
-	    one[2] += dely*fpair;
-	    one[3] += delz*fpair;
-	  }
-	  if (othergroupbit == groupbit) {
-	    one[1] -= delx*fpair;
-	    one[2] -= dely*fpair;
-	    one[3] -= delz*fpair;
-	  }
+        if (newton_pair || j < nlocal) {
+          one[0] += eng;
+          if (othergroupbit == jgroupbit) {
+            one[1] += delx*fpair;
+            one[2] += dely*fpair;
+            one[3] += delz*fpair;
+          }
+          if (othergroupbit == groupbit) {
+            one[1] -= delx*fpair;
+            one[2] -= dely*fpair;
+            one[3] -= delz*fpair;
+          }
 
-	// energy computed twice so tally half amount
-	// only tally force if I own igroup atom
+        // energy computed twice so tally half amount
+        // only tally force if I own igroup atom
 
-	} else {
-	  one[0] += 0.5*eng;
-	  if (othergroupbit == jgroupbit) {
-	    one[1] += delx*fpair;
-	    one[2] += dely*fpair;
-	    one[3] += delz*fpair;
-	  }
-	}
+        } else {
+          one[0] += 0.5*eng;
+          if (othergroupbit == jgroupbit) {
+            one[1] += delx*fpair;
+            one[2] += dely*fpair;
+            one[3] += delz*fpair;
+          }
+        }
       }
     }
   }

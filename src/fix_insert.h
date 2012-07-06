@@ -91,11 +91,11 @@ class FixInsert : public Fix {
   double ninsert_per;
 
   // determines how particle distributions are interpreted
-  // if 0, number of particles inserted in each step will vary but distributions will be fulfilled statistically perfect
-  // if > 0, number of particles inserted in each step will be same but distributions will be rounded/truncated
-  //         so that the number of particles in each distribution is a multiple of 'truncate'
-  //         e.g. truncate = 1 means particle numbers are all natural numbers
-  int truncate;
+  // total number of particles inserted for each vary with calc_ninsert_this() result
+  // if exact_number = 0, total # inserted particles will deviate from calc_ninsert_this() result
+  //                      distribution will be fulfilled statistically
+  // if exact_number = 1, total # inserted particles will match result from calc_ninsert_this()
+  int exact_number;
 
   // max and min type to be inserted
   int type_max,type_min;
@@ -136,6 +136,7 @@ class FixInsert : public Fix {
   int print_stats_start_flag;
 
   class FixRigidMultisphere *fix_rm;
+  class Multisphere *multisphere;
 
   /*---FUNCTION MEMBERS---*/
 
@@ -168,4 +169,3 @@ class FixInsert : public Fix {
 
 #endif
 #endif
-

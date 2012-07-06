@@ -117,8 +117,8 @@ void CfdDatacouplingMPI::allocate_external(int    **&data, int len2,char *keywor
   if(strcmp(keyword,"nparticles") == 0) len1 = atom->tag_max();
   else if(strcmp(keyword,"nbodies") == 0)
   {
-      if(frm_)
-        len1 = frm_->tag_max_body();
+      if(ms_data_)
+        len1 = ms_data_->tag_max_body();
       else error->one(FLERR,"CFD datacoupling keyword 'nbodies' may only be used with multisphere model in LIGGGHTS");
   }
   else error->one(FLERR,"Illegal keyword used in CfdDatacouplingMPI::allocate_external");
@@ -152,8 +152,8 @@ void CfdDatacouplingMPI::allocate_external(double **&data, int len2,char *keywor
   if(strcmp(keyword,"nparticles") == 0) len1 = atom->tag_max();
   else if(strcmp(keyword,"nbodies") == 0)
   {
-      if(frm_)
-        len1 = frm_->tag_max_body();
+      if(ms_data_)
+        len1 = ms_data_->tag_max_body();
       else error->one(FLERR,"CFD datacoupling keyword 'nbodies' may only be used with multisphere model in LIGGGHTS");
   }
   else error->one(FLERR,"Illegal keyword used in CfdDatacouplingMPI::allocate_external");

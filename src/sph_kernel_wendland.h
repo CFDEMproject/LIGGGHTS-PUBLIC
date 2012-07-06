@@ -87,4 +87,3 @@ inline double SPH_KERNEL_NS::sph_kernel_wendland_cut()
 
 #endif
 #endif
-

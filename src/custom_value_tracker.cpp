@@ -33,9 +33,16 @@ using namespace LAMMPS_NS;
    constructor, destructor
   ------------------------------------------------------------------------- */
 
-  CustomValueTracker::CustomValueTracker(LAMMPS *lmp,AbstractMesh &_owner)
+  CustomValueTracker::CustomValueTracker(LAMMPS *lmp,AbstractMesh *_ownerMesh)
    : Pointers(lmp),
-     owner_(_owner),
+     ownerMesh_(_ownerMesh),
+     capacityElement_(0)
+  {
+  }
+
+  CustomValueTracker::CustomValueTracker(LAMMPS *lmp)
+   : Pointers(lmp),
+     ownerMesh_(NULL),
      capacityElement_(0)
   {
   }
@@ -61,9 +68,9 @@ using namespace LAMMPS_NS;
   {
      elementProperties_.remove(_id);
   }
-  void CustomValueTracker::removeMeshProperty(char *_id)
+  void CustomValueTracker::removeGlobalProperty(char *_id)
   {
-     meshProperties_.remove(_id);
+     globalProperties_.remove(_id);
   }
 
   /* ----------------------------------------------------------------------
@@ -74,7 +81,7 @@ using namespace LAMMPS_NS;
   {
       
       elementProperties_.rotate(dQ);
-      meshProperties_.rotate(dQ);
+      globalProperties_.rotate(dQ);
   }
 
   /* ----------------------------------------------------------------------
@@ -85,7 +92,7 @@ using namespace LAMMPS_NS;
   {
       
       elementProperties_.scale(factor);
-      meshProperties_.scale(factor);
+      globalProperties_.scale(factor);
   }
 
   /* ----------------------------------------------------------------------
@@ -96,5 +103,5 @@ using namespace LAMMPS_NS;
   {
       
       elementProperties_.move(delta);
-      meshProperties_.move(delta);
+      globalProperties_.move(delta);
   }

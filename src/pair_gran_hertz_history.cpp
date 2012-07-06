@@ -85,4 +85,3 @@ inline void PairGranHertzHistory::deriveContactModelParams(int &ip, int &jp,doub
 
     return;
 }
-

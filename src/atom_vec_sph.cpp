@@ -139,7 +139,7 @@ void AtomVecSPH::copy(int i, int j, int delflag)
 /* ---------------------------------------------------------------------- */
 
 int AtomVecSPH::pack_comm(int n, int *list, double *buf,
-			       int pbc_flag, int *pbc)
+                               int pbc_flag, int *pbc)
 {
   int i,j,m;
   double dx,dy,dz;
@@ -147,30 +147,30 @@ int AtomVecSPH::pack_comm(int n, int *list, double *buf,
     m = 0;
     if (pbc_flag == 0) {
       for (i = 0; i < n; i++) {
-	j = list[i];
-	buf[m++] = x[j][0];
-	buf[m++] = x[j][1];
-	buf[m++] = x[j][2];
-	buf[m++] = q[j];
-	buf[m++] = density[j];
+        j = list[i];
+        buf[m++] = x[j][0];
+        buf[m++] = x[j][1];
+        buf[m++] = x[j][2];
+        buf[m++] = q[j];
+        buf[m++] = density[j];
       }
     } else {
       if (domain->triclinic == 0) {
-	dx = pbc[0]*domain->xprd;
-	dy = pbc[1]*domain->yprd;
-	dz = pbc[2]*domain->zprd;
+        dx = pbc[0]*domain->xprd;
+        dy = pbc[1]*domain->yprd;
+        dz = pbc[2]*domain->zprd;
       } else {
-	dx = pbc[0]*domain->xprd + pbc[5]*domain->xy + pbc[4]*domain->xz;
-	dy = pbc[1]*domain->yprd + pbc[3]*domain->yz;
-	dz = pbc[2]*domain->zprd;
+        dx = pbc[0]*domain->xprd + pbc[5]*domain->xy + pbc[4]*domain->xz;
+        dy = pbc[1]*domain->yprd + pbc[3]*domain->yz;
+        dz = pbc[2]*domain->zprd;
       }
       for (i = 0; i < n; i++) {
-	j = list[i];
-	buf[m++] = x[j][0] + dx;
-	buf[m++] = x[j][1] + dy;
-	buf[m++] = x[j][2] + dz;
-	buf[m++] = q[j];
-	buf[m++] = density[j];
+        j = list[i];
+        buf[m++] = x[j][0] + dx;
+        buf[m++] = x[j][1] + dy;
+        buf[m++] = x[j][2] + dz;
+        buf[m++] = q[j];
+        buf[m++] = density[j];
       }
     }
 
@@ -180,7 +180,7 @@ int AtomVecSPH::pack_comm(int n, int *list, double *buf,
 /* ---------------------------------------------------------------------- */
 
 int AtomVecSPH::pack_comm_vel(int n, int *list, double *buf,
-				   int pbc_flag, int *pbc)
+                                   int pbc_flag, int *pbc)
 {
   int i,j,m;
   double dx,dy,dz;
@@ -188,36 +188,36 @@ int AtomVecSPH::pack_comm_vel(int n, int *list, double *buf,
     m = 0;
     if (pbc_flag == 0) {
       for (i = 0; i < n; i++) {
-	j = list[i];
-	buf[m++] = x[j][0];
-	buf[m++] = x[j][1];
-	buf[m++] = x[j][2];
-	buf[m++] = q[j];
-	buf[m++] = density[j];
-	buf[m++] = v[j][0];
-	buf[m++] = v[j][1];
-	buf[m++] = v[j][2];
+        j = list[i];
+        buf[m++] = x[j][0];
+        buf[m++] = x[j][1];
+        buf[m++] = x[j][2];
+        buf[m++] = q[j];
+        buf[m++] = density[j];
+        buf[m++] = v[j][0];
+        buf[m++] = v[j][1];
+        buf[m++] = v[j][2];
       }
     } else {
       if (domain->triclinic == 0) {
-	dx = pbc[0]*domain->xprd;
-	dy = pbc[1]*domain->yprd;
-	dz = pbc[2]*domain->zprd;
+        dx = pbc[0]*domain->xprd;
+        dy = pbc[1]*domain->yprd;
+        dz = pbc[2]*domain->zprd;
       } else {
-	dx = pbc[0]*domain->xprd + pbc[5]*domain->xy + pbc[4]*domain->xz;
-	dy = pbc[1]*domain->yprd + pbc[3]*domain->yz;
-	dz = pbc[2]*domain->zprd;
+        dx = pbc[0]*domain->xprd + pbc[5]*domain->xy + pbc[4]*domain->xz;
+        dy = pbc[1]*domain->yprd + pbc[3]*domain->yz;
+        dz = pbc[2]*domain->zprd;
       }
       for (i = 0; i < n; i++) {
-	j = list[i];
-	buf[m++] = x[j][0] + dx;
-	buf[m++] = x[j][1] + dy;
-	buf[m++] = x[j][2] + dz;
-	buf[m++] = q[j];
-	buf[m++] = density[j];
-	buf[m++] = v[j][0];
-	buf[m++] = v[j][1];
-	buf[m++] = v[j][2];
+        j = list[i];
+        buf[m++] = x[j][0] + dx;
+        buf[m++] = x[j][1] + dy;
+        buf[m++] = x[j][2] + dz;
+        buf[m++] = q[j];
+        buf[m++] = density[j];
+        buf[m++] = v[j][0];
+        buf[m++] = v[j][1];
+        buf[m++] = v[j][2];
       }
     }
 
@@ -326,7 +326,7 @@ void AtomVecSPH::unpack_reverse(int n, int *list, double *buf)
 /* ---------------------------------------------------------------------- */
 
 int AtomVecSPH::pack_border(int n, int *list, double *buf,
-				 int pbc_flag, int *pbc)
+                                 int pbc_flag, int *pbc)
 {
   int i,j,m;
   double dx,dy,dz;
@@ -372,7 +372,7 @@ int AtomVecSPH::pack_border(int n, int *list, double *buf,
 /* ---------------------------------------------------------------------- */
 
 int AtomVecSPH::pack_border_vel(int n, int *list, double *buf,
-				     int pbc_flag, int *pbc)
+                                     int pbc_flag, int *pbc)
 {
   int i,j,m;
   double dx,dy,dz;
@@ -431,7 +431,7 @@ int AtomVecSPH::pack_border_hybrid(int n, int *list, double *buf)
   for (i = 0; i < n; i++) {
     j = list[i];
     buf[m++] = q[j];
-	buf[m++] = density[j];
+        buf[m++] = density[j];
   }
   return m;
 }
@@ -491,7 +491,7 @@ int AtomVecSPH::unpack_border_hybrid(int n, int first, double *buf)
   last = first + n;
   for (i = first; i < last; i++) {
     q[i] = buf[m++];
-	density[i] = buf[m++];
+        density[i] = buf[m++];
   }
   return m;
 }
@@ -551,7 +551,7 @@ int AtomVecSPH::unpack_exchange(double *buf)
   if (atom->nextra_grow)
     for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
       m += modify->fix[atom->extra_grow[iextra]]->
-	unpack_exchange(nlocal,&buf[m]);
+        unpack_exchange(nlocal,&buf[m]);
 
   atom->nlocal++;
   return m;
@@ -572,7 +572,7 @@ int AtomVecSPH::size_restart()
   if (atom->nextra_restart)
     for (int iextra = 0; iextra < atom->nextra_restart; iextra++)
       for (i = 0; i < nlocal; i++)
-	n += modify->fix[atom->extra_restart[iextra]]->size_restart(i);
+        n += modify->fix[atom->extra_restart[iextra]]->size_restart(i);
 
   return n;
 }

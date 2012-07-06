@@ -68,8 +68,8 @@ namespace MathExtraLiggghts {
   inline void vec_quat_rotate(int *vec, double *quat) {}
   inline void vec_quat_rotate(bool *vec, double *quat) {}
   inline void angmom_from_omega(double *w,
-				  double *ex, double *ey, double *ez,
-				  double *idiag, double *m);
+                                  double *ex, double *ey, double *ez,
+                                  double *idiag, double *m);
 
   // double comparison, added by P.S.
   inline bool compDouble(double const a, double const b, double const prec = 1e-13);
@@ -116,16 +116,16 @@ inline double MathExtraLiggghts::cbrt_5d(double d)
 
 inline double MathExtraLiggghts::cbrta_halleyd(const double a, const double R)
 {
-	const double a3 = a*a*a;
+        const double a3 = a*a*a;
     const double b= a * (a3 + R + R) / (a3 + a3 + R);
-	return b;
+        return b;
 }
 
 // cube root approximation using 1 iteration of Halley's method (double)
 inline double MathExtraLiggghts::halley_cbrt1d(double d)
 {
-	double a = cbrt_5d(d);
-	return cbrta_halleyd(a, d);
+        double a = cbrt_5d(d);
+        return cbrta_halleyd(a, d);
 }
 
   int MathExtraLiggghts::min(int a,int b) { if (a<b) return a; return b;}
@@ -373,8 +373,8 @@ void MathExtraLiggghts::vec_quat_rotate(double *vec, double *quat)
 ------------------------------------------------------------------------- */
 
 inline void MathExtraLiggghts::angmom_from_omega(double *w,
-				  double *ex, double *ey, double *ez,
-				  double *idiag, double *m)
+                                  double *ex, double *ey, double *ez,
+                                  double *idiag, double *m)
 {
   double mbody[3];
 
@@ -445,4 +445,3 @@ void MathExtraLiggghts::calcBaryTriCoords(double *p, double **edgeVec, double *e
 }
 
 #endif
-

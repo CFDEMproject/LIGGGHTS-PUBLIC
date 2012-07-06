@@ -24,7 +24,7 @@ update your repositories by {git pull} :l
 
 To clone the public LIGGGHTS repository, open a terminal and execute:
 
-git clone git://github.com:CFDEMproject/LIGGGHTS-PUBLIC.git :pre
+git clone git@github.com:CFDEMproject/LIGGGHTS-PUBLIC.git :pre
 
 Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively:
 
@@ -32,7 +32,7 @@ git clone https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git :pre
 
 To clone the public CFDEMcoupling repository, open a terminal and execute:
 
-git clone git://github.com:CFDEMproject/CFDEMcoupling-PUBLIC.git :pre
+git clone git@github.com:CFDEMproject/CFDEMcoupling-PUBLIC.git :pre
 
 Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively:
 

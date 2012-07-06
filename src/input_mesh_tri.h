@@ -47,4 +47,3 @@ class InputMeshTri : protected Input
 }
 
 #endif
-

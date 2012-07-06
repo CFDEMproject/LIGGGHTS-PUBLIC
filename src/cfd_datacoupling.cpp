@@ -30,6 +30,7 @@
 #include "cfd_datacoupling.h"
 #include "fix_cfd_coupling.h"
 #include "fix_rigid_multisphere.h"
+#include "multisphere.h"
 #include "fix_property_atom.h"
 #include "fix_property_global.h"
 
@@ -63,10 +64,10 @@ CfdDatacoupling::CfdDatacoupling(class LAMMPS *lmp, int jarg,int narg, char **ar
 
 CfdDatacoupling::~CfdDatacoupling()
 {
-	memory->destroy(pullnames_);
-	memory->destroy(pulltypes_);
-	memory->destroy(pushnames_);
-	memory->destroy(pushtypes_);
+        memory->destroy(pullnames_);
+        memory->destroy(pulltypes_);
+        memory->destroy(pushnames_);
+        memory->destroy(pushtypes_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -74,7 +75,13 @@ CfdDatacoupling::~CfdDatacoupling()
 void CfdDatacoupling::init()
 {
     // multisphere - can be NULL
-    frm_ = static_cast<FixRigidMultisphere*>(modify->find_fix_style_strict("rigid/multisphere",0));
+    FixRigidMultisphere *frm;
+    frm = static_cast<FixRigidMultisphere*>(modify->find_fix_style_strict("rigid/multisphere",0));
+
+    if(!frm)
+        ms_data_ = NULL;
+    else
+        ms_data_ = &frm->data();
 
     // empty list of requested properties
     // models do their init afterwards so list will be filled
@@ -283,9 +290,9 @@ void* CfdDatacoupling::find_property(int push,char *name,char *type,int &len1,in
     // may come from a fix rigid/multisphere
     // also handles scalar-multisphere and vector-multisphere
 
-    if(frm_)
+    if(ms_data_)
     {
-        ptr = frm_->extract(name,len1,len2);
+        ptr = ms_data_->extract(name,len1,len2);
 
         if((strcmp(type,"scalar-multisphere") == 0) && (len2 != 1) || (strcmp(type,"vector-multisphere") == 0) && (len2 != 3))
             return NULL;

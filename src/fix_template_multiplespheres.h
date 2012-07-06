@@ -93,4 +93,3 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
 
 #endif
 #endif
-

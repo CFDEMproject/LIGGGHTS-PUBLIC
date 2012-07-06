@@ -184,8 +184,8 @@ void FixScalarTransportEquation::post_create()
     //register heatSource as property/atom
     strcpy(fixarg[0],source_name);
     fixarg[1]="all";
+    fixarg[2]="property/atom";
     strcpy(fixarg[3],source_name);
-    fixarg[3]="heatSource";
     fixarg[4]="scalar"; 
     fixarg[5]="yes";    
     fixarg[6]="yes";    

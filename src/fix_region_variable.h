@@ -61,4 +61,3 @@ class FixRegionVariable : public Fix {
 
 #endif
 #endif
-

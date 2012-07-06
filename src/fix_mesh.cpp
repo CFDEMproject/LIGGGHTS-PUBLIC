@@ -108,12 +108,12 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
       } else if (strcmp(arg[iarg_],"temperature") == 0) {
           iarg_++;
           double Temp_mesh = atof(arg[iarg_++]);
-          mesh_->prop().addMeshProperty< ScalarContainer<double> >("Temp","comm_none","frame_invariant","restart_yes");
-          mesh_->prop().setMeshProperty< ScalarContainer<double> >("Temp",Temp_mesh);
-          mesh_->prop().addMeshProperty< ScalarContainer<double> >("heatFlux","comm_none","frame_invariant","restart_no");
-          mesh_->prop().setMeshProperty< ScalarContainer<double> >("heatFlux",0.);
-          mesh_->prop().addMeshProperty< ScalarContainer<double> >("heatFluxTotal","comm_none","frame_invariant","restart_yes");
-          mesh_->prop().setMeshProperty< ScalarContainer<double> >("heatFluxTotal",0.);
+          mesh_->prop().addGlobalProperty< ScalarContainer<double> >("Temp","comm_none","frame_invariant","restart_yes");
+          mesh_->prop().setGlobalProperty< ScalarContainer<double> >("Temp",Temp_mesh);
+          mesh_->prop().addGlobalProperty< ScalarContainer<double> >("heatFlux","comm_none","frame_invariant","restart_no");
+          mesh_->prop().setGlobalProperty< ScalarContainer<double> >("heatFlux",0.);
+          mesh_->prop().addGlobalProperty< ScalarContainer<double> >("heatFluxTotal","comm_none","frame_invariant","restart_yes");
+          mesh_->prop().setGlobalProperty< ScalarContainer<double> >("heatFluxTotal",0.);
           
           hasargs = true;
       }

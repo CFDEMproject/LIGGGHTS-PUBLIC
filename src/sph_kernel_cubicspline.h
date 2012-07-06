@@ -101,4 +101,3 @@ inline double SPH_KERNEL_NS::sph_kernel_cubicspline_cut()
 
 #endif
 #endif
-

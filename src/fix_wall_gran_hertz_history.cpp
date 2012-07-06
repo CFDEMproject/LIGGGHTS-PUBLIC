@@ -121,4 +121,3 @@ inline void FixWallGranHertzHistory::deriveContactModelParams(int ip, double del
 
     return;
 }
-

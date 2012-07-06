@@ -31,7 +31,7 @@ walltype = atom type (material type) of the wall imported from the STL file
 
 <LI>mesh_keyword = <I>scale</I> or <I>move</I> or <I>rotate</I> or <I>temperature</I> 
 
-<LI>  <I>scale</I> value = factor
+<PRE>  <I>scale</I> value = factor
     factor = factor to scale the mesh in x-, y-, and z-direction (double value)
   <I>move</I> values = mx my mz
     mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
@@ -41,8 +41,9 @@ walltype = atom type (material type) of the wall imported from the STL file
     angle = obligatory keyword 
     ang = angle to rotate the geometry around the specified axis (in degrees) 
   <I>temperature</I> value = T0
-    T0 = Temperature of the wall (temperature units)
-zero or more surface_keywords/surface_value pairs may be appended 
+    T0 = Temperature of the wall (temperature units) 
+</PRE>
+<LI>zero or more surface_keywords/surface_value pairs may be appended 
 
 <LI>surface_keyword = <I>surface_vel</I> or <I>surface_ang_vel</I> or <I>curvature</I> 
 

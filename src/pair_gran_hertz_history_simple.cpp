@@ -93,4 +93,3 @@ inline void PairGranHertzHistorySimple::deriveContactModelParams(int &ip, int &j
     kt /= force->nktv2p;
     return;
 }
-

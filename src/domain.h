@@ -49,7 +49,7 @@ class Domain : protected Pointers {
                                          // 2 = shrink-wrap non-periodic
                                          // 3 = shrink-wrap non-per w/ min
 
-  int triclinic;		         // 0 = orthog box, 1 = triclinic
+  int triclinic;                         // 0 = orthog box, 1 = triclinic
 
                                          // orthogonal box
   double xprd,yprd,zprd;                 // global box dimensions
@@ -85,7 +85,7 @@ class Domain : protected Pointers {
 
                                          // triclinic box
   double xy,xz,yz;                       // 3 tilt factors
-  double h[6],h_inv[6];	          	 // shape matrix in Voigt notation
+  double h[6],h_inv[6];                           // shape matrix in Voigt notation
   double h_rate[6],h_ratelo[3];          // rate of box size/shape change
 
   int box_change;                 // 1 if box bounds ever change, 0 if fixed
@@ -112,7 +112,7 @@ class Domain : protected Pointers {
   void minimum_image(double &, double &, double &);
   void minimum_image(double *);
   void closest_image(const double * const, const double * const,
-		     double * const);
+                     double * const);
   void remap(double *, int &);
   void remap(double *);
   void remap_near(double *, double *);

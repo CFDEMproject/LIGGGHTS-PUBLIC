@@ -53,9 +53,12 @@ RegionStyle(wedge,RegWedge)
 //              if axis == z then starting from x-axis
 //   dang ... angle between the wedge's ending face
 
-namespace LAMMPS_NS {
+namespace LAMMPS_NS
+{
+class RegWedge : public Region
+{
+  friend class DomainWedge;
 
-  class RegWedge : public Region{
   public:
     RegWedge(class LAMMPS *, int, char **);
     ~RegWedge();
@@ -89,10 +92,7 @@ namespace LAMMPS_NS {
     void printRegion();
     void printProperty(const char *name, double val);
     void printContacts(double *, int);
-
-    friend class DomainWedge;
-
-  };
+};
 
 }
 

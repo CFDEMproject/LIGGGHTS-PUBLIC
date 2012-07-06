@@ -47,6 +47,7 @@ namespace LAMMPS_NS
 
           virtual void add(T** elem);
 
+          void copy(int from,int to);
           void del(int n);
           void delForward(int n,bool scale,bool translate,bool rotate);
           void delRestart(int n,bool scale,bool translate,bool rotate);

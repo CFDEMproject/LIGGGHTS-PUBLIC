@@ -35,7 +35,7 @@
   template<int NUM_NODES>
   TrackingMesh<NUM_NODES>::TrackingMesh(LAMMPS *lmp)
   : MultiNodeMeshParallel<NUM_NODES>(lmp),
-    customValues_(*(new CustomValueTracker(lmp,*this))),
+    customValues_(*(new CustomValueTracker(lmp,this))),
     mapArray_(0),
     mapTagMax_(0),
     id_ (*this->prop().template addElementProperty< ScalarContainer<int> >("id","comm_none"/*ID does never change*/,"frame_invariant","restart_yes"))
@@ -52,7 +52,7 @@
      delete &customValues_;
 
      // deallocate map memory if exists
-      if(mapArray_) clearMap();
+     if(mapArray_) clearMap();
   }
 
   /* ----------------------------------------------------------------------
@@ -120,7 +120,7 @@
 
       // get max ID of all proc
       int idmax = id_.max();
-     MPI_Max_Scalar(idmax,mapTagMax_,this->world);
+      MPI_Max_Scalar(idmax,mapTagMax_,this->world);
 
       // alocate and initialize new array
       // IDs start at 0, so have to use mapTagMax_+1
@@ -128,8 +128,10 @@
       for(int i = 0; i < mapTagMax_; i++)
         mapArray_[i] = -1;
 
+      int nall = this->sizeLocal() + this->sizeGhost();
+
       // build map for owned and ghost particles
-      for (int i = this->sizeLocal()+this->sizeGhost()-1; i >= 0 ; i--)
+      for (int i = nall-1; i >= 0; i--)
       {
           
           mapArray_[id_(i)] = i;
@@ -153,7 +155,7 @@
   }
 
   /* ----------------------------------------------------------------------
-   push / pop functions for a list of
+   push / pop functions for a list of elements
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
@@ -225,7 +227,7 @@
   int TrackingMesh<NUM_NODES>::meshPropsBufSize(int operation,bool scale,bool translate,bool rotate)
   {
     int buf_size = 0;
-    buf_size += customValues_.meshPropsBufSize(operation,scale,translate,rotate);
+    buf_size += customValues_.globalPropsBufSize(operation,scale,translate,rotate);
     
     return buf_size;
   }
@@ -234,7 +236,7 @@
   int TrackingMesh<NUM_NODES>::pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
     int nsend = 0;
-    nsend += customValues_.pushMeshPropsToBuffer(&buf[nsend],operation,scale,translate,rotate);
+    nsend += customValues_.pushGlobalPropsToBuffer(&buf[nsend],operation,scale,translate,rotate);
     return nsend;
   }
 
@@ -242,7 +244,7 @@
   int TrackingMesh<NUM_NODES>::popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
     int nrecv = 0;
-    nrecv += customValues_.popMeshPropsFromBuffer(&buf[nrecv],operation,scale,translate,rotate);
+    nrecv += customValues_.popGlobalPropsFromBuffer(&buf[nrecv],operation,scale,translate,rotate);
     return nrecv;
   }
 

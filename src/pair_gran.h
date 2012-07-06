@@ -64,12 +64,18 @@ class PairGran : public Pair {
 
   /* PUBLIC ACCESS FUNCTIONS */
 
-  int is_history(){return history;}
-  int dnum_pair(){return dnum;}
+  int is_history()
+  { return history; }
+
+  int dnum_pair()
+  { return dnum_pairgran; }
+
   class FixRigid* fr_pair()
   { return fix_rigid; }
 
   class MechParamGran *mpg;
+
+  int fix_extra_dnum_index(class Fix *fix);
 
  protected:
 
@@ -107,8 +113,9 @@ class PairGran : public Pair {
   double dt;
   int freeze_group_bit;
 
+  // contact history
   int history;
-  int dnum;
+  int dnum_pairgran;
   class FixContactHistory *fix_history;
   int shearupdate;
   int laststep;
@@ -117,6 +124,15 @@ class PairGran : public Pair {
   double *maxrad_dynamic,*maxrad_frozen;
 
   void allocate();
+
+ private:
+
+  // shear history
+  int dnum_all;
+
+  int nfix;
+  Fix **fix_dnum;
+  int *dnum_index;
 };
 
 }

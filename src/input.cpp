@@ -105,7 +105,7 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
       variable->set(argv[iarg+1],jarg-iarg-2,&argv[iarg+2]);
       iarg = jarg;
     } else if (strcmp(argv[iarg],"-echo") == 0 ||
-	       strcmp(argv[iarg],"-e") == 0) {
+               strcmp(argv[iarg],"-e") == 0) {
       narg = 1;
       char **tmp = arg;        // trick echo() into using argv instead of arg
       arg = &argv[iarg+1];
@@ -151,12 +151,12 @@ void Input::file()
     if (me == 0) {
       m = 0;
       while (1) {
-	if (fgets(&line[m],MAXLINE-m,infile) == NULL) n = 0;
-	else n = strlen(line) + 1;
-	if (n == 0) break;
-	m = n-2;
-	while (m >= 0 && isspace(line[m])) m--;
-	if (m < 0 || line[m] != '&') break;
+        if (fgets(&line[m],MAXLINE-m,infile) == NULL) n = 0;
+        else n = strlen(line) + 1;
+        if (n == 0) break;
+        m = n-2;
+        while (m >= 0 && isspace(line[m])) m--;
+        if (m < 0 || line[m] != '&') break;
       }
     }
 
@@ -170,8 +170,8 @@ void Input::file()
     if (n == 0) {
       if (label_active) error->all(FLERR,"Label wasn't found in input script");
       if (me == 0) {
-	if (infile != stdin) fclose(infile);
-	nfile--;
+        if (infile != stdin) fclose(infile);
+        nfile--;
       }
       MPI_Bcast(&nfile,1,MPI_INT,0,world);
       if (nfile == 0) break;
@@ -394,17 +394,17 @@ void Input::substitute(char *str, int flag)
   while (*ptr) {
     if (*ptr == '$' && !quote) {
       if (*(ptr+1) == '{') {
-	var = ptr+2;
-	int i = 0;
-	while (var[i] != '\0' && var[i] != '}') i++;
-	if (var[i] == '\0') error->one(FLERR,"Invalid variable name");
-	var[i] = '\0';
-	beyond = ptr + strlen(var) + 3;
+        var = ptr+2;
+        int i = 0;
+        while (var[i] != '\0' && var[i] != '}') i++;
+        if (var[i] == '\0') error->one(FLERR,"Invalid variable name");
+        var[i] = '\0';
+        beyond = ptr + strlen(var) + 3;
       } else {
-	var = ptr;
-	var[0] = var[1];
-	var[1] = '\0';
-	beyond = ptr + strlen(var) + 1;
+        var = ptr;
+        var[0] = var[1];
+        var[1] = '\0';
+        beyond = ptr + strlen(var) + 1;
       }
       value = variable->retrieve(var);
       if (value == NULL) error->one(FLERR,"Substitution for illegal variable");
@@ -412,16 +412,16 @@ void Input::substitute(char *str, int flag)
       *ptr = '\0';
       strcpy(work,str);
       if (strlen(work)+strlen(value) >= MAXLINE)
-	error->one(FLERR,"Input line too long after variable substitution");
+        error->one(FLERR,"Input line too long after variable substitution");
       strcat(work,value);
       if (strlen(work)+strlen(beyond) >= MAXLINE)
-	error->one(FLERR,"Input line too long after variable substitution");
+        error->one(FLERR,"Input line too long after variable substitution");
       strcat(work,beyond);
       strcpy(str,work);
       ptr += strlen(value);
       if (flag && me == 0 && label_active == 0) {
-	if (echo_screen && screen) fprintf(screen,"%s",str);
-	if (echo_log && logfile) fprintf(logfile,"%s",str);
+        if (echo_screen && screen) fprintf(screen,"%s",str);
+        if (echo_log && logfile) fprintf(logfile,"%s",str);
       }
       continue;
     }
@@ -518,7 +518,7 @@ int Input::execute_command()
 #define COMMAND_CLASS
 #define CommandStyle(key,Class)         \
   else if (strcmp(command,#key) == 0) { \
-    Class key(lmp);			\
+    Class key(lmp);                        \
     key.command(narg,arg);              \
     return 0;                           \
   }
@@ -590,7 +590,7 @@ void Input::ifthenelse()
   int first = 2;
   int iarg = first;
   while (iarg < narg &&
-	 (strcmp(arg[iarg],"elif") != 0 && strcmp(arg[iarg],"else") != 0))
+         (strcmp(arg[iarg],"elif") != 0 && strcmp(arg[iarg],"else") != 0))
     iarg++;
   int last = iarg-1;
 
@@ -647,7 +647,7 @@ void Input::ifthenelse()
 
     iarg = first;
     while (iarg < narg &&
-	   (strcmp(arg[iarg],"elif") != 0 && strcmp(arg[iarg],"else") != 0))
+           (strcmp(arg[iarg],"elif") != 0 && strcmp(arg[iarg],"else") != 0))
       iarg++;
     last = iarg-1;
 
@@ -719,9 +719,9 @@ void Input::jump()
       if (infile != stdin) fclose(infile);
       infile = fopen(arg[0],"r");
       if (infile == NULL) {
-	char str[128];
-	sprintf(str,"Cannot open input script %s",arg[0]);
-	error->one(FLERR,str);
+        char str[128];
+        sprintf(str,"Cannot open input script %s",arg[0]);
+        error->one(FLERR,str);
       }
       infiles[nfile-1] = infile;
     }
@@ -756,9 +756,9 @@ void Input::log()
     else {
       logfile = fopen(arg[0],"w");
       if (logfile == NULL) {
-	char str[128];
-	sprintf(str,"Cannot open logfile %s",arg[0]);
-	error->one(FLERR,str);
+        char str[128];
+        sprintf(str,"Cannot open logfile %s",arg[0]);
+        error->one(FLERR,str);
       }
     }
     if (universe->nworlds == 1) universe->ulogfile = logfile;
@@ -844,7 +844,7 @@ void Input::shell()
 #if !defined(WINDOWS) && !defined(__MINGW32_VERSION)
     if (me == 0)
       for (int i = 1; i < narg; i++)
-	mkdir(arg[i], S_IRWXU | S_IRGRP | S_IXGRP);
+        mkdir(arg[i], S_IRWXU | S_IRGRP | S_IXGRP);
 #endif
 
   } else if (strcmp(arg[0],"mv") == 0) {
@@ -1334,10 +1334,10 @@ void Input::special_bonds()
 
   if (domain->box_exist && atom->molecular) {
     if (lj2 != force->special_lj[2] || lj3 != force->special_lj[3] ||
-	coul2 != force->special_coul[2] || coul3 != force->special_coul[3] ||
-	angle != force->special_angle ||
-	dihedral != force->special_dihedral ||
-	extra != force->special_extra) {
+        coul2 != force->special_coul[2] || coul3 != force->special_coul[3] ||
+        angle != force->special_angle ||
+        dihedral != force->special_dihedral ||
+        extra != force->special_extra) {
       Special special(lmp);
       special.build();
     }

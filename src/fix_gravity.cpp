@@ -163,15 +163,15 @@ void FixGravity::post_force(int vflag)
   if (style == GRADIENT) {
     if (domain->dimension == 3) {
       double phi_current = degree2rad *
-	(phi + (update->ntimestep - time_origin)*dt*phigrad*360.0);
+        (phi + (update->ntimestep - time_origin)*dt*phigrad*360.0);
       double theta_current = degree2rad *
-	(theta + (update->ntimestep - time_origin)*dt*thetagrad*360.0);
+        (theta + (update->ntimestep - time_origin)*dt*thetagrad*360.0);
       xgrav = sin(theta_current) * cos(phi_current);
       ygrav = sin(theta_current) * sin(phi_current);
       zgrav = cos(theta_current);
     } else {
       double theta_current = degree2rad *
-	(theta + (update->ntimestep - time_origin)*dt*thetagrad*360.0);
+        (theta + (update->ntimestep - time_origin)*dt*thetagrad*360.0);
       xgrav = sin(theta_current);
       ygrav = cos(theta_current);
     }
@@ -195,20 +195,20 @@ void FixGravity::post_force(int vflag)
   if (rmass) {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
-	massone = rmass[i];
-	f[i][0] += massone*xacc;
-	f[i][1] += massone*yacc;
-	f[i][2] += massone*zacc;
-	egrav -= massone * (xacc*x[i][0] + yacc*x[i][1] + zacc*x[i][2]);
+        massone = rmass[i];
+        f[i][0] += massone*xacc;
+        f[i][1] += massone*yacc;
+        f[i][2] += massone*zacc;
+        egrav -= massone * (xacc*x[i][0] + yacc*x[i][1] + zacc*x[i][2]);
       }
   } else {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
-	massone = mass[type[i]];
-	f[i][0] += massone*xacc;
-	f[i][1] += massone*yacc;
-	f[i][2] += massone*zacc;
-	egrav -= massone * (xacc*x[i][0] + yacc*x[i][1] + zacc*x[i][2]);
+        massone = mass[type[i]];
+        f[i][0] += massone*xacc;
+        f[i][1] += massone*yacc;
+        f[i][2] += massone*zacc;
+        egrav -= massone * (xacc*x[i][0] + yacc*x[i][1] + zacc*x[i][2]);
       }
   }
 }
@@ -243,4 +243,3 @@ void FixGravity::get_gravity(double *grav)
     grav[1] = ygrav * magnitude * force->ftm2v;
     grav[2] = zgrav * magnitude * force->ftm2v;
 }
-

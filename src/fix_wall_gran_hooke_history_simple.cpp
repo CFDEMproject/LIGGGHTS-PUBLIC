@@ -123,4 +123,3 @@ inline void FixWallGranHookeHistorySimple::deriveContactModelParams(int ip, doub
     kt /= force->nktv2p;
     return;
 }
-

@@ -57,4 +57,3 @@ class FixSPHDensityContinuity : public FixSPH {
 
 #endif
 #endif
-

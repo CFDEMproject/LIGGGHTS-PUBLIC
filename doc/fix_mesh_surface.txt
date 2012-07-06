@@ -31,7 +31,8 @@ mesh_keyword = {scale} or {move} or {rotate} or {temperature} :l
     angle = obligatory keyword 
     ang = angle to rotate the geometry around the specified axis (in degrees) 
   {temperature} value = T0
-    T0 = Temperature of the wall (temperature units)
+    T0 = Temperature of the wall (temperature units) :pre
+
 zero or more surface_keywords/surface_value pairs may be appended :l
 surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} :l
   {surface_vel} values = vx vy vz

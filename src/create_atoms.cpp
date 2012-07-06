@@ -55,7 +55,7 @@ void CreateAtoms::command(int narg, char **arg)
     error->all(FLERR,"Create_atoms command before simulation box is defined");
   if (modify->nfix_restart_peratom)
     error->all(FLERR,"Cannot create_atoms after "
-	       "reading restart file with per-atom info");
+               "reading restart file with per-atom info");
 
   // parse arguments
 
@@ -73,7 +73,7 @@ void CreateAtoms::command(int narg, char **arg)
     if (narg < 3) error->all(FLERR,"Illegal create_atoms command");
     nregion = domain->find_region(arg[2]);
     if (nregion == -1) error->all(FLERR,
-				  "Create_atoms region ID does not exist");
+                                  "Create_atoms region ID does not exist");
     iarg = 3;;
   } else if (strcmp(arg[1],"single") == 0) {
     style = SINGLE;
@@ -91,7 +91,7 @@ void CreateAtoms::command(int narg, char **arg)
     else {
       nregion = domain->find_region(arg[4]);
       if (nregion == -1) error->all(FLERR,
-				    "Create_atoms region ID does not exist");
+                                    "Create_atoms region ID does not exist");
     }
     iarg = 5;
   } else error->all(FLERR,"Illegal create_atoms command");
@@ -111,12 +111,12 @@ void CreateAtoms::command(int narg, char **arg)
     if (strcmp(arg[iarg],"basis") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal create_atoms command");
       if (domain->lattice == NULL)
-	error->all(FLERR,"Cannot create atoms with undefined lattice");
+        error->all(FLERR,"Cannot create atoms with undefined lattice");
       int ibasis = atoi(arg[iarg+1]);
       itype = atoi(arg[iarg+2]);
       if (ibasis <= 0 || ibasis > nbasis ||
-	  itype <= 0 || itype > atom->ntypes)
-	error->all(FLERR,"Illegal create_atoms command");
+          itype <= 0 || itype > atom->ntypes)
+        error->all(FLERR,"Illegal create_atoms command");
       basistype[ibasis-1] = itype;
       iarg += 3;
     } else if (strcmp(arg[iarg],"remap") == 0) {
@@ -174,7 +174,7 @@ void CreateAtoms::command(int narg, char **arg)
     Fix *fix = modify->fix[m];
     if (fix->create_attribute)
       for (int i = nlocal_previous; i < nlocal; i++)
-	fix->set_arrays(i);
+        fix->set_arrays(i);
   }
 
   // clean up
@@ -193,10 +193,10 @@ void CreateAtoms::command(int narg, char **arg)
   if (comm->me == 0) {
     if (screen)
       fprintf(screen,"Created " BIGINT_FORMAT " atoms\n",
-	      atom->natoms-natoms_previous);
+              atom->natoms-natoms_previous);
     if (logfile)
       fprintf(logfile,"Created " BIGINT_FORMAT " atoms\n",
-	      atom->natoms-natoms_previous);
+              atom->natoms-natoms_previous);
   }
 
   // reset simulation now that more atoms are defined
@@ -334,14 +334,14 @@ void CreateAtoms::add_random()
 
       valid = 1;
       if (nregion >= 0 &&
-	  domain->regions[nregion]->match(xone[0],xone[1],xone[2]) == 0)
-	valid = 0;
+          domain->regions[nregion]->match(xone[0],xone[1],xone[2]) == 0)
+        valid = 0;
       if (domain->triclinic) {
-	domain->x2lamda(xone,lamda);
-	coord = lamda;
-	if (coord[0] < boxlo[0] || coord[0] >= boxhi[0] ||
-	    coord[1] < boxlo[1] || coord[1] >= boxhi[1] ||
-	    coord[2] < boxlo[2] || coord[2] >= boxhi[2]) valid = 0;
+        domain->x2lamda(xone,lamda);
+        coord = lamda;
+        if (coord[0] < boxlo[0] || coord[0] >= boxhi[0] ||
+            coord[1] < boxlo[1] || coord[1] >= boxhi[1] ||
+            coord[2] < boxlo[2] || coord[2] >= boxhi[2]) valid = 0;
       } else coord = xone;
 
       if (valid) break;
@@ -350,8 +350,8 @@ void CreateAtoms::add_random()
     // if triclinic, coord is now in lamda units
 
     if (coord[0] >= sublo[0] && coord[0] < subhi[0] &&
-	coord[1] >= sublo[1] && coord[1] < subhi[1] &&
-	coord[2] >= sublo[2] && coord[2] < subhi[2])
+        coord[1] >= sublo[1] && coord[1] < subhi[1] &&
+        coord[2] >= sublo[2] && coord[2] < subhi[2])
     {
         atom->avec->create_atom(itype,xone);
         
@@ -390,21 +390,21 @@ void CreateAtoms::add_lattice()
   xmax = ymax = zmax = -BIG;
 
   domain->lattice->bbox(1,bboxlo[0],bboxlo[1],bboxlo[2],
-			xmin,ymin,zmin,xmax,ymax,zmax);
+                        xmin,ymin,zmin,xmax,ymax,zmax);
   domain->lattice->bbox(1,bboxhi[0],bboxlo[1],bboxlo[2],
-			xmin,ymin,zmin,xmax,ymax,zmax);
+                        xmin,ymin,zmin,xmax,ymax,zmax);
   domain->lattice->bbox(1,bboxlo[0],bboxhi[1],bboxlo[2],
-			xmin,ymin,zmin,xmax,ymax,zmax);
+                        xmin,ymin,zmin,xmax,ymax,zmax);
   domain->lattice->bbox(1,bboxhi[0],bboxhi[1],bboxlo[2],
-			xmin,ymin,zmin,xmax,ymax,zmax);
+                        xmin,ymin,zmin,xmax,ymax,zmax);
   domain->lattice->bbox(1,bboxlo[0],bboxlo[1],bboxhi[2],
-			xmin,ymin,zmin,xmax,ymax,zmax);
+                        xmin,ymin,zmin,xmax,ymax,zmax);
   domain->lattice->bbox(1,bboxhi[0],bboxlo[1],bboxhi[2],
-			xmin,ymin,zmin,xmax,ymax,zmax);
+                        xmin,ymin,zmin,xmax,ymax,zmax);
   domain->lattice->bbox(1,bboxlo[0],bboxhi[1],bboxhi[2],
-			xmin,ymin,zmin,xmax,ymax,zmax);
+                        xmin,ymin,zmin,xmax,ymax,zmax);
   domain->lattice->bbox(1,bboxhi[0],bboxhi[1],bboxhi[2],
-			xmin,ymin,zmin,xmax,ymax,zmax);
+                        xmin,ymin,zmin,xmax,ymax,zmax);
 
   // ilo:ihi,jlo:jhi,klo:khi = loop bounds for lattice overlap of my subbox
   // overlap = any part of a unit cell (face,edge,pt) in common with my subbox
@@ -484,37 +484,37 @@ void CreateAtoms::add_lattice()
   for (k = klo; k <= khi; k++)
     for (j = jlo; j <= jhi; j++)
       for (i = ilo; i <= ihi; i++)
-	for (m = 0; m < nbasis; m++) {
+        for (m = 0; m < nbasis; m++) {
 
-	  x[0] = i + basis[m][0];
-	  x[1] = j + basis[m][1];
-	  x[2] = k + basis[m][2];
+          x[0] = i + basis[m][0];
+          x[1] = j + basis[m][1];
+          x[2] = k + basis[m][2];
 
-	  // convert from lattice coords to box coords
+          // convert from lattice coords to box coords
 
-	  domain->lattice->lattice2box(x[0],x[1],x[2]);
+          domain->lattice->lattice2box(x[0],x[1],x[2]);
 
-	  // if a region was specified, test if atom is in it
+          // if a region was specified, test if atom is in it
 
-	  if (style == REGION)
-	    if (!domain->regions[nregion]->match(x[0],x[1],x[2])) continue;
+          if (style == REGION)
+            if (!domain->regions[nregion]->match(x[0],x[1],x[2])) continue;
 
-	  // test if atom is in my subbox
+          // test if atom is in my subbox
 
-	  if (triclinic) {
-	    domain->x2lamda(x,lamda);
-	    coord = lamda;
-	  } else coord = x;
+          if (triclinic) {
+            domain->x2lamda(x,lamda);
+            coord = lamda;
+          } else coord = x;
 
-	  if (coord[0] < sublo[0] || coord[0] >= subhi[0] ||
-	      coord[1] < sublo[1] || coord[1] >= subhi[1] ||
-	      coord[2] < sublo[2] || coord[2] >= subhi[2]) continue;
+          if (coord[0] < sublo[0] || coord[0] >= subhi[0] ||
+              coord[1] < sublo[1] || coord[1] >= subhi[1] ||
+              coord[2] < sublo[2] || coord[2] >= subhi[2]) continue;
 
-	  // add the atom to my list of atoms
+          // add the atom to my list of atoms
 
-	  atom->avec->create_atom(basistype[m],x);
-	  
-	  for (int k = 0; k < modify->nfix; k++)
+          atom->avec->create_atom(basistype[m],x);
+          
+          for (int k = 0; k < modify->nfix; k++)
         if (modify->fix[k]->create_attribute) modify->fix[k]->set_arrays(atom->nlocal-1);
-	}
+        }
 }

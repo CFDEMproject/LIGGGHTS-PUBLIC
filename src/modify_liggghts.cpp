@@ -231,7 +231,7 @@ bool Modify::have_restart_data(Fix *f)
   // check if Fix is in restart_peratom list
 
   for (int i = 0; i < nfix_restart_peratom; i++)
-    if (strcmp(id_restart_peratom[i],f->id) == 0 &&	strcmp(style_restart_peratom[i],f->style) == 0)
+    if (strcmp(id_restart_peratom[i],f->id) == 0 &&        strcmp(style_restart_peratom[i],f->style) == 0)
       return true;
 
   return false;

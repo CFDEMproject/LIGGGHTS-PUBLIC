@@ -54,17 +54,13 @@ FixHeatGran::FixHeatGran(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg
 {
   if ((!atom->radius_flag)||(!atom->rmass_flag)) error->all(FLERR,"Fix heat/gran needs per particle radius and mass");
 
-  //check if a fix of this style already exists
-  for (int i = 0; i < modify->nfix; i++)
-      if (strcmp(modify->fix[i]->style,style) == 0) error->all(FLERR,"A fix of type heat/gran is already registered. Cannot have more than one");
-
   if (narg < 5)
-    error->all(FLERR,"Illegal fix heat/gran command, not enough arguments");
+    error->fix_error(FLERR,this,"not enough arguments");
 
   int iarg = 3;
 
   if(strcmp(arg[iarg++],"initial_temperature"))
-    error->all(FLERR,"Illegal fix heat/gran command, expecting keyword 'initial_temperature'");
+    error->fix_error(FLERR,this,"expecting keyword 'initial_temperature'");
   T0 = atof(arg[iarg++]);
 
   area_correction_flag = 0;
@@ -74,20 +70,21 @@ FixHeatGran::FixHeatGran(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg
   {
     hasargs = false;
     if(strcmp(arg[iarg],"area_correction") == 0) {
-        if (iarg+2 > narg) error->all(FLERR,"Illegal fix heat/gran command");
+        if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments for keyword 'area_correction'");
         if(strcmp(arg[iarg+1],"yes") == 0)
           area_correction_flag = 1;
         else if(strcmp(arg[iarg+1],"no") == 0)
           area_correction_flag = 0;
-        else error->all(FLERR,"Illegal fix heat/gran command");
+        else error->fix_error(FLERR,this,"");
         iarg += 2;
         hasargs = true;
     } else if(strcmp(style,"heat/gran") == 0)
-        error->all(FLERR,"Illegal fix heat/gran command, unknown keyword");
+        error->fix_error(FLERR,this,"unknown keyword");
   }
 
   fix_temp = fix_heatFlux = fix_heatSource = NULL;
   fix_conductivity = NULL;
+  fix_ste = NULL;
 
   conductivity = NULL;
 
@@ -140,9 +137,15 @@ void FixHeatGran::post_create()
         delete [] newarg[8];
         delete [] newarg;
     }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixHeatGran::pre_delete(bool unfixflag)
+{
 
     // tell cpl that this fix is deleted
-    if(cpl) cpl->reference_deleted();
+    if(cpl && unfixflag) cpl->reference_deleted();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -173,6 +176,10 @@ void FixHeatGran::init()
   Fix* ymo_fix;
 
   if (!atom->radius_flag || !atom->rmass_flag) error->all(FLERR,"Please use a granular atom style for fix heat/gran");
+
+  // check if a fix of this style already exists
+  if(modify->n_fixes_style(style) > 1)
+    error->fix_error(FLERR,this,"cannot have more than one fix of this style");
 
   if(!force->pair_match("gran", 0)) error->all(FLERR,"Please use a granular pair style for fix heat/gran");
 
@@ -383,6 +390,6 @@ void FixHeatGran::unregister_compute_pair_local(ComputePairGranLocal *ptr)
 {
    
    if(cpl != ptr)
-       error->all(FLERR,"Illegal situation in PairGran::unregister_compute_pair_local");
+       error->all(FLERR,"Illegal situation in FixHeatGran::unregister_compute_pair_local");
    cpl = NULL;
 }

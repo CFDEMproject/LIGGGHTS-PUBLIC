@@ -40,4 +40,3 @@ class InputMultisphere : protected Input {
 }
 
 #endif
-

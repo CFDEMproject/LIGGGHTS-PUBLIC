@@ -131,7 +131,7 @@ FixPropertyAtom::FixPropertyAtom(LAMMPS *lmp, int narg, char **arg) :
             error->all(FLERR,"Error in fix property/atom. There is already a fix that registers a variable of the same name");
 
     // flags for vector output
-    vector_flag = 1;
+    //vector_flag = 1;
     size_vector = nvalues;
     global_freq = 1;
     extvector = 1;
@@ -344,7 +344,7 @@ int FixPropertyAtom::size_restart(int nlocal)
 /* ---------------------------------------------------------------------- */
 
 int FixPropertyAtom::pack_comm(int n, int *list, double *buf,
-			     int pbc_flag, int *pbc)
+                             int pbc_flag, int *pbc)
 {
     int i,j;
     //we dont need to account for pbc here
@@ -417,6 +417,6 @@ double FixPropertyAtom::compute_vector(int n)
       }
   }
 
- MPI_Sum_Scalar(value,world);
+  MPI_Sum_Scalar(value,world);
   return value;
 }

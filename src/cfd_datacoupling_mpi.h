@@ -29,6 +29,7 @@
 #define LMP_CFD_DATACOUPLING_MPI_H
 
 #include "cfd_datacoupling.h"
+#include "multisphere.h"
 #include "error.h"
 #include "mpi.h"
 
@@ -112,19 +113,19 @@ void CfdDatacouplingMPI::pull_mpi(char *name,char *type,void *&from)
     else if(strcmp(type,"scalar-multisphere") == 0)
     {
         T *to_t = (T*) to;
-        if(!frm_)
+        if(!ms_data_)
             error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
         for (int i = 0; i < len1; i++)
-            if ((m = frm_->map(i)) >= 0)
+            if ((m = ms_data_->map(i)) >= 0)
                 to_t[m] = allred[i];
     }
     else if(strcmp(type,"vector-multisphere") == 0)
     {
         T **to_t = (T**) to;
-        if(!frm_)
+        if(!ms_data_)
             error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
         for (int i = 0; i < len1; i++)
-            if ((m = frm_->map(i)) >= 0)
+            if ((m = ms_data_->map(i)) >= 0)
                 for (int j = 0; j < len2; j++)
                     to_t[m][j] = allred[i*len2 + j];
     }
@@ -148,7 +149,7 @@ void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
     int *tag = atom->tag;
     int nlocal = atom->nlocal;
     int nbodies = 0;
-    if(frm_) nbodies = frm_->n_bodies();
+    if(ms_data_) nbodies = ms_data_->n_body();
 
     // get reference where to write the data
     void * from = find_push_property(name,type,len1,len2);
@@ -191,22 +192,22 @@ void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
     else if(strcmp(type,"scalar-multisphere") == 0)
     {
         T *from_t = (T*) from;
-        if(!frm_)
+        if(!ms_data_)
             error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
         for (int i = 0; i < nbodies; i++) // loops over # local bodies
         {
-            id = frm_->tag(i);
+            id = ms_data_->tag(i);
             allred[id] = from_t[i];
         }
     }
     else if(strcmp(type,"vector-multisphere") == 0)
     {
         T **from_t = (T**) from;
-        if(!frm_)
+        if(!ms_data_)
             error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
         for (int i = 0; i < nbodies; i++) // loops over # local bodies
         {
-            id = frm_->tag(i);
+            id = ms_data_->tag(i);
             for (int j = 0; j < len2; j++)
                 allred[id*len2 + j] = from_t[i][j];
         }

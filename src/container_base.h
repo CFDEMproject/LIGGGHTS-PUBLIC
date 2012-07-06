@@ -47,6 +47,7 @@ namespace LAMMPS_NS
 
           void setProperties(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower = 1);
           bool propertiesSetCorrectly();
+
           void id(char *_id);
           bool matches_id(char *_id);
 
@@ -55,6 +56,7 @@ namespace LAMMPS_NS
           virtual int nVec() = 0;
           virtual int lenVec() = 0;
 
+          virtual void copy(int from,int to) = 0;
           virtual void del(int n) = 0;
           virtual void delForward(int n,bool scale,bool translate,bool rotate) = 0;
           virtual void delRestart(int n,bool scale,bool translate,bool rotate) = 0;

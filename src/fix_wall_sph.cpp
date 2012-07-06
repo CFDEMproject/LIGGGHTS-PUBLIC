@@ -231,4 +231,3 @@ void FixWallSPH::post_force_respa(int vflag, int ilevel, int iloop)
 {
   if (ilevel == nlevels_respa-1) post_force(vflag);
 }
-

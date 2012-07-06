@@ -92,9 +92,13 @@ void FixMoveMesh::pre_delete(bool unfixflag)
     {
         int nmove = modify->n_fixes_style("move/mesh");
 
-        if(nmove > 1 && move_->isFirst())
-        error->all(FLERR,"Illegal deletion of a fix move/mesh. There is another fix move/mesh command active on the same mesh. "
+        for(int imove = 0; imove < nmove; imove++)
+        {
+            FixMoveMesh* fix_move_mesh = static_cast<FixMoveMesh*>(modify->find_fix_style("move/mesh",imove));
+            if(fix_move_mesh != this && fix_move_mesh->fixMesh() == fixMesh() && move_->isFirst())
+                error->all(FLERR,"Illegal deletion of a fix move/mesh. There is another fix move/mesh command active on the same mesh. "
                            "Superposed fix move/mesh commands must be unfixed in reverse order of creation");
+        }
 
         move_->pre_delete();
 

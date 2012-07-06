@@ -54,4 +54,3 @@ class FixWallGranHookeHistorySimple : public FixWallGranHookeHistory {
 
 #endif
 #endif
-

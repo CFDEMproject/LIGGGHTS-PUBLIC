@@ -332,12 +332,12 @@ void FixParticledistributionDiscrete::random_init_list(int ntotal)
    the list in this fix. returns number of particles to be inserted.
    typically called once per insertion step
 
-   for truncate = 1, truncate distribution so to exactly meet
+   for exact_number = 1, truncate distribution so to exactly meet
                                requested # particles
-   for truncate = 0, use random gen to fulfil distribution
+   for exact_number = 0, use random gen to fulfil distribution
 ------------------------------------------------------------------------- */
 
-int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupbit,int truncate)
+int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupbit,int exact_number)
 {
     if(ntotal > n_pti_max)
     {
@@ -349,7 +349,7 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
     ninserted = 0;
 
     // use random generator so long-time average of insertion will represent distribution correctly
-    if(truncate == 0)
+    if(exact_number == 0)
     {
 
         for(int i = 0; i < ntemplates; i++)
@@ -358,30 +358,38 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
            
         }
     }
-    // truncate distribution so # particles to insert is met exactly and
-    // # particles in each distribution is an int multiple of 'truncate'
-    // throw error if not possible
-    // for truncate == 1, means just round to integer
+    // truncate distribution so # particles to insert is met exactly
     else
     {
-        if(ntotal % truncate) error->one(FLERR,"Fix particledistribution/discrete: ntotal and truncate are inconsistent");
-        ntotal /= truncate;
+        int ninsert_truncated = 0, j;
+        double *remainder = new double[ntemplates], rsum, r;
 
-        int ninsert_truncated = 0;
+        // distribute particles and calculate remainder
         for(int i = 0; i < ntemplates; i++)
         {
            parttogen[i] = static_cast<int>(static_cast<double>(ninsert) * distweight[i]);
            ninsert_truncated += parttogen[i];
+           remainder[i] = static_cast<double>(ninsert) * distweight[i] - static_cast<double>(parttogen[i]);
         }
 
-        // simple method - just round up the first few
         int ninsert_gap = ninsert - ninsert_truncated;
-        for (int i = 0; i < ninsert_gap; i++)
-            parttogen[i] += 1;
 
-        // now multiply with truncate
-        for(int i = 0; i < ntemplates; i++)
-            parttogen[i] *= truncate;
+        // distribute remaining ninsert_gap particles
+        for(int i = 0; i < ninsert_gap; i++)
+        {
+            r = random->uniform() * static_cast<double>(ninsert_gap);
+            j = 0;
+            rsum = 0.;
+
+            while(j < (ntemplates-1) && rsum < r)
+            {
+                rsum += remainder[j];
+                j++;
+            }
+            parttogen[j]++;
+        }
+
+        delete []remainder;
     }
 
     // count total particle number to be inserted, let templates generate a pti_list

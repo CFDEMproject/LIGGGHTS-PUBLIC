@@ -16,9 +16,10 @@
 #include "create_box.h"
 #include "atom.h"
 #include "force.h"
-#include "domain.h"
+#include "domain_wedge.h" 
 #include "region.h"
 #include "region_prism.h"
+#include "region_wedge.h" 
 #include "comm.h"
 #include "update.h"
 #include "error.h"
@@ -56,7 +57,10 @@ void CreateBox::command(int narg, char **arg)
   //   seutp triclinic domain
   //   set simulation domain params from prism params
 
-  if (strcmp(domain->regions[iregion]->style,"prism") != 0) {
+  bool isBox = (strcmp(domain->regions[iregion]->style,"prism") != 0) &&
+               (strcmp(domain->regions[iregion]->style,"wedge") != 0);
+
+  if (isBox) { 
     domain->triclinic = 0;
     domain->boxlo[0] = domain->regions[iregion]->extent_xlo;
     domain->boxhi[0] = domain->regions[iregion]->extent_xhi;
@@ -64,7 +68,13 @@ void CreateBox::command(int narg, char **arg)
     domain->boxhi[1] = domain->regions[iregion]->extent_yhi;
     domain->boxlo[2] = domain->regions[iregion]->extent_zlo;
     domain->boxhi[2] = domain->regions[iregion]->extent_zhi;
-
+  } else if (strcmp(domain->regions[iregion]->style,"wedge") == 0) {
+    RegWedge *region = static_cast<RegWedge*>(domain->regions[iregion]);
+    if(!dynamic_cast<DomainWedge*>(domain))
+        error->all(FLERR,"Create_box with wedge region requires you to start "
+                         "with the '-domain wedge' command line option");
+    else
+        dynamic_cast<DomainWedge*>(domain)->set_domain(region);
   } else {
     domain->triclinic = 1;
     RegPrism *region = (RegPrism *) domain->regions[iregion];

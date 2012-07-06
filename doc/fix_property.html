@@ -34,10 +34,10 @@ fix id group property/global variablename style stylearg defaultvalue(s)...
 </UL>
 <P>fix property/global:
 </P>
-<UL><LI>style = scalar or vector or matrix or atomtype or atomtypepair 
+<UL><LI>    style = scalar or vector or atomtype or matrix or atomtypepair 
 
-<PRE>  stylearg for scalar/vector: none
-  stylearg for matrix: nCols 
+<PRE>    stylearg for scalar/vector: none
+    stylearg for matrix/atomtypepair: nCols 
 </PRE>
 
 </UL>
@@ -73,13 +73,13 @@ fix id group property/global variablename style stylearg defaultvalue(s)...
 </P>
 <P>Note that the number of default values must thus be a multiple of nCols.
 Note that vector and atomtype do the same thing, atomtype is just provided to make input scripts more readable .
-Note that matrix and atomtypepair do the same thing, atomtype is just provided to make input scripts more readable .
+Note that matrix and atomtypepair both refer to a matrix of global values. However, a matrix defined via 'atomtypepair' is required to be symmetric.
 </P>
 <P>Note that the group of atoms the fix is applied to is ignored (as the fix is not applied to atoms, but defines values of global scope).
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
-<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> if you set 'restartvalue' to “yes”.
+<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> if you set 'restartvalue' to 'yes'.
 </P>
 <P>The <A HREF = "fix_modify.html">fix_modify</A> <I>energy</I> option is supported by this fix to add the potential "energy" inferred by the added force to the system's potential energy as part of <A HREF = "thermo_style.html">thermodynamic output</A>. This is a fictitious quantity but is needed so that the "minimize<A HREF = "minimize.html"></A> command can include the forces added by this fix in a consistent manner. I.e. there is a decrease in potential energy when atoms move in the direction of the added force. 
 </P>

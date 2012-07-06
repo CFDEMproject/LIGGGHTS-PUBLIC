@@ -142,4 +142,3 @@ void check_datatransfer(void *ptr)
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
     fcfd->get_dc()->check_datatransfer();
 }
-

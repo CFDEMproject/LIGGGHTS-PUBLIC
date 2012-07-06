@@ -50,4 +50,3 @@ class FixWallGranHertzHistorySimple : public FixWallGranHookeHistorySimple {
 
 #endif
 #endif
-

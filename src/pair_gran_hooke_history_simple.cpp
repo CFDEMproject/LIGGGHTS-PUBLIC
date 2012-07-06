@@ -54,10 +54,8 @@ PairGranHookeHistorySimple::~PairGranHookeHistorySimple()
     memory->destroy(gamma_n);
     memory->destroy(gamma_t);
 
-    memory->destroy(coeffFrict);
-    memory->destroy(coeffRollFrict);
-
-    memory->destroy(cohEnergyDens);
+    // do not destroy coeffFrict, coeffRollFrict, cohEnergyDens
+    // since are destroyed in ~PairGranHookeHistory()
 }
 
 /* ----------------------------------------------------------------------
@@ -201,4 +199,3 @@ inline void PairGranHookeHistorySimple::deriveContactModelParams(int &ip, int &j
     kt /= force->nktv2p;
     return;
 }
-

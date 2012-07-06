@@ -69,7 +69,13 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
   mpg = new MechParamGran(lmp);
 
   history = 0;
+  dnum_pairgran = 0;
+  dnum_all = 0;
   fix_history = NULL;
+
+  nfix = 0;
+  fix_dnum = NULL;
+  dnum_index = NULL;
 
   cpl_enable = 1;
   cpl = NULL;
@@ -111,19 +117,22 @@ PairGran::~PairGran()
   delete [] onerad_frozen;
   delete [] maxrad_dynamic;
   delete [] maxrad_frozen;
+
+  if(fix_dnum) delete []fix_dnum;
+  if(dnum_index) delete []dnum_index;
 }
 
 /* ---------------------------------------------------------------------- */
 
 void PairGran::updatePtrs()
 {
-	if(fppaCPEn) CPEn = fppaCPEn->vector_atom;
-	if(fppaCDEn) CDEn = fppaCDEn->vector_atom;
-	if(fppaCPEt) CPEt = fppaCPEt->vector_atom;
-	if(fppaCDEVt) CDEVt = fppaCDEVt->vector_atom;
-	if(fppaCDEFt) CDEFt = fppaCDEFt->vector_atom;
-	if(fppaCTFW) CTFW = fppaCTFW->vector_atom;
-	if(fppaDEH) DEH = fppaDEH->vector_atom;
+        if(fppaCPEn) CPEn = fppaCPEn->vector_atom;
+        if(fppaCDEn) CDEn = fppaCDEn->vector_atom;
+        if(fppaCPEt) CPEt = fppaCPEt->vector_atom;
+        if(fppaCDEVt) CDEVt = fppaCDEVt->vector_atom;
+        if(fppaCDEFt) CDEFt = fppaCDEFt->vector_atom;
+        if(fppaCTFW) CTFW = fppaCTFW->vector_atom;
+        if(fppaDEH) DEH = fppaDEH->vector_atom;
 }
 
 /* ----------------------------------------------------------------------
@@ -205,22 +214,54 @@ void PairGran::init_style()
   if (history && force->newton_pair == 1)
     error->all(FLERR,"Pair granular with shear history requires newton pair off");
 
+  dnum_all = dnum_pairgran;
+
+  int dnum_extra = 0;
+  nfix = modify->nfix;
+
+  if(fix_dnum) delete []fix_dnum;
+  if(dnum_index) delete []dnum_index;
+  fix_dnum = new Fix*[nfix];
+  dnum_index = new int[nfix];
+
+  for(int ifix = 0; ifix < nfix; ifix++)
+  {
+      fix_dnum[ifix] = modify->fix[ifix];
+      dnum_index[ifix] = dnum_pairgran + dnum_extra;
+      
+      dnum_extra += fix_dnum[ifix]->n_history_extra();
+  }
+
+  if(dnum_extra && !history)
+    error->all(FLERR,"Cannot use extra dnum with non-history pair style");
+  else
+    dnum_all += dnum_extra;
+
   // init contact history
   if(history)
   {
     if (!fix_history)
     {
         
-        char **fixarg = new char*[5+2*dnum];
+        char **fixarg = new char*[5+2*dnum_all];
         fixarg[4] = new char[3];
-        history_args(&fixarg[5]);
 
         fixarg[0] = (char *) "contacthistory";
         fixarg[1] = (char *) "all";
         fixarg[2] = (char *) "contacthistory";
         fixarg[3] = (char *) "pair";
-        sprintf(fixarg[4],"%d",dnum);
-        modify->add_fix(5+2*dnum,fixarg);
+        sprintf(fixarg[4],"%d",dnum_all);
+        history_args(&fixarg[5]);
+
+        // add history args from fixes
+        for(int ifix = 0; ifix < nfix; ifix++)
+        {
+            if(fix_dnum[ifix]->n_history_extra())
+                if(!fix_dnum[ifix]->history_args(&fixarg[5+2*dnum_index[ifix]]))
+                    error->all(FLERR,"Missing history_args() implementation for fix that requests extra history");
+        }
+
+        modify->add_fix(5+2*dnum_all,fixarg);
 
         if(modify->n_fixes_style_strict("contacthistory") != 1) error->all(FLERR,"Pair granular with shear history requires exactly one fix of style contacthistory");
         fix_history = static_cast<FixContactHistory*>(modify->find_fix_style_strict("contacthistory",0));
@@ -341,7 +382,7 @@ void PairGran::init_style()
     neighbor->requests[irequest]->id = 1; 
     neighbor->requests[irequest]->half = 0;
     neighbor->requests[irequest]->granhistory = 1;
-    neighbor->requests[irequest]->dnum = dnum;
+    neighbor->requests[irequest]->dnum = dnum_all;
   }
 
   // check for freeze Fix and set freeze_group_bit
@@ -395,13 +436,28 @@ void PairGran::register_compute_pair_local(ComputePairGranLocal *ptr,int &dnum_c
 {
    if(cpl != NULL) error->all(FLERR,"Pair gran allows only one compute of type pair/local");
    cpl = ptr;
-   dnum_compute = dnum; //history values
+   dnum_compute = dnum_pairgran; //history values
 }
 
 void PairGran::unregister_compute_pair_local(ComputePairGranLocal *ptr)
 {
    if(cpl != ptr) error->all(FLERR,"Illegal situation in PairGran::unregister_compute_pair_local");
    cpl = NULL;
+}
+
+/* ----------------------------------------------------------------------
+   return index for extra dnum
+------------------------------------------------------------------------- */
+
+int PairGran::fix_extra_dnum_index(class Fix *fix)
+{
+    for(int ifix = 0; ifix < nfix; ifix++)
+    {
+        if(fix == fix_dnum[ifix])
+            return dnum_index[ifix];
+    }
+    error->all(FLERR,"Internal error - illegal fix_extra_dnum_index() call");
+    return 0;
 }
 
 /* ----------------------------------------------------------------------

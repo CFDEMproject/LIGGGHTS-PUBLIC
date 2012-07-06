@@ -130,6 +130,7 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         void calcEdgeNormals(int nElem, double **edgeNorm);
 
         virtual bool isInElement(double *pos, int i) = 0;
+
         int randomOwnedGhostElement();
 
         void rotate(double *totalQ, double *dQ,double *totalDispl,double *dDispl);

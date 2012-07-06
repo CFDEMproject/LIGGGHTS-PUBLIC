@@ -139,6 +139,13 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       else error->fix_error(FLERR,this,"");
       iarg += 2;
       hasargs = true;
+    } else if (strcmp(arg[iarg],"random_distribute") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"");
+      if(strcmp(arg[iarg+1],"uncorrelated")==0) exact_number = 0;
+      else if(strcmp(arg[iarg+1],"exact")==0) exact_number = 1;
+      else error->fix_error(FLERR,this,"");
+      iarg += 2;
+      hasargs = true;
     } else if (strcmp(arg[iarg],"vel") == 0) {
       if (iarg+5 > narg) error->fix_error(FLERR,this,"");
       if (strcmp(arg[iarg+1],"constant") == 0)
@@ -177,9 +184,6 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
 
   // default is that total # of particles to insert by this command is known
   ninsert_exists = 1;
-
-  // default is statistically exact, non-truncated particle distributions
-  truncate = 0;
 
   // memory not allocated initially
   ninsert_this_max_local = 0;
@@ -273,6 +277,8 @@ void FixInsert::init_defaults()
   check_ol_flag = 1;
   all_in_flag = 0;
 
+  exact_number = 1;
+
   vectorZeroize3D(v_insert);
   vectorZeroize3D(omega_insert);
 
@@ -319,11 +325,11 @@ void FixInsert::print_stats_during(int ninsert_this, double mass_inserted_this)
   {
     if (screen)
       fprintf(screen ,"Particle insertion: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
-	      ninsert_this,mass_inserted_this,step,ninserted,massinserted);
+              ninsert_this,mass_inserted_this,step,ninserted,massinserted);
 
     if (logfile)
       fprintf(logfile,"Particle insertion: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
-	      ninsert_this,mass_inserted_this,step,ninserted,massinserted);
+              ninsert_this,mass_inserted_this,step,ninserted,massinserted);
   }
 }
 
@@ -347,6 +353,8 @@ void FixInsert::init()
     if (domain->dimension != 3) error->fix_error(FLERR,this,"Can use fix insert for 3d simulations only");
     
     fix_rm = static_cast<FixRigidMultisphere*>(modify->find_fix_style("rigid/multisphere", 0));
+    if(!fix_rm) multisphere = NULL;
+    else multisphere = &fix_rm->data();
 
     if(fix_rm && fix_rm->igroup != igroup)
         error->fix_error(FLERR,this,"Fix insert command and fix rigid/multisphere command are not compatible, must be same group");
@@ -426,10 +434,13 @@ void FixInsert::pre_exchange()
   ninsert_this = calc_ninsert_this();
 
   // limit to max number of particles that shall be inserted
-  // however max # may be slightly exceeded by random processes below
-  // in fix_distribution->randomize_list
+  // to avoid that max # may be slightly exceeded by random processes
+  // in fix_distribution->randomize_list, set exact_number to 1
   if (ninsert_exists && ninserted + ninsert_this > ninsert)
+  {
       ninsert_this = ninsert - ninserted;
+      exact_number = 1;
+  }
 
   // distribute ninsert_this across processors
   ninsert_this_local = distribute_ninsert_this(ninsert_this);
@@ -443,16 +454,16 @@ void FixInsert::pre_exchange()
   }
 
   // generate list of insertions
-  // number of inserted particles can change if truncate = 0
+  // number of inserted particles can change if exact_number = 0
   
-  ninsert_this_local = fix_distribution->randomize_list(ninsert_this_local,groupbit,truncate);
+  ninsert_this_local = fix_distribution->randomize_list(ninsert_this_local,groupbit,exact_number);
 
- MPI_Sum_Scalar(ninsert_this_local,ninsert_this,world);
+  MPI_Sum_Scalar(ninsert_this_local,ninsert_this,world);
 
   if(ninsert_this == 0)
   {
       // warn if flowrate should be fulfilled
-      if(nflowrate > 0. || massflowrate > 0.)
+      if((nflowrate > 0. || massflowrate > 0.) && comm->me == 0)
         error->warning(FLERR,"Particle insertion: Inserting no particle - check particle insertion settings");
 
       // schedule next insertion
@@ -542,18 +553,63 @@ void FixInsert::pre_exchange()
 
 int FixInsert::distribute_ninsert_this(int ninsert_this)
 {
-    int me, nprocs;
-    double fraction_local; //, *fraction_all;
+    int me, nprocs, ngap, ninsert_this_local, *ninsert_this_local_all;
+    double fraction_local, *fraction_local_all, *remainder, r, rsum;
 
     me = comm->me;
     nprocs = comm->nprocs;
 
     fraction_local = insertion_fraction();
+    
+    if(!exact_number)
+        return static_cast<int>(fraction_local*static_cast<double>(ninsert_this) + random->uniform());
 
-    // allgather if want to exactly match ninsert_this
-    //MPI_Allgather(&fraction_local,1,MPI_DOUBLE,fraction_all,1,MPI_DOUBLE,world);
+    // for exact_number==1, have to allgather to exactly match ninsert_this
 
-    int ninsert_this_local = static_cast<int>(fraction_local*static_cast<double>(ninsert_this) + random->uniform());
+    fraction_local_all = new double[nprocs];
+    remainder = new double[nprocs];
+    ninsert_this_local_all = new int[nprocs];
+
+    // allgather local fractions
+    MPI_Allgather(&fraction_local,1,MPI_DOUBLE,fraction_local_all,1,MPI_DOUBLE,world);
+
+    // proc0 calculates ninsert_this_local for all processes
+    
+    if(me == 0)
+    {
+        rsum = 0.;
+        for(int iproc = 0; iproc < nprocs; iproc++)
+        {
+            ninsert_this_local_all[iproc] = static_cast<int>(fraction_local_all[iproc]*static_cast<double>(ninsert_this));
+            remainder[iproc] = fraction_local_all[iproc]*static_cast<double>(ninsert_this) - ninsert_this_local_all[iproc];
+            rsum += remainder[iproc];
+            
+        }
+
+        ngap = round(rsum);
+        
+        for(int i = 0; i < ngap; i++)
+        {
+            r = random->uniform() * static_cast<double>(ngap);
+            int iproc = 0;
+            rsum = remainder[iproc];
+
+            while(iproc < (nprocs-1) && rsum < r)
+            {
+                iproc++;
+                rsum += remainder[iproc];
+            }
+            ninsert_this_local_all[iproc]++;
+        }
+    }
+
+    // Bcast the result
+    MPI_Bcast(ninsert_this_local_all,nprocs, MPI_INT,0,world);
+    ninsert_this_local = ninsert_this_local_all[me];
+
+    delete []fraction_local_all;
+    delete []remainder;
+    delete []ninsert_this_local_all;
 
     return ninsert_this_local;
 }

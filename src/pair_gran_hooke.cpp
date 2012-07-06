@@ -44,7 +44,7 @@ PairGranHooke::PairGranHooke(LAMMPS *lmp) : PairGranHookeHistory(lmp)
 
     //flag that we do not intend to use contact history
     history = 0;
-    dnum = 0;
+    dnum_pairgran = 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -161,7 +161,7 @@ void PairGranHooke::compute(int eflag, int vflag,int addflag)
         if (mask[i] & freeze_group_bit) meff = mj;
         if (mask[j] & freeze_group_bit) meff = mi;
 
-        deriveContactModelParams(i,j,meff,deltan,kn,kt,gamman,gammat,xmu,rmu);	 
+        deriveContactModelParams(i,j,meff,deltan,kn,kt,gamman,gammat,xmu,rmu);         
 
         damp = gamman*vnnr*rsqinv;    
         ccel = kn*(radsum-r)*rinv - damp;

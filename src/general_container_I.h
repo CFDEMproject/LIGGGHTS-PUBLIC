@@ -117,6 +117,18 @@
   }
 
   /* ----------------------------------------------------------------------
+   copy element data
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::copy(int from,int to)
+  {
+          for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                          arr_[to][i][j] = arr_[from][i][j];
+  }
+
+  /* ----------------------------------------------------------------------
    delete an element
   ------------------------------------------------------------------------- */
 
@@ -356,7 +368,7 @@
   template<typename T, int NUM_VEC, int LEN_VEC>
   int GeneralContainer<T,NUM_VEC,LEN_VEC>::popElemListFromBuffer(int first, int n, double *buf,int operation,bool scale,bool translate, bool rotate)
   {
-        int i,m = 0;
+        int m = 0;
 
         if(!this->decideBufferOperation(operation,scale,translate,rotate))
             return 0;

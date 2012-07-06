@@ -81,7 +81,7 @@ class DumpCustom : public Dump {
   double **vbuf;             // local storage for variable evaluation
 
   int ntypes;                // # of atom types
-  char **typenames;	     // array of element names for each type
+  char **typenames;             // array of element names for each type
 
   // private methods
 

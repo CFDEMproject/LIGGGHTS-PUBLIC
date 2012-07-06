@@ -38,6 +38,7 @@
 #include "fix_property_atom.h"
 #include "fix_particledistribution_discrete.h"
 #include "fix_rigid_multisphere.h"
+#include "multisphere.h"
 #include "fix_template_sphere.h"
 #include "particleToInsert.h"
 
@@ -467,12 +468,15 @@ void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
 
     double **release_data = fix_release->array_atom;
 
+    Multisphere *multisphere = NULL;
+    if(fix_rm) multisphere = &fix_rm->data();
+
     for(int i = ilo; i < ihi; i++)
     {
         
-        if(fix_rm)
-            n_steps = fix_rm->calc_n_steps(i,p_ref,normalvec,v_normal);
-        if(!fix_rm || n_steps == -1)
+        if(multisphere)
+            n_steps = multisphere->calc_n_steps(i,p_ref,normalvec,v_normal);
+        if(!multisphere || n_steps == -1)
         {
             vectorSubtract3D(p_ref,x[i],pos_rel);
             dist_normal = vectorDot3D(pos_rel,normalvec);

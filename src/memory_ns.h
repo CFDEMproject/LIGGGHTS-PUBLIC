@@ -81,8 +81,8 @@ namespace LAMMPS_MEMORY_NS {
 
         bigint n = 0;
         for (int i = 0; i < n1; i++) {
-  	array[i] = &data[n];
-  	n += n2;
+          array[i] = &data[n];
+          n += n2;
         }
         return array;
       }
@@ -104,8 +104,8 @@ namespace LAMMPS_MEMORY_NS {
 
         bigint n = 0;
         for (int i = 0; i < n1; i++) {
-  	array[i] = &data[n];
-  	n += n2;
+          array[i] = &data[n];
+          n += n2;
         }
         return array;
       }
@@ -140,12 +140,12 @@ namespace LAMMPS_MEMORY_NS {
           bigint m;
           bigint n = 0;
           for (i = 0; i < n1; i++) {
-    	m = ((bigint) i) * n2;
-    	array[i] = &plane[m];
-    	for (j = 0; j < n2; j++) {
-    	  plane[m+j] = &data[n];
-    	  n += n3;
-    	}
+            m = ((bigint) i) * n2;
+            array[i] = &plane[m];
+            for (j = 0; j < n2; j++) {
+              plane[m+j] = &data[n];
+              n += n3;
+            }
           }
           return array;
         }
@@ -171,12 +171,12 @@ namespace LAMMPS_MEMORY_NS {
           bigint m;
           bigint n = 0;
           for (i = 0; i < n1; i++) {
-    	m = ((bigint) i) * n2;
-    	array[i] = &plane[m];
-    	for (j = 0; j < n2; j++) {
-    	  plane[m+j] = &data[n];
-    	  n += n3;
-    	}
+            m = ((bigint) i) * n2;
+            array[i] = &plane[m];
+            for (j = 0; j < n2; j++) {
+              plane[m+j] = &data[n];
+              n += n3;
+            }
           }
           return array;
         }

@@ -172,6 +172,8 @@ class Fix : protected Pointers {
   virtual int min_type() {return 1;} 
   virtual int max_type() {return 1;} 
   virtual double extend_cut_ghost() {return 0.0;} 
+  virtual int n_history_extra() {return 0;} 
+  virtual bool history_args(char** args) {return false;} 
 
  protected:
   int evflag;

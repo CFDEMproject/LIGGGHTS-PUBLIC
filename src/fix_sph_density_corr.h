@@ -68,4 +68,3 @@ class FixSPHDensityCorr : public FixSPH {
 
 #endif
 #endif
-

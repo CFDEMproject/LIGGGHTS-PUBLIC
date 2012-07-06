@@ -37,10 +37,11 @@ namespace LAMMPS_NS
   class CustomValueTracker : protected Pointers
   {
       public:
-        CustomValueTracker(LAMMPS *lmp,AbstractMesh &_owner);
+        CustomValueTracker(LAMMPS *lmp);
+        CustomValueTracker(LAMMPS *lmp,AbstractMesh *_owner);
         ~CustomValueTracker();
 
-        // per mesh-element properties
+        // per-element properties
 
         template<typename T>
         T* addElementProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower = 1);
@@ -53,9 +54,23 @@ namespace LAMMPS_NS
 
         void removeElementProperty(char *_id);
 
-        // operation with
-        // per mesh-element properties
+        // global (e.g. mesh) properties
 
+        template<typename T>
+        T* addGlobalProperty(char *_id, char* _comm, char* _ref,char *_restart, int _scalePower = 1);
+
+        template<typename T>
+        T* getGlobalProperty(char *_id);
+
+        template<typename T, typename U>
+        void setGlobalProperty(char *_id, U def);
+
+        void removeGlobalProperty(char *_id);
+
+        // operation with
+        // per-element properties
+
+        inline void copyElement(int from, int to);
         inline void deleteElement(int i);
         inline void deleteForwardElement(int i,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int i,bool scale,bool translate,bool rotate);
@@ -75,32 +90,21 @@ namespace LAMMPS_NS
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
-        inline int meshPropsBufSize(int operation,bool scale,bool translate,bool rotate);
-        inline int pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int globalPropsBufSize(int operation,bool scale,bool translate,bool rotate);
+        inline int pushGlobalPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popGlobalPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
-        // scalar mesh properties
-
-        template<typename T>
-        T* addMeshProperty(char *_id, char* _comm, char* _ref,char *_restart, int _scalePower = 1);
-
-        template<typename T>
-        T* getMeshProperty(char *_id);
-
-        template<typename T, typename U>
-        void setMeshProperty(char *_id, U def);
-
-        void removeMeshProperty(char *_id);
-
+        // mem managenement
         int getCapacity();
         inline void grow(int to);
 
       private:
 
-        class AbstractMesh &owner_;
+        class AbstractMesh *ownerMesh_;
+
         int capacityElement_; 
         class AssociativePointerArray<ContainerBase> elementProperties_;
-        class AssociativePointerArray<ContainerBase> meshProperties_;
+        class AssociativePointerArray<ContainerBase> globalProperties_;
   };
 
   // *************************************
@@ -108,4 +112,4 @@ namespace LAMMPS_NS
   // *************************************
 
 } /* LAMMPS_NS */
-#endif /* CUSTOMVALUETRACKER_H_FOO */
+#endif

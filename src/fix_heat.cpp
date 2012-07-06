@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -102,12 +102,12 @@ void FixHeat::init()
 /* ---------------------------------------------------------------------- */
 
 void FixHeat::end_of_step()
-{ 
+{
   double heat,ke;
   double vsub[3],vcm[3];
   Region *region = NULL;
   if (iregion >= 0) region = domain->regions[iregion];
-  
+
   if (iregion < 0) {
     heat = heat_input*nevery*update->dt*force->ftm2v;
     ke = group->ke(igroup)*force->ftm2v;
@@ -137,16 +137,16 @@ void FixHeat::end_of_step()
   if (iregion < 0) {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
-	v[i][0] = scale*v[i][0] - vsub[0];
-	v[i][1] = scale*v[i][1] - vsub[1];
-	v[i][2] = scale*v[i][2] - vsub[2];
+        v[i][0] = scale*v[i][0] - vsub[0];
+        v[i][1] = scale*v[i][1] - vsub[1];
+        v[i][2] = scale*v[i][2] - vsub[2];
       }
   } else {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2])) {
-	v[i][0] = scale*v[i][0] - vsub[0];
-	v[i][1] = scale*v[i][1] - vsub[1];
-	v[i][2] = scale*v[i][2] - vsub[2];
+        v[i][0] = scale*v[i][0] - vsub[0];
+        v[i][1] = scale*v[i][1] - vsub[1];
+        v[i][2] = scale*v[i][2] - vsub[2];
       }
   }
 }

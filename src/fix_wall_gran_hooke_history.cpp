@@ -181,7 +181,7 @@ void FixWallGranHookeHistory::init_heattransfer()
         int heatflag = 0;
         for(int imesh = 0; imesh < n_meshes(); imesh++)
         {
-            heatflag = heatflag || mesh_list()[imesh]->mesh()->prop().getMeshProperty<ScalarContainer<double> >("Temp") != NULL;
+            heatflag = heatflag || mesh_list()[imesh]->mesh()->prop().getGlobalProperty<ScalarContainer<double> >("Temp") != NULL;
         }
 
         if(!heatflag) return;
@@ -348,10 +348,10 @@ void FixWallGranHookeHistory::compute_force(int ip, double deltan, double rsq,do
   vectorZeroize3D(r_torque);
   if(rollingflag)
   {
-	    wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
-	    if (wrmag > 0.)
-	    {
-	        r_torque[0] = rmu*kn*(radius-r)*wr1/wrmag*cr;
+            wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
+            if (wrmag > 0.)
+            {
+                r_torque[0] = rmu*kn*(radius-r)*wr1/wrmag*cr;
             r_torque[1] = rmu*kn*(radius-r)*wr2/wrmag*cr;
             r_torque[2] = rmu*kn*(radius-r)*wr3/wrmag*cr;
 
@@ -361,7 +361,7 @@ void FixWallGranHookeHistory::compute_force(int ip, double deltan, double rsq,do
             r_torque_n[1] = dy * rtorque_dot_delta * rsqinv;
             r_torque_n[2] = dz * rtorque_dot_delta * rsqinv;
             vectorSubtract3D(r_torque,r_torque_n,r_torque);
-	    }
+            }
   }
 
   if(addflag_)
@@ -385,7 +385,7 @@ void FixWallGranHookeHistory::addHeatFlux(TriMesh *mesh,int ip, double rsq, doub
     double ri = atom->radius[ip];
 
     if(mesh)
-        Temp_wall = (*mesh->prop().getMeshProperty< ScalarContainer<double> >("Temp"))(0);
+        Temp_wall = (*mesh->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))(0);
 
     r = sqrt(rsq);
 

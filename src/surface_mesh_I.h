@@ -38,12 +38,12 @@
 
 template<int NUM_NODES>
 SurfaceMesh<NUM_NODES>::SurfaceMesh(LAMMPS *lmp)
-: TrackingMesh<NUM_NODES>(lmp),
+:   TrackingMesh<NUM_NODES>(lmp),
     isInsertionMesh_(false),
     curvature_(1.-EPSILON_CURVATURE),
 
     // TODO should keep areaMeshSubdomain up-to-date more often for insertion faces
-    areaMesh_     (*this->prop().template addMeshProperty   < ScalarContainer<double> >                   ("areaMesh",     "comm_none","frame_trans_rot_invariant","restart_no",2)),
+    areaMesh_     (*this->prop().template addGlobalProperty   < ScalarContainer<double> >                 ("areaMesh",     "comm_none","frame_trans_rot_invariant","restart_no",2)),
 
     area_         (*this->prop().template addElementProperty< ScalarContainer<double> >                   ("area",         "comm_none","frame_trans_rot_invariant", "restart_no",2)),
     areaAcc_      (*this->prop().template addElementProperty< ScalarContainer<double> >                   ("areaAcc",      "comm_none","frame_trans_rot_invariant", "restart_no",2)),
@@ -58,10 +58,7 @@ SurfaceMesh<NUM_NODES>::SurfaceMesh(LAMMPS *lmp)
     
     neighFaces_   (*this->prop().template addElementProperty< VectorContainer<int,NUM_NODES> >            ("neighFaces",   "comm_none","frame_invariant",            "restart_no"))
 {
-    // create properties
-    // all properties have reference frame "invariant", so are not rotated automatically
-    // properties that have comm "comm_forward_if_moving" are communicated in case of moving mesh
-
+    
     areaMesh_.add(0.);
     areaMesh_.add(0.);
     areaMesh_.add(0.);
@@ -169,6 +166,10 @@ void SurfaceMesh<NUM_NODES>::recalcLocalSurfProperties()
 
 }
 
+/* ----------------------------------------------------------------------
+   recalculate properties of ghost elements
+------------------------------------------------------------------------- */
+
 template<int NUM_NODES>
 void SurfaceMesh<NUM_NODES>::recalcGhostSurfProperties()
 {
@@ -228,6 +229,9 @@ void SurfaceMesh<NUM_NODES>::recalcGhostSurfProperties()
 
         if(fabs((areaCheck-areaMeshGlobal()))/areaMeshGlobal() > TOLERANCE_MC_SURFACE_MESH_I_H)
             this->error->all(FLERR,"Local mesh area calculation failed, try boosting NITER_MC_SURFACE_MESH_I_H");
+
+        // correct so sum of all owned areas is equal to global area
+        areaMesh_(3) *= areaMeshGlobal()/areaCheck;
     }
 
 }
@@ -254,10 +258,11 @@ void SurfaceMesh<NUM_NODES>::recalcVectors()
 template<int NUM_NODES>
 inline int SurfaceMesh<NUM_NODES>::randomOwnedGhostElement()
 {
-        if(!isInsertionMesh_) this->error->one(FLERR,"Illegal call");
-        double r = this->random_->uniform() * (areaMeshOwned()+areaMeshGhost());
-        int nall = this->sizeLocal()+this->sizeGhost()-1;
-        return searchElementByAreaAcc(r,0,nall);
+    
+    if(!isInsertionMesh_) this->error->one(FLERR,"Illegal call for non-insertion mesh");
+    double r = this->random_->uniform() * (areaMeshOwned()+areaMeshGhost());
+    int nall = this->sizeLocal()+this->sizeGhost()-1;
+    return searchElementByAreaAcc(r,0,nall);
 }
 
 template<int NUM_NODES>

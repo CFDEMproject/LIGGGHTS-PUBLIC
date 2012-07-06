@@ -230,4 +230,3 @@ void FixNeighlistMesh::getPointers(int *&cList, int *&nContact)
     cList = contactList.begin();
     nContact = numContacts.begin();
 }
-

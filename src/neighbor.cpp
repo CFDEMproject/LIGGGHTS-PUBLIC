@@ -234,7 +234,7 @@ void Neighbor::init()
   triggersq = 0.25*skin*skin;
   boxcheck = 0;
   if (domain->box_change && (domain->xperiodic || domain->yperiodic ||
-			     (dimension == 3 && domain->zperiodic)))
+                             (dimension == 3 && domain->zperiodic)))
       boxcheck = 1;
 
   n = atom->ntypes;
@@ -265,8 +265,8 @@ void Neighbor::init()
       cutneighmax = MAX(cutneighmax,cut);
 
       if (force->pair && force->pair->ghostneigh) {
-	cut = force->pair->cutghost[i][j] + skin;
-	cutneighghostsq[i][j] = cut*cut;
+        cut = force->pair->cutghost[i][j] + skin;
+        cutneighghostsq[i][j] = cut*cut;
       }
     }
   }
@@ -390,12 +390,12 @@ void Neighbor::init()
 
     for (i = 1; i <= n; i++)
       for (j = 1; j <= n; j++)
-	ex_type[i][j] = 0;
+        ex_type[i][j] = 0;
 
     for (i = 0; i < nex_type; i++) {
       if (ex1_type[i] <= 0 || ex1_type[i] > n ||
-	  ex2_type[i] <= 0 || ex2_type[i] > n)
-	error->all(FLERR,"Invalid atom type in neighbor exclusion list");
+          ex2_type[i] <= 0 || ex2_type[i] > n)
+        error->all(FLERR,"Invalid atom type in neighbor exclusion list");
       ex_type[ex1_type[i]][ex2_type[i]] = 1;
       ex_type[ex2_type[i]][ex1_type[i]] = 1;
     }
@@ -467,14 +467,14 @@ void Neighbor::init()
       lists[i]->dnum = requests[i]->dnum;
       
       if (requests[i]->pair) {
-	Pair *pair = (Pair *) requests[i]->requestor;
-	pair->init_list(requests[i]->id,lists[i]);
+        Pair *pair = (Pair *) requests[i]->requestor;
+        pair->init_list(requests[i]->id,lists[i]);
       } else if (requests[i]->fix) {
-	Fix *fix = (Fix *) requests[i]->requestor;
-	fix->init_list(requests[i]->id,lists[i]);
+        Fix *fix = (Fix *) requests[i]->requestor;
+        fix->init_list(requests[i]->id,lists[i]);
       } else if (requests[i]->compute) {
-	Compute *compute = (Compute *) requests[i]->requestor;
-	compute->init_list(requests[i]->id,lists[i]);
+        Compute *compute = (Compute *) requests[i]->requestor;
+        compute->init_list(requests[i]->id,lists[i]);
       }
     }
 
@@ -503,68 +503,68 @@ void Neighbor::init()
 
     for (i = 0; i < nlist; i++) {
       if (requests[i]->copy)
-	lists[i]->listcopy = lists[requests[i]->otherlist];
+        lists[i]->listcopy = lists[requests[i]->otherlist];
 
       else if (requests[i]->skip) {
-	lists[i]->listskip = lists[requests[i]->otherlist];
-	lists[i]->copy_skip_info(requests[i]->iskip,requests[i]->ijskip);
+        lists[i]->listskip = lists[requests[i]->otherlist];
+        lists[i]->copy_skip_info(requests[i]->iskip,requests[i]->ijskip);
 
       } else if (requests[i]->half_from_full)
-	lists[i]->listfull = lists[i-1];
+        lists[i]->listfull = lists[i-1];
 
       else if (requests[i]->granhistory) {
-	lists[i-1]->listgranhistory = lists[i];
-	for (int ifix = 0; ifix < modify->nfix; ifix++)
-	  if (strcmp(modify->fix[ifix]->style,"contacthistory") == 0)
-	    lists[i-1]->fix_history = (FixContactHistory *) modify->fix[ifix]; 
+        lists[i-1]->listgranhistory = lists[i];
+        for (int ifix = 0; ifix < modify->nfix; ifix++)
+          if (strcmp(modify->fix[ifix]->style,"contacthistory") == 0)
+            lists[i-1]->fix_history = (FixContactHistory *) modify->fix[ifix]; 
 
       } else if (requests[i]->respaouter) {
-	if (requests[i-1]->respainner) {
-	  lists[i]->respamiddle = 0;
-	  lists[i]->listinner = lists[i-1];
-	} else {
-	  lists[i]->respamiddle = 1;
-	  lists[i]->listmiddle = lists[i-1];
-	  lists[i]->listinner = lists[i-2];
-	}
+        if (requests[i-1]->respainner) {
+          lists[i]->respamiddle = 0;
+          lists[i]->listinner = lists[i-1];
+        } else {
+          lists[i]->respamiddle = 1;
+          lists[i]->listmiddle = lists[i-1];
+          lists[i]->listinner = lists[i-2];
+        }
 
       } else if (requests[i]->pair && requests[i]->half) {
-	for (j = 0; j < nlist; j++)
-	  if (requests[j]->full && requests[j]->occasional == 0 &&
-	      requests[j]->skip == 0) break;
-	if (j < nlist) {
-	  requests[i]->half = 0;
-	  requests[i]->half_from_full = 1;
-	  lists[i]->listfull = lists[j];
-	}
+        for (j = 0; j < nlist; j++)
+          if (requests[j]->full && requests[j]->occasional == 0 &&
+              requests[j]->skip == 0) break;
+        if (j < nlist) {
+          requests[i]->half = 0;
+          requests[i]->half_from_full = 1;
+          lists[i]->listfull = lists[j];
+        }
 
       } else if (requests[i]->fix || requests[i]->compute) {
-	for (j = 0; j < nlist; j++) {
-	  if (requests[i]->half && requests[j]->pair &&
-	      requests[j]->skip == 0 && requests[j]->half) break;
-	  if (requests[i]->full && requests[j]->pair &&
-	      requests[j]->skip == 0 && requests[j]->full) break;
-	  if (requests[i]->half && requests[j]->pair &&
-	      requests[j]->skip == 0 && requests[j]->respaouter) break;
-	}
-	if (j < nlist && requests[j]->cudable != requests[i]->cudable)
-	  j = nlist;
-	if (j < nlist) {
-	  requests[i]->copy = 1;
-	  lists[i]->listcopy = lists[j];
-	} else {
-	  for (j = 0; j < nlist; j++) {
-	    if (requests[i]->half && requests[j]->pair &&
-		requests[j]->skip == 0 && requests[j]->full) break;
-	  }
-	  if (j < nlist && requests[j]->cudable != requests[i]->cudable)
-	    j = nlist;
-	  if (j < nlist) {
-	    requests[i]->half = 0;
-	    requests[i]->half_from_full = 1;
-	    lists[i]->listfull = lists[j];
-	  }
-	}
+        for (j = 0; j < nlist; j++) {
+          if (requests[i]->half && requests[j]->pair &&
+              requests[j]->skip == 0 && requests[j]->half) break;
+          if (requests[i]->full && requests[j]->pair &&
+              requests[j]->skip == 0 && requests[j]->full) break;
+          if (requests[i]->half && requests[j]->pair &&
+              requests[j]->skip == 0 && requests[j]->respaouter) break;
+        }
+        if (j < nlist && requests[j]->cudable != requests[i]->cudable)
+          j = nlist;
+        if (j < nlist) {
+          requests[i]->copy = 1;
+          lists[i]->listcopy = lists[j];
+        } else {
+          for (j = 0; j < nlist; j++) {
+            if (requests[i]->half && requests[j]->pair &&
+                requests[j]->skip == 0 && requests[j]->full) break;
+          }
+          if (j < nlist && requests[j]->cudable != requests[i]->cudable)
+            j = nlist;
+          if (j < nlist) {
+            requests[i]->half = 0;
+            requests[i]->half_from_full = 1;
+            lists[i]->listfull = lists[j];
+          }
+        }
       }
     }
 
@@ -613,8 +613,8 @@ void Neighbor::init()
     maxatom = atom->nmax;
     for (i = 0; i < nlist; i++)
       if (lists[i]->growflag) {
-	lists[i]->grow(maxatom);
-	lists[i]->add_pages();
+        lists[i]->grow(maxatom);
+        lists[i]->add_pages();
       }
 
     // setup 3 vectors of pairwise neighbor lists
@@ -635,9 +635,9 @@ void Neighbor::init()
     for (i = 0; i < nlist; i++) {
       if (lists[i]->buildflag) blist[nblist++] = i;
       if (lists[i]->growflag && requests[i]->occasional == 0)
-	glist[nglist++] = i;
+        glist[nglist++] = i;
       if (lists[i]->stencilflag && requests[i]->occasional == 0)
-	slist[nslist++] = i;
+        slist[nslist++] = i;
     }
 
 #ifdef NEIGH_LIST_DEBUG
@@ -655,21 +655,21 @@ void Neighbor::init()
     while (!done) {
       done = 1;
       for (i = 0; i < nblist; i++) {
-	NeighList *ptr = NULL;
-	if (lists[blist[i]]->listfull) ptr = lists[blist[i]]->listfull;
-	if (lists[blist[i]]->listcopy) ptr = lists[blist[i]]->listcopy;
-	if (lists[blist[i]]->listskip) ptr = lists[blist[i]]->listskip;
-	if (ptr == NULL) continue;
-	for (m = 0; m < nlist; m++)
-	  if (ptr == lists[m]) break;
-	for (j = 0; j < nblist; j++)
-	  if (m == blist[j]) break;
-	if (j < i) continue;
-	int tmp = blist[i];
-	blist[i] = blist[j];
-	blist[j] = tmp;
-	done = 0;
-	break;
+        NeighList *ptr = NULL;
+        if (lists[blist[i]]->listfull) ptr = lists[blist[i]]->listfull;
+        if (lists[blist[i]]->listcopy) ptr = lists[blist[i]]->listcopy;
+        if (lists[blist[i]]->listskip) ptr = lists[blist[i]]->listskip;
+        if (ptr == NULL) continue;
+        for (m = 0; m < nlist; m++)
+          if (ptr == lists[m]) break;
+        for (j = 0; j < nblist; j++)
+          if (m == blist[j]) break;
+        if (j < i) continue;
+        int tmp = blist[i];
+        blist[i] = blist[j];
+        blist[j] = tmp;
+        done = 0;
+        break;
       }
     }
 
@@ -713,14 +713,14 @@ void Neighbor::init()
   if (atom->molecular && atom->ndihedrals && maxdihedral == 0) {
     if (nprocs == 1) maxdihedral = atom->ndihedrals;
     else maxdihedral = static_cast<int>
-	   (LB_FACTOR * atom->ndihedrals / nprocs);
+           (LB_FACTOR * atom->ndihedrals / nprocs);
     memory->create(dihedrallist,maxdihedral,5,"neigh:dihedrallist");
   }
 
   if (atom->molecular && atom->nimpropers && maximproper == 0) {
     if (nprocs == 1) maximproper = atom->nimpropers;
     else maximproper = static_cast<int>
-	   (LB_FACTOR * atom->nimpropers / nprocs);
+           (LB_FACTOR * atom->nimpropers / nprocs);
     memory->create(improperlist,maximproper,5,"neigh:improperlist");
   }
 
@@ -740,7 +740,7 @@ void Neighbor::init()
     for (i = 0; i < atom->nlocal; i++) {
       if (bond_off) break;
       for (m = 0; m < atom->num_bond[i]; m++)
-	if (atom->bond_type[i][m] <= 0) bond_off = 1;
+        if (atom->bond_type[i][m] <= 0) bond_off = 1;
     }
   }
 
@@ -748,7 +748,7 @@ void Neighbor::init()
     for (i = 0; i < atom->nlocal; i++) {
       if (angle_off) break;
       for (m = 0; m < atom->num_angle[i]; m++)
-	if (atom->angle_type[i][m] <= 0) angle_off = 1;
+        if (atom->angle_type[i][m] <= 0) angle_off = 1;
     }
   }
 
@@ -757,7 +757,7 @@ void Neighbor::init()
     for (i = 0; i < atom->nlocal; i++) {
       if (dihedral_off) break;
       for (m = 0; m < atom->num_dihedral[i]; m++)
-	if (atom->dihedral_type[i][m] <= 0) dihedral_off = 1;
+        if (atom->dihedral_type[i][m] <= 0) dihedral_off = 1;
     }
   }
 
@@ -766,7 +766,7 @@ void Neighbor::init()
     for (i = 0; i < atom->nlocal; i++) {
       if (improper_off) break;
       for (m = 0; m < atom->num_improper[i]; m++)
-	if (atom->improper_type[i][m] <= 0) improper_off = 1;
+        if (atom->improper_type[i][m] <= 0) improper_off = 1;
     }
   }
 
@@ -798,7 +798,7 @@ int Neighbor::request(void *requestor)
     maxrequest += RQDELTA;
     requests = (NeighRequest **)
       memory->srealloc(requests,maxrequest*sizeof(NeighRequest *),
-		       "neighbor:requests");
+                       "neighbor:requests");
   }
 
   requests[nrequest] = new NeighRequest(lmp);
@@ -813,7 +813,7 @@ int Neighbor::request(void *requestor)
    copy -> copy_from function
    skip -> granular function if gran with granhistory,
            respa function if respaouter,
-	   skip_from function for everything else
+           skip_from function for everything else
    half_from_full, half, full, gran, respaouter ->
      choose by newton and rq->newton and tri settings
      style NSQ options = newton off, newton on
@@ -833,7 +833,7 @@ void Neighbor::choose_build(int index, NeighRequest *rq)
 
     else if (rq->skip) {
       if (rq->gran && lists[index]->listgranhistory)
-	pb = &Neighbor::skip_from_granular;
+        pb = &Neighbor::skip_from_granular;
       else if (rq->respaouter) pb = &Neighbor::skip_from_respa;
       else pb = &Neighbor::skip_from;
 
@@ -843,74 +843,74 @@ void Neighbor::choose_build(int index, NeighRequest *rq)
 
     } else if (rq->half) {
       if (style == NSQ) {
-	if (rq->newton == 0) {
-	  if (newton_pair == 0) pb = &Neighbor::half_nsq_no_newton;
-	  else if (newton_pair == 1) pb = &Neighbor::half_nsq_newton;
-	} else if (rq->newton == 1) {
-	  pb = &Neighbor::half_nsq_newton;
-	} else if (rq->newton == 2) {
-	  pb = &Neighbor::half_nsq_no_newton;
-	}
+        if (rq->newton == 0) {
+          if (newton_pair == 0) pb = &Neighbor::half_nsq_no_newton;
+          else if (newton_pair == 1) pb = &Neighbor::half_nsq_newton;
+        } else if (rq->newton == 1) {
+          pb = &Neighbor::half_nsq_newton;
+        } else if (rq->newton == 2) {
+          pb = &Neighbor::half_nsq_no_newton;
+        }
       } else if (style == BIN) {
-	if (rq->newton == 0) {
-	  if (newton_pair == 0) pb = &Neighbor::half_bin_no_newton;
-	  else if (triclinic == 0) pb = &Neighbor::half_bin_newton;
-	  else if (triclinic == 1) pb = &Neighbor::half_bin_newton_tri;
-	} else if (rq->newton == 1) {
-	  if (triclinic == 0) pb = &Neighbor::half_bin_newton;
-	  else if (triclinic == 1) pb = &Neighbor::half_bin_newton_tri;
-	} else if (rq->newton == 2) pb = &Neighbor::half_bin_no_newton;
+        if (rq->newton == 0) {
+          if (newton_pair == 0) pb = &Neighbor::half_bin_no_newton;
+          else if (triclinic == 0) pb = &Neighbor::half_bin_newton;
+          else if (triclinic == 1) pb = &Neighbor::half_bin_newton_tri;
+        } else if (rq->newton == 1) {
+          if (triclinic == 0) pb = &Neighbor::half_bin_newton;
+          else if (triclinic == 1) pb = &Neighbor::half_bin_newton_tri;
+        } else if (rq->newton == 2) pb = &Neighbor::half_bin_no_newton;
       } else if (style == MULTI) {
-	if (rq->newton == 0) {
-	  if (newton_pair == 0) pb = &Neighbor::half_multi_no_newton;
-	  else if (triclinic == 0) pb = &Neighbor::half_multi_newton;
-	  else if (triclinic == 1) pb = &Neighbor::half_multi_newton_tri;
-	} else if (rq->newton == 1) {
-	  if (triclinic == 0) pb = &Neighbor::half_multi_newton;
-	  else if (triclinic == 1) pb = &Neighbor::half_multi_newton_tri;
-	} else if (rq->newton == 2) pb = &Neighbor::half_multi_no_newton;
+        if (rq->newton == 0) {
+          if (newton_pair == 0) pb = &Neighbor::half_multi_no_newton;
+          else if (triclinic == 0) pb = &Neighbor::half_multi_newton;
+          else if (triclinic == 1) pb = &Neighbor::half_multi_newton_tri;
+        } else if (rq->newton == 1) {
+          if (triclinic == 0) pb = &Neighbor::half_multi_newton;
+          else if (triclinic == 1) pb = &Neighbor::half_multi_newton_tri;
+        } else if (rq->newton == 2) pb = &Neighbor::half_multi_no_newton;
       }
 
     } else if (rq->full) {
       if (style == NSQ) {
-	if (rq->ghost == 0) pb = &Neighbor::full_nsq;
-	else if (includegroup)
-	  error->all(FLERR,
-		     "Neighbor include group not allowed with ghost neighbors");
-	else if (rq->ghost == 1) pb = &Neighbor::full_nsq_ghost;
+        if (rq->ghost == 0) pb = &Neighbor::full_nsq;
+        else if (includegroup)
+          error->all(FLERR,
+                     "Neighbor include group not allowed with ghost neighbors");
+        else if (rq->ghost == 1) pb = &Neighbor::full_nsq_ghost;
       } else if (style == BIN) {
-	if (rq->ghost == 0) pb = &Neighbor::full_bin;
-	else if (includegroup)
-	  error->all(FLERR,
-		     "Neighbor include group not allowed with ghost neighbors");
-	else if (rq->ghost == 1) pb = &Neighbor::full_bin_ghost;
+        if (rq->ghost == 0) pb = &Neighbor::full_bin;
+        else if (includegroup)
+          error->all(FLERR,
+                     "Neighbor include group not allowed with ghost neighbors");
+        else if (rq->ghost == 1) pb = &Neighbor::full_bin_ghost;
       } else if (style == MULTI) {
-	if (rq->ghost == 0) pb = &Neighbor::full_multi;
-	else error->all(FLERR,
-			"Neighbor multi not yet enabled for ghost neighbors");
+        if (rq->ghost == 0) pb = &Neighbor::full_multi;
+        else error->all(FLERR,
+                        "Neighbor multi not yet enabled for ghost neighbors");
       }
 
     } else if (rq->gran) {
       if (style == NSQ) {
-	if (newton_pair == 0) pb = &Neighbor::granular_nsq_no_newton;
-	else if (newton_pair == 1) pb = &Neighbor::granular_nsq_newton;
+        if (newton_pair == 0) pb = &Neighbor::granular_nsq_no_newton;
+        else if (newton_pair == 1) pb = &Neighbor::granular_nsq_newton;
       } else if (style == BIN) {
-	if (newton_pair == 0) pb = &Neighbor::granular_bin_no_newton;
-	else if (triclinic == 0) pb = &Neighbor::granular_bin_newton;
-	else if (triclinic == 1) pb = &Neighbor::granular_bin_newton_tri;
+        if (newton_pair == 0) pb = &Neighbor::granular_bin_no_newton;
+        else if (triclinic == 0) pb = &Neighbor::granular_bin_newton;
+        else if (triclinic == 1) pb = &Neighbor::granular_bin_newton_tri;
       } else if (style == MULTI)
-	error->all(FLERR,"Neighbor multi not yet enabled for granular");
+        error->all(FLERR,"Neighbor multi not yet enabled for granular");
 
     } else if (rq->respaouter) {
       if (style == NSQ) {
-	if (newton_pair == 0) pb = &Neighbor::respa_nsq_no_newton;
-	else if (newton_pair == 1) pb = &Neighbor::respa_nsq_newton;
+        if (newton_pair == 0) pb = &Neighbor::respa_nsq_no_newton;
+        else if (newton_pair == 1) pb = &Neighbor::respa_nsq_newton;
       } else if (style == BIN) {
-	if (newton_pair == 0) pb = &Neighbor::respa_bin_no_newton;
-	else if (triclinic == 0) pb = &Neighbor::respa_bin_newton;
-	else if (triclinic == 1) pb = &Neighbor::respa_bin_newton_tri;
+        if (newton_pair == 0) pb = &Neighbor::respa_bin_no_newton;
+        else if (triclinic == 0) pb = &Neighbor::respa_bin_newton;
+        else if (triclinic == 1) pb = &Neighbor::respa_bin_newton_tri;
       } else if (style == MULTI)
-	error->all(FLERR,"Neighbor multi not yet enabled for rRESPA");
+        error->all(FLERR,"Neighbor multi not yet enabled for rRESPA");
     }
   } else {
 
@@ -918,7 +918,7 @@ void Neighbor::choose_build(int index, NeighRequest *rq)
 
     else if (rq->skip) {
       if (rq->gran && lists[index]->listgranhistory)
-	pb = &Neighbor::skip_from_granular;
+        pb = &Neighbor::skip_from_granular;
       else if (rq->respaouter) pb = &Neighbor::skip_from_respa;
       else pb = &Neighbor::skip_from;
 
@@ -928,74 +928,74 @@ void Neighbor::choose_build(int index, NeighRequest *rq)
 
     } else if (rq->half) {
       if (style == NSQ) {
-	if (rq->newton == 0) {
-	  if (newton_pair == 0) pb = &Neighbor::half_nsq_no_newton_omp;
-	  else if (newton_pair == 1) pb = &Neighbor::half_nsq_newton_omp;
-	} else if (rq->newton == 1) {
-	  pb = &Neighbor::half_nsq_newton_omp;
-	} else if (rq->newton == 2) {
-	  pb = &Neighbor::half_nsq_no_newton_omp;
-	}
+        if (rq->newton == 0) {
+          if (newton_pair == 0) pb = &Neighbor::half_nsq_no_newton_omp;
+          else if (newton_pair == 1) pb = &Neighbor::half_nsq_newton_omp;
+        } else if (rq->newton == 1) {
+          pb = &Neighbor::half_nsq_newton_omp;
+        } else if (rq->newton == 2) {
+          pb = &Neighbor::half_nsq_no_newton_omp;
+        }
       } else if (style == BIN) {
-	if (rq->newton == 0) {
-	  if (newton_pair == 0) pb = &Neighbor::half_bin_no_newton_omp;
-	  else if (triclinic == 0) pb = &Neighbor::half_bin_newton_omp;
-	  else if (triclinic == 1) pb = &Neighbor::half_bin_newton_tri_omp;
-	} else if (rq->newton == 1) {
-	  if (triclinic == 0) pb = &Neighbor::half_bin_newton_omp;
-	  else if (triclinic == 1) pb = &Neighbor::half_bin_newton_tri_omp;
-	} else if (rq->newton == 2) pb = &Neighbor::half_bin_no_newton_omp;
+        if (rq->newton == 0) {
+          if (newton_pair == 0) pb = &Neighbor::half_bin_no_newton_omp;
+          else if (triclinic == 0) pb = &Neighbor::half_bin_newton_omp;
+          else if (triclinic == 1) pb = &Neighbor::half_bin_newton_tri_omp;
+        } else if (rq->newton == 1) {
+          if (triclinic == 0) pb = &Neighbor::half_bin_newton_omp;
+          else if (triclinic == 1) pb = &Neighbor::half_bin_newton_tri_omp;
+        } else if (rq->newton == 2) pb = &Neighbor::half_bin_no_newton_omp;
       } else if (style == MULTI) {
-	if (rq->newton == 0) {
-	  if (newton_pair == 0) pb = &Neighbor::half_multi_no_newton_omp;
-	  else if (triclinic == 0) pb = &Neighbor::half_multi_newton_omp;
-	  else if (triclinic == 1) pb = &Neighbor::half_multi_newton_tri_omp;
-	} else if (rq->newton == 1) {
-	  if (triclinic == 0) pb = &Neighbor::half_multi_newton_omp;
-	  else if (triclinic == 1) pb = &Neighbor::half_multi_newton_tri_omp;
-	} else if (rq->newton == 2) pb = &Neighbor::half_multi_no_newton_omp;
+        if (rq->newton == 0) {
+          if (newton_pair == 0) pb = &Neighbor::half_multi_no_newton_omp;
+          else if (triclinic == 0) pb = &Neighbor::half_multi_newton_omp;
+          else if (triclinic == 1) pb = &Neighbor::half_multi_newton_tri_omp;
+        } else if (rq->newton == 1) {
+          if (triclinic == 0) pb = &Neighbor::half_multi_newton_omp;
+          else if (triclinic == 1) pb = &Neighbor::half_multi_newton_tri_omp;
+        } else if (rq->newton == 2) pb = &Neighbor::half_multi_no_newton_omp;
       }
 
     } else if (rq->full) {
       if (style == NSQ) {
-	if (rq->ghost == 0) pb = &Neighbor::full_nsq_omp;
-	else if (includegroup)
-	  error->all(FLERR,
-		     "Neighbor include group not allowed with ghost neighbors");
-	else if (rq->ghost == 1) pb = &Neighbor::full_nsq_ghost_omp;
+        if (rq->ghost == 0) pb = &Neighbor::full_nsq_omp;
+        else if (includegroup)
+          error->all(FLERR,
+                     "Neighbor include group not allowed with ghost neighbors");
+        else if (rq->ghost == 1) pb = &Neighbor::full_nsq_ghost_omp;
       } else if (style == BIN) {
-	if (rq->ghost == 0) pb = &Neighbor::full_bin_omp;
-	else if (includegroup)
-	  error->all(FLERR,
-		     "Neighbor include group not allowed with ghost neighbors");
-	else if (rq->ghost == 1) pb = &Neighbor::full_bin_ghost_omp;
+        if (rq->ghost == 0) pb = &Neighbor::full_bin_omp;
+        else if (includegroup)
+          error->all(FLERR,
+                     "Neighbor include group not allowed with ghost neighbors");
+        else if (rq->ghost == 1) pb = &Neighbor::full_bin_ghost_omp;
       } else if (style == MULTI) {
-	if (rq->ghost == 0) pb = &Neighbor::full_multi_omp;
-	else error->all(FLERR,
-			"Neighbor multi not yet enabled for ghost neighbors");
+        if (rq->ghost == 0) pb = &Neighbor::full_multi_omp;
+        else error->all(FLERR,
+                        "Neighbor multi not yet enabled for ghost neighbors");
       }
 
     } else if (rq->gran) {
       if (style == NSQ) {
-	if (newton_pair == 0) pb = &Neighbor::granular_nsq_no_newton_omp;
-	else if (newton_pair == 1) pb = &Neighbor::granular_nsq_newton_omp;
+        if (newton_pair == 0) pb = &Neighbor::granular_nsq_no_newton_omp;
+        else if (newton_pair == 1) pb = &Neighbor::granular_nsq_newton_omp;
       } else if (style == BIN) {
-	if (newton_pair == 0) pb = &Neighbor::granular_bin_no_newton_omp;
-	else if (triclinic == 0) pb = &Neighbor::granular_bin_newton_omp;
-	else if (triclinic == 1) pb = &Neighbor::granular_bin_newton_tri_omp;
+        if (newton_pair == 0) pb = &Neighbor::granular_bin_no_newton_omp;
+        else if (triclinic == 0) pb = &Neighbor::granular_bin_newton_omp;
+        else if (triclinic == 1) pb = &Neighbor::granular_bin_newton_tri_omp;
       } else if (style == MULTI)
-	error->all(FLERR,"Neighbor multi not yet enabled for granular");
+        error->all(FLERR,"Neighbor multi not yet enabled for granular");
 
     } else if (rq->respaouter) {
       if (style == NSQ) {
-	if (newton_pair == 0) pb = &Neighbor::respa_nsq_no_newton_omp;
-	else if (newton_pair == 1) pb = &Neighbor::respa_nsq_newton_omp;
+        if (newton_pair == 0) pb = &Neighbor::respa_nsq_no_newton_omp;
+        else if (newton_pair == 1) pb = &Neighbor::respa_nsq_newton_omp;
       } else if (style == BIN) {
-	if (newton_pair == 0) pb = &Neighbor::respa_bin_no_newton_omp;
-	else if (triclinic == 0) pb = &Neighbor::respa_bin_newton_omp;
-	else if (triclinic == 1) pb = &Neighbor::respa_bin_newton_tri_omp;
+        if (newton_pair == 0) pb = &Neighbor::respa_bin_no_newton_omp;
+        else if (triclinic == 0) pb = &Neighbor::respa_bin_newton_omp;
+        else if (triclinic == 1) pb = &Neighbor::respa_bin_newton_tri_omp;
       } else if (style == MULTI)
-	error->all(FLERR,"Neighbor multi not yet enabled for rRESPA");
+        error->all(FLERR,"Neighbor multi not yet enabled for rRESPA");
     }
   }
 
@@ -1003,7 +1003,7 @@ void Neighbor::choose_build(int index, NeighRequest *rq)
 
   if (rq->ghost && !rq->full)
     error->all(FLERR,
-	       "Neighbors of ghost atoms only allowed for full neighbor lists");
+               "Neighbors of ghost atoms only allowed for full neighbor lists");
 
   pair_build[index] = pb;
 }
@@ -1026,88 +1026,88 @@ void Neighbor::choose_stencil(int index, NeighRequest *rq)
   else if (rq->half || rq->gran || rq->respaouter) {
     if (style == BIN) {
       if (rq->newton == 0) {
-	if (newton_pair == 0) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_bin_2d_no_newton;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_bin_3d_no_newton;
-	} else if (triclinic == 0) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_bin_2d_newton;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_bin_3d_newton;
-	} else if (triclinic == 1) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_bin_2d_newton_tri;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_bin_3d_newton_tri;
-	}
+        if (newton_pair == 0) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_bin_2d_no_newton;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_bin_3d_no_newton;
+        } else if (triclinic == 0) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_bin_2d_newton;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_bin_3d_newton;
+        } else if (triclinic == 1) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_bin_2d_newton_tri;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_bin_3d_newton_tri;
+        }
       } else if (rq->newton == 1) {
-	if (triclinic == 0) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_bin_2d_newton;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_bin_3d_newton;
-	} else if (triclinic == 1) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_bin_2d_newton_tri;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_bin_3d_newton_tri;
-	}
+        if (triclinic == 0) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_bin_2d_newton;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_bin_3d_newton;
+        } else if (triclinic == 1) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_bin_2d_newton_tri;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_bin_3d_newton_tri;
+        }
       } else if (rq->newton == 2) {
-	if (dimension == 2)
-	  sc = &Neighbor::stencil_half_bin_2d_no_newton;
-	else if (dimension == 3)
-	  sc = &Neighbor::stencil_half_bin_3d_no_newton;
+        if (dimension == 2)
+          sc = &Neighbor::stencil_half_bin_2d_no_newton;
+        else if (dimension == 3)
+          sc = &Neighbor::stencil_half_bin_3d_no_newton;
       }
 
     } else if (style == MULTI) {
       if (rq->newton == 0) {
-	if (newton_pair == 0) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_multi_2d_no_newton;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_multi_3d_no_newton;
-	} else if (triclinic == 0) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_multi_2d_newton;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_multi_3d_newton;
-	} else if (triclinic == 1) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_multi_2d_newton_tri;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_multi_3d_newton_tri;
-	}
+        if (newton_pair == 0) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_multi_2d_no_newton;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_multi_3d_no_newton;
+        } else if (triclinic == 0) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_multi_2d_newton;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_multi_3d_newton;
+        } else if (triclinic == 1) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_multi_2d_newton_tri;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_multi_3d_newton_tri;
+        }
       } else if (rq->newton == 1) {
-	if (triclinic == 0) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_multi_2d_newton;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_multi_3d_newton;
-	} else if (triclinic == 1) {
-	  if (dimension == 2)
-	    sc = &Neighbor::stencil_half_multi_2d_newton_tri;
-	  else if (dimension == 3)
-	    sc = &Neighbor::stencil_half_multi_3d_newton_tri;
-	}
+        if (triclinic == 0) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_multi_2d_newton;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_multi_3d_newton;
+        } else if (triclinic == 1) {
+          if (dimension == 2)
+            sc = &Neighbor::stencil_half_multi_2d_newton_tri;
+          else if (dimension == 3)
+            sc = &Neighbor::stencil_half_multi_3d_newton_tri;
+        }
       } else if (rq->newton == 2) {
-	if (dimension == 2)
-	  sc = &Neighbor::stencil_half_multi_2d_no_newton;
-	else if (dimension == 3)
-	  sc = &Neighbor::stencil_half_multi_3d_no_newton;
+        if (dimension == 2)
+          sc = &Neighbor::stencil_half_multi_2d_no_newton;
+        else if (dimension == 3)
+          sc = &Neighbor::stencil_half_multi_3d_no_newton;
       }
     }
 
   } else if (rq->full) {
     if (style == BIN) {
       if (dimension == 2) {
-	if (rq->ghost) sc = &Neighbor::stencil_full_ghost_bin_2d;
-	else sc = &Neighbor::stencil_full_bin_2d;
+        if (rq->ghost) sc = &Neighbor::stencil_full_ghost_bin_2d;
+        else sc = &Neighbor::stencil_full_bin_2d;
       }
       else if (dimension == 3) {
-	if (rq->ghost) sc = &Neighbor::stencil_full_ghost_bin_3d;
-	else sc = &Neighbor::stencil_full_bin_3d;
+        if (rq->ghost) sc = &Neighbor::stencil_full_ghost_bin_3d;
+        else sc = &Neighbor::stencil_full_bin_3d;
       }
     } else if (style == MULTI) {
       if (dimension == 2) sc = &Neighbor::stencil_full_multi_2d;
@@ -1186,12 +1186,12 @@ int Neighbor::check_distance()
       domain->box_corners();
       delta1 = delta2 = 0.0;
       for (int i = 0; i < 8; i++) {
-	delx = corners[i][0] - corners_hold[i][0];
-	dely = corners[i][1] - corners_hold[i][1];
-	delz = corners[i][2] - corners_hold[i][2];
-	delta = sqrt(delx*delx + dely*dely + delz*delz);
-	if (delta > delta1) delta1 = delta;
-	else if (delta > delta2) delta2 = delta;
+        delx = corners[i][0] - corners_hold[i][0];
+        dely = corners[i][1] - corners_hold[i][1];
+        delz = corners[i][2] - corners_hold[i][2];
+        delta = sqrt(delx*delx + dely*dely + delz*delz);
+        if (delta > delta1) delta1 = delta;
+        else if (delta > delta2) delta2 = delta;
       }
       delta = 0.5 * (skin - (delta1+delta2));
       deltasq = delta*delta;
@@ -1283,20 +1283,20 @@ void Neighbor::build()
     }
     if (boxcheck) {
       if (triclinic == 0) {
-	boxlo_hold[0] = bboxlo[0];
-	boxlo_hold[1] = bboxlo[1];
-	boxlo_hold[2] = bboxlo[2];
-	boxhi_hold[0] = bboxhi[0];
-	boxhi_hold[1] = bboxhi[1];
-	boxhi_hold[2] = bboxhi[2];
+        boxlo_hold[0] = bboxlo[0];
+        boxlo_hold[1] = bboxlo[1];
+        boxlo_hold[2] = bboxlo[2];
+        boxhi_hold[0] = bboxhi[0];
+        boxhi_hold[1] = bboxhi[1];
+        boxhi_hold[2] = bboxhi[2];
       } else {
-	domain->box_corners();
-	corners = domain->corners;
-	for (i = 0; i < 8; i++) {
-	  corners_hold[i][0] = corners[i][0];
-	  corners_hold[i][1] = corners[i][1];
-	  corners_hold[i][2] = corners[i][2];
-	}
+        domain->box_corners();
+        corners = domain->corners;
+        for (i = 0; i < 8; i++) {
+          corners_hold[i][0] = corners[i][0];
+          corners_hold[i][1] = corners[i][1];
+          corners_hold[i][2] = corners[i][2];
+        }
       }
     }
   }
@@ -1380,7 +1380,7 @@ void Neighbor::build_one(int i)
   if (dist_check && update->whichflag) flag = check_distance();
   if (flag && me == 0)
     error->warning(FLERR,"Building an occasional neighobr list when "
-		   "atoms may have moved too far");
+                   "atoms may have moved too far");
 
   (this->*pair_build[i])(lists[i]);
 }
@@ -1658,58 +1658,58 @@ void Neighbor::modify_params(int narg, char **arg)
       if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
       includegroup = group->find(arg[iarg+1]);
       if (includegroup < 0)
-	error->all(FLERR,"Invalid group ID in neigh_modify command");
+        error->all(FLERR,"Invalid group ID in neigh_modify command");
       if (includegroup && (atom->firstgroupname == NULL ||
-			    strcmp(arg[iarg+1],atom->firstgroupname) != 0))
-	error->all(FLERR,"Neigh_modify include group != atom_modify first group");
+                            strcmp(arg[iarg+1],atom->firstgroupname) != 0))
+        error->all(FLERR,"Neigh_modify include group != atom_modify first group");
       iarg += 2;
     } else if (strcmp(arg[iarg],"exclude") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
 
       if (strcmp(arg[iarg+1],"type") == 0) {
-	if (iarg+4 > narg) error->all(FLERR,"Illegal neigh_modify command");
-	if (nex_type == maxex_type) {
-	  maxex_type += EXDELTA;
-	  memory->grow(ex1_type,maxex_type,"neigh:ex1_type");
-	  memory->grow(ex2_type,maxex_type,"neigh:ex2_type");
-	}
-	ex1_type[nex_type] = atoi(arg[iarg+2]);
-	ex2_type[nex_type] = atoi(arg[iarg+3]);
-	nex_type++;
-	iarg += 4;
+        if (iarg+4 > narg) error->all(FLERR,"Illegal neigh_modify command");
+        if (nex_type == maxex_type) {
+          maxex_type += EXDELTA;
+          memory->grow(ex1_type,maxex_type,"neigh:ex1_type");
+          memory->grow(ex2_type,maxex_type,"neigh:ex2_type");
+        }
+        ex1_type[nex_type] = atoi(arg[iarg+2]);
+        ex2_type[nex_type] = atoi(arg[iarg+3]);
+        nex_type++;
+        iarg += 4;
 
       } else if (strcmp(arg[iarg+1],"group") == 0) {
-	if (iarg+4 > narg) error->all(FLERR,"Illegal neigh_modify command");
-	if (nex_group == maxex_group) {
-	  maxex_group += EXDELTA;
-	  memory->grow(ex1_group,maxex_group,"neigh:ex1_group");
-	  memory->grow(ex2_group,maxex_group,"neigh:ex2_group");
-	}
-	ex1_group[nex_group] = group->find(arg[iarg+2]);
-	ex2_group[nex_group] = group->find(arg[iarg+3]);
-	if (ex1_group[nex_group] == -1 || ex2_group[nex_group] == -1)
-	  error->all(FLERR,"Invalid group ID in neigh_modify command");
-	nex_group++;
-	iarg += 4;
+        if (iarg+4 > narg) error->all(FLERR,"Illegal neigh_modify command");
+        if (nex_group == maxex_group) {
+          maxex_group += EXDELTA;
+          memory->grow(ex1_group,maxex_group,"neigh:ex1_group");
+          memory->grow(ex2_group,maxex_group,"neigh:ex2_group");
+        }
+        ex1_group[nex_group] = group->find(arg[iarg+2]);
+        ex2_group[nex_group] = group->find(arg[iarg+3]);
+        if (ex1_group[nex_group] == -1 || ex2_group[nex_group] == -1)
+          error->all(FLERR,"Invalid group ID in neigh_modify command");
+        nex_group++;
+        iarg += 4;
 
       } else if (strcmp(arg[iarg+1],"molecule") == 0) {
-	if (iarg+3 > narg) error->all(FLERR,"Illegal neigh_modify command");
-	if (atom->molecule_flag == 0)
-	  error->all(FLERR,"Neigh_modify exclude molecule "
-		     "requires atom attribute molecule");
-	if (nex_mol == maxex_mol) {
-	  maxex_mol += EXDELTA;
-	  memory->grow(ex_mol_group,maxex_mol,"neigh:ex_mol_group");
-	}
-	ex_mol_group[nex_mol] = group->find(arg[iarg+2]);
-	if (ex_mol_group[nex_mol] == -1)
-	  error->all(FLERR,"Invalid group ID in neigh_modify command");
-	nex_mol++;
-	iarg += 3;
+        if (iarg+3 > narg) error->all(FLERR,"Illegal neigh_modify command");
+        if (atom->molecule_flag == 0)
+          error->all(FLERR,"Neigh_modify exclude molecule "
+                     "requires atom attribute molecule");
+        if (nex_mol == maxex_mol) {
+          maxex_mol += EXDELTA;
+          memory->grow(ex_mol_group,maxex_mol,"neigh:ex_mol_group");
+        }
+        ex_mol_group[nex_mol] = group->find(arg[iarg+2]);
+        if (ex_mol_group[nex_mol] == -1)
+          error->all(FLERR,"Invalid group ID in neigh_modify command");
+        nex_mol++;
+        iarg += 3;
 
       } else if (strcmp(arg[iarg+1],"none") == 0) {
-	nex_type = nex_group = nex_mol = 0;
-	iarg += 2;
+        nex_type = nex_group = nex_mol = 0;
+        iarg += 2;
       } else error->all(FLERR,"Illegal neigh_modify command");
 
     } else error->all(FLERR,"Illegal neigh_modify command");
@@ -1738,9 +1738,9 @@ void Neighbor::bin_atoms()
     int bitmask = group->bitmask[includegroup];
     for (i = nall-1; i >= nlocal; i--) {
       if (mask[i] & bitmask) {
-	ibin = coord2bin(x[i]);
-	bins[i] = binhead[ibin];
-	binhead[ibin] = i;
+        ibin = coord2bin(x[i]);
+        bins[i] = binhead[ibin];
+        binhead[ibin] = i;
       }
     }
     for (i = atom->nfirst-1; i >= 0; i--) {
@@ -1844,7 +1844,7 @@ int Neighbor::coord2bin(double *x, int &ix, int &iy, int &iz)
 ------------------------------------------------------------------------- */
 
 int Neighbor::exclusion(int i, int j, int itype, int jtype,
-			int *mask, int *molecule) const {
+                        int *mask, int *molecule) const {
   int m;
 
   if (nex_type && ex_type[itype][jtype]) return 1;
@@ -1859,7 +1859,7 @@ int Neighbor::exclusion(int i, int j, int itype, int jtype,
   if (nex_mol) {
     for (m = 0; m < nex_mol; m++)
       if (mask[i] & ex_mol_bit[m] && mask[j] & ex_mol_bit[m] &&
-	  molecule[i] == molecule[j]) return 1;
+          molecule[i] == molecule[j]) return 1;
   }
 
   return 0;
@@ -1911,7 +1911,7 @@ int Neighbor::n_neighs()
 
     for (m = 0; m < old_nrequest; m++)
       if ((old_requests[m]->half || old_requests[m]->gran || old_requests[m]->respaouter || old_requests[m]->half_from_full) &&
-	      old_requests[m]->skip == 0) break;
+              old_requests[m]->skip == 0) break;
 
     int nneigh = 0;
 

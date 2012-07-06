@@ -52,4 +52,3 @@ class FixSPHDensitySum : public FixSPH {
 
 #endif
 #endif
-

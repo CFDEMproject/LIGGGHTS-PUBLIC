@@ -36,6 +36,7 @@ inline void __debug__(LAMMPS* lmp)
 
     for(int i = 0; i < lmp->modify->nfix; i++)
     {
+        /*
         if(strcmp(lmp->modify->fix[i]->style,"rigid/multisphere") == 0)
         {
             FixRigidMultisphere *fr = static_cast<FixRigidMultisphere*>(lmp->modify->fix[i]);
@@ -44,7 +45,7 @@ inline void __debug__(LAMMPS* lmp)
 
             printVec3D(lmp->screen,"omega1",omega[1]);
 
-        }
+        }*/
 
     }
 }

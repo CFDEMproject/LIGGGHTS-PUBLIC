@@ -32,8 +32,9 @@
 #include "variable.h"
 #include "error.h"
 #include "random_park.h"
-#include "vector_liggghts.h"
-#include "mpi_liggghts.h"
+#include "vector_liggghts.h" 
+#include "mpi_liggghts.h"  
+#include "math_extra_liggghts.h" 
 #include "comm.h"
 
 #define SMALL 1e-8
@@ -139,7 +140,7 @@ int Region::match(double x, double y, double z)
      before: inverse transform x,y,z (unmove, then unrotate)
      after: forward transform contact point xs,yx,zs (rotate, then move),
             then reset contact delx,dely,delz based on new contact point
-	    no need to do this if no rotation since delxyz doesn't change
+            no need to do this if no rotation since delxyz doesn't change
 ------------------------------------------------------------------------- */
 
 int Region::surface(double x, double y, double z, double cutoff)
@@ -326,25 +327,25 @@ void Region::options(int narg, char **arg)
     } else if (strcmp(arg[iarg],"move") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal region command");
       if (strcmp(arg[iarg+1],"NULL") != 0) {
-	if (strstr(arg[iarg+1],"v_") != arg[iarg+1])
-	  error->all(FLERR,"Illegal region command");
-	int n = strlen(&arg[iarg+1][2]) + 1;
-	xstr = new char[n];
-	strcpy(xstr,&arg[iarg+1][2]);
+        if (strstr(arg[iarg+1],"v_") != arg[iarg+1])
+          error->all(FLERR,"Illegal region command");
+        int n = strlen(&arg[iarg+1][2]) + 1;
+        xstr = new char[n];
+        strcpy(xstr,&arg[iarg+1][2]);
       }
       if (strcmp(arg[iarg+2],"NULL") != 0) {
-	if (strstr(arg[iarg+2],"v_") != arg[iarg+2])
-	  error->all(FLERR,"Illegal region command");
-	int n = strlen(&arg[iarg+2][2]) + 1;
-	ystr = new char[n];
-	strcpy(ystr,&arg[iarg+2][2]);
+        if (strstr(arg[iarg+2],"v_") != arg[iarg+2])
+          error->all(FLERR,"Illegal region command");
+        int n = strlen(&arg[iarg+2][2]) + 1;
+        ystr = new char[n];
+        strcpy(ystr,&arg[iarg+2][2]);
       }
       if (strcmp(arg[iarg+3],"NULL") != 0) {
-	if (strstr(arg[iarg+3],"v_") != arg[iarg+3])
-	  error->all(FLERR,"Illegal region command");
-	int n = strlen(&arg[iarg+3][2]) + 1;
-	zstr = new char[n];
-	strcpy(zstr,&arg[iarg+3][2]);
+        if (strstr(arg[iarg+3],"v_") != arg[iarg+3])
+          error->all(FLERR,"Illegal region command");
+        int n = strlen(&arg[iarg+3][2]) + 1;
+        zstr = new char[n];
+        strcpy(zstr,&arg[iarg+3][2]);
       }
       moveflag = 1;
       iarg += 4;
@@ -352,7 +353,7 @@ void Region::options(int narg, char **arg)
     } else if (strcmp(arg[iarg],"rotate") == 0) {
       if (iarg+8 > narg) error->all(FLERR,"Illegal region command");
       if (strstr(arg[iarg+1],"v_") != arg[iarg+1])
-	error->all(FLERR,"Illegal region command");
+        error->all(FLERR,"Illegal region command");
       int n = strlen(&arg[iarg+1][2]) + 1;
       tstr = new char[n];
       strcpy(tstr,&arg[iarg+1][2]);
@@ -425,56 +426,87 @@ void Region::reset_random(int new_seed)
 
 /* ---------------------------------------------------------------------- */
 
-void Region::generate_random(double *pos)
+inline void Region::rand_bounds(bool subdomain_flag, double *lo, double *hi)
 {
-    if(!bboxflag) error->all(FLERR,"Impossible to generate random points on region with incomputable bounding box");
+    if(!bboxflag) error->one(FLERR,"Impossible to generate random points on region with incomputable bounding box");
+    if(subdomain_flag)
+    {
+        lo[0] = MathExtraLiggghts::max(extent_xlo,domain->sublo[0]);
+        lo[1] = MathExtraLiggghts::max(extent_ylo,domain->sublo[1]);
+        lo[2] = MathExtraLiggghts::max(extent_zlo,domain->sublo[2]);
+        hi[0] = MathExtraLiggghts::min(extent_xhi,domain->subhi[0]);
+        hi[1] = MathExtraLiggghts::min(extent_yhi,domain->subhi[1]);
+        hi[2] = MathExtraLiggghts::min(extent_zhi,domain->subhi[2]);
+        if(lo[0] >= hi[0] || lo[1] >= hi[1] ||lo[2] >= hi[2])
+            error->one(FLERR,"Impossible to generate random points on wrong sub-domain");
+    }
+    else
+    {
+        vectorConstruct3D(lo,  extent_xlo,extent_ylo,extent_zlo );
+        vectorConstruct3D(hi,  extent_xhi,extent_yhi,extent_zhi );
+    }
+    
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Region::generate_random(double *pos,bool subdomain_flag)
+{
+    double lo[3],hi[3],diff[3];
+    rand_bounds(subdomain_flag,lo,hi);
+    vectorSubtract3D(hi,lo,diff);
     do
     {
-        pos[0] = extent_xlo + random->uniform() * (extent_xhi - extent_xlo);
-        pos[1] = extent_ylo + random->uniform() * (extent_yhi - extent_ylo);
-        pos[2] = extent_zlo + random->uniform() * (extent_zhi - extent_zlo);
+        pos[0] = lo[0] + random->uniform()*diff[0];
+        pos[1] = lo[1] + random->uniform()*diff[1];
+        pos[2] = lo[2] + random->uniform()*diff[2];
     }
     while(!match(pos[0],pos[1],pos[2]));
+    
 }
 
 /* ---------------------------------------------------------------------- */
 
 // generates a random point within the region and has a min distance from surface
 // i.e. generate random point in region "shrunk" by cut
-void Region::generate_random_shrinkby_cut(double *pos,double cut)
+void Region::generate_random_shrinkby_cut(double *pos,double cut,bool subdomain_flag)
 {
-    if(!bboxflag)
-        error->all(FLERR,"Impossible to generate random points on region with incomputable bounding box");
+    double lo[3],hi[3],diff[3];
+    rand_bounds(subdomain_flag,lo,hi);
+    vectorSubtract3D(hi,lo,diff);
+
     if((extent_xhi-extent_xlo < 2.*cut) ||
        (extent_yhi-extent_ylo < 2.*cut) ||
        (extent_zhi-extent_zlo < 2.*cut))
         error->all(FLERR,"Impossible to generate random points within region - region too small");
-    // point has to be within bounding box
+
     do
     {
-        pos[0] = extent_xlo + random->uniform() * (extent_xhi - extent_xlo);
-        pos[1] = extent_ylo + random->uniform() * (extent_yhi - extent_ylo);
-        pos[2] = extent_zlo + random->uniform() * (extent_zhi - extent_zlo);
+        pos[0] = lo[0] + random->uniform()*diff[0];
+        pos[1] = lo[1] + random->uniform()*diff[1];
+        pos[2] = lo[2] + random->uniform()*diff[2];
     }
-    // and has to be within region, but not within cut of region surface
+    // pos has to be within region, but not within cut of region surface
     while(!match(pos[0],pos[1],pos[2]) || match_cut(pos,cut));
 }
 
 /* ---------------------------------------------------------------------- */
 
 // generate a point inside region OR within a minimum distance from surface
-void Region::generate_random_expandby_cut(double *pos,double cut)
+void Region::generate_random_expandby_cut(double *pos,double cut,bool subdomain_flag)
 {
-    if(!bboxflag)
-        error->all(FLERR,"Impossible to generate random points on region with incomputable bounding box");
-    // point has to be within bounding box
+    double lo[3],hi[3],diff[3];
+    rand_bounds(subdomain_flag,lo,hi);
+    vectorSubtract3D(hi,lo,diff);
+
     do
     {
-        pos[0] = extent_xlo + random->uniform() * (extent_xhi - extent_xlo);
-        pos[1] = extent_ylo + random->uniform() * (extent_yhi - extent_ylo);
-        pos[2] = extent_zlo + random->uniform() * (extent_zhi - extent_zlo);
+        pos[0] = lo[0] + random->uniform()*diff[0];
+        pos[1] = lo[1] + random->uniform()*diff[1];
+        pos[2] = lo[2] + random->uniform()*diff[2];
     }
-    while( !(match(pos[0],pos[1],pos[2]) || !match_cut(pos,cut)) );
+    // pos has to be within region or within a distance (=cut) to region
+    while( !match_expandby_cut(pos,cut) );
 }
 
 /* ---------------------------------------------------------------------- */
@@ -528,7 +560,7 @@ void Region::volume_mc(int n_test,double &vol_global, double &vol_local)
     }
 
     double pos[3],vol_bbox;
-    int n_in_global = 0, n_in_local = 0;
+    int n_in_local = 0, n_in_global = 0, n_in_global_all;
 
     for(int i = 0; i < n_test; i++)
     {
@@ -544,13 +576,13 @@ void Region::volume_mc(int n_test,double &vol_global, double &vol_local)
         if(match(pos[0],pos[1],pos[2]))
         {
             n_in_global++;
-            if(domain->is_in_domain(pos))
+            if(domain->is_in_subdomain(pos))
                 n_in_local++;
         }
     }
 
-   MPI_Sum_Scalar(n_in_global,world);
-    if(n_in_global == 0)
+    MPI_Sum_Scalar(n_in_global,n_in_global_all,world);
+    if(n_in_global_all == 0)
         error->all(FLERR,"Unable to calculate region volume - are you operating on a 2d region?");
 
     vol_bbox = (extent_xhi - extent_xlo) * (extent_yhi - extent_ylo) * (extent_zhi - extent_zlo);

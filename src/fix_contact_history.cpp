@@ -267,7 +267,7 @@ void FixContactHistory::pre_exchange_pair()
       if (touch[jj]) {
         hist = &allhist[dnum*jj]; 
         j = jlist[jj];
-	    j &= NEIGHMASK;
+            j &= NEIGHMASK;
 
         if (npartner[i] >= maxtouch) grow_arrays_maxtouch(atom->nmax); 
         m = npartner[i];
@@ -578,4 +578,3 @@ void FixContactHistory::cleanUpContacts()
         }
     }
 }
-

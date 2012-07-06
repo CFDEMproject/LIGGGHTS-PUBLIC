@@ -250,8 +250,8 @@ void FixMeshSurface::initVel()
     double conv_vel_mag = vectorMag3D(conv_vel);
 
     // register new mesh property v
-    mesh_->prop().addMeshProperty< VectorContainer<double,3> >("v","comm_none","frame_invariant","restart_no");
-    mesh_->prop().setMeshProperty< VectorContainer<double,3> >("v",conv_vel);
+    mesh_->prop().addGlobalProperty< VectorContainer<double,3> >("v","comm_none","frame_invariant","restart_no");
+    mesh_->prop().setGlobalProperty< VectorContainer<double,3> >("v",conv_vel);
 
     // register new element property v - error if exists already via moving mesh
     mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
@@ -315,11 +315,11 @@ void FixMeshSurface::initAngVel()
             static_cast<TriMesh*>(mesh_)->node(i,j,node);
             vectorSubtract3D(node,rot_origin,surfaceV);
 
-    	    // lever arm X rotational axis = tangential component
-    	    vectorCross3D(surfaceV,unitAxis,tangComp);
+                // lever arm X rotational axis = tangential component
+                vectorCross3D(surfaceV,unitAxis,tangComp);
 
-    	    // multiplying by omega scales the tangential component to give tangential velocity
-    	    vectorScalarMult3D(tangComp,-rot_omega,Utang);
+                // multiplying by omega scales the tangential component to give tangential velocity
+                vectorScalarMult3D(tangComp,-rot_omega,Utang);
 
             // EPSILON is wall velocity, not rotational omega
             if(vectorMag3D(Utang) < EPSILON_V)
@@ -330,7 +330,7 @@ void FixMeshSurface::initAngVel()
 
             // removes components normal to wall
             vectorSubtract3D(Utang,tmp,v_node[i][j]);
-    	    magUtang = vectorMag3D(Utang);
+                magUtang = vectorMag3D(Utang);
 
             if(vectorMag3D(v_node[i][j]) > 0.)
             {

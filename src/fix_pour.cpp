@@ -107,20 +107,20 @@ FixPour::FixPour(LAMMPS *lmp, int narg, char **arg) :
       iarg += 2;
     } else if (strcmp(arg[iarg],"vel") == 0) {
       if (domain->dimension == 3) {
-	if (iarg+6 > narg) error->all(FLERR,"Illegal fix pour command");
-	vxlo = atof(arg[iarg+1]);
-	vxhi = atof(arg[iarg+2]);
-	vylo = atof(arg[iarg+3]);
-	vyhi = atof(arg[iarg+4]);
-	vz = atof(arg[iarg+5]);
-	iarg += 6;
+        if (iarg+6 > narg) error->all(FLERR,"Illegal fix pour command");
+        vxlo = atof(arg[iarg+1]);
+        vxhi = atof(arg[iarg+2]);
+        vylo = atof(arg[iarg+3]);
+        vyhi = atof(arg[iarg+4]);
+        vz = atof(arg[iarg+5]);
+        iarg += 6;
       } else {
-	if (iarg+4 > narg) error->all(FLERR,"Illegal fix pour command");
-	vxlo = atof(arg[iarg+1]);
-	vxhi = atof(arg[iarg+2]);
-	vy = atof(arg[iarg+3]);
-	vz = 0.0;
-	iarg += 4;
+        if (iarg+4 > narg) error->all(FLERR,"Illegal fix pour command");
+        vxlo = atof(arg[iarg+1]);
+        vxhi = atof(arg[iarg+2]);
+        vy = atof(arg[iarg+3]);
+        vz = 0.0;
+        iarg += 4;
       }
     } else error->all(FLERR,"Illegal fix pour command");
   }
@@ -142,8 +142,8 @@ FixPour::FixPour(LAMMPS *lmp, int narg, char **arg) :
     zlo = ((RegBlock *) domain->regions[iregion])->zlo;
     zhi = ((RegBlock *) domain->regions[iregion])->zhi;
     if (xlo < domain->boxlo[0] || xhi > domain->boxhi[0] ||
-	ylo < domain->boxlo[1] || yhi > domain->boxhi[1] ||
-	zlo < domain->boxlo[2] || zhi > domain->boxhi[2])
+        ylo < domain->boxlo[1] || yhi > domain->boxhi[1] ||
+        zlo < domain->boxlo[2] || zhi > domain->boxhi[2])
       error->all(FLERR,"Insertion region extends outside simulation box");
   } else if (strcmp(domain->regions[iregion]->style,"cylinder") == 0) {
     region_style = 2;
@@ -156,8 +156,8 @@ FixPour::FixPour(LAMMPS *lmp, int narg, char **arg) :
     if (axis != 'z')
       error->all(FLERR,"Must use a z-axis cylinder with fix pour");
     if (xc-rc < domain->boxlo[0] || xc+rc > domain->boxhi[0] ||
-	yc-rc < domain->boxlo[1] || yc+rc > domain->boxhi[1] ||
-	zlo < domain->boxlo[2] || zhi > domain->boxhi[2])
+        yc-rc < domain->boxlo[1] || yc+rc > domain->boxhi[1] ||
+        zlo < domain->boxlo[2] || zhi > domain->boxhi[2])
       error->all(FLERR,"Insertion region extends outside simulation box");
   } else error->all(FLERR,"Must use a block or cylinder region with fix pour");
 
@@ -242,12 +242,12 @@ FixPour::FixPour(LAMMPS *lmp, int narg, char **arg) :
   if (me == 0) {
     if (screen)
       fprintf(screen,
-	      "Particle insertion: %d every %d steps, %d by step %d\n",
-	      nper,nfreq,ninsert,nfinal);
+              "Particle insertion: %d every %d steps, %d by step %d\n",
+              nper,nfreq,ninsert,nfinal);
     if (logfile)
       fprintf(logfile,
-	      "Particle insertion: %d every %d steps, %d by step %d\n",
-	      nper,nfreq,ninsert,nfinal);
+              "Particle insertion: %d every %d steps, %d by step %d\n",
+              nper,nfreq,ninsert,nfinal);
   }
 }
 
@@ -293,11 +293,11 @@ void FixPour::init()
 
   if (domain->dimension == 3) {
     if (fabs(xgrav) > EPSILON || fabs(ygrav) > EPSILON ||
-	fabs(zgrav+1.0) > EPSILON)
+        fabs(zgrav+1.0) > EPSILON)
       error->all(FLERR,"Gravity must point in -z to use with fix pour in 3d");
   } else {
     if (fabs(xgrav) > EPSILON || fabs(ygrav+1.0) > EPSILON ||
-	fabs(zgrav) > EPSILON)
+        fabs(zgrav) > EPSILON)
       error->all(FLERR,"Gravity must point in -y to use with fix pour in 2d");
   }
 
@@ -380,7 +380,7 @@ void FixPour::pre_exchange()
   double *ptr = NULL;
   if (ncount) ptr = xmine[0];
   MPI_Allgatherv(ptr,4*ncount,MPI_DOUBLE,
-		 xnear[0],recvcounts,displs,MPI_DOUBLE,world);
+                 xnear[0],recvcounts,displs,MPI_DOUBLE,world);
 
   // insert new atoms into xnear list, one by one
   // check against all nearby atoms and previously inserted ones
@@ -405,16 +405,16 @@ void FixPour::pre_exchange()
       attempt++;
       xyz_random(h,coord);
       for (i = 0; i < nnear; i++) {
-	delx = coord[0] - xnear[i][0];
-	dely = coord[1] - xnear[i][1];
-	delz = coord[2] - xnear[i][2];
-	rsq = delx*delx + dely*dely + delz*delz;
-	radsum = radtmp + xnear[i][3];
-	if (rsq <= radsum*radsum) break;
+        delx = coord[0] - xnear[i][0];
+        dely = coord[1] - xnear[i][1];
+        delz = coord[2] - xnear[i][2];
+        rsq = delx*delx + dely*dely + delz*delz;
+        radsum = radtmp + xnear[i][3];
+        if (rsq <= radsum*radsum) break;
       }
       if (i == nnear) {
-	success = 1;
-	break;
+        success = 1;
+        break;
       }
     }
     if (success) {
@@ -472,15 +472,15 @@ void FixPour::pre_exchange()
 
     flag = 0;
     if (coord[0] >= sublo[0] && coord[0] < subhi[0] &&
-	coord[1] >= sublo[1] && coord[1] < subhi[1] &&
-	coord[2] >= sublo[2] && coord[2] < subhi[2]) flag = 1;
+        coord[1] >= sublo[1] && coord[1] < subhi[1] &&
+        coord[2] >= sublo[2] && coord[2] < subhi[2]) flag = 1;
     else if (domain->dimension == 3 && coord[2] >= domain->boxhi[2] &&
-	     comm->myloc[2] == comm->procgrid[2]-1 &&
-	     coord[0] >= sublo[0] && coord[0] < subhi[0] &&
-	     coord[1] >= sublo[1] && coord[1] < subhi[1]) flag = 1;
+             comm->myloc[2] == comm->procgrid[2]-1 &&
+             coord[0] >= sublo[0] && coord[0] < subhi[0] &&
+             coord[1] >= sublo[1] && coord[1] < subhi[1]) flag = 1;
     else if (domain->dimension == 2 && coord[1] >= domain->boxhi[1] &&
-	     comm->myloc[1] == comm->procgrid[1]-1 &&
-	     coord[0] >= sublo[0] && coord[0] < subhi[0]) flag = 1;
+             comm->myloc[1] == comm->procgrid[1]-1 &&
+             coord[0] >= sublo[0] && coord[0] < subhi[0]) flag = 1;
 
     if (flag) {
       avec->create_atom(ntype,coord);
@@ -493,7 +493,7 @@ void FixPour::pre_exchange()
       atom->v[m][1] = vytmp;
       atom->v[m][2] = vztmp;
       for (j = 0; j < nfix; j++)
-	if (fix[j]->create_attribute) fix[j]->set_arrays(m);
+        if (fix[j]->create_attribute) fix[j]->set_arrays(m);
     }
   }
 
@@ -507,9 +507,9 @@ void FixPour::pre_exchange()
     if (atom->tag_enable) {
       atom->tag_extend();
       if (atom->map_style) {
-	atom->nghost = 0;
-	atom->map_init();
-	atom->map_set();
+        atom->nghost = 0;
+        atom->map_init();
+        atom->map_set();
       }
     }
   }
@@ -539,8 +539,8 @@ int FixPour::overlap(int i)
   if (domain->dimension == 3) {
     if (region_style == 1) {
       if (x[i][0] < xlo-delta || x[i][0] > xhi+delta ||
-	  x[i][1] < ylo-delta || x[i][1] > yhi+delta ||
-	  x[i][2] < lo_current-delta || x[i][2] > hi_current+delta) return 0;
+          x[i][1] < ylo-delta || x[i][1] > yhi+delta ||
+          x[i][2] < lo_current-delta || x[i][2] > hi_current+delta) return 0;
     } else {
       if (x[i][2] < lo_current-delta || x[i][2] > hi_current+delta) return 0;
       double delx = x[i][0] - xc;
@@ -551,7 +551,7 @@ int FixPour::overlap(int i)
     }
   } else {
       if (x[i][0] < xlo-delta || x[i][0] > xhi+delta ||
-	  x[i][1] < lo_current-delta || x[i][1] > hi_current+delta) return 0;
+          x[i][1] < lo_current-delta || x[i][1] > hi_current+delta) return 0;
   }
 
   return 1;
@@ -569,9 +569,9 @@ void FixPour::xyz_random(double h, double *coord)
     } else {
       double r1,r2;
       while (1) {
-	r1 = random->uniform() - 0.5;
-	r2 = random->uniform() - 0.5;
-	if (r1*r1 + r2*r2 < 0.25) break;
+        r1 = random->uniform() - 0.5;
+        r2 = random->uniform() - 0.5;
+        if (r1*r1 + r2*r2 < 0.25) break;
       }
       coord[0] = xc + 2.0*r1*rc;
       coord[1] = yc + 2.0*r2*rc;

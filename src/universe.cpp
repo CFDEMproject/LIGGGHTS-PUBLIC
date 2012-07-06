@@ -111,12 +111,12 @@ void Universe::reorder(char *style, char *arg)
 
       char *ptr;
       if (!fgets(line,MAXLINE,fp))
-	error->one(FLERR,"Unexpected end of -reorder file");
+        error->one(FLERR,"Unexpected end of -reorder file");
       while (1) {
-	if (ptr = strchr(line,'#')) *ptr = '\0';
-	if (strspn(line," \t\n\r") != strlen(line)) break;
-	if (!fgets(line,MAXLINE,fp))
-	  error->one(FLERR,"Unexpected end of -reorder file");
+        if (ptr = strchr(line,'#')) *ptr = '\0';
+        if (strspn(line," \t\n\r") != strlen(line)) break;
+        if (!fgets(line,MAXLINE,fp))
+          error->one(FLERR,"Unexpected end of -reorder file");
       }
 
       // read nprocs lines
@@ -125,18 +125,18 @@ void Universe::reorder(char *style, char *arg)
       int me_orig,me_new;
       sscanf(line,"%d %d",&me_orig,&me_new);
       if (me_orig < 0 || me_orig >= nprocs ||
-	  me_new < 0 || me_new >= nprocs)
-	error->one(FLERR,"Invalid entry in -reorder file");
+          me_new < 0 || me_new >= nprocs)
+        error->one(FLERR,"Invalid entry in -reorder file");
       uni2orig[me_new] = me_orig;
 
       for (int i = 1; i < nprocs; i++) {
-	if (!fgets(line,MAXLINE,fp))
-	  error->one(FLERR,"Unexpected end of -reorder file");
-	sscanf(line,"%d %d",&me_orig,&me_new);
-	if (me_orig < 0 || me_orig >= nprocs ||
-	    me_new < 0 || me_new >= nprocs)
-	  error->one(FLERR,"Invalid entry in -reorder file");
-	uni2orig[me_new] = me_orig;
+        if (!fgets(line,MAXLINE,fp))
+          error->one(FLERR,"Unexpected end of -reorder file");
+        sscanf(line,"%d %d",&me_orig,&me_new);
+        if (me_orig < 0 || me_orig >= nprocs ||
+            me_new < 0 || me_new >= nprocs)
+          error->one(FLERR,"Invalid entry in -reorder file");
+        uni2orig[me_new] = me_orig;
       }
       fclose(fp);
     }
