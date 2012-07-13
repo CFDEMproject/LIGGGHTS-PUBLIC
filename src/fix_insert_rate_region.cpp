@@ -49,6 +49,8 @@ using namespace FixConst;
 FixInsertRateRegion::FixInsertRateRegion(LAMMPS *lmp, int narg, char **arg) :
   FixInsertPack(lmp, narg, arg)
 {
+    // no fixed total number of particles inserted by this fix exists
+    ninsert_exists = 1;
 }
 
 /* ---------------------------------------------------------------------- */

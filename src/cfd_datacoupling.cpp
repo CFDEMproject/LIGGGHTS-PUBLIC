@@ -29,7 +29,7 @@
 #include "comm.h"
 #include "cfd_datacoupling.h"
 #include "fix_cfd_coupling.h"
-#include "fix_rigid_multisphere.h"
+#include "fix_multisphere.h"
 #include "multisphere.h"
 #include "fix_property_atom.h"
 #include "fix_property_global.h"
@@ -75,13 +75,13 @@ CfdDatacoupling::~CfdDatacoupling()
 void CfdDatacoupling::init()
 {
     // multisphere - can be NULL
-    FixRigidMultisphere *frm;
-    frm = static_cast<FixRigidMultisphere*>(modify->find_fix_style_strict("rigid/multisphere",0));
+    FixMultisphere *fix_multisphere;
+    fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style_strict("rigid/multisphere",0));
 
-    if(!frm)
+    if(!fix_multisphere)
         ms_data_ = NULL;
     else
-        ms_data_ = &frm->data();
+        ms_data_ = &fix_multisphere->data();
 
     // empty list of requested properties
     // models do their init afterwards so list will be filled

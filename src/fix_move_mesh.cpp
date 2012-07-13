@@ -73,10 +73,6 @@ FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
       error->all(FLERR,"Illegal fix move/mesh command, cannot apply move to a mesh using keywords 'velocity' or 'angular_velocity'");
 
     restart_global = 1;
-
-    force_reneighbor = 1;
-
-    next_reneighbor = -1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -126,9 +122,7 @@ int FixMoveMesh::setmask()
 {
     int mask = 0;
     mask |= INITIAL_INTEGRATE;
-    mask |= PRE_FORCE;
     mask |= FINAL_INTEGRATE;
-    mask |= PRE_NEIGHBOR;
     return mask;
 }
 
@@ -138,14 +132,13 @@ void FixMoveMesh::setup_pre_force(int vflag)
 {
     time_since_setup_ = 0.;
 
-    pre_neighbor();
-    pre_force(0);
 }
 
 /* ---------------------------------------------------------------------- */
 
 void FixMoveMesh::setup(int vflag)
 {
+    
     if(!mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v"))
     {
         mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_general","restart_no");
@@ -171,36 +164,6 @@ void FixMoveMesh::initial_integrate(int dummy)
 
     // integration
     move_->initial_integrate(time_since_setup_,dt);
-}
-
-/* ---------------------------------------------------------------------- */
-
-void FixMoveMesh::pre_neighbor()
-{
-    neighListFresh_ = true;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void FixMoveMesh::pre_force(int vflag)
-{
-    // only first move on this mesh handles neigh list build
-    if(!move_->isFirst()) return;
-
-    // neigh list built on this step
-    
-    if(neighListFresh_)
-    {
-        store_node_pos();
-        neighListFresh_ = false;
-
-    }
-    // check for re-build of neigh list
-    else
-    {
-        if(decide_rebuild())
-            next_reneighbor = update->ntimestep + 1;
-    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -239,53 +202,4 @@ void FixMoveMesh::restart(char *buf)
   double *list = (double *) buf;
 
   time_ = static_cast<int> (list[n++]);
-}
-
-/* ----------------------------------------------------------------------
-   decide if any node has moved far enough to trigger re-build
-------------------------------------------------------------------------- */
-
-bool FixMoveMesh::decide_rebuild()
-{
-    
-    double ***node = mesh_->nodePtr();
-    double ***old = oldNodes.begin();
-    int flag = 0;
-    int nlocal = mesh_->sizeLocal();
-    double triggersq = 0.25*neighbor->skin*neighbor->skin;
-
-    for(int iTri = 0; iTri < nlocal; iTri++)
-    {
-      for(int iNode = 0; iNode < 3; iNode++)
-      {
-        double deltaX[3];
-        vectorSubtract3D(node[iTri][iNode],old[iTri][iNode],deltaX);
-        double distSq = deltaX[0]*deltaX[0] + deltaX[1]*deltaX[1] + deltaX[2]*deltaX[2];
-        if(distSq > triggersq){
-          
-          flag = 1;
-        }
-      }
-      if (flag) break;
-    }
-
-    // allreduce result
-    MPI_Max_Scalar(flag,this->world);
-
-    if(flag) return true;
-    else     return false;
-}
-
-/* ----------------------------------------------------------------------
-   store node pos at lat re-build
-------------------------------------------------------------------------- */
-
-void FixMoveMesh::store_node_pos()
-{
-    int nlocal = mesh_->sizeLocal();
-    double ***node = mesh_->nodePtr();
-
-    oldNodes.empty();
-    for(int i = 0; i < nlocal; i++)
-        oldNodes.add(node[i]);
 }

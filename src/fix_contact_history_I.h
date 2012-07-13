@@ -37,14 +37,14 @@
     if(haveContact(iP,idTri,history))
       return;
 
-    // else check if one of the present contacts is coplanar with iTri
-    // if so, copy history, set history pointer to correct location,
-    // set delete flag and return
-    if(hasContactCoplanarTo(iP,idTri,history))
-      return;
-
     // else new contact - add contact
     addNewTriContactToExistingParticle(iP,idTri,history);
+
+    // check if one of the present contacts is coplanar with iTri
+    // if so, copy history
+    checkCoplanarContact(iP,idTri,history);
+
+    return;
   }
 
   /* ---------------------------------------------------------------------- */
@@ -58,6 +58,7 @@
         if(partner[iP][j] == idTri)
         {
             delflag[iP][j] = true;
+            
             break;
         }
     }
@@ -82,17 +83,16 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline bool FixContactHistory::hasContactCoplanarTo(int iP, int idTri, double *&history)
+  inline bool FixContactHistory::checkCoplanarContact(int iP, int idTri, double *&history)
   {
-
     int *tri = partner[iP];
     for(int i = 0; i < npartner[iP]; i++)
     {
-      if(mesh_->areCoplanar(tri[i],idTri))
+      if(tri[i] != idTri && mesh_->areCoplanar(tri[i],idTri))
       {
-        tri[i] = idTri;
-        history = contacthistory[iP][i];
-        delflag[iP][i] = false;
+        // copy contact history
+        vectorCopyN(contacthistory[iP][i],history,dnum);
+        
         return true;
       }
     }
@@ -114,6 +114,7 @@
         history[i] = 0.;
 
       npartner[iP]++;
+
   }
 
   /* ---------------------------------------------------------------------- */

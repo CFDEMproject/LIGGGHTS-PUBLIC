@@ -30,6 +30,7 @@ DumpStyle(mesh/gran/VTK,DumpMeshVTK)
 #define LMP_DUMP_MESH_VTK_H
 
 #include "dump.h"
+#include "container.h"
 
 namespace LAMMPS_NS {
 
@@ -54,9 +55,24 @@ class DumpMeshVTK : public Dump {
 
   int dump_what_;
 
+  // properties to be dumped
+  // TODO: could make look-up more generic
+
+  // stress
+  class ScalarContainer<double> **sigma_n_, **sigma_t_;
+  // wear
+  class ScalarContainer<double> **wear_;
+  // vel
+  class MultiVectorContainer<double,3,3> **v_node_;
+  // stresscomponents
+  class VectorContainer<double,3> **f_node_;
+  // temp
+  // TODO
+
   int modify_param(int, char **);
   void write_header(bigint ndump);
   int count();
+  void getRefs();
   void pack(int *);
   void write_data(int, double *);
 

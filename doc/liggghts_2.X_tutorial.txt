@@ -24,7 +24,7 @@ dump mesh/stl (formerly dump stl) :l
 dump mesh/vtk (formerly dump mesh/gran/VTK) :l
 fix heat/gran :l
 fix mesh/surface (formerly fix mesh/gran) :l
-fix mesh/stressanalysis (formerly fix mesh/gran/stressanalysis) :l
+fix mesh/surface/stress (formerly fix mesh/gran/stressanalysis) :l
 fix move/mesh (formerly fix move/mesh/gran)  :l
 fix wall/gran/* :l
 pair_style gran/* :l
@@ -102,15 +102,12 @@ For details, see "fix mesh/surface"_fix_mesh_surface.html.
 
 :line
 
-[fix mesh/stressanalysis (formerly fix mesh/gran/stressanalysis):]
+[fix mesh/surface/stress (formerly fix mesh/gran/stressanalysis):]
 
 OLD: fix ID group-ID mesh/gran/stressanalysis mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. finnie yes
-NEW: fix ID group-ID mesh/stressanalysis file mesh.stl type 1 wear finnie :pre 
+NEW: fix ID group-ID fix mesh/surface/stress file mesh.stl type 1 wear finnie :pre 
 
-NOTE: For compatibility reasons, the command name {fix mesh/gran/stressanalysis} can be 
-used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax.
-
-For details, see "fix mesh/stressanalysis"_fix_mesh_stressanalysis.html.
+For details, see "fix mesh/surface/stress"_fix_mesh_surface_stress.html.
 
 :line
 

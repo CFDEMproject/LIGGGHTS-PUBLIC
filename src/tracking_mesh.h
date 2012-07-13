@@ -40,6 +40,8 @@ namespace LAMMPS_NS{
   {
       public:
 
+        void clearReverse();
+
         virtual void buildNeighbours() = 0;
 
         virtual void move(double *vecTotal, double *vecIncremental);
@@ -50,6 +52,8 @@ namespace LAMMPS_NS{
         virtual int generateRandomOwnedGhost(double *pos) = 0;
         virtual int generateRandomSubbox(double *pos) = 0;
         virtual int generateRandomSubboxWithin(double *pos,double delta) = 0;
+
+        // inline access
 
         inline CustomValueTracker& prop()
         {return customValues_;}
@@ -87,6 +91,8 @@ namespace LAMMPS_NS{
         inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
         inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate,bool rotate);

@@ -46,6 +46,8 @@ namespace LAMMPS_NS
         virtual void post_create();
         virtual void pre_delete(bool unfixflag);
 
+        virtual void init() {}
+
         virtual int setmask();
         void setup_pre_force(int);
 
@@ -54,6 +56,7 @@ namespace LAMMPS_NS
 
         virtual void pre_exchange();
         virtual void pre_force(int);
+        virtual void final_integrate();
 
         int min_type();
         int max_type();
@@ -90,7 +93,6 @@ namespace LAMMPS_NS
         // decides if parallel operations needed for
         // mesh on this time-step
         bool pOpFlag_;
-
   };
 
 } /* namespace LAMMPS_NS */

@@ -52,7 +52,7 @@ namespace LAMMPS_NS
 
         void buildNeighList(double neighCutoff, double **x, double *r, int nPart);
 
-        double resolveContact(double *x, double r, double *en0);
+        double resolveContact(double *x, double r, double *delta);
         bool resolveNeighlist(double *x, double r, double treshold);
 
       private:
@@ -83,9 +83,9 @@ namespace LAMMPS_NS
     delete []param;
   }
 
-  double PrimitiveWall::resolveContact(double *x, double r, double *en0)
+  double PrimitiveWall::resolveContact(double *x, double r, double *delta)
   {
-    return PRIMITIVE_WALL_DEFINITIONS::chooseContactTemplate(x, r, en0, param, wType);
+    return PRIMITIVE_WALL_DEFINITIONS::chooseContactTemplate(x, r, delta, param, wType);
   }
 
   bool PrimitiveWall::resolveNeighlist(double *x, double r, double treshold)

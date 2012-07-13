@@ -19,21 +19,27 @@
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
-------------------------------------------------------------------------- */
-
 #ifndef LMP_VOLUME_MESH_H
 #define LMP_VOLUME_MESH_H
 
 #include "tracking_mesh.h"
 #include "container.h"
 
+#include "surface_mesh.h"
+
+/*
+
+TODO
+
+integrate volume mesh
+neigh list build
+etc
+
+*/
+
 namespace LAMMPS_NS{
 
-template<int NUM_NODES,int N_NEIGHS>
+template<int NUM_NODES,int N_FACES>
 class VolumeMesh : public TrackingMesh<NUM_NODES>
 {
   public:
@@ -42,6 +48,10 @@ class VolumeMesh : public TrackingMesh<NUM_NODES>
 
     void addElement(double **nodeToAdd);
     void buildNeighbours();
+
+    void move(double *vecTotal, double *vecIncremental);
+    void move(double *vecIncremental);
+    void scale(double factor);
 
     bool isInside(double *p);
 
@@ -89,6 +99,9 @@ class VolumeMesh : public TrackingMesh<NUM_NODES>
 
     int randomOwnedGhostElement();
 
+    void rotate(double *totalQ, double *dQ,double *totalDispl,double *dDispl);
+    void rotate(double *dQ,double *dDispl);
+
     // inline access
     inline double&  vol(int i)         {return (vol_)(i);}
     inline double&  volAcc(int i)      {return (volAcc_)(i);}
@@ -104,7 +117,7 @@ class VolumeMesh : public TrackingMesh<NUM_NODES>
 
     // neighbor topology
     ScalarContainer<int>& nNeighs_;
-    VectorContainer<int,NUM_NODES>& neighFaces_;
+    VectorContainer<int,NUM_NODES>& neighElems_;
 
   private:
 

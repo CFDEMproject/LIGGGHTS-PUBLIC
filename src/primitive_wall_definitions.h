@@ -79,7 +79,7 @@ namespace LAMMPS_NS
      * default implementation: no contact
      */
     template<WallType W>
-    double resolveContactTemplate(double *x, double r, double *en0, double *param) {return 1.;}
+    double resolveContactTemplate(double *x, double r, double *delta, double *param) {return 1.;}
 
     /*
      * default neighbor list template returns true --> if neighbor list distance function is not
@@ -92,7 +92,7 @@ namespace LAMMPS_NS
      * declaration of choosing functions
      * definitions need to be after ALL definitions of resolveContactTemplate and resolveNeighlistTemplate
      */
-    double chooseContactTemplate(double *x, double r, double *en0, double *param, WallType wType);
+    double chooseContactTemplate(double *x, double r, double *delta, double *param, WallType wType);
     bool chooseNeighlistTemplate(double *x, double r, double treshold, double *param, WallType wType);
     /*
      * x,y,z planes can be handled by a template with dimension as template parameter
@@ -108,13 +108,13 @@ namespace LAMMPS_NS
     struct Plane : public Dim<dim>
     {
       typedef Dim<dim> d;
-      static double resolveContact(double *pos, double r, double *en0, double *param)
+      static double resolveContact(double *pos, double r, double *delta, double *param)
       {
         if(pos[d::x] > *param){
-          en0[d::x] = -1.; en0[d::y] = 0.; en0[d::z] = 0.;
+          delta[d::x] = *param - pos[d::x]; delta[d::y] = 0.; delta[d::z] = 0.;
           return pos[d::x] - *param - r;
         } else{
-          en0[d::x] = 1.; en0[d::y] = 0.; en0[d::z] = 0.;
+          delta[d::x] = *param - pos[d::x]; delta[d::y] = 0.; delta[d::z] = 0.;
           return *param - pos[d::x] - r;
         }
       }
@@ -141,21 +141,22 @@ namespace LAMMPS_NS
       {
         dy = pos[d::y]-param[1];
         dz = pos[d::z]-param[2];
-        int i=0;
         return sqrt(dy*dy+dz*dz);
       }
     public:
-      static double resolveContact(double *pos, double r, double *en0, double *param)
+      static double resolveContact(double *pos, double r, double *delta, double *param)
       {
-        double dy,dz;
+        double dx, dy,dz, fact;
         double dist = calcRadialDistance(pos,param,dy,dz);
-        double dx;
         if(dist > *param){
-          en0[d::x] = 0.; en0[d::y] = -dy/dist; en0[d::z] = -dz/dist;
           dx = dist - *param - r;
+          fact = (dist - *param) / dist;
+          delta[d::x] = 0.; delta[d::y] = -dy*fact; delta[d::z] = -dz*fact;
+
         } else{
-          en0[d::x] = 0.; en0[d::y] = dy/dist; en0[d::z] = dz/dist;
           dx = *param - dist - r;
+          fact = (*param - dist) / dist;
+          delta[d::x] = 0.; delta[d::y] = +dy*fact; delta[d::z] = +dz*fact;
         }
         return dx;
       }
@@ -172,22 +173,22 @@ namespace LAMMPS_NS
     /*
      * functions to choose the correct template
      */
-    double chooseContactTemplate(double *x, double r, double *en0, double *param, WallType wType)
+    double chooseContactTemplate(double *x, double r, double *delta, double *param, WallType wType)
     {
       //TODO: find a way to create switch statement automatically
       switch(wType){
       case XPLANE:
-        return Plane<0>::resolveContact(x,r,en0,param);
+        return Plane<0>::resolveContact(x,r,delta,param);
       case YPLANE:
-        return Plane<1>::resolveContact(x,r,en0,param);
+        return Plane<1>::resolveContact(x,r,delta,param);
       case ZPLANE:
-        return Plane<2>::resolveContact(x,r,en0,param);
+        return Plane<2>::resolveContact(x,r,delta,param);
       case XCYLINDER:
-        return Cylinder<0>::resolveContact(x,r,en0,param);
+        return Cylinder<0>::resolveContact(x,r,delta,param);
       case YCYLINDER:
-        return Cylinder<1>::resolveContact(x,r,en0,param);
+        return Cylinder<1>::resolveContact(x,r,delta,param);
       case ZCYLINDER:
-        return Cylinder<2>::resolveContact(x,r,en0,param);
+        return Cylinder<2>::resolveContact(x,r,delta,param);
 
       default: // default: no contact
         return 1.;

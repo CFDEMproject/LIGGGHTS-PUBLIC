@@ -1,0 +1,74 @@
+#Simple chute wear test
+
+atom_style	granular
+atom_modify	map array
+boundary	f f f
+newton		off
+
+communicate	single vel yes
+
+units		si
+
+region		reg block -0.5 0.1 -0.2 0.2 -0.4 0.15 units box
+create_box	1 reg
+
+neighbor	0.002 bin
+neigh_modify	delay 0
+
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.3
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.5
+fix 		m5 all property/global k_finnie peratomtypepair 1 1.0
+
+#New pair style
+pair_style 	gran/hertz/history #Hertzian without cohesion
+pair_coeff	* *
+
+timestep	0.00001
+
+fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+#the chute
+fix		cad all mesh/surface/stress file simple_chute.stl type 1 wear finnie
+fix		inface all mesh/surface file insertion_face.stl type 1
+fix		granwalls all wall/gran/hertz/history mesh n_meshes 1 meshes cad
+
+
+#distributions for insertion
+fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0015
+fix		pts2 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0025
+fix		pdd1 all particledistribution/discrete 1.  2 pts1 0.3 pts2 0.7
+
+#region and insertion
+group		nve_group region reg
+region		bc cylinder z 0.0 0.0 0.015 0.05 0.12 units box
+
+#particle insertion
+fix			ins nve_group insert/stream seed 5330 distributiontemplate pdd1 &
+				nparticles 6000 massrate 0.1 insert_every 1000 overlapcheck yes all_in no vel constant 0.0 0.0 -1.0 &
+				insertion_face inface 
+
+#apply nve integration to all particles that are inserted as single particles
+fix		integr nve_group nve/sphere
+
+#output settings, include total thermal energy
+compute		1 all erotate/sphere
+thermo_style	custom step atoms ke c_1 vol
+thermo		1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+run		1
+dump		dmp all custom 200 post/dump*.chute id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius 
+dump 		dumpstress all mesh/gran/VTK 200 post/dump*.vtk stress wear cad
+
+#insert particles
+run		100000 upto
+unfix		ins
+
+ 

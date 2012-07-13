@@ -37,7 +37,7 @@
 #include "error.h"
 #include "fix_property_atom.h"
 #include "fix_particledistribution_discrete.h"
-#include "fix_rigid_multisphere.h"
+#include "fix_multisphere.h"
 #include "multisphere.h"
 #include "fix_template_sphere.h"
 #include "particleToInsert.h"
@@ -46,6 +46,8 @@ enum{FACE_NONE,FACE_MESH,FACE_CIRCLE};
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
+
+#define TINY 1e-14
 
 /* ---------------------------------------------------------------------- */
 
@@ -88,7 +90,6 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
   }
 
   fix_release = NULL;
-  fix_rm = NULL;
   i_am_integrator = false;
 
   nevery = 1;
@@ -215,7 +216,8 @@ void FixInsertStream::calc_insertion_properties()
 
         if(extrude_length < 3.*max_r_bound())
             error->fix_error(FLERR,this,"'extrude_length' is too small");
-        insert_every = static_cast<int>(extrude_length/(dt*vectorMag3D(v_normal)));
+        // add TINY for resolving round-off
+        insert_every = static_cast<int>((extrude_length+TINY)/(dt*vectorMag3D(v_normal)));
         
         if(insert_every == 0)
           error->fix_error(FLERR,this,"insertion velocity too high or extrude_length too low");
@@ -239,7 +241,7 @@ void FixInsertStream::calc_insertion_properties()
     // ninsert - if ninsert not defined directly, calculate it
     if(ninsert == 0)
     {
-        if(massinsert > 0.) ninsert = static_cast<int>(massinsert / fix_distribution->mass_expect());
+        if(massinsert > 0.) ninsert = static_cast<int>((massinsert+TINY) / fix_distribution->mass_expect());
         else error->fix_error(FLERR,this,"must define either 'nparticles' or 'mass'");
     }
 
@@ -295,8 +297,8 @@ void FixInsertStream::init()
 
     i_am_integrator = modify->i_am_first_of_style(this);
 
-    if(fix_rm) fix_rm->set_v_integrate(v_normal);
-    if(!i_am_integrator && fix_rm)
+    if(fix_multisphere) fix_multisphere->set_v_integrate(v_normal);
+    if(!i_am_integrator && fix_multisphere)
         error->fix_error(FLERR,this,"Currently only one fix insert/stream is allowed with multisphere particles");
 
 }
@@ -469,18 +471,18 @@ void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
     double **release_data = fix_release->array_atom;
 
     Multisphere *multisphere = NULL;
-    if(fix_rm) multisphere = &fix_rm->data();
+    if(fix_multisphere) multisphere = &fix_multisphere->data();
 
     for(int i = ilo; i < ihi; i++)
     {
         
         if(multisphere)
-            n_steps = multisphere->calc_n_steps(i,p_ref,normalvec,v_normal);
+            n_steps = fix_multisphere->calc_n_steps(i,p_ref,normalvec,v_normal);
         if(!multisphere || n_steps == -1)
         {
             vectorSubtract3D(p_ref,x[i],pos_rel);
             dist_normal = vectorDot3D(pos_rel,normalvec);
-            n_steps = static_cast<int>(dist_normal/(vectorMag3D(v_normal)*dt));
+            n_steps = static_cast<int>((dist_normal+TINY)/(vectorMag3D(v_normal)*dt));
         }
 
         // first 3 values is original position to integrate
@@ -527,15 +529,15 @@ void FixInsertStream::end_of_step()
         {
             if(release_data[i][3] == 0.) continue;
 
-            i_step = static_cast<int>(release_data[i][3]);
-            r_step = static_cast<int>(release_data[i][4]);
+            i_step = static_cast<int>(release_data[i][3]+TINY);
+            r_step = static_cast<int>(release_data[i][4]+TINY);
             vectorCopy3D(&release_data[i][5],v_integrate);
 
             if(step > r_step) continue;
             else if (r_step == step)
             {
                 
-                if(fix_rm && fix_rm->belongs_to(i) >= 0) continue;
+                if(fix_multisphere && fix_multisphere->belongs_to(i) >= 0) continue;
 
                 // integrate with constant vel and set v,omega
 

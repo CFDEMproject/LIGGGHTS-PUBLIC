@@ -298,6 +298,7 @@ Region* FixParticledistributionDiscrete::randomize_single()
 void FixParticledistributionDiscrete::random_init_list(int ntotal)
 {
     int parttogen_max_i, n_pti_max_requested;
+    int nprocs = comm->nprocs;
 
     ntotal += 2 * ntemplates;
 
@@ -306,7 +307,7 @@ void FixParticledistributionDiscrete::random_init_list(int ntotal)
 
     for(int i = 0; i < ntemplates; i++)
     {
-        parttogen_max_i = static_cast<int>(static_cast<double>(ntotal) * distweight[i] + 1.01);
+        parttogen_max_i = static_cast<int>(static_cast<double>(ntotal) * distweight[i] + static_cast<double>(1.01)*(ntemplates+nprocs));
         n_pti_max_requested += parttogen_max_i;
 
         // re-allocated if need more ptis in this template than allocated so far
@@ -342,7 +343,7 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
     if(ntotal > n_pti_max)
     {
         
-        error->all(FLERR,"Faulty implementation: FixParticledistributionDiscrete::randomize_list() called for more particles than defined in random_init_list()");
+        error->one(FLERR,"Faulty implementation: FixParticledistributionDiscrete::randomize_list() called for more particles than defined in random_init_list()");
     }
 
     ninsert = ntotal;

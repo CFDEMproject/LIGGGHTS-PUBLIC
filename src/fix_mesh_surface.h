@@ -52,11 +52,19 @@ namespace LAMMPS_NS
         virtual void post_create();
         virtual void pre_delete(bool unfixflag);
 
+        virtual void init() {}
+
         virtual int setmask();
         void setup_pre_force(int);
 
+        virtual void pre_force(int);
+        virtual void final_integrate();
+
         void createNeighList();
         void createContactHistory(int dnum);
+
+        inline bool trackStress()
+        {return stress_flag_;}
 
         inline int atomTypeWall()
         { return atom_type_mesh_;}
@@ -77,6 +85,9 @@ namespace LAMMPS_NS
 
         class FixContactHistory *fix_contact_history_;
         class FixNeighlistMesh *fix_mesh_neighlist_;
+
+        // flag for stressanalysis
+        bool stress_flag_;
 
       private:
 

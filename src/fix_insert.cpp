@@ -32,7 +32,7 @@
 #include "random_park.h"
 #include "memory.h"
 #include "error.h"
-#include "fix_rigid_multisphere.h"
+#include "fix_multisphere.h"
 #include "fix_particledistribution_discrete.h"
 #include "fix_template_sphere.h"
 #include "fix_insert.h"
@@ -59,6 +59,10 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   restart_global = 1;
 
   setup_flag = false;
+
+  fix_distribution = NULL;
+  fix_multisphere = NULL;
+  multisphere = NULL;
 
   // required args
   iarg = 3;
@@ -283,8 +287,6 @@ void FixInsert::init_defaults()
   vectorZeroize3D(omega_insert);
 
   quatUnitize4D(quat_insert);
-
-  fix_distribution = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -352,12 +354,12 @@ void FixInsert::init()
     if (domain->triclinic) error->fix_error(FLERR,this,"Cannot use with triclinic box");
     if (domain->dimension != 3) error->fix_error(FLERR,this,"Can use fix insert for 3d simulations only");
     
-    fix_rm = static_cast<FixRigidMultisphere*>(modify->find_fix_style("rigid/multisphere", 0));
-    if(!fix_rm) multisphere = NULL;
-    else multisphere = &fix_rm->data();
+    fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere", 0));
+    if(!fix_multisphere) multisphere = NULL;
+    else multisphere = &fix_multisphere->data();
 
-    if(fix_rm && fix_rm->igroup != igroup)
-        error->fix_error(FLERR,this,"Fix insert command and fix rigid/multisphere command are not compatible, must be same group");
+    if(fix_multisphere && fix_multisphere->igroup != igroup)
+        error->fix_error(FLERR,this,"Fix insert command and fix multisphere command are not compatible, must be same group");
 
     // in case of new fix insert in a restarted simulation, have to add current time-step
     if(next_reneighbor > 0 && next_reneighbor < ntimestep)
@@ -469,6 +471,7 @@ void FixInsert::pre_exchange()
       // schedule next insertion
       if (insert_every && (!ninsert_exists || ninserted < ninsert))
         next_reneighbor += insert_every;
+
       return;
   }
   else if(ninsert_this < 0)
@@ -528,10 +531,16 @@ void FixInsert::pre_exchange()
     }
   }
 
+  if(multisphere)
+  {
+    multisphere->id_extend();
+    multisphere->generate_map();
+  }
+
   // tally stats
- MPI_Sum_Scalar(ninserted_this_local,ninserted_this,world);
+  MPI_Sum_Scalar(ninserted_this_local,ninserted_this,world);
   ninserted += ninserted_this;
- MPI_Sum_Scalar(mass_inserted_this_local,mass_inserted_this,world);
+  MPI_Sum_Scalar(mass_inserted_this_local,mass_inserted_this,world);
   massinserted += mass_inserted_this;
   print_stats_during(ninserted_this,mass_inserted_this);
 

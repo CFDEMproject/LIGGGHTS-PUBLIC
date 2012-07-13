@@ -57,6 +57,11 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 
     restart_global = 1;
 
+    force_reneighbor = 1;
+    next_reneighbor = -1;
+
+    // parse args
+
     iarg_ = 3;
 
     char mesh_fname[256];
@@ -139,7 +144,7 @@ void FixMesh::post_create()
 void FixMesh::create_mesh(char *mesh_fname)
 {
     
-    if(strcmp(style,"mesh/surface") == 0)
+    if(strncmp(style,"mesh/surface",12) == 0)
     {
         mesh_ = new TriMesh(lmp);
         static_cast<TriMesh*>(mesh_)->setMeshID(id);
@@ -188,6 +193,7 @@ int FixMesh::setmask()
     int mask = 0;
     mask |= PRE_EXCHANGE;
     mask |= PRE_FORCE;
+    mask |= FINAL_INTEGRATE;
     return mask;
 }
 
@@ -208,6 +214,9 @@ void FixMesh::setup_pre_force(int vflag)
     {
         mesh_->pbcExchangeBorders(1);
     }
+
+    // clear reverse comm properties
+    mesh_->clearReverse();
 
     pOpFlag_ = false;
 
@@ -242,7 +251,7 @@ void FixMesh::pre_exchange()
 }
 
 /* ----------------------------------------------------------------------
-   forward comm for mesh, currently no reverse comm invoked
+   forward comm for mesh
 ------------------------------------------------------------------------- */
 
 void FixMesh::pre_force(int vflag)
@@ -251,12 +260,34 @@ void FixMesh::pre_force(int vflag)
     // case re-neigh step
     if(pOpFlag_)
     {
+        
         mesh_->pbcExchangeBorders(0);
+
         pOpFlag_ = false;
     }
     // case regular step
     else
+    {
         mesh_->forwardComm();
+
+        if(mesh_->decideRebuild())
+        {
+            
+            next_reneighbor = update->ntimestep + 1;
+        }
+    }
+
+    // clear reverse comm properties
+    mesh_->clearReverse();
+}
+
+/* ----------------------------------------------------------------------
+   reverse comm for mesh
+------------------------------------------------------------------------- */
+
+void FixMesh::final_integrate()
+{
+    mesh_->reverseComm();
 }
 
 /* ---------------------------------------------------------------------- */

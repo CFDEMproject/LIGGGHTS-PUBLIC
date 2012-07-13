@@ -39,6 +39,7 @@ namespace LAMMPS_NS
 
         void initalSetup();
         void pbcExchangeBorders(int setupFlag);
+        void clearReverse();
         void forwardComm();
         void reverseComm();
 
@@ -80,6 +81,8 @@ namespace LAMMPS_NS
         virtual int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
         virtual int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
         virtual int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        virtual int pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        virtual int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         virtual int elemBufSize(int operation,bool scale,bool translate,bool rotate);
         virtual int pushElemToBuffer(int i, double *buf,int operation,bool scale,bool translate,bool rotate);
@@ -137,7 +140,7 @@ namespace LAMMPS_NS
 
         int size_exchange_;          // # of per-element datums in exchange
         int size_forward_;           // # of per-element datums in forward comm
-        //  int size_reverse_;       // # of datums in reverse comm
+        int size_reverse_;           // # of datums in reverse comm
         int size_border_;            // # of datums in forward border comm
 
         int maxforward_,maxreverse_; // max # of datums in forward/reverse comm
@@ -150,6 +153,8 @@ namespace LAMMPS_NS
         int *firstrecv_;             // where to put 1st recv atom in each swap
         int *sendproc_,*recvproc_;   // proc to send/recv to/from at each swap
         int *size_forward_recv_;     // # of values to recv in each forward comm
+        int *size_reverse_recv_;     // # to recv in each reverse comm
+
         double *slablo_,*slabhi_;
         int **sendlist_;             // list of elements to send in each swap
         int *maxsendlist_;           // max size of send list for each swap

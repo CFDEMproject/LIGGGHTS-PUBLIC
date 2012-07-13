@@ -32,7 +32,7 @@
 #include "vector_liggghts.h"
 #include "fix_cfd_coupling.h"
 #include "fix.h"
-#include "fix_rigid_multisphere.h"
+#include "fix_multisphere.h"
 #include "fix_property_global.h"
 #include "fix_property_atom.h"
 #include "fix_cfd_coupling.h"

@@ -31,7 +31,7 @@
 #include "math.h"
 #include "vector_liggghts.h"
 #include "fix_cfd_coupling.h"
-#include "fix_rigid_multisphere.h"
+#include "fix_multisphere.h"
 #include "cfd_datacoupling_mpi.h"
 
 using namespace LAMMPS_NS;

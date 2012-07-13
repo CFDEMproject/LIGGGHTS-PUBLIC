@@ -538,7 +538,6 @@ void ComputePairGranLocal::reallocate(int n)
   memory->destroy(array);
   memory->create(array,nmax,nvalues,"pair/local:array");
   array_local = array;
-
 }
 
 /* ----------------------------------------------------------------------

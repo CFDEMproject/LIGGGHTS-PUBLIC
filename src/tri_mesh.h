@@ -46,8 +46,8 @@ namespace LAMMPS_NS
         void addTriangleComplete();
         void deleteTriangle(int n);
 
-        double resolveTriSphereContact(int nTri, double rSphere, double *cSphere, double *en0);
-        double resolveTriSphereContactBary(int nTri, double rSphere, double *cSphere, double *en0,double *bary);
+        double resolveTriSphereContact(int nTri, double rSphere, double *cSphere, double *delta);
+        double resolveTriSphereContactBary(int nTri, double rSphere, double *cSphere, double *contactPoint,double *bary);
         bool resolveTriSphereNeighbuild(int nTri, double rSphere, double *cSphere, double treshold);
 
         int generateRandomOwnedGhost(double *pos);

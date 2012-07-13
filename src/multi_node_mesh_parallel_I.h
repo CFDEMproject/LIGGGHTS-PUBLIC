@@ -48,6 +48,7 @@
     firstrecv_(0),
     sendproc_(0),recvproc_(0),
     size_forward_recv_(0),
+    size_reverse_recv_(0),
     slablo_(0),slabhi_(0),
     sendlist_(0),
     maxsendlist_(0),
@@ -193,7 +194,7 @@
         }
       }
 
-   MPI_Max_Scalar(flag,this->world);
+    MPI_Max_Scalar(flag,this->world);
     if(flag) return false;
     else return true;
   }
@@ -221,10 +222,13 @@
        size_exchange_ = elemBufSize(OPERATION_COMM_EXCHANGE,scale,translate,rotate);
        size_border_ = elemBufSize(OPERATION_COMM_BORDERS,scale,translate,rotate);
        size_forward_ = elemBufSize(OPERATION_COMM_FORWARD,scale,translate,rotate);
-       
+       size_reverse_ = elemBufSize(OPERATION_COMM_REVERSE,scale,translate,rotate);
+
+       // maxforward = # of datums in largest forward communication
+       // maxreverse = # of datums in largest reverse communication
+
        maxforward_ = MathExtraLiggghts::max(size_exchange_,size_border_,size_forward_);
-       
-       maxreverse_ = 0;
+       maxreverse_ = size_reverse_;
 
        // copy comm and domain data
        vectorCopy3D(this->comm->myloc,myloc);
@@ -419,8 +423,7 @@
       this->memory->create(sendproc_,n,"MultiNodeMeshParallel:sendproc_");
       this->memory->create(recvproc_,n,"MultiNodeMeshParallel:recvproc_");
       this->memory->create(size_forward_recv_,n,"MultiNodeMeshParallel:size");
-//      this->memory->create(size_reverse_send,n,"MultiNodeMeshParallel:size");
-//      this->memory->create(size_reverse_recv,n,"MultiNodeMeshParallel:size");
+      this->memory->create(size_reverse_recv_,n,"MultiNodeMeshParallel:size");
       this->memory->create(slablo_,n,"MultiNodeMeshParallel:slablo_");
       this->memory->create(slabhi_,n,"MultiNodeMeshParallel:slabhi_");
       this->memory->create(firstrecv_,n,"MultiNodeMeshParallel:firstrecv");
@@ -436,8 +439,7 @@
       this->memory->destroy(sendproc_);
       this->memory->destroy(recvproc_);
       this->memory->destroy(size_forward_recv_);
-//      this->memory->destroy(size_reverse_send);
-//      this->memory->destroy(size_reverse_recv);
+      this->memory->destroy(size_reverse_recv_);
       this->memory->destroy(slablo_);
       this->memory->destroy(slabhi_);
       this->memory->destroy(firstrecv_);
@@ -517,6 +519,9 @@
       
       buildNeighbours();
 
+      // store node positions for neigh list trigger
+      this->storeNodePos();
+
   }
 
   /* ----------------------------------------------------------------------
@@ -526,9 +531,9 @@
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::pbcExchangeBorders(int setupFlag)
   {
-      // need not do this for non-moving mesh and non-changing simulation box
+      // need not do this during simulation for non-moving mesh and non-changing simulation box
       
-      if(!this->isMoving() && !this->domain->box_change) return;
+      if(!setupFlag && !this->isMoving() && !this->domain->box_change) return;
 
       // set-up mesh parallelism
       setup();
@@ -551,6 +556,18 @@
       // re-calculate properties for ghosts
       refreshGhosts(setupFlag);
 
+      // store node positions for neigh list trigger
+      this->storeNodePos();
+  }
+
+  /* ----------------------------------------------------------------------
+   parallelization - clear data of reverse comm properties
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::clearReverse()
+  {
+      // nothing to do here
   }
 
   /* ----------------------------------------------------------------------
@@ -791,8 +808,7 @@
               sendnum_[iswap] = nsend;
               recvnum_[iswap] = nrecv;
               size_forward_recv_[iswap] = nrecv*size_forward_;
-              //size_reverse_send[iswap] = nrecv*size_reverse;
-              //size_reverse_recv[iswap] = nsend*size_reverse;
+              size_reverse_recv_[iswap] = nsend*size_reverse_;
               firstrecv_[iswap] = nLocal_+nGhost_;
               nGhost_ += nrecv;
               iswap++;
@@ -888,13 +904,45 @@
   }
 
   /* ----------------------------------------------------------------------
-   communicate properties from ghost elements
+   reverse communication of properties on atoms every timestep
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::reverseComm()
   {
-      
+      int n;
+      MPI_Request request;
+      MPI_Status status;
+      double *buf;
+      int me = this->comm->me;
+
+      bool scale = this->isScaling();
+      bool translate = this->isTranslating();
+      bool rotate = this->isRotating();
+
+      // exchange data with another proc
+      // if other proc is self, just copy
+
+      for (int iswap = nswap_-1; iswap >= 0; iswap--)
+      {
+          if (sendproc_[iswap] != me)
+          {
+              if (size_reverse_recv_[iswap])
+                  MPI_Irecv(buf_recv_,size_reverse_recv_[iswap],MPI_DOUBLE,sendproc_[iswap],0,this->world,&request);
+
+              n = pushElemListToBufferReverse(firstrecv_[iswap],recvnum_[iswap],buf_send_,OPERATION_COMM_REVERSE,scale,translate,rotate);
+
+              if (n) MPI_Send(buf_send_,n,MPI_DOUBLE,recvproc_[iswap],0,this->world);
+              if (size_reverse_recv_[iswap]) MPI_Wait(&request,&status);
+
+              n = popElemListFromBufferReverse(sendnum_[iswap],sendlist_[iswap],buf_recv_,OPERATION_COMM_REVERSE,scale,translate,rotate);
+          }
+          else
+          {
+              n = pushElemListToBufferReverse(firstrecv_[iswap],recvnum_[iswap],buf_send_,OPERATION_COMM_REVERSE,scale,translate,rotate);
+              n = popElemListFromBufferReverse(sendnum_[iswap],sendlist_[iswap],buf_recv_,OPERATION_COMM_REVERSE,scale,translate,rotate);
+          }
+      }
   }
 
 #endif

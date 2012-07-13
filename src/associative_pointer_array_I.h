@@ -205,6 +205,17 @@
   }
 
   /* ----------------------------------------------------------------------
+   clear reverse properties, i.e. reset all of them to 0
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  void AssociativePointerArray<T>::clearReverse(bool scale,bool translate,bool rotate)
+  {
+      for(int i=0;i<numElem_;i++)
+        content_[i]->clearReverse(scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
    id 2 index
   ------------------------------------------------------------------------- */
 
@@ -315,6 +326,24 @@
     for(int i=0;i<numElem_;i++)
       nrecv += getBasePointerByIndex(i)->popElemListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
     return nrecv;
+  }
+
+  template<typename T>
+  int AssociativePointerArray<T>::pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    int nrecv = 0;
+    for(int i=0;i<numElem_;i++)
+      nrecv += getBasePointerByIndex(i)->pushElemListToBufferReverse(first,n,&buf[nrecv],operation,scale,translate,rotate);
+    return nrecv;
+  }
+
+  template<typename T>
+  int AssociativePointerArray<T>::popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    int nsend = 0;
+    for(int i=0;i<numElem_;i++)
+      nsend += getBasePointerByIndex(i)->popElemListFromBufferReverse(n,list,&buf[nsend],operation,scale,translate,rotate);
+    return nsend;
   }
 
   /* ----------------------------------------------------------------------

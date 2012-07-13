@@ -205,6 +205,16 @@
     return elementProperties_.popElemListFromBuffer(first,n,buf,operation,scale,translate,rotate);
   }
 
+  int CustomValueTracker::pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    return elementProperties_.pushElemListToBufferReverse(first,n,buf,operation,scale,translate,rotate);
+  }
+
+  int CustomValueTracker::popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    return elementProperties_.popElemListFromBufferReverse(n,list,buf,operation,scale,translate,rotate);
+  }
+
   /* ----------------------------------------------------------------------
    push / pop for element i
   ------------------------------------------------------------------------- */

@@ -48,7 +48,7 @@ MeshMoverLinear::MeshMoverLinear(LAMMPS *lmp,AbstractMesh *_mesh, double vx, dou
 
 void MeshMoverLinear::pre_delete()
 {
-    mesh_->unregisterMove(false,true,true);
+    mesh_->unregisterMove(false,true,false);
 }
 
 MeshMoverLinear::~MeshMoverLinear()
@@ -96,7 +96,7 @@ MeshMoverWiggle::MeshMoverWiggle(LAMMPS *lmp,AbstractMesh *_mesh,
 
 void MeshMoverWiggle::pre_delete()
 {
-    mesh_->unregisterMove(false,true,true);
+    mesh_->unregisterMove(false,true,false);
 }
 
 MeshMoverWiggle::~MeshMoverWiggle()

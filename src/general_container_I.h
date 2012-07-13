@@ -147,6 +147,23 @@
   }
 
   /* ----------------------------------------------------------------------
+   clear reverse properties, i.e. reset all of them to 0
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::clearReverse(bool scale,bool translate,bool rotate)
+  {
+      // do only reset property if it is a reverse comm property
+      if(!decideBufferOperation(OPERATION_COMM_REVERSE, scale, translate, rotate))
+        return;
+
+      for(int i=0;i<size();i++)
+            for(int j=0;j<NUM_VEC;j++)
+                for(int k=0;k<LEN_VEC;k++)
+                    arr_[i][j][k] = 0.;
+  }
+
+  /* ----------------------------------------------------------------------
    delete an element
   ------------------------------------------------------------------------- */
 
@@ -386,6 +403,43 @@
         }
 
         destroy<T>(tmp);
+
+        return (n*NUM_VEC*LEN_VEC);
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  int GeneralContainer<T,NUM_VEC,LEN_VEC>::pushElemListToBufferReverse(int first, int n, double *buf,int operation,bool scale,bool translate, bool rotate)
+  {
+        int m = 0;
+
+        if(!this->decideBufferOperation(operation,scale,translate,rotate))
+            return 0;
+
+        for(int i=first;i<first+n;i++)
+        {
+            for(int j=0;j<NUM_VEC;j++)
+                for(int k=0;k<LEN_VEC;k++)
+                    buf[m++] = static_cast<double>(arr_[i][j][k]);
+        }
+
+        return (n*NUM_VEC*LEN_VEC);
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  int GeneralContainer<T,NUM_VEC,LEN_VEC>::popElemListFromBufferReverse(int n, int *list,double *buf,int operation,bool scale,bool translate, bool rotate)
+  {
+        int i,m = 0;
+
+        if(!this->decideBufferOperation(operation,scale,translate,rotate))
+            return 0;
+
+        for(int ii=0;ii<n;ii++)
+        {
+            i = list[ii];
+            for(int j=0;j<NUM_VEC;j++)
+                for(int k=0;k<LEN_VEC;k++)
+                    arr_[i][j][k] += static_cast<T>(buf[m++]);
+        }
 
         return (n*NUM_VEC*LEN_VEC);
   }

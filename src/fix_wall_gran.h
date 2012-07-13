@@ -80,7 +80,7 @@ class FixWallGran : public Fix {
 
  protected:
 
-  int iarg_;
+  int iarg_, narg_;
   int atom_type_wall_;
 
   int addflag_;
@@ -119,7 +119,9 @@ class FixWallGran : public Fix {
  private:
 
   int nlevels_respa_;
-  int wiggle_,shear_;
+
+  int shear_, axis_;
+  double vshear_;
 
   // number of values for contact history
   int dnum_;
@@ -131,13 +133,17 @@ class FixWallGran : public Fix {
   int n_FixMesh_;
   class FixMeshSurface **FixMesh_list_;
 
+  // flag for stressanalysis
+  // true if any of the meshes tracks stresses
+  bool stress_flag_;
+
   class PrimitiveWall *primitiveWall_;
 
   // class to keep track of wall contacts
   bool rebuildPrimitiveNeighlist_;
 
   // force storage
-  int store_force_;
+  bool store_force_;
   class FixPropertyAtom *fix_wallforce_;
 
   // class variables for atom properties
@@ -150,8 +156,8 @@ class FixWallGran : public Fix {
   void post_force_mesh(int);
   void post_force_primitive(int);
 
-  inline void post_force_eval_contact(int iPart, double deltan, double *delta,
-      double *v_wall, double *c_history,class TriMesh *mesh);
+  inline void post_force_eval_contact(int iPart, double deltan, double *delta, double *v_wall,
+                    double *c_history, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
 };
 
 }

@@ -94,6 +94,9 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline void surfaceNorm(int i,double *sn)
         { vectorCopy3D(surfaceNorm(i),sn); }
 
+        inline double areaElem(int i)
+        { return (area_)(i); }
+
       protected:
 
         SurfaceMesh(LAMMPS *lmp);
@@ -109,12 +112,10 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline void recalcLocalSurfProperties();
         inline void recalcGhostSurfProperties();
 
-        // returns true if surfaces share a node/edge
+        // returns true if surfaces share an edge
         // called with local index
-        // iNode, jNode / iEdge, jEdge return indices of the
-        // shared edge/node in both triangles
+        // iEdge, jEdge return indices of first shared edge
         bool shareEdge(int i, int j, int &iEdge, int &jEdge);
-        bool shareNode(int i, int j, int &iNode, int &jNode);
 
         // mesh topology functions, called with local index
         void handleSharedEdge(int iSrf, int iEdge, int jSrf, int jEdge, bool coplanar);
@@ -164,9 +165,9 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         // surface properties
         ScalarContainer<double>& area_;
-        ScalarContainer<double>& areaAcc_;        // accumulated area of owned and ghost particles
-        VectorContainer<double,NUM_NODES>& edgeLen_;
-        MultiVectorContainer<double,NUM_NODES,3>& edgeVec_;
+        ScalarContainer<double>& areaAcc_;                    // accumulated area of owned and ghost particles
+        VectorContainer<double,NUM_NODES>& edgeLen_;          // len of edgeVec
+        MultiVectorContainer<double,NUM_NODES,3>& edgeVec_;   // unit vec from node0 to node1 etc
         MultiVectorContainer<double,NUM_NODES,3>& edgeNorm_;
         VectorContainer<double,3>& surfaceNorm_;
 

@@ -66,6 +66,8 @@ namespace LAMMPS_NS
         //   calls rotate(double *dQuat,double *displacement)
         void rotate(double dAngle, double *axis, double *p);
 
+        void setRotation(double *quat);
+
         // initialize movement
         bool registerMove(bool _scale, bool _translate, bool _rotate);
         void unregisterMove(bool _scale, bool _translate, bool _rotate);
@@ -74,6 +76,10 @@ namespace LAMMPS_NS
         BoundingBox getGlobalBoundingBox() const;
         BoundingBox getElementBoundingBoxOnSubdomain(int const n);
         void updateGlobalBoundingBox();
+
+        // neigh list stuff for moving mesh
+        bool decideRebuild();
+        void storeNodePos();
 
         // inline access
 
@@ -119,6 +125,12 @@ namespace LAMMPS_NS
         virtual void refreshGhosts(int setupFlag);
 
         bool nodesAreEqual(int iSurf, int iNode, int jSurf, int jNode);
+
+        // returns true if surfaces share a node
+        // called with local index
+        // iNode, jNode return indices of first shared node
+        bool shareNode(int iElem, int jElem, int &iNode, int &jNode);
+
         void extendToElem(int const nElem) const;
 
         // linear move of single element w/ incremental displacement
@@ -135,6 +147,9 @@ namespace LAMMPS_NS
         // original mesh node_ position, used for moving mesh
         MultiVectorContainer<double,NUM_NODES,3> *node_orig_;
         double** node_orig(int i) {return (*node_orig_)(i);}
+
+        // node pos stored by external trigger at neigh build
+        MultiVectorContainer<double,NUM_NODES,3> nodesLastRe_;
 
         // mesh center
         VectorContainer<double,3> center_; 
@@ -154,6 +169,9 @@ namespace LAMMPS_NS
         // flags stating how many move operations are performed on the mesh
         int nMove_;
         int nScale_,nTranslate_,nRotate_;
+
+        // integrated quaternion
+        double quat_[4];
 
         // reset mesh nodes to original position
         // called via mesh move functions

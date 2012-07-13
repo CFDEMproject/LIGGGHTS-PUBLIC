@@ -37,9 +37,9 @@ inline void __debug__(LAMMPS* lmp)
     for(int i = 0; i < lmp->modify->nfix; i++)
     {
         /*
-        if(strcmp(lmp->modify->fix[i]->style,"rigid/multisphere") == 0)
+        if(strcmp(lmp->modify->fix[i]->style,"multisphere") == 0)
         {
-            FixRigidMultisphere *fr = static_cast<FixRigidMultisphere*>(lmp->modify->fix[i]);
+            FixMultisphere *fr = static_cast<FixMultisphere*>(lmp->modify->fix[i]);
             int nb,np;
             double **omega = fr->get_dump_ref(nb,np,"omega");
 

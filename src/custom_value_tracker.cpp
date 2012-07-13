@@ -105,3 +105,13 @@ using namespace LAMMPS_NS;
       elementProperties_.move(delta);
       globalProperties_.move(delta);
   }
+
+  /* ----------------------------------------------------------------------
+   clear reverse properties, i.e. reset all of them to 0
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::clearReverse(bool scale,bool translate,bool rotate)
+  {
+      
+      elementProperties_.clearReverse(scale,translate,rotate);
+  }

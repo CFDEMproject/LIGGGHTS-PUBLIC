@@ -74,6 +74,7 @@ namespace LAMMPS_NS
         inline void deleteElement(int i);
         inline void deleteForwardElement(int i,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int i,bool scale,bool translate,bool rotate);
+        void clearReverse(bool scale,bool translate,bool rotate);
 
         void move(double *delta);
         inline void moveElement(int i, double *delta);
@@ -85,6 +86,8 @@ namespace LAMMPS_NS
         inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
         inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);

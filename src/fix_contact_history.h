@@ -86,7 +86,7 @@ class FixContactHistory : public Fix {
   // functions specific for mesh - contact management
 
   bool haveContact(int indexPart, int idTri, double *&history);
-  bool hasContactCoplanarTo(int indexPart, int idTri, double *&history);
+  bool checkCoplanarContact(int indexPart, int idTri, double *&history);
   void addNewTriContactToExistingParticle(int indexPart, int idTri, double *&history);
 
   // mem management

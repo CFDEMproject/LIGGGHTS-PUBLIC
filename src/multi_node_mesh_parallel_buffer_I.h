@@ -245,12 +245,6 @@
       
       int nsend = 0;
 
-      if(operation == OPERATION_COMM_REVERSE)
-      {
-        this->error->one(FLERR,"TODO here");
-        return nsend;
-      }
-
       if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
       {
           
@@ -283,12 +277,6 @@
   {
       int nrecv = 0;
 
-      if(operation == OPERATION_COMM_REVERSE)
-      {
-        this->error->one(FLERR,"TODO here");
-        return nrecv;
-      }
-
       if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
       {
           nrecv += MultiNodeMesh<NUM_NODES>::center_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
@@ -311,6 +299,48 @@
   }
 
   /* ----------------------------------------------------------------------
+   push a list of elements for reverseComm()
+   depending on operation and if mesh scales, translates or rotates,
+   different properties are communicated
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBufferReverse(int first, int n, double *buf,int operation,bool scale,bool translate,bool rotate)
+  {
+      int nsend = 0;
+
+      if(operation == OPERATION_COMM_REVERSE)
+      {
+        
+        return nsend;
+      }
+
+      this->error->one(FLERR,"Illegal operation in MultiNodeMeshParallel<NUM_NODES>::popElemFromBuffer");
+      return 0;
+  }
+
+  /* ----------------------------------------------------------------------
+   pop a list of elements for reverseComm()
+   depending on operation and if mesh scales, translates or rotates,
+   different properties are communicated
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBufferReverse(int n, int *list, double *buf,int operation,bool scale,bool translate,bool rotate)
+  {
+      int nrecv = 0;
+
+      if(operation == OPERATION_COMM_REVERSE)
+      {
+        
+        return nrecv;
+      }
+
+      this->error->one(FLERR,"Illegal operation in MultiNodeMeshParallel<NUM_NODES>::popElemFromBuffer");
+      return 0;
+  }
+
+  /* ----------------------------------------------------------------------
    return required buffer size for one element for exchange()
    must match push / pop implementation
    depending on operation and if mesh scales, translates or rotates,
@@ -321,12 +351,6 @@
   int MultiNodeMeshParallel<NUM_NODES>::elemBufSize(int operation,bool scale,bool translate,bool rotate)
   {
       int size_buf = 0;
-
-      if(operation == OPERATION_COMM_REVERSE)
-      {
-        this->error->one(FLERR,"TODO here");
-        return size_buf;
-      }
 
       if(operation == OPERATION_RESTART)
       {
@@ -348,6 +372,12 @@
       {
           
           return size_buf;
+      }
+
+      if(operation == OPERATION_COMM_REVERSE)
+      {
+        
+        return size_buf;
       }
 
       this->error->one(FLERR,"Illegal operation in MultiNodeMeshParallel<NUM_NODES>::elemBufSize");

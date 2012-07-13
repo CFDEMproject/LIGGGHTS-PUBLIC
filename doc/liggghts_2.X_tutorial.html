@@ -33,7 +33,7 @@ to modelling approaches.
 
 <LI>fix mesh/surface (formerly fix mesh/gran) 
 
-<LI>fix mesh/stressanalysis (formerly fix mesh/gran/stressanalysis) 
+<LI>fix mesh/surface/stress (formerly fix mesh/gran/stressanalysis) 
 
 <LI>fix move/mesh (formerly fix move/mesh/gran)  
 
@@ -115,15 +115,12 @@ NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_ang_vel origin 0.
 </P>
 <HR>
 
-<P><B>fix mesh/stressanalysis (formerly fix mesh/gran/stressanalysis):</B>
+<P><B>fix mesh/surface/stress (formerly fix mesh/gran/stressanalysis):</B>
 </P>
 <PRE>OLD: fix ID group-ID mesh/gran/stressanalysis mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. finnie yes
-NEW: fix ID group-ID mesh/stressanalysis file mesh.stl type 1 wear finnie 
+NEW: fix ID group-ID fix mesh/surface/stress file mesh.stl type 1 wear finnie 
 </PRE>
-<P>NOTE: For compatibility reasons, the command name <I>fix mesh/gran/stressanalysis</I> can be 
-used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax.
-</P>
-<P>For details, see <A HREF = "fix_mesh_stressanalysis.html">fix mesh/stressanalysis</A>.
+<P>For details, see <A HREF = "fix_mesh_surface_stress.html">fix mesh/surface/stress</A>.
 </P>
 <HR>
 

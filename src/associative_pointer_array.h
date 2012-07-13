@@ -66,6 +66,8 @@ class AssociativePointerArray
         inline void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int n,bool scale,bool translate,bool rotate);
 
+        inline void clearReverse(bool scale,bool translate,bool rotate);
+
         void rotate(double *dQ);
         void move(double *delta);
         void moveElement(int i,double *delta);
@@ -78,6 +80,8 @@ class AssociativePointerArray
         inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
         inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);

@@ -135,7 +135,7 @@ class FixInsert : public Fix {
   // determine if print stats
   int print_stats_start_flag;
 
-  class FixRigidMultisphere *fix_rm;
+  class FixMultisphere *fix_multisphere;
   class Multisphere *multisphere;
 
   /*---FUNCTION MEMBERS---*/

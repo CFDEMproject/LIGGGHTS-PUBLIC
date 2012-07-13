@@ -53,9 +53,7 @@ namespace LAMMPS_NS
         int setmask();
 
         void initial_integrate(int);
-        void pre_force(int vflag);
         void final_integrate();
-        void pre_neighbor();
 
         void write_restart(FILE *);
         void restart(char *);
@@ -76,7 +74,7 @@ namespace LAMMPS_NS
         bool neighListFresh_;
 
         double time_, time_since_setup_;
-        class MultiVectorContainer<double,3,3> oldNodes;
+
   };
 } /* namespace LAMMPS_NS */
 #endif

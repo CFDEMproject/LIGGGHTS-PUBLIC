@@ -29,7 +29,7 @@ args = list of arguments for a particular style :l
 
   {mesh/stl} args = 'local' or 'ghost' or 'all'
   {mesh/vtk} args =  one or more dump-identifiers
-      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner'
+      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area'
   {decomposition/vtk} args = none :pre
 
   {local} args = list of local attributes
@@ -330,7 +330,7 @@ Paraview , www.paraview.org
 The {mesh/vtk} style can be used to dump active mesh geometries 
 defined via "fix mesh"_fix_mesh.html commands to a series of VTK files. 
 Different keywords can be used to dump the per-triangle stress, id, 
-velocity, wear, stress components or the process which owns the element
+velocity, wear, stress components, area or the process which owns the element
 (visulatisation of the parallel decomposition) into the specified file using a 
 VTK file format. The list of mesh IDs is optional. As with the stl style, 
 all active meshes are dumped if you do not supply the optional list of 

@@ -47,10 +47,10 @@ inline void vectorConstruct3D(int *v,int x, int y, int z)
 
 inline void vectorNormalize3D(double *v)
 {
-    double norm = std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
-    v[0] /= norm;
-    v[1] /= norm;
-    v[2] /= norm;
+    double invnorm = 1./std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    v[0] *= invnorm;
+    v[1] *= invnorm;
+    v[2] *= invnorm;
 }
 
 inline double vectorMag3D(double *v)
@@ -66,6 +66,19 @@ inline double vectorMag3DSquared(double *v)
 inline double vectorMag4D(double *v)
 {
   return (  std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]+v[3]*v[3])  );
+}
+
+inline double pointDistance(double *point1, double *point2)
+{
+  return
+  (
+     std::sqrt
+     (
+          (point1[0]-point2[0]) * (point1[0]-point2[0]) +
+          (point1[1]-point2[1]) * (point1[1]-point2[1]) +
+          (point1[2]-point2[2]) * (point1[2]-point2[2])
+     )
+  );
 }
 
 inline double vectorMag4DSquared(double *v)
@@ -198,9 +211,10 @@ inline void vectorScalarMult3D(double *v,double s,double *result)
 
 inline void vectorScalarDiv3D(double *v,double s)
 {
-  v[0]=1./s*v[0];
-  v[1]=1./s*v[1];
-  v[2]=1./s*v[2];
+  double sinv = 1./s;
+  v[0]=sinv*v[0];
+  v[1]=sinv*v[1];
+  v[2]=sinv*v[2];
 }
 
 inline void vectorScalarAdd3D(double *v,double s)
@@ -224,11 +238,19 @@ inline void vectorNegate3D(double *v,double *result)
   result[2]=-v[2];
 }
 
+inline void vectorNegate3D(double *v)
+{
+  v[0]=-v[0];
+  v[1]=-v[1];
+  v[2]=-v[2];
+}
+
 inline void vectorScalarDiv3D(double *v,double s,double *result)
 {
-  result[0]=1./s*v[0];
-  result[1]=1./s*v[1];
-  result[2]=1./s*v[2];
+  double sinv = 1./s;
+  result[0]=sinv*v[0];
+  result[1]=sinv*v[1];
+  result[2]=sinv*v[2];
 }
 
 inline void vectorAdd3D(const double *v1,const double *v2, double *result)

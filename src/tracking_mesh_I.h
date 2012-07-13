@@ -155,6 +155,17 @@
   }
 
   /* ----------------------------------------------------------------------
+   clear reverse properties, i.e. reset all of them to 0
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void TrackingMesh<NUM_NODES>::clearReverse()
+  {
+      MultiNodeMeshParallel<NUM_NODES>::clearReverse();
+      customValues_.clearReverse(this->isScaling(),this->isTranslating(),this->isRotating());
+  }
+
+  /* ----------------------------------------------------------------------
    push / pop functions for a list of elements
   ------------------------------------------------------------------------- */
 
@@ -183,6 +194,24 @@
     nrecv += MultiNodeMeshParallel<NUM_NODES>::popElemListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
     nrecv += customValues_.popElemListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
     return nrecv;
+  }
+
+  template<int NUM_NODES>
+  int TrackingMesh<NUM_NODES>::pushElemListToBufferReverse(int first, int n,double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    int nrecv = 0;
+    nrecv += MultiNodeMeshParallel<NUM_NODES>::pushElemListToBufferReverse(first,n,&buf[nrecv],operation,scale,translate,rotate);
+    nrecv += customValues_.pushElemListToBufferReverse(first,n,&buf[nrecv],operation,scale,translate,rotate);
+    return nrecv;
+  }
+
+  template<int NUM_NODES>
+  int TrackingMesh<NUM_NODES>::popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    int nsend = 0;
+    nsend += MultiNodeMeshParallel<NUM_NODES>::popElemListFromBufferReverse(n,list,&buf[nsend],operation,scale,translate,rotate);
+    nsend += customValues_.popElemListFromBufferReverse(n,list,&buf[nsend],operation,scale,translate,rotate);
+    return nsend;
   }
 
   /* ----------------------------------------------------------------------
@@ -300,5 +329,26 @@
     MultiNodeMesh<NUM_NODES>::scale(factor);
     customValues_.scale(factor);
   }
+
+  /* ----------------------------------------------------------------------
+   return container classes
+  ------------------------------------------------------------------------- */
+/*
+  template <typename U>
+  containerTmp(
+
+  template<int NUM_NODES> template<typename U>
+  U* TrackingMesh<NUM_NODES>::containerTmp(int len)
+  {
+      if(len ==1) return MultiVectorConainer
+  }
+
+  template<int NUM_NODES>
+  void TrackingMesh<NUM_NODES>::move(double *vecTotal, double *vecIncremental)
+  {
+    
+    MultiNodeMesh<NUM_NODES>::move(vecTotal, vecIncremental);
+    customValues_.move(vecIncremental);
+  }*/
 
 #endif

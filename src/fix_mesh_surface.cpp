@@ -49,6 +49,7 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
 : FixMesh(lmp, narg, arg),
   fix_contact_history_(0),
   fix_mesh_neighlist_(0),
+  stress_flag_(false),
   velFlag_(false),
   angVelFlag_(false),
   curvature_(0.)
@@ -156,7 +157,6 @@ void FixMeshSurface::pre_delete(bool unfixflag)
 int FixMeshSurface::setmask()
 {
     int mask = FixMesh::setmask();
-
     return mask;
 }
 
@@ -171,6 +171,22 @@ void FixMeshSurface::setup_pre_force(int vflag)
     if(meshNeighlist())
         meshNeighlist()->initializeNeighlist();
 
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMeshSurface::pre_force(int vflag)
+{
+    FixMesh::pre_force(vflag);
+}
+
+/* ----------------------------------------------------------------------
+   reverse comm for mesh
+------------------------------------------------------------------------- */
+
+void FixMeshSurface::final_integrate()
+{
+    FixMesh::final_integrate();
 }
 
 /* ----------------------------------------------------------------------
@@ -315,11 +331,11 @@ void FixMeshSurface::initAngVel()
             static_cast<TriMesh*>(mesh_)->node(i,j,node);
             vectorSubtract3D(node,rot_origin,surfaceV);
 
-                // lever arm X rotational axis = tangential component
-                vectorCross3D(surfaceV,unitAxis,tangComp);
+            // lever arm X rotational axis = tangential component
+            vectorCross3D(surfaceV,unitAxis,tangComp);
 
-                // multiplying by omega scales the tangential component to give tangential velocity
-                vectorScalarMult3D(tangComp,-rot_omega,Utang);
+            // multiplying by omega scales the tangential component to give tangential velocity
+            vectorScalarMult3D(tangComp,-rot_omega,Utang);
 
             // EPSILON is wall velocity, not rotational omega
             if(vectorMag3D(Utang) < EPSILON_V)
@@ -330,7 +346,7 @@ void FixMeshSurface::initAngVel()
 
             // removes components normal to wall
             vectorSubtract3D(Utang,tmp,v_node[i][j]);
-                magUtang = vectorMag3D(Utang);
+            magUtang = vectorMag3D(Utang);
 
             if(vectorMag3D(v_node[i][j]) > 0.)
             {

@@ -46,7 +46,7 @@ FixNeighlistMesh::FixNeighlistMesh(LAMMPS *lmp, int narg, char **arg)
   buildNeighList(false),
   movingMesh(false)
 {
-    if(!modify->find_fix_id(arg[3]) || strcmp(modify->find_fix_id(arg[3])->style,"mesh/surface"))
+    if(!modify->find_fix_id(arg[3]) || !dynamic_cast<FixMeshSurface*>(modify->find_fix_id(arg[3])))
         error->fix_error(FLERR,this,"illegal caller");
 
     caller_ = static_cast<FixMeshSurface*>(modify->find_fix_id(arg[3]));
@@ -205,7 +205,8 @@ void FixNeighlistMesh::handleTriangle(int iTri)
     }
 
     numContacts.add(numContTmp);
-    //printf("numTri %d numContacts %d\n",iTri,numContTmp);
+    
+    return;
 }
 
 /* ---------------------------------------------------------------------- */

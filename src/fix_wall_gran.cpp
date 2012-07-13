@@ -43,7 +43,7 @@
 #include "math_extra_liggghts.h"
 #include "compute_pair_gran_local.h"
 #include "fix_neighlist_mesh.h"
-#include "fix_mesh_surface.h"
+#include "fix_mesh_surface_stress.h"
 #include "primitive_wall.h"
 #include "tri_mesh.h"
 #include "primitive_wall_definitions.h"
@@ -65,13 +65,14 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
         error->fix_error(FLERR,this,"requires atom attributes radius, omega, torque");
 
     // defaults
-    store_force_ = 1;
+    store_force_ = false;
+    stress_flag_ = false;
     n_FixMesh_ = 0;
     dnum_ = 0;
 
     r0_ = 0.;
 
-    wiggle_ = shear_ = 0;
+    shear_ = 0;
 
     atom_type_wall_ = 1; // will be overwritten during execution, but other fixes require a value here
 
@@ -97,6 +98,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     //strcpy(style,arg[2]);
 
     iarg_ = 3;
+    narg_ = narg;
 
     bool hasargs = true;
     while(iarg_ < narg && hasargs)
@@ -149,8 +151,8 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
         } else if (strcmp(arg[iarg_],"store_force") == 0) {
            if (iarg_+2 > narg)
               error->fix_error(FLERR,this," not enough arguments");
-           if (strcmp(arg[iarg_+1],"yes") == 0) store_force_ = 1;
-           else if (strcmp(arg[iarg_+1],"no") == 0) store_force_ = 0;
+           if (strcmp(arg[iarg_+1],"yes") == 0) store_force_ = true;
+           else if (strcmp(arg[iarg_+1],"no") == 0) store_force_ = false;
            else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'store_force'");
            hasargs = true;
            iarg_ += 2;
@@ -181,12 +183,31 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
               if (strncmp(modify->fix[f_i]->style,"mesh/surface",12))
                   error->fix_error(FLERR,this,"the fix belonging to the id you provided is not of type mesh");
               FixMesh_list_[i-1] = static_cast<FixMeshSurface*>(modify->fix[f_i]);
+
+              if(FixMesh_list_[i-1]->trackStress())
+                stress_flag_ = true;
               
           }
           hasargs = true;
           iarg_ += 1+n_FixMesh_;
+        } else if (strcmp(arg[iarg_],"shear") == 0) {
+          if (iarg_+3 > narg)
+            error->fix_error(FLERR,this,"not enough arguments for 'shear'");
+          if (strcmp(arg[iarg_+1],"x") == 0) axis_ = 0;
+          else if (strcmp(arg[iarg_+1],"y") == 0) axis_ = 1;
+          else if (strcmp(arg[iarg_+1],"z") == 0) axis_ = 2;
+          else error->fix_error(FLERR,this,"illegal 'shear' dim");
+          vshear_ = atof(arg[iarg_+2]);
+          shear_ = 1;
+          hasargs = true;
+          iarg_ += 3;
         }
     }
+
+    // error checks
+
+    if(meshwall_ == 1 && shear_)
+        error->fix_error(FLERR,this,"can not use mesh walls and shear together, please use fix move/mesh");
 
     if(meshwall_ == -1 && primitiveWall_ == 0)
         error->fix_error(FLERR,this,"Need to use define style 'mesh' or 'primitive'");
@@ -199,6 +220,9 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
 void FixWallGran::post_create()
 {
+    if(iarg_ < narg_)
+        error->fix_error(FLERR,this,"invalid keyword or keyword(s) in wrong order");
+
     // case granular
     if(strncmp(style,"wall/gran",9) == 0)
     {
@@ -413,7 +437,10 @@ void FixWallGran::post_force(int vflag,int addflag)
   f_ = atom->f;
   radius_ = atom->radius;
   rmass_ = atom->rmass;
-  wallforce_ = fix_wallforce_->array_atom;
+
+  if(fix_wallforce_)
+    wallforce_ = fix_wallforce_->array_atom;
+
   cutneighmax_ = neighbor->cutneighmax;
 
   if(nlocal_ && !radius_ && r0_ == 0.)
@@ -491,31 +518,31 @@ void FixWallGran::post_force_mesh(int vflag)
 
             if(deltan > 0.)
             {
-                
+              
               if(fix_contact) fix_contact->handleNoContact(iPart,idTri);
             }
             else
             {
-                
+              
               if(fix_contact) fix_contact->handleContact(iPart,idTri,c_history);
+
               for(int i = 0; i < 3; i++)
                 v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
 
-              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,mesh);
+              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,FixMesh_list_[iMesh],mesh,iTri);
             }
 
           }
         }
       }
-      // non-moving mesh
-      // don't calculate v_wall,use standard distance function
+      // non-moving mesh - do not calculate v_wall, use standard distance function
       else
       {
         // loop owned and ghost particles
         for(int iTri = 0; iTri < nTriAll; iTri++)
         {
           
-          for(int iCont=0;iCont<numNeigh[iTri];iCont++,neighborList++)
+          for(int iCont = 0; iCont < numNeigh[iTri]; iCont++,neighborList++)
           {
             int iPart = *neighborList;
 
@@ -523,8 +550,6 @@ void FixWallGran::post_force_mesh(int vflag)
             if(iPart >= nlocal) continue;
 
             int idTri = mesh->id(iTri);
-            
-            double bary[3];
             deltan = mesh->resolveTriSphereContact(iTri,radius_ ? radius_[iPart]:r0_,x_[iPart],delta);
 
             if(deltan > 0.)
@@ -534,7 +559,7 @@ void FixWallGran::post_force_mesh(int vflag)
             else 
             {
               if(fix_contact) fix_contact->handleContact(iPart,idTri,c_history);
-              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,mesh);
+              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,FixMesh_list_[iMesh],mesh,iTri);
             }
           }
         }
@@ -557,6 +582,10 @@ void FixWallGran::post_force_primitive(int vflag)
   double delta[3],deltan;
   double *c_history = 0, v_wall[] = {0.,0.,0.};
 
+  // if shear, set velocity accordingly
+  if (shear_) v_wall[axis_] = vshear_;
+
+  // loop neighbor list
   int *neighborList;
   int nNeigh = primitiveWall_->getNeighbors(neighborList);
   if(dnum() > 0) primitiveWall_->setContactHistorySize(atom->nlocal);
@@ -583,28 +612,42 @@ void FixWallGran::post_force_primitive(int vflag)
 ------------------------------------------------------------------------- */
 
 inline void FixWallGran::post_force_eval_contact(int iPart, double deltan, double *delta,
-     double *v_wall, double *c_history, TriMesh *mesh)
+     double *v_wall, double *c_history, FixMeshSurface *fix_mesh, TriMesh *mesh, int iTri)
 {
 
   double delr = (radius_ ? radius_[iPart] : r0_) + deltan;
   double rsqr = delr*delr;
-  double dx = -delta[0]*delr;
-  double dy = -delta[1]*delr;
-  double dz = -delta[2]*delr;
+  double dx = -delta[0];
+  double dy = -delta[1];
+  double dz = -delta[2];
   double mass = rmass_ ? rmass_[iPart] : atom->mass[atom->type[iPart]];
 
-  double force_old[] = {0.,0.,0.};
+  double force_old[3], f_pw[3];
 
   // if force should be stored - remember old force
-  if(store_force_) vectorCopy3D(f_[iPart],force_old);
+  if(store_force_ || stress_flag_)
+    vectorCopy3D(f_[iPart],force_old);
 
   // deltan > 0 in compute_force
   // but negative in distance algorithm
   compute_force(iPart, -deltan,rsqr,mass, dx, dy, dz, v_wall, c_history, 1.);
 
-  // if force should be stored - evaluate force
-  if(store_force_)
-    vectorSubtract3D(f_[iPart],force_old,wallforce_[iPart]);
+  // if force should be stored or evaluated
+  if(store_force_ || stress_flag_)
+  {
+    vectorSubtract3D(f_[iPart],force_old,f_pw);
+
+    if(store_force_)
+        vectorCopy3D(f_pw,wallforce_[iPart]);
+
+    if(stress_flag_ && fix_mesh->trackStress())
+    {
+        static_cast<FixMeshSurfaceStress*>(fix_mesh)->add_particle_contribution
+        (
+           iPart,f_pw,delta,iTri,v_wall
+        );
+    }
+  }
 
   // add heat flux
   if(heattransfer_flag_)
@@ -624,7 +667,7 @@ int FixWallGran::is_moving()
             if(FixMesh_list_[i]->mesh()->isMoving())
                flag = 1;
     }
-    else flag = wiggle_ || shear_;
+    else flag = shear_;
 
     return flag;
 }
@@ -639,7 +682,7 @@ int FixWallGran::n_contacts()
     for(int i = 0; i < n_FixMesh_; i++)
         ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts();
 
-   MPI_Sum_Scalar(ncontacts,world);
+    MPI_Sum_Scalar(ncontacts,world);
     return ncontacts;
 }
 
@@ -653,7 +696,7 @@ int FixWallGran::n_contacts(int contact_groupbit)
     for(int i = 0; i < n_FixMesh_; i++)
         ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts(contact_groupbit);
 
-   MPI_Sum_Scalar(ncontacts,world);
+    MPI_Sum_Scalar(ncontacts,world);
     return ncontacts;
 }
 
@@ -664,7 +707,7 @@ int FixWallGran::n_contacts(int contact_groupbit)
 void FixWallGran::register_compute_wall_local(ComputePairGranLocal *ptr,int &dnum_compute)
 {
    if(cwl_ != NULL)
-    error->fix_error(FLERR,this,"Fix wall/gran allows only one compute of type wall/gran/local");
+     error->fix_error(FLERR,this,"Fix wall/gran allows only one compute of type wall/gran/local");
    cwl_ = ptr;
    dnum_compute = dnum_; //history values
 }
@@ -672,6 +715,6 @@ void FixWallGran::register_compute_wall_local(ComputePairGranLocal *ptr,int &dnu
 void FixWallGran::unregister_compute_wall_local(ComputePairGranLocal *ptr)
 {
    if(cwl_ != ptr)
-    error->fix_error(FLERR,this,"Illegal situation in FixWallGran::unregister_compute_wall_local");
+     error->fix_error(FLERR,this,"Illegal situation in FixWallGran::unregister_compute_wall_local");
    cwl_ = NULL;
 }

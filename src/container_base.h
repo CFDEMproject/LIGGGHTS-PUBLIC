@@ -60,6 +60,7 @@ namespace LAMMPS_NS
           virtual void del(int n) = 0;
           virtual void delForward(int n,bool scale,bool translate,bool rotate) = 0;
           virtual void delRestart(int n,bool scale,bool translate,bool rotate) = 0;
+          virtual void clearReverse(bool scale,bool translate,bool rotate) = 0;
 
           virtual void scale(double factor) = 0;
           virtual void move(double *dx) = 0;
@@ -80,6 +81,10 @@ namespace LAMMPS_NS
           virtual int pushElemListToBuffer(int n, int *list, double *buf, int operation,
                            bool scale=false,bool translate=false, bool rotate=false) = 0;
           virtual int popElemListFromBuffer(int first, int n, double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false) = 0;
+          virtual int pushElemListToBufferReverse(int first, int n, double *buf, int operation,
+                           bool scale=false,bool translate=false, bool rotate=false) = 0;
+          virtual int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,
                            bool scale=false,bool translate=false, bool rotate=false) = 0;
 
           virtual int elemBufSize(int operation = OPERATION_UNDEFINED,

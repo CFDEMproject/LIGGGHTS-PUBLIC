@@ -633,6 +633,7 @@ of each style or click on the style itself for a full description:
 "langevin/eff"_fix_langevin_eff.html,
 "lineforce"_fix_lineforce.html,
 "mesh/surface"_fix_mesh_surface.html,
+"mesh/surface/stress"_fix_mesh_surface_stress.html,
 "meso"_fix_meso.html,
 "meso/stationary"_fix_meso_stationary.html,
 "momentum"_fix_momentum.html,
