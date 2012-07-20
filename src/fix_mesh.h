@@ -58,6 +58,8 @@ namespace LAMMPS_NS
         virtual void pre_force(int);
         virtual void final_integrate();
 
+        void box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double &zlo,double &zhi);
+
         int min_type();
         int max_type();
 
@@ -67,14 +69,20 @@ namespace LAMMPS_NS
         virtual bool surfaceVel()
         { return false; }
 
+        bool manipulated()
+        { return manipulated_; }
+
       protected:
+
+        // mesh manipulation upon creation
+        virtual void moveMesh(double const dx, double const dy, double const dz);
+        virtual void rotateMesh(double const axisX, double const axisY, double const axisZ, double const phi);
+        virtual void scaleMesh(double const factor);
 
         void create_mesh(char *mesh_fname);
         void create_mesh_restart();
 
         int iarg_;
-
-        class AbstractMesh *mesh_;
 
         int atom_type_mesh_;
 
@@ -82,10 +90,8 @@ namespace LAMMPS_NS
 
         void initialSetup();
 
-        // mesh manipulation upon creation
-        void moveMesh(double const dx, double const dy, double const dz);
-        void rotateMesh(double const axisX, double const axisY, double const axisZ, double const phi);
-        void scaleMesh(double const factor);
+        // mesh object
+        class AbstractMesh *mesh_;
 
         // flag if mesh is already setup
         bool setupFlag_;
@@ -93,6 +99,8 @@ namespace LAMMPS_NS
         // decides if parallel operations needed for
         // mesh on this time-step
         bool pOpFlag_;
+
+        bool manipulated_;
   };
 
 } /* namespace LAMMPS_NS */

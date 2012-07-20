@@ -297,7 +297,10 @@ void Modify::post_integrate()
 void Modify::pre_exchange()
 {
   for (int i = 0; i < n_pre_exchange; i++)
+  {
+    
     fix[list_pre_exchange[i]]->pre_exchange();
+  }
 }
 
 /* ----------------------------------------------------------------------

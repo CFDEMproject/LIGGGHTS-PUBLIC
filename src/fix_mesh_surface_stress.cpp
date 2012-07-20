@@ -35,6 +35,7 @@
 #include "comm.h"
 #include "math_extra.h"
 #include "fix_property_global.h"
+#include "fix_gravity.h"
 
 #define EPSILON 0.001
 
@@ -45,14 +46,21 @@ using namespace FixConst;
 
 FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
 : FixMeshSurface(lmp, narg, arg),
+  
+  p_ref_(*mesh()->prop().addGlobalProperty<VectorContainer<double,3> >("p_ref","comm_none","frame_general","restart_yes")),
   f_(0),
   sigma_n_(0),
   sigma_t_(0),
   wear_flag_(0),
   k_finnie_(0),
-  wear_(0)
+  wear_(0),
+  wear_step_(0)
 {
-    vectorZeroize3D(p_ref_);
+    vectorZeroize3D(f_total_);
+    vectorZeroize3D(torque_total_);
+
+    double zerovec[3] = {0.,0.,0.};
+    p_ref_.add(zerovec);
 
     // override default from base
     stress_flag_ = true;
@@ -70,10 +78,15 @@ FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
       hasargs = false;
       if (strcmp(arg[iarg_],"reference_point") == 0) {
           if (narg < iarg_+4) error->fix_error(FLERR,this,"not enough arguments");
+          if(manipulated())
+            error->warning(FLERR,"Mesh for fix mesh/surface/stress has been scaled, moved, or rotated.\n"
+                             "Please note that values for 'reference_point' refer to the scaled, moved, or rotated configuration");
           iarg_++;
-          p_ref_[0] = force->numeric(arg[iarg_++]);
-          p_ref_[1] = force->numeric(arg[iarg_++]);
-          p_ref_[2] = force->numeric(arg[iarg_++]);
+          double _p_ref[3];
+          _p_ref[0] = force->numeric(arg[iarg_++]);
+          _p_ref[1] = force->numeric(arg[iarg_++]);
+          _p_ref[2] = force->numeric(arg[iarg_++]);
+          p_ref_.set(0,_p_ref);
           hasargs = true;
       } else if(strcmp(arg[iarg_],"stress") == 0) {
           if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
@@ -126,9 +139,9 @@ void FixMeshSurfaceStress::init()
 {
     if(stress_flag_)
     {
-        f_ = mesh_->prop().getElementProperty<VectorContainer<double,3> >("f");
-        sigma_n_ = mesh_->prop().getElementProperty<ScalarContainer<double> >("sigma_n");
-        sigma_t_ = mesh_->prop().getElementProperty<ScalarContainer<double> >("sigma_t");
+        f_ = mesh()->prop().getElementProperty<VectorContainer<double,3> >("f");
+        sigma_n_ = mesh()->prop().getElementProperty<ScalarContainer<double> >("sigma_n");
+        sigma_t_ = mesh()->prop().getElementProperty<ScalarContainer<double> >("sigma_t");
         if(!f_ || !sigma_n_ || !sigma_t_)
             error->one(FLERR,"Internal error");
     }
@@ -136,8 +149,8 @@ void FixMeshSurfaceStress::init()
     if(wear_flag_)
     {
         k_finnie_ = static_cast<FixPropertyGlobal*>(modify->find_fix_property("k_finnie","property/global","peratomtypepair",atom->ntypes,atom->ntypes,style))->get_array();
-        wear_ = mesh_->prop().getElementProperty<ScalarContainer<double> >("wear");
-        wear_step_ = mesh_->prop().getElementProperty<ScalarContainer<double> >("wear_step");
+        wear_ = mesh()->prop().getElementProperty<ScalarContainer<double> >("wear");
+        wear_step_ = mesh()->prop().getElementProperty<ScalarContainer<double> >("wear_step");
         if(!wear_ || ! wear_step_)
             error->one(FLERR,"Internal error");
     }
@@ -155,22 +168,22 @@ int FixMeshSurfaceStress::setmask()
 
 void FixMeshSurfaceStress::initStress()
 {
-    mesh_->prop().addElementProperty<VectorContainer<double,3> >("f","comm_reverse","frame_invariant","restart_no");
-    mesh_->prop().getElementProperty<VectorContainer<double,3> >("f")->setAll(0.);
-    mesh_->prop().addElementProperty<ScalarContainer<double> >("sigma_n","comm_none","frame_invariant","restart_no");
-    mesh_->prop().getElementProperty<ScalarContainer<double> >("sigma_n")->setAll(0.);
-    mesh_->prop().addElementProperty<ScalarContainer<double> >("sigma_t","comm_none","frame_invariant","restart_no");
-    mesh_->prop().getElementProperty<ScalarContainer<double> >("sigma_t")->setAll(0.);
+    mesh()->prop().addElementProperty<VectorContainer<double,3> >("f","comm_reverse","frame_invariant","restart_no");
+    mesh()->prop().getElementProperty<VectorContainer<double,3> >("f")->setAll(0.);
+    mesh()->prop().addElementProperty<ScalarContainer<double> >("sigma_n","comm_none","frame_invariant","restart_no");
+    mesh()->prop().getElementProperty<ScalarContainer<double> >("sigma_n")->setAll(0.);
+    mesh()->prop().addElementProperty<ScalarContainer<double> >("sigma_t","comm_none","frame_invariant","restart_no");
+    mesh()->prop().getElementProperty<ScalarContainer<double> >("sigma_t")->setAll(0.);
 }
 
 /* ---------------------------------------------------------------------- */
 
 void FixMeshSurfaceStress::initWear()
 {
-    mesh_->prop().addElementProperty<ScalarContainer<double> >("wear","comm_none","frame_invariant","restart_yes");
-    mesh_->prop().getElementProperty<ScalarContainer<double> >("wear")->setAll(0.);
-    mesh_->prop().addElementProperty<ScalarContainer<double> >("wear_step","comm_reverse","frame_invariant","restart_yes");
-    mesh_->prop().getElementProperty<ScalarContainer<double> >("wear_step")->setAll(0.);
+    mesh()->prop().addElementProperty<ScalarContainer<double> >("wear","comm_none","frame_invariant","restart_yes");
+    mesh()->prop().getElementProperty<ScalarContainer<double> >("wear")->setAll(0.);
+    mesh()->prop().addElementProperty<ScalarContainer<double> >("wear_step","comm_reverse","frame_invariant","restart_yes");
+    mesh()->prop().getElementProperty<ScalarContainer<double> >("wear_step")->setAll(0.);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -223,7 +236,7 @@ void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
         // add contribution to total body force and torque
         vectorAdd3D(x,delta,contactPoint);
         vectorAdd3D(f_total_,frc,f_total_);
-        vectorSubtract3D(contactPoint,p_ref_,tmp);
+        vectorSubtract3D(contactPoint,p_ref_(0),tmp);
         vectorCross3D(tmp,frc,tmp2); // tmp2 is torque contrib
         vectorAdd3D(torque_total_,tmp2,torque_total_);
     }
@@ -268,13 +281,28 @@ void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
 }
 
 /* ----------------------------------------------------------------------
+   external force - has to be called before final_integrate()
+------------------------------------------------------------------------- */
+
+void FixMeshSurfaceStress::add_external_contribution(double *frc)
+{
+    vectorAdd3D(f_total_,frc,f_total_);
+}
+
+void FixMeshSurfaceStress::add_external_contribution(double *frc, double *trq)
+{
+    vectorAdd3D(f_total_,frc,f_total_);
+    vectorAdd3D(torque_total_,trq,torque_total_);
+}
+
+/* ----------------------------------------------------------------------
    allreduce total force on tri
 ------------------------------------------------------------------------- */
 
 void FixMeshSurfaceStress::calc_total_force()
 {
     double surfNorm[3], invSurfArea, temp[3];
-    int nTri = mesh_->size();
+    int nTri = mesh()->size();
 
     // add wear from this step to total wear
     if(trackWear())

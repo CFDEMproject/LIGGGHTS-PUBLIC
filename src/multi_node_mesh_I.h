@@ -360,13 +360,13 @@
 
   /* ----------------------------------------------------------------------
    rotate mesh interface, takes both total angle and dAngle in rad
+   assumes axis stays the same over time
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
   void MultiNodeMesh<NUM_NODES>::rotate(double totalAngle, double dAngle, double *axis, double *p)
   {
-    double totalQ[4],dQ[4], axisNorm[3];
-    double p_rot[3], totalDispl[3], dDispl[3];
+    double totalQ[4],dQ[4], axisNorm[3], origin[3];
 
     // rotates around axis through p
 
@@ -384,21 +384,15 @@
     for(int i = 0; i < 3; i++)
       dQ[i+1] = axis[i]*sin(dAngle*0.5);
 
-    // calc displacement caused by total rotation around axis through center
-    MathExtraLiggghts::vec_quat_rotate(p, totalQ,p_rot);
-    vectorSubtract3D(p,p_rot,totalDispl);
-
-    // calc displacement caused by incremental rotation around axis through center
-    MathExtraLiggghts::vec_quat_rotate(p, dQ,p_rot);
-    vectorSubtract3D(p,p_rot,dDispl);
+    vectorCopy3D(p,origin);
 
     // apply rotation around center axis + displacement
     // = rotation around axis through p
-    rotate(totalQ,dQ,totalDispl,dDispl);
+    rotate(totalQ,dQ,origin);
   }
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *totalDispl, double *dDispl)
+  void MultiNodeMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *origin)
   {
     if(!isRotating())
         this->error->all(FLERR,"Illegal call, need to register movement first");
@@ -407,6 +401,8 @@
 
     int n = sizeLocal() + sizeGhost();
 
+    bool trans = vectorMag3DSquared(origin) > 0.;
+
     // perform total rotation for data in this class
     for(int i = 0; i < n; i++)
     {
@@ -414,8 +410,9 @@
 
       for(int j = 0; j < NUM_NODES; j++)
       {
+        if(trans) vectorSubtract3D(node_(i)[j],origin,node_(i)[j]);
         MathExtraLiggghts::vec_quat_rotate(node_(i)[j], totalQ, node_(i)[j]);
-        vectorAdd3D(node_(i)[j],totalDispl,node_(i)[j]);
+        if(trans) vectorAdd3D(node_(i)[j],origin,node_(i)[j]);
         vectorAdd3D(node_(i)[j],center_(i),center_(i));
       }
       vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
@@ -431,8 +428,7 @@
   template<int NUM_NODES>
   void MultiNodeMesh<NUM_NODES>::rotate(double dAngle, double *axis, double *p)
   {
-    double dQ[4], axisNorm[3];
-    double p_rot[3], dDispl[3];
+    double dQ[4], axisNorm[3], origin[3];
 
     // rotates around axis through p
 
@@ -445,57 +441,37 @@
     for(int i = 0; i < 3; i++)
       dQ[i+1] = axis[i]*sin(dAngle*0.5);
 
-    // calc displacement caused by incremental rotation around axis through center
-    MathExtraLiggghts::vec_quat_rotate(p, dQ,p_rot);
-    vectorSubtract3D(p,p_rot,dDispl);
+    vectorCopy3D(p,origin);
 
     // apply rotation around center axis + displacement
     // = rotation around axis through p
-    rotate(dQ,dDispl);
+    rotate(dQ,origin);
   }
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::rotate(double *dQ, double *dDispl)
+  void MultiNodeMesh<NUM_NODES>::rotate(double *dQ, double *origin)
   {
     
     int n = sizeLocal() + sizeGhost();
 
+    bool trans = vectorMag3DSquared(origin) > 0.;
+
     // perform total rotation for data in this class
+    
     for(int i = 0; i < n; i++)
     {
       vectorZeroize3D(center_(i));
       for(int j = 0; j < NUM_NODES; j++)
       {
+        if(trans) vectorSubtract3D(node_(i)[j],origin,node_(i)[j]);
         MathExtraLiggghts::vec_quat_rotate(node_(i)[j], dQ,node_(i)[j]);
-        vectorAdd3D(node_(i)[j],dDispl,node_(i)[j]);
+        if(trans) vectorAdd3D(node_(i)[j],origin,node_(i)[j]);
         vectorAdd3D(node_(i)[j],center_(i),center_(i));
       }
       vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
     }
 
     updateGlobalBoundingBox();
-  }
-
-  /* ----------------------------------------------------------------------
-   set orientation of mesh
-  ------------------------------------------------------------------------- */
-
-  template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::setRotation(double *quatNew)
-  {
-      if(!isRotating())
-        this->error->all(FLERR,"Illegal call, need to register movement first");
-
-      // will just rotate the mesh, no translation
-      double dQ[4],dx[3],dX[3];
-      vectorZeroize3D(dx);
-      vectorZeroize3D(dX);
-
-      MathExtraLiggghts::quat_diff(quat_,quatNew,dQ);
-
-      vectorCopy4D(quatNew,quat_);
-
-      rotate(quatNew, dQ, dX, dx);
   }
 
   /* ----------------------------------------------------------------------

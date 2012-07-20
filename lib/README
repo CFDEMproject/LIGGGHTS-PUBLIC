@@ -13,12 +13,12 @@ atc           atomistic-to-continuum methods, USER-ATC package
                 from Reese Jones, Jeremy Templeton, Jon Zimmerman (Sandia)
 awpmd         antisymmetrized wave packet molecular dynamics, AWPMD package
                 from Ilya Valuev (JIHT RAS)
+colvars	      collective variable module (Metadynamics, ABF and more)
+                from Giacomo Fiorin and Jerome Henin (ICMS, Temple U)
 cuda	      NVIDIA GPU routines, USER-CUDA package
                 from Christian Trott (U Tech Ilmenau)
-gpu	      graphical processor (GPU) routines, GPU package
+gpu	      general GPU routines, GPU package
 	        from Mike Brown (ORNL)
-kim           interface to link with OpenKIM library
-	        from Valeriu Smirichinski, www.openkim.org
 linalg        set of BLAS and LAPACK routines needed by USER-ATC package
 	        from Axel Kohlmeyer (Temple U)
 poems	      POEMS rigid-body integration package, POEMS package

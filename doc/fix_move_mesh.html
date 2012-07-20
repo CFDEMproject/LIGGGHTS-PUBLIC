@@ -25,10 +25,12 @@
 
 <LI>mesh-ID = ID for the fix mesh that the fix move/mesh is applied to 
 
-<LI>style = <I>linear</I> or <I>wiggle</I> or <I>riggle</I> or <I>rotate</I> 
+<LI>style = <I>linear</I> or <I>linear/variable</I> or <I>wiggle</I> or <I>riggle</I> or <I>rotate</I> or <I>rotate/variable</I> 
 
 <PRE>  <I>linear</I> args = Vx Vy Vz
     Vx,Vy,Vz = components of velocity vector (velocity units)
+  <I>linear/variable</I> args = var_Vx var_Vy var_Vz
+    var_Vx,var_Vy,var_Vz = variables specifying components of velocity vector (velocity units)
   <I>wiggle</I> args = amplitude Ax Ay Az period per
     amplitude = obligatory keyword
     Ax,Ay,Az = components of amplitude vector (distance units)
@@ -37,7 +39,7 @@
   <I>riggle</I> args = origin Px Py Pz axis ax ay az period per amplitude ampl
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
-    ax,ay,az = axis of rotation vector
+    ax,ay,az = axis of rotation vector (distance units)
     period = obligatory keyword
     per = period of rotation (time units)#
     amplitude = obligatory keyword
@@ -45,9 +47,15 @@
   <I>rotate</I> args = origin Px Py Pz axis ax ay az period per
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
-    ax,ay,az = axis of rotation vector
+    ax,ay,az = axis of rotation vector (distance units)
     period = obligatory keyword
-    per = period of rotation (time units)  
+    per = period of rotation (time units) 
+  <I>rotate/variable</I> args = origin Px Py Pz axis ax ay az period var_omega
+    origin = obligatory keyword
+    Px,Py,Pz = origin point of axis of rotation (distance units)
+    ax,ay,az = axis of rotation vector (distance units)
+    period = obligatory keyword
+    var_omega = variable specifying angular velocity (rad / time units) 
 </PRE>
 
 </UL>
@@ -82,6 +90,9 @@ specified, <I>V</I> is the specified velocity vector with components
 specified.  This style also sets the velocity of each atom to V =
 (Vx,Vy,Vz). 
 </P>
+<P>The <I>linear/variable</I> style does the same as the <I>linear</I> style,
+but uses three variables so that the velocity can be time-dependant.
+</P>
 <P>The <I>wiggle</I> style moves atoms in an oscillatory fashion, so that
 their position <I>X</I> = (x,y,z) as a function of time is given in vector
 notation as
@@ -103,6 +114,12 @@ rotation axis to the atom. Note that the direction of rotation
 around the rotation axis is consistent with the right-hand rule: 
 if your right-hand's thumb points along <I>R</I>, then your fingers 
 wrap around the axis in the direction of rotation.
+</P>
+<P>The <I>rotate/variable</I> style does the same as the <I>rotate</I> style,
+but uses a variable for the angular velocity so that the angular 
+velocity can be time-dependant.
+IMPORTANT NOTE: style <I>rotate</I> takes the period of the rotation
+as input, <I>rotate/variable</I> takes angular velocity as input.
 </P>
 <P>The <I>riggle</I> style imposes an oscillatory rotation around a rotation
 axis <I>R</I> = (Rx,Ry,Rz) that goes thru a point <I>P</I> = (Px,Py,Pz). 
@@ -151,6 +168,8 @@ minimization</A>.
 </P>
 <P>If multiple fix move/mesh movements are superposed onto one mesh, 
 they have to be deleted in reverse order of their creation
+Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary. 
+In this case, an error is generated. See <A HREF = "boundary.html">boundary</A> command for details.
 </P>
 <P><B>Related commands:</B> 
 </P>

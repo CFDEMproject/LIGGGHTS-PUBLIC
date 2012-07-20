@@ -252,7 +252,9 @@ void Verlet::run(int n)
       comm->forward_comm();
       timer->stamp(TIME_COMM);
     } else {
+      
       if (n_pre_exchange) modify->pre_exchange();
+      
       if (triclinic) domain->x2lamda(atom->nlocal);
       domain->pbc();
       if (domain->box_change) {
@@ -262,12 +264,14 @@ void Verlet::run(int n)
         if (neighbor->style) neighbor->setup_bins();
       }
       timer->stamp();
+      
       comm->exchange();
       
       if (sortflag && ntimestep >= atom->nextsort) atom->sort();
       comm->borders();
       if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
       timer->stamp(TIME_COMM);
+      
       if (n_pre_neighbor) modify->pre_neighbor();
       neighbor->build();
       timer->stamp(TIME_NEIGHBOR);

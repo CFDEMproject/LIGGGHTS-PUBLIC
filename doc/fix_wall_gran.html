@@ -42,8 +42,8 @@
 
 <PRE>  <I>type</I> args = tp
     tp = atom_type (material type) of the wall
-  <I>xplane</I> or <I>yplane</I> or <I>zplane</I> args = lo hi
-    lo,hi = position of lower and upper plane (distance units), either can be NULL)
+  <I>xplane</I> or <I>yplane</I> or <I>zplane</I> args = pos
+    pos = position plane (distance units)
   <I>xcylinder</I> or <I>ycylinder</I> or <I>zcylinder</I> args = radius c1 c2
     radius = cylinder radius (distance units)
     c1,c2 = coordinates of center axis in other 2 dims (distance units)
@@ -84,7 +84,7 @@
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>fix zwalls all wall/gran/hertz/history primitive type 1 zplane 0.0 0.15
+<PRE>fix zwalls all wall/gran/hertz/history primitive type 1 zplane 0.15
 fix meshwalls all wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2  
 </PRE>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>

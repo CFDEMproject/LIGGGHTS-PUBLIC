@@ -76,13 +76,14 @@ void PairGranHookeHistorySimple::settings(int narg, char **arg)
     {
         hasargs = false;
         if (strcmp(arg[iarg_],"absolute_damping") == 0) {
+            if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'absolute_damping'");
             iarg_++;
             if(strcmp(arg[iarg_],"on") == 0)
                 damp_massflag = 0;
             else if(strcmp(arg[iarg_],"off") == 0)
                 damp_massflag = 1;
             else
-                error->all(FLERR,"Illegal pair_style gran command, expecting 'on' or 'off' after keyword 'damp_massflag'");
+                error->all(FLERR,"Illegal pair_style gran command, expecting 'on' or 'off' after keyword 'absolute_damping'");
             iarg_++;
             hasargs = true;
         }

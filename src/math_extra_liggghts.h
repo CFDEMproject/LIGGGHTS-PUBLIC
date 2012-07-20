@@ -67,7 +67,7 @@ namespace MathExtraLiggghts {
   inline void vec_quat_rotate(double *vec, double *quat);
   inline void vec_quat_rotate(int *vec, double *quat) {}
   inline void vec_quat_rotate(bool *vec, double *quat) {}
-  inline void quat_diff(double *q_old, double *q_new, double *q_diff);
+  inline void quat_diff(double *q_new, double *q_old, double *q_diff);
   inline void angmom_from_omega(double *w,
                                   double *ex, double *ey, double *ez,
                                   double *idiag, double *m);
@@ -405,13 +405,13 @@ inline void MathExtraLiggghts::quat_normalize(double *q)
    calculate the quaternion that would rotate q_old into q_new
 ------------------------------------------------------------------------- */
 
-inline void MathExtraLiggghts::quat_diff(double *q_old, double *q_new, double *q_diff)
+inline void MathExtraLiggghts::quat_diff(double *q_new, double *q_old, double *q_diff)
 {
     double q_old_c[4];
 
     // q_diff = q_old^-1 * q_new
     qconjugate(q_old,q_old_c);
-    MathExtra::quatquat(q_old,q_new,q_diff);
+    MathExtra::quatquat(q_old_c,q_new,q_diff);
 }
 
 /* -----------------------------------------------------------------------------

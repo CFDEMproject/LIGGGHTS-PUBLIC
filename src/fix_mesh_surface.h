@@ -69,14 +69,14 @@ namespace LAMMPS_NS
         inline int atomTypeWall()
         { return atom_type_mesh_;}
 
-        class FixContactHistory* contactHistory()
+        inline class FixContactHistory* contactHistory()
         { return fix_contact_history_;}
 
-        class FixNeighlistMesh* meshNeighlist()
+        inline class FixNeighlistMesh* meshNeighlist()
         { return fix_mesh_neighlist_;}
 
-        class TriMesh *triMesh()
-        { return static_cast<TriMesh*>(mesh_); }
+        inline class TriMesh *triMesh()
+        { return static_cast<TriMesh*>(mesh()); }
 
         bool surfaceVel()
         { return (velFlag_ || angVelFlag_); }
@@ -96,13 +96,13 @@ namespace LAMMPS_NS
 
         // surface velocity
         bool velFlag_;
-        double vel_[3];
+        double vSurf_[3];
 
         // rotational surf vel
         bool angVelFlag_;
         double origin_[3];
         double axis_[3];
-        double omega_;
+        double omegaSurf_;
 
         // mesh curvature
         double curvature_;

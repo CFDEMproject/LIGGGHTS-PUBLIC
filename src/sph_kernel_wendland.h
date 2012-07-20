@@ -32,7 +32,7 @@ andreas.aigner@jku.at
     // name of the functions for the kernel, its derivative, and the cutoff are defined
     SPHKernel
     (
-        2,
+        6,
         wendland,
         sph_kernel_wendland,
         sph_kernel_wendland_der,
@@ -54,12 +54,12 @@ namespace SPH_KERNEL_NS {
    Wendland SPH kernel
    h is kernel parameter
    s is distance normalized by h
-   0.41778 is 21 over 16pi
+   0.417781726 is 21 over 16pi
 ------------------------------------------------------------------------- */
 
 inline double SPH_KERNEL_NS::sph_kernel_wendland(double s, double h, double hinv)
 {
-    return (0.41778*hinv*hinv*hinv * (1.-0.5*s)*(1.-0.5*s)*(1.-0.5*s)*(1.-0.5*s) * (2.*s+1));
+    return (0.417781726*hinv*hinv*hinv * (1.-0.5*s)*(1.-0.5*s)*(1.-0.5*s)*(1.-0.5*s) * (2.*s+1));
 }
 
 /* ----------------------------------------------------------------------
@@ -67,12 +67,12 @@ inline double SPH_KERNEL_NS::sph_kernel_wendland(double s, double h, double hinv
    is equal to grad W if multiplied with radial unit vector
    h is kernel parameter
    s is distance normalized by h
-   0.41778 is 21 over 16pi
+   0.835563451 is 42 over 16pi
 ------------------------------------------------------------------------- */
 
 inline double SPH_KERNEL_NS::sph_kernel_wendland_der(double s,double h, double hinv)
 {
-    return (0.41778*hinv*hinv*hinv * ( (2*(1-0.5*s)*(1-0.5*s)*(1-0.5*s)*(1-0.5*s)) - (2*(1-0.5*s)*(1-0.5*s)*(1-0.5*s)*(2.*s+1)) ));
+    return (0.835563451*hinv*hinv*hinv*hinv * ((1-0.5*s)*(1-0.5*s)*(1-0.5*s)*((1-0.5*s)-(2.*s+1))));
 }
 
 /* ----------------------------------------------------------------------
@@ -87,3 +87,4 @@ inline double SPH_KERNEL_NS::sph_kernel_wendland_cut()
 
 #endif
 #endif
+

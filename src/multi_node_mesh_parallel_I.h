@@ -34,7 +34,7 @@
   template<int NUM_NODES>
   MultiNodeMeshParallel<NUM_NODES>::MultiNodeMeshParallel(LAMMPS *lmp)
   : MultiNodeMesh<NUM_NODES>(lmp),
-    nLocal_(0), nGhost_(0), nGlobal_(0),
+    nLocal_(0), nGhost_(0), nGlobal_(0), nGlobalOrig_(0),
     maxsend_(0), maxrecv_(0),
     buf_send_(0), buf_recv_(0),
     half_atom_cut_(0.),
@@ -497,6 +497,8 @@
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::initalSetup()
   {
+      nGlobalOrig_ = sizeLocal();
+
       // delete all elements that do not belong to this processor
       deleteUnowned();
 
@@ -521,6 +523,12 @@
 
       // store node positions for neigh list trigger
       this->storeNodePos();
+
+      if(sizeGlobal() != sizeGlobalOrig())
+      {
+        
+        this->error->all(FLERR,"Mesh elements have been lost");
+      }
 
   }
 
@@ -558,6 +566,12 @@
 
       // store node positions for neigh list trigger
       this->storeNodePos();
+
+      if(sizeGlobal() != sizeGlobalOrig())
+      {
+        
+        this->error->all(FLERR,"Mesh elements have been lost");
+      }
   }
 
   /* ----------------------------------------------------------------------
@@ -690,7 +704,7 @@
           // check incoming elements to see if they are in my box
           // if so, add on this proc
 
-          popExchange(nrecv, buf);
+          popExchange(nrecv,dim, buf);
           
       }
 

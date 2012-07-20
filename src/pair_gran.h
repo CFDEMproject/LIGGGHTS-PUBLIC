@@ -123,6 +123,8 @@ class PairGran : public Pair {
   double *onerad_dynamic,*onerad_frozen;
   double *maxrad_dynamic,*maxrad_frozen;
 
+  bool needs_neighlist;
+
   void allocate();
 
  private:

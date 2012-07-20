@@ -58,6 +58,9 @@ namespace LAMMPS_NS
         void add_particle_contribution(int ip, double *frc, double *delta,
                                        int iTri, double *v_wall);
 
+        void add_external_contribution(double *frc);
+        void add_external_contribution(double *frc,double *trq);
+
         // inline access
 
         inline bool trackWear()
@@ -66,8 +69,14 @@ namespace LAMMPS_NS
         inline void f_total(double *_f)
         { vectorCopy3D(f_total_,_f); }
 
+        inline double f_total(int i)
+        { return f_total_[i]; }
+
         inline void torque_total(double *_t)
         { vectorCopy3D(torque_total_,_t); }
+
+        inline double torque_total(int i)
+        { return torque_total_[i]; }
 
       protected:
 
@@ -88,6 +97,12 @@ namespace LAMMPS_NS
         inline double& wear_step(int i)
         { return (*wear_step_)(i); }
 
+        inline void set_p_ref(double *_p_ref)
+        { p_ref_.set(0,_p_ref); }
+
+        inline double p_ref(int i)
+        { return p_ref_(0)[i]; }
+
       private:
 
         // inititalization fcts
@@ -95,12 +110,13 @@ namespace LAMMPS_NS
         void initWear();
 
         void calc_total_force();
+        void add_gravity();
 
         // STRESS
 
         // stress flag in FixMeshSurface
         // reference point, total force and total torque
-        double p_ref_[3];
+        VectorContainer<double,3> &p_ref_;
         double f_total_[3], torque_total_[3];
 
         // per-element force and torque

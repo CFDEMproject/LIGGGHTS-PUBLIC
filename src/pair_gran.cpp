@@ -85,6 +85,8 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
   CPEn = CDEn = CPEt = CDEVt = CDEFt = CTFW = DEH = NULL;
 
   laststep = -1;
+
+  needs_neighlist = true;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -191,7 +193,8 @@ void PairGran::init_style()
 
   // error and warning checks
 
-  if(strcmp(update->unit_style,"metal")==0 || strcmp(update->unit_style,"real")==0) error->all(FLERR,"Cannot use a non-consistent unit system with pair gran. Please use si,cgs or lj.");
+  if(strcmp(update->unit_style,"metal") ==0 || strcmp(update->unit_style,"real") == 0)
+    error->all(FLERR,"Cannot use a non-consistent unit system with pair gran. Please use si,cgs or lj.");
 
   if (!atom->sphere_flag)
     error->all(FLERR,"Pair granular requires atom style sphere");
@@ -374,15 +377,18 @@ void PairGran::init_style()
 
   // need a half neigh list and optionally a granular history neigh list
 
-  int irequest = neighbor->request(this);
-  neighbor->requests[irequest]->half = 0;
-  neighbor->requests[irequest]->gran = 1;
-  if (history) {
-    irequest = neighbor->request(this);
-    neighbor->requests[irequest]->id = 1; 
-    neighbor->requests[irequest]->half = 0;
-    neighbor->requests[irequest]->granhistory = 1;
-    neighbor->requests[irequest]->dnum = dnum_all;
+  if(needs_neighlist)
+  {
+      int irequest = neighbor->request(this);
+      neighbor->requests[irequest]->half = 0;
+      neighbor->requests[irequest]->gran = 1;
+      if (history) {
+        irequest = neighbor->request(this);
+        neighbor->requests[irequest]->id = 1; 
+        neighbor->requests[irequest]->half = 0;
+        neighbor->requests[irequest]->granhistory = 1;
+        neighbor->requests[irequest]->dnum = dnum_all;
+      }
   }
 
   // check for freeze Fix and set freeze_group_bit
@@ -409,7 +415,7 @@ void PairGran::init_style()
     }
   }
 
-  //further dynamic and frozen
+  // further dynamic and frozen
 
   double *radius = atom->radius;
   int *mask = atom->mask;
@@ -485,7 +491,6 @@ double PairGran::init_one(int i, int j)
   double cutoff = maxrad_dynamic[i]+maxrad_dynamic[j];
   cutoff = MAX(cutoff,maxrad_frozen[i]+maxrad_dynamic[j]);
   cutoff = MAX(cutoff,maxrad_dynamic[i]+maxrad_frozen[j]);
-  
   return cutoff;
 }
 

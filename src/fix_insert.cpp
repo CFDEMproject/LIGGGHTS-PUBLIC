@@ -452,7 +452,7 @@ void FixInsert::pre_exchange()
   if(ninsert_this_local > ninsert_this_max_local)
   {
       fix_distribution->random_init_list(ninsert_this_local);
-      ninsert_this_max_local = ninsert_this;
+      ninsert_this_max_local = ninsert_this_local;
   }
 
   // generate list of insertions

@@ -13,7 +13,7 @@ fix mesh/surface/stress command :h3
 
 fix ID group-ID mesh/surface/stress file filename type walltype mesh_keywords mesh_values surface_keyword surface_values stress_keywords stress_values :pre
 
-ID, group-ID are documented in "fix"_fix.html command :ulb,l
+ID, is documented in "fix"_fix.html command, the group-ID is ignored for this command. :ulb,l
 mesh/surface/stress = style name of this fix command  :l
 file filename type walltype mesh_keywords mesh_values surface_keyword surface_values are documented in "fix mesh/surface"_fix_mesh_surface.html. :l
 zero or more stress_keyword/value pairs may be appended  :l

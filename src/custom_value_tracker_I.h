@@ -93,7 +93,7 @@
      }
 
      // allocate memory
-     globalProperties_.getPointerById<T>(_id)->addUninitialized(capacityElement_);
+     //globalProperties_.getPointerById<T>(_id)->addUninitialized(capacityElement_);
 
      // return pointer
      return globalProperties_.getPointerById<T>(_id);

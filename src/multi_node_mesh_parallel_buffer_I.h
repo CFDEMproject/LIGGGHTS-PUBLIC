@@ -59,13 +59,20 @@
   }
 
   template<int NUM_NODES>
-  void MultiNodeMeshParallel<NUM_NODES>::popExchange(int nrecv,double *buf)
+  void MultiNodeMeshParallel<NUM_NODES>::popExchange(int nrecv,int dim,double *buf)
   {
       double center_elem[3];
+      double checklo,checkhi;
       int m = 0, nrecv_this;
 
       // scale translate rotate not needed here
       bool dummy = false;
+
+      checklo = this->domain->sublo[dim];
+      if(this->domain->subhi[dim] == this->domain->boxhi[dim])
+        checkhi = this->domain->boxhi[dim] + SMALL_DMBRDR;
+      else
+        checkhi = this->domain->subhi[dim];
 
       while (m < nrecv)
       {
@@ -75,7 +82,7 @@
           // center is next in buffer, test it
           vectorCopy3D(&(buf[m+1]),center_elem);
 
-          if(this->domain->is_in_subdomain(center_elem))
+          if(center_elem[dim] >= checklo && center_elem[dim] < checkhi)
           {
             popElemFromBuffer(&(buf[m+1]),OPERATION_COMM_EXCHANGE,dummy,dummy,dummy);
             nLocal_++;

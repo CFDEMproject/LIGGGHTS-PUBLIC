@@ -161,11 +161,83 @@ int jacobi(double matrix[3][3], double *evalues, double evectors[3][3])
   return 1;
 }
 
+int jacobi(double **matrix, double *evalues, double **evectors)
+{
+  int i,j,k;
+  double tresh,theta,tau,t,sm,s,h,g,c,b[3],z[3];
+
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < 3; j++) evectors[i][j] = 0.0;
+    evectors[i][i] = 1.0;
+  }
+  for (i = 0; i < 3; i++) {
+    b[i] = evalues[i] = matrix[i][i];
+    z[i] = 0.0;
+  }
+
+  for (int iter = 1; iter <= MAXJACOBI; iter++) {
+    sm = 0.0;
+    for (i = 0; i < 2; i++)
+      for (j = i+1; j < 3; j++)
+        sm += fabs(matrix[i][j]);
+    if (sm == 0.0) return 0;
+
+    if (iter < 4) tresh = 0.2*sm/(3*3);
+    else tresh = 0.0;
+
+    for (i = 0; i < 2; i++) {
+      for (j = i+1; j < 3; j++) {
+        g = 100.0*fabs(matrix[i][j]);
+        if (iter > 4 && fabs(evalues[i])+g == fabs(evalues[i])
+            && fabs(evalues[j])+g == fabs(evalues[j]))
+          matrix[i][j] = 0.0;
+        else if (fabs(matrix[i][j]) > tresh) {
+          h = evalues[j]-evalues[i];
+          if (fabs(h)+g == fabs(h)) t = (matrix[i][j])/h;
+          else {
+            theta = 0.5*h/(matrix[i][j]);
+            t = 1.0/(fabs(theta)+sqrt(1.0+theta*theta));
+            if (theta < 0.0) t = -t;
+          }
+          c = 1.0/sqrt(1.0+t*t);
+          s = t*c;
+          tau = s/(1.0+c);
+          h = t*matrix[i][j];
+          z[i] -= h;
+          z[j] += h;
+          evalues[i] -= h;
+          evalues[j] += h;
+          matrix[i][j] = 0.0;
+          for (k = 0; k < i; k++) rotate(matrix,k,i,k,j,s,tau);
+          for (k = i+1; k < j; k++) rotate(matrix,i,k,k,j,s,tau);
+          for (k = j+1; k < 3; k++) rotate(matrix,i,k,j,k,s,tau);
+          for (k = 0; k < 3; k++) rotate(evectors,k,i,k,j,s,tau);
+        }
+      }
+    }
+
+    for (i = 0; i < 3; i++) {
+      evalues[i] = b[i] += z[i];
+      z[i] = 0.0;
+    }
+  }
+  return 1;
+}
+
 /* ----------------------------------------------------------------------
    perform a single Jacobi rotation
 ------------------------------------------------------------------------- */
 
 void rotate(double matrix[3][3], int i, int j, int k, int l,
+            double s, double tau)
+{
+  double g = matrix[i][j];
+  double h = matrix[k][l];
+  matrix[i][j] = g-s*(h+g*tau);
+  matrix[k][l] = h+s*(g-h*tau);
+}
+
+void rotate(double **matrix, int i, int j, int k, int l,
             double s, double tau)
 {
   double g = matrix[i][j];

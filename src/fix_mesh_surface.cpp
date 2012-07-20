@@ -68,33 +68,28 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
           if (narg < iarg_+4) error->fix_error(FLERR,this,"not enough arguments");
           iarg_++;
           velFlag_ = true;
-          vel_[0] = force->numeric(arg[iarg_++]);
-          vel_[1] = force->numeric(arg[iarg_++]);
-          vel_[2] = force->numeric(arg[iarg_++]);
-
+          vSurf_[0] = force->numeric(arg[iarg_++]);
+          vSurf_[1] = force->numeric(arg[iarg_++]);
+          vSurf_[2] = force->numeric(arg[iarg_++]);
           hasargs = true;
       } else if (strcmp(arg[iarg_],"surface_ang_vel") == 0) {
           if (narg < iarg_+11) error->fix_error(FLERR,this,"not enough arguments");
           iarg_++;
           angVelFlag_ = true;
-
           if(strcmp(arg[iarg_++],"origin"))
               error->fix_error(FLERR,this,"expecting keyword 'origin' after 'rotation'");
           origin_[0] = force->numeric(arg[iarg_++]);
           origin_[1] = force->numeric(arg[iarg_++]);
           origin_[2] = force->numeric(arg[iarg_++]);
-
           if(strcmp(arg[iarg_++],"axis"))
               error->fix_error(FLERR,this,"expecting keyword 'axis' after definition of 'origin'");
           axis_[0] = force->numeric(arg[iarg_++]);
           axis_[1] = force->numeric(arg[iarg_++]);
           axis_[2] = force->numeric(arg[iarg_++]);
-
           if(strcmp(arg[iarg_++],"omega"))
               error->fix_error(FLERR,this,"expecting keyword 'omega' after definition of 'axis'");
           // positive omega give anti-clockwise (CCW) rotation
-          omega_ = force->numeric(arg[iarg_++]);
-
+          omegaSurf_ = force->numeric(arg[iarg_++]);
           hasargs = true;
       } else if (strcmp(arg[iarg_],"curvature") == 0) {
           if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
@@ -103,7 +98,6 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
           if(curvature_ < 0. || curvature_ > 60)
             error->fix_error(FLERR,this,"0° < curvature < 60° required");
           curvature_ = cos(curvature_*M_PI/180.);
-
       } else if(strcmp(style,"mesh/surface") == 0) {
           char *errmsg = new char[strlen(arg[iarg_])+20];
           sprintf(errmsg,"unknown keyword: %s", arg[iarg_]);
@@ -127,7 +121,7 @@ void FixMeshSurface::post_create()
     FixMesh::post_create();
 
     if(curvature_ > 0.)
-        static_cast<TriMesh*>(mesh_)->setCurvature(curvature_);
+        triMesh()->setCurvature(curvature_);
 
     if(velFlag_ && angVelFlag_)
         error->fix_error(FLERR,this,"cannot use 'surface_vel' and 'surface_ang_vel' together");
@@ -262,24 +256,25 @@ void FixMeshSurface::initVel()
     double conv_vel[3];
     int size, nVec;
     double scp, tmp[3], facenormal[3], ***v_node;
-    vectorCopy3D(vel_,conv_vel);
-    double conv_vel_mag = vectorMag3D(conv_vel);
+    vectorCopy3D(vSurf_,conv_vel);
+    double conv_vSurf_mag = vectorMag3D(conv_vel);
 
     // register new mesh property v
-    mesh_->prop().addGlobalProperty< VectorContainer<double,3> >("v","comm_none","frame_invariant","restart_no");
-    mesh_->prop().setGlobalProperty< VectorContainer<double,3> >("v",conv_vel);
+    mesh()->prop().addGlobalProperty< VectorContainer<double,3> >("v","comm_none","frame_invariant","restart_no");
+    mesh()->prop().setGlobalProperty< VectorContainer<double,3> >("v",conv_vel);
 
     // register new element property v - error if exists already via moving mesh
-    mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
-    size = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
-    nVec = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
+    mesh()->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
+    size = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
+    nVec = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
 
-    v_node = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->begin();
+    v_node = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->begin();
 
     // set mesh velocity
+    TriMesh *trimesh = triMesh();
     for (int i = 0; i < size; i++)
     {
-        static_cast<TriMesh*>(mesh_)->surfaceNorm(i,facenormal);
+        trimesh->surfaceNorm(i,facenormal);
         scp = vectorDot3D(conv_vel,facenormal);
         vectorScalarMult3D(facenormal,scp,tmp);
         for(int j = 0; j < nVec; j++)
@@ -288,7 +283,7 @@ void FixMeshSurface::initVel()
             if(vectorMag3D(v_node[i][j]) > 0.)
             {
                 vectorScalarDiv3D(v_node[i][j],vectorMag3D(v_node[i][j]));
-                vectorScalarMult3D(v_node[i][j],conv_vel_mag);
+                vectorScalarMult3D(v_node[i][j],conv_vSurf_mag);
             }
         }
     }
@@ -304,31 +299,32 @@ void FixMeshSurface::initAngVel()
     double rot_origin[3],rot_axis[3],rot_omega;
     vectorCopy3D(origin_,rot_origin);
     vectorCopy3D(axis_,rot_axis);
-    rot_omega = omega_;
+    rot_omega = omegaSurf_;
     double tmp[3], scp, unitAxis[3], tangComp[3], Utang[3], surfaceV[3];
     double node[3],facenormal[3], magAxis, magUtang, ***v_node;
 
     // register new element property v - error if exists already via moving mesh
-    mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
-    size = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
-    nVec = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
+    mesh()->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
+    size = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
+    nVec = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
 
-    size = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
-    nVec = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
-    v_node = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->begin();
+    size = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
+    nVec = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
+    v_node = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->begin();
 
     // calculate unit vector of rotation axis
     magAxis = vectorMag3D(rot_axis);
     vectorScalarDiv3D(rot_axis,magAxis,unitAxis);
 
+    TriMesh *trimesh = triMesh();
     for (int i = 0; i < size; i++)
     {
-        static_cast<TriMesh*>(mesh_)->surfaceNorm(i,facenormal);
+        trimesh->surfaceNorm(i,facenormal);
         // number of nodes per face (3)
         for(int j = 0; j < nVec; j++)
         {
             // position of node - origin of rotation (to get lever arm)
-            static_cast<TriMesh*>(mesh_)->node(i,j,node);
+            trimesh->node(i,j,node);
             vectorSubtract3D(node,rot_origin,surfaceV);
 
             // lever arm X rotational axis = tangential component

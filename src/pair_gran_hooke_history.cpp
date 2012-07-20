@@ -426,6 +426,7 @@ void PairGranHookeHistory::settings(int narg, char **arg)
     {
         hasargs = false;
         if (strcmp(arg[iarg_],"cohesion") == 0) {
+            if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'cohesion'");
             iarg_++;
             if(strcmp(arg[iarg_],"sjkr") == 0)
                 cohesionflag = 1;
@@ -436,6 +437,7 @@ void PairGranHookeHistory::settings(int narg, char **arg)
             iarg_++;
             hasargs = true;
         } else if (strcmp(arg[iarg_],"rolling_friction") == 0) {
+            if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'rolling_friction'");
             iarg_++;
             if(strcmp(arg[iarg_],"cdt") == 0)
                 rollingflag = 1;
@@ -446,6 +448,7 @@ void PairGranHookeHistory::settings(int narg, char **arg)
             iarg_++;
             hasargs = true;
         } else if (strcmp(arg[iarg_],"tangential_damping") == 0) {
+            if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'tangential_damping'");
             iarg_++;
             if(strcmp(arg[iarg_],"on") == 0)
                 dampflag = 1;

@@ -284,7 +284,6 @@ double FixPropertyGlobal::compute_array_modified(int i, int j) //i is row, j is 
 int FixPropertyGlobal::setmask()
 {
   int mask = 0;
-  mask |= PRE_EXCHANGE;
   return mask;
 }
 

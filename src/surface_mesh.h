@@ -134,8 +134,8 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         int randomOwnedGhostElement();
 
-        void rotate(double *totalQ, double *dQ,double *totalDispl,double *dDispl);
-        void rotate(double *dQ,double *dDispl);
+        void rotate(double *totalQ, double *dQ,double *origin);
+        void rotate(double *dQ,double *origin);
 
         // inline access
         inline double&  area(int i)         {return (area_)(i);}

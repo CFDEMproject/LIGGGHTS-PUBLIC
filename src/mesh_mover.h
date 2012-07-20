@@ -85,6 +85,24 @@ namespace LAMMPS_NS
         double vel_[3];
   };
 
+  /* ----------------------------------------------------------------------- */
+
+   class MeshMoverLinearVariable : public MeshMover{
+
+      public:
+        MeshMoverLinearVariable(LAMMPS *lmp,AbstractMesh *_mesh,char* var1, char* var2, char* var3);
+        virtual ~MeshMoverLinearVariable();
+
+        void initial_integrate(double dT,double dt);
+        void final_integrate(double dT,double dt) {}
+        void pre_delete();
+
+      private:
+        char *var1str,*var2str,*var3str;
+        int myvar1,myvar2,myvar3;
+        double vel_[3];
+  };
+
   /* ---------------------------------------------------------------------- */
 
   class MeshMoverWiggle : public MeshMover{
@@ -124,6 +142,27 @@ namespace LAMMPS_NS
 
   /* ---------------------------------------------------------------------- */
 
+  class MeshMoverRotateVariable : public MeshMover {
+
+      public:
+        MeshMoverRotateVariable(LAMMPS *lmp,AbstractMesh *_mesh,
+                            double px, double py,double pz,
+                            double axisX, double axisY, double axisZ,
+                            char* var1);
+        virtual ~MeshMoverRotateVariable();
+
+        void initial_integrate(double dT,double dt);
+        void final_integrate(double dT,double dt) {}
+        void pre_delete();
+
+      private:
+        char *var1str;
+        int myvar1,myvar2,myvar3;
+        double axis[3], p[3], omega, totalPhi;
+  };
+
+  /* ---------------------------------------------------------------------- */
+
   class MeshMoverRiggle : public MeshMover {
 
       public:
@@ -157,8 +196,14 @@ namespace LAMMPS_NS
                           lmp->force->numeric(arg[1]),
                           lmp->force->numeric(arg[2]),
                           lmp->force->numeric(arg[3]));
-        }
-        else if(strcmp(name,"rotate") == 0){
+        } else if(strcmp(name,"linear/variable") == 0){
+          if(narg < 4) return 0;
+
+          return new MeshMoverLinearVariable(lmp,mesh,
+                          arg[1],
+                          arg[2],
+                          arg[3]);
+        } else if(strcmp(name,"rotate") == 0){
           if(narg < 11) return 0;
           else
           {
@@ -181,8 +226,30 @@ namespace LAMMPS_NS
                           // period
                           lmp->force->numeric(arg[10]));
           }
-        }
-        else if(strcmp(name,"wiggle") == 0){
+	    } else if(strcmp(name,"rotate/variable") == 0){
+          if(narg < 11) return 0;
+          else
+          {
+            if(strcmp("origin",arg[1]))
+                return 0;
+            if(strcmp("axis",arg[5]))
+                return 0;
+            if(strcmp("period",arg[9]))
+                return 0;
+
+            return new MeshMoverRotateVariable(lmp,mesh,
+                          // origin
+                          lmp->force->numeric(arg[2]),
+                          lmp->force->numeric(arg[3]),
+                          lmp->force->numeric(arg[4]),
+                          // axis
+                          lmp->force->numeric(arg[6]),
+                          lmp->force->numeric(arg[7]),
+                          lmp->force->numeric(arg[8]),
+                          // variable name for OMEGA (because var could be zero !)
+                          arg[10]);
+          }
+        } else if(strcmp(name,"wiggle") == 0){
           if(narg < 7) return 0;
           else
           {
@@ -199,8 +266,7 @@ namespace LAMMPS_NS
                           //period
                           lmp->force->numeric(arg[6]));
           }
-        }
-        else if(strcmp(name,"riggle") == 0){
+        } else if(strcmp(name,"riggle") == 0){
           if(narg < 13) return 0;
           else
           {

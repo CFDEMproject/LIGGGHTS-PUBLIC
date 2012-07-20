@@ -13,7 +13,7 @@ fix mesh/surface command :h3
 
 fix ID group-ID mesh/surface file filename type walltype mesh_keywords mesh_values surface_keyword surface_values :pre
 
-ID, group-ID are documented in "fix"_fix.html command :ulb,l
+ID, is documented in "fix"_fix.html command, the group-ID is ignored for this command. :ulb,l
 mesh/surface = style name of this fix command  :l
 file = obligatory keyword
 filename = name of STL or VTK file containing the triangle mesh data :l
@@ -62,10 +62,8 @@ This command is not available in LAMMPS.
 This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from 
 ASCII STL files or legacy ASCII VTK files. You can apply scaling, offset and rotation to 
 the imported mesh via keywords {scale}, {move}, {rotate}. Operations are applied in the 
-order as they are specified. The group-ID is ignored for this command.
-
-IMPORTANT NOTE: For periodic boundaries, the mesh is NOT mapped. Instead, a warning is 
-generated if a vertex lies outside the simulation box.
+order as they are specified. The group-ID is ignored for this command. For periodic boundaries, 
+the mesh is mapped. 
 
 One fix represents one wall with a specific material, where the material is identified 
 via keyword {type}. If multiple meshes with different materials are desired, the respective 

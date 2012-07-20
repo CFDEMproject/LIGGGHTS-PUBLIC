@@ -32,7 +32,7 @@ andreas.aigner@jku.at
     // name of the functions for the kernel, its derivative, and the cutoff are defined
     SPHKernel
     (
-        1,
+        2,
         cubicspline,
         sph_kernel_cubicspline,
         sph_kernel_cubicspline_der,
@@ -101,3 +101,4 @@ inline double SPH_KERNEL_NS::sph_kernel_cubicspline_cut()
 
 #endif
 #endif
+

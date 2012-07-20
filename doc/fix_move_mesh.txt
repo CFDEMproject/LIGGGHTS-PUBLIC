@@ -17,9 +17,11 @@ ID is documented in "fix"_fix.html command, group-ID is ignored :ulb,l
 move/mesh = style name of this fix command :l
 mesh = obligatory keyword :l
 mesh-ID = ID for the fix mesh that the fix move/mesh is applied to :l
-style = {linear} or {wiggle} or {riggle} or {rotate} :l
+style = {linear} or {linear/variable} or {wiggle} or {riggle} or {rotate} or {rotate/variable} :l
   {linear} args = Vx Vy Vz
     Vx,Vy,Vz = components of velocity vector (velocity units)
+  {linear/variable} args = var_Vx var_Vy var_Vz
+    var_Vx,var_Vy,var_Vz = variables specifying components of velocity vector (velocity units)
   {wiggle} args = amplitude Ax Ay Az period per
     amplitude = obligatory keyword
     Ax,Ay,Az = components of amplitude vector (distance units)
@@ -28,7 +30,7 @@ style = {linear} or {wiggle} or {riggle} or {rotate} :l
   {riggle} args = origin Px Py Pz axis ax ay az period per amplitude ampl
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
-    ax,ay,az = axis of rotation vector
+    ax,ay,az = axis of rotation vector (distance units)
     period = obligatory keyword
     per = period of rotation (time units)#
     amplitude = obligatory keyword
@@ -36,9 +38,15 @@ style = {linear} or {wiggle} or {riggle} or {rotate} :l
   {rotate} args = origin Px Py Pz axis ax ay az period per
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
-    ax,ay,az = axis of rotation vector
+    ax,ay,az = axis of rotation vector (distance units)
     period = obligatory keyword
-    per = period of rotation (time units)  :pre
+    per = period of rotation (time units) 
+  {rotate/variable} args = origin Px Py Pz axis ax ay az period var_omega
+    origin = obligatory keyword
+    Px,Py,Pz = origin point of axis of rotation (distance units)
+    ax,ay,az = axis of rotation vector (distance units)
+    period = obligatory keyword
+    var_omega = variable specifying angular velocity (rad / time units) :pre
 :ule
 
 [Examples:]
@@ -72,6 +80,9 @@ specified, {V} is the specified velocity vector with components
 specified.  This style also sets the velocity of each atom to V =
 (Vx,Vy,Vz). 
 
+The {linear/variable} style does the same as the {linear} style,
+but uses three variables so that the velocity can be time-dependant.
+
 The {wiggle} style moves atoms in an oscillatory fashion, so that
 their position {X} = (x,y,z) as a function of time is given in vector
 notation as
@@ -93,6 +104,12 @@ rotation axis to the atom. Note that the direction of rotation
 around the rotation axis is consistent with the right-hand rule: 
 if your right-hand's thumb points along {R}, then your fingers 
 wrap around the axis in the direction of rotation.
+
+The {rotate/variable} style does the same as the {rotate} style,
+but uses a variable for the angular velocity so that the angular 
+velocity can be time-dependant.
+IMPORTANT NOTE: style {rotate} takes the period of the rotation
+as input, {rotate/variable} takes angular velocity as input.
 
 The {riggle} style imposes an oscillatory rotation around a rotation
 axis {R} = (Rx,Ry,Rz) that goes thru a point {P} = (Px,Py,Pz). 
@@ -142,6 +159,8 @@ minimization"_minimize.html.
 
 If multiple fix move/mesh movements are superposed onto one mesh, 
 they have to be deleted in reverse order of their creation
+Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary. 
+In this case, an error is generated. See "boundary"_boundary.html command for details.
 
 [Related commands:] 
 

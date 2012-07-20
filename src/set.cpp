@@ -511,7 +511,17 @@ void Set::set(int keyword)
       else if (keyword == OMEGAZ) atom->omega[i][2] = dvalue;  
     else if (keyword == CHARGE) atom->q[i] = dvalue;
     else if (keyword == MASS) atom->rmass[i] = dvalue;
-    else if (keyword == DIAMETER) atom->radius[i] = 0.5 * dvalue;
+    else if (keyword == DIAMETER) 
+    {
+        atom->radius[i] = 0.5 * dvalue;
+        if(atom->rmass_flag && atom->density_flag && atom->density[i] > 0.)
+        {
+          if (domain->dimension == 2)
+            atom->rmass[i] = MY_PI * atom->radius[i]*atom->radius[i] * atom->density[i];
+          else
+            atom->rmass[i] = 4.0*MY_PI/3.0 * atom->radius[i]*atom->radius[i]*atom->radius[i] * atom->density[i];
+        }
+    }
     else if (keyword == VOLUME) atom->vfrac[i] = dvalue;
     else if (keyword == MESO_E) atom->e[i] = dvalue;
     else if (keyword == MESO_CV) atom->cv[i] = dvalue;
@@ -557,10 +567,10 @@ void Set::set(int keyword)
       if (atom->radius_flag && atom->radius[i] > 0.0)
       {
           atom->density[i] = dvalue;
-              if (domain->dimension == 2) atom->rmass[i] = MY_PI*
-            atom->radius[i]*atom->radius[i] * atom->density[i]; 
-              else atom->rmass[i] = 4.0*MY_PI/3.0 *
-            atom->radius[i]*atom->radius[i]*atom->radius[i] * atom->density[i]; 
+          if (domain->dimension == 2)
+            atom->rmass[i] = MY_PI * atom->radius[i]*atom->radius[i] * atom->density[i]; 
+          else
+            atom->rmass[i] = 4.0*MY_PI/3.0 * atom->radius[i]*atom->radius[i]*atom->radius[i] * atom->density[i]; 
       }
       else if (atom->density_flag)
         atom->density[i] = dvalue;

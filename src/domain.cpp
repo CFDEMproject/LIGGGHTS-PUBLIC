@@ -313,6 +313,10 @@ void Domain::reset_box()
       extent[2][1] = MAX(extent[2][1],x[i][2]);
     }
 
+    modify->box_extent(extent[0][0],extent[0][1],
+                       extent[1][0],extent[1][1],
+                       extent[2][0],extent[2][1]);
+
     // compute extent across all procs
     // flip sign of MIN to do it in one Allreduce MAX
 

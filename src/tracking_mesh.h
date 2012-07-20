@@ -62,6 +62,9 @@ namespace LAMMPS_NS{
         inline int map(int global)
         { return (mapArray_ ? mapArray_[global] : -1);}
 
+        int id_slow(int i)
+        { return id_(i); }
+
         inline int id(int i)
         { return id_(i); }
 
@@ -83,8 +86,8 @@ namespace LAMMPS_NS{
 
         virtual void moveElement(int i,double *vecIncremental);
 
-        virtual void rotate(double *totalQ, double *dQ,double *totalDispl, double *dDispl);
-        virtual void rotate(double *dQ,double *dDispl);
+        virtual void rotate(double *totalQ, double *dQ,double *origin);
+        virtual void rotate(double *dQ,double *origin);
 
         // buffer operations
 

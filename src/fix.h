@@ -100,6 +100,7 @@ class Fix : protected Pointers {
 
   virtual void post_create() {} 
   virtual void pre_delete(bool) {} 
+  virtual void box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double &zlo,double &zhi) {} 
   virtual void init() {}
   virtual void init_list(int, class NeighList *) {}
   virtual void setup(int) {}

@@ -545,9 +545,9 @@ void SurfaceMesh<NUM_NODES>::scale(double factor)
 ------------------------------------------------------------------------- */
 
 template<int NUM_NODES>
-void SurfaceMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *totalDispl, double *dDisp)
+void SurfaceMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *origin)
 {
-    TrackingMesh<NUM_NODES>::rotate(totalQ,dQ,totalDispl,dDisp);
+    TrackingMesh<NUM_NODES>::rotate(totalQ,dQ,origin);
 
     // find out if rotating every property is cheaper than
     // re-calculating them from the new nodes
@@ -555,9 +555,9 @@ void SurfaceMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *totalDisp
 }
 
 template<int NUM_NODES>
-void SurfaceMesh<NUM_NODES>::rotate(double *dQ,double *dDispl)
+void SurfaceMesh<NUM_NODES>::rotate(double *dQ,double *origin)
 {
-    TrackingMesh<NUM_NODES>::rotate(dQ,dDispl);
+    TrackingMesh<NUM_NODES>::rotate(dQ,origin);
 
     // find out if rotating every property is cheaper than
     // re-calculating them from the new nodes

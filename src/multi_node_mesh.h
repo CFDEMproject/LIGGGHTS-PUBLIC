@@ -66,8 +66,6 @@ namespace LAMMPS_NS
         //   calls rotate(double *dQuat,double *displacement)
         void rotate(double dAngle, double *axis, double *p);
 
-        void setRotation(double *quat);
-
         // initialize movement
         bool registerMove(bool _scale, bool _translate, bool _rotate);
         void unregisterMove(bool _scale, bool _translate, bool _rotate);
@@ -96,6 +94,9 @@ namespace LAMMPS_NS
         { return nRotate_ > 0; }
 
         inline void node(int i,int j,double *node)
+        { vectorCopy3D(node_(i)[j],node);}
+
+        void node_slow(int i,int j,double *node)
         { vectorCopy3D(node_(i)[j],node);}
 
         inline void center(int i,double *center)
@@ -136,10 +137,10 @@ namespace LAMMPS_NS
         // linear move of single element w/ incremental displacement
         virtual void moveElement(int i,double *vecIncremental);
 
-        // rotation functions using quaternions
+        // rotation using quaternions
         
-        virtual void rotate(double *totalQ, double *dQ,double *totalDispl, double *dDispl);
-        virtual void rotate(double *dQ, double *dDispl);
+        virtual void rotate(double *totalQ, double *dQ,double *origin);
+        virtual void rotate(double *dQ, double *origin);
 
         // mesh nodes
         MultiVectorContainer<double,NUM_NODES,3> node_;

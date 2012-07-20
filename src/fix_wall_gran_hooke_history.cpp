@@ -441,5 +441,9 @@ inline void FixWallGranHookeHistory::deriveContactModelParams(int ip, double del
 
     if (dampflag == 0) gammat = 0.0;
 
+        // convert Kn and Kt from pressure units to force/distance^2
+    kn /= force->nktv2p;
+    kt /= force->nktv2p;
+
     return;
 }

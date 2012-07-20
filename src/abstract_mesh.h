@@ -50,14 +50,18 @@ namespace LAMMPS_NS
         //   calls rotate(double *dQuat,double *displacement)
         virtual void rotate(double dAngle, double *axis, double *p) = 0;
 
-        // set rotation state of mesh
-        virtual void setRotation(double *quat) = 0;
+        // rotation using quaternions
+        virtual void rotate(double *totalQ, double *dQ,double *origin) = 0;
 
         // initialize movement
         virtual bool registerMove(bool _scale, bool _translate, bool _rotate) = 0;
         virtual void unregisterMove(bool _scale, bool _translate, bool _rotate) = 0;
 
         virtual bool isMoving() = 0;
+
+        // get node j of element i
+        
+        virtual void node_slow(int i,int j,double *node) = 0;
 
         // neigh list stuff for moving mesh
         virtual bool decideRebuild() = 0;
@@ -84,6 +88,7 @@ namespace LAMMPS_NS
         virtual ContainerBase* container(int type,int lenVec) = 0;
         virtual ContainerBase* container(bool type,int lenVec) = 0;
         */
+        virtual int id_slow(int i) = 0;
 
         // size includes owned and ghost elements
         inline int size()

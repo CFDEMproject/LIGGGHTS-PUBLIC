@@ -47,7 +47,8 @@ inline void vectorConstruct3D(int *v,int x, int y, int z)
 
 inline void vectorNormalize3D(double *v)
 {
-    double invnorm = 1./std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    double norm = std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    double invnorm = (norm == 0) ? 0. : 1./norm;
     v[0] *= invnorm;
     v[1] *= invnorm;
     v[2] *= invnorm;

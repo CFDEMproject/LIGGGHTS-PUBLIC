@@ -36,9 +36,9 @@
   TrackingMesh<NUM_NODES>::TrackingMesh(LAMMPS *lmp)
   : MultiNodeMeshParallel<NUM_NODES>(lmp),
     customValues_(*(new CustomValueTracker(lmp,this))),
+    id_ (*this->prop().template addElementProperty< ScalarContainer<int> >("id","comm_none"/*ID does never change*/,"frame_invariant","restart_yes")),
     mapArray_(0),
-    mapTagMax_(0),
-    id_ (*this->prop().template addElementProperty< ScalarContainer<int> >("id","comm_none"/*ID does never change*/,"frame_invariant","restart_yes"))
+    mapTagMax_(0)
   {
   }
 
@@ -305,21 +305,31 @@
   }
 
   template<int NUM_NODES>
-  void TrackingMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *totalDispl, double *dDispl)
+  void TrackingMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *origin)
   {
-    MultiNodeMesh<NUM_NODES>::rotate(totalQ,dQ,totalDispl,dDispl);
+    double negorigin[3];
+    bool trans = vectorMag3DSquared(origin) > 0.;
+    vectorNegate3D(origin,negorigin);
 
+    MultiNodeMesh<NUM_NODES>::rotate(totalQ,dQ,origin);
+
+    if(trans) customValues_.move(negorigin);
     customValues_.rotate(dQ);
-    customValues_.move(dDispl);
+    if(trans) customValues_.move(origin);
   }
 
   template<int NUM_NODES>
-  void TrackingMesh<NUM_NODES>::rotate(double *dQ,double *dDispl)
+  void TrackingMesh<NUM_NODES>::rotate(double *dQ,double *origin)
   {
-    MultiNodeMesh<NUM_NODES>::rotate(dQ,dDispl);
+    double negorigin[3];
+    bool trans = vectorMag3DSquared(origin) > 0.;
+    vectorNegate3D(origin,negorigin);
 
+    MultiNodeMesh<NUM_NODES>::rotate(dQ,origin);
+
+    if(trans) customValues_.move(negorigin);
     customValues_.rotate(dQ);
-    customValues_.move(dDispl);
+    if(trans) customValues_.move(origin);
   }
 
   template<int NUM_NODES>
