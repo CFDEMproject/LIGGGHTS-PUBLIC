@@ -508,13 +508,6 @@ void FixInsert::pre_exchange()
   
   ninserted_spheres_this_local = fix_distribution->insert(ninserted_this_local);
 
-  // give derived classes the chance to do some wrap-up
-  finalize_insertion(ninserted_spheres_this_local);
-
-  // give particle distributions the chance to do some wrap-up
-  
-  fix_distribution->finalize_insertion();
-
   // set tag # of new particles beyond all previous atoms, reset global natoms
   // if global map exists, reset it now instead of waiting for comm
   // since deleting atoms messes up ghosts
@@ -531,11 +524,13 @@ void FixInsert::pre_exchange()
     }
   }
 
-  if(multisphere)
-  {
-    multisphere->id_extend();
-    multisphere->generate_map();
-  }
+  // give particle distributions the chance to do some wrap-up
+  
+  fix_distribution->finalize_insertion();
+
+  // give derived classes the chance to do some wrap-up
+  
+  finalize_insertion(ninserted_spheres_this_local);
 
   // tally stats
   MPI_Sum_Scalar(ninserted_this_local,ninserted_this,world);
@@ -563,7 +558,7 @@ void FixInsert::pre_exchange()
 int FixInsert::distribute_ninsert_this(int ninsert_this)
 {
     int me, nprocs, ngap, ninsert_this_local, *ninsert_this_local_all;
-    double fraction_local, *fraction_local_all, *remainder, r, rsum;
+    double fraction_local, fraction_local_all_sum, *fraction_local_all, *remainder, r, rsum;
 
     me = comm->me;
     nprocs = comm->nprocs;
@@ -586,6 +581,15 @@ int FixInsert::distribute_ninsert_this(int ninsert_this)
     
     if(me == 0)
     {
+        // normalize fraction_local_all so sum across processors is 1
+
+        fraction_local_all_sum = 0.;
+        for(int iproc = 0; iproc < nprocs; iproc++)
+            fraction_local_all_sum += fraction_local_all[iproc];
+
+        for(int iproc = 0; iproc < nprocs; iproc++)
+            fraction_local_all[iproc] /= fraction_local_all_sum;
+
         rsum = 0.;
         for(int iproc = 0; iproc < nprocs; iproc++)
         {

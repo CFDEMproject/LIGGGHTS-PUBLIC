@@ -180,9 +180,9 @@ void FixMeshSurfaceStress::initStress()
 
 void FixMeshSurfaceStress::initWear()
 {
-    mesh()->prop().addElementProperty<ScalarContainer<double> >("wear","comm_none","frame_invariant","restart_yes");
+    mesh()->prop().addElementProperty<ScalarContainer<double> >("wear","comm_exchange_borders","frame_invariant","restart_yes");
     mesh()->prop().getElementProperty<ScalarContainer<double> >("wear")->setAll(0.);
-    mesh()->prop().addElementProperty<ScalarContainer<double> >("wear_step","comm_reverse","frame_invariant","restart_yes");
+    mesh()->prop().addElementProperty<ScalarContainer<double> >("wear_step","comm_reverse","frame_invariant","restart_no");
     mesh()->prop().getElementProperty<ScalarContainer<double> >("wear_step")->setAll(0.);
 }
 

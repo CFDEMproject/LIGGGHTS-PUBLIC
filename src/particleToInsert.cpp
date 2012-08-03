@@ -59,6 +59,8 @@ int ParticleToInsert::insert()
     // set group mask to "all" plus fix groups
 
     int inserted = 0;
+    int nfix = modify->nfix;
+    Fix **fix = modify->fix;
 
     for(int i = 0; i < nspheres; i++)
     {
@@ -74,8 +76,7 @@ int ParticleToInsert::insert()
                 atom->radius[m] = radius_ins[0];
                 atom->density[m] = density_ins;
                 atom->rmass[m] = mass_ins;
-                int nfix = modify->nfix;
-                Fix **fix = modify->fix;
+
                 for (int j = 0; j < nfix; j++)
                    if (fix[j]->create_attribute) fix[j]->set_arrays(m);
         }

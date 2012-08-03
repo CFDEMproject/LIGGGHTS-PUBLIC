@@ -45,7 +45,10 @@ class FixInsertPack : public FixInsert {
   virtual void calc_insertion_properties();
   void init_defaults();
 
+  void calc_region_volume_local();
+
   virtual int calc_ninsert_this();
+  virtual int calc_maxtry(int);
   void x_v_omega(int,int&,int&,double&);
   double insertion_fraction();
 
@@ -61,6 +64,9 @@ class FixInsertPack : public FixInsert {
   double volumefraction_region;
   int ntotal_region;
   double masstotal_region;
+
+  // ratio how many particles have been inserted
+  double insertion_ratio;
 
 };
 

@@ -129,8 +129,10 @@
   template<int NUM_NODES>
   void MultiNodeMesh<NUM_NODES>::refreshOwned(int setupFlag)
   {
+      storeNodePosRebuild();
+
       if(node_orig_ && setupFlag)
-        storeNodePos(0,sizeLocal());
+        storeNodePosOrig(0,sizeLocal());
 
       // nothing more to do here, necessary initialitation done in addElement()
   }
@@ -139,7 +141,7 @@
   void MultiNodeMesh<NUM_NODES>::refreshGhosts(int setupFlag)
   {
       if(node_orig_ && setupFlag)
-        storeNodePos(sizeLocal(),sizeLocal()+sizeGhost());
+        storeNodePosOrig(sizeLocal(),sizeLocal()+sizeGhost());
 
       // nothing more to do here, necessary initialitation done in addElement()
   }
@@ -255,14 +257,14 @@
   }
 
   /* ----------------------------------------------------------------------
-   store current node position for use by moving mesh
+   store current node position as original node position for use by moving mesh
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::storeNodePos(int ilo, int ihi)
+  void MultiNodeMesh<NUM_NODES>::storeNodePosOrig(int ilo, int ihi)
   {
     if(!node_orig_)
-        error->one(FLERR,"Internal error in MultiNodeMesh<NUM_NODES>::storeNodePos");
+        error->one(FLERR,"Internal error in MultiNodeMesh<NUM_NODES>::storeNodePosOrig");
 
     for(int i = ilo; i < ihi; i++)
         for(int j = 0; j < NUM_NODES; j++)
@@ -601,7 +603,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::storeNodePos()
+  void MultiNodeMesh<NUM_NODES>::storeNodePosRebuild()
   {
     // just return for non-moving mesh
     if(!isMoving()) return;

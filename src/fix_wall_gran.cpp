@@ -487,6 +487,11 @@ void FixWallGran::post_force_mesh(int vflag)
       TriMesh *mesh = FixMesh_list_[iMesh]->triMesh();
       nTriAll = mesh->sizeLocal() + mesh->sizeGhost();
       FixContactHistory *fix_contact = FixMesh_list_[iMesh]->contactHistory();
+
+      // mark all contacts for delettion at this point
+      
+      if(fix_contact) fix_contact->markAllContacts();
+
       int *neighborList  = 0, *numNeigh = 0;
 
       // get neighborList and numNeigh
@@ -520,7 +525,6 @@ void FixWallGran::post_force_mesh(int vflag)
             if(deltan > 0.)
             {
               
-              if(fix_contact) fix_contact->handleNoContact(iPart,idTri);
             }
             else
             {
@@ -555,7 +559,7 @@ void FixWallGran::post_force_mesh(int vflag)
 
             if(deltan > 0.)
             {
-              if(fix_contact) fix_contact->handleNoContact(iPart,idTri);
+              
             }
             else 
             {
@@ -566,7 +570,8 @@ void FixWallGran::post_force_mesh(int vflag)
         }
       }
 
-      // clean-up
+      // clean-up contacts
+      
       if(fix_contact) fix_contact->cleanUpContacts();
     }
 

@@ -48,7 +48,6 @@ namespace LAMMPS_NS
         virtual ~FixMoveMesh();
 
         void setup(int vflag);
-        void setup_pre_force(int vflag);
         void pre_delete(bool unfixflag);
         int setmask();
 
@@ -73,7 +72,8 @@ namespace LAMMPS_NS
 
         bool neighListFresh_;
 
-        double time_, time_since_setup_;
+        double time_;
+        double time_since_setup_;
 
   };
 } /* namespace LAMMPS_NS */

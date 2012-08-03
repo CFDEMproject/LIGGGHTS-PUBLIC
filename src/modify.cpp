@@ -257,6 +257,16 @@ void Modify::setup_pre_exchange()
 }
 
 /* ----------------------------------------------------------------------
+   setup pre_neighbor call, only for fixes that define pre_neighbor
+------------------------------------------------------------------------- */
+
+void Modify::setup_pre_neighbor()
+{
+  for (int i = 0; i < n_pre_neighbor; i++)
+    fix[list_pre_neighbor[i]]->setup_pre_neighbor();
+}
+
+/* ----------------------------------------------------------------------
    setup pre_force call, only for fixes that define pre_force
 ------------------------------------------------------------------------- */
 

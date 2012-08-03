@@ -104,7 +104,11 @@ namespace LAMMPS_NS
           inline bool isTranslationInvariant();
           inline bool isRotationInvariant();
 
-          inline bool decideBufferOperation(int operation,bool scale,bool translate, bool rotate);
+          inline bool decidePackUnpackOperation(int operation,bool scale,bool translate, bool rotate);
+
+          inline bool decideCommOperation(int operation);
+
+          inline bool decideCreateNewElements(int operation);
 
           char *id_;
           int communicationType_;

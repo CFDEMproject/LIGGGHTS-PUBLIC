@@ -1846,7 +1846,7 @@ int Neighbor::coord2bin(double *x, int &ix, int &iy, int &iz)
 int Neighbor::exclusion(int i, int j, int itype, int jtype,
                         int *mask, int *molecule) const {
   int m;
-
+  
   if (nex_type && ex_type[itype][jtype]) return 1;
 
   if (nex_group) {

@@ -386,9 +386,9 @@ void FixTemplateMultiplespheres::randomize_single()
 
 void FixTemplateMultiplespheres::init_ptilist(int n_random_max)
 {
+    if(pti_list) error->all(FLERR,"invalid FixTemplateSphere::init_list()");
     n_pti_max = n_random_max;
     pti_list = (ParticleToInsert**) memory->smalloc(n_pti_max*sizeof(ParticleToInsert*),"pti_list");
-
     for(int i = 0; i < n_pti_max; i++)
        pti_list[i] = new ParticleToInsert(lmp,nspheres);
 }

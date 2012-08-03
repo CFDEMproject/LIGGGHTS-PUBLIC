@@ -35,8 +35,10 @@ namespace LAMMPS_NS {
 
 class FixTemplateMultiplespheres : public FixTemplateSphere {
  public:
+
   FixTemplateMultiplespheres(class LAMMPS *, int, char **);
-  ~FixTemplateMultiplespheres();
+  virtual ~FixTemplateMultiplespheres();
+
   virtual void post_create();
   double max_r_bound();
   double max_rad();
@@ -46,7 +48,7 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
   virtual void randomize_single();
 
   // multi insertion
-  void init_ptilist(int);
+  virtual void init_ptilist(int);
   void randomize_ptilist(int ,int );
 
   virtual void finalize_insertion() {}

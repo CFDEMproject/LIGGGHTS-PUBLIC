@@ -45,7 +45,8 @@ namespace LAMMPS_NS
   {
       public:
 
-          virtual void add(T** elem);
+          void add(T** elem);
+          void addZero();
 
           void copy(int from,int to);
           void del(int n);
@@ -56,6 +57,7 @@ namespace LAMMPS_NS
           void get(int n, T** elem);
 
           void setAll(T def);
+          void setAll(int to, T def);
           void set(int n, T** elem);
 
           T**& operator()(int n);

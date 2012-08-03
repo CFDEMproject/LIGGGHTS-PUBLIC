@@ -65,7 +65,6 @@ namespace LAMMPS_NS
 
         // neigh list stuff for moving mesh
         virtual bool decideRebuild() = 0;
-        virtual void storeNodePos() = 0;
 
         virtual void initalSetup() = 0;
         virtual void pbcExchangeBorders(int setupFlag) = 0;

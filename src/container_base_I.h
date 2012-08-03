@@ -49,14 +49,19 @@
 
   enum{ // communication invoked manually
         COMM_TYPE_MANUAL,
+        // only exchange and borders comm
+        COMM_EXCHANGE_BORDERS,
         // forward comm every step
         COMM_TYPE_FORWARD,
         // forward comm based on reference frame setting
         // ie if mesh rotates, egdeVecs are communicated
+        
         COMM_TYPE_FORWARD_FROM_FRAME,
         // reverse comm every step
+        
         COMM_TYPE_REVERSE,
         // no comm at all
+        
         COMM_TYPE_NONE,
         // undefined state for error check
         COMM_TYPE_UNDEFINED};  // communication types
@@ -68,10 +73,10 @@
         RESTART_TYPE_NO};
 
   /* ----------------------------------------------------------------------
-   decide if property is pushed or pulled
+   decide if property is pushed or pulled at all
   ------------------------------------------------------------------------- */
 
-  inline bool ContainerBase::decideBufferOperation(int operation,bool scale,bool translate, bool rotate)
+  inline bool ContainerBase::decidePackUnpackOperation(int operation,bool scale,bool translate, bool rotate)
   {
       // return true for manual communication, such as for node_, node_orig_
       // etc in MultiNodeMeshParallel
@@ -118,29 +123,80 @@
   }
 
   /* ----------------------------------------------------------------------
+   decide if operation performs data communication
+  ------------------------------------------------------------------------- */
+
+  inline bool ContainerBase::decideCommOperation(int operation)
+  {
+      
+      if(operation == OPERATION_RESTART)
+          return true;
+
+      if(operation == OPERATION_COMM_FORWARD ||
+         operation == OPERATION_COMM_REVERSE )
+        return true;
+
+      if(operation == OPERATION_COMM_BORDERS ||
+         operation == OPERATION_COMM_EXCHANGE )
+      {
+          
+          if(communicationType_ == COMM_TYPE_NONE ||
+             communicationType_ == COMM_TYPE_REVERSE)
+             return false;
+
+          return true;
+      }
+
+      // default
+      return true;
+  }
+
+  /* ----------------------------------------------------------------------
+   decide if unpack creates new element or overwrites existing data
+  ------------------------------------------------------------------------- */
+
+  inline bool ContainerBase::decideCreateNewElements(int operation)
+  {
+      
+      if(operation == OPERATION_RESTART)
+          return true;
+
+      if(operation == OPERATION_COMM_BORDERS ||
+         operation == OPERATION_COMM_EXCHANGE )
+        return true;
+
+      if(operation == OPERATION_COMM_FORWARD ||
+         operation == OPERATION_COMM_REVERSE )
+        return false;
+
+      // default
+      return false;
+  }
+
+  /* ----------------------------------------------------------------------
    fast test for reference frame
    note that rotation is only carried out for LEN_VEC==3
   ------------------------------------------------------------------------- */
 
     bool ContainerBase::isScaleInvariant()
     {
-       return ( refFrame_==REF_FRAME_INVARIANT ||
-                refFrame_==REF_FRAME_SCALE_TRANS_INVARIANT);
+       return ( refFrame_ == REF_FRAME_INVARIANT ||
+                refFrame_ == REF_FRAME_SCALE_TRANS_INVARIANT);
     }
 
     bool ContainerBase::isTranslationInvariant()
     {
-        return ( refFrame_==REF_FRAME_INVARIANT ||
-                 refFrame_==REF_FRAME_TRANS_ROT_INVARIANT ||
-                 refFrame_==REF_FRAME_SCALE_TRANS_INVARIANT ||
-                 refFrame_==REF_FRAME_TRANS_INVARIANT);
+        return ( refFrame_ == REF_FRAME_INVARIANT ||
+                 refFrame_ == REF_FRAME_TRANS_ROT_INVARIANT ||
+                 refFrame_ == REF_FRAME_SCALE_TRANS_INVARIANT ||
+                 refFrame_ == REF_FRAME_TRANS_INVARIANT);
     }
 
     bool ContainerBase::isRotationInvariant()
     {
-        return ( refFrame_==REF_FRAME_INVARIANT ||
-                 refFrame_==REF_FRAME_TRANS_ROT_INVARIANT ||
-                 lenVec()!=3);
+        return ( refFrame_ == REF_FRAME_INVARIANT ||
+                 refFrame_ == REF_FRAME_TRANS_ROT_INVARIANT ||
+                 lenVec() != 3);
     }
 
 #endif

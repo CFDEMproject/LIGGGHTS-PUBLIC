@@ -92,6 +92,20 @@
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::addZero()
+  {
+          if(numElem_ == maxElem_)
+          {
+                  grow<T>(arr_,maxElem_+GROW,NUM_VEC,LEN_VEC);
+                  maxElem_ += GROW;
+          }
+          for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                          arr_[numElem_][i][j] = static_cast<T>(0);
+          numElem_++;
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::addUninitialized(int n)
   {
         numElem_ += n;
@@ -136,7 +150,7 @@
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::delForward(int n,bool scale,bool translate,bool rotate)
   {
           // do only delete property if it is a forward comm property
-          if(!decideBufferOperation(OPERATION_COMM_FORWARD, scale, translate, rotate))
+          if(!decidePackUnpackOperation(OPERATION_COMM_FORWARD, scale, translate, rotate))
             return;
 
           numElem_--;
@@ -154,12 +168,13 @@
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::clearReverse(bool scale,bool translate,bool rotate)
   {
       // do only reset property if it is a reverse comm property
-      if(!decideBufferOperation(OPERATION_COMM_REVERSE, scale, translate, rotate))
+      if(!decidePackUnpackOperation(OPERATION_COMM_REVERSE, scale, translate, rotate))
         return;
 
-      for(int i=0;i<size();i++)
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
+      int len = size();
+      for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
                     arr_[i][j][k] = 0.;
   }
 
@@ -171,7 +186,7 @@
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::delRestart(int n,bool scale,bool translate,bool rotate)
   {
           // do only delete property if it is a forward comm property
-          if(!decideBufferOperation(OPERATION_RESTART, scale, translate, rotate))
+          if(!decidePackUnpackOperation(OPERATION_RESTART, scale, translate, rotate))
             return;
 
           numElem_--;
@@ -214,17 +229,28 @@
   template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::set(int n, T** elem)
   {
-          for(int i=0;i<NUM_VEC;i++)
-                          for(int j=0;j<LEN_VEC;j++)
+          for(int i = 0; i < NUM_VEC; i++)
+                          for(int j = 0; j < LEN_VEC; j++)
                                   arr_[n][i][j] = elem[i][j];
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::setAll(T def)
   {
-      for(int n=0;n<size();n++)
-          for(int i=0;i<NUM_VEC;i++)
-                          for(int j=0;j<LEN_VEC;j++)
+      int len = size();
+      for(int n = 0; n < len; n++)
+          for(int i = 0; i < NUM_VEC; i++)
+                          for(int j = 0; j < LEN_VEC; j++)
+                                  arr_[n][i][j] = def;
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::setAll(int to,T def)
+  {
+      int len = MathExtraLiggghts::min(to,size());
+      for(int n = 0; n < len; n++)
+          for(int i = 0; i < NUM_VEC; i++)
+                          for(int j = 0; j < LEN_VEC; j++)
                                   arr_[n][i][j] = def;
   }
 
@@ -253,9 +279,10 @@
       for(int i = 0; i < scalePower_; i++)
         factorApplied *= factor;
 
-      for(int i=0;i<size();i++)
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
+      int len = size();
+      for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC;j++)
+                for(int k = 0; k < LEN_VEC; k++)
                     arr_[i][j][k] *= factorApplied;
   }
 
@@ -264,9 +291,11 @@
   {
       if(isTranslationInvariant()) return;
 
-      for(int i=0;i<size();i++)
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
+      int len = size();
+
+      for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
                     arr_[i][j][k] += delta[k];
   }
 
@@ -275,8 +304,8 @@
   {
       if(isTranslationInvariant()) return;
 
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
                     arr_[i][j][k] += delta[k];
   }
 
@@ -286,19 +315,24 @@
       if(isRotationInvariant()) return;
 
       // ATTENTION: only correct for 3D vectors
-      for(int i=0;i<size();i++)
-            for(int j=0;j<NUM_VEC;j++)
+      int len = size();
+      for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC; j++)
               MathExtraLiggghts::vec_quat_rotate(arr_[i][j],dQ);
   }
 
   /* ----------------------------------------------------------------------
    buffer size for all elements, push / pop for all elements
+   used for global properties
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   int GeneralContainer<T,NUM_VEC,LEN_VEC>::bufSize(int operation,bool scale,bool translate,bool rotate)
   {
-      if(!this->decideBufferOperation(operation,scale,translate,rotate))
+      if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
+            return 0;
+
+      if(!this->decideCommOperation(operation))
             return 0;
 
       return (1 + size()*NUM_VEC*LEN_VEC);
@@ -311,17 +345,19 @@
 
           int m = 0;
 
-          if(!this->decideBufferOperation(operation,scale,translate,rotate))
+          if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
-          buf[m++] = static_cast<double>(size());
+          int len = size();
 
-          for(int i=0;i<size();i++)
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
+          buf[m++] = static_cast<double>(len);
+
+          for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
                     buf[m++] = static_cast<double>(arr_[i][j][k]);
 
-          return (1 + size()*NUM_VEC*LEN_VEC);
+          return (1 + len*NUM_VEC*LEN_VEC);
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
@@ -329,35 +365,43 @@
   {
           int nNew, m = 0;
 
-          if(!this->decideBufferOperation(operation,scale,translate,rotate))
+          if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
-          T** tmp;
-          create<T>(tmp,NUM_VEC,LEN_VEC);
-
-          nNew = static_cast<int>(buf[m++]);
-
-          for(int i=0;i<nNew;i++)
+          if(decideCreateNewElements(operation))
           {
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
-                    tmp[j][k] = static_cast<T>(buf[m++]);
-            add(tmp);
+              T** tmp;
+              create<T>(tmp,NUM_VEC,LEN_VEC);
+
+              nNew = static_cast<int>(buf[m++]);
+
+              for(int i = 0; i < nNew; i++)
+              {
+                for(int j = 0; j < NUM_VEC; j++)
+                    for(int k = 0; k < LEN_VEC; k++)
+                        tmp[j][k] = static_cast<T>(buf[m++]);
+                add(tmp);
+              }
+
+              destroy<T>(tmp);
+
+              return (1 + nNew*NUM_VEC*LEN_VEC);
           }
-
-          destroy<T>(tmp);
-
-          return (1 + nNew*NUM_VEC*LEN_VEC);
+          else return 0;
   }
 
   /* ----------------------------------------------------------------------
    buffer size for a list of elements, push / pop a list of elements
+   used for borders, fw and rev comm for element properties
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   int GeneralContainer<T,NUM_VEC,LEN_VEC>::elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate)
   {
-      if(!this->decideBufferOperation(operation,scale,translate,rotate))
+      if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
+            return 0;
+
+      if(!this->decideCommOperation(operation))
             return 0;
 
       return (n*NUM_VEC*LEN_VEC);
@@ -368,14 +412,17 @@
   {
         int i,m = 0;
 
-        if(!this->decideBufferOperation(operation,scale,translate,rotate))
+        if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
-        for(int ii=0;ii<n;ii++)
+        if(!this->decideCommOperation(operation))
+            return 0;
+
+        for(int ii = 0; ii < n; ii++)
         {
             i = list[ii];
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
                     buf[m++] = static_cast<double>(arr_[i][j][k]);
         }
 
@@ -387,24 +434,28 @@
   {
         int m = 0;
 
-        if(!this->decideBufferOperation(operation,scale,translate,rotate))
+        if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
+
+        bool pullBuf = decideCommOperation(operation);
+
+        bool createElem = decideCreateNewElements(operation);
 
         T** tmp;
         create<T>(tmp,NUM_VEC,LEN_VEC);
 
-        for(int i=first;i<first+n;i++)
+        for(int i = first; i < first+n; i++)
         {
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
-                    tmp[j][k] = static_cast<T>(buf[m++]);
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
+                    (createElem ? tmp[j][k] : arr_[i][j][k]) = (pullBuf ? static_cast<T>(buf[m++]) : static_cast<T>(0));
 
-            add(tmp);
+            if(createElem) add(tmp);
         }
 
         destroy<T>(tmp);
 
-        return (n*NUM_VEC*LEN_VEC);
+        return m;
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
@@ -412,13 +463,13 @@
   {
         int m = 0;
 
-        if(!this->decideBufferOperation(operation,scale,translate,rotate))
+        if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
-        for(int i=first;i<first+n;i++)
+        for(int i = first; i < first+n; i++)
         {
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
                     buf[m++] = static_cast<double>(arr_[i][j][k]);
         }
 
@@ -430,14 +481,14 @@
   {
         int i,m = 0;
 
-        if(!this->decideBufferOperation(operation,scale,translate,rotate))
+        if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
-        for(int ii=0;ii<n;ii++)
+        for(int ii = 0; ii < n; ii++)
         {
             i = list[ii];
-            for(int j=0;j<NUM_VEC;j++)
-                for(int k=0;k<LEN_VEC;k++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
                     arr_[i][j][k] += static_cast<T>(buf[m++]);
         }
 
@@ -446,12 +497,16 @@
 
   /* ----------------------------------------------------------------------
    buffer size for a single element, push / pop a single element
+   used for exchange of single elements
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   int GeneralContainer<T,NUM_VEC,LEN_VEC>::elemBufSize(int operation,bool scale,bool translate,bool rotate)
   {
-      if(!this->decideBufferOperation(operation,scale,translate,rotate))
+      if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
+            return 0;
+
+      if(!this->decideCommOperation(operation))
             return 0;
 
       return (NUM_VEC*LEN_VEC);
@@ -462,14 +517,17 @@
   {
         int m = 0;
 
-        if(!this->decideBufferOperation(operation,scale,translate,rotate))
+        if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
-        for(int j=0;j<NUM_VEC;j++)
-            for(int k=0;k<LEN_VEC;k++)
+        if(!this->decideCommOperation(operation))
+            return 0;
+
+        for(int j = 0; j < NUM_VEC; j++)
+            for(int k = 0; k < LEN_VEC; k++)
                 buf[m++] = static_cast<double>(arr_[i][j][k]);
 
-        return (NUM_VEC*LEN_VEC);
+        return m;
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
@@ -477,20 +535,22 @@
   {
         int m = 0;
 
-        if(!this->decideBufferOperation(operation,scale,translate,rotate))
+        if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
+
+        bool pullBuf = decideCommOperation(operation);
 
         T** tmp;
         create<T>(tmp,NUM_VEC,LEN_VEC);
 
-        for(int j=0;j<NUM_VEC;j++)
-            for(int k=0;k<LEN_VEC;k++)
-                tmp[j][k] = static_cast<T>(buf[m++]);
-        add(tmp);
+        for(int j = 0; j < NUM_VEC; j++)
+            for(int k = 0; k < LEN_VEC; k++)
+                tmp[j][k] = pullBuf ? static_cast<T>(buf[m++]) : static_cast<T>(0);
 
+        add(tmp);
         destroy<T>(tmp);
 
-        return (NUM_VEC*LEN_VEC);
+        return m;
   }
 
 #endif

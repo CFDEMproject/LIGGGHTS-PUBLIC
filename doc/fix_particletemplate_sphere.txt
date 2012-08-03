@@ -52,6 +52,6 @@ Information about the random state in this fix is written to "binary restart fil
 
 [Related commands:]
 
-"fix_particletemplate_sphere"_fix_particletemplate_sphere.html "fix_pour_dev"_fix_pour_dev.html
+"fix_particletemplate_sphere"_fix_particletemplate_sphere.html
 
 [Default:] radius = 1.0, density = 1.0, atom_type = 1 

@@ -27,8 +27,9 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::pushExchange(int dim,double *buf)
+  int MultiNodeMeshParallel<NUM_NODES>::pushExchange(int dim)
   {
+      
       // scale translate rotate not needed here
       bool dummy = false;
       double checklo,checkhi;
@@ -45,8 +46,8 @@
       {
           if(!(this->center_(i)[dim] >= checklo && this->center_(i)[dim] < checkhi))
           {
-              nsend_this = pushElemToBuffer(i,&(buf[nsend+1]),OPERATION_COMM_EXCHANGE,dummy,dummy,dummy);
-              buf[nsend] = static_cast<double>(nsend_this+1);
+              nsend_this = pushElemToBuffer(i,&(buf_send_[nsend+1]),OPERATION_COMM_EXCHANGE,dummy,dummy,dummy);
+              buf_send_[nsend] = static_cast<double>(nsend_this+1);
               nsend += (nsend_this+1);
               
               if (nsend > maxsend_)

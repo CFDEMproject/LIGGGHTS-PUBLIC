@@ -30,6 +30,7 @@
 
 #include "general_container.h"
 #include "memory.h"
+#include <limits>
 
 namespace LAMMPS_NS
 {
@@ -50,6 +51,7 @@ namespace LAMMPS_NS
           T& operator() (int n);
           T const& operator() (int n) const;
           T max();
+          T max(int);
   };
 
   /* ----------------------------------------------------------------------
@@ -134,7 +136,8 @@ namespace LAMMPS_NS
   template<typename T>
   void ScalarContainer<T>::setAll(T def)
   {
-      for(int n=0;n<this->size();n++)
+      int len = this->size();
+      for(int n = 0; n < len; n++)
           this->arr_[n][0][0] = def;
   }
 
@@ -147,9 +150,33 @@ namespace LAMMPS_NS
   template<typename T>
   T ScalarContainer<T>::max()
   {
+      int len = this->size();
+
+      if(len == 0)
+        return  (std::numeric_limits<T>::min)();
+
       T maxim = this->arr_[0][0][0];
 
-      for(int n=0;n<this->size();n++)
+      for(int n = 0; n < len; n++)
+          if(this->arr_[n][0][0] > maxim)
+            maxim = this->arr_[n][0][0];
+
+      return maxim;
+  }
+
+  template<typename T>
+  T ScalarContainer<T>::max(int to)
+  {
+      T maxim;
+
+      int nn = MathExtraLiggghts::min(to,this->size());
+
+      if(nn == 0)
+        return  (std::numeric_limits<T>::min)();
+
+      maxim = this->arr_[0][0][0];
+
+      for(int n = 1; n < nn; n++)
           if(this->arr_[n][0][0] > maxim)
             maxim = this->arr_[n][0][0];
 

@@ -110,7 +110,7 @@ namespace LAMMPS_NS
         bool checkBorderElementRight(int,int,double,double);
 
         // lo-level parallelization
-        int pushExchange(int dim,double *buf);
+        int pushExchange(int dim);
         void popExchange(int nrecv,int dim,double *buf);
 
         int sizeRestartMesh();

@@ -138,6 +138,8 @@
   void CustomValueTracker::setGlobalProperty(char *_id, U def)
   {
      
+     if(globalProperties_.getPointerById<T>(_id)->size() == 0)
+        globalProperties_.getPointerById<T>(_id)->addUninitialized(1);
      globalProperties_.getPointerById<T>(_id)->set(0,def);
   }
 

@@ -124,3 +124,12 @@ int FixInsertRateRegion::calc_ninsert_this()
 
   return FixInsert::calc_ninsert_this();
 }
+
+/* ----------------------------------------------------------------------
+   calc # of maximum tries - directly linked to number of particles to insert
+------------------------------------------------------------------------- */
+
+int FixInsertRateRegion::calc_maxtry(int ninsert_this_local)
+{
+    return ninsert_this_local * maxattempt;
+}

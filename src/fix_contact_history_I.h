@@ -47,21 +47,17 @@
     return;
   }
 
-  /* ---------------------------------------------------------------------- */
+  /* ----------------------------------------------------------------------
+     mark all contacts for deletion
+  ------------------------------------------------------------------------- */
 
-  inline void FixContactHistory::handleNoContact(int iP, int idTri)
+  inline void FixContactHistory::markAllContacts()
   {
-    // check if contact is present - if yes, set deleteflag
-    
-    for(int j = 0; j < npartner[iP]; j++)
-    {
-        if(partner[iP][j] == idTri)
-        {
-            delflag[iP][j] = true;
-            
-            break;
-        }
-    }
+      int nlocal = atom->nlocal;
+
+      for(int i = 0; i < nlocal; i++)
+          for(int j = 0; j < npartner[i]; j++)
+              delflag[i][j] = true;
   }
 
   /* ---------------------------------------------------------------------- */
@@ -75,6 +71,7 @@
         if(tri[i] == idTri)
         {
             history = contacthistory[iP][i];
+            delflag[iP][i] = false;
             return true;
         }
     }
@@ -88,7 +85,8 @@
     int *tri = partner[iP];
     for(int i = 0; i < npartner[iP]; i++)
     {
-      if(tri[i] != idTri && mesh_->areCoplanar(tri[i],idTri))
+      
+      if(tri[i] != idTri && mesh_->map(tri[i]) && mesh_->areCoplanar(tri[i],idTri))
       {
         // copy contact history
         vectorCopyN(contacthistory[iP][i],history,dnum);

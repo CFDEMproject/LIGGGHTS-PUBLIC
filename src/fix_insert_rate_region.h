@@ -42,6 +42,7 @@ class FixInsertRateRegion : public FixInsertPack  {
 
   virtual void calc_insertion_properties();
   virtual int calc_ninsert_this();
+  virtual int calc_maxtry(int);
 };
 
 }

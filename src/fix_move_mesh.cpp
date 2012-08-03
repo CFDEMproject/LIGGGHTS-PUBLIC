@@ -128,16 +128,10 @@ int FixMoveMesh::setmask()
 
 /* ---------------------------------------------------------------------- */
 
-void FixMoveMesh::setup_pre_force(int vflag)
-{
-    time_since_setup_ = 0.;
-
-}
-
-/* ---------------------------------------------------------------------- */
-
 void FixMoveMesh::setup(int vflag)
 {
+    
+    time_since_setup_ = 0.;
     
     if(!mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v"))
     {
@@ -163,6 +157,7 @@ void FixMoveMesh::initial_integrate(int dummy)
     }
 
     // integration
+    
     move_->initial_integrate(time_since_setup_,dt);
 }
 
@@ -173,8 +168,10 @@ void FixMoveMesh::final_integrate()
     double dt = update->dt;
 
     // useful only if accelerations are known
-    move_->final_integrate(time_,dt);
+    
+    move_->final_integrate(time_since_setup_,dt);
 }
+
 /* ----------------------------------------------------------------------
    pack entire state of Fix into one write
 ------------------------------------------------------------------------- */

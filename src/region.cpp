@@ -375,7 +375,7 @@ void Region::options(int narg, char **arg)
      else error->all(FLERR,"Illegal region command");
   }
 
-  random = new RanPark(lmp,seed);
+  random = new RanPark(lmp,seed+comm->me);
 
   // error check
 
@@ -421,7 +421,7 @@ void Region::options(int narg, char **arg)
 void Region::reset_random(int new_seed)
 {
     if(comm->me == 0) fprintf(screen,"INFO: Resetting random generator for region %s\n",id);
-    random->reset(new_seed);
+    random->reset(new_seed + comm->me);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -552,15 +552,15 @@ int Region::match_shrinkby_cut(double *pos,double cut)
 
 void Region::volume_mc(int n_test,double &vol_global, double &vol_local)
 {
+    double pos[3],vol_bbox, vol_local_all;
+    int n_in_local = 0, n_in_global = 0, n_in_global_all;
+
     // impossible to calculate volume if bbox non-existent
     if(!bboxflag)
     {
         vol_global = vol_local = 0.;
         return;
     }
-
-    double pos[3],vol_bbox;
-    int n_in_local = 0, n_in_global = 0, n_in_global_all;
 
     for(int i = 0; i < n_test; i++)
     {
@@ -588,8 +588,13 @@ void Region::volume_mc(int n_test,double &vol_global, double &vol_local)
     vol_bbox = (extent_xhi - extent_xlo) * (extent_yhi - extent_ylo) * (extent_zhi - extent_zlo);
 
     // return calculated values
-    vol_global = static_cast<double>(n_in_global)/static_cast<double>(n_test) * vol_bbox;
+    vol_global = static_cast<double>(n_in_global_all)/static_cast<double>(n_test*comm->nprocs) * vol_bbox;
     vol_local  = static_cast<double>(n_in_local )/static_cast<double>(n_test) * vol_bbox;
+
+    // sum of local volumes will not be equal to global volume because of
+    // different random generator states - correct this now
+    MPI_Sum_Scalar(vol_local,vol_local_all,world);
+    vol_local *= (vol_global/vol_local_all);
 }
 
 /* ---------------------------------------------------------------------- */

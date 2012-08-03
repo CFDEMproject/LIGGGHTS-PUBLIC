@@ -124,6 +124,8 @@ void Verlet::setup()
   comm->borders();
   if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
   
+  modify->setup_pre_neighbor(); 
+  
   neighbor->build();
   neighbor->ncalls = 0;
 
@@ -180,6 +182,7 @@ void Verlet::setup_minimal(int flag)
     comm->exchange();
     comm->borders();
     if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
+    modify->setup_pre_neighbor(); 
     neighbor->build();
     neighbor->ncalls = 0;
   }

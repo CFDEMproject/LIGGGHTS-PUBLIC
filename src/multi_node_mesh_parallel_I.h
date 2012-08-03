@@ -219,7 +219,7 @@
        bool translate = this->isTranslating();
        bool rotate = this->isRotating();
 
-       size_exchange_ = elemBufSize(OPERATION_COMM_EXCHANGE,scale,translate,rotate);
+       size_exchange_ = elemBufSize(OPERATION_COMM_EXCHANGE,scale,translate,rotate) + 1;
        size_border_ = elemBufSize(OPERATION_COMM_BORDERS,scale,translate,rotate);
        size_forward_ = elemBufSize(OPERATION_COMM_FORWARD,scale,translate,rotate);
        size_reverse_ = elemBufSize(OPERATION_COMM_REVERSE,scale,translate,rotate);
@@ -485,7 +485,7 @@
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::grow_list(int iswap, int n)
   {
-    maxsendlist_[iswap] = static_cast<int> (BUFFACTOR_MNMP * n);
+    maxsendlist_[iswap] = static_cast<int> (BUFFACTOR_MNMP * n)+1;
     this->memory->grow(sendlist_[iswap],maxsendlist_[iswap],"MultiNodeMeshParallel:sendlist[iswap]");
   }
 
@@ -501,6 +501,12 @@
 
       // delete all elements that do not belong to this processor
       deleteUnowned();
+
+      if(sizeGlobal() != sizeGlobalOrig())
+      {
+        
+        this->error->all(FLERR,"Mesh elements have been lost");
+      }
 
       // set-up mesh parallelism
       setup();
@@ -521,15 +527,6 @@
       
       buildNeighbours();
 
-      // store node positions for neigh list trigger
-      this->storeNodePos();
-
-      if(sizeGlobal() != sizeGlobalOrig())
-      {
-        
-        this->error->all(FLERR,"Mesh elements have been lost");
-      }
-
   }
 
   /* ----------------------------------------------------------------------
@@ -541,6 +538,8 @@
   {
       // need not do this during simulation for non-moving mesh and non-changing simulation box
       
+      if(setupFlag) this->reset_stepLastReset();
+
       if(!setupFlag && !this->isMoving() && !this->domain->box_change) return;
 
       // set-up mesh parallelism
@@ -551,6 +550,12 @@
 
       // communicate particles
       exchange();
+
+      if(sizeGlobal() != sizeGlobalOrig())
+      {
+        
+        this->error->all(FLERR,"Mesh elements have been lost");
+      }
 
       // re-calculate properties for owned particles
       
@@ -564,14 +569,6 @@
       // re-calculate properties for ghosts
       refreshGhosts(setupFlag);
 
-      // store node positions for neigh list trigger
-      this->storeNodePos();
-
-      if(sizeGlobal() != sizeGlobalOrig())
-      {
-        
-        this->error->all(FLERR,"Mesh elements have been lost");
-      }
   }
 
   /* ----------------------------------------------------------------------
@@ -662,7 +659,7 @@
       {
           // push data to buffer
           
-          nsend = pushExchange(dim,buf_send_);
+          nsend = pushExchange(dim);
 
           // send/recv in both directions
           // if 1 proc in dimension, no send/recv, set recv buf to send buf
@@ -769,7 +766,7 @@
                       if( ((ineed % 2 == 0) && checkBorderElementLeft(i,dim,lo,hi))  ||
                           ((ineed % 2 != 0) && checkBorderElementRight(i,dim,lo,hi))  )
                       {
-                          if (nsend == maxsendlist_[iswap])
+                          if (nsend >= maxsendlist_[iswap])
                               grow_list(iswap,nsend);
                           sendlist_[iswap][nsend++] = i;
 

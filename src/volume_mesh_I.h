@@ -46,6 +46,8 @@ VolumeMesh<NUM_NODES,N_FACES>::VolumeMesh()
     volMesh_.add(0.);
     volMesh_.add(0.);
     volMesh_.add(0.);
+
+    this->error->all(FLERR,"have to add neigh topology with comm_exchange_borders");
 }
 
 template<int NUM_NODES,int N_FACES>

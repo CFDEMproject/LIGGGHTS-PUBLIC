@@ -77,7 +77,7 @@ namespace LAMMPS_NS
 
         // neigh list stuff for moving mesh
         bool decideRebuild();
-        void storeNodePos();
+        void storeNodePosRebuild();
 
         // inline access
 
@@ -165,6 +165,9 @@ namespace LAMMPS_NS
         // mesh ID - same as fix mesh ID
         char *mesh_id_;
 
+        inline void reset_stepLastReset()
+        { stepLastReset_ = -1; }
+
       private:
 
         // flags stating how many move operations are performed on the mesh
@@ -179,7 +182,7 @@ namespace LAMMPS_NS
         void resetNodesToOrig();
 
         // store current node position for use by moving mesh
-        void storeNodePos(int ilo, int ihi);
+        void storeNodePosOrig(int ilo, int ihi);
 
         // step when nodes have been reset the last time
         // only relevant for moving mesh

@@ -70,7 +70,7 @@ class FixContactHistory : public Fix {
   // spefific interface for mesh
 
   void handleContact(int iPart, int idTri, double *&history);
-  void handleNoContact(int iPart, int idTri);
+  void markAllContacts();
   void cleanUpContacts();
 
   // return # of contacts

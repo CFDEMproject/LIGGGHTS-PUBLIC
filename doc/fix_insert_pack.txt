@@ -11,7 +11,7 @@ fix insert/pack command :h3
 
 [Syntax:]
 
-fix ID group-ID insert/pack   seed seed_value distributiontemplate dist-ID general_keywords general_values pack_keywords pack_values ... :pre
+fix ID group-ID insert/pack seed seed_value distributiontemplate dist-ID general_keywords general_values pack_keywords pack_values ... :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 insert/pack = style names of this fix command :l
@@ -152,7 +152,7 @@ are used for the volume calculation.
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
 Information about this fix is written to "binary restart
-files"_restart.html.  This means you can restart a simulation simulation
+files"_restart.html.  This means you can restart a simulation
 while inserting particles, when the restart file was written during the
 insertion operation. 
 
@@ -180,7 +180,7 @@ Dynamic regions are not supported as insertion region.
 
 "fix_insert_stream"_fix_insert_stream.html, "fix_insert_rate_region"_fix_insert_rate_region.html,
 "fix_deposit"_fix_deposit.html, "region"_region.html, 
-"fix_pour_dev"_fix_pour_dev.html, "fix_pour"_fix_pour.html
+"fix_pour"_fix_pour.html
 
 [Default:]
 

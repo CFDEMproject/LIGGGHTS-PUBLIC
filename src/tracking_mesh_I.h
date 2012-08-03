@@ -36,7 +36,7 @@
   TrackingMesh<NUM_NODES>::TrackingMesh(LAMMPS *lmp)
   : MultiNodeMeshParallel<NUM_NODES>(lmp),
     customValues_(*(new CustomValueTracker(lmp,this))),
-    id_ (*this->prop().template addElementProperty< ScalarContainer<int> >("id","comm_none"/*ID does never change*/,"frame_invariant","restart_yes")),
+    id_ (*this->prop().template addElementProperty< ScalarContainer<int> >("id","comm_exchange_borders"/*ID does never change*/,"frame_invariant","restart_yes")),
     mapArray_(0),
     mapTagMax_(0)
   {
@@ -115,11 +115,13 @@
   template<int NUM_NODES>
   void TrackingMesh<NUM_NODES>::generateMap()
   {
+      int nall = this->sizeLocal() + this->sizeGhost();
+
       // deallocate old memory if exists
       if(mapArray_) clearMap();
 
       // get max ID of all proc
-      int idmax = id_.max();
+      int idmax = id_.max(nall);
       MPI_Max_Scalar(idmax,mapTagMax_,this->world);
 
       // alocate and initialize new array
@@ -127,8 +129,6 @@
       this->memory->create(mapArray_,mapTagMax_+1,"TrackingMesh:mapArray_");
       for(int i = 0; i < mapTagMax_; i++)
         mapArray_[i] = -1;
-
-      int nall = this->sizeLocal() + this->sizeGhost();
 
       // build map for owned and ghost particles
       for (int i = nall-1; i >= 0; i--)

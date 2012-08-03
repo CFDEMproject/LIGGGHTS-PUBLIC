@@ -45,7 +45,7 @@ namespace LAMMPS_NS
           void add(T* elem);
           void get(int n, T* elem);
           void set(int n, T* elem);
-          void setAll(T def);
+          //void setAll(T def);
           T*& operator() (int n);
           T* const& operator() (int n) const;
           T** begin();
@@ -123,25 +123,26 @@ namespace LAMMPS_NS
   template<typename T, int LEN_VEC>
   void VectorContainer<T,LEN_VEC>::get(int n, T* elem)
   {
-          for(int i=0;i<LEN_VEC;i++)
+          for(int i = 0; i < LEN_VEC; i++)
                   elem[i] = GeneralContainer<T,1,LEN_VEC>::arr_[n][0][i];
   }
 
   template<typename T, int LEN_VEC>
   void VectorContainer<T,LEN_VEC>::set(int n, T* elem)
   {
-          for(int i=0;i<LEN_VEC;i++)
+          for(int i = 0; i < LEN_VEC; i++)
                   GeneralContainer<T,1,LEN_VEC>::arr_[n][0][i] = elem[i];
   }
-
+/*
   template<typename T, int LEN_VEC>
   void VectorContainer<T,LEN_VEC>::setAll(T def)
   {
-      for(int n=0;n<this->size();n++)
-          for(int i=0;i<LEN_VEC;i++)
+      int len = this->size();
+      for(int n = 0; n < len; n++)
+          for(int i = 0; i < LEN_VEC; i++)
                   GeneralContainer<T,1,LEN_VEC>::arr_[n][0][i] = def;
   }
-
+*/
   template<typename T, int LEN_VEC>
   T** VectorContainer<T,LEN_VEC>::begin()
   {
