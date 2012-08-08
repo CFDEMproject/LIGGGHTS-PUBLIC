@@ -376,10 +376,10 @@ void FixWallGranHookeHistory::compute_force(int ip, double deltan, double rsq,do
 
 /* ---------------------------------------------------------------------- */
 
-void FixWallGranHookeHistory::addHeatFlux(TriMesh *mesh,int ip, double rsq, double area_ratio)
+void FixWallGranHookeHistory::addHeatFlux(TriMesh *mesh,int ip, double delta_n, double area_ratio)
 {
     //r is the distance between the sphere center and wall
-    double tcop, tcowall, hc, Acont, delta_n, r;
+    double tcop, tcowall, hc, Acont, r;
     double reff_wall = atom->radius[ip];
     int itype = atom->type[ip];
     double ri = atom->radius[ip];
@@ -390,14 +390,10 @@ void FixWallGranHookeHistory::addHeatFlux(TriMesh *mesh,int ip, double rsq, doub
     double *Temp_p = fppa_T->vector_atom;
     double *heatflux = fppa_hf->vector_atom;
 
-    r = sqrt(rsq);
-
     if(deltan_ratio)
-    {
-       delta_n = ri - r;
        delta_n *= deltan_ratio[itype-1][atom_type_wall_-1];
-       r = ri - delta_n;
-    }
+
+    r = ri + delta_n;
 
     Acont = (reff_wall*reff_wall-r*r)*M_PI*area_ratio; //contact area sphere-wall
     tcop = th_cond[itype-1]; //types start at 1, array at 0
@@ -415,6 +411,8 @@ void FixWallGranHookeHistory::addHeatFlux(TriMesh *mesh,int ip, double rsq, doub
         cwl_->add_heat_wall(ip,(Temp_wall-Temp_p[ip]) * hc);
     
 }
+
+/* ---------------------------------------------------------------------- */
 
 inline void FixWallGranHookeHistory::addCohesionForce(int &ip, double &r, double &Fn_coh,double area_ratio)
 {

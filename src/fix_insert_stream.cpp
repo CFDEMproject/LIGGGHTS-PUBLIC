@@ -314,7 +314,7 @@ double FixInsertStream::insertion_fraction()
 
 void FixInsertStream::pre_insert()
 {
-    if(!domain->is_in_domain(ins_vol_xmin) || !domain->is_in_domain(ins_vol_xmax))
+    if((!domain->is_in_domain(ins_vol_xmin) || !domain->is_in_domain(ins_vol_xmax)) && comm->me == 0)
       error->warning(FLERR,"Fix insert/stream: Extruded insertion face extends outside domain, may not insert all particles correctly");
 
 }

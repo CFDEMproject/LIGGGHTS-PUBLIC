@@ -72,6 +72,9 @@ namespace LAMMPS_NS
         inline double f_total(int i)
         { return f_total_[i]; }
 
+        inline double f_total_mag()
+        { return vectorMag3D(f_total_); }
+
         inline void torque_total(double *_t)
         { vectorCopy3D(torque_total_,_t); }
 

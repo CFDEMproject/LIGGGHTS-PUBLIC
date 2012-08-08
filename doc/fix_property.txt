@@ -15,7 +15,7 @@ fix id group property/atom variablename style restartvalue comm_ghost_value comm
 fix id group property/global variablename style stylearg defaultvalue(s)... :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
-property/global or property/peratom = style name of this fix command   :l
+property/global or property/atom = style name of this fix command   :l
 variablename = a valid C++ string :l
 restartvalues = 'yes' or 'no' :l
 comm_ghost_value = 'yes' or 'no' :l
@@ -29,7 +29,7 @@ fix property/global:
     stylearg for matrix/atomtypepair: nCols :pre
 :ule
 
-fix property/peratom:
+fix property/atom:
 
     style = scalar or vector  :ulb,l
     restartvalue = yes or no :l
@@ -74,6 +74,6 @@ The "fix_modify"_fix_modify.html {energy} option is supported by this fix to add
 
 [Related commands:]
 
-"set"_set.html "pair_gran"_pair_gran.html
+"set"_set.html, "pair_gran"_pair_gran.html
 
 [Default:] none

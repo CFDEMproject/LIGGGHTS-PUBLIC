@@ -58,7 +58,8 @@ namespace LAMMPS_NS
 
           void setAll(T def);
           void setAll(int to, T def);
-          void set(int n, T** elem);
+          void set(int i, T** elem);
+          void set(int i, int j, T* elem);
 
           T**& operator()(int n);
           T** const& operator()(int n) const;

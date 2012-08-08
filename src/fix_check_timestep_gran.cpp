@@ -124,10 +124,10 @@ void FixCheckTimestepGran::end_of_step()
 
     if(warnflag&&comm->me==0)
     {
-        if(fraction_skin > 0.1)
+        if(fraction_skin >= 0.5)
         {
-            if(screen)  fprintf(screen ,"WARNING: time step too large or skin too small - particles may travel a relative distance of %f per time-step, but 0.1 * skin is %f\n",vmax*dt,0.1*skin);
-            if(logfile) fprintf(logfile,"WARNING: time step too large or skin too small - particles may travel a relative distance of %f per time-step, but 0.1 * skin is %f\n",vmax*dt,0.1*skin);
+            if(screen)  fprintf(screen ,"WARNING: time step too large or skin too small - particles may travel a distance of %f per time-step, but half skin is %f\n",vmax*dt,0.5*skin);
+            if(logfile) fprintf(logfile,"WARNING: time step too large or skin too small - particles may travel a distance of %f per time-step, but half skin is %f\n",vmax*dt,0.5*skin);
         }
 
         if(vmax * dt > r_min)

@@ -218,23 +218,28 @@ void SurfaceMesh<NUM_NODES>::recalcGhostSurfProperties()
                 for(int i = 0; i < NTRY_MC_SURFACE_MESH_I_H; i++)
                 {
                     // pick a random position on owned or ghost element
-                    if((generateRandomOwnedGhost(pos) >= 0) && (this->domain->is_in_subdomain(pos)))
+                    if((generateRandomOwnedGhost(pos)) >= 0 && (this->domain->is_in_extended_subdomain(pos)))
                         n_succ++;
                 }
             }
             n_iter++;
             areaMesh_(3) = static_cast<double>(n_succ)/static_cast<double>(NTRY_MC_SURFACE_MESH_I_H*n_iter) * (areaMeshOwned()+areaMeshGhost());
 
-           MPI_Sum_Scalar(areaMesh_(3),areaCheck,this->world);
+            MPI_Sum_Scalar(areaMesh_(3),areaCheck,this->world);
+            
         }
 
         if(fabs((areaCheck-areaMeshGlobal()))/areaMeshGlobal() > TOLERANCE_MC_SURFACE_MESH_I_H)
+        {
+            
             this->error->all(FLERR,"Local mesh area calculation failed, try boosting NITER_MC_SURFACE_MESH_I_H");
+        }
 
         // correct so sum of all owned areas is equal to global area
         areaMesh_(3) *= areaMeshGlobal()/areaCheck;
 
     }
+
 }
 
 /* ----------------------------------------------------------------------
@@ -261,14 +266,19 @@ inline int SurfaceMesh<NUM_NODES>::randomOwnedGhostElement()
 {
     
     if(!isInsertionMesh_) this->error->one(FLERR,"Illegal call for non-insertion mesh");
+
     double r = this->random_->uniform() * (areaMeshOwned()+areaMeshGhost());
-    int nall = this->sizeLocal()+this->sizeGhost()-1;
-    return searchElementByAreaAcc(r,0,nall);
+    
+    int first = 0;
+    int last = this->sizeLocal()+this->sizeGhost()-1;
+
+    return searchElementByAreaAcc(r,first,last);
 }
 
 template<int NUM_NODES>
 inline int SurfaceMesh<NUM_NODES>::searchElementByAreaAcc(double area,int lo, int hi)
 {
+    
     if( (lo < 1 || area > areaAcc(lo-1)) && (area <= areaAcc(lo)) )
         return lo;
     if( (hi < 1 || area > areaAcc(hi-1)) && (area <= areaAcc(hi)) )
@@ -410,8 +420,10 @@ void SurfaceMesh<NUM_NODES>::buildNeighbours()
           handleSharedEdge(i,iEdge,j,jEdge, areCoplanar(this->id(i),this->id(j)));
         else
           handleSharedNode(i,iNode,j,jNode, areCoplanar(this->id(i),this->id(j)));
+
       }
     }
+
 }
 
 /* ----------------------------------------------------------------------
@@ -431,10 +443,7 @@ bool SurfaceMesh<NUM_NODES>::areCoplanar(int tag_a, int tag_b)
     // eg used to transfer shear history btw planar faces
 
     double dot = vectorDot3D(surfaceNorm(a),surfaceNorm(b));
-    // fprintf(this->screen,"a %d b %d  dot %f\n",a,b, dot);
-    // printVec3D(this->screen,"surfaceNorm(a)",surfaceNorm(a));
-    // printVec3D(this->screen,"surfaceNorm(b)",surfaceNorm(b));
-
+    
     // need fabs in case surface normal is other direction
     if(fabs(dot) > curvature_) return true;
     else return false;
@@ -488,12 +497,21 @@ void SurfaceMesh<NUM_NODES>::handleSharedEdge(int iSrf, int iEdge, int jSrf, int
     nNeighs_(iSrf)++;
     nNeighs_(jSrf)++;
 
-    // deactivate egde
-    edgeActive(iSrf)[iEdge] = false;
-
-    // deactivate other edge if coplanar
+    // deactivate one egde
+    // other as well if coplanar
+    
     if(coplanar)
-      edgeActive(jSrf)[jEdge] = false;
+    {
+        edgeActive(iSrf)[iEdge] = false;
+        edgeActive(jSrf)[jEdge] = false;
+    }
+    else
+    {
+        if(this->id(iSrf) < this->id(jSrf))
+            edgeActive(iSrf)[iEdge] = false;
+        else
+            edgeActive(jSrf)[jEdge] = false;
+    }
 
     handleSharedNode(iSrf,iEdge,jSrf,(jEdge+1)%NUM_NODES,coplanar);
     handleSharedNode(iSrf,(iEdge+1)%NUM_NODES,jSrf,jEdge,coplanar);
@@ -502,18 +520,23 @@ void SurfaceMesh<NUM_NODES>::handleSharedEdge(int iSrf, int iEdge, int jSrf, int
 template<int NUM_NODES>
 void SurfaceMesh<NUM_NODES>::handleSharedNode(int iSrf, int iNode, int jSrf, int jNode, bool coplanar)
 {
-    cornerActive(iSrf)[iNode] = false;
-    if
-    ( coplanar &&
-     !( hasNonCoplanarSharedNode(iSrf)[iNode] || hasNonCoplanarSharedNode(jSrf)[jNode] )
-    )
-      cornerActive(jSrf)[jNode] = false;
+    // coplanar - deactivate both
+
+    if(coplanar)
+    {
+        cornerActive(iSrf)[iNode] = false;
+        cornerActive(jSrf)[jNode] = false;
+    }
+    // non-coplanar - let one live
+    
     else
     {
-      hasNonCoplanarSharedNode(iSrf)[iNode] = true;
-      hasNonCoplanarSharedNode(jSrf)[jNode] = true;
-      cornerActive(jSrf)[jNode] = true;
+        if(this->id(iSrf) < this->id(jSrf))
+            cornerActive(iSrf)[iNode] = false;
+        else
+            cornerActive(jSrf)[jNode] = false;
     }
+    
 }
 
 /* ----------------------------------------------------------------------
@@ -578,11 +601,13 @@ bool SurfaceMesh<NUM_NODES>::isPlanar()
     int id_j;
     int flag = 0;
 
-    for(int i=0;i<this->sizeLocal();i++)
+    int nlocal = this->sizeLocal();
+
+    for(int i = 0; i < this->sizeLocal(); i++)
     {
         if(flag) break;
 
-        for(int ineigh=0;ineigh<nNeighs_(i);ineigh++)
+        for(int ineigh = 0; ineigh < nNeighs_(i); ineigh++)
         {
             id_j = neighFaces_(i)[ineigh];
             if(!areCoplanar(this->id(i),id_j))
@@ -590,7 +615,7 @@ bool SurfaceMesh<NUM_NODES>::isPlanar()
         }
     }
 
-   MPI_Max_Scalar(flag,this->world);
+    MPI_Max_Scalar(flag,this->world);
 
     if(flag) return false;
     return true;

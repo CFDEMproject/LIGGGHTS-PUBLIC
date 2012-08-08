@@ -157,8 +157,8 @@ inline int Domain::is_in_domain(double* pos)
         pos[0] >= boxlo[0] && pos[0] <= boxhi[0] &&
         pos[1] >= boxlo[1] && pos[1] <= boxhi[1] &&
         pos[2] >= boxlo[2] && pos[2] <= boxhi[2]
-    )   return true;
-    return false;
+    )   return 1;
+    return 0;
 }
 
 inline int Domain::is_in_subdomain(double* pos) 
@@ -186,8 +186,8 @@ inline int Domain::is_in_subdomain(double* pos)
     if ( pos[0] >= sublo[0] && pos[0] < checkhi[0] &&
          pos[1] >= sublo[1] && pos[1] < checkhi[1] &&
          pos[2] >= sublo[2] && pos[2] < checkhi[2])
-        return true;
-    return false;
+        return 1;
+    return 0;
 }
 
 inline int Domain::is_in_extended_subdomain(double* pos) 
@@ -196,7 +196,7 @@ inline int Domain::is_in_extended_subdomain(double* pos)
     // yields true if particle would be in subdomain after box extension
     
     if (is_in_subdomain(pos))
-        return true;
+        return 1;
     else if (dimension == 2)
         error->all(FLERR,"Domain::is_in_extended_subdomain() not implemented for 2d");
     else 
@@ -207,16 +207,17 @@ inline int Domain::is_in_extended_subdomain(double* pos)
             
             if (comm->procgrid[idim] == 1) {}
             else if(comm->myloc[idim] == comm->procgrid[idim]-1)
-                flag = flag && (pos[idim] >= subhi[idim]);
+                flag = flag && (pos[idim] >= sublo[idim]);
             else if(comm->myloc[idim] == 0)
-                flag = flag && (pos[idim] < sublo[idim]);
+                flag = flag && (pos[idim] <= subhi[idim]);
             
             else
                 flag = flag && (pos[idim] >= sublo[idim] && pos[idim] < subhi[idim]);
         }
-        return flag;
+        if(flag) return 1;
+        return 0;
     }
-    return false;
+    return 0;
 }
 
 inline double Domain::dist_subbox_borders(double* pos) 

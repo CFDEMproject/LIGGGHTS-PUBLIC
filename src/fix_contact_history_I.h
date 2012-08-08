@@ -30,21 +30,30 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline void FixContactHistory::handleContact(int iP, int idTri, double *&history)
+  inline bool FixContactHistory::handleContact(int iP, int idTri, double *&history)
   {
     // check if contact with iTri was there before
     // if so, set history to correct location and return
     if(haveContact(iP,idTri,history))
-      return;
+      return true;
 
-    // else new contact - add contact
-    addNewTriContactToExistingParticle(iP,idTri,history);
+    // else new contact - add contact if did not calculate contact with coplanar neighbor already
+    
+    if(!coplanarContactAlready(iP,idTri))
+    {
+        addNewTriContactToExistingParticle(iP,idTri,history);
 
-    // check if one of the present contacts is coplanar with iTri
-    // if so, copy history
-    checkCoplanarContact(iP,idTri,history);
+        // check if one of the contacts of previous steps is coplanar with iTri
+        
+        // if so, copy history
+        // also check if this contact has delflag = false, i.e. has been executed already
+        // this step. If so, signalize not to execute this contact (return false)
+        checkCoplanarContactHistory(iP,idTri,history);
+        return true;
+    }
 
-    return;
+    // did not add new contact
+    return false;
   }
 
   /* ----------------------------------------------------------------------
@@ -80,21 +89,40 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline bool FixContactHistory::checkCoplanarContact(int iP, int idTri, double *&history)
+  inline bool FixContactHistory::coplanarContactAlready(int iP, int idTri)
   {
     int *tri = partner[iP];
     for(int i = 0; i < npartner[iP]; i++)
     {
       
-      if(tri[i] != idTri && mesh_->map(tri[i]) && mesh_->areCoplanar(tri[i],idTri))
+      if(tri[i] != idTri && mesh_->map(tri[i]) >= 0 && mesh_->areCoplanar(tri[i],idTri))
       {
-        // copy contact history
-        vectorCopyN(contacthistory[iP][i],history,dnum);
         
-        return true;
+        // other coplanar contact handled already - do not handle this contact
+        if(!delflag[iP][i]) return true;
       }
     }
+
+    // no coplanar contact found - handle this contact
     return false;
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  inline void FixContactHistory::checkCoplanarContactHistory(int iP, int idTri, double *&history)
+  {
+    int *tri = partner[iP];
+    for(int i = 0; i < npartner[iP]; i++)
+    {
+      
+      if(tri[i] != idTri && mesh_->map(tri[i]) >= 0 && mesh_->areCoplanar(tri[i],idTri))
+      {
+          
+          // copy contact history
+          vectorCopyN(contacthistory[iP][i],history,dnum);
+          
+      }
+    }
   }
 
   /* ---------------------------------------------------------------------- */

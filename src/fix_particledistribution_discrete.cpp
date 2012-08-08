@@ -371,6 +371,7 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
            parttogen[i] = static_cast<int>(static_cast<double>(ninsert) * distweight[i]);
            ninsert_truncated += parttogen[i];
            remainder[i] = static_cast<double>(ninsert) * distweight[i] - static_cast<double>(parttogen[i]);
+           
         }
 
         int ninsert_gap = ninsert - ninsert_truncated;
@@ -380,13 +381,14 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
         {
             r = random->uniform() * static_cast<double>(ninsert_gap);
             j = 0;
-            rsum = 0.;
+            rsum = remainder[0];
 
             while(j < (ntemplates-1) && rsum < r)
             {
                 rsum += remainder[j];
                 j++;
             }
+            
             parttogen[j]++;
         }
 

@@ -235,6 +235,13 @@
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::set(int n, int m, T* elem)
+  {
+      for(int j = 0; j < LEN_VEC; j++)
+          arr_[n][m][j] = elem[j];
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::setAll(T def)
   {
       int len = size();

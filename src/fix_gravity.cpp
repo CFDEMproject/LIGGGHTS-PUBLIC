@@ -86,11 +86,13 @@ FixGravity::FixGravity(LAMMPS *lmp, int narg, char **arg) :
   } else if (style == VECTOR) {
     if (domain->dimension == 3) {
       double length = sqrt(xdir*xdir + ydir*ydir + zdir*zdir);
+      if(length == 0.) error->fix_error(FLERR,this,"length must be > 0"); 
       xgrav = xdir/length;
       ygrav = ydir/length;
       zgrav = zdir/length;
     } else {
       double length = sqrt(xdir*xdir + ydir*ydir);
+      if(length == 0.) error->fix_error(FLERR,this,"length must be > 0"); 
       xgrav = xdir/length;
       ygrav = ydir/length;
       zgrav = 0.0;

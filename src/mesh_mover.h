@@ -100,6 +100,7 @@ namespace LAMMPS_NS
       private:
         char *var1str,*var2str,*var3str;
         int myvar1,myvar2,myvar3;
+        double dX_[3];
         double vel_[3];
   };
 

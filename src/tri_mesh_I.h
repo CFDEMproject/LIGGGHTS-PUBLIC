@@ -43,7 +43,8 @@
     double triCenterToSphereCenter[3];
     double *surfNorm = SurfaceMesh<3>::surfaceNorm(nTri);
     vectorSubtract3D(cSphere,SurfaceMesh<3>::center_(nTri),triCenterToSphereCenter);
-    // normal distance of sphere center_ to plane
+
+    // normal distance of sphere center to plane
     double dNorm = vectorDot3D(surfNorm,triCenterToSphereCenter);
 
     if(rSphere > 0. && (dNorm > rSphere || dNorm < -rSphere))
@@ -56,17 +57,21 @@
 
     double nodeToCsPlane[3];
     double **node = MultiNodeMesh<3>::node_(nTri),
-        **edgeNorm = SurfaceMesh<3>::edgeNorm(nTri);
+       **edgeNorm = SurfaceMesh<3>::edgeNorm(nTri);
     int i;
     double distFromEdge(0.);
     for(i=0;i<3;i++){
       vectorSubtract3D(csPlane,node[i],nodeToCsPlane);
       distFromEdge = vectorDot3D(edgeNorm[i],nodeToCsPlane);
-      if(distFromEdge > 0.) break;
+      
+      if(distFromEdge > SMALL_TRIMESH) break;
     }
 
     if(i == 3) // then closest point on triangle is projection on surface
-      return (calcDist(cSphere,csPlane,delta) - rSphere);
+    {
+        
+        return (calcDist(cSphere,csPlane,delta) - rSphere);
+    }
 
     double *edgeVec = SurfaceMesh<3>::edgeVec(nTri)[i];
     double distFromNode = vectorDot3D(nodeToCsPlane,edgeVec);
@@ -74,16 +79,22 @@
     if(distFromNode < 0.)
     {
       if(SurfaceMesh<3>::cornerActive(nTri)[i])
-        return calcDist(cSphere,node[i],delta) - rSphere;
+      {
+          
+          return calcDist(cSphere,node[i],delta) - rSphere;
+      }
       else
-        return 1.;
+          return 1.;
     }
     else if(distFromNode > edgeLen(nTri)[i])
     {
       if(SurfaceMesh<3>::cornerActive(nTri)[(i+1)%3])
-        return calcDist(cSphere,node[(i+1)%3],delta) - rSphere;
+      {
+          
+          return calcDist(cSphere,node[(i+1)%3],delta) - rSphere;
+      }
       else
-        return 1.;
+          return 1.;
     }
 
     if(!SurfaceMesh<3>::edgeActive(nTri)[i])
@@ -129,7 +140,7 @@
 
     MathExtraLiggghts::calcBaryTriCoords(node0ToCsPlane,edgeVec(nTri),edgeLen(nTri),bary);
 
-    int barySign = (bary[0] > 0.) + 2*(bary[1] > 0.) + 4*(bary[2] > 0.);
+    int barySign = (bary[0] > -SMALL_TRIMESH) + 2*(bary[1] > -SMALL_TRIMESH) + 4*(bary[2] > -SMALL_TRIMESH);
 /*
     if(print){
       printf("node_ ");
@@ -351,7 +362,7 @@
 
     // step 1 - choose triangle
     int chosen = randomOwnedGhostElement();
-
+    
     if(chosen >= nTri || chosen < 0)
     {
         error->one(FLERR,"TriMesh::generate_random error");
@@ -359,15 +370,16 @@
     }
 
     // step 2 - random bary coords
-    u = random_->uniform();
-    v = random_->uniform();
+    
+    do {
+        u = random_->uniform();
+        v = random_->uniform();
+    } while( u+v > 1);
 
-    tmp = sqrt(u);
-    bary_0 = 1. - tmp;
-    bary_1 = v * tmp;
-    bary_2 = 1. - bary_0 - bary_1;
+    bary_0 = 1. - u - v;
+    bary_1 = v;
+    bary_2 = u;
 
-    // step 3 - apply bary coords
     pos[0] = bary_0 * node[chosen][0][0] + bary_1 * node[chosen][1][0] + bary_2 * node[chosen][2][0];
     pos[1] = bary_0 * node[chosen][0][1] + bary_1 * node[chosen][1][1] + bary_2 * node[chosen][2][1];
     pos[2] = bary_0 * node[chosen][0][2] + bary_1 * node[chosen][1][2] + bary_2 * node[chosen][2][2];
