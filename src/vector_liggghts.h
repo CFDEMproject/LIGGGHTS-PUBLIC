@@ -196,6 +196,12 @@ inline void vectorCopy4D(double *from,double *to)
   to[3]=from[3];
 }
 
+inline void vectorScalarMultN(int n,double *v,double s)
+{
+    for(int i = 0; i < n; i++)
+        v[i] = s*v[i];
+}
+
 inline void vectorScalarMult3D(double *v,double s)
 {
   v[0]=s*v[0];

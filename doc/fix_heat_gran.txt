@@ -19,7 +19,7 @@ initial_temperature = obligatory keyword :l
 T0 = initial (default) temperature for the particles :l
 zero or more keyword/value pairs may be appended :l
 keyword = {area_correction} :l
-  {area_correction} values = {on} or {off} :pre
+  {area_correction} values = {yes} or {no} :pre
 
 
 [Examples:]

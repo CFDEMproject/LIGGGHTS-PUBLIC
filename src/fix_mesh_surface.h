@@ -60,7 +60,7 @@ namespace LAMMPS_NS
         virtual void pre_force(int);
         virtual void final_integrate();
 
-        void createNeighList();
+        void createNeighList(int igrp);
         void createContactHistory(int dnum);
 
         inline bool trackStress()

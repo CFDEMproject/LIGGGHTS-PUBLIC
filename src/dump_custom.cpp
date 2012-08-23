@@ -1365,6 +1365,15 @@ int DumpCustom::modify_param(int narg, char **arg)
     return 2;
   }
 
+  if (strcmp(arg[0],"label") == 0) {
+     if (narg < 2) error->all(FLERR,"Illegal dump_modify command [label]");
+     delete [] label;
+     int n = strlen(arg[1]) + 1;
+     label = new char[n];
+     strcpy(label,arg[1]);
+     return 2;
+   }
+
   if (strcmp(arg[0],"element") == 0) {
     if (narg < ntypes+1)
       error->all(FLERR,"Dump modify element names do not match atom types");

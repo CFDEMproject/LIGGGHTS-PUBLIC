@@ -2,6 +2,7 @@
 #include "fix_addforce.h"
 #include "fix_ave_atom.h"
 #include "fix_ave_correlate.h"
+#include "fix_ave_euler.h"
 #include "fix_ave_histo.h"
 #include "fix_ave_spatial.h"
 #include "fix_ave_time.h"

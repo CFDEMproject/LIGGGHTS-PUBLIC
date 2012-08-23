@@ -20,7 +20,8 @@ seed_value = random # seed (positive integer) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
-general_keywords = {maxattampt} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {vel} or {omega} :l
+general_keywords = {verbose} or {maxattampt} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {vel} or {omega} :l
+  {verbose} = yes or no
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)
   {insert_every} value = once or ie
@@ -63,6 +64,9 @@ fix ins all insert/pack seed 1001 distributiontemplate pdd1 insert_every once ov
 
 Insert particles into a granular run either once or every few timesteps 
 within the specified region, as defined via the {region} keyword.
+
+The {verbose} keyword controlls whether statistics about particle
+insertion is output to the screen each time particles are inserted.
 
 This command must use the distributiontemplate keyword to refer to a 
 "fix_particledistribution_discrete"_fix_particledistribution_discrete.html (defined by dist-fix-ID) that defines the properties of the 

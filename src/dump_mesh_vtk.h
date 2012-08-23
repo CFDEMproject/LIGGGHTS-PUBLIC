@@ -44,6 +44,8 @@ class DumpMeshVTK : public Dump {
 
  private:            // column labels
 
+  int dataMode_;
+
   int nMesh_;
   class TriMesh **meshList_;
 
@@ -78,6 +80,8 @@ class DumpMeshVTK : public Dump {
 
   void write_header_ascii(bigint ndump);
   void write_data_ascii(int n, double *mybuf);
+  void write_data_ascii_point(int n, double *mybuf);
+  void write_data_ascii_face(int n, double *mybuf);
 };
 
 }

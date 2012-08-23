@@ -60,7 +60,8 @@
        **edgeNorm = SurfaceMesh<3>::edgeNorm(nTri);
     int i;
     double distFromEdge(0.);
-    for(i=0;i<3;i++){
+    for(i = 0; i < 3; i++)
+    {
       vectorSubtract3D(csPlane,node[i],nodeToCsPlane);
       distFromEdge = vectorDot3D(edgeNorm[i],nodeToCsPlane);
       
@@ -73,28 +74,58 @@
         return (calcDist(cSphere,csPlane,delta) - rSphere);
     }
 
-    double *edgeVec = SurfaceMesh<3>::edgeVec(nTri)[i];
-    double distFromNode = vectorDot3D(nodeToCsPlane,edgeVec);
+    double distFromNode;
 
-    if(distFromNode < 0.)
+    // check for dist to next edge
+    // have to do this for obtuse angled triangle
+    bool isEdgeContNext = false;
+    if(i != 2)
     {
-      if(SurfaceMesh<3>::cornerActive(nTri)[i])
-      {
-          
-          return calcDist(cSphere,node[i],delta) - rSphere;
-      }
-      else
-          return 1.;
+        int iNext = i+1;
+        double nodeToCsPlaneNext[3], distFromEdgeNext;
+        vectorSubtract3D(csPlane,node[iNext],nodeToCsPlaneNext);
+        distFromEdgeNext = vectorDot3D(edgeNorm[iNext],nodeToCsPlaneNext);
+        if(distFromEdgeNext > 0.)
+        {
+            double *edgeVecNext = SurfaceMesh<3>::edgeVec(nTri)[i+1];
+            distFromNode = vectorDot3D(nodeToCsPlaneNext,edgeVecNext);
+            if(distFromNode > -SMALL_TRIMESH)
+            {
+                isEdgeContNext = true;
+                i = iNext;
+            }
+        }
     }
-    else if(distFromNode > edgeLen(nTri)[i])
+
+    double *edgeVec = SurfaceMesh<3>::edgeVec(nTri)[i];
+
+    // go for corner contact only if not edge contact with next edge (case obtuse angled triangle)
+    if(!isEdgeContNext)
     {
-      if(SurfaceMesh<3>::cornerActive(nTri)[(i+1)%3])
-      {
+        distFromNode = vectorDot3D(nodeToCsPlane,edgeVec);
+        
+        if(distFromNode < 0.)
+        {
           
-          return calcDist(cSphere,node[(i+1)%3],delta) - rSphere;
-      }
-      else
-          return 1.;
+          if(SurfaceMesh<3>::cornerActive(nTri)[i])
+          {
+              
+              return calcDist(cSphere,node[i],delta) - rSphere;
+          }
+          else
+              return 1.;
+        }
+        else if(distFromNode > edgeLen(nTri)[i])
+        {
+          
+          if(SurfaceMesh<3>::cornerActive(nTri)[(i+1)%3])
+          {
+              
+              return calcDist(cSphere,node[(i+1)%3],delta) - rSphere;
+          }
+          else
+              return 1.;
+        }
     }
 
     if(!SurfaceMesh<3>::edgeActive(nTri)[i])
@@ -113,6 +144,36 @@
   inline double TriMesh::resolveTriSphereContactBary(int nTri, double rSphere,
                                    double *cSphere, double *delta, double *bary)
   {
+      double deltan, contactPoint[3], node0ToCsPlane[3];
+
+      // for now, use standard algorithm for distance calculation
+      deltan = resolveTriSphereContact(nTri, rSphere, cSphere, delta);
+
+      // additionaly calc bary coordinates
+      if(deltan < 0.)
+      {
+          vectorAdd3D(cSphere,delta,contactPoint);
+
+          double node0ToSphereCenter[3];
+          double *surfNorm = SurfaceMesh<3>::surfaceNorm(nTri);
+          vectorSubtract3D(cSphere,node_(nTri)[0],node0ToSphereCenter);
+
+          double csPlane[3],tmp[3];
+          double dNorm = vectorDot3D(surfNorm,node0ToSphereCenter);
+          vectorScalarMult3D(surfNorm,dNorm,tmp);
+          vectorSubtract3D(cSphere,tmp,csPlane);
+
+          MathExtraLiggghts::calcBaryTriCoords(node0ToCsPlane,edgeVec(nTri),edgeLen(nTri),bary);
+      }
+
+      return deltan;
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  inline double TriMesh::resolveTriSphereContactBaryDefunct(int nTri, double rSphere,
+                                   double *cSphere, double *delta, double *bary)
+  {
     bool print = false;//(nTri == 25);
     // this is only the overlap algorithm, neighbor list build is
     // coded in resolveTriSphereNeighbuild
@@ -122,9 +183,11 @@
     double **n = node_(nTri);
 
     // sphere-plane distance is coded explicitly because we need an intermediate result
+
     double node0ToSphereCenter[3];
     double *surfNorm = SurfaceMesh<3>::surfaceNorm(nTri);
     vectorSubtract3D(cSphere,n[0],node0ToSphereCenter);
+
     // normal distance of sphere center_ to plane
     double dNorm = vectorDot3D(surfNorm,node0ToSphereCenter);
 
@@ -141,42 +204,32 @@
     MathExtraLiggghts::calcBaryTriCoords(node0ToCsPlane,edgeVec(nTri),edgeLen(nTri),bary);
 
     int barySign = (bary[0] > -SMALL_TRIMESH) + 2*(bary[1] > -SMALL_TRIMESH) + 4*(bary[2] > -SMALL_TRIMESH);
-/*
-    if(print){
-      printf("node_ ");
-      for(int i=0;i<3;i++)
-        printf("%f %f %f | ",n[i][0],n[i][1],n[i][2]);
 
-      printf("%f %f %f\n",csPlane[0],csPlane[1],csPlane[2]);
-
-      printf("iTri %d barySign %d bary %f %f %f \n",nTri,barySign,bary[0],bary[1],bary[2]);
-    }
-*/
     double d(0.);
 
-    switch(barySign){
-    case 1:
-    case 2:
-    case 3: // bary[2] < 0 --> edge contact on edge[0]
-      d = resolveEdgeContact(nTri,0,cSphere,csPlane,delta,bary);
-      break;
-    case 4:
-    case 6: // bary[0] < 0 --> edge contact on edge[1]
-      d = resolveEdgeContact(nTri,1,cSphere,csPlane,delta,bary);
-      break;
-    case 5: // bary[1] < 0 --> edge contact on edge[2]
-      d = resolveEdgeContact(nTri,2,cSphere,csPlane,delta,bary);
-      break;
-    case 7: // face contact - all three barycentric coordinates are > 0
-      d = calcDist(cSphere,csPlane,delta);
-      break;
-    default:
-      d = 1.; // doesn't exist, just to satisfy the compiler
-      break;
+    switch(barySign)
+    {
+        case 1:
+        case 2:
+        case 3: // bary[2] < 0 --> edge contact on edge[0]
+          d = resolveEdgeContact(nTri,0,cSphere,csPlane,delta,bary);
+          break;
+        case 4:
+        case 6: // bary[0] < 0 --> edge contact on edge[1]
+          d = resolveEdgeContact(nTri,1,cSphere,csPlane,delta,bary);
+          break;
+        case 5: // bary[1] < 0 --> edge contact on edge[2]
+          d = resolveEdgeContact(nTri,2,cSphere,csPlane,delta,bary);
+          break;
+        case 7: // face contact - all three barycentric coordinates are > 0
+          d = calcDist(cSphere,csPlane,delta);
+          break;
+        default:
+          d = 1.; // doesn't exist, just to satisfy the compiler
+          break;
     }
 
     return d == 1. ? d : d - rSphere;
-
   }
 
   /* ---------------------------------------------------------------------- */
@@ -195,17 +248,27 @@
     double d(0.), distFromNode = vectorDot3D(tmp,edgeVec(iTri)[iEdge]);
 
     if(distFromNode <= 0){
-      if(!cornerActive(iTri)[iEdge]) d=1.;
-      else{
-        bary[iEdge] = 1.; bary[ip] = 0.; bary[ipp] = 0.;
-        d = calcDist(p,node_(iTri)[iEdge],delta);
-      }
+        double distFromPrevNode = vectorDot3D(pPlane,edgeVec(iTri)[ipp]);
+        if(distFromPrevNode < edgeLen(iTri)[ipp])
+            d = resolveEdgeContact(iTri,ipp,p,pPlane,delta,bary);
+        else{
+          if(!cornerActive(iTri)[iEdge]) d=1.;
+          else{
+            bary[iEdge] = 1.; bary[ip] = 0.; bary[ipp] = 0.;
+            d = calcDist(p,node_(iTri)[iEdge],delta);
+          }
+        }
     } else if(distFromNode >= edgeLen(iTri)[iEdge]){
-      if(!cornerActive(iTri)[ip]) d=1.;
-      else{
-        bary[iEdge] = 0.; bary[ip] = 1.; bary[ipp] = 0.;
-        d = calcDist(p,node_(iTri)[ip],delta);
-      }
+        double distFromNextNode = vectorDot3D(pPlane,edgeVec(iTri)[ip]);
+        if(distFromNextNode > 0)
+            d = resolveEdgeContact(iTri,ip,p,pPlane,delta,bary);
+        else{
+          if(!cornerActive(iTri)[ip]) d=1.;
+          else{
+            bary[iEdge] = 0.; bary[ip] = 1.; bary[ipp] = 0.;
+            d = calcDist(p,node_(iTri)[ip],delta);
+          }
+        }
     } else{
       if(!edgeActive(iTri)[iEdge]) d=1.;
       else{

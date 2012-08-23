@@ -165,6 +165,8 @@ void FixNeighlistMesh::pre_force(int vflag)
 
 void FixNeighlistMesh::handleTriangle(int iTri)
 {
+    int *mask = atom->mask;
+
     // get bounding box of element on this subdomain
     
     BoundingBox b = mesh_->getElementBoundingBoxOnSubdomain(iTri);
@@ -191,7 +193,8 @@ void FixNeighlistMesh::handleTriangle(int iTri)
               int iAtom = binhead[iBin];
               while(iAtom != -1 && iAtom < nlocal)
               {
-                
+                if(! (mask[iAtom] & groupbit)) continue;
+
                 if(mesh_->resolveTriSphereNeighbuild(iTri,r ? r[iAtom] : 0. ,x[iAtom],r ? skin : (distmax+skin) ))
                 {
                   

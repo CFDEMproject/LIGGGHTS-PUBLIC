@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "error.h"
+#include "group.h"
 #include "force.h"
 #include "bounding_box.h"
 #include "input_mesh_tri.h"
@@ -187,7 +188,7 @@ void FixMeshSurface::final_integrate()
    called from fix wall/gran out of post_create()
 ------------------------------------------------------------------------- */
 
-void FixMeshSurface::createNeighList()
+void FixMeshSurface::createNeighList(int igrp)
 {
     if(fix_mesh_neighlist_) return;
     char *neighlist_name = new char[strlen(id)+1+10];
@@ -202,6 +203,10 @@ void FixMeshSurface::createNeighList()
 
     fix_mesh_neighlist_ =
         static_cast<FixNeighlistMesh*>(modify->find_fix_id(neighlist_name));
+
+    // fix added with "all", correct this now
+    fix_mesh_neighlist_->igroup = igrp;
+    fix_mesh_neighlist_->groupbit = group->bitmask[igrp];
 
     delete []fixarg;
     delete []neighlist_name;

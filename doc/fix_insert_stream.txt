@@ -20,7 +20,8 @@ seed_value = random # seed (positive integer) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
-general_keywords = {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {vel} or {omega} :l
+general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {vel} or {omega} :l
+  {verbose} = yes or no
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)
   {nparticles} values = np
@@ -66,6 +67,9 @@ fix ins all insert/stream seed 1001 distributiontemplate pdd1 nparticles 5000 ve
 Insert particles into a granular run either once or every few timesteps
 within a specified region until either np particles have been inserted
 or the desired particle mass (mp) has been reached.
+
+The {verbose} keyword controlls whether statistics about particle
+insertion is output to the screen each time particles are inserted.
 
 Each timestep particles are inserted, they are placed randomly inside
 the insertion volume so as to mimic a stream of poured particles. The

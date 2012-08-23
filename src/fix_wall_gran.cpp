@@ -277,7 +277,7 @@ void FixWallGran::post_create()
    // also create contact tracker
    for(int i=0;i<n_FixMesh_;i++)
    {
-      FixMesh_list_[i]->createNeighList();
+      FixMesh_list_[i]->createNeighList(igroup);
       if(dnum()>0)FixMesh_list_[i]->createContactHistory(dnum());
    }
 }
@@ -473,6 +473,7 @@ void FixWallGran::post_force_respa(int vflag, int ilevel, int iloop)
 
 void FixWallGran::post_force_mesh(int vflag)
 {
+    
     // contact properties
     double force_old[3],force_wall[3],v_wall[3],bary[3];
     double delta[3],deltan;
@@ -534,7 +535,7 @@ void FixWallGran::post_force_mesh(int vflag)
               for(int i = 0; i < 3; i++)
                 v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
 
-              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,FixMesh_list_[iMesh],mesh,iTri);
+              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,iMesh,FixMesh_list_[iMesh],mesh,iTri);
             }
 
           }
@@ -564,7 +565,7 @@ void FixWallGran::post_force_mesh(int vflag)
             else 
             {
               if(fix_contact && ! fix_contact->handleContact(iPart,idTri,c_history)) continue;
-              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,FixMesh_list_[iMesh],mesh,iTri);
+              post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,iMesh,FixMesh_list_[iMesh],mesh,iTri);
             }
           }
         }
@@ -583,6 +584,8 @@ void FixWallGran::post_force_mesh(int vflag)
 
 void FixWallGran::post_force_primitive(int vflag)
 {
+  int *mask = atom->mask;
+
   // contact properties
   double force_old[3],force_wall[3];
   double delta[3],deltan;
@@ -599,6 +602,9 @@ void FixWallGran::post_force_primitive(int vflag)
   for (int iCont = 0; iCont < nNeigh ; iCont++, neighborList++)
   {
     int iPart = *neighborList;
+
+    if(!(mask[iPart] & groupbit)) continue;
+
     deltan = primitiveWall_->resolveContact(x_[iPart],radius_?radius_[iPart]:r0_,delta);
 
     if(deltan > 0.)
@@ -618,7 +624,7 @@ void FixWallGran::post_force_primitive(int vflag)
 ------------------------------------------------------------------------- */
 
 inline void FixWallGran::post_force_eval_contact(int iPart, double deltan, double *delta,
-     double *v_wall, double *c_history, FixMeshSurface *fix_mesh, TriMesh *mesh, int iTri)
+     double *v_wall, double *c_history, int iMesh, FixMeshSurface *fix_mesh, TriMesh *mesh, int iTri)
 {
 
   double delr = (radius_ ? radius_[iPart] : r0_) + deltan;
@@ -653,6 +659,14 @@ inline void FixWallGran::post_force_eval_contact(int iPart, double deltan, doubl
            iPart,f_pw,delta,iTri,v_wall
         );
     }
+  }
+
+  // add to cwl
+  if(cwl_ && !addflag_)
+  {
+      double contactPoint[3];
+      vectorAdd3D(x_[iPart],delta,contactPoint);
+      cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint);
   }
 
   // add heat flux

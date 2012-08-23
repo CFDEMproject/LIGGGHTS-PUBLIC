@@ -31,9 +31,10 @@
 
 <LI>one or more general keyword/value pairs can be appended 
 
-<LI>general_keywords = <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel</I> or <I>omega</I> 
+<LI>general_keywords = <I>verbose</I> or <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel</I> or <I>omega</I> 
 
-<PRE>  <I>maxattempt</I> value = ma
+<PRE>  <I>verbose</I> = yes or no
+  <I>maxattempt</I> value = ma
     ma = max # of insertion attempts per atom (positive integer)
   <I>nparticles</I> values = np
     np =  number of particles to insert (positive integer)
@@ -79,6 +80,9 @@
 </P>
 <P>Insert particles into a granular run every few timesteps 
 within a specified region at a specified rate.
+</P>
+<P>The <I>verbose</I> keyword controlls whether statistics about particle
+insertion is output to the screen each time particles are inserted.
 </P>
 <P>This command must use the <I>region</I> keyword to define an insertion
 volume. The specified region must have been previously defined with a

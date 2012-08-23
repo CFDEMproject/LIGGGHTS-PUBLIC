@@ -19,6 +19,11 @@
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
+/* ----------------------------------------------------------------------
+   Contributing author for interpolated output:
+   Felix Kleinfeldt (OVGU Magdeburg)
+------------------------------------------------------------------------- */
+
 #include "string.h"
 #include "dump_mesh_vtk.h"
 #include "tri_mesh.h"
@@ -35,7 +40,8 @@
 
 using namespace LAMMPS_NS;
 
-enum{
+enum
+{
     DUMP_STRESS = 1,
     DUMP_STRESSCOMPONENTS = 2,
     DUMP_ID = 4,
@@ -44,7 +50,13 @@ enum{
     DUMP_TEMP = 32,
     DUMP_OWNER = 64,
     DUMP_AREA = 128
-    };
+};
+
+enum
+{
+    DUMP_POINTS = 1,
+    DUMP_FACE = 2
+};
 
 /* ---------------------------------------------------------------------- */
 
@@ -91,12 +103,22 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
 
   int iarg = 5;
   dump_what_ = 0;
+  dataMode_;
 
   bool hasargs = true;
   while (iarg < narg && hasargs)
   {
       hasargs = false;
-      if(strcmp(arg[iarg],"stress")==0)
+      if(strcmp(arg[iarg],"output")==0)
+      {
+          if (iarg+2 > narg) error->all(FLERR,"Dump mesh/vtk: not enough arguments for 'interpolate'");
+          if(strcmp(arg[iarg+1],"face")==0) dataMode_ = 0;
+          else if(strcmp(arg[iarg+1],"interpolate")==0) dataMode_ = 1;
+          else error->all(FLERR,"Dump mesh/vtk: wrong arrgument for 'interpolate'");
+          iarg += 2;
+          hasargs = true;
+      }
+      else if(strcmp(arg[iarg],"stress")==0)
       {
           dump_what_ |= DUMP_STRESS;
           iarg++;
@@ -403,7 +425,239 @@ void DumpMeshVTK::write_data(int n, double *mybuf)
         write_data_ascii(n_all_/size_one,buf_all_);
 }
 
+/* ---------------------------------------------------------------------- */
+
 void DumpMeshVTK::write_data_ascii(int n, double *mybuf)
+{
+    if(dataMode_ == 0)
+        write_data_ascii_face(n,mybuf);
+    else if(dataMode_ == 1)
+        write_data_ascii_point(n,mybuf);
+    return;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
+{
+    int m, buf_pos;
+
+    // n is the number of tri
+
+    m = 0;
+    buf_pos = 0;
+
+    ScalarContainer<double> points;
+    ScalarContainer<int> tri_points;
+    bool add;
+    for (int i = 0; i < n; i++)
+      {
+        for (int j=0;j<3;j++)
+        {
+        add = true;
+        for (int k=0; k < points.size(); k+=3)
+        {
+            if (points.get(k)==mybuf[m+0] && points.get(k+1)==mybuf[m+1] && points.get(k+2)==mybuf[m+2])
+            {
+            add=false;
+            tri_points.add(k/3);
+            break;
+            }
+        }
+        if (add)
+        {
+            for (int k=0;k<3;k++)
+            points.add(mybuf[m+k]);
+            int max=tri_points.max();
+            if (max<0) max=-1;
+            tri_points.add(max+1);
+        }
+        m+=3;
+        }
+    m += size_one-9;
+    }
+
+    buf_pos += 9;
+
+    // points_neightri
+    class ScalarContainer<int> **points_neightri;
+    points_neightri = new ScalarContainer<int>*[(int)points.size()/3];
+    for (int i=0; i < points.size()/3; i++)
+        points_neightri[i] = new ScalarContainer<int>;
+    for (int i=0; i < 3*n; i+=3)
+    {
+        for (int j=0; j<3;j++)
+        points_neightri[tri_points.get(i+j)]->add(i/3);
+    }
+
+    // write point data
+      fprintf(fp,"DATASET UNSTRUCTURED_GRID\nPOINTS %d float\n", points.size()/3);
+    for (int i=0; i < points.size(); i+=3)
+        fprintf(fp,"%f %f %f\n",points.get(i+0),points.get(i+1),points.get(i+2));
+
+    // write polygon data
+      fprintf(fp,"CELLS %d %d\n",n,4*n);
+      for (int i = 0; i < 3*n; i+=3) fprintf(fp,"%d %d %d %d\n",3,tri_points.get(i+0),tri_points.get(i+1),tri_points.get(i+2));
+    // write cell types
+      fprintf(fp,"CELL_TYPES %d\n",n);
+      for (int i = 0; i < n; i++)
+        fprintf(fp,"5\n");
+
+    // write point data header
+      fprintf(fp,"POINT_DATA %d\n",points.size()/3);
+
+    // write cell data
+
+      if(dump_what_ & DUMP_STRESS)
+      {
+        // write pressure and shear stress
+        fprintf(fp,"SCALARS pressure float 1\nLOOKUP_TABLE default\n");
+            m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper=0;
+        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
+        helper /= points_neightri[i]->size();
+        fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+
+        // write shear stress
+        fprintf(fp,"SCALARS shearstress float 1\nLOOKUP_TABLE default\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper=0;
+        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
+        helper /= points_neightri[i]->size();
+        fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+      }
+      if(dump_what_ & DUMP_STRESSCOMPONENTS)
+      {
+        //write x y z stress component
+             fprintf(fp,"VECTORS stress float\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper1=0, helper2=0, helper3=0;
+        for (int j=0; j < points_neightri[i]->size();j++)
+        {
+            helper1 += mybuf[m + points_neightri[i]->get(j)*size_one];
+            helper2 += mybuf[m+1 + points_neightri[i]->get(j)*size_one];
+             helper3 += mybuf[m+2 + points_neightri[i]->get(j)*size_one];
+        }
+        helper1 /= points_neightri[i]->size();
+        helper2 /= points_neightri[i]->size();
+        helper3 /= points_neightri[i]->size();
+        fprintf(fp,"%f %f %f\n",helper1,helper2,helper3);
+        }
+        buf_pos += 3;
+     }
+
+      if(dump_what_ & DUMP_ID)
+      {
+        // write id
+        fprintf(fp,"SCALARS meshid float 1\nLOOKUP_TABLE default\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper=0;
+        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
+        helper /= points_neightri[i]->size();
+        fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+      }
+
+      if(dump_what_ & DUMP_VEL)
+      {
+        //write vel data
+        fprintf(fp,"VECTORS v float\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper1=0, helper2=0, helper3=0;
+        for (int j=0; j < points_neightri[i]->size();j++)
+        {
+            helper1 += mybuf[m + points_neightri[i]->get(j)*size_one];
+            helper2 += mybuf[m+1 + points_neightri[i]->get(j)*size_one];
+             helper3 += mybuf[m+2 + points_neightri[i]->get(j)*size_one];
+        }
+        helper1 /= points_neightri[i]->size();
+        helper2 /= points_neightri[i]->size();
+        helper3 /= points_neightri[i]->size();
+        fprintf(fp,"%f %f %f\n",helper1,helper2,helper3);
+        }
+        buf_pos += 3;
+      }
+
+      if(dump_what_ & DUMP_WEAR)
+      {
+        //write wear data
+        fprintf(fp,"SCALARS wear float 1\nLOOKUP_TABLE default\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper=0;
+        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
+        helper /= points_neightri[i]->size();
+        fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+      }
+
+      if(dump_what_ & DUMP_TEMP)
+      {
+        //write wear data
+        fprintf(fp,"SCALARS Temp float 1\nLOOKUP_TABLE default\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper=0;
+        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
+        helper /= points_neightri[i]->size();
+        fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+      }
+
+      if(dump_what_ & DUMP_OWNER)
+      {
+        //write owner data
+        fprintf(fp,"SCALARS owner float 1\nLOOKUP_TABLE default\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper=0;
+        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
+        helper /= points_neightri[i]->size();
+        fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+      }
+
+      if(dump_what_ & DUMP_AREA)
+      {
+        //write area data
+        fprintf(fp,"SCALARS area float 1\nLOOKUP_TABLE default\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+        double helper=0;
+        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
+        helper /= points_neightri[i]->size();
+        fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+       }
+    return;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpMeshVTK::write_data_ascii_face(int n, double *mybuf)
 {
   int k, m, buf_pos;
 

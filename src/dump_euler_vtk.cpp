@@ -1,0 +1,206 @@
+/* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   Christoph Kloss, christoph.kloss@cfdem.com
+   Copyright 2009-2012 JKU Linz
+   Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS is based on LAMMPS
+   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+   http://lammps.sandia.gov, Sandia National Laboratories
+   Steve Plimpton, sjplimp@sandia.gov
+
+   This software is distributed under the GNU General Public License.
+
+   See the README file in the top-level directory.
+------------------------------------------------------------------------- */
+
+#include "string.h"
+#include "dump_euler_vtk.h"
+#include "fix_ave_euler.h"
+#include "domain.h"
+#include "atom.h"
+#include "update.h"
+#include "group.h"
+#include "error.h"
+#include "fix.h"
+#include "modify.h"
+#include "comm.h"
+#include <stdint.h>
+
+using namespace LAMMPS_NS;
+
+/* ---------------------------------------------------------------------- */
+
+DumpEulerVTK::DumpEulerVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg),
+  fix_euler_(0)
+{
+  if (narg < 5)
+    error->all(FLERR,"Illegal dump pic/vtk command");
+
+  // CURRENTLY ONLY PROC 0 writes
+
+  format_default = NULL;
+}
+
+/* ---------------------------------------------------------------------- */
+
+DumpEulerVTK::~DumpEulerVTK()
+{
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpEulerVTK::init_style()
+{
+  fix_euler_ = static_cast<FixAveEuler*>(modify->find_fix_style("ave/euler",0));
+  if(!fix_euler_)
+    error->all(FLERR,"Illegal dump pic/vtk command, need a fix ave/euler");
+
+  // multifile=1;             // 0 = one big file, 1 = one file per timestep
+  // multiproc=0;             // 0 = proc 0 writes for all, 1 = one file/proc
+  if (multifile != 1)
+    error->all(FLERR,"You should use a filename like 'dump*.vtk' for the 'dump pic/vtk' command to produce one file per time-step");
+  if (multiproc != 0)
+    error->all(FLERR,"Your 'dump pic/vtk' command is writing one file per processor, where all the files contain the same data");
+
+//  if (domain->triclinic == 1)
+//    error->all(FLERR,"Can not dump VTK files for triclinic box");
+  if (binary)
+    error->all(FLERR,"Can not dump VTK files in binary mode");
+
+  // node center (3), av vel (3), volume fraction, stress
+  size_one = 8;
+
+  delete [] format;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int DumpEulerVTK::modify_param(int narg, char **arg)
+{
+  error->warning(FLERR,"dump_modify keyword is not supported by 'dump pic/vtk' and is thus ignored");
+  return 0;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpEulerVTK::write_header(bigint ndump)
+{
+  write_header_ascii(ndump);
+}
+
+void DumpEulerVTK::write_header_ascii(bigint ndump)
+{
+  if (comm->me!=0) return;
+  fprintf(fp,"# vtk DataFile Version 2.0\nLIGGGHTS mesh/VTK export\nASCII\n");
+}
+
+/* ---------------------------------------------------------------------- */
+
+int DumpEulerVTK::count()
+{
+  return fix_euler_->ncells();
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpEulerVTK::pack(int *ids)
+{
+  int m = 0;
+
+  // have to stick with this order (all per-element props)
+  // as multiple procs pack
+
+  int ncells = fix_euler_->ncells();
+
+  for(int i = 0; i < ncells; i++)
+  {
+    buf[m++] = fix_euler_->cell_center(i,0);
+    buf[m++] = fix_euler_->cell_center(i,1);
+    buf[m++] = fix_euler_->cell_center(i,2);
+
+    buf[m++] = fix_euler_->cell_v_av(i,0);
+    buf[m++] = fix_euler_->cell_v_av(i,1);
+    buf[m++] = fix_euler_->cell_v_av(i,2);
+
+    buf[m++] = fix_euler_->cell_vol_fr(i);
+
+    buf[m++] = fix_euler_->cell_pressure(i);
+  }
+  return ;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpEulerVTK::write_data(int n, double *mybuf)
+{
+  write_data_ascii(n,mybuf);
+}
+
+void DumpEulerVTK::write_data_ascii(int n, double *mybuf)
+{
+  //only proc 0 writes
+  if (comm->me != 0) return;
+
+  int m, buf_pos;
+
+  // n is the number of elements
+
+  // write point data
+  fprintf(fp,"DATASET POLYDATA\nPOINTS %d float\n",n);
+  m = 0;
+  buf_pos = 0;
+  for (int i = 0; i < n; i++)
+  {
+      fprintf(fp,"%f %f %f\n",mybuf[m],mybuf[m+1],mybuf[m+2]);
+      m += size_one ;
+  }
+  buf_pos += 3;
+
+  // write polygon data
+  fprintf(fp,"VERTICES %d %d\n",n,2*n);
+  for (int i = 0; i < n; i++)
+  {
+      fprintf(fp,"%d %d\n",1,i);
+  }
+
+  // write point data header
+  fprintf(fp,"POINT_DATA %d\n",n);
+
+  // write cell data
+
+  fprintf(fp,"VECTORS v_avg float\n");
+  m = buf_pos;
+  for (int i = 0; i < n; i++)
+  {
+     fprintf(fp,"%f %f %f\n",mybuf[m],mybuf[m+1],mybuf[m+2]);
+     m += size_one;
+  }
+  buf_pos += 3;
+
+  fprintf(fp,"SCALARS volumefraction float 1\nLOOKUP_TABLE default\n");
+  m = buf_pos;
+  for (int i = 0; i < n; i++)
+  {
+      fprintf(fp,"%f\n",mybuf[m]);
+      m += size_one;
+  }
+  buf_pos++;
+
+  fprintf(fp,"SCALARS pressure float 1\nLOOKUP_TABLE default\n");
+  m = buf_pos;
+  for (int i = 0; i < n; i++)
+  {
+      fprintf(fp,"%f\n",mybuf[m]);
+      m += size_one;
+  }
+  buf_pos++;
+
+  // footer not needed
+  // if would be needed, would do like in dump stl
+}

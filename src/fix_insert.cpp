@@ -150,6 +150,13 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       else error->fix_error(FLERR,this,"");
       iarg += 2;
       hasargs = true;
+    } else if (strcmp(arg[iarg],"verbose") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"");
+      if(strcmp(arg[iarg+1],"no")==0) print_stats_during_flag = 0;
+      else if(strcmp(arg[iarg+1],"yes")==0) print_stats_during_flag = 1;
+      else error->fix_error(FLERR,this,"");
+      iarg += 2;
+      hasargs = true;
     } else if (strcmp(arg[iarg],"vel") == 0) {
       if (iarg+5 > narg) error->fix_error(FLERR,this,"");
       if (strcmp(arg[iarg+1],"constant") == 0)
@@ -287,6 +294,8 @@ void FixInsert::init_defaults()
   vectorZeroize3D(omega_insert);
 
   quatUnitize4D(quat_insert);
+
+  print_stats_during_flag = 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -308,11 +317,11 @@ void FixInsert::print_stats_start()
 {
   if (me == 0 && print_stats_start_flag && ninsert_exists) {
     if (screen)
-        fprintf(screen ,"Particle insertion: %f particles every %d steps - particle rate %f  (mass rate %f)\n   %d particles (mass %f) within %d steps\n",
+        fprintf(screen ,"INFO: Particle insertion: %f particles every %d steps - particle rate %f  (mass rate %f)\n   %d particles (mass %f) within %d steps\n",
             ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
 
     if (logfile)
-        fprintf(logfile,"Particle insertion: %f particles every %d steps - particle rate %f, (mass rate %f)\n   %d particles (mass %f) within %d steps\n",
+        fprintf(logfile,"INFO: Particle insertion: %f particles every %d steps - particle rate %f, (mass rate %f)\n   %d particles (mass %f) within %d steps\n",
             ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
   }
 }
@@ -323,14 +332,14 @@ void FixInsert::print_stats_during(int ninsert_this, double mass_inserted_this)
 {
   int step = update->ntimestep;
 
-  if (me == 0)
+  if (me == 0 && print_stats_during_flag)
   {
     if (screen)
-      fprintf(screen ,"Particle insertion: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
+      fprintf(screen ,"INFO: Particle insertion: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
               ninsert_this,mass_inserted_this,step,ninserted,massinserted);
 
     if (logfile)
-      fprintf(logfile,"Particle insertion: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
+      fprintf(logfile,"INFO: Particle insertion: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
               ninsert_this,mass_inserted_this,step,ninserted,massinserted);
   }
 }

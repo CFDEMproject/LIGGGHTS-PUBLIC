@@ -31,9 +31,10 @@
 
 <LI>one or more general keyword/value pairs can be appended 
 
-<LI>general_keywords = <I>maxattampt</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel</I> or <I>omega</I> 
+<LI>general_keywords = <I>verbose</I> or <I>maxattampt</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel</I> or <I>omega</I> 
 
-<PRE>  <I>maxattempt</I> value = ma
+<PRE>  <I>verbose</I> = yes or no
+  <I>maxattempt</I> value = ma
     ma = max # of insertion attempts per atom (positive integer)
   <I>insert_every</I> value = once or ie
     once = value to signalise that isertion takes place only once (the step after the fix is issued)
@@ -78,6 +79,9 @@
 </P>
 <P>Insert particles into a granular run either once or every few timesteps 
 within the specified region, as defined via the <I>region</I> keyword.
+</P>
+<P>The <I>verbose</I> keyword controlls whether statistics about particle
+insertion is output to the screen each time particles are inserted.
 </P>
 <P>This command must use the distributiontemplate keyword to refer to a 
 <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> (defined by dist-fix-ID) that defines the properties of the 

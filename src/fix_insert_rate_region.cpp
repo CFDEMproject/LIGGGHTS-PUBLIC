@@ -51,6 +51,15 @@ FixInsertRateRegion::FixInsertRateRegion(LAMMPS *lmp, int narg, char **arg) :
 {
     // no fixed total number of particles inserted by this fix exists
     ninsert_exists = 1;
+
+  bool hasargs = true;
+  while(iarg < narg && hasargs)
+  {
+    hasargs = false;
+    if (strcmp(arg[iarg],"some_arg") == 0) {
+    } else if(strcmp(style,"insert/rate/region") == 0)
+        error->fix_error(FLERR,this,"unknown keyword");
+  }
 }
 
 /* ---------------------------------------------------------------------- */

@@ -157,7 +157,7 @@ class FixWallGran : public Fix {
   void post_force_primitive(int);
 
   inline void post_force_eval_contact(int iPart, double deltan, double *delta, double *v_wall,
-                    double *c_history, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
+                    double *c_history, int iMesh = 0, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
 };
 
 }

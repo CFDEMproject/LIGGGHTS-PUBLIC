@@ -38,7 +38,9 @@
 <PRE>  <I>image</I> args = discussed on <A HREF = "dump_image.html">dump image</A> doc page 
 </PRE>
 <PRE>  <I>mesh/stl</I> args = 'local' or 'ghost' or 'all'
-  <I>mesh/vtk</I> args =  one or more dump-identifiers
+  <I>mesh/vtk</I> args =  zero or more keyword/ value pairs and one or more dump-identifiers
+      keywords = <I>output</I>
+      <I>output</I> values = face or interpolate 
       dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area'
   <I>decomposition/vtk</I> args = none 
 </PRE>
@@ -348,6 +350,8 @@ all active meshes are dumped if you do not supply the optional list of
 mesh IDs. By specifying list of mesh IDs you can explicitly choose 
 which meshes to dump. The group-ID is ignored. Again, a series of files 
 can be post-processed in Paraview , www.paraview.org
+Keyword <I>output</I> controlls if the data is written in a per-face manner
+or as interpolated values to VTK.
 </P>
 <P>The <I>decomposition/vtk</I> style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.

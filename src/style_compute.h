@@ -6,6 +6,7 @@
 #include "compute_cna_atom.h"
 #include "compute_com.h"
 #include "compute_com_molecule.h"
+#include "compute_contact_atom.h"
 #include "compute_coord_atom.h"
 #include "compute_dihedral_local.h"
 #include "compute_displace_atom.h"

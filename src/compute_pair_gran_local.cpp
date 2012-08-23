@@ -439,7 +439,7 @@ void ComputePairGranLocal::add_heat(int i,int j,double hf)
    add data from particle-wall contact on this proc
 ------------------------------------------------------------------------- */
 
-void ComputePairGranLocal::add_wall_1(int iFMG,int iTri,int iP,double *contact_point)
+void ComputePairGranLocal::add_wall_1(int iFMG,int idTri,int iP,double *contact_point)
 {
     if (!(atom->mask[iP] & groupbit)) return;
 
@@ -456,7 +456,7 @@ void ComputePairGranLocal::add_wall_1(int iFMG,int iTri,int iP,double *contact_p
     if(idflag)
     {
         array[ipair][n++] = static_cast<double>(iFMG);
-        array[ipair][n++] = static_cast<double>(iTri);
+        array[ipair][n++] = static_cast<double>(idTri);
     }
 
 }

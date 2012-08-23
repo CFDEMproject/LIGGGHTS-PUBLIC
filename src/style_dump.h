@@ -3,6 +3,7 @@
 #include "dump_custom.h"
 #include "dump_dcd.h"
 #include "dump_decomposition_vtk.h"
+#include "dump_euler_vtk.h"
 #include "dump_image.h"
 #include "dump_local.h"
 #include "dump_mesh_stl.h"

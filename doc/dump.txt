@@ -28,7 +28,9 @@ args = list of arguments for a particular style :l
   {image} args = discussed on "dump image"_dump_image.html doc page :pre
 
   {mesh/stl} args = 'local' or 'ghost' or 'all'
-  {mesh/vtk} args =  one or more dump-identifiers
+  {mesh/vtk} args =  zero or more keyword/ value pairs and one or more dump-identifiers
+      keywords = {output}
+      {output} values = face or interpolate 
       dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area'
   {decomposition/vtk} args = none :pre
 
@@ -337,6 +339,8 @@ all active meshes are dumped if you do not supply the optional list of
 mesh IDs. By specifying list of mesh IDs you can explicitly choose 
 which meshes to dump. The group-ID is ignored. Again, a series of files 
 can be post-processed in Paraview , www.paraview.org
+Keyword {output} controlls if the data is written in a per-face manner
+or as interpolated values to VTK.
 
 The {decomposition/vtk} style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.

@@ -48,6 +48,7 @@ namespace LAMMPS_NS
 
         double resolveTriSphereContact(int nTri, double rSphere, double *cSphere, double *delta);
         double resolveTriSphereContactBary(int nTri, double rSphere, double *cSphere, double *contactPoint,double *bary);
+        double resolveTriSphereContactBaryDefunct(int nTri, double rSphere, double *cSphere, double *contactPoint,double *bary);
         bool resolveTriSphereNeighbuild(int nTri, double rSphere, double *cSphere, double treshold);
 
         int generateRandomOwnedGhost(double *pos);
