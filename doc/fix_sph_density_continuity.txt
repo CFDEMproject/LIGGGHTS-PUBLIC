@@ -8,3 +8,65 @@
 :line
 
 fix sph/density/continuity command :h3
+
+[Syntax:]
+
+fix ID group-ID sph/density/continuity :pre
+
+ID, group-ID are documented in "fix"_fix.html command
+sph/density/continuity = style name of this fix command :ul
+
+[Examples:]
+
+fix density all sph/density/continuity :pre
+
+[LIGGGHTS vs. LAMMPS Info:]
+
+This command is not available in LAMMPS.
+
+[Description:]
+
+Based on the continuity equation in the form
+
+:c,image(Eqs/fix_sph_density_continuity_eq1.jpg)
+
+this fix calculates the density of each particle by the rule
+
+:c,image(Eqs/fix_sph_density_continuity_eq2.jpg)
+
+where the summation is over all particles b other than particle a, m is the mass, v is the velocity, W<sub>ab</sub> is the interpolating kernel (documented in "pair_style sph/artVisc/tensCorr"_pair_sph_artvisc_tenscorr.html) and &nabla;<sub>a</sub> is the gradient of W<sub>ab</sub>.
+
+:line
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+No information about this fix is written to "binary restart files"_restart.html.
+
+None of the "fix_modify"_fix_modify.html options are relevant to this fix.
+
+No global scalar or vector or per_atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15.
+
+No parameter of this fix can be used with the {start/stop} keywords of the "run"_run.html command.
+
+This fix is not invoked during "energy minimization"_minimize.html.
+
+:line
+
+[Restrictions:]
+
+There can be only one fix sph/density.
+
+[Related commands:]
+
+"pair_style sph/artVisc/tensCorr"_pair_sph_artvisc_tenscorr.html, "fix sph/pressure"_fix_sph_pressure.html, "fix sph/density/corr"_fix_sph_density_corr.html
+
+[Default:] none
+
+:line
+
+:link(LiuLiu2003)
+[(Liu and Liu, 2003)] "Smoothed Particle Hydrodynamics: A Meshfree Particle Method", G. R. Liu and M. B. Liu, World Scientific, p. 449 (2003).
+
+:link(Monaghan1992)
+[(Monaghan, 1992)] "Smoothed Particle Hydrodynamics", J. J. Monaghan, Annu. Rev. Astron. Astrophys., 30, p. 543-574 (1992).
+

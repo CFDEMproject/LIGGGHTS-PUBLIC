@@ -32,23 +32,39 @@ andreas.aigner@jku.at
 
 namespace LAMMPS_NS {
 
-class FixSPH : public Fix {
+class FixSph : public Fix {
  public:
-  FixSPH(class LAMMPS *, int, char **);
-  ~FixSPH();
+  FixSph(class LAMMPS *, int, char **);
+  ~FixSph();
   int setmask();
+  virtual void updatePtrs();
   void init();
   void init_list(int, class NeighList *);
   virtual void post_integrate() {};
   virtual void post_integrate_respa(int, int);
 
+  int get_kernel_id(){return kernel_id;};
+  inline void set_kernel_id(int newid){kernel_id = newid;};
+
+  int kernel_flag;        // 1 if Fix uses sph kernel, 0 if not
+
  protected:
-  int iarg;
+  inline double interpDist(double disti, double distj) {return 0.5*(disti+distj);};
+
+  class FixPropertyAtom* fppaSl; //smoothing length
+  class FixPropertyGlobal* fppaSlType; //per type smoothing length
+  double *sl;         // per atom smoothing length
+  double **slComType; // common smoothing length in case of mass_type=1
+
   int kernel_id;
-  double h,hinv; //kernel constant
-  double **cutsq;
+  double kernel_cut;
+  char *kernel_style;
+
   class NeighList *list;
   int nlevels_respa;
+
+  int mass_type; // flag defined in atom_vec*
+
 };
 
 }

@@ -38,7 +38,7 @@ FixStyle(wall/region/sph,FixWallRegionSph)
 
 namespace LAMMPS_NS {
 
-class FixWallRegionSph : public FixSPH {
+class FixWallRegionSph : public FixSph {
  public:
   FixWallRegionSph(class LAMMPS *, int, char **);
   ~FixWallRegionSph() {}
@@ -53,6 +53,10 @@ class FixWallRegionSph : public FixSPH {
   double compute_vector(int);
 
  private:
+  template <int> void post_force_eval(int);
+  double repulsivSph(double);
+  double selfInfluenceForce(int, double, double, double);
+
   int iregion;
   double cutoff;
   int eflag;
@@ -63,7 +67,7 @@ class FixWallRegionSph : public FixSPH {
   double eng,fwall;
 
   double r0,D; // coefficient for repulsivsph
-  void repulsivsph(double);
+
 };
 
 }

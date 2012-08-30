@@ -38,19 +38,19 @@ FixStyle(sph/pressure,FixSPHPressure)
 
 namespace LAMMPS_NS {
 
-  enum {PRESSURESTYLE_ABSOLUT,PRESSURESTYLE_TAIT};
+  enum {PRESSURESTYLE_ABSOLUT,PRESSURESTYLE_TAIT,PRESSURESTYLE_RELATIV};
 
-class FixSPHPressure : public FixSPH {
+class FixSPHPressure : public FixSph {
  public:
   FixSPHPressure(class LAMMPS *, int, char **);
   ~FixSPHPressure();
   int setmask();
   void init();
-  void pre_force(int);
+  void post_integrate();
 
  private:
   int pressureStyle;
-  double B,density0,density0inv,gamma;
+  double B,rho0,rho0inv,gamma;
 };
 
 }

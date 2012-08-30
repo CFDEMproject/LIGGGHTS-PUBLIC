@@ -44,6 +44,8 @@
 #include "error.h"
 #include "modify.h" 
 #include "fix_property_atom.h" 
+#include "sph_kernels.h" 
+#include "fix_sph.h" 
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -270,7 +272,7 @@ void Set::command(int narg, char **arg)
       iarg += 4;
     } else if (strcmp(arg[iarg],"diameter") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
-      dvalue = atof(arg[iarg+1]);
+      dvalue = atof(arg[iarg+1])*force->cg();
       if (!atom->radius_flag)
         error->all(FLERR,"Cannot set this attribute for this atom style");
       if (dvalue < 0.0) error->all(FLERR,"Invalid diameter in set command");
@@ -399,6 +401,37 @@ void Set::command(int narg, char **arg)
       set(PROPERTYPERATOM);
       delete []updValues;
       iarg += (2+nUpdValues);
+    } else if (strcmp(arg[iarg],"sphkernel") == 0) { 
+      if (iarg+2 > narg) error->all(FLERR, "Illegal set command");
+
+      // check uniqueness of kernel IDs
+
+      int flag = SPH_KERNEL_NS::sph_kernels_unique_id();
+      if(flag < 0) error->all(FLERR, "Cannot proceed, sph kernels need unique IDs, check all sph_kernel_* files");
+
+      // get kernel id
+
+      dvalue = SPH_KERNEL_NS::sph_kernel_id(arg[iarg+1]);
+      if(dvalue < 0) error->all(FLERR, "Illegal pair_style sph command, unknown sph kernel");
+
+      // set kernel_id in all sph fixes
+
+      if (comm->me == 0 && screen) {
+        fprintf(screen,"Setting undefined fix_sph kernel IDs ...\n");
+        fprintf(screen,"  Sph styles with undefined kernel_id found: \n");
+      }
+      for (int ifix = 0; ifix < modify->nfix; ifix++)
+      {
+        if (strstr(modify->fix[ifix]->style,"sph")) {
+          if (((FixSph *)(modify->fix[ifix]))->kernel_flag && ((FixSph *)(modify->fix[ifix]))->get_kernel_id() < 0) {
+            if (comm->me == 0 && screen) fprintf(screen,"  Fix style = %s\n",modify->fix[ifix]->style);
+            ((FixSph *)(modify->fix[ifix]))->set_kernel_id(dvalue);
+            count++;
+          }
+        }
+      }
+
+      iarg += 2;
     } else error->all(FLERR,"Illegal set command");
 
     // statistics

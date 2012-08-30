@@ -38,13 +38,16 @@ FixStyle(sph/density/summation,FixSPHDensitySum)
 
 namespace LAMMPS_NS {
 
-class FixSPHDensitySum : public FixSPH {
+class FixSPHDensitySum : public FixSph {
  public:
   FixSPHDensitySum(class LAMMPS *, int, char **);
   ~FixSPHDensitySum();
   virtual int setmask();
   virtual void init();
   virtual void post_integrate();
+
+ private:
+  template <int> void post_integrate_eval();
 
 };
 

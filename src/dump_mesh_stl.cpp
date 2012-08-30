@@ -51,7 +51,9 @@ enum
 /* ---------------------------------------------------------------------- */
 
 DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg),
-  nMesh_(0), meshList_(0), writeBinarySTL_(0)
+  nMesh_(0),
+  meshList_(0),
+  writeBinarySTL_(0)
 {
   if (narg < 5)
     error->all(FLERR,"Illegal dump mesh/stl command");
@@ -77,19 +79,38 @@ DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
     } else if(strcmp(arg[iarg],"ghost") == 0){
       dump_what_ = NGHOST;
       iarg++;
-    } else error->all(FLERR,"Illegal dump mesh/stl command, unknown keyword");
+    } else {
+
+      // assume it's a mesh
+      TriMesh **meshListNew = new TriMesh*[nMesh_+1];
+      for(int i = 0; i < nMesh_; i++)
+        meshListNew[i] = meshList_[i];
+      delete[] meshList_;
+      meshList_ = meshListNew;
+
+      int ifix = modify->find_fix(arg[iarg++]);
+      if(ifix == -1)
+          error->all(FLERR,"Illegal dump mesh/stl command, unknown keyword or mesh");
+      FixMeshSurface *fms = static_cast<FixMeshSurface*>(modify->fix[ifix]);
+      meshList_[nMesh_] = fms->triMesh();
+      nMesh_++;
+    }
   }
 
-  nMesh_ = modify->n_fixes_style("mesh/surface");
-  
+  // in case meshes not specified explicitly, take all meshes
   if (nMesh_ == 0)
-    error->warning(FLERR,"Dump mesh/stl cannot find any fix of type 'mesh/gran' to dump");
-
-  meshList_ = new TriMesh*[nMesh_];
-  for (int iMesh = 0; iMesh < nMesh_; iMesh++)
   {
-      
-      meshList_[iMesh] =static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
+      nMesh_ = modify->n_fixes_style("mesh/surface");
+
+      meshList_ = new TriMesh*[nMesh_];
+      for (int iMesh = 0; iMesh < nMesh_; iMesh++)
+      {
+          
+          meshList_[iMesh] = static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
+      }
+
+      if (nMesh_ == 0)
+          error->warning(FLERR,"Dump mesh/stl cannot find any fix of type 'mesh/surface' to dump");
   }
 }
 

@@ -92,7 +92,7 @@ void FixCheckTimestepGran::init()
   if(!pg) pg = (PairGranHookeHistory*)force->pair_match("gran/hooke",1);
 
   if (!pg)
-    error->all(FLERR,"Fix check/timestep/gran can only be used together with: gran/hooke/history, gran/hooke, gran/hertz/history");
+    error->all(FLERR,"Fix check/timestep/gran can only be used together with: gran/hooke/history, gran/hooke, gran/hertz/history, gran/hooke/history/stiffness");
 
   mpg = pg->mpg;
   int max_type = mpg->max_type();

@@ -33,6 +33,7 @@ andreas.aigner@jku.at
 #include "update.h"
 #include "respa.h"
 #include "atom.h"
+#include "atom_vec.h"
 #include "force.h"
 #include "pair_sph.h"
 #include "comm.h"
@@ -42,28 +43,40 @@ andreas.aigner@jku.at
 #include "memory.h"
 #include "error.h"
 #include "sph_kernels.h"
+#include "modify.h"
+#include "fix_property_atom.h"
+#include "fix_property_global.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-FixSPH::FixSPH(LAMMPS *lmp, int narg, char **arg) :
+FixSph::FixSph(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg)
 {
+  kernel_flag = 1;  // default: kernel is used
+  kernel_id = -1;   // default value
+  kernel_cut = -1;
+  kernel_style = NULL;
 
+  fppaSl = NULL;
+  fppaSlType = NULL;
+  sl = NULL;
+  slComType = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
 
-FixSPH::~FixSPH()
+FixSph::~FixSph()
 {
-
+  if(kernel_style) delete []kernel_style;
+  if(mass_type) memory->destroy(slComType);
 }
 
 /* ---------------------------------------------------------------------- */
 
-int FixSPH::setmask()
+int FixSph::setmask()
 {
   int mask = 0;
   mask |= POST_INTEGRATE;
@@ -73,21 +86,10 @@ int FixSPH::setmask()
 
 /* ---------------------------------------------------------------------- */
 
-void FixSPH::init()
+void FixSph::init()
 {
-  // check for sph pair style
-
-  Pair *pair = force->pair_match("sph",0);
-  if(!pair) error->all(FLERR,"Fix sph can only be used together with pair_style sph");
-
-  // check kernel, cutoff, h
-
-  kernel_id = ((PairSPH *)pair)->sph_kernel_id();
-  double cut = SPH_KERNEL_NS::sph_kernel_cut(kernel_id);
-  cutsq = ((PairSPH *)pair)->cut_sq();
-  h = ((PairSPH *)pair)->sph_kernel_h();
-  hinv = 1./h;
-
+  mass_type = atom->avec->mass_type;
+  int ntypes = atom->ntypes;
   // need a half neighbor list, built when ever re-neighboring occurs
 
   int irequest = neighbor->request((void *) this);
@@ -96,18 +98,68 @@ void FixSPH::init()
 
   if (strcmp(update->integrate_style,"respa") == 0)
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
+
+  // check if kernel id is set
+  if (kernel_flag && kernel_id < 0) error->all(FLERR,"No sph kernel for fixes is set.");
+  // set kernel_cut
+  kernel_cut = SPH_KERNEL_NS::sph_kernel_cut(kernel_id);
+
+  // get the fix_property containing the smoothing length
+  if (mass_type) {
+    if (fppaSlType == NULL) {
+    fppaSlType=static_cast<FixPropertyGlobal*>(modify->find_fix_property("sl","property/global","peratomtype",ntypes,0,force->pair_style));
+    }
+    if (!fppaSlType) error->all(FLERR,"Fix sph only works with a fix property/global that defines sl");
+
+    // allocate memory for per atom-type property
+    //TODO: copy slComType from pair?
+    if (!slComType) memory->create(slComType,ntypes+1,ntypes+1,"fix:slComType");
+
+    for (int i = 1; i <= ntypes; i++)
+      for (int j = i; j <= ntypes; j++) {
+        double sli = fppaSlType->compute_vector(i-1);
+        double slj = fppaSlType->compute_vector(j-1);
+
+        slComType[i][j] = slComType[j][i] = interpDist(sli,slj);;
+      }
+
+  } else {
+    if (fppaSl == NULL) {
+      fppaSl=static_cast<FixPropertyAtom*>(modify->find_fix_property("sl","property/atom","scalar",0,0,false));
+    }
+    if(!fppaSl) error->all(FLERR,"Fix sph only works with a fix property/atom that defines sl. Internal error!");
+  }
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixSPH::init_list(int id, NeighList *ptr)
+void FixSph::init_list(int id, NeighList *ptr)
 {
   list = ptr;
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixSPH::post_integrate_respa(int ilevel, int iloop)
+void FixSph::post_integrate_respa(int ilevel, int iloop)
 {
   if (ilevel == nlevels_respa-1) post_integrate();
 }
+
+/* ---------------------------------------------------------------------- */
+
+void FixSph::updatePtrs()
+{
+  if (fppaSl) sl = fppaSl->vector_atom;
+  if (fppaSlType) sl = fppaSlType->values; //TODO: per get-function?
+}
+
+/* ----------------------------------------------------------------------
+   return common radius for types with different smoothing lengths
+   atm: simple arithmetic mean (compare Morris)
+------------------------------------------------------------------------- */
+/*
+inline double FixSph::interpDist(double disti, double distj)
+{
+  return 0.5*(disti+distj);
+}
+*/

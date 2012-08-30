@@ -78,6 +78,9 @@ namespace LAMMPS_NS{
 
         void clearGhostForward(bool scale,bool translate,bool rotate);
 
+        // called via mesh move functions
+        bool resetToOrig();
+
         virtual void refreshOwned(int setupFlag);
         virtual void refreshGhosts(int setupFlag);
 

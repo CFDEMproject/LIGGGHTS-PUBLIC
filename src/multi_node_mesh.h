@@ -168,18 +168,16 @@ namespace LAMMPS_NS
         inline void reset_stepLastReset()
         { stepLastReset_ = -1; }
 
+        // reset mesh nodes to original position
+        // called via mesh move functions
+        
+        virtual bool resetToOrig();
+
       private:
 
         // flags stating how many move operations are performed on the mesh
         int nMove_;
         int nScale_,nTranslate_,nRotate_;
-
-        // integrated quaternion
-        double quat_[4];
-
-        // reset mesh nodes to original position
-        // called via mesh move functions
-        void resetNodesToOrig();
 
         // store current node position for use by moving mesh
         void storeNodePosOrig(int ilo, int ihi);

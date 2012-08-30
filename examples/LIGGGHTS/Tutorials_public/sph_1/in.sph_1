@@ -38,20 +38,23 @@ mass          1 ${mass}
 
 neighbor      ${skin} bin
 
+fix 		      m1 all property/global speedOfSound peratomtype 20.
+fix           m2 all property/global sl peratomtype $h
+
 #sph pair style
 # mhu = 1e-3 (water) ~ alpha * cAB * h
 # for c=20 (10*vMax) and h=0.012 --> alpha=0.004166667
 # pair_style    sph kernel_style h [artVisc alpha beta cAB eta] [tensCorr epsilon]
 # artifical viscosity [Monaghan and Gingold (1983)] and tensile correction [Monaghan (2000)]
 
-pair_style 	  sph cubicspline $h artVisc 4.1666e-3 0. 20.0 ${eta} tensCorr 0.2
+pair_style 	  sph/artVisc/tensCorr cubicspline $h artVisc 4.1666e-3 0. ${eta} tensCorr 0.2 ${lat}
 pair_coeff	  * *
 
 #sph fixes
 # density
 fix           density all sph/density/continuity
 fix           corr all sph/density/corr shepard every 30
-set           group all density 1000
+set           group all meso_rho 1000
 
 # pressure
 # fix         id group style type [if Tait: B rho0 gamma] (according to Monaghan 1994)
@@ -69,10 +72,13 @@ fix           wall all wall/sph xplane  ${wallpos} NULL ${lathalf} 1.0
 # time integration
 # for c=20 --> dt~1e-5
 timestep      1e-5
-fix           integr all nve
+fix           integr all nve/sph
 
 #gravity
 fix           gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+# set sph kernels for all fix after all fixes are defined
+set        group all sphkernel cubicspline
 
 #output settings, include total thermal energy
 thermo_style	custom step atoms ke vol cpu
@@ -81,7 +87,7 @@ thermo_modify	lost ignore norm no
 compute_modify	thermo_temp dynamic yes
 
 run           1
-dump	      dmp all custom 1000 post/dump*.sph id type type x y z ix iy iz vx vy vz fx fy fz vx vy vz q q density
+dump	      dmp all custom 1000 post/dump*.sph id type type x y z ix iy iz vx vy vz fx fy fz vx vy vz p p rho
 run           5000
 
 unfix         wall

@@ -53,7 +53,7 @@ enum{ID,MOL,TYPE,ELEMENT,MASS,
      OMEGAX,OMEGAY,OMEGAZ,ANGMOMX,ANGMOMY,ANGMOMZ,
      TQX,TQY,TQZ,SPIN,ERADIUS,ERVEL,ERFORCE,
      COMPUTE,FIX,VARIABLE,
-     DENSITY}; 
+     DENSITY, RHO, P}; 
 enum{LT,LE,GT,GE,EQ,NEQ};
 enum{INT,DOUBLE,STRING};
 
@@ -724,9 +724,19 @@ int DumpCustom::count()
 
       } else if (thresh_array[ithresh] == Q) {
         if (!atom->q_flag)
+          error->all(FLERR,"Threshhold for an atom property that isn't allocated");
+        ptr = atom->q;
+        nstride = 1;
+      } else if (thresh_array[ithresh] == P) {
+        if (!atom->p_flag)
+          error->all(FLERR,"Threshhold for an atom property that isn't allocated");
+        ptr = atom->p;
+        nstride = 1;
+      } else if (thresh_array[ithresh] == RHO) {
+        if (!atom->rho_flag)
           error->all(FLERR,
                      "Threshhold for an atom property that isn't allocated");
-        ptr = atom->q;
+        ptr = atom->rho;
         nstride = 1;
       } else if (thresh_array[ithresh] == DENSITY) {
         if (!atom->density_flag)
@@ -1075,6 +1085,16 @@ int DumpCustom::parse_fields(int narg, char **arg)
       if (!atom->density_flag)
         error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_density;
+      vtype[i] = DOUBLE;
+   } else if (strcmp(arg[iarg],"p") == 0) {
+      if (!atom->p_flag)
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
+      pack_choice[i] = &DumpCustom::pack_p;
+      vtype[i] = DOUBLE;
+   } else if (strcmp(arg[iarg],"rho") == 0) {
+      if (!atom->rho_flag)
+        error->all(FLERR,"Dumping an atom property that isn't allocated");
+      pack_choice[i] = &DumpCustom::pack_rho;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"mux") == 0) {
       if (!atom->mu_flag)
@@ -1479,6 +1499,8 @@ int DumpCustom::modify_param(int narg, char **arg)
 
     else if (strcmp(arg[1],"q") == 0) thresh_array[nthresh] = Q;
     else if (strcmp(arg[1],"density") == 0) thresh_array[nthresh] = DENSITY;
+    else if (strcmp(arg[1],"p") == 0) thresh_array[nthresh] = P;
+    else if (strcmp(arg[1],"rho") == 0) thresh_array[nthresh] = RHO;
     else if (strcmp(arg[1],"mux") == 0) thresh_array[nthresh] = MUX;
     else if (strcmp(arg[1],"muy") == 0) thresh_array[nthresh] = MUY;
     else if (strcmp(arg[1],"muz") == 0) thresh_array[nthresh] = MUZ;
@@ -2240,6 +2262,30 @@ void DumpCustom::pack_density(int n)
     n += size_one;
   }
 
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustom::pack_p(int n)
+{
+  double *p = atom->p;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = p[clist[i]];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustom::pack_rho(int n)
+{
+  double *rho = atom->rho;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = rho[clist[i]];
+    n += size_one;
+  }
 }
 
 /* ---------------------------------------------------------------------- */

@@ -31,6 +31,7 @@ andreas.aigner@jku.at
 #include "string.h"
 #include "pair_sph.h"
 #include "atom.h"
+#include "atom_vec.h"
 #include "comm.h"
 #include "force.h"
 #include "modify.h"
@@ -44,62 +45,56 @@ andreas.aigner@jku.at
 #include "memory.h"
 #include "error.h"
 #include "sph_kernels.h"
-
-#include "domain.h"
-#include "lattice.h"
+#include "fix_property_atom.h"
+#include "fix_property_global.h"
+#include "timer.h"
 
 using namespace LAMMPS_NS;
 
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-
 /* ---------------------------------------------------------------------- */
 
-PairSPH::PairSPH(LAMMPS *lmp) : Pair(lmp)
+PairSph::PairSph(LAMMPS *lmp) : Pair(lmp)
 {
-    kernel_style = NULL;
     single_enable = 0;
+ //   no_virial_compute = 1;
+
+    kernel_style = NULL;
+
+    fppaSl = NULL;
+    fppaSlType = NULL;
+    sl = NULL;
+    slComType = NULL;
+
+    mass_type = atom->avec->mass_type; // get flag for mass per type
 }
 
 /* ---------------------------------------------------------------------- */
 
-PairSPH::~PairSPH()
+PairSph::~PairSph()
 {
   if (allocated) {
     memory->destroy(setflag);
     memory->destroy(cutsq);
-    memory->destroy(cut);
+    if (mass_type) memory->destroy(slComType);
   }
+
+  delete [] maxrad;
+  delete [] onerad;
+
   if(kernel_style) delete []kernel_style;
+  if(fppaSl) modify->delete_fix("sl");
+//  if(fppaSlType) modify->delete_fix("sl");
 }
 
 /* ----------------------------------------------------------------------
-   allocate all arrays
+    set kernel id and smoothing length
 ------------------------------------------------------------------------- */
 
-void PairSPH::allocate()
+void PairSph::setKernelAndLength(int narg, char **arg)
 {
-  allocated = 1;
-  int n = atom->ntypes;
-
-  memory->create(setflag,n+1,n+1,"pair:setflag");
-  for (int i = 1; i <= n; i++)
-    for (int j = i; j <= n; j++)
-      setflag[i][j] = 0;
-
-  memory->create(cutsq,n+1,n+1,"pair:cutsq");
-  memory->create(cut,n+1,n+1,"pair:cut");
-}
-
-/* ----------------------------------------------------------------------
-   global settings
-------------------------------------------------------------------------- */
-
-void PairSPH::settings(int narg, char **arg)
-{
-
   int iarg = 0;
 
-  if (iarg+2 > narg) error->all(FLERR,"Illegal pair_style sph command");
+  if (iarg+2 > narg) error->all(FLERR, "Illegal pair_style sph command");
 
   // kernel style
 
@@ -110,56 +105,55 @@ void PairSPH::settings(int narg, char **arg)
   // check uniqueness of kernel IDs
 
   int flag = SPH_KERNEL_NS::sph_kernels_unique_id();
-  if(flag < 0) error->all(FLERR,"Cannot proceed, sph kernels need unique IDs, check all sph_kernel_* files");
+  if(flag < 0) error->all(FLERR, "Cannot proceed, sph kernels need unique IDs, check all sph_kernel_* files");
 
   // get kernel id
 
   kernel_id = SPH_KERNEL_NS::sph_kernel_id(kernel_style);
-  if(kernel_id < 0) error->all(FLERR,"Illegal pair_style sph command, unknown sph kernel");
+  if(kernel_id < 0) error->all(FLERR, "Illegal pair_style sph command, unknown sph kernel");
 
-  // get h
+  // smoothing length
 
-  h = force->numeric(arg[iarg+1]);
-  hinv = 1./h;
-
-  // get cutoff
-
-  cut_global = SPH_KERNEL_NS::sph_kernel_cut(kernel_id) * h;
-  //if (screen) fprintf(screen,"cut_global %f\n",cut_global);
-
+  //if(strcmp(arg[iarg+1],"default_value")) error->all(FLERR, "Fix transportequation/scalar: expecting keyword 'default_value'");
+  sl_0 = force->numeric(arg[iarg+1]); // in case of mass_type == 1, this is only a dummy!
   iarg += 2;
 
-  // optional parameters
+}
 
-  artVisc_flag = tensCorr_flag = 0;
-  alpha = beta = cAB = eta = epsilon = 0.0;
+/* ---------------------------------------------------------------------- */
 
-  while (iarg < narg) {
-    if (strcmp(arg[iarg],"artVisc") == 0) {
-      // parameters for artifical viscosity
-      if (iarg+5 > narg) error->all(FLERR,"Illegal pair_style sph command");
-      artVisc_flag = 1;
-      alpha = force->numeric(arg[iarg+1]);
-      beta = force->numeric(arg[iarg+2]);
-      cAB = force->numeric(arg[iarg+3]);
-      eta = force->numeric(arg[iarg+4]);
-      iarg += 5;
-    } else if (strcmp(arg[iarg],"tensCorr") == 0) {
-      // parameters for tensile correction
-      if (iarg+2 > narg) error->all(FLERR,"Illegal pair_style sph command");
-      tensCorr_flag = 1;
-      epsilon = force->numeric(arg[iarg+1]);
-      iarg += 2;
-    } else iarg++;
-  }
+void PairSph::updatePtrs()
+{
+  if(fppaSl) sl = fppaSl->vector_atom;
+  if(fppaSlType) sl = fppaSlType->values;
+}
 
+/* ----------------------------------------------------------------------
+   allocate all arrays
+------------------------------------------------------------------------- */
+
+void PairSph::allocate()
+{
+  allocated = 1;
+  int n = atom->ntypes;
+
+  memory->create(setflag,n+1,n+1,"pair:setflag");
+  for (int i = 1; i <= n; i++)
+    for (int j = i; j <= n; j++)
+      setflag[i][j] = 0;
+
+  memory->create(cutsq,n+1,n+1,"pair:cutsq");
+  if (mass_type) memory->create(slComType,n+1,n+1,"pair:slComType");
+
+  onerad = new double[n+1];
+  maxrad = new double[n+1];
 }
 
 /* ----------------------------------------------------------------------
    set coeffs for one or more type pairs
 ------------------------------------------------------------------------- */
 
-void PairSPH::coeff(int narg, char **arg)
+void PairSph::coeff(int narg, char **arg)
 {
   if (narg > 2) error->all(FLERR,"Incorrect args for pair sph coefficients");
   if (!allocated) allocate();
@@ -173,8 +167,6 @@ void PairSPH::coeff(int narg, char **arg)
     for (int j = MAX(jlo,i); j <= jhi; j++) {
       setflag[i][j] = 1;
       count++;
-      cut[i][j] = cut_global;
-      cutsq[i][j] = cut_global*cut_global;
     }
   }
 
@@ -185,15 +177,24 @@ void PairSPH::coeff(int narg, char **arg)
    init specific to this pair style
 ------------------------------------------------------------------------- */
 
-void PairSPH::init_style()
+void PairSph::init_style()
 {
-  // check for mass, density
+	int i,j= 0;
+	int ntypes = atom->ntypes;
 
-  if(!atom->density_flag || !atom->q_flag) error->all(FLERR,"Pair sph requires atom_style sph");
+  // check for mass, rho
+  if(!atom->rho_flag || !atom->p_flag) error->all(FLERR,"Pair sph requires atom_style sph");
 
-  // request regular neighbor list
-  // is a half list
+  // request neighbor list
+  // if mass_type -> regular (half) list
+  // if !mass_type -> granular list (neighborlist build by radius)
   int irequest = neighbor->request(this);
+  if (mass_type) {
+    neighbor->requests[irequest]->half = 1; //default
+  } else {
+    neighbor->requests[irequest]->half = 0;
+    neighbor->requests[irequest]->gran = 1;
+  }
 
   // check for fixes
   int ifix_p = -1, ifix_d = -1;
@@ -205,228 +206,157 @@ void PairSPH::init_style()
   if (ifix_d == -1) error->all(FLERR,"Pair sph requires a fix sph/density");
   if (ifix_p == -1) error->all(FLERR,"Pair sph requires a fix sph/pressure");
 
-  // set once WdeltaPinv
-  WdeltaPinv = 1./SPH_KERNEL_NS::sph_kernel(kernel_id,domain->lattice->xlattice * hinv, h, hinv);
-  if (WdeltaPinv < 0. || std::isnan(WdeltaPinv)) error->all(FLERR,"Wrong kernel calculation for tensile correction. Check inital lattice.");
+  // init individual for mass_type 0/1
+  // mass_type = 1 ... get fppaSlType, the perAtomType smoothing length
+  //                   define cutsq und cutforce
+  // mass_type = 0 ... get fppaSl, the perAtom smoothing length
+  //                   define maxrad for all types
+  if (mass_type) {
+    // get pointer to the smoothing length pointer
+
+    fppaSlType=static_cast<FixPropertyGlobal*>(modify->find_fix_property("sl","property/global","peratomtype",ntypes,0,force->pair_style));
+    if(!fppaSlType) error->all(FLERR, "Pairstyle sph only works with a fix property/global that defines sl");
+
+    for (i = 1; i <= ntypes; i++)
+      for (j = i; j <= ntypes; j++) {
+        double sli = fppaSlType->compute_vector(i-1);
+        double slj = fppaSlType->compute_vector(j-1);
+
+        slComType[i][j] = slComType[j][i] = interpDist(sli,slj);;
+}
+
+  } else {
+    // register per-particle property smoothing length
+
+    if (fppaSl == NULL) {
+      char **fixarg = new char*[9];
+      for (int kk=0;kk<9;kk++) fixarg[kk]=new char[30];
+
+      fixarg[0]=(char *) "sl";
+      fixarg[1]=(char *) "all";
+      fixarg[2]=(char *) "property/atom";
+      fixarg[3]=(char *) "sl";
+      fixarg[4]=(char *) "scalar";
+      fixarg[5]=(char *) "yes"; // restart_peratom = 1
+      fixarg[6]=(char *) "yes"; // commGhost = 1
+      fixarg[7]=(char *) "no";  // commGhostRev = 0
+      sprintf(fixarg[8],"%f",sl_0); // default value
+      modify->add_fix(9,fixarg);
+      delete []fixarg;
+
+      fppaSl=static_cast<FixPropertyAtom*>(modify->find_fix_property("sl","property/atom","scalar",0,0,force->pair_style));
+    }
+    if(!fppaSl) error->all(FLERR, "Pairstyle sph only works with a internal fix property/atom that defines sl.");
+
+    // communicate to other procs
+    // TODO: Is this necessary? All procs have the same sl_0.
+    timer->stamp();
+    fppaSl->do_forward_comm();
+    timer->stamp(TIME_COMM);
+
+    // update pointers
+    updatePtrs();
+
+    // update radius
+    updateRadius();
+
+    // set maxrad_dynamic and maxrad_frozen for each type
+    for (i = 1; i <= atom->ntypes; i++)  onerad[i] = 0.0;
+
+    // include future Fix pour particles as dynamic
+
+    for (i = 0; i < modify->nfix; i++){
+      for(int j=1;j<=atom->ntypes;j++)
+      {
+          int pour_type = 0;
+          double pour_maxrad = 0.0;
+          pour_type = j;
+          pour_maxrad = modify->fix[i]->max_rad(pour_type);
+          onerad[pour_type] = MAX(onerad[pour_type],pour_maxrad);
+      }
+    }
+
+    //further dynamic and frozen
+
+    double *radius = atom->radius;
+    int *mask = atom->mask;
+    int *type = atom->type;
+    int nlocal = atom->nlocal;
+
+    for (i = 0; i < nlocal; i++)
+      if (mask[i])
+        onerad[type[i]] = MAX(onerad[type[i]],radius[i]);
+
+    MPI_Allreduce(&onerad[1],&maxrad[1],atom->ntypes,MPI_DOUBLE,MPI_MAX,world);
+  }
+
+  // proceed with initialisation of the substyle
+  init_substyle();
 
 }
 
 /* ---------------------------------------------------------------------- */
 
-void PairSPH::init_list(int id, NeighList *ptr)
+void PairSph::init_list(int id, NeighList *ptr)
 {
   if (id == 0) list = ptr;
-  else error->all(FLERR,"Internal error in PairSPH::init_list");
+  else error->all(FLERR,"Internal error in PairSph::init_list");
 }
 
 /* ----------------------------------------------------------------------
    init for one type pair i,j and corresponding j,i
 ------------------------------------------------------------------------- */
 
-double PairSPH::init_one(int i, int j)
+double PairSph::init_one(int i, int j)
 {
+  if (!allocated) allocate();
+
   if (setflag[i][j] == 0) {
-    error->all(FLERR,"PairSPH: Illegal pair_style sph command,");
+    error->all(FLERR,"PairSph: Illegal pair_style sph command,");
   }
-  return cut[i][j];
+
+  if (mass_type) {
+    return slComType[i][j]*SPH_KERNEL_NS::sph_kernel_cut(kernel_id); //return cutoff
+  } else {
+    return interpDist(maxrad[i],maxrad[j]); //return cutoff .. until now dummy!
+  }
 }
 
-/* ---------------------------------------------------------------------- */
+/* ----------------------------------------------------------------------
+   calculate radius
+   radius[i] = kernel_cut * sl[i];
+   only valid for atom styles with mass_type = 0
+------------------------------------------------------------------------- */
 
-void PairSPH::compute(int eflag, int vflag)
+void PairSph::updateRadius()
 {
-  int i,j,ii,jj,inum,jnum,itype,jtype;
-  double xtmp,ytmp,ztmp,delx,dely,delz,r,rsq,rinv,s;
-  double gradWmag,fpair;
-  int *ilist,*jlist,*numneigh,**firstneigh;
+  int i;
 
-  double delvx,delvy,delvz,densAB,mhu,artVisc;
+  // TODO: include future Fix pour particles
 
-  double fAB,fAB2,fAB4,rA,rB;
-
-  double **x = atom->x;
-  double **v = atom->v;
-  double *q = atom->q;
-  double *density = atom->density;
-  double *mass = atom->mass;
-  double **f = atom->f;
-  int *type = atom->type;
+  //find local maximum smoothing length
+  int *mask = atom->mask;
   int nlocal = atom->nlocal;
-  int newton_pair = force->newton_pair;
 
-  if (eflag || vflag) ev_setup(eflag,vflag);
-  else evflag = vflag_fdotr = 0;
+  // set radius for each particle
+  for (i = 0; i < nlocal; i++)
+    if (mask[i])
+      atom->radius[i] = sl[i]*SPH_KERNEL_NS::sph_kernel_cut(kernel_id);
 
-  inum = list->inum;
-  ilist = list->ilist;
-  numneigh = list->numneigh;
-  firstneigh = list->firstneigh;
-
-  // loop over neighbors of my atoms
-
-  for (ii = 0; ii < inum; ii++) {
-    i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
-    itype = type[i];
-    jlist = firstneigh[i];
-    jnum = numneigh[i];
-
-    // derivative of kernel must be 0 at s = 0
-    // so particle itself is not contributing
-
-    for (jj = 0; jj < jnum; jj++) {
-      j = jlist[jj];
-
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
-      rsq = delx*delx + dely*dely + delz*delz;
-      jtype = type[j];
-
-      if (rsq < cutsq[itype][jtype]) {
-
-        // get distance and normalized distance
-
-        r = sqrt(rsq);
-        rinv = 1./r;
-        s = r * hinv;
-
-        artVisc = 0.0;
-        if (artVisc_flag) {
-          // artifical viscosity [Monaghan, 1992]
-          // alpha ... shear viscosity
-          // beta  ... bulk viscosity
-          // eta   ... avoid singularities ~ 0.01*h*h
-          delvx = v[i][0] - v[j][0];
-          delvy = v[i][1] - v[j][1];
-          delvz = v[i][2] - v[j][2];
-
-          if ( (delvx*delx+delvy*dely+delvz*delz) < 0.0 ) {
-            mhu = h * (delvx*delx+delvy*dely+delvz*delz) / (rsq + eta);
-            densAB = 0.5*(density[i]+density[j]);
-            artVisc = (- alpha * cAB * mhu + beta * mhu * mhu)/densAB;
-          }
-        }
-
-        rA = rB = 0.0;
-        fAB = 1.0;
-        if (tensCorr_flag) {
-          // repulsive term for tensile instability [Monaghan, 2000]
-          if (q[i] < 0.0) rA = epsilon * -1.0 * q[i] / (density[i] * density[i]);
-          else rA = 0.01 * q[i] / (density[i] * density[i]);
-          if (q[j] < 0.0) rB = epsilon * -1.0 * q[j] / (density[j] * density[j]);
-          else rB = 0.01 * q[j] / (density[j] * density[j]);
-          fAB =  SPH_KERNEL_NS::sph_kernel(kernel_id,s,h,hinv) * WdeltaPinv;
-          fAB2 = fAB * fAB;
-          fAB4 = fAB2 * fAB2;
-        }
-
-        // calculate value for magnitude of grad W
-
-        gradWmag = SPH_KERNEL_NS::sph_kernel_der(kernel_id,s,h,hinv);
-
-        // calculate the force
-
-        fpair = - rinv * mass[itype] * mass[jtype] * (q[i]/(density[i]*density[i]) + q[j]/(density[j]*density[j]) + (rA+rB)*fAB4 + artVisc) * gradWmag; // mass[type[i]] for integration.. check fix_nve.cpp
-
-        // apply the force
-
-        f[i][0] += delx*fpair;
-        f[i][1] += dely*fpair;
-        f[i][2] += delz*fpair;
-
-        if (newton_pair || j < nlocal) {
-          f[j][0] -= delx*fpair;
-          f[j][1] -= dely*fpair;
-          f[j][2] -= delz*fpair;
-        }
-
-        if (evflag) ev_tally(i,j,nlocal,newton_pair,0.0,0.0,fpair,delx,dely,delz);
-      }
-    }
-  }
-
-  if (vflag_fdotr) virial_fdotr_compute();
-/*
-  for (i = 0; i < nlocal; i++) {
-    fprintf(screen,"particle %d: force %f %f %f\n",i,f[i][0],f[i][1],f[i][2]);
-  }*/
+  // update ghost particles
+  timer->stamp();
+  comm->forward_comm();
+  timer->stamp(TIME_COMM);
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 writes to restart file
+   return common radius for types with different smoothing lengths
+   atm: simple arithmetic mean (compare Morris)
 ------------------------------------------------------------------------- */
-
-void PairSPH::write_restart(FILE *fp)
+// XXX: .. inserted in pair_sph.h
+/*
+double PairSph::interpDist(double disti, double distj)
 {
-  write_restart_settings(fp);
-/*
-  int i,j;
-  for (i = 1; i <= atom->ntypes; i++)
-    for (j = i; j <= atom->ntypes; j++) {
-      fwrite(&setflag[i][j],sizeof(int),1,fp);
-      if (setflag[i][j]) {
-        fwrite(&epsilon[i][j],sizeof(double),1,fp);
-        fwrite(&sigma[i][j],sizeof(double),1,fp);
-        fwrite(&cut[i][j],sizeof(double),1,fp);
-      }
-    }*/
+  return 0.5*(disti+distj);
 }
-
-/* ----------------------------------------------------------------------
-   proc 0 reads from restart file, bcasts
-------------------------------------------------------------------------- */
-
-void PairSPH::read_restart(FILE *fp)
-{
-  read_restart_settings(fp);
-  allocate();
-/*
-  int i,j;
-  int me = comm->me;
-  for (i = 1; i <= atom->ntypes; i++)
-    for (j = i; j <= atom->ntypes; j++) {
-      if (me == 0) fread(&setflag[i][j],sizeof(int),1,fp);
-      MPI_Bcast(&setflag[i][j],1,MPI_INT,0,world);
-      if (setflag[i][j]) {
-        if (me == 0) {
-          fread(&epsilon[i][j],sizeof(double),1,fp);
-          fread(&sigma[i][j],sizeof(double),1,fp);
-          fread(&cut[i][j],sizeof(double),1,fp);
-        }
-        MPI_Bcast(&epsilon[i][j],1,MPI_DOUBLE,0,world);
-        MPI_Bcast(&sigma[i][j],1,MPI_DOUBLE,0,world);
-        MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
-      }
-    }*/
-}
-
-/* ----------------------------------------------------------------------
-   proc 0 writes to restart file
-------------------------------------------------------------------------- */
-
-void PairSPH::write_restart_settings(FILE *fp)
-{/*
-  fwrite(&cut_global,sizeof(double),1,fp);
-  fwrite(&offset_flag,sizeof(int),1,fp);
-  fwrite(&mix_flag,sizeof(int),1,fp);*/
-}
-
-/* ----------------------------------------------------------------------
-   proc 0 reads from restart file, bcasts
-------------------------------------------------------------------------- */
-
-void PairSPH::read_restart_settings(FILE *fp)
-{/*
-  int me = comm->me;
-  if (me == 0) {
-    fread(&cut_global,sizeof(double),1,fp);
-    fread(&offset_flag,sizeof(int),1,fp);
-    fread(&mix_flag,sizeof(int),1,fp);
-  }
-  MPI_Bcast(&cut_global,1,MPI_DOUBLE,0,world);
-  MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
-  MPI_Bcast(&mix_flag,1,MPI_INT,0,world);*/
-}
+*/

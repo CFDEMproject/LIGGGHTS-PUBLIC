@@ -90,13 +90,13 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
     while(iarg_ < narg && hasargs)
     {
       hasargs = false;
-      if(strcmp(arg[iarg_],"move") == 0){
+      if(strcmp(arg[iarg_],"move") == 0) {
           if (narg < iarg_+4) error->fix_error(FLERR,this,"not enough arguments");
           moveMesh(force->numeric(arg[iarg_+1]),force->numeric(arg[iarg_+2]),force->numeric(arg[iarg_+3]));
           manipulated_ = true;
           iarg_ += 4;
           hasargs = true;
-      } else if(strcmp(arg[iarg_],"rotate") == 0){
+      } else if(strcmp(arg[iarg_],"rotate") == 0) {
           if (narg < iarg_+7)
               error->fix_error(FLERR,this,"not enough arguments");
           if(strcmp(arg[iarg_+1],"axis"))
@@ -108,7 +108,7 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
           manipulated_ = true;
           iarg_ += 7;
           hasargs = true;
-      } else if(strcmp(arg[iarg_],"scale") == 0){
+      } else if(strcmp(arg[iarg_],"scale") == 0) {
           if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
           scaleMesh(force->numeric(arg[iarg_+1]));
           manipulated_ = true;

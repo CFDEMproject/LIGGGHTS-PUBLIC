@@ -27,7 +27,7 @@ andreas.aigner@jku.at
 
 #ifdef FIX_CLASS
 
-FixStyle(wall/sph,FixWallSPH)
+FixStyle(wall/sph,FixWallSph)
 
 #else
 
@@ -38,10 +38,10 @@ FixStyle(wall/sph,FixWallSPH)
 
 namespace LAMMPS_NS {
 
-class FixWallSPH : public FixSPH {
+class FixWallSph : public FixSph {
  public:
-  FixWallSPH(class LAMMPS *, int, char **);
-  ~FixWallSPH();
+  FixWallSph(class LAMMPS *, int, char **);
+  ~FixWallSph();
   int setmask();
   void init();
   void setup(int vflag);
@@ -52,6 +52,7 @@ class FixWallSPH : public FixSPH {
   int wallstyle;
   double lo,hi,cylradius;
   double r0,D;
+
 };
 
 }

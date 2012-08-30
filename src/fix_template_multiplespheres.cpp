@@ -37,6 +37,7 @@ a Fortran version of the MC integrator
 #include "domain.h"
 #include "modify.h"
 #include "comm.h"
+#include "force.h"
 #include "output.h"
 #include "memory.h"
 #include "error.h"
@@ -118,7 +119,7 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
           for(int i = 0; i < nspheres; i++)
           {
               if(r_sphere[i] <= 0.) error->fix_error(FLERR,this,"radius must be > 0");
-              r_sphere[i] *= scale_fact;
+              r_sphere[i] *= (scale_fact*force->cg());
               vectorScalarMult3D(x_sphere[i],scale_fact);
           }
 
@@ -139,7 +140,7 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
           //read sphere r and coos, determine min and max
           for(int i = 0; i < nspheres; i++)
           {
-              r_sphere[i] = atof(arg[iarg+3]);
+              r_sphere[i] = atof(arg[iarg+3])*force->cg();
               if(r_sphere[i] <= 0.) error->fix_error(FLERR,this,"radius must be >0");
               for(int j = 0; j < 3; j++)
               {

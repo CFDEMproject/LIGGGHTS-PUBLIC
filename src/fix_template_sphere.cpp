@@ -33,6 +33,7 @@
 #include "particleToInsert.h"
 #include "region.h"
 #include "domain.h"
+#include "force.h"
 #include "comm.h"
 #include "vector_liggghts.h"
 #include "fix_region_variable.h"
@@ -111,7 +112,7 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
       pdf_radius = new PDF(error);
       if (strcmp(arg[iarg+1],"constant") == 0)
       {
-          double value = atof(arg[iarg+2]);
+          double value = atof(arg[iarg+2])*force->cg();
           if( value <= 0.) error->all(FLERR,"Illegal fix particletemplate/sphere command, radius must be >= 0");
           pdf_radius->set_params<RANDOM_CONSTANT>(value);
           iarg += 3;
@@ -119,6 +120,8 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
       else if (strcmp(arg[iarg+1],"uniform") == 0)
       {
           if (iarg+4 > narg) error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
+          if(force->cg() > 1.)
+              error->all(FLERR,"Illegal fix particletemplate/sphere command, cannot use distribution with coarse-graining.");
           double min = atof(arg[iarg+2]);
           double max = atof(arg[iarg+3]);
           if( min <= 0. || max <= 0. || min >= max) error->all(FLERR,"Illegal fix particletemplate/sphere command, illegal min or max value for radius");
@@ -128,6 +131,8 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
       else if (strcmp(arg[iarg+1],"lognormal") == 0)
       {
           if (iarg+4 > narg) error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
+          if(force->cg() > 1.)
+              error->all(FLERR,"Illegal fix particletemplate/sphere command, cannot use distribution with coarse-graining.");
           double mu = atof(arg[iarg+2]);
           double sigma = atof(arg[iarg+3]);
           if( mu <= 0. ) error->all(FLERR,"Illegal fix particletemplate/sphere command, illegal mu value for radius");

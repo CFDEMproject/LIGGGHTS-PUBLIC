@@ -27,7 +27,7 @@ andreas.aigner@jku.at
 
 #ifdef FIX_CLASS
 
-FixStyle(sph/density/continuity,FixSPHDensityContinuity)
+FixStyle(sph/density/continuity,FixSphDensityContinuity)
 
 #else
 
@@ -38,19 +38,18 @@ FixStyle(sph/density/continuity,FixSPHDensityContinuity)
 
 namespace LAMMPS_NS {
 
-class FixSPHDensityContinuity : public FixSPH {
+class FixSphDensityContinuity : public FixSph {
  public:
-  FixSPHDensityContinuity(class LAMMPS *, int, char **);
-  ~FixSPHDensityContinuity();
+  FixSphDensityContinuity(class LAMMPS *, int, char **);
+  ~FixSphDensityContinuity();
   int setmask();
   void init();
-  void post_integrate();
-  void post_integrate_respa(int, int);
-  void reset_dt();
+  void pre_force(int);
 
  private:
-  double dtdensity;
-  double *step_respa;
+  template <int> void pre_force_eval(int);
+  double calcDensityDer(double, double, double);
+
 };
 
 }

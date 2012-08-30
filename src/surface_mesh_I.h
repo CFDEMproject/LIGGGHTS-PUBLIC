@@ -497,6 +497,8 @@ void SurfaceMesh<NUM_NODES>::handleSharedEdge(int iSrf, int iEdge, int jSrf, int
     nNeighs_(iSrf)++;
     nNeighs_(jSrf)++;
 
+    int id_i = this->id(iSrf), id_j = this->id(jSrf);
+
     // deactivate one egde
     // other as well if coplanar
     
@@ -522,21 +524,33 @@ void SurfaceMesh<NUM_NODES>::handleSharedNode(int iSrf, int iNode, int jSrf, int
 {
     // coplanar - deactivate both
 
+  int id_i = this->id(iSrf), id_j = this->id(jSrf);
+
     if(coplanar)
     {
+      if( hasNonCoplanarSharedNode(iSrf)[iNode] || hasNonCoplanarSharedNode(jSrf)[jNode] ){
+        if(this->id(iSrf) < this->id(jSrf))
+            cornerActive(iSrf)[iNode] = false;
+        else
+            cornerActive(jSrf)[jNode] = false;
+      } else {
         cornerActive(iSrf)[iNode] = false;
         cornerActive(jSrf)[jNode] = false;
+    }
     }
     // non-coplanar - let one live
     
     else
     {
+      // save that there exists a non-coplanar shared node
+      hasNonCoplanarSharedNode(iSrf)[iNode] = true;
+      hasNonCoplanarSharedNode(jSrf)[jNode] = true;
         if(this->id(iSrf) < this->id(jSrf))
             cornerActive(iSrf)[iNode] = false;
         else
             cornerActive(jSrf)[jNode] = false;
     }
-    
+
 }
 
 /* ----------------------------------------------------------------------

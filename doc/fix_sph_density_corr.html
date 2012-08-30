@@ -1,6 +1,8 @@
 <HTML>
-<CENTER><A HREF="http://www.liggghts.com/">LIGGGHTS WWW Site</A> - <A HREF="Manual.html">LIGGGHTS Documentation</A> - <A HREF="Section_commands.html#comm">LIGGGHTS Commands</A>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
 </CENTER>
+
+
 
 
 
@@ -9,58 +11,64 @@
 
 <HR>
 
-<H3>fix sph/density/corr command
+<H3>fix sph/density/corr command 
 </H3>
-<P><B>Syntax:</B> 
+<P><B>Syntax:</B>
 </P>
 <PRE>fix ID group-ID sph/density/corr style args 
 </PRE>
-<UL>
-	<LI>ID, group-ID are documented in <A HREF="fix.html">fix</A> command 
-	<LI>sph/density/corr = style name of this fix command 
-	<LI>filterstyle = <I>shepard</I>
-	<LI>args = list of arguments for a particular style 
-	<PRE>  <I>shepard</I> args = every nSteps
-    nSteps = determes number of timesteps</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command
+<LI>sph/density/corr = style name of this fix command
+<LI>style = <I>shepard</I>
+<LI>args = list of arguments for a particular style 
 </UL>
-<P><B>Examples:</B> 
-</P>
-<PRE>fix corr all sph/density/corr shepard every 30
+<PRE>  <I>shepard</I> args = every nSteps
+    nSteps = determes number of timesteps 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info: </B>
+<P><B>Examples:</B>
+</P>
+<PRE>fix corr all sph/density/corr shepard every 30 
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info:</B>
 </P>
 <P>This command is not available in LAMMPS.
 </P>
-<P><B>Description:</B> 
+<P><B>Description:</B>
 </P>
-<P>In gerneral the pressure field in SPH exhibits large oscillations. One approach to overcome this problem is to perform a filter over the density.
+<P>In general the pressure field in SPH exhibits large oscillations. One approach to overcome this problem is to perform a filter over the density.
 </P>
-<P>The filterstyle <I>shepard</I> is one of the most simple and quick correction. Every nSteps timesteps the following rule is applied:
+<P>The filterstyle <I>shepard</I> is one of the most simple and quick correction. Every <I>nSteps</I> timesteps the following rule is applied:
 </P>
-<CENTER><IMG SRC="fix_sph_density_corr_eq1.gif">
-</CENTER
+<CENTER><IMG SRC = "Eqs/fix_sph_density_corr_eq1.jpg">
+</CENTER>
+<HR>
+
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart files</A>.
 </P>
 <P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix.
 </P>
-<P>No global scalar or vector or per-atom quantities are stored by this fix 
-for access by various <A HREF = "Section_howto.html#4_15">output commands</A>.
+<P>No global scalar or vector or per_atom quantities are stored by this fix for access by various <A HREF = "Section_howto.html#4_15">output commands</A>.
 </P>
-<P>No parameter of this fix can be used with the <I>start/stop</I> keywords 
-of the <A HREF = "run.html">run</A> command.
+<P>No parameter of this fix can be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
 </P>
 <P>This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
 </P>
-<P><B>Restrictions:</B> none 
+<HR>
+
+<P><B>Restrictions:</B> none
 </P>
-<P><B>Related commands:</B> 
+<P><B>Related commands:</B>
 </P>
-<P><A HREF="pair_sph.html">pair_style sph</A>, 
-<A HREF="fix_sph_pressure.html">fix sph/pressure</A>, 
-<A HREF="fix_sph_density_continuity.html">fix sph/density/continuity</A>
+<P><A HREF = "pair_sph_artvisc_tenscorr.html">pair_style sph/artVisc/tensCorr</A>, <A HREF = "fix_sph_pressure.html">fix sph/pressure</A>, <A HREF = "fix_sph_density_continuity.html">fix sph/density/continuity</A>
 </P>
-<P><B>Default:</B> none 
+<P><B>Default:</B> none
+</P>
+<HR>
+
+<A NAME = "LiuLiu2003"></A>
+
+<P><B>(Liu and Liu, 2003)</B> "Smoothed Particle Hydrodynamics: A Meshfree Particle Method", G. R. Liu and M. B. Liu, World Scientific, p. 449 (2003).
 </P>
 </HTML>

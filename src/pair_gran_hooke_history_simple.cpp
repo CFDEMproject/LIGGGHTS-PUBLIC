@@ -19,10 +19,6 @@
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors for original version: Leo Silbert (SNL), Gary Grest (SNL)
-------------------------------------------------------------------------- */
-
 #include "math.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -128,9 +124,9 @@ void PairGranHookeHistorySimple::init_granular()
   {
       for(int j=1;j<max_type+1;j++)
       {
-          k_n[i][j] = k_n1->compute_array(i-1,j-1);
+          k_n[i][j] = force->cg()*k_n1->compute_array(i-1,j-1);
           k_t[i][j] = k_t1->compute_array(i-1,j-1);
-          gamma_n[i][j] = gamma_n1->compute_array(i-1,j-1);
+          gamma_n[i][j] = force->cg()*force->cg()*gamma_n1->compute_array(i-1,j-1);
           gamma_t[i][j] = gamma_t1->compute_array(i-1,j-1);
 
           coeffFrict[i][j] = coeffFrict1->compute_array(i-1,j-1);

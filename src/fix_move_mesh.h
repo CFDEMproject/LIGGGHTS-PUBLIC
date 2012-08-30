@@ -44,6 +44,7 @@ namespace LAMMPS_NS
   class FixMoveMesh : public LAMMPS_NS::Fix
   {
       public:
+
         FixMoveMesh(LAMMPS *lmp, int narg, char **arg);
         virtual ~FixMoveMesh();
 
@@ -57,24 +58,25 @@ namespace LAMMPS_NS
         void write_restart(FILE *);
         void restart(char *);
 
+        void add_reference_point(double *point);
+        void get_reference_point(double *point);
+        void reset_reference_point();
+
      protected:
+
         class FixMesh* fixMesh()
         { return fix_mesh_; }
 
       private:
 
-        bool decide_rebuild();
-        void store_node_pos();
-
         class FixMesh *fix_mesh_;
         class MeshMover *move_;
         class AbstractMesh *mesh_;
 
-        bool neighListFresh_;
-
         double time_;
         double time_since_setup_;
 
+        double reference_point_[3];
   };
 } /* namespace LAMMPS_NS */
 #endif

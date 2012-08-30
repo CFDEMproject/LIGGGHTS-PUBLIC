@@ -42,6 +42,7 @@ andreas.aigner@jku.at
 #include "neigh_request.h"
 #include "memory.h"
 #include "error.h"
+#include "timer.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -49,22 +50,41 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixSPHPressure::FixSPHPressure(LAMMPS *lmp, int narg, char **arg) :
-  FixSPH(lmp, narg, arg)
+  FixSph(lmp, narg, arg)
 {
     //Check args
     int iarg = 3;
-    if (narg < 4) error->fix_error(FLERR,this,"Not enough arguments \n");
+    if (narg < iarg+1) error->fix_error(FLERR,this,"Not enough arguments \n");
 
-    if (strcmp(arg[iarg],"absolut") == 0) pressureStyle = PRESSURESTYLE_ABSOLUT;
-    else if (strcmp(arg[iarg],"Tait") == 0) {
-      if (narg < iarg+3) error->fix_error(FLERR,this,"Not enough arguments for 'Tait' pressure style \n");
+    if (strcmp(arg[iarg],"absolut") == 0)
+    {
+      if (narg < iarg+2) error->fix_error(FLERR,this,"Not enough arguments for 'absolut' pressure style \n");
       B = force->numeric(arg[iarg+1]);
-      density0 = force->numeric(arg[iarg+2]);
-      if (density0 > 0) density0inv = 1./density0;
-      else error->fix_error(FLERR,this," density0 is zero or negativ \n");
+      pressureStyle = PRESSURESTYLE_ABSOLUT;
+      iarg += 2;
+    }
+    else if (strcmp(arg[iarg],"Tait") == 0)
+    {
+      if (narg < iarg+4) error->fix_error(FLERR,this,"Not enough arguments for 'Tait' pressure style \n");
+      B = force->numeric(arg[iarg+1]);
+      rho0 = force->numeric(arg[iarg+2]);
+      if (rho0 > 0) rho0inv = 1./rho0;
+      else error->fix_error(FLERR,this," rho0 is zero or negativ \n");
       gamma = force->numeric(arg[iarg+3]);
       pressureStyle = PRESSURESTYLE_TAIT;
-    } else error->fix_error(FLERR,this,"Unknown style. Valid styles are 'absolut' or 'Tait' \n");
+      iarg += 4;
+    }
+    else if (strcmp(arg[iarg],"relativ") == 0)
+    {
+      if (narg < iarg+3) error->fix_error(FLERR,this,"Not enough arguments for 'relativ' pressure style \n");
+      B = force->numeric(arg[iarg+1]);
+      rho0 = force->numeric(arg[iarg+2]);
+      pressureStyle = PRESSURESTYLE_RELATIV;
+      iarg += 3;
+    }
+    else error->fix_error(FLERR,this,"Unknown style. Valid styles are 'absolut' or 'Tait' \n");
+
+    kernel_flag = 0; // does not need any kernel
 }
 
 /* ---------------------------------------------------------------------- */
@@ -79,21 +99,23 @@ FixSPHPressure::~FixSPHPressure()
 int FixSPHPressure::setmask()
 {
   int mask = 0;
-  mask |= PRE_FORCE;
+  mask |= POST_INTEGRATE;
   return mask;
 }
 
 /* ---------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------- */
+
 void FixSPHPressure::init()
 {
-  FixSPH::init();
+  FixSph::init();
 
   // check if there is an sph/density fix present
-  // must come before me, because
-  // a - need the pressure for the density
+  // must come before me, because -- (sph/density has post_integrate routine... it will be called first)
+  // a - need the pressure for the rho
   // b - does the forward comm for me to have updated ghost properties
-  // chec is done by fix sph/density itself
+  // check is done by fix sph/density itself
 
   int dens = -1;
   for(int i = 0; i < modify->nfix; i++)
@@ -109,28 +131,47 @@ void FixSPHPressure::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixSPHPressure::pre_force(int vflag)
+void FixSPHPressure::post_integrate()
 {
   int *mask = atom->mask;
-  double *density = atom->density;
-  double *q = atom->q;
+  double *rho = atom->rho;
+  double *p = atom->p;
   int nlocal = atom->nlocal;
 
-  // already have updated ghost positions
+  // already have updated ghost positions due to regular communication
 
   // set pressure
-  if (pressureStyle == PRESSURESTYLE_TAIT) {
-    for (int i = 0; i < nlocal; i++) {
-      q[i] = B*(pow(density[i]*density0inv,gamma) - 1); // Tait's equation
+  
+  if (pressureStyle == PRESSURESTYLE_TAIT)
+  {
+    for (int i = 0; i < nlocal; i++)
+    {
+      
+      if (mask[i] & groupbit)
+      {
+        
+      p[i] = B*(pow(rho[i]*rho0inv,gamma) - 1); // Tait's equation
     }
-  } else if (pressureStyle == PRESSURESTYLE_ABSOLUT) {
-    for (int i = 0; i < nlocal; i++) {
-      q[i] = 0.1 * density[i] * density[i];
     }
   }
-
-  // send pressure to ghosts
-
-  comm->forward_comm();
-
+  else if (pressureStyle == PRESSURESTYLE_RELATIV)
+  {
+    for (int i = 0; i < nlocal; i++)
+    {
+      if (mask[i] & groupbit)
+      {
+        p[i] = B * (rho[i] - rho0);
+      }
+    }
+  }
+  else if (pressureStyle == PRESSURESTYLE_ABSOLUT)
+  {
+    for (int i = 0; i < nlocal; i++)
+    {
+      if (mask[i] & groupbit)
+      {
+        p[i] = B * B * rho[i];
+      }
+    }
+  }
 }

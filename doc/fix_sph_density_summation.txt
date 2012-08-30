@@ -8,3 +8,63 @@
 :line
 
 fix sph/density/summation command :h3
+
+[Syntax:]
+
+fix ID group-ID sph/density/summation :pre
+
+ID, group-ID are documented in "fix"_fix.html command
+sph/density/summation = style name of this fix command :ul
+
+[Examples:]
+
+fix density all sph/density/summation :pre
+
+[LIGGGHTS vs. LAMMPS Info:]
+
+This command is not available in LAMMPS.
+
+[Description:]
+
+Calculates the density field with the classic SPH-summation approach. The governing equation is given by:
+
+:c,image(Eqs/fix_sph_density_summation.jpg)
+
+rho<sub>a</sub> is the density of particle a, m is the mass and W<sub>ab</sub> denotes the interpolating kernel for the particle-particle distance r<sub>a</sub> - r<sub>b</sub>. The summation is over all particles b other than particle a.
+
+NOTE: In the current version boundary or image particles are not implemented. Therefore, the density calculation in the vicinity to a wall will be wrong.
+
+:line
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+No information about this fix is written to "binary restart files"_restart.html.
+
+None of the "fix_modify"_fix_modify.html options are relevant to this fix.
+
+No global scalar or vector or per_atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15.
+
+No parameter of this fix can be used with the {start/stop} keywords of the "run"_run.html command.
+
+This fix is not invoked during "energy minimization"_minimize.html.
+
+:line
+
+[Restrictions:]
+
+There can be only one fix sph/density/... (except "fix sph/density/corr"_fix_sph_density_corr.html)
+
+[Related commands:]
+
+"pair_style sph/artVisc/tensCorr"_pair_sph_artvisc_tenscorr.html, "fix sph/pressure"_fix_sph_pressure.html, "fix sph/density/continuity"_fix_sph_density_continuity.html
+
+[Default:] none
+
+:line
+
+:link(LiuLiu2003)
+[(Liu and Liu, 2003)] "Smoothed Particle Hydrodynamics: A Meshfree Particle Method", G. R. Liu and M. B. Liu, World Scientific, p. 449 (2003).
+
+:link(Monaghan1992)
+[(Monaghan, 1992)] "Smoothed Particle Hydrodynamics", J. J. Monaghan, Annu. Rev. Astron. Astrophys., 30, p. 543-574 (1992).
+

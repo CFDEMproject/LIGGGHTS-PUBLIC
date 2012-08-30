@@ -8,3 +8,61 @@
 :line
 
 fix sph/density/corr command :h3
+
+[Syntax:]
+
+fix ID group-ID sph/density/corr style args :pre
+
+ID, group-ID are documented in "fix"_fix.html command
+sph/density/corr = style name of this fix command
+style = {shepard}
+args = list of arguments for a particular style :ul
+
+  {shepard} args = every nSteps
+    nSteps = determes number of timesteps :pre
+
+[Examples:]
+
+fix corr all sph/density/corr shepard every 30 :pre
+
+[LIGGGHTS vs. LAMMPS Info:]
+
+This command is not available in LAMMPS.
+
+[Description:]
+
+In general the pressure field in SPH exhibits large oscillations. One approach to overcome this problem is to perform a filter over the density.
+
+The filterstyle {shepard} is one of the most simple and quick correction. Every {nSteps} timesteps the following rule is applied:
+
+:c,image(Eqs/fix_sph_density_corr_eq1.jpg)
+
+:line
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+No information about this fix is written to "binary restart files"_restart.html.
+
+None of the "fix_modify"_fix_modify.html options are relevant to this fix.
+
+No global scalar or vector or per_atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15.
+
+No parameter of this fix can be used with the {start/stop} keywords of the "run"_run.html command.
+
+This fix is not invoked during "energy minimization"_minimize.html.
+
+:line
+
+[Restrictions:] none
+
+[Related commands:]
+
+"pair_style sph/artVisc/tensCorr"_pair_sph_artvisc_tenscorr.html, "fix sph/pressure"_fix_sph_pressure.html, "fix sph/density/continuity"_fix_sph_density_continuity.html
+
+[Default:] none
+
+:line
+
+:link(LiuLiu2003)
+[(Liu and Liu, 2003)] "Smoothed Particle Hydrodynamics: A Meshfree Particle Method", G. R. Liu and M. B. Liu, World Scientific, p. 449 (2003).
+

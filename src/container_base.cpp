@@ -110,18 +110,3 @@ using namespace LAMMPS_NS;
 
       return true;
   }
-
-  /* ----------------------------------------------------------------------
-   ID operations
-  ------------------------------------------------------------------------- */
-
-  void ContainerBase::id(char *_id)
-  {
-      strcpy(_id,id_);
-  }
-
-  bool ContainerBase::matches_id(char *_id)
-  {
-      if(strcmp(_id,id_) == 0) return true;
-      return false;
-  }

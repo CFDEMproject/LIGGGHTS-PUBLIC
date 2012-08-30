@@ -27,47 +27,65 @@ andreas.aigner@jku.at
 
 #ifdef PAIR_CLASS
 
-PairStyle(sph,PairSPH)
-
 #else
 
-#ifndef LMP_PAIR_SPH
-#define LMP_PAIR_SPH
+#ifndef LMP_PAIR_SPH_H
+#define LMP_PAIR_SPH_H
 
 #include "pair.h"
 
 namespace LAMMPS_NS {
 
-class PairSPH : public Pair {
- friend class FixSPH;
+class PairSph : public Pair {
  public:
-  PairSPH(class LAMMPS *);
-  ~PairSPH();
-  virtual void compute(int, int);
-  virtual void settings(int, char **);
-  void coeff(int, char **);
+
+	friend class FixSPH;
+
+  PairSph(class LAMMPS *);
+  ~PairSph();
+
+  /* INHERITED FROM Pair */
+
+  virtual void compute(int, int) = 0;
+  virtual void settings(int, char **) = 0;
+  virtual void setKernelAndLength(int, char **);
+  virtual void coeff(int, char **) = 0;
   virtual void init_style();
-  void init_list(int, class NeighList *);
-  double init_one(int, int);
-  void write_restart(FILE *);
-  void read_restart(FILE *);
-  void write_restart_settings(FILE *);
-  void read_restart_settings(FILE *);
+  virtual void init_substyle() = 0;
+  virtual void init_list(int, class NeighList *);
+  virtual double init_one(int, int);
+  virtual void write_restart(FILE *){}
+  virtual void read_restart(FILE *){}
+  virtual void write_restart_settings(FILE *){}
+  virtual void read_restart_settings(FILE *){}
+  //virtual void reset_dt();
+
+  /* PUBLIC ACCESS FUNCTIONS */
+
   int sph_kernel_id(){return kernel_id;}
-  double sph_kernel_h(){return h;}
 
  protected:
-  double **cut_sq(){return cutsq;}
 
-  double h,hinv,cut_global;
-  double **cut;
   void allocate();
+  virtual void updatePtrs();
+  virtual void updateRadius();
+  //virtual double interpDist(double, double);
+  inline double interpDist(double disti, double distj) {return 0.5*(disti+distj);}
+
+  class FixPropertyAtom* fppaSl; //fix for smoothing length
+  class FixPropertyGlobal* fppaSlType; //fix for per type smoothing length
+  double *sl;         // per atom smoothing length
+  double **slComType; // common smoothing length in case of mass_type=1
+  double sl_0;
+
   int kernel_id;
   char *kernel_style;
 
-  int artVisc_flag, tensCorr_flag;
-  double alpha,beta,cAB,eta; //artifical viscosity
-  double epsilon,WdeltaPinv; //tensile instability
+  double *onerad;
+  double *maxrad;
+
+  int mass_type; // flag defined in atom_vec*
+
 };
 
 }

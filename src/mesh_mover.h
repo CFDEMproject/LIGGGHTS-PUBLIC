@@ -29,6 +29,7 @@
 #define LMP_MESH_MOVER_H
 
 #include "tri_mesh.h"
+#include "fix_move_mesh.h"
 #include "force.h"
 
 namespace LAMMPS_NS
@@ -36,9 +37,16 @@ namespace LAMMPS_NS
   class MeshMover : protected Pointers
   {
       public:
-        MeshMover(LAMMPS * lmp,AbstractMesh *_mesh) :
-            Pointers(lmp), mesh_(_mesh), isFirst_(false) {}
-        virtual ~MeshMover() {}
+
+        MeshMover(LAMMPS * lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh) :
+            Pointers(lmp),
+            mesh_(_mesh),
+            fix_move_mesh_(_fix_move_mesh),
+            isFirst_(false)
+        {}
+
+        virtual ~MeshMover()
+        {}
 
         virtual void initial_integrate(double dT,double dt) = 0;
         virtual void final_integrate(double dT,double dt) {};
@@ -46,10 +54,20 @@ namespace LAMMPS_NS
         inline bool isFirst()
         { return isFirst_; }
 
+        virtual int n_restart()
+        { return 0; }
+
+        virtual void write_restart(double *buf) {}
+        virtual void read_restart(double *buf) {}
+
+        void add_reference_point(double *point)
+        { fix_move_mesh_->add_reference_point(point); }
+
+        void get_reference_point(double *point)
+        { fix_move_mesh_->get_reference_point(point); }
+
         double ***get_nodes()
-        {
-            return mesh_->nodePtr();
-        }
+        { return mesh_->nodePtr(); }
 
         double ***get_v()
         {
@@ -64,6 +82,7 @@ namespace LAMMPS_NS
         }
 
         AbstractMesh *mesh_;
+        FixMoveMesh *fix_move_mesh_;
         bool isFirst_;
   };
 
@@ -74,7 +93,9 @@ namespace LAMMPS_NS
   class MeshMoverLinear : public MeshMover{
 
       public:
-        MeshMoverLinear(LAMMPS *lmp,AbstractMesh *_mesh,double vx, double vy, double vz);
+
+        MeshMoverLinear(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
+                        double vx, double vy, double vz);
         virtual ~MeshMoverLinear();
 
         void initial_integrate(double dT,double dt);
@@ -82,6 +103,7 @@ namespace LAMMPS_NS
         void pre_delete();
 
       private:
+
         double vel_[3];
   };
 
@@ -90,16 +112,23 @@ namespace LAMMPS_NS
    class MeshMoverLinearVariable : public MeshMover{
 
       public:
-        MeshMoverLinearVariable(LAMMPS *lmp,AbstractMesh *_mesh,char* var1, char* var2, char* var3);
+
+        MeshMoverLinearVariable(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
+                                char* var1, char* var2, char* var3);
         virtual ~MeshMoverLinearVariable();
 
         void initial_integrate(double dT,double dt);
         void final_integrate(double dT,double dt) {}
         void pre_delete();
 
+        int n_restart();
+        void write_restart(double *buf);
+        void read_restart(double *buf);
+
       private:
-        char *var1str,*var2str,*var3str;
-        int myvar1,myvar2,myvar3;
+
+        char *var1str_,*var2str_,*var3str_;
+        int myvar1_,myvar2_,myvar3_;
         double dX_[3];
         double vel_[3];
   };
@@ -109,7 +138,8 @@ namespace LAMMPS_NS
   class MeshMoverWiggle : public MeshMover{
 
       public:
-        MeshMoverWiggle(LAMMPS *lmp,AbstractMesh *_mesh,
+
+        MeshMoverWiggle(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
                         double ax, double ay, double az,
                         double T);
         virtual ~MeshMoverWiggle();
@@ -119,7 +149,8 @@ namespace LAMMPS_NS
         void pre_delete();
 
       private:
-        double amplitude[3],omega;
+
+        double amplitude_[3],omega_;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -127,7 +158,8 @@ namespace LAMMPS_NS
   class MeshMoverRotate : public MeshMover {
 
       public:
-        MeshMoverRotate(LAMMPS *lmp,AbstractMesh *_mesh,
+
+        MeshMoverRotate(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
                             double px, double py,double pz,
                             double axisX, double axisY, double axisZ,
                             double T);
@@ -138,7 +170,8 @@ namespace LAMMPS_NS
         void pre_delete();
 
       private:
-        double axis[3], p[3], omega;
+
+        double axis_[3], point_[3], omega_;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -146,7 +179,8 @@ namespace LAMMPS_NS
   class MeshMoverRotateVariable : public MeshMover {
 
       public:
-        MeshMoverRotateVariable(LAMMPS *lmp,AbstractMesh *_mesh,
+
+        MeshMoverRotateVariable(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
                             double px, double py,double pz,
                             double axisX, double axisY, double axisZ,
                             char* var1);
@@ -156,10 +190,15 @@ namespace LAMMPS_NS
         void final_integrate(double dT,double dt) {}
         void pre_delete();
 
+        int n_restart();
+        void write_restart(double *buf);
+        void read_restart(double *buf);
+
       private:
-        char *var1str;
-        int myvar1,myvar2,myvar3;
-        double axis[3], p[3], omega, totalPhi;
+
+        char *var1str_;
+        int myvar1_,myvar2_,myvar3_;
+        double axis_[3], point_[3], omega_, totalPhi_;
   };
 
   /* ---------------------------------------------------------------------- */
@@ -167,7 +206,8 @@ namespace LAMMPS_NS
   class MeshMoverRiggle : public MeshMover {
 
       public:
-        MeshMoverRiggle(LAMMPS *lmp,AbstractMesh *_mesh,
+
+        MeshMoverRiggle(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
                             double px, double py,double pz,
                             double axisX, double axisY, double axisZ,
                             double T, double ampl);
@@ -178,14 +218,15 @@ namespace LAMMPS_NS
         void pre_delete();
 
       private:
-        double axis[3], p[3], omega, amplitude;
+
+        double axis_[3], point_[3], omega_, amplitude_;
   };
 
    /* ----------------------------------------------------------------------
     Mesh Mover
     ------------------------------------------------------------------------- */
 
-    inline MeshMover* createMeshMover(LAMMPS *lmp,AbstractMesh *mesh,char **arg, int narg)
+    inline MeshMover* createMeshMover(LAMMPS *lmp,AbstractMesh *mesh,FixMoveMesh *fix_mm,char **arg, int narg)
     {
         if(narg < 1) return 0;
 
@@ -193,14 +234,14 @@ namespace LAMMPS_NS
         if(strcmp(name,"linear") == 0){
           if(narg < 4) return 0;
 
-          return new MeshMoverLinear(lmp,mesh,
+          return new MeshMoverLinear(lmp,mesh,fix_mm,
                           lmp->force->numeric(arg[1]),
                           lmp->force->numeric(arg[2]),
                           lmp->force->numeric(arg[3]));
         } else if(strcmp(name,"linear/variable") == 0){
           if(narg < 4) return 0;
 
-          return new MeshMoverLinearVariable(lmp,mesh,
+          return new MeshMoverLinearVariable(lmp,mesh,fix_mm,
                           arg[1],
                           arg[2],
                           arg[3]);
@@ -215,7 +256,7 @@ namespace LAMMPS_NS
             if(strcmp("period",arg[9]))
                 return 0;
 
-            return new MeshMoverRotate(lmp,mesh,
+            return new MeshMoverRotate(lmp,mesh,fix_mm,
                           // origin
                           lmp->force->numeric(arg[2]),
                           lmp->force->numeric(arg[3]),
@@ -238,7 +279,7 @@ namespace LAMMPS_NS
             if(strcmp("period",arg[9]))
                 return 0;
 
-            return new MeshMoverRotateVariable(lmp,mesh,
+            return new MeshMoverRotateVariable(lmp,mesh,fix_mm,
                           // origin
                           lmp->force->numeric(arg[2]),
                           lmp->force->numeric(arg[3]),
@@ -259,7 +300,7 @@ namespace LAMMPS_NS
             if(strcmp("period",arg[5]))
                 return 0;
 
-            return new MeshMoverWiggle(lmp,mesh,
+            return new MeshMoverWiggle(lmp,mesh,fix_mm,
                           //amplitude
                           lmp->force->numeric(arg[2]),
                           lmp->force->numeric(arg[3]),
@@ -280,7 +321,7 @@ namespace LAMMPS_NS
             if(strcmp("amplitude",arg[11]))
                 return 0;
 
-            return new MeshMoverRiggle(lmp,mesh,
+            return new MeshMoverRiggle(lmp,mesh,fix_mm,
                           // origin
                           lmp->force->numeric(arg[2]),
                           lmp->force->numeric(arg[3]),

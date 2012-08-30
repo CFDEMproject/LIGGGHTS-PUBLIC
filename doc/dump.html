@@ -37,11 +37,11 @@
 </PRE>
 <PRE>  <I>image</I> args = discussed on <A HREF = "dump_image.html">dump image</A> doc page 
 </PRE>
-<PRE>  <I>mesh/stl</I> args = 'local' or 'ghost' or 'all'
+<PRE>  <I>mesh/stl</I> args = 'local' or 'ghost' or 'all' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
   <I>mesh/vtk</I> args =  zero or more keyword/ value pairs and one or more dump-identifiers
       keywords = <I>output</I>
       <I>output</I> values = face or interpolate 
-      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area'
+      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
   <I>decomposition/vtk</I> args = none 
 </PRE>
 <PRE>  <I>local</I> args = list of local attributes
@@ -111,7 +111,7 @@ dump e_data all custom 100 dump.eff id type x y z spin eradius fx fy fz eforce
 granular mesh geometry into STL files or VTK files. The former is used 
 for dumping only the geometry, while the latter command is used to dump 
 the mesh IDs, stress etc- calculated on a granular mesh using the 
-<A HREF = "fix_mesh_stressanalysis.html">fix mesh/stressanalysis</A>  command.
+<A HREF = "fix_mesh_surface_stress.html">fix mesh/surface/stress</A>  command.
 Furthermore, style <I>decomposition/vtk</I> can be used to dump the current
 parallel domain decomposition to a VTK file.
 </P>
@@ -340,6 +340,10 @@ a filename like 'mydumpfile*.stl'. Note: This series of files can then be
 post-processed together with the particle dump file converted to VTK in 
 Paraview , www.paraview.org
 </P>
+<P>By providing any ID (or a list of IDs) of <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
+commands, you can specify which meshes to dump. If no meshes are specified,
+all meshes used in the simulation are dumped.
+</P>
 <P>The <I>mesh/vtk</I> style can be used to dump active mesh geometries 
 defined via <A HREF = "fix_mesh.html">fix mesh</A> commands to a series of VTK files. 
 Different keywords can be used to dump the per-triangle stress, id, 
@@ -352,6 +356,10 @@ which meshes to dump. The group-ID is ignored. Again, a series of files
 can be post-processed in Paraview , www.paraview.org
 Keyword <I>output</I> controlls if the data is written in a per-face manner
 or as interpolated values to VTK.
+</P>
+<P>By providing any ID (or a list of IDs) of <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
+commands, you can specify which meshes to dump. If no meshes are specified,
+all meshes used in the simulation are dumped.
 </P>
 <P>The <I>decomposition/vtk</I> style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.

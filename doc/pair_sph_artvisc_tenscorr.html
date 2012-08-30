@@ -1,0 +1,149 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>pair_style sph/artVisc/tensCorr command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>pair_style sph/artVisc/tensCorr kernelstyle args keyword values ... 
+</PRE>
+<UL><LI>sph/artVisc/tensCorr = name of this pair_style command
+<LI>kernelstyle = <I>cubicspline</I> or <I>wendland</I>
+<LI>args = list of arguments for a particular style 
+</UL>
+<PRE>  <I>cubicspline</I> or <I>wendland</I> args = h
+    h = smoothing length 
+</PRE>
+<UL><LI>zero or more keyword/value pairs may be appended to args
+<LI>keyword = <I>artVisc</I> or <I>tensCorr</I> 
+</UL>
+<PRE>  <I>artVisc</I> values = alpha beta eta
+    alpha = free parameter to control shear viscosity
+    beta = free parameter to control bulk viscosity
+    eta = coefficient to avoid singularities
+  <I>tensCorr</I> values = epsilon deltap
+    epsilon = free parameter
+    deltap = initial particle distribution 
+</PRE>
+<P><B>Examples:</B>
+</P>
+<PRE>pair_style sph wendland 0.001 artVisc 1e-4 0 1e-8
+pair_style sph cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0.2 1e-2 
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info:</B>
+</P>
+<P>This command is not available in LAMMPS.
+</P>
+<P><B>Description:</B>
+</P>
+<P>The <I>sph/artVisc/tensCorr</I> style uses the smoothed particle hydrodynamics (SPH) method according to Monaghan <A HREF = "#Monaghan1992">(1992)</A>. The acting force is calculated from the acceleration as stated in the equation: 
+</P>
+<CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq1.jpg">
+</CENTER>
+<P>Whereas the indices a and b stand for particles, P<sub>j</sub> stands for pressure and &#961;<sub>j</sub> for the density. W<sub>ab</sub> represents the kernel, which is defined by the kernelstyle.
+</P>
+<P>For kernelstyle cubicspline a piecewise defined, 3-order kernel is used:
+</P>
+<CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq2.jpg">
+</CENTER>
+<P>The wendland kernel (Wendland,1995) is defined as 
+</P>
+<CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq3.jpg">
+</CENTER>
+<P>The smoothing length h is the most important parameter for SPH-calculations. It depends on initial particle spacing, initial density &#961;<sub>0</sub> and mass per particle m<sub>j</sub>. In case that the smoothing length is about 1.2 times the initial particle spacing and it is a 3-dimensional cubic lattice (therefore the summation is over 57 particles), you can use the following equation <A HREF = "#LiuLiu2003">(Liu and Liu, 2003, p. 211-213)</A>:
+</P>
+<CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq4.jpg">
+</CENTER>
+<P>The atom style <I>sph/var</I> uses the input argument h as initial smoothing length for all particles. In case the atom style <I>sph</I> (per-type smoothing length) is used an additional per-type property <I>sl</I> must be defined, e.g., 
+</P>
+<PRE>fix           m2 all property/global sl peratomtype 0.0012 
+</PRE>
+<P>For further details on the basics of the SPH-method we recommend the papers from Monaghan <A HREF = "#Monaghan1992">(1992)</A>, <A HREF = "#Monaghan1994">(1994)</A>, etc.
+</P>
+<P>Optionally, this pairstyle can take into account the artificial viscosity proposed my Monaghan (1985), if the artVisc keyword is appended. In this case, &#928;<sub>ab</sub> is added to the bracket term in the above acceleration equation, where &#928;<sub>ab</sub> is given by 
+</P>
+<CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq5.jpg">
+</CENTER>
+<P>and
+</P>
+<CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq6.jpg">
+</CENTER>
+This expression produces a shear and bulk viscosity. The quadratic term enables simulation of high Mach number shocks. The parameter &#951;<sup>2</sup> prevents singularities. A good choice is normally &#951;<sup>2</sup>=0.01h<sup>2</sup>. 
+<BR>
+<P>The choice of &#945; and &#946; should not be critical, although there are some aspects which you should take into account: 
+</P>
+<P>  "In the present case, with negligible changes in the density [weakly compressible SPH], the viscosity is almost entirely shear viscosity with a viscosity coefficient approximately &#945;hc." <A HREF = "#Monaghan1994">(Monaghan, 1994)</A> 
+</P>
+<P>Bar-parameters like c<sub>ab</sub> and &#961;<sub>ab</sub> are mean values of particle a and b.
+NOTE: &#961;<sub>ab</sub> is calculated, and for the calculation of c<sub>ab</sub> the per-type property <I>speedOfSound</I> has to be defined, e.g., 
+</P>
+<PRE>fix 		      m1 all property/global speedOfSound peratomtype 20. 
+</PRE>
+<P>By appending the keyword <I>tensCorr</I> you enable the tensile correction algorithm <A HREF = "#Monaghan2000">(Monaghan, 2000)</A> which improves results in combination with negative pressures (e.g. EOS like Tait's equation). This method adds R*(f<sub>ab</sub>)<sup>n</sup> to the bracket term, where the factor R is related to the pressure and can be calculated by R=R<sub>a</sub> + R<sub>b</sub>. In case of negative pressures (P<sub>a</sub> < 0) we use the rule
+</P>
+<CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq7.jpg">
+</CENTER>
+<P>otherwise R<sub>a</sub> is zero. Typical values of <I>epsilon</I> are about 0.2.
+fab is calculated by
+</P>
+<CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq8.jpg">
+</CENTER>
+<P>where &Delta;p denotes the initial particle spacing.
+NOTE: In a next version this calculation should be improved too.
+</P>
+<HR>
+
+<P><B>Mixing, shift, table, tail correction, restart, rRESPA info</B>:
+</P>
+<P>The <A HREF = "pair_modify.html">pair_modify</A> mix, shift, table, and tail options
+are not relevant for sph pair styles.
+</P>
+<P>These pair styles write their information to <A HREF = "restart.html">binary restart
+files</A>, so a pair_style command does not need to be
+specified in an input script that reads a restart file.
+</P>
+<P>These pair styles can only be used via the <I>pair</I> keyword of the
+<A HREF = "run_style.html">run_style respa</A> command.  They do not support the
+<I>inner</I>, <I>middle</I>, <I>outer</I> keywords.
+</P>
+<HR>
+
+<P><B>Restrictions:</B>
+</P>
+<P>...
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "pair_coeff.html">pair_coeff</A>
+</P>
+<P><B>Default:</B> none
+</P>
+<HR>
+
+<A NAME = "LiuLiu2003"></A>
+
+<P><B>(Liu and Liu, 2003)</B> "Smoothed Particle Hydrodynamics: A Meshfree Particle Method", G. R. Liu and M. B. Liu, World Scientific, p. 449 (2003).
+</P>
+<A NAME = "Monaghan1992"></A>
+
+<P><B>(Monaghan, 1992)</B> "Smoothed Particle Hydrodynamics", J. J. Monaghan, Annu. Rev. Astron. Astrophys., 30, p. 543-574 (1992).
+</P>
+<A NAME = "Monaghan1994"></A>
+
+<P><B>(Monaghan, 1994)</B> J. J. Monaghan, Journal of Computational Physics, 110, p. 399-406 (1994).
+</P>
+<A NAME = "Monaghan2000"></A>
+
+<P><B>(Monaghan, 2000)</B> J. J. Monaghan, Journal of Computational Physics, 159, p. 290-311 (2000). 
+</P>
+</HTML>

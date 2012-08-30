@@ -68,6 +68,11 @@ class AssociativePointerArray
 
         inline void clearReverse(bool scale,bool translate,bool rotate);
 
+        inline void storeOrig(class AssociativePointerArray &orig);
+        inline void storeOrig(char *_id,class AssociativePointerArray &orig);
+        inline bool reset(class AssociativePointerArray &orig);
+        inline bool reset(char *_id,class AssociativePointerArray &orig);
+
         void rotate(double *dQ);
         void move(double *delta);
         void moveElement(int i,double *delta);

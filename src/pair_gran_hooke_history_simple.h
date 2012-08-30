@@ -19,10 +19,6 @@
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors for original version: Leo Silbert (SNL), Gary Grest (SNL)
-------------------------------------------------------------------------- */
-
 #ifdef PAIR_CLASS
 
 PairStyle(gran/hooke/history/stiffness,PairGranHookeHistorySimple)

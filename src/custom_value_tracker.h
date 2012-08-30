@@ -76,8 +76,16 @@ namespace LAMMPS_NS
         inline void deleteRestartElement(int i,bool scale,bool translate,bool rotate);
         void clearReverse(bool scale,bool translate,bool rotate);
 
-        void move(double *delta);
+        void storeOrig();
+        void resetToOrig();
+
+        inline void storeGlobalPropOrig(char *_id);
+        inline void resetGlobalPropToOrig(char *_id);
+
         inline void moveElement(int i, double *delta);
+        void move(double *vecTotal, double *vecIncremental);
+        void move(double *vecIncremental);
+        void rotate(double *totalQ, double *dQ);
         void rotate(double *dQ);
         void scale(double factor);
 
@@ -108,6 +116,7 @@ namespace LAMMPS_NS
         int capacityElement_; 
         class AssociativePointerArray<ContainerBase> elementProperties_;
         class AssociativePointerArray<ContainerBase> globalProperties_;
+        class AssociativePointerArray<ContainerBase> globalProperties_orig_;
   };
 
   // *************************************

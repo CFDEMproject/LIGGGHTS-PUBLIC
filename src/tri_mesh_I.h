@@ -141,7 +141,7 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline double TriMesh::resolveTriSphereContactBary(int nTri, double rSphere,
+  inline double TriMesh::resolveTriSphereContactBaryDefunct(int nTri, double rSphere,
                                    double *cSphere, double *delta, double *bary)
   {
       double deltan, contactPoint[3], node0ToCsPlane[3];
@@ -171,10 +171,9 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline double TriMesh::resolveTriSphereContactBaryDefunct(int nTri, double rSphere,
+  inline double TriMesh::resolveTriSphereContactBary(int nTri, double rSphere,
                                    double *cSphere, double *delta, double *bary)
   {
-    bool print = false;//(nTri == 25);
     // this is only the overlap algorithm, neighbor list build is
     // coded in resolveTriSphereNeighbuild
 
@@ -212,14 +211,14 @@
         case 1:
         case 2:
         case 3: // bary[2] < 0 --> edge contact on edge[0]
-          d = resolveEdgeContact(nTri,0,cSphere,csPlane,delta,bary);
+          d = resolveEdgeCornerContactBary(nTri,0,cSphere,csPlane,delta,bary);
           break;
         case 4:
         case 6: // bary[0] < 0 --> edge contact on edge[1]
-          d = resolveEdgeContact(nTri,1,cSphere,csPlane,delta,bary);
+          d = resolveEdgeCornerContactBary(nTri,1,cSphere,csPlane,delta,bary);
           break;
         case 5: // bary[1] < 0 --> edge contact on edge[2]
-          d = resolveEdgeContact(nTri,2,cSphere,csPlane,delta,bary);
+          d = resolveEdgeCornerContactBary(nTri,2,cSphere,csPlane,delta,bary);
           break;
         case 7: // face contact - all three barycentric coordinates are > 0
           d = calcDist(cSphere,csPlane,delta);
@@ -229,28 +228,34 @@
           break;
     }
 
-    return d == 1. ? d : d - rSphere;
+    double deltan = (d == 1.) ? d : d - rSphere;
+    
+    return deltan;
   }
 
   /* ---------------------------------------------------------------------- */
     /*
      * p : sphere center_
      * pPlane : projection of p to triangle plane
+     * delta: overlap vector
      */
-  inline double TriMesh::resolveEdgeContact(int iTri, int iEdge, double *p, double *pPlane, double *delta, double *bary)
+inline double TriMesh::resolveEdgeCornerContactBary(int iTri, int iEdge, double *p, double *pPlane, double *delta, double *bary, bool recursion)
   {
-    bool print = false;//(iTri == 25);
-    double tmp[3];
+    double nodeToPPlane[3];
     double **n = node_(iTri);
-    int ip = (iEdge+1)%3, ipp = (iEdge+2)%3;
+    int ip = (iEdge+1)%3, ipp = (iEdge+2)%3; // read "i plus", "i plus plus" ;-)
 
-    vectorSubtract3D(pPlane,n[iEdge],tmp);
-    double d(0.), distFromNode = vectorDot3D(tmp,edgeVec(iTri)[iEdge]);
+    vectorSubtract3D(pPlane,n[iEdge],nodeToPPlane);
+    double d(0.), distFromNode = vectorDot3D(nodeToPPlane,edgeVec(iTri)[iEdge]);
 
-    if(distFromNode <= 0){
-        double distFromPrevNode = vectorDot3D(pPlane,edgeVec(iTri)[ipp]);
-        if(distFromPrevNode < edgeLen(iTri)[ipp])
-            d = resolveEdgeContact(iTri,ipp,p,pPlane,delta,bary);
+    if(!recursion && distFromNode <= 0){
+	double prevNodeToPPlane[3];
+	vectorSubtract3D(pPlane,n[ipp],prevNodeToPPlane);
+        double distFromPrevNode = vectorDot3D(prevNodeToPPlane,edgeVec(iTri)[ipp]);
+	
+   if(distFromPrevNode < edgeLen(iTri)[ipp]){
+	  d = resolveEdgeCornerContactBary(iTri,ipp,p,pPlane,delta,bary,true);
+	}
         else{
           if(!cornerActive(iTri)[iEdge]) d=1.;
           else{
@@ -258,10 +263,14 @@
             d = calcDist(p,node_(iTri)[iEdge],delta);
           }
         }
-    } else if(distFromNode >= edgeLen(iTri)[iEdge]){
-        double distFromNextNode = vectorDot3D(pPlane,edgeVec(iTri)[ip]);
-        if(distFromNextNode > 0)
-            d = resolveEdgeContact(iTri,ip,p,pPlane,delta,bary);
+    } else if(!recursion && distFromNode >= edgeLen(iTri)[iEdge]){
+	double nextNodeToPPlane[3];
+	vectorSubtract3D(pPlane,n[ip],nextNodeToPPlane);
+        double distFromNextNode = vectorDot3D(nextNodeToPPlane,edgeVec(iTri)[ip]);
+	
+    if(distFromNextNode > 0){
+	  d = resolveEdgeCornerContactBary(iTri,ip,p,pPlane,delta,bary,true);
+    }
         else{
           if(!cornerActive(iTri)[ip]) d=1.;
           else{
@@ -272,19 +281,17 @@
     } else{
       if(!edgeActive(iTri)[iEdge]) d=1.;
       else{
+	
         bary[ipp] = 0.;
         bary[iEdge] = 1. - distFromNode/edgeLen(iTri)[iEdge];
         bary[ip] = 1. - bary[iEdge];
-        vectorScalarMult3D(edgeVec(iTri)[iEdge],distFromNode,tmp);
-        vectorAdd3D(tmp,n[iEdge],tmp);
-        d = calcDist(p,tmp,delta);
+        // nodeToPPlane is now closest point on edge
+        vectorScalarMult3D(edgeVec(iTri)[iEdge],distFromNode,nodeToPPlane); 
+        vectorAdd3D(nodeToPPlane,n[iEdge],nodeToPPlane);
+        d = calcDist(p,nodeToPPlane,delta);
       }
     }
-    /*
-        if(print)
-          printf("triangle %d bary %f %f %f | distFromEdge %f edgeLen_ %f \n",
-              iTri,bary[0],bary[1],bary[2],distFromNode,edgeLen_(iTri)[iEdge]);
-    */
+
     return d;
   }
 

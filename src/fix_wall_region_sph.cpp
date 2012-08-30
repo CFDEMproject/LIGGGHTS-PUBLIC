@@ -50,7 +50,7 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixWallRegionSph::FixWallRegionSph(LAMMPS *lmp, int narg, char **arg) :
-  FixSPH(lmp, narg, arg)
+  FixSph(lmp, narg, arg)
 {
   if (narg != 6) error->all(FLERR,"Illegal fix wall/region/sph command");
 
@@ -98,7 +98,7 @@ int FixWallRegionSph::setmask()
 void FixWallRegionSph::init()
 {
 
-  FixSPH::init();
+  FixSph::init();
 
   if (strcmp(update->integrate_style,"respa") == 0)
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
@@ -128,95 +128,9 @@ void FixWallRegionSph::min_setup(int vflag)
 
 void FixWallRegionSph::post_force(int vflag)
 {
-  int i,m,n;
-  double fx,fy,fz;
-
-  eflag = 0;
-  ewall[0] = ewall[1] = ewall[2] = ewall[3] = 0.0;
-
-  double **x = atom->x;
-  double **f = atom->f;
-  int *type = atom->type;
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
-
-  Region *region = domain->regions[iregion];
-  int onflag = 0;
-
-  double s,rinv,gradWmag;
-  int itype;
-  double *density = atom->density;
-  double *mass = atom->mass;
-  double *q = atom->q;
-
-  // region->match() insures particle is in region or on surface, else error
-  // if returned contact dist r = 0, is on surface, also an error
-
-  for (i = 0; i < nlocal; i++) {
-    if (mask[i] & groupbit) {
-
-      itype = type[i];
-      cutoff = sqrt(cutsq[itype][itype]);
-
-      if (!region->match(x[i][0],x[i][1],x[i][2])) {
-        onflag = 1;
-        //fprintf(screen,"Particle %d with the Coordinates x= %f, y= %f, z= %f. \n",i,x[i][0],x[i][1],x[i][2]); //TEST OUTPUT
-        continue;
-      }
-
-      // number of wall contacts
-      n = region->surface(x[i][0],x[i][1],x[i][2],cutoff);
-
-      for (m = 0; m < n; m++) {
-
-        // check wall distance
-        if (region->contact[m].r <= 0.0) {
-          onflag = 1;
-          //fprintf(screen,"Particle %d with the Coordinates x= %f, y= %f, z= %f has zero distance. \n",i,x[i][0],x[i][1],x[i][2]); // TEST OUTPUT
-          continue;
-        }
-
-        // fwall, due to self influence
-        // a small perturbation to avoid stacking particles
-        s = region->contact[m].r * hinv;
-        rinv = 1./region->contact[m].r;
-
-        // calculate value for magnitude of grad W
-        gradWmag = SPH_KERNEL_NS::sph_kernel_der(kernel_id,s,h,hinv);
-
-        // zero order approximation - properties at wall assumed to be equal to properties at particle (thuis factor 2)
-        fwall = - rinv * mass[itype] * mass[itype] * (2.*q[i]/(density[i]*density[i])) * gradWmag;
-
-        fx = fwall * region->contact[m].delx;
-        fy = fwall * region->contact[m].dely;
-        fz = fwall * region->contact[m].delz;
-        f[i][0] += fx;
-        f[i][1] += fy;
-        f[i][2] += fz;
-        ewall[1] -= fx;
-        ewall[2] -= fy;
-        ewall[3] -= fz;
-
-        // fwall, due to repulsive force
-        repulsivsph(region->contact[m].r);
-
-        ewall[0] += eng;
-        fx = fwall * region->contact[m].delx;
-        fy = fwall * region->contact[m].dely;
-        fz = fwall * region->contact[m].delz;
-        f[i][0] += fx;
-        f[i][1] += fy;
-        f[i][2] += fz;
-        ewall[1] -= fx;
-        ewall[2] -= fy;
-        ewall[3] -= fz;
-      }
-    }
-
-    if (onflag) {
-      error->one(FLERR,"Particle on or inside fix wall/region/sph surface \n");
-    }
-  }
+  //template function for using per atom or per atomtype smoothing length
+  if (mass_type) post_force_eval<1>(vflag);
+  else post_force_eval<0>(vflag);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -263,24 +177,134 @@ double FixWallRegionSph::compute_vector(int n)
   return ewall_all[n+1];
 }
 
+/* ---------------------------------------------------------------------- */
+
+template <int MASSFLAG>
+void FixWallRegionSph::post_force_eval(int vflag)
+{
+  int i,m,n;
+  double fx,fy,fz,sli,imass;
+
+  eflag = 0;
+  ewall[0] = ewall[1] = ewall[2] = ewall[3] = 0.0;
+
+  double **x = atom->x;
+  double **f = atom->f;
+  int *mask = atom->mask;
+  int *tag = atom->tag;
+  int nlocal = atom->nlocal;
+
+  Region *region = domain->regions[iregion];
+  int onflag = 0;
+
+  updatePtrs(); // get sl
+
+  // TODO: mass_type dependent declaration?
+  int itype;
+  int *type = atom->type;
+  double *mass = atom->mass;
+
+  double *rmass = atom->rmass;
+
+  for (i = 0; i < nlocal; i++) {
+    if (mask[i] & groupbit) {
+
+      if (MASSFLAG) {
+        itype = type[i];
+        sli = sl[itype-1];
+        imass = mass[itype];
+      } else {
+        sli = sl[i];
+        imass = rmass[i];
+      }
+
+      // region->match() insures particle is in region or on surface, else error
+      // if returned contact dist r = 0, is on surface, also an error
+      if (!region->match(x[i][0],x[i][1],x[i][2])) {
+        onflag = 1;
+        fprintf(screen,"Particle %d with the Coordinates x= %f, y= %f, z= %f is on or inside fix wall/region/sph surface. \n",tag[i],x[i][0],x[i][1],x[i][2]); //TEST OUTPUT
+        continue;
+      }
+
+      // number of wall contacts
+      n = region->surface(x[i][0],x[i][1],x[i][2],cutoff);
+
+      for (m = 0; m < n; m++) {
+
+        // check wall distance
+        if (region->contact[m].r <= 0.0) {
+          onflag = 1;
+          fprintf(screen,"Particle %d with the Coordinates x= %f, y= %f, z= %f has zero distance. \n",tag[i],x[i][0],x[i][1],x[i][2]); // TEST OUTPUT
+          continue;
+        }
+
+        // add fwall, due to self influence
+        fwall = selfInfluenceForce(i,region->contact[m].r,sli,imass);
+
+        // add fwall, due to repulsive force
+        fwall += repulsivSph(region->contact[m].r);
+
+        ewall[0] += eng;
+        fx = fwall * region->contact[m].delx;
+        fy = fwall * region->contact[m].dely;
+        fz = fwall * region->contact[m].delz;
+        f[i][0] += fx;
+        f[i][1] += fy;
+        f[i][2] += fz;
+        ewall[1] -= fx;
+        ewall[2] -= fy;
+        ewall[3] -= fz;
+
+      }
+    }
+  }
+
+  if (onflag) {
+    error->one(FLERR,"Particle on or inside fix wall/region/sph surface \n");
+  }
+
+}
+
 /* ----------------------------------------------------------------------
    repulsiv force for sph simulation
    compute eng and fwall = magnitude of wall force
 ------------------------------------------------------------------------- */
 
-void FixWallRegionSph::repulsivsph(double r)
+double FixWallRegionSph::repulsivSph(double r)
 {
-  double rinv,frac,frac2,frac4;
+  double rinv,frac,frac2;
 
   if (r <= r0) {
     rinv = 1.0/r;
     frac = r0*rinv;
     frac2 = frac*frac;
-    frac4 = frac2*frac2;
-    fwall = D * (frac4 - frac2) * rinv;
     eng = 0;
+    return (D * frac2 * (frac2 - 1) * rinv);
   } else {
-    fwall = 0;
     eng = 0;
+    return 0;
   }
+}
+
+/* ----------------------------------------------------------------------
+   force due to self influence
+------------------------------------------------------------------------- */
+
+double FixWallRegionSph::selfInfluenceForce(int ip, double r, double sl, double mass)
+{
+  double isl,ir,s,gradWmag;
+  double *rho = atom->rho;
+  double *p = atom->p;
+
+  // fwall, due to self influence
+  // a small perturbation to avoid stacking particles
+  ir = 1./r;
+  isl = 1./sl;
+  s = r*isl;
+
+  // calculate value for magnitude of grad W
+  gradWmag = SPH_KERNEL_NS::sph_kernel_der(kernel_id,s,sl,isl);
+
+  // zero order approximation - properties at wall assumed to be equal to properties at particle (thuis factor 2)
+  return (- ir * mass * mass * (2.*p[ip]/(rho[ip]*rho[ip])) * gradWmag);
 }

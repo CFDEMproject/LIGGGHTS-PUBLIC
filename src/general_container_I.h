@@ -224,6 +224,30 @@
           return arr_[n];
   }
 
+  /* ----------------------------------------------------------------------
+   set all data by copy from other container
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::setFromContainer(ContainerBase *cont)
+  {
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(cont);
+
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      int len = size();
+      for(int n = 0; n < len; n++)
+          for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                          arr_[n][i][j] = gcont->arr_[n][i][j];
+                          
+                  }
+
+      return true;
+  }
+
   /* ---------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>

@@ -60,11 +60,8 @@
       growArrays();
 
     content_[numElem_] = static_cast<T*>(new U(_id,_comm,_ref,_restart,_scalePower));
-
     numElem_++;
-
-    //for(int i=0;i<numElem_;i++)
-    //  printf("%d %s\n",i,id_[i]);
+    
     return static_cast<U*>(content_[numElem_-1]);
   }
 
@@ -235,34 +232,78 @@
   }
 
   /* ----------------------------------------------------------------------
+   store original value for reset
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  void AssociativePointerArray<T>::storeOrig(AssociativePointerArray &orig)
+  {
+      for(int i = 0; i < numElem_; i++)
+          orig.content_[i]->setFromContainer(content_[i]);
+  }
+
+  template<typename T>
+  void AssociativePointerArray<T>::storeOrig(char *_id,AssociativePointerArray &orig)
+  {
+      for(int i = 0; i < numElem_; i++)
+          if(content_[i]->matches_id(_id))
+            orig.content_[i]->setFromContainer(content_[i]);
+  }
+
+  /* ----------------------------------------------------------------------
+   reset to original value
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  bool AssociativePointerArray<T>::reset(AssociativePointerArray &orig)
+  {
+      
+      for(int i = 0; i < numElem_; i++)
+          content_[i]->setFromContainer(orig.content_[i]);
+
+      return true;
+  }
+
+  template<typename T>
+  bool AssociativePointerArray<T>::reset(char *_id,AssociativePointerArray &orig)
+  {
+      
+      for(int i = 0; i < numElem_; i++)
+          if(content_[i]->matches_id(_id))
+            content_[i]->setFromContainer(orig.content_[i]);
+
+      return true;
+  }
+
+  /* ----------------------------------------------------------------------
    move, rotate scale all properties
   ------------------------------------------------------------------------- */
 
   template<typename T>
   void AssociativePointerArray<T>::rotate(double *dQ)
   {
-      for(int i=0;i<numElem_;i++)
+      for(int i = 0; i < numElem_; i++)
         content_[i]->rotate(dQ);
   }
 
   template<typename T>
   void AssociativePointerArray<T>::scale(double factor)
   {
-      for(int i=0;i<numElem_;i++)
+      for(int i = 0; i < numElem_;i++)
         content_[i]->scale(factor);
   }
 
   template<typename T>
   void AssociativePointerArray<T>::move(double *delta)
   {
-      for(int i=0;i<numElem_;i++)
+      for(int i = 0; i < numElem_;i++)
         content_[i]->move(delta);
   }
 
   template<typename T>
   void AssociativePointerArray<T>::moveElement(int n,double *delta)
   {
-      for(int i=0;i<numElem_;i++)
+      for(int i = 0; i < numElem_;i++)
         content_[i]->moveElement(n,delta);
   }
 
@@ -284,7 +325,7 @@
   {
     int nsend = 0;
     for(int i=0;i<numElem_;i++)
-      nsend += getBasePointerByIndex(i)->pushToBuffer(&buf[nsend],operation,scale,translate,rotate);
+      nsend += getBasePointerByIndex(i)->pushToBuffer(&(buf[nsend]),operation,scale,translate,rotate);
     return nsend;
   }
 
@@ -293,7 +334,7 @@
   {
     int nrecv = 0;
     for(int i=0;i<numElem_;i++)
-      nrecv += getBasePointerByIndex(i)->popFromBuffer(&buf[nrecv],operation,scale,translate,rotate);
+      nrecv += getBasePointerByIndex(i)->popFromBuffer(&(buf[nrecv]),operation,scale,translate,rotate);
     return nrecv;
   }
 

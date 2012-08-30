@@ -49,8 +49,8 @@ enum{XPLANE,YPLANE,ZPLANE,ZCYLINDER};    // XYZ PLANE need to be 0,1,2
 
 /* ---------------------------------------------------------------------- */
 
-FixWallSPH::FixWallSPH(LAMMPS *lmp, int narg, char **arg) :
-  FixSPH(lmp, narg, arg)
+FixWallSph::FixWallSph(LAMMPS *lmp, int narg, char **arg) :
+  FixSph(lmp, narg, arg)
 {
   // wallstyle args
 
@@ -106,14 +106,14 @@ FixWallSPH::FixWallSPH(LAMMPS *lmp, int narg, char **arg) :
 
 /* ---------------------------------------------------------------------- */
 
-FixWallSPH::~FixWallSPH()
+FixWallSph::~FixWallSph()
 {
 
 }
 
 /* ---------------------------------------------------------------------- */
 
-int FixWallSPH::setmask()
+int FixWallSph::setmask()
 {
   int mask = 0;
   mask |= POST_FORCE;
@@ -123,9 +123,9 @@ int FixWallSPH::setmask()
 
 /* ---------------------------------------------------------------------- */
 
-void FixWallSPH::init()
+void FixWallSph::init()
 {
-  FixSPH::init();
+  FixSph::init();
 
   if (strcmp(update->integrate_style,"respa") == 0)
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
@@ -133,7 +133,7 @@ void FixWallSPH::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixWallSPH::setup(int vflag)
+void FixWallSph::setup(int vflag)
 {
   if (strcmp(update->integrate_style,"verlet") == 0)
     post_force(vflag);
@@ -146,15 +146,15 @@ void FixWallSPH::setup(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixWallSPH::post_force(int vflag)
+void FixWallSph::post_force(int vflag)
 {
-  double dx,dy,dz,del1,del2,delxy,delr,rsq,r,s,rinv;
-  double fwall,gradWmag;
+  double dx,dy,dz,del1,del2,delxy,delr,rsq,r,rinv;
+  double fwall;
 
   double wlo = lo;
   double whi = hi;
 
-  double frac,frac2,frac4; // for penetration force
+  double frac,frac2; // for penetration force
 
   // loop over all my atoms
   // rsq = distance from wall
@@ -211,9 +211,8 @@ void FixWallSPH::post_force(int vflag)
 
         frac = r0*rinv;
         frac2 = frac*frac;
-        frac4 = frac2*frac2;
 
-        fwall = D * (frac4 - frac2) * rinv; // second rinv
+        fwall = D * frac2 *(frac2 - 1) * rinv;
 
         f[i][0] += fwall * dx;
         f[i][1] += fwall * dy;
@@ -227,7 +226,7 @@ void FixWallSPH::post_force(int vflag)
 
 /* ---------------------------------------------------------------------- */
 
-void FixWallSPH::post_force_respa(int vflag, int ilevel, int iloop)
+void FixWallSph::post_force_respa(int vflag, int ilevel, int iloop)
 {
   if (ilevel == nlevels_respa-1) post_force(vflag);
 }

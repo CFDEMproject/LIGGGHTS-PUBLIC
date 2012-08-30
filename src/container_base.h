@@ -28,6 +28,8 @@
 #ifndef LMP_CONTAINER_BASE_H
 #define LMP_CONTAINER_BASE_H
 
+#include "string.h"
+
 namespace LAMMPS_NS
 {
   // buffer operation types (for push and pop)
@@ -48,8 +50,8 @@ namespace LAMMPS_NS
           void setProperties(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower = 1);
           bool propertiesSetCorrectly();
 
-          void id(char *_id);
-          bool matches_id(char *_id);
+          inline void id(char *_id);
+          inline bool matches_id(char *_id);
 
           virtual void addUninitialized(int n) = 0;
           virtual int size() = 0;
@@ -61,6 +63,8 @@ namespace LAMMPS_NS
           virtual void delForward(int n,bool scale,bool translate,bool rotate) = 0;
           virtual void delRestart(int n,bool scale,bool translate,bool rotate) = 0;
           virtual void clearReverse(bool scale,bool translate,bool rotate) = 0;
+
+          virtual bool setFromContainer(ContainerBase *cont) = 0;
 
           virtual void scale(double factor) = 0;
           virtual void move(double *dx) = 0;
@@ -94,7 +98,7 @@ namespace LAMMPS_NS
           virtual int popElemFromBuffer(double *buf,int operation,
                             bool scale=false,bool translate=false, bool rotate=false) = 0;
 
-      protected:
+     protected:
 
           ContainerBase();
           ContainerBase(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower);

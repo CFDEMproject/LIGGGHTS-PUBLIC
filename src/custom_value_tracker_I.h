@@ -74,13 +74,14 @@
      if(globalProperties_.getPointerById<T>(_id))
      {
          char *errmsg = new char[strlen(_id)+200];
-         sprintf(errmsg,"Illegal command, features are incompatible - global property '%s' exists already",_id);
+         sprintf(errmsg,"Illegal command, features are incompatible - global property '%s' already exists",_id);
          error->all(FLERR,errmsg);
          delete []errmsg;
      }
 
      // add property
      globalProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
+     globalProperties_orig_.add<T>(_id,_comm,_ref,_restart,_scalePower);
 
      // check if properties were set correctly
      // error here since ContainerBase not derived from Pointers
@@ -134,6 +135,7 @@
   {
      elementProperties_.getPointerById<T>(_id)->set(def);
   }
+
   template<typename T, typename U>
   void CustomValueTracker::setGlobalProperty(char *_id, U def)
   {
@@ -141,6 +143,30 @@
      if(globalProperties_.getPointerById<T>(_id)->size() == 0)
         globalProperties_.getPointerById<T>(_id)->addUninitialized(1);
      globalProperties_.getPointerById<T>(_id)->set(0,def);
+
+     if(globalProperties_orig_.getPointerById<T>(_id)->size() == 0)
+        globalProperties_orig_.getPointerById<T>(_id)->addUninitialized(1);
+     globalProperties_orig_.getPointerById<T>(_id)->set(0,def);
+  }
+
+  /* ----------------------------------------------------------------------
+   store global property orig - only needs to be done manually for
+   special cases, eg moving mesh ref points
+  ------------------------------------------------------------------------- */
+
+  inline void CustomValueTracker::storeGlobalPropOrig(char *_id)
+  {
+      globalProperties_.storeOrig(_id,globalProperties_orig_);
+  }
+
+  /* ----------------------------------------------------------------------
+   reset global property to orig - only needs to be done manually for
+   special cases, eg moving mesh ref points
+  ------------------------------------------------------------------------- */
+
+  inline void CustomValueTracker::resetGlobalPropToOrig(char *_id)
+  {
+      globalProperties_.reset(_id,globalProperties_orig_);
   }
 
   /* ----------------------------------------------------------------------
@@ -243,17 +269,26 @@
 
   int CustomValueTracker::globalPropsBufSize(int operation,bool scale,bool translate,bool rotate)
   {
-    return globalProperties_.bufSize(operation,scale,translate,rotate);
+    int n = 0;
+    n += globalProperties_.bufSize(operation,scale,translate,rotate);
+    n += globalProperties_orig_.bufSize(operation,scale,translate,rotate);
+    return n;
   }
 
   int CustomValueTracker::pushGlobalPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
-    return globalProperties_.pushToBuffer(buf,operation,scale,translate,rotate);
+    int n = 0;
+    n += globalProperties_.pushToBuffer(&(buf[n]),operation,scale,translate,rotate);
+    n += globalProperties_orig_.pushToBuffer(&(buf[n]),operation,scale,translate,rotate);
+    return n;
   }
 
   int CustomValueTracker::popGlobalPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
   {
-    return globalProperties_.popFromBuffer(buf,operation,scale,translate,rotate);
+    int n = 0;
+    n += globalProperties_.popFromBuffer(&(buf[n]),operation,scale,translate,rotate);
+    n += globalProperties_orig_.popFromBuffer(&(buf[n]),operation,scale,translate,rotate);
+    return n;
   }
 
 #endif

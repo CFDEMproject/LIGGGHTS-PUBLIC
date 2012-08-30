@@ -61,6 +61,8 @@ namespace LAMMPS_NS
           void set(int i, T** elem);
           void set(int i, int j, T* elem);
 
+          bool setFromContainer(ContainerBase *cont);
+
           T**& operator()(int n);
           T** const& operator()(int n) const;
           T*** begin();

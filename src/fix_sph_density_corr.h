@@ -27,7 +27,7 @@ andreas.aigner@jku.at
 
 #ifdef FIX_CLASS
 
-FixStyle(sph/density/corr,FixSPHDensityCorr)
+FixStyle(sph/density/corr,FixSphDensityCorr)
 
 #else
 
@@ -40,10 +40,10 @@ namespace LAMMPS_NS {
 
   enum {CORR_SHEPARD,CORR_MLS};
 
-class FixSPHDensityCorr : public FixSPH {
+class FixSphDensityCorr : public FixSph {
  public:
-  FixSPHDensityCorr(class LAMMPS *, int, char **);
-  ~FixSPHDensityCorr();
+  FixSphDensityCorr(class LAMMPS *, int, char **);
+  ~FixSphDensityCorr();
   void pre_delete(bool unfixflag);
   virtual int setmask();
   void updatePtrs();
@@ -52,6 +52,8 @@ class FixSPHDensityCorr : public FixSPH {
   virtual void post_integrate();
 
  private:
+  template <int> void post_integrate_eval();
+
   class FixPropertyAtom* fix_quantity;
   char *quantity_name;
 

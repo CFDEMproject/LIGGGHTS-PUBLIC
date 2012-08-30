@@ -852,6 +852,7 @@ potentials.  Click on the style itself for a full description:
 "resquared"_pair_resquared.html,
 "soft"_pair_soft.html,
 "sph"_pair_sph.html,
+"sph/artVisc/tensCorr"_pair_sph_artvisc_tenscorr.html,
 "sph/heatconduction"_pair_sph_heatconduction.html,
 "sph/idealgas"_pair_sph_idealgas.html,
 "sph/lj"_pair_sph_lj.html,

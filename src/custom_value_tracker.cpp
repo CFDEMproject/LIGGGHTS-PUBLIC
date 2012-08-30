@@ -68,14 +68,45 @@ using namespace LAMMPS_NS;
   {
      elementProperties_.remove(_id);
   }
+
   void CustomValueTracker::removeGlobalProperty(char *_id)
   {
      globalProperties_.remove(_id);
+     globalProperties_orig_.remove(_id);
+  }
+
+  /* ----------------------------------------------------------------------
+   store current values of global properties as orig
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::storeOrig()
+  {
+      
+      globalProperties_.storeOrig(globalProperties_orig_);
+      //  error->all(FLERR,"Internal error");
+  }
+
+  /* ----------------------------------------------------------------------
+   reset global properties to orig
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::resetToOrig()
+  {
+      
+      globalProperties_.reset(globalProperties_orig_);
+      //  error->all(FLERR,"Internal error");
   }
 
   /* ----------------------------------------------------------------------
    rotate all properties, applies to vector and multivector only
   ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::rotate(double *totalQ,double *dQ)
+  {
+      
+      elementProperties_.rotate(dQ);
+      globalProperties_.rotate(totalQ);
+  }
 
   void CustomValueTracker::rotate(double *dQ)
   {
@@ -99,11 +130,18 @@ using namespace LAMMPS_NS;
    move all properties
   ------------------------------------------------------------------------- */
 
-  void CustomValueTracker::move(double *delta)
+  void CustomValueTracker::move(double *vecTotal, double *vecIncremental)
   {
       
-      elementProperties_.move(delta);
-      globalProperties_.move(delta);
+      elementProperties_.move(vecIncremental);
+      globalProperties_.move(vecTotal);
+  }
+
+  void CustomValueTracker::move(double *vecIncremental)
+  {
+      
+      elementProperties_.move(vecIncremental);
+      globalProperties_.move(vecIncremental);
   }
 
   /* ----------------------------------------------------------------------

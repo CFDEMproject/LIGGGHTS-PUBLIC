@@ -27,11 +27,11 @@ args = list of arguments for a particular style :l
 
   {image} args = discussed on "dump image"_dump_image.html doc page :pre
 
-  {mesh/stl} args = 'local' or 'ghost' or 'all'
+  {mesh/stl} args = 'local' or 'ghost' or 'all' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
   {mesh/vtk} args =  zero or more keyword/ value pairs and one or more dump-identifiers
       keywords = {output}
       {output} values = face or interpolate 
-      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area'
+      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
   {decomposition/vtk} args = none :pre
 
   {local} args = list of local attributes
@@ -100,7 +100,7 @@ Two new styles ({mesh/stl} and {mesh/vtk}) are available for dumping
 granular mesh geometry into STL files or VTK files. The former is used 
 for dumping only the geometry, while the latter command is used to dump 
 the mesh IDs, stress etc- calculated on a granular mesh using the 
-"fix mesh/stressanalysis"_fix_mesh_stressanalysis.html  command.
+"fix mesh/surface/stress"_fix_mesh_surface_stress.html  command.
 Furthermore, style {decomposition/vtk} can be used to dump the current
 parallel domain decomposition to a VTK file.
 
@@ -329,6 +329,10 @@ a filename like 'mydumpfile*.stl'. Note: This series of files can then be
 post-processed together with the particle dump file converted to VTK in 
 Paraview , www.paraview.org
 
+By providing any ID (or a list of IDs) of "fix mesh/surface"_fix_mesh_surface.html
+commands, you can specify which meshes to dump. If no meshes are specified,
+all meshes used in the simulation are dumped.
+
 The {mesh/vtk} style can be used to dump active mesh geometries 
 defined via "fix mesh"_fix_mesh.html commands to a series of VTK files. 
 Different keywords can be used to dump the per-triangle stress, id, 
@@ -341,6 +345,10 @@ which meshes to dump. The group-ID is ignored. Again, a series of files
 can be post-processed in Paraview , www.paraview.org
 Keyword {output} controlls if the data is written in a per-face manner
 or as interpolated values to VTK.
+
+By providing any ID (or a list of IDs) of "fix mesh/surface"_fix_mesh_surface.html
+commands, you can specify which meshes to dump. If no meshes are specified,
+all meshes used in the simulation are dumped.
 
 The {decomposition/vtk} style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.

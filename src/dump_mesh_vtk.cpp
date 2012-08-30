@@ -61,6 +61,7 @@ enum
 /* ---------------------------------------------------------------------- */
 
 DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg),
+  dataMode_(0),
   nMesh_(0),
   meshList_(0),
   dump_what_(0),
@@ -83,9 +84,6 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
 
   nMesh_ = modify->n_fixes_style("mesh/surface");
   
-  if (nMesh_ == 0)
-    error->warning(FLERR,"Dump mesh/vtk cannot find any fix of type 'mesh/surface' to dump");
-
   // create meshlist
   meshList_ = new TriMesh*[nMesh_];
   for (int iMesh = 0; iMesh < nMesh_; iMesh++)
@@ -94,16 +92,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
       meshList_[iMesh] = static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
   }
 
-  // allocate arrays
-  sigma_n_ = new ScalarContainer<double>*[nMesh_];
-  sigma_t_ = new ScalarContainer<double>*[nMesh_];
-  wear_ = new ScalarContainer<double>*[nMesh_];
-  v_node_ = new MultiVectorContainer<double,3,3>*[nMesh_];
-  f_node_ = new VectorContainer<double,3>*[nMesh_];
-
   int iarg = 5;
-  dump_what_ = 0;
-  dataMode_;
 
   bool hasargs = true;
   while (iarg < narg && hasargs)
@@ -114,7 +103,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           if (iarg+2 > narg) error->all(FLERR,"Dump mesh/vtk: not enough arguments for 'interpolate'");
           if(strcmp(arg[iarg+1],"face")==0) dataMode_ = 0;
           else if(strcmp(arg[iarg+1],"interpolate")==0) dataMode_ = 1;
-          else error->all(FLERR,"Dump mesh/vtk: wrong arrgument for 'interpolate'");
+          else error->all(FLERR,"Dump mesh/vtk: wrong arrgument for 'output'");
           iarg += 2;
           hasargs = true;
       }
@@ -166,7 +155,46 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           iarg++;
           hasargs = true;
       }
+      else
+      {
+          // assume it's a mesh
+          TriMesh **meshListNew = new TriMesh*[nMesh_+1];
+          for(int i = 0; i < nMesh_; i++)
+            meshListNew[i] = meshList_[i];
+          delete[] meshList_;
+          meshList_ = meshListNew;
+
+          int ifix = modify->find_fix(arg[iarg++]);
+          if(ifix == -1)
+              error->all(FLERR,"Illegal dump mesh/vtk command, unknown keyword or mesh");
+          FixMeshSurface *fms = static_cast<FixMeshSurface*>(modify->fix[ifix]);
+          meshList_[nMesh_] = fms->triMesh();
+          nMesh_++;
+      }
   }
+
+  // in case meshes not specified explicitly, take all meshes
+  if (nMesh_ == 0)
+  {
+      nMesh_ = modify->n_fixes_style("mesh/surface");
+
+      meshList_ = new TriMesh*[nMesh_];
+      for (int iMesh = 0; iMesh < nMesh_; iMesh++)
+      {
+          
+          meshList_[iMesh] = static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
+      }
+
+      if (nMesh_ == 0)
+          error->warning(FLERR,"Dump mesh/vtk cannot find any fix of type 'mesh/surface' to dump");
+  }
+
+  // allocate arrays
+  sigma_n_ = new ScalarContainer<double>*[nMesh_];
+  sigma_t_ = new ScalarContainer<double>*[nMesh_];
+  wear_ = new ScalarContainer<double>*[nMesh_];
+  v_node_ = new MultiVectorContainer<double,3,3>*[nMesh_];
+  f_node_ = new VectorContainer<double,3>*[nMesh_];
 
   if(dump_what_ == 0)
     error->all(FLERR,"Dump mesh/vtk: No dump quantity selected");
