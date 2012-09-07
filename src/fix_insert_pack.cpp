@@ -345,6 +345,7 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
 
             do
             {
+                
                 if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
                 else ins_region->generate_random(pos,true);
                 ntry++;
@@ -380,6 +381,7 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             {
                 do
                 {
+                    
                     if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
                     else ins_region->generate_random(pos,true);
                     ntry++;

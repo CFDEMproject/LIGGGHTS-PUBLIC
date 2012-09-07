@@ -47,8 +47,9 @@ namespace LAMMPS_NS
         void deleteTriangle(int n);
 
         double resolveTriSphereContact(int nTri, double rSphere, double *cSphere, double *delta);
-        double resolveTriSphereContactBary(int nTri, double rSphere, double *cSphere, double *contactPoint,double *bary);
-        double resolveTriSphereContactBaryDefunct(int nTri, double rSphere, double *cSphere, double *contactPoint,double *bary);
+        double resolveTriSphereContactBary(int nTri, double rSphere, double *cSphere,
+                                           double *contactPoint,double *bary);
+
         bool resolveTriSphereNeighbuild(int nTri, double rSphere, double *cSphere, double treshold);
 
         int generateRandomOwnedGhost(double *pos);
@@ -64,7 +65,12 @@ namespace LAMMPS_NS
 
         double calcDist(double *cs, double *closestPoint, double *en0);
         double calcDistToPlane(double *p, double *pPlane, double *nPlane);
-        double resolveEdgeCornerContactBary(int iTri, int iEdge, double *p, double *pPlane, double *en0, double *bary, bool recursion = false);
+
+        double resolveCornerContactBary(int iTri, int iNode, bool obtuse, 
+                                    double *p, double *delta, double *bary);
+        double resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary);
+        double resolveFaceContactBary(int iTri, double *p, double *node0ToSphereCenter, double *delta);
+
   };
 
   // *************************************

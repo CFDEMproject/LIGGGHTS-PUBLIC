@@ -7,7 +7,8 @@
 
 :line
 
-fix_property/global_and_fix_property/atom  command :h3
+fix property/global command :h3
+fix property/atom command :h3
 
 [Syntax:]
 

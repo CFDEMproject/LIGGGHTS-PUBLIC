@@ -433,23 +433,24 @@ bool MathExtraLiggghts::compDouble(double const a, double const b, double const 
 }
 
 /* -----------------------------------------------------------------------------
- * calculate barycentric coordinates of a given point in the triangle plane
- * p is expected to be given w.r.t. node[0]
+ * calculate barycentric coordinates of a given point (in the triangle plane)
+ * should work for any point, at least analytics claim this ...
+ * ap is a vector from the point to node[0]
  * edgeVec are assumed to be unit vectors
  * source: http://www.blackpawn.com/texts/pointinpoly/default.html
  * hints on _which_ barycentric coordinates are computed by this method
  * can be found on wikipedia - u_{link} = bary[1] and v_{link} = bary[2]
  -------------------------------------------------------------------------------*/
 
-void MathExtraLiggghts::calcBaryTriCoords(double *p, double **edgeVec, double *edgeLen, double *bary)
+void MathExtraLiggghts::calcBaryTriCoords(double *ap, double **edgeVec, double *edgeLen, double *bary)
 {
 
   // Compute dot products
   double ab_ab = edgeLen[0]*edgeLen[0];
   double ab_ac = -LAMMPS_NS::vectorDot3D(edgeVec[0],edgeVec[2])*edgeLen[0]*edgeLen[2];
-  double ap_ab = LAMMPS_NS::vectorDot3D(edgeVec[0],p)*edgeLen[0];
+  double ap_ab = LAMMPS_NS::vectorDot3D(edgeVec[0],ap)*edgeLen[0];
   double ac_ac = edgeLen[2]*edgeLen[2];
-  double ap_ac = -LAMMPS_NS::vectorDot3D(p,edgeVec[2])*edgeLen[2];
+  double ap_ac = -LAMMPS_NS::vectorDot3D(ap,edgeVec[2])*edgeLen[2];
 
   // Compute barycentric coordinates
   double invDenom = 1. / (ab_ab * ac_ac - ab_ac * ab_ac);

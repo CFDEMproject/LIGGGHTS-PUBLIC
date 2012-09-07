@@ -49,14 +49,20 @@ class FixInsertStream : public FixInsert {
  private:
 
   virtual void calc_insertion_properties();
+  void create_mesh_copy();
 
   void pre_insert();
 
   int is_nearby(int);
   inline void generate_random(double *pos, double rad);
+  inline void generate_random_global(double *pos);
 
-  void x_v_omega(int ninsert_this,int &ninserted_this, int &ninserted_spheres_this, double &mass_inserted_this);
+  void x_v_omega(int ninsert_this,int &ninserted_this,
+                int &ninserted_spheres_this,
+                double &mass_inserted_this);
+
   double insertion_fraction();
+  void calc_ins_fraction();
   virtual void finalize_insertion(int);
 
   // additional insertion settings
@@ -68,11 +74,16 @@ class FixInsertStream : public FixInsert {
   double p_ref[3];         //reference point on face
   int face_style;
   double v_normal[3];      // insertion velocity projected on face
+  double ins_fraction;
+  bool do_ins_fraction_calc;
 
   // mesh face and bounding box of extruded face
   class TriMesh *ins_face;
+  class TriMesh *mesh_copy;
+  bool do_copy;
   double ins_vol_xmin[3];
   double ins_vol_xmax[3];
+  int ntry_mc;
 
   // non-mesh face
   double c_center[3], c_r; // non mesh face - currently only circle

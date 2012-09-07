@@ -41,6 +41,8 @@ class FixNVELimit : public Fix {
   double *step_respa;
   int mass_require,ncount;
   double xlimit,vlimitsq;
+
+  int relflag; 
 };
 
 }

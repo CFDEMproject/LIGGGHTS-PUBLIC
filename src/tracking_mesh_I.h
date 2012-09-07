@@ -73,6 +73,7 @@
     // set ID for element
     // ID starts from 0
     id_(this->sizeLocal()-1) = this->sizeLocal()-1;
+
   }
 
   template<int NUM_NODES>
@@ -139,7 +140,7 @@
       // alocate and initialize new array
       // IDs start at 0, so have to use mapTagMax_+1
       this->memory->create(mapArray_,mapTagMax_+1,"TrackingMesh:mapArray_");
-      for(int i = 0; i < mapTagMax_; i++)
+      for(int i = 0; i < mapTagMax_+1; i++)
         mapArray_[i] = -1;
 
       // build map for owned and ghost particles

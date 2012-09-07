@@ -55,6 +55,7 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         void setCurvature(double _curvature);
         void useAsInsertionMesh();
+        void useAsShallowGlobalMesh();
         void addElement(double **nodeToAdd);
 
         bool isPlanar();
@@ -71,6 +72,9 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         virtual int generateRandomOwnedGhost(double *pos) = 0;
         virtual int generateRandomSubbox(double *pos) = 0;
         virtual int generateRandomSubboxWithin(double *pos,double delta) = 0;
+
+        int n_active_edges(int i);
+        int n_active_corners(int i);
 
         // public inline access
 
@@ -97,6 +101,8 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline double areaElem(int i)
         { return (area_)(i); }
 
+        static const int NO_OBTUSE_ANGLE = -1;
+
       protected:
 
         SurfaceMesh(LAMMPS *lmp);
@@ -117,9 +123,15 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         // iEdge, jEdge return indices of first shared edge
         bool shareEdge(int i, int j, int &iEdge, int &jEdge);
 
+        bool edgeVecsColinear(double *v,double *w);
+
         // mesh topology functions, called with local index
         void handleSharedEdge(int iSrf, int iEdge, int jSrf, int jEdge, bool coplanar);
-        void handleSharedNode(int iSrf, int iNode, int jSrf, int jNode, bool coplanar);
+        void handleCorner(int iSrf, int iNode,int *idListVisited,int *idListHasNode,
+            double **edgeList,double **edgeEndPoint);
+        void checkNodeRecursive(int iSrf,double *nodeToCheck,int &nIdListVisited,
+            int *idListVisited,int &nIdListHasNode,int *idListHasNode,
+            double **edgeList,double **edgeEndPoint,bool &anyActiveEdge);
 
         // calc properties
         void calcSurfPropertiesOfNewElement();
@@ -147,13 +159,19 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline bool*    edgeActive(int i)   {return (edgeActive_)(i);}
         inline bool*    cornerActive(int i) {return (cornerActive_)(i);}
         inline bool*    hasNonCoplanarSharedNode(int i) {return (hasNonCoplanarSharedNode_)(i);}
+        inline int& obtuseAngleIndex(int i) { return obtuseAngleIndex_(i); }
 
       private:
 
         int searchElementByAreaAcc(double area,int lo, int hi);
 
+        void parallelCorrection();
+
         // flag indicating usage as insertion mesh
         bool isInsertionMesh_;
+
+        // flag indicating usage as shallow global mesh
+        bool isShallowGlobalMesh_;
 
         // mesh properties
         double curvature_;
@@ -170,6 +188,7 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         MultiVectorContainer<double,NUM_NODES,3>& edgeVec_;   // unit vec from node0 to node1 etc
         MultiVectorContainer<double,NUM_NODES,3>& edgeNorm_;
         VectorContainer<double,3>& surfaceNorm_;
+        ScalarContainer<int>& obtuseAngleIndex_;
 
         // neighbor topology
         

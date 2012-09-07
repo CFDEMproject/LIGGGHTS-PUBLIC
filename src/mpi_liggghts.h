@@ -166,6 +166,16 @@ inline void MPI_Max_Vector(int *vector,int len,MPI_Comm comm)
 
 /* ---------------------------------------------------------------------- */
 
+inline void MPI_Min_Vector(int *vector,int len,MPI_Comm comm)
+{
+    int *vector_all = new int[len];
+    MPI_Allreduce(vector,vector_all,len,MPI_INT,MPI_MIN,comm);
+    for(int i = 0; i < len; i++) vector[i] = vector_all[i];
+    delete []vector_all;
+}
+
+/* ---------------------------------------------------------------------- */
+
 inline void MPI_Allgather_Sum_Scalar(int scalar,int &scalar_acc,MPI_Comm comm)
 {
     int rank,size, *allg;

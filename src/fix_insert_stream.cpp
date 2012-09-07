@@ -52,7 +52,8 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
-  FixInsert(lmp, narg, arg)
+  FixInsert(lmp, narg, arg),
+  mesh_copy(new TriMesh(lmp))
 {
   // set defaults first, then parse args
   init_defaults();
@@ -74,23 +75,33 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
       face_style = FACE_MESH;
       iarg += 2;
       hasargs = true;
-    }else if (strcmp(arg[iarg],"extrude_length") == 0) {
+    } else if (strcmp(arg[iarg],"extrude_length") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       extrude_length = atof(arg[iarg+1]);
       if(extrude_length < 0. ) error->fix_error(FLERR,this,"invalid extrude_length");
       iarg += 2;
       hasargs = true;
-    }else if (strcmp(arg[iarg],"duration") == 0) {
+    } else if (strcmp(arg[iarg],"duration") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       duration = atoi(arg[iarg+1]);
       if(duration < 1 ) error->fix_error(FLERR,this,"'duration' can not be < 1");
       iarg += 2;
       hasargs = true;
-    }else error->fix_error(FLERR,this,"unknown keyword");
+    } else if (strcmp(arg[iarg],"ntry_mc") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"");
+      ntry_mc = atoi(arg[iarg+1]);
+      if(ntry_mc < 1000) error->fix_error(FLERR,this,"ntry_mc must be > 1000");
+      iarg += 2;
+      hasargs = true;
+    } else error->fix_error(FLERR,this,"unknown keyword");
   }
 
   fix_release = NULL;
   i_am_integrator = false;
+  do_copy = true;
+
+  ins_fraction = 0.;
+  do_ins_fraction_calc = true;
 
   nevery = 1;
 }
@@ -99,7 +110,7 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
 
 FixInsertStream::~FixInsertStream()
 {
-
+    delete mesh_copy;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -151,6 +162,8 @@ void FixInsertStream::init_defaults()
     extrude_length = 0.;
 
     duration = 0;
+
+    ntry_mc = 100000;
 }
 
 /* ----------------------------------------------------------------------
@@ -301,13 +314,71 @@ void FixInsertStream::init()
     if(!i_am_integrator && fix_multisphere)
         error->fix_error(FLERR,this,"Currently only one fix insert/stream is allowed with multisphere particles");
 
+    if(ins_face->isMoving() || ins_face->isScaling() || ins_face->isTranslating())
+        error->fix_error(FLERR,this,"cannot translate, rotate, scale mesh which is used for particle insertion");
+
+    if(do_copy) create_mesh_copy();
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixInsertStream::create_mesh_copy()
+{
+    
+    double **nodeTmp = create<double>(nodeTmp,3,3);
+
+    int size = ins_face->size();
+    for(int i = 0; i < size; i++)
+    {
+        for(int j = 0; j < 3; j++)
+            ins_face->node_slow(i,j,nodeTmp[j]);
+
+        mesh_copy->addElement(nodeTmp);
+    }
+
+    destroy<double>(nodeTmp);
+    mesh_copy->useAsShallowGlobalMesh();
+
+    do_copy = false;
+
 }
 
 /* ---------------------------------------------------------------------- */
 
 double FixInsertStream::insertion_fraction()
 {
-    return ins_face->areaMeshSubdomain()/ins_face->areaMeshGlobal() ;
+    // have to re-calculate insertion fraction for my subbox
+    // in case simulation box is changing
+    if(domain->box_change || do_ins_fraction_calc)
+        calc_ins_fraction();
+
+    return ins_fraction;
+}
+
+/* ----------------------------------------------------------------------
+   calculate insertion fraction for my subbox
+   has to be called at initialization and before every insertion in case
+   box is changing
+------------------------------------------------------------------------- */
+
+void FixInsertStream::calc_ins_fraction()
+{
+    
+    do_ins_fraction_calc = false;
+
+    double pos[3];
+    int n_in_local = 0, n_test = ntry_mc;
+
+    for(int i = 0; i < n_test; i++)
+    {
+        generate_random_global(pos);
+
+        if(domain->is_in_subdomain(pos))
+           n_in_local++;
+    }
+
+    ins_fraction = static_cast<double>(n_in_local)/static_cast<double>(n_test);
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -361,7 +432,8 @@ inline void FixInsertStream::generate_random(double *pos, double rad)
     // generate random position on the mesh
     
     if(all_in_flag)
-        ins_face->generateRandomSubboxWithin(pos,rad);
+        error->one(FLERR,"FixInsertStream: all_in 'yes' not yet implemented");
+        //ins_face->generateRandomSubboxWithin(pos,rad);
     else
         ins_face->generateRandomSubbox(pos);
 
@@ -374,6 +446,28 @@ inline void FixInsertStream::generate_random(double *pos, double rad)
 
     vectorScalarMult3D(normalvec,r,ext);
     vectorAdd3D(pos,ext,pos);
+}
+
+/* ----------------------------------------------------------------------
+   generate random positions on shallow copy insertion face
+   extrude by random length in negative face normal direction
+     currently only implemented for all_in_flag = 0
+     since would be tedious to check/implement otherwise
+------------------------------------------------------------------------- */
+
+inline void FixInsertStream::generate_random_global(double *pos)
+{
+    double r, ext[3];
+
+    // generate random position on the mesh
+    
+    mesh_copy->generateRandomOwnedGhost(pos);
+
+    // extrude the position
+    r = -1.*(random->uniform()*extrude_length);
+    vectorScalarMult3D(normalvec,r,ext);
+    vectorAdd3D(pos,ext,pos);
+
 }
 
 /* ----------------------------------------------------------------------
@@ -394,6 +488,9 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
 
     double omega_tmp[] = {0.,0.,0.};
 
+    int ntry = 0;
+    int maxtry = ninsert_this_local * maxattempt;
+
     // no overlap check
     // insert with v_normal, no omega
     if(!check_ol_flag)
@@ -402,7 +499,13 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
         {
             pti = fix_distribution->pti_list[ninserted_this_local];
             double rad_to_insert = pti->r_bound_ins;
-            generate_random(pos,rad_to_insert);
+
+            do
+            {
+                generate_random(pos,rad_to_insert);
+                ntry++;
+            }
+            while(ntry < maxtry && domain->dist_subbox_borders(pos) < rad_to_insert);
 
             // could randomize vel, omega, quat here
 
@@ -418,9 +521,6 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
     // pti checks against xnear and adds self contributions
     else
     {
-        int ntry = 0;
-        int maxtry = ninsert_this_local * maxattempt;
-
         while(ntry < maxtry && ninserted_this_local < ninsert_this_local)
         {
             pti = fix_distribution->pti_list[ninserted_this_local];

@@ -100,7 +100,7 @@ void PairGranHookeHistorySimple::init_granular()
   k_n1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("kn","property/global","peratomtypepair",max_type,max_type,force->pair_style));
   k_t1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("kt","property/global","peratomtypepair",max_type,max_type,force->pair_style));
 
-  // can be either absolute damping value or relative (which is multiplied by mass afterwards)
+  // can be either absolute damping value or relative (which is multiplied by effectivemass afterwards)
   if(damp_massflag == 1)
   {
     gamma_n1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("gamman","property/global","peratomtypepair",max_type,max_type,force->pair_style));
@@ -126,7 +126,13 @@ void PairGranHookeHistorySimple::init_granular()
       {
           k_n[i][j] = force->cg()*k_n1->compute_array(i-1,j-1);
           k_t[i][j] = k_t1->compute_array(i-1,j-1);
-          gamma_n[i][j] = force->cg()*force->cg()*gamma_n1->compute_array(i-1,j-1);
+
+          // decide on coarse graining for damping depending on formulation
+
+          if(damp_massflag == 0)
+            gamma_n[i][j] = force->cg()*force->cg()*gamma_n1->compute_array(i-1,j-1);
+          else if(damp_massflag == 1)
+            gamma_n[i][j] = (1./force->cg())*gamma_n1->compute_array(i-1,j-1);
           gamma_t[i][j] = gamma_t1->compute_array(i-1,j-1);
 
           coeffFrict[i][j] = coeffFrict1->compute_array(i-1,j-1);

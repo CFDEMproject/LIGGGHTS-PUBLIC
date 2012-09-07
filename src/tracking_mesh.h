@@ -62,6 +62,9 @@ namespace LAMMPS_NS{
         inline int map(int global)
         { return (mapArray_ ? mapArray_[global] : -1);}
 
+        inline int tag_max()
+        { return mapTagMax_; }
+
         int id_slow(int i)
         { return id_(i); }
 

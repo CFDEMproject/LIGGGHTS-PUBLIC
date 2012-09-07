@@ -41,7 +41,7 @@
   <I>mesh/vtk</I> args =  zero or more keyword/ value pairs and one or more dump-identifiers
       keywords = <I>output</I>
       <I>output</I> values = face or interpolate 
-      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
+      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
   <I>decomposition/vtk</I> args = none 
 </PRE>
 <PRE>  <I>local</I> args = list of local attributes
@@ -354,8 +354,10 @@ all active meshes are dumped if you do not supply the optional list of
 mesh IDs. By specifying list of mesh IDs you can explicitly choose 
 which meshes to dump. The group-ID is ignored. Again, a series of files 
 can be post-processed in Paraview , www.paraview.org
+Most keywords as used for the <I>mesh/vtk</I> style are self-explanatory. 
 Keyword <I>output</I> controlls if the data is written in a per-face manner
-or as interpolated values to VTK.
+or as interpolated values to VTK. Keywords <I>aedges</I> and <I>acorners</I> dump
+the number of active edges/corners per face.
 </P>
 <P>By providing any ID (or a list of IDs) of <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
 commands, you can specify which meshes to dump. If no meshes are specified,

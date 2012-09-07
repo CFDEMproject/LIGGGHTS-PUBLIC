@@ -40,9 +40,9 @@ fix		pdd1 all particledistribution/discrete 1. 2 pts1 0.3 pts2 0.7
 #region and insertion
 fix		ins_mesh all mesh/surface file face.stl type 1 scale 0.005
 group		nve_group region reg
-fix		ins nve_group insert/stream seed 100001 distributiontemplate pdd1 nparticles 5000&
+fix		ins nve_group insert/stream seed 100001 distributiontemplate pdd1 nparticles 5000 &
 		vel constant 0. -0.5 -2. particlerate 1000 & 
-		overlapcheck yes insertion_face ins_mesh extrude_length 0.6 
+		overlapcheck yes insertion_face ins_mesh extrude_length 0.6
 
 #apply nve integration to all particles that are inserted as single particles
 fix		integr nve_group nve/sphere

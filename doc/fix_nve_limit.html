@@ -13,11 +13,12 @@
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID nve/limit xmax 
+<PRE>fix ID group-ID nve/limit limitstyle xmax 
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command
-<LI>nve = style name of this fix command
-<LI>xmax = maximum distance an atom can move in one timestep (distance units) 
+<LI>nve/limit = style name of this fix command
+<LI>limitstyle = absolute or radius_ratio
+<LI>xmax = maximum distance an atom can move in one timestep (distance units or relative to atom radius) 
 </UL>
 <P><B>Examples:</B>
 </P>
@@ -43,6 +44,12 @@ neighbor list re-building, so that pairwise interactions are not
 missed on successive timesteps as atoms move.  See the
 <A HREF = "neighbor.html">neighbor</A> and <A HREF = "neigh_modify.html">neigh_modify</A> commands
 for details.
+</P>
+<P>If limitstyle <I>absolute</I> is used, <I>xmax</I> is applied directly.
+If limitstyle <I>radius_ratio</I> is used, a maxmimum distance per step 
+of <I>xmax</I>*radius is applied for each atom. This can be useful for
+the simulation poly-disperse systems. Note that this option requires
+the atom radius to be stored by using an appropriate atom style.
 </P>
 <P>Note that if a velocity reset occurs the integrator will not conserve
 energy.  On steps where no velocity resets occur, this integrator is

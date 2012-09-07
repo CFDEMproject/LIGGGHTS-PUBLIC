@@ -40,6 +40,7 @@ template<int NUM_NODES>
 SurfaceMesh<NUM_NODES>::SurfaceMesh(LAMMPS *lmp)
 :   TrackingMesh<NUM_NODES>(lmp),
     isInsertionMesh_(false),
+    isShallowGlobalMesh_(false),
     curvature_(1.-EPSILON_CURVATURE),
 
     // TODO should keep areaMeshSubdomain up-to-date more often for insertion faces
@@ -56,7 +57,8 @@ SurfaceMesh<NUM_NODES>::SurfaceMesh(LAMMPS *lmp)
     hasNonCoplanarSharedNode_(*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >("hasNonCoplanarSharedNode","comm_exchange_borders","frame_invariant", "restart_no")),
     nNeighs_      (*this->prop().template addElementProperty< ScalarContainer<int> >                      ("nNeighs",      "comm_exchange_borders","frame_invariant",            "restart_no")),
     
-    neighFaces_   (*this->prop().template addElementProperty< VectorContainer<int,NUM_NODES> >            ("neighFaces",   "comm_exchange_borders","frame_invariant",            "restart_no"))
+    neighFaces_   (*this->prop().template addElementProperty< VectorContainer<int,NUM_NODES> >            ("neighFaces",   "comm_exchange_borders","frame_invariant",            "restart_no")),
+    obtuseAngleIndex_   (*this->prop().template addElementProperty< ScalarContainer<int> >            ("obtuseAngleIndex",   "comm_exchange_borders","frame_invariant",            "restart_no"))
 {
     
     areaMesh_.add(0.);
@@ -89,6 +91,13 @@ void SurfaceMesh<NUM_NODES>::useAsInsertionMesh()
 {
     
     isInsertionMesh_ = true;
+}
+
+template<int NUM_NODES>
+void SurfaceMesh<NUM_NODES>::useAsShallowGlobalMesh()
+{
+    
+    isShallowGlobalMesh_ = true;
 }
 
 /* ----------------------------------------------------------------------
@@ -265,9 +274,11 @@ template<int NUM_NODES>
 inline int SurfaceMesh<NUM_NODES>::randomOwnedGhostElement()
 {
     
-    if(!isInsertionMesh_) this->error->one(FLERR,"Illegal call for non-insertion mesh");
+    if(!isInsertionMesh_ && !isShallowGlobalMesh_) this->error->one(FLERR,"Illegal call for non-insertion mesh");
 
-    double r = this->random_->uniform() * (areaMeshOwned()+areaMeshGhost());
+    double area = isInsertionMesh_?(areaMeshOwned()+areaMeshGhost()):areaMeshGlobal();
+
+    double r = this->random_->uniform() * area;
     
     int first = 0;
     int last = this->sizeLocal()+this->sizeGhost()-1;
@@ -320,6 +331,17 @@ void SurfaceMesh<NUM_NODES>::calcSurfPropertiesOfNewElement()
     // should be (edgeVec_ cross surfaceNormal)
     calcEdgeNormals(n,nodeTmp);
     edgeNorm_.set(n,nodeTmp);
+
+    obtuseAngleIndex_.set(n,NO_OBTUSE_ANGLE);
+
+    for(int i=0;i<NUM_NODES;i++){
+      
+      double angle = vectorDot3D(edgeVec_(n)[i],edgeVec_(n)[(i+1)%NUM_NODES]);
+      if(angle > 0.){
+        obtuseAngleIndex_.set(n,i);
+        break;
+      }
+    }
 
     // calc area_ from previously obtained values and add to container
     // calcArea is pure virtual and implemented in derived class(es)
@@ -407,7 +429,7 @@ void SurfaceMesh<NUM_NODES>::buildNeighbours()
         hasNonCoplanarSharedNode_.set(i,f);
     }
 
-    // build neigh topology, ~n*n/2
+    // build neigh topology and edge activity, ~n*n/2
     for(int i = 0; i < nall; i++)
     {
       for(int j = i+1; j < nall; j++)
@@ -418,12 +440,89 @@ void SurfaceMesh<NUM_NODES>::buildNeighbours()
 
         if(shareEdge(i,j,iEdge,jEdge))
           handleSharedEdge(i,iEdge,j,jEdge, areCoplanar(this->id(i),this->id(j)));
-        else
-          handleSharedNode(i,iNode,j,jNode, areCoplanar(this->id(i),this->id(j)));
-
       }
     }
 
+    int *idListVisited = new int[nall];
+    int *idListHasNode = new int[nall];
+    double **edgeList,**edgeEndPoint;
+    this->memory->create(edgeList,2*nall,3,"SurfaceMesh:edgeList");
+    this->memory->create(edgeEndPoint,2*nall,3,"SurfaceMesh:edgeEndPoint");
+
+    // recursively handle corner activity, ~n
+    for(int i = 0; i < nall; i++)
+    {
+        for(int iNode = 0; iNode < NUM_NODES; iNode++)
+            handleCorner(i,iNode,idListVisited,idListHasNode,edgeList,edgeEndPoint);
+    }
+
+    delete []idListVisited;
+    delete []idListHasNode;
+    this->memory->destroy(edgeList);
+    this->memory->destroy(edgeEndPoint);
+    
+    // correct edge and corner activation/deactivation in parallel
+    
+    parallelCorrection();
+}
+
+/* ----------------------------------------------------------------------
+   correct edge and corner activation/deactivation in parallel
+------------------------------------------------------------------------- */
+
+template<int NUM_NODES>
+void SurfaceMesh<NUM_NODES>::parallelCorrection()
+{
+    
+    int iGlobal,iLocal;
+    int mine = this->sizeLocal()+this->sizeGhost();
+    int sizeGlob = this->sizeGlobal();
+    int len = NUM_NODES*sizeGlob;
+
+    int *edgea = new int[len];
+    int *cornera = new int[len];
+    vectorInitializeN(edgea,len,2);
+    vectorInitializeN(cornera,len,2);
+
+    for(int i = 0; i < mine; i++)
+    {
+        iGlobal = this->id(i);
+
+        for(int j = 0; j < NUM_NODES; j++)
+        {
+            edgea[iGlobal*NUM_NODES+j] = edgeActive(i)[j]?1:0;
+            cornera[iGlobal*NUM_NODES+j] = cornerActive(i)[j]?1:0;
+        }
+    }
+
+    MPI_Min_Vector(edgea,len,this->world);
+    MPI_Min_Vector(cornera,len,this->world);
+
+    for(int i = 0; i < sizeGlob; i++)
+    {
+        iLocal = this->map(i);
+        if(iLocal >= 0)
+        {
+            for(int j = 0; j < NUM_NODES; j++)
+            {
+                if(edgea[i*NUM_NODES+j] == 0)
+                    edgeActive(iLocal)[j] = false;
+                else if(edgea[i*NUM_NODES+j] == 1)
+                    edgeActive(iLocal)[j] = true;
+                else
+                    this->error->one(FLERR,"Illegal situation in SurfaceMesh::parallelCorrection()");
+                if(cornera[i*NUM_NODES+j] == 0)
+                    cornerActive(iLocal)[j] = false;
+                else if(cornera[i*NUM_NODES+j] == 1)
+                    cornerActive(iLocal)[j] = true;
+                else
+                    this->error->one(FLERR,"Illegal situation in SurfaceMesh::parallelCorrection()");
+            }
+        }
+    }
+
+    delete []edgea;
+    delete []cornera;
 }
 
 /* ----------------------------------------------------------------------
@@ -449,6 +548,20 @@ bool SurfaceMesh<NUM_NODES>::areCoplanar(int tag_a, int tag_b)
     else return false;
 }
 
+/* ---------------------------------------------------------------------- */
+
+template<int NUM_NODES>
+bool SurfaceMesh<NUM_NODES>::edgeVecsColinear(double *v,double *w)
+{
+    // need normalized vectors
+    double dot = vectorDot3D(v,w);
+    // need fabs in case vectors are in different direction
+    if(fabs(dot) > curvature_) return true;
+    else return false;
+}
+
+/* ---------------------------------------------------------------------- */
+
 template<int NUM_NODES>
 void SurfaceMesh<NUM_NODES>::growSurface(int iSrf, double by)
 {
@@ -464,6 +577,8 @@ void SurfaceMesh<NUM_NODES>::growSurface(int iSrf, double by)
     return;
 }
 
+/* ---------------------------------------------------------------------- */
+
 template<int NUM_NODES>
 bool SurfaceMesh<NUM_NODES>::shareEdge(int iSrf, int jSrf, int &iEdge, int &jEdge)
 {
@@ -477,8 +592,8 @@ bool SurfaceMesh<NUM_NODES>::shareEdge(int iSrf, int jSrf, int &iEdge, int &jEdg
         jEdge = j;
         return true;
       }
-      if(MultiNodeMesh<NUM_NODES>::nodesAreEqual(iSrf,
-                      (i+1)%NUM_NODES,jSrf,(j-1+NUM_NODES)%NUM_NODES)){
+      if(MultiNodeMesh<NUM_NODES>::nodesAreEqual
+            (iSrf,(i+1)%NUM_NODES,jSrf,(j-1+NUM_NODES)%NUM_NODES)){
         iEdge = i;//(ii-1+NUM_NODES)%NUM_NODES;
         jEdge = (j-1+NUM_NODES)%NUM_NODES;
         return true;
@@ -488,6 +603,8 @@ bool SurfaceMesh<NUM_NODES>::shareEdge(int iSrf, int jSrf, int &iEdge, int &jEdg
     return false;
 }
 
+/* ---------------------------------------------------------------------- */
+
 template<int NUM_NODES>
 void SurfaceMesh<NUM_NODES>::handleSharedEdge(int iSrf, int iEdge, int jSrf, int jEdge, bool coplanar)
 {
@@ -496,8 +613,6 @@ void SurfaceMesh<NUM_NODES>::handleSharedEdge(int iSrf, int iEdge, int jSrf, int
     neighFaces_(jSrf)[nNeighs_(jSrf)] = this->id(iSrf);
     nNeighs_(iSrf)++;
     nNeighs_(jSrf)++;
-
-    int id_i = this->id(iSrf), id_j = this->id(jSrf);
 
     // deactivate one egde
     // other as well if coplanar
@@ -514,43 +629,102 @@ void SurfaceMesh<NUM_NODES>::handleSharedEdge(int iSrf, int iEdge, int jSrf, int
         else
             edgeActive(jSrf)[jEdge] = false;
     }
-
-    handleSharedNode(iSrf,iEdge,jSrf,(jEdge+1)%NUM_NODES,coplanar);
-    handleSharedNode(iSrf,(iEdge+1)%NUM_NODES,jSrf,jEdge,coplanar);
 }
 
+/* ---------------------------------------------------------------------- */
+
 template<int NUM_NODES>
-void SurfaceMesh<NUM_NODES>::handleSharedNode(int iSrf, int iNode, int jSrf, int jNode, bool coplanar)
+void SurfaceMesh<NUM_NODES>::handleCorner(int iSrf, int iNode,
+        int *idListVisited,int *idListHasNode,double **edgeList,double **edgeEndPoint)
 {
-    // coplanar - deactivate both
+    double nodeToCheck[3];
+    bool hasTwoColinearEdges, anyActiveEdge;
+    int nIdListVisited = 0, nIdListHasNode = 0, maxId = -1, nEdgeList;
 
-  int id_i = this->id(iSrf), id_j = this->id(jSrf);
+    this->node(iSrf,iNode,nodeToCheck);
+    anyActiveEdge = false;
+    checkNodeRecursive(iSrf,nodeToCheck,nIdListVisited,idListVisited,
+        nIdListHasNode,idListHasNode,edgeList,edgeEndPoint,anyActiveEdge);
 
-    if(coplanar)
-    {
-      if( hasNonCoplanarSharedNode(iSrf)[iNode] || hasNonCoplanarSharedNode(jSrf)[jNode] ){
-        if(this->id(iSrf) < this->id(jSrf))
-            cornerActive(iSrf)[iNode] = false;
-        else
-            cornerActive(jSrf)[jNode] = false;
-      } else {
-        cornerActive(iSrf)[iNode] = false;
-        cornerActive(jSrf)[jNode] = false;
-    }
-    }
-    // non-coplanar - let one live
+    // each element that shares the node contributes two edges
+    nEdgeList = 2*nIdListHasNode;
+
+    // get max ID
+    for(int i = 0; i < nIdListHasNode; i++)
+        maxId = MathExtraLiggghts::max(maxId,idListHasNode[i]);
+
+    // check if any 2 edges coplanar
     
-    else
-    {
-      // save that there exists a non-coplanar shared node
-      hasNonCoplanarSharedNode(iSrf)[iNode] = true;
-      hasNonCoplanarSharedNode(jSrf)[jNode] = true;
-        if(this->id(iSrf) < this->id(jSrf))
-            cornerActive(iSrf)[iNode] = false;
-        else
-            cornerActive(jSrf)[jNode] = false;
-    }
+    hasTwoColinearEdges = false;
+    for(int i = 0; i < nEdgeList; i++)
+        for(int j = i+1; j < nEdgeList; j++)
+        {
+            
+            if(edgeVecsColinear(edgeList[i],edgeList[j]) && !this->nodesAreEqual(edgeEndPoint[i],edgeEndPoint[j]))
+                hasTwoColinearEdges = true;
+        }
 
+    // deactivate all
+    if(hasTwoColinearEdges || !anyActiveEdge)
+        cornerActive(iSrf)[iNode] = false;
+    // let the highest ID live
+    else if(this->id(iSrf) == maxId)
+        cornerActive(iSrf)[iNode] = true;
+    else
+        cornerActive(iSrf)[iNode] = false;
+}
+
+/* ---------------------------------------------------------------------- */
+
+template<int NUM_NODES>
+void SurfaceMesh<NUM_NODES>::checkNodeRecursive(int iSrf,double *nodeToCheck,
+        int &nIdListVisited,int *idListVisited,int &nIdListHasNode,int *idListHasNode,
+        double **edgeList,double **edgeEndPoint,bool &anyActiveEdge)
+{
+    int idNeigh, iNeigh, nEdgeList = 2*nIdListHasNode, nEdgeEndPoint = 2*nIdListHasNode;
+
+    // check if I have been here already
+    for(int i = 0; i < nIdListVisited; i++)
+        if(idListVisited[i] == this->id(iSrf)) return;
+
+    // add to visited list
+    idListVisited[nIdListVisited++] = this->id(iSrf);
+
+    // if contains node, add to list and call neighbors
+    int iNode = this->containsNode(iSrf, nodeToCheck);
+    if(iNode >= 0)
+    {
+        
+        idListHasNode[nIdListHasNode++] = this->id(iSrf);
+        // node iNode is associated with edge iNode and iNode-1
+        vectorCopy3D(edgeVec(iSrf)[iNode],edgeList[nEdgeList++]);
+        vectorCopy3D(edgeVec(iSrf)[(iNode-1+NUM_NODES)%NUM_NODES],edgeList[nEdgeList++]);
+        vectorCopy3D(this->node_(iSrf)[(iNode+1)%NUM_NODES],edgeEndPoint[nEdgeEndPoint++]);
+        vectorCopy3D(this->node_(iSrf)[(iNode-1+NUM_NODES)%NUM_NODES],edgeEndPoint[nEdgeEndPoint++]);
+        if(edgeActive(iSrf)[iNode]) anyActiveEdge = true;
+        else if(edgeActive(iSrf)[(iNode-1+NUM_NODES)%NUM_NODES]) anyActiveEdge = true;
+
+        if(nNeighs_(iSrf) > NUM_NODES)
+        {
+            fprintf(this->screen,"mesh %s: element id %d has %d neighs, but only %d expected\n",
+                    this->mesh_id_,this->id(iSrf),nNeighs_(iSrf),NUM_NODES);
+            //for(int iN = 0; iN < nNeighs_(iSrf); iN++) (fprintf(this->screen,"   neigh %d\n",neighFaces_(iSrf)[iN]));
+            this->error->warning(FLERR,"more mesh element neighbors than expected - corrupt mesh?");
+        }
+
+        // only call recursive if have neighbor and if I have neigh element (own or ghost)
+
+        for(int iN = 0; iN < nNeighs_(iSrf); iN++)
+        {
+            idNeigh = neighFaces_(iSrf)[iN];
+            if(idNeigh < 0) return;
+            iNeigh = this->map(idNeigh);
+            if(iNeigh >= 0)
+                checkNodeRecursive(iNeigh,nodeToCheck,nIdListVisited,idListVisited,nIdListHasNode,
+                                    idListHasNode,edgeList,edgeEndPoint,anyActiveEdge);
+        }
+    }
+    
 }
 
 /* ----------------------------------------------------------------------
@@ -655,6 +829,34 @@ bool SurfaceMesh<NUM_NODES>::isOnSurface(double *pos)
     }
 
     return on_surf;
+}
+
+/* ----------------------------------------------------------------------
+   return number of active edges and corners for debugging
+------------------------------------------------------------------------- */
+
+template<int NUM_NODES>
+int SurfaceMesh<NUM_NODES>::n_active_edges(int i)
+{
+    int n = 0;
+    if(i > this->size()) return n;
+
+    if(edgeActive(i)[0]) n++;
+    if(edgeActive(i)[1]) n++;
+    if(edgeActive(i)[2]) n++;
+    return n;
+}
+
+template<int NUM_NODES>
+int SurfaceMesh<NUM_NODES>::n_active_corners(int i)
+{
+    int n = 0;
+    if(i > this->size()) return n;
+
+    if(cornerActive(i)[0]) n++;
+    if(cornerActive(i)[1]) n++;
+    if(cornerActive(i)[2]) n++;
+    return n;
 }
 
 #endif

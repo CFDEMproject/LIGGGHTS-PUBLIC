@@ -15,7 +15,7 @@ pair_style gran/hertz/history/stiffness command :h3
 
 [Syntax:]
 
-pair_style style friction_damp_flag keyword values :pre
+pair_style style keyword values :pre
 
 style = {gran/hooke} or {gran/hooke/history} or {gran/hertz/history} or {gran/hooke/history/simple} or {gran/hertz/history/simple} or {absolute_damping} :ulb,l
 zero or more keyword/value pairs may be appended :l

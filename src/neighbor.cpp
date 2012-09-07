@@ -1601,7 +1601,7 @@ void Neighbor::set(int narg, char **arg)
 {
   if (narg != 2) error->all(FLERR,"Illegal neighbor command");
 
-  skin = atof(arg[0]);
+  skin = force->cg()*atof(arg[0]); 
   if (skin < 0.0) error->all(FLERR,"Illegal neighbor command");
 
   if (strcmp(arg[1],"nsq") == 0) style = NSQ;
@@ -1650,7 +1650,7 @@ void Neighbor::modify_params(int narg, char **arg)
       iarg += 2;
     } else if (strcmp(arg[iarg],"binsize") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
-      binsize_user = atof(arg[iarg+1]);
+      binsize_user = force->cg()*atof(arg[iarg+1]); 
       if (binsize_user <= 0.0) binsizeflag = 0;
       else binsizeflag = 1;
       iarg += 2;

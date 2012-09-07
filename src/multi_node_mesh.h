@@ -126,11 +126,15 @@ namespace LAMMPS_NS
         virtual void refreshGhosts(int setupFlag);
 
         bool nodesAreEqual(int iSurf, int iNode, int jSurf, int jNode);
+        bool nodesAreEqual(double *nodeToCheck1,double *nodeToCheck2);
 
         // returns true if surfaces share a node
         // called with local index
         // iNode, jNode return indices of first shared node
         bool shareNode(int iElem, int jElem, int &iNode, int &jNode);
+
+        // returns node index if iElem contains nodeToCheck
+        int containsNode(int iElem, double *nodeToCheck);
 
         void extendToElem(int const nElem) const;
 

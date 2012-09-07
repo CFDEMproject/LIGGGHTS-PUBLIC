@@ -10,11 +10,12 @@ fix nve/limit command :h3
 
 [Syntax:]
 
-fix ID group-ID nve/limit xmax :pre
+fix ID group-ID nve/limit limitstyle xmax :pre
 
 ID, group-ID are documented in "fix"_fix.html command
-nve = style name of this fix command
-xmax = maximum distance an atom can move in one timestep (distance units) :ul
+nve/limit = style name of this fix command
+limitstyle = absolute or radius_ratio
+xmax = maximum distance an atom can move in one timestep (distance units or relative to atom radius) :ul
 
 [Examples:]
 
@@ -40,6 +41,12 @@ neighbor list re-building, so that pairwise interactions are not
 missed on successive timesteps as atoms move.  See the
 "neighbor"_neighbor.html and "neigh_modify"_neigh_modify.html commands
 for details.
+
+If limitstyle {absolute} is used, {xmax} is applied directly.
+If limitstyle {radius_ratio} is used, a maxmimum distance per step 
+of {xmax}*radius is applied for each atom. This can be useful for
+the simulation poly-disperse systems. Note that this option requires
+the atom radius to be stored by using an appropriate atom style.
 
 Note that if a velocity reset occurs the integrator will not conserve
 energy.  On steps where no velocity resets occur, this integrator is

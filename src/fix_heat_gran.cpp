@@ -200,10 +200,11 @@ void FixHeatGran::init()
   fix_conductivity = static_cast<FixPropertyGlobal*>(modify->find_fix_property("thermalConductivity","property/global","peratomtype",max_type,0,style));
 
   // pre-calculate conductivity for possible contact material combinations
+  
   for(int i=1;i< max_type+1; i++)
       for(int j=1;j<max_type+1;j++)
       {
-          conductivity[i-1] = fix_conductivity->compute_vector(i-1);
+          conductivity[i-1] = force->cg()*force->cg()*fix_conductivity->compute_vector(i-1);
           if(conductivity[i-1] < 0.) error->all(FLERR,"Fix heat/gran: Thermal conductivity must not be < 0");
       }
 

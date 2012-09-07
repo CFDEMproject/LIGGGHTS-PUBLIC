@@ -30,5 +30,6 @@
 #include "pair_morse.h"
 #include "pair_soft.h"
 #include "pair_sph.h"
+#include "pair_sph_artvisc_tenscorr.h"
 #include "pair_table.h"
 #include "pair_yukawa.h"

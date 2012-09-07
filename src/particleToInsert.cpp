@@ -64,8 +64,9 @@ int ParticleToInsert::insert()
 
     for(int i = 0; i < nspheres; i++)
     {
-        if (domain->is_in_extended_subdomain(x_ins[i]))
-        {
+        
+        //if (domain->is_in_extended_subdomain(x_ins[i]))
+        //{
                 
                 inserted++;
                 atom->avec->create_atom(atom_type,x_ins[i]);
@@ -79,7 +80,7 @@ int ParticleToInsert::insert()
 
                 for (int j = 0; j < nfix; j++)
                    if (fix[j]->create_attribute) fix[j]->set_arrays(m);
-        }
+        //}
     }
     return inserted;
 }

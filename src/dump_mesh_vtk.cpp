@@ -49,7 +49,10 @@ enum
     DUMP_WEAR = 16,
     DUMP_TEMP = 32,
     DUMP_OWNER = 64,
-    DUMP_AREA = 128
+    DUMP_AREA = 128,
+    DUMP_AEDGES = 256,
+    DUMP_ACORNERS = 512,
+    DUMP_INDEX = 1024
 };
 
 enum
@@ -155,6 +158,24 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           iarg++;
           hasargs = true;
       }
+      else if(strcmp(arg[iarg],"aedges")==0)
+      {
+          dump_what_ |= DUMP_AEDGES;
+          iarg++;
+          hasargs = true;
+      }
+      else if(strcmp(arg[iarg],"acorners")==0)
+      {
+          dump_what_ |= DUMP_ACORNERS;
+          iarg++;
+          hasargs = true;
+      }
+      else if(strcmp(arg[iarg],"index")==0)
+      {
+          dump_what_ |= DUMP_INDEX;
+          iarg++;
+          hasargs = true;
+      }
       else
       {
           // assume it's a mesh
@@ -244,6 +265,12 @@ void DumpMeshVTK::init_style()
   if(dump_what_ & DUMP_OWNER)
     size_one += 1;
   if(dump_what_ & DUMP_AREA)
+    size_one += 1;
+  if(dump_what_ & DUMP_AEDGES)
+    size_one += 1;
+  if(dump_what_ & DUMP_ACORNERS)
+    size_one += 1;
+  if(dump_what_ & DUMP_INDEX)
     size_one += 1;
 
   delete [] format;
@@ -418,8 +445,21 @@ void DumpMeshVTK::pack(int *ids)
 
         if(dump_what_ & DUMP_AREA)
         {
-            int me = comm->me;
             buf[m++] = mesh->areaElem(iTri);
+        }
+
+        if(dump_what_ & DUMP_AEDGES)
+        {
+            buf[m++] = static_cast<double>(mesh->n_active_edges(iTri));
+        }
+
+        if(dump_what_ & DUMP_ACORNERS)
+        {
+            buf[m++] = static_cast<double>(mesh->n_active_corners(iTri));
+        }
+        if(dump_what_ & DUMP_INDEX)
+        {
+            buf[m++] = static_cast<double>(iTri);
         }
     }
   }
@@ -611,7 +651,7 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         {
             helper1 += mybuf[m + points_neightri[i]->get(j)*size_one];
             helper2 += mybuf[m+1 + points_neightri[i]->get(j)*size_one];
-             helper3 += mybuf[m+2 + points_neightri[i]->get(j)*size_one];
+            helper3 += mybuf[m+2 + points_neightri[i]->get(j)*size_one];
         }
         helper1 /= points_neightri[i]->size();
         helper2 /= points_neightri[i]->size();
@@ -679,7 +719,24 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         fprintf(fp,"%f\n",helper);
         }
         buf_pos++;
-       }
+      }
+
+      // not able to interpolate this
+      if(dump_what_ & DUMP_AEDGES)
+      {
+        buf_pos++;
+      }
+
+      // not able to interpolate this
+      if(dump_what_ & DUMP_ACORNERS)
+      {
+        buf_pos++;
+      }
+      // not able to interpolate this
+      if(dump_what_ & DUMP_INDEX)
+      {
+        buf_pos++;
+      }
     return;
 }
 
@@ -835,7 +892,44 @@ void DumpMeshVTK::write_data_ascii_face(int n, double *mybuf)
           m += size_one;
       }
       buf_pos++;
-   }
+  }
+
+  if(dump_what_ & DUMP_AEDGES)
+  {
+      //write owner data
+      fprintf(fp,"SCALARS active_edges float 1\nLOOKUP_TABLE default\n");
+      m = buf_pos;
+      for (int i = 0; i < n; i++)
+      {
+          fprintf(fp,"%f\n",mybuf[m]);
+          m += size_one;
+      }
+      buf_pos++;
+  }
+  if(dump_what_ & DUMP_ACORNERS)
+  {
+      //write owner data
+      fprintf(fp,"SCALARS active_corners float 1\nLOOKUP_TABLE default\n");
+      m = buf_pos;
+      for (int i = 0; i < n; i++)
+      {
+          fprintf(fp,"%f\n",mybuf[m]);
+          m += size_one;
+      }
+      buf_pos++;
+  }
+  if(dump_what_ & DUMP_INDEX)
+  {
+      //write owner data
+      fprintf(fp,"SCALARS index float 1\nLOOKUP_TABLE default\n");
+      m = buf_pos;
+      for (int i = 0; i < n; i++)
+      {
+          fprintf(fp,"%f\n",mybuf[m]);
+          m += size_one;
+      }
+      buf_pos++;
+  }
 
   // footer not needed
   // if would be needed, would do like in dump stl

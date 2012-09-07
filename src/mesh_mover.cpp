@@ -172,8 +172,8 @@ void MeshMoverLinearVariable::initial_integrate(double dT,double dt)
     vel_[2] = input->variable->compute_equal(myvar3_);
     
     // calculate total and incremental displacement
-    vectorAdd3D(dX_,dx,dX_);
     vectorScalarMult3D(vel_,dt,dx);
+    vectorAdd3D(dX_,dx,dX_);
 
     // apply move
     mesh_->move(dX_,dx);

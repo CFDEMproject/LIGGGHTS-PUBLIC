@@ -491,7 +491,7 @@ void FixInsert::pre_exchange()
   // warn if max # insertions exceeded by random processes
   if (ninsert_exists && ninserted + ninsert_this > ninsert)
   {
-      error->warning(FLERR,"Particle insertion: Number of particles to insert was slightly exceeded by random process");
+      error->warning(FLERR,"INFO: Particle insertion: Number of particles to insert was slightly exceeded by random process");
   }
 
   // fill xnear array with particles to check overlap against
@@ -516,6 +516,12 @@ void FixInsert::pre_exchange()
   // actual particle insertion
   
   ninserted_spheres_this_local = fix_distribution->insert(ninserted_this_local);
+
+  // warn if max # insertions exceeded by random processes
+  if (ninsert_exists && ninserted + ninsert_this > ninsert)
+  {
+      error->warning(FLERR,"INFO: Particle insertion: Number of particles to insert was slightly exceeded by random process");
+  }
 
   // set tag # of new particles beyond all previous atoms, reset global natoms
   // if global map exists, reset it now instead of waiting for comm
@@ -590,11 +596,16 @@ int FixInsert::distribute_ninsert_this(int ninsert_this)
     
     if(me == 0)
     {
+        // remove fractions < 3%
         // normalize fraction_local_all so sum across processors is 1
 
         fraction_local_all_sum = 0.;
         for(int iproc = 0; iproc < nprocs; iproc++)
+        {
+            if(fraction_local_all[iproc] < 0.03)
+                fraction_local_all[iproc] = 0.;
             fraction_local_all_sum += fraction_local_all[iproc];
+        }
 
         for(int iproc = 0; iproc < nprocs; iproc++)
             fraction_local_all[iproc] /= fraction_local_all_sum;
