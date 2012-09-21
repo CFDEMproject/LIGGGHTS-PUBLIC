@@ -29,6 +29,7 @@
 #define LMP_TRI_MESH_I_H
 
 #define SMALL_TRIMESH 1.e-10
+#define LARGE_TRIMESH 1000000
 
   /* ---------------------------------------------------------------------- */
 
@@ -39,7 +40,6 @@
 
     double bary[3];
     return resolveTriSphereContactBary(nTri,rSphere,cSphere,delta,bary);
-
   }
 
   /* ---------------------------------------------------------------------- */
@@ -75,7 +75,7 @@
       break;
     case 4: 
       d = resolveCornerContactBary(nTri,2,obtuseAngleIndex == 2,cSphere,delta,bary);
-      break;	  
+      break;
     case 5: 
       d = resolveEdgeContactBary(nTri,2,cSphere,delta,bary);
       break;
@@ -86,6 +86,7 @@
       d = resolveFaceContactBary(nTri,cSphere,node0ToSphereCenter,delta);
       break;
     default:
+      this->error->one(FLERR,"Internal error");
       d = 1.; // doesn't exist, just to satisfy the compiler
       break;
     }
@@ -106,11 +107,15 @@ inline double TriMesh::resolveEdgeContactBary(int iTri, int iEdge, double *p, do
 
   if(distFromNode < -SMALL_TRIMESH){
     
+    if(!cornerActive(iTri)[iEdge])
+        return LARGE_TRIMESH;
     d = calcDist(p,n[iEdge],delta);
     bary[iEdge] = 1.; bary[ip] = 0.; bary[ipp] = 0.;
   }
   else if(distFromNode > edgeLen(iTri)[iEdge] + SMALL_TRIMESH){
     
+    if(!cornerActive(iTri)[ip])
+        return LARGE_TRIMESH;
     d = calcDist(p,n[ip],delta);
     bary[iEdge] = 0.; bary[ip] = 1.; bary[ipp] = 0.;
   }
@@ -118,10 +123,13 @@ inline double TriMesh::resolveEdgeContactBary(int iTri, int iEdge, double *p, do
     
     double closestPoint[3];
 
+    if(!edgeActive(iTri)[iEdge])
+        return LARGE_TRIMESH;
+
     vectorAddMultiple3D(n[iEdge],distFromNode,edgeVec(iTri)[iEdge],closestPoint);
 
     d = calcDist(p,closestPoint,delta);
-    
+
     bary[ipp] = 0.;
     bary[iEdge] = 1. - distFromNode/edgeLen(iTri)[iEdge];
     bary[ip] = 1. - bary[iEdge];
@@ -130,7 +138,7 @@ inline double TriMesh::resolveEdgeContactBary(int iTri, int iEdge, double *p, do
   return d;
 }
 
-inline double TriMesh::resolveCornerContactBary(int iTri, int iNode, bool obtuse, 
+inline double TriMesh::resolveCornerContactBary(int iTri, int iNode, bool obtuse,
                                                 double *p, double *delta, double *bary)
 {
   int ip = (iNode+1)%3, ipp = (iNode+2)%3;
@@ -141,12 +149,16 @@ inline double TriMesh::resolveCornerContactBary(int iTri, int iNode, bool obtuse
     
     double **edge = edgeVec(iTri);
     double nodeToP[3], closestPoint[3];
-    
+
     vectorSubtract3D(p,n,nodeToP);
 
     double distFromNode = vectorDot3D(nodeToP,edge[ipp]);
-    if(distFromNode < SMALL_TRIMESH){
+    if(distFromNode < SMALL_TRIMESH && distFromNode > -edgeLen(iTri)[ipp])
+    {
       
+      if(!edgeActive(iTri)[ipp])
+        return LARGE_TRIMESH;
+
       vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
 
       bary[ip] = 0.;
@@ -154,27 +166,30 @@ inline double TriMesh::resolveCornerContactBary(int iTri, int iNode, bool obtuse
       bary[ipp] = 1. - bary[iNode];
 
       return calcDist(p,closestPoint,delta);
-      
     }
 
     distFromNode = vectorDot3D(nodeToP,edge[iNode]);
-    if(distFromNode > -SMALL_TRIMESH){
+    if(distFromNode > -SMALL_TRIMESH && distFromNode < edgeLen(iTri)[iNode])
+    {
       
+      if(!edgeActive(iTri)[iNode])
+        return LARGE_TRIMESH;
+
       vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
-    
+
       bary[ipp] = 0.;
       bary[iNode] = 1. - distFromNode/edgeLen(iTri)[iNode];
       bary[ip] = 1. - bary[iNode];
 
       return calcDist(p,closestPoint,delta);
-      
     }
-
   }
+
+  if(!cornerActive(iTri)[iNode])
+      return LARGE_TRIMESH;
 
   bary[iNode] = 1.; bary[ip] = bary[ipp] = 0.;
   return calcDist(p,node_(iTri)[iNode],delta);
-
 }
 
 inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0ToSphereCenter, double *delta)
@@ -182,14 +197,14 @@ inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0
   double *surfNorm = SurfaceMesh<3>::surfaceNorm(iTri);
 
   double dNorm = vectorDot3D(surfNorm,node0ToSphereCenter);
-  
+
   double csPlane[3], tmp[3];
   vectorScalarMult3D(surfNorm,dNorm,tmp);
   vectorSubtract3D(p,tmp,csPlane);
 
   return calcDist(p,csPlane,delta);
-  
 }
+
   /* ---------------------------------------------------------------------- */
 
   inline bool TriMesh::resolveTriSphereNeighbuild(int nTri, double rSphere,
@@ -330,6 +345,7 @@ inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0
     
     if(chosen >= nTri || chosen < 0)
     {
+        
         error->one(FLERR,"TriMesh::generate_random error");
         return -1;
     }

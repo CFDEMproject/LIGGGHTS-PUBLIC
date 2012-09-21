@@ -52,7 +52,8 @@ enum
     DUMP_AREA = 128,
     DUMP_AEDGES = 256,
     DUMP_ACORNERS = 512,
-    DUMP_INDEX = 1024
+    DUMP_INDEX = 1024,
+    DUMP_NNEIGHS = 2048
 };
 
 enum
@@ -176,6 +177,12 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           iarg++;
           hasargs = true;
       }
+      else if(strcmp(arg[iarg],"nneighs")==0)
+      {
+          dump_what_ |= DUMP_NNEIGHS;
+          iarg++;
+          hasargs = true;
+      }
       else
       {
           // assume it's a mesh
@@ -271,6 +278,8 @@ void DumpMeshVTK::init_style()
   if(dump_what_ & DUMP_ACORNERS)
     size_one += 1;
   if(dump_what_ & DUMP_INDEX)
+    size_one += 1;
+  if(dump_what_ & DUMP_NNEIGHS)
     size_one += 1;
 
   delete [] format;
@@ -460,6 +469,10 @@ void DumpMeshVTK::pack(int *ids)
         if(dump_what_ & DUMP_INDEX)
         {
             buf[m++] = static_cast<double>(iTri);
+        }
+        if(dump_what_ & DUMP_NNEIGHS)
+        {
+            buf[m++] = static_cast<double>(mesh->nNeighs(iTri));
         }
     }
   }
@@ -737,6 +750,11 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
       {
         buf_pos++;
       }
+      // not able to interpolate this
+      if(dump_what_ & DUMP_NNEIGHS)
+      {
+        buf_pos++;
+      }
     return;
 }
 
@@ -922,6 +940,18 @@ void DumpMeshVTK::write_data_ascii_face(int n, double *mybuf)
   {
       //write owner data
       fprintf(fp,"SCALARS index float 1\nLOOKUP_TABLE default\n");
+      m = buf_pos;
+      for (int i = 0; i < n; i++)
+      {
+          fprintf(fp,"%f\n",mybuf[m]);
+          m += size_one;
+      }
+      buf_pos++;
+  }
+  if(dump_what_ & DUMP_NNEIGHS)
+  {
+      //write owner data
+      fprintf(fp,"SCALARS nneighs float 1\nLOOKUP_TABLE default\n");
       m = buf_pos;
       for (int i = 0; i < n; i++)
       {

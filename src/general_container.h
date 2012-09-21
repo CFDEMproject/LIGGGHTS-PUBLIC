@@ -63,6 +63,9 @@ namespace LAMMPS_NS
 
           bool setFromContainer(ContainerBase *cont);
 
+          T max_scalar();
+          T min_scalar();
+
           T**& operator()(int n);
           T** const& operator()(int n) const;
           T*** begin();

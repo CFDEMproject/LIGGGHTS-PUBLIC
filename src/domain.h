@@ -224,8 +224,8 @@ inline double Domain::dist_subbox_borders(double* pos)
 {
     double deltalo[3], deltahi[3], dlo, dhi;
 
-    vectorSubtract3D(pos,sublo,deltalo);
-    vectorSubtract3D(pos,subhi,deltahi);
+    vectorSubtract3D(sublo,pos,deltalo);
+    vectorSubtract3D(subhi,pos,deltahi);
     vectorAbs3D(deltalo);
     vectorAbs3D(deltahi);
 

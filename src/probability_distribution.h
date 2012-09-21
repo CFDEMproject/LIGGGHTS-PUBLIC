@@ -41,15 +41,27 @@ namespace LMP_PROBABILITY_NS {
       PDF(LAMMPS_NS::Error *error)
       {
           mu_ = sigma_ = min_ = max_ = 0.;
+          h1_ = h2_ = 0.;
           mass_shift_ = 0;
           this->error = error;
       }
       ~PDF(){}
 
+      int rand_style_;
+
+      double mu_,sigma_;
+      double min_,max_;
+
+      // helper
+      double h1_,h2_;
+
+      // if 1, pdf is shifted from number to mass based pdf
+      int mass_shift_;
+
+      LAMMPS_NS::Error *error;
+
       inline int rand_style()
-      {
-          return rand_style_;
-      }
+      { return rand_style_; }
 
       inline void set_min_max(double min,double max)
       {
@@ -58,29 +70,13 @@ namespace LMP_PROBABILITY_NS {
       }
 
       inline void activate_mass_shift()
-      {
-          mass_shift_ = 1;
-      }
+      { mass_shift_ = 1; }
 
       template<int RAND_STYLE> void set_params(double)
-      {
-          error->all(FLERR,"Faulty usage of Probability::set_params");
-      }
+      { error->all(FLERR,"Faulty usage of Probability::set_params"); }
 
       template<int RAND_STYLE> void set_params(double,double)
-      {
-          error->all(FLERR,"Faulty usage of Probability::set_params");
-      }
-
-      int rand_style_;
-
-      double mu_,sigma_;
-      double min_,max_;
-
-      // if 1, pdf is shifted from number to mass based pdf
-      int mass_shift_;
-
-      LAMMPS_NS::Error *error;
+      { error->all(FLERR,"Faulty usage of Probability::set_params"); }
   };
 
   inline double pdf_max(PDF *pdf)
@@ -135,19 +131,25 @@ namespace LMP_PROBABILITY_NS {
   {
          rand_style_ = RANDOM_UNIFORM;
          set_min_max(min,max);
+         h1_ = 2./(1./(min_*min_)-1./(max_*max_));
+         h2_ = h1_/(2.*min_*min_);
   }
 
   template<> inline double expectancy_value<RANDOM_UNIFORM>(PDF *pdf)
   {
-     if(!pdf->mass_shift_) return 0.5 * (pdf->min_ + pdf->max_);
-     else return ( pow((pdf->max_*pdf->max_*pdf->max_*pdf->max_- pdf->min_*pdf->min_*pdf->min_*pdf->min_)/(4.*(pdf->max_ - pdf->min_)),0.333333) );
+     if(!pdf->mass_shift_)
+        return 0.5 * (pdf->min_ + pdf->max_);
+     else
+        return sqrt(pdf->h1_/(2.*(pdf->h2_-0.5)));
   }
 
   template<> inline double rand_value<RANDOM_UNIFORM>(PDF *pdf,LAMMPS_NS::RanPark *rp)
   {
      double rn =  rp->uniform();
-     if(pdf->mass_shift_) rn = rn*rn*rn;
-     return (pdf->min_) + rn * (pdf->max_ - pdf->min_);
+     if(!pdf->mass_shift_)
+        return (pdf->min_) + rn * (pdf->max_ - pdf->min_);
+     else
+        return sqrt(pdf->h1_/(2.*(pdf->h2_-rn)));
   }
 
   //------------------------------------------------------------------------------
@@ -160,19 +162,22 @@ namespace LMP_PROBABILITY_NS {
          mu_ = mu;
          sigma_ = sigma;
 
-         //set min-max to +- 3 sigma (99.73% of all values)
+         // set min-max to +- 3 sigma (99.73% of all values)
          set_min_max(mu_-3.*sigma_, mu_+3.*sigma_);
+
+         if(min_ < 0.)
+            error->all(FLERR,"Probablity distribution: mu-3*sigma < 0, please increase mu or decrease sigma");
   }
 
   template<> inline double expectancy_value<RANDOM_GAUSSIAN>(PDF *pdf)
   {
-     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass_shift_ not implemented for gaussian");
+     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for gaussian");
      return pdf->mu_;
   }
 
   template<> inline double rand_value<RANDOM_GAUSSIAN>(PDF *pdf,LAMMPS_NS::RanPark *rp)
   {
-     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass_shift_ not implemented for gaussian");
+     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for gaussian");
      double value;
      do
      {
@@ -188,25 +193,27 @@ namespace LMP_PROBABILITY_NS {
   template<> inline void PDF::set_params<RANDOM_LOGNORMAL>(double mu, double sigma)
   {
       rand_style_ = RANDOM_LOGNORMAL;
-          mu_ = mu;
-          sigma_ = sigma;
+      mu_ = mu;
+      sigma_ = sigma;
 
-          //also here, take +- 3 sigma as min/max
-          //change in expectancy considered negligable
-          double min =  pow(MATH_E,mu_ - 3. * sigma_);
-          double max =  pow(MATH_E,mu_ + 3. * sigma_);
-          set_min_max(min, max);
+      // also here, take +- 3 sigma as min/max
+      // change in expectancy considered negligable
+      double min =  pow(MATH_E,mu_ - 3. * sigma_);
+      double max =  pow(MATH_E,mu_ + 3. * sigma_);
+      set_min_max(min, max);
+      if(min_ < 0.)
+            error->all(FLERR,"Probablity distribution: exp(mu-3*sigma) < 0, please increase mu or decrease sigma");
   }
 
   template<> inline double expectancy_value<RANDOM_LOGNORMAL>(PDF *pdf)
   {
-     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass_shift_ not implemented for lognormal");
+     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for lognormal");
      return pow(MATH_E,pdf->mu_ + 0.5 * pdf->sigma_ * pdf->sigma_);
   }
 
   template<> inline double rand_value<RANDOM_LOGNORMAL>(PDF *pdf,LAMMPS_NS::RanPark *rp)
   {
-     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass_shift_ not implemented for lognormal");
+     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for lognormal");
      double value;
      do
      {

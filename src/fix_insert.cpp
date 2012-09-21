@@ -45,7 +45,7 @@ using namespace FixConst;
 
 #define EPSILON 0.001
 
-#define LMP_DEBUGMODE_FIXINSERT false
+#define LMP_DEBUGMODE_FIXINSERT false //(667 == update->ntimestep)//  true
 #define LMP_DEBUG_OUT_FIXINSERT screen
 
 /* ---------------------------------------------------------------------- */

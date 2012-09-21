@@ -106,6 +106,12 @@ namespace LAMMPS_NS
 
         // mesh curvature
         double curvature_;
+
+        // mesh accuracy
+        double accuracy_;
+
+        // min mesh elem angle
+        double min_angle_;
   };
 
 } /* namespace LAMMPS_NS */

@@ -564,6 +564,7 @@ void FixWallGran::post_force_mesh(int vflag)
             }
             else 
             {
+              
               if(fix_contact && ! fix_contact->handleContact(iPart,idTri,c_history)) continue;
               post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,iMesh,FixMesh_list_[iMesh],mesh,iTri);
             }
@@ -640,6 +641,14 @@ inline void FixWallGran::post_force_eval_contact(int iPart, double deltan, doubl
   if(store_force_ || stress_flag_)
     vectorCopy3D(f_[iPart],force_old);
 
+  // add to cwl
+  if(cwl_ && !addflag_)
+  {
+      double contactPoint[3];
+      vectorAdd3D(x_[iPart],delta,contactPoint);
+      cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint);
+  }
+
   // deltan > 0 in compute_force
   // but negative in distance algorithm
   compute_force(iPart, -deltan,rsqr,mass, dx, dy, dz, v_wall, c_history, 1.);
@@ -659,14 +668,6 @@ inline void FixWallGran::post_force_eval_contact(int iPart, double deltan, doubl
            iPart,f_pw,delta,iTri,v_wall
         );
     }
-  }
-
-  // add to cwl
-  if(cwl_ && !addflag_)
-  {
-      double contactPoint[3];
-      vectorAdd3D(x_[iPart],delta,contactPoint);
-      cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint);
   }
 
   // add heat flux
@@ -694,7 +695,7 @@ int FixWallGran::is_moving()
 
 /* ---------------------------------------------------------------------- */
 
-int FixWallGran::n_contacts()
+int FixWallGran::n_contacts_local()
 {
     if (!is_mesh_wall() || dnum() == 0) return 0;
 
@@ -702,13 +703,21 @@ int FixWallGran::n_contacts()
     for(int i = 0; i < n_FixMesh_; i++)
         ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts();
 
+    return ncontacts;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixWallGran::n_contacts_all()
+{
+    int ncontacts = n_contacts_local();
     MPI_Sum_Scalar(ncontacts,world);
     return ncontacts;
 }
 
 /* ---------------------------------------------------------------------- */
 
-int FixWallGran::n_contacts(int contact_groupbit)
+int FixWallGran::n_contacts_local(int contact_groupbit)
 {
     if (!is_mesh_wall() || dnum() == 0) return 0;
 
@@ -716,6 +725,14 @@ int FixWallGran::n_contacts(int contact_groupbit)
     for(int i = 0; i < n_FixMesh_; i++)
         ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts(contact_groupbit);
 
+    return ncontacts;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixWallGran::n_contacts_all(int contact_groupbit)
+{
+    int ncontacts = n_contacts_local(contact_groupbit);
     MPI_Sum_Scalar(ncontacts,world);
     return ncontacts;
 }

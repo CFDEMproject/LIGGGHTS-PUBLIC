@@ -45,6 +45,10 @@ namespace LAMMPS_NS
           void add(T* elem);
           void get(int n, T* elem);
           void set(int n, T* elem);
+
+          T max_elem(int n);
+          T min_elem(int n);
+
           //void setAll(T def);
           T*& operator() (int n);
           T* const& operator() (int n) const;
@@ -132,6 +136,30 @@ namespace LAMMPS_NS
   {
           for(int i = 0; i < LEN_VEC; i++)
                   GeneralContainer<T,1,LEN_VEC>::arr_[n][0][i] = elem[i];
+  }
+
+  template<typename T, int LEN_VEC>
+  T VectorContainer<T,LEN_VEC>::max_elem(int n)
+  {
+          T max = GeneralContainer<T,1,LEN_VEC>::arr_[n][0][0];
+
+          for(int i = 1; i < LEN_VEC; i++)
+                  if(GeneralContainer<T,1,LEN_VEC>::arr_[n][0][i] > max)
+                    max = GeneralContainer<T,1,LEN_VEC>::arr_[n][0][i];
+
+          return max;
+  }
+
+  template<typename T, int LEN_VEC>
+  T VectorContainer<T,LEN_VEC>::min_elem(int n)
+  {
+          T min = GeneralContainer<T,1,LEN_VEC>::arr_[n][0][0];
+
+          for(int i = 1; i < LEN_VEC; i++)
+                  if(GeneralContainer<T,1,LEN_VEC>::arr_[n][0][i] < min)
+                    min = GeneralContainer<T,1,LEN_VEC>::arr_[n][0][i];
+
+          return min;
   }
 /*
   template<typename T, int LEN_VEC>

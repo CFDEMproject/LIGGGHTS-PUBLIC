@@ -63,12 +63,14 @@
 </PRE>
 <LI>following the general keyword/value section, one or more stream keyword/value pairs can be appended for the fix insert/stream command 
 
-<LI>stream_keywords = <I>duration</I> or <I>insertion_face</I> or <I>extrude_length</I> 
+<LI>stream_keywords = <I>duration</I> or <I>parallel</I> or <I>insertion_face</I> or <I>extrude_length</I> 
 
 <PRE>  <I>insertion_face</I> value = mesh-ID
     mesh-ID = ID of the <A HREF = "fix_mesh.html">fix mesh</A> to use as starting face for particle generation
   <I>extrude_length</I> values = L
     L =  length for extruding the insertion face in normal direction so to generate in insertion volume
+  <I>parallel</I> values = yes or no
+    yes, no = pre-calculate location of overlap of processor subdomains and extrusion volume to some extent
   <I>duration</I> values = du
     du =  duration of insertion in time-steps 
 </PRE>
@@ -187,6 +189,13 @@ the <I>random_distribute</I> settings. This is because in this case the
 and applying a simple floor/ceil rounding operation would lead to a 
 statistical bias.
 </P>
+<P>If keyword <I>parallel</I> is set to 'yes', LIGGGHTS tries to pre-calculate 
+more accurately the overlap of process subdomains and extrusion volume.
+For cases where the insertion volume is highly divided between different
+processes, this can lead to a speed-up of insertion as random number generation 
+is more efficient. For cases where the extrusion volume is divided 
+among few processes this will impose a small computation overhead.
+</P>
 <P>The insertion velocity and rotational velocity can be controlled via the
 <I>vel</I> and <I>omega</I> keywords. The insertion velocity must be non-zero.
 </P>
@@ -217,6 +226,6 @@ This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>
 </P>
 <P>The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
-duration = insert_every, random_distribute = exact
+duration = insert_every, random_distribute = exact, parallel = no
 </P>
 </HTML>

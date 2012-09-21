@@ -89,6 +89,10 @@ namespace LAMMPS_NS
         */
         virtual int id_slow(int i) = 0;
 
+        virtual int nBelowAngle() = 0;
+        virtual double angleLimit() = 0;
+        virtual int nTooManyNeighs() = 0;
+
         // size includes owned and ghost elements
         inline int size()
         { return sizeLocal()+sizeGhost(); }

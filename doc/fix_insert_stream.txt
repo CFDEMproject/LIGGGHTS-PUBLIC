@@ -8,7 +8,6 @@
 :line
 
 fix insert/stream command :h3
-
 [Syntax:]
 
 fix ID group-ID insert/stream seed seed_value distributiontemplate dist-ID general_keywords general_values stream_keywords stream_values ... :pre
@@ -50,11 +49,13 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
     omegaz = z-comonent of angular velocity (1/time units) :pre
 
 following the general keyword/value section, one or more stream keyword/value pairs can be appended for the fix insert/stream command :l
-stream_keywords = {duration} or {insertion_face} or {extrude_length} :l
+stream_keywords = {duration} or {parallel} or {insertion_face} or {extrude_length} :l
   {insertion_face} value = mesh-ID
     mesh-ID = ID of the "fix mesh"_fix_mesh.html to use as starting face for particle generation
   {extrude_length} values = L
     L =  length for extruding the insertion face in normal direction so to generate in insertion volume
+  {parallel} values = yes or no
+    yes, no = pre-calculate location of overlap of processor subdomains and extrusion volume to some extent
   {duration} values = du
     du =  duration of insertion in time-steps :pre
 :ule
@@ -172,6 +173,13 @@ the {random_distribute} settings. This is because in this case the
 and applying a simple floor/ceil rounding operation would lead to a 
 statistical bias.
 
+If keyword {parallel} is set to 'yes', LIGGGHTS tries to pre-calculate 
+more accurately the overlap of process subdomains and extrusion volume.
+For cases where the insertion volume is highly divided between different
+processes, this can lead to a speed-up of insertion as random number generation 
+is more efficient. For cases where the extrusion volume is divided 
+among few processes this will impose a small computation overhead.
+
 The insertion velocity and rotational velocity can be controlled via the
 {vel} and {omega} keywords. The insertion velocity must be non-zero.
 
@@ -202,4 +210,4 @@ Keywords {duration} and {extrude_length} can not be used together.
 
 The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
-duration = insert_every, random_distribute = exact
+duration = insert_every, random_distribute = exact, parallel = no

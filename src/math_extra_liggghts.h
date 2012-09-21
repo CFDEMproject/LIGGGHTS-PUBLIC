@@ -47,6 +47,7 @@ namespace MathExtraLiggghts {
   inline int abs(int a);
   inline double min(double a,double b);
   inline double max(double a,double b);
+  inline double min(double a,double b,double c);
   inline double max(double a,double b,double c);
   inline double abs(double a);
 
@@ -134,6 +135,13 @@ inline double MathExtraLiggghts::halley_cbrt1d(double d)
 
   double MathExtraLiggghts::min(double a,double b) { if (a<b) return a; return b;}
   double MathExtraLiggghts::max(double a,double b) { if (a>b) return a; return b;}
+
+  double MathExtraLiggghts::min(double a,double b,double c)
+  {
+      double ab = MathExtraLiggghts::min(a,b);
+      if (ab<c) return ab;
+      return c;
+  }
   double MathExtraLiggghts::max(double a,double b,double c)
   {
       double ab = MathExtraLiggghts::max(a,b);
@@ -427,7 +435,7 @@ bool MathExtraLiggghts::compDouble(double const a, double const b, double const 
   if (b == 0)
     return a < prec && a > -prec;
 
-  double x = (a-b)/b;
+  double x = (a-b);//b;
 
   return x < prec && x > -prec;
 }
@@ -444,7 +452,6 @@ bool MathExtraLiggghts::compDouble(double const a, double const b, double const 
 
 void MathExtraLiggghts::calcBaryTriCoords(double *ap, double **edgeVec, double *edgeLen, double *bary)
 {
-
   // Compute dot products
   double ab_ab = edgeLen[0]*edgeLen[0];
   double ab_ac = -LAMMPS_NS::vectorDot3D(edgeVec[0],edgeVec[2])*edgeLen[0]*edgeLen[2];
@@ -454,6 +461,7 @@ void MathExtraLiggghts::calcBaryTriCoords(double *ap, double **edgeVec, double *
 
   // Compute barycentric coordinates
   double invDenom = 1. / (ab_ab * ac_ac - ab_ac * ab_ac);
+  
   bary[1] =  (ac_ac * ap_ab - ab_ac * ap_ac) * invDenom;
   bary[2] =  (ab_ab * ap_ac - ab_ac * ap_ab) * invDenom;
   bary[0] = 1. - bary[1] - bary[2];

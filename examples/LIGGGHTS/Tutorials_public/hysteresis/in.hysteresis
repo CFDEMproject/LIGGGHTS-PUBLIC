@@ -1,0 +1,76 @@
+#Contact model example
+
+atom_style		granular
+atom_modify		map array
+boundary		m m m
+newton			off
+
+communicate		single vel yes
+
+units			si
+
+region			reg block -0.05 0.05 -0.05 0.05 0. 0.15 units box
+create_box		1 reg
+
+neighbor		0.002 bin
+neigh_modify	delay 0
+
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.9
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.05
+fix 		m5 all property/global characteristicVelocity scalar 2.
+#ratio: maxK2 or kC to kN (normal stiffness)
+fix     m6 all property/global coefficientMaxElasticStiffness peratomtypepair 1 2.
+fix     m7 all property/global coefficientAdhesionStiffness peratomtypepair 1 0.2
+fix     m8 all property/global coefficientPlasticityDepth peratomtypepair 1 0.05
+
+
+#New pair style
+pair_style 	gran/hooke/history/hysteresis #Hooke with hysteresis and adhesion
+pair_coeff	* *
+
+timestep	0.00001
+
+fix			gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+fix			zwalls1 all wall/gran/hooke/history   primitive type 1  zplane 0.0
+fix			zwalls2 all wall/gran/hooke/history   primitive type 1  zplane 0.15
+fix			cylwalls all wall/gran/hooke/history primitive type 1  zcylinder 0.05 0. 0.
+
+#region for insertion
+region		bc cylinder z 0.01 0.01 0.025 0.05 0.0603 units box
+group		nve_group region reg
+
+#distributions for insertion
+fix			pts1 all particletemplate/sphere 5330 atom_type 1 density constant 2500 radius constant 0.0015
+fix			pdd1 all particledistribution/discrete 5331  1 pts1 1.0
+
+#particle insertion
+fix		ins nve_group insert/pack seed 5332 distributiontemplate pdd1 &
+			maxattempt 100 insert_every 3000 overlapcheck yes all_in yes vel constant 0.0 0.0 -0.2 &
+			region bc particles_in_region 250 ntry_mc 10000
+
+#apply nve integration to all particles that are inserted as single particles
+fix		integr nve_group nve/sphere
+
+#output settings, include total thermal energy
+compute			rke all erotate/sphere
+thermo_style	custom step atoms ke c_rke vol
+thermo			1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+run			1
+dump		dmp all custom 800 post/dump*.hysteresis id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+
+#insert particles
+run			10000
+unfix		ins
+
+#run
+run			50000 upto

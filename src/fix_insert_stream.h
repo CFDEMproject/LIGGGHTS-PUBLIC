@@ -67,11 +67,13 @@ class FixInsertStream : public FixInsert {
 
   // additional insertion settings
   int duration;            //duration for insertion in time-steps
+  bool parallel;
 
   // stuff for insertion region
-  double normalvec[3];
+  double normalvec[3];     // points out of extruded volume
   double extrude_length;
-  double p_ref[3];         //reference point on face
+  double extrude_length_min, extrude_length_max;
+  double p_ref[3];         // reference point on face
   int face_style;
   double v_normal[3];      // insertion velocity projected on face
   double ins_fraction;

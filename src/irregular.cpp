@@ -232,6 +232,7 @@ int Irregular::migrate_check()
         if (ghi >= procgrid[2]) ghi = 0;
       }
       if (igz != myloc[2] && igz != glo && igz != ghi) flag = 1;
+
     }
   }
 

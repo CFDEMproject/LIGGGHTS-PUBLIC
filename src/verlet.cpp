@@ -276,6 +276,7 @@ void Verlet::run(int n)
       timer->stamp(TIME_COMM);
       
       if (n_pre_neighbor) modify->pre_neighbor();
+      
       neighbor->build();
       timer->stamp(TIME_NEIGHBOR);
     }

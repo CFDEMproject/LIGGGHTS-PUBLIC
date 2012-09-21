@@ -37,6 +37,8 @@
 #include "bounding_box.h"
 #include "random_park.h"
 
+#define EPSILON_ACCURACY 1e-8
+
 namespace LAMMPS_NS
 {
   template<int NUM_NODES>
@@ -48,6 +50,8 @@ namespace LAMMPS_NS
       public:
 
         void setMeshID(const char *_mesh_id);
+
+        void setAccuracy(double _accuracy);
 
         // scale mesh
         virtual void scale(double factor);
@@ -178,6 +182,9 @@ namespace LAMMPS_NS
         virtual bool resetToOrig();
 
       private:
+
+        // mesh accuracy
+        double accuracy_;
 
         // flags stating how many move operations are performed on the mesh
         int nMove_;

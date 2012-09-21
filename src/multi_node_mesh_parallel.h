@@ -62,6 +62,9 @@ namespace LAMMPS_NS
         inline int sizeGlobalOrig()
         { return nGlobalOrig_; }
 
+        inline bool isParallel()
+        { return isParallel_; }
+
         virtual int id(int i) = 0;
 
       protected:
@@ -123,6 +126,8 @@ namespace LAMMPS_NS
 
         // initial number of elements
         int nGlobalOrig_;
+
+        bool isParallel_;
 
         // *************************************
         // comm stuff - similar to Comm class

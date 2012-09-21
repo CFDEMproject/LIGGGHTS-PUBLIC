@@ -298,6 +298,40 @@
   }
 
   /* ----------------------------------------------------------------------
+   min,max
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  T GeneralContainer<T,NUM_VEC,LEN_VEC>::max_scalar()
+  {
+      T max = arr_[0][0][0];
+
+      int len = size();
+      for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
+                    if(arr_[i][j][k] > max)
+                        max = arr_[i][j][k];
+
+      return max;
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  T GeneralContainer<T,NUM_VEC,LEN_VEC>::min_scalar()
+  {
+      T min = arr_[0][0][0];
+
+      int len = size();
+      for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
+                    if(arr_[i][j][k] < min)
+                        min = arr_[i][j][k];
+
+      return min;
+  }
+
+  /* ----------------------------------------------------------------------
    translate, rotate, scale
   ------------------------------------------------------------------------- */
 

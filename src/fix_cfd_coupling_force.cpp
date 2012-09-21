@@ -171,6 +171,6 @@ void FixCfdCouplingForce::post_force(int vflag)
 
 double FixCfdCouplingForce::compute_vector(int n)
 {
- MPI_Sum_Vector(dragforce_total,3,world);
+  MPI_Sum_Vector(dragforce_total,3,world);
   return dragforce_total[n];
 }

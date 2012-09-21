@@ -91,6 +91,7 @@ class FixAveEuler : public Fix {
 
   // desired cell size
   double cell_size_ideal_;
+  double cell_size_ideal_lamda_[3];
 
   // number of cells
   int ncells_, ncells_dim_[3];

@@ -42,9 +42,13 @@ SurfaceMesh<NUM_NODES>::SurfaceMesh(LAMMPS *lmp)
     isInsertionMesh_(false),
     isShallowGlobalMesh_(false),
     curvature_(1.-EPSILON_CURVATURE),
+    minAngle_(cos(MIN_ANGLE_MESH*M_PI/180.)),
 
     // TODO should keep areaMeshSubdomain up-to-date more often for insertion faces
     areaMesh_     (*this->prop().template addGlobalProperty   < ScalarContainer<double> >                 ("areaMesh",     "comm_none","frame_trans_rot_invariant","restart_no",2)),
+
+    nBelowAngle_(0),
+    nTooManyNeighs_(0),
 
     area_         (*this->prop().template addElementProperty< ScalarContainer<double> >                   ("area",         "comm_none","frame_trans_rot_invariant", "restart_no",2)),
     areaAcc_      (*this->prop().template addElementProperty< ScalarContainer<double> >                   ("areaAcc",      "comm_none","frame_trans_rot_invariant", "restart_no",2)),
@@ -73,13 +77,19 @@ SurfaceMesh<NUM_NODES>::~SurfaceMesh()
 {}
 
 /* ----------------------------------------------------------------------
-   set mesh curvature, used for mesh topology
+   set mesh curvature and min angle, used for mesh topology
 ------------------------------------------------------------------------- */
 
 template<int NUM_NODES>
 void SurfaceMesh<NUM_NODES>::setCurvature(double _curvature)
- {
+{
     curvature_ = _curvature;
+}
+
+template<int NUM_NODES>
+void SurfaceMesh<NUM_NODES>::setMinAngle(double _min_angle)
+{
+    minAngle_ = _min_angle;
 }
 
 /* ----------------------------------------------------------------------
@@ -334,14 +344,22 @@ void SurfaceMesh<NUM_NODES>::calcSurfPropertiesOfNewElement()
 
     obtuseAngleIndex_.set(n,NO_OBTUSE_ANGLE);
 
+    bool hasSmallAngle = false;
+
     for(int i=0;i<NUM_NODES;i++){
       
-      double angle = vectorDot3D(edgeVec_(n)[i],edgeVec_(n)[(i+1)%NUM_NODES]);
+      double angle = vectorDot3D(edgeVec_(n)[i],edgeVec_(n)[(i-1+NUM_NODES)%NUM_NODES]);
+      
       if(angle > 0.){
+        
         obtuseAngleIndex_.set(n,i);
-        break;
       }
+      else if(-angle > minAngle_)
+        hasSmallAngle = true;
     }
+
+    if(hasSmallAngle)
+        nBelowAngle_++;
 
     // calc area_ from previously obtained values and add to container
     // calcArea is pure virtual and implemented in derived class(es)
@@ -548,6 +566,33 @@ bool SurfaceMesh<NUM_NODES>::areCoplanar(int tag_a, int tag_b)
     else return false;
 }
 
+template<int NUM_NODES>
+bool SurfaceMesh<NUM_NODES>::areCoplanarNeighs(int tag_a, int tag_b)
+{
+    bool areNeighs = false;
+    int a = this->map(tag_a);
+    int b = this->map(tag_b);
+
+    if(a < 0 || b < 0)
+        this->error->one(FLERR,"Internal error: Illegal call to SurfaceMesh::areCoplanarNeighs()");
+
+    // check if two faces are coplanar
+    // eg used to transfer shear history btw planar faces
+
+    // must be neighs, otherwise not considered coplanar
+    for(int i = 0; i < nNeighs_(a); i++)
+        if(neighFaces_(a)[i] == tag_b)
+            areNeighs = true;
+
+    if(!areNeighs) return false;
+
+    double dot = vectorDot3D(surfaceNorm(a),surfaceNorm(b));
+    
+    // need fabs in case surface normal is other direction
+    if(fabs(dot) > curvature_) return true;
+    else return false;
+}
+
 /* ---------------------------------------------------------------------- */
 
 template<int NUM_NODES>
@@ -608,9 +653,25 @@ bool SurfaceMesh<NUM_NODES>::shareEdge(int iSrf, int jSrf, int &iEdge, int &jEdg
 template<int NUM_NODES>
 void SurfaceMesh<NUM_NODES>::handleSharedEdge(int iSrf, int iEdge, int jSrf, int jEdge, bool coplanar)
 {
+    if(nNeighs_(iSrf) == NUM_NODES || nNeighs_(jSrf) == NUM_NODES)
+    {
+        int ii;
+        if(nNeighs_(iSrf) == NUM_NODES)
+            ii = iSrf;
+        else
+            ii = jSrf;
+
+        nTooManyNeighs_++;
+        //fprintf(this->screen,"mesh %s: element id %d has %d neighs, but only %d expected\n",
+        //        this->mesh_id_,this->id(ii),nNeighs_(ii)+1,NUM_NODES);
+        //this->error->warning(FLERR,"more mesh element neighbors than expected - corrupt mesh?");
+    }
+
     // set neighbor topology
-    neighFaces_(iSrf)[nNeighs_(iSrf)] = this->id(jSrf);
-    neighFaces_(jSrf)[nNeighs_(jSrf)] = this->id(iSrf);
+    if(nNeighs_(iSrf) < NUM_NODES)
+        neighFaces_(iSrf)[nNeighs_(iSrf)] = this->id(jSrf);
+    if(nNeighs_(jSrf) < NUM_NODES)
+        neighFaces_(jSrf)[nNeighs_(jSrf)] = this->id(iSrf);
     nNeighs_(iSrf)++;
     nNeighs_(jSrf)++;
 
@@ -704,14 +765,6 @@ void SurfaceMesh<NUM_NODES>::checkNodeRecursive(int iSrf,double *nodeToCheck,
         if(edgeActive(iSrf)[iNode]) anyActiveEdge = true;
         else if(edgeActive(iSrf)[(iNode-1+NUM_NODES)%NUM_NODES]) anyActiveEdge = true;
 
-        if(nNeighs_(iSrf) > NUM_NODES)
-        {
-            fprintf(this->screen,"mesh %s: element id %d has %d neighs, but only %d expected\n",
-                    this->mesh_id_,this->id(iSrf),nNeighs_(iSrf),NUM_NODES);
-            //for(int iN = 0; iN < nNeighs_(iSrf); iN++) (fprintf(this->screen,"   neigh %d\n",neighFaces_(iSrf)[iN]));
-            this->error->warning(FLERR,"more mesh element neighbors than expected - corrupt mesh?");
-        }
-
         // only call recursive if have neighbor and if I have neigh element (own or ghost)
 
         for(int iN = 0; iN < nNeighs_(iSrf); iN++)
@@ -798,7 +851,7 @@ bool SurfaceMesh<NUM_NODES>::isPlanar()
         for(int ineigh = 0; ineigh < nNeighs_(i); ineigh++)
         {
             id_j = neighFaces_(i)[ineigh];
-            if(!areCoplanar(this->id(i),id_j))
+            if(!areCoplanarNeighs(this->id(i),id_j))
                 flag = 1;
         }
     }

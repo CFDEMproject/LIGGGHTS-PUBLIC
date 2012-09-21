@@ -18,6 +18,7 @@
 
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
+
 #include "math.h"
 #include "string.h"
 #include "compute_pair_gran_local.h"
@@ -338,7 +339,7 @@ int ComputePairGranLocal::count_pairs()
 int ComputePairGranLocal::count_wallcontacts()
 {
     // account for fix group
-    return fixwall->n_contacts(groupbit);
+    return fixwall->n_contacts_local(groupbit);
 }
 
 /* ----------------------------------------------------------------------
@@ -457,6 +458,8 @@ void ComputePairGranLocal::add_wall_1(int iFMG,int idTri,int iP,double *contact_
     {
         array[ipair][n++] = static_cast<double>(iFMG);
         array[ipair][n++] = static_cast<double>(idTri);
+        n += 1;
+        
     }
 
 }
@@ -482,6 +485,7 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
     {
         n += 2;
         array[ipair][n++] = static_cast<double>(atom->tag[i]);
+        
     }
     if(fflag)
     {

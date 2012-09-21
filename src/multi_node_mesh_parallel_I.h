@@ -35,6 +35,7 @@
   MultiNodeMeshParallel<NUM_NODES>::MultiNodeMeshParallel(LAMMPS *lmp)
   : MultiNodeMesh<NUM_NODES>(lmp),
     nLocal_(0), nGhost_(0), nGlobal_(0), nGlobalOrig_(0),
+    isParallel_(false),
     maxsend_(0), maxrecv_(0),
     buf_send_(0), buf_recv_(0),
     half_atom_cut_(0.),
@@ -251,7 +252,7 @@
        rBound_max = 0.;
        for(int i = 0; i < sizeLocal(); i++)
            rBound_max = MathExtraLiggghts::max(this->rBound_(i),rBound_max);
-      MPI_Max_Scalar(rBound_max,this->world);
+       MPI_Max_Scalar(rBound_max,this->world);
 
        // mesh element ghost cutoff is element bounding radius plus half atom neigh cut
        cut_ghost = rBound_max + half_atom_cut_;
@@ -499,6 +500,19 @@
   {
       nGlobalOrig_ = sizeLocal();
 
+      // check for possible round-off isues
+      
+      double span = this->node_.max_scalar()-this->node_.min_scalar();
+      if(span < 1e-4)
+        this->error->all(FLERR,"Mesh error: dimensions too small - use different unit system");
+
+      if(this->nBelowAngle() > 0 && 0 == this->comm->me)
+      {
+        fprintf(this->screen,"%d mesh elements have high aspect ratio (angle < %f °)\n",
+                this->nBelowAngle(),this->angleLimit());
+        this->error->warning(FLERR,"Mesh contains highly skewed element");
+      }
+
       // delete all elements that do not belong to this processor
       deleteUnowned();
 
@@ -526,6 +540,15 @@
       // build mesh topology and neigh list
       
       buildNeighbours();
+
+      if(this->nTooManyNeighs() > 0 && 0 == this->comm->me)
+      {
+        fprintf(this->screen,"%d mesh elements have more than %d neighbors \n",
+                this->nTooManyNeighs(),NUM_NODES);
+        this->error->warning(FLERR,"Mesh contains possibly corrupt elements with too many neighbors");
+      }
+
+      isParallel_ = true;
 
   }
 

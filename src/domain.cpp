@@ -280,6 +280,7 @@ void Domain::set_local_box()
     if (myloc[2] < procgrid[2]-1)
       subhi[2] = boxlo[2] + zprd*zsplit[myloc[2]+1];
     else subhi[2] = boxhi[2];
+
   }
 }
 

@@ -31,7 +31,7 @@ args = list of arguments for a particular style :l
   {mesh/vtk} args =  zero or more keyword/ value pairs and one or more dump-identifiers
       keywords = {output}
       {output} values = face or interpolate 
-      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
+      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
   {decomposition/vtk} args = none :pre
 
   {local} args = list of local attributes
@@ -346,7 +346,8 @@ can be post-processed in Paraview , www.paraview.org
 Most keywords as used for the {mesh/vtk} style are self-explanatory. 
 Keyword {output} controlls if the data is written in a per-face manner
 or as interpolated values to VTK. Keywords {aedges} and {acorners} dump
-the number of active edges/corners per face.
+the number of active edges/corners per face. Keyword {nneighs} dumps the 
+number of face neighbors LIGGGHTS has recognized for each face.
 
 By providing any ID (or a list of IDs) of "fix mesh/surface"_fix_mesh_surface.html
 commands, you can specify which meshes to dump. If no meshes are specified,

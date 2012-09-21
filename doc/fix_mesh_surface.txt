@@ -44,6 +44,8 @@ surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} :l
     ax ay az = axis vector for rotation (length units) 
     omega = mandatory keyword
     om = rotaional velocity around specifyied axis (rad/time units)
+  {accuracy value} = a
+    a = mesh nodes this far away at maximum will be recognized as identical (length units)
   {curvature value} = c
     c = maximum angle between mesh faces belonging to the same surface (in degree) :pre
 
@@ -82,11 +84,14 @@ equal to the conveyor belt velocity. This ensures the model makes sense also in 
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 {surface_ang_vel} mimics rotational motion of the mesh (e.g. for modeling a shear cell)
 
-The curvature keyword lets you specify up to which angle between two triangles the 
+The {curvature} keyword lets you specify up to which angle between two triangles the 
 triangles should be treated as belonging to the same surface (e.g. useful for bends). 
 This angle is used to decide if (a) contact history is copied from one triangle to 
 the other as the contact point proceeds and (b) if edge and corner interaction is 
 calculated.
+
+The {accuracy} keyword specifies how far away mesh nodes can be at maximum to
+be recognized as identical.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -109,4 +114,4 @@ It is not supported to use both the moving mesh and the conveyor belt feature.
 
 "fix wall/gran"_fix_wall_gran.html
 
-[Default:] c = 0 degrees
+[Default:] curvature = 0 degrees, accuracy = 1e-8

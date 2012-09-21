@@ -42,7 +42,7 @@ MechParamGran::~MechParamGran()
 int MechParamGran::max_type()
 {
   //loop over all particles to check how many atom types are present
-  mintype=1;
+  mintype=100000;
   maxtype=1;
 
   for (int i=0;i<atom->nlocal;i++)
@@ -57,9 +57,9 @@ int MechParamGran::max_type()
   {
       // checks
       Fix *fix = modify->fix[i];
-      if(fix->min_type() < mintype)
+      if(fix->min_type() > 0 &&  fix->min_type() < mintype)
         mintype = fix->min_type();
-      if(fix->max_type() > mintype)
+      if(fix->max_type() > 0 &&  fix->max_type() > maxtype)
         maxtype = fix->max_type();
   }
 

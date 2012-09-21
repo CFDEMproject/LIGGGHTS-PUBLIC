@@ -41,6 +41,7 @@
 #include "math_extra_liggghts.h"
 
 #define EPSILON_CURVATURE 0.0001
+#define MIN_ANGLE_MESH 0.5 // in degress
 
 using namespace LAMMPS_MEMORY_NS;
 
@@ -54,12 +55,16 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         //virtual double distToElem(int nElem, double *p) = 0;
 
         void setCurvature(double _curvature);
+        void setMinAngle(double _min_angle);
+
         void useAsInsertionMesh();
         void useAsShallowGlobalMesh();
+
         void addElement(double **nodeToAdd);
 
         bool isPlanar();
         bool areCoplanar(int tag_i, int tag_j);
+        bool areCoplanarNeighs(int tag_i, int tag_j);
         bool isOnSurface(double *pos);
 
         void buildNeighbours();
@@ -100,6 +105,9 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         inline double areaElem(int i)
         { return (area_)(i); }
+
+        inline int nNeighs(int i)
+        { return nNeighs_(i); }
 
         static const int NO_OBTUSE_ANGLE = -1;
 
@@ -159,7 +167,10 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline bool*    edgeActive(int i)   {return (edgeActive_)(i);}
         inline bool*    cornerActive(int i) {return (cornerActive_)(i);}
         inline bool*    hasNonCoplanarSharedNode(int i) {return (hasNonCoplanarSharedNode_)(i);}
-        inline int& obtuseAngleIndex(int i) { return obtuseAngleIndex_(i); }
+        inline int& obtuseAngleIndex(int i) {return obtuseAngleIndex_(i); }
+        inline int nBelowAngle()            {return nBelowAngle_;}
+        inline double angleLimit()          {return acos(minAngle_)*180./M_PI;}
+        inline int nTooManyNeighs()            {return nTooManyNeighs_;}
 
       private:
 
@@ -175,7 +186,11 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         // mesh properties
         double curvature_;
+        double minAngle_;
         ScalarContainer<double>& areaMesh_; 
+
+        int nBelowAngle_;
+        int nTooManyNeighs_;
 
         // per-element properties
         // add more properties as they are needed, such as

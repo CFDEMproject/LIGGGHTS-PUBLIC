@@ -49,12 +49,13 @@ using namespace FixConst;
 FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg)
 {
-  if (domain->dimension != 3) error->all(FLERR,"Fix particletemplate/sphere is for 3D simulations only");
+  if (domain->dimension != 3)
+    error->fix_error(FLERR,this,"this fix is for 3D simulations only");
 
   restart_global = 1;
 
   // random number generator, same for all procs
-  if (narg < 4) error->all(FLERR,"Illegal fix particletemplate command, not enough arguments");
+  if (narg < 4) error->fix_error(FLERR,this,"not enough arguments");
   seed = atoi(arg[3]);
   random = new RanPark(lmp,seed);
 
@@ -81,112 +82,154 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
     hasargs = false;
     if (strcmp(arg[iarg],"atom_type") == 0)
     {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix particletemplate command, not enough arguments");
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments");
       atom_type=atoi(arg[iarg+1]);
-      if (atom_type < 1) error->all(FLERR,"Illegal fix particletemplate command, invalid atom type (must be >=1)");
+      if (atom_type < 1) error->fix_error(FLERR,this,"invalid atom type (must be >=1)");
       hasargs = true;
       iarg += 2;
     }
     else if (strcmp(arg[iarg],"region") == 0)
     {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix particletemplate command, not enough arguments");
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments");
       int ireg = domain->find_region(arg[iarg+1]);
-      if (ireg < 0) error->all(FLERR,"Illegal fix particletemplate command, illegal region");
+      if (ireg < 0) error->fix_error(FLERR,this,"illegal region");
       reg = domain->regions[ireg];
       hasargs = true;
       iarg += 2;
     }
     else if (strcmp(arg[iarg],"region_variable") == 0)
     {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal fix particletemplate command, not enough arguments");
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments");
       int ifix = modify->find_fix(arg[iarg+1]);
-      if (ifix < 0) error->all(FLERR,"Illegal fix particletemplate command, illegal region/variable fix");
+      if (ifix < 0) error->fix_error(FLERR,this,"illegal region/variable fix");
       reg_var = static_cast<FixRegionVariable*>(modify->fix[ifix]);
       hasargs = true;
       iarg += 2;
     }
     else if (strcmp(arg[iarg],"radius") == 0) {
       hasargs = true;
-      if(strcmp(this->style,"particletemplate/sphere")) error->all(FLERR,"Illegal fix particletemplate command, keyword radius only valid for particletemplate/sphere");
-      if (iarg+3 > narg) error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
+      if(strcmp(this->style,"particletemplate/sphere"))
+        error->fix_error(FLERR,this,"keyword radius only valid for particletemplate/sphere");
+      if (iarg+3 > narg)
+        error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
       pdf_radius = new PDF(error);
       if (strcmp(arg[iarg+1],"constant") == 0)
       {
           double value = atof(arg[iarg+2])*force->cg();
-          if( value <= 0.) error->all(FLERR,"Illegal fix particletemplate/sphere command, radius must be >= 0");
+          if( value <= 0.)
+            error->all(FLERR,"Illegal fix particletemplate/sphere command, radius must be >= 0");
           pdf_radius->set_params<RANDOM_CONSTANT>(value);
           iarg += 3;
       }
       else if (strcmp(arg[iarg+1],"uniform") == 0)
       {
-          if (iarg+4 > narg) error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
+          if(iarg+5 > narg)
+              error->fix_error(FLERR,this,"not enough arguments for uniform");
+          if(strcmp(arg[iarg+2],"mass") == 0)
+              pdf_radius->activate_mass_shift();
+          else if(strcmp(arg[iarg+2],"number"))
+              error->fix_error(FLERR,this,"expecting 'mass' or 'number'");
           if(force->cg() > 1.)
-              error->all(FLERR,"Illegal fix particletemplate/sphere command, cannot use distribution with coarse-graining.");
-          double min = atof(arg[iarg+2]);
-          double max = atof(arg[iarg+3]);
-          if( min <= 0. || max <= 0. || min >= max) error->all(FLERR,"Illegal fix particletemplate/sphere command, illegal min or max value for radius");
+              error->fix_error(FLERR,this,"cannot use distribution with coarse-graining.");
+          double min = atof(arg[iarg+3]);
+          double max = atof(arg[iarg+4]);
+          if( min <= 0. || max <= 0. || min >= max)
+            error->fix_error(FLERR,this,"illegal min or max value for radius");
           pdf_radius->set_params<RANDOM_UNIFORM>(min,max);
-          iarg += 4;
+          iarg += 5;
+      }
+      else if (strcmp(arg[iarg+1],"gaussian") == 0)
+      {
+          if(iarg+5 > narg)
+              error->fix_error(FLERR,this,"not enough arguments for gaussian");
+          if(strcmp(arg[iarg+2],"mass") == 0)
+              pdf_radius->activate_mass_shift();
+          else if(strcmp(arg[iarg+2],"number"))
+              error->fix_error(FLERR,this,"expecting 'mass' or 'number'");
+          if(force->cg() > 1.)
+              error->fix_error(FLERR,this,"cannot use distribution with coarse-graining.");
+          double mu = atof(arg[iarg+3]);
+          double sigma = atof(arg[iarg+4]);
+          if( mu <= 0. ) error->fix_error(FLERR,this,"illegal mu value for radius");
+          if( sigma <= 0. ) error->fix_error(FLERR,this,"illegal sigma value for radius");
+          pdf_radius->set_params<RANDOM_GAUSSIAN>(mu,sigma);
+          iarg += 5;
       }
       else if (strcmp(arg[iarg+1],"lognormal") == 0)
       {
-          if (iarg+4 > narg) error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
+          if(iarg+5 > narg)
+              error->fix_error(FLERR,this,"not enough arguments for lognormal");
+          if(strcmp(arg[iarg+2],"mass") == 0)
+              pdf_radius->activate_mass_shift();
+          else if(strcmp(arg[iarg+2],"number"))
+              error->fix_error(FLERR,this,"expecting 'mass' or 'number'");
           if(force->cg() > 1.)
-              error->all(FLERR,"Illegal fix particletemplate/sphere command, cannot use distribution with coarse-graining.");
-          double mu = atof(arg[iarg+2]);
-          double sigma = atof(arg[iarg+3]);
-          if( mu <= 0. ) error->all(FLERR,"Illegal fix particletemplate/sphere command, illegal mu value for radius");
-          if( sigma <= 0. ) error->all(FLERR,"Illegal fix particletemplate/sphere command, illegal sigma value for radius");
+              error->fix_error(FLERR,this,"cannot use distribution with coarse-graining.");
+          double mu = atof(arg[iarg+3]);
+          double sigma = atof(arg[iarg+4]);
+          if( sigma <= 0. ) error->fix_error(FLERR,this,"illegal sigma value for radius");
           pdf_radius->set_params<RANDOM_LOGNORMAL>(mu,sigma);
-          iarg += 4;
+          iarg += 5;
       }
-      else error->all(FLERR,"Illegal fix particletemplate command, invalid radius random style");
-      //use mass distribution instead of number distribution
-      pdf_radius->activate_mass_shift();
+      else error->fix_error(FLERR,this,"invalid radius random style");
       volume_expect = 4.*expectancy(pdf_radius)*expectancy(pdf_radius)*expectancy(pdf_radius)*M_PI/3.;
     }
     else if (strcmp(arg[iarg],"density") == 0) {
       hasargs = true;
-      if (iarg+3 > narg) error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
+      if (iarg+3 > narg) error->fix_error(FLERR,this,"not enough arguments");
       pdf_density = new PDF(error);
       if (strcmp(arg[iarg+1],"constant") == 0)
       {
           double value = atof(arg[iarg+2]);
-          if( value <= 0.) error->all(FLERR,"Illegal fix particletemplate/sphere command, density must be >= 0");
+          if( value <= 0.) error->fix_error(FLERR,this,"density must be >= 0");
           pdf_density->set_params<RANDOM_CONSTANT>(value);
           iarg += 3;
       }
       else if (strcmp(arg[iarg+1],"uniform") == 0)
       {
-          if (iarg+4 > narg) error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
+          if (iarg+4 > narg) error->fix_error(FLERR,this,"not enough arguments");
           double min = atof(arg[iarg+2]);
           double max = atof(arg[iarg+3]);
-          if( min <= 0. || max <= 0. || min >= max) error->all(FLERR,"Illegal fix particletemplate/sphere command, illegal min or max value for density");
+          if( min <= 0. || max <= 0. || min >= max)
+            error->fix_error(FLERR,this,"illegal min or max value for density");
           pdf_density->set_params<RANDOM_UNIFORM>(min,max);
+          iarg += 4;
+      }
+      else if (strcmp(arg[iarg+1],"gaussian") == 0)
+      {
+          if (iarg+4 > narg)
+            error->fix_error(FLERR,this,"not enough arguments");
+          double mu = atof(arg[iarg+2]);
+          double sigma = atof(arg[iarg+3]);
+          if( mu <= 0. )
+            error->fix_error(FLERR,this,"illegal mu value for density");
+          if( sigma <= 0. ) error->all(FLERR,"illegal sigma value for density");
+          pdf_density->set_params<RANDOM_GAUSSIAN>(mu,sigma);
           iarg += 4;
       }
       else if (strcmp(arg[iarg+1],"lognormal") == 0)
       {
-          if (iarg+4 > narg) error->all(FLERR,"Illegal fix particletemplate/sphere command, not enough arguments");
+          if (iarg+4 > narg)
+            error->fix_error(FLERR,this,"not enough arguments");
           double mu = atof(arg[iarg+2]);
           double sigma = atof(arg[iarg+3]);
-          if( mu <= 0. ) error->all(FLERR,"Illegal fix particletemplate/sphere command, illegal mu value for density");
-          if( sigma <= 0. ) error->all(FLERR,"Illegal fix particletemplate/sphere command, illegal sigma value for density");
+          if( sigma <= 0. ) error->all(FLERR,"illegal sigma value for density");
           pdf_density->set_params<RANDOM_LOGNORMAL>(mu,sigma);
           iarg += 4;
       }
-      else error->all(FLERR,"Illegal fix particletemplate command, invalid density random style");
+      else error->fix_error(FLERR,this,"invalid density random style");
       
     }
-    else if(strcmp(style,"particletemplate/sphere") == 0) error->all(FLERR,"Illegal fix particletemplate command, unrecognized keyword");
+    else if(strcmp(style,"particletemplate/sphere") == 0)
+        error->fix_error(FLERR,this,"unrecognized keyword");
   }
 
-  if(pdf_density == NULL) error->all(FLERR,"Illegal fix particletemplate command, have to define 'density'");
+  if(pdf_density == NULL) error->fix_error(FLERR,this,"have to define 'density'");
 
   // end here for derived classes
   if(strcmp(this->style,"particletemplate/sphere"))return;
 
-  if(pdf_radius == NULL) error->all(FLERR,"Illegal fix particletemplate command, have to define 'radius'");
+  if(pdf_radius == NULL) error->fix_error(FLERR,this,"have to define 'radius'");
 
   //set mass and volume
   volume_expect = pow(2.*expectancy(pdf_radius),3.)*M_PI/6.;
@@ -254,7 +297,7 @@ void FixTemplateSphere::randomize_single()
 
 void FixTemplateSphere::init_ptilist(int n_random_max)
 {
-    if(pti_list) error->all(FLERR,"invalid FixTemplateSphere::init_list()");
+    if(pti_list) error->one(FLERR,"invalid FixTemplateSphere::init_list()");
     n_pti_max = n_random_max;
     pti_list = (ParticleToInsert**) memory->smalloc(n_pti_max*sizeof(ParticleToInsert*),"pti_list");
     for(int i = 0; i < n_pti_max; i++)
@@ -324,7 +367,8 @@ double FixTemplateSphere::max_r_bound()
 
 double FixTemplateSphere::volexpect()
 {
-    if(volume_expect < 1e-12) error->all(FLERR,"Fix template/sphere: Volume expectancy too small");
+    if(volume_expect < 1e-12)
+        error->fix_error(FLERR,this,"Volume expectancy too small");
     return volume_expect;
 }
 

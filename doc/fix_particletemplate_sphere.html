@@ -35,9 +35,9 @@
   param1 = density for 'constant', low value of density for 'uniform', expectancy value for 'gaussian'
     param2 = omitted for 'constant', high value of density for 'uniform', sigma value for 'gaussian'
 <I>radius</I> values = random_style param1 (param2)
-  random_style = 'constant' or 'uniform' 
-  param1 = radius for 'constant', low value of radius for 'uniform'
-    param2 = omitted for 'constant', high value of radius for 'uniform' 
+  random_style = 'constant' or 'uniform number' or 'uniform mass' or 'gaussian number'
+  param1 = radius for 'constant', low value of radius for 'uniform', mu value for 'gaussian'
+  param2 = omitted for 'constant', high value of radius for 'uniform', sigma value for 'gaussian' 
 </PRE>
 
 </UL>
@@ -51,7 +51,9 @@
 </P>
 <P><B>Description:</B>
 </P>
-<P>Define a particle that is used as input for a <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> command. You can choose the atom type, density and radius of the particles. For density and radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. It is thus possible to define a uniform or gaussian distribution on top of the discrete distribution defined by <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>.
+<P>Define a particle that is used as input for a <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> command. You can choose the atom type, density and radius of the particles. For density and radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. Note that for radius, you can additionally choose between a number-based and mass-based uniform distribution, where the latter is used more frequently typically. 'gaussian' for radius only supports a number-based distribution.
+</P>
+<P>It is thus possible to define a uniform or gaussian distribution on top of the discrete distribution defined by <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>.
 </P>
 <P>IMPORTANT NOTE: As opposed to the number-based distributions used by <A HREF = "fix_pour.html">fix_pour</A> and <A HREF = "fix_pour_legacy.html">fix_pour_legacy</A>, this fix uses the more common distribution based on mass-% for the radius distribution (as does <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>).
 </P>

@@ -36,6 +36,7 @@
   MultiNodeMesh<NUM_NODES>::MultiNodeMesh(LAMMPS *lmp)
   : AbstractMesh(lmp),
     node_orig_(0),
+    accuracy_(EPSILON_ACCURACY),
     nMove_(0),
     stepLastReset_(-1),
     nScale_(0),
@@ -59,7 +60,7 @@
   }
 
   /* ----------------------------------------------------------------------
-   set ID
+   set ID and mesh accuracy (latter used for mesh topology)
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
@@ -68,6 +69,12 @@
       if(mesh_id_) delete []mesh_id_;
       mesh_id_ = new char[strlen(_id)+1];
       strcpy(mesh_id_,_id);
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::setAccuracy(double _accuracy)
+  {
+      accuracy_ = _accuracy;
   }
 
   /* ----------------------------------------------------------------------
@@ -153,7 +160,7 @@
   bool MultiNodeMesh<NUM_NODES>::nodesAreEqual(int iElem, int iNode, int jElem, int jNode)
   {
     for(int i=0;i<3;i++)
-      if(!MathExtraLiggghts::compDouble(node_(iElem)[iNode][i],node_(jElem)[jNode][i],1e-8))
+      if(!MathExtraLiggghts::compDouble(node_(iElem)[iNode][i],node_(jElem)[jNode][i],accuracy_))
         return false;
     return true;
   }
@@ -162,7 +169,7 @@
   bool MultiNodeMesh<NUM_NODES>::nodesAreEqual(double *nodeToCheck1,double *nodeToCheck2)
   {
     for(int i=0;i<3;i++)
-      if(!MathExtraLiggghts::compDouble(nodeToCheck1[i],nodeToCheck2[i],1e-8))
+      if(!MathExtraLiggghts::compDouble(nodeToCheck1[i],nodeToCheck2[i],accuracy_))
         return false;
     return true;
   }
@@ -172,9 +179,9 @@
   {
       for(int iNode = 0; iNode < NUM_NODES; iNode++)
       {
-          if(MathExtraLiggghts::compDouble(node_(iElem)[iNode][0],nodeToCheck[0],1e-8) &&
-             MathExtraLiggghts::compDouble(node_(iElem)[iNode][1],nodeToCheck[1],1e-8) &&
-             MathExtraLiggghts::compDouble(node_(iElem)[iNode][2],nodeToCheck[2],1e-8))
+          if(MathExtraLiggghts::compDouble(node_(iElem)[iNode][0],nodeToCheck[0],accuracy_) &&
+             MathExtraLiggghts::compDouble(node_(iElem)[iNode][1],nodeToCheck[1],accuracy_) &&
+             MathExtraLiggghts::compDouble(node_(iElem)[iNode][2],nodeToCheck[2],accuracy_))
                 return iNode;
       }
       return -1;

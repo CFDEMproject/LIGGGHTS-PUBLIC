@@ -53,7 +53,9 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
   stress_flag_(false),
   velFlag_(false),
   angVelFlag_(false),
-  curvature_(0.)
+  curvature_(0.),
+  accuracy_(0.),
+  min_angle_(0.)
 {
     // check if type has been read
     if(atom_type_mesh_ == -1)
@@ -99,6 +101,19 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
           if(curvature_ < 0. || curvature_ > 60)
             error->fix_error(FLERR,this,"0° < curvature < 60° required");
           curvature_ = cos(curvature_*M_PI/180.);
+      } else if (strcmp(arg[iarg_],"accuracy") == 0) {
+          if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
+          iarg_++;
+          accuracy_ = force->numeric(arg[iarg_++]);
+          if(accuracy_ < 0. || curvature_ > 0.001)
+            error->fix_error(FLERR,this,"0 < accuracy_ < 0.001 required");
+      } else if (strcmp(arg[iarg_],"min_angle") == 0) {
+          if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
+          iarg_++;
+          min_angle_ = force->numeric(arg[iarg_++]);
+          if(min_angle_ < 0. || min_angle_ > 20)
+            error->fix_error(FLERR,this,"0° < min_angle < 20° required");
+          min_angle_ = cos(min_angle_*M_PI/180.);
       } else if(strcmp(style,"mesh/surface") == 0) {
           char *errmsg = new char[strlen(arg[iarg_])+20];
           sprintf(errmsg,"unknown keyword: %s", arg[iarg_]);
@@ -123,6 +138,12 @@ void FixMeshSurface::post_create()
 
     if(curvature_ > 0.)
         triMesh()->setCurvature(curvature_);
+
+    if(accuracy_ > 0.)
+        triMesh()->setAccuracy(accuracy_);
+
+    if(min_angle_ > 0.)
+        triMesh()->setAccuracy(min_angle_);
 
     if(velFlag_ && angVelFlag_)
         error->fix_error(FLERR,this,"cannot use 'surface_vel' and 'surface_ang_vel' together");
