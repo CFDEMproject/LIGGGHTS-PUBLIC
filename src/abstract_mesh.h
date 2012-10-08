@@ -33,6 +33,12 @@ namespace LAMMPS_NS
 
       public:
 
+        virtual void setMeshID(const char *_mesh_id) = 0;
+
+        virtual void setPrecision(double _precision) = 0;
+
+        virtual void autoRemoveDuplicates() = 0;
+
         // scale mesh
         virtual void scale(double factor) = 0;
 
@@ -75,7 +81,6 @@ namespace LAMMPS_NS
         virtual void writeRestart(FILE *fp) = 0;
         virtual void restart(double *list) = 0;
 
-        virtual void buildNeighbours() = 0;
         virtual bool allNodesInsideSimulationBox() = 0;
 
         virtual int numNodes() = 0;
@@ -88,6 +93,8 @@ namespace LAMMPS_NS
         virtual ContainerBase* container(bool type,int lenVec) = 0;
         */
         virtual int id_slow(int i) = 0;
+
+        virtual void setVerbose() = 0;
 
         virtual int nBelowAngle() = 0;
         virtual double angleLimit() = 0;

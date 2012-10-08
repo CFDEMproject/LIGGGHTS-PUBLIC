@@ -24,6 +24,7 @@
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Philippe Seil (JKU Linz)
    Christian Richter (OVGU Magdeburg, linear/variable and rotate/variable)
+   Niels Dallinger (TU Chemnitz, viblin and vibrot)
 ------------------------------------------------------------------------- */
 
 #include "mesh_mover.h"
@@ -483,3 +484,154 @@ void MeshMoverRiggle::initial_integrate(double dT,double dt)
       }
     }
 }
+
+/* ----------------------------------------------------------------------
+   MeshMoverVibLin 
+------------------------------------------------------------------------- */
+
+MeshMoverVibLin::MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh,
+                                 FixMoveMesh *_fix_move_mesh,
+                                 double axisX, double axisY, double axisZ,
+                                 int order, double amplitude[10], double phase[10],
+                                 double T)
+  : MeshMover(lmp,_mesh,_fix_move_mesh), omega_(2.*M_PI/T)
+{
+    axis_[0] = axisX;
+    axis_[1] = axisY;
+    axis_[2] = axisZ;
+    ord = order;
+  
+    vectorScalarDiv3D(axis_,vectorMag3D(axis_));
+    //array transfer
+    for (int j=0;j<order; j++) {
+       phi[j] = phase[j];
+       ampl[j] = amplitude[j];
+	   }
+
+    isFirst_ = mesh_->registerMove(false,true,false);
+}
+
+void MeshMoverVibLin::pre_delete()
+{
+    mesh_->unregisterMove(false,true,false);
+}
+
+MeshMoverVibLin::~MeshMoverVibLin()
+{
+
+}
+
+/* ---------------------------------------------------------------------- */
+void MeshMoverVibLin::initial_integrate(double dT,double dt)
+{
+    double dX[3],dx[3],vNode[3];
+    int size = mesh_->size();
+    int numNodes = mesh_->numNodes();
+    double ***v_node = get_v();
+    
+    double arg = 0;
+    double vA = 0;
+  
+    for (int j=0;j<ord; j++)
+        {
+        arg = arg+ampl[j]*cos(omega_*(j+1)*dT+phi[j]);
+        vA= vA-ampl[j]*(j+1)*omega_*sin(omega_*(j+1)*dT+phi[j]);
+        }
+    
+    // calculate velocity, same for all nodes
+    vectorScalarMult3D(axis_,vA,vNode);    
+    // calculate total and incremental displacement
+    vectorScalarMult3D(axis_,arg,dX); //total
+    vectorScalarMult3D(vNode,dt,dx); //incremental
+
+    // apply linear move
+    mesh_->move(dX,dx);
+
+    // set mesh velocity
+    for (int i = 0; i < size; i++)
+        for(int j = 0; j < numNodes; j++)
+            vectorAdd3D(v_node[i][j],vNode,v_node[i][j]);
+
+}
+
+/* ----------------------------------------------------------------------
+   MeshMoverVibRot
+------------------------------------------------------------------------- */
+
+MeshMoverVibRot::MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh, 
+                                 FixMoveMesh *_fix_move_mesh,
+                                 double px, double py, double pz,
+                                 double axisX, double axisY, double axisZ,
+                                 int order, double amplitude[10], double phase[10],
+                                 double T)
+  : MeshMover(lmp,_mesh,_fix_move_mesh), omega_(2.*M_PI/T)
+{
+    axis_[0] = axisX;
+    axis_[1] = axisY;
+    axis_[2] = axisZ;
+
+    vectorScalarDiv3D(axis_,vectorMag3D(axis_));
+
+    p_[0] = px;
+    p_[1] = py;
+    p_[2] = pz;
+    ord = order;
+   
+    //array transfer
+    for (int j=0;j<order; j++) {
+       phi[j] = phase[j];
+       ampl[j] = amplitude[j];
+	   }
+    
+    isFirst_ = mesh_->registerMove(false,true,true);
+}
+void MeshMoverVibRot::pre_delete()
+{
+    mesh_->unregisterMove(false,true,true);
+}
+
+MeshMoverVibRot::~MeshMoverVibRot()
+{
+
+}
+/* ---------------------------------------------------------------------- */
+
+void MeshMoverVibRot::initial_integrate(double dT,double dt)
+{
+    double xOld[3],node[3],omegaVec[3],rPA[3],vRot[3];
+        
+    double arg = 0;
+    double vR = 0;
+
+    for (int j=0;j<ord; j++)
+        {
+        arg =arg+ampl[j]*cos(omega_*(j+1)*dT+phi[j]);
+        vR= vR-ampl[j]*(j+1)*omega_*sin(omega_*(j+1)*dT+phi[j]);
+        }
+ 
+    int size = mesh_->size();
+    int numNodes = mesh_->numNodes();
+    double ***v_node = get_v();
+    double ***nodes = get_nodes();
+
+    double totalPhi = arg;
+    double incrementalPhi = vR*dt;
+ 
+    // rotate the mesh
+    mesh_->rotate(totalPhi,incrementalPhi,axis_,p_);
+
+    // set mesh velocity, vel_prefactor * w/|w| x rPA
+    vectorScalarMult3D(axis_,vR,omegaVec); 
+    
+    for(int i = 0; i < size; i++)
+    {
+      for(int iNode = 0; iNode < numNodes; iNode++)
+      {
+          vectorCopy3D(nodes[i][iNode],node);
+          vectorSubtract3D(node,p_,rPA);      
+          vectorCross3D(omegaVec,rPA,vRot); 
+          vectorAdd3D(v_node[i][iNode],vRot,v_node[i][iNode]);
+      }
+    }
+}
+

@@ -106,6 +106,7 @@ namespace LAMMPS_NS
         inline int popGlobalPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
         // mem managenement
+
         int getCapacity();
         inline void grow(int to);
 

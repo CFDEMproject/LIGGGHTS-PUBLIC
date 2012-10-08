@@ -508,7 +508,7 @@ void RegWedge::printProperty(const char *name, double val){
 
 void RegWedge::printContacts(double *x, int n){
   for (int i = 0; i<n; i++){
-    printf("n %lld Contact %i\n",update->ntimestep,i);
+    printf("step "BIGINT_FORMAT" Contact %i\n",update->ntimestep,i);
     printf("\tx\t: %f\t%f\t%f\n",x[0],x[1],x[2]);
     printf("\tr\t: %f\n\tdx\t: %f\n\tdy\t: %f\n\tdz\t: %f\n",contact[i].r,contact[i].delx,contact[i].dely,contact[i].delz);
   }

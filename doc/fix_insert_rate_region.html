@@ -31,7 +31,7 @@
 
 <LI>one or more general keyword/value pairs can be appended 
 
-<LI>general_keywords = <I>verbose</I> or <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel</I> or <I>omega</I> 
+<LI>general_keywords = <I>verbose</I> or <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel constant</I> or <I>vel uniform</I> or <I>vel gaussian</I> or <I>omega</I> 
 
 <PRE>  <I>verbose</I> = yes or no
   <I>maxattempt</I> value = ma
@@ -51,12 +51,25 @@
     ts = time-step at which insertion should start (positive integer larger than current time-step)
   <I>overlapcheck</I> value = yes or no
   <I>all_in</I> value = yes or no
-  <I>random_distribute</I> = exact or uncorrelated
-  <I>vel</I> values = constant vx vy vz
-    constant = obligatory word
+  <I>random_distribute</I> value = exact or uncorrelated
+  <I>vel constant</I> values = vx vy vz
     vx = x-velocity at insertion (velocity units)
     vy = y-velocity at insertion (velocity units)
     vz = z-velocity at insertion (velocity units)
+  <I>vel uniform</I> values = vx vy vz vFluctx vFlucty vFluctz
+    vx = mean x-velocity at insertion (velocity units)
+    vy = mean y-velocity at insertion (velocity units)
+    vz = mean z-velocity at insertion (velocity units)
+    vFluctx = amplitude of uniform x-velocity fluctuation at insertion (velocity units)
+    vFlucty = amplitude of uniform y-velocity fluctuation at insertion (velocity units)
+    vFluctz = amplitude of uniform z-velocity fluctuation at insertion (velocity units)
+  <I>vel gaussian</I> values = vx vy vz vFluctx vFlucty vFluctz
+    vx = mean x-velocity at insertion (velocity units)
+    vy = mean y-velocity at insertion (velocity units)
+    vz = mean z-velocity at insertion (velocity units)
+    vFluctx = standard deviation of Gaussian x-velocity fluctuation at insertion (velocity units)
+    vFlucty = standard deviation of Gaussian y-velocity fluctuation at insertion (velocity units)
+    vFluctz = standard deviation of Gaussian z-velocity fluctuation at insertion (velocity units)
   <I>omega</I> values = constant omegax omegay omegaz
     constant = obligatory word
     omegax = x-comonent of angular velocity (1/time units)
@@ -155,7 +168,10 @@ and applying a simple floor/ceil rounding operation would lead to a
 statistical bias.
 </P>
 <P>The initial velocity and rotational velocity can be controlled via the
-<I>vel</I> and <I>omega</I> keywords.
+<I>vel</I> and <I>omega</I> keywords. <I>vel constant</I> simply patches a constant 
+velocity to the inserted particles, <I>vel uniform</I> sets uniformly distributed 
+velocities with mean and amplitude. <I>vel gaussian</I> sets Gaussian 
+distributed particle velocities with mean and std. deviation.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>

@@ -68,8 +68,11 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   iarg = 3;
 
   if(strcmp(arg[iarg++],"seed")) error->fix_error(FLERR,this,"expecting keyword 'seed'");
-  seed = atoi(arg[iarg++]);
+  seed = atoi(arg[iarg++]) + comm->me;
   if (seed <= 0) error->fix_error(FLERR,this,"illegal seed");
+
+  // random number generator, seed depends on proc
+  random = new RanPark(lmp,seed);
 
   // set defaults
   init_defaults();
@@ -158,14 +161,34 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       iarg += 2;
       hasargs = true;
     } else if (strcmp(arg[iarg],"vel") == 0) {
-      if (iarg+5 > narg) error->fix_error(FLERR,this,"");
-      if (strcmp(arg[iarg+1],"constant") == 0)
-      {
+      if (iarg+5 > narg) error->fix_error(FLERR,this,"not enough keyword for 'vel'");
+      if (strcmp(arg[iarg+1],"constant") == 0)  {
           v_insert[0] = atof(arg[iarg+2]);
           v_insert[1] = atof(arg[iarg+3]);
           v_insert[2] = atof(arg[iarg+4]);
-      } else error->fix_error(FLERR,this,"expecting keyword 'constant' after keyword 'vel'");
-      iarg += 5;
+          iarg += 5;
+      } else if (strcmp(arg[iarg+1],"uniform") == 0) {
+          if (iarg+8 > narg) error->fix_error(FLERR,this,"not enough keyword for 'uniform'");
+          v_randomSetting = 1; //switch 1...distribute with equal prop.
+          v_insert[0] = atof(arg[iarg+2]);
+          v_insert[1] = atof(arg[iarg+3]);
+          v_insert[2] = atof(arg[iarg+4]);
+          v_insertFluct[0] = atof(arg[iarg+5]);
+          v_insertFluct[1] = atof(arg[iarg+6]);
+          v_insertFluct[2] = atof(arg[iarg+7]);
+          iarg += 8;
+      } else if (strcmp(arg[iarg+1],"gaussian") == 0) {
+          if (iarg+8 > narg) error->fix_error(FLERR,this,"not enough keyword for 'gaussian'");
+          v_randomSetting = 2; //switch 2...distribute with gaussian distrib.
+          v_insert[0] = atof(arg[iarg+2]);
+          v_insert[1] = atof(arg[iarg+3]);
+          v_insert[2] = atof(arg[iarg+4]);
+          v_insertFluct[0] = atof(arg[iarg+5]);
+          v_insertFluct[1] = atof(arg[iarg+6]);
+          v_insertFluct[2] = atof(arg[iarg+7]);
+          iarg += 8;
+      } else
+          error->fix_error(FLERR,this,"expecting keyword 'constant' or 'uniform' or 'gaussian' after keyword 'vel'");
       hasargs = true;
     } else if (strcmp(arg[iarg],"omega") == 0) {
       if (iarg+5 > narg) error->fix_error(FLERR,this,"");
@@ -205,9 +228,6 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   //min/max type to be inserted, need that to check if material properties defined for all materials
   type_max = fix_distribution->max_type();
   type_min = fix_distribution->min_type();
-
-  // random number generator, same for all procs
-  random = new RanPark(lmp,seed);
 
   // allgather arrays
   MPI_Comm_rank(world,&me);
@@ -290,7 +310,9 @@ void FixInsert::init_defaults()
 
   exact_number = 1;
 
+  v_randomSetting = 0;
   vectorZeroize3D(v_insert);
+  vectorZeroize3D(v_insertFluct);
   vectorZeroize3D(omega_insert);
 
   quatUnitize4D(quat_insert);
@@ -359,9 +381,12 @@ void FixInsert::init()
 {
     int ntimestep = update->ntimestep;
 
-    if (!atom->radius_flag || !atom->rmass_flag) error->fix_error(FLERR,this,"Fix insert requires atom attributes radius, rmass");
-    if (domain->triclinic) error->fix_error(FLERR,this,"Cannot use with triclinic box");
-    if (domain->dimension != 3) error->fix_error(FLERR,this,"Can use fix insert for 3d simulations only");
+    if (!atom->radius_flag || !atom->rmass_flag)
+        error->fix_error(FLERR,this,"Fix insert requires atom attributes radius, rmass");
+    if (domain->triclinic)
+        error->fix_error(FLERR,this,"Cannot use with triclinic box");
+    if (domain->dimension != 3)
+        error->fix_error(FLERR,this,"Can use fix insert for 3d simulations only");
     
     fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere", 0));
     if(!fix_multisphere) multisphere = NULL;
@@ -733,7 +758,7 @@ void FixInsert::restart(char *buf)
   double *list = (double *) buf;
   double next_reneighbor_re;
 
-  seed = static_cast<int> (list[n++]);
+  seed = static_cast<int> (list[n++]) + comm->me;
   ninserted = static_cast<int> (list[n++]);
   first_ins_step = static_cast<int> (list[n++]);
   next_reneighbor_re = static_cast<int> (list[n++]);

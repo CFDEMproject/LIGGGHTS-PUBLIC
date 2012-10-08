@@ -347,6 +347,7 @@ void Neighbor::init()
 
   if (dist_check == 0) {
     memory->destroy(xhold);
+    memory->destroy(rhold);
     maxhold = 0;
     xhold = NULL;
     rhold = NULL;
@@ -1168,7 +1169,7 @@ int Neighbor::decide()
 int Neighbor::check_distance()
 {
   double delx,dely,delz,rsq;
-  double delta,deltasq,delta1,delta2,delta_r,trigger; 
+  double delta,deltasq,delta1,delta2,delr,delrsq,trigger; 
 
   if (boxcheck) {
     if (triclinic == 0) {
@@ -1213,6 +1214,7 @@ int Neighbor::check_distance()
         delz = x[i][2] - xhold[i][2];
         rsq = delx*delx + dely*dely + delz*delz;
         if (rsq > deltasq) flag = 1;
+        
       }
   }
   
@@ -1222,11 +1224,12 @@ int Neighbor::check_distance()
         delx = x[i][0] - xhold[i][0];
         dely = x[i][1] - xhold[i][1];
         delz = x[i][2] - xhold[i][2];
-        delta_r = radius[i] - rhold[i];
+        delr = radius[i] - rhold[i];
         rsq = delx*delx + dely*dely + delz*delz;
-        
-        if (delta_r > delta || rsq > deltasq - 2.*delta_r*delta + delta_r*delta_r)
+        delrsq = delr*delr;
+        if (delrsq > deltasq || rsq > deltasq - 2.*delr*delta + delr*delr)
             flag = 1;
+        
       }
       
   }
@@ -1873,6 +1876,7 @@ bigint Neighbor::memory_usage()
 {
   bigint bytes = 0;
   bytes += memory->usage(xhold,maxhold,3);
+  bytes += memory->usage(rhold,maxhold);
 
   if (style != NSQ) {
     bytes += memory->usage(bins,maxbin);

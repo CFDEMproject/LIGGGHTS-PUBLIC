@@ -37,7 +37,7 @@
 #include "bounding_box.h"
 #include "random_park.h"
 
-#define EPSILON_ACCURACY 1e-8
+#define EPSILON_PRECISION 1e-8
 
 namespace LAMMPS_NS
 {
@@ -51,7 +51,9 @@ namespace LAMMPS_NS
 
         void setMeshID(const char *_mesh_id);
 
-        void setAccuracy(double _accuracy);
+        void setPrecision(double _precision);
+
+        void autoRemoveDuplicates();
 
         // scale mesh
         virtual void scale(double factor);
@@ -69,6 +71,8 @@ namespace LAMMPS_NS
         // rotation w/ incremental displacement
         //   calls rotate(double *dQuat,double *displacement)
         void rotate(double dAngle, double *axis, double *p);
+
+        void updateCenterRbound(int ilo,int ihi);
 
         // initialize movement
         bool registerMove(bool _scale, bool _translate, bool _rotate);
@@ -112,6 +116,9 @@ namespace LAMMPS_NS
         inline char* mesh_id()
         { return mesh_id_; }
 
+        inline bool removeDuplicates()
+        { return autoRemoveDuplicates_; }
+
         // virtual functions for size
         // parallelism implemented in derived class
         virtual int sizeLocal() = 0;
@@ -123,7 +130,10 @@ namespace LAMMPS_NS
         MultiNodeMesh(LAMMPS *lmp);
         virtual ~MultiNodeMesh();
 
-        virtual void addElement(double **nodeToAdd);
+        virtual bool isDeforming()
+        { return false; }
+
+        virtual bool addElement(double **nodeToAdd);
         virtual void deleteElement(int n);
 
         virtual void refreshOwned(int setupFlag);
@@ -136,6 +146,10 @@ namespace LAMMPS_NS
         // called with local index
         // iNode, jNode return indices of first shared node
         bool shareNode(int iElem, int jElem, int &iNode, int &jNode);
+
+        // returns number of shared nodes
+        // called with local index
+        int nSharedNodes(int iElem, int jElem);
 
         // returns node index if iElem contains nodeToCheck
         int containsNode(int iElem, double *nodeToCheck);
@@ -183,8 +197,11 @@ namespace LAMMPS_NS
 
       private:
 
-        // mesh accuracy
-        double accuracy_;
+        // mesh precision
+        double precision_;
+
+        // state if elements should be automatically removed if duplicate
+        bool autoRemoveDuplicates_;
 
         // flags stating how many move operations are performed on the mesh
         int nMove_;

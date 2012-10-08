@@ -46,9 +46,11 @@ namespace LAMMPS_NS
         void writeRestart(FILE *fp);
         void restart(double *list);
 
-        virtual void buildNeighbours() = 0;
-
         bool allNodesInsideSimulationBox();
+        void useAsInsertionMesh(bool parallel);
+
+        inline bool isInsertionMesh()
+        { return isInsertionMesh_; }
 
         inline int sizeLocal()
         { return nLocal_; }
@@ -72,11 +74,20 @@ namespace LAMMPS_NS
         MultiNodeMeshParallel(LAMMPS *lmp);
         virtual ~MultiNodeMeshParallel();
 
-        virtual void addElement(double **nodeToAdd);
+        virtual bool addElement(double **nodeToAdd);
         virtual void deleteElement(int n);
+
+        virtual void buildNeighbours() = 0;
 
         virtual void refreshOwned(int setupFlag);
         virtual void refreshGhosts(int setupFlag);
+
+        virtual void qualityCheck() = 0;
+
+        virtual void preSetup() {}
+        virtual void preInitialSetup() {}
+        virtual void postInitialSetup() {}
+        virtual void postBorders() {}
 
         virtual void clearMap() = 0;
         virtual void generateMap() = 0;
@@ -97,6 +108,9 @@ namespace LAMMPS_NS
         virtual int meshPropsBufSize(int operation,bool scale,bool translate,bool rotate) = 0;
         virtual int pushMeshPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate) = 0;
         virtual int popMeshPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate) = 0;
+
+        // flags if mesh should be parallelized
+        bool doParallellization_;
 
       private:
 
@@ -127,7 +141,11 @@ namespace LAMMPS_NS
         // initial number of elements
         int nGlobalOrig_;
 
+        // flags if mesh is parallelized
         bool isParallel_;
+
+        // flag indicating usage as insertion mesh
+        bool isInsertionMesh_;
 
         // *************************************
         // comm stuff - similar to Comm class

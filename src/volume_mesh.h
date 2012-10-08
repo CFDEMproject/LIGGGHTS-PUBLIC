@@ -25,29 +25,14 @@
 #include "tracking_mesh.h"
 #include "container.h"
 
-#include "surface_mesh.h"
-
-/*
-
-TODO
-
-integrate volume mesh
-neigh list build
-etc
-
-*/
-
 namespace LAMMPS_NS{
 
-template<int NUM_NODES,int N_FACES>
+template<int NUM_NODES,int NUM_FACES,int NUM_NODES_PER_FACE>
 class VolumeMesh : public TrackingMesh<NUM_NODES>
 {
   public:
 
-    void useAsInsertionMesh();
-
-    void addElement(double **nodeToAdd);
-    void buildNeighbours();
+    bool addElement(double **nodeToAdd);
 
     void move(double *vecTotal, double *vecIncremental);
     void move(double *vecIncremental);
@@ -80,10 +65,12 @@ class VolumeMesh : public TrackingMesh<NUM_NODES>
 
   protected:
 
-    VolumeMesh();
+    VolumeMesh(LAMMPS *lmp);
     virtual ~VolumeMesh();
 
     void deleteElement(int n);
+
+    void buildNeighbours();
 
     void refreshOwned(int setupFlag);
     void refreshGhosts(int setupFlag);
@@ -93,9 +80,10 @@ class VolumeMesh : public TrackingMesh<NUM_NODES>
 
     void calcVolPropertiesOfNewElement();
 
-    virtual bool isInside(int nElem, double *p) =0;
-    virtual double calcVol(int nElem) =0;
-    virtual double calcCenter(int nElem) =0;
+    virtual bool shareFace(int i, int j, int &iFace, int &jFace) = 0;
+
+    virtual bool isInside(int nElem, double *p) = 0;
+    virtual double calcVol(int nElem) = 0;
 
     int randomOwnedGhostElement();
 
@@ -103,28 +91,42 @@ class VolumeMesh : public TrackingMesh<NUM_NODES>
     void rotate(double *dQ,double *dDispl);
 
     // inline access
-    inline double&  vol(int i)         {return (vol_)(i);}
-    inline double&  volAcc(int i)      {return (volAcc_)(i);}
+
+    inline double&  vol(int i)
+    { return (vol_)(i); }
+
+    inline double& volAcc(int i)
+    { return (volAcc_)(i); }
+
+    inline double** faceNodes(int i)
+    { return faceNodes_[i]; }
+
+  private:
+
+    void checkOrientation(int n);
+    void calcFaceNormals(int n);
+
+    int searchElementByVolAcc(double vol,int lo, int hi);
 
     // mesh properties
 
     ScalarContainer<double>& volMesh_; 
 
-    // per-element properties
+    // volume and accumulated volume for each element
 
     ScalarContainer<double> &vol_;
     ScalarContainer<double> &volAcc_;
 
-    // neighbor topology
+    // faces for each element
+
+    MultiVectorContainer<int,NUM_FACES,NUM_NODES_PER_FACE>& faceNodes_;
+    MultiVectorContainer<double,NUM_FACES,3>& faceNormals_;
+    VectorContainer<bool,NUM_FACES>& isBoundaryFace_;
+
+    // neighbor topology for each element
+
     ScalarContainer<int>& nNeighs_;
-    VectorContainer<int,NUM_NODES>& neighElems_;
-
-  private:
-
-    int searchElementByVolAcc(double vol,int lo, int hi);
-
-    // flag indicating usage as insertion mesh
-    bool isInsertionMesh_;
+    VectorContainer<int,NUM_FACES>& neighElems_;
 };
 
 // *************************************

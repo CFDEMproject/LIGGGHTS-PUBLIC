@@ -34,17 +34,15 @@
 
 namespace LAMMPS_NS
 {
+  
+  typedef SurfaceMesh<3,5> SurfaceMeshBase;
 
-  class TriMesh : public SurfaceMesh<3>
+  class TriMesh : public SurfaceMeshBase
   {
       public:
 
         TriMesh(LAMMPS *lmp);
         virtual ~TriMesh();
-
-        void addTriangle(double *a, double *b, double *c);
-        void addTriangleComplete();
-        void deleteTriangle(int n);
 
         double resolveTriSphereContact(int nTri, double rSphere, double *cSphere, double *delta);
         double resolveTriSphereContactBary(int nTri, double rSphere, double *cSphere,
@@ -54,7 +52,8 @@ namespace LAMMPS_NS
 
         int generateRandomOwnedGhost(double *pos);
         int generateRandomSubbox(double *pos);
-        int generateRandomSubboxWithin(double *pos,double delta);
+
+        virtual int generateRandomOwnedGhostWithin(double *pos,double delta);
 
       protected:
 
@@ -66,7 +65,7 @@ namespace LAMMPS_NS
         double calcDist(double *cs, double *closestPoint, double *en0);
         double calcDistToPlane(double *p, double *pPlane, double *nPlane);
 
-        double resolveCornerContactBary(int iTri, int iNode, bool obtuse, 
+        double resolveCornerContactBary(int iTri, int iNode, bool obtuse,
                                     double *p, double *delta, double *bary);
         double resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary);
         double resolveFaceContactBary(int iTri, double *p, double *node0ToSphereCenter, double *delta);

@@ -28,6 +28,7 @@
 #ifdef FIX_CLASS
 
 FixStyle(mesh/surface,FixMeshSurface)
+FixStyle(mesh/surface/planar,FixMeshSurface)
 
 #else
 
@@ -55,7 +56,7 @@ namespace LAMMPS_NS
         virtual void init() {}
 
         virtual int setmask();
-        void setup_pre_force(int);
+        virtual void setup_pre_force(int);
 
         virtual void pre_force(int);
         virtual void final_integrate();
@@ -106,12 +107,6 @@ namespace LAMMPS_NS
 
         // mesh curvature
         double curvature_;
-
-        // mesh accuracy
-        double accuracy_;
-
-        // min mesh elem angle
-        double min_angle_;
   };
 
 } /* namespace LAMMPS_NS */

@@ -37,7 +37,8 @@
 </PRE>
 <PRE>  <I>image</I> args = discussed on <A HREF = "dump_image.html">dump image</A> doc page 
 </PRE>
-<PRE>  <I>mesh/stl</I> args = 'local' or 'ghost' or 'all' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
+<PRE>  <I>mesh/stl</I> args = 'local' or 'ghost' or 'all' or 'region' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
+      <I>region</I> values = ID for region threshold
   <I>mesh/vtk</I> args =  zero or more keyword/ value pairs and one or more dump-identifiers
       keywords = <I>output</I>
       <I>output</I> values = face or interpolate 
@@ -331,6 +332,10 @@ The third command will output one file per time-step per processor
 containing the ghost (corona) mesh elements of each processor. 
 The third command will output one file per time-step containing the 
 ghost (corona) mesh elements of all processors. 
+</P>
+<P>With the <I>region</I> keyword, just those mesh element where the element center
+(arithmetic average of all nodes) is in the specified region, will be
+dumped.
 </P>
 <P>This dump is especially useful if a
 <A HREF = "fix_move_mesh.html">fix move/mesh</A> is registered. If the position 

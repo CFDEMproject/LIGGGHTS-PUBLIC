@@ -322,6 +322,13 @@ inline void vectorZeroizeN(int *v,int n)
      v[i]=0;
 }
 
+inline void vectorInitialize3D(double *v,double init)
+{
+  v[0]=init;
+  v[1]=init;
+  v[2]=init;
+}
+
 inline void vectorInitializeN(int *v,int n,int init)
 {
   for(int i = 0; i < n; i++)
@@ -398,6 +405,22 @@ inline void printVec3D(FILE *out,char *name, int *vec)
 inline void printVec4D(FILE *out,char *name, double *vec)
 {
     fprintf(out," vector %s: %e %e %e %e\n",name,vec[0],vec[1],vec[2],vec[3]);
+}
+
+inline void printVecN(FILE *out,char *name, double *vec, int n)
+{
+    fprintf(out," vector %s:\n",name);
+    for(int i = 0; i < n; i++)
+        fprintf(out,"%f ",vec[i]);
+    fprintf(out,"\n");
+}
+
+inline void printVecN(FILE *out,char *name, int *vec, int n)
+{
+    fprintf(out," vector %s:\n",name);
+    for(int i = 0; i < n; i++)
+        fprintf(out,"%d \n",vec[i]);
+    fprintf(out,"\n");
 }
 
 inline void printMat33(FILE *out,char *name, double **mat)

@@ -57,7 +57,7 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
 
   if (narg < 7)
     error->all(FLERR,"Illegal fix particledistribution/discrete command, not enough arguments");
-  seed = atoi(arg[3]);
+  seed = atoi(arg[3]) + comm->me;
   random = new RanPark(lmp,seed);
   ntemplates = atoi(arg[4]);
   if(ntemplates < 1)
@@ -522,7 +522,7 @@ void FixParticledistributionDiscrete::restart(char *buf)
   int n = 0;
   double *list = (double *) buf;
 
-  seed = static_cast<int> (list[n++]);
+  seed = static_cast<int> (list[n++]) + comm->me;
 
   random->reset(seed);
 }

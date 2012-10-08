@@ -335,6 +335,9 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
     int ntry = 0;
     int maxtry = calc_maxtry(ninsert_this_local);
 
+    double v_toInsert[3];
+    vectorZeroize3D(v_toInsert);
+
     // no overlap check
     if(!check_ol_flag)
     {
@@ -354,11 +357,25 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
 
             if(ntry == maxtry) break;
 
+            // randomize vel, omega, quat here
+            vectorCopy3D(v_insert,v_toInsert);
             // could ramdonize vel, omega, quat here
+            if(v_randomSetting==1)
+            {
+                v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
+                v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
+                v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
+            }
+            if(v_randomSetting==2)
+            {
+                v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
+                v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
+                v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
+            }
 
             if(pos[0] == 0. && pos[1] == 0. && pos[2] == 0.)
                 error->one(FLERR,"FixInsertPack::x_v_omega() illegal position");
-            ninserted_spheres_this_local += pti->set_x_v_omega(pos,v_insert,omega_insert,quat_insert);
+            ninserted_spheres_this_local += pti->set_x_v_omega(pos,v_toInsert,omega_insert,quat_insert);
             mass_inserted_this_local += pti->mass_ins;
             ninserted_this_local++;
 
@@ -388,9 +405,24 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
                 }
                 while(ntry < maxtry && domain->dist_subbox_borders(pos) < rbound);
 
-                // could ramdonize vel, omega, quat here
+                // randomize vel, omega, quat here
+                vectorCopy3D(v_insert,v_toInsert);
 
-                nins = pti->check_near_set_x_v_omega(pos,v_insert,omega_insert,quat_insert,xnear,nspheres_near);
+                // could ramdonize vel, omega, quat here
+                if(v_randomSetting==1)
+                {
+                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
+                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
+                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
+                }
+                else if(v_randomSetting==2)
+                {
+                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
+                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
+                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
+                }
+
+                nins = pti->check_near_set_x_v_omega(pos,v_toInsert,omega_insert,quat_insert,xnear,nspheres_near);
 
             }
 

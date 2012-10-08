@@ -56,7 +56,7 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
 
   // random number generator, same for all procs
   if (narg < 4) error->fix_error(FLERR,this,"not enough arguments");
-  seed = atoi(arg[3]);
+  seed = atoi(arg[3]) + comm->me;
   random = new RanPark(lmp,seed);
 
   iarg = 4;
@@ -419,7 +419,7 @@ void FixTemplateSphere::restart(char *buf)
   int n = 0;
   double *list = (double *) buf;
 
-  seed = static_cast<int> (list[n++]);
+  seed = static_cast<int> (list[n++]) + comm->me;
 
   random->reset(seed);
 }

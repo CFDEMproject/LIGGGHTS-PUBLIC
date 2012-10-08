@@ -116,7 +116,7 @@ int ParticleToInsert::check_near_set_x_v_omega(double *x,double *v, double *omeg
     xnear[nnear][3] = radius_ins[0];
     nnear++;
 
-        return 1;
+    return 1;
 }
 
 /* ---------------------------------------------------------------------- */

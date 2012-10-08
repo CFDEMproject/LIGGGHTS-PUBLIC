@@ -25,7 +25,7 @@
    constructor, destructor
 ------------------------------------------------------------------------- */
 
-TriMesh::TriMesh(LAMMPS *lmp) : SurfaceMesh<3>(lmp)
+TriMesh::TriMesh(LAMMPS *lmp) : SurfaceMeshBase(lmp)
 {
 }
 

@@ -36,7 +36,8 @@
   MultiNodeMesh<NUM_NODES>::MultiNodeMesh(LAMMPS *lmp)
   : AbstractMesh(lmp),
     node_orig_(0),
-    accuracy_(EPSILON_ACCURACY),
+    precision_(EPSILON_PRECISION),
+    autoRemoveDuplicates_(false),
     nMove_(0),
     stepLastReset_(-1),
     nScale_(0),
@@ -61,6 +62,7 @@
 
   /* ----------------------------------------------------------------------
    set ID and mesh accuracy (latter used for mesh topology)
+   set healing options
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
@@ -72,9 +74,15 @@
   }
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::setAccuracy(double _accuracy)
+  void MultiNodeMesh<NUM_NODES>::setPrecision(double _precision)
   {
-      accuracy_ = _accuracy;
+      precision_ = _precision;
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::autoRemoveDuplicates()
+  {
+      autoRemoveDuplicates_ = true;
   }
 
   /* ----------------------------------------------------------------------
@@ -83,12 +91,14 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::addElement(double **nodeToAdd)
+  bool MultiNodeMesh<NUM_NODES>::addElement(double **nodeToAdd)
   {
     double avg[3];
 
     // add node
     node_.add(nodeToAdd);
+
+    int n = sizeLocal();
 
     // calculate center
     vectorZeroize3D(avg);
@@ -96,8 +106,6 @@
         vectorAdd3D(nodeToAdd[i],avg,avg);
     vectorScalarDiv3D(avg,static_cast<double>(NUM_NODES));
     center_.add(avg);
-
-    int n = sizeLocal();
 
     // extend bbox
     this->extendToElem(n);
@@ -111,6 +119,23 @@
         rb = MathExtraLiggghts::max(rb,vectorMag3D(vec));
     }
     rBound_.add(rb);
+
+    if(autoRemoveDuplicates_)
+    {
+        for(int i = 0; i < n; i++)
+        {
+            
+            if(this->nSharedNodes(i,n) == NUM_NODES)
+            {
+                
+                node_.del(n);
+                center_.del(n);
+                return false;
+            }
+        }
+    }
+
+    return true;
   }
 
   /* ----------------------------------------------------------------------
@@ -135,10 +160,15 @@
   template<int NUM_NODES>
   void MultiNodeMesh<NUM_NODES>::refreshOwned(int setupFlag)
   {
+      int ilo = 0, ihi = sizeLocal();
+
+      if(isDeforming())
+          updateCenterRbound(ilo,ihi);
+
       storeNodePosRebuild();
 
       if(node_orig_ && setupFlag)
-        storeNodePosOrig(0,sizeLocal());
+        storeNodePosOrig(ilo,ihi);
 
       // nothing more to do here, necessary initialitation done in addElement()
   }
@@ -146,8 +176,13 @@
   template<int NUM_NODES>
   void MultiNodeMesh<NUM_NODES>::refreshGhosts(int setupFlag)
   {
+      int ilo = sizeLocal(), ihi = sizeLocal()+sizeGhost();
+
+      if(isDeforming())
+          updateCenterRbound(ilo,ihi);
+
       if(node_orig_ && setupFlag)
-        storeNodePosOrig(sizeLocal(),sizeLocal()+sizeGhost());
+        storeNodePosOrig(ilo,ihi);
 
       // nothing more to do here, necessary initialitation done in addElement()
   }
@@ -160,7 +195,7 @@
   bool MultiNodeMesh<NUM_NODES>::nodesAreEqual(int iElem, int iNode, int jElem, int jNode)
   {
     for(int i=0;i<3;i++)
-      if(!MathExtraLiggghts::compDouble(node_(iElem)[iNode][i],node_(jElem)[jNode][i],accuracy_))
+      if(!MathExtraLiggghts::compDouble(node_(iElem)[iNode][i],node_(jElem)[jNode][i],precision_))
         return false;
     return true;
   }
@@ -169,7 +204,7 @@
   bool MultiNodeMesh<NUM_NODES>::nodesAreEqual(double *nodeToCheck1,double *nodeToCheck2)
   {
     for(int i=0;i<3;i++)
-      if(!MathExtraLiggghts::compDouble(nodeToCheck1[i],nodeToCheck2[i],accuracy_))
+      if(!MathExtraLiggghts::compDouble(nodeToCheck1[i],nodeToCheck2[i],precision_))
         return false;
     return true;
   }
@@ -179,9 +214,9 @@
   {
       for(int iNode = 0; iNode < NUM_NODES; iNode++)
       {
-          if(MathExtraLiggghts::compDouble(node_(iElem)[iNode][0],nodeToCheck[0],accuracy_) &&
-             MathExtraLiggghts::compDouble(node_(iElem)[iNode][1],nodeToCheck[1],accuracy_) &&
-             MathExtraLiggghts::compDouble(node_(iElem)[iNode][2],nodeToCheck[2],accuracy_))
+          if(MathExtraLiggghts::compDouble(node_(iElem)[iNode][0],nodeToCheck[0],precision_) &&
+             MathExtraLiggghts::compDouble(node_(iElem)[iNode][1],nodeToCheck[1],precision_) &&
+             MathExtraLiggghts::compDouble(node_(iElem)[iNode][2],nodeToCheck[2],precision_))
                 return iNode;
       }
       return -1;
@@ -197,7 +232,7 @@
     // broad phase
     double dist[3], radsum;
     vectorSubtract3D(center_(iElem),center_(jElem),dist);
-    radsum = rBound_(iElem)+ rBound_(jElem);
+    radsum = rBound_(iElem) + rBound_(jElem);
     if(vectorMag3DSquared(dist) > radsum*radsum)
     {
         iNode = -1; jNode = -1;
@@ -218,6 +253,31 @@
     iNode = -1; jNode = -1;
     
     return false;
+  }
+
+  /* ----------------------------------------------------------------------
+   return the number of shared nodes
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  int MultiNodeMesh<NUM_NODES>::nSharedNodes(int iElem, int jElem)
+  {
+    double dist[3], radsum;
+    int nShared = 0;
+
+    // broad phase
+    vectorSubtract3D(center_(iElem),center_(jElem),dist);
+    radsum = rBound_(iElem) + rBound_(jElem);
+    if(vectorMag3DSquared(dist) > radsum*radsum)
+        return 0;
+
+    // narrow phase
+    for(int i=0;i<NUM_NODES;i++)
+      for(int j=0;j<NUM_NODES;j++)
+        if(MultiNodeMesh<NUM_NODES>::nodesAreEqual(iElem,i,jElem,j))
+          nShared++;
+
+    return nShared;
   }
 
   /* ----------------------------------------------------------------------
@@ -541,6 +601,34 @@
   }
 
   /* ----------------------------------------------------------------------
+   update center and rbound from node data
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::updateCenterRbound(int ilo, int ihi)
+  {
+    for(int i = ilo; i < ihi; i++)
+    {
+      vectorZeroize3D(center_(i));
+      for(int j = 0; j < NUM_NODES; j++)
+        vectorAdd3D(node_(i)[j],center_(i),center_(i));
+      vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
+
+      // calculate rounding radius
+      double rb = 0.;
+      double vec[3];
+      for(int j = 0; j < NUM_NODES; j++)
+      {
+         vectorSubtract3D(center_(i),node_(i)[j],vec);
+         rb = MathExtraLiggghts::max(rb,vectorMag3D(vec));
+      }
+      rBound_(i) = rb;
+    }
+
+    updateGlobalBoundingBox();
+  }
+
+  /* ----------------------------------------------------------------------
    bounding box funtions
   ------------------------------------------------------------------------- */
 
@@ -593,7 +681,7 @@
   bool MultiNodeMesh<NUM_NODES>::decideRebuild()
   {
     // just return for non-moving mesh
-    if(!isMoving()) return false;
+    if(!isMoving() && !isDeforming()) return false;
 
     double ***node = node_.begin();
     double ***old = nodesLastRe_.begin();
@@ -634,7 +722,7 @@
   void MultiNodeMesh<NUM_NODES>::storeNodePosRebuild()
   {
     // just return for non-moving mesh
-    if(!isMoving()) return;
+    if(!isMoving() && !isDeforming()) return;
 
     int nlocal = sizeLocal();
     double ***node = node_.begin();

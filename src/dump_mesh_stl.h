@@ -55,6 +55,9 @@ class DumpMeshSTL : public Dump {
 
   int writeBinarySTL_;
 
+  // region filter
+  int iregion_;
+
   int modify_param(int, char **);
   void write_header(bigint ndump);
   int count();

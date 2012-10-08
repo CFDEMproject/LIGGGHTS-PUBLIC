@@ -69,7 +69,9 @@ class DumpMeshVTK : public Dump {
   // stresscomponents
   class VectorContainer<double,3> **f_node_;
   // temp
-  // TODO
+  class ScalarContainer<double> **T_;
+  // min dist from active edge
+  class ScalarContainer<double> **min_active_edge_dist_;
 
   int modify_param(int, char **);
   void write_header(bigint ndump);

@@ -50,13 +50,15 @@ namespace LAMMPS_NS
         virtual void init();
         virtual int setmask();
 
+        virtual void setup_pre_force(int vflag);
+
         void pre_force(int vflag);
         void final_integrate();
 
         double compute_vector(int n);
 
-        void add_particle_contribution(int ip, double *frc, double *delta,
-                                       int iTri, double *v_wall);
+        virtual void add_particle_contribution(int ip, double *frc,
+                            double *delta, int iTri, double *v_wall);
 
         void add_external_contribution(double *frc);
         void add_external_contribution(double *frc,double *trq);
@@ -65,6 +67,9 @@ namespace LAMMPS_NS
 
         inline bool trackWear()
         { return wear_flag_; }
+
+        inline bool trackStress()
+        { return stress_flag_; }
 
         inline void f_total(double *_f)
         { vectorCopy3D(f_total_,_f); }
@@ -138,5 +143,5 @@ namespace LAMMPS_NS
 
 } /* namespace LAMMPS_NS */
 
-#endif /* LMP_FIX_MESH_H */
-#endif /* FIX_CLASS */
+#endif
+#endif

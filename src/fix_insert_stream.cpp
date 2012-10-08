@@ -41,6 +41,7 @@
 #include "multisphere.h"
 #include "fix_template_sphere.h"
 #include "particleToInsert.h"
+#include "tri_mesh_planar.h"
 
 enum{FACE_NONE,FACE_MESH,FACE_CIRCLE};
 
@@ -53,8 +54,7 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
-  FixInsert(lmp, narg, arg),
-  mesh_copy(new TriMesh(lmp))
+  FixInsert(lmp, narg, arg)
 {
   // set defaults first, then parse args
   init_defaults();
@@ -72,7 +72,7 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
       if (strncmp(modify->fix[f_i]->style,"mesh",4))
         error->fix_error(FLERR,this,"The fix belonging to the id you provided is not of type mesh");
       ins_face = (static_cast<FixMeshSurface*>(modify->fix[f_i]))->triMesh();
-      ins_face->useAsInsertionMesh();
+      ins_face->useAsInsertionMesh(false);
       face_style = FACE_MESH;
       iarg += 2;
       hasargs = true;
@@ -108,7 +108,6 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
 
   fix_release = NULL;
   i_am_integrator = false;
-  do_copy = true;
 
   ins_fraction = 0.;
   do_ins_fraction_calc = true;
@@ -120,7 +119,6 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
 
 FixInsertStream::~FixInsertStream()
 {
-    delete mesh_copy;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -153,8 +151,6 @@ void FixInsertStream::post_create()
         fixarg[15]="0.";
         modify->add_fix_property_atom(16,fixarg,style);
   }
-
-  if(do_copy) create_mesh_copy();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -202,6 +198,12 @@ void FixInsertStream::calc_insertion_properties()
         // check if face planar
         if(!ins_face->isPlanar())
             error->fix_error(FLERR,this,"command requires a planar face for insertion");
+
+        if(all_in_flag)
+        {
+            if(!dynamic_cast<TriMeshPlanar*>(ins_face))
+                error->fix_error(FLERR,this,"using all_in yes requires you to use a fix mesh/surface/planar");
+        }
 
         // get normal vector of face 0
         ins_face->surfaceNorm(0,normalvec);
@@ -339,61 +341,12 @@ void FixInsertStream::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixInsertStream::create_mesh_copy()
-{
-    
-    int size_global = ins_face->sizeGlobal();
-    int size_local = ins_face->sizeLocal();
-
-    if(!ins_face->isParallel())
-    {
-        double **nodeTmp = create<double>(nodeTmp,3,3);
-        for(int i = 0; i < size_local; i++)
-        {
-            for(int j = 0; j < 3; j++)
-                ins_face->node_slow(i,j,nodeTmp[j]);
-
-            mesh_copy->addElement(nodeTmp);
-        }
-        destroy<double>(nodeTmp);
-    }
-    
-    else
-    {
-        double ***nodeTmp = create<double>(nodeTmp,size_global,3,3);
-        int id;
-
-        vectorZeroizeN(&(nodeTmp[0][0][0]),size_global*3*3);
-
-        for(int i = 0; i < size_local; i++)
-        {
-            id = ins_face->id_slow(i);
-            for(int j = 0; j < 3; j++)
-                ins_face->node_slow(i,j,nodeTmp[id][j]);
-        }
-
-        MPI_Sum_Vector(&(nodeTmp[0][0][0]),size_global*3*3,world);
-
-        for(int i = 0; i < size_global; i++)
-            mesh_copy->addElement(nodeTmp[i]);
-
-        destroy<double>(nodeTmp);
-    }
-
-    mesh_copy->useAsShallowGlobalMesh();
-    mesh_copy->setMeshID(ins_face->mesh_id());
-
-    do_copy = false;
-    
-}
-
-/* ---------------------------------------------------------------------- */
-
 double FixInsertStream::insertion_fraction()
 {
+    
     // have to re-calculate insertion fraction for my subbox
     // in case simulation box is changing
-    if(domain->box_change || do_ins_fraction_calc)
+    if(domain->box_change || do_ins_fraction_calc || ins_face->isMoving())
         calc_ins_fraction();
 
     return ins_fraction;
@@ -514,11 +467,10 @@ inline void FixInsertStream::generate_random(double *pos, double rad)
     // generate random position on the mesh
     
     if(all_in_flag)
-        error->one(FLERR,"FixInsertStream: all_in 'yes' not yet implemented");
+        ins_face->generateRandomOwnedGhostWithin(pos,rad);
         
     else
-        
-        mesh_copy->generateRandomOwnedGhost(pos);
+        ins_face->generateRandomOwnedGhost(pos);
         
     // extrude the position
     
@@ -544,7 +496,7 @@ inline void FixInsertStream::generate_random_global(double *pos)
 
     // generate random position on the mesh
     
-    mesh_copy->generateRandomOwnedGhost(pos);
+    ins_face->generateRandomOwnedGhost(pos);
 
     // extrude the position
     r = -1.*(random->uniform()*extrude_length);
@@ -699,7 +651,7 @@ void FixInsertStream::end_of_step()
     int step = update->ntimestep;
     int nlocal = atom->nlocal;
     double **release_data = fix_release->array_atom;
-    double time_elapsed, dist_elapsed[3], v_integrate[3];
+    double time_elapsed, dist_elapsed[3], v_integrate[3],v_toInsert[3];
     double dt = update->dt;
 
     double **x = atom->x;
@@ -746,7 +698,25 @@ void FixInsertStream::end_of_step()
                 vectorZeroize3D(torque[i]);
 
                 // set inital conditions
-                vectorCopy3D(v_integrate,v[i]);
+                // randomize vel, omega, quat here
+                vectorCopy3D(v_insert,v_toInsert);
+
+                // could ramdonize vel, omega, quat here
+                if(v_randomSetting==1)
+                {
+                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
+                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
+                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
+                }
+                else if(v_randomSetting==2)
+                {
+                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
+                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
+                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
+                }
+
+                vectorCopy3D(v_toInsert,v[i]);
+                
                 vectorCopy3D(omega_insert,omega[i]);
 
             }

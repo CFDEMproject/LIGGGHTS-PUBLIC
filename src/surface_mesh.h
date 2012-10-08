@@ -40,14 +40,14 @@
 #include <cmath>
 #include "math_extra_liggghts.h"
 
-#define EPSILON_CURVATURE 0.0001
+#define EPSILON_CURVATURE 0.00001
 #define MIN_ANGLE_MESH 0.5 // in degress
 
 using namespace LAMMPS_MEMORY_NS;
 
 namespace LAMMPS_NS{
 
-template<int NUM_NODES>
+template<int NUM_NODES, int NUM_NEIGH_MAX>
 class SurfaceMesh : public TrackingMesh<NUM_NODES>
 {
       public:
@@ -55,28 +55,25 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         //virtual double distToElem(int nElem, double *p) = 0;
 
         void setCurvature(double _curvature);
-        void setMinAngle(double _min_angle);
-
-        void useAsInsertionMesh();
-        void useAsShallowGlobalMesh();
-
-        void addElement(double **nodeToAdd);
+        
+        bool addElement(double **nodeToAdd,int lineNumb);
 
         bool isPlanar();
         bool areCoplanar(int tag_i, int tag_j);
         bool areCoplanarNeighs(int tag_i, int tag_j);
         bool isOnSurface(double *pos);
 
-        void buildNeighbours();
-        void growSurface(int iSrf, double by = 1e-13);
-
         void move(double *vecTotal, double *vecIncremental);
         void move(double *vecIncremental);
         void scale(double factor);
 
         virtual int generateRandomOwnedGhost(double *pos) = 0;
+        virtual int generateRandomOwnedGhostWithin(double *pos,double delta) = 0;
         virtual int generateRandomSubbox(double *pos) = 0;
-        virtual int generateRandomSubboxWithin(double *pos,double delta) = 0;
+
+        inline double edgeEdgeDist(int iSrf, int iEdge, int jSrf, int jEdge);
+        inline double edgeNodeDist(int iSrf, int iEdge, int jSrf, int jNode);
+        inline double edgePointDist(int iSrf, int iEdge, double *point);
 
         int n_active_edges(int i);
         int n_active_corners(int i);
@@ -96,9 +93,11 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline double areaMeshGhost()
         { return areaMesh_(2);}
 
-        // area of owned and ghost elements in my subdomain
-        inline double areaMeshSubdomain()
-        { return areaMesh_(3);}
+        inline void edgeLen(int i,double *el)
+        { vectorCopy3D(edgeLen_(i),el); }
+
+        inline void edgeVec(int i,int j,double *ev)
+        { vectorCopy3D(edgeVec_(i)[j],ev); }
 
         inline void surfaceNorm(int i,double *sn)
         { vectorCopy3D(surfaceNorm(i),sn); }
@@ -109,6 +108,12 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline int nNeighs(int i)
         { return nNeighs_(i); }
 
+        inline int neighFaces(int i,int j)
+        { return neighFaces_(i)[j]; }
+
+        inline bool edgeActive(int i,int j)
+        { return (edgeActive_)(i)[j]; }
+
         static const int NO_OBTUSE_ANGLE = -1;
 
       protected:
@@ -117,14 +122,10 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         virtual ~SurfaceMesh();
 
         void deleteElement(int n);
+        void qualityCheck();
 
-        void refreshOwned(int setupFlag);
-        void refreshGhosts(int setupFlag);
-
-        // (re)calculate properties
-        inline void recalcVectors(); 
-        inline void recalcLocalSurfProperties();
-        inline void recalcGhostSurfProperties();
+        void buildNeighbours();
+        void parallelCorrection();
 
         // returns true if surfaces share an edge
         // called with local index
@@ -132,23 +133,30 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         bool shareEdge(int i, int j, int &iEdge, int &jEdge);
 
         bool edgeVecsColinear(double *v,double *w);
+        bool coplanarNeighsOverlap(int iSrf,int iEdge,int jSrf,int jEdge);
 
         // mesh topology functions, called with local index
-        void handleSharedEdge(int iSrf, int iEdge, int jSrf, int jEdge, bool coplanar);
-        void handleCorner(int iSrf, int iNode,int *idListVisited,int *idListHasNode,
-            double **edgeList,double **edgeEndPoint);
+        void handleSharedEdge(int iSrf, int iEdge, int jSrf, int jEdge,
+                          bool coplanar,bool neighflag = true);
+        virtual int handleCorner(int iSrf, int iNode,int *idListVisited,int *idListHasNode,
+                          double **edgeList,double **edgeEndPoint);
         void checkNodeRecursive(int iSrf,double *nodeToCheck,int &nIdListVisited,
-            int *idListVisited,int &nIdListHasNode,int *idListHasNode,
-            double **edgeList,double **edgeEndPoint,bool &anyActiveEdge);
+                          int *idListVisited,int &nIdListHasNode,int *idListHasNode,
+                          double **edgeList,double **edgeEndPoint,bool &anyActiveEdge);
 
-        // calc properties
+        // (re) calc properties
         void calcSurfPropertiesOfNewElement();
         void calcSurfPropertiesOfElement(int n);
-        virtual double calcArea(int nElem) =0;
+        void refreshOwned(int setupFlag);
+        void refreshGhosts(int setupFlag);
+        inline void recalcLocalSurfProperties();
+        inline void recalcGhostSurfProperties();
+
+        virtual double calcArea(int nElem) = 0;
         void calcEdgeVecLen(int nElem, double *len, double **vec);
-        void calcEdgeLen(int nElem, double *edgeLen);
         void calcSurfaceNorm(int nElem, double *surfNorm);
         void calcEdgeNormals(int nElem, double **edgeNorm);
+        void calcObtuseAngleIndex(int nElem, int iNode, double &dot);
 
         virtual bool isInElement(double *pos, int i) = 0;
 
@@ -168,29 +176,26 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline bool*    cornerActive(int i) {return (cornerActive_)(i);}
         inline bool*    hasNonCoplanarSharedNode(int i) {return (hasNonCoplanarSharedNode_)(i);}
         inline int& obtuseAngleIndex(int i) {return obtuseAngleIndex_(i); }
+
         inline int nBelowAngle()            {return nBelowAngle_;}
         inline double angleLimit()          {return acos(minAngle_)*180./M_PI;}
-        inline int nTooManyNeighs()            {return nTooManyNeighs_;}
+        inline int nTooManyNeighs()         {return nTooManyNeighs_;}
+        inline int nOverlapping()           {return nOverlapping_;}
 
       private:
 
         int searchElementByAreaAcc(double area,int lo, int hi);
 
-        void parallelCorrection();
-
-        // flag indicating usage as insertion mesh
-        bool isInsertionMesh_;
-
-        // flag indicating usage as shallow global mesh
-        bool isShallowGlobalMesh_;
+        void growSurface(int iSrf, double by = 1e-13);
 
         // mesh properties
         double curvature_;
-        double minAngle_;
+        double minAngle_; 
         ScalarContainer<double>& areaMesh_; 
 
         int nBelowAngle_;
         int nTooManyNeighs_;
+        int nOverlapping_;
 
         // per-element properties
         // add more properties as they are needed, such as
@@ -208,7 +213,7 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         // neighbor topology
         
         ScalarContainer<int>& nNeighs_;
-        VectorContainer<int,NUM_NODES>& neighFaces_;
+        VectorContainer<int,NUM_NEIGH_MAX>& neighFaces_;
         VectorContainer<bool,NUM_NODES>& hasNonCoplanarSharedNode_;
         VectorContainer<bool,NUM_NODES>& edgeActive_;
         VectorContainer<bool,NUM_NODES>& cornerActive_;

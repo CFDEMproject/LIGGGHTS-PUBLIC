@@ -19,7 +19,7 @@ seed_value = random # seed (positive integer) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
-general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {vel} or {omega} :l
+general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or{vel constant} or {vel uniform} or {vel gaussian} or {omega} :l
   {verbose} = yes or no
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)
@@ -36,12 +36,25 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
   {start} value = ts
     ts = time-step at which insertion should start (positive integer larger than current time-step)
   {all_in} value = yes or no
-  {random_distribute} = exact or uncorrelated
-  {vel} values = constant vx vy vz
-    constant = obligatory word
+  {random_distribute} value = exact or uncorrelated
+  {vel constant} values = vx vy vz
     vx = x-velocity at insertion (velocity units)
     vy = y-velocity at insertion (velocity units)
     vz = z-velocity at insertion (velocity units)
+  {vel uniform} values = vx vy vz vFluctx vFlucty vFluctz
+    vx = mean x-velocity at insertion (velocity units)
+    vy = mean y-velocity at insertion (velocity units)
+    vz = mean z-velocity at insertion (velocity units)
+    vFluctx = amplitude of uniform x-velocity fluctuation at insertion (velocity units)
+    vFlucty = amplitude of uniform y-velocity fluctuation at insertion (velocity units)
+    vFluctz = amplitude of uniform z-velocity fluctuation at insertion (velocity units)
+  {vel gaussian} values = vx vy vz vFluctx vFlucty vFluctz
+    vx = mean x-velocity at insertion (velocity units)
+    vy = mean y-velocity at insertion (velocity units)
+    vz = mean z-velocity at insertion (velocity units)
+    vFluctx = standard deviation of Gaussian x-velocity fluctuation at insertion (velocity units)
+    vFlucty = standard deviation of Gaussian y-velocity fluctuation at insertion (velocity units)
+    vFluctz = standard deviation of Gaussian z-velocity fluctuation at insertion (velocity units)
   {omega} values = constant omegax omegay omegaz
     constant = obligatory word
     omegax = x-comonent of angular velocity (1/time units)
@@ -51,7 +64,7 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
 following the general keyword/value section, one or more stream keyword/value pairs can be appended for the fix insert/stream command :l
 stream_keywords = {duration} or {parallel} or {insertion_face} or {extrude_length} :l
   {insertion_face} value = mesh-ID
-    mesh-ID = ID of the "fix mesh"_fix_mesh.html to use as starting face for particle generation
+    mesh-ID = ID of the "fix mesh/surface or fix mesh/surface/planar"_fix_mesh_surface.html to use as starting face for particle generation
   {extrude_length} values = L
     L =  length for extruding the insertion face in normal direction so to generate in insertion volume
   {parallel} values = yes or no
@@ -152,8 +165,14 @@ M = # of inserted particles * ma.  If unsuccessful at completing all
 insertions, a warning will be printed.
 
 The {all_in} flag determines if the particle is completely contained
-in the insertion region ({all_in yes}) or only the particle center
-({all_in no}).
+in the insertion region ({all_in = yes}) or only the particle center
+({all_in = no}).Using {all_in} = yes requires you to use an insertion 
+face of style "fix mesh/surface/planar"_fix_mesh_surface.html
+
+NOTE: You also have to use "fix mesh/surface/planar"_fix_mesh_surface.html 
+if there is a "run"_run.html command between the definition of the 
+insertion face and the fix insert/stream command. Otherwise, a 
+"fix mesh/surface/planar"_fix_mesh_surface.html will do.
 
 Keyword {random_distribute} controls how the number of particles to
 be inserted is distributed among parallel processors and among the
@@ -180,8 +199,12 @@ processes, this can lead to a speed-up of insertion as random number generation
 is more efficient. For cases where the extrusion volume is divided 
 among few processes this will impose a small computation overhead.
 
-The insertion velocity and rotational velocity can be controlled via the
-{vel} and {omega} keywords. The insertion velocity must be non-zero.
+The initial velocity and rotational velocity can be controlled via the
+{vel} and {omega} keywords. {vel constant} simply patches a constant 
+velocity to the inserted particles, {vel uniform} sets uniformly distributed 
+velocities with mean and amplitude. {vel gaussian} sets Gaussian 
+distributed particle velocities with mean and std. deviation.
+The insertion velocity must be non-zero.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 

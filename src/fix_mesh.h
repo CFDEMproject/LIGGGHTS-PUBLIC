@@ -101,6 +101,12 @@ namespace LAMMPS_NS
         bool pOpFlag_;
 
         bool manipulated_;
+
+        // flags and params to be passed to the mesh
+        bool verbose_,autoRemoveDuplicates_;
+
+        // mesh precision
+        double precision_;
   };
 
 } /* namespace LAMMPS_NS */

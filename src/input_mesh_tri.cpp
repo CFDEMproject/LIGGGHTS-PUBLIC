@@ -40,7 +40,8 @@ using namespace LAMMPS_NS;
 #define MAXLINE 2048
 #define DELTA 4
 
-InputMeshTri::InputMeshTri(LAMMPS *lmp, int argc, char **argv) : Input(lmp, argc, argv)
+InputMeshTri::InputMeshTri(LAMMPS *lmp, int argc, char **argv) : Input(lmp, argc, argv),
+verbose_(false)
 {}
 
 InputMeshTri::~InputMeshTri()
@@ -50,8 +51,12 @@ InputMeshTri::~InputMeshTri()
    process all input from filename
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh)
+void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool verbose)
 {
+  verbose_ = verbose;
+
+  int nEmptyLines;
+
   if(strlen(filename) < 5) error->all(FLERR,"Illegal command, file name too short for input of triangular mesh");
   const char *ext = &(filename[strlen(filename)-3]);
 
@@ -102,11 +107,13 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
   double **points;
   int ipoint,npoints = 0;
 
-  int **cells;
+  int **cells, *lines;
   int icell,ncells = 0;
 
   int ntris = 0;
   int iLine = 0;
+
+  int nLines = 0;
 
   while (1)
   {
@@ -134,6 +141,9 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
 
     MPI_Bcast(line,n,MPI_CHAR,0,world);
 
+    // lines start with 1 (not 0)
+    nLines++;
+
     // if n = MAXLINE, line is too long
     if (n == MAXLINE) {
       char str[MAXLINE+32];
@@ -141,12 +151,13 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
       error->all(FLERR,str);
     }
 
-    //parse one line from the file
+    // parse one line from the file
     parse_nonlammps();
 
-    //skip empty lines
+    // skip empty lines
     if(narg == 0){
-         if (me == 0) fprintf(screen,"Note: Skipping empty line in VTK mesh file\n");
+         if (me == 0 && verbose_)
+            fprintf(screen,"Note: Skipping empty line in VTK mesh file\n");
       continue;
     }
 
@@ -192,9 +203,11 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
 
     if(iLine == 6+npoints)
     {
-        if(strcmp(arg[0],"CELLS")) error->all(FLERR,"Expecting 'CELLS' section in ASCII VTK mesh file, cannot continue");
+        if(strcmp(arg[0],"CELLS"))
+            error->all(FLERR,"Expecting 'CELLS' section in ASCII VTK mesh file, cannot continue");
         ncells = atoi(arg[1]);
         memory->create<int>(cells,ncells,3,"input_mesh:cells");
+        memory->create<int>(lines,ncells,"input_mesh:lines");
         continue;
     }
 
@@ -206,14 +219,18 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
         else
             cells[icell][0] = -1;
 
+        lines[icell] = nLines;
+
         icell++;
         continue;
     }
 
     if(iLine == 7+npoints+ncells)
     {
-        if(strcmp(arg[0],"CELL_TYPES")) error->all(FLERR,"Expecting 'CELL_TYPES' section in ASCII VTK mesh file, cannot continue");
-        if(ncells != atoi(arg[1]))  error->all(FLERR,"Inconsistency in 'CELL_TYPES' section in ASCII VTK mesh file, cannot continue");
+        if(strcmp(arg[0],"CELL_TYPES"))
+            error->all(FLERR,"Expecting 'CELL_TYPES' section in ASCII VTK mesh file, cannot continue");
+        if(ncells != atoi(arg[1]))
+            error->all(FLERR,"Inconsistency in 'CELL_TYPES' section in ASCII VTK mesh file, cannot continue");
          icell = 0;
         continue;
     }
@@ -233,7 +250,7 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
   for(int i = 0; i < ncells; i++)
   {
       if(cells[i][0] == -1) continue;
-      addTriangle(mesh,points[cells[i][0]],points[cells[i][1]],points[cells[i][2]]);
+      addTriangle(mesh,points[cells[i][0]],points[cells[i][1]],points[cells[i][2]],lines[i]);
   }
 
   memory->destroy<double>(points);
@@ -252,6 +269,8 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
   bool insideSolidObject = false;
   bool insideFacet = false;
   bool insideOuterLoop = false;
+
+  int nLines = 0, nLinesTri = 0;
 
   while (1)
   {
@@ -279,6 +298,9 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
 
     MPI_Bcast(line,n,MPI_CHAR,0,world);
 
+    // lines start with 1 (not 0)
+    nLines++;
+
     // if n = MAXLINE, line is too long
     if (n == MAXLINE) {
       char str[MAXLINE+32];
@@ -291,24 +313,27 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
 
     // skip empty lines
     if(narg==0){
-         if (me == 0) fprintf(screen,"Note: Skipping empty line in STL file\n");
+         if (me == 0 && verbose_)
+            fprintf(screen,"Note: Skipping empty line in STL file\n");
       continue;
     }
 
     // detect begin and end of a solid object, facet and vertices
     if (strcmp(arg[0],"solid") == 0)
     {
-      if (insideSolidObject) error->all(FLERR,"Corrupt or unknown STL file: New solid object begins without closing prior solid object.");
+      if (insideSolidObject)
+        error->all(FLERR,"Corrupt or unknown STL file: New solid object begins without closing prior solid object.");
       insideSolidObject=true;
-      if (me == 0){
+      if (me == 0 && verbose_){
          fprintf(screen,"Solid body detected in STL file\n");
        }
     }
     else if (strcmp(arg[0],"endsolid") == 0)
     {
-       if (!insideSolidObject) error->all(FLERR,"Corrupt or unknown STL file: End of solid object found, but no begin.");
+       if (!insideSolidObject)
+         error->all(FLERR,"Corrupt or unknown STL file: End of solid object found, but no begin.");
        insideSolidObject=false;
-       if (me == 0) {
+       if (me == 0 && verbose_) {
          fprintf(screen,"End of solid body detected in STL file.\n");
        }
     }
@@ -316,26 +341,33 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
     // detect begin and end of a facet within a solids object
     else if (strcmp(arg[0],"facet") == 0)
     {
-      if (insideFacet) error->all(FLERR,"Corrupt or unknown STL file: New facet begins without closing prior facet.");
-      if (!insideSolidObject) error->all(FLERR,"Corrupt or unknown STL file: New facet begins outside solid object.");
+      if (insideFacet)
+        error->all(FLERR,"Corrupt or unknown STL file: New facet begins without closing prior facet.");
+      if (!insideSolidObject)
+        error->all(FLERR,"Corrupt or unknown STL file: New facet begins outside solid object.");
       insideFacet = true;
 
+      nLinesTri = nLines;
+
       // check for keyword normal belonging to facet
-      if (strcmp(arg[1],"normal")!=0) error->all(FLERR,"Corrupt or unknown STL file: Facet normal not defined.");
+      if (strcmp(arg[1],"normal") != 0)
+        error->all(FLERR,"Corrupt or unknown STL file: Facet normal not defined.");
 
       // do not import facet normal (is calculated later)
     }
     else if (strcmp(arg[0],"endfacet") == 0)
     {
-       if (!insideFacet) error->all(FLERR,"Corrupt or unknown STL file: End of facet found, but no begin.");
-       insideFacet=false;
-       if (iVertex!=3) error->all(FLERR,"Corrupt or unknown STL file: Number of vertices not equal to three (no triangle).");
+       if (!insideFacet)
+         error->all(FLERR,"Corrupt or unknown STL file: End of facet found, but no begin.");
+       insideFacet = false;
+       if (iVertex != 3)
+         error->all(FLERR,"Corrupt or unknown STL file: Number of vertices not equal to three (no triangle).");
 
       // add triangle to mesh
       //printVec3D(screen,"vertex",vertices[0]);
       //printVec3D(screen,"vertex",vertices[1]);
       //printVec3D(screen,"vertex",vertices[2]);
-      addTriangle(mesh,vertices[0],vertices[1],vertices[2]);
+      addTriangle(mesh,vertices[0],vertices[1],vertices[2],nLinesTri);
 
        if (me == 0) {
          //fprintf(screen,"  End of facet detected in in solid body.\n");
@@ -345,10 +377,12 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
     //detect begin and end of an outer loop within a facet
     else if (strcmp(arg[0],"outer") == 0)
     {
-      if (insideOuterLoop) error->all(FLERR,"Corrupt or unknown STL file: New outer loop begins without closing prior outer loop.");
-      if (!insideFacet) error->all(FLERR,"Corrupt or unknown STL file: New outer loop begins outside facet.");
-      insideOuterLoop=true;
-      iVertex=0;
+      if (insideOuterLoop)
+        error->all(FLERR,"Corrupt or unknown STL file: New outer loop begins without closing prior outer loop.");
+      if (!insideFacet)
+        error->all(FLERR,"Corrupt or unknown STL file: New outer loop begins outside facet.");
+      insideOuterLoop = true;
+      iVertex = 0;
 
       if (me == 0){
          //fprintf(screen,"    Outer loop detected in facet.\n");
@@ -356,7 +390,8 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
     }
     else if (strcmp(arg[0],"endloop") == 0)
     {
-       if (!insideOuterLoop) error->all(FLERR,"Corrupt or unknown STL file: End of outer loop found, but no begin.");
+       if (!insideOuterLoop)
+         error->all(FLERR,"Corrupt or unknown STL file: End of outer loop found, but no begin.");
        insideOuterLoop=false;
        if (me == 0) {
          //fprintf(screen,"    End of outer loop detected in facet.\n");
@@ -365,18 +400,21 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
 
     else if (strcmp(arg[0],"vertex") == 0)
     {
-       if (!insideOuterLoop) error->all(FLERR,"Corrupt or unknown STL file: Vertex found outside a loop.");
+       if (!insideOuterLoop)
+         error->all(FLERR,"Corrupt or unknown STL file: Vertex found outside a loop.");
 
        if (me == 0) {
          //fprintf(screen,"      Vertex found.\n");
        }
 
-      //read the vertex,
+      // read the vertex
       for (int j=0;j<3;j++)
         vertices[iVertex][j]=atof(arg[1+j]);
 
       iVertex++;
-      if (iVertex>3) error->all(FLERR,"Corrupt or unknown STL file: Can not have more than 3 vertices in a facet (only triangular meshes supported).");
+      if (iVertex > 3)
+         error->all(FLERR,"Corrupt or unknown STL file: Can not have more than 3 vertices "
+                          "in a facet (only triangular meshes supported).");
     }
   }
 }
@@ -385,7 +423,7 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
    add a triangle to the mesh
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::addTriangle(TriMesh *mesh,double *a, double *b, double *c)
+void InputMeshTri::addTriangle(TriMesh *mesh,double *a, double *b, double *c,int lineNumber)
 {
     double **nodeTmp = create<double>(nodeTmp,3,3);
     for(int i=0;i<3;i++){
@@ -393,6 +431,6 @@ void InputMeshTri::addTriangle(TriMesh *mesh,double *a, double *b, double *c)
       nodeTmp[1][i] = b[i];
       nodeTmp[2][i] = c[i];
     }
-    mesh->addElement(nodeTmp);
+    mesh->addElement(nodeTmp,lineNumber);
     destroy<double>(nodeTmp);
 }

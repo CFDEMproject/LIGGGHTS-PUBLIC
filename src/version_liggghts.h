@@ -1,1 +1,1 @@
-#define LIGGGHTS_VERSION "LIGGGHTS-PUBLIC 2.1.2, compiled 2012-09-21-14:17:34 by ckloss"
+#define LIGGGHTS_VERSION "LIGGGHTS-PUBLIC 2.2, compiled 2012-10-08-15:38:20 by ckloss"

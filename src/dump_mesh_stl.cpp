@@ -35,6 +35,7 @@
 #include "error.h"
 #include "fix.h"
 #include "fix_mesh_surface.h"
+#include "region.h"
 #include "modify.h"
 #include "comm.h"
 #include <stdint.h>
@@ -53,7 +54,8 @@ enum
 DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg),
   nMesh_(0),
   meshList_(0),
-  writeBinarySTL_(0)
+  writeBinarySTL_(0),
+  iregion_(-1)
 {
   if (narg < 5)
     error->all(FLERR,"Illegal dump mesh/stl command");
@@ -70,6 +72,13 @@ DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
     if(strncmp(arg[iarg],"binary",6) == 0){
       writeBinarySTL_ = 1;
       iarg++;
+    } else if(strcmp(arg[iarg],"region") == 0){
+      if (narg < iarg+2)
+        error->all(FLERR,"Illegal dump mesh/stl command, not enough arguments");
+      iregion_ = domain->find_region(arg[iarg+1]);
+      if (iregion_ == -1)
+        error->all(FLERR,"Illegal dump mesh/stl command, region ID does not exist");
+      iarg += 2;
     } else if(strcmp(arg[iarg],"all") == 0){
       dump_what_ = NALL;
       iarg++;
@@ -194,13 +203,26 @@ int DumpMeshSTL::count()
 {
   int ilo, ihi;
   int numTri = 0;
+  double center[3];
 
   n_calls_ = 0;
 
-  for(int i = 0; i < nMesh_; i++)
+  for(int imesh = 0; imesh < nMesh_; imesh++)
   {
-      bounds(i,ilo,ihi);
-      numTri += ihi-ilo;
+      bounds(imesh,ilo,ihi);
+      if(iregion_ == -1)
+      {
+          numTri += ihi-ilo;
+      }
+      else
+      {
+          for(int i = ilo; i < ihi; i++)
+          {
+              meshList_[imesh]->center(i,center);
+              if(domain->regions[iregion_]->match(center[0],center[1],center[2]))
+                numTri++;
+          }
+      }
   }
 
   return numTri;
@@ -210,6 +232,12 @@ int DumpMeshSTL::count()
 
 void DumpMeshSTL::bounds(int imesh,int &ilo, int &ihi)
 {
+    if(!meshList_[imesh]->isParallel() && 0 != comm->me)
+    {
+        ilo = ihi = 0;
+        return;
+    }
+
     if(dump_what_ == NLOCAL)
     {
         ilo = 0;
@@ -234,7 +262,7 @@ void DumpMeshSTL::pack(int *ids)
 {
   int ilo,ihi;
   int m = 0;
-  double node[3],surfaceNorm[3];
+  double node[3],surfaceNorm[3], center[3];
   TriMesh *mesh;
 
   for(int iMesh = 0;iMesh < nMesh_; iMesh++)
@@ -244,6 +272,13 @@ void DumpMeshSTL::pack(int *ids)
 
     for(int iTri = ilo; iTri < ihi; iTri++)
     {
+        if(iregion_ >= 0)
+        {
+            mesh->center(iTri,center);
+            if(!domain->regions[iregion_]->match(center[0],center[1],center[2]))
+                continue;
+        }
+
         mesh->surfaceNorm(iTri,surfaceNorm);
         for(int j=0;j<3;j++)
             buf[m++] = surfaceNorm[j];

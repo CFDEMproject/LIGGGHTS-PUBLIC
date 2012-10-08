@@ -17,7 +17,7 @@ ID is documented in "fix"_fix.html command, group-ID is ignored :ulb,l
 move/mesh = style name of this fix command :l
 mesh = obligatory keyword :l
 mesh-ID = ID for the fix mesh that the fix move/mesh is applied to :l
-style = {linear} or {linear/variable} or {wiggle} or {riggle} or {rotate} or {rotate/variable} :l
+style = {linear} or {linear/variable} or {wiggle} or {riggle} or {rotate} or {rotate/variable} or {viblin} or {vibrot} :l
   {linear} args = Vx Vy Vz
     Vx,Vy,Vz = components of velocity vector (velocity units)
   {linear/variable} args = var_Vx var_Vy var_Vz
@@ -41,19 +41,45 @@ style = {linear} or {linear/variable} or {wiggle} or {riggle} or {rotate} or {ro
     ax,ay,az = axis of rotation vector (distance units)
     period = obligatory keyword
     per = period of rotation (time units) 
-  {rotate/variable} args = origin Px Py Pz axis ax ay az period var_omega
+  {rotate/variable} args = origin Px Py Pz axis ax ay az omega var_omega
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
     ax,ay,az = axis of rotation vector (distance units)
+    omega = obligatory keyword
+    var_omega = variable specifying angular velocity (rad / time units) 
+  {viblin} args = axis ax ay az order n amplitude C1 ... Cn phase p1 ... pn period per
+    axis = obligatory keyword
+    ax,ay,az = components of moving direction vector (distance units)(origin 0 0 0)
+    order= obligatory keyword   
+    n= order of trigonometric series n (from 1 to 10)
+    amplitude = obligatory keyword
+    C1, ..., Cn = amplitude (distance units)
+    phase = obligatory keyword
+    p1, ...,pn = phase of functionterm (rad) (number of terms is equivalent to order n)
     period = obligatory keyword
-    var_omega = variable specifying angular velocity (rad / time units) :pre
+    per = period of rotation (time units)     
+  {vibrot} args = origin Px Py Pz axis ax ay az order n amplitude C1 ... Cn phase p1 ... pn period per
+    origin = obligatory keyword
+    Px,Py,Pz = origin point of axis of rotation (distance units)
+    axis = obligatory keyword
+    ax,ay,az = axis of rotation vector
+    order= obligatory keyword   
+    n= order of trigonometric series (from 1 to 10)
+    amplitude = obligatory keyword
+    C1, ..., Cn = amplitude (rad)
+    phase = obligatory keyword
+    p1, ...,pn = phase of functionterm (rad) (number of terms is equivalent to order n)
+    period = obligatory keyword
+    per = period of rotation (time units) :pre
 :ule
 
 [Examples:]
 
 fix move all move/mesh mesh cad1 wiggle amplitude -0.1 0. 0. period 0.02
 fix move all move/mesh mesh cad1 rotate origin 0. 0. 0. axis  0. 0. 1. period 0.05
-fix move all move/mesh mesh cad1 linear 5. 5. 0. :pre
+fix move all move/mesh mesh cad1 linear 5. 5. 0. 
+fix move all move/mesh mesh cad1 viblin axis 0. 0. 1 order 5 amplitude 0.4 0.1 0.3 0.1 0.1 phase 1.3 2 0.4 0.1 0 period 0.02
+fix move all move/mesh mesh cad1 vibrot origin 0. 0. 0 axis 0. 0. 1 order 2 amplitude 0.4 0.1  phase 1.3 0 period 0.02 :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 
@@ -115,8 +141,30 @@ The {riggle} style imposes an oscillatory rotation around a rotation
 axis {R} = (Rx,Ry,Rz) that goes thru a point {P} = (Px,Py,Pz). 
 The {period} of the oscillation is specified as well as the {amplitude}
 in grad (°). This style also sets the velocity of
-each element accordingly
+each element accordingly.
 
+The {viblin} style moves meshes in an oscillatory fashion with an vibration 
+function of higher order, so that their position {X} = (x,y,z) as a function 
+of time is given in vector notation as
+
+:c,image(Eqs/viblin.jpg)
+
+where {X0} = (x0,y0,z0) is their position at the time the fix is specified, 
+{n} represents the order of the trigonometric series, {Cn} is the specified 
+amplitude along the direction given by {axis} = (ax,ay,az). The vector {D}
+is the unit vector of {axis}. The angular velocity omega is 2 PI / {period}, 
+and {delta} is the time elapsed since the fix was specified. This style 
+also sets the velocity of each element to the time derivative of this expression.
+
+The {vibrot} style generates an oscillatory rotation around a rotation {axis} = 
+(ax,ay,az) that goes thru a point {origin} = (Px,Py,Pz). The {period} of the 
+oscillation is used to calculate omega, the amplitudes {Cn} and the phase phase 
+{n} are given in rad. The change of rotation angle per time {gamma(t)} is 
+described by trigonometric series of order {n}. The formula for this change is
+
+:c,image(Eqs/vibrot.jpg)
+
+This style also sets the velocity of each element accordingly
 
 NOTE: If a dangerous tri neighbor list build is detected, this may be due to 
 the fact that the geometry is moved too close to a region where particle 

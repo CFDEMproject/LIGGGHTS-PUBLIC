@@ -27,7 +27,8 @@ args = list of arguments for a particular style :l
 
   {image} args = discussed on "dump image"_dump_image.html doc page :pre
 
-  {mesh/stl} args = 'local' or 'ghost' or 'all' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
+  {mesh/stl} args = 'local' or 'ghost' or 'all' or 'region' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
+      {region} values = ID for region threshold
   {mesh/vtk} args =  zero or more keyword/ value pairs and one or more dump-identifiers
       keywords = {output}
       {output} values = face or interpolate 
@@ -320,6 +321,10 @@ The third command will output one file per time-step per processor
 containing the ghost (corona) mesh elements of each processor. 
 The third command will output one file per time-step containing the 
 ghost (corona) mesh elements of all processors. 
+
+With the {region} keyword, just those mesh element where the element center
+(arithmetic average of all nodes) is in the specified region, will be
+dumped.
 
 This dump is especially useful if a
 "fix move/mesh"_fix_move_mesh.html is registered. If the position 

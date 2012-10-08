@@ -48,12 +48,12 @@
                                    double *cSphere, double *delta, double *bary)
   {
     double **n = node_(nTri);
-    int obtuseAngleIndex = SurfaceMesh<3>::obtuseAngleIndex(nTri);
+    int obtuseAngleIndex = SurfaceMeshBase::obtuseAngleIndex(nTri);
 
     bary[0] = bary[1] = bary[2] = 0.;
 
     double node0ToSphereCenter[3];
-    double *surfNorm = SurfaceMesh<3>::surfaceNorm(nTri);
+    double *surfNorm = SurfaceMeshBase::surfaceNorm(nTri);
     vectorSubtract3D(cSphere,n[0],node0ToSphereCenter);
 
     MathExtraLiggghts::calcBaryTriCoords(node0ToSphereCenter,edgeVec(nTri),edgeLen(nTri),bary);
@@ -92,118 +92,123 @@
     }
 
     return d - rSphere;
-
   }
 
-inline double TriMesh::resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary)
-{
-  int ip = (iEdge+1)%3, ipp = (iEdge+2)%3;
-  double nodeToP[3], d(1.);
-  double **n = node_(iTri);
+  /* ---------------------------------------------------------------------- */
 
-  vectorSubtract3D(p,n[iEdge],nodeToP);
+  inline double TriMesh::resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary)
+  {
+      int ip = (iEdge+1)%3, ipp = (iEdge+2)%3;
+      double nodeToP[3], d(1.);
+      double **n = node_(iTri);
 
-  double distFromNode =  vectorDot3D(nodeToP,edgeVec(iTri)[iEdge]);
+      vectorSubtract3D(p,n[iEdge],nodeToP);
 
-  if(distFromNode < -SMALL_TRIMESH){
-    
-    if(!cornerActive(iTri)[iEdge])
-        return LARGE_TRIMESH;
-    d = calcDist(p,n[iEdge],delta);
-    bary[iEdge] = 1.; bary[ip] = 0.; bary[ipp] = 0.;
-  }
-  else if(distFromNode > edgeLen(iTri)[iEdge] + SMALL_TRIMESH){
-    
-    if(!cornerActive(iTri)[ip])
-        return LARGE_TRIMESH;
-    d = calcDist(p,n[ip],delta);
-    bary[iEdge] = 0.; bary[ip] = 1.; bary[ipp] = 0.;
-  }
-  else{
-    
-    double closestPoint[3];
+      double distFromNode =  vectorDot3D(nodeToP,edgeVec(iTri)[iEdge]);
 
-    if(!edgeActive(iTri)[iEdge])
-        return LARGE_TRIMESH;
+      if(distFromNode < -SMALL_TRIMESH){
+        
+        if(!cornerActive(iTri)[iEdge])
+            return LARGE_TRIMESH;
+        d = calcDist(p,n[iEdge],delta);
+        bary[iEdge] = 1.; bary[ip] = 0.; bary[ipp] = 0.;
+      }
+      else if(distFromNode > edgeLen(iTri)[iEdge] + SMALL_TRIMESH){
+        
+        if(!cornerActive(iTri)[ip])
+            return LARGE_TRIMESH;
+        d = calcDist(p,n[ip],delta);
+        bary[iEdge] = 0.; bary[ip] = 1.; bary[ipp] = 0.;
+      }
+      else{
+        
+        double closestPoint[3];
 
-    vectorAddMultiple3D(n[iEdge],distFromNode,edgeVec(iTri)[iEdge],closestPoint);
+        if(!edgeActive(iTri)[iEdge])
+            return LARGE_TRIMESH;
 
-    d = calcDist(p,closestPoint,delta);
+        vectorAddMultiple3D(n[iEdge],distFromNode,edgeVec(iTri)[iEdge],closestPoint);
 
-    bary[ipp] = 0.;
-    bary[iEdge] = 1. - distFromNode/edgeLen(iTri)[iEdge];
-    bary[ip] = 1. - bary[iEdge];
-  }
+        d = calcDist(p,closestPoint,delta);
 
-  return d;
-}
+        bary[ipp] = 0.;
+        bary[iEdge] = 1. - distFromNode/edgeLen(iTri)[iEdge];
+        bary[ip] = 1. - bary[iEdge];
+      }
 
-inline double TriMesh::resolveCornerContactBary(int iTri, int iNode, bool obtuse,
-                                                double *p, double *delta, double *bary)
-{
-  int ip = (iNode+1)%3, ipp = (iNode+2)%3;
-  double d(1.);
-  double *n = node_(iTri)[iNode];
-
-  if(obtuse){
-    
-    double **edge = edgeVec(iTri);
-    double nodeToP[3], closestPoint[3];
-
-    vectorSubtract3D(p,n,nodeToP);
-
-    double distFromNode = vectorDot3D(nodeToP,edge[ipp]);
-    if(distFromNode < SMALL_TRIMESH && distFromNode > -edgeLen(iTri)[ipp])
-    {
-      
-      if(!edgeActive(iTri)[ipp])
-        return LARGE_TRIMESH;
-
-      vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
-
-      bary[ip] = 0.;
-      bary[iNode] = 1. + distFromNode/edgeLen(iTri)[iNode];
-      bary[ipp] = 1. - bary[iNode];
-
-      return calcDist(p,closestPoint,delta);
-    }
-
-    distFromNode = vectorDot3D(nodeToP,edge[iNode]);
-    if(distFromNode > -SMALL_TRIMESH && distFromNode < edgeLen(iTri)[iNode])
-    {
-      
-      if(!edgeActive(iTri)[iNode])
-        return LARGE_TRIMESH;
-
-      vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
-
-      bary[ipp] = 0.;
-      bary[iNode] = 1. - distFromNode/edgeLen(iTri)[iNode];
-      bary[ip] = 1. - bary[iNode];
-
-      return calcDist(p,closestPoint,delta);
-    }
+      return d;
   }
 
-  if(!cornerActive(iTri)[iNode])
-      return LARGE_TRIMESH;
+  /* ---------------------------------------------------------------------- */
 
-  bary[iNode] = 1.; bary[ip] = bary[ipp] = 0.;
-  return calcDist(p,node_(iTri)[iNode],delta);
-}
+  inline double TriMesh::resolveCornerContactBary(int iTri, int iNode, bool obtuse,
+                                                    double *p, double *delta, double *bary)
+  {
+      int ip = (iNode+1)%3, ipp = (iNode+2)%3;
+      double d(1.);
+      double *n = node_(iTri)[iNode];
 
-inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0ToSphereCenter, double *delta)
-{
-  double *surfNorm = SurfaceMesh<3>::surfaceNorm(iTri);
+      if(obtuse){
+        
+        double **edge = edgeVec(iTri);
+        double nodeToP[3], closestPoint[3];
 
-  double dNorm = vectorDot3D(surfNorm,node0ToSphereCenter);
+        vectorSubtract3D(p,n,nodeToP);
 
-  double csPlane[3], tmp[3];
-  vectorScalarMult3D(surfNorm,dNorm,tmp);
-  vectorSubtract3D(p,tmp,csPlane);
+        double distFromNode = vectorDot3D(nodeToP,edge[ipp]);
+        if(distFromNode < SMALL_TRIMESH && distFromNode > -edgeLen(iTri)[ipp])
+        {
+          
+          if(!edgeActive(iTri)[ipp])
+            return LARGE_TRIMESH;
 
-  return calcDist(p,csPlane,delta);
-}
+          vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
+
+          bary[ip] = 0.;
+          bary[iNode] = 1. + distFromNode/edgeLen(iTri)[iNode];
+          bary[ipp] = 1. - bary[iNode];
+
+          return calcDist(p,closestPoint,delta);
+        }
+
+        distFromNode = vectorDot3D(nodeToP,edge[iNode]);
+        if(distFromNode > -SMALL_TRIMESH && distFromNode < edgeLen(iTri)[iNode])
+        {
+          
+          if(!edgeActive(iTri)[iNode])
+            return LARGE_TRIMESH;
+
+          vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
+
+          bary[ipp] = 0.;
+          bary[iNode] = 1. - distFromNode/edgeLen(iTri)[iNode];
+          bary[ip] = 1. - bary[iNode];
+
+          return calcDist(p,closestPoint,delta);
+        }
+      }
+
+      if(!cornerActive(iTri)[iNode])
+          return LARGE_TRIMESH;
+
+      bary[iNode] = 1.; bary[ip] = bary[ipp] = 0.;
+      return calcDist(p,node_(iTri)[iNode],delta);
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0ToSphereCenter, double *delta)
+  {
+      double *surfNorm = SurfaceMeshBase::surfaceNorm(iTri);
+
+      double dNorm = vectorDot3D(surfNorm,node0ToSphereCenter);
+
+      double csPlane[3], tmp[3];
+      vectorScalarMult3D(surfNorm,dNorm,tmp);
+      vectorSubtract3D(p,tmp,csPlane);
+
+      return calcDist(p,csPlane,delta);
+  }
 
   /* ---------------------------------------------------------------------- */
 
@@ -214,11 +219,11 @@ inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0
     double maxDist = rSphere + treshold;
 
     double dNorm = fabs( calcDistToPlane(cSphere,
-        SurfaceMesh<3>::center_(nTri),SurfaceMesh<3>::surfaceNorm(nTri)) );
+        SurfaceMeshBase::center_(nTri),SurfaceMeshBase::surfaceNorm(nTri)) );
     if(dNorm > maxDist) return false;
 
     double **node = MultiNodeMesh<3>::node_(nTri),
-        **edgeNorm = SurfaceMesh<3>::edgeNorm(nTri);
+        **edgeNorm = SurfaceMeshBase::edgeNorm(nTri);
 
     // d_para^2 + d_norm^2 > maxDist^2 --> return false
     double dParaMax = maxDist*maxDist;// - dNorm*dNorm;
@@ -261,8 +266,8 @@ inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0
   {
     double *vecTmp3 = new double[3];
 
-    vectorCross3D(SurfaceMesh<3>::edgeVec(n)[0],
-                    SurfaceMesh<3>::edgeVec(n)[1],vecTmp3);
+    vectorCross3D(SurfaceMeshBase::edgeVec(n)[0],
+                    SurfaceMeshBase::edgeVec(n)[1],vecTmp3);
 
     // edgevecs are normalized so have to multiply with their lengths
     double area = 0.5*vectorMag3D(vecTmp3) * edgeLen(n)[0] * edgeLen(n)[1];
@@ -316,21 +321,6 @@ inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0
   }
 
   /* ----------------------------------------------------------------------
-   generates a random point on the surface that lies within my subbox
-   additionally, point is within a distance of delta from active edges
-   so can generate a point within a distance delta from boundary on planar meshes
-   coarse approch: test only against active edges of chosen triangle and its neigbors
-  ------------------------------------------------------------------------- */
-
-  inline int TriMesh::generateRandomSubboxWithin(double *pos,double delta)
-  {
-      // TODO
-      
-      error->all(FLERR,"all_in 'yes' not yet implemented");
-      return 0;
-  }
-
-  /* ----------------------------------------------------------------------
    generates a random point on the surface that lies on an owned or ghost element
   ------------------------------------------------------------------------- */
 
@@ -366,6 +356,16 @@ inline double TriMesh::resolveFaceContactBary(int iTri, double *p, double *node0
     pos[2] = bary_0 * node[chosen][0][2] + bary_1 * node[chosen][1][2] + bary_2 * node[chosen][2][2];
 
     return chosen;
+  }
+
+  /* ----------------------------------------------------------------------
+   not implemented in thus class
+  ------------------------------------------------------------------------- */
+
+  inline int TriMesh::generateRandomOwnedGhostWithin(double *pos,double delta)
+  {
+      error->one(FLERR,"internal error");
+      return 0;
   }
 
 #endif

@@ -8,17 +8,23 @@
 :line
 
 fix mesh/surface command :h3
+fix mesh/surface/planar command :h3
 
 [Syntax:]
 
-fix ID group-ID mesh/surface file filename type walltype mesh_keywords mesh_values surface_keyword surface_values :pre
+fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
+fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values :pre
 
 ID, is documented in "fix"_fix.html command, the group-ID is ignored for this command. :ulb,l
-mesh/surface = style name of this fix command  :l
+mesh/surface or mesh/surface/planar = style name of this fix command  :l
 file = obligatory keyword
 filename = name of STL or VTK file containing the triangle mesh data :l
-type = obligatory keyword
-walltype = atom type (material type) of the wall imported from the STL file :l
+zero or more premesh_keywords/premesh_value pairs may be appended :l
+premesh_keyword = {type} or {precision} or {heal} or {verbose} :l
+  {type} value = atom type (material type) of the wall imported from the STL file
+  {precision} value = length mesh nodes this far away at maximum will be recognized as identical (length units)
+  {heal} value = auto_remove_duplicates or no
+  {verbose} value = yes or no
 zero or more mesh_keywords/mesh_value pairs may be appended :l
 mesh_keyword = {scale} or {move} or {rotate} or {temperature} :l
   {scale} value = factor
@@ -32,7 +38,6 @@ mesh_keyword = {scale} or {move} or {rotate} or {temperature} :l
     ang = angle to rotate the geometry around the specified axis (in degrees) 
   {temperature} value = T0
     T0 = Temperature of the wall (temperature units) :pre
-
 zero or more surface_keywords/surface_value pairs may be appended :l
 surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} :l
   {surface_vel} values = vx vy vz
@@ -44,8 +49,6 @@ surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} :l
     ax ay az = axis vector for rotation (length units) 
     omega = mandatory keyword
     om = rotaional velocity around specifyied axis (rad/time units)
-  {accuracy value} = a
-    a = mesh nodes this far away at maximum will be recognized as identical (length units)
   {curvature value} = c
     c = maximum angle between mesh faces belonging to the same surface (in degree) :pre
 
@@ -62,10 +65,13 @@ This command is not available in LAMMPS.
 [Description:]
 
 This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from 
-ASCII STL files or legacy ASCII VTK files. You can apply scaling, offset and rotation to 
-the imported mesh via keywords {scale}, {move}, {rotate}. Operations are applied in the 
-order as they are specified. The group-ID is ignored for this command. For periodic boundaries, 
-the mesh is mapped. 
+ASCII STL files or legacy ASCII VTK files. Style {mesh/surface} is a general surface mesh, and
+{mesh/surface/planar} represents a planar mesh. {mesh/surface/planar} requires the mesh to 
+consist of only 1 planar face. 
+
+Generall, you can apply scaling, offset and rotation to the imported mesh via keywords {scale}, 
+{move}, {rotate}. Operations are applied in the order as they are specified. The group-ID is 
+ignored for this command. For periodic boundaries, the mesh is mapped. 
 
 One fix represents one wall with a specific material, where the material is identified 
 via keyword {type}. If multiple meshes with different materials are desired, the respective 
@@ -76,7 +82,6 @@ conjunction with heat conduction via "fix heat/gran"_fix_heat_gran.html. Note th
 actual calculation of the heat transfer happens only if you use the mesh in conjunction 
 with a granular wall, see "fix wall/gran"_fix_wall_gran.html.
 
-
 With the optional {surface_vel} keyword, you can specify the imported mesh as conveyor belt. 
 The velocity direction for each mesh face is given by the projection of the conveyor 
 belt velocity parallel to the mesh face, the velocity magnitude for each mesh face is 
@@ -84,14 +89,49 @@ equal to the conveyor belt velocity. This ensures the model makes sense also in 
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 {surface_ang_vel} mimics rotational motion of the mesh (e.g. for modeling a shear cell)
 
+The {precision} keyword specifies how far away mesh nodes can be at maximum to
+be recognized as identical.
+
+If LIGGGHTS stalls because of duplicate elements, you can try setting 
+{heal} to auto_remove_duplicates. LIGGGHTS will then try to heal the geometry
+by removing duplicate elements.
+
+IMPORTANT NOTE: You should check the changes to the geometry, e.g. by using a 
+dump mesh/stl"_dump.html command.
+
 The {curvature} keyword lets you specify up to which angle between two triangles the 
 triangles should be treated as belonging to the same surface (e.g. useful for bends). 
 This angle is used to decide if (a) contact history is copied from one triangle to 
 the other as the contact point proceeds and (b) if edge and corner interaction is 
 calculated.
 
-The {accuracy} keyword specifies how far away mesh nodes can be at maximum to
-be recognized as identical.
+[Quality checks / error and warning messages:]
+
+LIGGGHTS checks a couple of quality criteria upon loading a mesh. LIGGGHTS tries
+to give you as much information about the issue as possible.
+
+Warning messages:
+
+There should be no angle < 0.5° in any element :l
+The number of neighbor elements should be <= 5 for any element :l
+All nodes should be within the simlation box :l
+
+If any of the obove rules is not fulfilled, a warning is generated. Keyword 
+{verbose} controls if details about the warning are written to the screen.
+
+Error messages:
+
+The {curvature} must not be larger than any angle in any mesh element :l
+Mesh elements must not be duplicate :l
+Coplanar mesh elements that share an edge must not overlap :l
+Mesh elements must not leave the simulation domain :l
+
+If any of the obove rules is not fulfilled, an error is generated and 
+LIGGGHTS halts. Error messages are always {verbose}. 
+If LIGGGHTS halts due to the last error, you might think about (a) 
+changing the mesh import parameters ({scale}, {move}, {rotate}), (b) 
+changing the mesh dynamics if a "fix move/mesh"_fix_move_mesh.html is 
+applied or using "boundary m m m"_boundary.html
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -114,4 +154,4 @@ It is not supported to use both the moving mesh and the conveyor belt feature.
 
 "fix wall/gran"_fix_wall_gran.html
 
-[Default:] curvature = 0 degrees, accuracy = 1e-8
+[Default:] curvature = 0.256235 degrees, precision = 1e-8, verbose = no, heal = no

@@ -117,8 +117,10 @@ class FixInsert : public Fix {
   double **xnear;
 
   // velocity and ang vel distribution
-  // currently constant - could also be a distribution
+  // currently constant for omega - could also be a distribution
+  int    v_randomSetting;
   double v_insert[3];
+  double v_insertFluct[3];
   double omega_insert[3];
   double quat_insert[4];
 

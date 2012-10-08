@@ -105,8 +105,8 @@ FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
           iarg_++;
           hasargs = true;
       } else if(strcmp(style,"mesh/surface/stress") == 0) {
-          char *errmsg = new char[strlen(arg[iarg_])+20];
-          sprintf(errmsg,"unknown keyword: %s", arg[iarg_]);
+          char *errmsg = new char[strlen(arg[iarg_])+50];
+          sprintf(errmsg,"unknown keyword or wrong keyword order: %s", arg[iarg_]);
           error->fix_error(FLERR,this,errmsg);
           delete []errmsg;
       }
@@ -162,6 +162,13 @@ int FixMeshSurfaceStress::setmask()
 {
     int mask = FixMeshSurface::setmask();
     return mask;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMeshSurfaceStress::setup_pre_force(int vflag)
+{
+    FixMeshSurface::setup_pre_force(vflag);
 }
 
 /* ---------------------------------------------------------------------- */

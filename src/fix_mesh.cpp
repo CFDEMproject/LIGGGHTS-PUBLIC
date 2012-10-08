@@ -35,7 +35,8 @@
 #include "input_mesh_tri.h"
 #include "fix_contact_history.h"
 #include "fix_neighlist_mesh.h"
-#include "multi_node_mesh.h"
+#include "tri_mesh_deform.h"
+#include "tri_mesh_planar.h"
 #include "modify.h"
 #include "comm.h"
 #include "math_extra.h"
@@ -51,7 +52,10 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
   atom_type_mesh_(-1),
   setupFlag_(false),
   pOpFlag_(false),
-  manipulated_(false)
+  manipulated_(false),
+  verbose_(false),
+  autoRemoveDuplicates_(false),
+  precision_(0.)
 {
     if(narg < 5)
       error->fix_error(FLERR,this,"not enough arguments - at least keyword 'file' and a filename are required.");
@@ -70,11 +74,44 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
         error->fix_error(FLERR,this,"expecting keyword 'file'");
     strcpy(mesh_fname,arg[iarg_++]);
 
-    // parse type
-    if(strcmp(arg[iarg_],"type") == 0)
+    // parse args
+
+    bool hasargs = true;
+    while(iarg_ < narg && hasargs)
     {
-        iarg_++;
-        atom_type_mesh_ = force->inumeric(arg[iarg_++]);
+        hasargs = false;
+        if(strcmp(arg[iarg_],"type") == 0) {
+            iarg_++;
+            atom_type_mesh_ = force->inumeric(arg[iarg_++]);
+            if(atom_type_mesh_ < 1)
+                error->fix_error(FLERR,this,"'type' > 0 required");
+            hasargs = true;
+        } else if(strcmp(arg[iarg_],"verbose") == 0) {
+            if(narg < iarg_+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'verbose'");
+            if(strcmp(arg[iarg_+1],"yes") == 0)
+              verbose_ = true;
+            else if(strcmp(arg[iarg_+1],"no"))
+                error->fix_error(FLERR,this,"expecing 'yes' or 'no' for 'verbose'");
+            iarg_ += 2;
+            hasargs = true;
+        } else if(strcmp(arg[iarg_],"heal") == 0) {
+            if(narg < iarg_+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'heal'");
+            if(strcmp(arg[iarg_+1],"auto_remove_duplicates") == 0)
+                autoRemoveDuplicates_ = true;
+            else if(strcmp(arg[iarg_+1],"no"))
+                error->fix_error(FLERR,this,"expecing 'auto_remove_duplicates' or 'no' for 'heal'");
+            iarg_ += 2;
+            hasargs = true;
+        } else if (strcmp(arg[iarg_],"precision") == 0) {
+            if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
+            iarg_++;
+            precision_ = force->numeric(arg[iarg_++]);
+            if(precision_ < 0. || precision_ > 0.001)
+              error->fix_error(FLERR,this,"0 < precision < 0.001 required");
+            hasargs = true;
+        }
     }
 
     // construct a mesh - can be surface or volume mesh
@@ -86,7 +123,7 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 
     // parse further args
 
-    bool hasargs = true;
+    hasargs = true;
     while(iarg_ < narg && hasargs)
     {
       hasargs = false;
@@ -150,14 +187,24 @@ void FixMesh::create_mesh(char *mesh_fname)
     
     if(strncmp(style,"mesh/surface",12) == 0)
     {
-        mesh_ = new TriMesh(lmp);
-        static_cast<TriMesh*>(mesh_)->setMeshID(id);
+        if(strcmp(style,"mesh/surface/stress/deform") == 0)
+            mesh_ = new TriMeshDeformable(lmp);
+        if(strcmp(style,"mesh/surface/planar") == 0)
+            mesh_ = new TriMeshPlanar(lmp);
+        else
+            mesh_ = new TriMesh(lmp);
+
+        // set properties that are important for reading
+        mesh_->setMeshID(id);
+        if(verbose_) mesh_->setVerbose();
+        if(autoRemoveDuplicates_) mesh_->autoRemoveDuplicates();
+        if(precision_ > 0.) mesh_->setPrecision(precision_);
 
         // read file
         // can be from STL file or VTK file
         InputMeshTri *mesh_input = new InputMeshTri(lmp,0,NULL);
         
-        mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_));
+        mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_);
         delete mesh_input;
     }
     else error->one(FLERR,"Illegal implementation of create_mesh();");
@@ -168,12 +215,19 @@ void FixMesh::create_mesh(char *mesh_fname)
 void FixMesh::create_mesh_restart()
 {
     
-    if(strncmp(style,"mesh/surface",12) == 0)
-    {
+    if(strcmp(style,"mesh/surface/stress/deform") == 0)
+        mesh_ = new TriMeshDeformable(lmp);
+    else if(strcmp(style,"mesh/surface/planar") == 0)
+        mesh_ = new TriMeshPlanar(lmp);
+    else if(strncmp(style,"mesh/surface",12) == 0)
         mesh_ = new TriMesh(lmp);
-        static_cast<TriMesh*>(mesh_)->setMeshID(id);
-    }
     else error->one(FLERR,"Illegal implementation of create_mesh();");
+
+    // set properties that are important for reading
+    mesh_->setMeshID(id);
+    if(verbose_) mesh_->setVerbose();
+    if(autoRemoveDuplicates_) mesh_->autoRemoveDuplicates();
+    if(precision_ > 0.) mesh_->setPrecision(precision_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -235,7 +289,7 @@ void FixMesh::initialSetup()
     mesh_->initalSetup();
 
     // warn if there are elements that extend outside box
-    if(!mesh_->allNodesInsideSimulationBox())
+    if(!mesh_->allNodesInsideSimulationBox() && 0 == comm->me)
        error->warning(FLERR,"Not all nodes of fix mesh inside simulation box, "
                             "elements will be deleted or wrapped around periodic boundary conditions");
 

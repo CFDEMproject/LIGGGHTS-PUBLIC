@@ -42,6 +42,8 @@ namespace LAMMPS_NS{
 
         void clearReverse();
 
+        void setVerbose();
+
         virtual void buildNeighbours() = 0;
 
         virtual void move(double *vecTotal, double *vecIncremental);
@@ -50,8 +52,8 @@ namespace LAMMPS_NS{
         virtual void scale(double factor);
 
         virtual int generateRandomOwnedGhost(double *pos) = 0;
+        virtual int generateRandomOwnedGhostWithin(double *pos,double delta) = 0;
         virtual int generateRandomSubbox(double *pos) = 0;
-        virtual int generateRandomSubboxWithin(double *pos,double delta) = 0;
 
         // inline access
 
@@ -71,18 +73,26 @@ namespace LAMMPS_NS{
         inline int id(int i)
         { return id_(i); }
 
+        inline int lineNo(int i)
+        { return (lineNo_?(*lineNo_)(i):-1); }
+
+        inline bool verbose()
+        { return verbose_; }
+
       protected:
 
         TrackingMesh(LAMMPS *lmp);
         virtual ~TrackingMesh();
 
-        virtual void addElement(double **nodeToAdd);
+        virtual bool addElement(double **nodeToAdd,int lineNumb);
         virtual void deleteElement(int n);
 
         void clearGhostForward(bool scale,bool translate,bool rotate);
 
         // called via mesh move functions
         bool resetToOrig();
+
+        void postInitialSetup();
 
         virtual void refreshOwned(int setupFlag);
         virtual void refreshGhosts(int setupFlag);
@@ -117,11 +127,17 @@ namespace LAMMPS_NS{
         CustomValueTracker &customValues_;
 
         // ID of element
-        ScalarContainer<int>& id_;
+        ScalarContainer<int> &id_;
+
+        // line where element was read
+        
+        ScalarContainer<int> *lineNo_;
 
         // global-local lookup
         int mapTagMax_;
         int *mapArray_;
+
+        bool verbose_;
 
   };
 

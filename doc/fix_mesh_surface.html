@@ -13,21 +13,29 @@
 
 <H3>fix mesh/surface command 
 </H3>
+<H3>fix mesh/surface/planar command 
+</H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID mesh/surface file filename type walltype mesh_keywords mesh_values surface_keyword surface_values 
+<PRE>fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
+fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values 
 </PRE>
 <UL><LI>ID, is documented in <A HREF = "fix.html">fix</A> command, the group-ID is ignored for this command. 
 
-<LI>mesh/surface = style name of this fix command  
+<LI>mesh/surface or mesh/surface/planar = style name of this fix command  
 
 <LI>file = obligatory keyword
 filename = name of STL or VTK file containing the triangle mesh data 
 
-<LI>type = obligatory keyword
-walltype = atom type (material type) of the wall imported from the STL file 
+<LI>zero or more premesh_keywords/premesh_value pairs may be appended 
 
-<LI>zero or more mesh_keywords/mesh_value pairs may be appended 
+<LI>premesh_keyword = <I>type</I> or <I>precision</I> or <I>heal</I> or <I>verbose</I> 
+
+<LI>  <I>type</I> value = atom type (material type) of the wall imported from the STL file
+  <I>precision</I> value = length mesh nodes this far away at maximum will be recognized as identical (length units)
+  <I>heal</I> value = auto_remove_duplicates or no
+  <I>verbose</I> value = yes or no
+zero or more mesh_keywords/mesh_value pairs may be appended 
 
 <LI>mesh_keyword = <I>scale</I> or <I>move</I> or <I>rotate</I> or <I>temperature</I> 
 
@@ -56,8 +64,6 @@ walltype = atom type (material type) of the wall imported from the STL file
     ax ay az = axis vector for rotation (length units) 
     omega = mandatory keyword
     om = rotaional velocity around specifyied axis (rad/time units)
-  <I>accuracy value</I> = a
-    a = mesh nodes this far away at maximum will be recognized as identical (length units)
   <I>curvature value</I> = c
     c = maximum angle between mesh faces belonging to the same surface (in degree) 
 </PRE>
@@ -74,10 +80,13 @@ walltype = atom type (material type) of the wall imported from the STL file
 <P><B>Description:</B>
 </P>
 <P>This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from 
-ASCII STL files or legacy ASCII VTK files. You can apply scaling, offset and rotation to 
-the imported mesh via keywords <I>scale</I>, <I>move</I>, <I>rotate</I>. Operations are applied in the 
-order as they are specified. The group-ID is ignored for this command. For periodic boundaries, 
-the mesh is mapped. 
+ASCII STL files or legacy ASCII VTK files. Style <I>mesh/surface</I> is a general surface mesh, and
+<I>mesh/surface/planar</I> represents a planar mesh. <I>mesh/surface/planar</I> requires the mesh to 
+consist of only 1 planar face. 
+</P>
+<P>Generall, you can apply scaling, offset and rotation to the imported mesh via keywords <I>scale</I>, 
+<I>move</I>, <I>rotate</I>. Operations are applied in the order as they are specified. The group-ID is 
+ignored for this command. For periodic boundaries, the mesh is mapped. 
 </P>
 <P>One fix represents one wall with a specific material, where the material is identified 
 via keyword <I>type</I>. If multiple meshes with different materials are desired, the respective 
@@ -95,36 +104,10 @@ equal to the conveyor belt velocity. This ensures the model makes sense also in 
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 <I>surface_ang_vel</I> mimics rotational motion of the mesh (e.g. for modeling a shear cell)
 </P>
-<P>The <I>curvature</I> keyword lets you specify up to which angle between two triangles the 
-triangles should be treated as belonging to the same surface (e.g. useful for bends). 
-This angle is used to decide if (a) contact history is copied from one triangle to 
-the other as the contact point proceeds and (b) if edge and corner interaction is 
-calculated.
-</P>
-<P>The <I>accuracy</I> keyword specifies how far away mesh nodes can be at maximum to
+<P>The <I>precision</I> keyword specifies how far away mesh nodes can be at maximum to
 be recognized as identical.
 </P>
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+<P>If LIGGGHTS stalls because of duplicate elements, you can try setting 
+<I>heal</I> to auto_remove_duplicates. LIGGGHTS will then try to heal the geometry
+by removing duplicate elements.
 </P>
-<P>This fix writes the STL data to binary <A HREF = "restart.html">restart files</A> to be able to 
-correctly resume the simulation in case the mesh is moved. None of the 
-<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global 
-scalar or vector or per-atom quantities are stored by this fix for access by 
-various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this fix 
-can be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command. 
-This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>To date, only ASCII STL and VTK files can be read (binary is not supported). 
-In the current implementation, each processor allocates memory for the whole 
-geometry, which may lead to memory issues for very large geometries . 
-It is not supported to use both the moving mesh and the conveyor belt feature.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "fix_wall_gran.html">fix wall/gran</A>
-</P>
-<P><B>Default:</B> curvature = 0 degrees, accuracy = 1e-8
-</P>
-</HTML>

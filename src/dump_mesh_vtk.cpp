@@ -53,7 +53,8 @@ enum
     DUMP_AEDGES = 256,
     DUMP_ACORNERS = 512,
     DUMP_INDEX = 1024,
-    DUMP_NNEIGHS = 2048
+    DUMP_NNEIGHS = 2048,
+    DUMP_MIN_ACTIVE_EDGE_DIST = 2048
 };
 
 enum
@@ -77,7 +78,9 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   sigma_t_(0),
   wear_(0),
   v_node_(0),
-  f_node_(0)
+  f_node_(0),
+  T_(0),
+  min_active_edge_dist_(0)
 {
   if (narg < 5)
     error->all(FLERR,"Illegal dump mesh/vtk command");
@@ -86,15 +89,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
 
   format_default = NULL;
 
-  nMesh_ = modify->n_fixes_style("mesh/surface");
-  
-  // create meshlist
-  meshList_ = new TriMesh*[nMesh_];
-  for (int iMesh = 0; iMesh < nMesh_; iMesh++)
-  {
-      
-      meshList_[iMesh] = static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
-  }
+  nMesh_ = 0;
 
   int iarg = 5;
 
@@ -183,13 +178,19 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           iarg++;
           hasargs = true;
       }
+      else if(strcmp(arg[iarg],"distaa")==0)
+      {
+          dump_what_ |= DUMP_MIN_ACTIVE_EDGE_DIST;
+          iarg++;
+          hasargs = true;
+      }
       else
       {
           // assume it's a mesh
           TriMesh **meshListNew = new TriMesh*[nMesh_+1];
           for(int i = 0; i < nMesh_; i++)
             meshListNew[i] = meshList_[i];
-          delete[] meshList_;
+          if(meshList_) delete[] meshList_;
           meshList_ = meshListNew;
 
           int ifix = modify->find_fix(arg[iarg++]);
@@ -223,6 +224,8 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   wear_ = new ScalarContainer<double>*[nMesh_];
   v_node_ = new MultiVectorContainer<double,3,3>*[nMesh_];
   f_node_ = new VectorContainer<double,3>*[nMesh_];
+  T_ = new ScalarContainer<double>*[nMesh_];
+  min_active_edge_dist_ = new ScalarContainer<double>*[nMesh_];
 
   if(dump_what_ == 0)
     error->all(FLERR,"Dump mesh/vtk: No dump quantity selected");
@@ -281,6 +284,8 @@ void DumpMeshVTK::init_style()
     size_one += 1;
   if(dump_what_ & DUMP_NNEIGHS)
     size_one += 1;
+  if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
+    size_one += 1;
 
   delete [] format;
 }
@@ -318,7 +323,12 @@ int DumpMeshVTK::count()
   getRefs();
 
   for(int i = 0; i < nMesh_; i++)
+  {
+    if(!meshList_[i]->isParallel() && 0 != comm->me)
+        continue;
     numTri += meshList_[i]->sizeLocal();
+    
+  }
 
   return numTri;
 }
@@ -358,6 +368,20 @@ void DumpMeshVTK::getRefs()
           wear_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("wear");
       }
   }
+  if(dump_what_ & DUMP_TEMP)
+  {
+      for(int i = 0; i < nMesh_; i++)
+      {
+          T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("T");
+      }
+  }
+  if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
+  {
+      for(int i = 0; i < nMesh_; i++)
+      {
+          min_active_edge_dist_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("minActiveEdgeDist");
+      }
+  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -376,6 +400,10 @@ void DumpMeshVTK::pack(int *ids)
   for(int iMesh = 0;iMesh < nMesh_; iMesh++)
   {
     mesh = meshList_[iMesh];
+
+    if(!mesh->isParallel() && 0 != comm->me)
+        continue;
+
     int nlocal = meshList_[iMesh]->sizeLocal();
 
     for(int iTri = 0; iTri < nlocal; iTri++)
@@ -443,7 +471,7 @@ void DumpMeshVTK::pack(int *ids)
 
         if(dump_what_ & DUMP_TEMP)
         {
-            buf[m++] = /*TODO temp*/ 0.;
+            buf[m++] = T_[iMesh] ? T_[iMesh]->get(0) : 0.;
         }
 
         if(dump_what_ & DUMP_OWNER)
@@ -473,6 +501,10 @@ void DumpMeshVTK::pack(int *ids)
         if(dump_what_ & DUMP_NNEIGHS)
         {
             buf[m++] = static_cast<double>(mesh->nNeighs(iTri));
+        }
+        if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
+        {
+            buf[m++] = min_active_edge_dist_[iMesh] ? min_active_edge_dist_[iMesh]->get(iTri) : 0.;
         }
     }
   }
@@ -755,6 +787,11 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
       {
         buf_pos++;
       }
+      // not able to interpolate this
+      if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
+      {
+        buf_pos++;
+      }
     return;
 }
 
@@ -952,6 +989,18 @@ void DumpMeshVTK::write_data_ascii_face(int n, double *mybuf)
   {
       //write owner data
       fprintf(fp,"SCALARS nneighs float 1\nLOOKUP_TABLE default\n");
+      m = buf_pos;
+      for (int i = 0; i < n; i++)
+      {
+          fprintf(fp,"%f\n",mybuf[m]);
+          m += size_one;
+      }
+      buf_pos++;
+  }
+  if(dump_what_ & DUMP_NNEIGHS)
+  {
+      //write owner data
+      fprintf(fp,"SCALARS min_active_edge_dist float 1\nLOOKUP_TABLE default\n");
       m = buf_pos;
       for (int i = 0; i < n; i++)
       {

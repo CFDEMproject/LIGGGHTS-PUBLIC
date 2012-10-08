@@ -193,7 +193,12 @@ void FixNeighlistMesh::handleTriangle(int iTri)
               int iAtom = binhead[iBin];
               while(iAtom != -1 && iAtom < nlocal)
               {
-                if(! (mask[iAtom] & groupbit)) continue;
+                if(! (mask[iAtom] & groupbit))
+                {
+                    if(bins) iAtom = bins[iAtom];
+                    else iAtom = -1;
+                    continue;
+                }
 
                 if(mesh_->resolveTriSphereNeighbuild(iTri,r ? r[iAtom] : 0. ,x[iAtom],r ? skin : (distmax+skin) ))
                 {

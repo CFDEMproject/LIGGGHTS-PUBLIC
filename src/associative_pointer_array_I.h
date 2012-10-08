@@ -50,7 +50,7 @@
   }
 
   /* ----------------------------------------------------------------------
-   add for per-element and pre-mesh properties
+   add for per-element and per-mesh properties
   ------------------------------------------------------------------------- */
 
   template<typename T> template<typename U>

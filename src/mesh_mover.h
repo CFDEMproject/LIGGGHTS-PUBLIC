@@ -23,6 +23,7 @@
    Contributing authors:
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Philippe Seil (JKU Linz)
+   Niels Dallinger (TU Chemnitz, viblin and vibrot)
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_MESH_MOVER_H
@@ -222,6 +223,46 @@ namespace LAMMPS_NS
         double axis_[3], point_[3], omega_, amplitude_;
   };
 
+  /* ---------------------------------------------------------------------- */
+  
+  class MeshMoverVibRot : public MeshMover {
+
+      public:
+        MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
+                            double px, double py,double pz,
+                            double axisX, double axisY, double axisZ,
+                            int order, double amplitude[10], double phase[10],
+                            double T);
+        virtual ~MeshMoverVibRot();
+
+        void initial_integrate(double dT,double dt);
+        void final_integrate(double dT,double dt) {}
+        void pre_delete();
+        
+      private:
+        double axis_[3], ord, ampl[10], phi[10], p_[3], omega_;
+       
+  };
+
+ /* ---------------------------------------------------------------------- */
+  class MeshMoverVibLin : public MeshMover {
+
+      public:
+        MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
+                            double axisX, double axisY, double axisZ,
+                            int order, double amplitude[10], double phase[10],
+                            double T);
+        virtual ~MeshMoverVibLin();
+
+        void initial_integrate(double dT,double dt);
+        void final_integrate(double dT,double dt) {}
+        void pre_delete();
+        
+      private:
+        double axis_[3], ord, omega_, ampl[10], phi[10];
+                
+  };
+  
    /* ----------------------------------------------------------------------
     Mesh Mover
     ------------------------------------------------------------------------- */
@@ -276,7 +317,7 @@ namespace LAMMPS_NS
                 return 0;
             if(strcmp("axis",arg[5]))
                 return 0;
-            if(strcmp("period",arg[9]))
+            if(strcmp("omega",arg[9]))
                 return 0;
 
             return new MeshMoverRotateVariable(lmp,mesh,fix_mm,
@@ -336,7 +377,91 @@ namespace LAMMPS_NS
                           lmp->force->numeric(arg[12]));
           }
         }
-
+         else if(strcmp(name,"viblin") == 0){
+            int order = lmp->force->numeric(arg[6]); 
+            if(narg < 10+2*order) return 0;
+          else
+          {
+            if(strcmp("axis",arg[1]))
+                return 0;
+            if(strcmp("order",arg[5]))
+                return 0;
+            if(strcmp("amplitude",arg[7]))
+                return 0;
+            if(strcmp("phase",arg[8+order]))
+                return 0;
+            if(strcmp("period",arg[9+2*order]))
+                return 0;
+            double pha[10];
+            double amp[10];
+            // creating array of amplitude and phase
+            for (int zv=0; zv<order; zv++) {
+                //amplitude                 
+                amp[zv] = lmp->force->numeric(arg[8+zv]);
+                // angle of phase
+                pha[zv] = lmp->force->numeric(arg[9+order+zv]);
+               }
+            
+            return new MeshMoverVibLin(lmp,mesh,fix_mm,
+                          // direction 
+                          lmp->force->numeric(arg[2]),
+                          lmp->force->numeric(arg[3]),
+                          lmp->force->numeric(arg[4]),
+                          // order
+                          lmp->force->numeric(arg[6]),
+                          // amplitudes
+                          amp,
+                          // phases
+                          pha,
+                          // periode 
+                          lmp->force->numeric(arg[10+2*order]));
+          }
+        }
+        else if(strcmp(name,"vibrot") == 0){
+             int order = lmp->force->numeric(arg[10]); 
+             if (narg < 14+2*order) return 0;
+          else
+          {
+            if(strcmp("origin",arg[1]))
+                return 0;
+            if(strcmp("axis",arg[5]))
+                return 0;
+            if(strcmp("order",arg[9]))
+                return 0;
+            if(strcmp("amplitude",arg[11]))
+                return 0;
+            if(strcmp("phase",arg[12+order]))
+                return 0;
+            if(strcmp("period",arg[13+2*order]))
+                return 0;          
+            double pha[10];
+            double amp[10];
+            // creating array of amplitude and phase
+            for (int zv=0; zv<order; zv++) {
+                //amplitude                 
+                amp[zv] = lmp->force->numeric(arg[12+zv]);
+                // angle of phase
+                pha[zv] = lmp->force->numeric(arg[13+order+zv]);
+               }
+            return new MeshMoverVibRot(lmp,mesh,fix_mm,
+                          // origin px py pz
+                          lmp->force->numeric(arg[2]),
+                          lmp->force->numeric(arg[3]),
+                          lmp->force->numeric(arg[4]),
+                          // axis axisx axisy axisz
+                          lmp->force->numeric(arg[6]),
+                          lmp->force->numeric(arg[7]),
+                          lmp->force->numeric(arg[8]),
+                          // order
+                          lmp->force->numeric(arg[10]),
+                          // amplitudes
+                          amp,
+                          // phases
+                          pha,
+                          // periode 
+                          lmp->force->numeric(arg[14+2*order]));
+           }
+        }        
         return 0;
     }
 
