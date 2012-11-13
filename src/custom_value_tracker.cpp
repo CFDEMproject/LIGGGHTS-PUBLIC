@@ -83,7 +83,7 @@ using namespace LAMMPS_NS;
   {
       
       globalProperties_.storeOrig(globalProperties_orig_);
-      //  error->all(FLERR,"Internal error");
+      
   }
 
   /* ----------------------------------------------------------------------
@@ -94,7 +94,7 @@ using namespace LAMMPS_NS;
   {
       
       globalProperties_.reset(globalProperties_orig_);
-      //  error->all(FLERR,"Internal error");
+      
   }
 
   /* ----------------------------------------------------------------------

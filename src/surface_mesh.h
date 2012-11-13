@@ -60,6 +60,7 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         bool isPlanar();
         bool areCoplanar(int tag_i, int tag_j);
+        bool areCoplanarNodeNeighs(int tag_i, int tag_j);
         bool areCoplanarNeighs(int tag_i, int tag_j);
         bool isOnSurface(double *pos);
 

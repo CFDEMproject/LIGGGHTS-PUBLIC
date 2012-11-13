@@ -49,8 +49,8 @@ using namespace FixConst;
 FixInsertRateRegion::FixInsertRateRegion(LAMMPS *lmp, int narg, char **arg) :
   FixInsertPack(lmp, narg, arg)
 {
-    // no fixed total number of particles inserted by this fix exists
-    ninsert_exists = 1;
+  // fixed total number of particles inserted by this fix exists
+  ninsert_exists = 1;
 
   bool hasargs = true;
   while(iarg < narg && hasargs)
@@ -58,7 +58,7 @@ FixInsertRateRegion::FixInsertRateRegion(LAMMPS *lmp, int narg, char **arg) :
     hasargs = false;
     if (strcmp(arg[iarg],"some_arg") == 0) {
     } else if(strcmp(style,"insert/rate/region") == 0)
-        error->fix_error(FLERR,this,"unknown keyword");
+    error->fix_error(FLERR,this,"unknown keyword");
   }
 }
 
@@ -113,6 +113,7 @@ void FixInsertRateRegion::calc_insertion_properties()
     else massflowrate = nflowrate * fix_distribution->mass_expect();
 
     ninsert_per = nflowrate*(static_cast<double>(insert_every)*dt);
+
 }
 
 /* ---------------------------------------------------------------------- */

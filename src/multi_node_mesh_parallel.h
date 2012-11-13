@@ -75,6 +75,8 @@ namespace LAMMPS_NS
         virtual ~MultiNodeMeshParallel();
 
         virtual bool addElement(double **nodeToAdd);
+        
+        virtual bool addElement(double **nodeToAdd,int lineNumb) = 0;
         virtual void deleteElement(int n);
 
         virtual void buildNeighbours() = 0;

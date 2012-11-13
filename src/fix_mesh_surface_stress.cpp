@@ -60,7 +60,7 @@ FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
     vectorZeroize3D(torque_total_);
 
     double zerovec[3] = {0.,0.,0.};
-    p_ref_.add(zerovec);
+    mesh()->prop().setGlobalProperty<VectorContainer<double,3> >("p_ref",zerovec);
 
     // override default from base
     stress_flag_ = true;
@@ -86,7 +86,7 @@ FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
           _p_ref[0] = force->numeric(arg[iarg_++]);
           _p_ref[1] = force->numeric(arg[iarg_++]);
           _p_ref[2] = force->numeric(arg[iarg_++]);
-          p_ref_.set(0,_p_ref);
+          mesh()->prop().setGlobalProperty<VectorContainer<double,3> >("p_ref",_p_ref);
           hasargs = true;
       } else if(strcmp(arg[iarg_],"stress") == 0) {
           if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
@@ -244,6 +244,7 @@ void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
         vectorAdd3D(x,delta,contactPoint);
         vectorAdd3D(f_total_,frc,f_total_);
         vectorSubtract3D(contactPoint,p_ref_(0),tmp);
+        
         vectorCross3D(tmp,frc,tmp2); // tmp2 is torque contrib
         vectorAdd3D(torque_total_,tmp2,torque_total_);
     }

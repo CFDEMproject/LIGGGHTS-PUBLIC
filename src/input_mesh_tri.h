@@ -43,7 +43,7 @@ class InputMeshTri : protected Input
     void meshtrifile_vtk(class TriMesh *);
     void meshtrifile_stl(class TriMesh *);
     inline void addTriangle(class TriMesh *mesh,
-            double *a, double *b, double *c,int lineNumber);
+         double *a, double *b, double *c,int lineNumber);
 
 };
 

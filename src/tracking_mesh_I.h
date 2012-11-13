@@ -109,7 +109,11 @@
   bool TrackingMesh<NUM_NODES>::resetToOrig()
   {
     if(MultiNodeMesh<NUM_NODES>::resetToOrig())
+    {
         customValues_.resetToOrig();
+        return true;
+    }
+    return false;
   }
 
   /* ----------------------------------------------------------------------

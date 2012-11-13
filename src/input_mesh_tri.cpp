@@ -55,9 +55,8 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
 {
   verbose_ = verbose;
 
-  int nEmptyLines;
-
-  if(strlen(filename) < 5) error->all(FLERR,"Illegal command, file name too short for input of triangular mesh");
+  if(strlen(filename) < 5)
+    error->all(FLERR,"Illegal command, file name too short for input of triangular mesh");
   const char *ext = &(filename[strlen(filename)-3]);
 
   // read file

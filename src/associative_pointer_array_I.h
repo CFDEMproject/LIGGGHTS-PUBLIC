@@ -245,6 +245,7 @@
   template<typename T>
   void AssociativePointerArray<T>::storeOrig(char *_id,AssociativePointerArray &orig)
   {
+      
       for(int i = 0; i < numElem_; i++)
           if(content_[i]->matches_id(_id))
             orig.content_[i]->setFromContainer(content_[i]);

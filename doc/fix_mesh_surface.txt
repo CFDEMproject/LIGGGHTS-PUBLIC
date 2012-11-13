@@ -97,7 +97,7 @@ If LIGGGHTS stalls because of duplicate elements, you can try setting
 by removing duplicate elements.
 
 IMPORTANT NOTE: You should check the changes to the geometry, e.g. by using a 
-dump mesh/stl"_dump.html command.
+"dump mesh/stl"_dump.html command.
 
 The {curvature} keyword lets you specify up to which angle between two triangles the 
 triangles should be treated as belonging to the same surface (e.g. useful for bends). 

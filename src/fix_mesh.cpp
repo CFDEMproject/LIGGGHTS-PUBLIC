@@ -189,7 +189,7 @@ void FixMesh::create_mesh(char *mesh_fname)
     {
         if(strcmp(style,"mesh/surface/stress/deform") == 0)
             mesh_ = new TriMeshDeformable(lmp);
-        if(strcmp(style,"mesh/surface/planar") == 0)
+        else if(strcmp(style,"mesh/surface/planar") == 0)
             mesh_ = new TriMeshPlanar(lmp);
         else
             mesh_ = new TriMesh(lmp);

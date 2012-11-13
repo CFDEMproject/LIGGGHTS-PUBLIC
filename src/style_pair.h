@@ -16,6 +16,7 @@
 #include "pair_gran_hooke_history.h"
 #include "pair_gran_hooke_history_hysteresis.h"
 #include "pair_gran_hooke_history_simple.h"
+#include "pair_gran_hooke_simple.h"
 #include "pair_hybrid.h"
 #include "pair_hybrid_overlay.h"
 #include "pair_lj96_cut.h"

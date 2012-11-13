@@ -73,6 +73,8 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     r0_ = 0.;
 
     shear_ = 0;
+    shearDim_ = shearAxis_ = -1;
+    vectorZeroize3D(shearAxisVec_);
 
     atom_type_wall_ = 1; // will be overwritten during execution, but other fixes require a value here
 
@@ -194,21 +196,29 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
         } else if (strcmp(arg[iarg_],"shear") == 0) {
           if (iarg_+3 > narg)
             error->fix_error(FLERR,this,"not enough arguments for 'shear'");
-          if (strcmp(arg[iarg_+1],"x") == 0) axis_ = 0;
-          else if (strcmp(arg[iarg_+1],"y") == 0) axis_ = 1;
-          else if (strcmp(arg[iarg_+1],"z") == 0) axis_ = 2;
+          if(!primitiveWall_)
+            error->fix_error(FLERR,this,"have to define primitive wall before 'shear'. For mehs walls, please use fix move/mesh");
+
+          if (strcmp(arg[iarg_+1],"x") == 0) shearDim_ = 0;
+          else if (strcmp(arg[iarg_+1],"y") == 0) shearDim_ = 1;
+          else if (strcmp(arg[iarg_+1],"z") == 0) shearDim_ = 2;
           else error->fix_error(FLERR,this,"illegal 'shear' dim");
           vshear_ = atof(arg[iarg_+2]);
           shear_ = 1;
+
+          // update axis for cylinder etc if needed
+          if(shearDim_ != primitiveWall_->axis())
+          {
+            shearAxis_ = primitiveWall_->axis();
+            shearAxisVec_[shearAxis_] = vshear_;
+          }
+
           hasargs = true;
           iarg_ += 3;
         }
     }
 
     // error checks
-
-    if(meshwall_ == 1 && shear_)
-        error->fix_error(FLERR,this,"can not use mesh walls and shear together, please use fix move/mesh");
 
     if(meshwall_ == -1 && primitiveWall_ == 0)
         error->fix_error(FLERR,this,"Need to use define style 'mesh' or 'primitive'");
@@ -366,7 +376,7 @@ void FixWallGran::init()
 
 void FixWallGran::setup(int vflag)
 {
-    if (strcmp(update->integrate_style,"verlet") == 0)
+    if (strstr(update->integrate_style,"verlet"))
     {
       pre_neighbor();
       pre_force(vflag);
@@ -589,11 +599,11 @@ void FixWallGran::post_force_primitive(int vflag)
 
   // contact properties
   double force_old[3],force_wall[3];
-  double delta[3],deltan;
+  double delta[3],deltan,rdist[3];
   double *c_history = 0, v_wall[] = {0.,0.,0.};
 
   // if shear, set velocity accordingly
-  if (shear_) v_wall[axis_] = vshear_;
+  if (shear_) v_wall[shearDim_] = vshear_;
 
   // loop neighbor list
   int *neighborList;
@@ -615,6 +625,12 @@ void FixWallGran::post_force_primitive(int vflag)
     else
     {
       if(dnum() > 0) primitiveWall_->handleContact(iPart,c_history);
+      if(shear_ && shearAxis_ >= 0)
+      {
+          primitiveWall_->calcRadialDistance(x_[iPart],rdist);
+          vectorCross3D(shearAxisVec_,rdist,v_wall);
+          
+      }
       post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,NULL);
     }
   }

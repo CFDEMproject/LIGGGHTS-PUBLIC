@@ -199,6 +199,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           FixMeshSurface *fms = static_cast<FixMeshSurface*>(modify->fix[ifix]);
           meshList_[nMesh_] = fms->triMesh();
           nMesh_++;
+          hasargs = true;
       }
   }
 

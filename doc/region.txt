@@ -13,7 +13,7 @@ region command :h3
 region ID style args keyword arg ... :pre
 
 ID = user-assigned name for the region :ulb,l
-style = {delete} or {block} or {cone} or {cylinder} or {plane} or {prism} or {sphere} or {union} or {intersect} or {wedge} :l
+style = {delete} or {block} or {cone} or {cylinder} or {plane} or {prism} or {sphere} or {mesh/tet} or {union} or {intersect} or {wedge} :l
   {delete} = no args
   {block} args = xlo xhi ylo yhi zlo zhi
     xlo,xhi,ylo,yhi,zlo,zhi = bounds of block in all dimensions (distance units)
@@ -38,6 +38,15 @@ style = {delete} or {block} or {cone} or {cylinder} or {plane} or {prism} or {sp
   {sphere} args = x y z radius
     x,y,z = center of sphere (distance units)
     radius = radius of sphere (distance units)
+  {mesh/tet} args = file filename scale s move offx offy offz rotate phix phiy phiz
+    file = obligatory keyword
+    filename = name of ASCII VTK file containing the VTK tet-mesh data
+    scale = obligatory keyword
+    s = scaling factor for the mesh (dimensionless)
+    move = obligatory keyword
+    offx,offy,offz = offset for the mesh (distance units)
+    rotate = obligatory keyword
+    phix,phiy,phiz = angle of mesh rotation around x-, y-, and z-axis (in grad)
   {wedge} args = axis dim center c1 c2 radius r bounds lo hi angle0 alpha0 angle alpha
     axis = obligatory keyword
     dim = x or y or z ... wedge is aligned to this dimension
@@ -195,6 +204,16 @@ See "Section_howto 12"_Section_howto.html#howto_12 of the doc pages
 for a geometric description of triclinic boxes, as defined by LAMMPS,
 and how to transform these parameters to and from other commonly used
 triclinic representations.
+
+For style {mesh/tet}, a tetrahedral mesh can be read from an ASCII VTK file.
+You can apply offset, scaling and rotation to the imported mesh via dedicated keywords.
+If applying more then one of these operations, the offset is applied first 
+and then the geometry is scaled. Then the geometry is rotated around the 
+x-axis first, then around the y-axis, then around the z-axis.
+
+IMPORTANT NOTE: Currently only ASCII VTK containing tetrahedra are
+supported. For periodic boundaries, the mesh is NOT mapped. Instead, a 
+warning is generated if a vertex lies outside the simulation box.
 
 The {union} style creates a region consisting of the volume of all the
 listed regions combined.  The {intersect} style creates a region

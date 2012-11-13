@@ -115,6 +115,7 @@ class Fix : protected Pointers {
   virtual void pre_force(int) {}
   virtual void post_force(int) {}
   virtual void final_integrate() {}
+  virtual bool iterate_implicitly() {return false;} 
   virtual void end_of_step() {}
   virtual void post_run() {}
   virtual void write_restart(FILE *) {}
@@ -206,7 +207,8 @@ namespace FixConst {
   static const int MIN_POST_FORCE =          1<<16;
   static const int MIN_ENERGY =              1<<17;
   static const int POST_RUN =                1<<18;
-  static const int FIX_CONST_LAST =          1<<19;
+  static const int ITERATE_IMPLICITLY =      1<<19;
+  static const int FIX_CONST_LAST =          1<<20;
 }
 
 }

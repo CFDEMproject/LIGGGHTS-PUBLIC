@@ -33,11 +33,12 @@ FixStyle(insert/stream,FixInsertStream)
 namespace LAMMPS_NS {
 
 class FixInsertStream : public FixInsert {
+
  public:
 
   FixInsertStream(class LAMMPS *, int, char **);
   ~FixInsertStream();
-  void post_create();
+  virtual void post_create();
   void pre_delete(bool unfixflag);
 
   virtual int setmask();
@@ -46,7 +47,7 @@ class FixInsertStream : public FixInsert {
 
   void init_defaults();
 
- private:
+ protected:
 
   virtual void calc_insertion_properties();
 

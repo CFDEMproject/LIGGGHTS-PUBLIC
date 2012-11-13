@@ -134,6 +134,9 @@ int FixCfdCoupling::setmask()
 
 void FixCfdCoupling::init()
 {
+    if(atom->map_style != 1)
+      error->fix_error(FLERR,this,"for code coupling, please add a 'atom_modify array' command");
+
     // make sure there is only one cfdcoupling fix
     if(modify->n_fixes_style_strict(style) != 1)
       error->fix_error(FLERR,this,"More than one fix of style couple/cfd is not allowed");
@@ -150,7 +153,7 @@ void FixCfdCoupling::init()
 
 void FixCfdCoupling::setup(int vflag)
 {
-    if (strcmp(update->integrate_style,"verlet") == 0)
+    if (strstr(update->integrate_style,"verlet"))
       post_force(vflag);
     else {
       ((Respa *) update->integrate)->copy_flevel_f(nlevels_respa-1);

@@ -23,6 +23,7 @@
 #define LMP_MPI_LIGGGHTS_H
 
 #include "mpi.h"
+#include "stdio.h"
 
 /* ---------------------------------------------------------------------- */
 // a poor man's inline MPI wrappers for LIGGGHTS
@@ -30,6 +31,31 @@
 
 namespace LAMMPS_NS
 {
+
+/* ----------------------------------------------------------------------
+   Helper function to be able to templetize wrappers
+------------------------------------------------------------------------- */
+
+template<typename T>
+inline MPI_Datatype mpi_type()
+{
+    printf("**************ILLEGAL CALL TO mpi_type()*************");
+    return 0;
+}
+
+template<>
+inline MPI_Datatype mpi_type<double>()
+{
+    return MPI_DOUBLE;
+}
+
+template<>
+inline MPI_Datatype mpi_type<int>()
+{
+    return MPI_INT;
+}
+
+/* ---------------------------------------------------------------------- */
 
 inline void MPI_Sum_Vector(double *vector,int len, MPI_Comm comm)
 {
@@ -232,6 +258,44 @@ inline int MPI_Gather0_Vector(double *vector, int size ,double *&vector_0,MPI_Co
     delete []displs;
 
     return size_0;
+}
+
+/* ----------------------------------------------------------------------
+   Allgather vector data from all processors
+   returns allocated and populated array vector_all to caller
+------------------------------------------------------------------------- */
+
+template<typename T>
+inline int MPI_Allgather_Vector(T *vector, int size ,T *&vector_all,MPI_Comm comm)
+{
+    int me,nprocs, *recvcnts, *displs;
+    int size_all;
+
+    MPI_Comm_size(comm, &nprocs);
+    MPI_Comm_rank(comm, &me);
+
+    recvcnts = new int[nprocs];
+    displs = new int[nprocs];
+
+    MPI_Allgather(&size,1,MPI_INT,recvcnts,1,MPI_INT,comm);
+
+    size_all = 0;
+    displs[0] = 0;
+    for (int iproc = 1; iproc < nprocs; iproc++)
+    {
+        size_all += recvcnts[iproc-1];
+        displs[iproc] = displs[iproc-1] + recvcnts[iproc-1];
+    }
+    size_all += recvcnts[nprocs-1];
+
+    vector_all = new T[size_all];
+
+    MPI_Allgatherv(vector,size,mpi_type<T>(),vector_all, recvcnts, displs, mpi_type<T>(), comm);
+
+    delete []recvcnts;
+    delete []displs;
+
+    return size_all;
 }
 
 }; // end namespace LAMMPS_NS

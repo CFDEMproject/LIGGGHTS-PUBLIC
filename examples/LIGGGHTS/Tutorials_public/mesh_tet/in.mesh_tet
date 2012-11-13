@@ -1,0 +1,62 @@
+# tet mesh region example
+
+atom_style	granular
+atom_modify	map array
+boundary	m m m
+newton		off
+
+communicate	single vel yes
+
+units		si
+
+region		reg block -1 1 -1 1 -0.05 1.05 units box
+create_box	1 reg
+
+neighbor	0.002 bin
+neigh_modify	delay 0
+
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.9
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.05
+fix 		m5 all property/global characteristicVelocity scalar 2.
+fix 		m6 all property/global cohesionEnergyDensity peratomtypepair 1 500
+
+#New pair style
+pair_style 	gran/hertz/history  #Hertzian without cohesion
+pair_coeff	* *
+
+timestep	0.00001
+
+fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+
+#region and insertion
+variable 	d equal 0.05
+region		mesh mesh/tet file test.vtk  scale 1. move 0. 0. 0.  rotate 0. 0. 0. units box
+group		nve_group region reg
+lattice		sc $d
+create_atoms	1 region mesh
+set		group all density 500 diameter $d
+
+
+#apply nve integration to all particles that are inserted as single particles
+fix		integr nve_group nve/sphere
+
+#output settings, include total thermal energy
+compute		1 all erotate/sphere
+thermo_style	custom step atoms ke c_1 vol
+thermo		1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+run		1
+dump		dmp all custom 800 post/dump*.tetmesh id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+
+#insert particles
+run		1000
+

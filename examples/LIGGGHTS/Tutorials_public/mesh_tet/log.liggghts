@@ -1,0 +1,120 @@
+LIGGGHTS (Version LIGGGHTS-MASTER 2.2plusplus, compiled 2012-11-12-08:58:15 by ckloss based on LAMMPS 20 Apr 2012)
+# tet mesh region example
+
+atom_style	granular
+atom_modify	map array
+boundary	m m m
+newton		off
+
+communicate	single vel yes
+
+units		si
+
+region		reg block -1 1 -1 1 -0.05 1.05 units box
+create_box	1 reg
+Created orthogonal box = (-1 -1 -0.05) to (1 1 1.05)
+  1 by 1 by 1 MPI processor grid
+
+neighbor	0.002 bin
+neigh_modify	delay 0
+
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.9
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.05
+fix 		m5 all property/global characteristicVelocity scalar 2.
+fix 		m6 all property/global cohesionEnergyDensity peratomtypepair 1 500
+
+#New pair style
+pair_style 	gran/hertz/history  #Hertzian without cohesion
+pair_coeff	* *
+
+timestep	0.00001
+
+fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+
+#region and insertion
+variable 	d equal 0.05
+region		mesh mesh/tet file test.vtk  scale 1. move 0. 0. 0.  rotate 0. 0. 0. units box
+WARNING: VTK file contains other types than tetrahedra - only tets are currently supported in LIGGGHTS, other cells are discarded (input_mesh_tet.cpp:277)
+group		nve_group region reg
+0 atoms in group nve_group
+lattice		sc $d
+lattice		sc 0.05
+Lattice spacing in x,y,z = 0.05 0.05 0.05
+create_atoms	1 region mesh
+Created 13121 atoms
+set		group all density 500 diameter $d
+set		group all density 500 diameter 0.05
+  13121 settings made for density
+  13121 settings made for diameter
+
+
+#apply nve integration to all particles that are inserted as single particles
+fix		integr nve_group nve/sphere
+
+#output settings, include total thermal energy
+compute		1 all erotate/sphere
+thermo_style	custom step atoms ke c_1 vol
+thermo		1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+run		1
+Memory usage per processor = 17.8605 Mbytes
+Step Atoms KinEng 1 Volume 
+       0    13121            0            0          4.4 
+       1    13121            0            0          4.4 
+Loop time of 0.00362992 on 1 procs for 1 steps with 13121 atoms
+
+Pair  time (%) = 0.00329709 (90.8309)
+Neigh time (%) = 0 (0)
+Comm  time (%) = 9.53674e-07 (0.0262726)
+Outpt time (%) = 0.000120163 (3.31034)
+Other time (%) = 0.000211716 (5.83251)
+
+Nlocal:    13121 ave 13121 max 13121 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    37552 ave 37552 max 37552 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 37552
+Ave neighs/atom = 2.86198
+Neighbor list builds = 0
+Dangerous builds = 0
+dump		dmp all custom 800 post/dump*.tetmesh id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+
+#insert particles
+run		1000
+Memory usage per processor = 17.8605 Mbytes
+Step Atoms KinEng 1 Volume 
+       1    13121            0            0          4.4 
+    1000    13121            0            0          4.4 
+    1001    13121            0            0          4.4 
+Loop time of 3.42228 on 1 procs for 1000 steps with 13121 atoms
+
+Pair  time (%) = 3.1693 (92.6077)
+Neigh time (%) = 0 (0)
+Comm  time (%) = 0.0001297 (0.00378986)
+Outpt time (%) = 0.0616691 (1.80199)
+Other time (%) = 0.191187 (5.58653)
+
+Nlocal:    13121 ave 13121 max 13121 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    37552 ave 37552 max 37552 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 37552
+Ave neighs/atom = 2.86198
+Neighbor list builds = 0
+Dangerous builds = 0
+

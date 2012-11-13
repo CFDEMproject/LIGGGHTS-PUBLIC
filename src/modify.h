@@ -1,4 +1,14 @@
 /* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -8,7 +18,7 @@
    certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_MODIFY_H
@@ -24,6 +34,7 @@ class Modify : protected Pointers {
   int nfix,maxfix;
   int n_initial_integrate,n_post_integrate,n_pre_exchange,n_pre_neighbor;
   int n_pre_force,n_post_force;
+  int n_iterate_implicitly; 
   int n_final_integrate,n_end_of_step,n_thermo_energy;
   int n_initial_integrate_respa,n_post_integrate_respa;
   int n_pre_force_respa,n_post_force_respa,n_final_integrate_respa;
@@ -56,6 +67,7 @@ class Modify : protected Pointers {
   virtual void pre_force(int);
   virtual void post_force(int);
   virtual void final_integrate();
+  virtual bool iterate_implicitly();  
   virtual void end_of_step();
   virtual double thermo_energy();
   virtual void post_run();
@@ -124,6 +136,7 @@ class Modify : protected Pointers {
   int *list_initial_integrate,*list_post_integrate;
   int *list_pre_exchange,*list_pre_neighbor;
   int *list_pre_force,*list_post_force;
+  int *list_iterate_implicitly; 
   int *list_final_integrate,*list_end_of_step,*list_thermo_energy;
   int *list_initial_integrate_respa,*list_post_integrate_respa;
   int *list_pre_force_respa,*list_post_force_respa;

@@ -122,4 +122,3 @@ void TriMeshPlanar::buildEdgeLists()
         minActiveEdgeDist_(iSrf) = MathExtraLiggghts::min(distEdges,2*NUM_NODES,dummy);
     }
 }
-

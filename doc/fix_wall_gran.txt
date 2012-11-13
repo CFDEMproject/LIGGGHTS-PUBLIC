@@ -32,12 +32,7 @@ wallstyle args for wallstyle {primitive} = {type} or {xplane} or {yplane} or {zp
     pos = position plane (distance units)
   {xcylinder} or {ycylinder} or {zcylinder} args = radius c1 c2
     radius = cylinder radius (distance units)
-    c1,c2 = coordinates of center axis in other 2 dims (distance units)
-  {zcone} args = lo hi radiuslo radiushi
-    lo = z-coordinate where the cone starts (distance units)
-    hi = z-coordinate where the cone ends (distance units)
-    radiuslo = cone radius at lo (distance units)
-    radiushi = cone radius at hi (distance units) :pre
+    c1,c2 = coordinates of center axis in other 2 dims (distance units) :pre
 
 zero or more general_keyword/value pairs may be appended :l
 general_keyword =  {shear} or {store_force} :l
@@ -104,18 +99,14 @@ For style {mesh}, the atom_type (material type) is inherited from the atom style
 in the "fix mesh/surface"_fix_mesh_surface.html command. 
 
 For {wallstyle primitive}, the atom_type (material type) has to be provided via
-keyword {type}. Primitve walls can be {xplane} or {yplane} or {zplane} or {cylindrical}
-or {conical}. The 3 planar options specify a pair of walls in a dimension.
-Wall positions are given by values for lo and hi. Either of the values
-can be specified as NULL if a single wall is desired. For a {zcylinder}
-wallstyle, the cylinder's axis is at x = y = 0.0, and the radius of the
-cylinder is specified. Likewise, a {zcone} wallstyle can be used, with
-the axis at x = y = 0.0, and the hi and lo radii being specified.
+keyword {type}. Primitve walls can be {xplane} or {yplane} or {zplane} or {cylindrical}. 
+The 3 planar options specify a single wall in a dimension.
+Wall positions are given by values for lo and hi. For an {xcylinder}, {ycylinder} or
+{zcylinder}, the radius and the cylinder axis in the other two dims is specified.
 
 :line
 
 Optionally, primitive walls can be moving, if the shear keyword is appended. 
-
 
 For the {shear} keyword, the wall moves continuously in the specified dimension
 with velocity vshear. The dimension must be tangential to walls with a planar
@@ -124,7 +115,8 @@ walls, a dimension of z means the cylinder is moving in the z-direction along
 it's axis. A dimension of x or y means the cylinder is spinning around the
 z-axis, either in the clockwise direction for vshear > 0 or counter-clockwise
 for vshear < 0. In this case, vshear is the tangential velocity of the wall
-at whatever radius has been defined.
+at whatever radius has been defined. The same applies to {xcylinder} and
+{ycylinder} accordingly.
 
 NOTE: The keywords wiggle or shear can NOT be used for {wallstyle mesh}.
 For a moving a granular wall with {wallstyle mesh}, use the more flexible

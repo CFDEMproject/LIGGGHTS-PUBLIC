@@ -266,7 +266,7 @@ void FixInsertStream::calc_insertion_properties()
         extrude_length = static_cast<double>(duration) * dt * vectorMag3D(v_normal);
         
         if(extrude_length < 3.*max_r_bound())
-          error->fix_error(FLERR,this,"'insert_every' or 'vel' is too small");
+          error->fix_error(FLERR,this,"'insert_every' or 'vel' is too small, or radius of inserted particles too large");
     }
 
     // ninsert - if ninsert not defined directly, calculate it
@@ -335,7 +335,7 @@ void FixInsertStream::init()
     if(!i_am_integrator && fix_multisphere)
         error->fix_error(FLERR,this,"Currently only one fix insert/stream is allowed with multisphere particles");
 
-    if(ins_face->isMoving() || ins_face->isScaling() || ins_face->isTranslating())
+    if(ins_face->isMoving() || ins_face->isScaling())
         error->fix_error(FLERR,this,"cannot translate, rotate, scale mesh which is used for particle insertion");
 }
 

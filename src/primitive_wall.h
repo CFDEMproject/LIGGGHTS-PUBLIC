@@ -55,6 +55,9 @@ namespace LAMMPS_NS
         double resolveContact(double *x, double r, double *delta);
         bool resolveNeighlist(double *x, double r, double treshold);
 
+        int axis();
+        double calcRadialDistance(double *pos, double *distvec);
+
       private:
         ScalarContainer<int> neighlist;
         ScalarContainer<int> contactHashmap;
@@ -86,6 +89,16 @@ namespace LAMMPS_NS
   double PrimitiveWall::resolveContact(double *x, double r, double *delta)
   {
     return PRIMITIVE_WALL_DEFINITIONS::chooseContactTemplate(x, r, delta, param, wType);
+  }
+
+  int PrimitiveWall::axis()
+  {
+    return PRIMITIVE_WALL_DEFINITIONS::chooseAxis(wType);
+  }
+
+  double PrimitiveWall::calcRadialDistance(double *pos, double *distvec)
+  {
+    return PRIMITIVE_WALL_DEFINITIONS::chooseCalcRadialDistance(pos, param, distvec[0],distvec[1],distvec[2], wType);
   }
 
   bool PrimitiveWall::resolveNeighlist(double *x, double r, double treshold)

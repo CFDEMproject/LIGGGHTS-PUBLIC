@@ -93,6 +93,7 @@
   template<int NUM_NODES>
   bool MultiNodeMesh<NUM_NODES>::addElement(double **nodeToAdd)
   {
+    
     double avg[3];
 
     // add node

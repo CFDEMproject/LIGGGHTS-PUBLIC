@@ -122,8 +122,9 @@ class FixWallGran : public Fix {
 
   int nlevels_respa_;
 
-  int shear_, axis_;
+  int shear_, shearDim_, shearAxis_;
   double vshear_;
+  double shearAxisVec_[3];
 
   // number of values for contact history
   int dnum_;

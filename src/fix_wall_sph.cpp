@@ -135,7 +135,7 @@ void FixWallSph::init()
 
 void FixWallSph::setup(int vflag)
 {
-  if (strcmp(update->integrate_style,"verlet") == 0)
+  if (strstr(update->integrate_style,"verlet"))
     post_force(vflag);
   else {
     ((Respa *) update->integrate)->copy_flevel_f(nlevels_respa-1);

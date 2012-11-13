@@ -73,4 +73,59 @@ inline int TriMeshPlanar::generateRandomOwnedGhostWithin(double *pos,double delt
     return iSrf;
 }
 
+/* ----------------------------------------------------------------------
+ search for position within the mesh - return ID, bary coords and normal dist
+------------------------------------------------------------------------- */
+
+inline bool TriMeshPlanar::locatePosition(double *pos,int &triID,double *bary,double &distance)
+{
+    double p[3], pProjected[3], temp[3];
+    int nlocal = sizeLocal();
+    vectorCopy3D(pos,p);
+
+    // calc normal distance
+    vectorSubtract3D(p,center_(0),temp);
+    distance = vectorDot3D(temp,surfaceNorm(0));
+
+    // calc projected point
+    vectorScalarMult3D(surfaceNorm(0),distance,temp);
+    vectorSubtract3D(p,temp,pProjected);
+
+    for(int i = 0; i < nlocal; i++)
+    {
+        if(isInElement(pProjected,i))
+        {
+            triID = TrackingMesh<3>::id(i);
+            vectorSubtract3D(pProjected,node_(i)[0],temp);
+            MathExtraLiggghts::calcBaryTriCoords(temp,edgeVec(i),edgeLen(i),bary);
+            
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/* ----------------------------------------------------------------------
+ calculate position from tri ID and bary coords
+------------------------------------------------------------------------- */
+
+inline bool TriMeshPlanar::constructPositionFromBary(int triID,double *bary,double *pos)
+{
+    int itri = TrackingMesh<3>::map(triID);
+
+    if(itri < 0) return false;
+
+    double tmp[3];
+    vectorZeroize3D(pos);
+
+    for(int i = 0; i < 3; i++)
+    {
+        vectorScalarMult3D(node_(itri)[i],bary[i],tmp);
+        vectorAdd3D(pos,tmp,pos);
+    }
+
+    return true;
+}
+
 #endif

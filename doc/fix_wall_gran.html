@@ -46,12 +46,7 @@
     pos = position plane (distance units)
   <I>xcylinder</I> or <I>ycylinder</I> or <I>zcylinder</I> args = radius c1 c2
     radius = cylinder radius (distance units)
-    c1,c2 = coordinates of center axis in other 2 dims (distance units)
-  <I>zcone</I> args = lo hi radiuslo radiushi
-    lo = z-coordinate where the cone starts (distance units)
-    hi = z-coordinate where the cone ends (distance units)
-    radiuslo = cone radius at lo (distance units)
-    radiushi = cone radius at hi (distance units) 
+    c1,c2 = coordinates of center axis in other 2 dims (distance units) 
 </PRE>
 <LI>zero or more general_keyword/value pairs may be appended 
 
@@ -124,13 +119,10 @@ For style <I>mesh</I>, the atom_type (material type) is inherited from the atom 
 in the <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command. 
 </P>
 <P>For <I>wallstyle primitive</I>, the atom_type (material type) has to be provided via
-keyword <I>type</I>. Primitve walls can be <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>cylindrical</I>
-or <I>conical</I>. The 3 planar options specify a pair of walls in a dimension.
-Wall positions are given by values for lo and hi. Either of the values
-can be specified as NULL if a single wall is desired. For a <I>zcylinder</I>
-wallstyle, the cylinder's axis is at x = y = 0.0, and the radius of the
-cylinder is specified. Likewise, a <I>zcone</I> wallstyle can be used, with
-the axis at x = y = 0.0, and the hi and lo radii being specified.
+keyword <I>type</I>. Primitve walls can be <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>cylindrical</I>. 
+The 3 planar options specify a single wall in a dimension.
+Wall positions are given by values for lo and hi. For an <I>xcylinder</I>, <I>ycylinder</I> or
+<I>zcylinder</I>, the radius and the cylinder axis in the other two dims is specified.
 </P>
 <HR>
 
@@ -143,7 +135,8 @@ walls, a dimension of z means the cylinder is moving in the z-direction along
 it's axis. A dimension of x or y means the cylinder is spinning around the
 z-axis, either in the clockwise direction for vshear > 0 or counter-clockwise
 for vshear < 0. In this case, vshear is the tangential velocity of the wall
-at whatever radius has been defined.
+at whatever radius has been defined. The same applies to <I>xcylinder</I> and
+<I>ycylinder</I> accordingly.
 </P>
 <P>NOTE: The keywords wiggle or shear can NOT be used for <I>wallstyle mesh</I>.
 For a moving a granular wall with <I>wallstyle mesh</I>, use the more flexible

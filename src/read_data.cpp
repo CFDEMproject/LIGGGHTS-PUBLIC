@@ -34,6 +34,8 @@
 #include "improper.h"
 #include "error.h"
 #include "memory.h"
+#include "modify.h" 
+#include "fix.h" 
 #include "special.h"
 
 using namespace LAMMPS_NS;
@@ -56,6 +58,8 @@ ReadData::ReadData(LAMMPS *lmp) : Pointers(lmp)
   buffer = new char[CHUNK*MAXLINE];
   narg = maxarg = 0;
   arg = NULL;
+
+  add_to_existing = 0; 
 
   // customize for new sections
   // pointers to atom styles that store extra info
@@ -82,10 +86,15 @@ ReadData::~ReadData()
 
 void ReadData::command(int narg, char **arg)
 {
-  if (narg != 1) error->all(FLERR,"Illegal read_data command");
+  if (narg != 1  && narg != 2) error->all(FLERR,"Illegal read_data command"); 
 
-  if (domain->box_exist)
+  if (narg == 2 && strcmp(arg[1],"add") == 0) add_to_existing = 1;
+
+  if (domain->box_exist && !add_to_existing)
     error->all(FLERR,"Cannot read_data after simulation box is defined");
+  else if (!domain->box_exist && add_to_existing)
+    error->all(FLERR,"Cannot read_data with adding particles without simulation box being defined");
+  
   if (domain->dimension == 2 && domain->zperiodic == 0)
     error->all(FLERR,"Cannot run 2d simulation with nonperiodic Z dimension");
 
@@ -117,28 +126,43 @@ void ReadData::command(int narg, char **arg)
 
   if (me == 0) {
     if (screen) fprintf(screen,"Reading data file ...\n");
-    open(arg[0]);
+
+    if(!add_to_existing || !strchr(arg[0],'*')) open(arg[0]);
+    else
+    {
+        char *file = new char[strlen(arg[0]) + 16];
+        char *ptr = strchr(arg[0],'*');
+        *ptr = '\0';
+        sprintf(file,"%s"BIGINT_FORMAT"%s",arg[0],update->ntimestep,ptr+1);
+        *ptr = '*';
+        open(file);
+        delete [] file;
+    }
   }
   header(1);
-  domain->box_exist = 1;
+
+  if (!domain->box_exist) domain->box_exist = 1; 
 
   // problem setup using info from header
 
-  update->ntimestep = 0;
+  if(!add_to_existing) 
+  {
+      update->ntimestep = 0;
 
-  int n;
-  if (comm->nprocs == 1) n = static_cast<int> (atom->natoms);
-  else n = static_cast<int> (LB_FACTOR * atom->natoms / comm->nprocs);
+      int n;
+      if (comm->nprocs == 1) n = static_cast<int> (atom->natoms);
+      else n = static_cast<int> (LB_FACTOR * atom->natoms / comm->nprocs);
 
-  atom->allocate_type_arrays();
-  atom->avec->grow(n);
-  n = atom->nmax;
+      atom->allocate_type_arrays();
+      atom->avec->grow(n);
+      n = atom->nmax;
 
-  domain->print_box("  ");
-  domain->set_initial_box();
-  domain->set_global_box();
-  comm->set_proc_grid();
-  domain->set_local_box();
+      domain->print_box("  ");
+      domain->set_initial_box();
+      domain->set_global_box();
+      comm->set_proc_grid();
+      domain->set_local_box();
+  }
 
   // customize for new sections
   // read rest of file in free format
@@ -372,50 +396,100 @@ void ReadData::header(int flag)
 
     // search line for header keyword and set corresponding variable
 
-    if (strstr(line,"atoms")) sscanf(line,BIGINT_FORMAT,&atom->natoms);
+    if (add_to_existing == 0) 
+    {
+        if (strstr(line,"atoms")) sscanf(line,BIGINT_FORMAT,&atom->natoms);
 
-    else if (strstr(line,"bonds")) sscanf(line,BIGINT_FORMAT,&atom->nbonds);
-    else if (strstr(line,"angles")) sscanf(line,BIGINT_FORMAT,&atom->nangles);
-    else if (strstr(line,"dihedrals")) sscanf(line,BIGINT_FORMAT,
-                                              &atom->ndihedrals);
-    else if (strstr(line,"impropers")) sscanf(line,BIGINT_FORMAT,
+        else if (strstr(line,"bonds")) sscanf(line,BIGINT_FORMAT,&atom->nbonds);
+        else if (strstr(line,"angles")) sscanf(line,BIGINT_FORMAT,&atom->nangles);
+        else if (strstr(line,"dihedrals")) sscanf(line,BIGINT_FORMAT,
+                                                 &atom->ndihedrals);
+        else if (strstr(line,"impropers")) sscanf(line,BIGINT_FORMAT,
                                               &atom->nimpropers);
 
-    else if (strstr(line,"atom types")) sscanf(line,"%d",&atom->ntypes);
-    else if (strstr(line,"bond types")) sscanf(line,"%d",&atom->nbondtypes);
-    else if (strstr(line,"angle types")) sscanf(line,"%d",&atom->nangletypes);
-    else if (strstr(line,"dihedral types"))
-      sscanf(line,"%d",&atom->ndihedraltypes);
-    else if (strstr(line,"improper types"))
-      sscanf(line,"%d",&atom->nimpropertypes);
+        else if (strstr(line,"atom types")) sscanf(line,"%d",&atom->ntypes);
+        else if (strstr(line,"bond types")) sscanf(line,"%d",&atom->nbondtypes);
+        else if (strstr(line,"angle types")) sscanf(line,"%d",&atom->nangletypes);
+        else if (strstr(line,"dihedral types"))
+          sscanf(line,"%d",&atom->ndihedraltypes);
+        else if (strstr(line,"improper types"))
+          sscanf(line,"%d",&atom->nimpropertypes);
 
-    else if (strstr(line,"extra bond per atom"))
-      sscanf(line,"%d",&atom->extra_bond_per_atom);
+        else if (strstr(line,"extra bond per atom"))
+          sscanf(line,"%d",&atom->extra_bond_per_atom);
 
-    else if (strstr(line,"ellipsoids")) {
-      if (!avec_ellipsoid)
-        error->all(FLERR,"No ellipsoids allowed with this atom style");
-      sscanf(line,BIGINT_FORMAT,&nellipsoids);
-    } else if (strstr(line,"lines")) {
-      if (!avec_line)
-        error->all(FLERR,"No lines allowed with this atom style");
-      sscanf(line,BIGINT_FORMAT,&nlines);
-    } else if (strstr(line,"triangles")) {
-      if (!avec_tri)
-        error->all(FLERR,"No triangles allowed with this atom style");
-      sscanf(line,BIGINT_FORMAT,&ntris);
+        else if (strstr(line,"ellipsoids")) {
+          if (!avec_ellipsoid)
+            error->all(FLERR,"No ellipsoids allowed with this atom style");
+          sscanf(line,BIGINT_FORMAT,&nellipsoids);
+        } else if (strstr(line,"lines")) {
+          if (!avec_line)
+            error->all(FLERR,"No lines allowed with this atom style");
+          sscanf(line,BIGINT_FORMAT,&nlines);
+        } else if (strstr(line,"triangles")) {
+          if (!avec_tri)
+            error->all(FLERR,"No triangles allowed with this atom style");
+          sscanf(line,BIGINT_FORMAT,&ntris);
+        }
+
+        else if (strstr(line,"xlo xhi"))
+          sscanf(line,"%lg %lg",&domain->boxlo[0],&domain->boxhi[0]);
+        else if (strstr(line,"ylo yhi"))
+          sscanf(line,"%lg %lg",&domain->boxlo[1],&domain->boxhi[1]);
+        else if (strstr(line,"zlo zhi"))
+          sscanf(line,"%lg %lg",&domain->boxlo[2],&domain->boxhi[2]);
+        else if (strstr(line,"xy xz yz")) {
+          domain->triclinic = 1;
+          sscanf(line,"%lg %lg %lg",&domain->xy,&domain->xz,&domain->yz);
+        } else break;
     }
-
-    else if (strstr(line,"xlo xhi"))
-      sscanf(line,"%lg %lg",&domain->boxlo[0],&domain->boxhi[0]);
-    else if (strstr(line,"ylo yhi"))
-      sscanf(line,"%lg %lg",&domain->boxlo[1],&domain->boxhi[1]);
-    else if (strstr(line,"zlo zhi"))
-      sscanf(line,"%lg %lg",&domain->boxlo[2],&domain->boxhi[2]);
-    else if (strstr(line,"xy xz yz")) {
-      domain->triclinic = 1;
-      sscanf(line,"%lg %lg %lg",&domain->xy,&domain->xz,&domain->yz);
-    } else break;
+    else // add_to_existing == 1
+    {
+        if (strstr(line,"atoms"))
+        {
+            sscanf(line,BIGINT_FORMAT,&natoms_add);
+            atom->natoms += natoms_add;
+            
+        }
+        else if (strstr(line,"atom types"))
+        {
+            int ntypes;
+            sscanf(line,"%d",&ntypes);
+            if (ntypes > atom->ntypes)
+                error->all(FLERR,"Data file contains more atom types than defined in the input script");
+        }
+        else if (strstr(line,"bond types"))
+        {
+            int ntypes;
+            sscanf(line,"%d",&ntypes);
+            if (ntypes > atom->nbondtypes)
+                error->all(FLERR,"Data file contains more bond types than defined in the input script");
+            sscanf(line,"%d",&atom->nbondtypes);
+        }
+        else if (strstr(line,"xlo xhi"))
+        {
+            double lo,hi;
+            sscanf(line,"%lg %lg",&lo,&hi);
+            if(lo < domain->boxlo[0] || hi > domain->boxhi[0])
+                error->all(FLERR,"Atom coordinates in data file extend outside simulation domain");
+        }
+        else if (strstr(line,"ylo yhi"))
+        {
+            double lo,hi;
+            sscanf(line,"%lg %lg",&lo,&hi);
+            if(lo < domain->boxlo[1] || hi > domain->boxhi[1])
+                error->all(FLERR,"Atom coordinates in data file extend outside simulation domain");
+        }
+        else if (strstr(line,"zlo zhi"))
+        {
+            double lo,hi;
+            sscanf(line,"%lg %lg",&lo,&hi);
+            if(lo < domain->boxlo[2] || hi > domain->boxhi[2])
+                error->all(FLERR,"Atom coordinates in data file extend outside simulation domain");
+        }
+        else
+            error->all(FLERR,"read_data add only supports atoms, atom types, bond types, xlo xhi, ylo yhi,zlo zhi");
+    }
   }
 
   // error check on total system size
@@ -475,6 +549,9 @@ void ReadData::atoms()
 
   bigint nread = 0;
   bigint natoms = atom->natoms;
+  int nlocal_old = atom->nlocal;
+  int tag_max_old = atom->tag_max();
+  if (add_to_existing ) natoms = natoms_add; 
 
   while (nread < natoms) {
     if (natoms-nread > CHUNK) nchunk = CHUNK;
@@ -494,6 +571,9 @@ void ReadData::atoms()
 
     atom->data_atoms(nchunk,buffer);
     nread += nchunk;
+
+    for (int j = 0; j < modify->nfix; j++)
+        if (modify->fix[j]->create_attribute) modify->fix[j]->set_arrays(atom->nlocal-1);
   }
 
   // check that all atoms were assigned correctly
@@ -525,21 +605,42 @@ void ReadData::atoms()
   if (flag_all)
     error->all(FLERR,"Invalid atom ID in Atoms section of data file");
 
-  flag = 0;
-  for (int i = 0; i < nlocal; i++)
-    if (tag[i] > 0) flag = 1;
-  MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_MAX,world);
-  if (flag_all == 0) atom->tag_enable = 0;
+  if(add_to_existing == 0)
+  {
+     flag = 0;
+     for (int i = 0; i < nlocal; i++)
+       if (tag[i] > 0) flag = 1;
+     MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_MAX,world);
+     if (flag_all == 0) atom->tag_enable = 0;
 
-  if (atom->tag_enable) {
-    flag = 0;
-    for (int i = 0; i < nlocal; i++)
-      if (tag[i] == 0) flag = 1;
-    MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_SUM,world);
-    if (flag_all)
-      error->all(FLERR,"Invalid atom ID in Atoms section of data file");
+     if (atom->tag_enable) {
+       flag = 0;
+       for (int i = 0; i < nlocal; i++)
+         if (tag[i] == 0) flag = 1;
+       MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_SUM,world);
+       if (flag_all)
+         error->all(FLERR,"Invalid atom ID in Atoms section of data file");
+     }
   }
+  else  
+  {
+      // check if tag may be already used
+      // if yes throw error since this would mess up atom map
 
+      if(atom->tag_enable)
+      {
+          int nlocal = atom->nlocal;
+
+          for(int i = nlocal_old; i < nlocal; i++)
+            if(atom->tag[i] <= tag_max_old)
+            {
+                fprintf(screen,"for i= %d\n",i);
+                error->one(FLERR,"Atom from data file uses atom tag that is already used by atom in the simulation");
+            }
+          atom->tag_extend();
+      }
+      atom->nghost = 0;
+  }
   // create global mapping
 
   if (atom->map_style) {
@@ -567,6 +668,7 @@ void ReadData::velocities()
 
   bigint nread = 0;
   bigint natoms = atom->natoms;
+  if (add_to_existing ) natoms = natoms_add; 
 
   while (nread < natoms) {
     if (natoms-nread > CHUNK) nchunk = CHUNK;

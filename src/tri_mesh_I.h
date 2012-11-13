@@ -156,36 +156,55 @@
         vectorSubtract3D(p,n,nodeToP);
 
         double distFromNode = vectorDot3D(nodeToP,edge[ipp]);
-        if(distFromNode < SMALL_TRIMESH && distFromNode > -edgeLen(iTri)[ipp])
-        {
-          
-          if(!edgeActive(iTri)[ipp])
-            return LARGE_TRIMESH;
+        if(distFromNode < SMALL_TRIMESH)
+          {
+            if(distFromNode > -edgeLen(iTri)[ipp]){
+              
+              if(!edgeActive(iTri)[ipp])
+                return LARGE_TRIMESH;
+              
+              vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
+              
+              bary[ip] = 0.;
+              bary[iNode] = 1. + distFromNode/edgeLen(iTri)[ipp];
+              bary[ipp] = 1. - bary[iNode];
+        
+              return calcDist(p,closestPoint,delta);
+            } else{
+              
+              if(!cornerActive(iTri)[ipp])
+                return LARGE_TRIMESH;
 
-          vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
-
-          bary[ip] = 0.;
-          bary[iNode] = 1. + distFromNode/edgeLen(iTri)[iNode];
-          bary[ipp] = 1. - bary[iNode];
-
-          return calcDist(p,closestPoint,delta);
-        }
+              bary[ipp] = 1.; bary[iNode] = bary[ip] = 0.;
+              return calcDist(p,node_(iTri)[ipp],delta);
+            }
+          }
 
         distFromNode = vectorDot3D(nodeToP,edge[iNode]);
-        if(distFromNode > -SMALL_TRIMESH && distFromNode < edgeLen(iTri)[iNode])
-        {
-          
-          if(!edgeActive(iTri)[iNode])
-            return LARGE_TRIMESH;
-
-          vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
-
-          bary[ipp] = 0.;
-          bary[iNode] = 1. - distFromNode/edgeLen(iTri)[iNode];
-          bary[ip] = 1. - bary[iNode];
-
-          return calcDist(p,closestPoint,delta);
-        }
+        if(distFromNode > -SMALL_TRIMESH)
+          {
+            if(distFromNode < edgeLen(iTri)[iNode]){
+              
+              if(!edgeActive(iTri)[iNode])
+                return LARGE_TRIMESH;
+              
+              vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
+              
+              bary[ipp] = 0.;
+              bary[iNode] = 1. - distFromNode/edgeLen(iTri)[iNode];
+              bary[ip] = 1. - bary[iNode];
+              
+              return calcDist(p,closestPoint,delta);
+            } else{
+              
+              if(!cornerActive(iTri)[ip])
+                return LARGE_TRIMESH;
+              
+              bary[ip] = 1.; bary[iNode] = bary[ipp] = 0.;
+              return calcDist(p,node_(iTri)[ip],delta);
+              
+            }
+          }
       }
 
       if(!cornerActive(iTri)[iNode])
@@ -300,8 +319,10 @@
     u = (dot11 * dot02 - dot01 * dot12) * invDenom;
     v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
-    if((u > -SMALL_TRIMESH) && (v > -SMALL_TRIMESH) && (u + v < 1+SMALL_TRIMESH)) return true;
-    return true;
+    if((u > -SMALL_TRIMESH) && (v > -SMALL_TRIMESH) && (u + v < 1+SMALL_TRIMESH))
+        return true;
+    else
+        return false;
   }
 
   /* ----------------------------------------------------------------------

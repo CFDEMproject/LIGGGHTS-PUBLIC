@@ -111,3 +111,69 @@ be recognized as identical.
 <I>heal</I> to auto_remove_duplicates. LIGGGHTS will then try to heal the geometry
 by removing duplicate elements.
 </P>
+<P>IMPORTANT NOTE: You should check the changes to the geometry, e.g. by using a 
+<A HREF = "dump.html">dump mesh/stl</A> command.
+</P>
+<P>The <I>curvature</I> keyword lets you specify up to which angle between two triangles the 
+triangles should be treated as belonging to the same surface (e.g. useful for bends). 
+This angle is used to decide if (a) contact history is copied from one triangle to 
+the other as the contact point proceeds and (b) if edge and corner interaction is 
+calculated.
+</P>
+<P><B>Quality checks / error and warning messages:</B>
+</P>
+<P>LIGGGHTS checks a couple of quality criteria upon loading a mesh. LIGGGHTS tries
+to give you as much information about the issue as possible.
+</P>
+<P>Warning messages:
+</P>
+<LI>There should be no angle < 0.5° in any element 
+
+<LI>The number of neighbor elements should be <= 5 for any element 
+
+<LI>All nodes should be within the simlation box 
+
+<P>If any of the obove rules is not fulfilled, a warning is generated. Keyword 
+<I>verbose</I> controls if details about the warning are written to the screen.
+</P>
+<P>Error messages:
+</P>
+<LI>The <I>curvature</I> must not be larger than any angle in any mesh element 
+
+<LI>Mesh elements must not be duplicate 
+
+<LI>Coplanar mesh elements that share an edge must not overlap 
+
+<LI>Mesh elements must not leave the simulation domain 
+
+<P>If any of the obove rules is not fulfilled, an error is generated and 
+LIGGGHTS halts. Error messages are always <I>verbose</I>. 
+If LIGGGHTS halts due to the last error, you might think about (a) 
+changing the mesh import parameters (<I>scale</I>, <I>move</I>, <I>rotate</I>), (b) 
+changing the mesh dynamics if a <A HREF = "fix_move_mesh.html">fix move/mesh</A> is 
+applied or using <A HREF = "boundary.html">boundary m m m</A>
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>This fix writes the STL data to binary <A HREF = "restart.html">restart files</A> to be able to 
+correctly resume the simulation in case the mesh is moved. None of the 
+<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global 
+scalar or vector or per-atom quantities are stored by this fix for access by 
+various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this fix 
+can be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command. 
+This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>To date, only ASCII STL and VTK files can be read (binary is not supported). 
+In the current implementation, each processor allocates memory for the whole 
+geometry, which may lead to memory issues for very large geometries . 
+It is not supported to use both the moving mesh and the conveyor belt feature.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_wall_gran.html">fix wall/gran</A>
+</P>
+<P><B>Default:</B> curvature = 0.256235 degrees, precision = 1e-8, verbose = no, heal = no
+</P>
+</HTML>

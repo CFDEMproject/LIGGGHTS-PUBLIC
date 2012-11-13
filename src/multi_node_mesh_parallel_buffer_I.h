@@ -426,7 +426,7 @@
   }
 
   /* ----------------------------------------------------------------------
-   pop one element for exchange()
+   pop one element for exchange, restart or restart
    depending on operation and if mesh scales, translates or rotates,
    different properties are communicated
   ------------------------------------------------------------------------- */
@@ -441,7 +441,7 @@
           MultiVectorContainer<double,NUM_NODES,3> nodeTmp;
           
           nrecv += nodeTmp.popElemFromBuffer(&(buf[nrecv]),operation);
-          this->addElement(nodeTmp.begin()[0]);
+          this->addElement(nodeTmp.begin()[0],-1);
 
           this->prop().deleteRestartElement(nLocal_-1,false,false,false);
 

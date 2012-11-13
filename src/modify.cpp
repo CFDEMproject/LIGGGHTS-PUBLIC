@@ -1,4 +1,14 @@
 /* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -8,7 +18,7 @@
    certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
 #include "stdio.h"
@@ -41,6 +51,7 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
   n_initial_integrate = n_post_integrate = 0;
   n_pre_exchange = n_pre_neighbor = 0;
   n_pre_force = n_post_force = 0;
+  n_iterate_implicitly = 0; 
   n_final_integrate = n_end_of_step = n_thermo_energy = 0;
   n_initial_integrate_respa = n_post_integrate_respa = 0;
   n_pre_force_respa = n_post_force_respa = n_final_integrate_respa = 0;
@@ -51,6 +62,7 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
   list_initial_integrate = list_post_integrate = NULL;
   list_pre_exchange = list_pre_neighbor = NULL;
   list_pre_force = list_post_force = NULL;
+  list_iterate_implicitly = NULL; 
   list_final_integrate = list_end_of_step = NULL;
   list_thermo_energy = NULL;
   list_initial_integrate_respa = list_post_integrate_respa = NULL;
@@ -98,6 +110,7 @@ Modify::~Modify()
   delete [] list_pre_force;
   delete [] list_post_force;
   delete [] list_final_integrate;
+  delete [] list_iterate_implicitly; 
   delete [] list_end_of_step;
   delete [] list_thermo_energy;
   delete [] list_initial_integrate_respa;
@@ -137,6 +150,7 @@ void Modify::init()
   list_init(PRE_FORCE,n_pre_force,list_pre_force);
   list_init(POST_FORCE,n_post_force,list_post_force);
   list_init(FINAL_INTEGRATE,n_final_integrate,list_final_integrate);
+  list_init(ITERATE_IMPLICITLY,n_iterate_implicitly,list_iterate_implicitly); 
   list_init_end_of_step(END_OF_STEP,n_end_of_step,list_end_of_step);
   list_init_thermo_energy(THERMO_ENERGY,n_thermo_energy,list_thermo_energy);
 
@@ -351,6 +365,19 @@ void Modify::post_force(int vflag)
 
 /* ----------------------------------------------------------------------
    2nd half of integrate call, only for relevant fixes
+------------------------------------------------------------------------- */
+
+bool Modify::iterate_implicitly()
+{
+  for (int i = 0; i < n_iterate_implicitly; i++)
+    if (fix[list_iterate_implicitly[i]]->iterate_implicitly())
+        return true;
+
+  return false;
+}
+
+/* ----------------------------------------------------------------------
+   check convergence, only for relevant implicit integration
 ------------------------------------------------------------------------- */
 
 void Modify::final_integrate()

@@ -94,6 +94,9 @@ namespace LAMMPS_NS
      */
     double chooseContactTemplate(double *x, double r, double *delta, double *param, WallType wType);
     bool chooseNeighlistTemplate(double *x, double r, double treshold, double *param, WallType wType);
+
+/* ---------------------------------------------------------------------- */
+
     /*
      * x,y,z planes can be handled by a template with dimension as template parameter
      */
@@ -126,6 +129,7 @@ namespace LAMMPS_NS
       }
     };
 
+/* ---------------------------------------------------------------------- */
     /*
      * same holds for x,y,z cylinders
      * param[0] = radius
@@ -135,7 +139,8 @@ namespace LAMMPS_NS
     template<int dim>
     struct Cylinder : public Dim<dim>
     {
-    private:
+    public:
+
       typedef Dim<dim> d;
       static double calcRadialDistance(double *pos, double *param, double &dy, double &dz)
       {
@@ -143,7 +148,7 @@ namespace LAMMPS_NS
         dz = pos[d::z]-param[2];
         return sqrt(dy*dy+dz*dz);
       }
-    public:
+
       static double resolveContact(double *pos, double r, double *delta, double *param)
       {
         double dx, dy,dz, fact;
@@ -170,9 +175,14 @@ namespace LAMMPS_NS
 
     };
 
+/* ---------------------------------------------------------------------- */
+
     /*
      * functions to choose the correct template
      */
+
+/* ---------------------------------------------------------------------- */
+
     double chooseContactTemplate(double *x, double r, double *delta, double *param, WallType wType)
     {
       //TODO: find a way to create switch statement automatically
@@ -197,7 +207,7 @@ namespace LAMMPS_NS
 
     bool chooseNeighlistTemplate(double *x, double r, double treshold, double *param, WallType wType)
     {
-      //TODO: find a way to create switch statement automatically
+      //TODO: create switch statement automatically
       switch(wType){
       case XPLANE:
         return Plane<0>::resolveNeighlist(x,r,treshold,param);
@@ -214,6 +224,41 @@ namespace LAMMPS_NS
 
       default: // default value: every particle will be added to neighbor list
         return true;
+      }
+    }
+
+    int chooseAxis(WallType wType)
+    {
+      //TODO: create switch statement automatically
+      switch(wType){
+      case XCYLINDER:
+        return 0;
+      case YCYLINDER:
+        return 1;
+      case ZCYLINDER:
+        return 2;
+
+      default:
+        return -1;
+      }
+    }
+    double chooseCalcRadialDistance(double *pos, double *param, double &dx, double &dy, double &dz, WallType wType)
+    {
+      //TODO: create switch statement automatically
+      switch(wType){
+      case XCYLINDER:
+        dx=0.;
+        return Cylinder<0>::calcRadialDistance(pos,param,dy,dz);
+      case YCYLINDER:
+        dy = 0.;
+        return Cylinder<1>::calcRadialDistance(pos,param,dx,dz);
+      case ZCYLINDER:
+        dz = 0.;
+        return Cylinder<2>::calcRadialDistance(pos,param,dx,dy);
+
+      default:
+        dx = dy = dz = 0.;
+        return -1.;
       }
     }
 
