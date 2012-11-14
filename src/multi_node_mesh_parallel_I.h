@@ -216,6 +216,7 @@
   {
     
     isInsertionMesh_ = true;
+    
     if(!parallelflag)
     {
         if(isParallel())

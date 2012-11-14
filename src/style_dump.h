@@ -1,4 +1,5 @@
 #include "dump_atom.h"
+#include "dump_atom_vtk.h"
 #include "dump_cfg.h"
 #include "dump_custom.h"
 #include "dump_dcd.h"
