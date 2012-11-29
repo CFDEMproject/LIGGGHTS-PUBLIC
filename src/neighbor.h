@@ -33,6 +33,8 @@ class Neighbor : protected Pointers {
   
   friend class FixNeighlistMesh;
   
+  friend class FixHeatGranRad;
+
  public:
   int style;                       // 0,1,2 = nsq, bin, multi
   int every;                       // build every this many steps
@@ -181,6 +183,11 @@ class Neighbor : protected Pointers {
   double bin_distance(int, int, int);   // distance between binx
   int coord2bin(double *);              // mapping atom coord to a bin
   int coord2bin(double *, int &, int &, int&); // ditto
+
+  void binBorders(int, double &, double &, double &, double &, double &, double &); 
+  void bin2XYZ(int, int &, int &, int &); 
+  int XYZ2bin(int, int, int); 
+  int binHop(int, int, int, int); 
 
   int exclusion(int, int, int,
                 int, int *, int *) const;  // test for pair exclusion

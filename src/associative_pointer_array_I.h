@@ -92,7 +92,17 @@
   {
     int ind = idToIndex(_id);
     if(ind != -1)
-      return dynamic_cast<U*>(content_[ind]);
+      return getPointerByIndex<U>(ind);
+    else
+      return 0;
+  }
+
+  template<typename T>
+  T* AssociativePointerArray<T>::getBasePointerById(char *_id)
+  {
+    int ind = idToIndex(_id);
+    if(ind != -1)
+      return getBasePointerByIndex(ind);
     else
       return 0;
   }
@@ -101,7 +111,7 @@
   U* AssociativePointerArray<T>::getPointerByIndex(int i)
   {
     if(i >= size() || i < 0) return 0;
-    else return dynamic_cast<U>(content_[i]);
+    else return dynamic_cast<U*>(content_[i]);
   }
 
   template<typename T>

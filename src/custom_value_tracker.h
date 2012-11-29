@@ -49,6 +49,8 @@ namespace LAMMPS_NS
         template<typename T>
         T* getElementProperty(char *_id);
 
+        inline ContainerBase* getElementPropertyBase(char *_id);
+
         template<typename T, typename U>
         void setElementProperty(char *_id, U def);
 

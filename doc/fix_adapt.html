@@ -208,12 +208,13 @@ current list of atom parameters that can be varied by this fix:
 <UL><LI>diameter = diameter of particle 
 </UL>
 <P>The <I>v_name</I> argument of the <I>atom</I> keyword is the name of an
-<A HREF = "variable.html">equal-style variable</A> which will be evaluated each time
-this fix is invoked to set the parameter to a new value.  It should be
-specified as v_name, where name is the variable name.  See the
-discussion above describing the formulas associated with equal-style
-variables.  The new value is assigned to the corresponding attribute
-for all atoms in the fix group.
+<A HREF = "variable.html">equal-style or atom-style variable</A> which will be 
+evaluated each time this fix is invoked to set the parameter to 
+a new value. It should be specified as v_name, where name is the 
+variable name. See the discussion above describing the formulas 
+associated with equal-style or atom-style variables. The new 
+value is assigned to the corresponding attribute for all atoms 
+in the fix group.
 </P>
 <P>If the atom parameter is <I>diameter</I> and per-atom density and per-atom
 mass are defined for particles (e.g. <A HREF = "atom_style.html">atom_style

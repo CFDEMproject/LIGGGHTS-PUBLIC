@@ -67,10 +67,6 @@ Note that the group of atoms the fix is applied to is ignored (as the fix is not
 
 Information about this fix is written to "binary restart files"_restart.html if you set 'restartvalue' to 'yes'.
 
-The "fix_modify"_fix_modify.html {energy} option is supported by this fix to add the potential "energy" inferred by the added force to the system's potential energy as part of "thermodynamic output"_thermo_style.html. This is a fictitious quantity but is needed so that the "minimize""_minimize.html command can include the forces added by this fix in a consistent manner. I.e. there is a decrease in potential energy when atoms move in the direction of the added force. 
-
-[Fix property/atom] computes a scalar (for style scalar) or a vector of values (for style vector), which can be accessed by various "output commands"_Section_howto.html#4_15. 
-
 [Restrictions:] none
 
 [Related commands:]

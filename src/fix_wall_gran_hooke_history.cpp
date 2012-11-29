@@ -199,7 +199,7 @@ void FixWallGranHookeHistory::init_heattransfer()
     // if youngsModulusOriginal defined, get deltan_ratio
     Fix* ymo_fix = modify->find_fix_property("youngsModulusOriginal","property/global","peratomtype",0,0,style,false);
     // deltan_ratio is defined by heat transfer fix, see if there is one
-    int n_htf = modify->n_fixes_style("heat/gran");
+    int n_htf = modify->n_fixes_style("heat/gran/conduction");
 
     // get deltan_ratio set by the heat transfer fix
     if(ymo_fix && n_htf) deltan_ratio = static_cast<FixPropertyGlobal*>(ymo_fix)->get_array_modified();

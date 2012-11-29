@@ -83,10 +83,6 @@ Note that matrix and atomtypepair both refer to a matrix of global values. Howev
 </P>
 <P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> if you set 'restartvalue' to 'yes'.
 </P>
-<P>The <A HREF = "fix_modify.html">fix_modify</A> <I>energy</I> option is supported by this fix to add the potential "energy" inferred by the added force to the system's potential energy as part of <A HREF = "thermo_style.html">thermodynamic output</A>. This is a fictitious quantity but is needed so that the "minimize<A HREF = "minimize.html"></A> command can include the forces added by this fix in a consistent manner. I.e. there is a decrease in potential energy when atoms move in the direction of the added force. 
-</P>
-<P><B>Fix property/atom</B> computes a scalar (for style scalar) or a vector of values (for style vector), which can be accessed by various <A HREF = "Section_howto.html#4_15">output commands</A>. 
-</P>
 <P><B>Restrictions:</B> none
 </P>
 <P><B>Related commands:</B>

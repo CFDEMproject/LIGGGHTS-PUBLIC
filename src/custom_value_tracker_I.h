@@ -120,6 +120,11 @@
      return elementProperties_.getPointerById<T>(_id);
   }
 
+  inline ContainerBase* CustomValueTracker::getElementPropertyBase(char *_id)
+  {
+     return elementProperties_.getBasePointerById(_id);
+  }
+
   template<typename T>
   T* CustomValueTracker::getGlobalProperty(char *_id)
   {

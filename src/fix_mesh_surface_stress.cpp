@@ -289,18 +289,24 @@ void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
 }
 
 /* ----------------------------------------------------------------------
-   external force - has to be called before final_integrate()
+   add external force (such as gravity)
+   called by all procs, only proc0 adds
+   has to be called before final_integrate()
 ------------------------------------------------------------------------- */
 
-void FixMeshSurfaceStress::add_external_contribution(double *frc)
+void FixMeshSurfaceStress::add_global_external_contribution(double *frc)
 {
-    vectorAdd3D(f_total_,frc,f_total_);
+    if(0 == comm->me)
+        vectorAdd3D(f_total_,frc,f_total_);
 }
 
-void FixMeshSurfaceStress::add_external_contribution(double *frc, double *trq)
+void FixMeshSurfaceStress::add_global_external_contribution(double *frc, double *trq)
 {
-    vectorAdd3D(f_total_,frc,f_total_);
-    vectorAdd3D(torque_total_,trq,torque_total_);
+    if(0 == comm->me)
+    {
+        vectorAdd3D(f_total_,frc,f_total_);
+        vectorAdd3D(torque_total_,trq,torque_total_);
+    }
 }
 
 /* ----------------------------------------------------------------------

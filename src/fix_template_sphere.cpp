@@ -231,8 +231,8 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
 
   if(pdf_radius == NULL) error->fix_error(FLERR,this,"have to define 'radius'");
 
-  //set mass and volume
-  volume_expect = pow(2.*expectancy(pdf_radius),3.)*M_PI/6.;
+  // set mass and volume expectancy
+  volume_expect = cubic_expectancy(pdf_radius)*4.*M_PI/3.;
   mass_expect = expectancy(pdf_density) * volume_expect;
 }
 

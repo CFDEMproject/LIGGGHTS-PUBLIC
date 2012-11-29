@@ -66,7 +66,7 @@ class ComputePairGranLocal : public Compute {
 
   // pointers to classes holding the data
   class PairGran *pairgran;
-  class FixHeatGran *fixheat;
+  class FixHeatGranCond *fixheat;
   class FixWallGran *fixwall;
 
   int ipair;

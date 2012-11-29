@@ -375,7 +375,7 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set meso_rho for this atom style");
       set(MESO_RHO);
       iarg += 2;
-    } else if (strcmp(arg[iarg],"property/atom") == 0) { 
+    } else if (strncmp(arg[iarg],"property/atom",13) == 0) { 
       if (iarg+1 > narg)
         error->all(FLERR,"Illegal set command for property/atom");
       int n = strlen(arg[iarg+1]) + 1;
@@ -384,7 +384,7 @@ void Set::command(int narg, char **arg)
       //find the fix (there should be only one fix with the same variablename, this is ensured by the fix itself)
       updFix = NULL;
       for (int ifix = 0; ifix < (lmp->modify->nfix); ifix++){
-        if ((strcmp(modify->fix[ifix]->style,"property/atom") == 0) && (strcmp(((FixPropertyAtom*)(modify->fix[ifix]))->variablename,variablename)==0) ){
+        if ((strncmp(modify->fix[ifix]->style,"property/atom",13) == 0) && (strcmp(((FixPropertyAtom*)(modify->fix[ifix]))->variablename,variablename)==0) ){
             updFix=(FixPropertyAtom*)(lmp->modify->fix[ifix]);
         }
       }

@@ -36,7 +36,7 @@
 #include "error.h"
 #include "pair_gran.h"
 #include "domain.h"
-#include "fix_heat_gran.h"
+#include "fix_heat_gran_conduction.h"
 #include "fix_wall_gran.h"
 #include "vector_liggghts.h"
 
@@ -177,15 +177,15 @@ void ComputePairGranLocal::init_cpgl()
       {
           for(ifix = 0; ifix < modify->nfix; ifix++)
           {
-              if(strcmp(modify->fix[ifix]->style,"heat/gran") == 0)
+              if(strcmp(modify->fix[ifix]->style,"heat/gran/conduction") == 0)
               {
-                  fixheat = static_cast<FixHeatGran*>(modify->fix[ifix]);
+                  fixheat = static_cast<FixHeatGranCond*>(modify->fix[ifix]);
               }
           }
-          if(!fixheat) error->warning(FLERR,"Compute pair/gran/local can not calculate heat flux values since no fix heat/gran not compute them");
+          if(!fixheat) error->warning(FLERR,"Compute pair/gran/local can not calculate heat flux values since no fix heat/gran/conduction not compute them");
 
           // group of this compute and heat transfer fix must be same so same number of pairs is computed
-          if(groupbit != fixheat->groupbit) error->all(FLERR,"Compute pair/gran/local group and fix heat/gran group cannot be different");
+          if(groupbit != fixheat->groupbit) error->all(FLERR,"Compute pair/gran/local group and fix heat/gran/conduction group cannot be different");
           fixheat->register_compute_pair_local(this);
       }
   }

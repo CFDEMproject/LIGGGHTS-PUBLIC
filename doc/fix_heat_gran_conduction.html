@@ -1,0 +1,125 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>fix heat/gran/conduction command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group-ID heat/gran/conduction initial_temperature T0 keyword values 
+</PRE>
+<LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>heat/gran/conduction = style name of this fix command 
+
+<LI>initial_temperature = obligatory keyword 
+
+<LI>T0 = initial (default) temperature for the particles 
+
+<LI>zero or more keyword/value pairs may be appended 
+
+<LI>keyword = <I>area_correction</I> 
+
+<PRE>  <I>area_correction</I> values = <I>on</I> or <I>off</I> 
+</PRE>
+<P><B>Examples:</B>
+</P>
+<PRE>fix 3 hg heat/gran/conduction temperature 273.15 
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS info:</B>
+</P>
+<P>This command is not available in LAMMPS.
+</P>
+<P><B>Description:</B>
+</P>
+<P>Calculates heat conduction between particles in contact and temperature update according to
+</P>
+<CENTER><IMG SRC = "Eqs/heat_gran.png">
+</CENTER>
+<P>It is assumed that the temperature within the particles is uniform.
+To make particles adiabatic (so they do not change the temperature),
+do not include them in the fix group. However, heat transfer is calculated
+between particles in the group and particles not in the group (but
+temperature update is not performed for particles not in the group).
+Thermal conductivity and specific thermal capacity must be defined for
+each atom type used in the simulation by means of
+<A HREF = "fix_property.html">fix property/global</A> commands:
+</P>
+<PRE>fix id all property/global thermalConductivity peratomtype value_1 value_2 ...
+(value_i=value for thermal conductivity of atom type i) 
+</PRE>
+<PRE>fix id all property/global thermalCapacity peratomtype value_1 value_2 ...
+(value_i=value for thermal capacity of atom type i) 
+</PRE>
+<P>To set the temperature for a group of particles, you can use the set command
+with keyword <I>property/atom</I> and values <I>Temp T</I>. <I>T</I> is the
+temperature value you want the particles to have. To set heat sources
+(or sinks) for a group of particles, you can also use the set command
+with the set keyword: <I>property/atom</I> and the set values: <I>heatSource h</I>
+where <I>h</I> is the heat source value you want the particles to have (in Energy/time
+units). A negative value means it is a heat sink. Examples would be:
+</P>
+<PRE>set region halfbed property/peratom Temp 800.
+set region srcreg property/peratom heatSource 0.5 
+</PRE>
+<HR>
+
+<P>Area correction:
+</P>
+<P>Fix heat/gran/conduction can perform an area correction via keyword <I>area_correction</I>
+to account for the fact that the Young's modulus might have been decreased in order to speed-up
+the simulation. In this case, you have to specify the original
+Young's modulus of each material by means of a
+<A HREF = "fix_property.html">fix property/global</A> command:
+</P>
+<PRE>fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
+(value_i=value for original Young's modulus of atom type i) 
+</PRE>
+<P>This area correction is performed by scaling the contact area with
+(Y*/Y*,orig)^a, where Y* and Y*,orig are calculated as defined in
+<A HREF = "pair_gran.html">pair_style gran</A> .
+The scaling factor is given as a=1 for pair/gran/hooke/* and a=2/3 for
+pair/gran/hertz/*.
+</P>
+<P><B>Output info:</B>
+</P>
+<P>You can visualize the heat sources by accessing f_heatSource[0], and the
+heatFluxes by f_heatFlux[0] . With f_Temp[0] you can access the per-particle
+temperature. You can also access the total thermal energy of the fix group
+(useful for the thermo command) with f_id .
+</P>
+<P><B>Restart, fix_modify, run start/stop, minimize info:</B>
+</P>
+<P>The particle temperature and heat source is written is written to
+<A HREF = "restart.html">binary restart files</A> so simulations can continue properly.
+None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix.
+</P>
+<P>This fix computes a scalar which can be accessed by various <A HREF = "Section_howto.html#4_15">output
+commands</A>.  This scalar is the total thermal energy
+of the fix group
+</P>
+<P>No parameter of this fix can be used with the <I>start/stop</I> keywords of
+the <A HREF = "run.html">run</A> command.  This fix is not invoked during <A HREF = "minimize.html">energy
+minimization</A>.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>Area correction currently only works with pair styles pair/gran/hooke/* and pair/gran/hertz/*
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "compute_temp.html">compute temp</A>, <A HREF = "compute_temp_region.html">compute
+temp/region</A>
+</P>
+<P><B>Default:</B> <I>area_correction</I> = <I>off</I>
+</P>
+</HTML>

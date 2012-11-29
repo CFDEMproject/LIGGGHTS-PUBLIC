@@ -42,9 +42,9 @@ enum
 class FixPropertyAtom : public Fix {
  friend class Set;
  public:
-  FixPropertyAtom(class LAMMPS *, int, char **);
+  FixPropertyAtom(class LAMMPS *, int, char **,bool parse = true);
   ~FixPropertyAtom();
-  int setmask();
+  virtual int setmask();
 
   void do_forward_comm();
   void do_reverse_comm();
@@ -54,7 +54,7 @@ class FixPropertyAtom : public Fix {
   double memory_usage();
   void grow_arrays(int);
   void copy_arrays(int, int);
-  void set_arrays(int);
+  virtual void set_arrays(int);
   int pack_exchange(int, double *);
   int unpack_exchange(int, double *);
   int pack_restart(int, double *);
@@ -67,6 +67,9 @@ class FixPropertyAtom : public Fix {
   void unpack_reverse_comm(int, int *, double *);
   double compute_vector(int n);
 
+ protected:
+  void parse_args(int narg, char **arg);
+
  private:
   char *variablename;   // name of the variable (used for identification by other fixes)
   int data_style;            // 0 if a scalar is registered, 1 if vector
@@ -74,9 +77,6 @@ class FixPropertyAtom : public Fix {
   int commGhostRev;     // 1 if rev communicated from ghost particles (via pack_comm_rev/unpack_comm_rev), 0 if not
   int nvalues;
   double *defaultvalues; // default values at particle creation
-
- private:
-
 }; //end class
 
 }

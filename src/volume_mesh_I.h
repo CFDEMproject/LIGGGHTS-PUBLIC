@@ -72,6 +72,8 @@ bool VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::addElement(double **nod
     this->error->one(FLERR,"TODO auto remove dupl");
 
     calcVolPropertiesOfNewElement();
+
+    return true;
 }
 
 template<int NUM_NODES,int NUM_FACES,int NUM_NODES_PER_FACE>

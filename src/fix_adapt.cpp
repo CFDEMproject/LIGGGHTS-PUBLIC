@@ -1,4 +1,14 @@
 /* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -8,7 +18,7 @@
    certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -27,6 +37,9 @@
 #include "math_const.h"
 #include "memory.h"
 #include "error.h"
+#include "fix_property_atom.h"
+#include "modify.h"
+#include "update.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -109,6 +122,8 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       adapt[nadapt].which = ATOM;
       if (strcmp(arg[iarg+1],"diameter") == 0) {
         adapt[nadapt].aparam = DIAMETER;
+        
+        rad_mass_vary_flag = 1;
         diamflag = 1;
       } else error->all(FLERR,"Illegal fix adapt command");
       if (strstr(arg[iarg+2],"v_") == arg[iarg+2]) {
@@ -148,6 +163,8 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   for (int m = 0; m < nadapt; m++)
     if (adapt[m].which == PAIR)
       memory->create(adapt[m].array_orig,n+1,n+1,"adapt:array_orig");
+
+  fppat = NULL; 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -163,6 +180,41 @@ FixAdapt::~FixAdapt()
     }
   }
   delete [] adapt;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixAdapt::post_create()
+{
+
+  if (fppat == NULL)
+  {
+    char **fixarg;
+    fixarg=new char*[9];
+    for (int kk=0;kk<9;kk++) fixarg[kk]=new char[50];
+    
+    sprintf(fixarg[0],"adaptProp_%s",id);
+    sprintf(fixid,    "adaptProp_%s",id);
+    fixarg[1]="all";
+    fixarg[2]="property/atom";
+    sprintf(fixarg[3],"adaptProp_%s",id);
+    fixarg[4]="scalar"; 
+    fixarg[5]="no";    
+    fixarg[6]="no";    
+    fixarg[7]="no";    
+    fixarg[8]="0.";     
+    modify->add_fix(9,fixarg);
+    delete []fixarg;
+
+    fppat = static_cast<FixPropertyAtom*>(modify->find_fix_property(fixid,"property/atom","scalar",0,0,style));
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixAdapt::pre_delete()
+{
+    if (fppat) modify->delete_fix(fixid); 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -191,7 +243,7 @@ void FixAdapt::init()
     ad->ivar = input->variable->find(ad->var);
     if (ad->ivar < 0)
       error->all(FLERR,"Variable name for fix adapt does not exist");
-    if (!input->variable->equalstyle(ad->ivar))
+    if (!input->variable->equalstyle(ad->ivar) && !input->variable->atomstyle(ad->ivar))
       error->all(FLERR,"Variable for fix adapt is invalid style");
 
     if (ad->which == PAIR) {
@@ -280,7 +332,13 @@ void FixAdapt::change_settings()
 
   for (int m = 0; m < nadapt; m++) {
     Adapt *ad = &adapt[m];
-    double value = input->variable->compute_equal(ad->ivar);
+
+    double value;
+    if (input->variable->equalstyle(ad->ivar)) value = input->variable->compute_equal(ad->ivar);
+    else if(input->variable->atomstyle(ad->ivar)) input->variable->compute_atom(ad->ivar, igroup, fppat->vector_atom, 1, 0);
+    else error->all(FLERR,"Wrong variable style in fix adapt - must use a scalar property");
+
+    bool is_atomstyle = (input->variable->atomstyle(ad->ivar)) == 1; 
 
     // set global scalar or type pair array values
 
@@ -322,10 +380,14 @@ void FixAdapt::change_settings()
         if (mflag == 0) {
           for (i = 0; i < nlocal; i++)
             if (mask[i] & groupbit)
+            {
+              if (is_atomstyle) value = fppat->vector_atom[i];  
               radius[i] = 0.5*value;
+            }
         } else {
           for (i = 0; i < nlocal; i++)
             if (mask[i] & groupbit) {
+              if (is_atomstyle) value = fppat->vector_atom[i];  
               density = rmass[i] / (4.0*MY_PI/3.0 *
                                     radius[i]*radius[i]*radius[i]);
               radius[i] = 0.5*value;

@@ -17,7 +17,7 @@ ID, is documented in "fix"_fix.html command, the group-ID is ignored for this co
 mesh/surface/stress = style name of this fix command  :l
 file filename premesh_keywords premesh_values  mesh_keywords mesh_values surface_keyword surface_values are documented in "fix mesh/surface"_fix_mesh_surface.html. :l
 zero or more stress_keyword/value pairs may be appended  :l
-stress_keyword= {stress} or {wear} :l
+stress_keyword = {stress} or {wear} :l
   {stress} value = {on} or {off}
   {reference_point} values = rx ry rz
     rx, ry, rz = coordinates of reference point

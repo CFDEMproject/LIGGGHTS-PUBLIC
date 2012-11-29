@@ -707,7 +707,7 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
 #undef FixStyle
 #undef FIX_CLASS
 
-    else error->all(FLERR,"Invalid fix style");
+    else {fprintf(screen,"adding %s\n",arg[2]);error->all(FLERR,"Invalid fix style");}
   }
 
   // set fix mask values and increment nfix (if new)

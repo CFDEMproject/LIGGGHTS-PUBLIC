@@ -193,12 +193,13 @@ current list of atom parameters that can be varied by this fix:
 diameter = diameter of particle :ul
 
 The {v_name} argument of the {atom} keyword is the name of an
-"equal-style variable"_variable.html which will be evaluated each time
-this fix is invoked to set the parameter to a new value.  It should be
-specified as v_name, where name is the variable name.  See the
-discussion above describing the formulas associated with equal-style
-variables.  The new value is assigned to the corresponding attribute
-for all atoms in the fix group.
+"equal-style or atom-style variable"_variable.html which will be 
+evaluated each time this fix is invoked to set the parameter to 
+a new value. It should be specified as v_name, where name is the 
+variable name. See the discussion above describing the formulas 
+associated with equal-style or atom-style variables. The new 
+value is assigned to the corresponding attribute for all atoms 
+in the fix group.
 
 If the atom parameter is {diameter} and per-atom density and per-atom
 mass are defined for particles (e.g. "atom_style

@@ -27,6 +27,7 @@
 #include "error.h"
 #include "domain.h"
 #include "vector_liggghts.h"
+#include "mpi_liggghts.h"
 #include "math.h"
 #include "math_extra_liggghts.h"
 #include "random_park.h"
@@ -309,11 +310,49 @@ inline void RegTetMesh::set_extent()
 
 /* ---------------------------------------------------------------------- */
 
-double RegTetMesh::volume_mc(int n_try)
+void RegTetMesh::volume_mc(int n_test,double &vol_global, double &vol_local)
 {
+    double pos[3],  vol_local_all;
+    int n_in_local = 0, n_in_global = 0, n_in_global_all;
 
     if(total_volume == 0.) error->all(FLERR,"mesh/tet region has zero volume, cannot continue");
-    return total_volume;
+
+    vol_global = total_volume;
+
+    for(int i = 0; i < n_test; i++)
+    {
+        pos[0] = extent_xlo + random->uniform() * (extent_xhi - extent_xlo);
+        pos[1] = extent_ylo + random->uniform() * (extent_yhi - extent_ylo);
+        pos[2] = extent_zlo + random->uniform() * (extent_zhi - extent_zlo);
+
+        if(!domain->is_in_domain(pos)) continue;
+
+        // point is in region
+        // assume every proc can evaluate this
+        
+        if(match(pos[0],pos[1],pos[2]))
+        {
+            n_in_global++;
+            if(domain->is_in_subdomain(pos))
+                n_in_local++;
+        }
+    }
+
+    MPI_Sum_Scalar(n_in_global,n_in_global_all,world);
+    if(n_in_global_all == 0)
+        error->all(FLERR,"Unable to calculate region volume - are you operating on a 2d region?");
+
+    // return calculated values
+    if(n_in_global == 0)
+        vol_local = 0.;
+    else
+        vol_local  = static_cast<double>(n_in_local )/static_cast<double>(n_in_global) * vol_global;
+
+    // sum of local volumes will not be equal to global volume because of
+    // different random generator states - correct this now
+    MPI_Sum_Scalar(vol_local,vol_local_all,world);
+    vol_local *= (vol_global/vol_local_all);
+
 }
 
 /* ---------------------------------------------------------------------- */

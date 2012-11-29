@@ -1,4 +1,14 @@
 /* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -8,7 +18,7 @@
    certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
@@ -487,8 +497,24 @@ void ReadData::header(int flag)
             if(lo < domain->boxlo[2] || hi > domain->boxhi[2])
                 error->all(FLERR,"Atom coordinates in data file extend outside simulation domain");
         }
-        else
+        else if( (strstr(line,"bonds")) ||
+                 (strstr(line,"angles")) ||
+                 (strstr(line,"diahedrals")) ||
+                 (strstr(line,"impropers")) ||
+                 (strstr(line,"bond types")) ||
+                 (strstr(line,"angle types")) ||
+                 (strstr(line,"diahedral types")) ||
+                 (strstr(line,"improper types")) ||
+                 (strstr(line,"extra bond per atom")) ||
+                 (strstr(line,"ellipsoids")) ||
+                 (strstr(line,"lines")) ||
+                 (strstr(line,"triangles"))
+                )
+        {
             error->all(FLERR,"read_data add only supports atoms, atom types, bond types, xlo xhi, ylo yhi,zlo zhi");
+        }
+        else
+            break;
     }
   }
 

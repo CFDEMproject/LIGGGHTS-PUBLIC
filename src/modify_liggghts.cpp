@@ -180,7 +180,7 @@ Fix* Modify::find_fix_property(const char *varname,const char *style,const char 
   char errmsg[500];
   Fix *fix_i = NULL;
 
-  if((strcmp(style,"property/global")) && (strcmp(style,"property/atom")))
+  if((strcmp(style,"property/global")) && (strncmp(style,"property/atom",13)))
     error->all(FLERR,"Valid styles for find_fix_property are 'property/global' and 'property/atom'");
 
   if((len1 < 0) || (len2 < 0))
@@ -188,7 +188,7 @@ Fix* Modify::find_fix_property(const char *varname,const char *style,const char 
 
   for(ifix = 0; ifix < nfix; ifix++)
   {
-      if(strcmp(fix[ifix]->style,"property/atom") == 0)
+      if(strncmp(fix[ifix]->style,"property/atom",13) == 0)
          fix_i = static_cast<FixPropertyAtom*>(fix[ifix])->check_fix(varname,svmstyle,len1,len2,caller,errflag);
       else if(strcmp(fix[ifix]->style,"property/global") == 0)
          fix_i = static_cast<FixPropertyGlobal*>(fix[ifix])->check_fix(varname,svmstyle,len1,len2,caller,errflag);

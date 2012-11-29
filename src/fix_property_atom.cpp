@@ -44,14 +44,21 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-FixPropertyAtom::FixPropertyAtom(LAMMPS *lmp, int narg, char **arg) :
+FixPropertyAtom::FixPropertyAtom(LAMMPS *lmp, int narg, char **arg, bool parse) :
   Fix(lmp, narg, arg)
+{
+    
+    if(parse) parse_args(narg,arg);
+}
+
+void FixPropertyAtom::parse_args(int narg, char **arg)
 {
     //Check args
     if (narg < 9) error->all(FLERR,"Illegal fix property/atom command, not enough arguments");
     if (narg > 19) error->warning(FLERR,"Vector length in fix property/atom larger than 10. Are you sure you want that?");
 
-    //Read args
+    // Read args
+    
     int n = strlen(arg[3]) + 1;
     variablename = new char[n];
     strcpy(variablename,arg[3]);
@@ -128,7 +135,7 @@ FixPropertyAtom::FixPropertyAtom(LAMMPS *lmp, int narg, char **arg) :
     // check if there is already a fix that tries to register a property with the same name
     for (int ifix = 0; ifix < modify->nfix; ifix++)
         if ((strcmp(modify->fix[ifix]->style,style) == 0) && (strcmp(((FixPropertyAtom*)(modify->fix[ifix]))->variablename,variablename)==0) )
-            error->all(FLERR,"Error in fix property/atom. There is already a fix that registers a variable of the same name");
+            error->fix_error(FLERR,this,"there is already a fix that registers a variable of the same name");
 
     // flags for vector output
     //vector_flag = 1;
@@ -244,6 +251,7 @@ void FixPropertyAtom::grow_arrays(int nmax)
 {
     if (data_style) memory->grow(array_atom,nmax,nvalues,"FixPropertyAtom:array_atom");
     else memory->grow(vector_atom, nmax, "FixPropertyAtom:vector_atom");
+    
 }
 
 /* ----------------------------------------------------------------------
@@ -262,6 +270,7 @@ void FixPropertyAtom::copy_arrays(int i, int j)
 
 void FixPropertyAtom::set_arrays(int i)
 {
+    
     if (data_style)
         for(int k=0;k<nvalues;k++)
             array_atom[i][k] = defaultvalues[k];

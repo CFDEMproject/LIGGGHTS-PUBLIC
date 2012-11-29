@@ -44,7 +44,8 @@ class RegTetMesh : public Region {
   int surface_interior(double *, double);
   int surface_exterior(double *, double);
 
-  virtual double volume_mc(int);
+  // volume calculation based on MC
+  virtual void volume_mc(int,double&,double&);
 
   void add_tet(double **n);
   int n_tet();

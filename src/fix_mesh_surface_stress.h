@@ -53,15 +53,15 @@ namespace LAMMPS_NS
         virtual void setup_pre_force(int vflag);
 
         void pre_force(int vflag);
-        void final_integrate();
+        virtual void final_integrate();
 
         double compute_vector(int n);
 
         virtual void add_particle_contribution(int ip, double *frc,
                             double *delta, int iTri, double *v_wall);
 
-        void add_external_contribution(double *frc);
-        void add_external_contribution(double *frc,double *trq);
+        void add_global_external_contribution(double *frc);
+        void add_global_external_contribution(double *frc,double *trq);
 
         // inline access
 

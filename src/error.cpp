@@ -27,6 +27,7 @@
 #include "universe.h"
 #include "output.h"
 #include "fix.h" 
+#include "compute.h" 
 #include "string.h" 
 
 using namespace LAMMPS_NS;
@@ -127,6 +128,35 @@ void Error::fix_error(const char *file, int line, Fix *fix,const char *str)
     {
         if (screen) fprintf(screen,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fix->style,fix->id,file,line);
         if (logfile) fprintf(logfile,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fix->style,fix->id,file,line);
+    }
+  }
+
+  if (output) delete output;
+  if (screen && screen != stdout) fclose(screen);
+  if (logfile) fclose(logfile);
+
+  if (universe->nworlds > 1) MPI_Abort(universe->uworld,1);
+  MPI_Finalize();
+  exit(1);
+}
+
+void Error::compute_error(const char *file, int line, Compute *compute,const char *str)
+{
+  MPI_Barrier(world);
+
+  int me;
+  MPI_Comm_rank(world,&me);
+
+  if (me == 0) {
+    if(strlen(str) > 2)
+    {
+        if (screen) fprintf(screen,"ERROR: Compute %s (id %s): %s (%s:%d)\n",compute->style,compute->id,str,file,line);
+        if (logfile) fprintf(logfile,"ERROR: Compute %s (id %s): %s (%s:%d)\n",compute->style,compute->id,str,file,line);
+    }
+    else
+    {
+        if (screen) fprintf(screen,"ERROR: Illegal compute %s (id %s) command (%s:%d)\n",compute->style,compute->id,file,line);
+        if (logfile) fprintf(logfile,"ERROR: Illegal compute %s (id %s) command (%s:%d)\n",compute->style,compute->id,file,line);
     }
   }
 

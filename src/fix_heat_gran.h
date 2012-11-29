@@ -18,62 +18,51 @@
 
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
-#ifdef FIX_CLASS
 
-FixStyle(heat/gran,FixHeatGran)
-
-#else
-
-#ifndef LMP_FIX_HEATGRAN_H
-#define LMP_FIX_HEATGRAN_H
+#ifndef LMP_FIX_HEATGRAN_ABSTRACT_H
+#define LMP_FIX_HEATGRAN_ABSTRACT_H
 
 #include "fix.h"
 
+#define SMALL 1e-8
+
 namespace LAMMPS_NS {
 
-class FixHeatGran : public Fix {
- public:
+  class FixHeatGran : public Fix {
+  public:
+    FixHeatGran(class LAMMPS *, int, char **);
+    ~FixHeatGran(){};
+    virtual void post_create();
+    virtual void pre_delete(bool unfixflag){};
 
-  FixHeatGran(class LAMMPS *, int, char **);
-  ~FixHeatGran();
-  int setmask();
-  void post_create();
-  void pre_delete(bool unfixflag);
-  void init();
-  void updatePtrs();
-  void post_force(int);
-  double compute_scalar();
-  void cpl_evaluate(class ComputePairGranLocal *);
-  void register_compute_pair_local(class ComputePairGranLocal *ptr);
-  void unregister_compute_pair_local(class ComputePairGranLocal *ptr);
+    virtual double compute_scalar();
+    virtual int setmask() = 0;
+    virtual void init();
 
- private:
+    // per default these three methods throw errors.
+    virtual void cpl_evaluate(class ComputePairGranLocal *);
+    virtual void register_compute_pair_local(class ComputePairGranLocal *);
+    virtual void unregister_compute_pair_local(class ComputePairGranLocal *);
+    void updatePtrs();
 
-  template <int> void post_force_eval(int,int);
+  protected:
+    class ComputePairGranLocal *cpl;
+    class FixPropertyAtom* fix_heatFlux;
+    class FixPropertyAtom* fix_heatSource;
+    class FixPropertyAtom* fix_temp;
+    class FixScalarTransportEquation *fix_ste;
 
-  class FixPropertyAtom* fix_temp;
-  class FixPropertyAtom* fix_heatFlux;
-  class FixPropertyAtom* fix_heatSource;
-  class FixPropertyGlobal* fix_conductivity;
-  class FixScalarTransportEquation *fix_ste;
+    double *heatFlux;   
+    double *heatSource; 
+    double *Temp;       
+    double T0;          
 
-  class ComputePairGranLocal *cpl;
+    bool FHG_init_flag; 
 
-  double T0;              
-  double *Temp;           
-  double *heatFlux;       
-  double *heatSource;     
-  double *conductivity;
-
-  // for heat transfer area correction
-  int area_correction_flag;
-  double const* const* deltan_ratio;
-
-  class PairGran *pair_gran;
-  int history_flag;
-};
+    class PairGran *pair_gran;
+    int history_flag;
+  };
 
 }
 
-#endif
 #endif

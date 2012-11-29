@@ -1,4 +1,14 @@
 /* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -8,7 +18,7 @@
    certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -34,8 +44,18 @@ using namespace LAMMPS_NS;
 ComputeContactAtom::ComputeContactAtom(LAMMPS *lmp, int narg, char **arg) :
   Compute(lmp, narg, arg)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute contact/atom command");
+  
+  if (narg < 3) error->all(FLERR,"Illegal compute contact/atom command");
 
+  skin = 0.;
+
+  if(narg > 3)
+  {
+      if (narg < 5) error->all(FLERR,"Illegal compute contact/atom command");
+      if(strcmp("skin",arg[3])) error->all(FLERR,"Illegal compute contact/atom command, expecting keyword 'skin'");
+      skin = atof(arg[4]);
+  }
+  
   peratom_flag = 1;
   size_peratom_cols = 0;
   comm_reverse = 1;
@@ -145,7 +165,7 @@ void ComputeContactAtom::compute_peratom()
         dely = ytmp - x[j][1];
         delz = ztmp - x[j][2];
         rsq = delx*delx + dely*dely + delz*delz;
-        radsum = radi + radius[j];
+        radsum = radi + radius[j] + skin; 
         radsumsq = radsum*radsum;
         if (rsq <= radsumsq) {
           contact[i] += 1.0;

@@ -52,6 +52,8 @@ class AssociativePointerArray
         template <typename U>
         U* getPointerById(char *_id);
 
+        T* getBasePointerById(char *_id);
+
         template <typename U>
         U* getPointerByIndex(int i);
 

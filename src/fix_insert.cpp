@@ -468,7 +468,7 @@ void FixInsert::pre_exchange()
 
   // number of particles to insert this timestep
   ninsert_this = calc_ninsert_this();
-
+  
   // limit to max number of particles that shall be inserted
   // to avoid that max # may be slightly exceeded by random processes
   // in fix_distribution->randomize_list, set exact_number to 1
@@ -480,7 +480,7 @@ void FixInsert::pre_exchange()
 
   // distribute ninsert_this across processors
   ninsert_this_local = distribute_ninsert_this(ninsert_this);
-
+  
   // re-allocate list if necessary
   
   if(ninsert_this_local > ninsert_this_max_local)
@@ -493,7 +493,7 @@ void FixInsert::pre_exchange()
   // number of inserted particles can change if exact_number = 0
   
   ninsert_this_local = fix_distribution->randomize_list(ninsert_this_local,groupbit,exact_number);
-
+  
   MPI_Sum_Scalar(ninsert_this_local,ninsert_this,world);
 
   if(ninsert_this == 0)

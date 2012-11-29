@@ -623,6 +623,7 @@ of each style or click on the style itself for a full description:
 "gravity"_fix_gravity.html,
 "heat"_fix_heat.html,
 "heat/gran"_fix_heat_gran.html,
+"heat/gran/conduction"_fix_heat_gran_conduction.html,
 "imd"_fix_imd.html,
 "indent"_fix_indent.html,
 "insert/pack"_fix_insert_pack.html,

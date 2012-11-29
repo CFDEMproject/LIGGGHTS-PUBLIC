@@ -158,8 +158,8 @@ void FixInsertStream::post_create()
 void FixInsertStream::pre_delete(bool unfixflag)
 {
     // delete if I am the last fix of this style to be deleted
-    if(modify->n_fixes_style(style) == 1)
-    modify->delete_fix("release_fix_insert_stream");
+    if(unfixflag && modify->n_fixes_style(style) == 1)
+        modify->delete_fix("release_fix_insert_stream");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -414,6 +414,10 @@ void FixInsertStream::calc_ins_fraction()
             extrude_length_max = extrude_length;
     }
 
+    double ins_fraction_all;
+    MPI_Sum_Scalar(ins_fraction,ins_fraction_all,world);
+    if(ins_fraction_all < 0.9 || ins_fraction_all > 1.1)
+        error->fix_error(FLERR,this,"insertion volume could not be distributed properly in parallel. Bad decomposition or insertion face outside domain");
 }
 
 /* ---------------------------------------------------------------------- */

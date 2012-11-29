@@ -95,6 +95,12 @@ namespace LMP_PROBABILITY_NS {
       return 0.;
   }
 
+  template <int RAND_STYLE> inline double cubic_expectancy_value(PDF *pdf)
+  {
+      pdf->error->all(FLERR,"Faulty usage of Probability::volume_expectancy");
+      return 0.;
+  }
+
   template <int RAND_STYLE> inline double rand_value(PDF *pdf,LAMMPS_NS::RanPark *rp)
   {
       pdf->error->all(FLERR,"Faulty usage of Probability::rand");
@@ -110,6 +116,12 @@ namespace LMP_PROBABILITY_NS {
          rand_style_ = RANDOM_CONSTANT;
          mu_ = val;
          set_min_max(mu_,mu_);
+  }
+
+  template<> inline double cubic_expectancy_value<RANDOM_CONSTANT>(PDF *pdf)
+  {
+
+     return pdf->mu_*pdf->mu_*pdf->mu_;
   }
 
   template<> inline double expectancy_value<RANDOM_CONSTANT>(PDF *pdf)
@@ -135,10 +147,22 @@ namespace LMP_PROBABILITY_NS {
          h2_ = h1_/(2.*min_*min_);
   }
 
+  template<> inline double cubic_expectancy_value<RANDOM_UNIFORM>(PDF *pdf)
+  {
+     if(pdf->mass_shift_)
+        /*return 0.5 * (pdf->min_ + pdf->max_);*/
+        pdf->error->all(FLERR,"mass distribution not implemented for uniform");
+     else
+        return 0.25*(pdf->max_*pdf->max_*pdf->max_+
+                     pdf->max_*pdf->max_*pdf->min_+
+                     pdf->max_*pdf->min_*pdf->min_+
+                     pdf->min_*pdf->min_*pdf->min_);
+  }
+
   template<> inline double expectancy_value<RANDOM_UNIFORM>(PDF *pdf)
   {
      if(!pdf->mass_shift_)
-        return 0.5 * (pdf->min_ + pdf->max_);
+        return pow(0.5 * (pdf->min_ + pdf->max_),3.);
      else
         return sqrt(pdf->h1_/(2.*(pdf->h2_-0.5)));
   }
@@ -169,6 +193,12 @@ namespace LMP_PROBABILITY_NS {
             error->all(FLERR,"Probablity distribution: mu-3*sigma < 0, please increase mu or decrease sigma");
   }
 
+  template<> inline double cubic_expectancy_value<RANDOM_GAUSSIAN>(PDF *pdf)
+  {
+     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for gaussian");
+     return pdf->mu_*(pdf->mu_*pdf->mu_+3*pdf->sigma_*pdf->sigma_);
+  }
+
   template<> inline double expectancy_value<RANDOM_GAUSSIAN>(PDF *pdf)
   {
      if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for gaussian");
@@ -192,6 +222,8 @@ namespace LMP_PROBABILITY_NS {
 
   template<> inline void PDF::set_params<RANDOM_LOGNORMAL>(double mu, double sigma)
   {
+      error->all(FLERR,"lognormal distribution currently deactivated");
+
       rand_style_ = RANDOM_LOGNORMAL;
       mu_ = mu;
       sigma_ = sigma;
@@ -203,6 +235,12 @@ namespace LMP_PROBABILITY_NS {
       set_min_max(min, max);
       if(min_ < 0.)
             error->all(FLERR,"Probablity distribution: exp(mu-3*sigma) < 0, please increase mu or decrease sigma");
+  }
+
+  template<> inline double cubic_expectancy_value<RANDOM_LOGNORMAL>(PDF *pdf)
+  {
+     if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for lognormal");
+     return pow(MATH_E,3.*pdf->mu_+4.5*pdf->sigma_*pdf->sigma_);
   }
 
   template<> inline double expectancy_value<RANDOM_LOGNORMAL>(PDF *pdf)
@@ -232,6 +270,16 @@ namespace LMP_PROBABILITY_NS {
       else if(pdf->rand_style_ == RANDOM_UNIFORM) return expectancy_value<RANDOM_UNIFORM>(pdf);
       else if(pdf->rand_style_ == RANDOM_GAUSSIAN) return expectancy_value<RANDOM_GAUSSIAN>(pdf);
       else if(pdf->rand_style_ == RANDOM_LOGNORMAL) return expectancy_value<RANDOM_LOGNORMAL>(pdf);
+      else pdf->error->all(FLERR,"Faulty implemantation in Probability::expectancy");
+      return 0.;
+  }
+
+  inline double cubic_expectancy(PDF *pdf)
+  {
+      if(pdf->rand_style_ == RANDOM_CONSTANT) return cubic_expectancy_value<RANDOM_CONSTANT>(pdf);
+      else if(pdf->rand_style_ == RANDOM_UNIFORM) return cubic_expectancy_value<RANDOM_UNIFORM>(pdf);
+      else if(pdf->rand_style_ == RANDOM_GAUSSIAN) return cubic_expectancy_value<RANDOM_GAUSSIAN>(pdf);
+      else if(pdf->rand_style_ == RANDOM_LOGNORMAL) return cubic_expectancy_value<RANDOM_LOGNORMAL>(pdf);
       else pdf->error->all(FLERR,"Faulty implemantation in Probability::expectancy");
       return 0.;
   }
