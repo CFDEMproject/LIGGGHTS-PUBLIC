@@ -39,15 +39,14 @@ class PairGran : public Pair {
 
   friend class FixWallGran;
   friend class FixCheckTimestepGran;
-  friend class ComputePairGranLocal;
 
   PairGran(class LAMMPS *);
   ~PairGran();
 
   /* INHERITED FROM Pair */
 
-  virtual void compute(int, int);
-  virtual void compute(int, int,int) = 0;
+  virtual void compute(int eflag, int vflag);
+  virtual void compute_pgl(int eflag, int vflag);
   virtual void settings(int, char **) = 0;
   virtual void coeff(int, char **);
   virtual void init_style();
@@ -61,6 +60,11 @@ class PairGran : public Pair {
   virtual void write_restart_settings(FILE *){}
   virtual void read_restart_settings(FILE *){}
   virtual void reset_dt();
+
+  int  cplenable()
+  { return cpl_enable; }
+  void register_compute_pair_local(class ComputePairGranLocal *,int&);
+  void unregister_compute_pair_local(class ComputePairGranLocal *ptr);
 
   /* PUBLIC ACCESS FUNCTIONS */
 
@@ -77,11 +81,13 @@ class PairGran : public Pair {
 
   int fix_extra_dnum_index(class Fix *fix);
 
+  void *extract(const char *str, int &dim);
+
  protected:
 
   virtual void history_args(char**) =0;
-  void register_compute_pair_local(class ComputePairGranLocal *,int&);
-  void unregister_compute_pair_local(class ComputePairGranLocal *ptr);
+  virtual void compute_force(int eflag, int vflag,int addflag) = 0;
+  virtual bool forceoff() = 0;
 
   virtual void updatePtrs();
 
@@ -118,7 +124,8 @@ class PairGran : public Pair {
   int dnum_pairgran;
   class FixContactHistory *fix_history;
   int shearupdate;
-  int laststep;
+
+  int computeflag;
 
   double *onerad_dynamic,*onerad_frozen;
   double *maxrad_dynamic,*maxrad_frozen;

@@ -342,6 +342,18 @@ double FixTemplateMultiplespheres::max_r_bound()
 
 /* ----------------------------------------------------------------------*/
 
+double FixTemplateMultiplespheres::min_rad()
+{
+    double rmin = 0.;
+
+    for(int j = 0; j < nspheres; j++)
+      if(rmin > r_sphere[j]) rmin = r_sphere[j];
+
+    return rmin;
+}
+
+/* ----------------------------------------------------------------------*/
+
 double FixTemplateMultiplespheres::max_rad()
 {
     double rmax = 0.;

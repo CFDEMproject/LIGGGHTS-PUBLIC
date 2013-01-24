@@ -593,7 +593,16 @@ void FixPour::reset_dt()
 
 /* ---------------------------------------------------------------------- */
 
+double FixPour::min_rad(int type)
+{
+    if(type != ntype) return 1000.;
+    return radius_lo;
+}
+
+/* ---------------------------------------------------------------------- */
+
 double FixPour::max_rad(int type)
 {
+    if(type != ntype) return 0.;
     return radius_hi;
 }

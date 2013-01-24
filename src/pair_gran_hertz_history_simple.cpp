@@ -72,7 +72,7 @@ void PairGranHertzHistorySimple::settings(int narg, char **arg)
  return appropriate params
 ------------------------------------------------------------------------- */
 
-inline void PairGranHertzHistorySimple::deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu)
+inline void PairGranHertzHistorySimple::deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu,double &vnnr)
 {
     int itype = atom->type[ip];
     int jtype = atom->type[jp];

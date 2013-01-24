@@ -46,7 +46,7 @@ class PairGranHookeSimple : public PairGranHooke {
 
  protected:
   virtual void allocate_properties(int);
-  virtual void deriveContactModelParams(int &, int &,double &, double &, double &,double &, double &, double &, double &,double &);
+  virtual void deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu,double &vnnr);
 
   //stiffness and damp parameters
   class FixPropertyGlobal *k_n1,*k_t1,*gamma_n1,*gamma_t1;

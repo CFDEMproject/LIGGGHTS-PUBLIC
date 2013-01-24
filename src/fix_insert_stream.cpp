@@ -131,7 +131,7 @@ void FixInsertStream::post_create()
   
   if(modify->n_fixes_style(style) == 1)
   {
-        char* fixarg[16];
+        char* fixarg[22];
 
         fixarg[0]="release_fix_insert_stream";
         fixarg[1]="all";
@@ -149,7 +149,13 @@ void FixInsertStream::post_create()
         fixarg[13]="0.";
         fixarg[14]="0.";
         fixarg[15]="0.";
-        modify->add_fix_property_atom(16,fixarg,style);
+        fixarg[16]="0.";
+        fixarg[17]="0.";
+        fixarg[18]="0.";
+        fixarg[19]="0.";
+        fixarg[20]="0.";
+        fixarg[21]="0.";
+        modify->add_fix_property_atom(22,fixarg,style);
   }
 }
 
@@ -326,14 +332,13 @@ void FixInsertStream::init()
     
     FixInsert::init();
 
+    if(fix_multisphere && v_randomSetting != 0)
+        error->fix_error(FLERR,this,"Currently only fix insert/stream with multisphere particles only supports constant velocity");
+
     fix_release = static_cast<FixPropertyAtom*>(modify->find_fix_property("release_fix_insert_stream","property/atom","vector",5,0,style));
     if(!fix_release) error->fix_error(FLERR,this,"Internal error if fix insert/stream");
 
     i_am_integrator = modify->i_am_first_of_style(this);
-
-    if(fix_multisphere) fix_multisphere->set_v_integrate(v_normal);
-    if(!i_am_integrator && fix_multisphere)
-        error->fix_error(FLERR,this,"Currently only one fix insert/stream is allowed with multisphere particles");
 
     if(ins_face->isMoving() || ins_face->isScaling())
         error->fix_error(FLERR,this,"cannot translate, rotate, scale mesh which is used for particle insertion");
@@ -603,7 +608,7 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
 void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
 {
     // nins particles have been inserted on this proc, set initial position, insertion step and release step according to pos
-
+    
     int n_steps = -1;
     int step = update->ntimestep;
     int ilo = atom->nlocal - ninserted_spheres_this_local;
@@ -642,6 +647,31 @@ void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
         // 6-8th value is integration velocity
         vectorCopy3D(v_normal,&release_data[i][5]);
 
+        // set inital conditions
+        // randomize vel, omega, quat here
+        double v_toInsert[3],omega_toInsert[3];
+
+        vectorCopy3D(v_insert,v_toInsert);
+        vectorCopy3D(omega_insert,omega_toInsert);
+
+        // could ramdonize vel, omega, quat here
+        if(v_randomSetting==1)
+        {
+            v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
+            v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
+            v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
+        }
+        else if(v_randomSetting==2)
+        {
+            v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
+            v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
+            v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
+        }
+
+        // 9-11th value is velocity, 12-14 is omega
+        vectorCopy3D(v_toInsert,&release_data[i][8]);
+        vectorCopy3D(omega_toInsert,&release_data[i][11]);
+
     }
 
 }
@@ -655,7 +685,7 @@ void FixInsertStream::end_of_step()
     int step = update->ntimestep;
     int nlocal = atom->nlocal;
     double **release_data = fix_release->array_atom;
-    double time_elapsed, dist_elapsed[3], v_integrate[3],v_toInsert[3];
+    double time_elapsed, dist_elapsed[3], v_integrate[3], *v_toInsert, *omega_toInsert;
     double dt = update->dt;
 
     double **x = atom->x;
@@ -682,7 +712,8 @@ void FixInsertStream::end_of_step()
             else if (r_step == step)
             {
                 
-                if(fix_multisphere && fix_multisphere->belongs_to(i) >= 0) continue;
+                if(fix_multisphere && fix_multisphere->belongs_to(i) >= 0)
+                    continue;
 
                 // integrate with constant vel and set v,omega
 
@@ -693,35 +724,18 @@ void FixInsertStream::end_of_step()
                 double *x_ins = release_data[i];
 
                 // set x,v,omega
-                vectorAdd3D(x_ins,dist_elapsed,x[i]);
-                vectorCopy3D(v_integrate,v[i]);
-                vectorZeroize3D(omega[i]);
-
                 // zero out force, torque
+
+                vectorAdd3D(x_ins,dist_elapsed,x[i]);
+
                 vectorZeroize3D(f[i]);
                 vectorZeroize3D(torque[i]);
 
-                // set inital conditions
-                // randomize vel, omega, quat here
-                vectorCopy3D(v_insert,v_toInsert);
-
-                // could ramdonize vel, omega, quat here
-                if(v_randomSetting==1)
-                {
-                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
-                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
-                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
-                }
-                else if(v_randomSetting==2)
-                {
-                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
-                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
-                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
-                }
+                v_toInsert = &release_data[i][8];
+                omega_toInsert = &release_data[i][11];
 
                 vectorCopy3D(v_toInsert,v[i]);
-                
-                vectorCopy3D(omega_insert,omega[i]);
+                vectorCopy3D(omega_toInsert,omega[i]);
 
             }
             // step < r_step, only true for inserted particles
@@ -729,6 +743,7 @@ void FixInsertStream::end_of_step()
             // integrate with constant vel
             else
             {
+                
                 time_elapsed = (step - i_step) * dt;
 
                 // particle moves with v_integrate

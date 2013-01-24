@@ -40,7 +40,7 @@ class ComputePairGranLocal : public Compute {
   ~ComputePairGranLocal();
   void post_create();
   void init();
-  void init_cpgl();
+  void init_cpgl(bool requestflag);
   void init_list(int, class NeighList *);
   void compute_local();
   double memory_usage();

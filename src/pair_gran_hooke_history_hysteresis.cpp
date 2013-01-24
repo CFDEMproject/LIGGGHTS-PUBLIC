@@ -92,7 +92,7 @@ void PairGranHookeHistoryHysteresis::history_args(char** args)
 
 /* ---------------------------------------------------------------------- */
 
-void PairGranHookeHistoryHysteresis::compute(int eflag, int vflag,int addflag)
+void PairGranHookeHistoryHysteresis::compute_force(int eflag, int vflag,int addflag)
 {
   //calculated from the material properties 
   double kn,kt,gamman,gammat,xmu,rmu; 
@@ -134,9 +134,6 @@ void PairGranHookeHistoryHysteresis::compute(int eflag, int vflag,int addflag)
   firstneigh = list->firstneigh;
   firsttouch = listgranhistory->firstneigh;
   firstshear = listgranhistory->firstdouble;
-
-  if (update->ntimestep > laststep) shearupdate = 1;
-  else shearupdate = 0;
 
   // loop over neighbors of my atoms
 
@@ -228,7 +225,7 @@ void PairGranHookeHistoryHysteresis::compute(int eflag, int vflag,int addflag)
         if (mask[i] & freeze_group_bit) meff = mj;
         if (mask[j] & freeze_group_bit) meff = mi;
 
-        deriveContactModelParams(i,j,meff,deltan,kn,kt,gamman,gammat,xmu,rmu);         //modified C.K
+        deriveContactModelParams(i,j,meff,deltan,kn,kt,gamman,gammat,xmu,rmu,vnnr);         //modified C.K
 
         damp = gamman*vnnr*rsqinv;  
 
@@ -274,7 +271,7 @@ void PairGranHookeHistoryHysteresis::compute(int eflag, int vflag,int addflag)
 
         touch[jj] = 1;
 
-        if (shearupdate && addflag)
+        if (shearupdate && computeflag)
         {
             shear[0] += vtr1*dt;
             shear[1] += vtr2*dt;
@@ -353,7 +350,7 @@ void PairGranHookeHistoryHysteresis::compute(int eflag, int vflag,int addflag)
             }
         }
 
-        if(addflag)
+        if(computeflag)
         {
             f[i][0] += fx;
             f[i][1] += fy;
@@ -363,7 +360,7 @@ void PairGranHookeHistoryHysteresis::compute(int eflag, int vflag,int addflag)
             torque[i][2] -= cri*tor3 + r_torque[2];
         }
 
-        if (j < nlocal && addflag) {
+        if (j < nlocal && computeflag) {
           f[j][0] -= fx;
           f[j][1] -= fy;
           f[j][2] -= fz;
@@ -372,14 +369,12 @@ void PairGranHookeHistoryHysteresis::compute(int eflag, int vflag,int addflag)
           torque[j][2] -= crj*tor3 - r_torque[2];
         }
 
-        if(cpl && !addflag) cpl->add_pair(i,j,fx,fy,fz,tor1,tor2,tor3,shear);
+        if(cpl && addflag) cpl->add_pair(i,j,fx,fy,fz,tor1,tor2,tor3,shear);
 
         if (evflag) ev_tally_xyz(i,j,nlocal,0,0.0,0.0,fx,fy,fz,delx,dely,delz);
       }
     }
   }
-
-  laststep = update->ntimestep;
 }
 
 /* ----------------------------------------------------------------------
@@ -393,6 +388,9 @@ void PairGranHookeHistoryHysteresis::settings(int narg, char **arg)
     // set defaults
     dampflag = 1;
     rollingflag = 0;
+    cohesionflag = 0;
+    viscousflag = 0;
+    force_off = false;
 
     // parse args
 
@@ -415,6 +413,17 @@ void PairGranHookeHistoryHysteresis::settings(int narg, char **arg)
                 error->all(FLERR,"Illegal pair_style gran command, expecting 'lcm' or 'off' after keyword 'cohesion'");
             iarg_++;
             hasargs = true;
+        } else if (strcmp(arg[iarg_],"force") == 0) {
+            if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'force'");
+            iarg_++;
+            if(strcmp(arg[iarg_],"on") == 0)
+                force_off = false;
+            else if(strcmp(arg[iarg_],"off") == 0)
+                force_off = true;
+            else
+                error->all(FLERR,"Illegal pair_style gran command, expecting 'on' or 'off' after keyword 'force'");
+            iarg_++;
+            hasargs = true;
         } else if (strcmp(arg[iarg_],"rolling_friction") == 0) {
             if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'rolling_friction'");
             iarg_++;
@@ -435,6 +444,17 @@ void PairGranHookeHistoryHysteresis::settings(int narg, char **arg)
                 dampflag = 0;
             else
                 error->all(FLERR,"Illegal pair_style gran command, expecting 'on' or 'off' after keyword 'dampflag'");
+            iarg_++;
+            hasargs = true;
+        } else if (strcmp(arg[iarg_],"viscous") == 0) {
+            if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'viscous'");
+            iarg_++;
+            if(strcmp(arg[iarg_],"stokes") == 0)
+                viscousflag = 1;
+            else if(strcmp(arg[iarg_],"off") == 0)
+                viscousflag = 0;
+            else
+                error->all(FLERR,"Illegal pair_style gran command, expecting 'stokes' or 'off' after keyword 'viscous'");
             iarg_++;
             hasargs = true;
         } else if (force->pair_match("gran/hooke/history",1) || force->pair_match("gran/hertz/history",1))

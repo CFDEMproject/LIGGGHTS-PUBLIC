@@ -245,8 +245,12 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   // calc max insertion radius
   int ntypes = atom->ntypes;
   maxrad = 0.;
+  minrad = 1000.;
   for(int i = 1; i <= ntypes; i++)
+  {
      maxrad = MathExtraLiggghts::max(maxrad,max_rad(i));
+     minrad = MathExtraLiggghts::min(minrad,min_rad(i));
+  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -419,6 +423,13 @@ int FixInsert::max_type()
 double FixInsert::max_rad(int type)
 {
     return fix_distribution->max_rad(type);
+}
+
+/* ---------------------------------------------------------------------- */
+
+double FixInsert::min_rad(int type)
+{
+    return fix_distribution->min_rad(type);
 }
 
 /* ---------------------------------------------------------------------- */

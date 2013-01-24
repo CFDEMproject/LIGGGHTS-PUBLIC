@@ -46,9 +46,9 @@ class FixWallGran : public Fix {
   void post_create();
   void pre_delete(bool unfixflag);
   void init();
-  void setup(int);
-  void post_force(int);
-  void post_force(int,int);
+  void setup(int vflag);
+  void post_force(int vflag);
+  void post_force_pgl();
   void post_force_respa(int, int, int);
 
   int min_type();
@@ -85,12 +85,13 @@ class FixWallGran : public Fix {
   int iarg_, narg_;
   int atom_type_wall_;
 
+  int computeflag_;
+
   int addflag_;
   class ComputePairGranLocal *cwl_;
 
   double dt_;
   int shearupdate_;
-  int laststep_;
 
   void set_r0(double _r0)
   { r0_ = _r0; }
@@ -156,6 +157,7 @@ class FixWallGran : public Fix {
   // max neigh cutoff - as in Neighbor
   double cutneighmax_;
 
+  void post_force_wall(int vflag);
   void post_force_mesh(int);
   void post_force_primitive(int);
 

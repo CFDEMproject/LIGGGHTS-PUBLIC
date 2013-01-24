@@ -53,9 +53,9 @@ FixPropertyAtom::FixPropertyAtom(LAMMPS *lmp, int narg, char **arg, bool parse) 
 
 void FixPropertyAtom::parse_args(int narg, char **arg)
 {
-    //Check args
+    // Check args
     if (narg < 9) error->all(FLERR,"Illegal fix property/atom command, not enough arguments");
-    if (narg > 19) error->warning(FLERR,"Vector length in fix property/atom larger than 10. Are you sure you want that?");
+    if (narg > 29) error->warning(FLERR,"Vector length in fix property/atom larger than 20. Are you sure you want that?");
 
     // Read args
     

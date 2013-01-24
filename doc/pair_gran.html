@@ -32,12 +32,16 @@
 <PRE>  <I>rolling_friction</I> values = 'cdt' or 'off'
     cdt = activates constant directional rolling friction model
     off = no rolling friction model
-  <I>cohesion</I> values = 'sjkr' or 'off'
+  <I>cohesion</I> values = 'sjkr' or 'sjkr2' or'off'
     sjkr = activates simplified JKR cohesion model
+    sjkr2 = activates variant of simplified JKR cohesion model
     off = no cohesion model
   <I>tangential_damping</I> values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping
+  <I>viscous</I> = 'stokes' or 'off'
+    viscous = restitution coefficient varies with a local Stokes number of the particle
+    off = no modification to the restitution coefficient
   <I>absolute_damping</I> values = 'on' or 'off'
     on = activates absolute damping (for hooke/history/simple only)
     off = deactivates absolute damping (for hooke/history/simple only) 
@@ -187,14 +191,23 @@ particles lose contact. In the Hertzian case, a similar analogy holds, though th
 <PRE>fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
     (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
 </PRE>
-<P>A simple linear <B>cohesion model</B> can be activated by setting <I>cohesion</I> = 'sjkr' 
+<P>A simple linear <B>cohesion model</B> can be activated by setting <I>cohesion</I> = 'sjkr' or 'sjkr2'
 (simplified Johnson-Kendall-Roberts model). If two particle are in contact, 
 it adds an additional normal force tending to maintain the contact, which writes 
 </P>
 <P>F = k A, 
 </P>
-<P>where A is the particle contact area and k is the cohesion energy density in J/m3. If you are 
-using the linear cohesion model, you must also define the cohesion energy density:
+<P>where A is the particle contact area and k is the cohesion energy density in J/m3. 
+For <I>sjkr</I>, the sphere-sphere contact area is calculated as (http://mathworld.wolfram.com/Sphere-SphereIntersection.html)
+</P>
+<P>A = Pi/4 * ((dist-Ri-Rj)*(dist+Ri-Rj)*(dist-Ri+Rj)*(dist+Ri+Rj) )/(dist*dist)
+</P>
+<P>where dist is the distance between the particle centers.
+For <I>sjkr2</I>, the sphere-sphere contact area is calculated as
+</P>
+<P>A = 2*Pi * delta_n * (2R*)
+</P>
+<P>If you are using the linear cohesion model, you must also define the cohesion energy density:
 </P>
 <PRE>fix id all property/global cohesionEnergyDensity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
     (value_ij=value for the cohesion energy density (in Energy/Length3 units) between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
@@ -202,6 +215,21 @@ using the linear cohesion model, you must also define the cohesion energy densit
 <P>IMPORTANT NOTE: The cohesion model has been derived for the Hertzian Style, it may note be 
 appropriate for the Hookean styles.
 </P>
+<H3>Viscous model 
+</H3>
+<P>Using option <I>viscous</I> = stokes adapts the coefficient of restitution as proposed by
+<A HREF = "#Legendre">(Legendre)</A>, <I>viscous</I> = off performs no modification.
+</P>
+<P>One has to provide the 3 peratomtypepair parameters via a <A HREF = "fix_property.html">fix property/global</A>
+command needed for the viscous damping:
+</P>
+<PRE>fix id all property/global FluidViscosity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for fluid viscosity between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+fix id all property/global CriticalStokes peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for critical Stokes number between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+fix id all property/global MaximumRestitution peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for maximum coefficient of restitution between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
+</PRE>
 <P>For granular styles there are no additional coefficients to set for each pair of atom types 
 via the <A HREF = "pair_coeff.html">pair_coeff</A> command. All settings are global and are made via the 
 pair_style command. However you must still use the <A HREF = "pair_coeff.html">pair_coeff</A> for all pairs 
@@ -247,7 +275,10 @@ command. They do not support the inner, middle, outer keywords.
 <I>tangential_damping</I> = 'on'
 <I>absolute_damping</I> = 'off'
 <I>store_force</I> = 'no'
+<I>viscous</I> = 'off'
 </P>
+<HR>
+
 <P><B>(Di Renzo)</B> Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525–541 (2004).
 </P>
 <P><B>(Ai)</B> Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
@@ -257,5 +288,9 @@ command. They do not support the inner, middle, outer keywords.
 <P><B>(Silbert)</B> Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
 </P>
 <P><B>(Zhang)</B> Zhang and Makse, Phys Rev E, 72, p 011301 (2005). 
+</P>
+<A NAME = "Legendre"></A>
+
+<P><B>(Legendre)</B> Legendre, Daniel and Guiraud. Phys. Fluids 17, 097105 (2005).
 </P>
 </HTML>

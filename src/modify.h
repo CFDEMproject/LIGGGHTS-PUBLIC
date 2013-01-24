@@ -128,6 +128,7 @@ class Modify : protected Pointers {
 
   int fix_restart_in_progress();
   bool have_restart_data(Fix *f);
+  void max_min_rad(double &maxrad,double &minrad); 
 
  protected:
 

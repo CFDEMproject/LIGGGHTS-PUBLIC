@@ -50,3 +50,88 @@ INSTALL(TARGETS liggghts DESTINATION "bin/")
 INSTALL(FILES ${SRC_FILES_HEAD} DESTINATION "include/liggghts${SUFFIX}/")
 #======================================================
 
+=======
+# ENABLE_PACKAGE: enable PACKAGE-modules (OFF by default)
+# ENABLE_PACKAGEUSER: enable PACKAGEUSER-modules (OFF by default)
+# SUFFIX: add sufix to binary-name (NONE by default)
+# USERPATH: use RPATH for search of the shared library libliggghts, need to be switched on by packaging (ON by default)
+# VERSION: version number (2.2 by default)
+# LIB_SUFFIX: suffix, where libliggghts library will be installed, lib/${LIB_SUFFIX} (NONE by default)
+
+PROJECT(LIGGGHTS C CXX)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+SET(CMAKE_VERBOSE_MAKEFILE 1)
+SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cMake")
+
+SET(VERSION 2.2)
+SET(USERPATH 1)
+#=======================================
+
+IF (NOT CMAKE_CXX_FLAGS)
+  #If flags are not set, add default flags
+  SET(CMAKE_BUILD_TYPE Release)
+  SET(CMAKE_CXX_FLAGS  " -Wall -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -Werror=format-security")
+ENDIF (NOT CMAKE_CXX_FLAGS)
+
+#=======================================
+
+INCLUDE(FindVTK)
+FIND_PACKAGE(VTK COMPONENTS Common)
+IF(VTK_FOUND)
+  INCLUDE_DIRECTORIES(${VTK_INCLUDE_DIRS})
+  LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLAMMPS_VTK")
+  MESSAGE(STATUS "Found VTK")
+  
+  FIND_PACKAGE(Eigen3 REQUIRED)
+  INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
+  MESSAGE(STATUS "Found Eigen3")
+ELSE(VTK_FOUND)
+  MESSAGE(STATUS "VTK NOT found!")
+ENDIF(VTK_FOUND)
+
+#=======================================
+
+INCLUDE(FindJPEG)
+IF(JPEG_FOUND)
+  INCLUDE_DIRECTORIES(${JPEG_INCLUDE_DIR})
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLAMMPS_JPEG")
+ELSE(JPEG_FOUND)
+  MESSAGE(STATUS "JPEG NOT found!")
+ENDIF(JPEG_FOUND)
+
+#=======================================
+
+INCLUDE(FindMPI)
+IF(MPI_C_FOUND AND MPI_CXX_FOUND)
+  SET(CMAKE_C_COMPILER ${MPI_C_COMPILER})
+  SET(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
+ELSE(MPI_C_FOUND AND MPI_CXX_FOUND)
+  #Check old FindMPI version
+  IF(MPI_COMPILER)
+    SET(CMAKE_C_COMPILER ${MPI_COMPILER})
+    SET(CMAKE_CXX_COMPILER ${MPI_COMPILER})
+  ELSE(MPI_COMPILER)
+    MESSAGE(FATAL_ERROR "MPI-COMPILER NOT found!")
+  ENDIF(MPI_COMPILER)
+ENDIF(MPI_C_FOUND AND MPI_CXX_FOUND)
+
+#=======================================
+
+#Disabled modules
+#GPU KIM MEAM POEMS REAX SRD
+IF(ENABLE_PACKAGE)
+  SET(MODULES_PACKAGE ASPHERE CLASS2 COLLOID DIPOLE FLD  GRANULAR KSPACE MANYBODY MC MOLECULE OPT PERI REPLICA SHOCK  XTC)
+ENDIF(ENABLE_PACKAGE)
+#Disabled modules
+#USER-MISC
+IF(ENABLE_PACKAGEUSER)
+  SET(MODULES_USER USER-ATC USER-AWPMD USER-CG-CMM USER-CUDA USER-EFF USER-EWALDN USER-OMP USER-REAXC USER-SPH)
+ENDIF(ENABLE_PACKAGEUSER)
+#=======================================
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
+
+ADD_SUBDIRECTORY("${CMAKE_SOURCE_DIR}/src")

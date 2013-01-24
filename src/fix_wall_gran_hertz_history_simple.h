@@ -43,7 +43,7 @@ class FixWallGranHertzHistorySimple : public FixWallGranHookeHistorySimple {
 
  protected:
 
-  virtual void deriveContactModelParams(int ip, double deltan, double meff_wall, double &kn, double &kt, double &gamman, double &gammat, double &xmu,double &rmu);
+  virtual void deriveContactModelParams(int ip, double deltan, double meff_wall, double &kn, double &kt, double &gamman, double &gammat, double &xmu,double &rmu,double &vnnr);
 };
 
 }

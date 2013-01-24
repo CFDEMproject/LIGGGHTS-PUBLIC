@@ -47,12 +47,16 @@ model_keyword = {rolling_friction} or {cohesion} or {tangential_damping} or {tem
   {rolling_friction} values = 'cdt' or 'off'
     cdt = activates constant directional rolling friction model
     off = no rolling friction model
-  {cohesion} values = 'sjkr' or 'off'
+  {cohesion} values = 'sjkr' or 'sjkr2' or 'off'
     sjkr = activates simplified JKR cohesion model
+    sjkr2 = activates variant of simplified JKR cohesion model
     off = no cohesion model
   {tangential_damping} values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping
+  {viscous} = 'stokes' or 'off'
+    viscous = restitution coefficient varies with a local Stokes number of the particle
+    off = no modification to the restitution coefficient
   {temperature} value = T0
     T0 = Temperature of the wall (temperature units) :pre
 :ule
@@ -134,8 +138,8 @@ store the wall force exerted on the particles in a
 "fix property/atom"_fix_property.html with id force_(ID), where (ID)
 is the id of the fix wall/gran command.
 
-The effect of keyword {rolling_friction}, {cohesion}, {tangential_damping}
-and {absolute_damping} is explanted in "pair gran"_pair_gran.html
+The effect of keyword {rolling_friction}, {cohesion}, {tangential_damping},
+{viscous} and {absolute_damping} is explanted in "pair gran"_pair_gran.html
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -183,3 +187,4 @@ Any dimension (xyz) that has a planar granular wall must be non-periodic.
 {tangential_damping} = 'on'
 {absolute_damping} = 'off'
 {store_force} = 'no'
+{viscous} = 'off'

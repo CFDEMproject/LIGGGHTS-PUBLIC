@@ -19,6 +19,7 @@
 #include "neigh_request.h"
 #include "memory.h"
 #include "error.h"
+#include "fix.h"
 
 using namespace LAMMPS_NS;
 
@@ -65,6 +66,12 @@ NeighList::NeighList(LAMMPS *lmp, int size) : Pointers(lmp)
   nstencil_multi = NULL;
   stencil_multi = NULL;
   distsq_multi = NULL;
+
+  nlevels = 0;
+  rmin_multigran = NULL;
+  rmax_multigran = NULL;
+  nstencil_multigran = NULL;
+  stencil_multigran = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -99,6 +106,11 @@ NeighList::~NeighList()
     delete [] nstencil_multi;
     delete [] stencil_multi;
     delete [] distsq_multi;
+
+    delete [] rmin_multigran;
+    delete [] rmax_multigran;
+    memory->destroy(nstencil_multigran);
+    memory->destroy(stencil_multigran);
   }
 }
 
@@ -173,6 +185,25 @@ void NeighList::stencil_allocate(int smax, int style)
                        "neighlist:distsq_multi");
       }
     }
+
+    nlevels = neighbor->multi_levels();
+
+    if (rmin_multigran)
+        delete []rmin_multigran;
+    rmin_multigran = new double[nlevels];
+
+    if (rmax_multigran)
+        delete []rmax_multigran;
+    rmax_multigran = new double[nlevels];
+
+    memory->destroy(nstencil_multigran);
+    memory->create(nstencil_multigran,nlevels,nlevels,
+                       "neighlist:nstencil_multigran");
+
+    memory->destroy(stencil_multigran);
+    memory->create(stencil_multigran,nlevels,nlevels,maxstencil_multi,
+                       "neighlist:stencil_multigran");
+
   }
 }
 

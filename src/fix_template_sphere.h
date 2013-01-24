@@ -48,6 +48,7 @@ class FixTemplateSphere : public Fix {
   // access to protected properties
   virtual double volexpect();           
   virtual double massexpect();          
+  virtual double min_rad();
   virtual double max_rad();
   virtual double max_r_bound();
   virtual int number_spheres();

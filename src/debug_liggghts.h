@@ -27,6 +27,7 @@
 #include "stdlib.h"
 #include "style_fix.h"
 #include "vector_liggghts.h"
+#include "container.h"
 
 namespace LAMMPS_NS {
 
@@ -36,17 +37,15 @@ inline void __debug__(LAMMPS* lmp)
 
     for(int i = 0; i < lmp->modify->nfix; i++)
     {
-        /*
-        if(strcmp(lmp->modify->fix[i]->style,"multisphere") == 0)
+
+        if(strcmp(lmp->modify->fix[i]->style,"move/mesh") == 0)
         {
-            FixMultisphere *fr = static_cast<FixMultisphere*>(lmp->modify->fix[i]);
-            int nb,np;
-            double **omega = fr->get_dump_ref(nb,np,"omega");
+            FixMoveMesh *fmm = static_cast<FixMoveMesh*>(lmp->modify->fix[i]);
+            MultiVectorContainer<double,3,3> *v;
+            v = fmm->mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
+            if(v) printVec3D(lmp->screen,"VDEBUG",v->begin()[0][0]);
 
-            printVec3D(lmp->screen,"omega1",omega[1]);
-
-        }*/
-
+        }
     }
 }
 

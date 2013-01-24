@@ -88,6 +88,10 @@ namespace LAMMPS_NS
 
       protected:
 
+        // STRESS
+        // total force and total torque
+        double f_total_[3], torque_total_[3]; 
+
         // inline access
 
         inline double* f(int i)
@@ -125,7 +129,6 @@ namespace LAMMPS_NS
         // stress flag in FixMeshSurface
         // reference point, total force and total torque
         VectorContainer<double,3> &p_ref_;
-        double f_total_[3], torque_total_[3];
 
         // per-element force and torque
         VectorContainer<double,3> *f_;

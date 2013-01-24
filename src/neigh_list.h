@@ -73,6 +73,14 @@ class NeighList : protected Pointers {
   int **stencil_multi;             // list of bin offsets in each stencil
   double **distsq_multi;           // sq distances to bins in each stencil
 
+  int nlevels;
+  
+  double *rmin_multigran, *rmax_multigran;
+
+  //int maxstencil_multigran same as maxstencil_multi;
+  int **nstencil_multigran;       // # bins in each level-based multi stencil
+  int ***stencil_multigran;        // list of bin offsets in each stencil
+
   class CudaNeighList *cuda_list;  // CUDA neighbor list
 
   NeighList(class LAMMPS *, int);

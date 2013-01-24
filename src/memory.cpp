@@ -61,7 +61,11 @@ void *Memory::srealloc(void *ptr, bigint nbytes, const char *name)
   ptr = realloc(ptr,nbytes);
   if (ptr == NULL) {
     char str[128];
-    sprintf(str,"Failed to reallocate " BIGINT_FORMAT " bytes for array %s",
+    if(strcmp(name,"neigh:binhead") == 0)
+        sprintf(str,"Failed to reallocate " BIGINT_FORMAT " bytes for array %s.\n"
+            "This may be due to bad dynamics overly increasing system size",nbytes,name);
+    else
+        sprintf(str,"Failed to reallocate " BIGINT_FORMAT " bytes for array %s",
             nbytes,name);
     error->one(FLERR,str);
   }

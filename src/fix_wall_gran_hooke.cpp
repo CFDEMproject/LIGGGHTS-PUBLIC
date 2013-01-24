@@ -78,10 +78,6 @@ void FixWallGranHooke::compute_force(int ip, double deltan, double rsq,double me
   if(fix_rigid_ && body_[ip] >= 0)
     mass = masstotal_[body_[ip]];
 
-  //get the parameters needed to resolve the contact
-  //deltan > 0 needed in this function
-  deriveContactModelParams(ip,-deltan,meff_wall,kn,kt,gamman,gammat,xmu,rmu);
-
   r = sqrt(rsq);
   rinv = 1.0/r;
   rsqinv = 1.0/rsq;
@@ -110,6 +106,10 @@ void FixWallGranHooke::compute_force(int ip, double deltan, double rsq,double me
   wr1 = cr*omega[0] * rinv;
   wr2 = cr*omega[1] * rinv;
   wr3 = cr*omega[2] * rinv;
+
+  // get the parameters needed to resolve the contact
+  // deltan > 0 needed in this function
+  deriveContactModelParams(ip,-deltan,meff_wall,kn,kt,gamman,gammat,xmu,rmu,vnnr);
 
   // normal forces = Hookian contact + normal velocity damping
 
@@ -143,7 +143,7 @@ void FixWallGranHooke::compute_force(int ip, double deltan, double rsq,double me
   fy = dy*ccel + fs2;
   fz = dz*ccel + fs3;
 
-  if(addflag_)
+  if(computeflag_)
   {
       f[0] += fx*area_ratio;
       f[1] += fy*area_ratio;
@@ -174,12 +174,12 @@ void FixWallGranHooke::compute_force(int ip, double deltan, double rsq,double me
             }
   }
 
-  if(addflag_)
+  if(computeflag_)
   {
       torque[0] -= cr*tor1*area_ratio + r_torque[0];
       torque[1] -= cr*tor2*area_ratio + r_torque[1];
       torque[2] -= cr*tor3*area_ratio + r_torque[2];
   }
-  else if(cwl_)
+  if(cwl_ && addflag_)
     cwl_->add_wall_2(ip,fx,fy,fz,tor1*area_ratio,tor2*area_ratio,tor3*area_ratio,c_history,rsq);
 }

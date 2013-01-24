@@ -95,6 +95,9 @@ void PairGranHookeHistorySimple::init_granular()
   int max_type = mpg->max_type();
   allocate_properties(max_type);
 
+  if(viscousflag)
+    error->all(FLERR,"Cannot use 'stokes' model for pair/gran model without coefficient of restitution");
+
   //Get pointer to the fixes that have the material properties
 
   k_n1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("kn","property/global","peratomtypepair",max_type,max_type,force->pair_style));
@@ -174,7 +177,7 @@ void PairGranHookeHistorySimple::allocate_properties(int size)
  return appropriate params
 ------------------------------------------------------------------------- */
 
-inline void PairGranHookeHistorySimple::deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu)
+inline void PairGranHookeHistorySimple::deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu,double &vnnr)
 {
     int itype = atom->type[ip];
     int jtype = atom->type[jp];

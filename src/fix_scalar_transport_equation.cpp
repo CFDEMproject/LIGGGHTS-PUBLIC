@@ -91,7 +91,6 @@ FixScalarTransportEquation::FixScalarTransportEquation(LAMMPS *lmp, int narg, ch
   peratom_flag = 1;              
   size_peratom_cols = 0;         
   peratom_freq = 1;
-  time_depend = 1;
 
   scalar_flag = 1; 
   global_freq = 1; 

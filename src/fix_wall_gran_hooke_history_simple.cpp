@@ -70,6 +70,9 @@ void FixWallGranHookeHistorySimple::init_granular()
 
   damp_massflag = ((PairGranHookeHistorySimple*)pairgran_)->damp_massflag;
 
+  if(viscousflag)
+    error->fix_error(FLERR,this,"cannot use 'stokes' model for fix wall/gran model without coefficient of restitution");
+
   //need to check properties for rolling friction and cohesion energy density here
   //since these models may not be active in the pair style
   
@@ -95,7 +98,7 @@ void FixWallGranHookeHistorySimple::init_granular()
    contact model parameters derived for hertz model 
 ------------------------------------------------------------------------- */
 
-inline void FixWallGranHookeHistorySimple::deriveContactModelParams(int ip, double deltan,double meff_wall, double &kn, double &kt, double &gamman, double &gammat, double &xmu,double &rmu)  
+inline void FixWallGranHookeHistorySimple::deriveContactModelParams(int ip, double deltan,double meff_wall, double &kn, double &kt, double &gamman, double &gammat, double &xmu,double &rmu,double &vnnr)  
 {
     int itype = atom->type[ip];
 

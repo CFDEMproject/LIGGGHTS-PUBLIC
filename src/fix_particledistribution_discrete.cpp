@@ -199,6 +199,7 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   //calc max radius and bounding sphere radius
 
   maxrad = maxrbound = 0.;
+  minrad = 1000.;
 
   for(int i = 0; i < ntemplates;i++)
       if(templates[i]->max_r_bound() > maxrbound)
@@ -207,6 +208,10 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   for(int i = 0; i < ntemplates;i++)
       if(templates[i]->max_rad() > maxrad)
         maxrad = templates[i]->max_rad();
+
+  for(int i = 0; i < ntemplates;i++)
+      if(templates[i]->min_rad() < minrad)
+        minrad = templates[i]->min_rad();
 
 }
 
@@ -460,6 +465,19 @@ double FixParticledistributionDiscrete::vol_expect()
 double FixParticledistributionDiscrete::mass_expect()
 {
     return massexpect;
+}
+
+/* ----------------------------------------------------------------------*/
+
+double FixParticledistributionDiscrete::min_rad(int type)
+{
+    //get minrad
+    double minrad_type = 1000.;
+    for(int i = 0; i < ntemplates;i++)
+      if( templates[i]->type() == type  && templates[i]->min_rad() < minrad_type)
+        minrad_type = templates[i]->min_rad();
+
+    return minrad_type;
 }
 
 /* ----------------------------------------------------------------------*/

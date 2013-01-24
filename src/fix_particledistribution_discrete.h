@@ -48,7 +48,9 @@ class FixParticledistributionDiscrete : public Fix {
   double mass_expect();
   int max_type();
   int min_type();
+  double min_rad(int);
   double max_rad(int);
+  double min_rad(){return minrad;}
   double max_rad(){return maxrad;}
   double max_r_bound(){return maxrbound;}
   int max_nspheres();
@@ -107,7 +109,7 @@ class FixParticledistributionDiscrete : public Fix {
   int maxnspheres;
 
   // maximum radius and bounding sphere radius
-  double maxrad,maxrbound;
+  double minrad,maxrad,maxrbound;
 };
 
 }

@@ -42,6 +42,7 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
   virtual void post_create();
   double max_r_bound();
   double max_rad();
+  double min_rad();
   int number_spheres();
 
   // single insertion

@@ -7,19 +7,21 @@
 
 :line
 
+fix heat/gran command :h3
 fix heat/gran/conduction command :h3
 
 [Syntax:]
 
+fix ID group-ID heat/gran initial_temperature T0 keyword values :pre
 fix ID group-ID heat/gran/conduction initial_temperature T0 keyword values :pre
 
 ID, group-ID are documented in "fix"_fix.html command :l
-heat/gran/conduction = style name of this fix command :l
+heat/gran/conduction or fix heat/gran = style name of this fix command :l
 initial_temperature = obligatory keyword :l
 T0 = initial (default) temperature for the particles :l
 zero or more keyword/value pairs may be appended :l
 keyword = {area_correction} :l
-  {area_correction} values = {on} or {off} :pre
+  {area_correction} values = {yes} or {no} :pre
 
 
 [Examples:]

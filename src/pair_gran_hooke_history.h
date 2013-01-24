@@ -49,7 +49,7 @@ class PairGranHookeHistory : public PairGran {
   virtual void settings(int, char **);
   virtual void init_granular(); 
 
-  virtual void compute(int, int,int);
+  virtual void compute_force(int eflag, int vflag, int addflag);
 
   virtual void write_restart_settings(FILE *);
   virtual void read_restart_settings(FILE *);
@@ -59,9 +59,16 @@ class PairGranHookeHistory : public PairGran {
   virtual void history_args(char**);
   void allocate_properties(int);
 
+  bool forceoff()
+  { return force_off; }
+
   class FixPropertyGlobal* Y1; //Youngs Modulus
   class FixPropertyGlobal* v1; //Poisson's ratio
   class FixPropertyGlobal* cohEnergyDens1; //Cohesion energy density
+
+  class FixPropertyGlobal* coeffMu1; // Fluid viscosity
+  class FixPropertyGlobal* coeffRestMax1;  // Maximum restitution coefficient (for mu=0)
+  class FixPropertyGlobal* coeffStc1; // Critical Stokes number (10-30 for glass beads)
 
   class FixPropertyGlobal* coeffRest1; //coefficient of restitution
   class FixPropertyGlobal* coeffFrict1; //coefficient of (static) friction
@@ -70,13 +77,17 @@ class PairGranHookeHistory : public PairGran {
   int charVelflag;
   class FixPropertyGlobal* charVel1; //characteristic velocity needed for Linear Spring Model
 
-  double **Yeff,**Geff,**betaeff,**veff,**cohEnergyDens,**coeffRestLog,**coeffFrict,charVel,**coeffRollFrict;
+  double **Yeff,**Geff,**betaeff,**veff,**cohEnergyDens,**coeffRestLog,**coeffFrict;
+  double charVel, **coeffRollFrict,**coeffMu,**coeffRestMax,**coeffStc;
 
-  virtual void deriveContactModelParams(int &, int &,double &, double &, double &,double &, double &, double &, double &,double &);
+  virtual void deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu,double &vnnr);
   virtual void addCohesionForce(int &, int &,double &,double &);
 
   int cohesionflag; 
-  int dampflag,rollingflag; 
+  int dampflag,rollingflag,viscousflag; 
+
+  // option to turn off all force computations
+  bool force_off;
 };
 
 }

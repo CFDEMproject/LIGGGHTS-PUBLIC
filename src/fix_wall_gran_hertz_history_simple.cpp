@@ -57,7 +57,7 @@ FixWallGranHertzHistorySimple::FixWallGranHertzHistorySimple(LAMMPS *lmp, int na
 
 /* ---------------------------------------------------------------------- */
 
-inline void FixWallGranHertzHistorySimple::deriveContactModelParams(int ip, double deltan, double meff_wall, double &kn, double &kt, double &gamman, double &gammat, double &xmu,double &rmu)  
+inline void FixWallGranHertzHistorySimple::deriveContactModelParams(int ip, double deltan, double meff_wall, double &kn, double &kt, double &gamman, double &gammat, double &xmu,double &rmu,double &vnnr)  
 {
     double polyhertz = sqrt(atom->radius[ip]*deltan);
     int itype = atom->type[ip];

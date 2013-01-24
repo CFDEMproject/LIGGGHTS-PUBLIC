@@ -22,12 +22,16 @@ zero or more keyword/value pairs may be appended :l
   {rolling_friction} values = 'cdt' or 'off'
     cdt = activates constant directional rolling friction model
     off = no rolling friction model
-  {cohesion} values = 'sjkr' or 'off'
+  {cohesion} values = 'sjkr' or 'sjkr2' or'off'
     sjkr = activates simplified JKR cohesion model
+    sjkr2 = activates variant of simplified JKR cohesion model
     off = no cohesion model
   {tangential_damping} values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping
+  {viscous} = 'stokes' or 'off'
+    viscous = restitution coefficient varies with a local Stokes number of the particle
+    off = no modification to the restitution coefficient
   {absolute_damping} values = 'on' or 'off'
     on = activates absolute damping (for hooke/history/simple only)
     off = deactivates absolute damping (for hooke/history/simple only) :pre
@@ -166,20 +170,44 @@ fix id all property/global coefficientRollingFriction peratomtypepair n_atomtype
     (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
 
 
-A simple linear [cohesion model] can be activated by setting {cohesion} = 'sjkr' 
+A simple linear [cohesion model] can be activated by setting {cohesion} = 'sjkr' or 'sjkr2'
 (simplified Johnson-Kendall-Roberts model). If two particle are in contact, 
 it adds an additional normal force tending to maintain the contact, which writes 
 
 F = k A, 
 
-where A is the particle contact area and k is the cohesion energy density in J/m3. If you are 
-using the linear cohesion model, you must also define the cohesion energy density:
+where A is the particle contact area and k is the cohesion energy density in J/m3. 
+For {sjkr}, the sphere-sphere contact area is calculated as (http://mathworld.wolfram.com/Sphere-SphereIntersection.html)
+
+A = Pi/4 * ((dist-Ri-Rj)*(dist+Ri-Rj)*(dist-Ri+Rj)*(dist+Ri+Rj) )/(dist*dist)
+
+where dist is the distance between the particle centers.
+For {sjkr2}, the sphere-sphere contact area is calculated as
+
+A = 2*Pi * delta_n * (2R*)
+
+If you are using the linear cohesion model, you must also define the cohesion energy density:
 
 fix id all property/global cohesionEnergyDensity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
     (value_ij=value for the cohesion energy density (in Energy/Length3 units) between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
 
 IMPORTANT NOTE: The cohesion model has been derived for the Hertzian Style, it may note be 
 appropriate for the Hookean styles.
+
+Viscous model :h3
+
+Using option {viscous} = stokes adapts the coefficient of restitution as proposed by
+"(Legendre)"_#Legendre, {viscous} = off performs no modification.
+
+One has to provide the 3 peratomtypepair parameters via a "fix property/global"_fix_property.html
+command needed for the viscous damping:
+
+fix id all property/global FluidViscosity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for fluid viscosity between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+fix id all property/global CriticalStokes peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for critical Stokes number between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+fix id all property/global MaximumRestitution peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for maximum coefficient of restitution between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
 
 For granular styles there are no additional coefficients to set for each pair of atom types 
 via the "pair_coeff"_pair_coeff.html command. All settings are global and are made via the 
@@ -227,6 +255,9 @@ Only unit system that are self-consistent (si, cgs, lj) can be used with this pa
 {tangential_damping} = 'on'
 {absolute_damping} = 'off'
 {store_force} = 'no'
+{viscous} = 'off'
+
+:line
 
 [(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525–541 (2004).
 
@@ -237,3 +268,6 @@ Only unit system that are self-consistent (si, cgs, lj) can be used with this pa
 [(Silbert)] Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
 
 [(Zhang)] Zhang and Makse, Phys Rev E, 72, p 011301 (2005). 
+
+:link(Legendre)
+[(Legendre)] Legendre, Daniel and Guiraud. Phys. Fluids 17, 097105 (2005).

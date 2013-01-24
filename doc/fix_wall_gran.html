@@ -66,12 +66,16 @@
 <PRE>  <I>rolling_friction</I> values = 'cdt' or 'off'
     cdt = activates constant directional rolling friction model
     off = no rolling friction model
-  <I>cohesion</I> values = 'sjkr' or 'off'
+  <I>cohesion</I> values = 'sjkr' or 'sjkr2' or 'off'
     sjkr = activates simplified JKR cohesion model
+    sjkr2 = activates variant of simplified JKR cohesion model
     off = no cohesion model
   <I>tangential_damping</I> values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping
+  <I>viscous</I> = 'stokes' or 'off'
+    viscous = restitution coefficient varies with a local Stokes number of the particle
+    off = no modification to the restitution coefficient
   <I>temperature</I> value = T0
     T0 = Temperature of the wall (temperature units) 
 </PRE>
@@ -154,8 +158,8 @@ store the wall force exerted on the particles in a
 <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID)
 is the id of the fix wall/gran command.
 </P>
-<P>The effect of keyword <I>rolling_friction</I>, <I>cohesion</I>, <I>tangential_damping</I>
-and <I>absolute_damping</I> is explanted in <A HREF = "pair_gran.html">pair gran</A>
+<P>The effect of keyword <I>rolling_friction</I>, <I>cohesion</I>, <I>tangential_damping</I>,
+<I>viscous</I> and <I>absolute_damping</I> is explanted in <A HREF = "pair_gran.html">pair gran</A>
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
@@ -203,5 +207,6 @@ For moving granular wall with style mesh, use "fix move/mesh"fix_move_mesh.html.
 <I>tangential_damping</I> = 'on'
 <I>absolute_damping</I> = 'off'
 <I>store_force</I> = 'no'
+<I>viscous</I> = 'off'
 </P>
 </HTML>

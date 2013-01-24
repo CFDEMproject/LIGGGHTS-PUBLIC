@@ -51,6 +51,7 @@ class FixPour : public Fix {
   void init();
   void pre_exchange();
   void reset_dt();
+  virtual double min_rad(int); 
   virtual double max_rad(int); 
   int min_type() {return ntype;} 
   int max_type() {return ntype;} 

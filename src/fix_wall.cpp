@@ -178,7 +178,7 @@ int FixWall::setmask()
 
   // FLD implicit needs to invoke wall forces before pair style
 
-  if (fldflag) mask != PRE_FORCE;
+  if (fldflag) mask |= PRE_FORCE;
   else mask |= POST_FORCE;
 
   mask |= THERMO_ENERGY;

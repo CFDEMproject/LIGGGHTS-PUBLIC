@@ -11,15 +11,19 @@
 
 <HR>
 
+<H3>fix heat/gran command 
+</H3>
 <H3>fix heat/gran/conduction command 
 </H3>
 <P><B>Syntax:</B>
 </P>
+<PRE>fix ID group-ID heat/gran initial_temperature T0 keyword values 
+</PRE>
 <PRE>fix ID group-ID heat/gran/conduction initial_temperature T0 keyword values 
 </PRE>
 <LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
-<LI>heat/gran/conduction = style name of this fix command 
+<LI>heat/gran/conduction or fix heat/gran = style name of this fix command 
 
 <LI>initial_temperature = obligatory keyword 
 
@@ -29,7 +33,7 @@
 
 <LI>keyword = <I>area_correction</I> 
 
-<PRE>  <I>area_correction</I> values = <I>on</I> or <I>off</I> 
+<PRE>  <I>area_correction</I> values = <I>yes</I> or <I>no</I> 
 </PRE>
 <P><B>Examples:</B>
 </P>

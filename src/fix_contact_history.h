@@ -50,9 +50,11 @@ class FixContactHistory : public Fix {
   void post_create();
   int setmask();
   void init();
-
+  void initial_integrate(int dummy);
   void setup_pre_exchange();
-  void pre_exchange();
+  virtual void pre_exchange();
+  void min_setup_pre_exchange();
+  void min_pre_exchange();
 
   double memory_usage();
   void grow_arrays(int);
@@ -105,12 +107,12 @@ class FixContactHistory : public Fix {
 
   bool is_pair;
   class PairGran *pair_gran;
+  int *computeflag;             // computeflag in PairGranHookeHistory
   class TriMesh *mesh_;
 
   int dnum;
   int *newtonflag;
   char **history_id;
-  int laststep;
 };
 
 // *************************************

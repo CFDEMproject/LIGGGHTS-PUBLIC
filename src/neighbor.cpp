@@ -46,6 +46,7 @@
 #include "update.h"
 #include "respa.h"
 #include "output.h"
+#include "math_extra_liggghts.h"
 #include "memory.h"
 #include "error.h"
 
@@ -271,6 +272,12 @@ void Neighbor::init()
     }
   }
   cutneighmaxsq = cutneighmax * cutneighmax;
+
+  if(atom->radius_flag) {
+    double maxrd,minrd;
+    modify->max_min_rad(maxrd,minrd);
+    cutneighmin = MIN(cutneighmin,2*minrd+skin);
+  }
 
   // check other classes that can induce reneighboring in decide()
   // don't check if build_once is set
@@ -899,8 +906,13 @@ void Neighbor::choose_build(int index, NeighRequest *rq)
         if (newton_pair == 0) pb = &Neighbor::granular_bin_no_newton;
         else if (triclinic == 0) pb = &Neighbor::granular_bin_newton;
         else if (triclinic == 1) pb = &Neighbor::granular_bin_newton_tri;
-      } else if (style == MULTI)
-        error->all(FLERR,"Neighbor multi not yet enabled for granular");
+      } else if (style == MULTI) { 
+        if (0) {}
+        else if (1 == triclinic) error->all(FLERR,"Neighbor multi not yet enabled for granular with triclinic");
+        else if (1 == newton_pair) error->all(FLERR,"Neighbor multi not yet enabled for granular with newton on");
+        else if (0 == newton_pair) pb = &Neighbor::granular_multi_no_newton;
+        else error->all(FLERR,"Neighbor multi not yet enabled for granular");
+      }
 
     } else if (rq->respaouter) {
       if (style == NSQ) {
@@ -1063,7 +1075,18 @@ void Neighbor::choose_stencil(int index, NeighRequest *rq)
       }
 
     } else if (style == MULTI) {
-      if (rq->newton == 0) {
+      
+      if(rq->gran) {
+          if(rq->newton == 1 || (rq->newton == 0 && newton_pair == 1))
+            error->all(FLERR,"Neigh multi with gran requires newton off");
+          if(triclinic == 1)
+            error->all(FLERR,"Neigh multi with gran requires triclinic off");
+          if(dimension == 2)
+            error->all(FLERR,"Neigh multi with gran requires dimension 3");
+          sc = &Neighbor::stencil_gran_multi_3d_no_newton;
+      }
+
+      else if (rq->newton == 0) {  
         if (newton_pair == 0) {
           if (dimension == 2)
             sc = &Neighbor::stencil_half_multi_2d_no_newton;
@@ -1592,6 +1615,29 @@ double Neighbor::bin_distance(int i, int j, int k)
   if (k > 0) delz = (k-1)*binsizez;
   else if (k == 0) delz = 0.0;
   else delz = (k+1)*binsizez;
+
+  return (delx*delx + dely*dely + delz*delz);
+}
+
+/* ----------------------------------------------------------------------
+   compute largest distance between central bin (0,0,0) and bin (i,j,k)
+------------------------------------------------------------------------- */
+
+double Neighbor::bin_largest_distance(int i, int j, int k)
+{
+  double delx,dely,delz;
+
+  if (i > 0) delx = (i+1)*binsizex;
+  else if (i == 0) delx = binsizex;
+  else delx = (i-1)*binsizex;
+
+  if (j > 0) dely = (j+1)*binsizey;
+  else if (j == 0) dely = binsizey;
+  else dely = (j-1)*binsizey;
+
+  if (k > 0) delz = (k+1)*binsizez;
+  else if (k == 0) delz = binsizez;
+  else delz = (k-1)*binsizez;
 
   return (delx*delx + dely*dely + delz*delz);
 }

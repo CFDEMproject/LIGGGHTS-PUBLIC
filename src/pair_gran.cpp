@@ -84,7 +84,7 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
   fppaCPEn = fppaCDEn = fppaCPEt = fppaCDEVt = fppaCDEFt = fppaCTFW = fppaDEH = NULL;
   CPEn = CDEn = CPEt = CDEVt = CDEFt = CTFW = DEH = NULL;
 
-  laststep = -1;
+  computeflag = 0;
 
   needs_neighlist = true;
 }
@@ -375,7 +375,7 @@ void PairGran::init_style()
     if(force->newton_pair == 1) error->all(FLERR,"Have to implement rev comm of energy terms");
   }
 
-  // need a half neigh list and optionally a granular history neigh list
+  // need a gran neigh list and optionally a granular history neigh list
 
   if(needs_neighlist)
   {
@@ -404,7 +404,8 @@ void PairGran::init_style()
 
   // include future Fix pour particles as dynamic
 
-  for (i = 0; i < modify->nfix; i++){
+  for (i = 0; i < modify->nfix; i++)
+  {
     for(int j=1;j<=atom->ntypes;j++)
     {
         int pour_type = 0;
@@ -495,11 +496,31 @@ double PairGran::init_one(int i, int j)
 }
 
 /* ----------------------------------------------------------------------
-   neighbor callback to inform pair style of neighbor list to use
-   optional granular history list
+   compute as called via force
 ------------------------------------------------------------------------- */
 
 void PairGran::compute(int eflag, int vflag)
+{
+   if(forceoff()) return;
+
+   if (fix_rigid && neighbor->ago == 0) {
+     body = fix_rigid->body;
+     masstotal = fix_rigid->masstotal;
+     comm->forward_comm_pair(this);
+   }
+
+   computeflag = 1;
+   shearupdate = 1;
+   if (update->setupflag) shearupdate = 0;
+
+   compute_force(eflag,vflag,0);
+}
+
+/* ----------------------------------------------------------------------
+   compute as called via compute pair gran local
+------------------------------------------------------------------------- */
+
+void PairGran::compute_pgl(int eflag, int vflag)
 {
    if (fix_rigid && neighbor->ago == 0) {
      body = fix_rigid->body;
@@ -507,7 +528,15 @@ void PairGran::compute(int eflag, int vflag)
      comm->forward_comm_pair(this);
    }
 
-   compute(eflag,vflag,1);
+   bool reset_computeflag = computeflag ? true : false;
+
+   computeflag = 0;
+   shearupdate = 0;
+
+   compute_force(eflag,vflag,1);
+
+   if(reset_computeflag)
+    computeflag = 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -568,7 +597,18 @@ void PairGran::read_restart(FILE *fp)
     }
 }
 
+/* ---------------------------------------------------------------------- */
+
 void PairGran::reset_dt()
 {
   dt = update->dt;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void *PairGran::extract(const char *str, int &dim)
+{
+  dim = 0;
+  if (strcmp(str,"computeflag") == 0) return (void *) &computeflag;
+  return NULL;
 }

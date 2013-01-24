@@ -32,6 +32,7 @@ class Neighbor : protected Pointers {
   friend class Cuda;
   
   friend class FixNeighlistMesh;
+  friend class OneLevelGrid;
   
   friend class FixHeatGranRad;
 
@@ -93,6 +94,9 @@ class Neighbor : protected Pointers {
   int exclude_setting();
   int neigh_once(){return build_once;} 
   int n_neighs(); 
+
+  void multi_levels(double &, double &, int &);
+  int multi_levels();
 
  protected:
   int me,nprocs;
@@ -181,6 +185,7 @@ class Neighbor : protected Pointers {
 
   void bin_atoms();                     // bin all atoms
   double bin_distance(int, int, int);   // distance between binx
+  double bin_largest_distance(int, int, int); 
   int coord2bin(double *);              // mapping atom coord to a bin
   int coord2bin(double *, int &, int &, int&); // ditto
 
@@ -230,6 +235,8 @@ class Neighbor : protected Pointers {
   void granular_bin_newton(class NeighList *);
   void granular_bin_newton_tri(class NeighList *);
 
+  void granular_multi_no_newton(class NeighList *); 
+
   void respa_nsq_no_newton(class NeighList *);
   void respa_nsq_newton(class NeighList *);
   void respa_bin_no_newton(class NeighList *);
@@ -265,6 +272,8 @@ class Neighbor : protected Pointers {
   void stencil_full_ghost_bin_3d(class NeighList *, int, int, int);
   void stencil_full_multi_2d(class NeighList *, int, int, int);
   void stencil_full_multi_3d(class NeighList *, int, int, int);
+
+  void stencil_gran_multi_3d_no_newton(NeighList *,int, int, int); 
 
   // topology build functions
 

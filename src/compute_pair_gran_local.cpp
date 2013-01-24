@@ -112,20 +112,22 @@ void ComputePairGranLocal::post_create()
   // check if wall data requested
   if(strcmp(style,"wall/gran/local") == 0) wall = 1;
 
-  // initialize once as dump parses in constructor
-  init_cpgl();
+  // initialize once as dump parses in constructor for length of per-atom data
+  
+  init_cpgl(false);
 }
 
 /* ---------------------------------------------------------------------- */
 
 void ComputePairGranLocal::init()
 {
-    init_cpgl();
+    init_cpgl(true);
+    
 }
 
 /* ---------------------------------------------------------------------- */
 
-void ComputePairGranLocal::init_cpgl()
+void ComputePairGranLocal::init_cpgl(bool requestflag)
 {
   int ifix, n_wall_fixes;
   FixWallGran *fwg;
@@ -160,17 +162,21 @@ void ComputePairGranLocal::init_cpgl()
       if (pairgran == NULL)
         error->all(FLERR,"No valid granular pair style found for use with compute pair/gran/local");
 
-      if (pairgran->cpl_enable == 0)
+      if (pairgran->cplenable() == 0)
         error->all(FLERR,"Pair style does not support compute pair/gran/local");
 
       pairgran->register_compute_pair_local(this,dnum);
 
-      int irequest = neighbor->request((void *) this);
-      neighbor->requests[irequest]->pair = 0;
-      neighbor->requests[irequest]->compute = 1;
-      neighbor->requests[irequest]->half = 0;
-      neighbor->requests[irequest]->gran = 1;
-      neighbor->requests[irequest]->occasional = 0;
+      if(requestflag)
+      {
+          
+          int irequest = neighbor->request((void *) this);
+          neighbor->requests[irequest]->pair = 0;
+          neighbor->requests[irequest]->compute = 1;
+          neighbor->requests[irequest]->half = 0;
+          neighbor->requests[irequest]->gran = 1;
+          neighbor->requests[irequest]->occasional = 1;
+      }
 
       // register heat transfer fix if applicable
       if(hfflag)
@@ -254,7 +260,7 @@ void ComputePairGranLocal::compute_local()
   {
       ipair = 0;
       if(pairgran == NULL) error->one(FLERR,"null");
-      pairgran->compute(0,0,0);
+      pairgran->compute_pgl(0,0);
 
       // get heat flux data
       if(fixheat)
@@ -268,7 +274,7 @@ void ComputePairGranLocal::compute_local()
   {
       ipair = 0;
       // this also calls heat transfer if necessary
-      fixwall->post_force(0,0);
+      fixwall->post_force_pgl();
   }
 }
 

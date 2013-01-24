@@ -9,15 +9,15 @@
 
 <HR>
 
-<H3>fix pour command 
+<H3>fix pour/legacy command 
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID pour N type seed keyword values ... 
+<PRE>fix ID group-ID pour/legacy N type seed keyword values ... 
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
-<LI>pour = style name of this fix command 
+<LI>pour/legacy = style name of this fix command 
 
 <LI>N = # of atoms to insert 
 
@@ -52,8 +52,8 @@
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>fix 3 all pour 1000 2 29494 region myblock
-fix 2 all pour 10000 1 19985583 region disk vol 0.33 100 rate 1.0 diam 0.9 1.1 
+<PRE>fix 3 all pour/legacy 1000 2 29494 region myblock
+fix 2 all pour/legacy 10000 1 19985583 region disk vol 0.33 100 rate 1.0 diam 0.9 1.1 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -64,7 +64,7 @@ influence of gravity.
 </P>
 <P>Inserted particles are assigned the specified atom type and are
 assigned to two groups: the default group "all" and the group
-specified in the fix pour command (which can also be "all").
+specified in the fix pour/legacy command (which can also be "all").
 </P>
 <P>This command must use the <I>region</I> keyword to define an insertion
 volume.  The specified region must have been previously defined with a
@@ -115,7 +115,7 @@ original fix pour command to do this.
 saved in restart files, you cannot do "exact" restarts with this fix,
 where the simulation continues on the same as if no restart had taken
 place.  However, in a statistical sense, a restarted simulation should
-produce the same behavior if you adjust the fix pour parameters
+produce the same behavior if you adjust the fix pour/legacy parameters
 appropriately.
 </P>
 <P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this

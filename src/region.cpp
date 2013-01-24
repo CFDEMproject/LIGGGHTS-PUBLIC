@@ -478,7 +478,8 @@ void Region::generate_random_shrinkby_cut(double *pos,double cut,bool subdomain_
     if((extent_xhi-extent_xlo < 2.*cut) ||
        (extent_yhi-extent_ylo < 2.*cut) ||
        (extent_zhi-extent_zlo < 2.*cut))
-        error->all(FLERR,"Impossible to generate random points within region - region too small");
+        error->one(FLERR,"Impossible to generate random points within region - region too small "
+        "(smaller than twice the particle cutoff)");
 
     do
     {

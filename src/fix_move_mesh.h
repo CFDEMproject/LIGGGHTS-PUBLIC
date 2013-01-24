@@ -62,6 +62,9 @@ namespace LAMMPS_NS
         void get_reference_point(double *point);
         void reset_reference_point();
 
+        class AbstractMesh * mesh()
+        { return mesh_; }
+
      protected:
 
         class FixMesh* fixMesh()

@@ -49,7 +49,7 @@ class PairGranHookeHistoryHysteresis : public PairGranHookeHistory {
   virtual void settings(int, char **);
   virtual void init_granular(); 
 
-  virtual void compute(int, int,int);
+  virtual void compute_force(int, int,int);
 
  protected:
 

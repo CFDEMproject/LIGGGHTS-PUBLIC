@@ -96,7 +96,7 @@ void FixWallGranHertzHistory::init_granular()
 ------------------------------------------------------------------------- */
 
 inline void FixWallGranHertzHistory::deriveContactModelParams(int ip, double deltan,
-    double meff_wall, double &kn, double &kt, double &gamman, double &gammat, double &xmu,double &rmu)  
+    double meff_wall, double &kn, double &kt, double &gamman, double &gammat, double &xmu,double &rmu, double &vnnr)  
 {
 
     int itype = atom->type[ip];

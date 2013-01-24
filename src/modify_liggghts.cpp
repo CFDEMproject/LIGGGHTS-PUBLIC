@@ -249,3 +249,35 @@ void Modify::box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double &
   for (int i = 0; i < nfix; i++)
     fix[i]->box_extent(xlo,xhi,ylo,yhi,zlo,zhi);
 }
+
+/* ----------------------------------------------------------------------
+   return min particle radius
+------------------------------------------------------------------------- */
+
+void Modify::max_min_rad(double &maxrad,double &minrad)
+{
+    maxrad = 0.;
+    minrad = 1000.;
+    int nlocal = atom->nlocal;
+    double *radius = atom->radius;
+    int ntypes = atom->ntypes;
+
+    for (int i = 0; i < nfix; i++) {
+      for (int j = 1; j <= ntypes; j++) {
+        
+        maxrad = MathExtraLiggghts::max(maxrad,fix[i]->max_rad(j));
+        if(modify->fix[i]->min_rad(j) > 0.)
+            minrad = MathExtraLiggghts::min(minrad,fix[i]->min_rad(j));
+      }
+    }
+
+    if (radius) {
+      for (int i = 0; i < nlocal; i++) {
+        maxrad = MathExtraLiggghts::max(maxrad,radius[i]);
+        minrad = MathExtraLiggghts::min(minrad,radius[i]);
+      }
+    }
+
+    MPI_Min_Scalar(minrad,world);
+    MPI_Max_Scalar(maxrad,world);
+}

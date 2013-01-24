@@ -44,7 +44,7 @@ class PairGranHertzHistory : public PairGranHookeHistory {
   PairGranHertzHistory(class LAMMPS *);
 
  protected:
-   virtual void deriveContactModelParams(int &, int &,double &, double &, double &,double &, double &, double &, double &,double &);
+   virtual void deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu,double &vnnr);
 };
 
 }

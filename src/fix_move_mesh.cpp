@@ -105,6 +105,14 @@ void FixMoveMesh::pre_delete(bool unfixflag)
         MultiVectorContainer<double,3,3> *v;
         v = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
         if(v) v->setAll(0.);
+
+        // remove reference point if have one
+        char refpt_id[200];
+        sprintf(refpt_id, "REFPT_%s",id);
+
+        if(mesh_->prop().getGlobalProperty<   VectorContainer<double,3> >(refpt_id))
+           mesh_->prop().removeGlobalProperty(refpt_id);
+
     }
 
     delete move_;
@@ -138,9 +146,11 @@ void FixMoveMesh::setup(int vflag)
 
     if(!mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v"))
     {
-        mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_general","restart_no");
+        mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
         
     }
+
+    move_->setup();
 }
 
 /* ---------------------------------------------------------------------- */

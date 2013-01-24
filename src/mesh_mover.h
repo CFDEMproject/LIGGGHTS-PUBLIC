@@ -49,9 +49,12 @@ namespace LAMMPS_NS
         virtual ~MeshMover()
         {}
 
+        virtual void pre_delete() = 0;
+        virtual void setup() {};
+
         virtual void initial_integrate(double dT,double dt) = 0;
         virtual void final_integrate(double dT,double dt) {};
-        virtual void pre_delete() = 0;
+
         inline bool isFirst()
         { return isFirst_; }
 
@@ -72,7 +75,7 @@ namespace LAMMPS_NS
 
         double ***get_v()
         {
-            double ***ptr;
+            double ***ptr = NULL;
             if(mesh_->numNodes() == 3)
                 ptr = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->begin();
             else if(mesh_->numNodes() == 4)
@@ -118,9 +121,11 @@ namespace LAMMPS_NS
                                 char* var1, char* var2, char* var3);
         virtual ~MeshMoverLinearVariable();
 
+        void pre_delete();
+        void setup();
+
         void initial_integrate(double dT,double dt);
         void final_integrate(double dT,double dt) {}
-        void pre_delete();
 
         int n_restart();
         void write_restart(double *buf);
@@ -187,9 +192,11 @@ namespace LAMMPS_NS
                             char* var1);
         virtual ~MeshMoverRotateVariable();
 
+        void pre_delete();
+        void setup();
+
         void initial_integrate(double dT,double dt);
         void final_integrate(double dT,double dt) {}
-        void pre_delete();
 
         int n_restart();
         void write_restart(double *buf);
@@ -224,7 +231,7 @@ namespace LAMMPS_NS
   };
 
   /* ---------------------------------------------------------------------- */
-  
+
   class MeshMoverVibRot : public MeshMover {
 
       public:
@@ -238,10 +245,10 @@ namespace LAMMPS_NS
         void initial_integrate(double dT,double dt);
         void final_integrate(double dT,double dt) {}
         void pre_delete();
-        
+
       private:
         double axis_[3], ord, ampl[10], phi[10], p_[3], omega_;
-       
+
   };
 
  /* ---------------------------------------------------------------------- */
@@ -257,12 +264,12 @@ namespace LAMMPS_NS
         void initial_integrate(double dT,double dt);
         void final_integrate(double dT,double dt) {}
         void pre_delete();
-        
+
       private:
         double axis_[3], ord, omega_, ampl[10], phi[10];
-                
+
   };
-  
+
    /* ----------------------------------------------------------------------
     Mesh Mover
     ------------------------------------------------------------------------- */
@@ -378,7 +385,7 @@ namespace LAMMPS_NS
           }
         }
          else if(strcmp(name,"viblin") == 0){
-            int order = lmp->force->numeric(arg[6]); 
+            int order = lmp->force->numeric(arg[6]);
             if(narg < 10+2*order) return 0;
           else
           {
@@ -396,14 +403,14 @@ namespace LAMMPS_NS
             double amp[10];
             // creating array of amplitude and phase
             for (int zv=0; zv<order; zv++) {
-                //amplitude                 
+                //amplitude
                 amp[zv] = lmp->force->numeric(arg[8+zv]);
                 // angle of phase
                 pha[zv] = lmp->force->numeric(arg[9+order+zv]);
                }
-            
+
             return new MeshMoverVibLin(lmp,mesh,fix_mm,
-                          // direction 
+                          // direction
                           lmp->force->numeric(arg[2]),
                           lmp->force->numeric(arg[3]),
                           lmp->force->numeric(arg[4]),
@@ -413,12 +420,12 @@ namespace LAMMPS_NS
                           amp,
                           // phases
                           pha,
-                          // periode 
+                          // periode
                           lmp->force->numeric(arg[10+2*order]));
           }
         }
         else if(strcmp(name,"vibrot") == 0){
-             int order = lmp->force->numeric(arg[10]); 
+             int order = lmp->force->numeric(arg[10]);
              if (narg < 14+2*order) return 0;
           else
           {
@@ -433,12 +440,12 @@ namespace LAMMPS_NS
             if(strcmp("phase",arg[12+order]))
                 return 0;
             if(strcmp("period",arg[13+2*order]))
-                return 0;          
+                return 0;
             double pha[10];
             double amp[10];
             // creating array of amplitude and phase
             for (int zv=0; zv<order; zv++) {
-                //amplitude                 
+                //amplitude
                 amp[zv] = lmp->force->numeric(arg[12+zv]);
                 // angle of phase
                 pha[zv] = lmp->force->numeric(arg[13+order+zv]);
@@ -458,10 +465,10 @@ namespace LAMMPS_NS
                           amp,
                           // phases
                           pha,
-                          // periode 
+                          // periode
                           lmp->force->numeric(arg[14+2*order]));
            }
-        }        
+        }
         return 0;
     }
 

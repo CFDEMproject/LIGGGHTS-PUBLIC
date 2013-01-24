@@ -86,14 +86,14 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
     FixMesh_list_ = NULL;
     primitiveWall_ = NULL;
-    laststep_ = 0;
 
     rebuildPrimitiveNeighlist_ = false;
 
-    addflag_ = 1;
+    addflag_ = 0;
     cwl_ = NULL;
 
-    laststep_ = -1;
+    computeflag_ = 1;
+
     meshwall_ = -1;
 
     // parse args
@@ -425,13 +425,12 @@ void FixWallGran::pre_force(int vflag)
 
 void FixWallGran::post_force(int vflag)
 {
-    if(fix_rigid_)
-    {
-        body_ = fix_rigid_->body;
-        masstotal_ = fix_rigid_->masstotal;
-    }
+    computeflag_ = 1;
+    shearupdate_ = 1;
+    if (update->setupflag) shearupdate_ = 0;
+    addflag_ = 0;
 
-    post_force(vflag,1);
+    post_force_wall(vflag);
 }
 
 /* ----------------------------------------------------------------------
@@ -439,7 +438,20 @@ void FixWallGran::post_force(int vflag)
    called via compute wall/gran
 ------------------------------------------------------------------------- */
 
-void FixWallGran::post_force(int vflag,int addflag)
+void FixWallGran::post_force_pgl()
+{
+    computeflag_ = 0;
+    shearupdate_ = 0;
+    addflag_ = 1;
+
+    post_force_wall(0);
+}
+
+/* ----------------------------------------------------------------------
+   post_force
+------------------------------------------------------------------------- */
+
+void FixWallGran::post_force_wall(int vflag)
 {
   // set pointers and values appropriately
   nlocal_ = atom->nlocal;
@@ -449,6 +461,12 @@ void FixWallGran::post_force(int vflag,int addflag)
   radius_ = atom->radius;
   rmass_ = atom->rmass;
 
+  if(fix_rigid_)
+  {
+      body_ = fix_rigid_->body;
+      masstotal_ = fix_rigid_->masstotal;
+  }
+
   if(fix_wallforce_)
     wallforce_ = fix_wallforce_->array_atom;
 
@@ -456,13 +474,6 @@ void FixWallGran::post_force(int vflag,int addflag)
 
   if(nlocal_ && !radius_ && r0_ == 0.)
     error->fix_error(FLERR,this,"need either per-atom radius or r0_ being set");
-
-  addflag_ = addflag;
-
-  if (update->ntimestep > laststep_)
-    shearupdate_ = 1;
-  else
-    shearupdate_ = 0;
 
   if(meshwall_ == 1)
     post_force_mesh(vflag);
@@ -658,7 +669,7 @@ inline void FixWallGran::post_force_eval_contact(int iPart, double deltan, doubl
     vectorCopy3D(f_[iPart],force_old);
 
   // add to cwl
-  if(cwl_ && !addflag_)
+  if(cwl_ && addflag_)
   {
       double contactPoint[3];
       vectorAdd3D(x_[iPart],delta,contactPoint);
