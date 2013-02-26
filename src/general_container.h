@@ -69,6 +69,7 @@ namespace LAMMPS_NS
           T**& operator()(int n);
           T** const& operator()(int n) const;
           T*** begin();
+          void* begin_slow_dirty();
 
           inline void scale(double factor);
           inline void move(double *dx);

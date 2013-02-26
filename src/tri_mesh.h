@@ -29,6 +29,7 @@
 #define LMP_TRI_MESH_H
 
 #include "surface_mesh.h"
+#include "atom.h"
 #include "math_extra_liggghts.h"
 #include <fstream>
 
@@ -44,8 +45,8 @@ namespace LAMMPS_NS
         TriMesh(LAMMPS *lmp);
         virtual ~TriMesh();
 
-        double resolveTriSphereContact(int nTri, double rSphere, double *cSphere, double *delta);
-        double resolveTriSphereContactBary(int nTri, double rSphere, double *cSphere,
+        double resolveTriSphereContact(int iPart, int nTri, double rSphere, double *cSphere, double *delta);
+        double resolveTriSphereContactBary(int iPart, int nTri, double rSphere, double *cSphere,
                                            double *contactPoint,double *bary);
 
         bool resolveTriSphereNeighbuild(int nTri, double rSphere, double *cSphere, double treshold);

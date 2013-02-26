@@ -299,11 +299,18 @@ void CfdDatacouplingFile::readGlobalArrayData(char *name, double ** field, int &
     inputPtr >> l1;
     inputPtr >> l2;
 
-    if(l1 != len1 || l2 != len2) error->all(FLERR,"Global array received has different length than the corresponding global array in LIGGGHTS");
+    if(l1 != len1 || l2 != len2)
+        error->one(FLERR,"Global array received has different length than the corresponding global array in LIGGGHTS");
 
-    for(int index = 0;index < len1; ++index)
+    for(int index = 0; index < len1; ++index)
     {
-        for(int i=0;i<len2;i++) inputPtr >> field[index][i];
+        for(int i = 0; i < len2; i++)
+        {
+            if(inputPtr.eof())
+                error->one(FLERR,"Global array received has different length than the corresponding global array in LIGGGHTS");
+            inputPtr >> field[index][i];
+            
+        }
     }
 
     // clean up inputStream

@@ -1,0 +1,98 @@
+<HTML>
+<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>compute nparticles/tracer/region command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>compute ID group-ID nparticles/tracer/region 
+</PRE>
+<LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command
+nparticles/tracer/region = style name of this compute command 
+
+<LI>region_count = obligatory keyword 
+
+<LI>region-ID = ID of region atoms must be in to be counted 
+
+<LI>tracer = obligatory keyword 
+
+<LI>tracer-ID = ID of a fix of type <A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>  
+
+<LI>zero or more keyword/value pairs may be appended to args 
+
+<LI>keyword = <I>periodic</I> or <I>check_mark_every</I> 
+
+<PRE>  <I>periodic</I> value = dim image
+    dim = <I>x</I> or <I>y</I> or <I>z</I>
+    image = image that a particle has to be in to be counted (any integer number or <I>all</I>)
+  <I>reset_marker</I> value = <I>yes</I> or <I>no</I>
+    yes = un-mark particles after counting them
+    no = do not un-mark particles after counting them  
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>compute nparticles all nparticles/tracer/region region_count count tracer tr periodic z -1 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Define a computation that calculates the number of marked particles
+that are in the region speficied via the <I>region_count</I> keyword.
+</P>
+<P>Note that only particles marked by a <A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>
+or <A HREF = "fix_property_atom_tracer_stream.html">fix property/atom/tracer/stream</A>
+command are counted - therefore, a valid ID of such a fix has to be
+provided via the <I>tracer</I> keyword.
+</P>
+<P>The <I>reset_marker</I> keyword controls if particles are un-marked (default)
+after they have been counted once by this command.
+</P>
+<P>IMPORTANT NOTE: If multiple compute nparticles/tracer/region
+commands are operating on the same <A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>
+commands, and the first compute resets the marker value, the second
+compute will not count them.
+</P>
+<P>With the <I>periodic</I> keyword, you can restrict counting/unmarking to
+particles which are in a specified image in a periodic simulation.
+For example, using
+</P>
+<PRE>periodic z +2 
+</PRE>
+<P>means that particles are only counted if they are in z-image #2.
+By default, all particles are counted/unmarked regardless in which 
+periodic image they are. 
+</P>
+<P>IMPORTANT NOTE: Currently, this command only supports one periodic
+boundary restriction via the <I>periodic</I> keyword. If keyword <I>periodic</I>
+is used multiple times, the last setting will be applied.
+</P>
+<P><B>Output info:</B>
+</P>
+<P>This compute calculates a global scalar (the number marked particles in 
+the specified region), which can be accessed  by any command that uses global 
+vector values from a compute as input.  See <A HREF = "Section_howto.html#howto_15">this
+section</A> for an overview of LAMMPS output
+options.
+</P>
+<P><B>Restrictions:</B> 
+</P>
+<P>Currently, only one periodic restriction via the <I>periodic</I> keyword 
+can be used.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>
+</P>
+<P><B>Default:</B> 
+<I>reset_marker</I> = yes, <I>periodic</I> is off per default
+</P>
+</HTML>

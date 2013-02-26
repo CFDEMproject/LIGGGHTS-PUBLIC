@@ -287,7 +287,7 @@ void FixWallGran::post_create()
    // also create contact tracker
    for(int i=0;i<n_FixMesh_;i++)
    {
-      FixMesh_list_[i]->createNeighList(igroup);
+      FixMesh_list_[i]->createWallNeighList(igroup);
       if(dnum()>0)FixMesh_list_[i]->createContactHistory(dnum());
    }
 }
@@ -296,7 +296,8 @@ void FixWallGran::post_create()
 
 void FixWallGran::pre_delete(bool unfixflag)
 {
-    if(store_force_) modify->delete_fix(fix_wallforce_->id);
+    if(unfixflag && store_force_)
+        modify->delete_fix(fix_wallforce_->id);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -542,7 +543,7 @@ void FixWallGran::post_force_mesh(int vflag)
 
             int idTri = mesh->id(iTri);
 
-            deltan = mesh->resolveTriSphereContactBary(iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary);
+            deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary);
 
             if(deltan > 0.)
             {
@@ -577,7 +578,7 @@ void FixWallGran::post_force_mesh(int vflag)
             if(iPart >= nlocal) continue;
 
             int idTri = mesh->id(iTri);
-            deltan = mesh->resolveTriSphereContact(iTri,radius_ ? radius_[iPart]:r0_,x_[iPart],delta);
+            deltan = mesh->resolveTriSphereContact(iPart,iTri,radius_ ? radius_[iPart]:r0_,x_[iPart],delta);
 
             if(deltan > 0.)
             {

@@ -97,7 +97,8 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
   }
 
   // no fixed total number of particles inserted by this fix exists
-  ninsert_exists = 0;
+  if(strcmp(style,"insert/pack") == 0)
+    ninsert_exists = 0;
 }
 
 /* ---------------------------------------------------------------------- */

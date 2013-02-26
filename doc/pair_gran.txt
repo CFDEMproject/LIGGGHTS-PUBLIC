@@ -244,6 +244,10 @@ This pair style requires you to use the "communicate vel yes"_communicate.html o
 
 Only unit system that are self-consistent (si, cgs, lj) can be used with this pair style.
 
+Parameters are restricted to their physical range (e.g. FluidViscosity > 0)
+If using SI units, youngsModulus must be > 5e6
+If using CGS units, youngsModulus must be > 5e5
+
 [Related commands:]
 
 "pair_coeff"_pair_coeff.html

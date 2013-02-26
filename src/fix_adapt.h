@@ -42,7 +42,7 @@ class FixAdapt : public Fix {
   ~FixAdapt();
   int setmask();
   void post_create(); 
-  void pre_delete(); 
+  void pre_delete(bool unfixflag); 
   void init();
   void setup_pre_force(int);
   void pre_force(int);

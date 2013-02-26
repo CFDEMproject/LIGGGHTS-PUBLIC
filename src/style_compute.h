@@ -20,6 +20,7 @@
 #include "compute_ke_atom.h"
 #include "compute_msd.h"
 #include "compute_msd_molecule.h"
+#include "compute_nparticles_tracer_region.h"
 #include "compute_pair.h"
 #include "compute_pair_gran_local.h"
 #include "compute_pair_local.h"

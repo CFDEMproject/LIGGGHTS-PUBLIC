@@ -57,6 +57,7 @@ namespace LAMMPS_NS
           virtual int size() = 0;
           virtual int nVec() = 0;
           virtual int lenVec() = 0;
+          virtual void* begin_slow_dirty() = 0;
 
           virtual void copy(int from,int to) = 0;
           virtual void del(int n) = 0;

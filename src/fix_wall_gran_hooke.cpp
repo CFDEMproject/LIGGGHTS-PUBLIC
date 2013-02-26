@@ -47,8 +47,8 @@ using namespace FixConst;
 
 #define BIG 1.0e20
 
-#define MIN(A,B) ((A) < (B)) ? (A) : (B)
-#define MAX(A,B) ((A) > (B)) ? (A) : (B)
+#define MIN(A,B) (((A) < (B)) ? (A) : (B))
+#define MAX(A,B) (((A) > (B)) ? (A) : (B))
 
 /* ---------------------------------------------------------------------- */
 

@@ -36,8 +36,9 @@
 <PRE>  <I>verbose</I> = yes or no
   <I>maxattempt</I> value = ma
     ma = max # of insertion attempts per atom (positive integer)
-  <I>nparticles</I> values = np
+  <I>nparticles</I> values = np or INF
     np =  number of particles to insert (positive integer)
+    INF =  insert as many particles as possible
   <I>mass</I> values = mp
     mp = mass of particles to be inserted (positive float)
   <I>particlerate</I> values = pr
@@ -230,9 +231,10 @@ while inserting particles, when the restart file was written during the
 insertion operation.
 </P>
 <P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this
-fix.  No global scalar or vector or per-atom quantities are stored by
-this fix for access by various <A HREF = "Section_howto.html#4_15">output
-commands</A>.  No parameter of this fix can be
+fix. A global vector is stored by this fix for access by various <A HREF = "Section_howto.html#4_15">output
+commands</A>. The first component of the vector is the
+number of particles already inserted, the second component is the mass
+of particles already inserted. No parameter of this fix can be
 used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
 This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
 </P>

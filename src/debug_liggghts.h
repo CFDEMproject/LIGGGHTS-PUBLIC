@@ -34,19 +34,10 @@ namespace LAMMPS_NS {
 inline void __debug__(LAMMPS* lmp)
 {
     //fprintf(lmp->screen,"test");
+    printVec3D(lmp->screen,"pos for tag 206",lmp->atom->x[lmp->atom->map(206)]);
+    printVec3D(lmp->screen,"vel for tag 206",lmp->atom->v[lmp->atom->map(206)]);
+    printVec3D(lmp->screen,"f for tag 206",lmp->atom->f[lmp->atom->map(206)]);
 
-    for(int i = 0; i < lmp->modify->nfix; i++)
-    {
-
-        if(strcmp(lmp->modify->fix[i]->style,"move/mesh") == 0)
-        {
-            FixMoveMesh *fmm = static_cast<FixMoveMesh*>(lmp->modify->fix[i]);
-            MultiVectorContainer<double,3,3> *v;
-            v = fmm->mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
-            if(v) printVec3D(lmp->screen,"VDEBUG",v->begin()[0][0]);
-
-        }
-    }
 }
 
 }

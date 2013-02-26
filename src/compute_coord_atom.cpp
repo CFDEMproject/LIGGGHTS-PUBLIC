@@ -34,10 +34,24 @@ using namespace LAMMPS_NS;
 ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int narg, char **arg) :
   Compute(lmp, narg, arg)
 {
-  if (narg != 4) error->all(FLERR,"Illegal compute coord/atom command");
+  if (narg != 4 && narg != 6)
+    error->compute_error(FLERR,this,"Illegal # of arguments"); 
 
   double cutoff = atof(arg[3]);
   cutsq = cutoff*cutoff;
+
+  mix = false;
+  if(narg == 6)
+  {
+      if(strcmp(arg[4],"mix"))
+        error->compute_error(FLERR,this,"expecting keyword 'mix");
+      if(strcmp(arg[5],"yes") == 0)
+        mix = true;
+      else if(strcmp(arg[5],"no") == 0)
+        mix = false;
+      else
+        error->compute_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'mix");
+  }
 
   peratom_flag = 1;
   size_peratom_cols = 0;
@@ -90,7 +104,16 @@ void ComputeCoordAtom::init_list(int id, NeighList *ptr)
 
 void ComputeCoordAtom::compute_peratom()
 {
-  int i,j,ii,jj,inum,jnum,n;
+    if(mix) compute_peratom_eval<true>();
+    else compute_peratom_eval<false>();
+}
+
+/* ---------------------------------------------------------------------- */
+
+template<bool MIX>
+void ComputeCoordAtom::compute_peratom_eval()
+{
+  int i,j,ii,jj,inum,jnum,n,itype = -1;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
@@ -119,6 +142,7 @@ void ComputeCoordAtom::compute_peratom()
 
   double **x = atom->x;
   int *mask = atom->mask;
+  int *type = atom->type;
 
   for (ii = 0; ii < inum; ii++) {
     i = ilist[ii];
@@ -128,11 +152,15 @@ void ComputeCoordAtom::compute_peratom()
       ztmp = x[i][2];
       jlist = firstneigh[i];
       jnum = numneigh[i];
+      if(MIX) itype = type[i];
 
       n = 0;
       for (jj = 0; jj < jnum; jj++) {
         j = jlist[jj];
         j &= NEIGHMASK;
+
+        if(MIX && itype == type[j])
+            continue;
 
         delx = xtmp - x[j][0];
         dely = ytmp - x[j][1];

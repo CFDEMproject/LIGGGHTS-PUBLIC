@@ -10,11 +10,17 @@ compute coord/atom command :h3
 
 [Syntax:]
 
-compute ID group-ID coord/atom cutoff :pre
+compute ID group-ID coord/atom cutoff keyword value :pre
 
-ID, group-ID are documented in "compute"_compute.html command
-coord/atom = style name of this compute command
-cutoff = distance within which to count coordination neighbors (distance units) :ul
+ID, group-ID are documented in "compute"_compute.html command :ulb,l
+coord/atom = style name of this compute command  :l
+cutoff = distance within which to count coordination neighbors (distance units) :l
+zero or more keyword/value pairs may be appended to args :l
+keyword = {mix} :l
+  {mix} value = yes or no -ID
+    no = count all neighbors  
+    yes = count only neighbors that have same atom type  :pre
+:ule
 
 [Examples:]
 
@@ -38,6 +44,10 @@ time the calculation is performed (i.e. each time a snapshot of atoms
 is dumped).  Thus it can be inefficient to compute/dump this quantity
 too frequently or to have multiple compute/dump commands, each of a
 {coord/atom} style.
+
+Keyword {mix} controlls if all neighbors are counted or if only neighbors
+with same atom type are counted. The latter can be useful to quanitfy
+mixture of different species.
 
 [Output info:]
 

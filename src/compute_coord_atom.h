@@ -31,6 +31,7 @@ class ComputeCoordAtom : public Compute {
   void init();
   void init_list(int, class NeighList *);
   void compute_peratom();
+  template<bool MIX> void compute_peratom_eval();
   double memory_usage();
 
  private:
@@ -38,6 +39,8 @@ class ComputeCoordAtom : public Compute {
   double cutsq;
   class NeighList *list;
   double *coordination;
+
+  bool mix;
 };
 
 }

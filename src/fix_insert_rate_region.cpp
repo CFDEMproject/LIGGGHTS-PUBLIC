@@ -49,16 +49,13 @@ using namespace FixConst;
 FixInsertRateRegion::FixInsertRateRegion(LAMMPS *lmp, int narg, char **arg) :
   FixInsertPack(lmp, narg, arg)
 {
-  // fixed total number of particles inserted by this fix exists
-  ninsert_exists = 1;
-
   bool hasargs = true;
   while(iarg < narg && hasargs)
   {
     hasargs = false;
     if (strcmp(arg[iarg],"some_arg") == 0) {
     } else if(strcmp(style,"insert/rate/region") == 0)
-    error->fix_error(FLERR,this,"unknown keyword");
+    error->fix_error(FLERR,this,"unknown keyword or wrong keyword order");
   }
 }
 
@@ -98,7 +95,7 @@ void FixInsertRateRegion::calc_insertion_properties()
         error->fix_error(FLERR,this,"must not define both 'nparticles' and 'mass'");
 
     // ninsert - either defined defined directly or calculated
-    if(ninsert == 0)
+    if(ninsert == 0&& ninsert_exists)
     {
         if(massinsert > 0.) ninsert = static_cast<int>(massinsert / fix_distribution->mass_expect());
         else error->fix_error(FLERR,this,"must define either 'nparticles' or 'mass'");
@@ -113,6 +110,7 @@ void FixInsertRateRegion::calc_insertion_properties()
     else massflowrate = nflowrate * fix_distribution->mass_expect();
 
     ninsert_per = nflowrate*(static_cast<double>(insert_every)*dt);
+    if(ninsert_exists) massinsert = static_cast<double>(ninsert) * fix_distribution->mass_expect();
 
 }
 

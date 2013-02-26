@@ -292,6 +292,12 @@
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
+  void* GeneralContainer<T,NUM_VEC,LEN_VEC>::begin_slow_dirty()
+  {
+          return (void*) &(arr_[0][0][0]);
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
   int GeneralContainer<T,NUM_VEC,LEN_VEC>::getElemSize()
   {
           return NUM_VEC*LEN_VEC*sizeof(T);

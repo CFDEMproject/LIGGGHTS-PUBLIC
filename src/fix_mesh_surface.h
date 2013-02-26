@@ -61,7 +61,8 @@ namespace LAMMPS_NS
         virtual void pre_force(int);
         virtual void final_integrate();
 
-        void createNeighList(int igrp);
+        void createWallNeighList(int igrp);
+        class FixNeighlistMesh* createOtherNeighList(int igrp,const char *nId);
         void createContactHistory(int dnum);
 
         inline bool trackStress()

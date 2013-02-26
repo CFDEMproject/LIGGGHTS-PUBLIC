@@ -33,18 +33,18 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline double TriMesh::resolveTriSphereContact(int nTri, double rSphere, double *cSphere, double *delta)
+  inline double TriMesh::resolveTriSphereContact(int iPart,int nTri, double rSphere, double *cSphere, double *delta)
   {
     // this is the overlap algorithm, neighbor list build is
     // coded in resolveTriSphereNeighbuild
 
     double bary[3];
-    return resolveTriSphereContactBary(nTri,rSphere,cSphere,delta,bary);
+    return resolveTriSphereContactBary(iPart,nTri,rSphere,cSphere,delta,bary);
   }
 
   /* ---------------------------------------------------------------------- */
 
-  inline double TriMesh::resolveTriSphereContactBary(int nTri, double rSphere,
+  inline double TriMesh::resolveTriSphereContactBary(int iPart, int nTri, double rSphere,
                                    double *cSphere, double *delta, double *bary)
   {
     double **n = node_(nTri);
@@ -86,6 +86,7 @@
       d = resolveFaceContactBary(nTri,cSphere,node0ToSphereCenter,delta);
       break;
     default:
+      
       this->error->one(FLERR,"Internal error");
       d = 1.; // doesn't exist, just to satisfy the compiler
       break;
@@ -162,13 +163,13 @@
               
               if(!edgeActive(iTri)[ipp])
                 return LARGE_TRIMESH;
-              
+
               vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
-              
+
               bary[ip] = 0.;
               bary[iNode] = 1. + distFromNode/edgeLen(iTri)[ipp];
               bary[ipp] = 1. - bary[iNode];
-        
+
               return calcDist(p,closestPoint,delta);
             } else{
               
@@ -187,22 +188,22 @@
               
               if(!edgeActive(iTri)[iNode])
                 return LARGE_TRIMESH;
-              
+
               vectorAddMultiple3D(n,distFromNode,edge[ipp],closestPoint);
-              
+
               bary[ipp] = 0.;
               bary[iNode] = 1. - distFromNode/edgeLen(iTri)[iNode];
               bary[ip] = 1. - bary[iNode];
-              
+
               return calcDist(p,closestPoint,delta);
             } else{
               
               if(!cornerActive(iTri)[ip])
                 return LARGE_TRIMESH;
-              
+
               bary[ip] = 1.; bary[iNode] = bary[ipp] = 0.;
               return calcDist(p,node_(iTri)[ip],delta);
-              
+
             }
           }
       }

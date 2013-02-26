@@ -36,6 +36,7 @@
 #include "memory.h"
 #include "error.h"
 #include "fix_property_atom.h"
+#include "fix_property_atom_tracer_stream.h"
 #include "fix_particledistribution_discrete.h"
 #include "fix_multisphere.h"
 #include "multisphere.h"
@@ -103,11 +104,14 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
       if(ntry_mc < 1000) error->fix_error(FLERR,this,"ntry_mc must be > 1000");
       iarg += 2;
       hasargs = true;
-    } else error->fix_error(FLERR,this,"unknown keyword");
+    } else error->fix_error(FLERR,this,"unknown keyword or wrong keyword order");
   }
 
   fix_release = NULL;
   i_am_integrator = false;
+
+  tracer = NULL;
+  ntracer = 0;
 
   ins_fraction = 0.;
   do_ins_fraction_calc = true;
@@ -119,6 +123,7 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
 
 FixInsertStream::~FixInsertStream()
 {
+    if(tracer) delete []tracer;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -182,6 +187,25 @@ void FixInsertStream::init_defaults()
     parallel = false;
 
     ntry_mc = 100000;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixInsertStream::register_tracer_callback(FixPropertyAtomTracerStream* tr)
+{
+    // just return if I already have this callback
+    for(int i = 0; i < ntracer; i++)
+        if(tracer[i] == tr) return;
+
+    FixPropertyAtomTracerStream** tracer_new = new FixPropertyAtomTracerStream*[ntracer+1];
+
+    for(int i = 0; i < ntracer; i++)
+        tracer_new[i] = tracer[i];
+
+    tracer_new[ntracer] = tr;
+    ntracer++;
+    delete []tracer;
+    tracer = tracer_new;
 }
 
 /* ----------------------------------------------------------------------
@@ -276,7 +300,7 @@ void FixInsertStream::calc_insertion_properties()
     }
 
     // ninsert - if ninsert not defined directly, calculate it
-    if(ninsert == 0)
+    if(ninsert == 0 && ninsert_exists)
     {
         if(massinsert > 0.) ninsert = static_cast<int>((massinsert+FIX_INSERT_STREAM_TINY) / fix_distribution->mass_expect());
         else error->fix_error(FLERR,this,"must define either 'nparticles' or 'mass'");
@@ -292,7 +316,7 @@ void FixInsertStream::calc_insertion_properties()
 
     // ninsert_per and massinsert
     ninsert_per = nflowrate*(static_cast<double>(insert_every)*dt);
-    massinsert = static_cast<double>(ninsert) * fix_distribution->mass_expect();
+    if(ninsert_exists) massinsert = static_cast<double>(ninsert) * fix_distribution->mass_expect();
 
     // calculate bounding box of extruded face
     if(face_style == FACE_MESH)
@@ -422,7 +446,8 @@ void FixInsertStream::calc_ins_fraction()
     double ins_fraction_all;
     MPI_Sum_Scalar(ins_fraction,ins_fraction_all,world);
     if(ins_fraction_all < 0.9 || ins_fraction_all > 1.1)
-        error->fix_error(FLERR,this,"insertion volume could not be distributed properly in parallel. Bad decomposition or insertion face outside domain");
+        error->fix_error(FLERR,this,"insertion volume could not be distributed properly in parallel. "
+                                     "Bad decomposition or insertion face extrusion is too small or outside domain");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -674,6 +699,9 @@ void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
 
     }
 
+    if(ntracer)
+        for(int i = 0; i < ntracer; i++)
+            tracer[i]->mark_tracers(ilo,ihi);
 }
 
 /* ---------------------------------------------------------------------- */

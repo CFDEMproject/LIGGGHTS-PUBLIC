@@ -85,6 +85,7 @@ class Compute : protected Pointers {
   void reset_extra_dof();
 
   virtual void post_create() {} 
+  virtual void pre_delete(bool) {} 
   virtual void init() = 0;
   virtual void init_list(int, class NeighList *) {}
   virtual double compute_scalar() {return 0.0;}

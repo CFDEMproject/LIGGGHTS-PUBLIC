@@ -100,6 +100,10 @@ PairGran::~PairGran()
   if (allocated) {
     memory->destroy(setflag);
     memory->destroy(cutsq);
+    delete [] onerad_dynamic;
+    delete [] onerad_frozen;
+    delete [] maxrad_dynamic;
+    delete [] maxrad_frozen;
   }
   delete mpg;
 
@@ -114,11 +118,6 @@ PairGran::~PairGran()
   if (fppaCDEFt) modify->delete_fix("CDEFt");
   if (fppaCTFW) modify->delete_fix("CTFW");
   if (fppaDEH) modify->delete_fix("DEH");
-
-  delete [] onerad_dynamic;
-  delete [] onerad_frozen;
-  delete [] maxrad_dynamic;
-  delete [] maxrad_frozen;
 
   if(fix_dnum) delete []fix_dnum;
   if(dnum_index) delete []dnum_index;

@@ -1,0 +1,97 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>fix massflow/mesh command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix id group massflow/mesh mesh mesh-ID vec_side vx vy vz keyword value ... 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>massflow/mesh = style name of this fix command   
+
+<LI>mesh = obligatory keyword 
+
+<LI>mesh-ID = ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command 
+
+<LI>vec_side = obligatory keyword 
+
+<LI>vx, vy, vz = vector components defining the "outside" of the mesh 
+
+<LI>zero or more keyword/value pairs may be appended to args 
+
+<LI>keyword = <I>count</I> 
+
+<PRE>  <I>count</I> value = <I>once</I> or <I>multiple</I>
+    once = count particles only once
+    multiple = allow particles to be counted multiple times 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix mass all massflow/mesh mesh inface vec_side 0. 0. -1. 
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info:</B>
+</P>
+<P>This LIGGGHTS command is not available in LAMMPS.
+</P>
+<P><B>Description:</B>
+</P>
+<P>Fix massflow/mesh tracks how many particles penetrate through a mesh surface,
+as defined by a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command.
+It counts the total number of particles and the associated mass. Only particles
+part of <I>group</I> are eligible for counting.
+</P>
+<P>Particles are counted if they cross from the inner side of the mesh to the outer
+side of the mesh, where the outer side is defined by keyword <I>vec_side</I>. Note
+that the vector defined by <I>vec_side</I> does not necessarily have to be 
+perpendicular to the mesh face. The following restrictions apply: (i) the
+<A HREF = "fix_mesh_surface.html">fix mesh/surface</A> has to be planar, the vector defined 
+by <I>vec_side</I> may not lie inside the mesh plane. 
+</P>
+<P>When <I>count</I> = once, then each particle is only counted once, for <I>count</I> = multiple
+a particle contributes to number and mass count each time it crosses the mesh face.
+This can happen e.g. in the case of periodic boundary conditions or in re-circulating
+flow conditions.
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> .
+</P>
+<P>This fix computes a per-atom vector (the marker) which can be accessed by
+various <A HREF = "Section_howto.html#howto_15">output commands</A>. . 
+This fix also computes a global vector of length 4. The first vector component 
+is equal to the total mass which has crosses the mesh surface, the second vector 
+components indicates the particle count. The third vector component 
+is equal to the total mass which has crosses the mesh surface since the last output 
+divived by the time since the last output (i.e. the mass flow rate), the fourth vector 
+components indicates the particle count since the last output divived by the time
+since the last output (i.e. the mass flow rate). This vector
+can also be accessed by various <A HREF = "Section_howto.html#howto_15">output commands</A>. . 
+</P>
+<P><B>Restrictions:</B> 
+</P>
+<P>Currently, this feature does not support multi-sphere particles.
+The <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> has to define a planar surface.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A> 
+</P>
+<P><B>Default:</B> 
+</P>
+<P><I>count</I> = multiple
+</P>
+</HTML>

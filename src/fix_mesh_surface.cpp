@@ -87,6 +87,8 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
           axis_[0] = force->numeric(arg[iarg_++]);
           axis_[1] = force->numeric(arg[iarg_++]);
           axis_[2] = force->numeric(arg[iarg_++]);
+          if(vectorMag3D(axis_) < EPSILON_V)
+              error->fix_error(FLERR,this,"'axis' vector must me non-zero");
           if(strcmp(arg[iarg_++],"omega"))
               error->fix_error(FLERR,this,"expecting keyword 'omega' after definition of 'axis'");
           // positive omega give anti-clockwise (CCW) rotation
@@ -189,11 +191,11 @@ void FixMeshSurface::final_integrate()
    called from fix wall/gran out of post_create()
 ------------------------------------------------------------------------- */
 
-void FixMeshSurface::createNeighList(int igrp)
+void FixMeshSurface::createWallNeighList(int igrp)
 {
     if(fix_mesh_neighlist_) return;
-    char *neighlist_name = new char[strlen(id)+1+10];
-    sprintf(neighlist_name,"neighlist_%s",id);
+    char *neighlist_name = new char[strlen(id)+1+20];
+    sprintf(neighlist_name,"wall_neighlist_%s",id);
 
     char **fixarg = new char*[4];
     fixarg[0]= neighlist_name;
@@ -217,6 +219,37 @@ void FixMeshSurface::createNeighList(int igrp)
     fix_mesh_neighlist_->pre_neighbor();
     fix_mesh_neighlist_->pre_force(0);
     */
+}
+
+/* ----------------------------------------------------------------------
+   called from fix messflow/mesh out of post_create()
+------------------------------------------------------------------------- */
+
+class FixNeighlistMesh* FixMeshSurface::createOtherNeighList(int igrp,const char *nId)
+{
+    FixNeighlistMesh* neighlist;
+
+    char *neighlist_name = new char[strlen(id)+1+20+strlen(nId)+1];
+    sprintf(neighlist_name,"neighlist_%s_%s",nId,id);
+
+    char **fixarg = new char*[4];
+    fixarg[0]= neighlist_name;
+    fixarg[1]= (char *) "all";
+    fixarg[2]= (char *) "neighlist/mesh";
+    fixarg[3]= id;
+    modify->add_fix(4,fixarg);
+
+    neighlist =
+        static_cast<FixNeighlistMesh*>(modify->find_fix_id(neighlist_name));
+
+    // fix added with "all", correct this now
+    neighlist->igroup = igrp;
+    neighlist->groupbit = group->bitmask[igrp];
+
+    delete []fixarg;
+    delete []neighlist_name;
+
+    return neighlist;
 }
 
 /* ----------------------------------------------------------------------

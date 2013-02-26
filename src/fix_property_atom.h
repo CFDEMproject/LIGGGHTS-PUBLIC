@@ -67,6 +67,8 @@ class FixPropertyAtom : public Fix {
   void unpack_reverse_comm(int, int *, double *);
   double compute_vector(int n);
 
+  virtual void mark_tracers(int ilo, int ihi) {}
+
  protected:
   void parse_args(int narg, char **arg);
 

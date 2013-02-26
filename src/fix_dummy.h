@@ -40,6 +40,8 @@ class FixMultisphere : public Fix {
 
  public:
 
+  FixMultisphere(class LAMMPS * lmp, int narg, char ** arg) : Fix(lmp, narg, arg) {}
+
   void set_v_integrate(double *v) {}
   int belongs_to(int i) {return -1;}
 

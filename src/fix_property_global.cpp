@@ -115,7 +115,7 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
     if(is_symmetric)
     {
         if(size_array_rows != size_array_cols)
-            error->fix_error(FLERR,this,"per-atomtype property matrix  must be symmetric, i.e. N atom types "
+            error->fix_error(FLERR,this,"per-atomtype property matrix must be symmetric, i.e. N atom types "
                                         "require you to define N columns and N rows with N*N total values");
 
         int sflag = true;
@@ -217,7 +217,7 @@ void FixPropertyGlobal::grow(int len1, int len2)
     }
     else if(data_style == FIXPROPERTY_GLOBAL_MATRIX && len1*len2 > nvalues)
     {
-        memory->srealloc(values,len1*len2,"FixPropertyGlobal:values");
+        values = (double*) memory->srealloc(values,len1*len2*sizeof(double),"FixPropertyGlobal:values");
         size_array_rows = len1;
         size_array_cols = len2;
         nvalues = len1*len2;

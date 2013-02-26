@@ -134,8 +134,8 @@ int FixCfdCoupling::setmask()
 
 void FixCfdCoupling::init()
 {
-    if(atom->map_style != 1)
-      error->fix_error(FLERR,this,"for code coupling, please add a 'atom_modify array' command");
+    if(0 == atom->map_style)
+      error->fix_error(FLERR,this,"requires an 'atom_modify map' command to allocate an atom map");
 
     // make sure there is only one cfdcoupling fix
     if(modify->n_fixes_style_strict(style) != 1)

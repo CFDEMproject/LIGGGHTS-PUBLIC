@@ -45,11 +45,16 @@ class FixInsert : public Fix {
   void write_restart(FILE *);
   virtual void restart(char *);
 
+  double compute_vector(int index);
+
   virtual double min_rad(int);  
   virtual double max_rad(int);  
   virtual double max_r_bound();  
   int min_type();
   int max_type();
+
+  int ins_every()
+  { return insert_every; }
 
  protected:
 

@@ -47,6 +47,14 @@ class FixInsertStream : public FixInsert {
 
   void init_defaults();
 
+  void register_tracer_callback(class FixPropertyAtomTracerStream* tr);
+
+  class FixPropertyAtom * fix_prop_release()
+  { return fix_release; }
+
+  virtual int release_step_index()
+  { return 4; }
+
  protected:
 
   virtual void calc_insertion_properties();
@@ -91,6 +99,10 @@ class FixInsertStream : public FixInsert {
   // per particle release step
   class FixPropertyAtom *fix_release;
   bool i_am_integrator;
+
+ private:
+  class FixPropertyAtomTracerStream **tracer;
+  int ntracer;
 
 };
 

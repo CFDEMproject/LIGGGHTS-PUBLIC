@@ -77,6 +77,7 @@ PairGranHookeHistory::PairGranHookeHistory(LAMMPS *lmp) : PairGran(lmp)
     charVelflag = 1;
 
     force_off = false;
+    sanity_checks = true;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -474,6 +475,17 @@ void PairGranHookeHistory::settings(int narg, char **arg)
                 error->all(FLERR,"Illegal pair_style gran command, expecting 'on' or 'off' after keyword 'force'");
             iarg_++;
             hasargs = true;
+        } else if (strcmp(arg[iarg_],"sanity_checks") == 0) {
+            if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'sanity_checks'");
+            iarg_++;
+            if(strcmp(arg[iarg_],"on") == 0)
+                sanity_checks = true;
+            else if(strcmp(arg[iarg_],"off") == 0)
+                sanity_checks = false;
+            else
+                error->all(FLERR,"Illegal pair_style gran command, expecting 'on' or 'off' after keyword 'sanity_checks'");
+            iarg_++;
+            hasargs = true;
         } else if (strcmp(arg[iarg_],"rolling_friction") == 0) {
             if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'rolling_friction'");
             iarg_++;
@@ -556,6 +568,23 @@ void PairGranHookeHistory::init_granular()
           double Yj=Y1->compute_vector(j-1);
           double vi=v1->compute_vector(i-1);
           double vj=v1->compute_vector(j-1);
+          double cor = coeffRest1->compute_array(i-1,j-1);
+
+          // error checks on Y, v, e
+
+          if(sanity_checks)
+          {
+              if(strcmp(update->unit_style,"si") == 0  && Yi < 5e6)
+                 error->all(FLERR,"youngsModulus >= 5e6 required for SI units");
+              if(strcmp(update->unit_style,"cgs") == 0 && Yi < 5e5)
+                error->all(FLERR,"youngsModulus >= 5e5 required for CGS units");
+
+              if(vi < 0. || vi > 0.5)
+                error->all(FLERR,"0 <= poissonsRatio <= 0.5 required");
+
+              if(cor <= 0. || cor > 1)
+                error->all(FLERR,"0 < coefficientRestitution <= 1 required");
+          }
 
           Yeff[i][j] = 1./((1.-pow(vi,2.))/Yi+(1.-pow(vj,2.))/Yj);
           Geff[i][j] = 1./(2.*(2.-vi)*(1.+vi)/Yi+2.*(2.-vj)*(1.+vj)/Yj);
@@ -567,6 +596,17 @@ void PairGranHookeHistory::init_granular()
            coeffMu[i][j] = coeffMu1->compute_array(i-1,j-1);
            coeffRestMax[i][j] = coeffRestMax1->compute_array(i-1,j-1);
            coeffStc[i][j] = coeffStc1->compute_array(i-1,j-1);
+
+           // error check
+           if(sanity_checks)
+           {
+               if(coeffRestMax[i][j] <= 0. || coeffRestMax[i][j] > 1)
+                 error->all(FLERR,"0 < MaximumRestitution <= 1 required");
+               if(coeffMu[i][j] <= 0.)
+                 error->all(FLERR,"coeffMu > 0 required");
+               if(coeffStc[i][j] <= 0.)
+                 error->all(FLERR,"CriticalStokes > 0 required");
+           }
          }
 
           betaeff[i][j] =coeffRestLog[i][j] /sqrt(pow(coeffRestLog[i][j],2.)+pow(M_PI,2.));

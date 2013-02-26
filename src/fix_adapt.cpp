@@ -212,9 +212,9 @@ void FixAdapt::post_create()
 
 /* ---------------------------------------------------------------------- */
 
-void FixAdapt::pre_delete()
+void FixAdapt::pre_delete(bool unfixflag)
 {
-    if (fppat) modify->delete_fix(fixid); 
+    if (unfixflag && fppat) modify->delete_fix(fixid); 
 }
 
 /* ---------------------------------------------------------------------- */

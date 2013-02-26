@@ -1,0 +1,86 @@
+"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+compute nparticles/tracer/region command :h3
+
+[Syntax:]
+
+compute ID group-ID nparticles/tracer/region :pre
+
+ID, group-ID are documented in "compute"_compute.html command
+nparticles/tracer/region = style name of this compute command :l
+region_count = obligatory keyword :l
+region-ID = ID of region atoms must be in to be counted :l
+tracer = obligatory keyword :l
+tracer-ID = ID of a fix of type "fix property/atom/tracer"_fix_property_atom_tracer.html  :l
+zero or more keyword/value pairs may be appended to args :l
+keyword = {periodic} or {check_mark_every} :l
+  {periodic} value = dim image
+    dim = {x} or {y} or {z}
+    image = image that a particle has to be in to be counted (any integer number or {all})
+  {reset_marker} value = {yes} or {no}
+    yes = un-mark particles after counting them
+    no = do not un-mark particles after counting them  :pre
+
+:ule
+
+[Examples:]
+
+compute nparticles all nparticles/tracer/region region_count count tracer tr periodic z -1 :pre
+
+[Description:]
+
+Define a computation that calculates the number of marked particles
+that are in the region speficied via the {region_count} keyword.
+
+Note that only particles marked by a "fix property/atom/tracer"_fix_property_atom_tracer.html
+or "fix property/atom/tracer/stream"_fix_property_atom_tracer_stream.html
+command are counted - therefore, a valid ID of such a fix has to be
+provided via the {tracer} keyword.
+
+The {reset_marker} keyword controls if particles are un-marked (default)
+after they have been counted once by this command.
+
+IMPORTANT NOTE: If multiple compute nparticles/tracer/region
+commands are operating on the same "fix property/atom/tracer"_fix_property_atom_tracer.html
+commands, and the first compute resets the marker value, the second
+compute will not count them.
+
+With the {periodic} keyword, you can restrict counting/unmarking to
+particles which are in a specified image in a periodic simulation.
+For example, using
+
+periodic z +2 :pre
+
+means that particles are only counted if they are in z-image #2.
+By default, all particles are counted/unmarked regardless in which 
+periodic image they are. 
+
+IMPORTANT NOTE: Currently, this command only supports one periodic
+boundary restriction via the {periodic} keyword. If keyword {periodic}
+is used multiple times, the last setting will be applied.
+
+[Output info:]
+
+This compute calculates a global scalar (the number marked particles in 
+the specified region), which can be accessed  by any command that uses global 
+vector values from a compute as input.  See "this
+section"_Section_howto.html#howto_15 for an overview of LAMMPS output
+options.
+
+[Restrictions:] 
+
+Currently, only one periodic restriction via the {periodic} keyword 
+can be used.
+
+[Related commands:]
+
+"fix property/atom/tracer"_fix_property_atom_tracer.html
+
+[Default:] 
+{reset_marker} = yes, {periodic} is off per default

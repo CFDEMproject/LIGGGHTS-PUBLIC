@@ -102,6 +102,8 @@ class Data {
   int bond_per_atom,angle_per_atom,dihedral_per_atom,improper_per_atom;
   int triclinic;
 
+  int tag_off,tag_max; //NP modified C.K.
+
   double xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz;
   double special_lj[4],special_coul[4];
 
@@ -378,10 +380,14 @@ int main (int narg, char **arg)
 
   if (narg < 2) helpmsg(1);
 
+  //NP modified C.K. 
+  Data data;
+
   int iarg,write_coeffs,write_vels;
   char *restartfile, *datafile, *inputfile;
   write_coeffs = write_vels = 1;
   restartfile = datafile = inputfile = NULL;
+  data.tag_max = data.tag_off = 0;
 
   for (iarg = 1; iarg < narg; ++iarg) {
     if (strcmp(arg[iarg],"-h") == 0) {
@@ -390,6 +396,9 @@ int main (int narg, char **arg)
       write_coeffs = 0;
     } else if (strcmp(arg[iarg],"-nv") == 0) {
       write_vels = 0;
+    } else if (strcmp(arg[iarg],"tag_offset") == 0) {
+      data.tag_off = atoi(arg[++iarg]);
+      printf("Applying a tag offset of %d to atom data\n",data.tag_off); 
     } else if (!restartfile) {
       restartfile = arg[iarg];
     } else if (!datafile) {
@@ -435,7 +444,7 @@ int main (int narg, char **arg)
 
   // read beginning of restart file
 
-  Data data;
+  //NP modified C.K. Data data;
 
   header(fp,data);
   if (data.size_smallint != sizeof(int) || 
@@ -523,6 +532,10 @@ int main (int narg, char **arg)
     fclose(fp2);
   }
 
+  //NP modified C.K.
+  FILE *fpt = fopen("max_tag","w");
+  fprintf(fpt,"%d\n",data.tag_max); 
+  fclose(fpt);
   return 0;
 }
 
@@ -661,7 +674,7 @@ void set_style(char *name, Data &data, int flag)
   else if (strcmp(name,"meso") == 0) data.style_meso = flag;
   else if (strcmp(name,"molecular") == 0) data.style_molecular = flag;
   else if (strcmp(name,"peri") == 0) data.style_peri = flag;
-  else if (strcmp(name,"sphere") == 0) data.style_sphere = flag;
+  else if (strcmp(name,"sphere") == 0 || strcmp(name,"granular") == 0) data.style_sphere = flag;
   else if (strcmp(name,"tri") == 0) data.style_tri = flag;
   else if (strcmp(name,"wavepacket") == 0) data.style_wavepacket = flag;
   else if (strcmp(name,"hybrid") == 0) data.style_hybrid = flag;
@@ -1259,7 +1272,8 @@ int atom_sphere(double *buf, Data &data, int iatoms)
   data.x[iatoms] = buf[m++];
   data.y[iatoms] = buf[m++];
   data.z[iatoms] = buf[m++];
-  data.tag[iatoms] = static_cast<int> (buf[m++]);
+  data.tag[iatoms] = static_cast<int> (buf[m++]) + data.tag_off; //NP modified C.K.
+  if(data.tag[iatoms] > data.tag_max) data.tag_max = data.tag[iatoms]; //NP modified C.K.
   data.type[iatoms] = static_cast<int> (buf[m++]);
   data.mask[iatoms] = static_cast<int> (buf[m++]);
   data.image[iatoms] = static_cast<int> (buf[m++]);
@@ -1974,12 +1988,12 @@ void pair(FILE *fp, Data &data, char *style, int flag)
 	   (strcmp(style,"gran/hooke/history") == 0) ||
 	   (strcmp(style,"gran/hertz/history") == 0)) {
 
-    double kn = read_double(fp);
-    double kt = read_double(fp);
-    double gamman = read_double(fp);
-    double gammat = read_double(fp);
-    double xmu = read_double(fp);
-    int dampflag = read_int(fp);
+    //double kn = read_double(fp);
+    //double kt = read_double(fp);
+    //double gamman = read_double(fp);
+    //double gammat = read_double(fp);
+    int flag1 = read_int(fp);
+    int flag2 = read_int(fp);
 
     if (!flag) return;
 
@@ -3212,9 +3226,9 @@ void Data::write(FILE *fp, FILE *fp2, int write_coeffs, int write_vels)
 	(strcmp(pair_style,"eff/cut") != 0) &&
 	(strcmp(pair_style,"gauss") != 0) &&
 	(strcmp(pair_style,"gauss/cut") != 0) &&
-	(strcmp(pair_style,"gran/history") != 0) &&
-	(strcmp(pair_style,"gran/no_history") != 0) &&
-	(strcmp(pair_style,"gran/hertzian") != 0) &&
+	(strcmp(pair_style,"gran/hertz/history") != 0) &&  //NP modified C.K.
+	(strcmp(pair_style,"gran/hooke/history") != 0) &&
+	(strcmp(pair_style,"gran/hooke") != 0) &&
 	(strcmp(pair_style,"lubricate2") != 0) &&
 	(strcmp(pair_style,"lubricateU") != 0) &&
 	(strcmp(pair_style,"meam") != 0) &&

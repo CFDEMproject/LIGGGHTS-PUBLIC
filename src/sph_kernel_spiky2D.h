@@ -78,14 +78,14 @@ inline double SPH_KERNEL_NS::sph_kernel_spiky2d(double s, double h, double hinv)
    is equal to grad W if multiplied with radial unit vector
    h is kernel parameter
    s is distance normalized by h
-   0.09947183943 is 5 over 16*pi
+   0.298415518297304 is 15 over 16*pi
 ------------------------------------------------------------------------- */
 
 inline double SPH_KERNEL_NS::sph_kernel_spiky2d_der(double s,double h, double hinv)
 {
     if (s < 2.)
     {
-        return (-0.09947183943*hinv*hinv*hinv * (2.-s)*(2.-s));
+        return (-0.298415518297304*hinv*hinv*hinv * (2.-s)*(2.-s));
     }
     else
     {

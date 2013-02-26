@@ -65,7 +65,8 @@ map) and a flag that is 1 for interaction over a periodic boundary
 and 0 otherwise. For computing particle-wall data, the output {id}
 will be the mesh id, the triangle id and the particle id. The output
 {force} and {torque} are the contact force and the torque divided by the
-particle diameter, both in force "units"_units.html. The output {history}
+particle radius, both in force "units"_units.html. Note that the torque
+does NOT contain any rolling friction torque. The output {history}
 will depend on what this history represents, according to the granular
 pair style used. The output {contactArea} will output the contact area,
 in distance^2 "units"_units.html. The output {heatFlux} (available only

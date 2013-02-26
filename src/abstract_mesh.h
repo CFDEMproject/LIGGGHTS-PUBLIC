@@ -30,6 +30,7 @@ namespace LAMMPS_NS
   {
       friend class FixMoveMesh;
       friend class MeshMover;
+      friend class FixMeshSurfaceStressServo;
 
       public:
 

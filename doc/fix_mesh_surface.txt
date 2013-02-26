@@ -17,7 +17,7 @@ fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_value
 
 ID, is documented in "fix"_fix.html command, the group-ID is ignored for this command. :ulb,l
 mesh/surface or mesh/surface/planar = style name of this fix command  :l
-file = obligatory keyword
+file = obligatory keyword :l
 filename = name of STL or VTK file containing the triangle mesh data :l
 zero or more premesh_keywords/premesh_value pairs may be appended :l
 premesh_keyword = {type} or {precision} or {heal} or {verbose} :l

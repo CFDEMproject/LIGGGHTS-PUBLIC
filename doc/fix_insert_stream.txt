@@ -23,8 +23,9 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
   {verbose} = yes or no
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)
-  {nparticles} values = np
+  {nparticles} values = np or INF
     np =  number of particles to insert (positive integer)
+    INF =  insert as many particles as possible
   {mass} values = mp
     mp = mass of particles to be inserted (positive float)
   {particlerate} values = pr
@@ -214,9 +215,10 @@ while inserting particles, when the restart file was written during the
 insertion operation.
 
 None of the "fix_modify"_fix_modify.html options are relevant to this
-fix.  No global scalar or vector or per-atom quantities are stored by
-this fix for access by various "output
-commands"_Section_howto.html#4_15.  No parameter of this fix can be
+fix. A global vector is stored by this fix for access by various "output
+commands"_Section_howto.html#4_15. The first component of the vector is the
+number of particles already inserted, the second component is the mass
+of particles already inserted. No parameter of this fix can be
 used with the {start/stop} keywords of the "run"_run.html command.
 This fix is not invoked during "energy minimization"_minimize.html.
 

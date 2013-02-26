@@ -111,6 +111,19 @@ Fix* Modify::find_fix_id(const char *id)
 }
 
 /* ----------------------------------------------------------------------
+   find a fix by ID and style, return NULL if not found
+------------------------------------------------------------------------- */
+
+Fix* Modify::find_fix_id_style(const char *id,const char* style)
+{
+  int ifix;
+  for (ifix = 0; ifix < nfix; ifix++)
+    if (strcmp(id,fix[ifix]->id) == 0 && strncmp(style,fix[ifix]->style,strlen(style)) == 0) break;
+  if (ifix == nfix) return NULL;
+  return fix[ifix];
+}
+
+/* ----------------------------------------------------------------------
    return number of fixes with requested style
 ------------------------------------------------------------------------- */
 

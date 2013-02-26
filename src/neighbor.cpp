@@ -49,6 +49,7 @@
 #include "math_extra_liggghts.h"
 #include "memory.h"
 #include "error.h"
+#include "neigh_multi_level_grid.h"
 
 using namespace LAMMPS_NS;
 
@@ -98,6 +99,7 @@ Neighbor::Neighbor(LAMMPS *lmp) : Pointers(lmp)
   binhead = NULL;
   maxbin = 0;
   bins = NULL;
+  mlg = NULL; 
 
   // pair exclusion list info
 
@@ -161,6 +163,8 @@ Neighbor::~Neighbor()
 
   memory->destroy(binhead);
   memory->destroy(bins);
+
+  if(mlg) delete mlg; 
 
   memory->destroy(ex1_type);
   memory->destroy(ex2_type);

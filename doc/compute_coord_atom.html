@@ -13,11 +13,23 @@
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>compute ID group-ID coord/atom cutoff 
+<PRE>compute ID group-ID coord/atom cutoff keyword value 
 </PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command
-<LI>coord/atom = style name of this compute command
+<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command 
+
+<LI>coord/atom = style name of this compute command  
+
 <LI>cutoff = distance within which to count coordination neighbors (distance units) 
+
+<LI>zero or more keyword/value pairs may be appended to args 
+
+<LI>keyword = <I>mix</I> 
+
+<PRE>  <I>mix</I> value = yes or no -ID
+    no = count all neighbors  
+    yes = count only neighbors that have same atom type  
+</PRE>
+
 </UL>
 <P><B>Examples:</B>
 </P>
@@ -41,6 +53,10 @@ time the calculation is performed (i.e. each time a snapshot of atoms
 is dumped).  Thus it can be inefficient to compute/dump this quantity
 too frequently or to have multiple compute/dump commands, each of a
 <I>coord/atom</I> style.
+</P>
+<P>Keyword <I>mix</I> controlls if all neighbors are counted or if only neighbors
+with same atom type are counted. The latter can be useful to quanitfy
+mixture of different species.
 </P>
 <P><B>Output info:</B>
 </P>

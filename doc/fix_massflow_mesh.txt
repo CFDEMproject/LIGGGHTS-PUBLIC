@@ -1,0 +1,83 @@
+"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix massflow/mesh command :h3
+
+[Syntax:]
+
+fix id group massflow/mesh mesh mesh-ID vec_side vx vy vz keyword value ... :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+massflow/mesh = style name of this fix command   :l
+mesh = obligatory keyword :l
+mesh-ID = ID of a "fix mesh/surface"_fix_mesh_surface.html command :l
+vec_side = obligatory keyword :l
+vx, vy, vz = vector components defining the "outside" of the mesh :l
+zero or more keyword/value pairs may be appended to args :l
+keyword = {count} :l
+  {count} value = {once} or {multiple}
+    once = count particles only once
+    multiple = allow particles to be counted multiple times :pre
+
+:ule
+
+[Examples:]
+
+fix mass all massflow/mesh mesh inface vec_side 0. 0. -1. :pre
+
+[LIGGGHTS vs. LAMMPS Info:]
+
+This LIGGGHTS command is not available in LAMMPS.
+
+[Description:]
+
+Fix massflow/mesh tracks how many particles penetrate through a mesh surface,
+as defined by a "fix mesh/surface"_fix_mesh_surface.html command.
+It counts the total number of particles and the associated mass. Only particles
+part of {group} are eligible for counting.
+
+Particles are counted if they cross from the inner side of the mesh to the outer
+side of the mesh, where the outer side is defined by keyword {vec_side}. Note
+that the vector defined by {vec_side} does not necessarily have to be 
+perpendicular to the mesh face. The following restrictions apply: (i) the
+"fix mesh/surface"_fix_mesh_surface.html has to be planar, the vector defined 
+by {vec_side} may not lie inside the mesh plane. 
+
+When {count} = once, then each particle is only counted once, for {count} = multiple
+a particle contributes to number and mass count each time it crosses the mesh face.
+This can happen e.g. in the case of periodic boundary conditions or in re-circulating
+flow conditions.
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+Information about this fix is written to "binary restart files"_restart.html .
+
+This fix computes a per-atom vector (the marker) which can be accessed by
+various "output commands"_Section_howto.html#howto_15. . 
+This fix also computes a global vector of length 4. The first vector component 
+is equal to the total mass which has crosses the mesh surface, the second vector 
+components indicates the particle count. The third vector component 
+is equal to the total mass which has crosses the mesh surface since the last output 
+divived by the time since the last output (i.e. the mass flow rate), the fourth vector 
+components indicates the particle count since the last output divived by the time
+since the last output (i.e. the mass flow rate). This vector
+can also be accessed by various "output commands"_Section_howto.html#howto_15. . 
+
+[Restrictions:] 
+
+Currently, this feature does not support multi-sphere particles.
+The "fix mesh/surface"_fix_mesh_surface.html has to define a planar surface.
+
+[Related commands:]
+
+"compute nparticles/tracer/region"_compute_nparticles_tracer_region.html 
+
+[Default:] 
+
+{count} = multiple

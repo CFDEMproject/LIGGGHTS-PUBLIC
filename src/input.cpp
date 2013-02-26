@@ -1398,7 +1398,7 @@ void Input::timestep()
 void Input::uncompute()
 {
   if (narg != 1) error->all(FLERR,"Illegal uncompute command");
-  modify->delete_compute(arg[0]);
+  modify->delete_compute(arg[0],true); 
 }
 
 /* ---------------------------------------------------------------------- */
