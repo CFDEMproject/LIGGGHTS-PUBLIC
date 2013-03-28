@@ -52,7 +52,9 @@ namespace LAMMPS_NS
           //void setAll(T def);
           T*& operator() (int n);
           T* const& operator() (int n) const;
+
           T** begin();
+          void* begin_slow_dirty();
   };
 
   /* ----------------------------------------------------------------------
@@ -175,6 +177,12 @@ namespace LAMMPS_NS
   T** VectorContainer<T,LEN_VEC>::begin()
   {
           return &(GeneralContainer<T,1,LEN_VEC>::arr_[0][0]);
+  }
+
+  template<typename T, int LEN_VEC>
+  void* VectorContainer<T,LEN_VEC>::begin_slow_dirty()
+  {
+          return (void*) &(GeneralContainer<T,1,LEN_VEC>::arr_[0][0]);
   }
 
 } /* LAMMPS_NS */

@@ -117,8 +117,8 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
     fix_mesh_->triMesh()->surfaceNorm(0,nvec_);
     double dot = vectorDot3D(nvec_,sidevec_);
 
-    if(dot == 0.)
-        error->fix_error(FLERR,this,"need to change 'vec_side', it is currently in the mesh plane");
+    if(fabs(dot) < 1e-6)
+        error->fix_error(FLERR,this,"need to change 'vec_side', it is currently in or to close to the mesh plane");
     else if(dot < 0.)
         vectorScalarMult3D(nvec_,-1.);
 

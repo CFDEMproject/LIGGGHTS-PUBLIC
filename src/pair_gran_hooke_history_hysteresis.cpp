@@ -398,22 +398,7 @@ void PairGranHookeHistoryHysteresis::settings(int narg, char **arg)
     while(iarg_ < narg && hasargs)
     {
         hasargs = false;
-        if (strcmp(arg[iarg_],"cohesion") == 0) {
-            if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'cohesion'");
-            iarg_++;
-            if(strcmp(arg[iarg_],"lcm") == 0) {
-            	//kn2k2Max_ = force->numeric(arg[iarg_+1]);
-            	//kn2kc_ = force->numeric(arg[iarg_+2]);
-            	//phiF_ = force->numeric(arg[iarg_+3]);
-            	//iarg_ = iarg_+3;
-            }
-            else if(strcmp(arg[iarg_],"off") == 0)
-            	error->warning(FLERR,"This pair_style is designed for cohesion model. If you need not this feature, use another gran pair_style instead.");
-            else
-                error->all(FLERR,"Illegal pair_style gran command, expecting 'lcm' or 'off' after keyword 'cohesion'");
-            iarg_++;
-            hasargs = true;
-        } else if (strcmp(arg[iarg_],"force") == 0) {
+        if (strcmp(arg[iarg_],"force") == 0) {
             if (narg < iarg_+2) error->all(FLERR,"Pair gran: not enough arguments for 'force'");
             iarg_++;
             if(strcmp(arg[iarg_],"on") == 0)
@@ -532,7 +517,7 @@ void PairGranHookeHistoryHysteresis::allocate_properties(int size)
     memory->destroy(Geff);
     memory->destroy(betaeff);
     memory->destroy(veff);
-    memory->destroy(cohEnergyDens);
+    memory->destroy(cohEnergyDens); 
     memory->destroy(coeffRestLog);
     memory->destroy(coeffFrict);
     memory->destroy(coeffRollFrict);

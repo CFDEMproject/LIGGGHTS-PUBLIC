@@ -52,6 +52,13 @@ class DumpEulerVTK : public Dump {
 
   void write_header_ascii(bigint ndump);
   void write_data_ascii(int n, double *mybuf);
+
+  int n_calls_;
+
+  // buffer for data from all procs
+  int n_all_, n_all_max_;
+  double *buf_all_;
+
 };
 
 }

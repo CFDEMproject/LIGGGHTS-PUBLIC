@@ -27,6 +27,7 @@
 #include "update.h"
 #include "group.h"
 #include "error.h"
+#include "memory.h"
 #include "fix.h"
 #include "modify.h"
 #include "comm.h"
@@ -37,7 +38,11 @@ using namespace LAMMPS_NS;
 /* ---------------------------------------------------------------------- */
 
 DumpEulerVTK::DumpEulerVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg),
-  fix_euler_(0)
+  fix_euler_(0),
+  n_calls_(0),
+  n_all_(0),
+  n_all_max_(0),
+  buf_all_(0)
 {
   if (narg < 5)
     error->all(FLERR,"Illegal dump pic/vtk command");
@@ -73,8 +78,8 @@ void DumpEulerVTK::init_style()
   if (binary)
     error->all(FLERR,"Can not dump VTK files in binary mode");
 
-  // node center (3), av vel (3), volume fraction, stress
-  size_one = 8;
+  // node center (3), av vel (3), volume fraction, stress, radius
+  size_one = 9;
 
   delete [] format;
 }
@@ -104,6 +109,8 @@ void DumpEulerVTK::write_header_ascii(bigint ndump)
 
 int DumpEulerVTK::count()
 {
+  n_calls_ = 0;
+  n_all_ = 0;
   return fix_euler_->ncells();
 }
 
@@ -129,7 +136,7 @@ void DumpEulerVTK::pack(int *ids)
     buf[m++] = fix_euler_->cell_v_av(i,2);
 
     buf[m++] = fix_euler_->cell_vol_fr(i);
-
+    buf[m++] = fix_euler_->cell_radius(i);
     buf[m++] = fix_euler_->cell_pressure(i);
   }
   return ;
@@ -139,13 +146,29 @@ void DumpEulerVTK::pack(int *ids)
 
 void DumpEulerVTK::write_data(int n, double *mybuf)
 {
-  write_data_ascii(n,mybuf);
+    //only proc 0 writes
+    if (comm->me != 0) return;
+
+    n_calls_++;
+
+    // grow buffer if necessary
+    if(n_all_+n*size_one > n_all_max_)
+    {
+        n_all_max_ = n_all_ + n*size_one;
+        memory->grow(buf_all_,n_all_max_,"DumpEulerVTK:buf_all_");
+    }
+
+    // copy to buffer
+    vectorCopyN(mybuf,&(buf_all_[n_all_]),n*size_one);
+    n_all_ += n*size_one;
+
+    // write on last call
+    if(n_calls_ == comm->nprocs)
+        write_data_ascii(n_all_/size_one,buf_all_);
 }
 
 void DumpEulerVTK::write_data_ascii(int n, double *mybuf)
 {
-  //only proc 0 writes
-  if (comm->me != 0) return;
 
   int m, buf_pos;
 
@@ -184,6 +207,15 @@ void DumpEulerVTK::write_data_ascii(int n, double *mybuf)
   buf_pos += 3;
 
   fprintf(fp,"SCALARS volumefraction float 1\nLOOKUP_TABLE default\n");
+  m = buf_pos;
+  for (int i = 0; i < n; i++)
+  {
+      fprintf(fp,"%f\n",mybuf[m]);
+      m += size_one;
+  }
+  buf_pos++;
+
+  fprintf(fp,"SCALARS radius float 1\nLOOKUP_TABLE default\n");
   m = buf_pos;
   for (int i = 0; i < n; i++)
   {

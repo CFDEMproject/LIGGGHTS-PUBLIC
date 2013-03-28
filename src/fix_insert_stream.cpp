@@ -69,7 +69,7 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
       
       if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments");
       int f_i = modify->find_fix(arg[iarg+1]);
-      if (f_i == -1) error->fix_error(FLERR,this,"Could not find fix mesh/gran id you provided");
+      if (f_i == -1) error->fix_error(FLERR,this,"Could not find fix mesh/surface id you provided");
       if (strncmp(modify->fix[f_i]->style,"mesh",4))
         error->fix_error(FLERR,this,"The fix belonging to the id you provided is not of type mesh");
       ins_face = (static_cast<FixMeshSurface*>(modify->fix[f_i]))->triMesh();
@@ -645,7 +645,7 @@ void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
 
     double **release_data = fix_release->array_atom;
 
-    Multisphere *multisphere = NULL;
+    MultisphereParallel *multisphere = NULL;
     if(fix_multisphere) multisphere = &fix_multisphere->data();
 
     for(int i = ilo; i < ihi; i++)

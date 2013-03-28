@@ -204,6 +204,7 @@ void FixMeshSurfaceStress::pre_force(int vflag)
         vectorZeroize3D(f_total_);
         vectorZeroize3D(torque_total_);
     }
+
 }
 
 /* ---------------------------------------------------------------------- */

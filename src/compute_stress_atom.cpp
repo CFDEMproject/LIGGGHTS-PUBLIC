@@ -1,4 +1,14 @@
 /* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -8,7 +18,7 @@
    certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
 #include "stdlib.h"
@@ -42,6 +52,7 @@ ComputeStressAtom::ComputeStressAtom(LAMMPS *lmp, int narg, char **arg) :
   size_peratom_cols = 6;
   pressatomflag = 1;
   timeflag = 1;
+  comm_forward = 6; 
   comm_reverse = 6;
 
   if (narg == 3) {
@@ -298,4 +309,42 @@ double ComputeStressAtom::memory_usage()
 {
   double bytes = nmax*6 * sizeof(double);
   return bytes;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int ComputeStressAtom::pack_comm(int n, int *list, double *buf,
+                             int pbc_flag, int *pbc)
+{
+    int i,j;
+    //we dont need to account for pbc here
+    int m = 0;
+    for (i = 0; i < n; i++) {
+      j = list[i];
+      buf[m++] = stress[j][0];
+      buf[m++] = stress[j][1];
+      buf[m++] = stress[j][2];
+      buf[m++] = stress[j][3];
+      buf[m++] = stress[j][4];
+      buf[m++] = stress[j][5];
+    }
+    return 6;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void ComputeStressAtom::unpack_comm(int n, int first, double *buf)
+{
+  int i,m,last;
+  m = 0;
+  last = first + n;
+  for (i = first; i < last; i++) {
+      stress[i][0] = buf[m++];
+      stress[i][1] = buf[m++];
+      stress[i][2] = buf[m++];
+      stress[i][3] = buf[m++];
+      stress[i][4] = buf[m++];
+      stress[i][5] = buf[m++];
+  }
+
 }

@@ -39,12 +39,12 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fix(lmp,narg,arg)
+FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fix(lmp,narg,arg),
+    fix_dragforce_(0),
+    fix_coupling_(0),
+    fix_volumeweight_(0),
+    use_force_(true)
 {
-    fix_dragforce_ = NULL;
-    fix_coupling_ = NULL;
-    fix_volumeweight_ = NULL;
-
     // flags for vector output
     vector_flag = 1;
     size_vector = 3;
@@ -64,7 +64,7 @@ FixCfdCouplingForce::~FixCfdCouplingForce()
 void FixCfdCouplingForce::post_create()
 {
     // register dragforce
-    if(!fix_dragforce_)
+    if(!fix_dragforce_ && use_force_)
     {
         char* fixarg[11];
         fixarg[0]="dragforce";
@@ -104,7 +104,8 @@ void FixCfdCouplingForce::post_create()
 
 void FixCfdCouplingForce::pre_delete(bool unfixflag)
 {
-    if(fix_dragforce_) modify->delete_fix("dragforce");
+    if(unfixflag && fix_dragforce_) modify->delete_fix("dragforce");
+    if(unfixflag && fix_volumeweight_) modify->delete_fix("volumeweight");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -122,7 +123,7 @@ void FixCfdCouplingForce::init()
 {
     // make sure there is only one fix of this style
     if(modify->n_fixes_style(style) != 1)
-      error->fix_error(FLERR,this,"More than one fix of style couple/cfd/force is not allowed");
+      error->fix_error(FLERR,this,"More than one fix of this style is not allowed");
 
     // find coupling fix
     fix_coupling_ = static_cast<FixCfdCoupling*>(modify->find_fix_style_strict("couple/cfd",0));
@@ -137,7 +138,7 @@ void FixCfdCouplingForce::init()
     fix_coupling_->add_push_property("volumeweight","scalar-atom");
 
     // values to come from OF
-    fix_coupling_->add_pull_property("dragforce","vector-atom");
+    if(use_force_) fix_coupling_->add_pull_property("dragforce","vector-atom");
 
     vectorZeroize3D(dragforce_total);
 }
@@ -155,6 +156,7 @@ void FixCfdCouplingForce::post_force(int vflag)
   vectorZeroize3D(dragforce_total);
 
   // add dragforce to force vector
+  
   for (int i = 0; i < nlocal; i++)
   {
     if (mask[i] & groupbit)

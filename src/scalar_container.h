@@ -48,6 +48,7 @@ namespace LAMMPS_NS
           void set(int n, T elem);
           void setAll(T def);
           T* begin();
+          void* begin_slow_dirty();
           T& operator() (int n);
           T const& operator() (int n) const;
           T max();
@@ -145,6 +146,12 @@ namespace LAMMPS_NS
   T* ScalarContainer<T>::begin()
   {
           return &(this->arr_[0][0][0]);
+  }
+
+  template<typename T>
+  void* ScalarContainer<T>::begin_slow_dirty()
+  {
+          return (void*) &(this->arr_[0][0][0]);
   }
 
   template<typename T>

@@ -171,7 +171,7 @@ void FixMoveMesh::initial_integrate(int dummy)
 
     // integration
     
-    move_->initial_integrate(time_since_setup_,dt);
+    move_->initial_integrate(time_,time_since_setup_,dt);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -182,7 +182,7 @@ void FixMoveMesh::final_integrate()
 
     // useful only if accelerations are known
     
-    move_->final_integrate(time_since_setup_,dt);
+    move_->final_integrate(time_,time_since_setup_,dt);
 }
 
 /* ----------------------------------------------------------------------
@@ -194,7 +194,7 @@ void FixMoveMesh::write_restart(FILE *fp)
   int n = 0;
   double list[1 + move_->n_restart()];
   list[n++] = time_;
-
+  
   move_->write_restart(&(list[n]));
   n += move_->n_restart();
 
@@ -214,8 +214,9 @@ void FixMoveMesh::restart(char *buf)
   int n = 0;
   double *list = (double *) buf;
 
-  time_ = static_cast<int> (list[n++]);
+  time_ = static_cast<double> (list[n++]);
   move_->read_restart(&(list[n]));
+
 }
 
 /* ----------------------------------------------------------------------

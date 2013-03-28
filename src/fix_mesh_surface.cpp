@@ -293,17 +293,26 @@ void FixMeshSurface::createContactHistory(int dnum)
 void FixMeshSurface::initVel()
 {
     double conv_vel[3];
+    vectorCopy3D(vSurf_,conv_vel);
+
+    // register new mesh property v
+    mesh()->prop().addGlobalProperty< VectorContainer<double,3> >("v","comm_exchange_borders","frame_invariant","restart_no");
+    mesh()->prop().setGlobalProperty< VectorContainer<double,3> >("v",conv_vel);
+
+    // register new element property v - error if exists already via moving mesh
+    mesh()->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_exchange_borders","frame_invariant","restart_no");
+
+    setVel();
+}
+
+void FixMeshSurface::setVel()
+{
+    double conv_vel[3];
     int size, nVec;
     double scp, tmp[3], facenormal[3], ***v_node;
     vectorCopy3D(vSurf_,conv_vel);
     double conv_vSurf_mag = vectorMag3D(conv_vel);
 
-    // register new mesh property v
-    mesh()->prop().addGlobalProperty< VectorContainer<double,3> >("v","comm_none","frame_invariant","restart_no");
-    mesh()->prop().setGlobalProperty< VectorContainer<double,3> >("v",conv_vel);
-
-    // register new element property v - error if exists already via moving mesh
-    mesh()->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
     size = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
     nVec = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
 
@@ -311,6 +320,7 @@ void FixMeshSurface::initVel()
 
     // set mesh velocity
     TriMesh *trimesh = triMesh();
+    
     for (int i = 0; i < size; i++)
     {
         trimesh->surfaceNorm(i,facenormal);
@@ -323,6 +333,7 @@ void FixMeshSurface::initVel()
             {
                 vectorScalarDiv3D(v_node[i][j],vectorMag3D(v_node[i][j]));
                 vectorScalarMult3D(v_node[i][j],conv_vSurf_mag);
+                
             }
         }
     }
@@ -334,6 +345,14 @@ void FixMeshSurface::initVel()
 
 void FixMeshSurface::initAngVel()
 {
+    // register new element property v - error if exists already via moving mesh
+    mesh()->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_exchange_borders","frame_invariant","restart_no");
+
+    setAngVel();
+}
+
+void FixMeshSurface::setAngVel()
+{
     int size, nVec;
     double rot_origin[3],rot_axis[3],rot_omega;
     vectorCopy3D(origin_,rot_origin);
@@ -342,13 +361,9 @@ void FixMeshSurface::initAngVel()
     double tmp[3], scp, unitAxis[3], tangComp[3], Utang[3], surfaceV[3];
     double node[3],facenormal[3], magAxis, magUtang, ***v_node;
 
-    // register new element property v - error if exists already via moving mesh
-    mesh()->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
     size = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
     nVec = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
 
-    size = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->size();
-    nVec = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->nVec();
     v_node = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->begin();
 
     // calculate unit vector of rotation axis

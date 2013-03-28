@@ -42,14 +42,21 @@ class FixCfdCouplingForce : public Fix  {
 
   int setmask();
   virtual void init();
-  void post_force(int);
+  virtual void post_force(int);
   double compute_vector(int n);
 
  protected:
+
+  void dont_use_force()
+  { use_force_ = false; }
+
   double dragforce_total[3];
   class FixCfdCoupling* fix_coupling_;
   class FixPropertyAtom* fix_dragforce_;
   class FixPropertyAtom* fix_volumeweight_;
+
+ private:
+  bool use_force_;
 };
 
 }

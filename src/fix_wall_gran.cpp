@@ -86,6 +86,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
     FixMesh_list_ = NULL;
     primitiveWall_ = NULL;
+    fix_history_primitive_ = NULL;
 
     rebuildPrimitiveNeighlist_ = false;
 
@@ -290,6 +291,30 @@ void FixWallGran::post_create()
       FixMesh_list_[i]->createWallNeighList(igroup);
       if(dnum()>0)FixMesh_list_[i]->createContactHistory(dnum());
    }
+
+   // contact history for primitive wall
+   if(meshwall_ == 0 && dnum_ > 0)
+   {
+          char *hist_name = new char[strlen(style)+1+10];
+          strcpy(hist_name,"history_");
+          strcat(hist_name,id);
+          char **fixarg = new char*[8+dnum_];
+          fixarg[0] = hist_name;
+          fixarg[1] = (char *) "all";
+          fixarg[2] = (char *) "property/atom";
+          fixarg[3] = hist_name;
+          fixarg[4] = (char *) "vector";
+          fixarg[5] = (char *) "yes";    // restart
+          fixarg[6] = (char *) "no";    // communicate ghost
+          fixarg[7] = (char *) "no";    // communicate rev
+          for(int i = 8; i < 8+dnum_; i++)
+              fixarg[i] = (char *) "0.";
+          modify->add_fix(8+dnum_,fixarg);
+          fix_history_primitive_ =
+              static_cast<FixPropertyAtom*>(modify->find_fix_property(hist_name,"property/atom","vector",dnum_,0,style));
+          delete []fixarg;
+          delete []hist_name;
+   }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -298,6 +323,8 @@ void FixWallGran::pre_delete(bool unfixflag)
 {
     if(unfixflag && store_force_)
         modify->delete_fix(fix_wallforce_->id);
+    if(unfixflag && fix_history_primitive_)
+        modify->delete_fix(fix_history_primitive_->id);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -370,7 +397,7 @@ void FixWallGran::init()
         // init for derived classes
         init_granular();
     }
-
+    
 }
 
 /* ---------------------------------------------------------------------- */
@@ -475,6 +502,14 @@ void FixWallGran::post_force_wall(int vflag)
 
   if(nlocal_ && !radius_ && r0_ == 0.)
     error->fix_error(FLERR,this,"need either per-atom radius or r0_ being set");
+
+    if(store_force_)
+    {
+        for(int i = 0; i < nlocal_; i++)
+        {
+            vectorZeroize3D(wallforce_[i]);
+        }
+    }
 
   if(meshwall_ == 1)
     post_force_mesh(vflag);
@@ -612,7 +647,11 @@ void FixWallGran::post_force_primitive(int vflag)
   // contact properties
   double force_old[3],force_wall[3];
   double delta[3],deltan,rdist[3];
-  double *c_history = 0, v_wall[] = {0.,0.,0.};
+  double v_wall[] = {0.,0.,0.};
+  double **c_history = 0;
+
+  if(dnum() > 0)
+    c_history = fix_history_primitive_->array_atom;
 
   // if shear, set velocity accordingly
   if (shear_) v_wall[shearDim_] = vshear_;
@@ -620,7 +659,6 @@ void FixWallGran::post_force_primitive(int vflag)
   // loop neighbor list
   int *neighborList;
   int nNeigh = primitiveWall_->getNeighbors(neighborList);
-  if(dnum() > 0) primitiveWall_->setContactHistorySize(atom->nlocal);
 
   for (int iCont = 0; iCont < nNeigh ; iCont++, neighborList++)
   {
@@ -632,18 +670,17 @@ void FixWallGran::post_force_primitive(int vflag)
 
     if(deltan > 0.)
     {
-      if(dnum() > 0) primitiveWall_->handleNoContact(iPart);
+      vectorZeroizeN(c_history[iPart],dnum_);
     }
     else
     {
-      if(dnum() > 0) primitiveWall_->handleContact(iPart,c_history);
       if(shear_ && shearAxis_ >= 0)
       {
           primitiveWall_->calcRadialDistance(x_[iPart],rdist);
           vectorCross3D(shearAxisVec_,rdist,v_wall);
           
       }
-      post_force_eval_contact(iPart,deltan,delta,v_wall,c_history,NULL);
+      post_force_eval_contact(iPart,deltan,delta,v_wall,c_history[iPart],NULL);
     }
   }
 }
@@ -687,7 +724,7 @@ inline void FixWallGran::post_force_eval_contact(int iPart, double deltan, doubl
     vectorSubtract3D(f_[iPart],force_old,f_pw);
 
     if(store_force_)
-        vectorCopy3D(f_pw,wallforce_[iPart]);
+        vectorAdd3D (wallforce_[iPart], f_pw, wallforce_[iPart]);
 
     if(stress_flag_ && fix_mesh->trackStress())
     {

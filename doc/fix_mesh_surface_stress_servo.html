@@ -60,7 +60,8 @@ servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV
 it additionally assumes the mesh being a servo wall that compacts a particle packing until either a 
 total force (for <I>ctrlPV</I> = force)  or a total torque (for <I>ctrlPV</I> = torque) is acting on the mesh.
 The target value is defined via keyword <I>target_val</I>. The servo can act in any dimension 
-(as specified by the <I>dim</I> keyword), but only in one dimension at a time. The user has to specify 
+(as specified by the <I>dim</I> keyword), but only in one dimension at a time. 
+A negative value for <I>target_val</I> leads to a wall motion towards negative <I>dim</I>-direction and vice versa. The user has to specify 
 the center of mass (keyword <I>com</I>) and the maximum velocity allowed for the servo wall by keyword <I>vel_max</I>.
 Note that <I>vel_max</I> < <A HREF = "neighbor.html">skin</A> /(2* <A HREF = "timestep.html">timestep</A> ) is required.
 </P>
@@ -72,7 +73,7 @@ Note that <I>vel_max</I> < <A HREF = "neighbor.html">skin</A> /(2* <A HREF = "ti
 <P>where 'error' is the current devation of the controll process value to the target value, 
 'errorsum' is the time integration (sum) of the error values and 'errorchange' its derivative. The controller
 also includes an "anti-wind-up scheme" which prohibits accumulation of erroneous controller output caused 
-by the integral part due to unavoidable long-lasting deviataions.
+by the integral part due to unavoidable long-lasting deviations.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
@@ -81,6 +82,10 @@ The first 3 components are equal to the total force on the mesh, the next 3 comp
 on the mesh. The last 3 components output the wall position.
 Furthermore, this fix writes the state of the servo wall to binary restart files so 
 that a simulation can continue correctly.
+This fix supports <A HREF = "fix_modify.html">fix_modify</A> with option <I>integrate</I> = 'start' or 'stop'
+to start or stop the servo wall integration inbetween two runs.
+This fix also supports <A HREF = "fix_modify.html">fix_modify</A> with option <I>target_val</I> = val to
+change the target value inbetween two runs.
 </P>
 <P><B>Restrictions:</B>
 </P>

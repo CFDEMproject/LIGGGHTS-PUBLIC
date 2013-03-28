@@ -60,6 +60,7 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   center_(NULL),
   v_av_(NULL),
   vol_fr_(NULL),
+  radius_(NULL),
   mass_(NULL),
   stress_(NULL),
   compute_stress_(NULL)
@@ -106,6 +107,7 @@ FixAveEuler::~FixAveEuler()
   memory->destroy(center_);
   memory->destroy(v_av_);
   memory->destroy(vol_fr_);
+  memory->destroy(radius_);
   memory->destroy(mass_);
   memory->destroy(stress_);
 }
@@ -178,7 +180,7 @@ void FixAveEuler::setup_bins()
 
     // calc ideal cell size as multiple of max cutoff
     cell_size_ideal_ = cell_size_ideal_rel_ * (neighbor->cutneighmax-neighbor->skin);
-
+    
     for(int dim = 0; dim < 3; dim++)
     {
         // get bounds
@@ -213,6 +215,7 @@ void FixAveEuler::setup_bins()
         ncells_dim_[dim] = static_cast<int>((hi_[dim]-lo_[dim])/cell_size_ideal_);
     	if (ncells_dim_[dim] < 1) {
     		ncells_dim_[dim] = 1;
+    		
     		error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
     	}
         cell_size_[dim] = (hi_[dim]-lo_[dim])/static_cast<double>(ncells_dim_[dim]);
@@ -246,7 +249,8 @@ void FixAveEuler::setup_bins()
         memory->grow(center_,ncells_max_,3,"ave/euler:center_");
         memory->grow(v_av_,  ncells_max_,3,"ave/euler:v_av_");
         memory->grow(vol_fr_,ncells_max_,  "ave/euler:vol_fr_");
-        memory->grow(mass_,ncells_max_,  "ave/euler:mass_");
+        memory->grow(radius_,ncells_max_,  "ave/euler:radius_");
+        memory->grow(mass_,ncells_max_,    "ave/euler:mass_");
         memory->grow(stress_,ncells_max_,7,"ave/euler:stress_");
     }
 
@@ -394,6 +398,9 @@ void FixAveEuler::calculate_eu()
         compute_stress_->invoked_flag |= INVOKED_PERATOM;
     }
 
+    // forward comm per-particle stress from compute so neighs have it
+    comm->forward_comm_compute(compute_stress_);
+
     // need to get pointer here since compute_peratom() may realloc
     double **stress_atom = compute_stress_->array_atom;
 
@@ -406,22 +413,26 @@ void FixAveEuler::calculate_eu()
         ncount = 0;
         vectorZeroize3D(v_av_[icell]);
         vol_fr_[icell] = 0.;
+        radius_[icell] = 0.;
         mass_[icell] = 0.;
         vectorZeroizeN(stress_[icell],7);
 
         // add contributions of particle - v and volume fraction
         // v is favre-averaged (mass-averaged)
+        // radius is number-averaged
 
         for(int iatom = cellhead_[icell/*+stencil*/]; iatom >= 0; iatom = cellptr_[iatom])
         {
             vectorScalarMult3D(v[iatom],rmass[iatom],vel_x_mass);
             vectorAdd3D(v_av_[icell],vel_x_mass,v_av_[icell]);
             vol_fr_[icell] += radius[iatom]*radius[iatom]*radius[iatom];
+            radius_[icell] += radius[iatom];
             mass_[icell] += rmass[iatom];
             ncount++;
         }
 
         if(ncount) vectorScalarDiv3D(v_av_[icell],static_cast<double>(ncount)*mass_[icell]);
+        if(ncount) radius_[icell]/=static_cast<double>(ncount);
         vol_fr_[icell] *= prefactor_vol_fr;
 
         // add contribution of particle - stress
@@ -449,7 +460,7 @@ void FixAveEuler::calculate_eu()
    return I,J array value
    if I exceeds current bins, return 0.0 instead of generating an error
    column 1,2,3 = bin coords, next column = vol fr,
-   remaining columns = vel, stress
+   remaining columns = vel, stress, radius
 ------------------------------------------------------------------------- */
 
 double FixAveEuler::compute_array(int i, int j)
@@ -461,5 +472,6 @@ double FixAveEuler::compute_array(int i, int j)
   else if(j < 7) return v_av_[i][j-4];
   else if(j == 7) return stress_[i][0];
   else if(j < 14) return stress_[i][j-8];
+  else if(j < 15) return radius_[i];
   else return 0.0;
 }

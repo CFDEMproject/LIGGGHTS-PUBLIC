@@ -107,7 +107,9 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       hasargs = true;
     } else if (strcmp(arg[iarg],"mass") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
-      massinsert = atof(arg[iarg+1]);
+      if(strcmp(arg[iarg+1],"INF") == 0)
+        ninsert_exists = 0;
+      else massinsert = atof(arg[iarg+1]);
       iarg += 2;
       hasargs = true;
     } else if (strcmp(arg[iarg],"massrate") == 0) {
@@ -356,24 +358,24 @@ void FixInsert::print_stats_start()
     if(ninsert_exists)
     {
         if (screen)
-            fprintf(screen ,"INFO: Particle insertion: %f particles every %d steps - particle rate %f  (mass rate %f)\n"
+            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %f)\n"
                             "      %d particles (mass %f) within %d steps\n",
-                ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
+                id,ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
 
         if (logfile)
-            fprintf(logfile,"INFO: Particle insertion: %f particles every %d steps - particle rate %f, (mass rate %f)\n"
+            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %f)\n"
                             "      %d particles (mass %f) within %d steps\n",
-                ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
+                id,ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
     }
     else
     {
         if (screen)
-            fprintf(screen ,"INFO: Particle insertion: %f particles every %d steps - particle rate %f  (mass rate %f)\n",
-                ninsert_per,insert_every,nflowrate,massflowrate);
+            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %f)\n",
+                id,ninsert_per,insert_every,nflowrate,massflowrate);
 
         if (logfile)
-            fprintf(logfile,"INFO: Particle insertion: %f particles every %d steps - particle rate %f, (mass rate %f)\n",
-                ninsert_per,insert_every,nflowrate,massflowrate);
+            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %f)\n",
+                id,ninsert_per,insert_every,nflowrate,massflowrate);
     }
   }
 }
@@ -387,12 +389,12 @@ void FixInsert::print_stats_during(int ninsert_this, double mass_inserted_this)
   if (me == 0 && print_stats_during_flag)
   {
     if (screen)
-      fprintf(screen ,"INFO: Particle insertion: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
-              ninsert_this,mass_inserted_this,step,ninserted,massinserted);
+      fprintf(screen ,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
+              id,ninsert_this,mass_inserted_this,step,ninserted,massinserted);
 
     if (logfile)
-      fprintf(logfile,"INFO: Particle insertion: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
-              ninsert_this,mass_inserted_this,step,ninserted,massinserted);
+      fprintf(logfile,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
+              id,ninsert_this,mass_inserted_this,step,ninserted,massinserted);
   }
 }
 
@@ -658,16 +660,22 @@ int FixInsert::distribute_ninsert_this(int ninsert_this)
     
     if(me == 0)
     {
-        // remove fractions < 1%
+        // remove fractions < 2% / nprocs
+        // have to normalize so not all portions get cancelled away for higher proc counts
         // normalize fraction_local_all so sum across processors is 1
+
+        double lower_thresh = 0.02 / static_cast<double>(nprocs);
 
         fraction_local_all_sum = 0.;
         for(int iproc = 0; iproc < nprocs; iproc++)
         {
-            if(fraction_local_all[iproc] < 0.01)
+            if(fraction_local_all[iproc] < lower_thresh)
                 fraction_local_all[iproc] = 0.;
             fraction_local_all_sum += fraction_local_all[iproc];
         }
+
+        if(fraction_local_all_sum == 0.)
+            error->one(FLERR,"Internal error distributing particles to processes");
 
         for(int iproc = 0; iproc < nprocs; iproc++)
             fraction_local_all[iproc] /= fraction_local_all_sum;

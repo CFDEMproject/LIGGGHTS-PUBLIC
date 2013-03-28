@@ -74,6 +74,23 @@
   }
 
   /* ----------------------------------------------------------------------
+   check if data is of type double
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::isDoubleData()
+  {
+      // partial templatization does not work
+      // std::is_same<T,double>::value is from C++11
+      // this is work-around
+
+      if(sizeof(T) == sizeof(double))
+        return true;
+      else
+        return false;
+  }
+
+  /* ----------------------------------------------------------------------
    add element(s)
   ------------------------------------------------------------------------- */
 
@@ -294,7 +311,7 @@
   template<typename T, int NUM_VEC, int LEN_VEC>
   void* GeneralContainer<T,NUM_VEC,LEN_VEC>::begin_slow_dirty()
   {
-          return (void*) &(arr_[0][0][0]);
+          return (void*) arr_;
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>

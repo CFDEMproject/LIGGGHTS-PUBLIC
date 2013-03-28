@@ -35,25 +35,43 @@
 #include <vector>
 
 using MODIFIED_ANDREW_AUX::Circle;
-using MODIFIED_ANDREW_AUX::Line;
 using MODIFIED_ANDREW_AUX::Point;
 using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ModifiedAndrew::ModifiedAndrew(LAMMPS *lmp) : Pointers(lmp) {}
-ModifiedAndrew::~ModifiedAndrew(){}
+ModifiedAndrew::ModifiedAndrew(LAMMPS *lmp) : Pointers(lmp) {
+  npoints_per_circle_ = 6;
+  directions_ = new double*[npoints_per_circle_];
+  for (int i = 0; i < npoints_per_circle_; ++i)
+  {
+    directions_[i] = new double[2];
+  }
+  double angle = (2.0*M_PI)/((double)npoints_per_circle_);
+  for (int i = 0; i < npoints_per_circle_; ++i)
+  {
+    directions_[i][0] = sin(((double)i)*angle);
+    directions_[i][1] = cos(((double)i)*angle);
+  }
+
+}
+ModifiedAndrew::~ModifiedAndrew(){
+  for (int i = 0; i < npoints_per_circle_; ++i)
+    delete []directions_[i];
+  delete []directions_;
+}
 
 /* ---------------------------------------------------------------------- */
 
 double ModifiedAndrew::area()
 {
     double A;
-    vector<Circle> hull_c = convex_hull(contacts_);
+    vector<Point> hull_c = convex_hull(contacts_);
 
     // multi-proc case
     if(1 < comm->nprocs) //(1)//
     {
+      
         // perform allgather
         double *data = 0,*data0 = 0;
         int ndata = 0, ndata0 = 0;
@@ -68,17 +86,15 @@ double ModifiedAndrew::area()
         // proc0 calculates convex hull
         if(0 == comm->me) {
 
-            vector<Circle> hull_c_allreduced = construct_hull_c_all(data0,ndata0);
-            vector<Circle> hull_c_global = convex_hull(hull_c_allreduced);
+            vector<Point> hull_c_allreduced = construct_hull_c_all(data0,ndata0);
+            vector<Point> hull_c_global = convex_hull(hull_c_allreduced);
 
-            if (hull_c_global.size() < 4)
+            if (hull_c_global.size() < 3)
                 A = 0.;
-            else {
-                vector<Point> hull_p = hull_points(hull_c_global);
-                A = area(hull_p);
-            }
+            else
+                A = area(hull_c_global);
         }
-
+        
         if(data) delete []data;
         if(data0) delete []data0;
 
@@ -88,12 +104,10 @@ double ModifiedAndrew::area()
     // single proc case
     else
     {
-        if (hull_c.size() < 4)
+        if (hull_c.size() < 3)
            A = 0.;
-        else {
-            vector<Point> hull_p = hull_points(hull_c);
-            A = area(hull_p);
-        }
+        else
+            A = area(hull_c);
     }
 
     // clear contact data
@@ -104,17 +118,29 @@ double ModifiedAndrew::area()
 
 /* ---------------------------------------------------------------------- */
 
-int ModifiedAndrew::construct_data(vector<Circle> hull_c, double *&data)
+void ModifiedAndrew::add_contact(Circle c){
+  // generate npoints_per_circle_ points for this circle
+  Point p;
+  for (int i = 0; i < npoints_per_circle_; ++i)
+  {
+    p.x = c.x+directions_[i][0]*c.r;
+    p.y = c.y+directions_[i][1]*c.r;
+    contacts_.push_back(p);
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+int ModifiedAndrew::construct_data(vector<Point> hull_c, double *&data)
 {
     int size = hull_c.size();
-    int datasize = 3*size;
+    int datasize = 2*size;
     data = new double[datasize];
 
     for(int i = 0; i < size; i++)
     {
-        data[3*i+0] = hull_c[i].x;
-        data[3*i+1] = hull_c[i].y;
-        data[3*i+2] = hull_c[i].r;
+        data[2*i+0] = hull_c[i].x;
+        data[2*i+1] = hull_c[i].y;
     }
 
     return datasize;
@@ -122,17 +148,16 @@ int ModifiedAndrew::construct_data(vector<Circle> hull_c, double *&data)
 
 /* ---------------------------------------------------------------------- */
 
-vector<Circle> ModifiedAndrew::construct_hull_c_all(double *data0, int ndata0)
+vector<Point> ModifiedAndrew::construct_hull_c_all(double *data0, int ndata0)
 {
-    vector<Circle> result;
+    vector<Point> result;
 
-    Circle c;
+    Point c;
 
-    for(int i = 0; i < ndata0/3; i++)
+    for(int i = 0; i < ndata0/2; i++)
     {
-        c.x = data0[i*3+0];
-        c.y = data0[i*3+1];
-        c.r = data0[i*3+2];
+        c.x = data0[i*2+0];
+        c.y = data0[i*2+1];
         result.push_back(c);
     }
 
@@ -167,53 +192,9 @@ double ModifiedAndrew::area(vector<Point> H){
 // 2D cross product of OA and OB vectors, i.e. z-component of their 3D cross product.
 // Returns a positive value, if OAB makes a counter-clockwise turn,
 // negative for clockwise turn, and zero if the points are collinear.
-double ModifiedAndrew::turn(const Circle &O, const Circle &A, const Circle &B)
+double ModifiedAndrew::cross(Point O, Point A, Point B)
 {
-  // calculate lines
-  Line l1 = find_right_tangent(O,A);
-  Line l2 = find_right_tangent(O,B);
-
-  return (-l1.a) * (-l2.b) - (-l1.b) * (-l2.a);
-}
-
-/* ---------------------------------------------------------------------- */
-
-// find the right tangent of two circles
-Line ModifiedAndrew::find_right_tangent(const Circle &p1, const Circle &p2){
-  Line l;
-  double d;
-  double x,y,r,X,Y,R;
-
-  x = p2.x - p1.x;
-  y = p2.y - p1.y;
-  r = p2.r - p1.r;
-  d = sqrt(x*x + y*y);
-
-  X = x/d;
-  Y = y/d;
-  R = r/d;
-
-  l.a = R*X - Y*sqrt(1-R*R);
-  l.b = R*Y + X*sqrt(1-R*R);
-  l.c = p1.r - (l.a*p1.x + l.b*p1.y);
-
-  return l;
-}
-
-/* ---------------------------------------------------------------------- */
-
-// find intersection point of two lines that are not parallel
-Point ModifiedAndrew::intersectLines(Line &l, Line &j){
-  double x,y;
-
-  x = -((-(j.b*l.c) + l.b*j.c) / (j.a*l.b - l.a*j.b));
-  y = -((j.a*l.c - l.a*j.c) / (j.a*l.b - l.a*j.b));
-
-  Point p;
-  p.x = x;
-  p.y = y;
-
-  return p;
+  return (A.x - O.x)*(B.y - O.y) - (A.y - O.y)*(B.x - O.x);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -239,61 +220,26 @@ Point ModifiedAndrew::mean_point(vector<Point> P){
 
 // Returns a list of points on the convex hull in counter-clockwise order.
 // Note: the last circle in the returned list is the same as the first one.
-vector<Circle> ModifiedAndrew::convex_hull(vector<Circle> P)
+vector<Point> ModifiedAndrew::convex_hull(vector<Point> P)
 {
     int n = P.size(), k = 0;
-    vector<Circle> H(2*n);
+    vector<Point> H(2*n);
 
     // Sort points lexicographically
     sort(P.begin(), P.end());
 
     // Build lower hull
     for (int i = 0; i < n; i++) {
-        while (k >= 2 && turn(H[k-2], H[k-1], P[i]) <= 0) k--;
+        while (k >= 2 && cross(H[k-2], H[k-1], P[i]) <= 0) k--;
         H[k++] = P[i];
     }
 
     // Build upper hull
     for (int i = n-2, t = k+1; i >= 0; i--) {
-        while (k >= t && turn(H[k-2], H[k-1], P[i]) <= 0) k--;
+        while (k >= t && cross(H[k-2], H[k-1], P[i]) <= 0) k--;
         H[k++] = P[i];
     }
 
     H.resize(k);
     return H;
-}
-
-/* ---------------------------------------------------------------------- */
-
-// find exterior points of convex hull, i.e. the points
-// that are outside the circles, such that their convex hull
-// includes all circles, and is the minimal polygon
-// with as many edges as hull-circles to do so.
-vector<Point> ModifiedAndrew::hull_points(vector<Circle> C){
-
-  vector<Point> points(C.size());
-  Line l1, l2;
-
-  // find intersection around first sphere
-  l1 = find_right_tangent(C[C.size()-2],C[0]);
-  l2 = find_right_tangent(C[0],C[1]);
-  points[0] = intersectLines(l1,l2);
-
-  int N = C.size();
-  for (int i = 2; i < N; i++){
-
-    // find tangents
-    l1 = find_right_tangent(C[i-2], C[i-1]);
-    l2 = find_right_tangent(C[i-1], C[i]);
-
-    // find intersection between tangents
-    points[i-1] = intersectLines(l1,l2);
-  }
-
-  // copy first point, which equals last point
-  N = C.size()-1;
-  points[N].x = points[0].x;
-  points[N].y = points[0].y;
-
-  return points;
 }

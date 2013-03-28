@@ -94,7 +94,9 @@ namespace LAMMPS_NS
       private:
 
         void initVel();
+        void setVel();
         void initAngVel();
+        void setAngVel();
 
         // surface velocity
         bool velFlag_;

@@ -51,7 +51,8 @@ This fix implements the functionality of "fix mesh/surface/stress"_fix_mesh_surf
 it additionally assumes the mesh being a servo wall that compacts a particle packing until either a 
 total force (for {ctrlPV} = force)  or a total torque (for {ctrlPV} = torque) is acting on the mesh.
 The target value is defined via keyword {target_val}. The servo can act in any dimension 
-(as specified by the {dim} keyword), but only in one dimension at a time. The user has to specify 
+(as specified by the {dim} keyword), but only in one dimension at a time. 
+A negative value for {target_val} leads to a wall motion towards negative {dim}-direction and vice versa. The user has to specify 
 the center of mass (keyword {com}) and the maximum velocity allowed for the servo wall by keyword {vel_max}.
 Note that {vel_max} < "skin"_neighbor.html /(2* "timestep"_timestep.html ) is required.
 
@@ -63,7 +64,7 @@ output = kp * error + ki * errorsum + kd * errorchange
 where 'error' is the current devation of the controll process value to the target value, 
 'errorsum' is the time integration (sum) of the error values and 'errorchange' its derivative. The controller
 also includes an "anti-wind-up scheme" which prohibits accumulation of erroneous controller output caused 
-by the integral part due to unavoidable long-lasting deviataions.
+by the integral part due to unavoidable long-lasting deviations.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -72,6 +73,10 @@ The first 3 components are equal to the total force on the mesh, the next 3 comp
 on the mesh. The last 3 components output the wall position.
 Furthermore, this fix writes the state of the servo wall to binary restart files so 
 that a simulation can continue correctly.
+This fix supports "fix_modify"_fix_modify.html with option {integrate} = 'start' or 'stop'
+to start or stop the servo wall integration inbetween two runs.
+This fix also supports "fix_modify"_fix_modify.html with option {target_val} = val to
+change the target value inbetween two runs.
 
 [Restrictions:]
 

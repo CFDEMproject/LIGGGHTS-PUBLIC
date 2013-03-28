@@ -142,6 +142,7 @@ class FixWallGran : public Fix {
   bool stress_flag_;
 
   class PrimitiveWall *primitiveWall_;
+  class FixPropertyAtom *fix_history_primitive_;
 
   // class to keep track of wall contacts
   bool rebuildPrimitiveNeighlist_;

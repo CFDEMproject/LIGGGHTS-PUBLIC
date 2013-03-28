@@ -69,6 +69,9 @@ class FixAveEuler : public Fix {
   inline double cell_vol_fr(int i)
   { return vol_fr_[i]; }
 
+  inline double cell_radius(int i)
+  { return radius_[i]; }
+
   inline double cell_pressure(int i)
   { return stress_[i][0]; }
 
@@ -127,6 +130,9 @@ class FixAveEuler : public Fix {
 
   // cell-based volume fraction
   double *vol_fr_;
+
+  // cell-based average radius
+  double *radius_;
 
   // cell-based mass
   double *mass_;

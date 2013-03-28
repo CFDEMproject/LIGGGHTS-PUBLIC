@@ -30,6 +30,7 @@ style = {linear} or {linear/variable} or {wiggle} or {riggle} or {rotate} or {ro
   {riggle} args = origin Px Py Pz axis ax ay az period per amplitude ampl
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
+    axis = obligatory keyword
     ax,ay,az = axis of rotation vector (distance units)
     period = obligatory keyword
     per = period of rotation (time units)#

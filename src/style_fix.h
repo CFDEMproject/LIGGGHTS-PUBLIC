@@ -11,6 +11,7 @@
 #include "fix_cfd_coupling.h"
 #include "fix_cfd_coupling_convection.h"
 #include "fix_cfd_coupling_force.h"
+#include "fix_cfd_coupling_force_implicit.h"
 #include "fix_check_timestep_gran.h"
 #include "fix_check_timestep_sph.h"
 #include "fix_contact_history.h"

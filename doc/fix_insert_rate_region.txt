@@ -29,6 +29,7 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
     INF =  insert as many particles as possible
   {mass} values = mp
     mp = mass of particles to be inserted (positive float)
+    INF =  insert as many particles as possible
   {particlerate} values = pr
     pr = particle inseration rate (particles/time units)
   {massrate} values = mr

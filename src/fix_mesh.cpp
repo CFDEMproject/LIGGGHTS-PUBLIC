@@ -238,9 +238,9 @@ void FixMesh::pre_delete(bool unfixflag)
     
     if(unfixflag)
     {
-        if(mesh_->isMoving())
+        if(mesh_->isMoving() && modify->n_fixes_style("move/mesh") > 0)
             error->fix_error(FLERR,this,
-                    "illegal unfix command, may not unfix a mesh while a fix move is applied."
+                    "illegal unfix command, may not unfix a moving mesh while a fix move is applied."
                     "Unfix the fix move/mesh first");
     }
 }

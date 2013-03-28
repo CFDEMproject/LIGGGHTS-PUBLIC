@@ -60,8 +60,6 @@ namespace LAMMPS_NS
 
       private:
         ScalarContainer<int> neighlist;
-        ScalarContainer<int> contactHashmap;
-        VectorContainer<double,3> history;
         PRIMITIVE_WALL_DEFINITIONS::WallType wType;
 
         double *param;
@@ -112,43 +110,6 @@ namespace LAMMPS_NS
     return neighlist.size();
   }
 
-  void PrimitiveWall::handleContact(int iPart, double *&c_history)
-  {
-    int index = contactHashmap(iPart);
-    static double zeroVec[] = {0.,0.,0.};
-    if(index != -1){
-      c_history = history(index);
-      //printf("contact to particle %d found\n",iPart);
-    } else{
-      contactHashmap(iPart) = history.size();
-      history.add(zeroVec);
-      c_history = history(history.size()-1);
-      //printf("contact to particle %d added\n",iPart);
-    }
-  }
-
-  void PrimitiveWall::handleNoContact(int iPart)
-  {
-    int index = contactHashmap(iPart);
-    //printf("history-size: %d | index: %d ",history.size(),index);
-    if(index == -1) return;
-    //printf("contact to particle %d deleted\n",iPart);
-    //printf("*** history-size: %d | index: %d \n",history.size(),index);
-      contactHashmap(iPart) = -1;
-      history.del(index);
-  }
-
-  void PrimitiveWall::setContactHistorySize(int nPart)
-  {
-    int currentSize = contactHashmap.size();
-    if(nPart > currentSize){
-      int delta = nPart - currentSize;
-      contactHashmap.addUninitialized(delta);
-      for(int i=0;i<delta;i++)
-        contactHashmap(currentSize+i) = -1;
-    }
-
-  }
   void PrimitiveWall::buildNeighList(double treshold, double **x, double *r, int nPart)
   {
     neighlist.empty();

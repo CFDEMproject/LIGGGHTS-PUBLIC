@@ -52,8 +52,8 @@ namespace LAMMPS_NS
         virtual void pre_delete() = 0;
         virtual void setup() {};
 
-        virtual void initial_integrate(double dT,double dt) = 0;
-        virtual void final_integrate(double dT,double dt) {};
+        virtual void initial_integrate(double dTAbs,double dTSetup,double dt) = 0;
+        virtual void final_integrate(double dTAbs,double dTSetup,double dt) {};
 
         inline bool isFirst()
         { return isFirst_; }
@@ -102,8 +102,8 @@ namespace LAMMPS_NS
                         double vx, double vy, double vz);
         virtual ~MeshMoverLinear();
 
-        void initial_integrate(double dT,double dt);
-        void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dTAbs,double dTSetup,double dt);
+        void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
 
       private:
@@ -124,8 +124,8 @@ namespace LAMMPS_NS
         void pre_delete();
         void setup();
 
-        void initial_integrate(double dT,double dt);
-        void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dTAbs,double dTSetup,double dt);
+        void final_integrate(double dTAbs,double dTSetup,double dt) {}
 
         int n_restart();
         void write_restart(double *buf);
@@ -150,8 +150,8 @@ namespace LAMMPS_NS
                         double T);
         virtual ~MeshMoverWiggle();
 
-        void initial_integrate(double dT,double dt);
-        void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dTAbs,double dTSetup,double dt);
+        void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
 
       private:
@@ -171,8 +171,8 @@ namespace LAMMPS_NS
                             double T);
         virtual ~MeshMoverRotate();
 
-        void initial_integrate(double dT,double dt);
-        void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dTAbs,double dTSetup,double dt);
+        void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
 
       private:
@@ -195,8 +195,8 @@ namespace LAMMPS_NS
         void pre_delete();
         void setup();
 
-        void initial_integrate(double dT,double dt);
-        void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dTAbs,double dTSetup,double dt);
+        void final_integrate(double dTAbs,double dTSetup,double dt) {}
 
         int n_restart();
         void write_restart(double *buf);
@@ -221,8 +221,8 @@ namespace LAMMPS_NS
                             double T, double ampl);
         virtual ~MeshMoverRiggle();
 
-        void initial_integrate(double dT,double dt);
-        void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dTAbs,double dTSetup,double dt);
+        void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
 
       private:
@@ -242,8 +242,8 @@ namespace LAMMPS_NS
                             double T);
         virtual ~MeshMoverVibRot();
 
-        void initial_integrate(double dT,double dt);
-        void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dTAbs,double dTSetup,double dt);
+        void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
 
       private:
@@ -261,8 +261,8 @@ namespace LAMMPS_NS
                             double T);
         virtual ~MeshMoverVibLin();
 
-        void initial_integrate(double dT,double dt);
-        void final_integrate(double dT,double dt) {}
+        void initial_integrate(double dTAbs,double dTSetup,double dt);
+        void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
 
       private:

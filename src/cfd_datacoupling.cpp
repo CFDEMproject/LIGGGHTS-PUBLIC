@@ -76,7 +76,7 @@ void CfdDatacoupling::init()
 {
     // multisphere - can be NULL
     FixMultisphere *fix_multisphere;
-    fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style_strict("rigid/multisphere",0));
+    fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
 
     if(!fix_multisphere)
         ms_data_ = NULL;

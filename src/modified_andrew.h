@@ -36,25 +36,20 @@ namespace MODIFIED_ANDREW_AUX{
 
 struct Point {
   double x, y;
+
+  bool operator <(const Point &p) const {
+    return x < p.x || (x == p.x && y < p.y);
+  }
 };
 
 struct Circle {
   double x, y, r;
-
-  bool operator <(const Circle &p) const {
-    return x-r < p.x-p.r || (x-r == p.x-p.r && y-r < p.y-p.r);
-  }
-};
-
-struct Line {
-  double a,b,c;
 };
 
 }
 
 using MODIFIED_ANDREW_AUX::Point;
 using MODIFIED_ANDREW_AUX::Circle;
-using MODIFIED_ANDREW_AUX::Line;
 
 namespace LAMMPS_NS{
 
@@ -66,8 +61,7 @@ public:
 
   double area();
 
-  inline void add_contact(Circle c)
-  { contacts_.push_back(c); }
+  void add_contact(Circle c);
 
   inline void clear_contacts()
   { contacts_.clear(); }
@@ -76,22 +70,19 @@ private:
 
   double area(vector<Point> H);
   double area(Point &p, Point &m, Point &q);
-  double turn(const Circle &O, const Circle &A, const Circle &B);
+  double cross(Point O, Point A, Point B);
 
-  Line find_right_tangent(const Circle &p1, const Circle &p2);
-
-  Point intersectLines(Line &l, Line &j);
   Point mean_point(vector<Point> P);
 
-  vector<Circle> convex_hull(vector<Circle> P);
-  vector<Point> hull_points(vector<Circle> C);
-  vector<Circle> construct_hull_c_all(double *data0, int ndata0);
-  int construct_data(vector<Circle> hull_c, double *&data);
+  vector<Point> convex_hull(vector<Point> P);
+  vector<Point> construct_hull_c_all(double *data0, int ndata0);
+  int construct_data(vector<Point> hull_c, double *&data);
 
-  void project_contancts();
+  // container for contacts: x, y
+  vector<Point> contacts_;
 
-  // container for contacts: x, y, r
-  vector<Circle> contacts_;
+  int npoints_per_circle_;
+  double **directions_;
 };
 
 }
