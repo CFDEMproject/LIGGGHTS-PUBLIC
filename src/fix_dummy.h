@@ -45,6 +45,8 @@ class FixMultisphere : public Fix {
   void set_v_integrate(double *v) {}
   int belongs_to(int i) {return -1;}
 
+  void* extract(char*& a, int& b, int& c) {return NULL;}
+
   int calc_n_steps(int iatom,double *p_ref,double *normalvec,double *v_normal)
   { return 0; }
 

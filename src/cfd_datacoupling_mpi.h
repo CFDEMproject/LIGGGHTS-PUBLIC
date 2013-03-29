@@ -116,7 +116,7 @@ void CfdDatacouplingMPI::pull_mpi(char *name,char *type,void *&from)
         if(!ms_data_)
             error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
         for (int i = 0; i < len1; i++)
-            if ((m = ms_data_->map(i)) >= 0)
+            if ((m = ms_data_->map(i+1)) >= 0)
                 to_t[m] = allred[i];
     }
     else if(strcmp(type,"vector-multisphere") == 0)
@@ -125,7 +125,7 @@ void CfdDatacouplingMPI::pull_mpi(char *name,char *type,void *&from)
         if(!ms_data_)
             error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
         for (int i = 0; i < len1; i++)
-            if ((m = ms_data_->map(i)) >= 0)
+            if ((m = ms_data_->map(i+1)) >= 0)
                 for (int j = 0; j < len2; j++)
                     to_t[m][j] = allred[i*len2 + j];
     }
@@ -156,6 +156,7 @@ void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
 
     if (atom->nlocal && (!from || len1 < 0 || len2 < 0))
     {
+        
         if(screen) fprintf(screen,"LIGGGHTS could not find property %s to write data from calling program to.\n",name);
         lmp->error->one(FLERR,"This is fatal");
     }
@@ -197,7 +198,7 @@ void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
         for (int i = 0; i < nbodies; i++) // loops over # local bodies
         {
             id = ms_data_->tag(i);
-            allred[id] = from_t[i];
+            allred[id-1] = from_t[i];
         }
     }
     else if(strcmp(type,"vector-multisphere") == 0)
@@ -209,8 +210,12 @@ void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
         {
             id = ms_data_->tag(i);
             for (int j = 0; j < len2; j++)
-                allred[id*len2 + j] = from_t[i][j];
+            {
+                allred[(id-1)*len2 + j] = from_t[i][j];
+                
+            }
         }
+        
     }
     else if(strcmp(type,"scalar-global") == 0 || strcmp(type,"vector-global") == 0 || strcmp(type,"matrix-global") == 0)
     {

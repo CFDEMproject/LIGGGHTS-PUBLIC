@@ -670,7 +670,7 @@ void FixWallGran::post_force_primitive(int vflag)
 
     if(deltan > 0.)
     {
-      vectorZeroizeN(c_history[iPart],dnum_);
+      if(c_history) vectorZeroizeN(c_history[iPart],dnum_);
     }
     else
     {
@@ -680,7 +680,7 @@ void FixWallGran::post_force_primitive(int vflag)
           vectorCross3D(shearAxisVec_,rdist,v_wall);
           
       }
-      post_force_eval_contact(iPart,deltan,delta,v_wall,c_history[iPart],NULL);
+      post_force_eval_contact(iPart,deltan,delta,v_wall,c_history?c_history[iPart]:0,NULL);
     }
   }
 }

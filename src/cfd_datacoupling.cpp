@@ -57,6 +57,10 @@ CfdDatacoupling::CfdDatacoupling(class LAMMPS *lmp, int jarg,int narg, char **ar
       pushtypes_ = NULL;
       pushinvoked_ = NULL;
       pullinvoked_ = NULL;
+
+      ms_ = NULL;
+      ms_data_ = NULL;
+
       grow_();
 }
 
@@ -76,12 +80,9 @@ void CfdDatacoupling::init()
 {
     // multisphere - can be NULL
     FixMultisphere *fix_multisphere;
-    fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
+    ms_ = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
 
-    if(!fix_multisphere)
-        ms_data_ = NULL;
-    else
-        ms_data_ = &fix_multisphere->data();
+    if(ms_) ms_data_ = &ms_->data();
 
     // empty list of requested properties
     // models do their init afterwards so list will be filled
@@ -207,6 +208,7 @@ void CfdDatacoupling::check_datatransfer()
 
 void CfdDatacoupling::add_pull_property(char *name,char *type)
 {
+    
     if(strlen(name) >= MAXLENGTH) error->all(FLERR,"Fix couple/cfd: Maximum string length for a variable exceeded");
     if(npull_ >= nvalues_max_) grow_();
 
@@ -216,6 +218,16 @@ void CfdDatacoupling::add_pull_property(char *name,char *type)
             return;
         if(strcmp(pullnames_[i],name) == 0 && strcmp(pulltypes_[i],type))
             error->all(FLERR,"Properties added via CfdDatacoupling::add_pull_property are inconsistent");
+    }
+
+    // test if property is available
+
+    int len1,len2;
+    void *ptr = find_pull_property(name,type,len1,len2);
+    if (atom->nlocal && (!ptr || len1 < 0 || len2 < 0))
+    {
+        if(screen) fprintf(screen,"Property %s added via CfdDatacoupling::add_pull_property not found.\n",name);
+        error->one(FLERR,"This is fatal");
     }
 
     strcpy(pullnames_[npull_],name);
@@ -229,6 +241,7 @@ void CfdDatacoupling::add_pull_property(char *name,char *type)
 
 void CfdDatacoupling::add_push_property(char *name,char *type)
 {
+    
     if(strlen(name) >= MAXLENGTH)
         error->all(FLERR,"Fix couple/cfd: Maximum string length for a variable exceeded");
     if(npush_ >= nvalues_max_) grow_();
@@ -239,6 +252,16 @@ void CfdDatacoupling::add_push_property(char *name,char *type)
             return;
         if(strcmp(pushnames_[i],name) == 0 && strcmp(pushtypes_[i],type))
             error->all(FLERR,"Properties added via CfdDatacoupling::add_push_property are inconsistent");
+    }
+
+    // test if property is available
+
+    int len1,len2;
+    void *ptr = find_push_property(name,type,len1,len2);
+    if (atom->nlocal && (!ptr || len1 < 0 || len2 < 0))
+    {
+        if(screen) fprintf(screen,"Property %s added via CfdDatacoupling::add_push_property not found.\n",name);
+        error->one(FLERR,"This is fatal");
     }
 
     strcpy(pushnames_[npush_],name);
@@ -287,13 +310,12 @@ void* CfdDatacoupling::find_property(int push,char *name,char *type,int &len1,in
     }
 
     // possiblility 2
-    // may come from a fix rigid/multisphere
+    // may come from a fix multisphere
     // also handles scalar-multisphere and vector-multisphere
 
-    if(ms_data_)
+    if(ms_)
     {
-        ptr = ms_data_->extract(name,len1,len2);
-
+        ptr = ms_->extract(name,len1,len2);
         if((strcmp(type,"scalar-multisphere") == 0) && (len2 != 1) || (strcmp(type,"vector-multisphere") == 0) && (len2 != 3))
             return NULL;
 

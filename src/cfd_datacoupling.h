@@ -100,6 +100,7 @@ class CfdDatacoupling : protected Pointers {
   class FixCfdCoupling *fc_;
 
   // multisphere
+  class FixMultisphere *ms_;
   class MultisphereParallel *ms_data_;
 };
 

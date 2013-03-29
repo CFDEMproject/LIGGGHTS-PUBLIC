@@ -419,7 +419,7 @@ inline void printVecN(FILE *out,char *name, int *vec, int n)
 {
     fprintf(out," vector %s:\n",name);
     for(int i = 0; i < n; i++)
-        fprintf(out,"%d \n",vec[i]);
+        fprintf(out,"%d ",vec[i]);
     fprintf(out,"\n");
 }
 
