@@ -192,7 +192,10 @@ void FixMoveMesh::final_integrate()
 void FixMoveMesh::write_restart(FILE *fp)
 {
   int n = 0;
-  double list[1 + move_->n_restart()];
+
+  //double list[1 + move_->n_restart()];
+  double *list;
+  list=new double [1 + move_->n_restart()];
   list[n++] = time_;
   
   move_->write_restart(&(list[n]));
