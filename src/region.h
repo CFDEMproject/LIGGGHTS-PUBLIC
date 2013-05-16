@@ -79,7 +79,7 @@ class Region : protected Pointers {
   int match_shrinkby_cut(double *,double);
 
   // volume calculation based on MC
-  virtual void volume_mc(int,double&,double&);
+  virtual void volume_mc(int n_test,bool cutflag,double cut,double &vol_global,double &vol_local);
 
   // flag if region bbox extends outside simulation domain
   virtual int bbox_extends_outside_box();

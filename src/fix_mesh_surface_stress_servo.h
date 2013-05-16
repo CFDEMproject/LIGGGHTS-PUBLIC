@@ -86,7 +86,7 @@ class FixMeshSurfaceStressServo : public FixMeshSurfaceStress {
       // servo settings and controller
 
       bool mode_flag_;
-      double vel_max_,set_point_,set_point_inv_,ctrl_output_max_;
+      double vel_max_,vel_min_,set_point_,set_point_inv_,ctrl_output_max_,ctrl_output_min_,ratio_;
       char *sp_str_;
       int sp_var_, sp_style_;
       double *control_output_,*process_value_;

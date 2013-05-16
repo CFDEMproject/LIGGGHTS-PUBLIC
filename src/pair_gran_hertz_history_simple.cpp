@@ -69,6 +69,19 @@ void PairGranHertzHistorySimple::settings(int narg, char **arg)
 }
 
 /* ----------------------------------------------------------------------
+   init specific to this granular substyle
+------------------------------------------------------------------------- */
+
+void PairGranHertzHistorySimple::init_granular()
+{
+  PairGranHookeHistorySimple::init_granular();
+
+  // error checks on coarsegraining
+  if(force->cg_active())
+    error->cg(FLERR,force->pair_style);
+}
+
+/* ----------------------------------------------------------------------
  return appropriate params
 ------------------------------------------------------------------------- */
 

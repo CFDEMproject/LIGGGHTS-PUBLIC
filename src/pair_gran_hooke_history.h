@@ -51,6 +51,9 @@ class PairGranHookeHistory : public PairGran {
 
   virtual void compute_force(int eflag, int vflag, int addflag);
 
+  template <int ROLLINGFRICTION>
+  void compute_force_eval(int eflag, int vflag, int addflag);
+
   virtual void write_restart_settings(FILE *);
   virtual void read_restart_settings(FILE *);
 
@@ -73,12 +76,13 @@ class PairGranHookeHistory : public PairGran {
   class FixPropertyGlobal* coeffRest1; //coefficient of restitution
   class FixPropertyGlobal* coeffFrict1; //coefficient of (static) friction
   class FixPropertyGlobal* coeffRollFrict1; //characteristic velocity needed for Linear Spring Model
+  class FixPropertyGlobal* coeffRollVisc1; //coefficient of rolling viscous damping (epsd model)
 
   int charVelflag;
   class FixPropertyGlobal* charVel1; //characteristic velocity needed for Linear Spring Model
 
   double **Yeff,**Geff,**betaeff,**veff,**cohEnergyDens,**coeffRestLog,**coeffFrict;
-  double charVel, **coeffRollFrict,**coeffMu,**coeffRestMax,**coeffStc;
+  double charVel, **coeffRollFrict,**coeffRollVisc,**coeffMu,**coeffRestMax,**coeffStc;
 
   virtual void deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu,double &vnnr);
   virtual void addCohesionForce(int &, int &,double &,double &);

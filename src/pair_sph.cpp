@@ -58,6 +58,8 @@ PairSph::PairSph(LAMMPS *lmp) : Pair(lmp)
     single_enable = 0;
  //   no_virial_compute = 1;
 
+    calcMode_ = 0;
+
     kernel_style = NULL;
 
     fppaSl = NULL;
@@ -179,8 +181,8 @@ void PairSph::coeff(int narg, char **arg)
 
 void PairSph::init_style()
 {
-	int i,j= 0;
-	int ntypes = atom->ntypes;
+  int i,j= 0;
+  int ntypes = atom->ntypes;
 
   // check for mass, rho
   if(!atom->rho_flag || !atom->p_flag) error->all(FLERR,"Pair sph requires atom_style sph");

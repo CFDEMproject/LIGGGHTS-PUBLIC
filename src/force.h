@@ -29,6 +29,8 @@
 namespace LAMMPS_NS {
 
 class Force : protected Pointers {
+ friend class Coarsegraining;
+
  public:
   double boltz;                      // Boltzmann constant (eng/degree-K)
   double hplanck;                    // Planck's constant (energy-time)
@@ -111,11 +113,15 @@ class Force : protected Pointers {
   inline double cg() 
   { return coarsegraining; }
 
-  inline void set_coarsegraining(double cg) 
-  { coarsegraining = cg; }
+  inline bool cg_active() 
+  { return (cg() > 1.); }
+
+  inline bool error_cg() 
+  { return error_coarsegraining; }
 
  private:
   double coarsegraining; 
+  bool error_coarsegraining; 
 };
 
 }

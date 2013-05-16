@@ -75,9 +75,12 @@ class DumpMeshVTK : public Dump {
 
   // general implementation
   class ScalarContainer<double> ***scalar_containers_;
+  char **scalar_container_names_;
   int n_scalar_containers_;
   class VectorContainer<double,3> ***vector_containers_;
+  char **vector_container_names_;
   int n_vector_containers_;
+
   char **container_args_;
   int n_container_bases_;
 

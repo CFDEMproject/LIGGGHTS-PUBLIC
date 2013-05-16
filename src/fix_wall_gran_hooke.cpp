@@ -55,6 +55,8 @@ using namespace FixConst;
 FixWallGranHooke::FixWallGranHooke(LAMMPS *lmp, int narg, char **arg) :
   FixWallGranHookeHistory(lmp, narg, arg)
 {
+    if(rollingflag == 2)
+        error->fix_error(FLERR,this,"cannot use 'espd' with this wall style");
 
 }
 

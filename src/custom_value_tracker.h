@@ -51,6 +51,8 @@ namespace LAMMPS_NS
 
         inline ContainerBase* getElementPropertyBase(char *_id);
 
+        inline int getElementPropertyIndex(char *_id);
+
         template<typename T, typename U>
         void setElementProperty(char *_id, U def);
 
@@ -73,6 +75,7 @@ namespace LAMMPS_NS
         // per-element properties
 
         inline void copyElement(int from, int to);
+        inline void addZeroElement();
         inline void deleteElement(int i);
         inline void deleteForwardElement(int i,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int i,bool scale,bool translate,bool rotate);

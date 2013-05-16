@@ -128,7 +128,6 @@ void FixSPHDensitySum::init()
 
   if(me == -1 && pres >= 0) error->fix_error(FLERR,this,"Fix sph/pressure has to be defined after sph/density/summation \n");
   if(pres == -1) error->fix_error(FLERR,this,"Requires to define a fix sph/pressure also \n");
-
 }
 
 /* ---------------------------------------------------------------------- */
@@ -159,7 +158,7 @@ void FixSPHDensitySum::post_integrate_eval()
   double *mass = atom->mass;
   double *rmass = atom->rmass;
 
-  if (!MASSFLAG) updatePtrs(); // get sl
+  updatePtrs(); // get sl
 
   // reset and add rho contribution of self
 

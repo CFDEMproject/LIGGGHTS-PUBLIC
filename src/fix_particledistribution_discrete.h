@@ -44,15 +44,23 @@ class FixParticledistributionDiscrete : public Fix {
   void restart(char *);
 
   int setmask();
+
   double vol_expect();
   double mass_expect();
+
   int max_type();
   int min_type();
+
   double min_rad(int);
   double max_rad(int);
-  double min_rad(){return minrad;}
-  double max_rad(){return maxrad;}
-  double max_r_bound(){return maxrbound;}
+
+  double min_rad()
+  { return minrad; }
+  double max_rad()
+  { return maxrad; }
+  double max_r_bound()
+  { return maxrbound; }
+
   int max_nspheres();
 
   int random_init_single(int);         
@@ -70,14 +78,9 @@ class FixParticledistributionDiscrete : public Fix {
   int insert(int n);
 
   inline int n_particletemplates()
-  {
-      return ntemplates;
-  }
-
+  { return ntemplates; }
   inline class FixTemplateSphere** particletemplates()
-  {
-      return templates;
-  }
+  { return templates; }
 
  protected:
 

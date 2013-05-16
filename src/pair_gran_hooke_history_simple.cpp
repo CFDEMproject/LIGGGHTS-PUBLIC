@@ -122,7 +122,7 @@ void PairGranHookeHistorySimple::init_granular()
   if(cohesionflag)
     cohEnergyDens1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("cohesionEnergyDensity","property/global","peratomtypepair",max_type,max_type,force->pair_style));
 
-  //pre-calculate parameters for possible contact material combinations
+  // pre-calculate parameters for possible contact material combinations
   for(int i=1;i< max_type+1; i++)
   {
       for(int j=1;j<max_type+1;j++)

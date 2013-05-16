@@ -56,6 +56,7 @@ PairSphArtviscTenscorr::PairSphArtviscTenscorr(LAMMPS *lmp) : PairSph(lmp)
 {
   respa_enable = 0;
   single_enable = 0;
+  calcMode_ = 1;
 
   csmean = NULL;
   wDeltaPTypeinv = NULL;
@@ -65,10 +66,10 @@ PairSphArtviscTenscorr::PairSphArtviscTenscorr(LAMMPS *lmp) : PairSph(lmp)
 
 PairSphArtviscTenscorr::~PairSphArtviscTenscorr()
 {
-	if (allocated) {
+  if (allocated) {
     memory->destroy(csmean);
     if (mass_type && tensCorr_flag) memory->destroy(wDeltaPTypeinv);
-	}
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -77,12 +78,12 @@ PairSphArtviscTenscorr::~PairSphArtviscTenscorr()
 
 void PairSphArtviscTenscorr::allocate()
 {
-	PairSph::allocate();
+  PairSph::allocate();
 
-	int n = atom->ntypes;
+  int n = atom->ntypes;
 
-	memory->create(csmean,n+1,n+1,"pair:csmean");
-	if (mass_type && tensCorr_flag) memory->create(wDeltaPTypeinv,n+1,n+1,"pair:wDeltaPTypeinv");
+  memory->create(csmean,n+1,n+1,"pair:csmean");
+  if (mass_type && tensCorr_flag) memory->create(wDeltaPTypeinv,n+1,n+1,"pair:wDeltaPTypeinv");
 
 }
 
@@ -180,46 +181,46 @@ void PairSphArtviscTenscorr::coeff(int narg, char **arg)
 
 void PairSphArtviscTenscorr::init_substyle()
 {
-	int max_type = atom->ntypes;
-	int i,j;
+  int max_type = atom->ntypes;
+  int i,j;
 
-	//create wDeltaPTypeInv
-	if (mass_type && tensCorr_flag) {
+  //create wDeltaPTypeInv
+  if (mass_type && tensCorr_flag) {
 
-	  double slCom,slComInv;
+    double slCom,slComInv;
 
-	  //pre-calculate common smoothing length
-	  for(i = 1; i < max_type+1; i++) {
-	    for(j = 1; j < max_type+1; j++) {
+    //pre-calculate common smoothing length
+    for(i = 1; i < max_type+1; i++) {
+      for(j = 1; j < max_type+1; j++) {
 
-	      slCom = slComType[i][j];
-	      slComInv = 1./slCom;
-	      wDeltaPTypeinv[i][j] = 1./SPH_KERNEL_NS::sph_kernel(kernel_id,deltaP * slComInv,slCom,slComInv);
-	    }
-	  }
-	}
+        slCom = slComType[i][j];
+        slComInv = 1./slCom;
+        wDeltaPTypeinv[i][j] = 1./SPH_KERNEL_NS::sph_kernel(kernel_id,deltaP * slComInv,slCom,slComInv);
+      }
+    }
+  }
 
   //Get pointer to the fixes that have the material properties
 
-	if (artVisc_flag) {
-	  cs=static_cast<FixPropertyGlobal*>(modify->find_fix_property("speedOfSound","property/global","peratomtype",max_type,0,force->pair_style));
-	  if(!cs) error->all(FLERR, "Pairstyle sph/artVisc/tensCorr only works with a fix property/global that defines speedOfSound");
+  if (artVisc_flag) {
+    cs=static_cast<FixPropertyGlobal*>(modify->find_fix_property("speedOfSound","property/global","peratomtype",max_type,0,force->pair_style));
+    if(!cs) error->all(FLERR, "Pairstyle sph/artVisc/tensCorr only works with a fix property/global that defines speedOfSound");
 
-	  double csi,csj;
+    double csi,csj;
 
-	  //pre-calculate parameters for possible contact material combinations
-	  for(i=1;i< max_type+1; i++)
-	  {
-	    for(j=1;j<max_type+1;j++)
-	    {
-	      csi=cs->compute_vector(i-1);
-	      csj=cs->compute_vector(j-1);
+    //pre-calculate parameters for possible contact material combinations
+    for(i=1;i< max_type+1; i++)
+    {
+      for(j=1;j<max_type+1;j++)
+      {
+        csi=cs->compute_vector(i-1);
+        csj=cs->compute_vector(j-1);
 
-	      csmean[i][j] = 0.5*(csi+csj);
+        csmean[i][j] = 0.5*(csi+csj);
 
-	    }
-	  }
-	}
+      }
+    }
+  }
 }
 
 /* ----------------------------------------------------------------------

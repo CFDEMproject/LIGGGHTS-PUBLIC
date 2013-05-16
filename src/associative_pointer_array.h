@@ -45,8 +45,6 @@ class AssociativePointerArray
         template <typename U>
         U* add(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower = 1);
 
-        //T* add(char *_id,int _scalePower = 1);
-
         void remove(char *_id);
 
         template <typename U>
@@ -64,6 +62,7 @@ class AssociativePointerArray
         int size();
 
         inline void copyElement(int from, int to);
+        inline void addZeroElement();
         inline void deleteElement(int n);
         inline void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int n,bool scale,bool translate,bool rotate);
@@ -94,14 +93,15 @@ class AssociativePointerArray
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
+        int idToIndex(char *_id);
+        void indexToId(int index, char *_id);
+
       private:
 
         T **content_;
         int numElem_, maxElem_;
 
         void growArrays();
-        int idToIndex(char *_id);
-        void indexToId(int index, char *_id);
 };
 
   // *************************************

@@ -68,6 +68,9 @@ class FixInsertPack : public FixInsert {
   // ratio how many particles have been inserted
   double insertion_ratio;
 
+  // warn if region extends outside box
+  bool warn_region;
+
 };
 
 }

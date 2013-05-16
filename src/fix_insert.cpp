@@ -367,7 +367,7 @@ void FixInsert::print_stats_start()
                             "      %d particles (mass %f) within %d steps\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
     }
-    else
+    else if(massflowrate > 0.)
     {
         if (screen)
             fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %f)\n",
@@ -376,6 +376,14 @@ void FixInsert::print_stats_start()
         if (logfile)
             fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %f)\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate);
+    }
+    else
+    {
+        if (screen)
+            fprintf(screen ,"INFO: Particle insertion %s: inserting every %d steps\n",id,insert_every);
+
+        if (logfile)
+            fprintf(logfile ,"INFO: Particle insertion %s: inserting every %d steps\n",id,insert_every);
     }
   }
 }

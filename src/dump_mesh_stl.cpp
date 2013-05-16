@@ -334,6 +334,6 @@ void DumpMeshSTL::write_data_ascii(int n, double *mybuf)
   }
   //write footer
   
-  if(n && n_calls_ == comm->nprocs)
+  if(multiproc || n_calls_ == comm->nprocs)
     fprintf(fp,"endsolid LIGGGHTS_STL_EXPORT\n");
 }

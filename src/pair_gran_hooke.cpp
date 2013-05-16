@@ -47,6 +47,18 @@ PairGranHooke::PairGranHooke(LAMMPS *lmp) : PairGranHookeHistory(lmp)
     dnum_pairgran = 0;
 }
 
+/* ----------------------------------------------------------------------
+   global settings
+------------------------------------------------------------------------- */
+
+void PairGranHooke::settings(int narg, char **arg) 
+{
+    PairGranHookeHistory::settings(narg,arg);
+
+    if(rollingflag == 2)
+        if (narg < iarg_+2) error->all(FLERR,"Cannot use 'epsd' with pair gran/hooke");
+}
+
 /* ---------------------------------------------------------------------- */
 
 void PairGranHooke::compute_force(int eflag, int vflag,int addflag)

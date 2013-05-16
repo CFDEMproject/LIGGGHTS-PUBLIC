@@ -88,6 +88,8 @@ class PairGran : public Pair {
   virtual void history_args(char**) =0;
   virtual void compute_force(int eflag, int vflag,int addflag) = 0;
   virtual bool forceoff() = 0;
+  inline int dnum()
+  { return dnum_all; }
 
   virtual void updatePtrs();
 

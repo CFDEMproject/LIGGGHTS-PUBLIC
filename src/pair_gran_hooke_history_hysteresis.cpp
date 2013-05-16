@@ -69,9 +69,9 @@ PairGranHookeHistoryHysteresis::PairGranHookeHistoryHysteresis(LAMMPS *lmp) : Pa
 
 PairGranHookeHistoryHysteresis::~PairGranHookeHistoryHysteresis()
 {
-	memory->destroy(kn2k2Max_);
-	memory->destroy(kn2kc_);
-	memory->destroy(phiF_);
+  memory->destroy(kn2k2Max_);
+  memory->destroy(kn2kc_);
+  memory->destroy(phiF_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -164,7 +164,7 @@ void PairGranHookeHistoryHysteresis::compute_force(int eflag, int vflag,int addf
         // unset non-touching neighbors
 
         touch[jj] = 0;
-        shear = &allshear[dnum_pairgran*jj];
+        shear = &allshear[dnum()*jj];
         shear[0] = 0.0;
         shear[1] = 0.0;
         shear[2] = 0.0;
@@ -232,11 +232,11 @@ void PairGranHookeHistoryHysteresis::compute_force(int eflag, int vflag,int addf
         itype = type[i];
         jtype = type[j];
 
-        shear = &allshear[dnum_pairgran*jj];
+        shear = &allshear[dnum()*jj];
         deltaMax = shear[3]; // the 4th value of the history array is deltaMax
         if (deltan > deltaMax) {
-        	shear[3] = deltan;
-        	deltaMax = deltan;
+          shear[3] = deltan;
+          deltaMax = deltan;
         }
 
         k2Max = kn * kn2k2Max_[itype][jtype]; 
@@ -250,11 +250,11 @@ void PairGranHookeHistoryHysteresis::compute_force(int eflag, int vflag,int addf
 
         fTmp = k2*(deltan-deltaMax)+kn*deltaMax;//k2*(deltan-delta0);
         if (fTmp >= kn*deltan) {
-        	fHys = kn*deltan;
+          fHys = kn*deltan;
         } else {
-        	if (fTmp > -kc*deltan) {
-        		fHys = fTmp;
-        	} else fHys = -kc*deltan;
+          if (fTmp > -kc*deltan) {
+            fHys = fTmp;
+          } else fHys = -kc*deltan;
         }
 
         ccel = fHys*rinv - damp; //kn*(radsum-r)*rinv - damp;
@@ -505,6 +505,10 @@ void PairGranHookeHistoryHysteresis::init_granular()
   }
 
   if(charVelflag) charVel = charVel1->compute_scalar();
+
+  // error checks on coarsegraining
+  if((rollingflag || cohesionflag) && force->cg_active())
+    error->cg(FLERR,"Granular model with rolling friction and / or cohesion");
 }
 
 /* ----------------------------------------------------------------------

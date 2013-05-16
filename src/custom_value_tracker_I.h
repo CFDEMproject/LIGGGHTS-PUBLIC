@@ -125,6 +125,11 @@
      return elementProperties_.getBasePointerById(_id);
   }
 
+  inline int CustomValueTracker::getElementPropertyIndex(char *_id)
+  {
+     return elementProperties_.idToIndex(_id);
+  }
+
   template<typename T>
   T* CustomValueTracker::getGlobalProperty(char *_id)
   {
@@ -181,6 +186,15 @@
   void CustomValueTracker::copyElement(int from, int to)
   {
       elementProperties_.copyElement(from,to);
+  }
+
+  /* ----------------------------------------------------------------------
+   add an element and initialize its properties with 0
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::addZeroElement()
+  {
+      elementProperties_.addZeroElement();
   }
 
   /* ----------------------------------------------------------------------

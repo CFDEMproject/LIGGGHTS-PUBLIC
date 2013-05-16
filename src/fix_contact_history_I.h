@@ -79,7 +79,7 @@
     {
         if(tri[i] == idTri)
         {
-            history = contacthistory[iP][i];
+            if(dnum > 0) history = contacthistory[iP][i];
             delflag[iP][i] = false;
             return true;
         }
@@ -135,7 +135,9 @@
 
       partner[iP][numCont] = idTri;
       delflag[iP][numCont] = false;
-      history = contacthistory[iP][numCont];
+
+      if(dnum > 0)
+        history = contacthistory[iP][numCont];
       for(int i = 0; i < dnum; i++)
         history[i] = 0.;
 

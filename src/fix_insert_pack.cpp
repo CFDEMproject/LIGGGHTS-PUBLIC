@@ -92,6 +92,15 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
       if(ntry_mc < 1000) error->fix_error(FLERR,this,"ntry_mc must be > 1000");
       iarg += 2;
       hasargs = true;
+    } else if (strcmp(arg[iarg],"warn_region") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"");
+      if(strcmp(arg[iarg+1],"yes") == 0)
+        warn_region = true;
+      else if(strcmp(arg[iarg+1],"no") == 0)
+        warn_region = false;
+      else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'warn_region'");
+      iarg += 2;
+      hasargs = true;
     } else if(strcmp(style,"insert/pack") == 0)
         error->fix_error(FLERR,this,"unknown keyword");
   }
@@ -122,6 +131,8 @@ void FixInsertPack::init_defaults()
       region_volume = region_volume_local = 0.;
 
       insertion_ratio = 0.;
+
+      warn_region = true;
 }
 
 /* ----------------------------------------------------------------------
@@ -173,7 +184,8 @@ void FixInsertPack::calc_insertion_properties()
 
 void FixInsertPack::calc_region_volume_local()
 {
-    ins_region->volume_mc(ntry_mc,region_volume,region_volume_local);
+    ins_region->volume_mc(ntry_mc,all_in_flag==0?false:true,fix_distribution->max_r_bound(),
+                          region_volume,region_volume_local);
 }
 
 /* ----------------------------------------------------------------------
@@ -194,7 +206,7 @@ int FixInsertPack::calc_ninsert_this()
   // check if region extends outside simulation box
   // if so, throw error if boundary setting is "f f f"
 
-  if(ins_region->bbox_extends_outside_box())
+  if(warn_region && ins_region->bbox_extends_outside_box())
   {
       for(int idim = 0; idim < 3; idim++)
         for(int iface = 0; iface < 2; iface++)

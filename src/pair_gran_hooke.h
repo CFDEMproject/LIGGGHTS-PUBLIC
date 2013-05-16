@@ -39,7 +39,11 @@ namespace LAMMPS_NS {
 class PairGranHooke : public PairGranHookeHistory {
  public:
   friend class FixWallGranHooke;
+
   PairGranHooke(class LAMMPS *);
+
+  virtual void settings(int, char **);
+
   void compute_force(int, int, int);
 };
 

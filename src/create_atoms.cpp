@@ -27,6 +27,7 @@
 #include "create_atoms.h"
 #include "atom.h"
 #include "atom_vec.h"
+#include "force.h"
 #include "comm.h"
 #include "modify.h"
 #include "fix.h"
@@ -220,6 +221,10 @@ void CreateAtoms::command(int narg, char **arg)
       nspecial[i][2] = 0;
     }
   }
+
+  // error checks on coarsegraining
+  if(force->cg_active())
+    error->cg(FLERR,"create_atoms");
 }
 
 /* ----------------------------------------------------------------------

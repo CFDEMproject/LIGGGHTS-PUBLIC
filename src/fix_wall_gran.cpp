@@ -289,7 +289,8 @@ void FixWallGran::post_create()
    for(int i=0;i<n_FixMesh_;i++)
    {
       FixMesh_list_[i]->createWallNeighList(igroup);
-      if(dnum()>0)FixMesh_list_[i]->createContactHistory(dnum());
+      //if(dnum()>0)FixMesh_list_[i]->createContactHistory(dnum());
+      FixMesh_list_[i]->createContactHistory(dnum());
    }
 
    // contact history for primitive wall

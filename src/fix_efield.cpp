@@ -136,6 +136,10 @@ void FixEfield::init()
 
   if (strstr(update->integrate_style,"respa"))
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
+
+  // error checks on coarsegraining
+  if(force->cg_active())
+    error->cg(FLERR,this->style);
 }
 
 /* ---------------------------------------------------------------------- */

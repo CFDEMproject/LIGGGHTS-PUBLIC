@@ -72,14 +72,14 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
   //read dnum
   dnum = atoi(arg[iarg++]);
   
-  if(dnum < 1)
-    error->all(FLERR,"dnum must be >=1 in fix contacthistory");
+  if(dnum < 0)
+    error->all(FLERR,"dnum must be >=0 in fix contacthistory");
   if(dnum > 10)
     error->warning(FLERR,"dnum >10 in fix contacthistory - are you really sure you intend this?");
 
   newtonflag = NULL;
   history_id = NULL;
-  if(is_pair)
+  if(is_pair && dnum > 0)
   {
       //read newtonflag
       if(narg-iarg < 2*dnum)
@@ -100,20 +100,20 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
       }
   }
 
+  // perform initial allocation of atom-based arrays
+  // register with atom class
+
   restart_peratom = 1;
   restart_global = 1; 
   create_attribute = 1;
+
+  atom->add_callback(0);
+  atom->add_callback(1);
 
   if(is_pair)
     maxtouch = DELTA_MAXTOUCH_PAIR;
   else
     maxtouch = DELTA_MAXTOUCH_MESH;
-
-  // perform initial allocation of atom-based arrays
-  // register with atom class
-
-  atom->add_callback(0);
-  atom->add_callback(1);
 
   npartner = NULL;
   partner = NULL;
@@ -144,6 +144,7 @@ void FixContactHistory::post_create()
 FixContactHistory::~FixContactHistory()
 {
     // unregister this fix so atom class doesn't invoke it any more
+
     atom->delete_callback(id,0);
     atom->delete_callback(id,1);
 
@@ -356,7 +357,7 @@ void FixContactHistory::grow_arrays(int nmax)
   
   memory->grow(npartner,nmax,"contacthistory:npartner");
   memory->grow(partner,nmax,maxtouch,"contacthistory:partner");
-  memory->grow(contacthistory,nmax,maxtouch,dnum,"contact_history:contacthistory");
+  if(dnum > 0) memory->grow(contacthistory,nmax,maxtouch,dnum,"contact_history:contacthistory");
   memory->grow(delflag,nmax,maxtouch,"contact_history:delflag");
 }
 

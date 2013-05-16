@@ -125,7 +125,8 @@ namespace LAMMPS_NS
       {
         double dMax = r + treshold;
         double dist = pos[d::x] - *param;
-        return (dMax < dist || -dMax < dist);
+        double absdist = (dist > 0.0) ? dist : -dist;
+        return (absdist <= dMax);
       }
     };
 

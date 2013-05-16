@@ -177,6 +177,36 @@ bool Modify::i_am_first_of_style(Fix *fix_to_check)
 
 /* ----------------------------------------------------------------------
    
+   returns the index of first fix that implements a specified function
+------------------------------------------------------------------------- */
+
+int Modify::my_index(Fix *fixptr)
+{
+
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(fix[ifix] == fixptr)
+        return ifix;
+
+    return -1;
+}
+
+/* ----------------------------------------------------------------------
+   
+   returns the index of first fix that implements a specified function
+------------------------------------------------------------------------- */
+
+int Modify::index_first_fix_with_function(const int FUNCTION, bool integrate)
+{
+
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if((!integrate || fix[ifix]->time_integrate) && (fmask[ifix] & FUNCTION))
+        return ifix;
+
+    return -1;
+}
+
+/* ----------------------------------------------------------------------
+   
    find a property registered by a fix property/global or fix property/atom
    check if it is of desired style
    return the index in the fix array

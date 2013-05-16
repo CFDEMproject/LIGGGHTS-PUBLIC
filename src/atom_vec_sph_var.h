@@ -81,8 +81,8 @@ class AtomVecSPH2 : public AtomVec {
  private:
   int *tag,*type,*mask,*image;
   double **x,**v,**f;
-	double *p,*rho,*drho,*e,*de;
-	double *radius,*rmass;
+  double *p,*rho,*drho,*e,*de;
+  double *radius,*rmass;
   int radvary;
 };
 

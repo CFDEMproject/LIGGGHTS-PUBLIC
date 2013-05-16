@@ -51,6 +51,7 @@ class FixPropertyGlobal : public Fix {
   ~FixPropertyGlobal();
   int setmask();
   void init();
+  void pre_delete(bool unfixflag);
 
   Fix* check_fix(const char *varname,const char *svmstyle,int len1,int len2,const char *caller,bool errflag);
 
@@ -63,6 +64,7 @@ class FixPropertyGlobal : public Fix {
   void vector_modify(int,double);
   void array_modify(int,int,double);
   void new_array(int l1,int l2);
+  int modify_param(int narg, char **arg);
 
   //bool checkCorrectness(int,char*,int,int);
 
@@ -73,6 +75,8 @@ class FixPropertyGlobal : public Fix {
 
   void grow(int,int);
 
+  void write();
+
   char *variablename;        // name of the variable (used for identification by other fixes)
   int data_style;            // 0 if a scalar is registered, 1 if vector, 2 if 2d array (matrix)
   int nvalues;
@@ -81,6 +85,8 @@ class FixPropertyGlobal : public Fix {
   double *values_recomputed; // values to be stored in this fix, recomputed by eg another fix
   double **array;
   double **array_recomputed;
+
+  char *filename;
 
 }; //end class
 
