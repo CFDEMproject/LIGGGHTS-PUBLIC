@@ -381,7 +381,7 @@ void FixWallGranHookeHistory::compute_force(int ip, double deltan, double rsq,do
   // add rolling friction torque
   vectorZeroize3D(r_torque);
   if(rollingflag)
-    addRollingFrictionTorque(ip,wr1,wr2,wr3,cr,ccel,r,rmu,kn,dx,dy,dz,rsqinv,c_history,r_torque);
+    addRollingFrictionTorque(ip,wr1,wr2,wr3,cr,ccel,r,mass,rmu,kn,dx,dy,dz,rsqinv,c_history,r_torque);
 
   if(computeflag_)
   {
@@ -449,7 +449,7 @@ inline void FixWallGranHookeHistory::addCohesionForce(int &ip, double &r, double
 /* ---------------------------------------------------------------------- */
 
 void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double wr2,double wr3,double cr,double ccel,
-            double r,double rmu,double kn,double dx, double dy, double dz,double rsqinv,double *c_history,double *r_torque)
+            double r,double mi,double rmu,double kn,double dx, double dy, double dz,double rsqinv,double *c_history,double *r_torque)
 {
     double wrmag,r_torque_n[3];
     double radius = atom->radius[ip];
@@ -477,7 +477,6 @@ void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double
       double dr_torque[3],wr_n[3],wr_t[3];
 
       int itype = atom->type[ip];
-      double mass = atom->mass[ip];
       double dt = update->dt; 
 
       // remove normal (torsion) part of relative rotation
@@ -502,8 +501,8 @@ void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double
       r_torque[2] = c_history[5] + dr_torque[2];
 
       // dashpot
-      if (domain->dimension == 2) r_inertia = 1.5*mass*radius*radius;
-      else  r_inertia = 1.4*mass*radius*radius;
+      if (domain->dimension == 2) r_inertia = 1.5*mi*radius*radius;
+      else  r_inertia = 1.4*mi*radius*radius;
 
       r_coef = coeffRollVisc[itype][atom_type_wall_] * 2 * sqrt(r_inertia*kr);
 
