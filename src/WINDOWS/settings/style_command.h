@@ -1,5 +1,4 @@
 // File is generaged by ListModules() macro
-#include "..\..\balance.h"
 #include "..\..\change_box.h"
 #include "..\..\create_atoms.h"
 #include "..\..\create_box.h"

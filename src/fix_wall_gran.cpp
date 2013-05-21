@@ -128,7 +128,9 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
            if(narg-iarg_ < nPrimitiveArgs)
             error->fix_error(FLERR,this,"not enough arguments for primitive wall");
 
-           double argVec[nPrimitiveArgs];
+           //double argVec[nPrimitiveArgs];
+		   double *argVec;
+		   argVec=new double[nPrimitiveArgs];
            for(int i=0;i<nPrimitiveArgs;i++)
            {
              
@@ -146,6 +148,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
                break;
              }
            }
+		   delete[] argVec;
            if(!setflag) error->fix_error(FLERR,this,"unknown primitive wall style");
            hasargs = true;
         } else if (strcmp(arg[iarg_],"mesh") == 0) {

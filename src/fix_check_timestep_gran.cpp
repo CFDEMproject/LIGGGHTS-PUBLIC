@@ -42,6 +42,10 @@ using namespace FixConst;
 
 #define BIG 1000000.
 
+#include "windows.h"
+#define fmax max
+#define fmin min
+
 /* ---------------------------------------------------------------------- */
 
 FixCheckTimestepGran::FixCheckTimestepGran(LAMMPS *lmp, int narg, char **arg) :

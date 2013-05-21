@@ -39,8 +39,12 @@
 #include <fstream>
 #include <unistd.h>
 
+#include <windows.h>
+
 using namespace LAMMPS_NS;
 using namespace std;
+
+#include <windows.h>
 
 /* ---------------------------------------------------------------------- */
 
@@ -217,7 +221,7 @@ void CfdDatacouplingFile::readVectorData(char *name, double ** field)
 
     fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
     struct stat st;
-    while (stat(file,&st)) sleep(0.03);
+    while (stat(file,&st)) Sleep(0.03);
 
     // set file pointer
     ifstream inputPtr(file);
@@ -251,7 +255,7 @@ void CfdDatacouplingFile::readScalarData(char* name, double *field)
 
     fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
     struct stat st;
-    while (stat(file,&st)) sleep(0.03);
+    while (stat(file,&st)) Sleep(0.03);
 
     // set file pointer
     ifstream inputPtr(file);
@@ -286,7 +290,7 @@ void CfdDatacouplingFile::readGlobalArrayData(char *name, double ** field, int &
 
     fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
     struct stat st;
-    while (stat(file,&st)) sleep(0.03);
+    while (stat(file,&st)) Sleep(0.03);
 
     // set file pointerfrom
     ifstream inputPtr(file);
@@ -327,7 +331,7 @@ void CfdDatacouplingFile::readGlobalVectorData(char* name, double *field, int &l
 
     fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
     struct stat st;
-    while (stat(file,&st)) sleep(0.03);
+    while (stat(file,&st)) Sleep(0.03);
 
     // set file pointer
     int l1;
@@ -362,7 +366,7 @@ void CfdDatacouplingFile::writeVectorData(char *name,  double ** field)
     {
       fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
        struct stat st;
-       while (stat(file,&st)) sleep(0.03);
+       while (stat(file,&st)) Sleep(0.03);
     }
 
     // set file pointer
@@ -393,7 +397,7 @@ void CfdDatacouplingFile::writeScalarData(char* name, double * field)
     {
       fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
        struct stat st;
-       while (stat(file,&st)) sleep(0.03);
+       while (stat(file,&st)) Sleep(0.03);
     }
 
     // set file pointer
@@ -425,7 +429,7 @@ void CfdDatacouplingFile::writeGlobalVectorData(char *name,  double *field,int l
     {
       fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
        struct stat st;
-       while (stat(file,&st)) sleep(0.03);
+       while (stat(file,&st)) Sleep(0.03);
     }
 
     // set file pointer
@@ -457,7 +461,7 @@ void CfdDatacouplingFile::writeGlobalArrayData(char* name, double **field,int le
     {
       fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
        struct stat st;
-       while (stat(file,&st)) sleep(0.03);
+       while (stat(file,&st)) Sleep(0.03);
     }
 
     // set file pointer

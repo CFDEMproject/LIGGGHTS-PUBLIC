@@ -132,7 +132,13 @@
     // for(int i=0;i<numElem_+1;i++)
     //  printf("%d %s %d\n",i,id_[i], strcmp(id_[i],"v"));
 
-    T *tmp[maxElem_];
+<<<<<<< HEAD
+    //T *tmp[maxElem_];
+=======
+   // T *tmp[maxElem_];
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
+	T **tmp;
+	tmp=new T*[maxElem_];
 
     for(int i = 0; i < maxElem_; i++)
         tmp[i] = content_[i];
@@ -145,6 +151,7 @@
     for(int i = 0; i < numElem_; i++)
         content_[i] = tmp[i];
 
+	delete[] tmp;
     //for(int i=0;i<numElem_+1;i++)
     //  printf("%d %s %d\n",i,id_[i], strcmp(id_[i],"v"));
   }

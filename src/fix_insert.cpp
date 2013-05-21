@@ -638,9 +638,22 @@ void FixInsert::pre_exchange()
 
 }
 
+/*--------------- TLH --------------*/
+double round(double d)
+{
+  return floor(d + 0.5);
+}
+/*----------------------------------*/
+
 /* ----------------------------------------------------------------------
    distribute insertions across processors
 ------------------------------------------------------------------------- */
+
+//not standard c, VS complains about unknown function tztzt
+double round(double d)
+{
+  return floor(d + 0.5);
+}
 
 int FixInsert::distribute_ninsert_this(int ninsert_this)
 {
