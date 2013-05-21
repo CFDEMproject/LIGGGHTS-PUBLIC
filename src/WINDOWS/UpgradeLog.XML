@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="LAMMPS">
+</Property><Property Name="Projektmappendatei" Value="C:\Users\Christian\LIGGGHTS-PUBLIC\src\WINDOWS\LAMMPS.sln">
+</Property><Property Name="Date" Value="Dienstag, 21. Mai 2013">
+</Property><Property Name="Time" Value="20:06">
+</Property></Properties><Event ErrorLevel="1" Project="STUBS" Source="STUBS.vcproj" Description="Die Anwendung wurde aktualisiert und enthält nun auch Einstellungen für die Benutzerkontensteuerung (User Account Control, UAC) von Windows Vista. Standardmäßig wird die Anwendung beim Ausführen unter Windows Vista mit aktivierter Benutzerkontensteuerung so markiert, dass sie mit den gleichen Berechtigungen wie der Prozess ausgeführt wird, durch den sie gestartet wurde. Mit der Markierung wird auch das Ausführen der Anwendung mit Virtualisierung deaktiviert. Sie können die Einstellungen der Benutzerkontensteuerung über die Eigenschaftenseiten des Projekts ändern.">
+</Event><Event ErrorLevel="0" Project="STUBS" Source="STUBS.vcproj" Description="Das Projekt wurde erfolgreich aktualisiert.">
+</Event><Event ErrorLevel="3" Project="STUBS" Source="STUBS.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="LAMMPS" Source="LAMMPS.vcproj" Description="Die Webbereitstellung auf dem lokalen IIS-Server wird nicht mehr unterstützt. Das Buildtool für die Webbereitstellung wurde aus den Projekteinstellungen entfernt.">
+</Event><Event ErrorLevel="1" Project="LAMMPS" Source="LAMMPS.vcproj" Description="Die Anwendung wurde aktualisiert und enthält nun auch Einstellungen für die Benutzerkontensteuerung (User Account Control, UAC) von Windows Vista. Standardmäßig wird die Anwendung beim Ausführen unter Windows Vista mit aktivierter Benutzerkontensteuerung so markiert, dass sie mit den gleichen Berechtigungen wie der Prozess ausgeführt wird, durch den sie gestartet wurde. Mit der Markierung wird auch das Ausführen der Anwendung mit Virtualisierung deaktiviert. Sie können die Einstellungen der Benutzerkontensteuerung über die Eigenschaftenseiten des Projekts ändern.">
+</Event><Event ErrorLevel="0" Project="LAMMPS" Source="LAMMPS.vcproj" Description="Das Projekt wurde erfolgreich aktualisiert.">
+</Event><Event ErrorLevel="3" Project="LAMMPS" Source="LAMMPS.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="LAMMPS.sln" Description="Die Projektmappe wurde erfolgreich konvertiert.">
+</Event><Event ErrorLevel="3" Project="" Source="LAMMPS.sln" Description="Converted">
+</Event></UpgradeLog>
