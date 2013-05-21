@@ -148,6 +148,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
                break;
              }
            }
+		   delete[] argVec;
            if(!setflag) error->fix_error(FLERR,this,"unknown primitive wall style");
            hasargs = true;
         } else if (strcmp(arg[iarg_],"mesh") == 0) {

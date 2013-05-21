@@ -44,6 +44,8 @@
 using namespace LAMMPS_NS;
 using namespace std;
 
+#include <windows.h>
+
 /* ---------------------------------------------------------------------- */
 
 CfdDatacouplingFile::CfdDatacouplingFile(LAMMPS *lmp, int iarg,int narg, char **arg,FixCfdCoupling *fc)  :

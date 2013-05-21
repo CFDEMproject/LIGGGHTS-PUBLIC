@@ -1,7 +1,13 @@
 ﻿
+<<<<<<< HEAD
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "STUBS", "STUBS.vcproj", "{FD83089F-1BF6-455F-9BEA-BB1C21FC137C}"
+=======
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "STUBS", "STUBS.vcxproj", "{FD83089F-1BF6-455F-9BEA-BB1C21FC137C}"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LAMMPS", "LAMMPS.vcxproj", "{74AC9767-A52F-47BD-BB26-07C739DA3EA5}"
 EndProject

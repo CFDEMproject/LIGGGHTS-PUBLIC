@@ -12,6 +12,9 @@
 		<Platform
 			Name="Win32"
 		/>
+		<Platform
+			Name="x64"
+		/>
 	</Platforms>
 	<ToolFiles>
 	</ToolFiles>
@@ -118,8 +121,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..;extra;settings;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="..;extra;settings;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2/;../MANYBODY;C:\MPICH2_32\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -138,8 +144,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="mpi.lib extra/fftw2/FFTW2dll.lib"
+				AdditionalDependencies="mpi.lib cxx.lib extra/fftw2/w32/FFTW2dll.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="C:\MPICH2_32\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -321,6 +328,325 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
+<<<<<<< HEAD
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..;extra;settings;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4267;4244;4101;4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="mpi.lib extra/fftw2/FFTW2dll.lib"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="..;extra;settings;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2/;../MANYBODY;C:\MPICH2_64\include"
+				PreprocessorDefinitions="WIN64;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4267;4244;4101;4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="mpi.lib cxx.lib extra/fftw2/x64/FFTW2dll.lib"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="C:\MPICH2_64\lib"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug_STUBS|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..;extra;settings;../STUBS;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4267;4244;4101;4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)/stubs.lib extra/fftw2/FFTW2dll.lib"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release_STUBS|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..;extra;settings;../STUBS;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4267;4244;4101;4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="$(OutDir)/stubs.lib extra/fftw2/FFTW2dll.lib"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+=======
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -412,7 +738,19 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
 				RelativePath="..\atom_vec_line.h"
+=======
+				RelativePath="..\associative_pointer_array.h"
+				>
+			</File>
+			<File
+				RelativePath="..\associative_pointer_array_I.h"
+				>
+			</File>
+			<File
+				RelativePath="..\atom.cpp"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -461,6 +799,82 @@
 			</File>
 			<File
 				RelativePath="..\bond_hybrid.h"
+				>
+			</File>
+			<File
+				RelativePath="..\bounding_box.cpp"
+				>
+			</File>
+			<File
+<<<<<<< HEAD
+				RelativePath="..\bounding_box.h"
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_datacoupling.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_datacoupling.h"
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_datacoupling_file.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_datacoupling_file.h"
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_datacoupling_mpi.cpp"
+=======
+				RelativePath="..\atom_vec_sph.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\atom_vec_sph.h"
+				>
+			</File>
+			<File
+				RelativePath="..\atom_vec_sph_var.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\atom_vec_sph_var.h"
+				>
+			</File>
+			<File
+				RelativePath="..\atom_vec_sphere.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\atom_vec_sphere.h"
+				>
+			</File>
+			<File
+				RelativePath="..\atom_vec_tri.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\atom_vec_tri.h"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_datacoupling_mpi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_regionmodel.h"
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_regionmodel_none.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\cfd_regionmodel_none.h"
 				>
 			</File>
 			<File
@@ -1205,6 +1619,7 @@
 			</File>
 			<File
 				RelativePath="..\fix_cfd_coupling.cpp"
+<<<<<<< HEAD
 				>
 			</File>
 			<File
@@ -1265,10 +1680,92 @@
 			</File>
 			<File
 				RelativePath="..\fix_deform.cpp"
+=======
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
+				RelativePath="..\fix_cfd_coupling.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_cfd_coupling_convection.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_cfd_coupling_convection.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_cfd_coupling_force.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_cfd_coupling_force.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_cfd_coupling_force_implicit.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_cfd_coupling_force_implicit.h"
+				>
+			</File>
+			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_dummy.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_efield.cpp"
+=======
+				RelativePath="..\fix_check_timestep_gran.cpp"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
+				>
+			</File>
+			<File
+				RelativePath="..\fix_check_timestep_gran.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_check_timestep_sph.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_check_timestep_sph.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_contact_history.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_contact_history.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_contact_history_I.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_deform.cpp"
+				>
+			</File>
+			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_freeze.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_freeze.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_gravity.cpp"
+=======
 				RelativePath="..\fix_deform.h"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -1284,7 +1781,27 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_heat_gran.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_heat_gran.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_heat_gran_conduction.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_heat_gran_conduction.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_indent.cpp"
+=======
 				RelativePath="..\fix_drag.h"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -1292,7 +1809,43 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_insert.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_insert.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_insert_pack.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_insert_pack.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_insert_rate_region.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_insert_rate_region.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_insert_stream.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_insert_stream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_langevin.cpp"
+=======
 				RelativePath="..\fix_dt_reset.h"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -1308,6 +1861,89 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_massflow_mesh.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_massflow_mesh.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_mesh.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_mesh.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_mesh_surface.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_mesh_surface.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_mesh_surface_stress.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_mesh_surface_stress.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_mesh_surface_stress_servo.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_mesh_surface_stress_servo.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_minimize.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_minimize.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_momentum.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_momentum.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_move.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_move.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_move_mesh.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_move_mesh.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_multisphere.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_neighlist_mesh.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_neighlist_mesh.h"
+=======
 				RelativePath="..\fix_enforce2d.cpp"
 				>
 			</File>
@@ -1329,6 +1965,7 @@
 			</File>
 			<File
 				RelativePath="..\fix_external.h"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -1404,7 +2041,27 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_nve_sph.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_nve_sph.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_nve_sph_stationary.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_nve_sph_stationary.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_nve_sphere.cpp"
+=======
 				RelativePath="..\fix_insert_stream.cpp"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -1444,7 +2101,19 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_particledistribution_discrete.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_particledistribution_discrete.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_planeforce.cpp"
+=======
 				RelativePath="..\fix_mesh_surface.cpp"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -1452,7 +2121,19 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_pour.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_pour.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_press_berendsen.cpp"
+=======
 				RelativePath="..\fix_mesh_surface_stress.cpp"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -1468,7 +2149,43 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_property_atom.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_property_atom.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_property_atom_tracer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_property_atom_tracer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_property_atom_tracer_stream.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_property_atom_tracer_stream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_property_global.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_property_global.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_read_restart.cpp"
+=======
 				RelativePath="..\fix_minimize.cpp"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
@@ -1484,7 +2201,19 @@
 				>
 			</File>
 			<File
+<<<<<<< HEAD
+				RelativePath="..\fix_region_variable.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_region_variable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\fix_respa.cpp"
+=======
 				RelativePath="..\fix_move.cpp"
+>>>>>>> 33e339be30b5945d011175c3f2386ee19a0c2fc9
 				>
 			</File>
 			<File
