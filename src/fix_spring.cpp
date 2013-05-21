@@ -22,6 +22,7 @@
 #include "atom.h"
 #include "update.h"
 #include "respa.h"
+#include "force.h"
 #include "domain.h"
 #include "error.h"
 #include "group.h"
@@ -130,6 +131,10 @@ void FixSpring::init()
 
   if (strstr(update->integrate_style,"respa"))
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
+
+  // error checks on coarsegraining
+  if(force->cg_active())
+    error->cg(FLERR,this->style);
 }
 
 /* ---------------------------------------------------------------------- */

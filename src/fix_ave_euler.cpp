@@ -203,21 +203,21 @@ void FixAveEuler::setup_bins()
       // round down (makes cell size larger)
       // at least one cell
       if (triclinic_) {
-    	ncells_dim_[dim] = static_cast<int>((hi_lamda_[dim]-lo_lamda_[dim])/cell_size_ideal_lamda_[dim]);
-    	if (ncells_dim_[dim] < 1) {
-    		ncells_dim_[dim] = 1;
-    		error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
-    	}
+      ncells_dim_[dim] = static_cast<int>((hi_lamda_[dim]-lo_lamda_[dim])/cell_size_ideal_lamda_[dim]);
+      if (ncells_dim_[dim] < 1) {
+        ncells_dim_[dim] = 1;
+        error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
+      }
         cell_size_lamda_[dim] = (hi_lamda_[dim]-lo_lamda_[dim])/static_cast<double>(ncells_dim_[dim]);
 
         cell_size_[dim] = cell_size_lamda_[dim]*domain->h[dim];
       } else {
         ncells_dim_[dim] = static_cast<int>((hi_[dim]-lo_[dim])/cell_size_ideal_);
-    	if (ncells_dim_[dim] < 1) {
-    		ncells_dim_[dim] = 1;
-    		
-    		error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
-    	}
+      if (ncells_dim_[dim] < 1) {
+        ncells_dim_[dim] = 1;
+        
+        error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
+      }
         cell_size_[dim] = (hi_[dim]-lo_[dim])/static_cast<double>(ncells_dim_[dim]);
       }
     }
@@ -316,6 +316,7 @@ void FixAveEuler::bin_atoms()
 {
   int i,ibin;
   double **x = atom->x;
+  int *mask = atom->mask;
   int nall = atom->nlocal + atom->nghost;
 
   for (i = 0; i < ncells_max_; i++)
@@ -333,7 +334,9 @@ void FixAveEuler::bin_atoms()
 
   for (i = nall-1; i >= 0; i--)
   {
-    ibin = coord2bin(x[i]);
+      if(! (mask[i] & groupbit)) continue;
+
+      ibin = coord2bin(x[i]);
 
       // ghosts outside grid may return values ibin < 0 || ibin >= ncells_
       // lets ignore them

@@ -55,6 +55,7 @@ namespace LAMMPS_NS
 
           virtual bool isDoubleData() = 0;
 
+          virtual void addZero() = 0;
           virtual void addUninitialized(int n) = 0;
           virtual int size() = 0;
           virtual int nVec() = 0;

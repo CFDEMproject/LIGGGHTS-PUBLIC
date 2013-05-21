@@ -19,8 +19,9 @@ pair_style style keyword values :pre
 
 style = {gran/hooke} or {gran/hooke/history} or {gran/hertz/history} or {gran/hooke/history/simple} or {gran/hertz/history/simple} or {absolute_damping} :ulb,l
 zero or more keyword/value pairs may be appended :l
-  {rolling_friction} values = 'cdt' or 'off'
+  {rolling_friction} values = 'cdt' or 'epsd' or 'off'
     cdt = activates constant directional rolling friction model
+    epsd = activates elastic-plastic spring-dashpot model
     off = no rolling friction model
   {cohesion} values = 'sjkr' or 'sjkr2' or'off'
     sjkr = activates simplified JKR cohesion model
@@ -169,6 +170,28 @@ If the rolling friction model is activated, the coefficient of rolling friction 
 fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
     (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
 
+The command {rolling_friction} = 'epsd' activates an elastic-plastic spring-dashpot model (see Ai et al.) that adds an additional torque contribution, equal to
+
+:c,image(Eqs/pair_gran_hooke_eqEpsd1.gif)
+
+where the torque due to the spring M_rk is calculated as
+
+:c,image(Eqs/pair_gran_hooke_eqEpsd2.gif)
+
+Here k_r denotes the rolling stiffness and dtheta_r is the incremental relative rotation between the particles. The spring torque is limited by the full mobilisation torque M_rm that is determined by the normal force F_n and the coefficient of rolling friction (rmu) (compare the CDT model).
+
+The viscous damping torque M_rd is implemented as
+
+:c,image(Eqs/pair_gran_hooke_eqEpsd3.gif)
+
+where in the current implementation the damping is disabled in case of full mobilisation (f = 0). The damping coefficient C_r may be expressed as:
+
+:c,image(Eqs/pair_gran_hooke_eqEpsd4.gif)
+
+Here I_i/j is the moment of inertia and m_i/j is the mass of the particles i and j, respectively. In addition to rmu (see CDT model), eta_r is the required material property that must be defined as
+
+fix id all property/global coefficientRollingViscousDamping peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
 
 A simple linear [cohesion model] can be activated by setting {cohesion} = 'sjkr' or 'sjkr2'
 (simplified Johnson-Kendall-Roberts model). If two particle are in contact, 

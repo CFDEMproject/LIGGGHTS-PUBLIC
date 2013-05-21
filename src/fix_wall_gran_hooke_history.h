@@ -53,13 +53,16 @@ class FixWallGranHookeHistory : public FixWallGran {
                               double dx, double dy, double dz,double *vwall,
                              double *c_history,double area_ratio);
   virtual void addCohesionForce(int &ip, double &r, double &Fn_coh,double area_ratio);
+  void addRollingFrictionTorque(int ip, double wr1,double wr2,double wr3,double cr,double ccel,
+            double r,double mi,double rmu,double kn,double dx, double dy, double dz,double rsqinv,double *c_history,double *r_torque);
+
   virtual void deriveContactModelParams(int ip, double deltan,double meff_wall,
                             double &kn, double &kt, double &gamman, double &gammat,
                             double &xmu,double &rmu,double &vnnr);
   virtual void pre_reset_history(int,double*) {}
 
   int dampflag,cohesionflag,rollingflag,viscousflag;
-  double **Yeff,**Geff,**betaeff,**veff,**cohEnergyDens,**coeffRestLog,**coeffFrict;
+  double **Yeff,**Geff,**betaeff,**veff,**cohEnergyDens,**coeffRestLog,**coeffFrict,**coeffRollVisc;
   double charVel,**coeffRollFrict,**coeffMu,**coeffRestMax,**coeffStc;
 
   // heat transfer

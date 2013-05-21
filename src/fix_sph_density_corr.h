@@ -49,10 +49,10 @@ class FixSphDensityCorr : public FixSph {
   void updatePtrs();
   void post_create();
   virtual void init();
-  virtual void post_integrate();
+  virtual void pre_force(int);
 
  private:
-  template <int> void post_integrate_eval();
+  template <int> void pre_force_eval();
 
   class FixPropertyAtom* fix_quantity;
   char *quantity_name;

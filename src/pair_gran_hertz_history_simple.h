@@ -46,6 +46,7 @@ class PairGranHertzHistorySimple : public PairGranHookeHistorySimple {
   ~PairGranHertzHistorySimple();
 
   virtual void settings(int, char **);
+  virtual void init_granular();
 
  protected:
   virtual void deriveContactModelParams(int &ip, int &jp,double &meff,double &deltan, double &kn, double &kt, double &gamman, double &gammat, double &xmu, double &rmu,double &vnnr);

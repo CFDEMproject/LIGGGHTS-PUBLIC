@@ -15,7 +15,7 @@ dump ID group-ID style N file args :pre
 
 ID = user-assigned name for the dump :ulb,l
 group-ID = ID of the group of atoms to be dumped :l
-style = {atom} or {atom/vtk} or {cfg} or {dcd} or {xtc} or {xyz} or {image} or {local} or {custom} or {mesh/stl} or {mesh/vtk} or {mesh/vtk} or {decomposition/vtk} :l
+style = {atom} or {atom/vtk} or {cfg} or {dcd} or {xtc} or {xyz} or {image} or {local} or {custom} or {mesh/stl} or {mesh/vtk} or {mesh/vtk} or {decomposition/vtk} or {euler/vtk} :l
 N = dump every this many timesteps :l
 file = name of file to write dump info to :l
 args = list of arguments for a particular style :l
@@ -34,6 +34,7 @@ args = list of arguments for a particular style :l
       keywords = {output}
       {output} values = face or interpolate 
       dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
+  {euler/vtk} args = none
   {decomposition/vtk} args = none :pre
 
   {local} args = list of local attributes
@@ -105,6 +106,7 @@ the mesh IDs, stress etc- calculated on a granular mesh using the
 "fix mesh/surface/stress"_fix_mesh_surface_stress.html  command.
 Furthermore, style {decomposition/vtk} can be used to dump the current
 parallel domain decomposition to a VTK file.
+Style {euler/vtk} can be used to dump cell-based averages to a VTK file.
 
 [Description:]
 
@@ -353,6 +355,9 @@ number of face neighbors LIGGGHTS has recognized for each face.
 By providing any ID (or a list of IDs) of "fix mesh/surface"_fix_mesh_surface.html
 commands, you can specify which meshes to dump. If no meshes are specified,
 all meshes used in the simulation are dumped.
+
+The {euler/vtk} style dumps the output of a "fix ave/euler"_fix_ave_euler.html
+command into a series of VTK files. No further args are expected.
 
 The {decomposition/vtk} style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.

@@ -57,7 +57,7 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) : FixH
       iarg += 2;
       hasargs = true;
     } else if(strcmp(style,"heat/gran/conduction") == 0)
-      	error->fix_error(FLERR,this,"unknown keyword");
+        error->fix_error(FLERR,this,"unknown keyword");
   }
 
   fix_conductivity = NULL;
@@ -70,8 +70,8 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) : FixH
 FixHeatGranCond::~FixHeatGranCond()
 {
 
-	if (conductivity)
-		delete []conductivity;
+  if (conductivity)
+    delete []conductivity;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -159,6 +159,10 @@ void FixHeatGranCond::init()
   }
 
   updatePtrs();
+
+  // error checks on coarsegraining
+  if(force->cg_active())
+    error->cg(FLERR,this->style);
 }
 
 /* ---------------------------------------------------------------------- */

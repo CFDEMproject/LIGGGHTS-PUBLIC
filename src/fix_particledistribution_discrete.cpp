@@ -73,7 +73,7 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
 
   int itemp=0;
 
-  if(narg < iarg+2*ntemplates)
+  if(narg != iarg+2*ntemplates)
     error->all(FLERR,"Illegal fix particledistribution/discrete command, # of templates does not match # of arguments");
 
   // parse further args

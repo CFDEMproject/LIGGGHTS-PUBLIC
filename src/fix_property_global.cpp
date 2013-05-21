@@ -96,6 +96,8 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
 
     extvector=0; 
 
+    filename = 0;
+
     //check if there is already a fix that tries to register a property with the same name
     for (int ifix = 0; ifix < modify->nfix; ifix++)
         if ((modify->fix[ifix]) && (strcmp(modify->fix[ifix]->style,style) == 0) && (strcmp(((FixPropertyGlobal*)(modify->fix[ifix]))->variablename,variablename)==0) )
@@ -136,11 +138,20 @@ FixPropertyGlobal::~FixPropertyGlobal()
   // delete locally stored arrays
   delete[] variablename;
 
+  if(filename) delete[] filename;
+
   memory->sfree(values);
   memory->sfree(values_recomputed);
 
   if(array)            memory->sfree(array);
   if(array_recomputed) memory->sfree(array_recomputed);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixPropertyGlobal::pre_delete(bool unfixflag)
+{
+    if(filename) write();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -312,4 +323,55 @@ void FixPropertyGlobal::new_array(int l1,int l2)
 
     memory->create(array,size_array_rows,size_array_cols,"FixPropGlob:array");
     memory->create(array_recomputed,size_array_rows,size_array_cols,"FixPropGlob:array_recomputed");
+}
+
+/* ----------------------------------------------------------------------
+   write out command
+------------------------------------------------------------------------- */
+
+void FixPropertyGlobal::write()
+{
+    if(0 != comm->me)
+        return;
+
+    FILE *file = fopen(filename,"w");
+
+    if(!file)
+        error->one(FLERR,"Fix property/global cannot open file");
+
+    // fix id group style variablename
+    fprintf(file,"fix %s %s %s %s ",id,group->names[igroup],style,variablename);
+
+    // datatype
+    char *datatyp;
+    if(0 == data_style) datatyp = (char*) "scalar";
+    if(1 == data_style) datatyp = (char*) "vector";
+    if(2 == data_style && is_symmetric) datatyp = (char*) "atomtypepair";
+    else if(2 == data_style) datatyp            = (char*) "matrix";
+    fprintf(file,"%s ",datatyp);
+
+    // size_array_cols if required
+    if(2 == data_style) fprintf(file,"%d ",size_array_cols);
+
+    // values
+    for(int i = 0; i < nvalues; i++)
+        fprintf(file,"%f ",values[i]);
+
+    fprintf(file,"\n");
+    fclose(file);
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixPropertyGlobal::modify_param(int narg, char **arg)
+{
+  if (strcmp(arg[0],"file") == 0) {
+    if (narg < 2) error->fix_error(FLERR,this,"not enough arguments for fix_modify 'file'");
+
+    filename = new char[strlen(arg[1])+1];
+    strcpy(filename,arg[1]);
+    return 2;
+  }
+
+  return 0;
 }

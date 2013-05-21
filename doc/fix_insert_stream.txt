@@ -226,6 +226,7 @@ This fix is not invoked during "energy minimization"_minimize.html.
 [Restrictions:]
 
 Keywords {duration} and {extrude_length} can not be used together.
+The insertion face cannot move.
 
 [Related commands:]
 

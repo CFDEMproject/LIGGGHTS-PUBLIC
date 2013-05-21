@@ -23,6 +23,10 @@
 Contributing author for SPH:
 Andreas Aigner (CD Lab Particulate Flow Modelling, JKU)
 andreas.aigner@jku.at
+-------------------------------------------------------------------------
+Contributing author for SPH:
+Andreas Eitzlmayr (Institute for Process and Particle Engineering, TU Graz)
+andreas.eitzlmayr@tugraz.at
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -46,11 +50,11 @@ class FixSPHPressure : public FixSph {
   ~FixSPHPressure();
   int setmask();
   void init();
-  void post_integrate();
+  void pre_force(int);
 
  private:
   int pressureStyle;
-  double B,rho0,rho0inv,gamma;
+  double B,rho0,rho0inv,gamma,P0;
 };
 
 }

@@ -39,11 +39,14 @@ class Universe : protected Pointers {
   int *uni2orig;          // proc I in universe uworld is
                           // proc uni2orig[I] in original communicator
 
+  char *universe_id;       
+
   Universe(class LAMMPS *, MPI_Comm);
   ~Universe();
   void reorder(char *, char *);
   void add_world(char *);
   int consistent();
+  void id(char *id);
 };
 
 }

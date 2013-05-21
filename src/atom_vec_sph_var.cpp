@@ -60,7 +60,7 @@ AtomVecSPH2::AtomVecSPH2(LAMMPS *lmp, int narg, char **arg) :
   xcol_data = 6;
 
   atom->p_flag = atom->rho_flag = atom->e_flag = 1;
-	
+  
   atom->radius_flag = atom->rmass_flag = 1;
   mass_type = 0; // is default!
   radvary = 0;
@@ -111,7 +111,7 @@ void AtomVecSPH2::grow(int n)
   e = memory->grow(atom->e,nmax,"atom:e");
   de = memory->grow(atom->e,nmax,"atom:de");
 
-  radius = memory->grow(atom->radius,nmax,"atom:radius");	
+  radius = memory->grow(atom->radius,nmax,"atom:radius");  
   rmass = memory->grow(atom->rmass,nmax,"atom:rmass");
 
   if (atom->nextra_grow)

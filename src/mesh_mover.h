@@ -316,7 +316,7 @@ namespace LAMMPS_NS
                           // period
                           lmp->force->numeric(arg[10]));
           }
-	    } else if(strcmp(name,"rotate/variable") == 0){
+      } else if(strcmp(name,"rotate/variable") == 0){
           if(narg < 11) return 0;
           else
           {

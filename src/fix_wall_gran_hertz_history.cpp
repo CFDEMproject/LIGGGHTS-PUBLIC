@@ -69,14 +69,17 @@ void FixWallGranHertzHistory::init_granular()
   coeffRestLog = ((PairGranHertzHistory*)pairgran_)->coeffRestLog;
   coeffFrict = ((PairGranHertzHistory*)pairgran_)->coeffFrict;
   coeffRollFrict = ((PairGranHertzHistory*)pairgran_)->coeffRollFrict;
+  coeffRollVisc = ((PairGranHertzHistory*)pairgran_)->coeffRollVisc;
 
   //need to check properties for rolling friction and cohesion energy density here
   //since these models may not be active in the pair style
   
-  FixPropertyGlobal *coeffRollFrict1, *cohEnergyDens1;
+  FixPropertyGlobal *coeffRollFrict1, *coeffRollVisc1, *cohEnergyDens1;
   int max_type = pairgran_->mpg->max_type();
   if(rollingflag)
     coeffRollFrict1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("coefficientRollingFriction","property/global","peratomtypepair",max_type,max_type,style));
+  if(rollingflag == 2) // epsd model
+    coeffRollVisc1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("coefficientRollingViscousDamping","property/global","peratomtypepair",max_type,max_type,force->pair_style));
   if(cohesionflag)
     cohEnergyDens1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("cohesionEnergyDensity","property/global","peratomtypepair",max_type,max_type,style));
 
@@ -86,9 +89,14 @@ void FixWallGranHertzHistory::init_granular()
       for(int j=1;j<max_type+1;j++)
       {
           if(rollingflag) coeffRollFrict[i][j] = coeffRollFrict1->compute_array(i-1,j-1);
+          if(rollingflag == 2) coeffRollVisc[i][j] = coeffRollVisc1->compute_array(i-1,j-1);
           if(cohesionflag) cohEnergyDens[i][j] = cohEnergyDens1->compute_array(i-1,j-1);
       }
   }
+
+  // error checks on coarsegraining
+  if((rollingflag || cohesionflag) && force->cg_active())
+    error->cg(FLERR,"Granular model with rolling friction and / or cohesion");
 }
 
 /* ----------------------------------------------------------------------

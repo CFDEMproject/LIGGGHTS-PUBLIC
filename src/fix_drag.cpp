@@ -16,6 +16,7 @@
 #include "string.h"
 #include "fix_drag.h"
 #include "atom.h"
+#include "force.h"
 #include "update.h"
 #include "respa.h"
 #include "domain.h"
@@ -81,6 +82,10 @@ void FixDrag::setup(int vflag)
     post_force_respa(vflag,nlevels_respa-1,0);
     ((Respa *) update->integrate)->copy_f_flevel(nlevels_respa-1);
   }
+
+  // error checks on coarsegraining
+  if(force->cg_active())
+    error->cg(FLERR,this->style);
 }
 
 /* ---------------------------------------------------------------------- */

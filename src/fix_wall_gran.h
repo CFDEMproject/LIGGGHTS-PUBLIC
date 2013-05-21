@@ -43,10 +43,10 @@ class FixWallGran : public Fix {
   /* INHERITED FROM Fix */
 
   virtual int setmask();
-  void post_create();
-  void pre_delete(bool unfixflag);
-  void init();
-  void setup(int vflag);
+  virtual void post_create();
+  virtual void pre_delete(bool unfixflag);
+  virtual void init();
+  virtual void setup(int vflag);
   void post_force(int vflag);
   void post_force_pgl();
   void post_force_respa(int, int, int);
@@ -93,12 +93,20 @@ class FixWallGran : public Fix {
   double dt_;
   int shearupdate_;
 
+  // class variables for atom properties
+  int nlocal_;
+  double **x_, **f_, *radius_, *rmass_, **wallforce_, r0_;
+
   void set_r0(double _r0)
   { r0_ = _r0; }
 
   virtual void init_granular() {}
   virtual void init_heattransfer() {}
   bool heattransfer_flag_;
+
+  // mesh and primitive force implementations
+  virtual void post_force_mesh(int);
+  virtual void post_force_primitive(int);
 
   // virtual functions that allow implementation of the
   // actual physics in the derived classes
@@ -109,8 +117,13 @@ class FixWallGran : public Fix {
 
   // sets flag that neigh list shall be built
   virtual void pre_neighbor();
+
   // builds neigh list if necessary
   virtual void pre_force(int vflag);
+
+  // references to mesh walls
+  int n_FixMesh_;
+  class FixMeshSurface **FixMesh_list_;
 
   // pair style, fix rigid for correct damping
   char *pairstyle_;
@@ -133,10 +146,6 @@ class FixWallGran : public Fix {
   // flag if mesh wall
   int meshwall_;
 
-  // references to mesh walls
-  int n_FixMesh_;
-  class FixMeshSurface **FixMesh_list_;
-
   // flag for stressanalysis
   // true if any of the meshes tracks stresses
   bool stress_flag_;
@@ -151,16 +160,10 @@ class FixWallGran : public Fix {
   bool store_force_;
   class FixPropertyAtom *fix_wallforce_;
 
-  // class variables for atom properties
-  int nlocal_;
-  double **x_, **f_, *radius_, *rmass_, **wallforce_, r0_;
-
   // max neigh cutoff - as in Neighbor
   double cutneighmax_;
 
   void post_force_wall(int vflag);
-  void post_force_mesh(int);
-  void post_force_primitive(int);
 
   inline void post_force_eval_contact(int iPart, double deltan, double *delta, double *v_wall,
                     double *c_history, int iMesh = -1, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);

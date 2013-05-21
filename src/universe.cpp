@@ -59,6 +59,8 @@ Universe::Universe(LAMMPS *lmp, MPI_Comm communicator) : Pointers(lmp)
 
   memory->create(uni2orig,nprocs,"universe:uni2orig");
   for (int i = 0; i < nprocs; i++) uni2orig[i] = i;
+
+  universe_id = 0; 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -70,6 +72,7 @@ Universe::~Universe()
   memory->destroy(root_proc);
   memory->destroy(uni2orig);
   delete []version; 
+  if(universe_id) delete []universe_id; 
 }
 
 /* ----------------------------------------------------------------------
@@ -206,4 +209,14 @@ int Universe::consistent()
   for (int i = 0; i < nworlds; i++) n += procs_per_world[i];
   if (n == nprocs) return 1;
   else return 0;
+}
+
+/* ----------------------------------------------------------------------
+   give this universe an ID
+------------------------------------------------------------------------- */
+
+void Universe::id(char *id)
+{
+  universe_id = new char[strlen(id)+1];
+  strcpy(universe_id,id);
 }

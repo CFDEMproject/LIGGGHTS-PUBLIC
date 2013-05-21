@@ -44,8 +44,9 @@ general_keyword =  {shear} or {store_force} :l
 
 zero or more model_keyword/value pairs may be appended :l
 model_keyword = {rolling_friction} or {cohesion} or {tangential_damping} or {temperature} :l
-  {rolling_friction} values = 'cdt' or 'off'
+  {rolling_friction} values = 'cdt' or 'epsd' or 'off'
     cdt = activates constant directional rolling friction model
+    epsd = activates elastic-plastic spring-dashpot model
     off = no rolling friction model
   {cohesion} values = 'sjkr' or 'sjkr2' or 'off'
     sjkr = activates simplified JKR cohesion model

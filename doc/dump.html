@@ -21,7 +21,7 @@
 
 <LI>group-ID = ID of the group of atoms to be dumped 
 
-<LI>style = <I>atom</I> or <I>atom/vtk</I> or <I>cfg</I> or <I>dcd</I> or <I>xtc</I> or <I>xyz</I> or <I>image</I> or <I>local</I> or <I>custom</I> or <I>mesh/stl</I> or <I>mesh/vtk</I> or <I>mesh/vtk</I> or <I>decomposition/vtk</I> 
+<LI>style = <I>atom</I> or <I>atom/vtk</I> or <I>cfg</I> or <I>dcd</I> or <I>xtc</I> or <I>xyz</I> or <I>image</I> or <I>local</I> or <I>custom</I> or <I>mesh/stl</I> or <I>mesh/vtk</I> or <I>mesh/vtk</I> or <I>decomposition/vtk</I> or <I>euler/vtk</I> 
 
 <LI>N = dump every this many timesteps 
 
@@ -44,6 +44,7 @@
       keywords = <I>output</I>
       <I>output</I> values = face or interpolate 
       dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
+  <I>euler/vtk</I> args = none
   <I>decomposition/vtk</I> args = none 
 </PRE>
 <PRE>  <I>local</I> args = list of local attributes
@@ -116,6 +117,7 @@ the mesh IDs, stress etc- calculated on a granular mesh using the
 <A HREF = "fix_mesh_surface_stress.html">fix mesh/surface/stress</A>  command.
 Furthermore, style <I>decomposition/vtk</I> can be used to dump the current
 parallel domain decomposition to a VTK file.
+Style <I>euler/vtk</I> can be used to dump cell-based averages to a VTK file.
 </P>
 <P><B>Description:</B>
 </P>
@@ -364,6 +366,9 @@ number of face neighbors LIGGGHTS has recognized for each face.
 <P>By providing any ID (or a list of IDs) of <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
 commands, you can specify which meshes to dump. If no meshes are specified,
 all meshes used in the simulation are dumped.
+</P>
+<P>The <I>euler/vtk</I> style dumps the output of a <A HREF = "fix_ave_euler.html">fix ave/euler</A>
+command into a series of VTK files. No further args are expected.
 </P>
 <P>The <I>decomposition/vtk</I> style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.

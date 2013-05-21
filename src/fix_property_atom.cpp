@@ -305,7 +305,7 @@ int FixPropertyAtom::unpack_exchange(int nlocal, double *buf)
 
 int FixPropertyAtom::pack_restart(int i, double *buf)
 {
-  buf[0] = nvalues+1;
+  buf[0] = static_cast<double>(nvalues+1);
   if (data_style) for(int k=0;k<nvalues;k++) buf[k+1] = array_atom[i][k];
   else buf[1] = vector_atom[i];
 

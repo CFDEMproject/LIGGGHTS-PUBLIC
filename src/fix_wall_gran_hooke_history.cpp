@@ -89,6 +89,8 @@ FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS *lmp, int narg, char **a
             iarg_++;
             if(strcmp(arg[iarg_],"cdt") == 0)
                 rollingflag = 1;
+            else if(strcmp(arg[iarg_],"epsd") == 0)
+                rollingflag = 2;
             else if(strcmp(arg[iarg_],"off") == 0)
                 rollingflag = 0;
             else
@@ -156,6 +158,7 @@ void FixWallGranHookeHistory::init_granular()
   coeffRestLog = ((PairGranHookeHistory*)pairgran_)->coeffRestLog;
   coeffFrict = ((PairGranHookeHistory*)pairgran_)->coeffFrict;
   coeffRollFrict = ((PairGranHookeHistory*)pairgran_)->coeffRollFrict;
+  coeffRollVisc = ((PairGranHookeHistory*)pairgran_)->coeffRollVisc;
   coeffMu = ((PairGranHookeHistory*)pairgran_)->coeffMu;
   coeffRestMax = ((PairGranHookeHistory*)pairgran_)->coeffRestMax;
   coeffStc = ((PairGranHookeHistory*)pairgran_)->coeffStc;
@@ -165,10 +168,12 @@ void FixWallGranHookeHistory::init_granular()
   // since these models may not be active in the pair style
   
   int max_type = pairgran_->mpg->max_type();
-  FixPropertyGlobal *coeffRollFrict1, *cohEnergyDens1,*coeffMu1,*coeffRestMax1,*coeffStc1;
+  FixPropertyGlobal *coeffRollFrict1, *cohEnergyDens1,*coeffMu1,*coeffRestMax1,*coeffStc1,*coeffRollVisc1;
   if(rollingflag)
     coeffRollFrict1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("coefficientRollingFriction","property/global","peratomtypepair",max_type,max_type,style));
-  if(cohesionflag)
+  if(rollingflag == 2) // epsd model
+    coeffRollVisc1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("coefficientRollingViscousDamping","property/global","peratomtypepair",max_type,max_type,force->pair_style));
+ if(cohesionflag)
     cohEnergyDens1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("cohesionEnergyDensity","property/global","peratomtypepair",max_type,max_type,style));
   if(viscousflag)
   {
@@ -182,6 +187,7 @@ void FixWallGranHookeHistory::init_granular()
       for(int j=1;j<max_type+1;j++)
       {
           if(rollingflag) coeffRollFrict[i][j] = coeffRollFrict1->compute_array(i-1,j-1);
+          if(rollingflag == 2) coeffRollVisc[i][j] = coeffRollVisc1->compute_array(i-1,j-1);
           if(cohesionflag) cohEnergyDens[i][j] = cohEnergyDens1->compute_array(i-1,j-1);
           if(viscousflag)
           {
@@ -237,9 +243,9 @@ void FixWallGranHookeHistory::init_heattransfer()
 
 void FixWallGranHookeHistory::compute_force(int ip, double deltan, double rsq,double meff_wall, double dx, double dy, double dz,double *vwall,double *c_history, double area_ratio)
 {
-  double r,vr1,vr2,vr3,vnnr,vn1,vn2,vn3,vt1,vt2,vt3,wrmag;
+  double r,vr1,vr2,vr3,vnnr,vn1,vn2,vn3,vt1,vt2,vt3;
   double wr1,wr2,wr3,damp,ccel,vtr1,vtr2,vtr3,vrel;
-  double fn,fs,fs1,fs2,fs3,fx,fy,fz,tor1,tor2,tor3,r_torque[3],r_torque_n[3];
+  double fn,fs,fs1,fs2,fs3,fx,fy,fz,tor1,tor2,tor3,r_torque[3];
   double shrmag,rsht,rinv,rsqinv;
   double kn, kt, gamman, gammat, xmu, rmu;
   double cri, crj;
@@ -375,22 +381,7 @@ void FixWallGranHookeHistory::compute_force(int ip, double deltan, double rsq,do
   // add rolling friction torque
   vectorZeroize3D(r_torque);
   if(rollingflag)
-  {
-            wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
-            if (wrmag > 0.)
-            {
-                r_torque[0] = rmu*kn*(radius-r)*wr1/wrmag*cr;
-            r_torque[1] = rmu*kn*(radius-r)*wr2/wrmag*cr;
-            r_torque[2] = rmu*kn*(radius-r)*wr3/wrmag*cr;
-
-            // remove normal (torsion) part of torque
-            double rtorque_dot_delta = r_torque[0]*dx+ r_torque[1]*dy + r_torque[2]*dz;
-            r_torque_n[0] = dx * rtorque_dot_delta * rsqinv;
-            r_torque_n[1] = dy * rtorque_dot_delta * rsqinv;
-            r_torque_n[2] = dz * rtorque_dot_delta * rsqinv;
-            vectorSubtract3D(r_torque,r_torque_n,r_torque);
-            }
-  }
+    addRollingFrictionTorque(ip,wr1,wr2,wr3,cr,ccel,r,mass,rmu,kn,dx,dy,dz,rsqinv,c_history,r_torque);
 
   if(computeflag_)
   {
@@ -453,6 +444,94 @@ inline void FixWallGranHookeHistory::addCohesionForce(int &ip, double &r, double
        Acont = M_PI * 2. * reff_wall * (reff_wall - r);
     int itype = atom->type[ip];
     Fn_coh=cohEnergyDens[itype][atom_type_wall_]*Acont*area_ratio;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double wr2,double wr3,double cr,double ccel,
+            double r,double mi,double rmu,double kn,double dx, double dy, double dz,double rsqinv,double *c_history,double *r_torque)
+{
+    double wrmag,r_torque_n[3];
+    double radius = atom->radius[ip];
+
+    if (rollingflag == 1)
+    {
+            wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
+            if (wrmag > 0.)
+            {
+                r_torque[0] = rmu*kn*(radius-r)*wr1/wrmag*cr;
+                r_torque[1] = rmu*kn*(radius-r)*wr2/wrmag*cr;
+                r_torque[2] = rmu*kn*(radius-r)*wr3/wrmag*cr;
+
+                // remove normal (torsion) part of torque
+                double rtorque_dot_delta = r_torque[0]*dx+ r_torque[1]*dy + r_torque[2]*dz;
+                r_torque_n[0] = dx * rtorque_dot_delta * rsqinv;
+                r_torque_n[1] = dy * rtorque_dot_delta * rsqinv;
+                r_torque_n[2] = dz * rtorque_dot_delta * rsqinv;
+                vectorSubtract3D(r_torque,r_torque_n,r_torque);
+            }
+    }
+    else
+    {
+      double kr,r_inertia,r_coef,r_torque_mag,r_torque_max,factor;
+      double dr_torque[3],wr_n[3],wr_t[3];
+
+      int itype = atom->type[ip];
+      double dt = update->dt; 
+
+      // remove normal (torsion) part of relative rotation
+      // use only tangential parts for rolling torque
+      double wr_dot_delta = wr1*dx+ wr2*dy + wr3*dz;
+      wr_n[0] = dx * wr_dot_delta * rsqinv;
+      wr_n[1] = dy * wr_dot_delta * rsqinv;
+      wr_n[2] = dz * wr_dot_delta * rsqinv;
+      wr_t[0] = wr1 - wr_n[0];
+      wr_t[1] = wr2 - wr_n[1];
+      wr_t[2] = wr3 - wr_n[2];
+
+      // spring
+      kr = 2.25*kn*rmu*rmu*radius*radius; 
+
+      dr_torque[0] = kr * wr_t[0] * dt;
+      dr_torque[1] = kr * wr_t[1] * dt;
+      dr_torque[2] = kr * wr_t[2] * dt;
+
+      r_torque[0] = c_history[3] + dr_torque[0];
+      r_torque[1] = c_history[4] + dr_torque[1];
+      r_torque[2] = c_history[5] + dr_torque[2];
+
+      // dashpot
+      if (domain->dimension == 2) r_inertia = 1.5*mi*radius*radius;
+      else  r_inertia = 1.4*mi*radius*radius;
+
+      r_coef = coeffRollVisc[itype][atom_type_wall_] * 2 * sqrt(r_inertia*kr);
+
+      // limit max. torque
+      r_torque_mag = vectorMag3D(r_torque);
+      r_torque_max = fabs(ccel*r)*radius*rmu;
+      if(r_torque_mag > r_torque_max)
+      {
+        factor = r_torque_max / r_torque_mag;
+
+        r_torque[0] *= factor;
+        r_torque[1] *= factor;
+        r_torque[2] *= factor;
+
+        r_coef = 0.0; // no damping in case of full mobilisation rolling angle
+
+      }
+
+      // save rolling torque due to spring
+      c_history[3] = r_torque[0];
+      c_history[4] = r_torque[1];
+      c_history[5] = r_torque[2];
+
+      // add damping torque
+      r_torque[0] += r_coef*wr_t[0];
+      r_torque[1] += r_coef*wr_t[1];
+      r_torque[2] += r_coef*wr_t[2];
+
+    }
 }
 
 /* ---------------------------------------------------------------------- */

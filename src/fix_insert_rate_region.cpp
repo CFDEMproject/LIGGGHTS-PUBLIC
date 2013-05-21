@@ -75,7 +75,8 @@ void FixInsertRateRegion::calc_insertion_properties()
     if(!ins_region)
         error->fix_error(FLERR,this,"must define an insertion region");
     ins_region->reset_random(seed + SEED_OFFSET);
-    ins_region->volume_mc(ntry_mc,region_volume,region_volume_local);
+    ins_region->volume_mc(ntry_mc,all_in_flag==0?false:true,fix_distribution->max_r_bound(),
+                          region_volume,region_volume_local);
     if(region_volume <= 0. || region_volume_local < 0. || region_volume_local > region_volume)
         error->one(FLERR,"Fix insert: Region volume calculation with MC failed");
 

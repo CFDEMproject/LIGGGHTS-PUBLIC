@@ -100,6 +100,11 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
         universe->add_world(arg[iarg]);
         iarg++;
       }
+    } else if (strcmp(arg[iarg],"-uid") == 0) {
+      if (iarg+2 > narg)
+        error->universe_all(FLERR,"Invalid command-line argument");
+      universe->id(arg[iarg+1]);
+      iarg += 2;
     } else if (strcmp(arg[iarg],"-in") == 0 ||
                strcmp(arg[iarg],"-i") == 0) {
       if (iarg+2 > narg)

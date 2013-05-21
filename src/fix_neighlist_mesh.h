@@ -59,6 +59,9 @@ class FixNeighlistMesh : public Fix
 
     void getPointers(int *&cList, int *&nContact);
 
+    int getSizeNumContacts() {return numContacts.size();}
+    int getTotalNumContacts() {return numAllContacts_;}
+
   private:
 
     void handleTriangle(int iTri);
@@ -71,6 +74,8 @@ class FixNeighlistMesh : public Fix
     bool buildNeighList;
 
     ScalarContainer<int> contactList, numContacts;
+
+    int numAllContacts_;
 
     int mbinx,mbiny,mbinz,maxhead, *bins, *binhead;
     double skin;

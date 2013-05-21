@@ -48,7 +48,7 @@ servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV
 </UL>
 <P><B>Examples:</B>
 </P>
-<P>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force dim z  set_point -10 vel_max 1.
+<P>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force dim z  target_val 10 vel_max 1.
 </P>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>
 </P>
@@ -86,6 +86,8 @@ This fix supports <A HREF = "fix_modify.html">fix_modify</A> with option <I>inte
 to start or stop the servo wall integration inbetween two runs.
 This fix also supports <A HREF = "fix_modify.html">fix_modify</A> with option <I>target_val</I> = val to
 change the target value inbetween two runs.
+This fix also supports <A HREF = "fix_modify.html">fix_modify</A> with option <I>ctrlParam</I> = kp ki kd
+to change the controller params inbetween two runs.
 </P>
 <P><B>Restrictions:</B>
 </P>

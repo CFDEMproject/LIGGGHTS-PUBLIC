@@ -136,7 +136,7 @@
           sizeElements += (size_this+1);
       }
 
-      // gather the pre-element data
+      // gather the per-element data
       
       sizeElements_all = MPI_Gather0_Vector(sendbufElems,sizeElements,recvbufElems,this->world);
 
@@ -178,8 +178,8 @@
   }
 
   /* ----------------------------------------------------------------------
-   restart functionality - write all required data into restart buffer
-   executed on all processes, but only proc 0 writes into writebuf
+   restart functionality - read all required data from restart buffer
+   executed on all processes
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>

@@ -52,7 +52,7 @@ namespace LAMMPS_NS
 
         virtual void setup_pre_force(int vflag);
 
-        void pre_force(int vflag);
+        virtual void pre_force(int vflag);
         virtual void final_integrate();
 
         double compute_vector(int n);

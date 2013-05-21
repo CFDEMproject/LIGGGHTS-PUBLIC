@@ -109,6 +109,8 @@ class Modify : protected Pointers {
   int n_fixes_style(const char *style); 
   int n_fixes_style_strict(const char *style); 
   bool i_am_first_of_style(class Fix *fix_to_check); 
+  int my_index(class Fix *fixptr);
+  int index_first_fix_with_function(const int FUNCTION, bool integrate=false); 
   class FixScalarTransportEquation* find_fix_scalar_transport_equation(const char *equation_id);
 
   void box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double &zlo,double &zhi);
