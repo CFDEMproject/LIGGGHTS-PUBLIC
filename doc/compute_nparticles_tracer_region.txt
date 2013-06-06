@@ -12,7 +12,7 @@ compute nparticles/tracer/region command :h3
 
 compute ID group-ID nparticles/tracer/region :pre
 
-ID, group-ID are documented in "compute"_compute.html command
+ID, group-ID are documented in "compute"_compute.html command  :l
 nparticles/tracer/region = style name of this compute command :l
 region_count = obligatory keyword :l
 region-ID = ID of region atoms must be in to be counted :l
@@ -35,8 +35,9 @@ compute nparticles all nparticles/tracer/region region_count count tracer tr per
 
 [Description:]
 
-Define a computation that calculates the number of marked particles
-that are in the region speficied via the {region_count} keyword.
+Define a computation that calculates the number and mass of marked and un-marked particles
+that are in the region speficied via the {region_count} keyword. Particles have
+to be in the group "group-ID" to be counted.
 
 Note that only particles marked by a "fix property/atom/tracer"_fix_property_atom_tracer.html
 or "fix property/atom/tracer/stream"_fix_property_atom_tracer_stream.html
@@ -67,10 +68,15 @@ is used multiple times, the last setting will be applied.
 
 [Output info:]
 
-This compute calculates a global scalar (the number marked particles in 
-the specified region), which can be accessed  by any command that uses global 
-vector values from a compute as input.  See "this
-section"_Section_howto.html#howto_15 for an overview of LAMMPS output
+This this compute calculates a global vector containing the following information 
+(the number in brackets corresponds to the vector id): 
+
+[(1)] total number of (marked + un-marked) particles in region :l
+[(2)] number of marked particles in region :l
+[(3)] total mass of (marked + un-marked) particles in region :l
+[(4)] mass of marked particles in region :l
+
+See "this section"_Section_howto.html#howto_15 for an overview of LAMMPS output
 options.
 
 [Restrictions:] 

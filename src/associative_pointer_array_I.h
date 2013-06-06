@@ -23,6 +23,7 @@
    Contributing authors:
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Philippe Seil (JKU Linz)
+   Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_ASSOCIATIVE_POINTER_ARRAY_I_H
@@ -132,7 +133,7 @@
     // for(int i=0;i<numElem_+1;i++)
     //  printf("%d %s %d\n",i,id_[i], strcmp(id_[i],"v"));
 
-    T *tmp[maxElem_];
+    T ** tmp = new T*[maxElem_];
 
     for(int i = 0; i < maxElem_; i++)
         tmp[i] = content_[i];
@@ -144,6 +145,8 @@
 
     for(int i = 0; i < numElem_; i++)
         content_[i] = tmp[i];
+
+    delete[] tmp;
 
     //for(int i=0;i<numElem_+1;i++)
     //  printf("%d %s %d\n",i,id_[i], strcmp(id_[i],"v"));

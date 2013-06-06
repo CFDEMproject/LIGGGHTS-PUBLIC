@@ -1,10 +1,13 @@
 // File is generaged by ListModules() macro
 #include "..\..\atom_vec_atomic.h"
+#include "..\..\atom_vec_bond_gran.h"
 #include "..\..\atom_vec_charge.h"
 #include "..\..\atom_vec_ellipsoid.h"
 #include "..\..\atom_vec_hybrid.h"
 #include "..\..\atom_vec_line.h"
+#include "..\..\atom_vec_sph.h"
 #include "..\..\atom_vec_sphere.h"
+#include "..\..\atom_vec_sph_var.h"
 #include "..\..\atom_vec_tri.h"
 #include "..\..\MOLECULE\atom_vec_angle.h"
 #include "..\..\MOLECULE\atom_vec_bond.h"

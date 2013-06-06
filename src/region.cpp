@@ -597,7 +597,10 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
 
     MPI_Sum_Scalar(n_in_global,n_in_global_all,world);
     if(n_in_global_all == 0)
-        error->all(FLERR,"Unable to calculate region volume - are you operating on a 2d region?");
+        error->all(FLERR,"Unable to calculate region volume. Possible sources of error: \n"
+                         "   (a) region volume is too small\n"
+                         "   (b) particles for insertion are too large when using all_in yes\n"
+                         "   (c) region is 2d, but should be 3d");
 
     vol_bbox = (extent_xhi - extent_xlo) * (extent_yhi - extent_ylo) * (extent_zhi - extent_zlo);
 

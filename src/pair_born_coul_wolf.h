@@ -10,7 +10,9 @@
 
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
-
+#if defined(_WIN32) || defined(_WIN64)
+// must be disabled, because of missing error function erfc
+#else
 #ifdef PAIR_CLASS
 
 PairStyle(born/coul/wolf,PairBornCoulWolf)
@@ -76,3 +78,4 @@ All pair coefficients must be set in the data file or by the
 pair_coeff command before running a simulation.
 
 */
+#endif

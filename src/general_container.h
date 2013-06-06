@@ -46,6 +46,7 @@ namespace LAMMPS_NS
       public:
 
           bool isDoubleData();
+          bool isIntData();
 
           void add(T** elem);
           void addZero();

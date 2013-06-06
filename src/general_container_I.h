@@ -90,6 +90,19 @@
         return false;
   }
 
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::isIntData()
+  {
+      // partial templatization does not work
+      // std::is_same<T,double>::value is from C++11
+      // this is work-around
+
+      if(sizeof(T) == sizeof(int))
+        return true;
+      else
+        return false;
+  }
+
   /* ----------------------------------------------------------------------
    add element(s)
   ------------------------------------------------------------------------- */

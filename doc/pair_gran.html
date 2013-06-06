@@ -29,9 +29,10 @@
 
 <LI>zero or more keyword/value pairs may be appended 
 
-<PRE>  <I>rolling_friction</I> values = 'cdt' or 'epsd' or 'off'
+<PRE>  <I>rolling_friction</I> values = 'cdt' or 'epsd' or 'epsd2' or 'off'
     cdt = activates constant directional rolling friction model
     epsd = activates elastic-plastic spring-dashpot model
+    epsd2 = actiavtes an alternative version of the elastic-plastic spring-dashpot model
     off = no rolling friction model
   <I>cohesion</I> values = 'sjkr' or 'sjkr2' or'off'
     sjkr = activates simplified JKR cohesion model
@@ -215,6 +216,12 @@ particles lose contact. In the Hertzian case, a similar analogy holds, though th
 <PRE>fix id all property/global coefficientRollingViscousDamping peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
     (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
 </PRE>
+<P>The command <I>rolling_friction</I> = 'epsd2' activates an alternative version of the 'epsd' model (see Iwashita and Oda). In contrast to the original model the rolling stiffness k_r is defined as
+</P>
+<CENTER><IMG SRC = "Eqs/pair_gran_hooke_eqEpsd5.gif">
+</CENTER>
+<P>where k_t is the abovementioned tangential stiffness. Furthermore, the viscous damping torque M_rd is disabled at all.
+</P>
 <P>A simple linear <B>cohesion model</B> can be activated by setting <I>cohesion</I> = 'sjkr' or 'sjkr2'
 (simplified Johnson-Kendall-Roberts model). If two particle are in contact, 
 it adds an additional normal force tending to maintain the contact, which writes 

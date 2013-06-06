@@ -75,9 +75,14 @@ class FixContactHistory : public Fix {
   void markAllContacts();
   void cleanUpContacts();
 
+  void reset_history(int dnum_wall);
+
   // return # of contacts
   int n_contacts();
   int n_contacts(int contact_groupbit);
+
+  int get_dnum()
+  { return dnum; }
 
  private:
 

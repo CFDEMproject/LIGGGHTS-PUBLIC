@@ -40,6 +40,7 @@
 #include "mpi_liggghts.h"
 #include "particleToInsert.h"
 #include "fix_multisphere.h"
+#include "math_extra_liggghts.h"
 
 #define SEED_OFFSET 12
 
@@ -386,6 +387,9 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
                 v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
             }
 
+            if(quat_random_)
+                MathExtraLiggghts::random_unit_quat(random,quat_insert);
+
             if(pos[0] == 0. && pos[1] == 0. && pos[2] == 0.)
                 error->one(FLERR,"FixInsertPack::x_v_omega() illegal position");
             ninserted_spheres_this_local += pti->set_x_v_omega(pos,v_toInsert,omega_insert,quat_insert);
@@ -434,6 +438,9 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
                     v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
                     v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
                 }
+
+                if(quat_random_)
+                    MathExtraLiggghts::random_unit_quat(random,quat_insert);
 
                 nins = pti->check_near_set_x_v_omega(pos,v_toInsert,omega_insert,quat_insert,xnear,nspheres_near);
 

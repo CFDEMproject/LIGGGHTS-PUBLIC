@@ -22,7 +22,7 @@
 #ifndef LMP_VECTOR_LIGGGHTS_H
 #define LMP_VECTOR_LIGGGHTS_H
 
-#include<cmath>
+#include "math.h"
 #include "lammps.h"
 
 namespace LAMMPS_NS {
@@ -47,7 +47,7 @@ inline void vectorConstruct3D(int *v,int x, int y, int z)
 
 inline void vectorNormalize3D(double *v)
 {
-    double norm = std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    double norm = sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
     double invnorm = (norm == 0) ? 0. : 1./norm;
     v[0] *= invnorm;
     v[1] *= invnorm;
@@ -56,7 +56,7 @@ inline void vectorNormalize3D(double *v)
 
 inline double vectorMag3D(double *v)
 {
-  return (  std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])  );
+  return (  sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])  );
 }
 
 inline double vectorMag3DSquared(double *v)
@@ -66,14 +66,14 @@ inline double vectorMag3DSquared(double *v)
 
 inline double vectorMag4D(double *v)
 {
-  return (  std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]+v[3]*v[3])  );
+  return (  sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]+v[3]*v[3])  );
 }
 
 inline double pointDistance(double *point1, double *point2)
 {
   return
   (
-     std::sqrt
+     sqrt
      (
           (point1[0]-point2[0]) * (point1[0]-point2[0]) +
           (point1[1]-point2[1]) * (point1[1]-point2[1]) +
@@ -335,6 +335,14 @@ inline void vectorInitializeN(int *v,int n,int init)
      v[i]=init;
 }
 
+inline double vectorSumN(double *v,int n)
+{
+  double sum = 0.;
+  for(int i = 0; i < n; i++)
+     sum+=v[i];
+  return sum;
+}
+
 inline void quatUnitize4D(double *q)
 {
   q[0]=1.;
@@ -392,22 +400,22 @@ inline void bufToVector4D(double *vec,double *buf,int &m)
   vec[3] = buf[m++];
 }
 
-inline void printVec3D(FILE *out,char *name, double *vec)
+inline void printVec3D(FILE *out, const char *name, double *vec)
 {
     fprintf(out," vector %s: %e %e %e\n",name,vec[0],vec[1],vec[2]);
 }
 
-inline void printVec3D(FILE *out,char *name, int *vec)
+inline void printVec3D(FILE *out, const char *name, int *vec)
 {
     fprintf(out," vector %s: %d %d %d\n",name,vec[0],vec[1],vec[2]);
 }
 
-inline void printVec4D(FILE *out,char *name, double *vec)
+inline void printVec4D(FILE *out, const char *name, double *vec)
 {
     fprintf(out," vector %s: %e %e %e %e\n",name,vec[0],vec[1],vec[2],vec[3]);
 }
 
-inline void printVecN(FILE *out,char *name, double *vec, int n)
+inline void printVecN(FILE *out, const char *name, double *vec, int n)
 {
     fprintf(out," vector %s:\n",name);
     for(int i = 0; i < n; i++)
@@ -415,7 +423,7 @@ inline void printVecN(FILE *out,char *name, double *vec, int n)
     fprintf(out,"\n");
 }
 
-inline void printVecN(FILE *out,char *name, int *vec, int n)
+inline void printVecN(FILE *out, const char *name, int *vec, int n)
 {
     fprintf(out," vector %s:\n",name);
     for(int i = 0; i < n; i++)
@@ -423,7 +431,7 @@ inline void printVecN(FILE *out,char *name, int *vec, int n)
     fprintf(out,"\n");
 }
 
-inline void printMat33(FILE *out,char *name, double **mat)
+inline void printMat33(FILE *out, const char *name, double **mat)
 {
     fprintf(out," matrix %s: %f %f %f\n",name,mat[0][0],mat[0][1],mat[0][2]);
     fprintf(out,"        %s: %f %f %f\n",name,mat[1][0],mat[1][1],mat[1][2]);

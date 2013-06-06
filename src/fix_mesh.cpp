@@ -391,6 +391,9 @@ void FixMesh::rotateMesh(double const axisX, double const axisY, double const ax
 {
     double axis[3] = {axisX,axisY,axisZ}, p[3] = {0.,0.,0.};
 
+    if(vectorMag3D(axis) < 1e-5)
+        error->fix_error(FLERR,this,"illegal magnitude of rotation axis");
+
     if (comm->me == 0)
     {
       //fprintf(screen,"rotate ");

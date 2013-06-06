@@ -23,6 +23,7 @@
    Contributing authors:
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Philippe Seil (JKU Linz)
+   Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
 
 #include "fix_move_mesh.h"
@@ -192,7 +193,7 @@ void FixMoveMesh::final_integrate()
 void FixMoveMesh::write_restart(FILE *fp)
 {
   int n = 0;
-  double list[1 + move_->n_restart()];
+  double * list = new double[1 + move_->n_restart()];
   list[n++] = time_;
   
   move_->write_restart(&(list[n]));
@@ -203,6 +204,8 @@ void FixMoveMesh::write_restart(FILE *fp)
     fwrite(&size,sizeof(int),1,fp);
     fwrite(list,sizeof(double),n,fp);
   }
+
+  delete[] list;
 }
 
 /* ----------------------------------------------------------------------

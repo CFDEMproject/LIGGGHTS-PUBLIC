@@ -317,7 +317,7 @@
             node_orig_->add(tmp);
           }
 
-          this->memory->destroy<double>(tmp);
+          this->memory->template destroy<double>(tmp);
       }
 
       return isFirst;

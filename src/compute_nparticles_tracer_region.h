@@ -40,12 +40,12 @@ class ComputeNparticlesTracerRegion : public Compute {
   ~ComputeNparticlesTracerRegion();
 
   void init();
-  double compute_scalar();
+  void compute_vector();
 
  private:
 
   template<bool IMAGE>
-  double compute_scalar_eval();
+  void compute_vector_eval(bool, double&, double&);
 
   // image stuff
   int image_dim_, image_no_;

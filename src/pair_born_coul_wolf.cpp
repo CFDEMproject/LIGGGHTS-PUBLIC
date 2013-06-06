@@ -11,6 +11,10 @@
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
+#if defined(_WIN32) || defined(_WIN64)
+// must be disabled, because of missing error function erfc
+#else
+
 /* ----------------------------------------------------------------------
    Contributing author: Yongfeng Zhang (INL), yongfeng.zhang@inl.gov
 ------------------------------------------------------------------------- */
@@ -464,3 +468,5 @@ double PairBornCoulWolf::single(int i, int j, int itype, int jtype,
   }
   return eng;
 }
+
+#endif

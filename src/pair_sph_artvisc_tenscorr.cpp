@@ -56,7 +56,7 @@ PairSphArtviscTenscorr::PairSphArtviscTenscorr(LAMMPS *lmp) : PairSph(lmp)
 {
   respa_enable = 0;
   single_enable = 0;
-  calcMode_ = 1;
+  pairStyle_ = 1;
 
   csmean = NULL;
   wDeltaPTypeinv = NULL;
@@ -132,6 +132,7 @@ void PairSphArtviscTenscorr::settings(int narg, char **arg)
       if (iarg+4 > narg) error->all(FLERR, "Illegal pair_style sph command");
       artVisc_flag = 1;
       alpha = force->numeric(arg[iarg+1]);
+      viscosity_ = alpha;
       beta = force->numeric(arg[iarg+2]);
       eta = force->numeric(arg[iarg+3]);
       iarg += 4;

@@ -31,7 +31,7 @@
 
 <LI>one or more general keyword/value pairs can be appended 
 
-<LI>general_keywords = <I>verbose</I> or <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel constant</I> or <I>vel uniform</I> or <I>vel gaussian</I> or <I>omega</I> 
+<LI>general_keywords = <I>verbose</I> or <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel constant</I> or <I>vel uniform</I> or <I>vel gaussian</I> or <I>orientation</I> or <I>omega</I> 
 
 <PRE>  <I>verbose</I> = yes or no
   <I>maxattempt</I> value = ma
@@ -72,6 +72,9 @@
     vFluctx = standard deviation of Gaussian x-velocity fluctuation at insertion (velocity units)
     vFlucty = standard deviation of Gaussian y-velocity fluctuation at insertion (velocity units)
     vFluctz = standard deviation of Gaussian z-velocity fluctuation at insertion (velocity units)
+  <I>orientation</I> values = random or template
+    random = randomize rotational orientation
+    template = use orientation from particle template
   <I>omega</I> values = constant omegax omegay omegaz
     constant = obligatory word
     omegax = x-comonent of angular velocity (1/time units)

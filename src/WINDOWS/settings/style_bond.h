@@ -1,4 +1,5 @@
 // File is generaged by ListModules() macro
+#include "..\..\bond_gran.h"
 #include "..\..\bond_hybrid.h"
 #include "..\..\MOLECULE\bond_fene.h"
 #include "..\..\MOLECULE\bond_fene_expand.h"

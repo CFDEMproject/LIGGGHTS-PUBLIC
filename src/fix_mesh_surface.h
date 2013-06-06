@@ -65,6 +65,9 @@ namespace LAMMPS_NS
         class FixNeighlistMesh* createOtherNeighList(int igrp,const char *nId);
         void createContactHistory(int dnum);
 
+        void deleteWallNeighList();
+        void deleteContactHistory();
+
         inline bool trackStress()
         {return stress_flag_;}
 

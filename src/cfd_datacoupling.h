@@ -48,6 +48,9 @@ class CfdDatacoupling : protected Pointers {
   void init();
   virtual void post_create() {}
 
+  virtual bool error_push()
+  { return true;}
+
   // exchange data with OF
   // does nothing in case of MPI coupling
   // for the MPI case, this is done withing the OF solver

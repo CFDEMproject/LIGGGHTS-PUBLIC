@@ -37,6 +37,12 @@
 #include "neighbor.h"
 #include "mpi_liggghts.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <algorithm>
+#define fmax std::max
+#define fmin std::min
+#endif
+
 using namespace LAMMPS_NS;
 using namespace FixConst;
 

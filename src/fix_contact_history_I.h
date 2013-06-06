@@ -119,7 +119,7 @@
       {
           
           // copy contact history
-          vectorCopyN(contacthistory[iP][i],history,dnum);
+          if(dnum > 0) vectorCopyN(contacthistory[iP][i],history,dnum);
           
       }
     }

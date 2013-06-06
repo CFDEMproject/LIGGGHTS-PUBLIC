@@ -33,6 +33,12 @@
 #include "memory.h"
 #include "error.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#define sleep Sleep
+#define ATOM AATOM
+#endif
+
 using namespace LAMMPS_NS;
 using namespace MathConst;
 
@@ -395,7 +401,7 @@ int Variable::next(int narg, char **arg)
       while (1) {
 
         if (!rename(filename_1,filename_2)) break;
-        usleep(100000);
+        sleep(100);
       }
       FILE *fp = fopen(filename_2,"r");
       fscanf(fp,"%d",&nextindex);

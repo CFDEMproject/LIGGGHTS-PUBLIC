@@ -117,7 +117,14 @@ ComputeNparticlesTracerRegion::ComputeNparticlesTracerRegion(LAMMPS *lmp, int na
     if(iregion_count_ < 0)
         error->compute_error(FLERR,this,"have to define 'region_count'");
 
-    scalar_flag = 1;
+    vector_flag = 1;
+    size_vector = 4;
+    extscalar = 0;
+    extvector = 1;
+    tempflag = 1;
+
+    vector = new double[size_vector];
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -126,6 +133,8 @@ ComputeNparticlesTracerRegion::~ComputeNparticlesTracerRegion()
 {
     delete []idregion_count_;
     delete []fix_tracer_name_;
+
+    delete [] vector;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -137,7 +146,7 @@ void ComputeNparticlesTracerRegion::init()
         error->compute_error(FLERR,this,"Region ID (region_count) does not exist");
 
     FixPropertyAtom *fix_ppa;
-    
+
     fix_ppa = static_cast<FixPropertyAtom*>(modify->find_fix_property(fix_tracer_name_,"property/atom","scalar",0,0,style));
 
     fix_tracer_ = dynamic_cast<FixPropertyAtomTracer*>(fix_ppa);
@@ -146,36 +155,49 @@ void ComputeNparticlesTracerRegion::init()
 }
 
 /* ---------------------------------------------------------------------- */
-
-double ComputeNparticlesTracerRegion::compute_scalar()
+void ComputeNparticlesTracerRegion::compute_vector()
 {
-    invoked_scalar = update->ntimestep;
+    invoked_vector = update->ntimestep;
+
+    double resultTot, resultMarked;
 
     if(image_dim_ == -1)
-        scalar = compute_scalar_eval<false>();
+        compute_vector_eval<false>(false, resultTot, resultMarked);
     else
-        scalar = compute_scalar_eval<true>();
+        compute_vector_eval<true>(false, resultTot, resultMarked);
+    vector[0] = resultTot; //all particle count
+    vector[1] = resultMarked; //marked particle count
 
-    return scalar;
+    if(image_dim_ == -1)
+        compute_vector_eval<false>(true, resultTot, resultMarked);
+    else
+        compute_vector_eval<true>(true, resultTot, resultMarked);
+    vector[2] = resultTot; //total mass
+    vector[3] =  resultMarked; //marked total mass
 }
 
 /* ---------------------------------------------------------------------- */
 
 template<bool IMAGE>
-double ComputeNparticlesTracerRegion::compute_scalar_eval()
+void ComputeNparticlesTracerRegion::compute_vector_eval(bool countMass, double& resultTot, double& resultMarked)
 {
-    int ncount;
     int nlocal = atom->nlocal;
     int *image = atom->image;
-    double **x = atom->x;
+    double **x     = atom->x;
+    double *mass = atom->mass;  //mass per type
+    double *rmass = atom->rmass;    //mass per particle
+    int *type = atom->type;
+    int *mask = atom->mask;
     double *marker = fix_tracer_->vector_atom;
     Region *region = domain->regions[iregion_count_];
 
     // count all particles in region, taking image flag into account
-    ncount = 0;
+    resultTot = 0.0; resultMarked = 0.0;
+
     for(int i = 0; i < nlocal; i++)
     {
-        
+        if (!(mask[i] & groupbit)) continue; //check if on current processor and in group
+
         if(IMAGE && image_dim_ == 0 && ( ((image[i] & 1023) - 512      ) != image_no_) )
             continue;
         if(IMAGE && image_dim_ == 1 && ( ((image[i] >> 10 & 1023) - 512) != image_no_) )
@@ -183,16 +205,38 @@ double ComputeNparticlesTracerRegion::compute_scalar_eval()
         if(IMAGE && image_dim_ == 2 && ( ((image[i] >> 20) - 512) != image_no_) )
             continue;
 
-        if(MathExtraLiggghts::compDouble(marker[i]  ,1.0,1e-5) &&
-           region->match(x[i][0],x[i][1],x[i][2]))
+        if( region->match(x[i][0],x[i][1],x[i][2]) )
         {
-            ncount++;
-            
-            if(reset_marker_)
-                marker[i] = 0.0;
+
+            if(countMass)
+            {
+                if (rmass)
+                   resultTot+= rmass[i];
+                else
+                   resultTot+= mass[type[i]];
+             }
+             else
+                   resultTot += 1.0;
+            //Check if particle is marked, and add counter
+            if( MathExtraLiggghts::compDouble(marker[i]  ,1.0,1e-5) )
+            {
+              if(countMass)
+              {
+                if (rmass)
+                   resultMarked+= rmass[i];
+                else
+                   resultMarked+= mass[type[i]];
+               }
+               else
+                    resultMarked += 1.0;
+
+               if(reset_marker_)
+                    marker[i] = 0.0;
+            }
         }
     }
 
-    MPI_Sum_Scalar(ncount,world);
-    return static_cast<double>(ncount);
+   MPI_Sum_Scalar(resultTot,world);
+   MPI_Sum_Scalar(resultMarked,world);
+   return;
 }

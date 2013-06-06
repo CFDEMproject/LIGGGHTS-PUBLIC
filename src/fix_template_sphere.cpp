@@ -63,6 +63,7 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
 
   // set default values
   atom_type = 1;
+  vol_limit = 1e-12;
 
   pdf_radius = NULL;
   pdf_density = NULL;
@@ -103,6 +104,15 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
       int ifix = modify->find_fix(arg[iarg+1]);
       if (ifix < 0) error->fix_error(FLERR,this,"illegal region/variable fix");
       reg_var = static_cast<FixRegionVariable*>(modify->fix[ifix]);
+      hasargs = true;
+      iarg += 2;
+    }
+    else if (strcmp(arg[iarg],"volume_limit") == 0)
+    {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments for 'volume_limit'");
+      vol_limit = atof(arg[iarg+1]);
+      if(vol_limit <= 0)
+        error->fix_error(FLERR,this,"volume_limit > 0 required");
       hasargs = true;
       iarg += 2;
     }
@@ -375,8 +385,9 @@ double FixTemplateSphere::max_r_bound()
 
 double FixTemplateSphere::volexpect()
 {
-    if(volume_expect < 1e-12)
-        error->fix_error(FLERR,this,"Volume expectancy too small");
+    if(volume_expect < vol_limit)
+        error->fix_error(FLERR,this,"Volume expectancy too small. Change 'volume_limit' "
+        "if you are sure you know what you're doing");
     return volume_expect;
 }
 

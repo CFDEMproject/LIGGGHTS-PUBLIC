@@ -577,6 +577,9 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
 
             // could randomize vel, omega, quat here
 
+            if(quat_random_)
+                    MathExtraLiggghts::random_unit_quat(random,quat_insert);
+
             if(ntry < maxtry)
             {
                 nins = pti->set_x_v_omega(pos,v_normal,omega_tmp,quat_insert);
@@ -610,6 +613,9 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
 
                 // could randomize vel, omega, quat here
 
+                if(quat_random_)
+                    MathExtraLiggghts::random_unit_quat(random,quat_insert);
+                
                 if(ntry < maxtry)
                 {
                     

@@ -21,6 +21,11 @@
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
+/* ----------------------------------------------------------------------
+   Contributing authors:
+   Richard Berger (JKU Linz)
+------------------------------------------------------------------------- */
+
 #include "stdio.h"
 #include "string.h"
 #include "modify.h"
@@ -35,6 +40,8 @@
 #include "domain.h"
 #include "memory.h"
 #include "error.h"
+#include <map>
+#include <string>
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -634,6 +641,9 @@ int Modify::min_reset_ref()
 /* ----------------------------------------------------------------------
    add a new fix or replace one with same ID
 ------------------------------------------------------------------------- */
+template<typename T> Fix * create_fix_instance(LAMMPS* lmp, int nargs, char** arg) {
+	return new T(lmp, nargs, arg);
+}
 
 void Modify::add_fix(int narg, char **arg, char *suffix)
 {
@@ -686,34 +696,32 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
 
   int success = 0;
 
+  std::map<std::string, Fix*(*)(LAMMPS*,int,char**)> fix_creators;
+
+#define FIX_CLASS
+#define FixStyle(key,Class) \
+  fix_creators[#key] = &create_fix_instance<Class>;
+#include "style_fix.h"
+#undef FixStyle
+#undef FIX_CLASS
+
   if (suffix && lmp->suffix_enable) {
     char estyle[256];
     sprintf(estyle,"%s/%s",arg[2],suffix);
-    success = 1;
+    
+    success = 0;
 
-    if (0) return;
-
-#define FIX_CLASS
-#define FixStyle(key,Class) \
-    else if (strcmp(estyle,#key) == 0) fix[ifix] = new Class(lmp,narg,arg);
-#include "style_fix.h"
-#undef FixStyle
-#undef FIX_CLASS
-
-    else success = 0;
+    if(fix_creators.find(estyle) != fix_creators.end()) {
+      fix[ifix] = fix_creators[estyle](lmp,narg,arg);
+      success = 1;
+    }
   }
 
   if (!success) {
-    if (0) return;
-
-#define FIX_CLASS
-#define FixStyle(key,Class) \
-    else if (strcmp(arg[2],#key) == 0) fix[ifix] = new Class(lmp,narg,arg);
-#include "style_fix.h"
-#undef FixStyle
-#undef FIX_CLASS
-
-    else {fprintf(screen,"adding fix %s\n",arg[2]);error->all(FLERR,"Invalid fix style");}
+    if(fix_creators.find(arg[2]) != fix_creators.end()) {
+      fix[ifix] = fix_creators[arg[2]](lmp,narg,arg);
+    }
+    else {fprintf(screen,"adding %s\n",arg[2]);error->all(FLERR,"Invalid fix style");}
   }
 
   // set fix mask values and increment nfix (if new)

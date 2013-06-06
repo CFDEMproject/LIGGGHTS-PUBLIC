@@ -54,6 +54,7 @@ namespace LAMMPS_NS
           inline bool matches_id(char *_id);
 
           virtual bool isDoubleData() = 0;
+          virtual bool isIntData() = 0;
 
           virtual void addZero() = 0;
           virtual void addUninitialized(int n) = 0;

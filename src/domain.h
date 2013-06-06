@@ -124,7 +124,7 @@ class Domain : protected Pointers {
   void delete_region(int, char **);
   int find_region(char *);
   void set_boundary(int, char **, int);
-  void print_box(const char *);
+  virtual void print_box(const char *); 
 
   virtual void lamda2x(int);
   virtual void x2lamda(int);

@@ -48,6 +48,9 @@ class CfdDatacouplingMPI : public CfdDatacoupling {
   template <typename T> void pull_mpi(char *,char *,void *&);
   template <typename T> void push_mpi(char *,char *,void *&);
 
+  virtual bool error_push()
+  { return false;}
+
   void allocate_external(int    **&data, int len2,int len1,     int initvalue);
   void allocate_external(int    **&data, int len2,char *keyword,int initvalue);
   void allocate_external(double **&data, int len2,int len1,     double initvalue);
@@ -114,7 +117,7 @@ void CfdDatacouplingMPI::pull_mpi(char *name,char *type,void *&from)
     {
         T *to_t = (T*) to;
         if(!ms_data_)
-            error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
+            error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix multisphere");
         for (int i = 0; i < len1; i++)
             if ((m = ms_data_->map(i+1)) >= 0)
                 to_t[m] = allred[i];
@@ -123,7 +126,7 @@ void CfdDatacouplingMPI::pull_mpi(char *name,char *type,void *&from)
     {
         T **to_t = (T**) to;
         if(!ms_data_)
-            error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
+            error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix multisphere");
         for (int i = 0; i < len1; i++)
             if ((m = ms_data_->map(i+1)) >= 0)
                 for (int j = 0; j < len2; j++)
@@ -194,7 +197,7 @@ void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
     {
         T *from_t = (T*) from;
         if(!ms_data_)
-            error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
+            error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix multisphere");
         for (int i = 0; i < nbodies; i++) // loops over # local bodies
         {
             id = ms_data_->tag(i);
@@ -205,7 +208,7 @@ void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
     {
         T **from_t = (T**) from;
         if(!ms_data_)
-            error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix rigid/multisphere");
+            error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix multisphere");
         for (int i = 0; i < nbodies; i++) // loops over # local bodies
         {
             id = ms_data_->tag(i);

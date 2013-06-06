@@ -28,6 +28,7 @@
 #include "error.h"
 #include "vector_liggghts.h"
 #include "math_extra.h"
+#include "random_park.h"
 
 #define TOLERANCE_ORTHO 1e-10
 
@@ -82,6 +83,8 @@ namespace MathExtraLiggghts {
   // calculate barycentrc coordinates of p w.r.t node, added by P.S.
   inline void calcBaryTriCoords(double *p, double **edgeVec, double *edgeLen, double *bary);
   inline void calcBaryTriCoords(double *p, double *edgeVec0, double *edgeVec1, double *edgeVec2, double *edgeLen, double *bary);
+
+  inline void random_unit_quat(LAMMPS_NS::RanPark *random,double *quat);
 };
 
 /* ----------------------------------------------------------------------
@@ -518,6 +521,26 @@ void MathExtraLiggghts::calcBaryTriCoords(double *ap, double *edgeVec0, double *
   bary[1] = (a - b*c)/(edgeLen[0] * oneMinCSqr);
   bary[2] = (a*c - b)/(edgeLen[2] * oneMinCSqr);
   bary[0] = 1. - bary[1] - bary[2];
+}
+
+/* ----------------------------------------------------------------------
+   generate random unit quaternion
+   from http://planning.cs.uiuc.edu/node198.html
+------------------------------------------------------------------------- */
+
+void MathExtraLiggghts::random_unit_quat(LAMMPS_NS::RanPark *random,double *quat)
+{
+    double u1 = random->uniform();
+    double u2 = random->uniform();
+    double u3 = random->uniform();
+
+    double h1 = sqrt(1.-u1);
+    double h2 = sqrt(u1);
+
+    quat[0] = h1 * sin(2.*M_PI*u2);
+    quat[1] = h1 * cos(2.*M_PI*u2);
+    quat[2] = h2 * sin(2.*M_PI*u3);
+    quat[3] = h2 * cos(2.*M_PI*u3);
 }
 
 #endif

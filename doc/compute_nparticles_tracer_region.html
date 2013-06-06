@@ -15,8 +15,9 @@
 </P>
 <PRE>compute ID group-ID nparticles/tracer/region 
 </PRE>
-<LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command
-nparticles/tracer/region = style name of this compute command 
+<LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command  
+
+<LI>nparticles/tracer/region = style name of this compute command 
 
 <LI>region_count = obligatory keyword 
 
@@ -45,8 +46,9 @@ nparticles/tracer/region = style name of this compute command
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>Define a computation that calculates the number of marked particles
-that are in the region speficied via the <I>region_count</I> keyword.
+<P>Define a computation that calculates the number and mass of marked and un-marked particles
+that are in the region speficied via the <I>region_count</I> keyword. Particles have
+to be in the group "group-ID" to be counted.
 </P>
 <P>Note that only particles marked by a <A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>
 or <A HREF = "fix_property_atom_tracer_stream.html">fix property/atom/tracer/stream</A>
@@ -77,10 +79,18 @@ is used multiple times, the last setting will be applied.
 </P>
 <P><B>Output info:</B>
 </P>
-<P>This compute calculates a global scalar (the number marked particles in 
-the specified region), which can be accessed  by any command that uses global 
-vector values from a compute as input.  See <A HREF = "Section_howto.html#howto_15">this
-section</A> for an overview of LAMMPS output
+<P>This this compute calculates a global vector containing the following information 
+(the number in brackets corresponds to the vector id): 
+</P>
+<LI><B>(1)</B> total number of (marked + un-marked) particles in region 
+
+<LI><B>(2)</B> number of marked particles in region 
+
+<LI><B>(3)</B> total mass of (marked + un-marked) particles in region 
+
+<LI><B>(4)</B> mass of marked particles in region 
+
+<P>See <A HREF = "Section_howto.html#howto_15">this section</A> for an overview of LAMMPS output
 options.
 </P>
 <P><B>Restrictions:</B> 

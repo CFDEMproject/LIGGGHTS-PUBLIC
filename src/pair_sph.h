@@ -63,7 +63,8 @@ class PairSph : public Pair {
   /* PUBLIC ACCESS FUNCTIONS */
 
   int sph_kernel_id(){return kernel_id;}
-  int returnCalcMode(){return calcMode_; };
+  int returnPairStyle(){return pairStyle_; };
+  double returnViscosity() {return viscosity_; };
 
  protected:
 
@@ -87,7 +88,8 @@ class PairSph : public Pair {
 
   int mass_type; // flag defined in atom_vec*
 
-  int calcMode_;
+  int pairStyle_;
+  double viscosity_;
 
 };
 

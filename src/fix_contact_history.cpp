@@ -362,6 +362,29 @@ void FixContactHistory::grow_arrays(int nmax)
 }
 
 /* ----------------------------------------------------------------------
+   allocate local atom-based arrays
+------------------------------------------------------------------------- */
+
+void FixContactHistory::reset_history(int dnum_wall)
+{
+  
+  if(dnum_wall > dnum)
+  {
+      contacthistory = 0;
+      memory->grow(contacthistory,atom->nmax,maxtouch,dnum_wall,"contact_history:contacthistory");
+
+      // initialize npartner to 0 so neighbor list creation is OK the 1st time
+      if(atom->nmax > 0)
+      {
+          int nlocal = atom->nlocal;
+          for (int i = 0; i < nlocal; i++) npartner[i] = 0;
+      }
+
+      dnum = dnum_wall;
+  }
+}
+
+/* ----------------------------------------------------------------------
    grow local atom-based arrays in case maxtouch is too small
 ------------------------------------------------------------------------- */
 

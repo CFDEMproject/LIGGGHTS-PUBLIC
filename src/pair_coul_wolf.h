@@ -10,7 +10,9 @@
 
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
-
+#if defined(_WIN32) || defined(_WIN64)
+// must be disabled, because of missing error function erfc
+#else
 #ifdef PAIR_CLASS
 
 PairStyle(coul/wolf,PairCoulWolf)
@@ -67,3 +69,4 @@ E: Pair coul/wolf requires atom attribute q
 The atom style defined does not have this attribute.
 
 */
+#endif

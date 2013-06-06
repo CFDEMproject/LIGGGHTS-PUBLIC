@@ -165,7 +165,7 @@ void CfdDatacoupling::push(char *name,char *type,void *&ptr,char *datatype)
             error->all(FLERR,"This error is fatal");
         }
     }
-    if(!found)
+    if(!found && error_push())
     {
         if(comm->me == 0 && screen)
             fprintf(screen,"LIGGGHTS could not find property %s requested by calling program. Check your model settings in LIGGGHTS.\n",name);
@@ -192,7 +192,7 @@ void CfdDatacoupling::check_datatransfer()
 
     for(int i = 0; i < npush_; i++)
     {
-       if(!pushinvoked_[i])
+       if(!pushinvoked_[i] && error_push())
        {
             if(comm->me == 0 && screen)
                 fprintf(screen,"Communication of property %s from LIGGGHTS to OF was not invoked, but needed by "

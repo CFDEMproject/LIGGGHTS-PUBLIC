@@ -129,6 +129,7 @@ class FixInsert : public Fix {
   double v_insertFluct[3];
   double omega_insert[3];
   double quat_insert[4];
+  bool quat_random_;
 
   /*---FURTHER THINGS THAT WE NEED---*/
 

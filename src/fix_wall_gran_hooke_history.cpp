@@ -91,10 +91,12 @@ FixWallGranHookeHistory::FixWallGranHookeHistory(LAMMPS *lmp, int narg, char **a
                 rollingflag = 1;
             else if(strcmp(arg[iarg_],"epsd") == 0)
                 rollingflag = 2;
+            else if(strcmp(arg[iarg_],"epsd2") == 0)
+                rollingflag = 3;
             else if(strcmp(arg[iarg_],"off") == 0)
                 rollingflag = 0;
             else
-                error->fix_error(FLERR,this,"expecting 'cdt' or 'off' after keyword 'rolling_friction'");
+                error->fix_error(FLERR,this,"expecting 'cdt', 'epsd', 'epsd2' or 'off' after keyword 'rolling_friction'");
             iarg_++;
             hasargs = true;
         } else if (strcmp(arg[iarg_],"viscous") == 0) {
@@ -380,8 +382,16 @@ void FixWallGranHookeHistory::compute_force(int ip, double deltan, double rsq,do
 
   // add rolling friction torque
   vectorZeroize3D(r_torque);
-  if(rollingflag)
-    addRollingFrictionTorque(ip,wr1,wr2,wr3,cr,ccel,r,mass,rmu,kn,dx,dy,dz,rsqinv,c_history,r_torque);
+  switch (rollingflag)
+  {
+  case 0: break;
+  case 1: addRollingFrictionTorque<1>(ip,wr1,wr2,wr3,cr,ccel,r,mass,rmu,kn,kt,dx,dy,dz,rsqinv,c_history,r_torque);
+          break;
+  case 2: addRollingFrictionTorque<2>(ip,wr1,wr2,wr3,cr,ccel,r,mass,rmu,kn,kt,dx,dy,dz,rsqinv,c_history,r_torque);
+          break;
+  case 3: addRollingFrictionTorque<3>(ip,wr1,wr2,wr3,cr,ccel,r,mass,rmu,kn,kt,dx,dy,dz,rsqinv,c_history,r_torque);
+          break;
+  }
 
   if(computeflag_)
   {
@@ -448,13 +458,14 @@ inline void FixWallGranHookeHistory::addCohesionForce(int &ip, double &r, double
 
 /* ---------------------------------------------------------------------- */
 
+template <int ROLLINGFRICTION>
 void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double wr2,double wr3,double cr,double ccel,
-            double r,double mi,double rmu,double kn,double dx, double dy, double dz,double rsqinv,double *c_history,double *r_torque)
+            double r,double mi,double rmu,double kn,double kt,double dx, double dy, double dz,double rsqinv,double *c_history,double *r_torque)
 {
     double wrmag,r_torque_n[3];
     double radius = atom->radius[ip];
 
-    if (rollingflag == 1)
+    if (ROLLINGFRICTION == 1)
     {
             wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
             if (wrmag > 0.)
@@ -471,7 +482,7 @@ void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double
                 vectorSubtract3D(r_torque,r_torque_n,r_torque);
             }
     }
-    else
+    else 
     {
       double kr,r_inertia,r_coef,r_torque_mag,r_torque_max,factor;
       double dr_torque[3],wr_n[3],wr_t[3];
@@ -490,7 +501,10 @@ void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double
       wr_t[2] = wr3 - wr_n[2];
 
       // spring
-      kr = 2.25*kn*rmu*rmu*radius*radius; 
+      if (ROLLINGFRICTION == 2)
+        kr = 2.25*kn*rmu*rmu*radius*radius; 
+      else
+        kr = kt*radius*radius;
 
       dr_torque[0] = kr * wr_t[0] * dt;
       dr_torque[1] = kr * wr_t[1] * dt;
@@ -499,12 +513,6 @@ void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double
       r_torque[0] = c_history[3] + dr_torque[0];
       r_torque[1] = c_history[4] + dr_torque[1];
       r_torque[2] = c_history[5] + dr_torque[2];
-
-      // dashpot
-      if (domain->dimension == 2) r_inertia = 1.5*mi*radius*radius;
-      else  r_inertia = 1.4*mi*radius*radius;
-
-      r_coef = coeffRollVisc[itype][atom_type_wall_] * 2 * sqrt(r_inertia*kr);
 
       // limit max. torque
       r_torque_mag = vectorMag3D(r_torque);
@@ -517,21 +525,38 @@ void FixWallGranHookeHistory::addRollingFrictionTorque(int ip, double wr1,double
         r_torque[1] *= factor;
         r_torque[2] *= factor;
 
-        r_coef = 0.0; // no damping in case of full mobilisation rolling angle
+        // save rolling torque due to spring
+        c_history[3] = r_torque[0];
+        c_history[4] = r_torque[1];
+        c_history[5] = r_torque[2];
 
+        // no damping / no dashpot in case of full mobilisation rolling angle
+        // r_coef = 0.0;
+
+      } else {
+
+        // save rolling torque due to spring before adding damping torque
+        c_history[3] = r_torque[0];
+        c_history[4] = r_torque[1];
+        c_history[5] = r_torque[2];
+
+        // dashpot only for the original epsd model
+        if(ROLLINGFRICTION == 2)
+        {
+          // dashpot
+          if (domain->dimension == 2) r_inertia = 1.5*mi*radius*radius;
+          else  r_inertia = 1.4*mi*radius*radius;
+
+          r_coef = coeffRollVisc[itype][atom_type_wall_] * 2 * sqrt(r_inertia*kr);
+
+          // add damping torque
+          r_torque[0] += r_coef*wr_t[0];
+          r_torque[1] += r_coef*wr_t[1];
+          r_torque[2] += r_coef*wr_t[2];
+        }
       }
-
-      // save rolling torque due to spring
-      c_history[3] = r_torque[0];
-      c_history[4] = r_torque[1];
-      c_history[5] = r_torque[2];
-
-      // add damping torque
-      r_torque[0] += r_coef*wr_t[0];
-      r_torque[1] += r_coef*wr_t[1];
-      r_torque[2] += r_coef*wr_t[2];
-
     }
+
 }
 
 /* ---------------------------------------------------------------------- */
