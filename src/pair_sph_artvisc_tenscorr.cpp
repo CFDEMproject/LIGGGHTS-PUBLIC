@@ -313,7 +313,7 @@ double PairSphArtviscTenscorr::artificialViscosity(int ip, int jp, int itype, in
 
   double muAB, rhoMeanInv,dotDelVDelR;
 
-  //double **v = atom->v;
+  //double **v = atom->vest;
 
   dotDelVDelR = ( (v[ip][0]-v[jp][0])*delx + (v[ip][1]-v[jp][1])*dely + (v[ip][2]-v[jp][2])*delz );
 
@@ -382,7 +382,7 @@ void PairSphArtviscTenscorr::compute_eval(int eflag, int vflag)
   double radi,radj,rcom;
 
   double **x = atom->x;
-  double **v = atom->v;
+  double **v = atom->vest;
   double *p = atom->p;
   double *rho = atom->rho;
   double **f = atom->f;

@@ -45,7 +45,7 @@
 </PRE>
 <LI>zero or more keyword/arg pairs may be appended 
 
-<LI>keyword = <I>norm</I> or <I>units</I> or <I>file</I> or <I>ave</I> or <I>title1</I> or <I>title2</I> or <I>title3</I> 
+<LI>keyword = <I>norm</I> or <I>units</I> or <I>file</I> or <I>ave</I> or <I>title1</I> or <I>title2</I> or <I>title3</I> or <I>std</I> 
 
 <PRE>  <I>units</I> arg = <I>box</I> or <I>lattice</I> or <I>reduced</I>
   <I>norm</I> arg = <I>all</I> or <I>sample</I>
@@ -63,6 +63,10 @@
     string = text to print as 2nd line of output file
   <I>title3</I> arg = string
     string = text to print as 3rd line of output file 
+  <I>std</I> arg = N1 N2 filename
+	N1 = lower limit of particle number per bin for sampling
+	N2 = upper limit of particle number per bin for sampling
+	filename = file to write results into 
 </PRE>
 
 </UL>
@@ -71,7 +75,8 @@
 <PRE>fix 1 all ave/spatial 10000 1 10000 z lower 0.02 c_myCentro units reduced &
                       title1 "My output values"
 fix 1 flow ave/spatial 100 10 1000 y 0.0 1.0 vx vz norm sample file vel.profile
-fix 1 flow ave/spatial 100 5 1000 z lower 1.0 y 0.0 2.5 density/mass ave running 
+fix 1 flow ave/spatial 100 5 1000 z lower 1.0 y 0.0 2.5 density/mass ave running
+fix 1 all ave/spatial 1000 1 1000 x 0 1e-3 y 0 1e-3 z 0 1e-3 f_tracer[0] file bin_data.dat std 124 126 samples_data.dat 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -304,13 +309,18 @@ values for each of these, so they do not need to be specified.
 # Timestep Number-of-bins
 # Bin Coord1 Coord2 Coord3 Count value1 value2 ... 
 </PRE>
-<P>In the first line, ID and name are replaced with the fix-ID and group
+<HR>In the first line, ID and name are replaced with the fix-ID and group
 name.  The second line describes the two values that are printed at
 the first of each section of output.  In the third line the values are
 replaced with the appropriate fields from the fix ave/spatial command.
 The Coord2 and Coord3 entries in the third line only appear for 2d and
 3d bins respectively.  For 1d bins, the word Coord1 is replaced by
 just Coord.
+
+
+<P>If the <I>std</I> keyword is set, mean and standard deviation of the specified values (value1, value2, etc.) over samples of a defined size are calculated. The sample size has to be defined by a lower limit (N1) and an upper limit (N2>N1). 
+All bins containing a particle count between N1 and N2 (including N1 and N2) are used as samples. Every <I>Nfreq</I> timestep a line is written to a file specified after N1 and N2, including the following numbers: timestep, total number of atoms, total number of bins, maximum number of atoms per bin, number of empty bins, number of bins including less atoms than N1, number of bins including more atoms than N2, number of samples, average number of atoms per sample, followed by three quantities for each defined value: true average (over all atoms), average over the chosen samples, standard deviation over the chosen samples. 
+For the calculation of the standard deviation the (known) true average is used instead of the samples average (the latter is only an estimate for the true average!).
 </P>
 <HR>
 

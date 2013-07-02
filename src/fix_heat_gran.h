@@ -35,8 +35,10 @@ namespace LAMMPS_NS {
     virtual void post_create();
     virtual void pre_delete(bool unfixflag){};
 
+    void initial_integrate(int vflag);
+
     virtual double compute_scalar();
-    virtual int setmask() = 0;
+    virtual int setmask();
     virtual void init();
 
     // per default these three methods throw errors.
@@ -51,12 +53,13 @@ namespace LAMMPS_NS {
     class FixPropertyAtom* fix_heatSource;
     class FixPropertyAtom* fix_temp;
     class FixScalarTransportEquation *fix_ste;
+    class FixPropertyAtom* fix_directionalHeatFlux;
 
     double *heatFlux;   
     double *heatSource; 
     double *Temp;       
     double T0;          
-
+    double **directionalHeatFlux;
     bool FHG_init_flag; 
 
     class PairGran *pair_gran;

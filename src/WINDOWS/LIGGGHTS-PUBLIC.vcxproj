@@ -1,0 +1,1071 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug_STUBS|Win32">
+      <Configuration>Debug_STUBS</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_STUBS|x64">
+      <Configuration>Debug_STUBS</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_STUBS|Win32">
+      <Configuration>Release_STUBS</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_STUBS|x64">
+      <Configuration>Release_STUBS</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\abstract_mesh.h" />
+    <ClInclude Include="..\accelerator_cuda.h" />
+    <ClInclude Include="..\accelerator_omp.h" />
+    <ClInclude Include="..\angle.h" />
+    <ClInclude Include="..\associative_pointer_array.h" />
+    <ClInclude Include="..\associative_pointer_array_I.h" />
+    <ClInclude Include="..\atom.h" />
+    <ClInclude Include="..\atom_vec.h" />
+    <ClInclude Include="..\atom_vec_atomic.h" />
+    <ClInclude Include="..\atom_vec_charge.h" />
+    <ClInclude Include="..\atom_vec_ellipsoid.h" />
+    <ClInclude Include="..\atom_vec_hybrid.h" />
+    <ClInclude Include="..\atom_vec_line.h" />
+    <ClInclude Include="..\atom_vec_sph.h" />
+    <ClInclude Include="..\atom_vec_sphere.h" />
+    <ClInclude Include="..\atom_vec_sph_var.h" />
+    <ClInclude Include="..\atom_vec_tri.h" />
+    <ClInclude Include="..\bond.h" />
+    <ClInclude Include="..\bond_hybrid.h" />
+    <ClInclude Include="..\bounding_box.h" />
+    <ClInclude Include="..\cfd_datacoupling.h" />
+    <ClInclude Include="..\cfd_datacoupling_file.h" />
+    <ClInclude Include="..\cfd_datacoupling_mpi.h" />
+    <ClInclude Include="..\cfd_regionmodel.h" />
+    <ClInclude Include="..\cfd_regionmodel_none.h" />
+    <ClInclude Include="..\change_box.h" />
+    <ClInclude Include="..\comm.h" />
+    <ClInclude Include="..\compute.h" />
+    <ClInclude Include="..\compute_angle_local.h" />
+    <ClInclude Include="..\compute_atom_molecule.h" />
+    <ClInclude Include="..\compute_bond_local.h" />
+    <ClInclude Include="..\compute_centro_atom.h" />
+    <ClInclude Include="..\compute_cluster_atom.h" />
+    <ClInclude Include="..\compute_cna_atom.h" />
+    <ClInclude Include="..\compute_com.h" />
+    <ClInclude Include="..\compute_com_molecule.h" />
+    <ClInclude Include="..\compute_contact_atom.h" />
+    <ClInclude Include="..\compute_coord_atom.h" />
+    <ClInclude Include="..\compute_dihedral_local.h" />
+    <ClInclude Include="..\compute_displace_atom.h" />
+    <ClInclude Include="..\compute_erotate_sphere.h" />
+    <ClInclude Include="..\compute_group_group.h" />
+    <ClInclude Include="..\compute_gyration.h" />
+    <ClInclude Include="..\compute_gyration_molecule.h" />
+    <ClInclude Include="..\compute_heat_flux.h" />
+    <ClInclude Include="..\compute_improper_local.h" />
+    <ClInclude Include="..\compute_ke.h" />
+    <ClInclude Include="..\compute_ke_atom.h" />
+    <ClInclude Include="..\compute_msd.h" />
+    <ClInclude Include="..\compute_msd_molecule.h" />
+    <ClInclude Include="..\compute_nparticles_tracer_region.h" />
+    <ClInclude Include="..\compute_pair.h" />
+    <ClInclude Include="..\compute_pair_gran_local.h" />
+    <ClInclude Include="..\compute_pair_local.h" />
+    <ClInclude Include="..\compute_pe.h" />
+    <ClInclude Include="..\compute_pe_atom.h" />
+    <ClInclude Include="..\compute_pressure.h" />
+    <ClInclude Include="..\compute_property_atom.h" />
+    <ClInclude Include="..\compute_property_local.h" />
+    <ClInclude Include="..\compute_property_molecule.h" />
+    <ClInclude Include="..\compute_rdf.h" />
+    <ClInclude Include="..\compute_reduce.h" />
+    <ClInclude Include="..\compute_reduce_region.h" />
+    <ClInclude Include="..\compute_slice.h" />
+    <ClInclude Include="..\compute_stress_atom.h" />
+    <ClInclude Include="..\compute_temp.h" />
+    <ClInclude Include="..\compute_temp_com.h" />
+    <ClInclude Include="..\compute_temp_deform.h" />
+    <ClInclude Include="..\compute_temp_partial.h" />
+    <ClInclude Include="..\compute_temp_profile.h" />
+    <ClInclude Include="..\compute_temp_ramp.h" />
+    <ClInclude Include="..\compute_temp_region.h" />
+    <ClInclude Include="..\compute_temp_sphere.h" />
+    <ClInclude Include="..\compute_ti.h" />
+    <ClInclude Include="..\container.h" />
+    <ClInclude Include="..\container_base.h" />
+    <ClInclude Include="..\container_base_I.h" />
+    <ClInclude Include="..\create_atoms.h" />
+    <ClInclude Include="..\create_box.h" />
+    <ClInclude Include="..\custom_value_tracker.h" />
+    <ClInclude Include="..\custom_value_tracker_I.h" />
+    <ClInclude Include="..\debug_liggghts.h" />
+    <ClInclude Include="..\delete_atoms.h" />
+    <ClInclude Include="..\delete_bonds.h" />
+    <ClInclude Include="..\dihedral.h" />
+    <ClInclude Include="..\displace_atoms.h" />
+    <ClInclude Include="..\domain.h" />
+    <ClInclude Include="..\domain_wedge.h" />
+    <ClInclude Include="..\domain_wedge_dummy.h" />
+    <ClInclude Include="..\dump.h" />
+    <ClInclude Include="..\dump_atom.h" />
+    <ClInclude Include="..\dump_atom_vtk.h" />
+    <ClInclude Include="..\dump_cfg.h" />
+    <ClInclude Include="..\dump_custom.h" />
+    <ClInclude Include="..\dump_dcd.h" />
+    <ClInclude Include="..\dump_decomposition_vtk.h" />
+    <ClInclude Include="..\dump_euler_vtk.h" />
+    <ClInclude Include="..\dump_image.h" />
+    <ClInclude Include="..\dump_local.h" />
+    <ClInclude Include="..\dump_mesh_stl.h" />
+    <ClInclude Include="..\dump_mesh_vtk.h" />
+    <ClInclude Include="..\dump_xyz.h" />
+    <ClInclude Include="..\error.h" />
+    <ClInclude Include="..\finish.h" />
+    <ClInclude Include="..\fix.h" />
+    <ClInclude Include="..\fix_adapt.h" />
+    <ClInclude Include="..\fix_addforce.h" />
+    <ClInclude Include="..\fix_aveforce.h" />
+    <ClInclude Include="..\fix_ave_atom.h" />
+    <ClInclude Include="..\fix_ave_correlate.h" />
+    <ClInclude Include="..\fix_ave_euler.h" />
+    <ClInclude Include="..\fix_ave_histo.h" />
+    <ClInclude Include="..\fix_ave_spatial.h" />
+    <ClInclude Include="..\fix_ave_time.h" />
+    <ClInclude Include="..\fix_box_relax.h" />
+    <ClInclude Include="..\fix_cfd_coupling.h" />
+    <ClInclude Include="..\fix_cfd_coupling_convection.h" />
+    <ClInclude Include="..\fix_cfd_coupling_force.h" />
+    <ClInclude Include="..\fix_cfd_coupling_force_implicit.h" />
+    <ClInclude Include="..\fix_check_timestep_gran.h" />
+    <ClInclude Include="..\fix_check_timestep_sph.h" />
+    <ClInclude Include="..\fix_contact_history.h" />
+    <ClInclude Include="..\fix_contact_history_I.h" />
+    <ClInclude Include="..\fix_deform.h" />
+    <ClInclude Include="..\fix_deposit.h" />
+    <ClInclude Include="..\fix_drag.h" />
+    <ClInclude Include="..\fix_dt_reset.h" />
+    <ClInclude Include="..\fix_dummy.h" />
+    <ClInclude Include="..\fix_efield.h" />
+    <ClInclude Include="..\fix_enforce2d.h" />
+    <ClInclude Include="..\fix_evaporate.h" />
+    <ClInclude Include="..\fix_external.h" />
+    <ClInclude Include="..\fix_freeze.h" />
+    <ClInclude Include="..\fix_gravity.h" />
+    <ClInclude Include="..\fix_heat.h" />
+    <ClInclude Include="..\fix_heat_gran.h" />
+    <ClInclude Include="..\fix_heat_gran_conduction.h" />
+    <ClInclude Include="..\fix_indent.h" />
+    <ClInclude Include="..\fix_insert.h" />
+    <ClInclude Include="..\fix_insert_pack.h" />
+    <ClInclude Include="..\fix_insert_rate_region.h" />
+    <ClInclude Include="..\fix_insert_stream.h" />
+    <ClInclude Include="..\fix_langevin.h" />
+    <ClInclude Include="..\fix_lineforce.h" />
+    <ClInclude Include="..\fix_massflow_mesh.h" />
+    <ClInclude Include="..\fix_mesh.h" />
+    <ClInclude Include="..\fix_mesh_surface.h" />
+    <ClInclude Include="..\fix_mesh_surface_stress.h" />
+    <ClInclude Include="..\fix_mesh_surface_stress_servo.h" />
+    <ClInclude Include="..\fix_minimize.h" />
+    <ClInclude Include="..\fix_momentum.h" />
+    <ClInclude Include="..\fix_move.h" />
+    <ClInclude Include="..\fix_move_mesh.h" />
+    <ClInclude Include="..\fix_multisphere.h" />
+    <ClInclude Include="..\fix_neighlist_mesh.h" />
+    <ClInclude Include="..\fix_nh.h" />
+    <ClInclude Include="..\fix_nh_sphere.h" />
+    <ClInclude Include="..\fix_nph.h" />
+    <ClInclude Include="..\fix_nph_sphere.h" />
+    <ClInclude Include="..\fix_npt.h" />
+    <ClInclude Include="..\fix_npt_sphere.h" />
+    <ClInclude Include="..\fix_nve.h" />
+    <ClInclude Include="..\fix_nve_limit.h" />
+    <ClInclude Include="..\fix_nve_noforce.h" />
+    <ClInclude Include="..\fix_nve_sph.h" />
+    <ClInclude Include="..\fix_nve_sphere.h" />
+    <ClInclude Include="..\fix_nve_sph_stationary.h" />
+    <ClInclude Include="..\fix_nvt.h" />
+    <ClInclude Include="..\fix_nvt_sllod.h" />
+    <ClInclude Include="..\fix_nvt_sphere.h" />
+    <ClInclude Include="..\fix_orient_fcc.h" />
+    <ClInclude Include="..\fix_particledistribution_discrete.h" />
+    <ClInclude Include="..\fix_planeforce.h" />
+    <ClInclude Include="..\fix_pour.h" />
+    <ClInclude Include="..\fix_press_berendsen.h" />
+    <ClInclude Include="..\fix_print.h" />
+    <ClInclude Include="..\fix_property_atom.h" />
+    <ClInclude Include="..\fix_property_atom_tracer.h" />
+    <ClInclude Include="..\fix_property_atom_tracer_stream.h" />
+    <ClInclude Include="..\fix_property_global.h" />
+    <ClInclude Include="..\fix_read_restart.h" />
+    <ClInclude Include="..\fix_recenter.h" />
+    <ClInclude Include="..\fix_region_variable.h" />
+    <ClInclude Include="..\fix_respa.h" />
+    <ClInclude Include="..\fix_restrain.h" />
+    <ClInclude Include="..\fix_rigid.h" />
+    <ClInclude Include="..\fix_rigid_nve.h" />
+    <ClInclude Include="..\fix_rigid_nvt.h" />
+    <ClInclude Include="..\fix_scalar_transport_equation.h" />
+    <ClInclude Include="..\fix_setforce.h" />
+    <ClInclude Include="..\fix_shake.h" />
+    <ClInclude Include="..\fix_shear_history.h" />
+    <ClInclude Include="..\fix_sph.h" />
+    <ClInclude Include="..\fix_sph_density_continuity.h" />
+    <ClInclude Include="..\fix_sph_density_corr.h" />
+    <ClInclude Include="..\fix_sph_density_summation.h" />
+    <ClInclude Include="..\fix_sph_pressure.h" />
+    <ClInclude Include="..\fix_spring.h" />
+    <ClInclude Include="..\fix_spring_rg.h" />
+    <ClInclude Include="..\fix_spring_self.h" />
+    <ClInclude Include="..\fix_store_force.h" />
+    <ClInclude Include="..\fix_store_state.h" />
+    <ClInclude Include="..\fix_template_multiplespheres.h" />
+    <ClInclude Include="..\fix_template_sphere.h" />
+    <ClInclude Include="..\fix_temp_berendsen.h" />
+    <ClInclude Include="..\fix_temp_rescale.h" />
+    <ClInclude Include="..\fix_thermal_conductivity.h" />
+    <ClInclude Include="..\fix_tmd.h" />
+    <ClInclude Include="..\fix_ttm.h" />
+    <ClInclude Include="..\fix_viscosity.h" />
+    <ClInclude Include="..\fix_viscous.h" />
+    <ClInclude Include="..\fix_wall.h" />
+    <ClInclude Include="..\fix_wall_gran.h" />
+    <ClInclude Include="..\fix_wall_gran_hertz_history.h" />
+    <ClInclude Include="..\fix_wall_gran_hertz_history_simple.h" />
+    <ClInclude Include="..\fix_wall_gran_hooke.h" />
+    <ClInclude Include="..\fix_wall_gran_hooke_history.h" />
+    <ClInclude Include="..\fix_wall_gran_hooke_history_simple.h" />
+    <ClInclude Include="..\fix_wall_gran_hooke_simple.h" />
+    <ClInclude Include="..\fix_wall_harmonic.h" />
+    <ClInclude Include="..\fix_wall_lj126.h" />
+    <ClInclude Include="..\fix_wall_lj93.h" />
+    <ClInclude Include="..\fix_wall_reflect.h" />
+    <ClInclude Include="..\fix_wall_region.h" />
+    <ClInclude Include="..\fix_wall_region_sph.h" />
+    <ClInclude Include="..\fix_wall_sph.h" />
+    <ClInclude Include="..\force.h" />
+    <ClInclude Include="..\general_container.h" />
+    <ClInclude Include="..\general_container_I.h" />
+    <ClInclude Include="..\group.h" />
+    <ClInclude Include="..\image.h" />
+    <ClInclude Include="..\improper.h" />
+    <ClInclude Include="..\input.h" />
+    <ClInclude Include="..\input_mesh_tet.h" />
+    <ClInclude Include="..\input_mesh_tri.h" />
+    <ClInclude Include="..\input_multisphere.h" />
+    <ClInclude Include="..\integrate.h" />
+    <ClInclude Include="..\irregular.h" />
+    <ClInclude Include="..\kspace.h" />
+    <ClInclude Include="..\lammps.h" />
+    <ClInclude Include="..\lattice.h" />
+    <ClInclude Include="..\library.h" />
+    <ClInclude Include="..\library_cfd_coupling.h" />
+    <ClInclude Include="..\lmptype.h" />
+    <ClInclude Include="..\lmpwindows.h" />
+    <ClInclude Include="..\math_const.h" />
+    <ClInclude Include="..\math_extra.h" />
+    <ClInclude Include="..\math_extra_liggghts.h" />
+    <ClInclude Include="..\mech_param_gran.h" />
+    <ClInclude Include="..\memory.h" />
+    <ClInclude Include="..\memory_ns.h" />
+    <ClInclude Include="..\mesh_mover.h" />
+    <ClInclude Include="..\min.h" />
+    <ClInclude Include="..\minimize.h" />
+    <ClInclude Include="..\min_cg.h" />
+    <ClInclude Include="..\min_fire.h" />
+    <ClInclude Include="..\min_hftn.h" />
+    <ClInclude Include="..\min_linesearch.h" />
+    <ClInclude Include="..\min_quickmin.h" />
+    <ClInclude Include="..\min_sd.h" />
+    <ClInclude Include="..\modified_andrew.h" />
+    <ClInclude Include="..\modify.h" />
+    <ClInclude Include="..\mpi_liggghts.h" />
+    <ClInclude Include="..\multisphere.h" />
+    <ClInclude Include="..\multi_node_mesh.h" />
+    <ClInclude Include="..\multi_node_mesh_I.h" />
+    <ClInclude Include="..\multi_node_mesh_parallel.h" />
+    <ClInclude Include="..\multi_node_mesh_parallel_buffer_I.h" />
+    <ClInclude Include="..\multi_node_mesh_parallel_I.h" />
+    <ClInclude Include="..\multi_vector_container.h" />
+    <ClInclude Include="..\neighbor.h" />
+    <ClInclude Include="..\neigh_bond.h" />
+    <ClInclude Include="..\neigh_derive.h" />
+    <ClInclude Include="..\neigh_dummy.h" />
+    <ClInclude Include="..\neigh_full.h" />
+    <ClInclude Include="..\neigh_gran.h" />
+    <ClInclude Include="..\neigh_half_bin.h" />
+    <ClInclude Include="..\neigh_half_multi.h" />
+    <ClInclude Include="..\neigh_half_nsq.h" />
+    <ClInclude Include="..\neigh_list.h" />
+    <ClInclude Include="..\neigh_mlg_dummy.h" />
+    <ClInclude Include="..\neigh_multi_level_grid.h" />
+    <ClInclude Include="..\neigh_request.h" />
+    <ClInclude Include="..\neigh_respa.h" />
+    <ClInclude Include="..\output.h" />
+    <ClInclude Include="..\pack.h" />
+    <ClInclude Include="..\pair.h" />
+    <ClInclude Include="..\pair_beck.h" />
+    <ClInclude Include="..\pair_born.h" />
+    <ClInclude Include="..\pair_born_coul_wolf.h" />
+    <ClInclude Include="..\pair_buck.h" />
+    <ClInclude Include="..\pair_buck_coul_cut.h" />
+    <ClInclude Include="..\pair_coul_cut.h" />
+    <ClInclude Include="..\pair_coul_debye.h" />
+    <ClInclude Include="..\pair_coul_wolf.h" />
+    <ClInclude Include="..\pair_dpd.h" />
+    <ClInclude Include="..\pair_dpd_tstat.h" />
+    <ClInclude Include="..\pair_gauss.h" />
+    <ClInclude Include="..\pair_gran.h" />
+    <ClInclude Include="..\pair_gran_hertz_history.h" />
+    <ClInclude Include="..\pair_gran_hertz_history_simple.h" />
+    <ClInclude Include="..\pair_gran_hooke.h" />
+    <ClInclude Include="..\pair_gran_hooke_history.h" />
+    <ClInclude Include="..\pair_gran_hooke_history_hysteresis.h" />
+    <ClInclude Include="..\pair_gran_hooke_history_simple.h" />
+    <ClInclude Include="..\pair_gran_hooke_simple.h" />
+    <ClInclude Include="..\pair_hybrid.h" />
+    <ClInclude Include="..\pair_hybrid_overlay.h" />
+    <ClInclude Include="..\pair_lj96_cut.h" />
+    <ClInclude Include="..\pair_lj_cubic.h" />
+    <ClInclude Include="..\pair_lj_cut.h" />
+    <ClInclude Include="..\pair_lj_cut_coul_cut.h" />
+    <ClInclude Include="..\pair_lj_cut_coul_debye.h" />
+    <ClInclude Include="..\pair_lj_expand.h" />
+    <ClInclude Include="..\pair_lj_gromacs.h" />
+    <ClInclude Include="..\pair_lj_gromacs_coul_gromacs.h" />
+    <ClInclude Include="..\pair_lj_smooth.h" />
+    <ClInclude Include="..\pair_lj_smooth_linear.h" />
+    <ClInclude Include="..\pair_morse.h" />
+    <ClInclude Include="..\pair_soft.h" />
+    <ClInclude Include="..\pair_sph.h" />
+    <ClInclude Include="..\pair_sph_artvisc_tenscorr.h" />
+    <ClInclude Include="..\pair_table.h" />
+    <ClInclude Include="..\pair_yukawa.h" />
+    <ClInclude Include="..\particleToInsert.h" />
+    <ClInclude Include="..\pointers.h" />
+    <ClInclude Include="..\primitive_wall.h" />
+    <ClInclude Include="..\primitive_wall_definitions.h" />
+    <ClInclude Include="..\probability_distribution.h" />
+    <ClInclude Include="..\procmap.h" />
+    <ClInclude Include="..\random_mars.h" />
+    <ClInclude Include="..\random_park.h" />
+    <ClInclude Include="..\read_data.h" />
+    <ClInclude Include="..\read_restart.h" />
+    <ClInclude Include="..\region.h" />
+    <ClInclude Include="..\region_block.h" />
+    <ClInclude Include="..\region_cone.h" />
+    <ClInclude Include="..\region_cylinder.h" />
+    <ClInclude Include="..\region_intersect.h" />
+    <ClInclude Include="..\region_mesh_tet.h" />
+    <ClInclude Include="..\region_plane.h" />
+    <ClInclude Include="..\region_prism.h" />
+    <ClInclude Include="..\region_sphere.h" />
+    <ClInclude Include="..\region_union.h" />
+    <ClInclude Include="..\region_wedge.h" />
+    <ClInclude Include="..\replicate.h" />
+    <ClInclude Include="..\respa.h" />
+    <ClInclude Include="..\run.h" />
+    <ClInclude Include="..\scalar_container.h" />
+    <ClInclude Include="..\set.h" />
+    <ClInclude Include="..\special.h" />
+    <ClInclude Include="..\sph_kernels.h" />
+    <ClInclude Include="..\sph_kernel_cubicspline.h" />
+    <ClInclude Include="..\sph_kernel_cubicspline2D.h" />
+    <ClInclude Include="..\sph_kernel_spiky.h" />
+    <ClInclude Include="..\sph_kernel_spiky2D.h" />
+    <ClInclude Include="..\sph_kernel_wendland.h" />
+    <ClInclude Include="..\sph_kernel_wendland2D.h" />
+    <ClInclude Include="..\style_angle.h" />
+    <ClInclude Include="..\style_atom.h" />
+    <ClInclude Include="..\style_bond.h" />
+    <ClInclude Include="..\style_cfd_datacoupling.h" />
+    <ClInclude Include="..\style_cfd_regionmodel.h" />
+    <ClInclude Include="..\style_command.h" />
+    <ClInclude Include="..\style_compute.h" />
+    <ClInclude Include="..\style_dihedral.h" />
+    <ClInclude Include="..\style_dump.h" />
+    <ClInclude Include="..\style_fix.h" />
+    <ClInclude Include="..\style_improper.h" />
+    <ClInclude Include="..\style_integrate.h" />
+    <ClInclude Include="..\style_kspace.h" />
+    <ClInclude Include="..\style_lb.h" />
+    <ClInclude Include="..\style_minimize.h" />
+    <ClInclude Include="..\style_pair.h" />
+    <ClInclude Include="..\style_region.h" />
+    <ClInclude Include="..\style_sph_kernel.h" />
+    <ClInclude Include="..\suffix.h" />
+    <ClInclude Include="..\surface_mesh.h" />
+    <ClInclude Include="..\surface_mesh_I.h" />
+    <ClInclude Include="..\thermo.h" />
+    <ClInclude Include="..\timer.h" />
+    <ClInclude Include="..\tracking_mesh.h" />
+    <ClInclude Include="..\tracking_mesh_I.h" />
+    <ClInclude Include="..\tri_mesh.h" />
+    <ClInclude Include="..\tri_mesh_deform.h" />
+    <ClInclude Include="..\tri_mesh_I.h" />
+    <ClInclude Include="..\tri_mesh_planar.h" />
+    <ClInclude Include="..\tri_mesh_planar_I.h" />
+    <ClInclude Include="..\universe.h" />
+    <ClInclude Include="..\update.h" />
+    <ClInclude Include="..\variable.h" />
+    <ClInclude Include="..\vector_container.h" />
+    <ClInclude Include="..\vector_liggghts.h" />
+    <ClInclude Include="..\velocity.h" />
+    <ClInclude Include="..\verlet.h" />
+    <ClInclude Include="..\verlet_implicit.h" />
+    <ClInclude Include="..\version.h" />
+    <ClInclude Include="..\version_liggghts.h" />
+    <ClInclude Include="..\volume_mesh.h" />
+    <ClInclude Include="..\volume_mesh_I.h" />
+    <ClInclude Include="..\write_restart.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\angle.cpp" />
+    <ClCompile Include="..\atom.cpp" />
+    <ClCompile Include="..\atom_vec.cpp" />
+    <ClCompile Include="..\atom_vec_atomic.cpp" />
+    <ClCompile Include="..\atom_vec_charge.cpp" />
+    <ClCompile Include="..\atom_vec_ellipsoid.cpp" />
+    <ClCompile Include="..\atom_vec_hybrid.cpp" />
+    <ClCompile Include="..\atom_vec_line.cpp" />
+    <ClCompile Include="..\atom_vec_sph.cpp" />
+    <ClCompile Include="..\atom_vec_sphere.cpp" />
+    <ClCompile Include="..\atom_vec_sph_var.cpp" />
+    <ClCompile Include="..\atom_vec_tri.cpp" />
+    <ClCompile Include="..\bond.cpp" />
+    <ClCompile Include="..\bond_hybrid.cpp" />
+    <ClCompile Include="..\bounding_box.cpp" />
+    <ClCompile Include="..\cfd_datacoupling.cpp" />
+    <ClCompile Include="..\cfd_datacoupling_file.cpp" />
+    <ClCompile Include="..\cfd_datacoupling_mpi.cpp" />
+    <ClCompile Include="..\cfd_regionmodel_none.cpp" />
+    <ClCompile Include="..\change_box.cpp" />
+    <ClCompile Include="..\comm.cpp" />
+    <ClCompile Include="..\compute.cpp" />
+    <ClCompile Include="..\compute_angle_local.cpp" />
+    <ClCompile Include="..\compute_atom_molecule.cpp" />
+    <ClCompile Include="..\compute_bond_local.cpp" />
+    <ClCompile Include="..\compute_centro_atom.cpp" />
+    <ClCompile Include="..\compute_cluster_atom.cpp" />
+    <ClCompile Include="..\compute_cna_atom.cpp" />
+    <ClCompile Include="..\compute_com.cpp" />
+    <ClCompile Include="..\compute_com_molecule.cpp" />
+    <ClCompile Include="..\compute_contact_atom.cpp" />
+    <ClCompile Include="..\compute_coord_atom.cpp" />
+    <ClCompile Include="..\compute_dihedral_local.cpp" />
+    <ClCompile Include="..\compute_displace_atom.cpp" />
+    <ClCompile Include="..\compute_erotate_sphere.cpp" />
+    <ClCompile Include="..\compute_group_group.cpp" />
+    <ClCompile Include="..\compute_gyration.cpp" />
+    <ClCompile Include="..\compute_gyration_molecule.cpp" />
+    <ClCompile Include="..\compute_heat_flux.cpp" />
+    <ClCompile Include="..\compute_improper_local.cpp" />
+    <ClCompile Include="..\compute_ke.cpp" />
+    <ClCompile Include="..\compute_ke_atom.cpp" />
+    <ClCompile Include="..\compute_msd.cpp" />
+    <ClCompile Include="..\compute_msd_molecule.cpp" />
+    <ClCompile Include="..\compute_nparticles_tracer_region.cpp" />
+    <ClCompile Include="..\compute_pair.cpp" />
+    <ClCompile Include="..\compute_pair_gran_local.cpp" />
+    <ClCompile Include="..\compute_pair_local.cpp" />
+    <ClCompile Include="..\compute_pe.cpp" />
+    <ClCompile Include="..\compute_pe_atom.cpp" />
+    <ClCompile Include="..\compute_pressure.cpp" />
+    <ClCompile Include="..\compute_property_atom.cpp" />
+    <ClCompile Include="..\compute_property_local.cpp" />
+    <ClCompile Include="..\compute_property_molecule.cpp" />
+    <ClCompile Include="..\compute_rdf.cpp" />
+    <ClCompile Include="..\compute_reduce.cpp" />
+    <ClCompile Include="..\compute_reduce_region.cpp" />
+    <ClCompile Include="..\compute_slice.cpp" />
+    <ClCompile Include="..\compute_stress_atom.cpp" />
+    <ClCompile Include="..\compute_temp.cpp" />
+    <ClCompile Include="..\compute_temp_com.cpp" />
+    <ClCompile Include="..\compute_temp_deform.cpp" />
+    <ClCompile Include="..\compute_temp_partial.cpp" />
+    <ClCompile Include="..\compute_temp_profile.cpp" />
+    <ClCompile Include="..\compute_temp_ramp.cpp" />
+    <ClCompile Include="..\compute_temp_region.cpp" />
+    <ClCompile Include="..\compute_temp_sphere.cpp" />
+    <ClCompile Include="..\compute_ti.cpp" />
+    <ClCompile Include="..\container_base.cpp" />
+    <ClCompile Include="..\create_atoms.cpp" />
+    <ClCompile Include="..\create_box.cpp" />
+    <ClCompile Include="..\custom_value_tracker.cpp" />
+    <ClCompile Include="..\delete_atoms.cpp" />
+    <ClCompile Include="..\delete_bonds.cpp" />
+    <ClCompile Include="..\dihedral.cpp" />
+    <ClCompile Include="..\displace_atoms.cpp" />
+    <ClCompile Include="..\domain.cpp" />
+    <ClCompile Include="..\dump.cpp" />
+    <ClCompile Include="..\dump_atom.cpp" />
+    <ClCompile Include="..\dump_atom_vtk.cpp" />
+    <ClCompile Include="..\dump_cfg.cpp" />
+    <ClCompile Include="..\dump_custom.cpp" />
+    <ClCompile Include="..\dump_dcd.cpp" />
+    <ClCompile Include="..\dump_decomposition_vtk.cpp" />
+    <ClCompile Include="..\dump_euler_vtk.cpp" />
+    <ClCompile Include="..\dump_image.cpp" />
+    <ClCompile Include="..\dump_local.cpp" />
+    <ClCompile Include="..\dump_mesh_stl.cpp" />
+    <ClCompile Include="..\dump_mesh_vtk.cpp" />
+    <ClCompile Include="..\dump_xyz.cpp" />
+    <ClCompile Include="..\error.cpp" />
+    <ClCompile Include="..\finish.cpp" />
+    <ClCompile Include="..\fix.cpp" />
+    <ClCompile Include="..\fix_adapt.cpp" />
+    <ClCompile Include="..\fix_addforce.cpp" />
+    <ClCompile Include="..\fix_aveforce.cpp" />
+    <ClCompile Include="..\fix_ave_atom.cpp" />
+    <ClCompile Include="..\fix_ave_correlate.cpp" />
+    <ClCompile Include="..\fix_ave_euler.cpp" />
+    <ClCompile Include="..\fix_ave_histo.cpp" />
+    <ClCompile Include="..\fix_ave_spatial.cpp" />
+    <ClCompile Include="..\fix_ave_time.cpp" />
+    <ClCompile Include="..\fix_box_relax.cpp" />
+    <ClCompile Include="..\fix_cfd_coupling.cpp" />
+    <ClCompile Include="..\fix_cfd_coupling_convection.cpp" />
+    <ClCompile Include="..\fix_cfd_coupling_force.cpp" />
+    <ClCompile Include="..\fix_cfd_coupling_force_implicit.cpp" />
+    <ClCompile Include="..\fix_check_timestep_gran.cpp" />
+    <ClCompile Include="..\fix_check_timestep_sph.cpp" />
+    <ClCompile Include="..\fix_contact_history.cpp" />
+    <ClCompile Include="..\fix_deform.cpp" />
+    <ClCompile Include="..\fix_deposit.cpp" />
+    <ClCompile Include="..\fix_drag.cpp" />
+    <ClCompile Include="..\fix_dt_reset.cpp" />
+    <ClCompile Include="..\fix_efield.cpp" />
+    <ClCompile Include="..\fix_enforce2d.cpp" />
+    <ClCompile Include="..\fix_evaporate.cpp" />
+    <ClCompile Include="..\fix_external.cpp" />
+    <ClCompile Include="..\fix_freeze.cpp" />
+    <ClCompile Include="..\fix_gravity.cpp" />
+    <ClCompile Include="..\fix_heat.cpp" />
+    <ClCompile Include="..\fix_heat_gran.cpp" />
+    <ClCompile Include="..\fix_heat_gran_conduction.cpp" />
+    <ClCompile Include="..\fix_indent.cpp" />
+    <ClCompile Include="..\fix_insert.cpp" />
+    <ClCompile Include="..\fix_insert_pack.cpp" />
+    <ClCompile Include="..\fix_insert_rate_region.cpp" />
+    <ClCompile Include="..\fix_insert_stream.cpp" />
+    <ClCompile Include="..\fix_langevin.cpp" />
+    <ClCompile Include="..\fix_lineforce.cpp" />
+    <ClCompile Include="..\fix_massflow_mesh.cpp" />
+    <ClCompile Include="..\fix_mesh.cpp" />
+    <ClCompile Include="..\fix_mesh_surface.cpp" />
+    <ClCompile Include="..\fix_mesh_surface_stress.cpp" />
+    <ClCompile Include="..\fix_mesh_surface_stress_servo.cpp" />
+    <ClCompile Include="..\fix_minimize.cpp" />
+    <ClCompile Include="..\fix_momentum.cpp" />
+    <ClCompile Include="..\fix_move.cpp" />
+    <ClCompile Include="..\fix_move_mesh.cpp" />
+    <ClCompile Include="..\fix_neighlist_mesh.cpp" />
+    <ClCompile Include="..\fix_nh.cpp" />
+    <ClCompile Include="..\fix_nh_sphere.cpp" />
+    <ClCompile Include="..\fix_nph.cpp" />
+    <ClCompile Include="..\fix_nph_sphere.cpp" />
+    <ClCompile Include="..\fix_npt.cpp" />
+    <ClCompile Include="..\fix_npt_sphere.cpp" />
+    <ClCompile Include="..\fix_nve.cpp" />
+    <ClCompile Include="..\fix_nve_limit.cpp" />
+    <ClCompile Include="..\fix_nve_noforce.cpp" />
+    <ClCompile Include="..\fix_nve_sph.cpp" />
+    <ClCompile Include="..\fix_nve_sphere.cpp" />
+    <ClCompile Include="..\fix_nve_sph_stationary.cpp" />
+    <ClCompile Include="..\fix_nvt.cpp" />
+    <ClCompile Include="..\fix_nvt_sllod.cpp" />
+    <ClCompile Include="..\fix_nvt_sphere.cpp" />
+    <ClCompile Include="..\fix_orient_fcc.cpp" />
+    <ClCompile Include="..\fix_particledistribution_discrete.cpp" />
+    <ClCompile Include="..\fix_planeforce.cpp" />
+    <ClCompile Include="..\fix_pour.cpp" />
+    <ClCompile Include="..\fix_press_berendsen.cpp" />
+    <ClCompile Include="..\fix_print.cpp" />
+    <ClCompile Include="..\fix_property_atom.cpp" />
+    <ClCompile Include="..\fix_property_atom_tracer.cpp" />
+    <ClCompile Include="..\fix_property_atom_tracer_stream.cpp" />
+    <ClCompile Include="..\fix_property_global.cpp" />
+    <ClCompile Include="..\fix_read_restart.cpp" />
+    <ClCompile Include="..\fix_recenter.cpp" />
+    <ClCompile Include="..\fix_region_variable.cpp" />
+    <ClCompile Include="..\fix_respa.cpp" />
+    <ClCompile Include="..\fix_restrain.cpp" />
+    <ClCompile Include="..\fix_rigid.cpp" />
+    <ClCompile Include="..\fix_rigid_nve.cpp" />
+    <ClCompile Include="..\fix_rigid_nvt.cpp" />
+    <ClCompile Include="..\fix_scalar_transport_equation.cpp" />
+    <ClCompile Include="..\fix_setforce.cpp" />
+    <ClCompile Include="..\fix_shake.cpp" />
+    <ClCompile Include="..\fix_shear_history.cpp" />
+    <ClCompile Include="..\fix_sph.cpp" />
+    <ClCompile Include="..\fix_sph_density_continuity.cpp" />
+    <ClCompile Include="..\fix_sph_density_corr.cpp" />
+    <ClCompile Include="..\fix_sph_density_summation.cpp" />
+    <ClCompile Include="..\fix_sph_pressure.cpp" />
+    <ClCompile Include="..\fix_spring.cpp" />
+    <ClCompile Include="..\fix_spring_rg.cpp" />
+    <ClCompile Include="..\fix_spring_self.cpp" />
+    <ClCompile Include="..\fix_store_force.cpp" />
+    <ClCompile Include="..\fix_store_state.cpp" />
+    <ClCompile Include="..\fix_template_multiplespheres.cpp" />
+    <ClCompile Include="..\fix_template_sphere.cpp" />
+    <ClCompile Include="..\fix_temp_berendsen.cpp" />
+    <ClCompile Include="..\fix_temp_rescale.cpp" />
+    <ClCompile Include="..\fix_thermal_conductivity.cpp" />
+    <ClCompile Include="..\fix_tmd.cpp" />
+    <ClCompile Include="..\fix_ttm.cpp" />
+    <ClCompile Include="..\fix_viscosity.cpp" />
+    <ClCompile Include="..\fix_viscous.cpp" />
+    <ClCompile Include="..\fix_wall.cpp" />
+    <ClCompile Include="..\fix_wall_gran.cpp" />
+    <ClCompile Include="..\fix_wall_gran_hertz_history.cpp" />
+    <ClCompile Include="..\fix_wall_gran_hertz_history_simple.cpp" />
+    <ClCompile Include="..\fix_wall_gran_hooke.cpp" />
+    <ClCompile Include="..\fix_wall_gran_hooke_history.cpp" />
+    <ClCompile Include="..\fix_wall_gran_hooke_history_simple.cpp" />
+    <ClCompile Include="..\fix_wall_gran_hooke_simple.cpp" />
+    <ClCompile Include="..\fix_wall_harmonic.cpp" />
+    <ClCompile Include="..\fix_wall_lj126.cpp" />
+    <ClCompile Include="..\fix_wall_lj93.cpp" />
+    <ClCompile Include="..\fix_wall_reflect.cpp" />
+    <ClCompile Include="..\fix_wall_region.cpp" />
+    <ClCompile Include="..\fix_wall_region_sph.cpp" />
+    <ClCompile Include="..\fix_wall_sph.cpp" />
+    <ClCompile Include="..\force.cpp" />
+    <ClCompile Include="..\group.cpp" />
+    <ClCompile Include="..\image.cpp" />
+    <ClCompile Include="..\improper.cpp" />
+    <ClCompile Include="..\input.cpp" />
+    <ClCompile Include="..\input_mesh_tet.cpp" />
+    <ClCompile Include="..\input_mesh_tri.cpp" />
+    <ClCompile Include="..\input_multisphere.cpp" />
+    <ClCompile Include="..\integrate.cpp" />
+    <ClCompile Include="..\irregular.cpp" />
+    <ClCompile Include="..\kspace.cpp" />
+    <ClCompile Include="..\lammps.cpp" />
+    <ClCompile Include="..\lattice.cpp" />
+    <ClCompile Include="..\library.cpp" />
+    <ClCompile Include="..\library_cfd_coupling.cpp" />
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\math_extra.cpp" />
+    <ClCompile Include="..\mech_param_gran.cpp" />
+    <ClCompile Include="..\memory.cpp" />
+    <ClCompile Include="..\mesh_mover.cpp" />
+    <ClCompile Include="..\min.cpp" />
+    <ClCompile Include="..\minimize.cpp" />
+    <ClCompile Include="..\min_cg.cpp" />
+    <ClCompile Include="..\min_fire.cpp" />
+    <ClCompile Include="..\min_hftn.cpp" />
+    <ClCompile Include="..\min_linesearch.cpp" />
+    <ClCompile Include="..\min_quickmin.cpp" />
+    <ClCompile Include="..\min_sd.cpp" />
+    <ClCompile Include="..\modified_andrew.cpp" />
+    <ClCompile Include="..\modify.cpp" />
+    <ClCompile Include="..\modify_liggghts.cpp" />
+    <ClCompile Include="..\neighbor.cpp" />
+    <ClCompile Include="..\neigh_bond.cpp" />
+    <ClCompile Include="..\neigh_derive.cpp" />
+    <ClCompile Include="..\neigh_dummy.cpp" />
+    <ClCompile Include="..\neigh_full.cpp" />
+    <ClCompile Include="..\neigh_gran.cpp" />
+    <ClCompile Include="..\neigh_half_bin.cpp" />
+    <ClCompile Include="..\neigh_half_multi.cpp" />
+    <ClCompile Include="..\neigh_half_nsq.cpp" />
+    <ClCompile Include="..\neigh_list.cpp" />
+    <ClCompile Include="..\neigh_request.cpp" />
+    <ClCompile Include="..\neigh_respa.cpp" />
+    <ClCompile Include="..\neigh_stencil.cpp" />
+    <ClCompile Include="..\output.cpp" />
+    <ClCompile Include="..\pair.cpp" />
+    <ClCompile Include="..\pair_beck.cpp" />
+    <ClCompile Include="..\pair_born.cpp" />
+    <ClCompile Include="..\pair_born_coul_wolf.cpp" />
+    <ClCompile Include="..\pair_buck.cpp" />
+    <ClCompile Include="..\pair_buck_coul_cut.cpp" />
+    <ClCompile Include="..\pair_coul_cut.cpp" />
+    <ClCompile Include="..\pair_coul_debye.cpp" />
+    <ClCompile Include="..\pair_coul_wolf.cpp" />
+    <ClCompile Include="..\pair_dpd.cpp" />
+    <ClCompile Include="..\pair_dpd_tstat.cpp" />
+    <ClCompile Include="..\pair_gauss.cpp" />
+    <ClCompile Include="..\pair_gran.cpp" />
+    <ClCompile Include="..\pair_gran_hertz_history.cpp" />
+    <ClCompile Include="..\pair_gran_hertz_history_simple.cpp" />
+    <ClCompile Include="..\pair_gran_hooke.cpp" />
+    <ClCompile Include="..\pair_gran_hooke_history.cpp" />
+    <ClCompile Include="..\pair_gran_hooke_history_hysteresis.cpp" />
+    <ClCompile Include="..\pair_gran_hooke_history_simple.cpp" />
+    <ClCompile Include="..\pair_gran_hooke_simple.cpp" />
+    <ClCompile Include="..\pair_hybrid.cpp" />
+    <ClCompile Include="..\pair_hybrid_overlay.cpp" />
+    <ClCompile Include="..\pair_lj96_cut.cpp" />
+    <ClCompile Include="..\pair_lj_cubic.cpp" />
+    <ClCompile Include="..\pair_lj_cut.cpp" />
+    <ClCompile Include="..\pair_lj_cut_coul_cut.cpp" />
+    <ClCompile Include="..\pair_lj_cut_coul_debye.cpp" />
+    <ClCompile Include="..\pair_lj_expand.cpp" />
+    <ClCompile Include="..\pair_lj_gromacs.cpp" />
+    <ClCompile Include="..\pair_lj_gromacs_coul_gromacs.cpp" />
+    <ClCompile Include="..\pair_lj_smooth.cpp" />
+    <ClCompile Include="..\pair_lj_smooth_linear.cpp" />
+    <ClCompile Include="..\pair_morse.cpp" />
+    <ClCompile Include="..\pair_soft.cpp" />
+    <ClCompile Include="..\pair_sph.cpp" />
+    <ClCompile Include="..\pair_sph_artvisc_tenscorr.cpp" />
+    <ClCompile Include="..\pair_table.cpp" />
+    <ClCompile Include="..\pair_yukawa.cpp" />
+    <ClCompile Include="..\particleToInsert.cpp" />
+    <ClCompile Include="..\procmap.cpp" />
+    <ClCompile Include="..\random_mars.cpp" />
+    <ClCompile Include="..\random_park.cpp" />
+    <ClCompile Include="..\read_data.cpp" />
+    <ClCompile Include="..\read_restart.cpp" />
+    <ClCompile Include="..\region.cpp" />
+    <ClCompile Include="..\region_block.cpp" />
+    <ClCompile Include="..\region_cone.cpp" />
+    <ClCompile Include="..\region_cylinder.cpp" />
+    <ClCompile Include="..\region_intersect.cpp" />
+    <ClCompile Include="..\region_mesh_tet.cpp" />
+    <ClCompile Include="..\region_plane.cpp" />
+    <ClCompile Include="..\region_prism.cpp" />
+    <ClCompile Include="..\region_sphere.cpp" />
+    <ClCompile Include="..\region_union.cpp" />
+    <ClCompile Include="..\region_wedge.cpp" />
+    <ClCompile Include="..\replicate.cpp" />
+    <ClCompile Include="..\respa.cpp" />
+    <ClCompile Include="..\run.cpp" />
+    <ClCompile Include="..\set.cpp" />
+    <ClCompile Include="..\special.cpp" />
+    <ClCompile Include="..\thermo.cpp" />
+    <ClCompile Include="..\timer.cpp" />
+    <ClCompile Include="..\tri_mesh.cpp" />
+    <ClCompile Include="..\tri_mesh_planar.cpp" />
+    <ClCompile Include="..\universe.cpp" />
+    <ClCompile Include="..\update.cpp" />
+    <ClCompile Include="..\variable.cpp" />
+    <ClCompile Include="..\velocity.cpp" />
+    <ClCompile Include="..\verlet.cpp" />
+    <ClCompile Include="..\verlet_implicit.cpp" />
+    <ClCompile Include="..\write_restart.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{74AC9767-A52F-47BD-BB26-07C739DA3EA5}</ProjectGuid>
+    <RootNamespace>testmacro</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\MPICH2\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\MPICH2\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\MPICH2\include;$(IncludePath)</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\MPICH2\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Program Files (x86)\MPICH2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\MPICH2\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\Program Files (x86)\MPICH2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files (x86)\MPICH2\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..;extra;settings;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4101;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>mpi.lib;cxx.lib;extra/fftw2/FFTW2dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..;extra;settings;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4101;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>mpi.lib;cxx.lib;extra/fftw2/x64/FFTW2dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..;extra;settings;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4101;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>mpi.lib;cxx.lib;extra/fftw2/FFTW2dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..;extra;settings;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4101;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>mpi.lib;cxx.lib;extra/fftw2/x64/FFTW2dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..;extra;settings;../STUBS;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4101;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)stubs.lib;extra/fftw2/FFTW2dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_STUBS|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..;extra;settings;../STUBS;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4101;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)stubs.lib;extra/fftw2/FFTW2dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..;extra;settings;../STUBS;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4101;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)stubs.lib;extra/fftw2/FFTW2dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_STUBS|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..;extra;settings;../STUBS;../../lib/awpmd/systems/interact/TCP;../MOLECULE;../KSPACE;extra/fftw2;../MANYBODY;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;FFT_FFTW;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4101;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)stubs.lib;extra/fftw2/FFTW2dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

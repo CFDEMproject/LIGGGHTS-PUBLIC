@@ -97,6 +97,7 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
     extvector=0; 
 
     filename = 0;
+    grpname = 0;
 
     //check if there is already a fix that tries to register a property with the same name
     for (int ifix = 0; ifix < modify->nfix; ifix++)
@@ -139,6 +140,7 @@ FixPropertyGlobal::~FixPropertyGlobal()
   delete[] variablename;
 
   if(filename) delete[] filename;
+  if(grpname) delete[] grpname;
 
   memory->sfree(values);
   memory->sfree(values_recomputed);
@@ -200,6 +202,8 @@ Fix* FixPropertyGlobal::check_fix(const char *varname,const char *svmstyle,int l
 
 void FixPropertyGlobal::init()
 {
+    me = comm->me;
+
     char errmsg[300];
     int ntypes = atom->ntypes;
 
@@ -331,7 +335,8 @@ void FixPropertyGlobal::new_array(int l1,int l2)
 
 void FixPropertyGlobal::write()
 {
-    if(0 != comm->me)
+    
+    if(0 != me)
         return;
 
     FILE *file = fopen(filename,"w");
@@ -340,7 +345,7 @@ void FixPropertyGlobal::write()
         error->one(FLERR,"Fix property/global cannot open file");
 
     // fix id group style variablename
-    fprintf(file,"fix %s %s %s %s ",id,group->names[igroup],style,variablename);
+    fprintf(file,"fix %s %s %s %s ",id,grpname,style,variablename);
 
     // datatype
     char *datatyp;
@@ -370,6 +375,7 @@ int FixPropertyGlobal::modify_param(int narg, char **arg)
 
     filename = new char[strlen(arg[1])+1];
     strcpy(filename,arg[1]);
+    strcpy(grpname,group->names[igroup]);
     return 2;
   }
 

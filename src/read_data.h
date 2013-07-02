@@ -61,7 +61,7 @@ class ReadData : protected Pointers {
   void open(char *);
   void scan(int &, int &, int &, int &);
   int reallocate(int **, int, int);
-  void header(int);
+  void header(int, int add = 1); 
   void parse_keyword(int, int);
   void skip_lines(int);
   void parse_coeffs(char *, const char *, int);

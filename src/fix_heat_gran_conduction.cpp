@@ -92,7 +92,7 @@ void FixHeatGranCond::pre_delete(bool unfixflag)
 
 int FixHeatGranCond::setmask()
 {
-  int mask = 0;
+  int mask = FixHeatGran::setmask();
   mask |= POST_FORCE;
   return mask;
 }
@@ -189,7 +189,7 @@ void FixHeatGranCond::cpl_evaluate(ComputePairGranLocal *caller)
 template <int HISTFLAG>
 void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
 {
-  double hc,contactArea,delta_n,flux;
+  double hc,contactArea,delta_n,flux,dirFlux[3];
   int i,j,ii,jj,inum,jnum;
   double xtmp,ytmp,ztmp,delx,dely,delz;
   double radi,radj,radsum,rsq,r,rinv,rsqinv,tcoi,tcoj;
@@ -255,6 +255,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
           rsq = delx*delx + dely*dely + delz*delz;
           radj = radius[j];
           radsum = radi + radj;
+          if(rsq >= radsum*radsum) continue;
         }
 
         r = sqrt(rsq);
@@ -275,10 +276,24 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
 
         flux = (Temp[j]-Temp[i])*hc;
 
+        dirFlux[0] = flux*delx;
+        dirFlux[1] = flux*dely;
+        dirFlux[2] = flux*delz;
         if(!cpl_flag)
         {
+          //Add half of the flux (located at the contact) to each particle in contact
           heatFlux[i] += flux;
-          if (newton_pair || j < nlocal) heatFlux[j] -= flux;
+          directionalHeatFlux[i][0] += 0.50 * dirFlux[0];
+          directionalHeatFlux[i][1] += 0.50 * dirFlux[1];
+          directionalHeatFlux[i][2] += 0.50 * dirFlux[2];
+          if (newton_pair || j < nlocal)
+          {
+            heatFlux[j] -= flux;
+            directionalHeatFlux[j][0] += 0.50 * dirFlux[0];
+            directionalHeatFlux[j][1] += 0.50 * dirFlux[1];
+            directionalHeatFlux[j][2] += 0.50 * dirFlux[2];
+          }
+
         }
 
         if(cpl_flag && cpl) cpl->add_heat(i,j,flux);
@@ -287,6 +302,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
   }
 
   if(newton_pair) fix_heatFlux->do_reverse_comm();
+  if(newton_pair) fix_directionalHeatFlux->do_reverse_comm();
 }
 
 /* ----------------------------------------------------------------------

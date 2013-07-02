@@ -63,12 +63,20 @@ class FixMassflowMesh : public Fix {
   double pref_[3];
   double sidevec_[3];
 
+  bool    havePointAtOutlet_;
+  bool    insideOut_;
+  double pointAtOutlet_[3];
+
   // true if any given particle is
   // counted only once
   bool once_;
 
   double mass_;
   int nparticles_;
+
+  // data write
+  bool screenflag_;
+  FILE *fp_;
 
   // data for particle and mass flow calculation
   double mass_last_;

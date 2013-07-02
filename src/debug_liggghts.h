@@ -33,11 +33,7 @@ namespace LAMMPS_NS {
 
 inline void __debug__(LAMMPS* lmp)
 {
-    //fprintf(lmp->screen,"test");
-    printVec3D(lmp->screen,"pos for tag 206",lmp->atom->x[lmp->atom->map(206)]);
-    printVec3D(lmp->screen,"vel for tag 206",lmp->atom->v[lmp->atom->map(206)]);
-    printVec3D(lmp->screen,"f for tag 206",lmp->atom->f[lmp->atom->map(206)]);
-
+    
 }
 
 }

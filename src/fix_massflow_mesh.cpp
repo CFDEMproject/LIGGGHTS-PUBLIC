@@ -25,6 +25,7 @@
 #include "atom.h"
 #include "comm.h"
 #include "modify.h"
+#include "force.h"
 #include "memory.h"
 #include "update.h"
 #include "error.h"
@@ -54,13 +55,21 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   mass_last_(0.),
   t_count_(0.),
   delta_t_(0.),
-  reset_t_count_(true)
+  reset_t_count_(true),
+  havePointAtOutlet_(false),
+  insideOut_(false),
+  screenflag_(false)
 {
     vectorZeroize3D(nvec_);
     vectorZeroize3D(pref_);
     vectorZeroize3D(sidevec_);
+    vectorZeroize3D(pointAtOutlet_);
 
     // parse args for this class
+
+  if(1 < comm->nprocs && 0 == comm->me)
+      fprintf(screen,"**FixMassflowMesh: > 1 process - "
+                     " will write to multiple files\n");
 
     int iarg = 3;
 
@@ -99,13 +108,60 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
                 error->fix_error(FLERR,this,"expecting 'once' or 'multiple' after 'count'");
             iarg++;
             hasargs = true;
+        } else if(strcmp(arg[iarg],"point_at_outlet") == 0) {
+            if(narg < iarg+4)
+                error->fix_error(FLERR,this,"not enough arguments for 'point_at_outlet'");
+            havePointAtOutlet_ = true;
+            iarg++;
+            pointAtOutlet_[0] = atof(arg[iarg++]);
+            pointAtOutlet_[1] = atof(arg[iarg++]);
+            pointAtOutlet_[2] = atof(arg[iarg++]);
+            hasargs = true;
+        } else if(strcmp(arg[iarg],"inside_out") == 0) {
+            insideOut_ = true;
+            iarg++;
+            if(!havePointAtOutlet_)
+                error->fix_error(FLERR,this,"the setting 'inside_out' has no meaning in case you do not use 'point_at_outlet'");
+            hasargs = true;
+        } else if (strcmp(arg[iarg],"file") == 0 || strcmp(arg[iarg],"append") == 0)
+          {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"Illegal keyword entry");
+
+            char* filecurrent = new char[strlen(arg[iarg+1]) + 8];
+            if (1 < comm->nprocs) //open a separate file for each processor
+                 sprintf(filecurrent,"%s%s%d",arg[iarg+1],".",comm->me);
+            else  //open one file for proc 0
+                 sprintf(filecurrent,"%s",arg[iarg+1]);
+
+            if (strcmp(arg[iarg],"file") == 0)
+                fp_ = fopen(filecurrent,"w");
+            else
+                fp_ = fopen(filecurrent,"a");
+            if (fp_ == NULL) {
+               char str[128];
+               sprintf(str,"Cannot open file %s",arg[iarg+1]);
+                error->fix_error(FLERR,this,str);
+            }
+            iarg += 2;
+            hasargs = true;
+        } else if (strcmp(arg[iarg],"screen") == 0) {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"Illegal keyword entry");
+            if (strcmp(arg[iarg+1],"yes") == 0) screenflag_ = true;
+            else if (strcmp(arg[iarg+1],"no") == 0) screenflag_ = false;
+            else error->all(FLERR,"Illegal fix print command");
+            iarg += 2;
+            hasargs = true;
         } else
             error->fix_error(FLERR,this,"unknown keyword");
     }
 
     // error checks on necessary args
 
-    if(vectorMag3D(sidevec_) == 0.)
+    if( !once_ && havePointAtOutlet_)
+        error->fix_error(FLERR,this,"setting 'pointAtOutlet' requires 'count once'");
+    if( vectorMag3D(sidevec_)==0. && !havePointAtOutlet_)
         error->fix_error(FLERR,this,"expecting keyword 'vec_side'");
     if (!fix_mesh_)
         error->fix_error(FLERR,this,"expecting keyword 'mesh'");
@@ -117,7 +173,7 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
     fix_mesh_->triMesh()->surfaceNorm(0,nvec_);
     double dot = vectorDot3D(nvec_,sidevec_);
 
-    if(fabs(dot) < 1e-6)
+    if(fabs(dot) < 1e-6 && !havePointAtOutlet_ )
         error->fix_error(FLERR,this,"need to change 'vec_side', it is currently in or to close to the mesh plane");
     else if(dot < 0.)
         vectorScalarMult3D(nvec_,-1.);
@@ -133,6 +189,7 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
 
 FixMassflowMesh::~FixMassflowMesh()
 {
+   if(fp_) fclose(fp_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -207,6 +264,8 @@ int FixMassflowMesh::setmask()
 /* ----------------------------------------------------------------------
    evaluate mass which went thru face
    all nearby particles
+  -1 = default value for counter, set if particle is not
+       a neighbor of the TriMesh
    0 = was not on nvec_ last step and is thus eligible
    1 = was on nvec_ side last step
    2 = do not re-count, was counted already
@@ -216,12 +275,16 @@ void FixMassflowMesh::post_integrate()
 {
     int nlocal = atom->nlocal;
     double **x = atom->x;
+    double **v = atom->v;
+    double *radius = atom->radius;
     double *rmass = atom->rmass;
     double *counter = fix_counter_->vector_atom;
     double dot,delta[3];
     int *neighs, *nneighs;
     double mass_this = 0.;
     int nparticles_this = 0.;
+    double deltan;
+    int *tag = atom->tag;
 
     TriMesh *mesh = fix_mesh_->triMesh();
     int nTriAll = mesh->sizeLocal() + mesh->sizeGhost();
@@ -251,11 +314,31 @@ void FixMassflowMesh::post_integrate()
             if(iPart >= nlocal) continue;
 
             // in case of once_ == true, ignore
-            // everything which has been counted
+            // everything which has been already counted
             if(compDouble(counter[iPart],2.)) continue;
 
-            vectorSubtract3D(x[iPart],pref_,delta);
-            dot = vectorDot3D(delta,nvec_);
+            if(havePointAtOutlet_)
+            {
+                //get the vector from the particle center
+                //to the next triangle
+                deltan = fix_mesh_->triMesh()->resolveTriSphereContact(iPart,iTri,radius[iPart],x[iPart],delta);
+                if(deltan < radius[iPart])
+                {
+                    vectorSubtract3D(x[iPart],pointAtOutlet_,nvec_); //vector pointing to the particle location
+                    dot = vectorDot3D(delta,nvec_);
+                }
+                else //particle is not overlapping with mesh, so continue
+                {
+                    continue;
+                }
+
+                if(insideOut_) dot =-dot;
+            }
+            else
+            {
+                vectorSubtract3D(x[iPart],pref_,delta);
+                dot = vectorDot3D(delta,nvec_);
+            }
 
             // first-time, just set 0 or 1
             if(compDouble(counter[iPart],-1.))
@@ -265,13 +348,25 @@ void FixMassflowMesh::post_integrate()
             }
 
             // not first time
-
             if(dot > 0.)
             {
                 if(compDouble(counter[iPart],0.))
                 {
                     mass_this += rmass[iPart];
                     nparticles_this ++;
+                    if (screenflag_ && screen)
+                        fprintf(screen," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g \n ",
+                                       tag[iPart],2.*radius[iPart]/force->cg(),
+                                       x[iPart][0],x[iPart][1],x[iPart][2],
+                                       v[iPart][0],v[iPart][1],v[iPart][2]);
+                    if (fp_)
+                    {
+                        fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g \n ",
+                                   tag[iPart],2.*radius[iPart]/force->cg(),
+                                   x[iPart][0],x[iPart][1],x[iPart][2],
+                                   v[iPart][0],v[iPart][1],v[iPart][2]);
+                        fflush(fp_);
+                    }
                 }
 
                 counter[iPart] = once_ ? 2. : 1.;
@@ -341,8 +436,14 @@ double FixMassflowMesh::compute_vector(int index)
         reset_t_count_ = false;
     }
 
-    if(index == 0) return mass_;
-    if(index == 1) return static_cast<double>(nparticles_);
-    if(index == 2) return delta_t_ == 0. ? 0. : (mass_-mass_last_)/delta_t_;
-    if(index == 3) return delta_t_ == 0. ? 0. : static_cast<double>(nparticles_-nparticles_last_)/delta_t_;
+    if(index == 0)
+        return mass_;
+    if(index == 1)
+        return static_cast<double>(nparticles_);
+    if(index == 2)
+        return delta_t_ == 0. ? 0. : (mass_-mass_last_)/delta_t_;
+    if(index == 3)
+        return delta_t_ == 0. ? 0. : static_cast<double>(nparticles_-nparticles_last_)/delta_t_;
+
+    return 0.;
 }

@@ -708,7 +708,7 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
   if (suffix && lmp->suffix_enable) {
     char estyle[256];
     sprintf(estyle,"%s/%s",arg[2],suffix);
-    
+
     success = 0;
 
     if(fix_creators.find(estyle) != fix_creators.end()) {
@@ -721,7 +721,7 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
     if(fix_creators.find(arg[2]) != fix_creators.end()) {
       fix[ifix] = fix_creators[arg[2]](lmp,narg,arg);
     }
-    else {fprintf(screen,"adding %s\n",arg[2]);error->all(FLERR,"Invalid fix style");}
+    else {fprintf(screen,"Adding fix %s\n",arg[2]);error->all(FLERR,"Invalid fix style");}
   }
 
   // set fix mask values and increment nfix (if new)

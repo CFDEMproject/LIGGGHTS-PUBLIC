@@ -45,6 +45,7 @@ class FixAveSpatial : public Fix {
   int *which,*argindex,*value2index;
   char **ids;
   FILE *fp;
+  FILE *fp2;
   class Region *region;
 
   int ave,nwindow,scaleflag;
@@ -68,6 +69,9 @@ class FixAveSpatial : public Fix {
   double **values_one,**values_many,**values_sum;
   double *count_total,**count_list;
   double **values_total,***values_list;
+
+  int calcStd;
+  int lowerLimit, upperLimit;
 
   void setup_bins();
   void atom2bin1d();

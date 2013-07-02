@@ -51,7 +51,7 @@ FixHeatGran::FixHeatGran(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg
 
   fix_temp = fix_heatFlux = fix_heatSource = NULL;
   fix_ste = NULL;
-
+  fix_directionalHeatFlux = NULL;
   peratom_flag = 1;      
   size_peratom_cols = 0; 
   peratom_freq = 1;
@@ -68,8 +68,25 @@ FixHeatGran::FixHeatGran(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg
 
 /* ---------------------------------------------------------------------- */
 
-void FixHeatGran::post_create(){
-
+void FixHeatGran::post_create()
+{
+  // register directional flux
+  if(!fix_directionalHeatFlux)
+  {
+    char* fixarg[11];
+    fixarg[0]="directionalHeatFlux";
+    fixarg[1]="all";
+    fixarg[2]="property/atom";
+    fixarg[3]="directionalHeatFlux";
+    fixarg[4]="vector";
+    fixarg[5]="no";
+    fixarg[6]="yes";
+    fixarg[7]="no";
+    fixarg[8]="0.";
+    fixarg[9]="0.";
+    fixarg[10]="0.";
+    fix_directionalHeatFlux = modify->add_fix_property_atom(11,fixarg,style);
+  }
   fix_ste = modify->find_fix_scalar_transport_equation("heattransfer");
 
   if(!fix_ste)
@@ -107,7 +124,7 @@ void FixHeatGran::updatePtrs(){
 
   heatFlux = fix_heatFlux->vector_atom;
   heatSource = fix_heatSource->vector_atom;
-
+  directionalHeatFlux = fix_directionalHeatFlux->array_atom;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -131,10 +148,44 @@ void FixHeatGran::init(){
   fix_temp = static_cast<FixPropertyAtom*>(modify->find_fix_property("Temp","property/atom","scalar",0,0,style));
   fix_heatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatFlux","property/atom","scalar",0,0,style));
   fix_heatSource = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatSource","property/atom","scalar",0,0,style));
-
+  fix_directionalHeatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("directionalHeatFlux","property/atom","vector",0,0,style));
   updatePtrs();
 
   FHG_init_flag = true;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixHeatGran::setmask()
+{
+  int mask = 0;
+  mask |= INITIAL_INTEGRATE;
+  return mask;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixHeatGran::initial_integrate(int vflag)
+{
+  updatePtrs();
+
+  //reset heat flux
+  //sources are not reset
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+
+  for (int i = 0; i < nlocal; i++)
+  {
+     if (mask[i] & groupbit)
+     {
+        directionalHeatFlux[i][0] = 0.;
+        directionalHeatFlux[i][1] = 0.;
+        directionalHeatFlux[i][2] = 0.;
+     }
+  }
+
+  //update ghosts
+  fix_directionalHeatFlux->do_forward_comm();
 }
 
 /* ---------------------------------------------------------------------- */

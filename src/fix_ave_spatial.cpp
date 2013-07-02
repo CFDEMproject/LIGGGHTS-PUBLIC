@@ -164,6 +164,10 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
   regionflag = 0;
   idregion = NULL;
   fp = NULL;
+  fp2 = NULL;
+  lowerLimit = 0;
+  upperLimit = 0;
+  calcStd = 0;
   ave = ONE;
   nwindow = 0;
   char *title1 = NULL;
@@ -239,6 +243,20 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
       title3 = new char[n];
       strcpy(title3,arg[iarg+1]);
       iarg += 2;
+    } else if (strcmp(arg[iarg],"std") == 0) {
+      if (iarg+4 > narg) error->all(FLERR,"Illegal fix ave/spatial command");
+      calcStd = 1;
+      lowerLimit = atoi(arg[iarg+1]);
+      upperLimit = atoi(arg[iarg+2]);
+      if (me == 0) {
+        fp2 = fopen(arg[iarg+3],"w");
+        if (fp2 == NULL) {
+          char str[128];
+          sprintf(str,"Cannot open fix ave/spatial file %s",arg[iarg+3]);
+          error->one(FLERR,str);
+        }
+      }
+      iarg += 4;
     } else error->all(FLERR,"Illegal fix ave/spatial command");
   }
 
@@ -315,6 +333,20 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
       fprintf(fp,"\n");
     }
   }
+
+  if (fp2 && me == 0) {
+    fprintf(fp2,"# Spatial-averaged data for fix %s and group %s\n",
+                 id,arg[1]);
+    fprintf(fp2,"# Mean and standard deviation for all bins including between L=%i and H=%i particles\n",lowerLimit,upperLimit);
+    fprintf(fp2,"# Timestep  Natoms  Nbins  MaxAtomsPerBin  NbinsEmpty  Nbins<L  Nbins>H  Nsamples  NatomsPerSample  ");
+
+    for (int i = 0; i < nvalues; i++) {
+      fprintf(fp2,"{%s: trueMean samplesMean Std}   ",arg[6+3*ndim+i]);
+    }
+    fprintf(fp2,"\n");
+  }
+
+  fflush(fp2);
 
   delete [] title1;
   delete [] title2;
@@ -396,6 +428,7 @@ FixAveSpatial::~FixAveSpatial()
   delete [] idregion;
 
   if (fp && me == 0) fclose(fp);
+  if (fp2 && me == 0) fclose(fp2);
 
   memory->destroy(varatom);
   memory->destroy(bin);
@@ -818,6 +851,82 @@ void FixAveSpatial::end_of_step()
       }
 
     fflush(fp);
+  }
+
+  // calculate mean and standard deviation
+
+  if (calcStd != 0) {
+    int n_samples = 0;
+    int n_empty = 0;
+    int n_lower = 0;
+    int n_higher = 0;
+    double *true_mean, *samples_mean, *std;
+    double diff, count_sum, count_samples, samples_average, count_max;
+
+    memory->create(true_mean,nvalues,"ave/spatial:true_mean");
+    memory->create(samples_mean,nvalues,"ave/spatial:samples_mean");
+    memory->create(std,nvalues,"ave/spatial:std");
+
+    count_sum = 0;
+    count_samples = 0;
+    samples_average = 0;
+    count_max = 0;
+
+    for (i = 0; i < nvalues; i++) {
+      true_mean[i] = 0;
+
+      for (m = 0; m < nbins; m++) {
+        true_mean[i] += values_total[m][i] * count_total[m];
+        if (i == 0) count_sum += count_total[m];
+      }
+
+      true_mean[i] /= count_sum;
+
+      samples_mean[i] = 0;
+      std[i] = 0;
+    }
+
+    for (m = 0; m < nbins; m++) {
+      if (count_total[m] > count_max) count_max = count_total[m];
+      if (count_total[m] == 0) n_empty += 1;
+      else if (count_total[m] < lowerLimit) n_lower += 1;
+      else if (count_total[m] > upperLimit) n_higher += 1;
+      else {
+        n_samples += 1;
+        count_samples += count_total[m];
+        for (i = 0; i < nvalues; i++) {
+          samples_mean[i] += values_total[m][i];
+          diff = values_total[m][i] - true_mean[i];
+          std[i] += diff * diff;
+        }
+      }
+    }
+    
+    if (n_samples != 0) {
+      for (i = 0; i < nvalues; i++) {
+        samples_average = count_samples / n_samples; // average # particles per sample
+        samples_mean[i] /= n_samples;
+        std[i] /= n_samples; // not(n_sample-1) since true_mean is the true Average
+        std[i] = sqrt(std[i]);
+        samples_mean[i] /= norm;
+        std[i] /= norm;
+      }
+    }
+
+    // output to file
+    if (fp2 && me == 0) {
+      fprintf(fp2,BIGINT_FORMAT " %g %d %g %d %d %d %d %g",
+        ntimestep,count_sum,nbins,count_max,n_empty,n_lower,n_higher,n_samples,samples_average);
+      for (i = 0; i < nvalues; i++) {
+        fprintf(fp2," %g %g %g",true_mean[i],samples_mean[i],std[i]); //;
+      }
+      fprintf(fp2,"\n");
+      fflush(fp2);
+    }
+
+    memory->destroy(true_mean);
+    memory->destroy(samples_mean);
+    memory->destroy(std);
   }
 }
 

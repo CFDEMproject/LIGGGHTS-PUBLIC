@@ -1992,10 +1992,12 @@ void pair(FILE *fp, Data &data, char *style, int flag)
     //double kt = read_double(fp);
     //double gamman = read_double(fp);
     //double gammat = read_double(fp);
+
     int flag1 = read_int(fp);
     int flag2 = read_int(fp);
+    int flag3 = read_int(fp);
 
-    if (!flag) return;
+    //if (!flag) return;
 
     for (i = 1; i <= data.ntypes; i++) { 
       for (j = i; j <= data.ntypes; j++) {

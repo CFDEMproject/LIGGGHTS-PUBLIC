@@ -120,7 +120,7 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
           {
               if(r_sphere[i] <= 0.) error->fix_error(FLERR,this,"radius must be > 0");
               r_sphere[i] *= (scale_fact*force->cg());
-              vectorScalarMult3D(x_sphere[i],scale_fact);
+              vectorScalarMult3D(x_sphere[i],scale_fact*force->cg());
           }
 
           // calculate bounding box
@@ -144,7 +144,7 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
               if(r_sphere[i] <= 0.) error->fix_error(FLERR,this,"radius must be >0");
               for(int j = 0; j < 3; j++)
               {
-                x_sphere[i][j] = atof(arg[iarg+j]);
+                x_sphere[i][j] = atof(arg[iarg+j])*force->cg();
                 if (x_sphere[i][j]-r_sphere[i]<x_min[j]) x_min[j]=x_sphere[i][j]-r_sphere[i];
                 if (x_sphere[i][j]+r_sphere[i]>x_max[j]) x_max[j]=x_sphere[i][j]+r_sphere[i];
               }

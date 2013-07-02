@@ -40,6 +40,7 @@ class Neighbor : protected Pointers {
   int style;                       // 0,1,2 = nsq, bin, multi
   int every;                       // build every this many steps
   int delay;                       // delay build for this many steps
+  double contactHistoryDistanceFactor;// contact history distance factor to be used when fix_liquidTracking_inst is used
   int dist_check;                  // 0 = always build, 1 = only if 1/2 dist
   int ago;                         // how many steps ago neighboring occurred
   int pgsize;                      // size of neighbor page
@@ -69,8 +70,8 @@ class Neighbor : protected Pointers {
   class NeighList **lists;
 
   int nbondlist;                   // list of bonds to compute
-  int **bondlist;
-  double **bondhistlist; 
+  int **bondlist;                  
+  double **bondhistlist;           
   int nanglelist;                  // list of angles to compute
   int **anglelist;
   int ndihedrallist;               // list of dihedrals to compute

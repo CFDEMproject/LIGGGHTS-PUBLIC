@@ -75,6 +75,7 @@ Neighbor::Neighbor(LAMMPS *lmp) : Pointers(lmp)
   style = BIN;
   every = 1;
   delay = 10;
+  contactHistoryDistanceFactor = 1.0;
   dist_check = 1;
   pgsize = 100000;
   oneatom = 2000;

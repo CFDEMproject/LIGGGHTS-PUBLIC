@@ -97,7 +97,11 @@ pair/gran/hertz/*.
 <P><B>Output info:</B>
 </P>
 <P>You can visualize the heat sources by accessing f_heatSource[0], and the
-heatFluxes by f_heatFlux[0] . With f_Temp[0] you can access the per-particle
+heatFluxes by f_heatFlux[0] . With f_directionalHeatFlux[0], f_directionalHeatFlux[1]  
+and f_directionalHeatFlux[2] you can access the conductive heat fluxes in x,y,z directions. 
+The conductive heat fluxes are calculated per-contact and 
+half the value is stored in each atom participating in the contact.
+With f_Temp[0] you can access the per-particle
 temperature. You can also access the total thermal energy of the fix group
 (useful for the thermo command) with f_id .
 </P>

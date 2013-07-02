@@ -541,8 +541,11 @@
       if(sizeGlobal() != sizeGlobalOrig())
       {
         
-        this->error->all(FLERR,"Mesh elements have been lost / left the domain. Please use "
-                         "'boundary m m m' or scale/translate/rotate the mesh or change its dynamics");
+        char errstr[500];
+        sprintf(errstr,"Mesh (id %s): Mesh elements have been lost / left the domain. Please use "
+                       "'boundary m m m' or scale/translate/rotate the mesh or change its dynamics",
+                       this->mesh_id_);
+        this->error->all(FLERR,errstr);
       }
 
       // perform operations that should be done before initial setup

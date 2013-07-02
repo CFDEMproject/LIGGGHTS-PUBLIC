@@ -20,16 +20,25 @@ mesh-ID = ID of a "fix mesh/surface"_fix_mesh_surface.html command :l
 vec_side = obligatory keyword :l
 vx, vy, vz = vector components defining the "outside" of the mesh :l
 zero or more keyword/value pairs may be appended to args :l
-keyword = {count} :l
+keywords = {count} or {point_at_outlet} or {append} or {file} or {screen} :l
   {count} value = {once} or {multiple}
     once = count particles only once
-    multiple = allow particles to be counted multiple times :pre
+    multiple = allow particles to be counted multiple times 
+  {point_at_outlet}  pointX pointY pointZ
+    pointX pointY pointZ = coordinates of point on the outlet side of the surface 
+  {inside_out}  
+    use this in connection with {point_at_outlet} to flip direction particle counting 
+  {file} value = filename 
+  {append} value = filename 
+   filename = name of the file to print radius, position and velocity values of the particles
+  {screen} value = {yes} or {no}  :pre
 
 :ule
 
 [Examples:]
 
 fix mass all massflow/mesh mesh inface vec_side 0. 0. -1. :pre
+fix mass all massflow/mesh mesh inface count once point_at_outlet 0. 0. 0. :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 
@@ -43,36 +52,57 @@ It counts the total number of particles and the associated mass. Only particles
 part of {group} are eligible for counting.
 
 Particles are counted if they cross from the inner side of the mesh to the outer
-side of the mesh, where the outer side is defined by keyword {vec_side}. Note
+side of the mesh. The outer side can be defined by using the keyword {vec_side}, 
+by specifying a point at the outlet side of the mesh (keyword {point_at_outlet}). Note
 that the vector defined by {vec_side} does not necessarily have to be 
-perpendicular to the mesh face. The following restrictions apply: (i) the
-"fix mesh/surface"_fix_mesh_surface.html has to be planar, the vector defined 
-by {vec_side} may not lie inside the mesh plane. 
+perpendicular to the mesh face. 
+
+The following restrictions apply in case {vec_side} is specified: (i) the
+"fix mesh/surface"_fix_mesh_surface.html has to be planar, and (ii) the vector 
+defined by {vec_side} may not lie inside the mesh plane. 
+
+The following restriction applies in case {point_at_outlet} is used: the {count} 
+value has to be set to once.
+
+The keyword {point_at_outlet} is especially useful in case a cylindrically-shaped
+surface is used. The {point_at_outlet} value should be on the cylinder axis in
+this case. If you like to track particles moving away from the cylinder axis,
+specify the {point_at_outlet} on the axis, and use the keyword 
+{inside_out} to flip the direction.
 
 When {count} = once, then each particle is only counted once, for {count} = multiple
 a particle contributes to number and mass count each time it crosses the mesh face.
 This can happen e.g. in the case of periodic boundary conditions or in re-circulating
 flow conditions.
 
+The diameter, position and velocity of the particles can be written into a file using the {file} keyword, 
+by specifying a filename. 
+
+If the {screen} keyword is used, output by this fix to the screen and
+logfile can be turned on or off as desired.  
+
+If the {delete_atoms} keyword is used then the particles passing through the mesh surface are deleted.
+
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
 Information about this fix is written to "binary restart files"_restart.html .
 
 This fix computes a per-atom vector (the marker) which can be accessed by
-various "output commands"_Section_howto.html#howto_15. . 
-This fix also computes a global vector of length 4. The first vector component 
-is equal to the total mass which has crosses the mesh surface, the second vector 
-components indicates the particle count. The third vector component 
-is equal to the total mass which has crosses the mesh surface since the last output 
-divived by the time since the last output (i.e. the mass flow rate), the fourth vector 
-components indicates the particle count since the last output divived by the time
-since the last output (i.e. the mass flow rate). This vector
-can also be accessed by various "output commands"_Section_howto.html#howto_15. . 
+various "output commands"_Section_howto.html#howto_15. The per-atom vector 
+(i.e., the marker) can be accessed by dumps by using "f_massflow_ID", .
+This fix also computes a global vector of length 4. This vector can be 
+accessed via "f_ID", where ID is the fix id. The first vector component 
+is equal to the total mass which has crossed the mesh surface, the second vector 
+component indicates the particle count. The third vector component 
+is equal to the total mass which has crossed the mesh surface since the last output 
+divived by the time since the last output (i.e., the mass flow rate), the fourth vector 
+component indicates the particle count since the last output divived by the time
+since the last output (i.e., the number rate of particles). This vector
+can also be accessed by various "output commands"_Section_howto.html#howto_15.
 
 [Restrictions:] 
 
 Currently, this feature does not support multi-sphere particles.
-The "fix mesh/surface"_fix_mesh_surface.html has to define a planar surface.
 
 [Related commands:]
 

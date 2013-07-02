@@ -56,6 +56,18 @@ class FixWallGran : public Fix {
 
   /* PUBLIC ACCESS FUNCTIONS */
 
+  void setSkinDistance(double newSkinDistance)
+  { skinDistance_ = newSkinDistance; }
+
+  void setDnum(int newDnum)
+  { dnum_ = newDnum; }
+
+  inline int store_force()
+  { return store_force_; }
+
+  inline int iarg()
+  { return iarg_; }
+
   inline int dnum()
   { return dnum_; }
 
@@ -139,6 +151,10 @@ class FixWallGran : public Fix {
   int shear_, shearDim_, shearAxis_;
   double vshear_;
   double shearAxisVec_[3];
+
+  // distance in order to calculate interaction with
+  // rough wall
+  double skinDistance_;
 
   // number of values for contact history
   int dnum_;

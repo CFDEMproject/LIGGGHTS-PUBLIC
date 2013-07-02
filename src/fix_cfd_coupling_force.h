@@ -56,7 +56,7 @@ class FixCfdCouplingForce : public Fix  {
   class FixPropertyAtom* fix_volumeweight_;
 
  private:
-  bool use_force_;
+  bool use_force_, use_dens_, use_type_;
 };
 
 }

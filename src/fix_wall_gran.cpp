@@ -76,6 +76,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     stress_flag_ = false;
     n_FixMesh_ = 0;
     dnum_ = 0;
+    skinDistance_ = 0.0;
 
     r0_ = 0.;
 
@@ -592,7 +593,7 @@ void FixWallGran::post_force_mesh(int vflag)
 
             deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary);
 
-            if(deltan > 0.)
+            if(deltan > skinDistance_) //allow force calculation away from the wall
             {
               
             }
@@ -627,7 +628,7 @@ void FixWallGran::post_force_mesh(int vflag)
             int idTri = mesh->id(iTri);
             deltan = mesh->resolveTriSphereContact(iPart,iTri,radius_ ? radius_[iPart]:r0_,x_[iPart],delta);
 
-            if(deltan > 0.)
+            if(deltan > skinDistance_) //allow force calculation away from the wall
             {
               
             }
@@ -680,7 +681,7 @@ void FixWallGran::post_force_primitive(int vflag)
 
     deltan = primitiveWall_->resolveContact(x_[iPart],radius_?radius_[iPart]:r0_,delta);
 
-    if(deltan > 0.)
+    if(deltan > skinDistance_) //allow force calculation away from the wall
     {
       if(c_history) vectorZeroizeN(c_history[iPart],dnum_);
     }

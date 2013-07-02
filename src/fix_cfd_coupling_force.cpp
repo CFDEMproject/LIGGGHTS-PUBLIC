@@ -43,8 +43,45 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
     fix_dragforce_(0),
     fix_coupling_(0),
     fix_volumeweight_(0),
-    use_force_(true)
+    use_force_(true),
+    use_dens_(false),
+    use_type_(false)
 {
+    int iarg = 3;
+
+    bool hasargs = true;
+    while(iarg < narg && hasargs)
+    {
+        hasargs = false;
+
+        if(strcmp(arg[iarg],"transfer_density") == 0) {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_density'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_dens_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_dens_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_density'");
+            iarg++;
+            hasargs = true;
+        } else if(strcmp(arg[iarg],"transfer_type") == 0) {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_type'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_type_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_type_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_type'");
+            iarg++;
+            hasargs = true;
+        } else
+            error->fix_error(FLERR,this,"unknown keyword");
+    }
+
     // flags for vector output
     vector_flag = 1;
     size_vector = 3;
@@ -135,6 +172,8 @@ void FixCfdCouplingForce::init()
     fix_coupling_->add_push_property("x","vector-atom");
     fix_coupling_->add_push_property("v","vector-atom");
     fix_coupling_->add_push_property("radius","scalar-atom");
+    if(use_type_) fix_coupling_->add_push_property("type","scalar-atom");
+    if(use_dens_) fix_coupling_->add_push_property("density","scalar-atom");
     fix_coupling_->add_push_property("volumeweight","scalar-atom");
 
     // values to come from OF

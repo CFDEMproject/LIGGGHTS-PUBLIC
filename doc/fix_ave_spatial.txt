@@ -32,7 +32,7 @@ value = vx, vy, vz, fx, fy, fz, density/mass, density/number, c_ID, c_ID\[I\], f
   v_name = per-atom vector calculated by an atom-style variable with name :pre
 
 zero or more keyword/arg pairs may be appended :l
-keyword = {norm} or {units} or {file} or {ave} or {title1} or {title2} or {title3} :l
+keyword = {norm} or {units} or {file} or {ave} or {title1} or {title2} or {title3} or {std} :l
   {units} arg = {box} or {lattice} or {reduced}
   {norm} arg = {all} or {sample}
   {region} arg = region-ID
@@ -48,7 +48,11 @@ keyword = {norm} or {units} or {file} or {ave} or {title1} or {title2} or {title
   {title2} arg = string
     string = text to print as 2nd line of output file
   {title3} arg = string
-    string = text to print as 3rd line of output file :pre
+    string = text to print as 3rd line of output file 
+  {std} arg = N1 N2 filename
+	N1 = lower limit of particle number per bin for sampling
+	N2 = upper limit of particle number per bin for sampling
+	filename = file to write results into :pre
 :ule
 
 [Examples:]
@@ -56,7 +60,8 @@ keyword = {norm} or {units} or {file} or {ave} or {title1} or {title2} or {title
 fix 1 all ave/spatial 10000 1 10000 z lower 0.02 c_myCentro units reduced &
                       title1 "My output values"
 fix 1 flow ave/spatial 100 10 1000 y 0.0 1.0 vx vz norm sample file vel.profile
-fix 1 flow ave/spatial 100 5 1000 z lower 1.0 y 0.0 2.5 density/mass ave running :pre
+fix 1 flow ave/spatial 100 5 1000 z lower 1.0 y 0.0 2.5 density/mass ave running
+fix 1 all ave/spatial 1000 1 1000 x 0 1e-3 y 0 1e-3 z 0 1e-3 f_tracer\[0\] file bin_data.dat std 124 126 samples_data.dat :pre
 
 [Description:]
 
@@ -296,6 +301,10 @@ replaced with the appropriate fields from the fix ave/spatial command.
 The Coord2 and Coord3 entries in the third line only appear for 2d and
 3d bins respectively.  For 1d bins, the word Coord1 is replaced by
 just Coord.
+:line
+If the {std} keyword is set, mean and standard deviation of the specified values (value1, value2, etc.) over samples of a defined size are calculated. The sample size has to be defined by a lower limit (N1) and an upper limit (N2>N1). 
+All bins containing a particle count between N1 and N2 (including N1 and N2) are used as samples. Every {Nfreq} timestep a line is written to a file specified after N1 and N2, including the following numbers: timestep, total number of atoms, total number of bins, maximum number of atoms per bin, number of empty bins, number of bins including less atoms than N1, number of bins including more atoms than N2, number of samples, average number of atoms per sample, followed by three quantities for each defined value: true average (over all atoms), average over the chosen samples, standard deviation over the chosen samples. 
+For the calculation of the standard deviation the (known) true average is used instead of the samples average (the latter is only an estimate for the true average!).
 
 :line
 
