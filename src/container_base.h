@@ -45,6 +45,8 @@ namespace LAMMPS_NS
   {
       public:
 
+          ContainerBase(char *_id);
+
           virtual ~ContainerBase();
 
           void setProperties(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower = 1);
@@ -105,7 +107,6 @@ namespace LAMMPS_NS
 
      protected:
 
-          ContainerBase();
           ContainerBase(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower);
           ContainerBase(ContainerBase const &orig);
 
@@ -124,6 +125,10 @@ namespace LAMMPS_NS
           int refFrame_;
           int scalePower_;
           int restartType_;
+
+     private:
+
+         ContainerBase();
   };
 
   // *************************************

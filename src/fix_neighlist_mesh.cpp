@@ -43,6 +43,8 @@ using namespace FixConst;
 
 FixNeighlistMesh::FixNeighlistMesh(LAMMPS *lmp, int narg, char **arg)
 : Fix(lmp,narg,arg),
+  contactList("contactList"),
+  numContacts("numContacts"),
   buildNeighList(false),
   movingMesh(false)
 {

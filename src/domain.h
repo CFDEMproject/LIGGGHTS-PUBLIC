@@ -139,7 +139,7 @@ class Domain : protected Pointers {
   inline int is_in_extended_subdomain(double* pos); 
   inline double dist_subbox_borders(double* pos); 
   int is_periodic_ghost(int i); 
-  int is_periodic_ghost_of_owned(int i); 
+  bool is_owned_or_first_ghost(int i); 
 
  private:
   double small[3];                  // fractions of box lengths

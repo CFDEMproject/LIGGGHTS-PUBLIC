@@ -663,7 +663,7 @@ void PairGranHookeHistory::init_granular()
 
   if(rollingflag)
     coeffRollFrict1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("coefficientRollingFriction","property/global","peratomtypepair",max_type,max_type,force->pair_style));
-  if(rollingflag == 2 || rollingflag == 3) // epsd model
+  if(rollingflag == 2) // damping for original epsd model only
     coeffRollVisc1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("coefficientRollingViscousDamping","property/global","peratomtypepair",max_type,max_type,force->pair_style));
   if(viscousflag)
   {
@@ -731,7 +731,7 @@ void PairGranHookeHistory::init_granular()
 
           coeffFrict[i][j] = coeffFrict1->compute_array(i-1,j-1);
           if(rollingflag) coeffRollFrict[i][j] = coeffRollFrict1->compute_array(i-1,j-1);
-          if(rollingflag == 2 || rollingflag == 3) coeffRollVisc[i][j] = coeffRollVisc1->compute_array(i-1,j-1);
+          if(rollingflag == 2) coeffRollVisc[i][j] = coeffRollVisc1->compute_array(i-1,j-1);
           
           if(cohesionflag) cohEnergyDens[i][j] = cohEnergyDens1->compute_array(i-1,j-1);
           //omitting veff here

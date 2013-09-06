@@ -656,6 +656,7 @@ int AtomVecEllipsoid::pack_border_vel(int n, int *list, double *buf,
         if (ellipsoid[j] < 0) buf[m++] = 0;
         else {
           buf[m++] = 1;
+          shape = bonus[ellipsoid[j]].shape;
           quat = bonus[ellipsoid[j]].quat;
           buf[m++] = shape[0];
           buf[m++] = shape[1];

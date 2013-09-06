@@ -337,8 +337,8 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
   if (fp2 && me == 0) {
     fprintf(fp2,"# Spatial-averaged data for fix %s and group %s\n",
                  id,arg[1]);
-    fprintf(fp2,"# Mean and standard deviation for all bins including between L=%i and H=%i particles\n",lowerLimit,upperLimit);
-    fprintf(fp2,"# Timestep  Natoms  Nbins  MaxAtomsPerBin  NbinsEmpty  Nbins<L  Nbins>H  Nsamples  NatomsPerSample  ");
+    fprintf(fp2,"# Mean and standard deviation for all bins including between N1=%i and N2=%i particles\n",lowerLimit,upperLimit);
+    fprintf(fp2,"# Timestep  Natoms  Nbins  MaxAtomsPerBin  NbinsEmpty  Nbins<N1  Nbins>N2  Nsamples  NatomsPerSample  ");
 
     for (int i = 0; i < nvalues; i++) {
       fprintf(fp2,"{%s: trueMean samplesMean Std}   ",arg[6+3*ndim+i]);
@@ -880,7 +880,7 @@ void FixAveSpatial::end_of_step()
         if (i == 0) count_sum += count_total[m];
       }
 
-      true_mean[i] /= count_sum;
+      if (count_sum != 0) true_mean[i] /= count_sum;
 
       samples_mean[i] = 0;
       std[i] = 0;

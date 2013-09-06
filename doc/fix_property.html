@@ -55,17 +55,40 @@ fix id group property/global variablename style stylearg defaultvalue(s)...
 
  
 </UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
+fix m5 all property/global characteristicVelocity scalar 2. 
+fix uf all property/atom uf vector yes no no  0. 0. 0. 
+</PRE>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>
 </P>
 <P>This LIGGGHTS command is not available in LAMMPS.
 </P>
 <P><B>Description:</B>
 </P>
-<P><B>Fix property/atom</B> reserves per-atom properties to be accessed by the user or other fixes. Style scalar reserves one value per atom, style vector multiple values per atoms, where the number of defaultvalues (that are assigned to the atoms at creation) determines the length of the vector . The group of atoms the fix is applied to is always "all", irrespective of which group is used for the fix command . If you want to assign different values for different groups, you can use the set command with keyword 'property/atom'.
+<P><B>Fix property/atom</B> reserves per-atom properties to be accessed by the user or other fixes. 
+Style <I>scalar</I> reserves one value per atom, style <I>vector</I> multiple values per atoms, where 
+the number of <I>defaultvalues</I> (that are assigned to the atoms at creation) determines the 
+length of the vector. The group of atoms the fix is applied to is always "all", irrespective 
+of which group is used for the fix command . If you want to assign different values for 
+different groups, you can use the <A HREF = "set.html">set</A> command with keyword 'property/atom'.
+Keyword <I>restartvalues</I> determines whether information about the values stored by this fix 
+is written to binary restart files.
+Keyword <I>communicate_ghost_value</I> determines whether information about the values stored by this fix 
+can be communicated to ghost particles (forward communication). The exact location during a time-step 
+when this happens depends on the model that uses this fix.
+Keyword <I>communicate_reverse_ghost_value</I> determines whether information about the values stored by this fix 
+can be communicated from ghost particles to owned particles (reverse communication). The exact location 
+during a time-step when this happens depends on the model that uses this fix.
 </P>
-<P><B>Fix property/global</B> reserves global properties to be accessed by the user or other fixes or pair styles. The number of defaultvalues determines the length of the vector / the number of matrix components . For style vector or atomtype, the user provides the number of vector components . For style matrix or atomtypepair, the user provides the number of matrix columns (nCols) .
+<P><B>Fix property/global</B> reserves global properties to be accessed by the user or other 
+fixes or pair styles. The number of defaultvalues determines the length of the vector / 
+the number of matrix components . For style <I>vector</I> or <I>atomtype</I>, the user provides 
+the number of vector components . For style <I>matrix</I> or <I>atomtypepair</I>, the user provides 
+the number of matrix columns (<I>nCols</I>) .
 </P>
-<P>Example: nCols= 2 and defaultvalues = 1 2 3 4 5 6 would be mapped into a matrix like
+<P>Example: <I>nCols</I>= 2 and <I>defaultvalues</I> = 1 2 3 4 5 6 would be mapped into a matrix like
 </P>
 <P>[ 1 2 ]
 </P>
@@ -73,15 +96,15 @@ fix id group property/global variablename style stylearg defaultvalue(s)...
 </P>
 <P>[ 5 6 ]
 </P>
-<P>Note that the number of default values must thus be a multiple of nCols.
-Note that vector and atomtype do the same thing, atomtype is just provided to make input scripts more readable .
-Note that matrix and atomtypepair both refer to a matrix of global values. However, a matrix defined via 'atomtypepair' is required to be symmetric.
+<P>Note that the number of default values must thus be a multiple of <I>nCols</I>.
+Note that <I>vector</I> and <I>atomtype</I> do the same thing, <I>atomtype</I> is just provided to make input scripts more readable .
+Note that <I>matrix</I> and <I>atomtypepair</I> both refer to a matrix of global values. However, a matrix defined via <I>atomtypepair</I> is required to be symmetric.
 </P>
 <P>Note that the group of atoms the fix is applied to is ignored (as the fix is not applied to atoms, but defines values of global scope).
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
-<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> if you set 'restartvalue' to 'yes'.
+<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> if you set <I>restartvalue</I> to 'yes'.
 </P>
 <P><B>Restrictions:</B> none
 </P>

@@ -91,6 +91,9 @@ class PairSph : public Pair {
   int pairStyle_;
   double viscosity_;
 
+  // storage for force part caused by pressure gradient (grad P / rho):
+  class FixPropertyAtom* fix_fgradP_;
+  double **fgradP_;
 };
 
 }

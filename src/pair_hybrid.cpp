@@ -253,6 +253,16 @@ void PairHybrid::settings(int narg, char **arg)
 
   // set comm_forward, comm_reverse, comm_reverse_off to max of any sub-style
 
+  flags();
+}
+
+/* ----------------------------------------------------------------------
+   set top-level pair flags from sub-style flags  - new from patch 19Jan2013
+------------------------------------------------------------------------- */
+
+void PairHybrid::flags() //- new from patch 19Jan2013
+{
+  int m;
   for (m = 0; m < nstyles; m++) {
     if (styles[m]) comm_forward = MAX(comm_forward,styles[m]->comm_forward);
     if (styles[m]) comm_reverse = MAX(comm_reverse,styles[m]->comm_reverse);
@@ -602,6 +612,7 @@ void PairHybrid::read_restart(FILE *fp)
   styles = new Pair*[nstyles];
   keywords = new char*[nstyles];
 
+  multiple = new int[nstyles]; // - new from patch 17May2012
   // each sub-style is created via new_pair()
   // each reads its settings, but no coeff info
 
@@ -615,6 +626,18 @@ void PairHybrid::read_restart(FILE *fp)
     styles[m] = force->new_pair(keywords[m],lmp->suffix,dummy);
     styles[m]->read_restart_settings(fp);
   }
+  for (int i = 0; i < nstyles; i++) {
+    int count = 0;
+    for (int j = 0; j < nstyles; j++) {
+      if (strcmp(keywords[j],keywords[i]) == 0) count++;
+      if (j == i) multiple[i] = count;
+    }
+    if (count == 1) multiple[i] = 0;
+  }  //- new from patch 17May2012
+
+  // set pair flags from sub-style flags // - new from patch 19Jan2013
+
+  flags();
 }
 
 /* ----------------------------------------------------------------------

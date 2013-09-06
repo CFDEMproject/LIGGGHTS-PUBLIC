@@ -72,7 +72,7 @@ namespace LAMMPS_NS
    */
 
   PrimitiveWall::PrimitiveWall(LAMMPS *lmp,PRIMITIVE_WALL_DEFINITIONS::WallType wType_, int nParam_, double *param_)
-  : Pointers(lmp), wType(wType_), nParam(nParam_)
+  : Pointers(lmp), neighlist("neighlist"), wType(wType_), nParam(nParam_)
   {
     param = new double[nParam];
     for(int i=0;i<nParam;i++)

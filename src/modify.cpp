@@ -729,6 +729,8 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
   fmask[ifix] = fix[ifix]->setmask();
   if (newflag) nfix++;
 
+  fix[ifix]->post_create_pre_restart(); 
+
   // check if Fix is in restart_global list
   // if yes, pass state info to the Fix so it can reset itself
 

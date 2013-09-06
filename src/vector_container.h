@@ -37,7 +37,7 @@ namespace LAMMPS_NS
   class VectorContainer : public GeneralContainer <T, 1, LEN_VEC>
   {
     public:
-          VectorContainer();
+          VectorContainer(char *_id);
           VectorContainer(char *_id, char *_comm, char *_ref, char *_restart, int _scalePower = 1);
           VectorContainer(VectorContainer<T,LEN_VEC> const &orig);
           virtual ~VectorContainer();
@@ -62,8 +62,8 @@ namespace LAMMPS_NS
   ------------------------------------------------------------------------- */
 
   template<typename T, int LEN_VEC>
-  VectorContainer<T,LEN_VEC>::VectorContainer()
-  : GeneralContainer<T,1,LEN_VEC>()
+  VectorContainer<T,LEN_VEC>::VectorContainer(char *_id)
+  : GeneralContainer<T,1,LEN_VEC>(_id)
   {
 
   }

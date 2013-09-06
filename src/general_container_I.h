@@ -33,8 +33,8 @@
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer()
-  : ContainerBase(),
+  GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(char *_id)
+  : ContainerBase(_id),
     numElem_(0),
     maxElem_(GROW)
   {
@@ -604,12 +604,13 @@
   template<typename T, int NUM_VEC, int LEN_VEC>
   int GeneralContainer<T,NUM_VEC,LEN_VEC>::elemBufSize(int operation,bool scale,bool translate,bool rotate)
   {
+      
       if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
       if(!this->decideCommOperation(operation))
             return 0;
-
+      
       return (NUM_VEC*LEN_VEC);
   }
 

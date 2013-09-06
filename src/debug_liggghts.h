@@ -28,6 +28,7 @@
 #include "style_fix.h"
 #include "vector_liggghts.h"
 #include "container.h"
+#include "atom.h"
 
 namespace LAMMPS_NS {
 

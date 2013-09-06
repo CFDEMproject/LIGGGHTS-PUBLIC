@@ -35,6 +35,10 @@
   template<int NUM_NODES>
   MultiNodeMesh<NUM_NODES>::MultiNodeMesh(LAMMPS *lmp)
   : AbstractMesh(lmp),
+    node_("node"),
+    nodesLastRe_("nodesLastRe"),
+    center_("center"),
+    rBound_("rBound"),
     node_orig_(0),
     precision_(EPSILON_PRECISION),
     autoRemoveDuplicates_(false),
@@ -308,7 +312,7 @@
           if(node_orig_)
             error->one(FLERR,"Illegal situation in MultiNodeMesh<NUM_NODES>::registerMove");
 
-          node_orig_ = new MultiVectorContainer<double,NUM_NODES,3>;
+          node_orig_ = new MultiVectorContainer<double,NUM_NODES,3>("node_orig");
           for(int i = 0; i < nall; i++)
           {
             for(int j = 0; j < NUM_NODES; j++)

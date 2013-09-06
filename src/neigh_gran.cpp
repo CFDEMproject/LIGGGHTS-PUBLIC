@@ -73,6 +73,8 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
   int **firstneigh = list->firstneigh;
   int **pages = list->pages;
 
+  double contactHistoryDistanceFactorSqr = contactHistoryDistanceFactor*contactHistoryDistanceFactor;
+
   FixContactHistory *fix_history = list->fix_history; 
   if (fix_history) {
     npartner = fix_history->npartner;
@@ -134,8 +136,8 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
         neighptr[n] = j;
 
         if (fix_history) {
-            if (rsq < radsum*radsum*contactHistoryDistanceFactor) 
-                {
+          if (rsq < radsum*radsum*contactHistoryDistanceFactorSqr)
+          {
             for (m = 0; m < npartner[i]; m++)
               if (partner[i][m] == tag[j]) break;
             if (m < npartner[i]) {
@@ -300,6 +302,8 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
   double **pages_shear;
   int dnum; 
 
+  double contactHistoryDistanceFactorSqr = contactHistoryDistanceFactor*contactHistoryDistanceFactor;
+
   // bin local & ghost atoms
 
   bin_atoms();
@@ -388,7 +392,7 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
           neighptr[n] = j;
           
           if (fix_history) {
-            if (rsq < radsum*radsum*contactHistoryDistanceFactor) 
+            if (rsq < radsum*radsum*contactHistoryDistanceFactorSqr)
                 {
               for (m = 0; m < npartner[i]; m++)
                 if (partner[i][m] == tag[j]) break;

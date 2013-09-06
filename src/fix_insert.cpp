@@ -450,9 +450,6 @@ void FixInsert::init()
     if(!fix_multisphere) multisphere = NULL;
     else multisphere = &fix_multisphere->data();
 
-    if(fix_multisphere && fix_multisphere->igroup != igroup)
-        error->fix_error(FLERR,this,"Fix insert command and fix multisphere command are not compatible, must be same group");
-
     // in case of new fix insert in a restarted simulation, have to add current time-step
     if(next_reneighbor > 0 && next_reneighbor < ntimestep)
         error->fix_error(FLERR,this,"'start' step can not be before current step");

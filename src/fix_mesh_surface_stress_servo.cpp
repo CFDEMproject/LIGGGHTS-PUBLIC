@@ -143,7 +143,7 @@ FixMeshSurfaceStressServo::FixMeshSurfaceStressServo(LAMMPS *lmp, int narg, char
           } else {
             set_point_ = -force->numeric(arg[iarg_]); // the resultant force/torque/shear acts in opposite direction --> negative value
             if (set_point_ == 0.) error->fix_error(FLERR,this,"'target_val' (desired force/torque) has to be != 0.0");
-            set_point_inv_ = 1./set_point_;
+            set_point_inv_ = 1./abs(set_point_);
             sp_style_ = CONSTANT;
           }
           iarg_++;
@@ -427,7 +427,7 @@ void FixMeshSurfaceStressServo::final_integrate()
 
         set_point_ = -input->variable->compute_equal(sp_var_);
         if (set_point_ == 0.) error->fix_error(FLERR,this,"Set point (desired force/torque/shear) has to be != 0.0");
-        set_point_inv_ = 1./set_point_;
+        set_point_inv_ = 1./abs(set_point_);
         
         modify->addstep_compute(update->ntimestep + 1);
 
@@ -469,7 +469,7 @@ void FixMeshSurfaceStressServo::final_integrate()
 
         set_point_ = -input->variable->compute_equal(sp_var_);
         if (set_point_ == 0.) error->fix_error(FLERR,this,"Set point (desired force/torque/shear) has to be != 0.0");
-        set_point_inv_ = 1./set_point_;
+        set_point_inv_ = 1./abs(set_point_);
         
         modify->addstep_compute(update->ntimestep + 1);
 
@@ -612,7 +612,7 @@ int FixMeshSurfaceStressServo::modify_param(int narg, char **arg)
     } else {
       set_point_ = -force->numeric(arg[1]); // the resultant force/torque/shear acts in opposite direction --> negative value
       if (set_point_ == 0.) error->fix_error(FLERR,this,"'target_val' (desired force/torque) has to be != 0.0");
-      set_point_inv_ = 1./set_point_;
+      set_point_inv_ = 1./abs(set_point_);
       sp_style_ = CONSTANT;
     }
 

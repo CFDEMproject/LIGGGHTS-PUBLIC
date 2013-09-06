@@ -748,6 +748,7 @@ void FixMove::final_integrate()
   for (int i = 0; i < nlocal; i++) {
     if (mask[i] & groupbit) {
       if (xflag)
+      {
         if (rmass) {
           dtfm = dtf / rmass[i];
           v[i][0] += dtfm * f[i][0];
@@ -755,8 +756,10 @@ void FixMove::final_integrate()
           dtfm = dtf / mass[type[i]];
           v[i][0] += dtfm * f[i][0];
         }
+      }
 
       if (yflag)
+      {
         if (rmass) {
           dtfm = dtf / rmass[i];
           v[i][1] += dtfm * f[i][1];
@@ -764,8 +767,10 @@ void FixMove::final_integrate()
           dtfm = dtf / mass[type[i]];
           v[i][1] += dtfm * f[i][1];
         }
+      }
 
       if (zflag)
+      {
         if (rmass) {
           dtfm = dtf / rmass[i];
           v[i][2] += dtfm * f[i][2];
@@ -773,6 +778,7 @@ void FixMove::final_integrate()
           dtfm = dtf / mass[type[i]];
           v[i][2] += dtfm * f[i][2];
         }
+      }
     }
   }
 }

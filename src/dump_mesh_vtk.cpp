@@ -667,8 +667,8 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
     m = 0;
     buf_pos = 0;
 
-    ScalarContainer<double> points;
-    ScalarContainer<int> tri_points;
+    ScalarContainer<double> points("DumpMeshVTK::points");
+    ScalarContainer<int> tri_points("DumpMeshVTK::tri_points");
     bool add;
     for (int i = 0; i < n; i++)
       {
@@ -703,7 +703,7 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
     class ScalarContainer<int> **points_neightri;
     points_neightri = new ScalarContainer<int>*[(int)points.size()/3];
     for (int i=0; i < points.size()/3; i++)
-        points_neightri[i] = new ScalarContainer<int>;
+        points_neightri[i] = new ScalarContainer<int>("DumpMeshVTK::points_neightri");
     for (int i=0; i < 3*n; i+=3)
     {
         for (int j=0; j<3;j++)

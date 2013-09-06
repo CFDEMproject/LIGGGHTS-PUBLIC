@@ -253,7 +253,7 @@
       
       int nsend = 0;
 
-      if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
+      if(OPERATION_COMM_EXCHANGE == operation || OPERATION_COMM_BORDERS == operation)
       {
           
           nsend += MultiNodeMesh<NUM_NODES>::center_.pushElemListToBuffer(n,list,&(buf[nsend]),operation);
@@ -264,7 +264,7 @@
           return nsend;
       }
 
-      if(operation == OPERATION_COMM_FORWARD)
+      if(OPERATION_COMM_FORWARD == operation)
       {
           
           return nsend;
@@ -285,7 +285,7 @@
   {
       int nrecv = 0;
 
-      if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
+      if(OPERATION_COMM_EXCHANGE == operation || OPERATION_COMM_BORDERS == operation)
       {
           nrecv += MultiNodeMesh<NUM_NODES>::center_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
           nrecv += MultiNodeMesh<NUM_NODES>::node_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
@@ -295,7 +295,7 @@
           return nrecv;
       }
 
-      if(operation == OPERATION_COMM_FORWARD)
+      if(OPERATION_COMM_FORWARD == operation)
       {
           
           //    nrecv += MultiNodeMesh<NUM_NODES>::node_.popListFromBuffer(first,n,&(buf[nrecv]),operation);
@@ -317,7 +317,7 @@
   {
       int nsend = 0;
 
-      if(operation == OPERATION_COMM_REVERSE)
+      if(OPERATION_COMM_REVERSE == operation)
       {
         
         return nsend;
@@ -338,7 +338,7 @@
   {
       int nrecv = 0;
 
-      if(operation == OPERATION_COMM_REVERSE)
+      if(OPERATION_COMM_REVERSE == operation)
       {
         
         return nrecv;
@@ -360,13 +360,13 @@
   {
       int size_buf = 0;
 
-      if(operation == OPERATION_RESTART)
+      if(OPERATION_RESTART == operation)
       {
           size_buf += MultiNodeMesh<NUM_NODES>::node_.elemBufSize();
           return size_buf;
       }
 
-      if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
+      if(OPERATION_COMM_EXCHANGE == operation || OPERATION_COMM_BORDERS == operation)
       {
           size_buf += MultiNodeMesh<NUM_NODES>::center_.elemBufSize();
           size_buf += MultiNodeMesh<NUM_NODES>::node_.elemBufSize();
@@ -376,13 +376,13 @@
           return size_buf;
       }
 
-      if(operation == OPERATION_COMM_FORWARD)
+      if(OPERATION_COMM_FORWARD == operation)
       {
           
           return size_buf;
       }
 
-      if(operation == OPERATION_COMM_REVERSE)
+      if(OPERATION_COMM_REVERSE == operation)
       {
         
         return size_buf;
@@ -403,14 +403,14 @@
   {
       int nsend = 0;
 
-      if(operation == OPERATION_RESTART)
+      if(OPERATION_RESTART == operation)
       {
           nsend += MultiNodeMesh<NUM_NODES>::node_.pushElemToBuffer(i,&(buf[nsend]),operation);
 
           return nsend;
       }
 
-      if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
+      if(OPERATION_COMM_EXCHANGE == operation || OPERATION_COMM_BORDERS == operation)
       {
           
           nsend += MultiNodeMesh<NUM_NODES>::center_.pushElemToBuffer(i,&(buf[nsend]),operation);
@@ -436,9 +436,9 @@
   {
       int nrecv = 0;
 
-      if(operation == OPERATION_RESTART)
+      if(OPERATION_RESTART == operation)
       {
-          MultiVectorContainer<double,NUM_NODES,3> nodeTmp;
+          MultiVectorContainer<double,NUM_NODES,3> nodeTmp("nodeTmp");
           
           nrecv += nodeTmp.popElemFromBuffer(&(buf[nrecv]),operation);
           this->addElement(nodeTmp.begin()[0],-1);
@@ -448,7 +448,7 @@
           return nrecv;
       }
 
-      if(operation == OPERATION_COMM_EXCHANGE || operation == OPERATION_COMM_BORDERS)
+      if(OPERATION_COMM_EXCHANGE == operation || OPERATION_COMM_BORDERS == operation)
       {
           nrecv += MultiNodeMesh<NUM_NODES>::center_.popElemFromBuffer(&(buf[nrecv]),operation);
           nrecv += MultiNodeMesh<NUM_NODES>::node_.popElemFromBuffer(&(buf[nrecv]),operation);

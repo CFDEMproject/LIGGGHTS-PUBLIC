@@ -45,11 +45,23 @@ using namespace LAMMPS_NS;
   {
   }
 
+  ContainerBase::ContainerBase(char *_id)
+  : id_(0),
+    communicationType_(COMM_TYPE_MANUAL),
+    refFrame_(REF_FRAME_UNDEFINED),
+    restartType_(RESTART_TYPE_UNDEFINED),
+    scalePower_(-1)
+  {
+      id_ = new char[strlen(_id)+1];
+      strcpy(id_,_id);
+  }
+
   ContainerBase::ContainerBase(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower)
   : id_(0),
     communicationType_(COMM_TYPE_MANUAL),
+    refFrame_(REF_FRAME_UNDEFINED),
     restartType_(RESTART_TYPE_UNDEFINED),
-    refFrame_(REF_FRAME_UNDEFINED)
+    scalePower_(-1)
   {
           setProperties(_id, _comm, _ref,_restart,_scalePower);
   }
@@ -66,7 +78,7 @@ using namespace LAMMPS_NS;
 
   ContainerBase::~ContainerBase()
   {
-      delete []id_;
+      if(id_) delete []id_;
   }
 
   /* ----------------------------------------------------------------------

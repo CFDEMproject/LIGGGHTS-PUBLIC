@@ -119,18 +119,22 @@ FixMeshSurfaceStress::~FixMeshSurfaceStress()
 {
 
 }
+/* ---------------------------------------------------------------------- */
+
+void FixMeshSurfaceStress::post_create_pre_restart()
+{
+    if(stress_flag_)
+        initStress();
+
+    if(wear_flag_)
+        initWear();
+}
 
 /* ---------------------------------------------------------------------- */
 
 void FixMeshSurfaceStress::post_create()
 {
     FixMeshSurface::post_create();
-
-    if(stress_flag_)
-        initStress();
-
-    if(wear_flag_)
-        initWear();
 }
 
 /* ---------------------------------------------------------------------- */

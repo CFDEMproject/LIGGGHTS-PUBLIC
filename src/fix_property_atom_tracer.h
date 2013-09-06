@@ -35,7 +35,8 @@ namespace LAMMPS_NS {
 enum
 {
    MARKER_DIRAC = 0,
-   MARKER_HEAVISIDE = 1
+   MARKER_HEAVISIDE = 1,
+   MARKER_NONE = 2
 };
 
 class FixPropertyAtomTracer : public FixPropertyAtom {

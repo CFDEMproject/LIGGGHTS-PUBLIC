@@ -23,6 +23,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "atom.h"
+#include "atom_vec.h"
 #include "comm.h"
 #include "modify.h"
 #include "force.h"
@@ -55,10 +56,14 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   mass_last_(0.),
   t_count_(0.),
   delta_t_(0.),
+  fp_(0),
   reset_t_count_(true),
   havePointAtOutlet_(false),
   insideOut_(false),
-  screenflag_(false)
+  screenflag_(false),
+  delete_atoms_(false),
+  mass_deleted_(0.),
+  nparticles_deleted_(0)
 {
     vectorZeroize3D(nvec_);
     vectorZeroize3D(pref_);
@@ -66,10 +71,6 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
     vectorZeroize3D(pointAtOutlet_);
 
     // parse args for this class
-
-  if(1 < comm->nprocs && 0 == comm->me)
-      fprintf(screen,"**FixMassflowMesh: > 1 process - "
-                     " will write to multiple files\n");
 
     int iarg = 3;
 
@@ -153,14 +154,28 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
             else error->all(FLERR,"Illegal fix print command");
             iarg += 2;
             hasargs = true;
+        } else if (strcmp(arg[iarg],"delete_atoms") == 0) {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"Illegal keyword entry");
+            if (strcmp(arg[iarg+1],"yes") == 0) delete_atoms_ = true;
+            else if (strcmp(arg[iarg+1],"no") == 0) delete_atoms_ = false;
+            else error->all(FLERR,"Illegal delete command");
+            iarg += 2;
+            hasargs = true;
         } else
             error->fix_error(FLERR,this,"unknown keyword");
     }
 
+    if(fp_ && 1 < comm->nprocs && 0 == comm->me)
+      fprintf(screen,"**FixMassflowMesh: > 1 process - "
+                     " will write to multiple files\n");
+
     // error checks on necessary args
 
+    if(!once_ && delete_atoms_)
+           error->fix_error(FLERR,this,"using 'delete_atoms yes' requires 'count once'");
     if( !once_ && havePointAtOutlet_)
-        error->fix_error(FLERR,this,"setting 'pointAtOutlet' requires 'count once'");
+        error->fix_error(FLERR,this,"setting 'point_at_outlet' requires 'count once'");
     if( vectorMag3D(sidevec_)==0. && !havePointAtOutlet_)
         error->fix_error(FLERR,this,"expecting keyword 'vec_side'");
     if (!fix_mesh_)
@@ -240,6 +255,9 @@ void FixMassflowMesh::init()
 
     if(modify->n_fixes_style("multisphere"))
         error->fix_error(FLERR,this,"does not support multi-sphere");
+
+    if(delete_atoms_ && 0 == atom->map_style)
+        error->fix_error(FLERR,this,"requires an 'atom_modify map' command to allocate an atom map");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -248,8 +266,8 @@ void FixMassflowMesh::setup(int vflag)
 {
     // check if face planar
     
-    if(!fix_mesh_->triMesh()->isPlanar())
-       error->fix_error(FLERR,this,"command requires a planar face mass flow measurement");
+    if(!fix_mesh_->triMesh()->isPlanar() && !havePointAtOutlet_)
+       error->fix_error(FLERR,this,"requires a planar face mass flow measurement or using 'point_at_outlet'");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -258,6 +276,7 @@ int FixMassflowMesh::setmask()
 {
     int mask = 0;
     mask |= POST_INTEGRATE;
+    if(delete_atoms_) mask |= PRE_EXCHANGE;
     return mask;
 }
 
@@ -328,9 +347,7 @@ void FixMassflowMesh::post_integrate()
                     dot = vectorDot3D(delta,nvec_);
                 }
                 else //particle is not overlapping with mesh, so continue
-                {
                     continue;
-                }
 
                 if(insideOut_) dot =-dot;
             }
@@ -354,6 +371,9 @@ void FixMassflowMesh::post_integrate()
                 {
                     mass_this += rmass[iPart];
                     nparticles_this ++;
+                    if(delete_atoms_)
+                        atom_tags_delete_.push_back(atom->tag[iPart]);
+
                     if (screenflag_ && screen)
                         fprintf(screen," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g \n ",
                                        tag[iPart],2.*radius[iPart]/force->cg(),
@@ -388,6 +408,68 @@ void FixMassflowMesh::post_integrate()
 }
 
 /* ----------------------------------------------------------------------
+   perform particle deletion of marked particles
+   done before exchange, borders, reneighbor
+   so that ghost atoms and neighbor lists will be correct
+------------------------------------------------------------------------- */
+
+void FixMassflowMesh::pre_exchange()
+{
+    int nlocal = atom->nlocal;
+    int iPart;
+    double *counter = fix_counter_->vector_atom;
+
+    if (update->ntimestep != next_reneighbor) return;
+
+    if (delete_atoms_)
+    {
+        double mass_deleted_this_ = 0.;
+        int nparticles_deleted_this_ = 0.;
+
+        // delete particles
+
+        while (atom_tags_delete_.size() > 0)
+        {
+            iPart = atom->map(atom_tags_delete_[0]);
+
+            mass_deleted_this_ += atom->rmass[iPart];
+            nparticles_deleted_this_++;
+
+            atom->avec->copy(atom->nlocal-1,iPart,1);
+            atom->nlocal--;
+
+            atom_tags_delete_.erase(atom_tags_delete_.begin());
+        }
+
+        atom_tags_delete_.clear();
+
+        MPI_Sum_Scalar(mass_deleted_this_,world);
+        MPI_Sum_Scalar(nparticles_deleted_this_,world);
+
+        mass_deleted_ += mass_deleted_this_;
+        nparticles_deleted_ += nparticles_deleted_this_;
+
+        if(nparticles_deleted_this_)
+        {
+            int i;
+            if (atom->molecular == 0) {
+              int *tag = atom->tag;
+              for (i = 0; i < atom->nlocal; i++) tag[i] = 0;
+              atom->tag_extend();
+            }
+
+            if (atom->tag_enable) {
+              if (atom->map_style) {
+                atom->nghost = 0;
+                atom->map_init();
+                atom->map_set();
+              }
+            }
+        }
+    }
+}
+
+/* ----------------------------------------------------------------------
    pack entire state of Fix into one write
 ------------------------------------------------------------------------- */
 
@@ -399,6 +481,8 @@ void FixMassflowMesh::write_restart(FILE *fp)
   list[n++] = t_count_;
   list[n++] = mass_last_;
   list[n++] = static_cast<double>(nparticles_last_);
+  list[n++] = mass_deleted_;
+  list[n++] = static_cast<double>(nparticles_deleted_);
 
   if (comm->me == 0) {
     int size = n * sizeof(double);
@@ -420,7 +504,8 @@ void FixMassflowMesh::restart(char *buf)
   t_count_ = list[n++];
   mass_last_ = list[n++];
   nparticles_last_ = static_cast<int>(list[n++]);
-  nparticles_last_ = static_cast<int>(list[n++]);
+  mass_deleted_ = list[n++];
+  nparticles_deleted_ = static_cast<int>(list[n++]);
 }
 
 /* ----------------------------------------------------------------------
@@ -444,6 +529,10 @@ double FixMassflowMesh::compute_vector(int index)
         return delta_t_ == 0. ? 0. : (mass_-mass_last_)/delta_t_;
     if(index == 3)
         return delta_t_ == 0. ? 0. : static_cast<double>(nparticles_-nparticles_last_)/delta_t_;
+    if(index == 4)
+        return mass_deleted_;
+    if(index == 5)
+        return static_cast<double>(nparticles_deleted_);
 
     return 0.;
 }

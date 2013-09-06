@@ -150,7 +150,7 @@ void FixInsertPack::calc_insertion_properties()
     ins_region->reset_random(seed + SEED_OFFSET);
 
     calc_region_volume_local();
-    if(region_volume <= 0. || region_volume_local < 0. || region_volume_local > region_volume)
+    if(region_volume <= 0. || region_volume_local < 0. || (region_volume_local - region_volume)/region_volume > 1e-3 )
         error->one(FLERR,"Fix insert: Region volume calculation with MC failed");
 
     if(ins_region->dynamic_check())
@@ -187,6 +187,7 @@ void FixInsertPack::calc_region_volume_local()
 {
     ins_region->volume_mc(ntry_mc,all_in_flag==0?false:true,fix_distribution->max_r_bound(),
                           region_volume,region_volume_local);
+    
 }
 
 /* ----------------------------------------------------------------------

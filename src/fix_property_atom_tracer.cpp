@@ -95,8 +95,8 @@ FixPropertyAtomTracer::FixPropertyAtomTracer(LAMMPS *lmp, int narg, char **arg,b
                 error->fix_error(FLERR,this,"not enough arguments for 'mark_step'");
             iarg_++;
             step_ = atoi(arg[iarg_++]);
-            if(step_ < 0)
-                error->fix_error(FLERR,this,"mark_step > 0 required");
+            if(step_ < 0 || step_ < update->ntimestep)
+                error->fix_error(FLERR,this,"mark_step > 0 required, mark_step must not be before current time-step");
             hasargs = true;
         } else if(strcmp(arg[iarg_],"marker_style") == 0) {
             if(narg < iarg_+2)
@@ -106,6 +106,8 @@ FixPropertyAtomTracer::FixPropertyAtomTracer(LAMMPS *lmp, int narg, char **arg,b
                 marker_style_ = MARKER_HEAVISIDE;
             else if(strcmp(arg[iarg_],"dirac") == 0)
                 marker_style_ = MARKER_DIRAC;
+            else if(strcmp(arg[iarg_],"none") == 0)
+                marker_style_ = MARKER_NONE;
             else
                 error->fix_error(FLERR,this,"expecting 'heaviside' or 'dirac' after keyword 'marker_style'");
             iarg_++;
@@ -176,7 +178,7 @@ void FixPropertyAtomTracer::end_of_step()
 {
     int ts = update->ntimestep;
 
-    if(ts < step_ || (marker_style_ == MARKER_DIRAC && !first_mark_))
+    if(ts < step_ || marker_style_ == MARKER_NONE || (marker_style_ == MARKER_DIRAC && !first_mark_))
         return;
 
     int nlocal = atom->nlocal;

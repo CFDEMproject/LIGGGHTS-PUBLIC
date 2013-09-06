@@ -68,7 +68,27 @@ PairSph::PairSph(LAMMPS *lmp) : Pair(lmp)
     sl = NULL;
     slComType = NULL;
 
+    fix_fgradP_ = NULL;
+
     mass_type = atom->avec->mass_type; // get flag for mass per type
+
+    char **fixarg;
+    fixarg=new char*[11];
+    for (int kk=0;kk<11;kk++) fixarg[kk]=new char[30];
+    
+    strcpy(fixarg[0],"fgradP");
+    fixarg[1]="all";
+    fixarg[2]="property/atom";
+    strcpy(fixarg[3],"fgradP");
+    fixarg[4]="vector";
+    fixarg[5]="yes";
+    fixarg[6]="yes";
+    fixarg[7]="yes";
+    fixarg[8]="0.";
+    fixarg[9]="0.";
+    fixarg[10]="0.";
+    fix_fgradP_ = modify->add_fix_property_atom(11,fixarg,"PairSph");
+    delete []fixarg;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -87,6 +107,8 @@ PairSph::~PairSph()
   if(kernel_style) delete []kernel_style;
   if(fppaSl) modify->delete_fix("sl");
 //  if(fppaSlType) modify->delete_fix("sl");
+  
+  if(fix_fgradP_) modify->delete_fix(fix_fgradP_->id);
 }
 
 /* ----------------------------------------------------------------------

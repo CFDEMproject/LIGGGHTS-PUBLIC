@@ -38,6 +38,11 @@ fix property/atom:
     communicate_reverse_ghost_value = yes or no :l
  :ule
 
+[Examples:]
+
+fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
+fix m5 all property/global characteristicVelocity scalar 2. 
+fix uf all property/atom uf vector yes no no  0. 0. 0. :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 
@@ -45,11 +50,28 @@ This LIGGGHTS command is not available in LAMMPS.
 
 [Description:]
 
-[Fix property/atom] reserves per-atom properties to be accessed by the user or other fixes. Style scalar reserves one value per atom, style vector multiple values per atoms, where the number of defaultvalues (that are assigned to the atoms at creation) determines the length of the vector . The group of atoms the fix is applied to is always "all", irrespective of which group is used for the fix command . If you want to assign different values for different groups, you can use the set command with keyword 'property/atom'.
+[Fix property/atom] reserves per-atom properties to be accessed by the user or other fixes. 
+Style {scalar} reserves one value per atom, style {vector} multiple values per atoms, where 
+the number of {defaultvalues} (that are assigned to the atoms at creation) determines the 
+length of the vector. The group of atoms the fix is applied to is always "all", irrespective 
+of which group is used for the fix command . If you want to assign different values for 
+different groups, you can use the "set"_set.html command with keyword 'property/atom'.
+Keyword {restartvalues} determines whether information about the values stored by this fix 
+is written to binary restart files.
+Keyword {communicate_ghost_value} determines whether information about the values stored by this fix 
+can be communicated to ghost particles (forward communication). The exact location during a time-step 
+when this happens depends on the model that uses this fix.
+Keyword {communicate_reverse_ghost_value} determines whether information about the values stored by this fix 
+can be communicated from ghost particles to owned particles (reverse communication). The exact location 
+during a time-step when this happens depends on the model that uses this fix.
 
-[Fix property/global] reserves global properties to be accessed by the user or other fixes or pair styles. The number of defaultvalues determines the length of the vector / the number of matrix components . For style vector or atomtype, the user provides the number of vector components . For style matrix or atomtypepair, the user provides the number of matrix columns (nCols) .
+[Fix property/global] reserves global properties to be accessed by the user or other 
+fixes or pair styles. The number of defaultvalues determines the length of the vector / 
+the number of matrix components . For style {vector} or {atomtype}, the user provides 
+the number of vector components . For style {matrix} or {atomtypepair}, the user provides 
+the number of matrix columns ({nCols}) .
 
-Example: nCols= 2 and defaultvalues = 1 2 3 4 5 6 would be mapped into a matrix like
+Example: {nCols}= 2 and {defaultvalues} = 1 2 3 4 5 6 would be mapped into a matrix like
 
 \[ 1 2 \]
 
@@ -57,15 +79,15 @@ Example: nCols= 2 and defaultvalues = 1 2 3 4 5 6 would be mapped into a matrix 
 
 \[ 5 6 \]
 
-Note that the number of default values must thus be a multiple of nCols.
-Note that vector and atomtype do the same thing, atomtype is just provided to make input scripts more readable .
-Note that matrix and atomtypepair both refer to a matrix of global values. However, a matrix defined via 'atomtypepair' is required to be symmetric.
+Note that the number of default values must thus be a multiple of {nCols}.
+Note that {vector} and {atomtype} do the same thing, {atomtype} is just provided to make input scripts more readable .
+Note that {matrix} and {atomtypepair} both refer to a matrix of global values. However, a matrix defined via {atomtypepair} is required to be symmetric.
 
 Note that the group of atoms the fix is applied to is ignored (as the fix is not applied to atoms, but defines values of global scope).
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
-Information about this fix is written to "binary restart files"_restart.html if you set 'restartvalue' to 'yes'.
+Information about this fix is written to "binary restart files"_restart.html if you set {restartvalue} to 'yes'.
 
 [Restrictions:] none
 

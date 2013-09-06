@@ -1682,6 +1682,11 @@ void Neighbor::modify_params(int narg, char **arg)
       delay = atoi(arg[iarg+1]);
       if (delay < 0) error->all(FLERR,"Illegal neigh_modify command");
       iarg += 2;
+    } else if (strcmp(arg[iarg],"contactHistoryDistanceFactor") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
+      contactHistoryDistanceFactor = atof(arg[iarg+1]);
+      if (contactHistoryDistanceFactor < 1.0) error->all(FLERR,"Illegal neigh_modify command. Please set contactHistoryDistanceFactor value >=1");
+      iarg +=2; 
     } else if (strcmp(arg[iarg],"check") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
       if (strcmp(arg[iarg+1],"yes") == 0) dist_check = 1;

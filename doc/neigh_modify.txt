@@ -39,6 +39,8 @@ keyword = {delay} or {every} or {check} or {once} or {include} or {exclude} or {
     N = number of pairs stored in a single neighbor page
   {one} value = N
     N = max number of neighbors of one atom
+  {contactHistoryDistanceFactor} value = N
+    N = contact history distance factor used to keep contact history of non-contacting particles (must be > 1).
   {binsize} value = size
     size = bin size for neighbor list construction (distance units) :pre
 :ule
@@ -49,7 +51,8 @@ neigh_modify every 2 delay 10 check yes page 100000
 neigh_modify exclude type 2 3
 neigh_modify exclude group frozen frozen check no
 neigh_modify exclude group residue1 chain3
-neigh_modify exclude molecule rigid :pre
+neigh_modify exclude molecule rigid
+neigh_modify delay 0 contactHistoryDistanceFactor 2.0 :pre
 
 [Description:]
 
@@ -75,6 +78,9 @@ lists should be rebuilt.
 When the rRESPA integrator is used (see the "run_style"_run_style.html
 command), the {every} and {delay} parameters refer to the longest
 (outermost) timestep.
+The {contactHistoryDistanceFactor} setting has to be used while using fix liquid transfer. 
+This factor must be either 1 or greater than 1, to ensure that the extra contact history values are not lost
+when the neighbor lists are rebuilt. 
 
 The {include} option limits the building of pairwise neighbor lists to
 atoms in the specified group.  This can be useful for models where a

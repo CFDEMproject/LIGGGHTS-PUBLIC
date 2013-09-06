@@ -71,7 +71,9 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
 
   //read dnum
   dnum = atoi(arg[iarg++]);
-  
+
+  index_decide_noncontacting = -1;
+
   if(dnum < 0)
     error->all(FLERR,"dnum must be >=0 in fix contacthistory");
   if(dnum > 10)
@@ -191,6 +193,9 @@ void FixContactHistory::init()
     if (atom->tag_enable == 0)
       error->fix_error(FLERR,this,"using contact history requires atoms have IDs");
 
+    if (-1 == index_decide_noncontacting && 1. < neighbor->contactHistoryDistanceFactor)
+      error->fix_error(FLERR,this,"have to call set_index_decide_noncontacting() function");
+
     if(is_pair)
     {
         if(!force->pair_match("gran", 0))
@@ -286,7 +291,7 @@ void FixContactHistory::pre_exchange_pair()
 
   int *tag = atom->tag;
   double **x = atom->x;
-  double *radius = atom->radius; 
+  double *radius = atom->radius;
 
   NeighList *list = pair_gran->list;
   inum = list->inum;
@@ -295,7 +300,7 @@ void FixContactHistory::pre_exchange_pair()
   firstneigh = list->firstneigh;
   firsttouch = list->listgranhistory->firstneigh;
   firsthist = list->listgranhistory->firstdouble;
-  contactHistDistanceFactor = neighbor->contactHistoryDistanceFactor; 
+  contactHistDistanceFactor = neighbor->contactHistoryDistanceFactor;
   if(contactHistDistanceFactor> 1.0) considerNonContactingParticles = true;
 
   for (ii = 0; ii < inum; ii++) {
@@ -312,28 +317,20 @@ void FixContactHistory::pre_exchange_pair()
     for (jj = 0; jj < jnum; jj++) {
         j = jlist[jj];
         j &= NEIGHMASK;
-#if 0
-       //Check if considerNonContactingParticles are within range
-        haveNonContactingParticlesInRange = false;
-        if(considerNonContactingParticles && (j<nlocal))
-        {
-            radSum = radius[j] + rPartner;
-            delx = x[j][0] - xPartner[0];
-            dely = x[j][1] - xPartner[1];
-            delz = x[j][2] - xPartner[2];
-            rsq = delx*delx + dely*dely + delz*delz;
-            if( rsq<(contactHistDistanceFactor*radSum*contactHistDistanceFactor*radSum) ) //check if particles are close enough to keep contact history
-                haveNonContactingParticlesInRange = true;
-        }
 
-//        fprintf(screen, "***FixContactHistory::pre_exchange_pair - haveNonContactingParticlesInRange %d, considerNonContactingParticles %d, contactHistDistanceFactor: %f \n.",
-//                        haveNonContactingParticlesInRange, considerNonContactingParticles, contactHistDistanceFactor);
-//       Check if we need to consider non-contacting particles
+       //Check if considerNonContactingParticles are within range
+       haveNonContactingParticlesInRange = false;
+
+       if(considerNonContactingParticles)
+       {
+           hist = &allhist[dnum*jj];
+           if( hist[index_decide_noncontacting]>0.0 ) //check if particles are close enough to keep contact history
+               haveNonContactingParticlesInRange = true;
+       }
+
        if ( (touch[jj] ) ||  haveNonContactingParticlesInRange)
-#endif 
-       if ( (touch[jj] ) ||  considerNonContactingParticles) 
-       { 
-        hist = &allhist[dnum*jj]; 
+       {
+        hist = &allhist[dnum*jj];
 
         if (npartner[i] >= maxtouch) grow_arrays_maxtouch(atom->nmax); 
         m = npartner[i];

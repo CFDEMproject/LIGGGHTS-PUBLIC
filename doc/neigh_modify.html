@@ -43,6 +43,8 @@
     N = number of pairs stored in a single neighbor page
   <I>one</I> value = N
     N = max number of neighbors of one atom
+  <I>contactHistoryDistanceFactor</I> value = N
+    N = contact history distance factor used to keep contact history of non-contacting particles (must be > 1).
   <I>binsize</I> value = size
     size = bin size for neighbor list construction (distance units) 
 </PRE>
@@ -54,7 +56,8 @@
 neigh_modify exclude type 2 3
 neigh_modify exclude group frozen frozen check no
 neigh_modify exclude group residue1 chain3
-neigh_modify exclude molecule rigid 
+neigh_modify exclude molecule rigid
+neigh_modify delay 0 contactHistoryDistanceFactor 2.0 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -80,6 +83,9 @@ lists should be rebuilt.
 <P>When the rRESPA integrator is used (see the <A HREF = "run_style.html">run_style</A>
 command), the <I>every</I> and <I>delay</I> parameters refer to the longest
 (outermost) timestep.
+The <I>contactHistoryDistanceFactor</I> setting has to be used while using fix liquid transfer. 
+This factor must be either 1 or greater than 1, to ensure that the extra contact history values are not lost
+when the neighbor lists are rebuilt. 
 </P>
 <P>The <I>include</I> option limits the building of pairwise neighbor lists to
 atoms in the specified group.  This can be useful for models where a

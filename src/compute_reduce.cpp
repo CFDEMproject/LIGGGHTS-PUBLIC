@@ -30,7 +30,7 @@
 using namespace LAMMPS_NS;
 
 enum{SUM,MINN,MAXX,AVE};
-enum{X,V,F,COMPUTE,FIX,VARIABLE};
+enum{X,V,F,RHO,P,COMPUTE,FIX,VARIABLE};
 enum{PERATOM,LOCAL};
 
 #define INVOKED_VECTOR 2
@@ -111,6 +111,12 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
     } else if (strcmp(arg[iarg],"fz") == 0) {
       which[nvalues] = F;
       argindex[nvalues++] = 2;
+    } else if (strcmp(arg[iarg],"rho") == 0) {
+      which[nvalues] = RHO;
+      argindex[nvalues++] = 0;
+    } else if (strcmp(arg[iarg],"p") == 0) {
+      which[nvalues] = P;
+      argindex[nvalues++] = 0;
 
     } else if (strncmp(arg[iarg],"c_",2) == 0 ||
                strncmp(arg[iarg],"f_",2) == 0 ||
@@ -471,6 +477,18 @@ double ComputeReduce::compute_one(int m, int flag)
       for (i = 0; i < nlocal; i++)
         if (mask[i] & groupbit) combine(one,f[i][aidx],i);
     } else one = f[flag][aidx];
+  } else if (which[m] == RHO) {
+    double *rho = atom->rho;
+    if (flag < 0) {
+      for (i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit) combine(one,rho[i],i);
+    } else one = rho[flag];
+  } else if (which[m] == P) {
+    double *p = atom->p;
+    if (flag < 0) {
+      for (i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit) combine(one,p[i],i);
+    } else one = p[flag];
 
   // invoke compute if not previously invoked
 

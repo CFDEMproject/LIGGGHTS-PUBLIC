@@ -159,7 +159,7 @@ void FixScalarTransportEquation::post_create()
     fixarg[5]="yes";    
     fixarg[6]="yes";    
     fixarg[7]="no";    
-    sprintf(fixarg[8],"%f",quantity_0);
+    sprintf(fixarg[8],"%e",quantity_0);
     modify->add_fix(9,fixarg);
     fix_quantity=static_cast<FixPropertyAtom*>(modify->find_fix_property(quantity_name,"property/atom","scalar",0,0,style));
   }

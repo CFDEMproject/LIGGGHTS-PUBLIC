@@ -472,6 +472,10 @@ void PairSphArtviscTenscorr::compute_eval(int eflag, int vflag)
 
         // get distance and normalized distance
         r = sqrt(rsq);
+        if (r == 0.) {
+          printf("Particle %i and %i are at same position (%f, %f, %f)",i,j,xtmp,ytmp,ztmp);
+          error->one(FLERR,"Zero distance between SPH particles!");
+        }
         rinv = 1./r;
         s = r * slComInv;
 

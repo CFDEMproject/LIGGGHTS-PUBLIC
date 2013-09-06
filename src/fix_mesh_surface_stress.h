@@ -45,6 +45,7 @@ namespace LAMMPS_NS
         FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg);
         virtual ~FixMeshSurfaceStress();
 
+        virtual void post_create_pre_restart();
         virtual void post_create();
 
         virtual void init();

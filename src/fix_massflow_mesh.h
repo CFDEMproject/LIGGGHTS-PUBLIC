@@ -29,6 +29,9 @@ FixStyle(massflow/mesh,FixMassflowMesh)
 #define LMP_FIX_MASSFLOW_MESH_H
 
 #include "fix.h"
+#include <vector>
+
+using namespace std;
 
 namespace LAMMPS_NS {
 
@@ -47,6 +50,7 @@ class FixMassflowMesh : public Fix {
   int setmask();
 
   void post_integrate();
+  void pre_exchange();
 
   void write_restart(FILE *fp);
   void restart(char *buf);
@@ -83,6 +87,12 @@ class FixMassflowMesh : public Fix {
   int nparticles_last_;
   double t_count_, delta_t_;
   bool reset_t_count_;
+
+  // in case particles counted should be deleted
+  bool delete_atoms_;
+  vector<int> atom_tags_delete_;
+  double mass_deleted_;
+  double nparticles_deleted_;
 
 }; //end class
 

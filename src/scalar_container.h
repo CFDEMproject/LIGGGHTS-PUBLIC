@@ -38,7 +38,7 @@ namespace LAMMPS_NS
   class ScalarContainer : public GeneralContainer <T, 1, 1>
   {
     public:
-          ScalarContainer();
+          ScalarContainer(char *_id);
           ScalarContainer(char *_id, char *_comm, char *_ref, char *_restart, int _scalePower = 1);
           ScalarContainer(ScalarContainer<T> const &orig);
           virtual ~ScalarContainer();
@@ -60,8 +60,8 @@ namespace LAMMPS_NS
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  ScalarContainer<T>::ScalarContainer()
-  : GeneralContainer<T,1,1>()
+  ScalarContainer<T>::ScalarContainer(char *_id)
+  : GeneralContainer<T,1,1>(_id)
   {
 
   }

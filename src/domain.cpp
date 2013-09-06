@@ -44,6 +44,7 @@
 #include "math_const.h"
 #include "memory.h"
 #include "error.h"
+#include "neighbor.h"
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -1416,7 +1417,7 @@ void Domain::box_corners()
 }
 
 /* ----------------------------------------------------------------------
-   domain checks - not used very often, so not inlined
+   domain check - not used very often, so not inlined
 ------------------------------------------------------------------------- */
 
 int Domain::is_periodic_ghost(int i) 
@@ -1424,31 +1425,32 @@ int Domain::is_periodic_ghost(int i)
     int idim;
     int nlocal = atom->nlocal;
     double *x = atom->x[i];
+    double halfskin = 0.5*neighbor->skin;
 
     if(i < nlocal) return 0;
-
     else
     {
         for(idim = 0; idim < 3; idim++)
-            if ((x[idim] < boxlo[idim] || x[idim] > boxhi[idim]) && periodicity[idim])
+             if ((x[idim] < (boxlo[idim]+halfskin) || x[idim] > (boxhi[idim]-halfskin)) && periodicity[idim])
+             
                 return 1;
     }
     return 0;
 }
 
-int Domain::is_periodic_ghost_of_owned(int i) 
+/* ----------------------------------------------------------------------
+   check if atom is unique on this subdomain
+   used when tallying stats across owned and ghost particles
+------------------------------------------------------------------------- */
+
+bool Domain::is_owned_or_first_ghost(int i) 
 {
-    int idim;
-    int nlocal = atom->nlocal;
-    double *x = atom->x[i];
+    if(!atom->tag_enable)
+        error->one(FLERR,"The current simulation setup requires atoms to have tags");
+    if(0 == atom->map_style)
+        error->one(FLERR,"The current simulation setup requires an 'atom_modify map' command to allocate an atom map");
 
-    if(i < nlocal) return 0;
-
-    else
-    {
-        for(idim = 0; idim < 3; idim++)
-            if ((x[idim] < boxlo[idim] || x[idim] > boxhi[idim]) && periodicity[idim] && 1 == comm->procgrid[idim])
-                return 1;
-    }
-    return 0;
+    if(i == atom->map(atom->tag[i]))
+        return true;
+    return false;
 }

@@ -20,7 +20,7 @@ mesh-ID = ID of a "fix mesh/surface"_fix_mesh_surface.html command :l
 vec_side = obligatory keyword :l
 vx, vy, vz = vector components defining the "outside" of the mesh :l
 zero or more keyword/value pairs may be appended to args :l
-keywords = {count} or {point_at_outlet} or {append} or {file} or {screen} :l
+keywords = {count} or {point_at_outlet} or {append} or {file} or {screen} or {delete_atoms} :l
   {count} value = {once} or {multiple}
     once = count particles only once
     multiple = allow particles to be counted multiple times 
@@ -31,7 +31,9 @@ keywords = {count} or {point_at_outlet} or {append} or {file} or {screen} :l
   {file} value = filename 
   {append} value = filename 
    filename = name of the file to print radius, position and velocity values of the particles
-  {screen} value = {yes} or {no}  :pre
+  {screen} value = {yes} or {no} 
+  {delete_atoms} value = {yes} or {no}  
+    yes = to remove the particles that pass through the mesh surface :pre
 
 :ule
 
@@ -81,7 +83,8 @@ by specifying a filename.
 If the {screen} keyword is used, output by this fix to the screen and
 logfile can be turned on or off as desired.  
 
-If the {delete_atoms} keyword is used then the particles passing through the mesh surface are deleted.
+If the {delete_atoms} keyword is used then the particles passing through the mesh 
+surface are deleted at the next re-neighboring step.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -90,14 +93,15 @@ Information about this fix is written to "binary restart files"_restart.html .
 This fix computes a per-atom vector (the marker) which can be accessed by
 various "output commands"_Section_howto.html#howto_15. The per-atom vector 
 (i.e., the marker) can be accessed by dumps by using "f_massflow_ID", .
-This fix also computes a global vector of length 4. This vector can be 
+This fix also computes a global vector of length 6. This vector can be 
 accessed via "f_ID", where ID is the fix id. The first vector component 
 is equal to the total mass which has crossed the mesh surface, the second vector 
 component indicates the particle count. The third vector component 
 is equal to the total mass which has crossed the mesh surface since the last output 
 divived by the time since the last output (i.e., the mass flow rate), the fourth vector 
 component indicates the particle count since the last output divived by the time
-since the last output (i.e., the number rate of particles). This vector
+since the last output (i.e., the number rate of particles). The fifth and sixth vector
+components are the deleted mass and the number of deleted particles. This vector
 can also be accessed by various "output commands"_Section_howto.html#howto_15.
 
 [Restrictions:] 
@@ -110,4 +114,4 @@ Currently, this feature does not support multi-sphere particles.
 
 [Default:] 
 
-{count} = multiple
+{count} = multiple, {inside_out}  =false, {delete_atoms} = false

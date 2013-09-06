@@ -81,6 +81,9 @@ class FixContactHistory : public Fix {
   int n_contacts();
   int n_contacts(int contact_groupbit);
 
+  void set_index_decide_noncontacting(int index)
+  { index_decide_noncontacting = index; };
+
   int get_dnum()
   { return dnum; }
 
@@ -118,6 +121,9 @@ class FixContactHistory : public Fix {
   int dnum;
   int *newtonflag;
   char **history_id;
+
+  //
+  int index_decide_noncontacting;
 };
 
 // *************************************
