@@ -46,6 +46,7 @@
 #include "fix_property_atom.h" 
 #include "sph_kernels.h" 
 #include "fix_sph.h" 
+#include "update.h"
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -82,6 +83,8 @@ void Set::command(int narg, char **arg)
   id = new char[n];
   strcpy(id,arg[1]);
   select = NULL;
+  add    = 0; 
+  until  = 1; 
 
   // loop over keyword/value pairs
   // call appropriate routine to reset attributes
@@ -375,6 +378,22 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set meso_rho for this atom style");
       set(MESO_RHO);
       iarg += 2;
+    } else if (strcmp(arg[iarg],"add") == 0){ 
+      if (iarg+1 > narg)
+        error->all(FLERR,"Illegal set command for add");
+      if(strcmp(arg[iarg+1],"yes") == 0)
+      add = 1;   
+      else if(strcmp(arg[iarg+1],"no") == 0)
+      add = 0;   
+      else error->all(FLERR,"Illegal 'add' option called");
+      iarg +=2;
+    } else if (strcmp(arg[iarg],"until") == 0){ 
+     if (iarg+1 > narg)
+        error->all(FLERR,"Illegal set command for until");
+      until = atof(arg[iarg+1]);
+      if (until <= 0.0) 
+        error->all(FLERR,"Illegal 'until' option called. Please set keyword value >0");
+      iarg +=2;
     } else if (strncmp(arg[iarg],"property/atom",13) == 0) { 
       if (iarg+1 > narg)
         error->all(FLERR,"Illegal set command for property/atom");
@@ -561,17 +580,29 @@ void Set::set(int keyword)
     else if (keyword == MESO_RHO) atom->rho[i] = dvalue;
 
     // set desired per-atom property
-    else if (keyword == PROPERTYPERATOM) {
+    else if (keyword == PROPERTYPERATOM) { 
 
         // if fix was just created, its default values have not been set,
         // so have to add a run 0 to call setup
         if(updFix->just_created)
             error->all(FLERR,"May not use the set command right after fix property/atom without a prior run. Add a 'run 0' between fix property/atom and set");
 
+          if (add == 0)
+          {
             if (updFix->data_style) for (int m = 0; m < nUpdValues; m++)
               updFix->array_atom[i][m] = updValues[m];
         else updFix->vector_atom[i]=updValues[0];
-
+           }
+          else
+          {
+              currentTimestep = update->ntimestep;
+           if (currentTimestep < until) 
+           { 
+              if (updFix->data_style) for (int m = 0; m < nUpdValues; m++)
+               updFix->array_atom[i][m] = updValues[m];
+              else updFix->vector_atom[i]=updValues[0];
+           }
+          }
     }
 
     // set shape of ellipsoidal particle

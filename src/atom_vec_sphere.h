@@ -46,6 +46,7 @@ class AtomVecSphere : public AtomVec {
   void copy(int, int, int);
   int pack_comm(int, int *, double *, int, int *);
   int pack_comm_vel(int, int *, double *, int, int *);
+  int pack_comm_vel_wedge(int, int *, double *, int, int *); 
   int pack_comm_hybrid(int, int *, double *);
   void unpack_comm(int, int, double *);
   void unpack_comm_vel(int, int, double *);
@@ -56,6 +57,7 @@ class AtomVecSphere : public AtomVec {
   int unpack_reverse_hybrid(int, int *, double *);
   int pack_border(int, int *, double *, int, int *);
   int pack_border_vel(int, int *, double *, int, int *);
+  int pack_border_vel_wedge(int, int *, double *, int, int *); 
   int pack_border_hybrid(int, int *, double *);
   void unpack_border(int, int, double *);
   void unpack_border_vel(int, int, double *);

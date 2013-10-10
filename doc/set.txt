@@ -64,6 +64,10 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
   {meso_e} value = energy of SPH particles (need units)
   {meso_cv} value = heat capacity of SPH particles (need units)
   {meso_rho} value = density of SPH particles (need units) 
+  {add} value = yes no 
+    yes = add per-atom quantities to a region or a group
+  {until} value = final timestep
+    final timestep = the final timestep value until which the per-atom quantity is to be added
   {property/atom} value = varname var_value[0] var_value[1] ....
     varname = name of the variable to be set
     var_value[0], var_value[1]... = values of the property to be set :pre
@@ -79,6 +83,7 @@ set type 3 charge 0.5
 set type 1*3 charge 0.5
 set atom 100*200 x 0.5 y 1.0
 set atom 1492 type 3 
+set region reg add yes until 1000 property/atom liqOnParticle 5e-5 
 set property/atom Temp 273.15 :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
@@ -309,6 +314,11 @@ update, i.e. only var_value[0] if the defined property is a scalar,
 and the appropriate number if the property is a vector. See 
 "fix property/atom"_fix_property.html for details on how to define 
 such a per-particle property.
+
+Keyword {add} and {until} are used to add a per-atom quantity (or property)
+in addition to the keyword {property/atom}. The {add} keyword is used to turn on 
+the addition of a quantity in a region or a group 
+until the timestep defined by the {until} keyword.
 
 [Restrictions:]
 

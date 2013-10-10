@@ -78,7 +78,7 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_type'");
             iarg++;
             hasargs = true;
-        } else
+        } else if (strcmp(this->style,"couple/cfd/force") == 0)
             error->fix_error(FLERR,this,"unknown keyword");
     }
 

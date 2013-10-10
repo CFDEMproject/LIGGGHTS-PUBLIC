@@ -35,6 +35,7 @@
 #include "math_const.h"
 #include "memory.h"
 #include "error.h"
+#include "domain_wedge.h"
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -238,7 +239,11 @@ int AtomVecSphere::pack_comm(int n, int *list, double *buf,
 int AtomVecSphere::pack_comm_vel(int n, int *list, double *buf,
                                    int pbc_flag, int *pbc)
 {
+  if(dynamic_cast<DomainWedge*>(domain))
+    return pack_comm_vel_wedge(n,list,buf,pbc_flag,pbc);
+
   int i,j,m;
+
   double dx,dy,dz,dvx,dvy,dvz;
 
   if (radvary == 0) {
@@ -280,6 +285,7 @@ int AtomVecSphere::pack_comm_vel(int n, int *list, double *buf,
           buf[m++] = omega[j][2];
         }
       } else {
+        
         dvx = pbc[0]*h_rate[0] + pbc[5]*h_rate[5] + pbc[4]*h_rate[4];
         dvy = pbc[1]*h_rate[1] + pbc[3]*h_rate[3];
         dvz = pbc[2]*h_rate[2];
@@ -349,6 +355,7 @@ int AtomVecSphere::pack_comm_vel(int n, int *list, double *buf,
           buf[m++] = omega[j][2];
         }
       } else {
+        
         dvx = pbc[0]*h_rate[0] + pbc[5]*h_rate[5] + pbc[4]*h_rate[4];
         dvy = pbc[1]*h_rate[1] + pbc[3]*h_rate[3];
         dvz = pbc[2]*h_rate[2];
@@ -445,6 +452,7 @@ void AtomVecSphere::unpack_comm_vel(int n, int first, double *buf)
       omega[i][0] = buf[m++];
       omega[i][1] = buf[m++];
       omega[i][2] = buf[m++];
+      
     }
   } else {
     m = 0;
@@ -528,6 +536,7 @@ void AtomVecSphere::unpack_reverse(int n, int *list, double *buf)
   m = 0;
   for (i = 0; i < n; i++) {
     j = list[i];
+    
     f[j][0] += buf[m++];
     f[j][1] += buf[m++];
     f[j][2] += buf[m++];
@@ -606,6 +615,9 @@ int AtomVecSphere::pack_border(int n, int *list, double *buf,
 int AtomVecSphere::pack_border_vel(int n, int *list, double *buf,
                                      int pbc_flag, int *pbc)
 {
+  if(dynamic_cast<DomainWedge*>(domain))
+    return pack_border_vel_wedge(n,list,buf,pbc_flag,pbc);
+
   int i,j,m;
   double dx,dy,dz,dvx,dvy,dvz;
 
@@ -664,6 +676,7 @@ int AtomVecSphere::pack_border_vel(int n, int *list, double *buf,
       dvz = pbc[2]*h_rate[2];
       for (i = 0; i < n; i++) {
         j = list[i];
+
         buf[m++] = x[j][0] + dx;
         buf[m++] = x[j][1] + dy;
         buf[m++] = x[j][2] + dz;
@@ -754,6 +767,7 @@ void AtomVecSphere::unpack_border_vel(int n, int first, double *buf)
     omega[i][0] = buf[m++];
     omega[i][1] = buf[m++];
     omega[i][2] = buf[m++];
+    
   }
 }
 

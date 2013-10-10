@@ -107,6 +107,7 @@ class Modify : protected Pointers {
   class Fix* find_fix_style(const char *style, int rank);
   class Fix* find_fix_style_strict(const char *style, int rank);
   int n_fixes_style(const char *style); 
+  int n_computes_style(const char *style); 
   int n_fixes_style_strict(const char *style); 
   bool i_am_first_of_style(class Fix *fix_to_check); 
   int index_first_fix_of_style(const char *style); 

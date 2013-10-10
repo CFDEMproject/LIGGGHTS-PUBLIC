@@ -32,6 +32,7 @@ class ComputeKE : public Compute {
 
  private:
   double pfactor;
+  class FixMultisphere *fix_ms; 
 };
 
 }

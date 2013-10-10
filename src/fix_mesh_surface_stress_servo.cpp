@@ -143,7 +143,7 @@ FixMeshSurfaceStressServo::FixMeshSurfaceStressServo(LAMMPS *lmp, int narg, char
           } else {
             set_point_ = -force->numeric(arg[iarg_]); // the resultant force/torque/shear acts in opposite direction --> negative value
             if (set_point_ == 0.) error->fix_error(FLERR,this,"'target_val' (desired force/torque) has to be != 0.0");
-            set_point_inv_ = 1./abs(set_point_);
+            set_point_inv_ = 1./fabs(set_point_);
             sp_style_ = CONSTANT;
           }
           iarg_++;
@@ -427,7 +427,7 @@ void FixMeshSurfaceStressServo::final_integrate()
 
         set_point_ = -input->variable->compute_equal(sp_var_);
         if (set_point_ == 0.) error->fix_error(FLERR,this,"Set point (desired force/torque/shear) has to be != 0.0");
-        set_point_inv_ = 1./abs(set_point_);
+        set_point_inv_ = 1./fabs(set_point_);
         
         modify->addstep_compute(update->ntimestep + 1);
 
@@ -449,12 +449,12 @@ void FixMeshSurfaceStressServo::final_integrate()
         // cruise mode
         test_output = ctrl_output_max_;
       } else {
-        if (abs(err_) <= e_low) {
+        if (fabs(err_) <= e_low) {
           test_output = tmp_scale*ctrl_output_min_;
-        } else if(abs(err_) >= e_high) {
+        } else if(fabs(err_) >= e_high) {
           test_output = ctrl_output_min_;
         } else { // linear interpolation
-          test_output = tmp_scale*ctrl_output_min_ + ((1-tmp_scale)*ctrl_output_min_) * (abs(err_)-e_low)/(e_high-e_low);
+          test_output = tmp_scale*ctrl_output_min_ + ((1-tmp_scale)*ctrl_output_min_) * (fabs(err_)-e_low)/(e_high-e_low);
         }
       }
 
@@ -469,7 +469,7 @@ void FixMeshSurfaceStressServo::final_integrate()
 
         set_point_ = -input->variable->compute_equal(sp_var_);
         if (set_point_ == 0.) error->fix_error(FLERR,this,"Set point (desired force/torque/shear) has to be != 0.0");
-        set_point_inv_ = 1./abs(set_point_);
+        set_point_inv_ = 1./fabs(set_point_);
         
         modify->addstep_compute(update->ntimestep + 1);
 
@@ -514,7 +514,7 @@ void FixMeshSurfaceStressServo::limit_vel()
 {
 
   double vmag, factor, maxOutput;
-  vmag = abs(*control_output_);
+  vmag = fabs(*control_output_);
 
   // saturation of the velocity
   int totNumContacts = fix_mesh_neighlist_->getTotalNumContacts();
@@ -612,7 +612,7 @@ int FixMeshSurfaceStressServo::modify_param(int narg, char **arg)
     } else {
       set_point_ = -force->numeric(arg[1]); // the resultant force/torque/shear acts in opposite direction --> negative value
       if (set_point_ == 0.) error->fix_error(FLERR,this,"'target_val' (desired force/torque) has to be != 0.0");
-      set_point_inv_ = 1./abs(set_point_);
+      set_point_inv_ = 1./fabs(set_point_);
       sp_style_ = CONSTANT;
     }
 

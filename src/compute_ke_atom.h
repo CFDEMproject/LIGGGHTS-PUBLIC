@@ -35,6 +35,7 @@ class ComputeKEAtom : public Compute {
  private:
   int nmax;
   double *ke;
+  class FixMultisphere *fix_ms; 
 };
 
 }

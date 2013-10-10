@@ -192,7 +192,7 @@ void PairGran::init_style()
 
   // error and warning checks
 
-  if(0 != neighbor->delay)
+  if(0 == comm->me && 0 != neighbor->delay)
     error->warning(FLERR,"It is heavily recommended to use 'neigh_modify delay 0' with granular pair styles");
 
   if(strcmp(update->unit_style,"metal") ==0 || strcmp(update->unit_style,"real") == 0)

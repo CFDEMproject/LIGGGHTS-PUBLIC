@@ -33,6 +33,7 @@ namespace LAMMPS_NS {
 
 #define MIN(A,B) ((A) < (B) ? (A) : (B))
 #define MAX(A,B) ((A) > (B) ? (A) : (B))
+#define UNUSED(P) (void)P
 
 class Pointers {
  public:

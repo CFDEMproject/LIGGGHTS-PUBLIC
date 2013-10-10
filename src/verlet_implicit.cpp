@@ -73,25 +73,11 @@ void VerletImplicit::run(int n)
 
     ntimestep = ++update->ntimestep;
     
-    do
-    {
-        ev_set(ntimestep);
+    // neigh list build if required
 
-        // initial time integration
+    nflag = neighbor->decide();
 
-        modify->initial_integrate(vflag);
-        
-        if (n_post_integrate) modify->post_integrate();
-
-        // regular communication vs neighbor list rebuild
-
-        nflag = neighbor->decide();
-
-        if (nflag == 0) {
-          timer->stamp();
-          comm->forward_comm();
-          timer->stamp(TIME_COMM);
-        } else {
+    if (nflag == 1) {
           
           if (n_pre_exchange) modify->pre_exchange();
           
@@ -116,7 +102,23 @@ void VerletImplicit::run(int n)
           
           neighbor->build();
           timer->stamp(TIME_NEIGHBOR);
-        }
+    }
+
+    do
+    {
+        ev_set(ntimestep);
+
+        // initial time integration
+
+        modify->initial_integrate(vflag);
+        
+        if (n_post_integrate) modify->post_integrate();
+
+        // regular communication here
+
+        timer->stamp();
+        comm->forward_comm();
+        timer->stamp(TIME_COMM);
 
         // force computations
         
@@ -155,7 +157,6 @@ void VerletImplicit::run(int n)
         if (n_post_force) modify->post_force(vflag);
         
         modify->final_integrate();
-
     }
     while(modify->iterate_implicitly());
 

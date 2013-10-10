@@ -37,10 +37,10 @@
 #include "fix_property_global.h"
 #include "fix_gravity.h"
 
-#define EPSILON 0.001
-
 using namespace LAMMPS_NS;
 using namespace FixConst;
+
+#define EPSILON 0.0001
 
 /* ---------------------------------------------------------------------- */
 
@@ -228,7 +228,7 @@ void FixMeshSurfaceStress::final_integrate()
 void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
                                 double *delta,int iTri,double *v_wall)
 {
-    double E,c[3],v_rel[3],cmag,vmag,cos_gamma,sin_gamma,sin_2gamma,tan_gamma;
+    double E,c[3],v_rel[3],cmag,v_rel_mag,cos_gamma,sin_gamma,sin_2gamma,tan_gamma;
     double contactPoint[3],surfNorm[3], tmp[3], tmp2[3];
 
     // do not include if not in fix group
@@ -265,18 +265,23 @@ void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
         vectorSubtract3D(v,v_wall,v_rel);
 
         if(vectorDot3D(c,v_rel) < 0.) return;
-        vmag = vectorMag3D(v_rel);
+        v_rel_mag = vectorMag3D(v_rel);
 
         // get surface normal
+        
         triMesh()->surfaceNorm(iTri,surfNorm);
 
-        sin_gamma = MathExtraLiggghts::abs(vectorDot3D(v_rel,surfNorm)) / (vmag);
-        
-        if(sin_gamma > 1.) sin_gamma = 1.;
-        if(sin_gamma < -1.) sin_gamma = -1.;
+        // return if no relative velocity
+        if(0.0000001 > v_rel_mag)
+            return;
 
-        cos_gamma = sqrt(1. - sin_gamma * sin_gamma);
-        if(cos_gamma > EPSILON || (sin_gamma < 3. * cos_gamma))
+        sin_gamma = MathExtraLiggghts::abs(vectorDot3D(v_rel,surfNorm)) / (v_rel_mag);
+        cos_gamma = MathExtraLiggghts::abs(vectorCrossMag3D(v_rel,surfNorm)) / (v_rel_mag);
+
+        if(cos_gamma > 1.) cos_gamma = 1.;
+        if(sin_gamma > 1.) sin_gamma = 1.;
+
+        if(cos_gamma < EPSILON || 3.*sin_gamma > cos_gamma)
         {
             E = 0.33333 * cos_gamma * cos_gamma;
             
@@ -287,7 +292,7 @@ void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
             E = sin_2gamma - 3. * sin_gamma * sin_gamma;
             
         }
-        E *= 2.*k_finnie_[atomTypeWall()-1][atom->type[ip]-1] * vmag * vectorMag3D(frc);
+        E *= 2.*k_finnie_[atomTypeWall()-1][atom->type[ip]-1] * v_rel_mag * vectorMag3D(frc);
         
         wear_step(iTri) += E / triMesh()->areaElem(iTri);
     }

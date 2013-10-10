@@ -260,6 +260,7 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
 
   vector_flag = 1;
   size_vector = 2;
+  global_freq = 1;
 
   print_stats_start_flag = 1;
 
@@ -298,11 +299,11 @@ void FixInsert::setup(int vflag)
   // calc last step of insertion
   if(ninsert_exists)
   {
-      if(ninsert < ninsert_per)
+      if(ninsert <= ninsert_per)
         final_ins_step = first_ins_step;
       else
         final_ins_step = first_ins_step +
-                static_cast<int>(static_cast<double>(ninsert)/ninsert_per *  static_cast<double>(insert_every));
+                static_cast<int>(static_cast<double>(ninsert)/ninsert_per) *  static_cast<double>(insert_every);
 
       if(final_ins_step < 0)
         error->fix_error(FLERR,this,"Particle insertion: Overflow - need too long for particle insertion. "

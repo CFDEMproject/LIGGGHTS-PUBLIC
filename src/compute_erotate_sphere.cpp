@@ -18,6 +18,8 @@
 #include "update.h"
 #include "force.h"
 #include "domain.h"
+#include "modify.h" 
+#include "fix_multisphere.h" 
 #include "group.h"
 #include "error.h"
 
@@ -39,6 +41,8 @@ ComputeERotateSphere::ComputeERotateSphere(LAMMPS *lmp, int narg, char **arg) :
 
   if (!atom->sphere_flag)
     error->all(FLERR,"Compute erotate/sphere requires atom style sphere");
+
+  fix_ms = 0; 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -46,6 +50,7 @@ ComputeERotateSphere::ComputeERotateSphere(LAMMPS *lmp, int narg, char **arg) :
 void ComputeERotateSphere::init()
 {
   pfactor = 0.5 * force->mvv2e * INERTIA;
+  fix_ms =  static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0)); 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -65,7 +70,7 @@ double ComputeERotateSphere::compute_scalar()
 
   double erotate = 0.0;
   for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit)
+    if (mask[i] & groupbit && (!fix_ms || fix_ms->belongs_to(i) < 0)) 
       erotate += (omega[i][0]*omega[i][0] + omega[i][1]*omega[i][1] +
                   omega[i][2]*omega[i][2]) * radius[i]*radius[i]*rmass[i];
 

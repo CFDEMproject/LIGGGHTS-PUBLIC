@@ -39,10 +39,15 @@ class FixCfdCouplingForceImplicit : public FixCfdCouplingForce  {
   void post_create();
   void pre_delete(bool unfixflag);
 
+  int setmask();
   virtual void init();
   void post_force(int);
+  void end_of_step();
 
  protected:
+  double deltaT_;
+  bool   useCN_;
+  double CNalpha_;  
   class FixPropertyAtom* fix_Ksl_;
   class FixPropertyAtom* fix_uf_;
 };

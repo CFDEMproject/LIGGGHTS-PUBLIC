@@ -675,7 +675,8 @@ void PairGranHookeHistory::init_granular()
   if(cohesionflag)
     cohEnergyDens1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("cohesionEnergyDensity","property/global","peratomtypepair",max_type,max_type,force->pair_style));
 
-  if(charVelflag) charVel1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("characteristicVelocity","property/global","scalar",0,0,force->pair_style));
+  if(charVelflag)
+      charVel1=static_cast<FixPropertyGlobal*>(modify->find_fix_property("characteristicVelocity","property/global","scalar",0,0,force->pair_style));
 
   //pre-calculate parameters for possible contact material combinations
   for(int i=1;i< max_type+1; i++)
@@ -739,7 +740,15 @@ void PairGranHookeHistory::init_granular()
       }
   }
 
-  if(charVelflag) charVel = charVel1->compute_scalar();
+  if(charVelflag)
+  {
+      charVel = charVel1->compute_scalar();
+      if(sanity_checks)
+      {
+            if(strcmp(update->unit_style,"si") == 0  && charVel < 1e-2)
+                 error->all(FLERR,"characteristicVelocity >= 1e-2 required for SI units");
+      }
+  }
 
   // error checks on coarsegraining
   if((rollingflag || cohesionflag) && force->cg_active())

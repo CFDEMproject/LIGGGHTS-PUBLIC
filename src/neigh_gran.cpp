@@ -387,7 +387,7 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
         rsq = delx*delx + dely*dely + delz*delz;
         radsum = radi + radius[j];
         cutsq = (radsum+skin) * (radsum+skin);
-
+        
         if (rsq <= cutsq) {
           neighptr[n] = j;
           

@@ -68,6 +68,10 @@
   <I>meso_e</I> value = energy of SPH particles (need units)
   <I>meso_cv</I> value = heat capacity of SPH particles (need units)
   <I>meso_rho</I> value = density of SPH particles (need units) 
+  <I>add</I> value = yes no 
+    yes = add per-atom quantities to a region or a group
+  <I>until</I> value = final timestep
+    final timestep = the final timestep value until which the per-atom quantity is to be added
   <I>property/atom</I> value = varname var_value<B>0</B> var_value<B>1</B> ....
     varname = name of the variable to be set
     var_value<B>0</B>, var_value<B>1</B>... = values of the property to be set 
@@ -84,6 +88,7 @@ set type 3 charge 0.5
 set type 1*3 charge 0.5
 set atom 100*200 x 0.5 y 1.0
 set atom 1492 type 3 
+set region reg add yes until 1000 property/atom liqOnParticle 5e-5 
 set property/atom Temp 273.15 
 </PRE>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>
@@ -314,6 +319,11 @@ update, i.e. only var_value<B>0</B> if the defined property is a scalar,
 and the appropriate number if the property is a vector. See 
 <A HREF = "fix_property.html">fix property/atom</A> for details on how to define 
 such a per-particle property.
+</P>
+<P>Keyword <I>add</I> and <I>until</I> are used to add a per-atom quantity (or property)
+in addition to the keyword <I>property/atom</I>. The <I>add</I> keyword is used to turn on 
+the addition of a quantity in a region or a group 
+until the timestep defined by the <I>until</I> keyword.
 </P>
 <P><B>Restrictions:</B>
 </P>

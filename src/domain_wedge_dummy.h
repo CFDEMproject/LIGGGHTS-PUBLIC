@@ -40,6 +40,20 @@ class DomainWedge : public Domain
     DomainWedge(class LAMMPS *lmp) : Domain(lmp) {};
     void set_domain(class RegWedge *rw) {}
 
+    inline int index_axis()
+    { return 0; }
+
+    inline int index_phi()
+    { return 0; }
+
+    inline void n1(double *_n1)
+    { }
+
+    inline void n2(double *_n2)
+    { }
+
+    inline void center(double *_c)
+    { }
 };
 
 }

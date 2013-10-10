@@ -22,6 +22,7 @@
 #ifndef LMP_MATH_EXTRA_LIGGGHTS_H
 #define LMP_MATH_EXTRA_LIGGGHTS_H
 
+#include "pointers.h"
 #include "math.h"
 #include "stdio.h"
 #include "string.h"
@@ -70,8 +71,8 @@ namespace MathExtraLiggghts {
   inline void vec_from_quat(const double *q, double *v);
   inline void vec_quat_rotate(double *vec, double *quat, double *result);
   inline void vec_quat_rotate(double *vec, double *quat);
-  inline void vec_quat_rotate(int *vec, double *quat) {}
-  inline void vec_quat_rotate(bool *vec, double *quat) {}
+  inline void vec_quat_rotate(int *vec, double *quat) { UNUSED(vec); UNUSED(quat); }
+  inline void vec_quat_rotate(bool *vec, double *quat) { UNUSED(vec); UNUSED(quat); }
   inline void quat_diff(double *q_new, double *q_old, double *q_diff);
   inline void angmom_from_omega(double *w,
                                   double *ex, double *ey, double *ez,
@@ -105,6 +106,7 @@ Matrix determinant
 
 double MathExtraLiggghts::mdet(const double m[3][3],LAMMPS_NS::Error *error)
 {
+    UNUSED(error);
     return ( -m[0][2]*m[1][1]*m[2][0] + m[0][1]*m[1][2]*m[2][0] + m[0][2]*m[1][0]*m[2][1] - m[0][0]*m[1][2]*m[2][1] - m[0][1]*m[1][0]*m[2][2] + m[0][0]*m[1][1]*m[2][2] );
 
 }
@@ -304,6 +306,7 @@ void MathExtraLiggghts::local_coosys_to_cartesian(double *global,double *local, 
 
 void MathExtraLiggghts::cartesian_coosys_to_local(double *local,double *global, double *ex_local, double *ey_local, double *ez_local,LAMMPS_NS::Error *error)
 {
+  UNUSED(error);
   double M[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
   double Mt[3][3] = {{0.,0.,0.},{0.,0.,0.},{0.,0.,0.}};
 
@@ -512,6 +515,7 @@ void MathExtraLiggghts::calcBaryTriCoords(double *ap, double **edgeVec, double *
 void MathExtraLiggghts::calcBaryTriCoords(double *ap, double *edgeVec0, double *edgeVec1, double *edgeVec2,
                                            double *edgeLen, double *bary)
 {
+  UNUSED(edgeVec1);
   
   double a = LAMMPS_NS::vectorDot3D(ap,edgeVec0);
   double b = LAMMPS_NS::vectorDot3D(ap,edgeVec2);

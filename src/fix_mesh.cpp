@@ -115,7 +115,6 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
     }
 
     // construct a mesh - can be surface or volume mesh
-    
     // just create object and return if reading data from restart file
     
     if(modify->have_restart_data(this)) create_mesh_restart();
@@ -304,7 +303,6 @@ void FixMesh::initialSetup()
 
 void FixMesh::pre_exchange()
 {
-    // flag parallel operations on this step
     
     pOpFlag_ = true;
 }
@@ -315,7 +313,6 @@ void FixMesh::pre_exchange()
 
 void FixMesh::pre_force(int vflag)
 {
-    
     // case re-neigh step
     if(pOpFlag_)
     {
@@ -346,6 +343,7 @@ void FixMesh::pre_force(int vflag)
 
 void FixMesh::final_integrate()
 {
+    
     mesh_->reverseComm();
 }
 

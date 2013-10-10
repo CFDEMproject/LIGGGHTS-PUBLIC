@@ -38,6 +38,8 @@
 #include "force.h"
 #include "pair.h"
 #include "domain.h"
+#include "domain_wedge.h" 
+#include "math_extra_liggghts.h" 
 #include "neighbor.h"
 #include "group.h"
 #include "modify.h"
@@ -62,6 +64,10 @@ enum{SINGLE,MULTI};
 enum{MULTIPLE};                   // same as in ProcMap
 enum{ONELEVEL,TWOLEVEL,NUMA,CUSTOM};
 enum{CART,CARTREORDER,XYZ};
+
+// *************************************
+#include "comm_I.h"
+// *************************************
 
 /* ----------------------------------------------------------------------
    setup MPI and allocate buffer space
@@ -546,6 +552,22 @@ void Comm::setup()
   nswap = 2 * (maxneed[0]+maxneed[1]+maxneed[2]);
   if (nswap > maxswap) grow_swap(nswap);
 
+  dw_ = dynamic_cast<DomainWedge*>(domain);
+  if(dw_)
+  {
+      ia = dw_->index_axis();
+      iphi = dw_->index_phi();
+      dw_->n1(nleft);
+      dw_->n2(nright);
+      dw_->center(c);
+      double cutghmax = MathExtraLiggghts::max(cutghost[0],cutghost[1],cutghost[2]);
+      pleft[0] = c[0] - nleft[0] * (atom->radius ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
+      pleft[1] = c[1] - nleft[1] * (atom->radius ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
+      pright[0] = c[0] - nright[0] * (atom->radius ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
+      pright[1] = c[1] - nright[1] * (atom->radius ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
+      
+  }
+  
   // setup parameters for each exchange:
   // sendproc = proc to send to at each swap
   // recvproc = proc to recv from at each swap
@@ -568,6 +590,14 @@ void Comm::setup()
   int iswap = 0;
   for (dim = 0; dim < 3; dim++) {
     for (ineed = 0; ineed < 2*maxneed[dim]; ineed++) {
+      
+      if(dw_ && dim != ia && dim != iphi)
+      {
+        
+        nswap--;
+        continue;
+      }
+      
       pbc_flag[iswap] = 0;
       pbc[iswap][0] = pbc[iswap][1] = pbc[iswap][2] =
         pbc[iswap][3] = pbc[iswap][4] = pbc[iswap][5] = 0;
@@ -578,7 +608,7 @@ void Comm::setup()
         if (style == SINGLE) {
           if (ineed < 2) slablo[iswap] = -BIG;
           else slablo[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
-          slabhi[iswap] = sublo[dim] + cutghost[dim];
+          slabhi[iswap] = sublo[dim] + (atom->radius ? (cutghost[dim] / 2. + neighbor->skin/2.) : cutghost[dim]); 
         } else {
           for (i = 1; i <= ntypes; i++) {
             if (ineed < 2) multilo[iswap][i] = -BIG;
@@ -599,7 +629,7 @@ void Comm::setup()
         sendproc[iswap] = procneigh[dim][1];
         recvproc[iswap] = procneigh[dim][0];
         if (style == SINGLE) {
-          slablo[iswap] = subhi[dim] - cutghost[dim];
+          slablo[iswap] = subhi[dim] - (atom->radius ? (cutghost[dim] / 2. + neighbor->skin/2.) : cutghost[dim]); 
           if (ineed < 2) slabhi[iswap] = BIG;
           else slabhi[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
         } else {
@@ -941,10 +971,17 @@ void Comm::borders()
   smax = rmax = 0;
 
   for (dim = 0; dim < 3; dim++) {
+
     nlast = 0;
     twoneed = 2*maxneed[dim];
     for (ineed = 0; ineed < twoneed; ineed++) {
 
+      if(dw_ && dim != ia && dim != iphi)
+      {
+        
+        continue;
+      }
+      
       // find atoms within slab boundaries lo/hi using <= and >=
       // check atoms between nfirst and nlast
       //   for first swaps in a dim, check owned and ghost
@@ -982,11 +1019,23 @@ void Comm::borders()
       if (sendflag) {
         if (!bordergroup || ineed >= 2) {
           if (style == SINGLE) {
-            for (i = nfirst; i < nlast; i++)
-              if (x[i][dim] >= lo && x[i][dim] <= hi) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
-                sendlist[iswap][nsend++] = i;
-              }
+            
+            if(dw_ && dim == iphi)
+            {
+                for (i = nfirst; i < nlast; i++)
+                  if (decide_wedge(i,dim,lo,hi,ineed)) {
+                    if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                    sendlist[iswap][nsend++] = i;
+                  }
+            }
+            else 
+            {
+                for (i = nfirst; i < nlast; i++)
+                  if (decide(i,dim,lo,hi,ineed)) {
+                    if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                    sendlist[iswap][nsend++] = i;
+                  }
+            }
           } else {
             for (i = nfirst; i < nlast; i++) {
               itype = type[i];
@@ -999,17 +1048,35 @@ void Comm::borders()
 
         } else {
           if (style == SINGLE) {
-            ngroup = atom->nfirst;
-            for (i = 0; i < ngroup; i++)
-              if (x[i][dim] >= lo && x[i][dim] <= hi) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
-                sendlist[iswap][nsend++] = i;
-              }
-            for (i = atom->nlocal; i < nlast; i++)
-              if (x[i][dim] >= lo && x[i][dim] <= hi) {
-                if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
-                sendlist[iswap][nsend++] = i;
-              }
+            
+            if(dw_ && dim == iphi)
+            {
+                ngroup = atom->nfirst;
+                for (i = 0; i < ngroup; i++)
+                  if (decide_wedge(i,dim,lo,hi,ineed)) {
+                    if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                    sendlist[iswap][nsend++] = i;
+                  }
+                for (i = atom->nlocal; i < nlast; i++)
+                  if (decide_wedge(i,dim,lo,hi,ineed)) {
+                    if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                    sendlist[iswap][nsend++] = i;
+                  }
+            }
+            else 
+            {
+                ngroup = atom->nfirst;
+                for (i = 0; i < ngroup; i++)
+                  if (decide(i,dim,lo,hi,ineed)) {
+                    if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                    sendlist[iswap][nsend++] = i;
+                  }
+                for (i = atom->nlocal; i < nlast; i++)
+                  if (decide(i,dim,lo,hi,ineed)) {
+                    if (nsend == maxsendlist[iswap]) grow_list(iswap,nsend);
+                    sendlist[iswap][nsend++] = i;
+                  }
+            }
           } else {
             ngroup = atom->nfirst;
             for (i = 0; i < ngroup; i++) {

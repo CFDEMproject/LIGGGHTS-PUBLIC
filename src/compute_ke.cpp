@@ -19,6 +19,8 @@
 #include "domain.h"
 #include "group.h"
 #include "error.h"
+#include "modify.h" 
+#include "fix_multisphere.h" 
 
 using namespace LAMMPS_NS;
 
@@ -31,6 +33,7 @@ ComputeKE::ComputeKE(LAMMPS *lmp, int narg, char **arg) :
 
   scalar_flag = 1;
   extscalar = 1;
+  fix_ms = NULL; 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -38,6 +41,7 @@ ComputeKE::ComputeKE(LAMMPS *lmp, int narg, char **arg) :
 void ComputeKE::init()
 {
   pfactor = 0.5 * force->mvv2e;
+  fix_ms =  static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0)); 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -57,7 +61,7 @@ double ComputeKE::compute_scalar()
 
   if (rmass) {
     for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit)
+      if (mask[i] & groupbit && (!fix_ms || fix_ms->belongs_to(i) < 0))
         ke += rmass[i] * (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
   } else {
     for (int i = 0; i < nlocal; i++)

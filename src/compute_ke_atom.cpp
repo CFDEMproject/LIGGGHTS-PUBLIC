@@ -17,6 +17,7 @@
 #include "update.h"
 #include "modify.h"
 #include "comm.h"
+#include "fix_multisphere.h" 
 #include "force.h"
 #include "memory.h"
 #include "error.h"
@@ -35,6 +36,7 @@ ComputeKEAtom::ComputeKEAtom(LAMMPS *lmp, int narg, char **arg) :
 
   nmax = 0;
   ke = NULL;
+  fix_ms = NULL; 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -53,6 +55,7 @@ void ComputeKEAtom::init()
     if (strcmp(modify->compute[i]->style,"ke/atom") == 0) count++;
   if (count > 1 && comm->me == 0)
     error->warning(FLERR,"More than one compute ke/atom");
+  fix_ms =  static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0)); 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -82,7 +85,7 @@ void ComputeKEAtom::compute_peratom()
 
   if (rmass)
     for (int i = 0; i < nlocal; i++) {
-      if (mask[i] & groupbit) {
+      if (mask[i] & groupbit && (!fix_ms || fix_ms->belongs_to(i) < 0)) { 
         ke[i] = 0.5 * mvv2e * rmass[i] *
           (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
       } else ke[i] = 0.0;

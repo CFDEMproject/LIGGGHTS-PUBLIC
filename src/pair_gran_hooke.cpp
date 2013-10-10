@@ -29,6 +29,7 @@
 #include "pair_gran_hooke.h"
 #include "atom.h"
 #include "force.h"
+#include "update.h"
 #include "neigh_list.h"
 #include "error.h"
 #include "vector_liggghts.h"
@@ -181,7 +182,6 @@ void PairGranHooke::compute_force(int eflag, int vflag,int addflag)
         if (cohesionflag) { 
             addCohesionForce(i,j,r,Fn_coh);
             ccel-=Fn_coh*rinv;
-
         }
 
         // relative velocities

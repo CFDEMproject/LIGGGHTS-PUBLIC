@@ -375,6 +375,7 @@ int FixPropertyGlobal::modify_param(int narg, char **arg)
 
     filename = new char[strlen(arg[1])+1];
     strcpy(filename,arg[1]);
+    grpname = new char[strlen(group->names[igroup])+1];
     strcpy(grpname,group->names[igroup]);
     return 2;
   }

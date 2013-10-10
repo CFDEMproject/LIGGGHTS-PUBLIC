@@ -130,6 +130,14 @@ class Comm : protected Pointers {
   virtual void allocate_multi(int);         // allocate multi arrays
   virtual void free_swap();                 // free swap arrays
   virtual void free_multi();                // free multi arrays
+
+  bool decide(int i,int dim,double lo,double hi,int ineed);
+  bool decide_wedge(int i,int dim,double lo,double hi,int ineed);
+
+  class DomainWedge *dw_;
+  int ia,iphi;
+  
+  double nleft[2],nright[2],pleft[2],pright[2],c[2];
 };
 
 }

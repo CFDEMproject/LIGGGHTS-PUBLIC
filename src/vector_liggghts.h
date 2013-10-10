@@ -48,7 +48,7 @@ inline void vectorConstruct3D(int *v,int x, int y, int z)
 inline void vectorNormalize3D(double *v)
 {
     double norm = sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
-    double invnorm = (norm == 0) ? 0. : 1./norm;
+    double invnorm = (norm == 0.) ? 0. : 1./norm;
     v[0] *= invnorm;
     v[1] *= invnorm;
     v[2] *= invnorm;
@@ -108,6 +108,13 @@ inline void vectorCopy3D(double *from,double *to)
   to[0]=from[0];
   to[1]=from[1];
   to[2]=from[2];
+}
+
+inline void vectorFlip3D(double *v)
+{
+  v[0]=-v[0];
+  v[1]=-v[1];
+  v[2]=-v[2];
 }
 
 inline void vectorCopyN(double *from,double *to,int N)
@@ -281,11 +288,26 @@ inline void vectorSubtract3D(const double *v1,const double *v2, double *result)
   result[2]=v1[2]-v2[2];
 }
 
+inline void vectorSubtract2D(const double *v1,const double *v2, double *result)
+{
+  result[0]=v1[0]-v2[0];
+  result[1]=v1[1]-v2[1];
+}
+
 inline void vectorCross3D(const double *v1,const double *v2, double *result)
 {
   result[0]=v1[1]*v2[2]-v1[2]*v2[1];
   result[1]=v1[2]*v2[0]-v1[0]*v2[2];
   result[2]=v1[0]*v2[1]-v1[1]*v2[0];
+}
+
+inline double vectorCrossMag3D(const double *v1,const double *v2)
+{
+  double res[3];
+  res[0]=v1[1]*v2[2]-v1[2]*v2[1];
+  res[1]=v1[2]*v2[0]-v1[0]*v2[2];
+  res[2]=v1[0]*v2[1]-v1[1]*v2[0];
+  return vectorMag3D(res);
 }
 
 inline void vectorZeroize3D(double *v)
@@ -398,6 +420,11 @@ inline void bufToVector4D(double *vec,double *buf,int &m)
   vec[1] = buf[m++];
   vec[2] = buf[m++];
   vec[3] = buf[m++];
+}
+
+inline void printVec2D(FILE *out, const char *name, double *vec)
+{
+    fprintf(out," vector %s: %e %e\n",name,vec[0],vec[1]);
 }
 
 inline void printVec3D(FILE *out, const char *name, double *vec)

@@ -83,7 +83,7 @@ class RegWedge : public Region
     double onedivr;
 
     // normal vectors
-    // the normal vectors point outside the wedge and are normed
+    // the normal vectors point outside the wedge and are normalized
     double normal1[2]; // normal vector to 1st plane of section (angle1)
     double normal2[2]; // normal vector to 2nd plane of section (angle2)
 

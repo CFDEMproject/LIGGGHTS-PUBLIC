@@ -399,7 +399,6 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
       {
         
         int iNode(0), jNode(0), iEdge(0), jEdge(0);
-        if(!this->shareNode(i,j,iNode,jNode)) continue;
 
         if(shareEdge(i,j,iEdge,jEdge))
           handleSharedEdge(i,iEdge,j,jEdge, areCoplanar(TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::id(j)));
@@ -442,7 +441,7 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
     int nall = this->sizeLocal()+this->sizeGhost();
     int me = this->comm->me;
 
-    // check duplicate elements, n^2 operation
+    // check duplicate elements, n^2/2 operation
     
     for(int i = 0; i < nlocal; i++)
     {
@@ -490,7 +489,8 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
         
         fprintf(this->screen,"Mesh %s: %d mesh elements have more than %d neighbors \n",
                 this->mesh_id_,this->nTooManyNeighs(),NUM_NEIGH_MAX);
-        this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. Possibly corrupt elements with too many neighbors");
+        this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. Possibly corrupt elements with too many neighbors.\n"
+                                "If you know what you're doing, you can try to change the definition of SurfaceMeshBase in tri_mesh.h and recompile");
     }
 
     if(nOverlapping() > 0)
@@ -578,7 +578,7 @@ bool SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::areCoplanar(int tag_a, int tag_b)
     double dot = vectorDot3D(surfaceNorm(a),surfaceNorm(b));
     
     // need fabs in case surface normal is other direction
-    if(fabs(dot) > curvature_) return true;
+    if(fabs(dot) >= curvature_) return true;
     else return false;
 }
 
@@ -714,23 +714,26 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::growSurface(int iSrf, double by)
 template<int NUM_NODES, int NUM_NEIGH_MAX>
 bool SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::shareEdge(int iSrf, int jSrf, int &iEdge, int &jEdge)
 {
-    int i,j;
-    if(this->shareNode(iSrf,jSrf,i,j)){
+    int iNode1,jNode1,iNode2,jNode2;
+    if(this->share2Nodes(iSrf,jSrf,iNode1,jNode1,iNode2,jNode2)){
       // following implementation of shareNode(), the only remaining option to
-      // share an edge is that the next node of iSrf is equal to the previous
+      // share an edge is that the next node of iSrf is equal to the next or previous
       // node if jSrf
-      if(i==0 && MultiNodeMesh<NUM_NODES>::nodesAreEqual(iSrf,NUM_NODES-1,jSrf,(j+1)%NUM_NODES)){
-        iEdge = NUM_NODES-1;
-        jEdge = j;
-        return true;
-      }
-      if(MultiNodeMesh<NUM_NODES>::nodesAreEqual
-            (iSrf,(i+1)%NUM_NODES,jSrf,(j-1+NUM_NODES)%NUM_NODES)){
-        iEdge = i;//(ii-1+NUM_NODES)%NUM_NODES;
-        jEdge = (j-1+NUM_NODES)%NUM_NODES;
-        return true;
-      }
+      
+      if(2 == iNode1+iNode2)
+        iEdge = 2;
+      
+      else
+        iEdge = MathExtraLiggghts::min(iNode1,iNode2);
+
+      if(2 == jNode1+jNode2)
+        jEdge = 2;
+      else
+        jEdge = MathExtraLiggghts::min(jNode1,jNode2);
+
+      return true;
     }
+    
     iEdge = -1; jEdge = -1;
     return false;
 }
@@ -741,6 +744,7 @@ template<int NUM_NODES, int NUM_NEIGH_MAX>
 void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::handleSharedEdge(int iSrf, int iEdge, int jSrf, int jEdge,
                                             bool coplanar, bool neighflag)
 {
+    
     if(neighflag)
     {
         if(nNeighs_(iSrf) == NUM_NEIGH_MAX || nNeighs_(jSrf) == NUM_NEIGH_MAX)
@@ -784,7 +788,7 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::handleSharedEdge(int iSrf, int iEdge,
             edgeActive(jSrf)[jEdge] = false;
         }
     }
-    else
+    else // coplanar
     {
         if(!coplanar) this->error->one(FLERR,"internal error");
         
@@ -828,10 +832,9 @@ int SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::handleCorner(int iSrf, int iNode,
         }
     }
 
-    // deactivate all
     if(hasTwoColinearEdges || !anyActiveEdge)
         cornerActive(iSrf)[iNode] = false;
-    // let the highest ID live
+    
     else if(TrackingMesh<NUM_NODES>::id(iSrf) == maxId)
         cornerActive(iSrf)[iNode] = true;
     else

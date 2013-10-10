@@ -476,7 +476,7 @@ void FixMassflowMesh::pre_exchange()
 void FixMassflowMesh::write_restart(FILE *fp)
 {
   int n = 0;
-  double list[4];
+  double list[6];
   list[n++] = mass_;
   list[n++] = t_count_;
   list[n++] = mass_last_;

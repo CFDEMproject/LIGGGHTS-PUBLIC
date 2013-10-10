@@ -228,19 +228,22 @@
   }
 
   /* ----------------------------------------------------------------------
-   return the lowest iNode/jNode combination that is shared
+   return if elemens share node, returns lowest iNode and corresponding jNode
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  bool MultiNodeMesh<NUM_NODES>::shareNode(int iElem, int jElem, int &iNode, int &jNode)
+  bool MultiNodeMesh<NUM_NODES>::share2Nodes(int iElem, int jElem,
+        int &iNode1, int &jNode1, int &iNode2, int &jNode2)
   {
     // broad phase
     double dist[3], radsum;
+    int nShared = 0;
     vectorSubtract3D(center_(iElem),center_(jElem),dist);
     radsum = rBound_(iElem) + rBound_(jElem);
+
     if(vectorMag3DSquared(dist) > radsum*radsum)
     {
-        iNode = -1; jNode = -1;
+        iNode1 = jNode1 = iNode2 = jNode2 = -1;
         
         return false;
     }
@@ -249,13 +252,24 @@
     for(int i=0;i<NUM_NODES;i++){
       for(int j=0;j<NUM_NODES;j++){
         if(MultiNodeMesh<NUM_NODES>::nodesAreEqual(iElem,i,jElem,j)){
-          iNode = i; jNode = j;
-          
-          return true;
+          if(0 == nShared)
+          {
+              iNode1 = i;
+              jNode1 = j;
+          }
+          else
+          {
+              iNode2 = i;
+              jNode2 = j;
+              
+              return true;
+          }
+          nShared++;
         }
       }
     }
-    iNode = -1; jNode = -1;
+
+    iNode1 = jNode1 = iNode2 = jNode2 = -1;
     
     return false;
   }

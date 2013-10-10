@@ -49,11 +49,15 @@ class Set : protected Pointers {
   class FixPropertyAtom* updFix; 
   int nUpdValues; 
   double *updValues; 
+  int add;
+  bigint until; 
+  bigint currentTimestep; 
 
   void selection(int);
   void set(int);
   void setrandom(int);
   void topology(int);
+
 };
 
 }

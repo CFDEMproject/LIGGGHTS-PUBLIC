@@ -193,6 +193,9 @@ RegWedge::RegWedge(LAMMPS *lmp, int narg, char **arg) : Region(lmp, narg, arg)
     // of pi_half are incorporated in the bounding box, in case the wedge does
     // not reside in one quadrant only.
 
+    // a ... horizontal direction from viewpoint of axis (cos part of angle)
+    // b ... vertical direction from viewpoint of axis (sin part of angle)
+
     double amin, amax;
     double bmin, bmax;
 
@@ -201,29 +204,31 @@ RegWedge::RegWedge(LAMMPS *lmp, int narg, char **arg) : Region(lmp, narg, arg)
 
     // find min and max in both directions for end- and start-angle
     amin = MIN(amin, cosang1);
-    amax = MAX(amax, cosang1);
     amin = MIN(amin, cosang2);
+    amax = MAX(amax, cosang1);
     amax = MAX(amax, cosang2);
 
     bmin = MIN(bmin, sinang1);
-    bmax = MAX(bmax, sinang1);
     bmin = MIN(bmin, sinang2);
+    bmax = MAX(bmax, sinang1);
     bmax = MAX(bmax, sinang2);
 
-    // take care of the angles inbetween (suppose angle2-angle1 == pi) then
-    // we need to think about what happens in the middle w.r.t. the bbox
+    // sin and cos functions are only monotonous within the four quadrants.
+    // if the wedge crossees quadrands, these functions might have a maximum
+    // there, which should be a limit of the bounding box.
 
-    double phi = angle1;
-    double sinphi, cosphi;
-    int n = static_cast<int>(phi/pi_half);  // get current multiple of pi_half
+    double phi, sinphi, cosphi;
+    int n = 0;
+    // could be, that angle1 is -190 degrees
+    while (static_cast<double>(n)*pi_half > angle1)
+      n--;
 
-    while (phi < angle2) {
-
-      // round phi to next multiple of pi_half
-      n += 1;
+    // since the wedge can have a maximum of 180 degrees
+    // and we start smaller then angle1 i=0 to i=2 suffices
+    for (int i = 0; i < 3; i++, n += pi_half){
       phi = static_cast<double>(n)*pi_half;
 
-      // update mins and maxes for this phi
+      if (angle1 <= phi && phi <= angle1 + dang){
       sinphi = sin(phi);
       cosphi = cos(phi);
 
@@ -231,10 +236,10 @@ RegWedge::RegWedge(LAMMPS *lmp, int narg, char **arg) : Region(lmp, narg, arg)
       amax = MAX(amax, cosphi);
       bmin = MIN(bmin, sinphi);
       bmax = MAX(bmax, sinphi);
-
+      }
     }
 
-    // adjust to incorporate radius
+    // adjust for radius
     amin *= radius;
     amax *= radius;
     bmin *= radius;

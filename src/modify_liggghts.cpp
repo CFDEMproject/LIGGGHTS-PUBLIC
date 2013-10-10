@@ -124,7 +124,7 @@ Fix* Modify::find_fix_id_style(const char *id,const char* style)
 }
 
 /* ----------------------------------------------------------------------
-   return number of fixes with requested style
+   return number of fixes/computes with requested style
 ------------------------------------------------------------------------- */
 
 int Modify::n_fixes_style(const char *style)
@@ -139,6 +139,20 @@ int Modify::n_fixes_style(const char *style)
           n_fixes++;
 
     return n_fixes;
+}
+
+int Modify::n_computes_style(const char *style)
+{
+    int n_computes,len;
+
+    n_computes = 0;
+    len = strlen(style);
+
+    for(int icompute = 0; icompute < ncompute; icompute++)
+      if(strncmp(compute[icompute]->style,style,len) == 0)
+          n_computes++;
+
+    return n_computes;
 }
 
 int Modify::n_fixes_style_strict(const char *style)

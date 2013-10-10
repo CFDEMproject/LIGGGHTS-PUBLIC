@@ -142,10 +142,10 @@ namespace LAMMPS_NS
         bool nodesAreEqual(int iSurf, int iNode, int jSurf, int jNode);
         bool nodesAreEqual(double *nodeToCheck1,double *nodeToCheck2);
 
-        // returns true if surfaces share a node
-        // called with local index
-        // iNode, jNode return indices of first shared node
-        bool shareNode(int iElem, int jElem, int &iNode, int &jNode);
+        // returns true if surfaces share 2 nodes
+        // called with local element indices
+        // returns indices of nodes with iNode1 < iNode2
+        bool share2Nodes(int iElem, int jElem, int &iNode1, int &jNode1, int &iNode2, int &jNode2);
 
         // returns number of shared nodes
         // called with local index
