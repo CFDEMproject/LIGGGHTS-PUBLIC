@@ -40,7 +40,7 @@ class DumpCustom : public Dump {
   virtual ~DumpCustom();
 
  protected:
-  int nevery;                // dump frequency to check Fix against
+  int nevery;                // dump frequency for output
   char *label;               // string for dump file header 
   int iregion;               // -1 if no region, else which region
   char *idregion;            // region ID
@@ -89,6 +89,7 @@ class DumpCustom : public Dump {
   virtual void write_header(bigint);
   int count();
   void pack(int *);
+  virtual int convert_string(int, double *);
   virtual void write_data(int, double *);
   bigint memory_usage();
 
@@ -105,10 +106,16 @@ class DumpCustom : public Dump {
   void header_item(bigint);
   void header_item_triclinic(bigint);
 
-  typedef void (DumpCustom::*FnPtrData)(int, double *);
-  FnPtrData write_choice;              // ptr to write data functions
+  typedef int (DumpCustom::*FnPtrConvert)(int, double *);
+  FnPtrConvert convert_choice;          // ptr to convert data functions
+  int convert_image(int, double *);
+  int convert_noimage(int, double *);
+
+  typedef void (DumpCustom::*FnPtrWrite)(int, double *);
+  FnPtrWrite write_choice;             // ptr to write data functions
   void write_binary(int, double *);
-  void write_text(int, double *);
+  void write_string(int, double *);
+  void write_lines(int, double *);
 
   // customize by adding a method prototype
 
@@ -196,6 +203,11 @@ output to dump file.
 E: Invalid attribute in dump custom command
 
 Self-explantory.
+
+E: Dump_modify format string is too short
+
+There are more fields to be dumped in a line of output than
+your format string specifies.
 
 E: Could not find dump custom compute ID
 

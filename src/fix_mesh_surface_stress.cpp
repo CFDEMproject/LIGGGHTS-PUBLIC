@@ -83,9 +83,9 @@ FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
                              "Please note that values for 'reference_point' refer to the scaled, moved, or rotated configuration");
           iarg_++;
           double _p_ref[3];
-          _p_ref[0] = force->numeric(arg[iarg_++]);
-          _p_ref[1] = force->numeric(arg[iarg_++]);
-          _p_ref[2] = force->numeric(arg[iarg_++]);
+          _p_ref[0] = force->numeric(FLERR,arg[iarg_++]);
+          _p_ref[1] = force->numeric(FLERR,arg[iarg_++]);
+          _p_ref[2] = force->numeric(FLERR,arg[iarg_++]);
           mesh()->prop().setGlobalProperty<VectorContainer<double,3> >("p_ref",_p_ref);
           hasargs = true;
       } else if(strcmp(arg[iarg_],"stress") == 0) {

@@ -77,6 +77,8 @@ class Compute : protected Pointers {
   int comm_forward;   // size of forward communication (0 if none)
   int comm_reverse;   // size of reverse communication (0 if none)
 
+  unsigned int datamask;
+  unsigned int datamask_ext;
   int cudable;        // 1 if compute is CUDA-enabled
 
   Compute(class LAMMPS *, int, char **);
@@ -88,6 +90,7 @@ class Compute : protected Pointers {
   virtual void pre_delete(bool) {} 
   virtual void init() = 0;
   virtual void init_list(int, class NeighList *) {}
+  virtual void setup() {}
   virtual double compute_scalar() {return 0.0;}
   virtual void compute_vector() {}
   virtual void compute_array() {}
@@ -112,6 +115,8 @@ class Compute : protected Pointers {
   void clearstep();
 
   virtual double memory_usage() {return 0.0;}
+  virtual int unsigned data_mask() {return datamask;}
+  virtual int unsigned data_mask_ext() {return datamask_ext;}
 
  protected:
   int extra_dof;               // extra DOF for temperature computes

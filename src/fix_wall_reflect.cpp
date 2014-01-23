@@ -23,12 +23,13 @@
 #include "input.h"
 #include "variable.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
-enum{XLO,XHI,YLO,YHI,ZLO,ZHI};
-enum{EDGE,CONSTANT,VARIABLE};
+enum{XLO=0,XHI=1,YLO=2,YHI=3,ZLO=4,ZHI=5};
+enum{NONE=0,EDGE,CONSTANT,VARIABLE};
 
 /* ---------------------------------------------------------------------- */
 
@@ -75,7 +76,7 @@ FixWallReflect::FixWallReflect(LAMMPS *lmp, int narg, char **arg) :
         strcpy(varstr[nwall],&arg[iarg+1][2]);
       } else {
         wallstyle[nwall] = CONSTANT;
-        coord0[nwall] = atof(arg[iarg+1]);
+        coord0[nwall] = force->numeric(FLERR,arg[iarg+1]);
       }
 
       nwall++;
@@ -115,9 +116,6 @@ FixWallReflect::FixWallReflect(LAMMPS *lmp, int narg, char **arg) :
     if (wallstyle[m] != EDGE) flag = 1;
 
   if (flag) {
-    if (scaleflag && domain->lattice == NULL)
-      error->all(FLERR,"Use of fix wall with undefined lattice");
-
     if (scaleflag) {
       xscale = domain->lattice->xlattice;
       yscale = domain->lattice->ylattice;
@@ -133,11 +131,11 @@ FixWallReflect::FixWallReflect(LAMMPS *lmp, int narg, char **arg) :
     }
   }
 
-  // set time_depend and varflag if any wall positions are variable
+  // set varflag if any wall positions are variable
 
   varflag = 0;
   for (int m = 0; m < nwall; m++)
-    if (wallstyle[m] == VARIABLE) time_depend = varflag = 1;
+    if (wallstyle[m] == VARIABLE) varflag = 1;
 }
 
 /* ---------------------------------------------------------------------- */

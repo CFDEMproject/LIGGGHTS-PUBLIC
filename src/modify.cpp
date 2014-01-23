@@ -40,6 +40,7 @@
 #include "domain.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 #include <map>
 #include <string>
 
@@ -49,6 +50,9 @@ using namespace FixConst;
 #define DELTA 4
 
 #define BIG 1.0e20
+#define NEXCEPT 4       // change when add to exceptions in add_fix()
+
+Fix * create_gran_wall_fix(LAMMPS* lmp, int nargs, char** arg);
 
 /* ---------------------------------------------------------------------- */
 
@@ -63,6 +67,7 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
   n_initial_integrate_respa = n_post_integrate_respa = 0;
   n_pre_force_respa = n_post_force_respa = n_final_integrate_respa = 0;
   n_min_pre_exchange = n_min_pre_force = n_min_post_force = n_min_energy = 0;
+  n_min_pre_neighbor = 0;
 
   fix = NULL;
   fmask = NULL;
@@ -75,8 +80,9 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
   list_initial_integrate_respa = list_post_integrate_respa = NULL;
   list_pre_force_respa = list_post_force_respa = NULL;
   list_final_integrate_respa = NULL;
-  list_min_pre_exchange = list_min_pre_force =
-  list_min_post_force = list_min_energy = NULL;
+  list_min_pre_exchange = list_min_pre_neighbor = NULL;
+  list_min_pre_force = list_min_post_force = NULL;
+  list_min_energy = NULL;
 
   end_of_step_every = NULL;
 
@@ -88,10 +94,33 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
   id_restart_peratom = style_restart_peratom = NULL;
   index_restart_peratom = NULL;
 
-  allow_early_fix = 0;
-
   ncompute = maxcompute = 0;
   compute = NULL;
+
+  timing = 0;
+
+  // fill map with fixes listed in style_fix.h
+
+  fix_map = new std::map<std::string,FixCreator>();
+
+#define FIX_CLASS
+#define FixStyle(key,Class) \
+  (*fix_map)[#key] = &fix_creator<Class>;
+#include "style_fix.h"
+#undef FixStyle
+#undef FIX_CLASS
+  (*fix_map)["wall/gran"] = &create_gran_wall_fix;
+
+  // fill map with computes listed in style_compute.h
+
+  compute_map = new std::map<std::string,ComputeCreator>();
+
+#define COMPUTE_CLASS
+#define ComputeStyle(key,Class) \
+  (*compute_map)[#key] = &compute_creator<Class>;
+#include "style_compute.h"
+#undef ComputeStyle
+#undef COMPUTE_CLASS
 }
 
 /* ---------------------------------------------------------------------- */
@@ -126,6 +155,7 @@ Modify::~Modify()
   delete [] list_post_force_respa;
   delete [] list_final_integrate_respa;
   delete [] list_min_pre_exchange;
+  delete [] list_min_pre_neighbor;
   delete [] list_min_pre_force;
   delete [] list_min_post_force;
   delete [] list_min_energy;
@@ -134,6 +164,8 @@ Modify::~Modify()
   delete [] list_timeflag;
 
   restart_deallocate();
+  delete compute_map;
+  delete fix_map;
 }
 
 /* ----------------------------------------------------------------------
@@ -178,9 +210,10 @@ void Modify::init()
   list_init(MIN_ENERGY,n_min_energy,list_min_energy);
 
   // init each fix
-  // needs to come before compute init
-  // this is b/c some computes call fix->dof()
-  // FixRigid::dof() depends on its own init having been called
+  // not sure if now needs to come before compute init
+  // used to b/c temperature computes called fix->dof() in their init,
+  // and fix rigid required its own init before its dof() could be called,
+  // but computes now do their DOF in setup()
 
   for (i = 0; i < nfix; i++) fix[i]->init();
 
@@ -236,11 +269,13 @@ void Modify::init()
   int checkall;
   MPI_Allreduce(&check,&checkall,1,MPI_INT,MPI_SUM,world);
   if (comm->me == 0 && checkall)
-    error->warning(FLERR,"One or more atoms are time integrated more than once");
+    error->warning(FLERR,
+                   "One or more atoms are time integrated more than once");
 }
 
 /* ----------------------------------------------------------------------
-   setup for run, calls setup() of all fixes
+   setup for run, calls setup() of all fixes and computes
+   called from Verlet, RESPA, Min
 ------------------------------------------------------------------------- */
 
 void Modify::setup(int vflag)
@@ -261,44 +296,55 @@ void Modify::setup(int vflag)
      fix[i]->recent_restart = 0;
   }
 
+  // compute setup needs to come before fix setup
+  // b/c NH fixes need use DOF of temperature computes
+
+  for (int i = 0; i < ncompute; i++) compute[i]->setup();
+
   if (update->whichflag == 1)
-    for (int i = 0; i < nfix; i++) fix[i]->setup(vflag);
+    call_method_on_fixes(&Fix::setup, vflag);
   else if (update->whichflag == 2)
-    for (int i = 0; i < nfix; i++) fix[i]->min_setup(vflag);
+    call_method_on_fixes(&Fix::min_setup, vflag);
 }
 
 /* ----------------------------------------------------------------------
    setup pre_exchange call, only for fixes that define pre_exchange
+   called from Verlet, RESPA, Min, and WriteRestart with whichflag = 0
 ------------------------------------------------------------------------- */
 
 void Modify::setup_pre_exchange()
 {
-  for (int i = 0; i < n_pre_exchange; i++)
-    fix[list_pre_exchange[i]]->setup_pre_exchange();
+  if (update->whichflag <= 1)
+    call_method_on_fixes(&Fix::setup_pre_exchange, list_pre_exchange, n_pre_exchange);
+  else if (update->whichflag == 2)
+    call_method_on_fixes(&Fix::min_setup_pre_exchange, list_min_pre_exchange, n_min_pre_exchange);
 }
 
 /* ----------------------------------------------------------------------
    setup pre_neighbor call, only for fixes that define pre_neighbor
+   called from Verlet, RESPA
 ------------------------------------------------------------------------- */
 
 void Modify::setup_pre_neighbor()
 {
-  for (int i = 0; i < n_pre_neighbor; i++)
-    fix[list_pre_neighbor[i]]->setup_pre_neighbor();
+  if (update->whichflag == 1)
+    call_method_on_fixes(&Fix::setup_pre_neighbor, list_pre_neighbor, n_pre_neighbor);
+  else if (update->whichflag == 2)
+    call_method_on_fixes(&Fix::min_setup_pre_neighbor, list_min_pre_neighbor, n_min_pre_neighbor);
 }
 
 /* ----------------------------------------------------------------------
    setup pre_force call, only for fixes that define pre_force
+   called from Verlet, RESPA, Min
 ------------------------------------------------------------------------- */
 
 void Modify::setup_pre_force(int vflag)
 {
-  if (update->whichflag == 1)
-    for (int i = 0; i < n_pre_force; i++)
-      fix[list_pre_force[i]]->setup_pre_force(vflag);
-  else if (update->whichflag == 2)
-    for (int i = 0; i < n_min_pre_force; i++)
-      fix[list_min_pre_force[i]]->min_setup_pre_force(vflag);
+  if (update->whichflag == 1) {
+    call_method_on_fixes(&Fix::setup_pre_force, vflag, list_pre_force, n_pre_force);
+  } else if (update->whichflag == 2) {
+    call_method_on_fixes(&Fix::min_setup_pre_force, vflag, list_min_pre_force, n_min_pre_force);
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -307,11 +353,8 @@ void Modify::setup_pre_force(int vflag)
 
 void Modify::initial_integrate(int vflag)
 {
-  for (int i = 0; i < n_initial_integrate; i++)
-  {
-    
-    fix[list_initial_integrate[i]]->initial_integrate(vflag);
-  }
+  
+  call_method_on_fixes(&Fix::initial_integrate, vflag, list_initial_integrate, n_initial_integrate);
 }
 
 /* ----------------------------------------------------------------------
@@ -320,8 +363,7 @@ void Modify::initial_integrate(int vflag)
 
 void Modify::post_integrate()
 {
-  for (int i = 0; i < n_post_integrate; i++)
-    fix[list_post_integrate[i]]->post_integrate();
+  call_method_on_fixes(&Fix::post_integrate, list_post_integrate, n_post_integrate);
 }
 
 /* ----------------------------------------------------------------------
@@ -330,11 +372,8 @@ void Modify::post_integrate()
 
 void Modify::pre_exchange()
 {
-  for (int i = 0; i < n_pre_exchange; i++)
-  {
-    
-    fix[list_pre_exchange[i]]->pre_exchange();
-  }
+  
+  call_method_on_fixes(&Fix::pre_exchange, list_pre_exchange, n_pre_exchange);
 }
 
 /* ----------------------------------------------------------------------
@@ -343,11 +382,8 @@ void Modify::pre_exchange()
 
 void Modify::pre_neighbor()
 {
-  for (int i = 0; i < n_pre_neighbor; i++)
-  {
-    
-    fix[list_pre_neighbor[i]]->pre_neighbor();
-  }
+  
+  call_method_on_fixes(&Fix::pre_neighbor, list_pre_neighbor, n_pre_neighbor);
 }
 
 /* ----------------------------------------------------------------------
@@ -356,11 +392,8 @@ void Modify::pre_neighbor()
 
 void Modify::pre_force(int vflag)
 {
-  for (int i = 0; i < n_pre_force; i++)
-  {
-    
-    fix[list_pre_force[i]]->pre_force(vflag);
-  }
+  
+  call_method_on_fixes(&Fix::pre_force, vflag, list_pre_force, n_pre_force);
 }
 
 /* ----------------------------------------------------------------------
@@ -369,15 +402,12 @@ void Modify::pre_force(int vflag)
 
 void Modify::post_force(int vflag)
 {
-  for (int i = 0; i < n_post_force; i++)
-  {
-    
-    fix[list_post_force[i]]->post_force(vflag);
-  }
+  
+  call_method_on_fixes(&Fix::post_force, vflag, list_post_force, n_post_force);
 }
 
 /* ----------------------------------------------------------------------
-   2nd half of integrate call, only for relevant fixes
+   check convergence, only for relevant implicit integration
 ------------------------------------------------------------------------- */
 
 bool Modify::iterate_implicitly()
@@ -390,13 +420,12 @@ bool Modify::iterate_implicitly()
 }
 
 /* ----------------------------------------------------------------------
-   check convergence, only for relevant implicit integration
+   2nd half of integrate call, only for relevant fixes
 ------------------------------------------------------------------------- */
 
 void Modify::final_integrate()
 {
-  for (int i = 0; i < n_final_integrate; i++)
-    fix[list_final_integrate[i]]->final_integrate();
+  call_method_on_fixes(&Fix::final_integrate, list_final_integrate, n_final_integrate);
 }
 
 /* ----------------------------------------------------------------------
@@ -406,9 +435,24 @@ void Modify::final_integrate()
 
 void Modify::end_of_step()
 {
-  for (int i = 0; i < n_end_of_step; i++)
-    if (update->ntimestep % end_of_step_every[i] == 0)
-      fix[list_end_of_step[i]]->end_of_step();
+  if(timing) {
+    for (int i = 0; i < n_end_of_step; i++) {
+      if (update->ntimestep % end_of_step_every[i] == 0) {
+        const int ifix = list_end_of_step[i];
+        fix[ifix]->begin_time_recording();
+        fix[ifix]->end_of_step();
+        fix[ifix]->end_time_recording();
+      }
+    }
+  }
+  else
+  {
+    for (int i = 0; i < n_end_of_step; i++) {
+      if (update->ntimestep % end_of_step_every[i] == 0) {
+        fix[list_end_of_step[i]]->end_of_step();
+      }
+    }
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -420,8 +464,20 @@ void Modify::end_of_step()
 double Modify::thermo_energy()
 {
   double energy = 0.0;
-  for (int i = 0; i < n_thermo_energy; i++)
-    energy += fix[list_thermo_energy[i]]->compute_scalar();
+  if(timing) {
+    for (int i = 0; i < n_thermo_energy; i++) {
+      const int ifix = list_thermo_energy[i];
+      fix[ifix]->begin_time_recording();
+      energy += fix[ifix]->compute_scalar();
+      fix[ifix]->end_time_recording();
+    }
+  }
+  else
+  {
+    for (int i = 0; i < n_thermo_energy; i++) {
+      energy += fix[list_thermo_energy[i]]->compute_scalar();
+    }
+  }
   return energy;
 }
 
@@ -431,7 +487,7 @@ double Modify::thermo_energy()
 
 void Modify::post_run()
 {
-  for (int i = 0; i < nfix; i++) fix[i]->post_run();
+  call_method_on_fixes(&Fix::post_run);
 }
 
 /* ----------------------------------------------------------------------
@@ -440,8 +496,8 @@ void Modify::post_run()
 
 void Modify::setup_pre_force_respa(int vflag, int ilevel)
 {
-  for (int i = 0; i < n_pre_force; i++)
-    fix[list_pre_force[i]]->setup_pre_force_respa(vflag,ilevel);
+  call_respa_method_on_fixes(&Fix::setup_pre_force_respa, vflag, ilevel,
+      list_pre_force_respa, n_pre_force_respa);
 }
 
 /* ----------------------------------------------------------------------
@@ -450,9 +506,8 @@ void Modify::setup_pre_force_respa(int vflag, int ilevel)
 
 void Modify::initial_integrate_respa(int vflag, int ilevel, int iloop)
 {
-  for (int i = 0; i < n_initial_integrate_respa; i++)
-    fix[list_initial_integrate_respa[i]]->
-      initial_integrate_respa(vflag,ilevel,iloop);
+  call_respa_method_on_fixes(&Fix::initial_integrate_respa, vflag, ilevel, iloop,
+      list_initial_integrate_respa, n_initial_integrate_respa);
 }
 
 /* ----------------------------------------------------------------------
@@ -461,8 +516,8 @@ void Modify::initial_integrate_respa(int vflag, int ilevel, int iloop)
 
 void Modify::post_integrate_respa(int ilevel, int iloop)
 {
-  for (int i = 0; i < n_post_integrate_respa; i++)
-    fix[list_post_integrate_respa[i]]->post_integrate_respa(ilevel,iloop);
+  call_respa_method_on_fixes(&Fix::post_integrate_respa, ilevel, iloop,
+      list_post_integrate_respa, n_post_integrate_respa);
 }
 
 /* ----------------------------------------------------------------------
@@ -471,8 +526,8 @@ void Modify::post_integrate_respa(int ilevel, int iloop)
 
 void Modify::pre_force_respa(int vflag, int ilevel, int iloop)
 {
-  for (int i = 0; i < n_pre_force_respa; i++)
-    fix[list_pre_force_respa[i]]->pre_force_respa(vflag,ilevel,iloop);
+  call_respa_method_on_fixes(&Fix::pre_force_respa, vflag, ilevel, iloop,
+      list_pre_force_respa, n_pre_force_respa);
 }
 
 /* ----------------------------------------------------------------------
@@ -481,8 +536,8 @@ void Modify::pre_force_respa(int vflag, int ilevel, int iloop)
 
 void Modify::post_force_respa(int vflag, int ilevel, int iloop)
 {
-  for (int i = 0; i < n_post_force_respa; i++)
-    fix[list_post_force_respa[i]]->post_force_respa(vflag,ilevel,iloop);
+  call_respa_method_on_fixes(&Fix::post_force_respa, vflag, ilevel, iloop,
+      list_post_force_respa, n_post_force_respa);
 }
 
 /* ----------------------------------------------------------------------
@@ -491,8 +546,8 @@ void Modify::post_force_respa(int vflag, int ilevel, int iloop)
 
 void Modify::final_integrate_respa(int ilevel, int iloop)
 {
-  for (int i = 0; i < n_final_integrate_respa; i++)
-    fix[list_final_integrate_respa[i]]->final_integrate_respa(ilevel,iloop);
+  call_respa_method_on_fixes(&Fix::final_integrate_respa, ilevel, iloop,
+      list_final_integrate_respa, n_final_integrate_respa);
 }
 
 /* ----------------------------------------------------------------------
@@ -501,8 +556,17 @@ void Modify::final_integrate_respa(int ilevel, int iloop)
 
 void Modify::min_pre_exchange()
 {
-  for (int i = 0; i < n_min_pre_exchange; i++)
-    fix[list_min_pre_exchange[i]]->min_pre_exchange();
+  call_method_on_fixes(&Fix::min_pre_exchange, list_min_pre_exchange, n_min_pre_exchange);
+}
+
+/* ----------------------------------------------------------------------
+   minimizer pre-neighbor call, only for relevant fixes
+------------------------------------------------------------------------- */
+
+void Modify::min_pre_neighbor()
+{
+  for (int i = 0; i < n_min_pre_neighbor; i++)
+    fix[list_min_pre_neighbor[i]]->min_pre_neighbor();
 }
 
 /* ----------------------------------------------------------------------
@@ -511,8 +575,7 @@ void Modify::min_pre_exchange()
 
 void Modify::min_pre_force(int vflag)
 {
-  for (int i = 0; i < n_min_pre_force; i++)
-    fix[list_min_pre_force[i]]->min_pre_force(vflag);
+  call_method_on_fixes(&Fix::min_pre_force, vflag, list_min_pre_force, n_min_pre_force);
 }
 
 /* ----------------------------------------------------------------------
@@ -521,8 +584,7 @@ void Modify::min_pre_force(int vflag)
 
 void Modify::min_post_force(int vflag)
 {
-  for (int i = 0; i < n_min_post_force; i++)
-    fix[list_min_post_force[i]]->min_post_force(vflag);
+  call_method_on_fixes(&Fix::min_post_force, vflag, list_min_post_force, n_min_post_force);
 }
 
 /* ----------------------------------------------------------------------
@@ -550,8 +612,7 @@ double Modify::min_energy(double *fextra)
 
 void Modify::min_store()
 {
-  for (int i = 0; i < n_min_energy; i++)
-    fix[list_min_energy[i]]->min_store();
+  call_method_on_fixes(&Fix::min_store, list_min_energy, n_min_energy);
 }
 
 /* ----------------------------------------------------------------------
@@ -560,20 +621,17 @@ void Modify::min_store()
 
 void Modify::min_clearstore()
 {
-  for (int i = 0; i < n_min_energy; i++)
-    fix[list_min_energy[i]]->min_clearstore();
+  call_method_on_fixes(&Fix::min_clearstore, list_min_energy, n_min_energy);
 }
 
 void Modify::min_pushstore()
 {
-  for (int i = 0; i < n_min_energy; i++)
-    fix[list_min_energy[i]]->min_pushstore();
+  call_method_on_fixes(&Fix::min_pushstore, list_min_energy, n_min_energy);
 }
 
 void Modify::min_popstore()
 {
-  for (int i = 0; i < n_min_energy; i++)
-    fix[list_min_energy[i]]->min_popstore();
+  call_method_on_fixes(&Fix::min_popstore, list_min_energy, n_min_energy);
 }
 
 /* ----------------------------------------------------------------------
@@ -641,15 +699,32 @@ int Modify::min_reset_ref()
 /* ----------------------------------------------------------------------
    add a new fix or replace one with same ID
 ------------------------------------------------------------------------- */
-template<typename T> Fix * create_fix_instance(LAMMPS* lmp, int nargs, char** arg) {
-	return new T(lmp, nargs, arg);
+
+Fix * create_gran_wall_fix(LAMMPS* lmp, int nargs, char** arg) {
+  return lmp->force->new_granular_wall_fix(nargs, arg);
 }
 
 void Modify::add_fix(int narg, char **arg, char *suffix)
 {
-  if (domain->box_exist == 0 && allow_early_fix == 0)
-    error->all(FLERR,"Fix command before simulation box is defined");
+
   if (narg < 3) error->all(FLERR,"Illegal fix command");
+
+  // cannot define fix before box exists unless style is in exception list
+  // don't like this way of checking for exceptions by adding fixes to list,
+  //   but can't think of better way
+  // too late if instantiate fix, then check flag set in fix constructor,
+  //   since some fixes access domain settings in their constructor
+  // change NEXCEPT above when add new fix to this list
+
+  const char *exceptions[NEXCEPT] = {"GPU","OMP","property/atom","cmap"};
+
+  if (domain->box_exist == 0) {
+    int m;
+    for (m = 0; m < NEXCEPT; m++)
+      if (strcmp(arg[2],exceptions[m]) == 0) break;
+    if (m == NEXCEPT)
+      error->all(FLERR,"Fix command before simulation box is defined");
+  }
 
   // check group ID
 
@@ -692,37 +767,31 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
     }
   }
 
-  // create the Fix, first with suffix appended
+  // create the Fix
+  // try first with suffix appended
 
-  int success = 0;
-
-  std::map<std::string, Fix*(*)(LAMMPS*,int,char**)> fix_creators;
-
-#define FIX_CLASS
-#define FixStyle(key,Class) \
-  fix_creators[#key] = &create_fix_instance<Class>;
-#include "style_fix.h"
-#undef FixStyle
-#undef FIX_CLASS
+  fix[ifix] = NULL;
 
   if (suffix && lmp->suffix_enable) {
     char estyle[256];
     sprintf(estyle,"%s/%s",arg[2],suffix);
 
-    success = 0;
-
-    if(fix_creators.find(estyle) != fix_creators.end()) {
-      fix[ifix] = fix_creators[estyle](lmp,narg,arg);
-      success = 1;
+    if (fix_map->find(estyle) != fix_map->end()) {
+      FixCreator fix_creator = (*fix_map)[estyle];
+      fix[ifix] = fix_creator(lmp,narg,arg);
     }
   }
 
-  if (!success) {
-    if(fix_creators.find(arg[2]) != fix_creators.end()) {
-      fix[ifix] = fix_creators[arg[2]](lmp,narg,arg);
-    }
-    else {fprintf(screen,"Adding fix %s\n",arg[2]);error->all(FLERR,"Invalid fix style");}
+  if (fix[ifix] == NULL && fix_map->find(arg[2]) != fix_map->end()) {
+    FixCreator fix_creator = (*fix_map)[arg[2]];
+    fix[ifix] = fix_creator(lmp,narg,arg);
   }
+
+  if (fix[ifix] == NULL){ 
+    char errmsg[30+strlen(arg[2])];
+    sprintf(errmsg,"Invalid fix style: \" %s \"",arg[2]);
+    error->all(FLERR,errmsg);
+  } 
 
   // set fix mask values and increment nfix (if new)
 
@@ -758,7 +827,8 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
         strcmp(style_restart_peratom[i],fix[ifix]->style) == 0) {
       for (int j = 0; j < atom->nlocal; j++)
         fix[ifix]->unpack_restart(j,index_restart_peratom[i]);
-        fix[ifix]->recent_restart = 1; 
+      fix[ifix]->recent_restart = 1; 
+      fix[ifix]->restart_reset = 1;
       if (comm->me == 0) {
         char *str = (char *) ("Resetting per-atom state of Fix %s Style %s "
                      "from restart file info\n");
@@ -769,6 +839,16 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
 
   fix[ifix]->post_create(); 
 
+}
+
+/* ----------------------------------------------------------------------
+   one instance per fix in style_fix.h
+------------------------------------------------------------------------- */
+
+template <typename T>
+Fix *Modify::fix_creator(LAMMPS *lmp, int narg, char **arg)
+{
+  return new T(lmp,narg,arg);
 }
 
 /* ----------------------------------------------------------------------
@@ -847,45 +927,41 @@ void Modify::add_compute(int narg, char **arg, char *suffix)
       memory->srealloc(compute,maxcompute*sizeof(Compute *),"modify:compute");
   }
 
-  // create the Compute, first with suffix appended
+  // create the Compute
+  // try first with suffix appended
 
-  int success = 0;
+  compute[ncompute] = NULL;
 
   if (suffix && lmp->suffix_enable) {
     char estyle[256];
     sprintf(estyle,"%s/%s",arg[2],suffix);
-    success = 1;
-
-    if (0) return;
-
-#define COMPUTE_CLASS
-#define ComputeStyle(key,Class) \
-    else if (strcmp(estyle,#key) == 0) \
-      compute[ncompute] = new Class(lmp,narg,arg);
-#include "style_compute.h"
-#undef ComputeStyle
-#undef COMPUTE_CLASS
-
-    else success = 0;
+    if (compute_map->find(estyle) != compute_map->end()) {
+      ComputeCreator compute_creator = (*compute_map)[estyle];
+      compute[ncompute] = compute_creator(lmp,narg,arg);
+    }
   }
 
-  if (!success) {
-    if (0) return;
-
-#define COMPUTE_CLASS
-#define ComputeStyle(key,Class) \
-    else if (strcmp(arg[2],#key) == 0) \
-      compute[ncompute] = new Class(lmp,narg,arg);
-#include "style_compute.h"
-#undef ComputeStyle
-#undef COMPUTE_CLASS
-
-    else error->all(FLERR,"Invalid compute style");
+  if (compute[ncompute] == NULL &&
+      compute_map->find(arg[2]) != compute_map->end()) {
+    ComputeCreator compute_creator = (*compute_map)[arg[2]];
+    compute[ncompute] = compute_creator(lmp,narg,arg);
   }
+
+  if (compute[ncompute] == NULL) error->all(FLERR,"Invalid compute style");
 
   ncompute++;
 
   compute[ncompute-1]->post_create(); 
+}
+
+/* ----------------------------------------------------------------------
+   one instance per compute in style_compute.h
+------------------------------------------------------------------------- */
+
+template <typename T>
+Compute *Modify::compute_creator(LAMMPS *lmp, int narg, char **arg)
+{
+  return new T(lmp,narg,arg);
 }
 
 /* ----------------------------------------------------------------------
@@ -901,7 +977,8 @@ void Modify::modify_compute(int narg, char **arg)
   int icompute;
   for (icompute = 0; icompute < ncompute; icompute++)
     if (strcmp(arg[0],compute[icompute]->id) == 0) break;
-  if (icompute == ncompute) error->all(FLERR,"Could not find compute_modify ID");
+  if (icompute == ncompute)
+    error->all(FLERR,"Could not find compute_modify ID");
 
   compute[icompute]->modify_params(narg-1,&arg[1]);
 }
@@ -1016,6 +1093,7 @@ void Modify::write_restart(FILE *fp)
 
   for (int i = 0; i < nfix; i++)
     if (fix[i]->restart_peratom) {
+      int maxsize_restart = fix[i]->maxsize_restart();
       if (me == 0) {
         n = strlen(fix[i]->id) + 1;
         fwrite(&n,sizeof(int),1,fp);
@@ -1023,8 +1101,7 @@ void Modify::write_restart(FILE *fp)
         n = strlen(fix[i]->style) + 1;
         fwrite(&n,sizeof(int),1,fp);
         fwrite(fix[i]->style,sizeof(char),n,fp);
-        n = fix[i]->maxsize_restart();
-        fwrite(&n,sizeof(int),1,fp);
+        fwrite(&maxsize_restart,sizeof(int),1,fp);
       }
     }
 }
@@ -1237,4 +1314,137 @@ bigint Modify::memory_usage()
   for (int i = 0; i < ncompute; i++)
     bytes += static_cast<bigint> (compute[i]->memory_usage());
   return bytes;
+}
+
+/* ======================================================================
+   helper functions by Richard Berger (JKU)
+========================================================================= */
+
+/* ----------------------------------------------------------------------
+   calls a member method on all fixes
+------------------------------------------------------------------------- */
+
+void Modify::call_method_on_fixes(FixMethod method) {
+  if(timing) {
+    for (int i = 0; i < nfix; i++) {
+      fix[i]->begin_time_recording();
+      (fix[i]->*method)();
+      fix[i]->end_time_recording();
+    }
+  }
+  else
+  {
+    for (int i = 0; i < nfix; i++) {
+      (fix[i]->*method)();
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------
+   calls a member method on all fixes in the specified list
+------------------------------------------------------------------------- */
+
+void Modify::call_method_on_fixes(FixMethod method, int *& ilist, int & inum) {
+  if(timing) {
+    for (int i = 0; i < inum; i++) {
+      const int ifix = ilist[i];
+      fix[ifix]->begin_time_recording();
+      (fix[ifix]->*method)();
+      fix[ifix]->end_time_recording();
+    }
+  }
+  else
+  {
+    for (int i = 0; i < inum; i++) {
+      (fix[ilist[i]]->*method)();
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------
+   calls a member method with vflag parameter on all fixes
+------------------------------------------------------------------------- */
+
+void Modify::call_method_on_fixes(FixMethodWithVFlag method, int vflag) {
+  if(timing) {
+    for (int i = 0; i < nfix; i++) {
+      fix[i]->begin_time_recording();
+      (fix[i]->*method)(vflag);
+      fix[i]->end_time_recording();
+    }
+  }
+  else
+  {
+    for (int i = 0; i < nfix; i++) {
+      (fix[i]->*method)(vflag);
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------
+   calls a member method with vflag parameter on all fixes in the
+   specified list
+------------------------------------------------------------------------- */
+
+void Modify::call_method_on_fixes(FixMethodWithVFlag method, int vflag, int *& ilist, int & inum) {
+  if(timing) {
+    for (int i = 0; i < inum; i++) {
+      const int ifix = ilist[i];
+      fix[ifix]->begin_time_recording();
+      (fix[ifix]->*method)(vflag);
+      fix[ifix]->end_time_recording();
+    }
+  }
+  else
+  {
+    for (int i = 0; i < inum; i++) {
+      (fix[ilist[i]]->*method)(vflag);
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------
+   calls a respa member method with 2 int parameters on all fixes in the
+   specified list
+------------------------------------------------------------------------- */
+
+void Modify::call_respa_method_on_fixes(FixMethodRESPA2 method,
+    int arg1, int arg2, int *& ilist, int & inum) {
+  if(timing) {
+    for (int i = 0; i < inum; i++) {
+      const int ifix = ilist[i];
+      fix[ifix]->begin_time_recording();
+      (fix[ifix]->*method)(arg1, arg2);
+      fix[ifix]->end_time_recording();
+    }
+  }
+  else
+  {
+    for (int i = 0; i < inum; i++) {
+      (fix[ilist[i]]->*method)(arg1, arg2);
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------
+   calls a respa member method with 3 int parameters on all fixes in the
+   specified list
+------------------------------------------------------------------------- */
+
+void Modify::call_respa_method_on_fixes(FixMethodRESPA3 method, int arg1,
+    int arg2, int arg3, int *& ilist, int & inum) {
+  if(timing) {
+    for (int i = 0; i < inum; i++) {
+      const int ifix = ilist[i];
+      fix[ifix]->begin_time_recording();
+      (fix[ifix]->*method)(arg1, arg2, arg3);
+      fix[ifix]->end_time_recording();
+    }
+  }
+  else
+  {
+    for (int i = 0; i < inum; i++) {
+      (fix[ilist[i]]->*method)(arg1, arg2, arg3);
+    }
+  }
 }

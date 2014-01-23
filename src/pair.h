@@ -46,9 +46,18 @@ class Pair : protected Pointers {
   int restartinfo;               // 1 if pair style writes restart info
   int respa_enable;              // 1 if inner/middle/outer rRESPA routines
   int one_coeff;                 // 1 if allows only one coeff * * call
+  int manybody_flag;             // 1 if a manybody potential
   int no_virial_fdotr_compute;   // 1 if does not invoke virial_fdotr_compute()
+  int writedata;                 // 1 if writes coeffs to data file
   int ghostneigh;                // 1 if pair style needs neighbors of ghosts
   double **cutghost;             // cutoff for each ghost pair
+
+  int ewaldflag;                 // 1 if compatible with Ewald solver
+  int pppmflag;                  // 1 if compatible with PPPM solver
+  int msmflag;                   // 1 if compatible with MSM solver
+  int dispersionflag;            // 1 if compatible with LJ/dispersion solver
+  int tip4pflag;                 // 1 if compatible with TIP4P solver
+  int dipoleflag;                // 1 if compatible with dipole solver
 
   int tail_flag;                 // pair_modify flag for LJ tail correction
   double etail,ptail;            // energy/pressure tail corrections
@@ -57,6 +66,17 @@ class Pair : protected Pointers {
   int evflag;                    // energy,virial settings
   int eflag_either,eflag_global,eflag_atom;
   int vflag_either,vflag_global,vflag_atom;
+
+  int ncoultablebits;            // size of Coulomb table, accessed by KSpace
+  int ndisptablebits;            // size of dispersion table
+  double tabinnersq;
+  double tabinnerdispsq;
+  double *rtable,*drtable,*ftable,*dftable,*ctable,*dctable;
+  double *etable,*detable,*ptable,*dptable,*vtable,*dvtable;
+  double *rdisptable, *drdisptable, *fdisptable, *dfdisptable;
+  double *edisptable, *dedisptable;
+  int ncoulshiftbits,ncoulmask;
+  int ndispshiftbits, ndispmask;
 
   int nextra;                    // # of extra quantities pair style calculates
   double *pvector;               // vector of extra pair quantities
@@ -71,6 +91,9 @@ class Pair : protected Pointers {
   class NeighList *listinner;    // rRESPA lists used by some pairs
   class NeighList *listmiddle;
   class NeighList *listouter;
+
+  unsigned int datamask;
+  unsigned int datamask_ext;
 
   int compute_flag;              // 0 if skip compute()
 
@@ -90,6 +113,7 @@ class Pair : protected Pointers {
 
   // need to be public, so can be called by pair_style reaxc
 
+  void v_tally(int, double *, double *);
   void ev_tally(int, int, int, int, double, double, double,
                 double, double, double);
   void ev_tally3(int, int, int, double, double,
@@ -108,7 +132,11 @@ class Pair : protected Pointers {
   virtual void compute_outer(int, int) {}
 
   virtual double single(int, int, int, int,
-                        double, double, double, double &) {return 0.0;}
+                        double, double, double, 
+			double& fforce) {
+    fforce = 0.0;
+    return 0.0;
+  }
 
   virtual void settings(int, char **) = 0;
   virtual void coeff(int, char **) = 0;
@@ -117,10 +145,17 @@ class Pair : protected Pointers {
   virtual void init_list(int, class NeighList *);
   virtual double init_one(int, int) {return 0.0;}
 
+  virtual void init_tables(double, double *);
+  virtual void init_tables_disp(double);
+  virtual void free_tables();
+  virtual void free_disp_tables();
+
   virtual void write_restart(FILE *) {}
   virtual void read_restart(FILE *) {}
   virtual void write_restart_settings(FILE *) {}
   virtual void read_restart_settings(FILE *) {}
+  virtual void write_data(FILE *) {}
+  virtual void write_data_all(FILE *) {}
 
   virtual int pack_comm(int, int *, double *, int, int *) {return 0;}
   virtual void unpack_comm(int, int, double *) {}
@@ -137,14 +172,19 @@ class Pair : protected Pointers {
   virtual void min_xf_get(int) {}
   virtual void min_x_set(int) {}
 
+  virtual unsigned int data_mask() {return datamask;}
+  virtual unsigned int data_mask_ext() {return datamask_ext;}
+
  protected:
+  enum{GEOMETRIC,ARITHMETIC,SIXTHPOWER};   // mixing options
+
   int allocated;               // 0/1 = whether arrays are allocated
   int suffix_flag;             // suffix compatibility flag
 
                                        // pair_modify settings
   int offset_flag,mix_flag;            // flags for offset and mixing
-  int ncoultablebits;                  // size of Coulomb table
   double tabinner;                     // inner cutoff for Coulomb table
+  double tabinner_disp;                 // inner cutoff for dispersion table
 
   // custom data type for accessing Coulomb tables
 
@@ -156,16 +196,20 @@ class Pair : protected Pointers {
   int maxeatom,maxvatom;
 
   virtual void ev_setup(int, int);
+  void ev_unset();
   void ev_tally_full(int, double, double, double, double, double, double);
   void ev_tally_xyz_full(int, double, double,
                          double, double, double, double, double, double);
   void ev_tally4(int, int, int, int, double,
                  double *, double *, double *, double *, double *, double *);
-  void ev_tally_list(int, int *, double, double *);
+  void ev_tally_tip4p(int, int *, double *, double, double);
   void v_tally2(int, int, double, double *);
   void v_tally_tensor(int, int, int, int,
                       double, double, double, double, double, double);
   void virial_fdotr_compute();
+
+  FILE *open_potential(const char *);
+  const char *potname(const char *);
 
   inline int sbmask(int j) {
     return j >> SBBITS & 3;
@@ -203,10 +247,18 @@ This is probably a bogus thing to do, since tail corrections are
 computed by integrating the density of a periodic system out to
 infinity.
 
+W: Using a manybody potential with bonds/angles/dihedrals and special_bond exclusions
+
+UNDOCUMENTED
+
 E: All pair coeffs are not set
 
 All pair coefficients must be set in the data file or by the
 pair_coeff command before running a simulation.
+
+E: Pair style requres a KSpace style
+
+UNDOCUMENTED
 
 E: Pair style does not support pair_write
 

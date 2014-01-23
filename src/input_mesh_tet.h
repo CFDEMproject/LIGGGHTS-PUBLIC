@@ -34,7 +34,7 @@ class InputMeshTet : protected Input {
   ~InputMeshTet();
 
   void meshtetfile(class RegTetMesh *);
-  void meshtetfile(const char *,class RegTetMesh *,bool verbose);
+  void meshtetfile(const char *,class RegTetMesh *,bool verbose); // analogon to file(const char *filename)
 
  private:
   void meshtetfile_vtk(class RegTetMesh *);

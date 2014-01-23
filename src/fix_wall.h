@@ -20,6 +20,14 @@ namespace LAMMPS_NS {
 
 class FixWall : public Fix {
  public:
+  int nwall;
+  int wallwhich[6];
+  double coord0[6];
+  int xflag;           // 1 if any wall position is a variable
+  int xstyle[6];
+  int xindex[6];
+  char *xstr[6];
+
   FixWall(class LAMMPS *, int, char **);
   virtual ~FixWall();
   int setmask();
@@ -37,14 +45,14 @@ class FixWall : public Fix {
   virtual void wall_particle(int, int, double) = 0;
 
  protected:
-  int nwall;
-  int wallwhich[6],wallstyle[6];
-  double coord0[6],epsilon[6],sigma[6],cutoff[6];
-  char *varstr[6];
-  int varindex[6];
-  int eflag,varflag;
+  double epsilon[6],sigma[6],cutoff[6];
   double ewall[7],ewall_all[7];
   double xscale,yscale,zscale;
+  int estyle[6],sstyle[6],wstyle[6];
+  int eindex[6],sindex[6];
+  char *estr[6],*sstr[6];
+  int varflag;                // 1 if any wall position,epsilon,sigma is a var
+  int eflag;                  // per-wall flag for energy summation
   int nlevels_respa;
   double dt;
   int fldflag;
@@ -70,18 +78,13 @@ E: Fix wall cutoff <= 0.0
 
 Self-explanatory.
 
-E: Cannot use fix wall in periodic dimension
-
-Self-explanatory.
-
 E: Cannot use fix wall zlo/zhi for a 2d simulation
 
 Self-explanatory.
 
-E: Use of fix wall with undefined lattice
+E: Cannot use fix wall in periodic dimension
 
-Must use lattice command with fix wall command if units option is set
-to lattice.
+Self-explanatory.
 
 E: Variable name for fix wall does not exist
 
@@ -90,5 +93,14 @@ Self-explanatory.
 E: Variable for fix wall is invalid style
 
 Only equal-style variables can be used.
+
+E: Variable evaluation in fix wall gave bad value
+
+The returned value for epsilon or sigma < 0.0.
+
+U: Use of fix wall with undefined lattice
+
+Must use lattice command with fix wall command if units option is set
+to lattice.
 
 */

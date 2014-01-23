@@ -55,9 +55,11 @@ enum{ID,MOL,TYPE,ELEMENT,MASS,
      COMPUTE,FIX,VARIABLE,
      DENSITY, RHO, P}; 
 enum{LT,LE,GT,GE,EQ,NEQ};
-enum{INT,DOUBLE,STRING};
+enum{INT,DOUBLE,STRING};    // same as in DumpCFG
 
 #define INVOKED_PERATOM 8
+#define ONEFIELD 32
+#define DELTA 1048576
 
 /* ---------------------------------------------------------------------- */
 
@@ -68,7 +70,7 @@ DumpCustom::DumpCustom(LAMMPS *lmp, int narg, char **arg) :
 
   clearstep = 1;
 
-  nevery = atoi(arg[3]);
+  nevery = force->inumeric(FLERR,arg[3]);
 
   // size_one may be shrunk below if additional optional args exist
 
@@ -76,6 +78,8 @@ DumpCustom::DumpCustom(LAMMPS *lmp, int narg, char **arg) :
   pack_choice = new FnPtrPack[nfield];
   vtype = new int[nfield];
 
+  buffer_allow = 1;
+  buffer_flag = 1;
   iregion = -1;
   idregion = NULL;
   nthresh = 0;
@@ -223,6 +227,7 @@ void DumpCustom::init_style()
   for (int i = 0; i < size_one; i++) {
     if (i == 0) ptr = strtok(format," \0");
     else ptr = strtok(NULL," \0");
+    if (ptr == NULL) error->all(FLERR,"Dump_modify format string is too short");
     delete [] vformat[i];
     vformat[i] = new char[strlen(ptr) + 2];
     strcpy(vformat[i],ptr);
@@ -231,17 +236,7 @@ void DumpCustom::init_style()
 
   // setup boundary string
 
-  int m = 0;
-  for (int idim = 0; idim < 3; idim++) {
-    for (int iside = 0; iside < 2; iside++) {
-      if (domain->boundary[idim][iside] == 0) boundstr[m++] = 'p';
-      else if (domain->boundary[idim][iside] == 1) boundstr[m++] = 'f';
-      else if (domain->boundary[idim][iside] == 2) boundstr[m++] = 's';
-      else if (domain->boundary[idim][iside] == 3) boundstr[m++] = 'm';
-    }
-    boundstr[m++] = ' ';
-  }
-  boundstr[8] = '\0';
+  domain->boundary_string(boundstr);
 
   // setup function ptrs
 
@@ -255,7 +250,8 @@ void DumpCustom::init_style()
     header_choice = &DumpCustom::header_item_triclinic;
 
   if (binary) write_choice = &DumpCustom::write_binary;
-  else write_choice = &DumpCustom::write_text;
+  else if (buffer_flag == 1) write_choice = &DumpCustom::write_string;
+  else write_choice = &DumpCustom::write_lines;
 
   // find current ptr for each compute,fix,variable
   // check that fix frequency is acceptable
@@ -320,10 +316,8 @@ void DumpCustom::header_binary(bigint ndump)
   fwrite(&boxzlo,sizeof(double),1,fp);
   fwrite(&boxzhi,sizeof(double),1,fp);
   fwrite(&size_one,sizeof(int),1,fp);
-  if (multiproc) {
-    int one = 1;
-    fwrite(&one,sizeof(int),1,fp);
-  } else fwrite(&nprocs,sizeof(int),1,fp);
+  if (multiproc) fwrite(&nclusterprocs,sizeof(int),1,fp);
+  else fwrite(&nprocs,sizeof(int),1,fp);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -344,10 +338,8 @@ void DumpCustom::header_binary_triclinic(bigint ndump)
   fwrite(&boxxz,sizeof(double),1,fp);
   fwrite(&boxyz,sizeof(double),1,fp);
   fwrite(&size_one,sizeof(int),1,fp);
-  if (multiproc) {
-    int one = 1;
-    fwrite(&one,sizeof(int),1,fp);
-  } else fwrite(&nprocs,sizeof(int),1,fp);
+  if (multiproc) fwrite(&nclusterprocs,sizeof(int),1,fp);
+  else fwrite(&nprocs,sizeof(int),1,fp);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -559,61 +551,62 @@ int DumpCustom::count()
 
       } else if (thresh_array[ithresh] == XU) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double xprd = domain->xprd;
         for (i = 0; i < nlocal; i++)
-          dchoose[i] = x[i][0] + ((image[i] & 1023) - 512) * xprd;
+          dchoose[i] = x[i][0] + ((image[i] & IMGMASK) - IMGMAX) * xprd;
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == YU) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double yprd = domain->yprd;
         for (i = 0; i < nlocal; i++)
-          dchoose[i] = x[i][1] + ((image[i] >> 10 & 1023) - 512) * yprd;
+          dchoose[i] = x[i][1] + 
+            ((image[i] >> IMGBITS & IMGMASK) - IMGMAX) * yprd;
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == ZU) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double zprd = domain->zprd;
         for (i = 0; i < nlocal; i++)
-          dchoose[i] = x[i][2] + ((image[i] >> 20) - 512) * zprd;
+          dchoose[i] = x[i][2] + ((image[i] >> IMG2BITS) - IMGMAX) * zprd;
         ptr = dchoose;
         nstride = 1;
 
       } else if (thresh_array[ithresh] == XUTRI) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double *h = domain->h;
         int xbox,ybox,zbox;
         for (i = 0; i < nlocal; i++) {
-          xbox = (image[i] & 1023) - 512;
-          ybox = (image[i] >> 10 & 1023) - 512;
-          zbox = (image[i] >> 20) - 512;
+          xbox = (image[i] & IMGMASK) - IMGMAX;
+          ybox = (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
+          zbox = (image[i] >> IMG2BITS) - IMGMAX;
           dchoose[i] = x[i][0] + h[0]*xbox + h[5]*ybox + h[4]*zbox;
         }
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == YUTRI) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double *h = domain->h;
         int ybox,zbox;
         for (i = 0; i < nlocal; i++) {
-          ybox = (image[i] >> 10 & 1023) - 512;
-          zbox = (image[i] >> 20) - 512;
+          ybox = (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
+          zbox = (image[i] >> IMG2BITS) - IMGMAX;
           dchoose[i] = x[i][1] + h[1]*ybox + h[3]*zbox;
         }
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == ZUTRI) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double *h = domain->h;
         int zbox;
         for (i = 0; i < nlocal; i++) {
-          zbox = (image[i] >> 20) - 512;
+          zbox = (image[i] >> IMG2BITS) - IMGMAX;
           dchoose[i] = x[i][2] + h[2]*zbox;
         }
         ptr = dchoose;
@@ -621,85 +614,88 @@ int DumpCustom::count()
 
       } else if (thresh_array[ithresh] == XSU) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double boxxlo = domain->boxlo[0];
         double invxprd = 1.0/domain->xprd;
         for (i = 0; i < nlocal; i++)
-          dchoose[i] = (x[i][0] - boxxlo) * invxprd + (image[i] & 1023) - 512;
+          dchoose[i] = (x[i][0] - boxxlo) * invxprd + 
+            (image[i] & IMGMASK) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
 
       } else if (thresh_array[ithresh] == YSU) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double boxylo = domain->boxlo[1];
         double invyprd = 1.0/domain->yprd;
         for (i = 0; i < nlocal; i++)
           dchoose[i] =
-            (x[i][1] - boxylo) * invyprd + (image[i] >> 10 & 1023) - 512;
+            (x[i][1] - boxylo) * invyprd + 
+            (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
 
       } else if (thresh_array[ithresh] == ZSU) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double boxzlo = domain->boxlo[2];
         double invzprd = 1.0/domain->zprd;
         for (i = 0; i < nlocal; i++)
-          dchoose[i] = (x[i][2] - boxzlo) * invzprd + (image[i] >> 20) - 512;
+          dchoose[i] = (x[i][2] - boxzlo) * invzprd + 
+            (image[i] >> IMG2BITS) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
 
       } else if (thresh_array[ithresh] == XSUTRI) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double *boxlo = domain->boxlo;
         double *h_inv = domain->h_inv;
         for (i = 0; i < nlocal; i++)
           dchoose[i] = h_inv[0]*(x[i][0]-boxlo[0]) +
             h_inv[5]*(x[i][1]-boxlo[1]) +
             h_inv[4]*(x[i][2]-boxlo[2]) +
-            (image[i] & 1023) - 512;
+            (image[i] & IMGMASK) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == YSUTRI) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double *boxlo = domain->boxlo;
         double *h_inv = domain->h_inv;
         for (i = 0; i < nlocal; i++)
           dchoose[i] = h_inv[1]*(x[i][1]-boxlo[1]) +
             h_inv[3]*(x[i][2]-boxlo[2]) +
-            (image[i] >> 10 & 1023) - 512;
+            (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == ZSUTRI) {
         double **x = atom->x;
-        int *image = atom->image;
+        tagint *image = atom->image;
         double *boxlo = domain->boxlo;
         double *h_inv = domain->h_inv;
         for (i = 0; i < nlocal; i++)
           dchoose[i] = h_inv[2]*(x[i][2]-boxlo[2]) +
-            (image[i] >> 20) - 512;
+            (image[i] >> IMG2BITS) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
 
       } else if (thresh_array[ithresh] == IX) {
-        int *image = atom->image;
+        tagint *image = atom->image;
         for (i = 0; i < nlocal; i++)
-          dchoose[i] = (image[i] & 1023) - 512;
+          dchoose[i] = (image[i] & IMGMASK) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == IY) {
-        int *image = atom->image;
+        tagint *image = atom->image;
         for (i = 0; i < nlocal; i++)
-          dchoose[i] = (image[i] >> 10 & 1023) - 512;
+          dchoose[i] = (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
       } else if (thresh_array[ithresh] == IZ) {
-        int *image = atom->image;
+        tagint *image = atom->image;
         for (i = 0; i < nlocal; i++)
-          dchoose[i] = (image[i] >> 20) - 512;
+          dchoose[i] = (image[i] >> IMG2BITS) - IMGMAX;
         ptr = dchoose;
         nstride = 1;
 
@@ -727,18 +723,18 @@ int DumpCustom::count()
           error->all(FLERR,"Threshhold for an atom property that isn't allocated");
         ptr = atom->q;
         nstride = 1;
-      } else if (thresh_array[ithresh] == P) {
+      } else if (thresh_array[ithresh] == P) { 
         if (!atom->p_flag)
           error->all(FLERR,"Threshhold for an atom property that isn't allocated");
         ptr = atom->p;
         nstride = 1;
-      } else if (thresh_array[ithresh] == RHO) {
+      } else if (thresh_array[ithresh] == RHO) { 
         if (!atom->rho_flag)
           error->all(FLERR,
                      "Threshhold for an atom property that isn't allocated");
         ptr = atom->rho;
         nstride = 1;
-      } else if (thresh_array[ithresh] == DENSITY) {
+      } else if (thresh_array[ithresh] == DENSITY) { 
         if (!atom->density_flag)
           error->all(FLERR,"Threshhold for an atom property that isn't allocated");
         ptr = atom->density;
@@ -939,6 +935,39 @@ void DumpCustom::pack(int *ids)
   }
 }
 
+/* ----------------------------------------------------------------------
+   convert mybuf of doubles to one big formatted string in sbuf
+   return -1 if strlen exceeds an int, since used as arg in MPI calls in Dump
+------------------------------------------------------------------------- */
+
+int DumpCustom::convert_string(int n, double *mybuf)
+{
+  int i,j;
+
+  int offset = 0;
+  int m = 0;
+  for (i = 0; i < n; i++) {
+    if (offset + size_one*ONEFIELD > maxsbuf) {
+      if ((bigint) maxsbuf + DELTA > MAXSMALLINT) return -1;
+      maxsbuf += DELTA;
+      memory->grow(sbuf,maxsbuf,"dump:sbuf");
+    }
+
+    for (j = 0; j < size_one; j++) {
+      if (vtype[j] == INT) 
+        offset += sprintf(&sbuf[offset],vformat[j],static_cast<int> (mybuf[m]));
+      else if (vtype[j] == DOUBLE) 
+        offset += sprintf(&sbuf[offset],vformat[j],mybuf[m]);
+      else if (vtype[j] == STRING)
+        offset += sprintf(&sbuf[offset],vformat[j],typenames[(int) mybuf[m]]);
+      m++;
+    }
+    offset += sprintf(&sbuf[offset],"\n");
+  }
+
+  return offset;
+}
+
 /* ---------------------------------------------------------------------- */
 
 void DumpCustom::write_data(int n, double *mybuf)
@@ -957,7 +986,14 @@ void DumpCustom::write_binary(int n, double *mybuf)
 
 /* ---------------------------------------------------------------------- */
 
-void DumpCustom::write_text(int n, double *mybuf)
+void DumpCustom::write_string(int n, double *mybuf)
+{
+  fwrite(mybuf,sizeof(char),n,fp);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustom::write_lines(int n, double *mybuf)
 {
   int i,j;
 
@@ -1218,9 +1254,11 @@ int DumpCustom::parse_fields(int narg, char **arg)
       if (modify->compute[n]->peratom_flag == 0)
         error->all(FLERR,"Dump custom compute does not compute per-atom info");
       if (argindex[i] == 0 && modify->compute[n]->size_peratom_cols > 0)
-        error->all(FLERR,"Dump custom compute does not calculate per-atom vector");
+        error->all(FLERR,
+                   "Dump custom compute does not calculate per-atom vector");
       if (argindex[i] > 0 && modify->compute[n]->size_peratom_cols == 0)
-        error->all(FLERR,"Dump custom compute does not calculate per-atom array");
+        error->all(FLERR,\
+                   "Dump custom compute does not calculate per-atom array");
       if (argindex[i] > 0 &&
           argindex[i] > modify->compute[n]->size_peratom_cols)
         error->all(FLERR,"Dump custom compute vector is accessed out-of-range");
@@ -1385,7 +1423,7 @@ int DumpCustom::modify_param(int narg, char **arg)
     return 2;
   }
 
-  if (strcmp(arg[0],"label") == 0) {
+  if (strcmp(arg[0],"label") == 0) { 
      if (narg < 2) error->all(FLERR,"Illegal dump_modify command [label]");
      delete [] label;
      int n = strlen(arg[1]) + 1;
@@ -1498,9 +1536,9 @@ int DumpCustom::modify_param(int narg, char **arg)
     else if (strcmp(arg[1],"fz") == 0) thresh_array[nthresh] = FZ;
 
     else if (strcmp(arg[1],"q") == 0) thresh_array[nthresh] = Q;
-    else if (strcmp(arg[1],"density") == 0) thresh_array[nthresh] = DENSITY;
-    else if (strcmp(arg[1],"p") == 0) thresh_array[nthresh] = P;
-    else if (strcmp(arg[1],"rho") == 0) thresh_array[nthresh] = RHO;
+    else if (strcmp(arg[1],"density") == 0) thresh_array[nthresh] = DENSITY; 
+    else if (strcmp(arg[1],"p") == 0) thresh_array[nthresh] = P; 
+    else if (strcmp(arg[1],"rho") == 0) thresh_array[nthresh] = RHO; 
     else if (strcmp(arg[1],"mux") == 0) thresh_array[nthresh] = MUX;
     else if (strcmp(arg[1],"muy") == 0) thresh_array[nthresh] = MUY;
     else if (strcmp(arg[1],"muz") == 0) thresh_array[nthresh] = MUZ;
@@ -1637,7 +1675,7 @@ int DumpCustom::modify_param(int narg, char **arg)
 
     // set threshhold value
 
-    thresh_value[nthresh] = atof(arg[3]);
+    thresh_value[nthresh] = force->numeric(FLERR,arg[3]);
 
     nthresh++;
     return 4;
@@ -1916,13 +1954,13 @@ void DumpCustom::pack_xu(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double xprd = domain->xprd;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    buf[n] = x[j][0] + ((image[j] & 1023) - 512) * xprd;
+    buf[n] = x[j][0] + ((image[j] & IMGMASK) - IMGMAX) * xprd;
     n += size_one;
   }
 }
@@ -1933,13 +1971,13 @@ void DumpCustom::pack_yu(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double yprd = domain->yprd;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    buf[n] = x[j][1] + ((image[j] >> 10 & 1023) - 512) * yprd;
+    buf[n] = x[j][1] + ((image[j] >> IMGBITS & IMGMASK) - IMGMAX) * yprd;
     n += size_one;
   }
 }
@@ -1950,13 +1988,13 @@ void DumpCustom::pack_zu(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double zprd = domain->zprd;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    buf[n] = x[j][2] + ((image[j] >> 20) - 512) * zprd;
+    buf[n] = x[j][2] + ((image[j] >> IMG2BITS) - IMGMAX) * zprd;
     n += size_one;
   }
 }
@@ -1967,16 +2005,16 @@ void DumpCustom::pack_xu_triclinic(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double *h = domain->h;
   int xbox,ybox,zbox;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    xbox = (image[j] & 1023) - 512;
-    ybox = (image[j] >> 10 & 1023) - 512;
-    zbox = (image[j] >> 20) - 512;
+    xbox = (image[j] & IMGMASK) - IMGMAX;
+    ybox = (image[j] >> IMGBITS & IMGMASK) - IMGMAX;
+    zbox = (image[j] >> IMG2BITS) - IMGMAX;
     buf[n] = x[j][0] + h[0]*xbox + h[5]*ybox + h[4]*zbox;
     n += size_one;
   }
@@ -1988,15 +2026,15 @@ void DumpCustom::pack_yu_triclinic(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double *h = domain->h;
   int ybox,zbox;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    ybox = (image[j] >> 10 & 1023) - 512;
-    zbox = (image[j] >> 20) - 512;
+    ybox = (image[j] >> IMGBITS & IMGMASK) - IMGMAX;
+    zbox = (image[j] >> IMG2BITS) - IMGMAX;
     buf[n] = x[j][1] + h[1]*ybox + h[3]*zbox;
     n += size_one;
   }
@@ -2008,14 +2046,14 @@ void DumpCustom::pack_zu_triclinic(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double *h = domain->h;
   int zbox;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    zbox = (image[j] >> 20) - 512;
+    zbox = (image[j] >> IMG2BITS) - IMGMAX;
     buf[n] = x[j][2] + h[2]*zbox;
     n += size_one;
   }
@@ -2027,14 +2065,14 @@ void DumpCustom::pack_xsu(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double boxxlo = domain->boxlo[0];
   double invxprd = 1.0/domain->xprd;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    buf[n] = (x[j][0] - boxxlo) * invxprd + (image[j] & 1023) - 512;
+    buf[n] = (x[j][0] - boxxlo) * invxprd + (image[j] & IMGMASK) - IMGMAX;
     n += size_one;
   }
 }
@@ -2045,14 +2083,14 @@ void DumpCustom::pack_ysu(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double boxylo = domain->boxlo[1];
   double invyprd = 1.0/domain->yprd;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    buf[n] = (x[j][1] - boxylo) * invyprd + (image[j] >> 10 & 1023) - 512;
+    buf[n] = (x[j][1] - boxylo) * invyprd + (image[j] >> IMGBITS & IMGMASK) - IMGMAX;
     n += size_one;
   }
 }
@@ -2063,14 +2101,14 @@ void DumpCustom::pack_zsu(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double boxzlo = domain->boxlo[2];
   double invzprd = 1.0/domain->zprd;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    buf[n] = (x[j][2] - boxzlo) * invzprd + (image[j] >> 20) - 512;
+    buf[n] = (x[j][2] - boxzlo) * invzprd + (image[j] >> IMG2BITS) - IMGMAX;
     n += size_one;
   }
 }
@@ -2081,7 +2119,7 @@ void DumpCustom::pack_xsu_triclinic(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double *boxlo = domain->boxlo;
   double *h_inv = domain->h_inv;
@@ -2089,7 +2127,7 @@ void DumpCustom::pack_xsu_triclinic(int n)
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
     buf[n] = h_inv[0]*(x[j][0]-boxlo[0]) + h_inv[5]*(x[j][1]-boxlo[1]) +
-      h_inv[4]*(x[j][2]-boxlo[2]) + (image[j] & 1023) - 512;
+      h_inv[4]*(x[j][2]-boxlo[2]) + (image[j] & IMGMASK) - IMGMAX;
     n += size_one;
   }
 }
@@ -2100,7 +2138,7 @@ void DumpCustom::pack_ysu_triclinic(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double *boxlo = domain->boxlo;
   double *h_inv = domain->h_inv;
@@ -2108,7 +2146,7 @@ void DumpCustom::pack_ysu_triclinic(int n)
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
     buf[n] = h_inv[1]*(x[j][1]-boxlo[1]) + h_inv[3]*(x[j][2]-boxlo[2]) +
-      (image[j] >> 10 & 1023) - 512;
+      (image[j] >> IMGBITS & IMGMASK) - IMGMAX;
     n += size_one;
   }
 }
@@ -2119,14 +2157,14 @@ void DumpCustom::pack_zsu_triclinic(int n)
 {
   int j;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   double *boxlo = domain->boxlo;
   double *h_inv = domain->h_inv;
 
   for (int i = 0; i < nchoose; i++) {
     j = clist[i];
-    buf[n] = h_inv[2]*(x[j][2]-boxlo[2]) + (image[j] >> 20) - 512;
+    buf[n] = h_inv[2]*(x[j][2]-boxlo[2]) + (image[j] >> IMG2BITS) - IMGMAX;
     n += size_one;
   }
 }
@@ -2135,10 +2173,10 @@ void DumpCustom::pack_zsu_triclinic(int n)
 
 void DumpCustom::pack_ix(int n)
 {
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   for (int i = 0; i < nchoose; i++) {
-    buf[n] = (image[clist[i]] & 1023) - 512;
+    buf[n] = (image[clist[i]] & IMGMASK) - IMGMAX;
     n += size_one;
   }
 }
@@ -2147,10 +2185,10 @@ void DumpCustom::pack_ix(int n)
 
 void DumpCustom::pack_iy(int n)
 {
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   for (int i = 0; i < nchoose; i++) {
-    buf[n] = (image[clist[i]] >> 10 & 1023) - 512;
+    buf[n] = (image[clist[i]] >> IMGBITS & IMGMASK) - IMGMAX;
     n += size_one;
   }
 }
@@ -2159,10 +2197,10 @@ void DumpCustom::pack_iy(int n)
 
 void DumpCustom::pack_iz(int n)
 {
-  int *image = atom->image;
+  tagint *image = atom->image;
 
   for (int i = 0; i < nchoose; i++) {
-    buf[n] = (image[clist[i]] >> 20) - 512;
+    buf[n] = (image[clist[i]] >> IMG2BITS) - IMGMAX;
     n += size_one;
   }
 }
@@ -2253,7 +2291,7 @@ void DumpCustom::pack_q(int n)
 
 /* ---------------------------------------------------------------------- */
 
-void DumpCustom::pack_density(int n)
+void DumpCustom::pack_density(int n) 
 {
   double *density = atom->density;
 
@@ -2266,7 +2304,7 @@ void DumpCustom::pack_density(int n)
 
 /* ---------------------------------------------------------------------- */
 
-void DumpCustom::pack_p(int n)
+void DumpCustom::pack_p(int n) 
 {
   double *p = atom->p;
 
@@ -2278,7 +2316,7 @@ void DumpCustom::pack_p(int n)
 
 /* ---------------------------------------------------------------------- */
 
-void DumpCustom::pack_rho(int n)
+void DumpCustom::pack_rho(int n) 
 {
   double *rho = atom->rho;
 

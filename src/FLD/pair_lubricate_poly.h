@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -54,6 +54,14 @@ Self-explanatory.
 E: Pair lubricate/poly requires extended particles
 
 One of the particles has radius 0.0.
+
+E: Using pair lubricate with inconsistent fix deform remap option
+
+Must use remap v option with fix deform with this pair style.
+
+E: Cannot use multiple fix wall commands with pair lubricate/poly
+
+Self-explanatory.
 
 E: Using pair lubricate/poly with inconsistent fix deform remap option
 

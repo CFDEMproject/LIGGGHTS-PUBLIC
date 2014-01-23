@@ -77,6 +77,10 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
   fix_dnum = NULL;
   dnum_index = NULL;
 
+  mass_rigid = NULL;
+
+  nmax = 0;
+
   cpl_enable = 1;
   cpl = NULL;
 
@@ -248,15 +252,14 @@ void PairGran::init_style()
     if (!fix_history)
     {
         
-        char **fixarg = new char*[5+2*dnum_all];
-        fixarg[4] = new char[3];
+        char **fixarg = new char*[4+2*dnum_all];
+        fixarg[3] = new char[3];
 
         fixarg[0] = (char *) "contacthistory";
         fixarg[1] = (char *) "all";
         fixarg[2] = (char *) "contacthistory";
-        fixarg[3] = (char *) "pair";
-        sprintf(fixarg[4],"%d",dnum_all);
-        history_args(&fixarg[5]);
+        sprintf(fixarg[3],"%d",dnum_all);
+        history_args(&fixarg[4]);
 
         // add history args from fixes
         for(int ifix = 0; ifix < nfix; ifix++)
@@ -266,12 +269,12 @@ void PairGran::init_style()
                     error->all(FLERR,"Missing history_args() implementation for fix that requests extra history");
         }
 
-        modify->add_fix(5+2*dnum_all,fixarg);
+        modify->add_fix(4+2*dnum_all,fixarg);
 
         if(modify->n_fixes_style_strict("contacthistory") != 1) error->all(FLERR,"Pair granular with shear history requires exactly one fix of style contacthistory");
         fix_history = static_cast<FixContactHistory*>(modify->find_fix_style_strict("contacthistory",0));
 
-        delete [] fixarg[4];
+        delete [] fixarg[3];
         delete [] fixarg;
     }
   }
@@ -494,7 +497,7 @@ double PairGran::init_one(int i, int j)
   double cutoff = maxrad_dynamic[i]+maxrad_dynamic[j];
   cutoff = MAX(cutoff,maxrad_frozen[i]+maxrad_dynamic[j]);
   cutoff = MAX(cutoff,maxrad_dynamic[i]+maxrad_frozen[j]);
-  return cutoff;
+  return cutoff * neighbor->contactDistanceFactor;
 }
 
 /* ----------------------------------------------------------------------
@@ -505,11 +508,25 @@ void PairGran::compute(int eflag, int vflag)
 {
    if(forceoff()) return;
 
-   if (fix_rigid && neighbor->ago == 0) {
-     body = fix_rigid->body;
-     masstotal = fix_rigid->masstotal;
-     comm->forward_comm_pair(this);
-   }
+  // update rigid body info for owned & ghost atoms if using FixRigid masses
+  // body[i] = which body atom I is in, -1 if none
+  // mass_body = mass of each rigid body
+
+  if (fix_rigid && neighbor->ago == 0) {
+    int tmp;
+    int *body = (int *) fix_rigid->extract("body",tmp);
+    double *mass_body = (double *) fix_rigid->extract("masstotal",tmp);
+    if (atom->nmax > nmax) {
+      memory->destroy(mass_rigid);
+      nmax = atom->nmax;
+      memory->create(mass_rigid,nmax,"pair:mass_rigid");
+    }
+    int nlocal = atom->nlocal;
+    for (int i = 0; i < nlocal; i++)
+      if (body[i] >= 0) mass_rigid[i] = mass_body[body[i]];
+      else mass_rigid[i] = 0.0;
+    comm->forward_comm_pair(this);
+  }
 
    computeflag = 1;
    shearupdate = 1;
@@ -524,20 +541,34 @@ void PairGran::compute(int eflag, int vflag)
 
 void PairGran::compute_pgl(int eflag, int vflag)
 {
-   if (fix_rigid && neighbor->ago == 0) {
-     body = fix_rigid->body;
-     masstotal = fix_rigid->masstotal;
-     comm->forward_comm_pair(this);
-   }
+  // update rigid body info for owned & ghost atoms if using FixRigid masses
+  // body[i] = which body atom I is in, -1 if none
+  // mass_body = mass of each rigid body
 
-   bool reset_computeflag = computeflag ? true : false;
+  if (fix_rigid && neighbor->ago == 0) {
+    int tmp;
+    int *body = (int *) fix_rigid->extract("body",tmp);
+    double *mass_body = (double *) fix_rigid->extract("masstotal",tmp);
+    if (atom->nmax > nmax) {
+      memory->destroy(mass_rigid);
+      nmax = atom->nmax;
+      memory->create(mass_rigid,nmax,"pair:mass_rigid");
+    }
+    int nlocal = atom->nlocal;
+    for (int i = 0; i < nlocal; i++)
+      if (body[i] >= 0) mass_rigid[i] = mass_body[body[i]];
+      else mass_rigid[i] = 0.0;
+    comm->forward_comm_pair(this);
+  }
 
-   computeflag = 0;
-   shearupdate = 0;
+  bool reset_computeflag = (computeflag == 1) ? true : false;
 
-   compute_force(eflag,vflag,1);
+  computeflag = 0;
+  shearupdate = 0;
 
-   if(reset_computeflag)
+  compute_force(eflag,vflag,1);
+
+  if(reset_computeflag)
     computeflag = 1;
 }
 
@@ -550,7 +581,7 @@ int PairGran::pack_comm(int n, int *list,double *buf, int pbc_flag, int *pbc)
   m = 0;
   for (i = 0; i < n; i++) {
     j = list[i];
-    buf[m++] = body[j];
+    buf[m++] = mass_rigid[j];
   }
   return 1;
 }
@@ -564,7 +595,7 @@ void PairGran::unpack_comm(int n, int first, double *buf)
   m = 0;
   last = first + n;
   for (i = first; i < last; i++)
-    body[i] = static_cast<int> (buf[m++]);
+    mass_rigid[i] = static_cast<int> (buf[m++]);
 }
 
 /* ----------------------------------------------------------------------
@@ -613,4 +644,14 @@ void *PairGran::extract(const char *str, int &dim)
   dim = 0;
   if (strcmp(str,"computeflag") == 0) return (void *) &computeflag;
   return NULL;
+}
+
+/* ----------------------------------------------------------------------
+   memory usage of local atom-based arrays
+------------------------------------------------------------------------- */
+
+double PairGran::memory_usage()
+{
+  double bytes = nmax * sizeof(double);
+  return bytes;
 }

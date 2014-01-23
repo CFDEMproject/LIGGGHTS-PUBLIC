@@ -346,7 +346,7 @@ void ReadRestart::command(int narg, char **arg)
     if (atom->tag[i] > 0) flag = 1;
   int flag_all;
   MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_MAX,world);
-  if (flag_all == 0) atom->tag_enable = 0;
+  if (atom->natoms > 0 && flag_all == 0) atom->tag_enable = 0;
 
   if (atom->map_style) {
     atom->map_init();
@@ -627,6 +627,8 @@ void ReadRestart::header()
       }
 
       atom->create_avec(style,nwords,words);
+      atom->avec->read_restart_settings(fp);
+
       for (int i = 0; i < nwords; i++) delete [] words[i];
       delete [] words;
       delete [] style;
@@ -739,7 +741,7 @@ void ReadRestart::force_fields()
       if (me == 0) nread_char(style,n,fp);
       MPI_Bcast(style,n,MPI_CHAR,0,world);
 
-      force->create_pair(style);
+      force->create_pair_from_restart(fp, style);
       delete [] style;
       if (force->pair->restartinfo) force->pair->read_restart(fp);
       else {
@@ -894,10 +896,11 @@ bigint ReadRestart::read_bigint()
 }
 
 /* ----------------------------------------------------------------------
-// auto-detect if restart file needs to be byte-swapped on this platform
-// return 0 if not, 1 if it does
-// re-open file with fp after checking first few bytes
+   auto-detect if restart file needs to be byte-swapped on this platform
+   return 0 if not, 1 if it does
+   re-open file with fp after checking first few bytes
    read a bigint from restart file and bcast it
+   NOTE: not yet fully implemented, ditto for swapflag logic
 ------------------------------------------------------------------------- */
 
 int ReadRestart::autodetect(FILE **pfp, char *file)

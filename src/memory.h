@@ -511,6 +511,7 @@ class Memory : protected Pointers {
   template <typename TYPE>
     bigint usage(TYPE *array, int n)
     {
+      UNUSED(array);
       bigint bytes = ((bigint) sizeof(TYPE)) * n;
       return bytes;
     }
@@ -518,6 +519,7 @@ class Memory : protected Pointers {
   template <typename TYPE>
     bigint usage(TYPE **array, int n1, int n2)
     {
+      UNUSED(array);
       bigint bytes = ((bigint) sizeof(TYPE)) * n1*n2;
       bytes += ((bigint) sizeof(TYPE *)) * n1;
       return bytes;
@@ -526,6 +528,7 @@ class Memory : protected Pointers {
   template <typename TYPE>
     bigint usage(TYPE ***array, int n1, int n2, int n3)
     {
+      UNUSED(array);
       bigint bytes = ((bigint) sizeof(TYPE)) * n1*n2*n3;
       bytes += ((bigint) sizeof(TYPE *)) * n1*n2;
       bytes += ((bigint) sizeof(TYPE **)) * n1;
@@ -535,6 +538,7 @@ class Memory : protected Pointers {
   template <typename TYPE>
     bigint usage(TYPE ****array, int n1, int n2, int n3, int n4)
     {
+      UNUSED(array);
       bigint bytes = ((bigint) sizeof(TYPE)) * n1*n2*n3*n4;
       bytes += ((bigint) sizeof(TYPE *)) * n1*n2*n3;
       bytes += ((bigint) sizeof(TYPE **)) * n1*n2;

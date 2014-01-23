@@ -25,12 +25,19 @@
 #include "atom.h"
 #include "force.h"
 #include "update.h"
+#include "domain.h"
 #include "memory.h"
 #include "error.h"
 
 using namespace LAMMPS_NS;
 
 #define BONDDELTA 10000
+
+// bondlist, anglelist, dihedrallist, improperlist
+//   no longer store atom->map() of the bond partners
+// instead store domain->closest_image() of the bond partners of atom I
+// this enables distances between list atoms to be calculated
+//   w/out invoking domain->minimium_image(), e.g. in bond->compute()
 
 /* ---------------------------------------------------------------------- */
 
@@ -59,6 +66,7 @@ void Neighbor::bond_all()
                 tag[i],bond_atom[i][m],me,update->ntimestep);
         error->one(FLERR,str);
       }
+      atom1 = domain->closest_image(i,atom1);
       if (newton_bond || i < atom1) {
         if (nbondlist == maxbond) {
           maxbond += BONDDELTA;
@@ -80,6 +88,7 @@ void Neighbor::bond_all()
         nbondlist++;
       }
     }
+  if (cluster_check) bond_check();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -110,6 +119,7 @@ void Neighbor::bond_partial()
                 tag[i],bond_atom[i][m],me,update->ntimestep);
         error->one(FLERR,str);
       }
+      atom1 = domain->closest_image(i,atom1);
       if (newton_bond || i < atom1) {
         if (nbondlist == maxbond) {
           maxbond += BONDDELTA;
@@ -126,6 +136,32 @@ void Neighbor::bond_partial()
         nbondlist++;
       }
     }
+  if (cluster_check) bond_check();
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Neighbor::bond_check()
+{
+  int i,j;
+  double dx,dy,dz,dxstart,dystart,dzstart;
+  
+  double **x = atom->x;
+  int flag = 0;
+
+  for (int m = 0; m < nbondlist; m++) {
+    i = bondlist[m][0];
+    j = bondlist[m][1];
+    dxstart = dx = x[i][0] - x[j][0];
+    dystart = dy = x[i][1] - x[j][1];
+    dzstart = dz = x[i][2] - x[j][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+  }
+
+  int flag_all;
+  MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_SUM,world);
+  if (flag_all) error->all(FLERR,"Bond extent > half of periodic box length");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -158,6 +194,9 @@ void Neighbor::angle_all()
                 me,update->ntimestep);
         error->one(FLERR,str);
       }
+      atom1 = domain->closest_image(i,atom1);
+      atom2 = domain->closest_image(i,atom2);
+      atom3 = domain->closest_image(i,atom3);
       if (newton_bond || (i <= atom1 && i <= atom2 && i <= atom3)) {
         if (nanglelist == maxangle) {
           maxangle += BONDDELTA;
@@ -170,6 +209,7 @@ void Neighbor::angle_all()
         nanglelist++;
       }
     }
+  if (cluster_check) angle_check();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -203,6 +243,9 @@ void Neighbor::angle_partial()
                 me,update->ntimestep);
         error->one(FLERR,str);
       }
+      atom1 = domain->closest_image(i,atom1);
+      atom2 = domain->closest_image(i,atom2);
+      atom3 = domain->closest_image(i,atom3);
       if (newton_bond || (i <= atom1 && i <= atom2 && i <= atom3)) {
         if (nanglelist == maxangle) {
           maxangle += BONDDELTA;
@@ -215,6 +258,46 @@ void Neighbor::angle_partial()
         nanglelist++;
       }
     }
+  if (cluster_check) angle_check();
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Neighbor::angle_check()
+{
+  int i,j,k;
+  double dx,dy,dz,dxstart,dystart,dzstart;
+  
+  double **x = atom->x;
+  int flag = 0;
+
+  // check all 3 distances
+  // in case angle potential computes any of them
+
+  for (int m = 0; m < nanglelist; m++) {
+    i = anglelist[m][0];
+    j = anglelist[m][1];
+    k = anglelist[m][2];
+    dxstart = dx = x[i][0] - x[j][0];
+    dystart = dy = x[i][1] - x[j][1];
+    dzstart = dz = x[i][2] - x[j][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+    dxstart = dx = x[i][0] - x[k][0];
+    dystart = dy = x[i][1] - x[k][1];
+    dzstart = dz = x[i][2] - x[k][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+    dxstart = dx = x[j][0] - x[k][0];
+    dystart = dy = x[j][1] - x[k][1];
+    dzstart = dz = x[j][2] - x[k][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+  }
+
+  int flag_all;
+  MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_SUM,world);
+  if (flag_all) error->all(FLERR,"Angle extent > half of periodic box length");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -250,6 +333,10 @@ void Neighbor::dihedral_all()
                 me,update->ntimestep);
         error->one(FLERR,str);
       }
+      atom1 = domain->closest_image(i,atom1);
+      atom2 = domain->closest_image(i,atom2);
+      atom3 = domain->closest_image(i,atom3);
+      atom4 = domain->closest_image(i,atom4);
       if (newton_bond ||
           (i <= atom1 && i <= atom2 && i <= atom3 && i <= atom4)) {
         if (ndihedrallist == maxdihedral) {
@@ -264,6 +351,7 @@ void Neighbor::dihedral_all()
         ndihedrallist++;
       }
     }
+  if (cluster_check) dihedral_check(ndihedrallist,dihedrallist);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -300,6 +388,10 @@ void Neighbor::dihedral_partial()
                 me,update->ntimestep);
         error->one(FLERR,str);
       }
+      atom1 = domain->closest_image(i,atom1);
+      atom2 = domain->closest_image(i,atom2);
+      atom3 = domain->closest_image(i,atom3);
+      atom4 = domain->closest_image(i,atom4);
       if (newton_bond ||
           (i <= atom1 && i <= atom2 && i <= atom3 && i <= atom4)) {
         if (ndihedrallist == maxdihedral) {
@@ -314,6 +406,63 @@ void Neighbor::dihedral_partial()
         ndihedrallist++;
       }
     }
+  if (cluster_check) dihedral_check(ndihedrallist,dihedrallist);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Neighbor::dihedral_check(int nlist, int **list)
+{
+  int i,j,k,l;
+  double dx,dy,dz,dxstart,dystart,dzstart;
+  
+  double **x = atom->x;
+  int flag = 0;
+
+  // check all 6 distances
+  // in case dihedral/improper potential computes any of them
+
+  for (int m = 0; m < nlist; m++) {
+    i = list[m][0];
+    j = list[m][1];
+    k = list[m][2];
+    l = list[m][3];
+    dxstart = dx = x[i][0] - x[j][0];
+    dystart = dy = x[i][1] - x[j][1];
+    dzstart = dz = x[i][2] - x[j][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+    dxstart = dx = x[i][0] - x[k][0];
+    dystart = dy = x[i][1] - x[k][1];
+    dzstart = dz = x[i][2] - x[k][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+    dxstart = dx = x[i][0] - x[l][0];
+    dystart = dy = x[i][1] - x[l][1];
+    dzstart = dz = x[i][2] - x[l][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+    dxstart = dx = x[j][0] - x[k][0];
+    dystart = dy = x[j][1] - x[k][1];
+    dzstart = dz = x[j][2] - x[k][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+    dxstart = dx = x[j][0] - x[l][0];
+    dystart = dy = x[j][1] - x[l][1];
+    dzstart = dz = x[j][2] - x[l][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+    dxstart = dx = x[k][0] - x[l][0];
+    dystart = dy = x[k][1] - x[l][1];
+    dzstart = dz = x[k][2] - x[l][2];
+    domain->minimum_image(dx,dy,dz);
+    if (dx != dxstart || dy != dystart || dz != dzstart) flag = 1;
+  }
+
+  int flag_all;
+  MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_SUM,world);
+  if (flag_all) 
+    error->all(FLERR,"Dihedral/improper extent > half of periodic box length");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -349,6 +498,10 @@ void Neighbor::improper_all()
                 me,update->ntimestep);
         error->one(FLERR,str);
       }
+      atom1 = domain->closest_image(i,atom1);
+      atom2 = domain->closest_image(i,atom2);
+      atom3 = domain->closest_image(i,atom3);
+      atom4 = domain-> closest_image(i,atom4);
       if (newton_bond ||
           (i <= atom1 && i <= atom2 && i <= atom3 && i <= atom4)) {
         if (nimproperlist == maximproper) {
@@ -363,6 +516,7 @@ void Neighbor::improper_all()
         nimproperlist++;
       }
     }
+  if (cluster_check) dihedral_check(nimproperlist,improperlist);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -399,6 +553,10 @@ void Neighbor::improper_partial()
                 me,update->ntimestep);
         error->one(FLERR,str);
       }
+      atom1 = domain->closest_image(i,atom1);
+      atom2 = domain->closest_image(i,atom2);
+      atom3 = domain->closest_image(i,atom3);
+      atom4 = domain->closest_image(i,atom4);
       if (newton_bond ||
           (i <= atom1 && i <= atom2 && i <= atom3 && i <= atom4)) {
         if (nimproperlist == maximproper) {
@@ -413,4 +571,5 @@ void Neighbor::improper_partial()
         nimproperlist++;
       }
     }
+  if (cluster_check) dihedral_check(nimproperlist,improperlist);
 }

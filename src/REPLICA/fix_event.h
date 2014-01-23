@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -26,7 +26,7 @@ class FixEvent : public Fix {
 
   double memory_usage();
   void grow_arrays(int);
-  void copy_arrays(int, int);
+  void copy_arrays(int, int, int);
   int pack_exchange(int, double *);
   int unpack_exchange(int, double *);
   virtual void write_restart(FILE *);

@@ -164,26 +164,32 @@ available in LAMMPS:
 
 "angle/local"_compute_bond_local.html - theta and energy of each angle
 "atom/molecule"_compute_atom_molecule.html - sum per-atom properties for each molecule
+"body/local"_compute_body_local.html - attributes of body sub-particles
 "bond/local"_compute_bond_local.html - distance and energy of each bond
 "centro/atom"_compute_centro_atom.html - centro-symmetry parameter for each atom
 "cluster/atom"_compute_cluster_atom.html - cluster ID for each atom
 "cna/atom"_compute_cna_atom.html - common neighbor analysis (CNA) for each atom
 "com"_compute_com.html - center-of-mass of group of atoms
 "com/molecule"_compute_com_molecule.html - center-of-mass for each molecule
+"contact/atom"_compute_contact_atom.html - contact count for each spherical particle
 "coord/atom"_compute_coord_atom.html - coordination number for each atom
 "damage/atom"_compute_damage_atom.html - Peridynamic damage for each atom
 "dihedral/local"_compute_dihedral_local.html - angle of each dihedral
 "displace/atom"_compute_displace_atom.html - displacement of each atom
 "erotate/asphere"_compute_erotate_asphere.html - rotational energy of aspherical particles
+"erotate/rigid"_compute_erotate_rigid.html - rotational energy of rigid bodies
 "erotate/sphere"_compute_erotate_sphere.html - rotational energy of spherical particles
+"erotate/sphere/atom"_compute_erotate_sphere.html - rotational energy for each spherical particle
 "event/displace"_compute_event_displace.html - detect event on atom displacement
 "group/group"_compute_group_group.html - energy/force between two groups of atoms
 "gyration"_compute_gyration.html - radius of gyration of group of atoms
 "gyration/molecule"_compute_gyration_molecule.html - radius of gyration for each molecule
 "heat/flux"_compute_heat_flux.html - heat flux through a group of atoms
 "improper/local"_compute_improper_local.html - angle of each improper
+"inertia/molecule"_compute_inertia_molecule.html - inertia tensor for each molecule
 "ke"_compute_ke.html - translational kinetic energy
 "ke/atom"_compute_ke_atom.html - kinetic energy for each atom
+"ke/rigid"_compute_ke_rigid.html - translational kinetic energy of rigid bodies
 "msd"_compute_msd.html - mean-squared displacement of group of atoms
 "msd/molecule"_compute_msd_molecule.html - mean-squared displacement for each molecule
 "pair"_compute_pair.html - values computed by a pair style
@@ -208,7 +214,8 @@ available in LAMMPS:
 "temp/ramp"_compute_temp_ramp.html - temperature excluding ramped velocity component
 "temp/region"_compute_temp_region.html - temperature of a region of atoms
 "temp/sphere"_compute_temp_sphere.html - temperature of spherical particles
-"ti"_compute_ti.html - thermodyanmic integration free energy values :ul
+"ti"_compute_ti.html - thermodyanmic integration free energy values
+"voronoi/atom"_compute_voronoi_atom.html - Voronoi volume and neighbors for each atom :ul
 
 There are also additional compute styles submitted by users which are
 included in the LAMMPS distribution.  The list of these with links to

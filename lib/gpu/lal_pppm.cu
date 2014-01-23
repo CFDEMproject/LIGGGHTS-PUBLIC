@@ -14,14 +14,14 @@
 // ***************************************************************************/
 
 #ifdef NV_KERNEL
+
 #include "lal_preprocessor.h"
+#ifndef _DOUBLE_DOUBLE
 texture<float4> pos_tex;
 texture<float> q_tex;
-#ifndef _DOUBLE_DOUBLE
-ucl_inline float4 fetch_pos(const int& i, const float4 *pos) 
-  { return tex1Dfetch(pos_tex, i); }
-ucl_inline float fetch_q(const int& i, const float *q) 
-  { return tex1Dfetch(q_tex, i); }
+#else
+texture<int4,1> pos_tex;
+texture<int2> q_tex;
 #endif
 
 // Allow PPPM to compile without atomics for NVIDIA 1.0 cards, error
@@ -31,6 +31,8 @@ ucl_inline float fetch_q(const int& i, const float *q)
 #endif
 
 #else
+#define pos_tex x_
+#define q_tex q_
 #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics: enable
 #endif
 
@@ -39,15 +41,18 @@ ucl_inline float fetch_q(const int& i, const float *q)
 // Number of pencils per block for charge spread
 #define BLOCK_PENCILS (PPPM_BLOCK_1D/PENCIL_SIZE)
 
-__kernel void particle_map(__global numtyp4 *x_,  __global numtyp *q_,
+__kernel void particle_map(const __global numtyp4 *restrict x_,  
+                           const __global numtyp *restrict q_,
                            const grdtyp delvolinv, const int nlocal, 
-                           __global int *counts, __global grdtyp4 *ans, 
+                           __global int *restrict counts, 
+                           __global grdtyp4 *restrict ans, 
                            const grdtyp b_lo_x, const grdtyp b_lo_y,
                            const grdtyp b_lo_z, const grdtyp delxinv,
                            const grdtyp delyinv, const grdtyp delzinv,
                            const int nlocal_x, const int nlocal_y,
                            const int nlocal_z, const int atom_stride,
-                           const int max_atoms, __global int *error) {
+                           const int max_atoms, 
+                           __global int *restrict error) {
   // ii indexes the two interacting particles in gi
   int ii=GLOBAL_ID_X;
 
@@ -59,9 +64,11 @@ __kernel void particle_map(__global numtyp4 *x_,  __global numtyp *q_,
   int nx,ny,nz;
 
   if (ii<nlocal) {
-    numtyp4 p=fetch_pos(ii,x_);
+    numtyp4 p;
+    fetch4(p,ii,pos_tex);
     grdtyp4 delta;
-    delta.w=delvolinv*fetch_q(ii,q_);
+    fetch(delta.w,ii,q_tex);
+    delta.w*=delvolinv;
     
     if (delta.w!=(grdtyp)0.0) {
       delta.x=(p.x-b_lo_x)*delxinv;
@@ -93,8 +100,10 @@ __kernel void particle_map(__global numtyp4 *x_,  __global numtyp *q_,
 
 /* --------------------------- */
 
-__kernel void make_rho(__global int *counts, __global grdtyp4 *atoms,
-                       __global grdtyp *brick, __global grdtyp *_rho_coeff,
+__kernel void make_rho(const __global int *restrict counts, 
+                       const __global grdtyp4 *restrict atoms,
+                       __global grdtyp *restrict brick, 
+                       const __global grdtyp *restrict _rho_coeff,
                        const int atom_stride, const int npts_x,
                        const int npts_y, const int npts_z, const int nlocal_x,
                        const int nlocal_y, const int nlocal_z,
@@ -188,15 +197,17 @@ __kernel void make_rho(__global int *counts, __global grdtyp4 *atoms,
   }
 }
 
-__kernel void interp(__global numtyp4 *x_, __global numtyp *q_,
-                     const int nlocal, __global grdtyp4 *brick,
-                     __global grdtyp *_rho_coeff, const int npts_x,
-                     const int npts_yx, const grdtyp b_lo_x,
+__kernel void interp(const __global numtyp4 *restrict x_, 
+                     const __global numtyp *restrict q_,
+                     const int nlocal, 
+                     const __global grdtyp4 *restrict brick,
+                     const __global grdtyp *restrict _rho_coeff, 
+                     const int npts_x, const int npts_yx, const grdtyp b_lo_x,
                      const grdtyp b_lo_y, const grdtyp b_lo_z,
                      const grdtyp delxinv,  const grdtyp delyinv,
                      const grdtyp delzinv, const int order,
                      const int order2, const grdtyp qqrd2e_scale, 
-                     __global acctyp4 *ans) {
+                     __global acctyp4 *restrict ans) {
   __local grdtyp rho_coeff[PPPM_MAX_SPLINE*PPPM_MAX_SPLINE];
   __local grdtyp rho1d_0[PPPM_MAX_SPLINE][PPPM_BLOCK_1D];
   __local grdtyp rho1d_1[PPPM_MAX_SPLINE][PPPM_BLOCK_1D];
@@ -212,8 +223,11 @@ __kernel void interp(__global numtyp4 *x_, __global numtyp *q_,
   grdtyp tx,ty,tz;
 
   if (ii<nlocal) {
-    numtyp4 p=fetch_pos(ii,x_);
-    grdtyp qs=qqrd2e_scale*fetch_q(ii,q_);
+    numtyp4 p;
+    fetch4(p,ii,pos_tex);
+    grdtyp qs;
+    fetch(qs,ii,q_tex);
+    qs*=qqrd2e_scale;
 
     acctyp4 ek;
     ek.x=(acctyp)0.0;

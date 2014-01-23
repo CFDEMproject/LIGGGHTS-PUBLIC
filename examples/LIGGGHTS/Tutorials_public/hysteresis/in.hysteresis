@@ -30,16 +30,16 @@ fix     m8 all property/global coefficientPlasticityDepth peratomtypepair 1 0.05
 
 
 #New pair style
-pair_style 	gran/hooke/history/hysteresis #Hooke with hysteresis and adhesion
+pair_style gran model hooke/hysteresis tangential history #Hooke with hysteresis and adhesion
 pair_coeff	* *
 
 timestep	0.00001
 
 fix			gravi all gravity 9.81 vector 0.0 0.0 -1.0
 
-fix			zwalls1 all wall/gran/hooke/history   primitive type 1  zplane 0.0
-fix			zwalls2 all wall/gran/hooke/history   primitive type 1  zplane 0.15
-fix			cylwalls all wall/gran/hooke/history primitive type 1  zcylinder 0.05 0. 0.
+fix zwalls1 all wall/gran model hooke tangential history primitive type 1  zplane 0.0
+fix zwalls2 all wall/gran model hooke tangential history primitive type 1  zplane 0.15
+fix cylwalls all wall/gran model hooke tangential history primitive type 1  zcylinder 0.05 0. 0.
 
 #region for insertion
 region		bc cylinder z 0.01 0.01 0.025 0.05 0.0603 units box

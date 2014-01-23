@@ -1,4 +1,4 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -38,6 +38,7 @@ class FixNH : public Fix {
   int modify_param(int, char **);
   void reset_target(double);
   void reset_dt();
+  virtual void *extract(const char*,int &);
 
  protected:
   int dimension,which;
@@ -64,7 +65,9 @@ class FixNH : public Fix {
   double pdrag_factor;             // drag factor on barostat
   int kspace_flag;                 // 1 if KSpace invoked, 0 if not
   int nrigid;                      // number of rigid fixes
+  int dilate_group_bit;            // mask for dilation group
   int *rfix;                       // indices of rigid fixes
+  char *id_dilate;                 // group name to dilate
   class Irregular *irregular;      // for migrating atoms after box flips
 
   int nlevels_respa;
@@ -109,8 +112,11 @@ class FixNH : public Fix {
   int scaleyz;                     // 1 if yz scaled with lz
   int scalexz;                     // 1 if xz scaled with lz
   int scalexy;                     // 1 if xy scaled with ly
+  int flipflag;                    // 1 if box flips are invoked as needed
 
-  double fixedpoint[3];            // Location of dilation fixed-point
+  int pre_exchange_flag;           // set if pre_exchange needed for box flips
+
+  double fixedpoint[3];            // location of dilation fixed-point
 
   void couple();
   void remap();
@@ -151,6 +157,10 @@ E: Invalid fix nvt/npt/nph command for a 2d simulation
 
 Cannot control z dimension in a 2d model.
 
+E: Fix nvt/npt/nph dilate group ID does not exist
+
+Self-explanatory.
+
 E: Invalid fix nvt/npt/nph command pressure settings
 
 If multiple dimensions are coupled, those dimensions must be
@@ -167,15 +177,15 @@ When specifying an off-diagonal pressure component, the 2nd of the two
 dimensions must be periodic.  E.g. if the xy component is specified,
 then the y dimension must be periodic.
 
-E: Cannot use fix nvt/npt/nph with yz dynamics when z is non-periodic dimension
+E: Cannot use fix nvt/npt/nph with yz scaling when z is non-periodic dimension
 
 The 2nd dimension in the barostatted tilt factor must be periodic.
 
-E: Cannot use fix nvt/npt/nph with xz dynamics when z is non-periodic dimension
+E: Cannot use fix nvt/npt/nph with xz scaling when z is non-periodic dimension
 
 The 2nd dimension in the barostatted tilt factor must be periodic.
 
-E: Cannot use fix nvt/npt/nph with xy dynamics when y is non-periodic dimension
+E: Cannot use fix nvt/npt/nph with xy scaling when y is non-periodic dimension
 
 The 2nd dimension in the barostatted tilt factor must be periodic.
 
@@ -208,7 +218,7 @@ E: Cannot use fix npt and fix deform on same component of stress tensor
 
 This would be changing the same box dimension twice.
 
-E: Temperature ID for fix nvt/nph/npt does not exist
+E: Temperature ID for fix nvt/npt does not exist
 
 Self-explanatory.
 

@@ -32,7 +32,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-PairLJGromacsCoulGromacs::PairLJGromacsCoulGromacs(LAMMPS *lmp) : Pair(lmp) {}
+PairLJGromacsCoulGromacs::PairLJGromacsCoulGromacs(LAMMPS *lmp) : Pair(lmp)
+{
+  writedata = 1;
+}
 
 /* ---------------------------------------------------------------------- */
 
@@ -216,14 +219,14 @@ void PairLJGromacsCoulGromacs::settings(int narg, char **arg)
   if (narg != 2 && narg != 4)
     error->all(FLERR,"Illegal pair_style command");
 
-  cut_lj_inner = force->numeric(arg[0]);
-  cut_lj = force->numeric(arg[1]);
+  cut_lj_inner = force->numeric(FLERR,arg[0]);
+  cut_lj = force->numeric(FLERR,arg[1]);
   if (narg == 2) {
     cut_coul_inner = cut_lj_inner;
     cut_coul = cut_lj;
   } else {
-    cut_coul_inner = force->numeric(arg[2]);
-    cut_coul = force->numeric(arg[3]);
+    cut_coul_inner = force->numeric(FLERR,arg[2]);
+    cut_coul = force->numeric(FLERR,arg[3]);
   }
 
   if (cut_lj_inner <= 0.0 || cut_coul_inner < 0.0)
@@ -245,8 +248,8 @@ void PairLJGromacsCoulGromacs::coeff(int narg, char **arg)
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double epsilon_one = force->numeric(arg[2]);
-  double sigma_one = force->numeric(arg[3]);
+  double epsilon_one = force->numeric(FLERR,arg[2]);
+  double sigma_one = force->numeric(FLERR,arg[3]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -268,7 +271,8 @@ void PairLJGromacsCoulGromacs::coeff(int narg, char **arg)
 void PairLJGromacsCoulGromacs::init_style()
 {
   if (!atom->q_flag)
-    error->all(FLERR,"Pair style lj/gromacs/coul/gromacs requires atom attribute q");
+    error->all(FLERR,
+               "Pair style lj/gromacs/coul/gromacs requires atom attribute q");
 
   neighbor->request(this);
 
@@ -421,6 +425,27 @@ void PairLJGromacsCoulGromacs::read_restart_settings(FILE *fp)
   MPI_Bcast(&cut_coul,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void PairLJGromacsCoulGromacs::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    fprintf(fp,"%d %g %g\n",i,epsilon[i][i],sigma[i][i]);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes all pairs to data file
+------------------------------------------------------------------------- */
+
+void PairLJGromacsCoulGromacs::write_data_all(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    for (int j = i; j <= atom->ntypes; j++)
+      fprintf(fp,"%d %d %g %g\n",i,j,epsilon[i][j],sigma[i][j]);
 }
 
 /* ---------------------------------------------------------------------- */

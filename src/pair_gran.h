@@ -31,8 +31,13 @@
 #define LMP_PAIR_GRAN_H
 
 #include "pair.h"
+#include "compute_pair_gran_local.h"
+#include "contact_interface.h"
+#include <vector>
+#include <string>
 
 namespace LAMMPS_NS {
+using namespace ContactModels;
 
 class PairGran : public Pair {
  public:
@@ -60,11 +65,23 @@ class PairGran : public Pair {
   virtual void write_restart_settings(FILE *){}
   virtual void read_restart_settings(FILE *){}
   virtual void reset_dt();
+  double memory_usage();
 
   int  cplenable()
   { return cpl_enable; }
   void register_compute_pair_local(class ComputePairGranLocal *,int&);
   void unregister_compute_pair_local(class ComputePairGranLocal *ptr);
+
+  inline void cpl_add_pair(CollisionData & cdata, ForceData & i_forces)
+  {
+    const double fx = i_forces.delta_F[0];
+    const double fy = i_forces.delta_F[1];
+    const double fz = i_forces.delta_F[2];
+    const double tor1 = i_forces.delta_torque[0];
+    const double tor2 = i_forces.delta_torque[1];
+    const double tor3 = i_forces.delta_torque[2];
+    cpl->add_pair(cdata.i, cdata.j, fx,fy,fz,tor1,tor2,tor3,cdata.contact_history);
+  }
 
   /* PUBLIC ACCESS FUNCTIONS */
 
@@ -83,9 +100,31 @@ class PairGran : public Pair {
 
   void *extract(const char *str, int &dim);
 
- protected:
+  int add_history_value(std::string name, std::string newtonflag) {
+    int offset = history_arg.size();
+    history = true;
+    history_arg.push_back(HistoryArg(name, newtonflag));
+    dnum_pairgran++;
+    return offset;
+  }
 
-  virtual void history_args(char**) =0;
+ protected:
+  struct HistoryArg {
+    std::string name;
+    std::string newtonflag;
+
+    HistoryArg(std::string name, std::string newtonflag) : name(name), newtonflag(newtonflag) {}
+  };
+
+  std::vector<HistoryArg> history_arg;
+
+  void history_args(char ** args) {
+    for(size_t i = 0; i < history_arg.size(); i++) {
+      args[2*i] = (char*)history_arg[i].name.c_str();
+      args[2*i+1] = (char*)history_arg[i].newtonflag.c_str();
+    }
+  }
+
   virtual void compute_force(int eflag, int vflag,int addflag) = 0;
   virtual bool forceoff() = 0;
   inline int dnum()
@@ -114,9 +153,11 @@ class PairGran : public Pair {
   int cpl_enable;
   class ComputePairGranLocal *cpl;
 
-  class FixRigid* fix_rigid;
-  int *body;
-  double *masstotal;
+  // storage of rigid body masses for use in granular interactions
+
+  class FixRigid *fix_rigid; // ptr to rigid body fix, NULL if none
+  double *mass_rigid;        // rigid mass for owned+ghost atoms
+  int nmax;                  // allocated size of mass_rigid
 
   double dt;
   int freeze_group_bit;

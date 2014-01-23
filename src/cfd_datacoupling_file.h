@@ -38,8 +38,8 @@ class CfdDatacouplingFile : public CfdDatacoupling {
   ~CfdDatacouplingFile();
   friend class FixTempFromFile;
 
-  void pull(char *,char *,void *&,char *);
-  void push(char *,char *,void *&,char *);
+  void pull(const char *, const char *, void *&, const char *);
+  void push(const char *, const char *, void *&, const char *);
   virtual void post_create();
 
   void exchange();
@@ -52,17 +52,17 @@ class CfdDatacouplingFile : public CfdDatacoupling {
    bool firstexec;
    int t0;
 
-   char * getFilePath(char *name,bool);
-   void op_complete(char *name);
-   void writeVectorData(char *name,  double ** field);
-   void writeScalarData(char *name,  double * field);
-   void writeGlobalVectorData(char *name,  double * field,int);
-   void writeGlobalArrayData(char *name,  double ** field,int,int);
+   char * getFilePath(const char *name, bool flag);
+   void op_complete(const char *name);
+   void writeVectorData(const char *name,  double ** field);
+   void writeScalarData(const char *name,  double * field);
+   void writeGlobalVectorData(const char *name,  double * field,int);
+   void writeGlobalArrayData(const char *name,  double ** field,int,int);
 
-   void readVectorData(char *name,  double ** field);
-   void readScalarData(char *name,  double * field);
-   void readGlobalVectorData(char* name, double *field, int &len);
-   void readGlobalArrayData(char *name, double ** field, int &len1, int &len2);
+   void readVectorData(const char *name,  double ** field);
+   void readScalarData(const char *name,  double * field);
+   void readGlobalVectorData(const char* name, double *field, int &len);
+   void readGlobalArrayData(const char *name, double ** field, int &len1, int &len2);
 
 };
 

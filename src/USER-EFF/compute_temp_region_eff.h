@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -29,6 +29,7 @@ class ComputeTempRegionEff : public Compute {
   ComputeTempRegionEff(class LAMMPS *, int, char **);
   virtual ~ComputeTempRegionEff();
   void init();
+  void setup();
   virtual double compute_scalar();
   virtual void compute_vector();
 
@@ -38,7 +39,7 @@ class ComputeTempRegionEff : public Compute {
   void restore_bias(int, double *);
   void restore_bias_all();
   double memory_usage();
- 
+
  protected:
   int iregion;
   char *idregion;

@@ -64,12 +64,12 @@ using namespace LAMMPS_NS;
    remove property
   ------------------------------------------------------------------------- */
 
-  void CustomValueTracker::removeElementProperty(char *_id)
+  void CustomValueTracker::removeElementProperty(const char *_id)
   {
      elementProperties_.remove(_id);
   }
 
-  void CustomValueTracker::removeGlobalProperty(char *_id)
+  void CustomValueTracker::removeGlobalProperty(const char *_id)
   {
      globalProperties_.remove(_id);
      globalProperties_orig_.remove(_id);

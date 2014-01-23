@@ -62,7 +62,7 @@ FixSphDensityCorr::FixSphDensityCorr(LAMMPS *lmp, int narg, char **arg) :
   if (strcmp(arg[iarg],"shepard") == 0) {
     if (iarg+3 > narg) error->fix_error(FLERR,this,"Not enough arguments");
     if (strcmp(arg[iarg+1],"every") == 0) {
-      every = force->inumeric(arg[iarg+2]);
+      every = force->inumeric(FLERR,arg[iarg+2]);
       if (every <= 0) error->fix_error(FLERR,this,"every <= 0 not allowed");
       corrStyle = CORR_SHEPARD;
       iarg += 3;
@@ -124,7 +124,7 @@ FixSphDensityCorr::~FixSphDensityCorr()
 
 /* ---------------------------------------------------------------------- */
 
-void FixSphDensityCorr::pre_delete(bool unfixflag)
+void FixSphDensityCorr::pre_delete(bool)
 {
     //unregister property/atom fixes
     if (fix_quantity) modify->delete_fix(quantity_name);
@@ -153,26 +153,21 @@ void FixSphDensityCorr::updatePtrs()
 
 void FixSphDensityCorr::post_create()
 {
-  char **fixarg;
-  fixarg=new char*[9];
-  for (int kk=0;kk<9;kk++) fixarg[kk]=new char[30];
+  const char * fixarg[9];
 
   if (fix_quantity==NULL) {
-    strcpy(fixarg[0],quantity_name);
+    fixarg[0]=quantity_name;
     fixarg[1]="all";
     fixarg[2]="property/atom";
-    strcpy(fixarg[3],quantity_name);
+    fixarg[3]=quantity_name;
     fixarg[4]="scalar";
     fixarg[5]="yes";
     fixarg[6]="yes";
     fixarg[7]="no";
     fixarg[8]="0.";
-    modify->add_fix(9,fixarg);
+    modify->add_fix(9,(char**)fixarg);
     fix_quantity=static_cast<FixPropertyAtom*>(modify->find_fix_property(quantity_name,"property/atom","scalar",0,0,style));
   }
-
-  delete []fixarg;
-
 }
 
 /* ---------------------------------------------------------------------- */
@@ -184,7 +179,7 @@ void FixSphDensityCorr::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixSphDensityCorr::pre_force(int vflag)
+void FixSphDensityCorr::pre_force(int)
 {
   //template function for using per atom or per atomtype smoothing length
   if (mass_type) pre_force_eval<1>();
@@ -291,7 +286,7 @@ void FixSphDensityCorr::pre_force_eval()
           slCom = interpDist(sli,slj);
         }
 
-        cut = slCom*kernel_cut; 
+        cut = slCom*kernel_cut;
 
         delx = xtmp - x[j][0];
         dely = ytmp - x[j][1];
@@ -393,7 +388,7 @@ void FixSphDensityCorr::pre_force_eval()
           slCom = interpDist(sli,slj);
         }
 
-        cut = slCom*kernel_cut; 
+        cut = slCom*kernel_cut;
 
         delx = xtmp - x[j][0];
         dely = ytmp - x[j][1];

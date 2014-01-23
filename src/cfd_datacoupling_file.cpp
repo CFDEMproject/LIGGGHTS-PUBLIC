@@ -108,7 +108,7 @@ void CfdDatacouplingFile::exchange()
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::pull(char *name,char *type,void *&from,char *datatype)
+void CfdDatacouplingFile::pull(const char *name, const char *type, void *&from, const char *datatype)
 {
     CfdDatacoupling::pull(name,type,from,datatype);
 
@@ -145,7 +145,7 @@ void CfdDatacouplingFile::pull(char *name,char *type,void *&from,char *datatype)
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::push(char *name,char *type,void *&to,char *datatype)
+void CfdDatacouplingFile::push(const char *name, const char *type, void *&to, const char *datatype)
 {
     CfdDatacoupling::push(name,type,to,datatype);
 
@@ -186,23 +186,27 @@ void CfdDatacouplingFile::push(char *name,char *type,void *&to,char *datatype)
 /* ---------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------- */
 
-char * CfdDatacouplingFile::getFilePath(char *name,bool flag)
+char * CfdDatacouplingFile::getFilePath(const char *name, bool flag)
 {
     
-    if(!append) return name;
+    if(!append) {
+      
+      char *file = new char[strlen(name)+1];
+      strcpy(file,name);
+      return file;
+    }
 
     char *file = new char[strlen(filepath)+strlen(name)+3];
     strcpy(file,filepath);
     strcat(file,name);
     if(flag) strcat(file,"0");
     else strcat(file,"1");
-    struct stat st;
     return file;
 }
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::op_complete(char *name)
+void CfdDatacouplingFile::op_complete(const char *name)
 {
     if(!append) return;
     char *oldfile = getFilePath(name,true);
@@ -215,7 +219,7 @@ void CfdDatacouplingFile::op_complete(char *name)
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::readVectorData(char *name, double ** field)
+void CfdDatacouplingFile::readVectorData(const char *name, double ** field)
 {
     // get output path
     char *file = getFilePath(name,true);
@@ -249,7 +253,7 @@ void CfdDatacouplingFile::readVectorData(char *name, double ** field)
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::readScalarData(char* name, double *field)
+void CfdDatacouplingFile::readScalarData(const char* name, double *field)
 {
     // get output path
     char *file = getFilePath(name,true);
@@ -284,7 +288,7 @@ void CfdDatacouplingFile::readScalarData(char* name, double *field)
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::readGlobalArrayData(char *name, double ** field, int &len1, int &len2)
+void CfdDatacouplingFile::readGlobalArrayData(const char *name, double ** field, int &len1, int &len2)
 {
     // get output path
     char *file = getFilePath(name,true);
@@ -325,7 +329,7 @@ void CfdDatacouplingFile::readGlobalArrayData(char *name, double ** field, int &
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::readGlobalVectorData(char* name, double *field, int &len)
+void CfdDatacouplingFile::readGlobalVectorData(const char* name, double *field, int &len)
 {
     // get output path
     char *file = getFilePath(name,true);
@@ -358,7 +362,7 @@ void CfdDatacouplingFile::readGlobalVectorData(char* name, double *field, int &l
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::writeVectorData(char *name,  double ** field)
+void CfdDatacouplingFile::writeVectorData(const char *name,  double ** field)
 {
     // get output path
     char *file = getFilePath(name,true);
@@ -389,7 +393,7 @@ void CfdDatacouplingFile::writeVectorData(char *name,  double ** field)
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::writeScalarData(char* name, double * field)
+void CfdDatacouplingFile::writeScalarData(const char* name, double * field)
 {
     // get output path
     char *file = getFilePath(name,true);
@@ -419,7 +423,7 @@ void CfdDatacouplingFile::writeScalarData(char* name, double * field)
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::writeGlobalVectorData(char *name,  double *field,int len)
+void CfdDatacouplingFile::writeGlobalVectorData(const char *name,  double *field, int len)
 {
     if(len < 0) error->all(FLERR,"Internal error in CfdDatacouplingFile");
 
@@ -451,7 +455,7 @@ void CfdDatacouplingFile::writeGlobalVectorData(char *name,  double *field,int l
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingFile::writeGlobalArrayData(char* name, double **field,int len1,int len2)
+void CfdDatacouplingFile::writeGlobalArrayData(const char* name, double **field, int len1, int len2)
 {
     if(len1 < 0 || len2 < 0) error->all(FLERR,"Internal error in CfdDatacouplingFile");
 

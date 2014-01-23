@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -28,27 +28,29 @@ class PPPMGPU : public PPPM {
  public:
   PPPMGPU(class LAMMPS *, int, char **);
   virtual ~PPPMGPU();
-  virtual void init();
-  virtual void setup();
-  virtual void compute(int, int);
-  virtual void timing(int, double &, double &);
-  virtual double memory_usage();
+  void init();
+  void setup();
+  void compute(int, int);
+  int timing_1d(int, double &);
+  int timing_3d(int, double &);
+  double memory_usage();
 
  protected:
-
   FFT_SCALAR ***density_brick_gpu, ***vd_brick;
   bool kspace_split, im_real_space;
+  int old_nlocal;
+  double poisson_time;
 
-  virtual void allocate();
-  virtual void deallocate();
-  virtual void brick2fft();
-  virtual void fillbrick();
-  virtual void poisson();
+  void brick2fft();
+  virtual void poisson_ik();
 
-  double poisson_time;  
+  void pack_forward(int, FFT_SCALAR *, int, int *);
+  void unpack_forward(int, FFT_SCALAR *, int, int *);
+  void pack_reverse(int, FFT_SCALAR *, int, int *);
+  void unpack_reverse(int, FFT_SCALAR *, int, int *);
 
   FFT_SCALAR ***create_3d_offset(int, int, int, int, int, int, const char *,
-				 FFT_SCALAR *, int);
+                                 FFT_SCALAR *, int);
   void destroy_3d_offset(FFT_SCALAR ***, int, int);
 };
 
@@ -64,6 +66,14 @@ E: Illegal ... command
 Self-explanatory.  Check the input script syntax and compare to the
 documentation for the command.  You can use -echo screen as a
 command-line option when running LAMMPS to see the offending line.
+
+E: Cannot currently use pppm/gpu with fix balance.
+
+Self-explanatory.
+
+E: Cannot (yet) do analytic differentiation with pppm/gpu
+
+This is a current restriction of this command.
 
 E: Cannot use order greater than 8 with pppm/gpu.
 

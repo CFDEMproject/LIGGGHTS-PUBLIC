@@ -72,15 +72,7 @@ int DumpATOMVTK::count()
 {
   n_calls_ = 0;
 
-  if (igroup == 0) return atom->nlocal;
-
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
-
-  int m = 0;
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit) m++;
-  return m;
+  return Dump::count();
 }
 
 /* ---------------------------------------------------------------------- */

@@ -17,14 +17,132 @@
 #include "lal_ellipsoid_extra.h"
 #endif
 
-__kernel void kernel_ellipsoid_sphere(__global numtyp4* x_,__global numtyp4 *q,
-                   __global numtyp4* shape, __global numtyp4* well, 
-                   __global numtyp *splj, __global numtyp2* sig_eps,
-                   const int ntypes, __global int *dev_nbor, const int stride, 
-                   __global acctyp4 *ans, const int astride, 
-                   __global acctyp *engv, __global int *err_flag, 
-                   const int eflag, const int vflag, const int inum,
-                   const int t_per_atom) {
+#if (ARCH < 300)
+
+#define store_answers_rt(f, tor, energy, virial, ii, astride, tid,           \
+                         t_per_atom, offset, eflag, vflag, ans, engv)        \
+  if (t_per_atom>1) {                                                        \
+    __local acctyp red_acc[7][BLOCK_PAIR];                                   \
+    red_acc[0][tid]=f.x;                                                     \
+    red_acc[1][tid]=f.y;                                                     \
+    red_acc[2][tid]=f.z;                                                     \
+    red_acc[3][tid]=tor.x;                                                   \
+    red_acc[4][tid]=tor.y;                                                   \
+    red_acc[5][tid]=tor.z;                                                   \
+    for (unsigned int s=t_per_atom/2; s>0; s>>=1) {                          \
+      if (offset < s) {                                                      \
+        for (int r=0; r<6; r++)                                              \
+          red_acc[r][tid] += red_acc[r][tid+s];                              \
+      }                                                                      \
+    }                                                                        \
+    f.x=red_acc[0][tid];                                                     \
+    f.y=red_acc[1][tid];                                                     \
+    f.z=red_acc[2][tid];                                                     \
+    tor.x=red_acc[3][tid];                                                   \
+    tor.y=red_acc[4][tid];                                                   \
+    tor.z=red_acc[5][tid];                                                   \
+    if (eflag>0 || vflag>0) {                                                \
+      for (int r=0; r<6; r++)                                                \
+        red_acc[r][tid]=virial[r];                                           \
+      red_acc[6][tid]=energy;                                                \
+      for (unsigned int s=t_per_atom/2; s>0; s>>=1) {                        \
+        if (offset < s) {                                                    \
+          for (int r=0; r<7; r++)                                            \
+            red_acc[r][tid] += red_acc[r][tid+s];                            \
+        }                                                                    \
+      }                                                                      \
+      for (int r=0; r<6; r++)                                                \
+        virial[r]=red_acc[r][tid];                                           \
+      energy=red_acc[6][tid];                                                \
+    }                                                                        \
+  }                                                                          \
+  if (offset==0) {                                                           \
+    __global acctyp *ap1=engv+ii;                                            \
+    if (eflag>0) {                                                           \
+      *ap1+=energy*(acctyp)0.5;                                              \
+      ap1+=astride;                                                          \
+    }                                                                        \
+    if (vflag>0) {                                                           \
+      for (int i=0; i<6; i++) {                                              \
+        *ap1+=virial[i]*(acctyp)0.5;                                         \
+        ap1+=astride;                                                        \
+      }                                                                      \
+    }                                                                        \
+    acctyp4 old=ans[ii];                                                     \
+    old.x+=f.x;                                                              \
+    old.y+=f.y;                                                              \
+    old.z+=f.z;                                                              \
+    ans[ii]=old;                                                             \
+    old=ans[ii+astride];                                                     \
+    old.x+=tor.x;                                                            \
+    old.y+=tor.y;                                                            \
+    old.z+=tor.z;                                                            \
+    ans[ii+astride]=old;                                                     \
+  }
+
+#else
+
+#define store_answers_rt(f, tor, energy, virial, ii, astride, tid,          \
+                         t_per_atom, offset, eflag, vflag, ans, engv)       \
+  if (t_per_atom>1) {                                                       \
+    for (unsigned int s=t_per_atom/2; s>0; s>>=1) {                         \
+        f.x += shfl_xor(f.x, s, t_per_atom);                                \
+        f.y += shfl_xor(f.y, s, t_per_atom);                                \
+        f.z += shfl_xor(f.z, s, t_per_atom);                                \
+        tor.x += shfl_xor(tor.x, s, t_per_atom);                            \
+        tor.y += shfl_xor(tor.y, s, t_per_atom);                            \
+        tor.z += shfl_xor(tor.z, s, t_per_atom);                            \
+        energy += shfl_xor(energy, s, t_per_atom);                          \
+    }                                                                       \
+    if (vflag>0) {                                                          \
+      for (unsigned int s=t_per_atom/2; s>0; s>>=1) {                       \
+          for (int r=0; r<6; r++)                                           \
+            virial[r] += shfl_xor(virial[r], s, t_per_atom);                \
+      }                                                                     \
+    }                                                                       \
+  }                                                                         \
+  if (offset==0) {                                                          \
+    __global acctyp *ap1=engv+ii;                                           \
+    if (eflag>0) {                                                          \
+      *ap1+=energy*(acctyp)0.5;                                             \
+      ap1+=astride;                                                         \
+    }                                                                       \
+    if (vflag>0) {                                                          \
+      for (int i=0; i<6; i++) {                                             \
+        *ap1+=virial[i]*(acctyp)0.5;                                        \
+        ap1+=astride;                                                       \
+      }                                                                     \
+    }                                                                       \
+    acctyp4 old=ans[ii];                                                    \
+    old.x+=f.x;                                                             \
+    old.y+=f.y;                                                             \
+    old.z+=f.z;                                                             \
+    ans[ii]=old;                                                            \
+    old=ans[ii+astride];                                                    \
+    old.x+=tor.x;                                                           \
+    old.y+=tor.y;                                                           \
+    old.z+=tor.z;                                                           \
+    ans[ii+astride]=old;                                                    \
+  }
+
+#endif
+
+__kernel void k_resquared_ellipsoid_sphere(const __global numtyp4 *restrict x_,
+                                           const __global numtyp4 *restrict q,
+                                           const __global numtyp4 *restrict shape, 
+                                           const __global numtyp4 *restrict well,
+                                           const __global numtyp *restrict splj, 
+                                           const __global numtyp2 *restrict sig_eps,
+                                           const int ntypes, 
+                                           const __global int *dev_nbor,
+                                           const int stride, 
+                                           __global acctyp4 *restrict ans,
+                                           const int astride, 
+                                           __global acctyp *restrict engv, 
+                                           __global int *restrict err_flag, 
+                                           const int eflag, const int vflag, 
+                                           const int inum, 
+                                           const int t_per_atom) {
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
 
@@ -54,12 +172,13 @@ __kernel void kernel_ellipsoid_sphere(__global numtyp4* x_,__global numtyp4 *q,
     virial[i]=(acctyp)0;
 
   if (ii<inum) {
-    __global int *nbor, *nbor_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *nbor_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info_e(dev_nbor,stride,t_per_atom,ii,offset,i,numj,
                 n_stride,nbor_end,nbor);
   
-    numtyp4 ix=x_[i];
+    numtyp4 ix; fetch4(ix,i,pos_tex);
     int itype=ix.w;
 
     numtyp a[9];       // Rotation matrix (lab->body)
@@ -84,7 +203,7 @@ __kernel void kernel_ellipsoid_sphere(__global numtyp4* x_,__global numtyp4 *q,
       factor_lj = sp_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      numtyp4 jx=x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex);
       int jtype=jx.w;
 
       // Compute r12
@@ -259,86 +378,26 @@ __kernel void kernel_ellipsoid_sphere(__global numtyp4* x_,__global numtyp4 *q,
       }
 
     } // for nbor
-
-    // Reduce answers
-    if (t_per_atom>1) {
-      __local acctyp red_acc[7][BLOCK_PAIR];
-      
-      red_acc[0][tid]=f.x;
-      red_acc[1][tid]=f.y;
-      red_acc[2][tid]=f.z;
-      red_acc[3][tid]=tor.x;
-      red_acc[4][tid]=tor.y;
-      red_acc[5][tid]=tor.z;
-  
-      for (unsigned int s=t_per_atom/2; s>0; s>>=1) {
-        if (offset < s) {
-          for (int r=0; r<6; r++)
-            red_acc[r][tid] += red_acc[r][tid+s];
-        }
-      }
-      
-      f.x=red_acc[0][tid];
-      f.y=red_acc[1][tid];
-      f.z=red_acc[2][tid];
-      tor.x=red_acc[3][tid];
-      tor.y=red_acc[4][tid];
-      tor.z=red_acc[5][tid];
-  
-      if (eflag>0 || vflag>0) {
-        for (int r=0; r<6; r++)
-          red_acc[r][tid]=virial[r];
-        red_acc[6][tid]=energy;
-  
-        for (unsigned int s=t_per_atom/2; s>0; s>>=1) {
-          if (offset < s) {
-            for (int r=0; r<7; r++)
-              red_acc[r][tid] += red_acc[r][tid+s];
-          }
-        }
-      
-        for (int r=0; r<6; r++)
-          virial[r]=red_acc[r][tid];
-        energy=red_acc[6][tid];
-      }
-    }
-  
-    // Store answers
-    if (offset==0) {
-      __global acctyp *ap1=engv+ii;
-      if (eflag>0) {
-        *ap1+=energy;
-        ap1+=astride;
-      }
-      if (vflag>0) {
-        for (int i=0; i<6; i++) {
-          *ap1+=virial[i];
-          ap1+=astride;
-        }
-      }
-      acctyp4 old=ans[ii];
-      old.x+=f.x;
-      old.y+=f.y;
-      old.z+=f.z;
-      ans[ii]=old;
-      
-      old=ans[ii+astride];
-      old.x+=tor.x;
-      old.y+=tor.y;
-      old.z+=tor.z;
-      ans[ii+astride]=old;
-    }
+    store_answers_rt(f,tor,energy,virial,ii,astride,tid,t_per_atom,offset,eflag,
+                     vflag,ans,engv);
   } // if ii
 }
 
-__kernel void kernel_sphere_ellipsoid(__global numtyp4 *x_,__global numtyp4 *q,
-                               __global numtyp4* shape,__global numtyp4* well, 
-                               __global numtyp *splj, __global numtyp2* sig_eps, 
-                               const int ntypes, __global int *dev_nbor,
-                               const int stride, __global acctyp4 *ans,
-                               __global acctyp *engv, __global int *err_flag,
-                               const int eflag, const int vflag,const int start,
-                               const int inum, const int t_per_atom) {
+__kernel void k_resquared_sphere_ellipsoid(const __global numtyp4 *restrict x_,
+                                           const __global numtyp4 *restrict q, 
+                                           const __global numtyp4 *restrict shape,
+                                           const __global numtyp4 *restrict well,
+                                           const __global numtyp *restrict splj,
+                                           const __global numtyp2 *restrict sig_eps,
+                                           const int ntypes, 
+                                           const __global int *dev_nbor,
+                                           const int stride, 
+                                           __global acctyp4 *restrict ans,
+                                           __global acctyp *restrict engv, 
+                                           __global int *restrict err_flag,
+                                           const int eflag, const int vflag,
+                                           const int start, const int inum, 
+                                           const int t_per_atom) {
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   ii+=start;
@@ -365,12 +424,13 @@ __kernel void kernel_sphere_ellipsoid(__global numtyp4 *x_,__global numtyp4 *q,
     virial[i]=(acctyp)0;
 
   if (ii<inum) {
-    __global int *nbor, *nbor_end;
-    int j, numj, n_stride;
+    const __global int *nbor, *nbor_end;
+    int j, numj;
+    __local int n_stride;
     nbor_info_e(dev_nbor,stride,t_per_atom,ii,offset,j,numj,
                 n_stride,nbor_end,nbor);
   
-    numtyp4 jx=x_[j];
+    numtyp4 jx; fetch4(jx,j,pos_tex);
     int jtype=jx.w;
 
     numtyp factor_lj;
@@ -379,7 +439,7 @@ __kernel void kernel_sphere_ellipsoid(__global numtyp4 *x_,__global numtyp4 *q,
       factor_lj = sp_lj[sbmask(i)];
       i &= NEIGHMASK;
 
-      numtyp4 ix=x_[i];
+      numtyp4 ix; fetch4(ix,i,pos_tex);
       int itype=ix.w;
 
       numtyp a[9];       // Rotation matrix (lab->body)
@@ -524,14 +584,18 @@ __kernel void kernel_sphere_ellipsoid(__global numtyp4 *x_,__global numtyp4 *q,
   } // if ii
 }
 
-__kernel void kernel_lj(__global numtyp4 *x_, __global numtyp4 *lj1, 
-                        __global numtyp4* lj3, const int lj_types, 
-                        __global numtyp *gum, 
-                        const int stride, __global int *dev_ij, 
-                        __global acctyp4 *ans, __global acctyp *engv, 
-                        __global int *err_flag, const int eflag, 
-                        const int vflag, const int start, const int inum, 
-                        const int t_per_atom) {
+__kernel void k_resquared_lj(const __global numtyp4 *restrict x_, 
+                             const __global numtyp4 *restrict lj1, 
+                             const __global numtyp4 *restrict lj3, 
+                             const int lj_types, 
+                             const __global numtyp *restrict gum, 
+                             const int stride, 
+                             const __global int *dev_ij, 
+                             __global acctyp4 *restrict ans,
+                             __global acctyp *restrict engv, 
+                             __global int *restrict err_flag,
+                             const int eflag, const int vflag, const int start,
+                             const int inum, const int t_per_atom) {
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   ii+=start;
@@ -552,12 +616,13 @@ __kernel void kernel_lj(__global numtyp4 *x_, __global numtyp4 *lj1,
     virial[i]=(acctyp)0;
   
   if (ii<inum) {
-    __global int *nbor, *list_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *list_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info_e(dev_ij,stride,t_per_atom,ii,offset,i,numj,
                 n_stride,list_end,nbor);
   
-    numtyp4 ix=x_[i];
+    numtyp4 ix; fetch4(ix,i,pos_tex);
     int itype=ix.w;
 
     numtyp factor_lj;
@@ -567,7 +632,7 @@ __kernel void kernel_lj(__global numtyp4 *x_, __global numtyp4 *lj1,
       factor_lj = sp_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      numtyp4 jx=x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex);
       int jtype=jx.w;
 
       // Compute r12
@@ -606,13 +671,18 @@ __kernel void kernel_lj(__global numtyp4 *x_, __global numtyp4 *lj1,
   } // if ii
 }
 
-__kernel void kernel_lj_fast(__global numtyp4 *x_, __global numtyp4 *lj1_in, 
-                             __global numtyp4* lj3_in, __global numtyp *gum, 
-                             const int stride, __global int *dev_ij,
-                             __global acctyp4 *ans, __global acctyp *engv,
-                             __global int *err_flag, const int eflag,
-                             const int vflag, const int start, const int inum,
-                             const int t_per_atom) {
+__kernel void k_resquared_lj_fast(const __global numtyp4 *restrict x_, 
+                                  const __global numtyp4 *restrict lj1_in, 
+                                  const __global numtyp4 *restrict lj3_in, 
+                                  const __global numtyp *restrict gum, 
+                                  const int stride,
+                                  const __global int *dev_ij,
+                                  __global acctyp4 *restrict ans,
+                                  __global acctyp *restrict engv, 
+                                  __global int *restrict err_flag,
+                                  const int eflag, const int vflag,
+                                  const int start, const int inum, 
+                                  const int t_per_atom) {
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   ii+=start;
@@ -640,12 +710,13 @@ __kernel void kernel_lj_fast(__global numtyp4 *x_, __global numtyp4 *lj1_in,
   __syncthreads();
   
   if (ii<inum) {
-    __global int *nbor, *list_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *list_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info_e(dev_ij,stride,t_per_atom,ii,offset,i,numj,
                 n_stride,list_end,nbor);
 
-    numtyp4 ix=x_[i];
+    numtyp4 ix; fetch4(ix,i,pos_tex);
     int iw=ix.w;
     int itype=fast_mul((int)MAX_SHARED_TYPES,iw);
 
@@ -656,7 +727,7 @@ __kernel void kernel_lj_fast(__global numtyp4 *x_, __global numtyp4 *lj1_in,
       factor_lj = sp_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      numtyp4 jx=x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex);
       int mtype=itype+jx.w;
 
       // Compute r12

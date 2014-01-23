@@ -30,7 +30,7 @@
 using namespace LAMMPS_NS;
 
 enum{SUM,MINN,MAXX,AVE};
-enum{X,V,F,RHO,P,COMPUTE,FIX,VARIABLE};
+enum{X,V,F,COMPUTE,FIX,VARIABLE};
 enum{PERATOM,LOCAL};
 
 #define INVOKED_VECTOR 2
@@ -111,12 +111,6 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
     } else if (strcmp(arg[iarg],"fz") == 0) {
       which[nvalues] = F;
       argindex[nvalues++] = 2;
-    } else if (strcmp(arg[iarg],"rho") == 0) {
-      which[nvalues] = RHO;
-      argindex[nvalues++] = 0;
-    } else if (strcmp(arg[iarg],"p") == 0) {
-      which[nvalues] = P;
-      argindex[nvalues++] = 0;
 
     } else if (strncmp(arg[iarg],"c_",2) == 0 ||
                strncmp(arg[iarg],"f_",2) == 0 ||
@@ -162,7 +156,7 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
       int col2 = atoi(arg[iarg+2]) - 1;
       if (col1 < 0 || col1 >= nvalues || col2 < 0 || col2 >= nvalues)
         error->all(FLERR,"Illegal compute reduce command");
-      if (col1 == col2)        error->all(FLERR,"Illegal compute reduce command");
+      if (col1 == col2) error->all(FLERR,"Illegal compute reduce command");
       if (replace[col1] >= 0 || replace[col2] >= 0)
         error->all(FLERR,"Invalid replace values in compute reduce");
       replace[col1] = col2;
@@ -201,7 +195,8 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
                      "calculate a per-atom array");
         if (argindex[i] &&
             argindex[i] > modify->compute[icompute]->size_peratom_cols)
-          error->all(FLERR,"Compute reduce compute array is accessed out-of-range");
+          error->all(FLERR,
+                     "Compute reduce compute array is accessed out-of-range");
       } else if (modify->compute[icompute]->local_flag) {
         flavor[i] = LOCAL;
         if (argindex[i] == 0 &&
@@ -213,8 +208,10 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
                      "calculate a local array");
         if (argindex[i] &&
             argindex[i] > modify->compute[icompute]->size_local_cols)
-          error->all(FLERR,"Compute reduce compute array is accessed out-of-range");
-      } else error->all(FLERR,"Compute reduce compute calculates global values");
+          error->all(FLERR,
+                     "Compute reduce compute array is accessed out-of-range");
+      } else error->all(FLERR,
+                        "Compute reduce compute calculates global values");
 
     } else if (which[i] == FIX) {
       int ifix = modify->find_fix(ids[i]);
@@ -304,7 +301,7 @@ ComputeReduce::~ComputeReduce()
 
 void ComputeReduce::init()
 {
-  // set indices and check validity of all computes,fixes,variables
+  // set indices of all computes,fixes,variables
 
   for (int m = 0; m < nvalues; m++) {
     if (which[m] == COMPUTE) {
@@ -477,18 +474,6 @@ double ComputeReduce::compute_one(int m, int flag)
       for (i = 0; i < nlocal; i++)
         if (mask[i] & groupbit) combine(one,f[i][aidx],i);
     } else one = f[flag][aidx];
-  } else if (which[m] == RHO) {
-    double *rho = atom->rho;
-    if (flag < 0) {
-      for (i = 0; i < nlocal; i++)
-        if (mask[i] & groupbit) combine(one,rho[i],i);
-    } else one = rho[flag];
-  } else if (which[m] == P) {
-    double *p = atom->p;
-    if (flag < 0) {
-      for (i = 0; i < nlocal; i++)
-        if (mask[i] & groupbit) combine(one,p[i],i);
-    } else one = p[flag];
 
   // invoke compute if not previously invoked
 

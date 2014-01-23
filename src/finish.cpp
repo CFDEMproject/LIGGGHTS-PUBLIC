@@ -29,6 +29,8 @@
 #include "neigh_request.h"
 #include "output.h"
 #include "memory.h"
+#include "modify.h"
+#include "fix.h"
 
 using namespace LAMMPS_NS;
 
@@ -73,10 +75,22 @@ void Finish::end(int flag)
     if (update->whichflag == 1 &&
         strcmp(update->integrate_style,"verlet/split") == 0 &&
         universe->iworld == 1) neighflag = 0;
-    if (force->kspace && force->kspace_match("pppm",0)) fftflag = 1;
+    if (force->kspace && force->kspace_match("pppm",0)
+        && force->kspace->fftbench) fftflag = 1;
   }
   if (flag == 2) prdflag = histoflag = neighflag = 1;
   if (flag == 3) tadflag = histoflag = neighflag = 1;
+
+  // calculate modify time
+  time = 0.0;
+
+  if(modify->timing) {
+    for(int i = 0; i < modify->nfix; i++) {
+      time += modify->fix[i]->get_recorded_time();
+    }
+  }
+
+  timer->array[TIME_MODIFY] = time;
 
   // loop stats
 
@@ -84,7 +98,7 @@ void Finish::end(int flag)
     time_other = timer->array[TIME_LOOP] -
       (timer->array[TIME_PAIR] + timer->array[TIME_BOND] +
        timer->array[TIME_KSPACE] + timer->array[TIME_NEIGHBOR] +
-       timer->array[TIME_COMM] + timer->array[TIME_OUTPUT]);
+       timer->array[TIME_COMM] + timer->array[TIME_OUTPUT] + timer->array[TIME_MODIFY]);
 
     time_loop = timer->array[TIME_LOOP];
     MPI_Allreduce(&time_loop,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
@@ -305,6 +319,20 @@ void Finish::end(int flag)
                 time,time/time_loop*100.0);
     }
 
+    if(modify->timing) {
+      time = timer->array[TIME_MODIFY];
+      MPI_Allreduce(&time,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
+      time = tmp/nprocs;
+      if (me == 0) {
+        if (screen)
+          fprintf(screen,"  Modify   time (%%) = %g (%g)\n",
+                  time,time/time_loop*100.0);
+        if (logfile)
+          fprintf(logfile,"  Modify   time (%%) = %g (%g)\n",
+                  time,time/time_loop*100.0);
+      }
+    }
+
     time = time_other;
     MPI_Allreduce(&time,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
     time = tmp/nprocs;
@@ -402,6 +430,20 @@ void Finish::end(int flag)
                 time,time/time_loop*100.0);
     }
 
+    if(modify->timing) {
+      time = timer->array[TIME_MODIFY];
+      MPI_Allreduce(&time,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
+      time = tmp/nprocs;
+      if (me == 0) {
+        if (screen)
+          fprintf(screen,"Modfy time (%%) = %g (%g)\n",
+                  time,time/time_loop*100.0);
+        if (logfile)
+          fprintf(logfile,"Modfy time (%%) = %g (%g)\n",
+                  time,time/time_loop*100.0);
+      }
+    }
+
     time = time_other;
     MPI_Allreduce(&time,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
     time = tmp/nprocs;
@@ -413,10 +455,30 @@ void Finish::end(int flag)
         fprintf(logfile,"Other time (%%) = %g (%g)\n",
                 time,time/time_loop*100.0);
     }
+
+    if(modify->timing) {
+      // output fix timings
+      for(int i = 0; i < modify->nfix; i++) {
+        Fix * fix = modify->fix[i];
+        time = fix->get_recorded_time();
+        MPI_Allreduce(&time,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
+        time = tmp/nprocs;
+
+         if (me == 0) {
+            if (screen)
+              fprintf(screen,"Fix %s %s time (%%) = %g (%g)\n",
+                  fix->id, fix->style, time,time/time_loop*100.0);
+            if (logfile)
+              fprintf(logfile,"Fix %s %s time (%%) = %g (%g)\n",
+                  fix->id, fix->style, time,time/time_loop*100.0);
+        }
+      }
+    }
   }
 
   // FFT timing statistics
   // time3d,time1d = total time during run for 3d and 1d FFTs
+  // loop on timing() until nsample FFTs require at least 1.0 CPU sec
   // time_kspace may be 0.0 if another partition is doing Kspace
 
   if (fftflag) {
@@ -427,13 +489,24 @@ void Finish::end(int flag)
 
     int nsteps = update->nsteps;
 
-    int nsample = 5;
-    double time3d,time1d;
-    force->kspace->timing(nsample,time3d,time1d);
+    double time3d;
+    int nsample = 1;
+    int nfft = force->kspace->timing_3d(nsample,time3d);
+    while (time3d < 1.0) {
+      nsample *= 2;
+      nfft = force->kspace->timing_3d(nsample,time3d);
+    }
 
     time3d = nsteps * time3d / nsample;
     MPI_Allreduce(&time3d,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
     time3d = tmp/nprocs;
+    double time1d;
+    nsample = 1;
+    nfft = force->kspace->timing_1d(nsample,time1d);
+    while (time1d < 1.0) {
+      nsample *= 2;
+      nfft = force->kspace->timing_1d(nsample,time1d);
+    }
 
     time1d = nsteps * time1d / nsample;
     MPI_Allreduce(&time1d,&tmp,1,MPI_DOUBLE,MPI_SUM,world);
@@ -451,8 +524,8 @@ void Finish::end(int flag)
     if (nsteps) {
       if (time_kspace) fraction = time3d/time_kspace*100.0;
       else fraction = 0.0;
-      flop3 = nflops/1.0e9/(time3d/4.0/nsteps);
-      flop1 = nflops/1.0e9/(time1d/4.0/nsteps);
+      flop3 = nfft*nflops/1.0e9/(time3d/nsteps);
+      flop1 = nfft*nflops/1.0e9/(time1d/nsteps);
     } else fraction = flop3 = flop1 = 0.0;
 
     if (me == 0) {
@@ -611,8 +684,10 @@ void Finish::end(int flag)
         if (atom->molecular && atom->natoms > 0)
           fprintf(screen,"Ave special neighs/atom = %g\n",
                   nspec_all/atom->natoms);
-        fprintf(screen,"Neighbor list builds = %d\n",neighbor->ncalls);
-        fprintf(screen,"Dangerous builds = %d\n",neighbor->ndanger);
+        fprintf(screen,"Neighbor list builds = " BIGINT_FORMAT "\n",
+                neighbor->ncalls);
+        fprintf(screen,"Dangerous builds = " BIGINT_FORMAT "\n",
+                neighbor->ndanger);
       }
       if (logfile) {
         if (nall < 2.0e9)
@@ -624,8 +699,10 @@ void Finish::end(int flag)
         if (atom->molecular && atom->natoms > 0)
           fprintf(logfile,"Ave special neighs/atom = %g\n",
                   nspec_all/atom->natoms);
-        fprintf(logfile,"Neighbor list builds = %d\n",neighbor->ncalls);
-        fprintf(logfile,"Dangerous builds = %d\n",neighbor->ndanger);
+        fprintf(logfile,"Neighbor list builds = " BIGINT_FORMAT "\n",
+                neighbor->ncalls);
+        fprintf(logfile,"Dangerous builds = " BIGINT_FORMAT "\n",
+                neighbor->ndanger);
       }
     }
   }

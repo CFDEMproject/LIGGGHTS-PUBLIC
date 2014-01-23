@@ -16,7 +16,6 @@
 #include "string.h"
 #include "ctype.h"
 #include "pair_hybrid.h"
-#include "style_pair.h"
 #include "atom.h"
 #include "force.h"
 #include "pair.h"
@@ -37,6 +36,8 @@ PairHybrid::PairHybrid(LAMMPS *lmp) : Pair(lmp)
   styles = NULL;
   keywords = NULL;
   multiple = NULL;
+
+  outerflag = 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -63,7 +64,7 @@ PairHybrid::~PairHybrid()
 }
 
 /* ----------------------------------------------------------------------
-  call each sub-style's compute function
+  call each sub-style's compute() or compute_outer() function
   accumulate sub-style global/peratom energy/virial in hybrid
   for global vflag = 1:
     each sub-style computes own virial[6]
@@ -98,7 +99,13 @@ void PairHybrid::compute(int eflag, int vflag)
   else vflag_substyle = vflag;
 
   for (m = 0; m < nstyles; m++) {
-    styles[m]->compute(eflag,vflag_substyle);
+
+    // invoke compute() unless 
+    // outerflag is set and sub-style has a compute_outer() method
+
+    if (outerflag && styles[m]->respa_enable) 
+      styles[m]->compute_outer(eflag,vflag_substyle);
+    else styles[m]->compute(eflag,vflag_substyle);
 
     if (eflag_global) {
       eng_vdwl += styles[m]->eng_vdwl;
@@ -146,8 +153,9 @@ void PairHybrid::compute_middle()
 
 void PairHybrid::compute_outer(int eflag, int vflag)
 {
-  for (int m = 0; m < nstyles; m++)
-    if (styles[m]->respa_enable) styles[m]->compute_outer(eflag,vflag);
+  outerflag = 1;
+  compute(eflag,vflag);
+  outerflag = 0;
 }
 
 /* ----------------------------------------------------------------------
@@ -202,11 +210,7 @@ void PairHybrid::settings(int narg, char **arg)
   }
   allocated = 0;
 
-  // build list of all known pair styles
-
-  build_styles();
-
-  // allocate list of sub-styles as big as possibly needed
+  // allocate list of sub-styles as big as possibly needed if no extra args
 
   styles = new Pair*[narg];
   keywords = new char*[narg];
@@ -214,6 +218,7 @@ void PairHybrid::settings(int narg, char **arg)
 
   // allocate each sub-style
   // call settings() with set of args that are not pair style names
+  // use force->pair_map to determine which args these are
 
   int iarg,jarg,dummy;
 
@@ -224,23 +229,20 @@ void PairHybrid::settings(int narg, char **arg)
       error->all(FLERR,"Pair style hybrid cannot have hybrid as an argument");
     if (strcmp(arg[iarg],"none") == 0)
       error->all(FLERR,"Pair style hybrid cannot have none as an argument");
-    styles[nstyles] = force->new_pair(arg[iarg],lmp->suffix,dummy);
+    int nremaining = narg - iarg;
+    char ** remaining_args = &arg[iarg+1];
+    styles[nstyles] = force->new_pair(arg[iarg],nremaining,remaining_args,lmp->suffix,dummy);
     int n = strlen(arg[iarg]) + 1;
     keywords[nstyles] = new char[n];
     strcpy(keywords[nstyles],arg[iarg]);
     jarg = iarg + 1;
-    while (jarg < narg && !known_style(arg[jarg])) jarg++;
+    while (jarg < narg && !force->pair_map->count(arg[jarg])) jarg++;
     styles[nstyles]->settings(jarg-iarg-1,&arg[iarg+1]);
     iarg = jarg;
     nstyles++;
   }
 
-  // free allstyles
-
-  for (int i = 0; i < nallstyles; i++) delete [] allstyles[i];
-  delete [] allstyles;
-
-  // multiple[i] = 1 to N if sub-style used multiple times, else 0
+  // multiple[i] = 1 to M if sub-style used multiple times, else 0
 
   for (int i = 0; i < nstyles; i++) {
     int count = 0;
@@ -251,18 +253,21 @@ void PairHybrid::settings(int narg, char **arg)
     if (count == 1) multiple[i] = 0;
   }
 
-  // set comm_forward, comm_reverse, comm_reverse_off to max of any sub-style
+  // set pair flags from sub-style flags
 
   flags();
 }
 
 /* ----------------------------------------------------------------------
-   set top-level pair flags from sub-style flags  - new from patch 19Jan2013
+   set top-level pair flags from sub-style flags
 ------------------------------------------------------------------------- */
 
-void PairHybrid::flags() //- new from patch 19Jan2013
+void PairHybrid::flags()
 {
   int m;
+
+  // set comm_forward, comm_reverse, comm_reverse_off to max of any sub-style
+
   for (m = 0; m < nstyles; m++) {
     if (styles[m]) comm_forward = MAX(comm_forward,styles[m]->comm_forward);
     if (styles[m]) comm_reverse = MAX(comm_reverse,styles[m]->comm_reverse);
@@ -272,18 +277,25 @@ void PairHybrid::flags() //- new from patch 19Jan2013
 
   // single_enable = 1 if any sub-style is set
   // respa_enable = 1 if any sub-style is set
+  // manybody_flag = 1 if any sub-style is set
   // no_virial_fdotr_compute = 1 if any sub-style is set
   // ghostneigh = 1 if any sub-style is set
+  // ewaldflag, pppmflag, msmflag, dispersionflag, tip4pflag = 1
+  //   if any sub-style is set
 
   single_enable = 0;
-  for (m = 0; m < nstyles; m++)
+  for (m = 0; m < nstyles; m++) {
     if (styles[m]->single_enable) single_enable = 1;
-  for (m = 0; m < nstyles; m++)
     if (styles[m]->respa_enable) respa_enable = 1;
-  for (m = 0; m < nstyles; m++)
+    if (styles[m]->manybody_flag) manybody_flag = 1;
     if (styles[m]->no_virial_fdotr_compute) no_virial_fdotr_compute = 1;
-  for (m = 0; m < nstyles; m++)
     if (styles[m]->ghostneigh) ghostneigh = 1;
+    if (styles[m]->ewaldflag) ewaldflag = 1;
+    if (styles[m]->pppmflag) pppmflag = 1;
+    if (styles[m]->msmflag) msmflag = 1;
+    if (styles[m]->dispersionflag) dispersionflag = 1;
+    if (styles[m]->tip4pflag) tip4pflag = 1;
+  }
 
   // single_extra = min of all sub-style single_extra
   // allocate svector
@@ -326,7 +338,7 @@ void PairHybrid::coeff(int narg, char **arg)
         if (narg < 4) error->all(FLERR,"Incorrect args for pair coefficients");
         if (!isdigit(arg[3][0]))
           error->all(FLERR,"Incorrect args for pair coefficients");
-        int index = atoi(arg[3]);
+        int index = force->inumeric(FLERR,arg[3]);
         if (index == multiple[m]) break;
         else continue;
       } else break;
@@ -609,10 +621,12 @@ void PairHybrid::read_restart(FILE *fp)
   if (me == 0) fread(&nstyles,sizeof(int),1,fp);
   MPI_Bcast(&nstyles,1,MPI_INT,0,world);
 
+  // allocate list of sub-styles
+
   styles = new Pair*[nstyles];
   keywords = new char*[nstyles];
+  multiple = new int[nstyles];
 
-  multiple = new int[nstyles]; // - new from patch 17May2012
   // each sub-style is created via new_pair()
   // each reads its settings, but no coeff info
 
@@ -623,9 +637,12 @@ void PairHybrid::read_restart(FILE *fp)
     keywords[m] = new char[n];
     if (me == 0) fread(keywords[m],sizeof(char),n,fp);
     MPI_Bcast(keywords[m],n,MPI_CHAR,0,world);
-    styles[m] = force->new_pair(keywords[m],lmp->suffix,dummy);
+    styles[m] = force->new_pair_from_restart(fp, keywords[m],lmp->suffix,dummy);
     styles[m]->read_restart_settings(fp);
   }
+
+  // multiple[i] = 1 to M if sub-style used multiple times, else 0
+
   for (int i = 0; i < nstyles; i++) {
     int count = 0;
     for (int j = 0; j < nstyles; j++) {
@@ -633,9 +650,9 @@ void PairHybrid::read_restart(FILE *fp)
       if (j == i) multiple[i] = count;
     }
     if (count == 1) multiple[i] = 0;
-  }  //- new from patch 17May2012
+  }
 
-  // set pair flags from sub-style flags // - new from patch 19Jan2013
+  // set pair flags from sub-style flags
 
   flags();
 }
@@ -734,45 +751,6 @@ int PairHybrid::check_ijtype(int itype, int jtype, char *substyle)
 {
   for (int m = 0; m < nmap[itype][jtype]; m++)
     if (strcmp(keywords[map[itype][jtype][m]],substyle) == 0) return 1;
-  return 0;
-}
-
-/* ----------------------------------------------------------------------
-   allstyles = list of all pair styles in this LAMMPS executable
-------------------------------------------------------------------------- */
-
-void PairHybrid::build_styles()
-{
-  nallstyles = 0;
-#define PAIR_CLASS
-#define PairStyle(key,Class) nallstyles++;
-#include "style_pair.h"
-#undef PairStyle
-#undef PAIR_CLASS
-
-  allstyles = new char*[nallstyles];
-
-  int n;
-  nallstyles = 0;
-#define PAIR_CLASS
-#define PairStyle(key,Class)                \
-  n = strlen(#key) + 1;                     \
-  allstyles[nallstyles] = new char[n];      \
-  strcpy(allstyles[nallstyles],#key);       \
-  nallstyles++;
-#include "style_pair.h"
-#undef PairStyle
-#undef PAIR_CLASS
-}
-
-/* ----------------------------------------------------------------------
-   allstyles = list of all known pair styles
-------------------------------------------------------------------------- */
-
-int PairHybrid::known_style(char *str)
-{
-  for (int i = 0; i < nallstyles; i++)
-    if (strcmp(str,allstyles[i]) == 0) return 1;
   return 0;
 }
 

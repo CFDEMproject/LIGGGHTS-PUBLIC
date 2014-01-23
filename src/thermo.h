@@ -30,6 +30,7 @@ namespace LAMMPS_NS {
 
 class Thermo : protected Pointers {
   friend class WriteRestart;           // accesses lostflag
+  friend class WriteData;              // accesses lostflag
   friend class MinCG;                  // accesses compute_pe
 
  public:
@@ -71,7 +72,7 @@ class Thermo : protected Pointers {
   int flushflag,lineflag;
 
   double last_tpcpu,last_spcpu;
-  double last_cu; 
+  double last_cu;       
   double last_time;
   bigint last_step;
 
@@ -132,9 +133,12 @@ class Thermo : protected Pointers {
   void compute_elapsed();
   void compute_elapsed_long();
   void compute_dt();
+  void compute_time();
   void compute_cpu();
   void compute_tpcpu();
   void compute_spcpu();
+  void compute_cpuremain();
+  void compute_part();
   void compute_cu(); 
 
   void compute_atoms();
@@ -157,6 +161,7 @@ class Thermo : protected Pointers {
   void compute_etail();
 
   void compute_vol();
+  void compute_density();
   void compute_lx();
   void compute_ly();
   void compute_lz();
@@ -288,10 +293,6 @@ E: Thermo_modify int format does not contain d character
 
 Self-explanatory.
 
-E: Thermo keyword requires lattice be defined
-
-The xlat, ylat, zlat keywords refer to lattice properties.
-
 E: Could not find thermo custom compute ID
 
 The compute ID needed by thermo style custom to compute a requested
@@ -396,7 +397,11 @@ You are using a thermo keyword that requires potentials to
 have tallied energy, but they didn't on this timestep.  See the
 variable doc page for ideas on how to make this work.
 
-E: Thermo keyword in variable requires lattice be defined
+U: Thermo keyword requires lattice be defined
+
+The xlat, ylat, zlat keywords refer to lattice properties.
+
+U: Thermo keyword in variable requires lattice be defined
 
 The xlat, ylat, zlat keywords refer to lattice properties.
 

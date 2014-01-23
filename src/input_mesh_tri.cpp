@@ -37,9 +37,6 @@
 
 using namespace LAMMPS_NS;
 
-#define MAXLINE 2048
-#define DELTA 4
-
 InputMeshTri::InputMeshTri(LAMMPS *lmp, int argc, char **argv) : Input(lmp, argc, argv),
 verbose_(false)
 {}
@@ -54,7 +51,6 @@ InputMeshTri::~InputMeshTri()
 void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool verbose)
 {
   verbose_ = verbose;
-
   if(strlen(filename) < 5)
     error->all(FLERR,"Illegal command, file name too short for input of triangular mesh");
   const char *ext = &(filename[strlen(filename)-3]);
@@ -100,7 +96,7 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
 
 void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
 {
-  int n;
+  int n,m;
   int iVertex = 0;
 
   double **points;
@@ -116,15 +112,29 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
 
   while (1)
   {
-    // read one line from input script
-    // if line ends in continuation char '&', concatenate next line(s)
-    // n = str length of line
+    // read a line from input script
+    // n = length of line including str terminator, 0 if end of file
+    // if line ends in continuation char '&', concatenate next line
+
     if (me == 0) {
-      if (fgets(line,MAXLINE,nonlammps_file) == NULL) n = 0;
-      else n = strlen(line) + 1;
-      while (n >= 3 && line[n-3] == '&') {
-        if (fgets(&line[n-3],MAXLINE-n+3,nonlammps_file) == NULL) n = 0;
-        else n = strlen(line) + 1;
+      m = 0;
+      while (1) {
+        if (maxline-m < 2) reallocate(line,maxline,0);
+        if (fgets(&line[m],maxline-m,nonlammps_file) == NULL) {
+          if (m) n = strlen(line) + 1;
+          else n = 0;
+          break;
+        }
+        m = strlen(line);
+        if (line[m-1] != '\n') continue;
+
+        m--;
+        while (m >= 0 && isspace(line[m])) m--;
+        if (m < 0 || line[m] != '&') {
+          line[m+1] = '\0';
+          n = m+2;
+          break;
+        }
       }
     }
 
@@ -133,26 +143,20 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
     // error if label_active is set, since label wasn't encountered
     // if original input file, code is done
     // else go back to previous input file
+
     MPI_Bcast(&n,1,MPI_INT,0,world);
     if (n == 0) {
       break;
     }
 
+    if (n > maxline) reallocate(line,maxline,n);
     MPI_Bcast(line,n,MPI_CHAR,0,world);
 
     // lines start with 1 (not 0)
     nLines++;
 
-    // if n = MAXLINE, line is too long
-    if (n == MAXLINE) {
-      char str[MAXLINE+32];
-      sprintf(str,"Input line too long: %s",line);
-      error->all(FLERR,str);
-    }
-
     // parse one line from the file
     parse_nonlammps();
-
     // skip empty lines
     if(narg == 0){
          if (me == 0 && verbose_)
@@ -262,7 +266,7 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
 
 void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
 {
-  int n;
+  int n,m;
   int iVertex = 0;
   double vertices[3][3];
   bool insideSolidObject = false;
@@ -273,15 +277,29 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
 
   while (1)
   {
-    // read one line from input script
-    // if line ends in continuation char '&', concatenate next line(s)
-    // n = str length of line
+    // read a line from input script
+    // n = length of line including str terminator, 0 if end of file
+    // if line ends in continuation char '&', concatenate next line
+
     if (me == 0) {
-      if (fgets(line,MAXLINE,nonlammps_file) == NULL) n = 0;
-      else n = strlen(line) + 1;
-      while (n >= 3 && line[n-3] == '&') {
-            if (fgets(&line[n-3],MAXLINE-n+3,nonlammps_file) == NULL) n = 0;
-            else n = strlen(line) + 1;
+      m = 0;
+      while (1) {
+        if (maxline-m < 2) reallocate(line,maxline,0);
+        if (fgets(&line[m],maxline-m,nonlammps_file) == NULL) {
+          if (m) n = strlen(line) + 1;
+          else n = 0;
+          break;
+        }
+        m = strlen(line);
+        if (line[m-1] != '\n') continue;
+
+        m--;
+        while (m >= 0 && isspace(line[m])) m--;
+        if (m < 0 || line[m] != '&') {
+          line[m+1] = '\0';
+          n = m+2;
+          break;
+        }
       }
     }
 
@@ -290,22 +308,17 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
     // error if label_active is set, since label wasn't encountered
     // if original input file, code is done
     // else go back to previous input file
+
     MPI_Bcast(&n,1,MPI_INT,0,world);
     if (n == 0) {
       break;
     }
 
+    if (n > maxline) reallocate(line,maxline,n);
     MPI_Bcast(line,n,MPI_CHAR,0,world);
 
     // lines start with 1 (not 0)
     nLines++;
-
-    // if n = MAXLINE, line is too long
-    if (n == MAXLINE) {
-      char str[MAXLINE+32];
-      sprintf(str,"Input line too long: %s",line);
-      error->all(FLERR,str);
-    }
 
     // parse one line from the stl file
     parse_nonlammps();

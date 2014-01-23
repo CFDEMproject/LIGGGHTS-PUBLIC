@@ -35,7 +35,7 @@ class Velocity : protected Pointers {
  private:
   int igroup,groupbit;
   int style;
-  int dist_flag,sum_flag,momentum_flag,rotation_flag,loop_flag,scale_flag;
+  int dist_flag,sum_flag,momentum_flag,rotation_flag,loop_flag,scale_flag,rfix;
   double xscale,yscale,zscale;
   class Compute *temperature;
 
@@ -93,11 +93,6 @@ E: Atom IDs must be consecutive for velocity create loop all
 
 Self-explanatory.
 
-E: Use of velocity with undefined lattice
-
-If scale = lattice (the default) for the velocity set or velocity ramp
-command, then a lattice must first be defined via the lattice command.
-
 E: Variable name for velocity set does not exist
 
 Self-explanatory.
@@ -136,5 +131,10 @@ E: Velocity temperature ID does not compute temperature
 
 The compute ID given to the velocity command must compute
 temperature.
+
+U: Use of velocity with undefined lattice
+
+If units = lattice (the default) for the velocity set or velocity ramp
+command, then a lattice must first be defined via the lattice command.
 
 */

@@ -27,7 +27,7 @@ namespace LAMMPS_NS {
 
 class PairHybrid : public Pair {
  public:
-  int nstyles;                  // # of different sub-styles
+  int nstyles;                  // # of sub-styles
   Pair **styles;                // list of Pair style classes
   char **keywords;              // style name of each Pair style
   int *multiple;                // 0 if style used once, else Mth instance
@@ -54,17 +54,14 @@ class PairHybrid : public Pair {
   int check_ijtype(int, int, char *);
 
  protected:
+  int outerflag;                // toggle compute() when invoked by outer()
+
   int **nmap;                   // # of sub-styles itype,jtype points to
   int ***map;                   // list of sub-styles itype,jtype points to
-
-  char **allstyles;
-  int nallstyles;
 
   void allocate();
   void flags();
   virtual void modify_requests();
-  void build_styles();
-  int known_style(char *);
 };
 
 }

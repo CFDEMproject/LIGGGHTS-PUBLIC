@@ -30,6 +30,7 @@ PairLJ96CutOMP::PairLJ96CutOMP(LAMMPS *lmp) :
 {
   suffix_flag |= Suffix::OMP;
   respa_enable = 0;
+  cut_respa = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -56,11 +57,11 @@ void PairLJ96CutOMP::compute(int eflag, int vflag)
 
     if (evflag) {
       if (eflag) {
-	if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else {
       if (force->newton_pair) eval<0,0,1>(ifrom, ito, thr);
@@ -81,11 +82,11 @@ void PairLJ96CutOMP::eval(int iifrom, int iito, ThrData * const thr)
 
   evdwl = 0.0;
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
-  const int * const type = atom->type;
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
+  const int * _noalias const type = atom->type;
   const int nlocal = atom->nlocal;
-  const double * const special_lj = force->special_lj;
+  const double * _noalias const special_lj = force->special_lj;
   double fxtmp,fytmp,fztmp;
 
   ilist = list->ilist;
@@ -97,9 +98,9 @@ void PairLJ96CutOMP::eval(int iifrom, int iito, ThrData * const thr)
   for (ii = iifrom; ii < iito; ++ii) {
 
     i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
@@ -110,42 +111,42 @@ void PairLJ96CutOMP::eval(int iifrom, int iito, ThrData * const thr)
       factor_lj = special_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-	r2inv = 1.0/rsq;
-	r6inv = r2inv*r2inv*r2inv;
-	r3inv = sqrt(r6inv);
+        r2inv = 1.0/rsq;
+        r6inv = r2inv*r2inv*r2inv;
+        r3inv = sqrt(r6inv);
 
-	forcelj = r6inv * (lj1[itype][jtype]*r3inv - lj2[itype][jtype]);
-	fpair = factor_lj*forcelj*r2inv;
+        forcelj = r6inv * (lj1[itype][jtype]*r3inv - lj2[itype][jtype]);
+        fpair = factor_lj*forcelj*r2inv;
 
-	fxtmp += delx*fpair;
-	fytmp += dely*fpair;
-	fztmp += delz*fpair;
-	if (NEWTON_PAIR || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        fxtmp += delx*fpair;
+        fytmp += dely*fpair;
+        fztmp += delz*fpair;
+        if (NEWTON_PAIR || j < nlocal) {
+          f[j].x -= delx*fpair;
+          f[j].y -= dely*fpair;
+          f[j].z -= delz*fpair;
+        }
 
-	if (EFLAG) {
-	  evdwl = r6inv*(lj3[itype][jtype]*r3inv-lj4[itype][jtype])
-	    - offset[itype][jtype];
-	  evdwl *= factor_lj;
-	}
+        if (EFLAG) {
+          evdwl = r6inv*(lj3[itype][jtype]*r3inv-lj4[itype][jtype])
+            - offset[itype][jtype];
+          evdwl *= factor_lj;
+        }
 
-	if (EVFLAG) ev_tally_thr(this,i,j,nlocal,NEWTON_PAIR,
-				 evdwl,0.0,fpair,delx,dely,delz,thr);
+        if (EVFLAG) ev_tally_thr(this,i,j,nlocal,NEWTON_PAIR,
+                                 evdwl,0.0,fpair,delx,dely,delz,thr);
       }
     }
-    f[i][0] += fxtmp;
-    f[i][1] += fytmp;
-    f[i][2] += fztmp;
+    f[i].x += fxtmp;
+    f[i].y += fytmp;
+    f[i].z += fztmp;
   }
 }
 

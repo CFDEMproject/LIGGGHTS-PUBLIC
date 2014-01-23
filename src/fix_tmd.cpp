@@ -40,13 +40,12 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-FixTMD::FixTMD(LAMMPS *lmp, int narg, char **arg) :
-  Fix(lmp, narg, arg)
+FixTMD::FixTMD(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 {
   if (narg < 6) error->all(FLERR,"Illegal fix tmd command");
 
-  rho_stop = atof(arg[3]);
-  nfileevery = atoi(arg[5]);
+  rho_stop = force->numeric(FLERR,arg[3]);
+  nfileevery = force->inumeric(FLERR,arg[5]);
   if (rho_stop < 0 || nfileevery < 0)
     error->all(FLERR,"Illegal fix tmd command");
   if (nfileevery && narg != 7) error->all(FLERR,"Illegal fix tmd command");
@@ -93,31 +92,22 @@ FixTMD::FixTMD(LAMMPS *lmp, int narg, char **arg) :
 
   int *mask = atom->mask;
   int *type = atom->type;
-  int *image = atom->image;
+  tagint *image = atom->image;
   double **x = atom->x;
   double *mass = atom->mass;
   int nlocal = atom->nlocal;
 
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
-
   double dx,dy,dz;
-  int xbox,ybox,zbox;
+
   rho_start = 0.0;
 
   for (int i = 0; i < nlocal; i++) {
     if (mask[i] & groupbit) {
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = x[i][0] + xbox*xprd - xf[i][0];
-      dy = x[i][1] + ybox*yprd - xf[i][1];
-      dz = x[i][2] + zbox*zprd - xf[i][2];
+      domain->unmap(x[i],image[i],xold[i]);
+      dx = xold[i][0] - xf[i][0];
+      dy = xold[i][1] - xf[i][1];
+      dz = xold[i][2] - xf[i][2];
       rho_start += mass[type[i]]*(dx*dx + dy*dy + dz*dz);
-      xold[i][0] = x[i][0] + xbox*xprd;
-      xold[i][1] = x[i][1] + ybox*yprd;
-      xold[i][2] = x[i][2] + zbox*zprd;
     } else xold[i][0] = xold[i][1] = xold[i][2] = 0.0;
   }
 
@@ -190,22 +180,19 @@ void FixTMD::initial_integrate(int vflag)
   double dxold,dyold,dzold,xback,yback,zback;
   double gamma_forward,gamma_back,gamma_max,lambda;
   double kt,fr,kttotal,frtotal,dtfm;
+  double unwrap[3];
 
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
   double **x = atom->x;
   double **v = atom->v;
   double **f = atom->f;
   double *mass = atom->mass;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int *type = atom->type;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
-  int xbox,ybox,zbox;
 
   double delta = update->ntimestep - update->beginstep;
-  delta /= update->endstep - update->beginstep;
+  if (delta != 0.0) delta /= update->endstep - update->beginstep;
   double rho_target = rho_start + delta * (rho_stop - rho_start);
 
   // compute the Lagrange multiplier
@@ -216,12 +203,10 @@ void FixTMD::initial_integrate(int vflag)
       dxold = xold[i][0] - xf[i][0];
       dyold = xold[i][1] - xf[i][1];
       dzold = xold[i][2] - xf[i][2];
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = x[i][0] + xbox*xprd - xf[i][0];
-      dy = x[i][1] + ybox*yprd - xf[i][1];
-      dz = x[i][2] + zbox*zprd - xf[i][2];
+      domain->unmap(x[i],image[i],unwrap);
+      dx = unwrap[0] - xf[i][0];
+      dy = unwrap[1] - xf[i][1];
+      dz = unwrap[2] - xf[i][2];
       a += mass[type[i]]*(dxold*dxold + dyold*dyold + dzold*dzold);
       b += mass[type[i]]*(dx   *dxold + dy   *dyold + dz   *dzold);
       e += mass[type[i]]*(dx   *dx    + dy   *dy    + dz   *dz);
@@ -258,12 +243,10 @@ void FixTMD::initial_integrate(int vflag)
       dxold = xold[i][0] - xf[i][0];
       dyold = xold[i][1] - xf[i][1];
       dzold = xold[i][2] - xf[i][2];
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      xback = x[i][0] + xbox*xprd + gamma_back*dxold;
-      yback = x[i][1] + ybox*yprd + gamma_back*dyold;
-      zback = x[i][2] + zbox*zprd + gamma_back*dzold;
+      domain->unmap(x[i],image[i],unwrap);
+      xback = unwrap[0] + gamma_back*dxold;
+      yback = unwrap[1] + gamma_back*dyold;
+      zback = unwrap[2] + gamma_back*dzold;
       dxkt = xback - xold[i][0];
       dykt = yback - xold[i][1];
       dzkt = zback - xold[i][2];
@@ -314,12 +297,7 @@ void FixTMD::initial_integrate(int vflag)
       x[i][2] += gamma_forward*dzold;
       v[i][2] += gamma_forward*dzold/dtv;
       f[i][2] += gamma_forward*dzold/dtv/dtfm;
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      xold[i][0] = x[i][0] + xbox*xprd;
-      xold[i][1] = x[i][1] + ybox*yprd;
-      xold[i][2] = x[i][2] + zbox*zprd;
+      domain->unmap(x[i],image[i],xold[i]);
     }
   }
 }
@@ -360,7 +338,7 @@ void FixTMD::grow_arrays(int nmax)
    copy values within local atom-based arrays
 ------------------------------------------------------------------------- */
 
-void FixTMD::copy_arrays(int i, int j)
+void FixTMD::copy_arrays(int i, int j, int delflag)
 {
   xf[j][0] = xf[i][0];
   xf[j][1] = xf[i][1];
@@ -415,25 +393,25 @@ void FixTMD::readfile(char *file)
   int nlocal = atom->nlocal;
 
   char *buffer = new char[CHUNK*MAXLINE];
-  char *ptr,*next,*bufptr;
+  char *next,*bufptr;
   int i,m,nlines,tag,imageflag,ix,iy,iz;
   double x,y,z,xprd,yprd,zprd;
 
   int firstline = 1;
   int ncount = 0;
-  int eof = 0;
+  char *eof = NULL;
   xprd = yprd = zprd = -1.0;
 
   while (!eof) {
     if (me == 0) {
       m = 0;
       for (nlines = 0; nlines < CHUNK; nlines++) {
-        ptr = fgets(&buffer[m],MAXLINE,fp);
-        if (ptr == NULL) break;
+        eof = fgets(&buffer[m],MAXLINE,fp);
+        if (eof == NULL) break;
         m += strlen(&buffer[m]);
       }
-      if (ptr == NULL) eof = 1;
-      buffer[m++] = '\n';
+      if (buffer[m-1] != '\n') strcpy(&buffer[m++],"\n");
+      m++;
     }
 
     MPI_Bcast(&eof,1,MPI_INT,0,world);
@@ -540,8 +518,14 @@ void FixTMD::open(char *file)
   else {
 #ifdef LAMMPS_GZIP
     char gunzip[128];
-    sprintf(gunzip,"gunzip -c %s",file);
+    sprintf(gunzip,"gzip -c -d %s",file);
+
+#ifdef _WIN32
+    fp = _popen(gunzip,"rb");
+#else
     fp = popen(gunzip,"r");
+#endif
+
 #else
     error->one(FLERR,"Cannot open gzipped file");
 #endif

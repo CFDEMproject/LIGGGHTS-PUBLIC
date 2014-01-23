@@ -132,8 +132,8 @@ namespace LAMMPS_NS
 
       protected:
 
-          GeneralContainer(char *_id);
-          GeneralContainer(char *_id, char *_comm, char *_ref, char *_restart, int _scalePower = 1);
+          GeneralContainer(const char *_id);
+          GeneralContainer(const char *_id, const char *_comm, const char *_ref, const char *_restart, int _scalePower = 1);
           GeneralContainer(GeneralContainer<T,NUM_VEC,LEN_VEC> const &orig);
           virtual ~GeneralContainer();
 

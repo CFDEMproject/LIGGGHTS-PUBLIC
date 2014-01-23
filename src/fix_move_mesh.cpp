@@ -147,7 +147,8 @@ void FixMoveMesh::setup(int vflag)
 
     if(!mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v"))
     {
-        mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_none","frame_invariant","restart_no");
+        
+        mesh_->prop().addElementProperty<MultiVectorContainer<double,3,3> >("v","comm_exchange_borders","frame_invariant","restart_no");
         
     }
 

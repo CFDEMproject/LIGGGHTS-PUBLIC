@@ -23,12 +23,15 @@
 #include "comm.h"
 #include "irregular.h"
 #include "group.h"
+#include "math_const.h"
 #include "random_park.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
+using namespace MathConst;
 
-enum{MOVE,RAMP,RANDOM};
+enum{MOVE,RAMP,RANDOM,ROTATE};
 
 /* ---------------------------------------------------------------------- */
 
@@ -59,6 +62,7 @@ void DisplaceAtoms::command(int narg, char **arg)
   if (strcmp(arg[1],"move") == 0) style = MOVE;
   else if (strcmp(arg[1],"ramp") == 0) style = RAMP;
   else if (strcmp(arg[1],"random") == 0) style = RANDOM;
+  else if (strcmp(arg[1],"rotate") == 0) style = ROTATE;
   else error->all(FLERR,"Illegal displace_atoms command");
 
   // set option defaults
@@ -70,11 +74,9 @@ void DisplaceAtoms::command(int narg, char **arg)
   if (style == MOVE) options(narg-5,&arg[5]);
   else if (style == RAMP) options(narg-8,&arg[8]);
   else if (style == RANDOM) options(narg-6,&arg[6]);
+  else if (style == ROTATE) options(narg-9,&arg[9]);
 
   // setup scaling
-
-  if (scaleflag && domain->lattice == NULL)
-    error->all(FLERR,"Use of displace_atoms with undefined lattice");
 
   double xscale,yscale,zscale;
   if (scaleflag) {
@@ -88,9 +90,9 @@ void DisplaceAtoms::command(int narg, char **arg)
 
   if (style == MOVE) {
 
-    double delx = xscale*atof(arg[2]);
-    double dely = yscale*atof(arg[3]);
-    double delz = zscale*atof(arg[4]);
+    double delx = xscale*force->numeric(FLERR,arg[2]);
+    double dely = yscale*force->numeric(FLERR,arg[3]);
+    double delz = zscale*force->numeric(FLERR,arg[4]);
 
     double **x = atom->x;
     int *mask = atom->mask;
@@ -117,14 +119,14 @@ void DisplaceAtoms::command(int narg, char **arg)
 
     double d_lo,d_hi;
     if (d_dim == 0) {
-      d_lo = xscale*atof(arg[3]);
-      d_hi = xscale*atof(arg[4]);
+      d_lo = xscale*force->numeric(FLERR,arg[3]);
+      d_hi = xscale*force->numeric(FLERR,arg[4]);
     } else if (d_dim == 1) {
-      d_lo = yscale*atof(arg[3]);
-      d_hi = yscale*atof(arg[4]);
+      d_lo = yscale*force->numeric(FLERR,arg[3]);
+      d_hi = yscale*force->numeric(FLERR,arg[4]);
     } else if (d_dim == 2) {
-      d_lo = zscale*atof(arg[3]);
-      d_hi = zscale*atof(arg[4]);
+      d_lo = zscale*force->numeric(FLERR,arg[3]);
+      d_hi = zscale*force->numeric(FLERR,arg[4]);
     }
 
     int coord_dim;
@@ -135,14 +137,14 @@ void DisplaceAtoms::command(int narg, char **arg)
 
     double coord_lo,coord_hi;
     if (coord_dim == 0) {
-      coord_lo = xscale*atof(arg[6]);
-      coord_hi = xscale*atof(arg[7]);
+      coord_lo = xscale*force->numeric(FLERR,arg[6]);
+      coord_hi = xscale*force->numeric(FLERR,arg[7]);
     } else if (coord_dim == 1) {
-      coord_lo = yscale*atof(arg[6]);
-      coord_hi = yscale*atof(arg[7]);
+      coord_lo = yscale*force->numeric(FLERR,arg[6]);
+      coord_hi = yscale*force->numeric(FLERR,arg[7]);
     } else if (coord_dim == 2) {
-      coord_lo = zscale*atof(arg[6]);
-      coord_hi = zscale*atof(arg[7]);
+      coord_lo = zscale*force->numeric(FLERR,arg[6]);
+      coord_hi = zscale*force->numeric(FLERR,arg[7]);
     }
 
     double **x = atom->x;
@@ -168,10 +170,10 @@ void DisplaceAtoms::command(int narg, char **arg)
   if (style == RANDOM) {
     RanPark *random = new RanPark(lmp,1);
 
-    double dx = xscale*atof(arg[2]);
-    double dy = yscale*atof(arg[3]);
-    double dz = zscale*atof(arg[4]);
-    int seed = atoi(arg[5]);
+    double dx = xscale*force->numeric(FLERR,arg[2]);
+    double dy = yscale*force->numeric(FLERR,arg[3]);
+    double dz = zscale*force->numeric(FLERR,arg[4]);
+    int seed = force->inumeric(FLERR,arg[5]);
     if (seed <= 0) error->all(FLERR,"Illegal displace_atoms random command");
 
     double **x = atom->x;
@@ -189,13 +191,79 @@ void DisplaceAtoms::command(int narg, char **arg)
 
     delete random;
   }
+ 
+  // rotate atoms by right-hand rule by theta around R
+  // P = point = vector = point of rotation
+  // R = vector = axis of rotation
+  // R0 = runit = unit vector for R
+  // D = X - P = vector from P to X
+  // C = (D dot R0) R0 = projection of atom coord onto R line
+  // A = D - C = vector from R line to X
+  // B = R0 cross A = vector perp to A in plane of rotation
+  // A,B define plane of circular rotation around R line
+  // X = P + C + A cos(theta) + B sin(theta)
+
+  if (style == ROTATE) {
+    double axis[3],point[3];
+    double a[3],b[3],c[3],d[3],disp[3],runit[3];
+    
+    int dim = domain->dimension;
+    point[0] = xscale*force->numeric(FLERR,arg[2]);
+    point[1] = yscale*force->numeric(FLERR,arg[3]);
+    point[2] = zscale*force->numeric(FLERR,arg[4]);
+    axis[0] = force->numeric(FLERR,arg[5]);
+    axis[1] = force->numeric(FLERR,arg[6]);
+    axis[2] = force->numeric(FLERR,arg[7]);
+    double theta = force->numeric(FLERR,arg[8]);
+    if (dim == 2 && (axis[0] != 0.0 || axis[1] != 0.0))
+      error->all(FLERR,"Invalid displace_atoms rotate axis for 2d");
+
+    double len = sqrt(axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2]);
+    if (len == 0.0)
+      error->all(FLERR,"Zero length rotation vector with displace_atoms");
+    runit[0] = axis[0]/len;
+    runit[1] = axis[1]/len;
+    runit[2] = axis[2]/len;
+
+    double sine = sin(MY_PI*theta/180.0);
+    double cosine = cos(MY_PI*theta/180.0);
+    double ddotr;
+
+    double **x = atom->x;
+    int *mask = atom->mask;
+    int nlocal = atom->nlocal;
+
+    for (i = 0; i < nlocal; i++) {
+      if (mask[i] & groupbit) {
+        d[0] = x[i][0] - point[0];
+        d[1] = x[i][1] - point[1];
+        d[2] = x[i][2] - point[2];
+        ddotr = d[0]*runit[0] + d[1]*runit[1] + d[2]*runit[2];
+        c[0] = ddotr*runit[0];
+        c[1] = ddotr*runit[1];
+        c[2] = ddotr*runit[2];
+        a[0] = d[0] - c[0];
+        a[1] = d[1] - c[1];
+        a[2] = d[2] - c[2];
+        b[0] = runit[1]*a[2] - runit[2]*a[1];
+        b[1] = runit[2]*a[0] - runit[0]*a[2];
+        b[2] = runit[0]*a[1] - runit[1]*a[0];
+        disp[0] = a[0]*cosine  + b[0]*sine;
+        disp[1] = a[1]*cosine  + b[1]*sine;
+        disp[2] = a[2]*cosine  + b[2]*sine;
+        x[i][0] = point[0] + c[0] + disp[0];
+        x[i][1] = point[1] + c[1] + disp[1];
+        if (dim == 3) x[i][2] = point[2] + c[2] + disp[2];
+      }
+    }
+  }
 
   // move atoms back inside simulation box and to new processors
   // use remap() instead of pbc() in case atoms moved a long distance
   // use irregular() in case atoms moved a long distance
 
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int nlocal = atom->nlocal;
   for (i = 0; i < nlocal; i++) domain->remap(x[i],image[i]);
 

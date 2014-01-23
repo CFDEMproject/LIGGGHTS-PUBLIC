@@ -33,7 +33,7 @@ class AtomVecEllipsoid : public AtomVec {
   };
   struct Bonus *bonus;
 
-  AtomVecEllipsoid(class LAMMPS *, int, char **);
+  AtomVecEllipsoid(class LAMMPS *);
   ~AtomVecEllipsoid();
   void grow(int);
   void grow_reset();
@@ -60,10 +60,18 @@ class AtomVecEllipsoid : public AtomVec {
   int pack_restart(int, double *);
   int unpack_restart(double *);
   void create_atom(int, double *);
-  void data_atom(double *, int, char **);
+  void data_atom(double *, tagint, char **);
   int data_atom_hybrid(int, char **);
   void data_vel(int, char **);
   int data_vel_hybrid(int, char **);
+  void pack_data(double **);
+  int pack_data_hybrid(int, double *);
+  void write_data(FILE *, int, double **);
+  int write_data_hybrid(FILE *, double *);
+  void pack_vel(double **);
+  int pack_vel_hybrid(int, double *);
+  void write_vel(FILE *, int, double **);
+  int write_vel_hybrid(FILE *, double *);
   bigint memory_usage();
 
   // manipulate Bonus data structure for extra atom info
@@ -76,7 +84,8 @@ class AtomVecEllipsoid : public AtomVec {
   void set_shape(int, double, double, double);
 
  private:
-  int *tag,*type,*mask,*image;
+  int *tag,*type,*mask;
+  tagint *image;
   double **x,**v,**f;
   double *rmass;
   double **angmom,**torque;

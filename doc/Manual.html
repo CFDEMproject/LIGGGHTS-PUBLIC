@@ -23,7 +23,7 @@
 <HR><H1></H1>
 
 
-<CENTER><H3>LIGGGHTS Documentation, Version 2.X 
+<CENTER><H3>LIGGGHTS Documentation, Version 3.X 
 </H3></CENTER>
 <HR>
 
@@ -34,19 +34,21 @@
 <P>LIGGGHTS stands for LAMMPS Improved for General Granular and Granular 
 Heat Transfer Simulations. It is part of the <A HREF = "http://www.cfdem.com">CFDEMproject</A>, www.cfdem.com
 </P>
-<P>The core developer of LIGGGHTS is Christoph Kloss (DCS Computing GmbH, Linz and JKU Linz), 
-major contributions from Philippe Seil, Andreas Aigner and Stefan Amberger (all JKU Linz)
-and Christoph Goniva (DCS Computing GmbH, Linz and JKU Linz)
+<P>The core developers of LIGGGHTS are Christoph Kloss (DCS Computing GmbH, Linz and JKU Linz)
+and Richard Berger (JKU Linz), with major contributions from Philippe Seil, Andreas Aigner 
+and Stefan Amberger (all JKU Linz) and Christoph Goniva (DCS Computing GmbH, Linz and JKU Linz)
 </P>
 <P><A HREF = "http://www.cfdem.com">CFDEMproject</A> has more information about the code and its uses. 
 For questions about the code, please use the forums at <A HREF = "http://www.cfdem.com">CFDEMproject</A>.
 </P>
-<P>LIGGGHTS is based on LAMMPS (see below), and so is its manual. 
+<P>LIGGGHTS is based on LAMMPS (see below), and so is its manual. So if the manual says
+'LAMMPS', you could read 'LIGGGHTS' instead. However, we want to make clear which 
+parts of the code and framework stem from the LAMMPS base.
 </P>
 <H4>LIGGGHTS Version info: 
 </H4>
 <P>All LIGGGHTS versions are based on a specific version of LAMMPS, as printed in 
-the file src/version.h LIGGGHTS version are identidied by a version number (e.g. '2.0'),
+the file src/version.h LIGGGHTS version are identidied by a version number (e.g. '3.0'),
 a branch name (e.g. 'LIGGGHTS-PUBLIC' for the public release of LIGGGHTS),
 compilation info (date / time stamp and user name), and a LAMMPS version 
 number (which is the LAMMPS version that the LIGGGHTS release is based on).
@@ -61,7 +63,8 @@ the WWW site</A>.  Each dated copy of LAMMPS contains all the
 features and bug-fixes up to and including that version date. The
 version date is printed to the screen and logfile every time you run
 LAMMPS. It is also in the file src/version.h and in the LAMMPS
-directory name created when you unpack a tarball.
+directory name created when you unpack a tarball, and at the top of
+the first page of the manual (this page).
 </P>
 <UL><LI>If you browse the HTML doc pages on the LAMMPS WWW site, they always
 describe the most current version of LAMMPS. 
@@ -71,7 +74,7 @@ describe the version you have.
 
 <LI>The <A HREF = "Manual.pdf">PDF file</A> on the WWW site or in the tarball is updated
 about once per month.  This is because it is large, and we don't want
-it to be part of very patch. 
+it to be part of every patch. 
 
 <LI>There is also a <A HREF = "Developer.pdf">Developer.pdf</A> file in the doc
 directory, which describes the internal structure and algorithms of
@@ -162,15 +165,21 @@ it gives quick access to documentation for all LAMMPS commands.
 <BR></UL>
 <LI><A HREF = "Section_accelerate.html">Accelerating LAMMPS performance</A> 
 
-<UL>  5.1 <A HREF = "Section_accelerate.html#acc_1">OPT package</A> 
+<UL>  5.1 <A HREF = "Section_accelerate.html#acc_1">Measuring performance</A> 
 <BR>
-  5.2 <A HREF = "Section_accelerate.html#acc_2">USER-OMP package</A> 
+  5.2 <A HREF = "Section_accelerate.html#acc_2">General strategies</A> 
 <BR>
-  5.3 <A HREF = "Section_accelerate.html#acc_3">GPU package</A> 
+  5.3 <A HREF = "Section_accelerate.html#acc_3">Packages with optimized styles</A> 
 <BR>
-  5.4 <A HREF = "Section_accelerate.html#acc_4">USER-CUDA package</A> 
+  5.4 <A HREF = "Section_accelerate.html#acc_4">OPT package</A> 
 <BR>
-  5.5 <A HREF = "Section_accelerate.html#acc_5">Comparison of GPU and USER-CUDA packages</A> 
+  5.5 <A HREF = "Section_accelerate.html#acc_5">USER-OMP package</A> 
+<BR>
+  5.6 <A HREF = "Section_accelerate.html#acc_6">GPU package</A> 
+<BR>
+  5.7 <A HREF = "Section_accelerate.html#acc_7">USER-CUDA package</A> 
+<BR>
+  5.8 <A HREF = "Section_accelerate.html#acc_8">Comparison of GPU and USER-CUDA packages</A> 
 <BR></UL>
 <LI><A HREF = "Section_howto.html">How-to discussions</A> 
 
@@ -200,7 +209,7 @@ it gives quick access to documentation for all LAMMPS commands.
 <BR>
   6.13 <A HREF = "Section_howto.html#howto_13">NEMD simulations</A> 
 <BR>
-  6.14 <A HREF = "Section_howto.html#howto_14">Extended spherical and aspherical particles</A> 
+  6.14 <A HREF = "Section_howto.html#howto_14">Finite-size spherical and aspherical particles</A> 
 <BR>
   6.15 <A HREF = "Section_howto.html#howto_15">Output from LAMMPS (thermo, dumps, computes, fixes, variables)</A> 
 <BR>
@@ -246,27 +255,27 @@ it gives quick access to documentation for all LAMMPS commands.
 <BR>
   10.11 <A HREF = "Section_modify.html#mod_11">Region styles</A> 
 <BR>
-  10.12 <A HREF = "Section_modify.html#mod_12">Thermodynamic output options</A> 
+  10.12 <A HREF = "Section_modify.html#mod_12">Body styles</A> 
 <BR>
-  10.13 <A HREF = "Section_modify.html#mod_13">Variable options</A> 
+  10.13 <A HREF = "Section_modify.html#mod_13">Thermodynamic output options</A> 
 <BR>
-  10.14 <A HREF = "Section_modify.html#mod_14">Submitting new features for inclusion in LAMMPS</A> 
+  10.14 <A HREF = "Section_modify.html#mod_14">Variable options</A> 
+<BR>
+  10.15 <A HREF = "Section_modify.html#mod_15">Submitting new features for inclusion in LAMMPS</A> 
 <BR></UL>
 <LI><A HREF = "Section_python.html">Python interface</A> 
 
-<UL>  11.1 <A HREF = "Section_python.html#py_1">Extending Python with a serial version of LAMMPS</A> 
+<UL>  11.1 <A HREF = "Section_python.html#py_1">Building LAMMPS as a shared library</A> 
 <BR>
-  11.2 <A HREF = "Section_python.html#py_2">Creating a shared MPI library</A> 
+  11.2 <A HREF = "Section_python.html#py_2">Installing the Python wrapper into Python</A> 
 <BR>
-  11.3 <A HREF = "Section_python.html#py_3">Extending Python with a parallel version of LAMMPS</A> 
+  11.3 <A HREF = "Section_python.html#py_3">Extending Python with MPI to run in parallel</A> 
 <BR>
-  11.4 <A HREF = "Section_python.html#py_4">Extending Python with MPI</A> 
+  11.4 <A HREF = "Section_python.html#py_4">Testing the Python-LAMMPS interface</A> 
 <BR>
-  11.5 <A HREF = "Section_python.html#py_5">Testing the Python-LAMMPS interface</A> 
+  11.5 <A HREF = "Section_python.html#py_5">Using LAMMPS from Python</A> 
 <BR>
-  11.6 <A HREF = "Section_python.html#py_6">Using LAMMPS from Python</A> 
-<BR>
-  11.7 <A HREF = "Section_python.html#py_7">Example Python scripts that use LAMMPS</A> 
+  11.6 <A HREF = "Section_python.html#py_6">Example Python scripts that use LAMMPS</A> 
 <BR></UL>
 <LI><A HREF = "Section_errors.html">Errors</A> 
 
@@ -284,6 +293,12 @@ it gives quick access to documentation for all LAMMPS commands.
 <BR></UL>
 
 </OL>
+
+
+
+
+
+
 
 
 

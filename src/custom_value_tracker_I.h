@@ -33,7 +33,7 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  T* CustomValueTracker::addElementProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower)
+  T* CustomValueTracker::addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower)
   {
      // error if property exists already
      if(elementProperties_.getPointerById<T>(_id))
@@ -68,7 +68,7 @@
   }
 
   template<typename T>
-  T* CustomValueTracker::addGlobalProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower)
+  T* CustomValueTracker::addGlobalProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower)
   {
      // error if property exists already
      if(globalProperties_.getPointerById<T>(_id))
@@ -115,23 +115,23 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  T* CustomValueTracker::getElementProperty(char *_id)
+  T* CustomValueTracker::getElementProperty(const char *_id)
   {
      return elementProperties_.getPointerById<T>(_id);
   }
 
-  inline ContainerBase* CustomValueTracker::getElementPropertyBase(char *_id)
+  inline ContainerBase* CustomValueTracker::getElementPropertyBase(const char *_id)
   {
      return elementProperties_.getBasePointerById(_id);
   }
 
-  inline int CustomValueTracker::getElementPropertyIndex(char *_id)
+  inline int CustomValueTracker::getElementPropertyIndex(const char *_id)
   {
      return elementProperties_.idToIndex(_id);
   }
 
   template<typename T>
-  T* CustomValueTracker::getGlobalProperty(char *_id)
+  T* CustomValueTracker::getGlobalProperty(const char *_id)
   {
      return globalProperties_.getPointerById<T>(_id);
   }
@@ -141,13 +141,13 @@
   ------------------------------------------------------------------------- */
 
   template<typename T, typename U>
-  void CustomValueTracker::setElementProperty(char *_id, U def)
+  void CustomValueTracker::setElementProperty(const char *_id, U def)
   {
      elementProperties_.getPointerById<T>(_id)->set(def);
   }
 
   template<typename T, typename U>
-  void CustomValueTracker::setGlobalProperty(char *_id, U def)
+  void CustomValueTracker::setGlobalProperty(const char *_id, U def)
   {
      
      if(globalProperties_.getPointerById<T>(_id)->size() == 0)
@@ -164,7 +164,7 @@
    special cases, eg moving mesh ref points
   ------------------------------------------------------------------------- */
 
-  inline void CustomValueTracker::storeGlobalPropOrig(char *_id)
+  inline void CustomValueTracker::storeGlobalPropOrig(const char *_id)
   {
       globalProperties_.storeOrig(_id,globalProperties_orig_);
   }
@@ -174,7 +174,7 @@
    special cases, eg moving mesh ref points
   ------------------------------------------------------------------------- */
 
-  inline void CustomValueTracker::resetGlobalPropToOrig(char *_id)
+  inline void CustomValueTracker::resetGlobalPropToOrig(const char *_id)
   {
       globalProperties_.reset(_id,globalProperties_orig_);
   }

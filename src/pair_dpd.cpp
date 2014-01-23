@@ -38,6 +38,7 @@ using namespace LAMMPS_NS;
 
 PairDPD::PairDPD(LAMMPS *lmp) : Pair(lmp)
 {
+  writedata = 1;
   random = NULL;
 }
 
@@ -187,9 +188,9 @@ void PairDPD::settings(int narg, char **arg)
 {
   if (narg != 3) error->all(FLERR,"Illegal pair_style command");
 
-  temperature = force->numeric(arg[0]);
-  cut_global = force->numeric(arg[1]);
-  seed = force->inumeric(arg[2]);
+  temperature = force->numeric(FLERR,arg[0]);
+  cut_global = force->numeric(FLERR,arg[1]);
+  seed = force->inumeric(FLERR,arg[2]);
 
   // initialize Marsaglia RNG with processor-unique seed
 
@@ -220,11 +221,11 @@ void PairDPD::coeff(int narg, char **arg)
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double a0_one = force->numeric(arg[2]);
-  double gamma_one = force->numeric(arg[3]);
+  double a0_one = force->numeric(FLERR,arg[2]);
+  double gamma_one = force->numeric(FLERR,arg[3]);
 
   double cut_one = cut_global;
-  if (narg == 5) cut_one = force->numeric(arg[4]);
+  if (narg == 5) cut_one = force->numeric(FLERR,arg[4]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -359,6 +360,27 @@ void PairDPD::read_restart_settings(FILE *fp)
 
   if (random) delete random;
   random = new RanMars(lmp,seed + comm->me);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void PairDPD::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    fprintf(fp,"%d %g %g\n",i,a0[i][i],gamma[i][i]);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes all pairs to data file
+------------------------------------------------------------------------- */
+
+void PairDPD::write_data_all(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    for (int j = i; j <= atom->ntypes; j++)
+      fprintf(fp,"%d %d %g %g %g\n",i,j,a0[i][j],gamma[i][j],cut[i][j]);
 }
 
 /* ---------------------------------------------------------------------- */

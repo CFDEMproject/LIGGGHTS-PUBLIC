@@ -1,0 +1,96 @@
+"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+LIGGGHTS 3.X vs. LIGGGHTS 2.X - syntax changes :h1
+
+Introduction: :h2
+
+This is a short outline of the most important changes in LIGGGHTS 3.X 
+compared to LIGGGHTS 2.X regarding the syntax of major commands. The 
+motivation for these changes was to make the script language more readable and to 
+improve extendability (in the sense of object oriented programming) with respect 
+to modelling approaches.
+
+Commands covered by this tutorial: :h2
+
+fix wall/gran/* :l
+pair_style gran/* :l
+:ule
+
+Changes in syntax for each command: :h2
+
+Changes are indicated as follows
+
+OLD: old_syntax
+NEW: new_syntax  :pre
+
+where {old_syntax} refers to the syntax used in LIGGGHTS 2.X and before,
+and {new_syntax} refers to the syntax used in LIGGGHTS 3.X.
+
+:line
+
+[fix wall/gran/*:]
+
+OLD: fix ID group-ID wall/gran/* {WALL-OPTIONS}
+NEW: fix ID group-ID wall/gran {MODEL-SELECTION} {WALL-OPTIONS} {MODEL-SETTINGS} :pre
+
+MODEL-SELECTION :h3
+{MODEL-SELECTION} = model {M} \[tangential {T}\] \[cohesion {C}\] \[rolling_friction {R}\] :pre
+{M} = hooke | hooke_stiffness | hooke_hysteresis | hertz | hertz_stiffness :pre
+{T} = [no_history] | history :pre
+{C} = [off] | sjkr | sjkr2 | hamaker :pre
+{R} = [off] | cdt | epsd :pre
+
+MODEL-SETTINGS :h3
+{MODEL-SELECTION} = \[tangential_damping ([on]|off)\] \[absolute_damping (on|[off])\] \[viscous (on|[off])\] :pre
+
+Examples :h3
+
+OLD: fix ID group-ID wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2
+NEW: fix ID group-ID wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2 :pre
+
+OLD: fix ID1 group-ID wall/gran/hooke/history type 1 xplane -0.5
+NEW: fix ID1 group-ID wall/gran model hooke tangential history type 1 xplane -0.5 :pre
+
+OLD: fix ID1 group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 rolling_friction cdt
+NEW: fix ID1 group-ID wall/gran model hertz tangential history rolling_friction cdt primitive type 1 xplane -0.5 :pre
+
+OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 0.5 cohesion sjkr
+NEW: fix ID group-ID wall/gran model hertz tangential history cohesion sjkr primitive type 1 xplane -0.5 0.5  :pre
+
+OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off
+NEW: fix ID group-ID wall/gran model hertz tangential history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off :pre
+
+:line
+
+[pair_style gran/*:]
+
+OLD: pair_style gran/* [MODEL-SETTINGS]
+NEW: pair_style gran  [MODEL-SELECTION] [MODEL-SETTINGS] :pre
+
+MODEL-SELECTION :h3
+Same as in fix wall/gran/*
+
+MODEL-SETTINGS :h3
+Same as in fix wall/gran/*
+
+Examples :h3
+
+OLD: pair_style gran/hertz/history
+NEW: pair_style gran model hertz tangential history :pre
+
+OLD: pair_style gran/hertz/history rolling_friction cdt
+NEW: pair_style gran model hertz tangential history rolling_friction cdt  :pre
+
+OLD: pair_style gran/hertz/history cohesion sjkr
+NEW: pair_style gran model hertz tangential history cohesion sjkr   :pre
+
+OLD: pair_style gran/hertz/history tangential_damping off
+OLD: pair_style gran model hertz tangential history tangential_damping off :pre
+

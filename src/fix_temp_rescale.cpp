@@ -22,6 +22,8 @@
 #include "domain.h"
 #include "region.h"
 #include "comm.h"
+#include "input.h"
+#include "variable.h"
 #include "modify.h"
 #include "compute.h"
 #include "error.h"
@@ -30,6 +32,7 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 
 enum{NOBIAS,BIAS};
+enum{CONSTANT,EQUAL};
 
 /* ---------------------------------------------------------------------- */
 
@@ -38,17 +41,28 @@ FixTempRescale::FixTempRescale(LAMMPS *lmp, int narg, char **arg) :
 {
   if (narg < 8) error->all(FLERR,"Illegal fix temp/rescale command");
 
-  nevery = atoi(arg[3]);
+  nevery = force->inumeric(FLERR,arg[3]);
   if (nevery <= 0) error->all(FLERR,"Illegal fix temp/rescale command");
 
   scalar_flag = 1;
   global_freq = nevery;
   extscalar = 1;
 
-  t_start = atof(arg[4]);
-  t_stop = atof(arg[5]);
-  t_window = atof(arg[6]);
-  fraction = atof(arg[7]);
+  tstr = NULL;
+  if (strstr(arg[4],"v_") == arg[4]) {
+    int n = strlen(&arg[4][2]) + 1;
+    tstr = new char[n];
+    strcpy(tstr,&arg[4][2]);
+    tstyle = EQUAL;
+  } else {
+    t_start = force->numeric(FLERR,arg[4]);
+    t_target = t_start;
+    tstyle = CONSTANT;
+  }
+
+  t_stop = force->numeric(FLERR,arg[5]);
+  t_window = force->numeric(FLERR,arg[6]);
+  fraction = force->numeric(FLERR,arg[7]);
 
   // create a new compute temp
   // id = fix-ID + temp, compute group = fix group
@@ -73,6 +87,8 @@ FixTempRescale::FixTempRescale(LAMMPS *lmp, int narg, char **arg) :
 
 FixTempRescale::~FixTempRescale()
 {
+  delete [] tstr;
+
   // delete temperature if fix created it
 
   if (tflag) modify->delete_compute(id_temp);
@@ -93,6 +109,16 @@ int FixTempRescale::setmask()
 
 void FixTempRescale::init()
 {
+  // check variable
+
+  if (tstr) {
+    tvar = input->variable->find(tstr);
+    if (tvar < 0)
+      error->all(FLERR,"Variable name for fix temp/rescale does not exist");
+    if (input->variable->equalstyle(tvar)) tstyle = EQUAL;
+    else error->all(FLERR,"Variable for fix temp/rescale is invalid style");
+  }
+
   int icompute = modify->find_compute(id_temp);
   if (icompute < 0)
     error->all(FLERR,"Temperature ID for fix temp/rescale does not exist");
@@ -111,8 +137,21 @@ void FixTempRescale::end_of_step()
     error->all(FLERR,"Computed temperature for fix temp/rescale cannot be 0.0");
 
   double delta = update->ntimestep - update->beginstep;
-  delta /= update->endstep - update->beginstep;
-  double t_target = t_start + delta * (t_stop-t_start);
+  if (delta != 0.0) delta /= update->endstep - update->beginstep;
+
+  // set current t_target
+  // if variable temp, evaluate variable, wrap with clear/add
+
+  if (tstyle == CONSTANT)
+    t_target = t_start + delta * (t_stop-t_start);
+  else {
+    modify->clearstep_compute();
+    t_target = input->variable->compute_equal(tvar);
+    if (t_target < 0.0)
+      error->one(FLERR,
+                 "Fix temp/rescale variable returned negative temperature");
+    modify->addstep_compute(update->ntimestep + nevery);
+  }
 
   // rescale velocity of appropriate atoms if outside window
   // for BIAS:
@@ -149,7 +188,6 @@ void FixTempRescale::end_of_step()
         }
       }
     }
-
   }
 }
 
@@ -174,7 +212,8 @@ int FixTempRescale::modify_param(int narg, char **arg)
     temperature = modify->compute[icompute];
 
     if (temperature->tempflag == 0)
-      error->all(FLERR,"Fix_modify temperature ID does not compute temperature");
+      error->all(FLERR,
+                 "Fix_modify temperature ID does not compute temperature");
     if (temperature->igroup != igroup && comm->me == 0)
       error->warning(FLERR,"Group for fix_modify temp != fix group");
     return 2;
@@ -186,7 +225,7 @@ int FixTempRescale::modify_param(int narg, char **arg)
 
 void FixTempRescale::reset_target(double t_new)
 {
-  t_start = t_stop = t_new;
+  t_target = t_start = t_stop = t_new;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -194,4 +233,17 @@ void FixTempRescale::reset_target(double t_new)
 double FixTempRescale::compute_scalar()
 {
   return energy;
+}
+
+/* ----------------------------------------------------------------------
+   extract thermostat properties
+------------------------------------------------------------------------- */
+
+void *FixTempRescale::extract(const char *str, int &dim)
+{
+  dim=0;
+  if (strcmp(str,"t_target") == 0) {
+    return &t_target;
+  }
+  return NULL;
 }

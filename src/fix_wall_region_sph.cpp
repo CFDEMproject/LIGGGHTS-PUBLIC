@@ -68,8 +68,8 @@ FixWallRegionSph::FixWallRegionSph(LAMMPS *lmp, int narg, char **arg) :
   iregion = domain->find_region(arg[iarg]);
   if (iregion == -1) error->all(FLERR,"Fix wall/region/sph region ID does not exist");
 
-  r0 = force->numeric(arg[iarg+1]);
-  D  = force->numeric(arg[iarg+2]);
+  r0 = force->numeric(FLERR,arg[iarg+1]);
+  D  = force->numeric(FLERR,arg[iarg+2]);
 
   iarg += 3;
 

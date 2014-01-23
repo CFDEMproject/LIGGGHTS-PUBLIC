@@ -42,9 +42,8 @@
 
 <PRE>  <I>scale</I> value = <I>no</I> or <I>yes</I>
     <I>no</I> = the variable value is the new setting
-    <I>yes</I> = the variable value multiplies the original setting 
-</PRE>
-<PRE>  <I>reset</I> value = <I>no</I> or <I>yes</I>
+    <I>yes</I> = the variable value multiplies the original setting
+  <I>reset</I> value = <I>no</I> or <I>yes</I>
     <I>no</I> = values will remain altered at the end of a run
     <I>yes</I> = reset altered values to their original values at the end of a run 
 </PRE>
@@ -65,7 +64,11 @@ attributes which can be varied by this fix are discussed below.  Many
 other fixes can also be used to time-vary simulation parameters,
 e.g. the "fix deform" command will change the simulation box
 size/shape and the "fix move" command will change atom positions and
-velocities in a prescribed manner.
+velocities in a prescribed manner.  Also note that many commands allow
+variables as arguments for specific parameters, if described in that
+manner on their doc pages.  An equal-style variable can calculate a
+time-dependent quantity, so this is another way to vary a simulation
+parameter over time.
 </P>
 <P>If <I>N</I> is specified as 0, the specified attributes are only changed
 once, before the simulation begins.  This is all that is needed if the
@@ -78,10 +81,6 @@ this fix will or will not be reset back to their original values at
 the end of a simulation.  Even if <I>reset</I> is specified as <I>yes</I>, a
 restart file written during a simulation will contain the modified
 settings.
-</P>
-<P>IMPORTANT NOTE: Currently, only the <I>pair</I> and <I>kspace</I> params
-are resettable.  <I>Atom</I> attributes are not.  This will be
-added at some point.
 </P>
 <P>If the <I>scale</I> keyword is set to <I>no</I>, then the value the parameter is
 set to will be whatever the variable generates.  If the <I>scale</I>
@@ -116,8 +115,8 @@ styles and their energy formulas for the meaning of these parameters:
 <TR><TD ><A HREF = "pair_coul.html">coul/cut</A></TD><TD > scale</TD><TD > type pairs</TD></TR>
 <TR><TD ><A HREF = "pair_coul.html">coul/debye</A></TD><TD > scale</TD><TD > type pairs</TD></TR>
 <TR><TD ><A HREF = "pair_coul.html">coul/long</A></TD><TD > scale</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_lj.html">lj/cut</A></TD><TD > epsilon</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_lj.html">lj/cut/opt</A></TD><TD > epsilon</TD><TD > type pairs</TD></TR>
+<TR><TD ><A HREF = "pair_lj.html">lj/cut</A></TD><TD > epsilon,sigma</TD><TD > type pairs</TD></TR>
+<TR><TD ><A HREF = "pair_lj_expand.html">lj/expand</A></TD><TD > epsilon,sigma,delta</TD><TD > type pairs</TD></TR>
 <TR><TD ><A HREF = "pair_lubricate.html">lubricate</A></TD><TD > mu</TD><TD > global</TD></TR>
 <TR><TD ><A HREF = "pair_gauss.html">gauss</A></TD><TD > a</TD><TD > type pairs</TD></TR>
 <TR><TD ><A HREF = "pair_soft.html">soft</A></TD><TD > a</TD><TD > type pairs 
@@ -166,7 +165,7 @@ asterisks imply type pairs where J < I, they are ignored.
 <P>IMPROTANT NOTE: If <A HREF = "pair_hybrid.html">pair_style hybrid or
 hybrid/overlay</A> is being used, then the <I>pstyle</I> will
 be a sub-style name.  You must specify I,J arguments that correspond
-to type pair values defined (via the <A HREF = "doc/pair_coeff.html">pair_coeff</A>
+to type pair values defined (via the <A HREF = "pair_coeff.html">pair_coeff</A>
 command) for that sub-style.
 </P>
 <P>The <I>v_name</I> argument for keyword <I>pair</I> is the name of an
@@ -205,16 +204,16 @@ is set to <I>no</I> or <I>yes</I>.
 <I>aparam</I> argument is the name of the parameter to change.  This is the
 current list of atom parameters that can be varied by this fix:
 </P>
-<UL><LI>diameter = diameter of particle 
+<UL><LI>charge = charge on particle
+<LI>diameter = diameter of particle 
 </UL>
 <P>The <I>v_name</I> argument of the <I>atom</I> keyword is the name of an
-<A HREF = "variable.html">equal-style or atom-style variable</A> which will be 
-evaluated each time this fix is invoked to set the parameter to 
-a new value. It should be specified as v_name, where name is the 
-variable name. See the discussion above describing the formulas 
-associated with equal-style or atom-style variables. The new 
-value is assigned to the corresponding attribute for all atoms 
-in the fix group.
+<A HREF = "variable.html">equal-style variable</A> which will be evaluated each time
+this fix is invoked to set the parameter to a new value.  It should be
+specified as v_name, where name is the variable name.  See the
+discussion above describing the formulas associated with equal-style
+variables.  The new value is assigned to the corresponding attribute
+for all atoms in the fix group.
 </P>
 <P>If the atom parameter is <I>diameter</I> and per-atom density and per-atom
 mass are defined for particles (e.g. <A HREF = "atom_style.html">atom_style
@@ -229,6 +228,8 @@ over the course of a 1000-step simulation:
 <PRE>variable size equal ramp(1.0,0.1)
 fix 1 center adapt 10 atom diameter v_size 
 </PRE>
+<HR>
+
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart

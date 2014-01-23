@@ -37,7 +37,7 @@ parameter = {x} or {y} or {z} or {xy} or {xz} or {yz} or {boundary} or {ortho} o
     {s} is non-periodic and shrink-wrapped
     {m} is non-periodic and shrink-wrapped with a minimum value
   {ortho} args = none = change box to orthogonal
-  (triclinic} args = none = change box to triclinic
+  {triclinic} args = none = change box to triclinic
   {set} args = none = store state of current box
   {remap} args = none = remap atom coords from last saved state to current box :pre
 
@@ -118,6 +118,16 @@ changed from its initial 3d configuration; see the
 "processors"_processors.html command.  Thus, if the box size/shape
 changes dramatically, the mapping of processors to the simulation box
 may not end up as optimal as the initial mapping attempted to be.
+
+IMPORTANT NOTE: Because the keywords used in this command are applied
+one at a time to the simulation box and the atoms in it, care must be
+taken with triclinic cells to avoid exceeding the limits on skew after
+each transformation in the sequence.  If skew is exceeded before the
+final transformation this can be avoided by changing the order of the
+sequence, or breaking the transformation into two or more smaller
+transformations.  For more information on the allowed limits for box
+skew see the discussion on triclinic boxes on "this
+page"_Section_howto.html#howto_12.
 
 :line
 

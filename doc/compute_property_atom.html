@@ -33,7 +33,8 @@
 			end1x, end1y, end1z, end2x, end2y, end2z,
 			corner1x, corner1y, corner1z,
 			corner2x, corner2y, corner2z,
-			corner3x, corner3y, corner3z 
+			corner3x, corner3y, corner3z,
+                        i_name, d_name 
 </PRE>
 <PRE>      id = atom ID
       mol = molecule ID
@@ -49,17 +50,19 @@
       mux,muy,muz = orientation of dipole moment of atom
       mu = magnitude of dipole moment of atom
       radius,diameter = radius,diameter of spherical particle
-      omegax,omegay,omegaz = angular velocity of extended particle
-      angmomx,angmomy,angmomz = angular momentum of extended particle
+      omegax,omegay,omegaz = angular velocity of spherical particle
+      angmomx,angmomy,angmomz = angular momentum of aspherical particle
       shapex,shapey,shapez = 3 diameters of aspherical particle
-      quatw,quati,quatj,quatk = quaternion components for aspherical particles
-      tqx,tqy,tqz = torque on extended particles
+      quatw,quati,quatj,quatk = quaternion components for aspherical or body particles
+      tqx,tqy,tqz = torque on finite-size particles
       spin = electron spin
       eradius = electron radius
       ervel = electron radial velocity
       erforce = electron radial force
       end12x, end12y, end12z = end points of line segment
-      coner123x, corner123y, corner123z = corner points of triangle 
+      coner123x, corner123y, corner123z = corner points of triangle
+      i_name = custom integer vector with name
+      d_name = custom integer vector with name 
 </PRE>
 
 </UL>
@@ -94,11 +97,12 @@ quantities that are not defined for a particular particle in the group
 directly via the <A HREF = "dump.html">dump custom</A> command, are as follows.
 </P>
 <P><I>Shapex</I>, <I>shapey</I>, and <I>shapez</I> are defined for ellipsoidal particles
-and define the 3d shape of each particle.  <I>Quatw</I>, <I>quati</I>, <I>quatj</I>,
-and <I>quatk</I> are also defined for ellipsoidal particles and store the
-4-vector quaternion representing the orientation of each particle.
-See the <A HREF = "set.html">set</A> command for an explanation of the quaternion
-vector.
+and define the 3d shape of each particle.
+</P>
+<P><I>Quatw</I>, <I>quati</I>, <I>quatj</I>, and <I>quatk</I> are defined for ellipsoidal
+particles and body particles and store the 4-vector quaternion
+representing the orientation of each particle.  See the <A HREF = "set.html">set</A>
+command for an explanation of the quaternion vector.
 </P>
 <P><I>End1x</I>, <I>end1y</I>, <I>end1z</I>, <I>end2x</I>, <I>end2y</I>, <I>end2z</I>, are defined for
 line segment particles and define the end points of each line segment.
@@ -106,6 +110,12 @@ line segment particles and define the end points of each line segment.
 <P><I>Corner1x</I>, <I>corner1y</I>, <I>corner1z</I>, <I>corner2x</I>, <I>corner2y</I>,
 <I>corner2z</I>, <I>corner3x</I>, <I>corner3y</I>, <I>corner3z</I>, are defined for
 triangular particles and define the corner points of each triangle.
+</P>
+<P>The <I>i_name</I> and <I>d_name</I> attributes refer to custom integer and
+floating-point properties that have been added to each atom via the
+<A HREF = "fix_property_atom.html">fix property/atom</A> command.  When that command
+is used specific names are given to each attribute which are what is
+specified as the "name" portion of <I>i_name</I> or <I>d_name</I>.
 </P>
 <P><B>Output info:</B>
 </P>
@@ -127,7 +137,8 @@ units for q, etc.
 <P><B>Related commands:</B>
 </P>
 <P><A HREF = "dump.html">dump custom</A>, <A HREF = "compute_reduce.html">compute reduce</A>, <A HREF = "fix_ave_atom.html">fix
-ave/atom</A>, <A HREF = "fix_ave_spatial.html">fix ave/spatial</A>
+ave/atom</A>, <A HREF = "fix_ave_spatial.html">fix ave/spatial</A>,
+<A HREF = "fix_property_atom.html">fix property/atom</A>
 </P>
 <P><B>Default:</B> none
 </P>

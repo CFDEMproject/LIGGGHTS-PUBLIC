@@ -38,8 +38,6 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 
 #define EPSILON 0.001
-#define myAtof lmp->force->numeric 
-#define myAtoi lmp->force->inumeric 
 
 /* ---------------------------------------------------------------------- */
 
@@ -54,15 +52,24 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
     variablename = new char[n];
     strcpy(variablename,arg[3]);
     is_symmetric = false;
+    is_atomtype_bound = false;
 
-    if (strcmp(arg[4],"scalar") == 0) data_style = FIXPROPERTY_GLOBAL_SCALAR;
-    else if (strcmp(arg[4],"vector") == 0) data_style = FIXPROPERTY_GLOBAL_VECTOR;
-    else if (strcmp(arg[4],"peratomtype") == 0 || strcmp(arg[4],"atomtype") == 0) data_style = FIXPROPERTY_GLOBAL_VECTOR;
-    else if (strcmp(arg[4],"matrix") == 0) data_style = FIXPROPERTY_GLOBAL_MATRIX;
+    if (strcmp(arg[4],"scalar") == 0)
+        data_style = FIXPROPERTY_GLOBAL_SCALAR;
+    else if (strcmp(arg[4],"vector") == 0)
+        data_style = FIXPROPERTY_GLOBAL_VECTOR;
+    else if (strcmp(arg[4],"peratomtype") == 0 || strcmp(arg[4],"atomtype") == 0)
+    {
+        data_style = FIXPROPERTY_GLOBAL_VECTOR;
+        is_atomtype_bound = true;
+    }
+    else if (strcmp(arg[4],"matrix") == 0)
+        data_style = FIXPROPERTY_GLOBAL_MATRIX;
     else if (strcmp(arg[4],"peratomtypepair") == 0 || strcmp(arg[4],"atomtypepair") == 0)
     {
         data_style = FIXPROPERTY_GLOBAL_MATRIX;
         is_symmetric = true;
+        is_atomtype_bound = true;
     }
     else error->fix_error(FLERR,this,"Unknown style. Valid styles are scalar, vector, atomtype/peratomtype, matrix, or atomtypepair/peratomtypepair");
 
@@ -78,7 +85,7 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
     if(narg < 5+darg+nvalues) error->fix_error(FLERR,this,"not enough arguments");
 
     for (int j = 0; j < nvalues; j++)
-        values[j] = myAtof(arg[5+darg+j]);
+        values[j] = force->numeric(FLERR,arg[5+darg+j]);
 
     if (data_style == FIXPROPERTY_GLOBAL_SCALAR)
         scalar_flag = 1;
@@ -88,9 +95,9 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
     }
     else if (data_style == FIXPROPERTY_GLOBAL_MATRIX) {
         array_flag = 1;
-        size_array_cols = myAtoi(arg[5]);
+        size_array_cols = force->inumeric(FLERR,arg[5]);
         if (fmod(static_cast<double>(nvalues),size_array_cols) != 0.)
-          error->fix_error(FLERR,this,"the number of default values must thus be a multiple of the nCols.");
+          error->fix_error(FLERR,this,"the number of default values must be a multiple of nCols.");
         size_array_rows = static_cast<int>(static_cast<double>(nvalues)/size_array_cols);
     }
 
@@ -100,6 +107,7 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
     grpname = 0;
 
     //check if there is already a fix that tries to register a property with the same name
+    
     for (int ifix = 0; ifix < modify->nfix; ifix++)
         if ((modify->fix[ifix]) && (strcmp(modify->fix[ifix]->style,style) == 0) && (strcmp(((FixPropertyGlobal*)(modify->fix[ifix]))->variablename,variablename)==0) )
             error->fix_error(FLERR,this,"There is already a fix that registers a variable of the same name");
@@ -207,15 +215,15 @@ void FixPropertyGlobal::init()
     char errmsg[300];
     int ntypes = atom->ntypes;
 
-    if((strcmp(style,"property/atomtype") == 0 || strcmp(style,"property/peratomtype") == 0) && nvalues < ntypes)
+    if(FIXPROPERTY_GLOBAL_VECTOR == data_style && is_atomtype_bound && nvalues != ntypes)
     {
-        sprintf(errmsg,"Fix property/global: Length not sufficient for variable %s, length should be (number of atom types), which is %d",
+        sprintf(errmsg,"Fix property/global: Length not correct for variable %s, length should be equal to %d (= number of atom types)",
                 variablename,ntypes);
         error->fix_error(FLERR,this,errmsg);
     }
-    if((strcmp(style,"property/atomtypepair") == 0 || strcmp(style,"property/peratomtypepair") == 0) && nvalues < ntypes*ntypes)
+    if(FIXPROPERTY_GLOBAL_MATRIX == data_style && is_atomtype_bound && nvalues != ntypes*ntypes)
     {
-        sprintf(errmsg,"Fix property/global: Length not sufficient for variable %s, length should be (number of atom types)*(number of atom types), which is %d",
+        sprintf(errmsg,"Fix property/global: Length not correct for variable %s, length should be equal to %d ( = number of atom types * number of atom types)",
                 variablename,ntypes*ntypes);
         error->fix_error(FLERR,this,errmsg);
     }

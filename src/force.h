@@ -25,6 +25,9 @@
 #define LMP_FORCE_H
 
 #include "pointers.h"
+#include "property_registry.h"
+#include <map>
+#include <string>
 
 namespace LAMMPS_NS {
 
@@ -49,12 +52,16 @@ class Force : protected Pointers {
   double mvh2r;                      // conversion of mv/hbar to distance
                                      // hbar = h/(2*pi)
   double angstrom;                   // 1 angstrom in native units
+  double femtosecond;                // 1 femtosecond in native units
   double qelectron;                  // 1 electron charge abs() in native units
 
   int newton,newton_pair,newton_bond;   // Newton's 3rd law settings
 
   class Pair *pair;
   char *pair_style;
+
+  typedef Pair *(*PairCreator)(LAMMPS *);
+  std::map<std::string,PairCreator> *pair_map;
 
   class Bond *bond;
   char *bond_style;
@@ -83,8 +90,15 @@ class Force : protected Pointers {
   ~Force();
   void init();
 
-  void create_pair(const char *, const char *suffix = NULL);
-  class Pair *new_pair(const char *, const char *, int &);
+  void create_pair(const char *, int & narg, char** & args, const char *suffix = NULL);
+  void create_pair_from_restart(FILE* fp,const char *, const char *suffix = NULL);
+  class Pair *new_pair(const char *, int & narg, char** & args, const char *, int &);
+  class Pair *new_pair_from_restart(FILE* fp, const char *, const char *, int &);
+  class Pair *new_granular_pair(int & narg, char ** & args);
+  class Pair *new_granular_pair_from_restart(FILE * fp);
+
+  class Fix* new_granular_wall_fix(int narg, char ** args);
+
   class Pair *pair_match(const char *, int);
 
   void create_bond(const char *, const char *suffix = NULL);
@@ -105,9 +119,9 @@ class Force : protected Pointers {
   class KSpace *kspace_match(const char *, int);
 
   void set_special(int, char **);
-  void bounds(char *, int, int &, int &);
-  double numeric(char *);
-  int inumeric(char *);
+  void bounds(char *, int, int &, int &, int nmin=1);
+  double numeric(const char *, int, char *);
+  int inumeric(const char *, int, char *);
   bigint memory_usage();
 
   inline double cg() 
@@ -119,10 +133,45 @@ class Force : protected Pointers {
   inline bool error_cg() 
   { return error_coarsegraining; }
 
+  PropertyRegistry registry;
+
  private:
+  template <typename T> static Pair *pair_creator(LAMMPS *);
+
   double coarsegraining; 
   bool error_coarsegraining; 
+
+  typedef class Pair*(*GranularPairCreator)(LAMMPS*);
+  typedef class Fix*(*GranularWallFixCreator)(LAMMPS*,int,char**);
+  std::map<int64_t, GranularPairCreator> granular_pair_style_creators;
+  std::map<int64_t, GranularWallFixCreator> granular_wall_fix_creators;
+  std::map<std::string, int> surface_model_map;
+  std::map<std::string, int> normal_model_map;
+  std::map<std::string, int> tangential_model_map;
+  std::map<std::string, int> cohesion_model_map;
+  std::map<std::string, int> rolling_model_map;
+
+  int64_t select_contact_model(int & narg, char ** & args);
+
+  template<int MODEL, int TANGENTIAL, int COHESION, int ROLLING, int SURFACE>
+  void register_granular_pair_style();
+
+  template<int MODEL, int TANGENTIAL, int COHESION, int ROLLING, int SURFACE>
+  void register_granular_wall_fix();
 };
+
+class Pair;
+class Fix;
+
+template<typename T>
+Pair * create_pair_style_instance(LAMMPS* lmp) {
+  return new T(lmp);
+}
+
+template<typename T>
+Fix * create_fix_instance(LAMMPS* lmp, int narg, char ** args) {
+  return new T(lmp, narg, args);
+}
 
 }
 
@@ -166,11 +215,11 @@ A command with an argument that specifies an integer or range of
 integers is using a value that is less than 1 or greater than the
 maximum allowed limit.
 
-E: Expected floating point parameter in input script or data file
+U: Expected floating point parameter in input script or data file
 
 The quantity being read is an integer on non-numeric value.
 
-E: Expected integer parameter in input script or data file
+U: Expected integer parameter in input script or data file
 
 The quantity being read is a floating point or non-numeric value.
 

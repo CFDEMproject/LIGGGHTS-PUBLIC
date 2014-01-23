@@ -14,6 +14,8 @@
 #include "neighbor.h"
 #include "neigh_list.h"
 #include "atom.h"
+#include "domain.h"
+#include "my_page.h"
 #include "group.h"
 #include "error.h"
 
@@ -49,24 +51,16 @@ void Neighbor::full_nsq(NeighList *list)
   int *ilist = list->ilist;
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
-  int **pages = list->pages;
+  MyPage<int> *ipage = list->ipage;
 
   int inum = 0;
-  int npage = 0;
-  int npnt = 0;
+  ipage->reset();
 
   // loop over owned atoms, storing neighbors
 
   for (i = 0; i < nlocal; i++) {
-
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage++;
-      if (npage == list->maxpage) pages = list->add_pages();
-    }
-
-    neighptr = &pages[npage][npnt];
     n = 0;
+    neighptr = ipage->vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -89,7 +83,10 @@ void Neighbor::full_nsq(NeighList *list)
       if (rsq <= cutneighsq[itype][jtype]) {
         if (molecular) {
           which = find_special(special[i],nspecial[i],tag[j]);
-          if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
+          if (which == 0) neighptr[n++] = j;
+          else if (domain->minimum_image_check(delx,dely,delz))
+            neighptr[n++] = j;
+          else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
         } else neighptr[n++] = j;
       }
     }
@@ -97,8 +94,8 @@ void Neighbor::full_nsq(NeighList *list)
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage->vgot(n);
+    if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
 
@@ -133,24 +130,16 @@ void Neighbor::full_nsq_ghost(NeighList *list)
   int *ilist = list->ilist;
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
-  int **pages = list->pages;
+  MyPage<int> *ipage = list->ipage;
 
   int inum = 0;
-  int npage = 0;
-  int npnt = 0;
+  ipage->reset();
 
   // loop over owned & ghost atoms, storing neighbors
 
   for (i = 0; i < nall; i++) {
-
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage++;
-      if (npage == list->maxpage) pages = list->add_pages();
-    }
-
-    neighptr = &pages[npage][npnt];
     n = 0;
+    neighptr = ipage->vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -159,6 +148,7 @@ void Neighbor::full_nsq_ghost(NeighList *list)
 
     // loop over all atoms, owned and ghost
     // skip i = j
+    // no molecular test when i = ghost atom
 
     if (i < nlocal) {
       for (j = 0; j < nall; j++) {
@@ -173,7 +163,10 @@ void Neighbor::full_nsq_ghost(NeighList *list)
         if (rsq <= cutneighsq[itype][jtype]) {
           if (molecular) {
             which = find_special(special[i],nspecial[i],tag[j]);
-            if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
+            if (which == 0) neighptr[n++] = j;
+            else if (domain->minimum_image_check(delx,dely,delz))
+              neighptr[n++] = j;
+            else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
           } else neighptr[n++] = j;
         }
       }
@@ -188,16 +181,15 @@ void Neighbor::full_nsq_ghost(NeighList *list)
         delz = ztmp - x[j][2];
         rsq = delx*delx + dely*dely + delz*delz;
 
-        if (rsq <= cutneighghostsq[itype][jtype])
-          neighptr[n++] = j;
+        if (rsq <= cutneighghostsq[itype][jtype]) neighptr[n++] = j;
       }
     }
 
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage->vgot(n);
+    if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
 
@@ -235,26 +227,18 @@ void Neighbor::full_bin(NeighList *list)
   int *ilist = list->ilist;
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
-  int **pages = list->pages;
   int nstencil = list->nstencil;
   int *stencil = list->stencil;
+  MyPage<int> *ipage = list->ipage;
 
   int inum = 0;
-  int npage = 0;
-  int npnt = 0;
+  ipage->reset();
 
   // loop over owned atoms, storing neighbors
 
   for (i = 0; i < nlocal; i++) {
-
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage++;
-      if (npage == list->maxpage) pages = list->add_pages();
-    }
-
-    neighptr = &pages[npage][npnt];
     n = 0;
+    neighptr = ipage->vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -281,7 +265,10 @@ void Neighbor::full_bin(NeighList *list)
         if (rsq <= cutneighsq[itype][jtype]) {
           if (molecular) {
             which = find_special(special[i],nspecial[i],tag[j]);
-            if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
+            if (which == 0) neighptr[n++] = j;
+            else if (domain->minimum_image_check(delx,dely,delz))
+              neighptr[n++] = j;
+            else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
           } else neighptr[n++] = j;
         }
       }
@@ -290,8 +277,8 @@ void Neighbor::full_bin(NeighList *list)
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage->vgot(n);
+    if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
 
@@ -331,27 +318,19 @@ void Neighbor::full_bin_ghost(NeighList *list)
   int *ilist = list->ilist;
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
-  int **pages = list->pages;
   int nstencil = list->nstencil;
   int *stencil = list->stencil;
   int **stencilxyz = list->stencilxyz;
+  MyPage<int> *ipage = list->ipage;
 
   int inum = 0;
-  int npage = 0;
-  int npnt = 0;
+  ipage->reset();
 
   // loop over owned & ghost atoms, storing neighbors
 
   for (i = 0; i < nall; i++) {
-
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage++;
-      if (npage == list->maxpage) pages = list->add_pages();
-    }
-
-    neighptr = &pages[npage][npnt];
     n = 0;
+    neighptr = ipage->vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -361,6 +340,7 @@ void Neighbor::full_bin_ghost(NeighList *list)
     // loop over all atoms in surrounding bins in stencil including self
     // when i is a ghost atom, must check if stencil bin is out of bounds
     // skip i = j
+    // no molecular test when i = ghost atom
 
     if (i < nlocal) {
       ibin = coord2bin(x[i]);
@@ -379,7 +359,10 @@ void Neighbor::full_bin_ghost(NeighList *list)
           if (rsq <= cutneighsq[itype][jtype]) {
             if (molecular) {
               which = find_special(special[i],nspecial[i],tag[j]);
-              if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
+              if (which == 0) neighptr[n++] = j;
+              else if (domain->minimum_image_check(delx,dely,delz))
+                neighptr[n++] = j;
+              else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
             } else neighptr[n++] = j;
           }
         }
@@ -405,8 +388,7 @@ void Neighbor::full_bin_ghost(NeighList *list)
           delz = ztmp - x[j][2];
           rsq = delx*delx + dely*dely + delz*delz;
 
-          if (rsq <= cutneighghostsq[itype][jtype])
-            neighptr[n++] = j;
+          if (rsq <= cutneighghostsq[itype][jtype]) neighptr[n++] = j;
         }
       }
     }
@@ -414,8 +396,8 @@ void Neighbor::full_bin_ghost(NeighList *list)
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage->vgot(n);
+    if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
 
@@ -457,25 +439,17 @@ void Neighbor::full_multi(NeighList *list)
   int *ilist = list->ilist;
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
-  int **pages = list->pages;
   int *nstencil_multi = list->nstencil_multi;
   int **stencil_multi = list->stencil_multi;
   double **distsq_multi = list->distsq_multi;
+  MyPage<int> *ipage = list->ipage;
 
   int inum = 0;
-  int npage = 0;
-  int npnt = 0;
+  ipage->reset();
 
   for (i = 0; i < nlocal; i++) {
-
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage++;
-      if (npage == list->maxpage) pages = list->add_pages();
-    }
-
-    neighptr = &pages[npage][npnt];
     n = 0;
+    neighptr = ipage->vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -507,7 +481,10 @@ void Neighbor::full_multi(NeighList *list)
         if (rsq <= cutneighsq[itype][jtype]) {
           if (molecular) {
             which = find_special(special[i],nspecial[i],tag[j]);
-            if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
+            if (which == 0) neighptr[n++] = j;
+            else if (domain->minimum_image_check(delx,dely,delz))
+              neighptr[n++] = j;
+            else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
           } else neighptr[n++] = j;
         }
       }
@@ -516,8 +493,8 @@ void Neighbor::full_multi(NeighList *list)
     ilist[inum++] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage->vgot(n);
+    if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
 

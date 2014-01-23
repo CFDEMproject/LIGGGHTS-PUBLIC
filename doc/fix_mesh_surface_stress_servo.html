@@ -28,11 +28,12 @@ servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV
 
 <PRE><I>com</I> values = x, y, z
     x, y, z = coordinates of the center of mass of the body (distance units)
-<I>dim</I> value = x or y or z
-    x, y, z = dimension in which to apply servo wall 
 <I>ctrlPV</I> values = force or torque
     force = use force as controll process value, i.e. control force
     torque = use torque as controll process value, i.e. control torque
+<I>axis</I> args = x y z
+    x y z = vector direction to apply the controlled mesh motion
+    x or y or z can be a variable (see below) 
 <I>target_val</I> values = val
     val = target value for the controller (force units or torque units, depending on <I>ctrlPV</I>)
 <I>vel_max</I> values = v
@@ -42,13 +43,17 @@ servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV
 <I>ki</I> values = k
     k = integral constant for PID controller
 <I>kd</I> values = k
-    k = differential constant for PID controller 
+    k = differential constant for PID controller
+<I>mode</I> values = auto
+    auto = use alternative controller algorithm 
+<I>ratio</I> values = dr
+    dr = constant for the alternative controller approach (<I>mode</I> = auto) 
 </PRE>
 
 </UL>
 <P><B>Examples:</B>
 </P>
-<P>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force dim z  target_val 10 vel_max 1.
+<P>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
 </P>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>
 </P>
@@ -60,13 +65,14 @@ servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV
 it additionally assumes the mesh being a servo wall that compacts a particle packing until either a 
 total force (for <I>ctrlPV</I> = force)  or a total torque (for <I>ctrlPV</I> = torque) is acting on the mesh.
 The target value is defined via keyword <I>target_val</I>. The servo can act in any dimension 
-(as specified by the <I>dim</I> keyword), but only in one dimension at a time. 
-A negative value for <I>target_val</I> leads to a wall motion towards negative <I>dim</I>-direction and vice versa. The user has to specify 
+(as specified by the <I>axis</I> keyword). Only the direction of the axis is important; it's
+length is ignored.
+A negative value for <I>target_val</I> leads to a wall motion towards negative <I>axis</I>-direction and vice versa. The user has to specify 
 the center of mass (keyword <I>com</I>) and the maximum velocity allowed for the servo wall by keyword <I>vel_max</I>.
 Note that <I>vel_max</I> < <A HREF = "neighbor.html">skin</A> /(2* <A HREF = "timestep.html">timestep</A> ) is required.
 </P>
 <P>The controller itself is a proportional-integral-derivative (PID) controller which is controlled by
-3 constants kp, ki, kd:
+3 constants <I>kp</I>, <I>ki</I>, <I>kd</I>:
 </P>
 <P>output = kp * error + ki * errorsum + kd * errorchange
 </P>
@@ -74,6 +80,8 @@ Note that <I>vel_max</I> < <A HREF = "neighbor.html">skin</A> /(2* <A HREF = "ti
 'errorsum' is the time integration (sum) of the error values and 'errorchange' its derivative. The controller
 also includes an "anti-wind-up scheme" which prohibits accumulation of erroneous controller output caused 
 by the integral part due to unavoidable long-lasting deviations.
+</P>
+<P>By using the keyword <I>mode</I> = auto an alternative controller approach is applied. It is a pure proportional controller with gain scheduling. In the absence of neighbour particles the servo wall may move with maximum velocity (defined by <I>vel_max</I>). Otherwise, the maximum wall velocity is defined by <I>ratio</I> * min(radius) / dt. Approaching <I>target_val</I> the maximum velocity decreases to 0.1 * <I>radio</I> * min(radius) / dt.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>

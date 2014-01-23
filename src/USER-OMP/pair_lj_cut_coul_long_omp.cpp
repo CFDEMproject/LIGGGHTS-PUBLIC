@@ -38,6 +38,7 @@ PairLJCutCoulLongOMP::PairLJCutCoulLongOMP(LAMMPS *lmp) :
 {
   suffix_flag |= Suffix::OMP;
   respa_enable = 0;
+  cut_respa = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -64,11 +65,11 @@ void PairLJCutCoulLongOMP::compute(int eflag, int vflag)
 
     if (evflag) {
       if (eflag) {
-	if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else {
       if (force->newton_pair) eval<0,0,1>(ifrom, ito, thr);
@@ -93,13 +94,13 @@ void PairLJCutCoulLongOMP::eval(int iifrom, int iito, ThrData * const thr)
 
   evdwl = ecoul = 0.0;
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
-  const double * const q = atom->q;
-  const int * const type = atom->type;
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
+  const double * _noalias const q = atom->q;
+  const int * _noalias const type = atom->type;
   const int nlocal = atom->nlocal;
-  const double * const special_coul = force->special_coul;
-  const double * const special_lj = force->special_lj;
+  const double * _noalias const special_coul = force->special_coul;
+  const double * _noalias const special_lj = force->special_lj;
   const double qqrd2e = force->qqrd2e;
   double fxtmp,fytmp,fztmp;
 
@@ -113,9 +114,9 @@ void PairLJCutCoulLongOMP::eval(int iifrom, int iito, ThrData * const thr)
 
     i = ilist[ii];
     qtmp = q[i];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
@@ -127,83 +128,83 @@ void PairLJCutCoulLongOMP::eval(int iifrom, int iito, ThrData * const thr)
       factor_coul = special_coul[sbmask(j)];
       j &= NEIGHMASK;
 
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-	r2inv = 1.0/rsq;
+        r2inv = 1.0/rsq;
 
-	if (rsq < cut_coulsq) {
-	  if (!ncoultablebits || rsq <= tabinnersq) {
-	    r = sqrt(rsq);
-	    grij = g_ewald * r;
-	    expm2 = exp(-grij*grij);
-	    t = 1.0 / (1.0 + EWALD_P*grij);
-	    erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
-	    prefactor = qqrd2e * qtmp*q[j]/r;
-	    forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
-	    if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
-	  } else {
-	    union_int_float_t rsq_lookup;
-	    rsq_lookup.f = rsq;
-	    itable = rsq_lookup.i & ncoulmask;
-	    itable >>= ncoulshiftbits;
-	    fraction = (rsq_lookup.f - rtable[itable]) * drtable[itable];
-	    table = ftable[itable] + fraction*dftable[itable];
-	    forcecoul = qtmp*q[j] * table;
-	    if (factor_coul < 1.0) {
-	      table = ctable[itable] + fraction*dctable[itable];
-	      prefactor = qtmp*q[j] * table;
-	      forcecoul -= (1.0-factor_coul)*prefactor;
-	    }
-	  }
-	} else forcecoul = 0.0;
+        if (rsq < cut_coulsq) {
+          if (!ncoultablebits || rsq <= tabinnersq) {
+            r = sqrt(rsq);
+            grij = g_ewald * r;
+            expm2 = exp(-grij*grij);
+            t = 1.0 / (1.0 + EWALD_P*grij);
+            erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
+            prefactor = qqrd2e * qtmp*q[j]/r;
+            forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
+            if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
+          } else {
+            union_int_float_t rsq_lookup;
+            rsq_lookup.f = rsq;
+            itable = rsq_lookup.i & ncoulmask;
+            itable >>= ncoulshiftbits;
+            fraction = (rsq_lookup.f - rtable[itable]) * drtable[itable];
+            table = ftable[itable] + fraction*dftable[itable];
+            forcecoul = qtmp*q[j] * table;
+            if (factor_coul < 1.0) {
+              table = ctable[itable] + fraction*dctable[itable];
+              prefactor = qtmp*q[j] * table;
+              forcecoul -= (1.0-factor_coul)*prefactor;
+            }
+          }
+        } else forcecoul = 0.0;
 
-	if (rsq < cut_ljsq[itype][jtype]) {
-	  r6inv = r2inv*r2inv*r2inv;
-	  forcelj = r6inv * (lj1[itype][jtype]*r6inv - lj2[itype][jtype]);
-	  forcelj *= factor_lj;
-	} else forcelj = 0.0;
+        if (rsq < cut_ljsq[itype][jtype]) {
+          r6inv = r2inv*r2inv*r2inv;
+          forcelj = r6inv * (lj1[itype][jtype]*r6inv - lj2[itype][jtype]);
+          forcelj *= factor_lj;
+        } else forcelj = 0.0;
 
-	fpair = (forcecoul + forcelj) * r2inv;
+        fpair = (forcecoul + forcelj) * r2inv;
 
-	fxtmp += delx*fpair;
-	fytmp += dely*fpair;
-	fztmp += delz*fpair;
-	if (NEWTON_PAIR || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        fxtmp += delx*fpair;
+        fytmp += dely*fpair;
+        fztmp += delz*fpair;
+        if (NEWTON_PAIR || j < nlocal) {
+          f[j].x -= delx*fpair;
+          f[j].y -= dely*fpair;
+          f[j].z -= delz*fpair;
+        }
 
-	if (EFLAG) {
-	  if (rsq < cut_coulsq) {
-	    if (!ncoultablebits || rsq <= tabinnersq)
-	      ecoul = prefactor*erfc;
-	    else {
-	      table = etable[itable] + fraction*detable[itable];
-	      ecoul = qtmp*q[j] * table;
-	    }
-	    if (factor_coul < 1.0) ecoul -= (1.0-factor_coul)*prefactor;
-	  } else ecoul = 0.0;
+        if (EFLAG) {
+          if (rsq < cut_coulsq) {
+            if (!ncoultablebits || rsq <= tabinnersq)
+              ecoul = prefactor*erfc;
+            else {
+              table = etable[itable] + fraction*detable[itable];
+              ecoul = qtmp*q[j] * table;
+            }
+            if (factor_coul < 1.0) ecoul -= (1.0-factor_coul)*prefactor;
+          } else ecoul = 0.0;
 
-	  if (rsq < cut_ljsq[itype][jtype]) {
-	    evdwl = r6inv*(lj3[itype][jtype]*r6inv-lj4[itype][jtype]) -
-	      offset[itype][jtype];
-	    evdwl *= factor_lj;
-	  } else evdwl = 0.0;
-	}
+          if (rsq < cut_ljsq[itype][jtype]) {
+            evdwl = r6inv*(lj3[itype][jtype]*r6inv-lj4[itype][jtype]) -
+              offset[itype][jtype];
+            evdwl *= factor_lj;
+          } else evdwl = 0.0;
+        }
 
-	if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
-				 evdwl,ecoul,fpair,delx,dely,delz,thr);
+        if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
+                                 evdwl,ecoul,fpair,delx,dely,delz,thr);
       }
     }
-    f[i][0] += fxtmp;
-    f[i][1] += fytmp;
-    f[i][2] += fztmp;
+    f[i].x += fxtmp;
+    f[i].y += fytmp;
+    f[i].z += fztmp;
   }
 }
 

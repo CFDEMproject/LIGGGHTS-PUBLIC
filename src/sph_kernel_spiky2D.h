@@ -61,7 +61,7 @@ namespace SPH_KERNEL_NS {
    0.09947183943 is 5 over 16*pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_spiky2d(double s, double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_spiky2d(double s, double, double hinv)
 {
   if (s < 2.)
   {
@@ -81,7 +81,7 @@ inline double SPH_KERNEL_NS::sph_kernel_spiky2d(double s, double h, double hinv)
    0.298415518297304 is 15 over 16*pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_spiky2d_der(double s,double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_spiky2d_der(double s, double, double hinv)
 {
     if (s < 2.)
     {

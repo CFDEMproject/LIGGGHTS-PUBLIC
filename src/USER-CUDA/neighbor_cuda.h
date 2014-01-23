@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -23,7 +23,7 @@ class NeighborCuda : public Neighbor {
   NeighborCuda(class LAMMPS *);
   void init();
   int check_distance();
-  void build();
+  void build(int do_build_bonded=1);
 
  private:
   class Cuda *cuda;

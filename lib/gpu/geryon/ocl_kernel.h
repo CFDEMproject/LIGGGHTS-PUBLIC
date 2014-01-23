@@ -29,11 +29,25 @@
 
 namespace ucl_opencl {
     
+class UCL_Texture;
+template <class numtyp> class UCL_D_Vec;
+template <class numtyp> class UCL_D_Mat;
+template <class hosttype, class devtype> class UCL_Vector;
+template <class hosttype, class devtype> class UCL_Matrix;
+#define UCL_MAX_KERNEL_ARGS 256
+
 /// Class storing 1 or more kernel functions from a single string or file
 class UCL_Program {
  public:
   inline UCL_Program() : _init_done(false) {}
   inline UCL_Program(UCL_Device &device) : _init_done(false) { init(device); }
+  inline UCL_Program(UCL_Device &device, const void *program, 
+                     const char *flags="", std::string *log=NULL) : 
+      _init_done(false) { 
+    init(device); 
+    load_string(program,flags,log);
+  }
+
   inline ~UCL_Program() { clear(); }
 
   /// Initialize the program with a device
@@ -78,10 +92,10 @@ class UCL_Program {
   }
   
   /// Load a program from a string and compile with flags
-  inline int load_string(const char *program, const char *flags="",
+  inline int load_string(const void *program, const char *flags="",
                          std::string *log=NULL) {
     cl_int error_flag;
-    const char *prog=program;
+    const char *prog=(const char *)program;
     _program=clCreateProgramWithSource(_context,1,&prog,NULL,&error_flag);
     CL_CHECK_ERR(error_flag);
     error_flag = clBuildProgram(_program,1,&_device,flags,NULL,NULL);
@@ -120,6 +134,11 @@ class UCL_Program {
     return UCL_SUCCESS;
   }                                               
    
+  /// Return the default command queue/stream associated with this data
+  inline command_queue & cq() { return _cq; }
+  /// Change the default command queue associated with matrix
+  inline void cq(command_queue &cq_in) { _cq=cq_in; }
+
   friend class UCL_Kernel;
  private:
   bool _init_done;
@@ -159,19 +178,77 @@ class UCL_Kernel {
   /** If not a device pointer, this must be repeated each time the argument
     * changes **/
   template <class dtype>
-  inline void set_arg(const cl_uint index, dtype *arg) { 
+  inline void set_arg(const cl_uint index, const dtype * const arg) { 
     CL_SAFE_CALL(clSetKernelArg(_kernel,index,sizeof(dtype),arg)); 
-    if (index>_num_args) _num_args=index;
+    if (index>_num_args) {
+      _num_args=index;
+      #ifdef UCL_DEBUG
+      if (_num_args>_kernel_info_nargs) {
+        std::cerr << "TOO MANY ARGUMENTS TO OPENCL FUNCTION: " 
+                  << _kernel_info_name << std::endl;
+        assert(0==1);
+      }
+      #endif
+    }
   }
  
+  /// Set a geryon container as a kernel argument.
+  template <class numtyp>
+  inline void set_arg(const UCL_D_Vec<numtyp> * const arg) 
+    { set_arg(&arg->begin()); }
+
+  /// Set a geryon container as a kernel argument.
+  template <class numtyp>
+  inline void set_arg(const UCL_D_Mat<numtyp> * const arg) 
+    { set_arg(&arg->begin()); }
+
+  /// Set a geryon container as a kernel argument.
+  template <class hosttype, class devtype>
+  inline void set_arg(const UCL_Vector<hosttype, devtype> * const arg) 
+    { set_arg(&arg->device.begin()); }
+
+  /// Set a geryon container as a kernel argument.
+  template <class hosttype, class devtype>
+  inline void set_arg(const UCL_Matrix<hosttype, devtype> * const arg) 
+    { set_arg(&arg->device.begin()); }
+
   /// Add a kernel argument.
   template <class dtype>
-  inline void add_arg(dtype *arg) {
+  inline void add_arg(const dtype * const arg) {
     CL_SAFE_CALL(clSetKernelArg(_kernel,_num_args,sizeof(dtype),arg)); 
     _num_args++; 
+    #ifdef UCL_DEBUG
+    if (_num_args>_kernel_info_nargs) {
+      std::cerr << "TOO MANY ARGUMENTS TO OPENCL FUNCTION: " 
+                << _kernel_info_name << std::endl;
+      assert(0==1);
+    }
+    #endif
   }
 
+  /// Add a geryon container as a kernel argument.
+  template <class numtyp>
+  inline void add_arg(const UCL_D_Vec<numtyp> * const arg) 
+    { add_arg(&arg->begin()); }
+
+  /// Add a geryon container as a kernel argument.
+  template <class numtyp>
+  inline void add_arg(const UCL_D_Mat<numtyp> * const arg) 
+    { add_arg(&arg->begin()); }
+
+  /// Add a geryon container as a kernel argument.
+  template <class hosttype, class devtype>
+  inline void add_arg(const UCL_Vector<hosttype, devtype> * const arg) 
+    { add_arg(&arg->device.begin()); }
+
+  /// Add a geryon container as a kernel argument.
+  template <class hosttype, class devtype>
+  inline void add_arg(const UCL_Matrix<hosttype, devtype> * const arg) 
+    { add_arg(&arg->device.begin()); }
+
   /// Set the number of thread blocks and the number of threads in each block
+  /** \note This should be called before any arguments have been added
+      \note The default command queue is used for the kernel execution **/
   inline void set_size(const size_t num_blocks, const size_t block_size) { 
     _dimensions=1; 
     _num_blocks[0]=num_blocks*block_size; 
@@ -179,6 +256,15 @@ class UCL_Kernel {
   }
 
   /// Set the number of thread blocks and the number of threads in each block
+  /** \note This should be called before any arguments have been added
+      \note The default command queue for the kernel is changed to cq **/
+  inline void set_size(const size_t num_blocks, const size_t block_size,
+                       command_queue &cq)
+    { _cq=cq; set_size(num_blocks,block_size); }
+
+  /// Set the number of thread blocks and the number of threads in each block
+  /** \note This should be called before any arguments have been added
+      \note The default command queue is used for the kernel execution **/
   inline void set_size(const size_t num_blocks_x, const size_t num_blocks_y,
                        const size_t block_size_x, const size_t block_size_y) { 
     _dimensions=2; 
@@ -189,6 +275,16 @@ class UCL_Kernel {
   }
   
   /// Set the number of thread blocks and the number of threads in each block
+  /** \note This should be called before any arguments have been added
+      \note The default command queue for the kernel is changed to cq **/
+  inline void set_size(const size_t num_blocks_x, const size_t num_blocks_y,
+                       const size_t block_size_x, const size_t block_size_y,
+                       command_queue &cq) 
+    {_cq=cq; set_size(num_blocks_x, num_blocks_y, block_size_x, block_size_y);}
+
+  /// Set the number of thread blocks and the number of threads in each block
+  /** \note This should be called before any arguments have been added
+      \note The default command queue is used for the kernel execution **/
   inline void set_size(const size_t num_blocks_x, const size_t num_blocks_y,
                        const size_t block_size_x, 
                        const size_t block_size_y, const size_t block_size_z) {
@@ -202,16 +298,19 @@ class UCL_Kernel {
     _block_size[2]=block_size_z; 
   }
 
-  /// Run the kernel in the default command queue
-  inline void run() {
-    run(_cq);
+  /// Set the number of thread blocks and the number of threads in each block
+  /** \note This should be called before any arguments have been added
+      \note The default command queue is used for the kernel execution **/
+  inline void set_size(const size_t num_blocks_x, const size_t num_blocks_y,
+                       const size_t block_size_x, const size_t block_size_y,
+                       const size_t block_size_z, command_queue &cq) {
+    _cq=cq;
+    set_size(num_blocks_x, num_blocks_y, block_size_x, block_size_y, 
+             block_size_z);
   }
   
-  /// Run the kernel in the specified command queue
-  inline void run(command_queue &cq) {
-    CL_SAFE_CALL(clEnqueueNDRangeKernel(cq,_kernel,_dimensions,NULL,
-                                        _num_blocks,_block_size,0,NULL,NULL));
-  }
+  /// Run the kernel in the default command queue
+  inline void run();
   
   /// Clear any arguments associated with the kernel
   inline void clear_args() { _num_args=0; }
@@ -228,6 +327,12 @@ class UCL_Kernel {
   
   cl_command_queue _cq;        // The default command queue for this kernel
   unsigned _num_args;
+
+  #ifdef UCL_DEBUG
+  std::string _kernel_info_name;
+  unsigned _kernel_info_nargs;
+  //std::string _kernel_info_args[256];
+  #endif
 };
 
 inline int UCL_Kernel::set_function(UCL_Program &program, const char *function) {
@@ -248,7 +353,30 @@ inline int UCL_Kernel::set_function(UCL_Program &program, const char *function) 
     #endif
     return UCL_FUNCTION_NOT_FOUND;
   }
+  
+  #ifdef UCL_DEBUG
+  _kernel_info_name=function;
+  cl_uint nargs;
+  CL_SAFE_CALL(clGetKernelInfo(_kernel,CL_KERNEL_NUM_ARGS,sizeof(cl_uint),
+                               &nargs,NULL));
+  _kernel_info_nargs=nargs;
+  #ifdef NOT_TEST_CL_VERSION_1_2
+  char tname[256];
+  size_t ret;
+  for (cl_uint i=0; i<nargs; i++) {
+    CL_SAFE_CALL(clGetKernelArgInfo(_kernel,i,CL_KERNEL_ARG_TYPE_NAME,256,
+                                    tname,&ret));
+    _kernel_info_args[i]=tname;
+  }
+  #endif
+  #endif
+  
   return UCL_SUCCESS;                                               
+}
+
+void UCL_Kernel::run() {
+  CL_SAFE_CALL(clEnqueueNDRangeKernel(_cq,_kernel,_dimensions,NULL,
+                                      _num_blocks,_block_size,0,NULL,NULL));
 }
 
 } // namespace

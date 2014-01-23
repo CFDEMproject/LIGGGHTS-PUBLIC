@@ -59,38 +59,38 @@ FixWallSph::FixWallSph(LAMMPS *lmp, int narg, char **arg) :
     if (narg < iarg+3) error->all(FLERR,"Illegal fix wall/sph command");
     wallstyle = XPLANE;
     if (strcmp(arg[iarg+1],"NULL") == 0) lo = -BIG;
-    else lo = force->numeric(arg[iarg+1]);
+    else lo = force->numeric(FLERR,arg[iarg+1]);
     if (strcmp(arg[iarg+2],"NULL") == 0) hi = BIG;
-    else hi = force->numeric(arg[iarg+2]);
+    else hi = force->numeric(FLERR,arg[iarg+2]);
     iarg += 3;
   } else if (strcmp(arg[iarg],"yplane") == 0) {
     if (narg < iarg+3) error->all(FLERR,"Illegal fix wall/sph command");
     wallstyle = YPLANE;
     if (strcmp(arg[iarg+1],"NULL") == 0) lo = -BIG;
-    else lo = force->numeric(arg[iarg+1]);
+    else lo = force->numeric(FLERR,arg[iarg+1]);
     if (strcmp(arg[iarg+2],"NULL") == 0) hi = BIG;
-    else hi = force->numeric(arg[iarg+2]);
+    else hi = force->numeric(FLERR,arg[iarg+2]);
     iarg += 3;
   } else if (strcmp(arg[iarg],"zplane") == 0) {
     if (narg < iarg+3) error->all(FLERR,"Illegal fix wall/sph command");
     wallstyle = ZPLANE;
     if (strcmp(arg[iarg+1],"NULL") == 0) lo = -BIG;
-    else lo = force->numeric(arg[iarg+1]);
+    else lo = force->numeric(FLERR,arg[iarg+1]);
     if (strcmp(arg[iarg+2],"NULL") == 0) hi = BIG;
-    else hi = force->numeric(arg[iarg+2]);
+    else hi = force->numeric(FLERR,arg[iarg+2]);
     iarg += 3;
   } else if (strcmp(arg[iarg],"zcylinder") == 0) {
     if (narg < iarg+2) error->all(FLERR,"Illegal fix wall/gran command");
     wallstyle = ZCYLINDER;
     lo = hi = 0.0;
-    cylradius = force->numeric(arg[iarg+1]);
+    cylradius = force->numeric(FLERR,arg[iarg+1]);
     iarg += 2;
   }
 
   // parameters for penetration force
   if (narg < iarg+2) error->all(FLERR,"Illegal fix wall/sph command, not enough arguments for penetration force");
-  r0 = force->numeric(arg[iarg]);
-  D  = force->numeric(arg[iarg+1]);
+  r0 = force->numeric(FLERR,arg[iarg]);
+  D  = force->numeric(FLERR,arg[iarg+1]);
   iarg += 2;
 
   if (wallstyle == XPLANE && domain->xperiodic)

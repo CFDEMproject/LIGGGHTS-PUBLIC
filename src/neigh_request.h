@@ -26,18 +26,18 @@ class NeighRequest : protected Pointers {
 
   // which class is requesting the list, one flag is 1, others are 0
 
-  int pair;
+  int pair;              // set by default
   int fix;
   int compute;
   int command;
 
-  // kind of list requested
+  // kind of list requested, one flag is 1, others are 0
   // set by requesting class
 
-  int half;              // 1 if half neigh list
+  int half;              // 1 if half neigh list (set by default)
   int full;              // 1 if full neigh list
 
-  int gran;              // 1 if granular list
+  int gran;              // 1 if granular list 
   int granhistory;       // 1 if granular history list
 
   int respainner;        // 1 if a rRESPA inner list
@@ -59,7 +59,7 @@ class NeighRequest : protected Pointers {
   int newton;
 
   // 0 if user of list wants no encoding of special bond flags and all neighs
-  // 1 if user of list wants special bond flags encoded
+  // 1 if user of list wants special bond flags encoded, set by default
 
   int special;
 
@@ -89,12 +89,21 @@ class NeighRequest : protected Pointers {
   int *iskip;            // iskip[i] if atoms of type I are not in list
   int **ijskip;          // ijskip[i][j] if pairs of type I,J are not in list
 
-  int otherlist;         // other list to copy or skip from
+  int otherlist;         // index of other list to copy or skip from
+
+  // original params by requester
+  // stored to compare against in identical() in case Neighbor changes them
+
+  int half_original;
+  int half_from_full_original;
+  int copy_original;
+  int otherlist_original;
 
   // methods
 
   NeighRequest(class LAMMPS *);
   ~NeighRequest();
+  void archive();
   int identical(NeighRequest *);
   int same_kind(NeighRequest *);
   int same_skip(NeighRequest *);

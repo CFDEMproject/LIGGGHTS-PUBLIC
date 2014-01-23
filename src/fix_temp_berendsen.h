@@ -1,4 +1,4 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -34,11 +34,14 @@ class FixTempBerendsen : public Fix {
   int modify_param(int, char **);
   void reset_target(double);
   double compute_scalar();
+  virtual void *extract(const char *, int &);
 
  private:
   int which;
-  double t_start,t_stop,t_period;
+  double t_start,t_stop,t_period,t_target;
   double energy;
+  int tstyle,tvar;
+  char *tstr;
 
   char *id_temp;
   class Compute *temperature;
@@ -62,11 +65,23 @@ E: Fix temp/berendsen period must be > 0.0
 
 Self-explanatory.
 
+E: Variable name for fix temp/berendsen does not exist
+
+Self-explanatory.
+
+E: Variable for fix temp/berendsen is invalid style
+
+Only equal-style variables can be used.
+
 E: Temperature ID for fix temp/berendsen does not exist
 
 Self-explanatory.
 
 E: Computed temperature for fix temp/berendsen cannot be 0.0
+
+Self-explanatory.
+
+E: Fix temp/berendsen variable returned negative temperature
 
 Self-explanatory.
 

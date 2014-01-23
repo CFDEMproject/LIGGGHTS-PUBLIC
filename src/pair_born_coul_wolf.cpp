@@ -11,10 +11,6 @@
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
-#if defined(_WIN32) || defined(_WIN64)
-// must be disabled, because of missing error function erfc
-#else
-
 /* ----------------------------------------------------------------------
    Contributing author: Yongfeng Zhang (INL), yongfeng.zhang@inl.gov
 ------------------------------------------------------------------------- */
@@ -38,7 +34,10 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-PairBornCoulWolf::PairBornCoulWolf(LAMMPS *lmp) : Pair(lmp) {}
+PairBornCoulWolf::PairBornCoulWolf(LAMMPS *lmp) : Pair(lmp)
+{
+  writedata = 1;
+}
 
 /* ---------------------------------------------------------------------- */
 
@@ -222,10 +221,10 @@ void PairBornCoulWolf::settings(int narg, char **arg)
 {
   if (narg < 2 || narg > 3) error->all(FLERR,"Illegal pair_style command");
 
-  alf = force->numeric(arg[0]);
-  cut_lj_global = force->numeric(arg[1]);
+  alf = force->numeric(FLERR,arg[0]);
+  cut_lj_global = force->numeric(FLERR,arg[1]);
   if (narg == 2) cut_coul = cut_lj_global;
-  else cut_coul = force->numeric(arg[2]);
+  else cut_coul = force->numeric(FLERR,arg[2]);
 
   if (allocated) {
     int i,j;
@@ -249,15 +248,15 @@ void PairBornCoulWolf::coeff(int narg, char **arg)
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double a_one = force->numeric(arg[2]);
-  double rho_one = force->numeric(arg[3]);
-  double sigma_one = force->numeric(arg[4]);
+  double a_one = force->numeric(FLERR,arg[2]);
+  double rho_one = force->numeric(FLERR,arg[3]);
+  double sigma_one = force->numeric(FLERR,arg[4]);
   if (rho_one <= 0) error->all(FLERR,"Incorrect args for pair coefficients");
-  double c_one = force->numeric(arg[5]);
-  double d_one = force->numeric(arg[6]);
+  double c_one = force->numeric(FLERR,arg[5]);
+  double d_one = force->numeric(FLERR,arg[6]);
 
   double cut_lj_one = cut_lj_global;
-  if (narg == 8) cut_lj_one = force->numeric(arg[7]);
+  if (narg == 8) cut_lj_one = force->numeric(FLERR,arg[7]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -307,7 +306,7 @@ double PairBornCoulWolf::init_one(int i, int j)
   born3[i][j] = 8.0*d[i][j];
 
   if (offset_flag) {
-    double rexp = exp(-cut_lj[i][j]/rho[i][j]);
+    double rexp = exp((sigma[i][j]-cut_lj[i][j])*rhoinv[i][j]);
     offset[i][j] = a[i][j]*rexp - c[i][j]/pow(cut_lj[i][j],6.0)
       + d[i][j]/pow(cut_lj[i][j],8.0);
   } else offset[i][j] = 0.0;
@@ -418,6 +417,29 @@ void PairBornCoulWolf::read_restart_settings(FILE *fp)
 }
 
 /* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void PairBornCoulWolf::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    fprintf(fp,"%d %g %g %g %g %g\n",i,
+            a[i][i],rho[i][i],sigma[i][i],c[i][i],d[i][i]);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes all pairs to data file
+------------------------------------------------------------------------- */
+
+void PairBornCoulWolf::write_data_all(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    for (int j = i; j <= atom->ntypes; j++)
+      fprintf(fp,"%d %d %g %g %g %g %g %g\n",i,j,
+              a[i][j],rho[i][j],sigma[i][j],c[i][j],d[i][j],cut_lj[i][j]);
+}
+
+/* ----------------------------------------------------------------------
    only the pair part is calculated here
 ------------------------------------------------------------------------- */
 
@@ -468,5 +490,3 @@ double PairBornCoulWolf::single(int i, int j, int itype, int jtype,
   }
   return eng;
 }
-
-#endif

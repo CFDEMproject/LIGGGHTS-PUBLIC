@@ -24,6 +24,7 @@
 #include "input.h"
 #include "variable.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -51,7 +52,7 @@ FixAveForce::FixAveForce(LAMMPS *lmp, int narg, char **arg) :
   } else if (strcmp(arg[3],"NULL") == 0) {
     xstyle = NONE;
   } else {
-    xvalue = atof(arg[3]);
+    xvalue = force->numeric(FLERR,arg[3]);
     xstyle = CONSTANT;
   }
   if (strstr(arg[4],"v_") == arg[4]) {
@@ -61,7 +62,7 @@ FixAveForce::FixAveForce(LAMMPS *lmp, int narg, char **arg) :
   } else if (strcmp(arg[4],"NULL") == 0) {
     ystyle = NONE;
   } else {
-    yvalue = atof(arg[4]);
+    yvalue = force->numeric(FLERR,arg[4]);
     ystyle = CONSTANT;
   }
   if (strstr(arg[5],"v_") == arg[5]) {
@@ -71,7 +72,7 @@ FixAveForce::FixAveForce(LAMMPS *lmp, int narg, char **arg) :
   } else if (strcmp(arg[5],"NULL") == 0) {
     zstyle = NONE;
   } else {
-    zvalue = atof(arg[5]);
+    zvalue = force->numeric(FLERR,arg[5]);
     zstyle = CONSTANT;
   }
 
@@ -128,19 +129,22 @@ void FixAveForce::init()
 
   if (xstr) {
     xvar = input->variable->find(xstr);
-    if (xvar < 0) error->all(FLERR,"Variable name for fix aveforce does not exist");
+    if (xvar < 0)
+      error->all(FLERR,"Variable name for fix aveforce does not exist");
     if (input->variable->equalstyle(xvar)) xstyle = EQUAL;
     else error->all(FLERR,"Variable for fix aveforce is invalid style");
   }
   if (ystr) {
     yvar = input->variable->find(ystr);
-    if (yvar < 0) error->all(FLERR,"Variable name for fix aveforce does not exist");
+    if (yvar < 0)
+      error->all(FLERR,"Variable name for fix aveforce does not exist");
     if (input->variable->equalstyle(yvar)) ystyle = EQUAL;
     else error->all(FLERR,"Variable for fix aveforce is invalid style");
   }
   if (zstr) {
     zvar = input->variable->find(zstr);
-    if (zvar < 0) error->all(FLERR,"Variable name for fix aveforce does not exist");
+    if (zvar < 0)
+      error->all(FLERR,"Variable name for fix aveforce does not exist");
     if (input->variable->equalstyle(zvar)) zstyle = EQUAL;
     else error->all(FLERR,"Variable for fix aveforce is invalid style");
   }
@@ -149,7 +153,8 @@ void FixAveForce::init()
 
   if (iregion >= 0) {
     iregion = domain->find_region(idregion);
-    if (iregion == -1) error->all(FLERR,"Region ID for fix aveforce does not exist");
+    if (iregion == -1)
+      error->all(FLERR,"Region ID for fix aveforce does not exist");
   }
 
   if (xstyle == EQUAL || ystyle == EQUAL || zstyle == EQUAL) varflag = EQUAL;

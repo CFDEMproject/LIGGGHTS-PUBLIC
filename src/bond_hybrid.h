@@ -42,7 +42,7 @@ class BondHybrid : public Bond {
   double equilibrium_distance(int);
   void write_restart(FILE *);
   void read_restart(FILE *);
-  double single(int, double, int, int);
+  double single(int, double, int, int, double &);
   double memory_usage();
 
  private:
@@ -68,7 +68,7 @@ Self-explanatory.  Check the input script syntax and compare to the
 documentation for the command.  You can use -echo screen as a
 command-line option when running LAMMPS to see the offending line.
 
-E: Bond style hybrid cannot use same pair style twice
+E: Bond style hybrid cannot use same bond style twice
 
 Self-explanatory.
 

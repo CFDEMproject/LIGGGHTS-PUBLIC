@@ -85,7 +85,7 @@ void InputMeshTet::meshtetfile(const char *filename, class RegTetMesh *mesh, boo
 
 void InputMeshTet::meshtetfile_vtk(class RegTetMesh *mesh)
 {
-  int n;
+  int n,m;
   int iVertex = 0;
 
   double phix = (mesh->rot_angle[0])*M_PI/180.;
@@ -110,15 +110,30 @@ void InputMeshTet::meshtetfile_vtk(class RegTetMesh *mesh)
   int flag_other_than_tet = 0;
 
   while (1) {
-    // read one line from input script
-    // if line ends in continuation char '&', concatenate next line(s)
-    // n = str length of line
+
+    // read a line from input script
+    // n = length of line including str terminator, 0 if end of file
+    // if line ends in continuation char '&', concatenate next line
+
     if (me == 0) {
-      if (fgets(line,MAXLINE,nonlammps_file) == NULL) n = 0;
-      else n = strlen(line) + 1;
-      while (n >= 3 && line[n-3] == '&') {
-        if (fgets(&line[n-3],MAXLINE-n+3,nonlammps_file) == NULL) n = 0;
-        else n = strlen(line) + 1;
+      m = 0;
+      while (1) {
+        if (maxline-m < 2) reallocate(line,maxline,0);
+        if (fgets(&line[m],maxline-m,nonlammps_file) == NULL) {
+          if (m) n = strlen(line) + 1;
+          else n = 0;
+          break;
+        }
+        m = strlen(line);
+        if (line[m-1] != '\n') continue;
+
+        m--;
+        while (m >= 0 && isspace(line[m])) m--;
+        if (m < 0 || line[m] != '&') {
+          line[m+1] = '\0';
+          n = m+2;
+          break;
+        }
       }
     }
 
@@ -127,22 +142,17 @@ void InputMeshTet::meshtetfile_vtk(class RegTetMesh *mesh)
     // error if label_active is set, since label wasn't encountered
     // if original input file, code is done
     // else go back to previous input file
+
     MPI_Bcast(&n,1,MPI_INT,0,world);
     if (n == 0) {
       break;
     }
 
+    if (n > maxline) reallocate(line,maxline,n);
     MPI_Bcast(line,n,MPI_CHAR,0,world);
 
     // lines start with 1 (not 0)
     nLines++;
-
-    // if n = MAXLINE, line is too long
-    if (n == MAXLINE) {
-      char str[MAXLINE+32];
-      sprintf(str,"Input line too long: %s",line);
-      error->all(FLERR,str);
-    }
 
     //parse one line from the file
     parse_nonlammps();
@@ -222,7 +232,6 @@ void InputMeshTet::meshtetfile_vtk(class RegTetMesh *mesh)
         else
         {
             cells[icell][0] = -1;
-
         }
 
         icell++;
@@ -250,8 +259,7 @@ void InputMeshTet::meshtetfile_vtk(class RegTetMesh *mesh)
         icell++;
         continue;
     }
-
-  }
+}
 
   //must throw an error here since regions may not extend outside box
   if(flag_outside)

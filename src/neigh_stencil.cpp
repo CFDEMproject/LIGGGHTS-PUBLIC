@@ -23,8 +23,7 @@ using namespace LAMMPS_NS;
    sx,sy,sz = bin bounds = furthest the stencil could possibly extend
    3d creates xyz stencil, 2d creates xy stencil
    for half list with newton off:
-     stencil is all surrounding bins
-     stencil includes self
+     stencil is all surrounding bins including self
      regardless of triclinic
    for half list with newton on:
      stencil is bins to the "upper right" of central bin
@@ -55,6 +54,27 @@ void Neighbor::stencil_half_bin_2d_no_newton(NeighList *list,
     for (i = -sx; i <= sx; i++)
       if (bin_distance(i,j,0) < cutneighmaxsq)
         stencil[nstencil++] = j*mbinx + i;
+  list->nstencil = nstencil;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Neighbor::stencil_half_ghost_bin_2d_no_newton(NeighList *list,
+                                                   int sx, int sy, int sz)
+{
+  int i,j,k;
+  int *stencil = list->stencil;
+  int **stencilxyz = list->stencilxyz;
+  int nstencil = 0;
+
+  for (j = -sy; j <= sy; j++)
+    for (i = -sx; i <= sx; i++)
+      if (bin_distance(i,j,0) < cutneighmaxsq) {
+        stencilxyz[nstencil][0] = i;
+        stencilxyz[nstencil][1] = j;
+        stencilxyz[nstencil][2] = 0;
+        stencil[nstencil++] = j*mbinx + i;
+      }
 
   list->nstencil = nstencil;
 }
@@ -74,6 +94,29 @@ void Neighbor::stencil_half_bin_3d_no_newton(NeighList *list,
         if (bin_distance(i,j,k) < cutneighmaxsq)
           stencil[nstencil++] = k*mbiny*mbinx + j*mbinx + i;
   
+  list->nstencil = nstencil;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Neighbor::stencil_half_ghost_bin_3d_no_newton(NeighList *list,
+                                                   int sx, int sy, int sz)
+{
+  int i,j,k;
+  int *stencil = list->stencil;
+  int **stencilxyz = list->stencilxyz;
+  int nstencil = 0;
+
+  for (k = -sz; k <= sz; k++)
+    for (j = -sy; j <= sy; j++)
+      for (i = -sx; i <= sx; i++)
+        if (bin_distance(i,j,k) < cutneighmaxsq) {
+          stencilxyz[nstencil][0] = i;
+          stencilxyz[nstencil][1] = j;
+          stencilxyz[nstencil][2] = k;
+          stencil[nstencil++] = k*mbiny*mbinx + j*mbinx + i;
+        }
+
   list->nstencil = nstencil;
 }
 

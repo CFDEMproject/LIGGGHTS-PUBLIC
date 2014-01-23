@@ -39,7 +39,7 @@ PairDPDOMP::PairDPDOMP(LAMMPS *lmp) :
 
 /* ---------------------------------------------------------------------- */
 
-PairDPDOMP::~PairDPDOMP() 
+PairDPDOMP::~PairDPDOMP()
 {
   if (random_thr) {
     for (int i=1; i < comm->nthreads; ++i)
@@ -82,16 +82,16 @@ void PairDPDOMP::compute(int eflag, int vflag)
     // generate a random number generator instance for
     // all threads != 0. make sure we use unique seeds.
     if (random_thr && tid > 0)
-      random_thr[tid] = new RanMars(Pair::lmp, seed + comm->me 
-				    + comm->nprocs*tid);
+      random_thr[tid] = new RanMars(Pair::lmp, seed + comm->me
+                                    + comm->nprocs*tid);
 
     if (evflag) {
       if (eflag) {
-	if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else {
       if (force->newton_pair) eval<0,0,1>(ifrom, ito, thr);
@@ -113,10 +113,10 @@ void PairDPDOMP::eval(int iifrom, int iito, ThrData * const thr)
 
   evdwl = 0.0;
 
-  const double * const * const x = atom->x;
-  const double * const * const v = atom->v;
-  double * const * const f = thr->get_f();
-  const int * const type = atom->type;
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  const dbl3_t * _noalias const v = (dbl3_t *) atom->v[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
+  const int * _noalias const type = atom->type;
   const int nlocal = atom->nlocal;
   const double *special_lj = force->special_lj;
   const double dtinvsqrt = 1.0/sqrt(update->dt);
@@ -132,12 +132,12 @@ void PairDPDOMP::eval(int iifrom, int iito, ThrData * const thr)
   for (ii = iifrom; ii < iito; ++ii) {
 
     i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
-    vxtmp = v[i][0];
-    vytmp = v[i][1];
-    vztmp = v[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
+    vxtmp = v[i].x;
+    vytmp = v[i].y;
+    vztmp = v[i].z;
     itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
@@ -148,56 +148,56 @@ void PairDPDOMP::eval(int iifrom, int iito, ThrData * const thr)
       factor_dpd = special_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-	r = sqrt(rsq);
-	if (r < EPSILON) continue;     // r can be 0.0 in DPD systems
-	rinv = 1.0/r;
-	delvx = vxtmp - v[j][0];
-	delvy = vytmp - v[j][1];
-	delvz = vztmp - v[j][2];
-	dot = delx*delvx + dely*delvy + delz*delvz;
-	wd = 1.0 - r/cut[itype][jtype];
-	randnum = rng.gaussian();
+        r = sqrt(rsq);
+        if (r < EPSILON) continue;     // r can be 0.0 in DPD systems
+        rinv = 1.0/r;
+        delvx = vxtmp - v[j].x;
+        delvy = vytmp - v[j].y;
+        delvz = vztmp - v[j].z;
+        dot = delx*delvx + dely*delvy + delz*delvz;
+        wd = 1.0 - r/cut[itype][jtype];
+        randnum = rng.gaussian();
 
-	// conservative force = a0 * wd
-	// drag force = -gamma * wd^2 * (delx dot delv) / r
-	// random force = sigma * wd * rnd * dtinvsqrt;
+        // conservative force = a0 * wd
+        // drag force = -gamma * wd^2 * (delx dot delv) / r
+        // random force = sigma * wd * rnd * dtinvsqrt;
 
-	fpair = a0[itype][jtype]*wd;
-	fpair -= gamma[itype][jtype]*wd*wd*dot*rinv;
-	fpair += sigma[itype][jtype]*wd*randnum*dtinvsqrt;
-	fpair *= factor_dpd*rinv;	
+        fpair = a0[itype][jtype]*wd;
+        fpair -= gamma[itype][jtype]*wd*wd*dot*rinv;
+        fpair += sigma[itype][jtype]*wd*randnum*dtinvsqrt;
+        fpair *= factor_dpd*rinv;
 
-	fxtmp += delx*fpair;
-	fytmp += dely*fpair;
-	fztmp += delz*fpair;
-	if (NEWTON_PAIR || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        fxtmp += delx*fpair;
+        fytmp += dely*fpair;
+        fztmp += delz*fpair;
+        if (NEWTON_PAIR || j < nlocal) {
+          f[j].x -= delx*fpair;
+          f[j].y -= dely*fpair;
+          f[j].z -= delz*fpair;
+        }
 
-	if (EFLAG) {
+        if (EFLAG) {
           // unshifted eng of conservative term:
-	  // evdwl = -a0[itype][jtype]*r * (1.0-0.5*r/cut[itype][jtype]);
-	  // eng shifted to 0.0 at cutoff
-	  evdwl = 0.5*a0[itype][jtype]*cut[itype][jtype] * wd*wd;
-	  evdwl *= factor_dpd;
-	}
+          // evdwl = -a0[itype][jtype]*r * (1.0-0.5*r/cut[itype][jtype]);
+          // eng shifted to 0.0 at cutoff
+          evdwl = 0.5*a0[itype][jtype]*cut[itype][jtype] * wd*wd;
+          evdwl *= factor_dpd;
+        }
 
-	if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
-				 evdwl,0.0,fpair,delx,dely,delz,thr);
+        if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
+                                 evdwl,0.0,fpair,delx,dely,delz,thr);
       }
     }
-    f[i][0] += fxtmp;
-    f[i][1] += fytmp;
-    f[i][2] += fztmp;
+    f[i].x += fxtmp;
+    f[i].y += fytmp;
+    f[i].z += fztmp;
   }
 }
 

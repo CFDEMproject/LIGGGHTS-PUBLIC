@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -31,8 +31,8 @@ class PairSW : public Pair {
   virtual void compute(int, int);
   void settings(int, char **);
   void coeff(int, char **);
-  double init_one(int, int);
-  void init_style();
+  virtual double init_one(int, int);
+  virtual void init_style();
 
  protected:
   struct Param {
@@ -46,7 +46,7 @@ class PairSW : public Pair {
     double c1,c2,c3,c4,c5,c6;
     int ielement,jelement,kelement;
   };
-  
+
   double cutmax;                // max cutoff for all elements
   int nelements;                // # of unique elements
   char **elements;              // names of unique elements
@@ -56,12 +56,12 @@ class PairSW : public Pair {
   int maxparam;                 // max # of parameter sets
   Param *params;                // parameter set for an I-J-K interaction
 
-  void allocate();
+  virtual void allocate();
   void read_file(char *);
   void setup();
   void twobody(Param *, double, double &, int, double &);
   void threebody(Param *, Param *, Param *, double, double, double *, double *,
-		 double *, double *, int, double &);
+                 double *, double *, int, double &);
 };
 
 }

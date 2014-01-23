@@ -18,13 +18,13 @@
 #include "update.h"
 #include "modify.h"
 #include "domain.h"
-#include "force.h"
 #include "region.h"
 #include "respa.h"
 #include "input.h"
 #include "variable.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -52,7 +52,7 @@ FixAddForce::FixAddForce(LAMMPS *lmp, int narg, char **arg) :
     xstr = new char[n];
     strcpy(xstr,&arg[3][2]);
   } else {
-    xvalue = atof(arg[3]);
+    xvalue = force->numeric(FLERR,arg[3]);
     xstyle = CONSTANT;
   }
   if (strstr(arg[4],"v_") == arg[4]) {
@@ -60,7 +60,7 @@ FixAddForce::FixAddForce(LAMMPS *lmp, int narg, char **arg) :
     ystr = new char[n];
     strcpy(ystr,&arg[4][2]);
   } else {
-    yvalue = atof(arg[4]);
+    yvalue = force->numeric(FLERR,arg[4]);
     ystyle = CONSTANT;
   }
   if (strstr(arg[5],"v_") == arg[5]) {
@@ -68,7 +68,7 @@ FixAddForce::FixAddForce(LAMMPS *lmp, int narg, char **arg) :
     zstr = new char[n];
     strcpy(zstr,&arg[5][2]);
   } else {
-    zvalue = atof(arg[5]);
+    zvalue = force->numeric(FLERR,arg[5]);
     zstyle = CONSTANT;
   }
 
@@ -225,6 +225,7 @@ void FixAddForce::post_force(int vflag)
   double **x = atom->x;
   double **f = atom->f;
   int *mask = atom->mask;
+  tagint *image = atom->image;
   int nlocal = atom->nlocal;
 
   // reallocate sforce array if necessary
@@ -242,16 +243,18 @@ void FixAddForce::post_force(int vflag)
   force_flag = 0;
 
   // constant force
-  // potential energy = - x dot f
+  // potential energy = - x dot f in unwrapped coords
 
   if (varflag == CONSTANT) {
+    double unwrap[3];
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
         if (iregion >= 0 &&
             !domain->regions[iregion]->match(x[i][0],x[i][1],x[i][2]))
           continue;
 
-        foriginal[0] -= xvalue*x[i][0] + yvalue*x[i][1] + zvalue*x[i][2];
+        domain->unmap(x[i],image[i],unwrap);
+        foriginal[0] -= xvalue*unwrap[0] + yvalue*unwrap[1] + zvalue*unwrap[2];
         foriginal[1] += f[i][0];
         foriginal[2] += f[i][1];
         foriginal[3] += f[i][2];

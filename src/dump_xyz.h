@@ -27,14 +27,23 @@ namespace LAMMPS_NS {
 class DumpXYZ : public Dump {
  public:
   DumpXYZ(class LAMMPS *, int, char**);
-  ~DumpXYZ() {}
+  ~DumpXYZ();
 
  private:
+  int ntypes;
+  char **typenames;
+
   void init_style();
   void write_header(bigint);
-  int count();
   void pack(int *);
+  int convert_string(int, double *);
   void write_data(int, double *);
+  int modify_param(int, char **);
+
+  typedef void (DumpXYZ::*FnPtrWrite)(int, double *);
+  FnPtrWrite write_choice;              // ptr to write data functions
+  void write_string(int, double *);
+  void write_lines(int, double *);
 };
 
 }
@@ -54,5 +63,9 @@ E: Invalid dump xyz filename
 
 Filenames used with the dump xyz style cannot be binary or cause files
 to be written by each processor.
+
+E: Dump modify element names do not match atom types
+
+Number of element names must equal number of atom types.
 
 */

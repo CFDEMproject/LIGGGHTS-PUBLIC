@@ -3,6 +3,13 @@
 
 #include "MatrixDef.h"
 
+namespace ATC_matrix {
+
+  /**
+   *  @class  DiagonalMatrix
+   *  @brief  Class for storing data as a diagonal matrix         
+   */
+
 template<typename T>
 class DiagonalMatrix : public Matrix<T>
 {
@@ -20,6 +27,8 @@ class DiagonalMatrix : public Matrix<T>
   void reset(const Vector<T>& v);
   //* resets based on full copy of a DiagonalMatrix
   void reset(const DiagonalMatrix<T>& v);
+  //* resets based on a one column DenseMatrix
+  void reset(const DenseMatrix<T>& c);
   //* resizes the matrix, ignores nCols, optionally copies what fits
   void copy(const T * ptr, INDEX rows, INDEX cols=0);
 
@@ -27,6 +36,8 @@ class DiagonalMatrix : public Matrix<T>
   void shallowreset(const Vector<T> &v);
   //* resets based on a "shallow" copy of a DiagonalMatrix
   void shallowreset(const DiagonalMatrix<T> &c);
+  //* resets based on a "shallow" copy of one column DenseMatrix
+  void shallowreset(const DenseMatrix<T> &c);
 
   T& operator()(INDEX i, INDEX j);
   T  operator()(INDEX i, INDEX j) const;
@@ -34,14 +45,14 @@ class DiagonalMatrix : public Matrix<T>
   T  operator[](INDEX i)          const;
   INDEX nRows()                   const;
   INDEX nCols()                   const;
-  T* get_ptr()                    const;
+  T* ptr()                    const;
   void write_restart(FILE *f)     const;
 
   // Dump matrix contents to screen (not defined for all datatypes)
-  string tostring() const { return _data->tostring(); }
+  std::string to_string() const { return _data->to_string(); }
 
   using Matrix<T>::matlab;
-  void matlab(ostream &o, const string &s="D") const;
+  void matlab(std::ostream &o, const std::string &s="D") const;
 
   // overloaded operators
   DiagonalMatrix<T>& operator=(const T s);
@@ -53,6 +64,17 @@ class DiagonalMatrix : public Matrix<T>
   DiagonalMatrix<T>& inv_this(); 
   //* returns a copy of the inverse of this matrix
   DiagonalMatrix<T>  inv() const;
+
+  // DiagonalMatrix-matrix multiplication function
+  virtual void MultAB(const Matrix<T>& B, DenseMatrix<T>& C) const
+  {
+    GCK(*this, B, this->nCols()!=B.nRows(), "DiagonalMatrix-Matrix multiplication");
+    for (INDEX i=0; i<C.nRows(); i++) {
+      T value = (*this)[i];
+      for (INDEX j=0; j<C.nCols(); j++)
+        C(i,j) = B(i,j) * value;
+    }
+  }
 
 protected:
   void _set_equal(const Matrix<T> &r);
@@ -81,12 +103,9 @@ DiagonalMatrix<T> operator*(const DiagonalMatrix<T>& A, const DiagonalMatrix<T>&
 template<typename T>
 DenseMatrix<T> operator*(const DiagonalMatrix<T>& A, const Matrix<T> &B)
 {
-  GCK(A, B, A.nCols()!=B.nRows(), "DiagonalMatrix-Matrix multiplication");
-  DenseMatrix<T> R(B);  // makes a copy of r to return
-  for (INDEX i=0; i<R.nRows(); i++)
-    for (INDEX j=0; j<R.nCols(); j++)
-      R(i,j) *= A[i];
-  return R;
+  DenseMatrix<T> C(A.nRows(), B.nCols(), true);
+  A.MultAB(B, C);
+  return C;
 }
 //-----------------------------------------------------------------------------
 // matrix-DiagonalMatrix multiplication
@@ -259,6 +278,15 @@ void DiagonalMatrix<T>::reset(const DiagonalMatrix<T>& c)
   reset(*(c._data));
 }
 //-----------------------------------------------------------------------------
+// copys from a single column matrix
+//-----------------------------------------------------------------------------
+template<typename T>
+void DiagonalMatrix<T>::reset(const DenseMatrix<T>& c)
+{
+  GCHK(c.nCols()!=1,"DiagonalMatrix reset from DenseMatrix");
+  copy(c.ptr(),c.nRows(),c.nRows());
+}
+//-----------------------------------------------------------------------------
 // resizes the matrix and copies data
 //-----------------------------------------------------------------------------
 template<typename T>
@@ -266,7 +294,7 @@ void DiagonalMatrix<T>::copy(const T * ptr, INDEX rows, INDEX cols)
 {
   if (_data) _data->reset(rows, false);
   else _data = new DenseVector<T>(rows, false);
-  memcpy(_data, ptr, this->size()*sizeof(T));
+  _data->copy(ptr,rows,cols);
 }
 //-----------------------------------------------------------------------------
 // shallow reset from another DiagonalMatrix
@@ -287,13 +315,22 @@ void DiagonalMatrix<T>::shallowreset(const Vector<T> &v)
   _data = new CloneVector<T>(v);
 }
 //-----------------------------------------------------------------------------
+// shallow reset from a DenseMatrix
+//-----------------------------------------------------------------------------
+template<typename T>
+void DiagonalMatrix<T>::shallowreset(const DenseMatrix<T> &c)
+{
+  _delete();
+  _data = new CloneVector<T>(c,CLONE_COL);
+}
+//-----------------------------------------------------------------------------
 // reference indexing operator - must throw an error if i!=j
 //-----------------------------------------------------------------------------
 template<typename T>
 T& DiagonalMatrix<T>::operator()(INDEX i, INDEX j)
 {
   GCK(*this,*this,i!=j,"DiagonalMatrix: tried to index off diagonal");
-  return VIDX(i);
+  return (*this)[i];
 }
 //-----------------------------------------------------------------------------
 // value indexing operator - returns 0 if i!=j
@@ -339,9 +376,9 @@ INDEX DiagonalMatrix<T>::nCols()                                          const
 // returns a pointer to the diagonal values, dangerous!
 //-----------------------------------------------------------------------------
 template<typename T>
-T* DiagonalMatrix<T>::get_ptr()                                           const
+T* DiagonalMatrix<T>::ptr()                                           const
 {
-  return _data->get_ptr(); 
+  return _data->ptr(); 
 } 
 //-----------------------------------------------------------------------------
 // writes the diagonal to a binary data restart file
@@ -357,7 +394,7 @@ void DiagonalMatrix<T>::write_restart(FILE *f)                            const
 template<typename T>
 DiagonalMatrix<T>& DiagonalMatrix<T>::operator=(const T v) 
 {
-  set_all_elements_to(v);
+  this->set_all_elements_to(v);
   return *this;
 }
 //-----------------------------------------------------------------------------
@@ -373,7 +410,7 @@ DiagonalMatrix<T>& DiagonalMatrix<T>::operator=(const DiagonalMatrix<T>& C)
 // writes a matlab command to duplicate this sparse matrix
 //-----------------------------------------------------------------------------
 template<typename T>
-void DiagonalMatrix<T>::matlab(ostream &o, const string &s)               const 
+void DiagonalMatrix<T>::matlab(std::ostream &o, const std::string &s)               const 
 {
   _data->matlab(o, s);
   o << s <<"=diag("<<s<<",0);\n";
@@ -386,17 +423,19 @@ DiagonalMatrix<T>& DiagonalMatrix<T>::inv_this()
 {
   for(INDEX i=0; i<nRows(); i++) 
   {
-     if (VIDX(i)!=T(0)) VIDX(i) = 1.0/VIDX(i);
+     if ((*this)[i]!=T(0)) (*this)[i] = 1.0/(*this)[i];
      else 
      {
-        cout<<"DiagonalMatrix::inv(): ("<<i<<","<<i<<")=0\n";
+        std::cout<<"DiagonalMatrix::inv(): ("<<i<<","<<i<<")=0\n";
+        ERROR_FOR_BACKTRACE
+        exit(EXIT_FAILURE);
      }
   }  
   // Error check info
   const double min_max = _data->minabs() / _data->maxabs();
   if (min_max > 1e-14)   return *this;
-  cout << "DiagonalMatrix::inv_this(): Warning: Matrix is badly scaled.";
-  cout << "  RCOND = "<<min_max<<"\n";
+  std::cout << "DiagonalMatrix::inv_this(): Warning: Matrix is badly scaled.";
+  std::cout << "  RCOND = "<<min_max<<"\n";
   return *this;
 }
 //-----------------------------------------------------------------------------
@@ -409,17 +448,19 @@ DiagonalMatrix<T> DiagonalMatrix<T>::inv() const
 
   for(INDEX i=0; i<invA.nRows(); i++) 
   {
-     if (VIDX(i)!=T(0)) invA[i]=1.0/VIDX(i);
+     if ((*this)[i]!=T(0)) invA[i]=1.0/(*this)[i];
      else 
      {
-        cout<<"DiagonalMatrix::inv(): ("<<i<<","<<i<<")=0\n";
+        std::cout<<"DiagonalMatrix::inv(): ("<<i<<","<<i<<")=0\n";
+        ERROR_FOR_BACKTRACE
+        exit(EXIT_FAILURE);
      }
   }
   // Error check info
   const double min_max = _data->minabs() / _data->maxabs();
   if (min_max > 1e-14)   return invA;
-  cout << "DiagonalMatrix::inv(): Warning: Matrix is badly scaled.";
-  cout << "  RCOND = "<<min_max<<"\n";
+  std::cout << "DiagonalMatrix::inv(): Warning: Matrix is badly scaled.";
+  std::cout << "  RCOND = "<<min_max<<"\n";
   return invA;
 }
 //-----------------------------------------------------------------------------
@@ -442,12 +483,13 @@ void DiagonalMatrix<T>::_set_equal(const Matrix<T> &r)
   const DiagonalMatrix<T> *pd = dynamic_cast<const DiagonalMatrix<T>*> (pr);
   const Vector<T>         *pv = dynamic_cast<const Vector<T>*>         (pr);
 
-  if (ps)       this->reset(ps->get_diag());
+  if (ps)       this->reset(ps->diag());
   else if (pd)  this->reset(*pd);
   else if (pv)  this->reset(*pv);
   else
   {
-    cout <<"Error in general sparse matrix assignment\n";
+    std::cout <<"Error in general sparse matrix assignment\n";
+    exit(1);
   }
 }
 //-----------------------------------------------------------------------------
@@ -458,5 +500,7 @@ const DiagonalMatrix<T> *diag_cast(const Matrix<T> *m)
 {
   return dynamic_cast<const DiagonalMatrix<T>*>(m);
 }
+
+} // end namespace
 
 #endif

@@ -56,8 +56,7 @@
 //     Definition:   Default thread block size for "bio" pair styles
 //  MAX_BIO_SHARED_TYPES
 //     Definition:   Max # of atom type params can be stored in shared memory
-//     Restrictions:  MAX_BIO_SHARED_TYPES<=BLOCK_BIO_PAIR*2 &&
-//                    MAX_BIO_SHARED_TYPES>=BLOCK_BIO_PAIR
+//     Restrictions:  MAX_BIO_SHARED_TYPES<=BLOCK_BIO_PAIR*2
 //
 //*************************************************************************/
 
@@ -80,6 +79,7 @@
 #define __kernel extern "C" __global__
 #define __local __shared__
 #define __global  
+#define restrict __restrict__
 #define atom_add atomicAdd
 #define ucl_inline static __inline__ __device__ 
 
@@ -107,16 +107,30 @@
 #define BLOCK_NBOR_BUILD 128
 #define BLOCK_PAIR 128
 #define BLOCK_BIO_PAIR 128
-#define MAX_SHARED_TYPES 11
+#define MAX_SHARED_TYPES 8
 
 #else
 
 #define THREADS_PER_ATOM 4
 #define THREADS_PER_CHARGE 8
 #define BLOCK_NBOR_BUILD 128
-#define BLOCK_PAIR 512
-#define BLOCK_BIO_PAIR 512
+#define BLOCK_PAIR 256
+#define BLOCK_BIO_PAIR 256
+#define BLOCK_ELLIPSE 128
 #define MAX_SHARED_TYPES 11
+
+#ifdef _SINGLE_SINGLE
+#define shfl_xor __shfl_xor
+#else
+ucl_inline double shfl_xor(double var, int laneMask, int width) {
+  int2 tmp;
+  tmp.x = __double2hiint(var);
+  tmp.y = __double2loint(var);
+  tmp.x = __shfl_xor(tmp.x,laneMask,width);
+  tmp.y = __shfl_xor(tmp.y,laneMask,width);
+  return __hiloint2double(tmp.x,tmp.y);
+}
+#endif
 
 #endif
 
@@ -129,8 +143,21 @@
 #define MAX_BIO_SHARED_TYPES 128
 
 #ifdef _DOUBLE_DOUBLE
-ucl_inline double4 fetch_pos(const int& i, const double4 *pos) { return pos[i]; };
-ucl_inline double fetch_q(const int& i, const double *q) { return q[i]; };
+#define fetch4(ans,i,pos_tex) {                        \
+  int4 xy = tex1Dfetch(pos_tex,i*2);                   \
+  int4 zt = tex1Dfetch(pos_tex,i*2+1);                 \
+  ans.x=__hiloint2double(xy.y, xy.x);                  \
+  ans.y=__hiloint2double(xy.w, xy.z);                  \
+  ans.z=__hiloint2double(zt.y, zt.x);                  \
+  ans.w=__hiloint2double(zt.w, zt.z);                  \
+}
+#define fetch(ans,i,q_tex) {                           \
+  int2 qt = tex1Dfetch(q_tex,i);                       \
+  ans=__hiloint2double(qt.y, qt.x);                    \
+}
+#else
+#define fetch4(ans,i,pos_tex) ans=tex1Dfetch(pos_tex, i);
+#define fetch(ans,i,q_tex) ans=tex1Dfetch(q_tex,i);
 #endif
 
 #if (__CUDA_ARCH__ < 200)
@@ -188,15 +215,36 @@ typedef struct _double4 double4;
 #endif
 
 // -------------------------------------------------------------------------
+//                            NVIDIA GENERIC OPENCL DEFINITIONS
+// -------------------------------------------------------------------------
+
+#ifdef NV_GENERIC_OCL
+
+#define USE_OPENCL
+#define fast_mul mul24
+#define MEM_THREADS 16
+#define THREADS_PER_ATOM 1
+#define THREADS_PER_CHARGE 1
+#define BLOCK_PAIR 64
+#define MAX_SHARED_TYPES 8
+#define BLOCK_NBOR_BUILD 64
+#define BLOCK_BIO_PAIR 64
+
+#define WARP_SIZE 32
+#define PPPM_BLOCK_1D 64
+#define BLOCK_CELL_2D 8
+#define BLOCK_CELL_ID 128
+#define MAX_BIO_SHARED_TYPES 128
+
+#endif
+
+// -------------------------------------------------------------------------
 //                           NVIDIA FERMI OPENCL DEFINITIONS
 // -------------------------------------------------------------------------
 
 #ifdef FERMI_OCL
 
 #define USE_OPENCL
-#define fast_mul(X,Y) (X)*(Y)
-#define ARCH 0
-#define DRIVER 0
 #define MEM_THREADS 32
 #define THREADS_PER_ATOM 4
 #define THREADS_PER_CHARGE 8
@@ -211,7 +259,54 @@ typedef struct _double4 double4;
 #define BLOCK_CELL_ID 128
 #define MAX_BIO_SHARED_TYPES 128
 
-#pragma OPENCL EXTENSION cl_khr_fp64: enable
+#endif
+
+// -------------------------------------------------------------------------
+//                           NVIDIA KEPLER OPENCL DEFINITIONS
+// -------------------------------------------------------------------------
+
+#ifdef KEPLER_OCL
+
+#define USE_OPENCL
+#define MEM_THREADS 32
+#define THREADS_PER_ATOM 4
+#define THREADS_PER_CHARGE 8
+#define BLOCK_PAIR 256
+#define MAX_SHARED_TYPES 11
+#define BLOCK_NBOR_BUILD 128
+#define BLOCK_BIO_PAIR 256
+#define BLOCK_ELLIPSE 128
+
+#define WARP_SIZE 32
+#define PPPM_BLOCK_1D 64
+#define BLOCK_CELL_2D 8
+#define BLOCK_CELL_ID 128
+#define MAX_BIO_SHARED_TYPES 128
+
+#ifndef NO_OCL_PTX
+#define ARCH 300
+#ifdef _SINGLE_SINGLE
+inline float shfl_xor(float var, int laneMask, int width) {
+  float ret;
+  int c;
+  c = ((WARP_SIZE-width) << 8) | 0x1f;
+  asm volatile ("shfl.bfly.b32 %0, %1, %2, %3;" : "=f"(ret) : "f"(var), "r"(laneMask), "r"(c));
+  return ret;
+}
+#else
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+inline double shfl_xor(double var, int laneMask, int width) {
+  int c = ((WARP_SIZE-width) << 8) | 0x1f;
+  int x,y,x2,y2;
+  double ans;
+  asm volatile ("mov.b64 {%0, %1}, %2;" : "=r"(y), "=r"(x) : "d"(var));
+  asm volatile ("shfl.bfly.b32 %0, %1, %2, %3;" : "=r"(x2) : "r"(x), "r"(laneMask), "r"(c));
+  asm volatile ("shfl.bfly.b32 %0, %1, %2, %3;" : "=r"(y2) : "r"(y), "r"(laneMask), "r"(c));
+  asm volatile ("mov.b64 %0, {%1, %2};" : "=d"(ans) : "r"(y2), "r"(x2));
+  return ans;
+}
+#endif
+#endif
 
 #endif
 
@@ -222,9 +317,6 @@ typedef struct _double4 double4;
 #ifdef CYPRESS_OCL
 
 #define USE_OPENCL
-#define fast_mul(X,Y) (X)*(Y)
-#define ARCH 0
-#define DRIVER 0
 #define MEM_THREADS 32
 #define THREADS_PER_ATOM 4
 #define THREADS_PER_CHARGE 8
@@ -239,12 +331,6 @@ typedef struct _double4 double4;
 #define BLOCK_CELL_ID 128
 #define MAX_BIO_SHARED_TYPES 128
 
-#if defined(cl_khr_fp64)
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#elif defined(cl_amd_fp64)
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
-#endif
-
 #endif
 
 // -------------------------------------------------------------------------
@@ -254,9 +340,6 @@ typedef struct _double4 double4;
 #ifdef GENERIC_OCL
 
 #define USE_OPENCL
-#define fast_mul mul24
-#define ARCH 0
-#define DRIVER 0
 #define MEM_THREADS 16
 #define THREADS_PER_ATOM 1
 #define THREADS_PER_CHARGE 1
@@ -271,6 +354,20 @@ typedef struct _double4 double4;
 #define BLOCK_CELL_ID 128
 #define MAX_BIO_SHARED_TYPES 128
 
+#endif
+
+// -------------------------------------------------------------------------
+//                     OPENCL Stuff for All Hardware
+// -------------------------------------------------------------------------
+#ifdef USE_OPENCL
+
+#ifndef _SINGLE_SINGLE
+
+#ifndef cl_khr_fp64
+#ifndef cl_amd_fp64
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+#endif
 #if defined(cl_khr_fp64)
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #elif defined(cl_amd_fp64)
@@ -279,10 +376,17 @@ typedef struct _double4 double4;
 
 #endif
 
-// -------------------------------------------------------------------------
-//                     OPENCL Stuff for All Hardware
-// -------------------------------------------------------------------------
-#ifdef USE_OPENCL
+#ifndef fast_mul
+#define fast_mul(X,Y) (X)*(Y)
+#endif
+
+#ifndef ARCH
+#define ARCH 0
+#endif
+
+#ifndef DRIVER
+#define DRIVER 0
+#endif
 
 #define GLOBAL_ID_X get_global_id(0)
 #define THREAD_ID_X get_local_id(0)
@@ -293,8 +397,8 @@ typedef struct _double4 double4;
 #define BLOCK_ID_Y get_group_id(1)
 #define __syncthreads() barrier(CLK_LOCAL_MEM_FENCE)
 #define ucl_inline inline
-#define fetch_pos(i,y) x_[i]
-#define fetch_q(i,y) q_[i]
+#define fetch4(ans,i,x) ans=x[i]
+#define fetch(ans,i,q) ans=q[i]
 
 #define ucl_atan atan
 #define ucl_cbrt cbrt
@@ -366,4 +470,8 @@ typedef struct _double4 double4;
 #define SBBITS 30
 #define NEIGHMASK 0x3FFFFFFF
 ucl_inline int sbmask(int j) { return j >> SBBITS & 3; };
+
+#ifndef BLOCK_ELLIPSE
+#define BLOCK_ELLIPSE BLOCK_PAIR
+#endif
 

@@ -25,7 +25,7 @@ fix 		m5 all property/global characteristicVelocity scalar 2.
 fix 		m6 all property/global cohesionEnergyDensity peratomtypepair 1 500
 
 #New pair style
-pair_style 	gran/hertz/history #Hertzian without cohesion
+pair_style gran model hertz tangential history #Hertzian without cohesion
 pair_coeff	* *
 
 timestep	0.00001
@@ -38,10 +38,10 @@ fix		pts2 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius
 fix		pdd1 all particledistribution/discrete 1. 2 pts1 0.3 pts2 0.7
 
 #region and insertion
-fix		ins_mesh all mesh/surface file face.stl type 1 scale 0.005
-group		nve_group region reg
+fix		ins_mesh all mesh/surface file meshes/face.stl type 1 scale 0.005
+group	nve_group region reg
 fix		ins nve_group insert/stream seed 100001 distributiontemplate pdd1 nparticles 5000 &
-		vel constant 0. -0.5 -2. particlerate 1000 & 
+		vel constant 0. -0.5 -2. particlerate 1000 &
 		overlapcheck yes insertion_face ins_mesh extrude_length 0.6
 
 #apply nve integration to all particles that are inserted as single particles

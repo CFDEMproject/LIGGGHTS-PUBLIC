@@ -50,10 +50,9 @@ FixDeform::FixDeform(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 {
   if (narg < 4) error->all(FLERR,"Illegal fix deform command");
 
-  box_change = 1;
   no_change_box = 1;
 
-  nevery = atoi(arg[3]);
+  nevery = force->inumeric(FLERR,arg[3]);
   if (nevery <= 0) error->all(FLERR,"Illegal fix deform command");
 
   // set defaults
@@ -85,34 +84,34 @@ FixDeform::FixDeform(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       if (strcmp(arg[iarg+1],"final") == 0) {
         if (iarg+4 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = FINAL;
-        set[index].flo = atof(arg[iarg+2]);
-        set[index].fhi = atof(arg[iarg+3]);
+        set[index].flo = force->numeric(FLERR,arg[iarg+2]);
+        set[index].fhi = force->numeric(FLERR,arg[iarg+3]);
         iarg += 4;
       } else if (strcmp(arg[iarg+1],"delta") == 0) {
         if (iarg+4 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = DELTA;
-        set[index].dlo = atof(arg[iarg+2]);
-        set[index].dhi = atof(arg[iarg+3]);
+        set[index].dlo = force->numeric(FLERR,arg[iarg+2]);
+        set[index].dhi = force->numeric(FLERR,arg[iarg+3]);
         iarg += 4;
       } else if (strcmp(arg[iarg+1],"scale") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = SCALE;
-        set[index].scale = atof(arg[iarg+2]);
+        set[index].scale = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"vel") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = VEL;
-        set[index].vel = atof(arg[iarg+2]);
+        set[index].vel = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"erate") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = ERATE;
-        set[index].rate = atof(arg[iarg+2]);
+        set[index].rate = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"trate") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = TRATE;
-        set[index].rate = atof(arg[iarg+2]);
+        set[index].rate = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"volume") == 0) {
         set[index].style = VOLUME;
@@ -120,8 +119,8 @@ FixDeform::FixDeform(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       } else if (strcmp(arg[iarg+1],"wiggle") == 0) {
         if (iarg+4 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = WIGGLE;
-        set[index].amplitude = atof(arg[iarg+2]);
-        set[index].tperiod = atof(arg[iarg+3]);
+        set[index].amplitude = force->numeric(FLERR,arg[iarg+2]);
+        set[index].tperiod = force->numeric(FLERR,arg[iarg+3]);
         if (set[index].tperiod <= 0.0)
           error->all(FLERR,"Illegal fix deform command");
         iarg += 4;
@@ -157,33 +156,33 @@ FixDeform::FixDeform(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       if (strcmp(arg[iarg+1],"final") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = FINAL;
-        set[index].ftilt = atof(arg[iarg+2]);
+        set[index].ftilt = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"delta") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = DELTA;
-        set[index].dtilt = atof(arg[iarg+2]);
+        set[index].dtilt = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"vel") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = VEL;
-        set[index].vel = atof(arg[iarg+2]);
+        set[index].vel = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"erate") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = ERATE;
-        set[index].rate = atof(arg[iarg+2]);
+        set[index].rate = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"trate") == 0) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = TRATE;
-        set[index].rate = atof(arg[iarg+2]);
+        set[index].rate = force->numeric(FLERR,arg[iarg+2]);
         iarg += 3;
       } else if (strcmp(arg[iarg+1],"wiggle") == 0) {
         if (iarg+4 > narg) error->all(FLERR,"Illegal fix deform command");
         set[index].style = WIGGLE;
-        set[index].amplitude = atof(arg[iarg+2]);
-        set[index].tperiod = atof(arg[iarg+3]);
+        set[index].amplitude = force->numeric(FLERR,arg[iarg+2]);
+        set[index].tperiod = force->numeric(FLERR,arg[iarg+3]);
         if (set[index].tperiod <= 0.0)
           error->all(FLERR,"Illegal fix deform command");
         iarg += 4;
@@ -245,7 +244,7 @@ FixDeform::FixDeform(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   if (set[4].style &&
       (domain->boundary[2][0] >= 2 || domain->boundary[2][1] >= 2))
     error->all(FLERR,"Cannot use fix deform tilt on a shrink-wrapped 2nd dim");
-  if (set[4].style &&
+  if (set[5].style &&
       (domain->boundary[1][0] >= 2 || domain->boundary[1][1] >= 2))
     error->all(FLERR,"Cannot use fix deform tilt on a shrink-wrapped 2nd dim");
 
@@ -255,9 +254,6 @@ FixDeform::FixDeform(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   for (int i = 0; i < 6; i++)
     if (set[i].style == FINAL || set[i].style == DELTA ||
         set[i].style == VEL || set[i].style == WIGGLE) flag = 1;
-
-  if (flag && scaleflag && domain->lattice == NULL)
-    error->all(FLERR,"Use of fix deform with undefined lattice");
 
   double xscale,yscale,zscale;
   if (flag && scaleflag) {
@@ -354,7 +350,8 @@ FixDeform::FixDeform(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
   // reneighboring only forced if flips can occur due to shape changes
 
-  if (set[3].style || set[4].style || set[5].style) force_reneighbor = 1;
+  if (flipflag && (set[3].style || set[4].style || set[5].style))
+    force_reneighbor = 1;
   next_reneighbor = -1;
 
   nrigid = 0;
@@ -565,23 +562,27 @@ void FixDeform::init()
   //   an integer combination of the edge vectors of the unflipped shape matrix
   // VARIABLE for yz is error, since no way to calculate if box flip occurs
   // WIGGLE lo/hi flip test is on min/max oscillation limit, not tilt_stop
+  // only trigger actual errors if flipflag is set
 
   if (set[3].style && set[5].style) {
     int flag = 0;
     double lo,hi;
-    if (set[3].style == VARIABLE)
+    if (flipflag && set[3].style == VARIABLE)
       error->all(FLERR,"Fix deform cannot use yz variable with xy");
     if (set[3].style == WIGGLE) {
       lo = set[3].tilt_min;
       hi = set[3].tilt_max;
     } else lo = hi = set[3].tilt_stop;
-    if (lo/(set[1].hi_start-set[1].lo_start) < -0.5 ||
-        hi/(set[1].hi_start-set[1].lo_start) > 0.5) flag = 1;
-    if (set[1].style) {
-      if (lo/(set[1].hi_stop-set[1].lo_stop) < -0.5 ||
-          hi/(set[1].hi_stop-set[1].lo_stop) > 0.5) flag = 1;
+    if (flipflag) {
+      if (lo/(set[1].hi_start-set[1].lo_start) < -0.5 ||
+          hi/(set[1].hi_start-set[1].lo_start) > 0.5) flag = 1;
+      if (set[1].style) {
+        if (lo/(set[1].hi_stop-set[1].lo_stop) < -0.5 ||
+            hi/(set[1].hi_stop-set[1].lo_stop) > 0.5) flag = 1;
+      }
+      if (flag)
+        error->all(FLERR,"Fix deform is changing yz too much with xy");
     }
-    if (flag) error->all(FLERR,"Fix deform is changing yz too much with xy");
   }
 
   // set domain->h_rate values for use by domain and other fixes/computes
@@ -636,9 +637,11 @@ void FixDeform::init()
 /* ----------------------------------------------------------------------
   box flipped on previous step
   reset box tilts for flipped config and create new box in domain
+  image_flip() adjusts image flags due to box shape change induced by flip
   remap() puts atoms outside the new box back into the new box
-  image_tilt() adjusts image flags due to box shape change induced by flip
   perform irregular on atoms in lamda coords to migrate atoms to new procs
+  important that image_flip comes before remap, since remap may change
+    image flags to new values, making eqs in doc of Domain:image_flip incorrect
 ------------------------------------------------------------------------- */
 
 void FixDeform::pre_exchange()
@@ -651,11 +654,12 @@ void FixDeform::pre_exchange()
   domain->set_global_box();
   domain->set_local_box();
 
+  domain->image_flip(flipxy,flipxz,flipyz);
+
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int nlocal = atom->nlocal;
   for (int i = 0; i < nlocal; i++) domain->remap(x[i],image[i]);
-  domain->image_flip(flipxy,flipxz,flipyz);
 
   domain->x2lamda(atom->nlocal);
   irregular->migrate_atoms();
@@ -671,7 +675,7 @@ void FixDeform::end_of_step()
   int i;
 
   double delta = update->ntimestep - update->beginstep;
-  delta /= update->endstep - update->beginstep;
+  if (delta != 0.0) delta /= update->endstep - update->beginstep;
 
   // wrap variable evaluations with clear/add
 
@@ -835,7 +839,7 @@ void FixDeform::end_of_step()
   // check yz first since it may change xz, then xz check comes after
   // flip is performed on next timestep, before reneighboring in pre-exchange()
 
-  if (triclinic) {
+  if (triclinic && flipflag) {
     double xprd = set[0].hi_target - set[0].lo_target;
     double yprd = set[1].hi_target - set[1].lo_target;
     double xprdinv = 1.0 / xprd;
@@ -957,6 +961,7 @@ void FixDeform::options(int narg, char **arg)
 
   remapflag = X_REMAP;
   scaleflag = 1;
+  flipflag = 1;
 
   int iarg = 0;
   while (iarg < narg) {
@@ -971,6 +976,12 @@ void FixDeform::options(int narg, char **arg)
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix deform command");
       if (strcmp(arg[iarg+1],"box") == 0) scaleflag = 0;
       else if (strcmp(arg[iarg+1],"lattice") == 0) scaleflag = 1;
+      else error->all(FLERR,"Illegal fix deform command");
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"flip") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal fix deform command");
+      if (strcmp(arg[iarg+1],"yes") == 0) flipflag = 1;
+      else if (strcmp(arg[iarg+1],"no") == 0) flipflag = 0;
       else error->all(FLERR,"Illegal fix deform command");
       iarg += 2;
     } else error->all(FLERR,"Illegal fix deform command");

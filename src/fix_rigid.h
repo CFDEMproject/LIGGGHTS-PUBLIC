@@ -50,19 +50,26 @@ class FixRigid : public Fix {
   virtual void final_integrate();
   void initial_integrate_respa(int, int, int);
   void final_integrate_respa(int, int);
+  void write_restart_file(char *);
   virtual double compute_scalar();
+  virtual int modify_param(int, char **) {return 0;}
 
-  virtual double memory_usage();  
-  virtual void grow_arrays(int);  
-  virtual void copy_arrays(int, int);  
-  virtual void set_arrays(int);  
-  virtual int pack_exchange(int, double *);  
-  virtual int unpack_exchange(int, double *);  
+  double memory_usage();
+  void grow_arrays(int);
+  void copy_arrays(int, int, int);
+  void set_arrays(int);
+  int pack_exchange(int, double *);
+  int unpack_exchange(int, double *);
 
-  virtual void pre_neighbor();  
+  void pre_neighbor();
   int dof(int);
   void deform(int);
   void reset_dt();
+  void zero_momentum();
+  void zero_rotation();
+  virtual void *extract(const char*, int &);
+  double extract_ke();
+  double extract_erotational();
   double compute_array(int, int);
 
  protected:
@@ -72,8 +79,19 @@ class FixRigid : public Fix {
   int triclinic;
   double MINUSPI,TWOPI;
 
+  char *infile;             // file to read rigid body attributes from
+  int rstyle;               // SINGLE,MOLECULE,GROUP
+  int firstflag;            // 1 for first-time setup of rigid bodies
+
+  int dimension;            // # of dimensions
   int nbody;                // # of rigid bodies
   int *nrigid;              // # of atoms in each rigid body
+  int *mol2body;            // convert mol-ID to rigid body index
+  int *body2mol;            // convert rigid body index to mol-ID
+  int maxmol;               // size of mol2body = max mol-ID
+
+  int *body;                // which body each atom is part of (-1 if none)
+  double **displace;        // displacement of each atom in body coords
   double *masstotal;        // total mass of each rigid body
   double **xcm;             // coords of center-of-mass of each rigid body
   double **vcm;             // velocity of center-of-mass of each
@@ -85,13 +103,10 @@ class FixRigid : public Fix {
   double **omega;           // angular velocity of each in space coords
   double **torque;          // torque on each rigid body in space coords
   double **quat;            // quaternion of each rigid body
-  int *imagebody;           // image flags of xcm of each rigid body
+  tagint *imagebody;        // image flags of xcm of each rigid body
   double **fflag;           // flag for on/off of center-of-mass force
   double **tflag;           // flag for on/off of center-of-mass torque
   double **langextra;       // Langevin thermostat forces and torques
-
-  int *body;                // which body each atom is part of (-1 if none)
-  double **displace;        // displacement of each atom in body coords
 
   double **sum,**all;       // work vectors for each rigid body
   int **remapflag;          // PBC remap flags for each rigid body
@@ -107,15 +122,20 @@ class FixRigid : public Fix {
   double tfactor;           // scale factor on temperature of rigid bodies
   int langflag;             // 0/1 = no/yes Langevin thermostat
 
-  int tempflag;             // NVT settings
-  double t_start,t_stop;
+  int tstat_flag;           // NVT settings
+  double t_start,t_stop,t_target;
   double t_period,t_freq;
   int t_chain,t_iter,t_order;
 
-  int pressflag;            // NPT settings
-  double p_start,p_stop;
-  double p_period,p_freq;
+  int pstat_flag;           // NPT settings
+  double p_start[3],p_stop[3];
+  double p_period[3],p_freq[3];
+  int p_flag[3];  
+  int pcouple,pstyle;
   int p_chain;
+  int allremap;              // remap all atoms
+  int dilate_group_bit;      // mask for dilation group
+  char *id_dilate;           // group name to dilate
 
   class RanMars *random;
   class AtomVecEllipsoid *avec_ellipsoid;
@@ -125,9 +145,12 @@ class FixRigid : public Fix {
   int POINT,SPHERE,ELLIPSOID,LINE,TRIANGLE,DIPOLE;   // bitmasks for eflags
   int OMEGA,ANGMOM,TORQUE;
 
-  void no_squish_rotate(int, double *, double *, double *, double);
-  virtual void set_xv();  
-  virtual void set_v();  
+  void no_squish_rotate(int, double *, double *, double *, double) const;
+  void set_xv();
+  void set_v();
+  void setup_bodies_static();
+  void setup_bodies_dynamic();
+  void readfile(int, double *, double **, int *);
 };
 
 }
@@ -172,6 +195,9 @@ E: Fix rigid langevin period must be > 0.0
 
 Self-explanatory.
 
+E: Fix rigid npt/nph dilate group ID does not exist
+
+Self-explanatory.
 E: One or zero atoms in rigid body
 
 Any rigid body defined by the fix rigid command must contain 2 or more
@@ -186,10 +212,20 @@ E: Rigid fix must come before NPT/NPH fix
 NPT/NPH fix must be defined in input script after all rigid fixes,
 else the rigid fix contribution to the pressure virial is
 incorrect.
+W: Cannot count rigid body degrees-of-freedom before bodies are fully initialized
+
+UNDOCUMENTED
+
+W: Computing temperature of portions of rigid bodies
+
+The group defined by the temperature compute does not encompass all
+the atoms in one or more rigid bodies, so the change in
+degrees-of-freedom for the atoms in those partial rigid bodies will
+not be accounted for.
 
 E: Fix rigid atom has non-zero image flag in a non-periodic dimension
 
-You cannot set image flags for non-periodic dimensions.
+Image flags for non-periodic dimensions should not be set.
 
 E: Insufficient Jacobi rotations for rigid body
 
@@ -200,11 +236,22 @@ E: Fix rigid: Bad principal moments
 The principal moments of inertia computed for a rigid body
 are not within the required tolerances.
 
-W: Computing temperature of portions of rigid bodies
+E: Cannot open fix rigid infile %s
 
-The group defined by the temperature compute does not encompass all
-the atoms in one or more rigid bodies, so the change in
-degrees-of-freedom for the atoms in those partial rigid bodies will
-not be accounted for.
+The specified file cannot be opened.  Check that the path and name are
+correct.
+
+E: Unexpected end of fix rigid file
+
+A read operation from the file failed.
+
+E: Incorrect rigid body format in fix rigid file
+
+The number of fields per line is not what expected.
+
+E: Invalid rigid body ID in fix rigid file
+
+The ID does not match the number or an existing ID of rigid bodies
+that are defined by the fix rigid command.
 
 */

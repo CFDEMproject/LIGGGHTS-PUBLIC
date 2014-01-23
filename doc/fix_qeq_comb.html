@@ -46,7 +46,7 @@
 equilibration portion of the calculation using the so-called QEq
 method, whereby the charge on each atom is adjusted to minimize the
 energy of the system.  This fix can only be used with the COMB
-potential; see the <A HREF = "fix_qeq_reqx.html">fix qeq/reax</A> command for a QeQ
+potential; see the <A HREF = "fix_qeq_reax.html">fix qeq/reax</A> command for a QeQ
 calculation that can be used with any potential.
 </P>
 <P>Only charges on the atoms in the specified group are equilibrated.
@@ -104,8 +104,9 @@ gradient of the charge on each atom.  The per-atom values be accessed
 on any timestep.
 </P>
 <P>No parameter of this fix can be used with the <I>start/stop</I> keywords of
-the <A HREF = "run.html">run</A> command.  This fix is not invoked during <A HREF = "minimize.html">energy
-minimization</A>.
+the <A HREF = "run.html">run</A> command.  
+</P>
+<P>This fix can be invoked during <A HREF = "minimize.html">energy minimization</A>.
 </P>
 <P><B>Restrictions:</B> 
 </P>

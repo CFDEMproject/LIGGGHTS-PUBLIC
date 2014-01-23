@@ -1,4 +1,4 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -44,7 +44,8 @@ class Atom : protected Pointers {
   // per-atom arrays
   // customize by adding new array
 
-  int *tag,*type,*mask,*image;
+  int *tag,*type,*mask;
+  tagint *image;
   double **x,**v,**f;
 
   int *molecule;
@@ -53,7 +54,7 @@ class Atom : protected Pointers {
   double *radius,*rmass,*vfrac,*s0;
   double *density; 
   double **x0;
-  int *ellipsoid,*line,*tri;
+  int *ellipsoid,*line,*tri,*body;
   int *spin;
   double *eradius,*ervel,*erforce,*ervelforce;
   double *cs,*csforce,*vforce;
@@ -71,7 +72,7 @@ class Atom : protected Pointers {
   int *num_bond;
   int **bond_type;
   int **bond_atom;
-  double ***bond_hist;
+  double ***bond_hist; 
 
   int *num_angle;
   int **angle_type;
@@ -85,14 +86,25 @@ class Atom : protected Pointers {
   int **improper_type;
   int **improper_atom1,**improper_atom2,**improper_atom3,**improper_atom4;
 
+  // custom arrays used by fix property/atom
+  int **ivector;
+  double **dvector;
+  double ***darray; 
+  char **iname,**dname,**daname; 
+  int nivector,ndvector, ndarray; 
+
+  // used by USER-CUDA to flag used per-atom arrays
+
+  unsigned int datamask;
+  unsigned int datamask_ext;
+
   // atom style and per-atom array existence flags
   // customize by adding new flag
 
-  int sphere_flag,ellipsoid_flag,line_flag,tri_flag,peri_flag,electron_flag;
+  int sphere_flag,ellipsoid_flag,line_flag,tri_flag,body_flag;
+  int peri_flag,electron_flag;
+  int ecp_flag;
   int wavepacket_flag,sph_flag;
-
-  int n_bondhist;
-  int radvary_flag;
 
   int molecule_flag,q_flag,mu_flag;
   int rmass_flag,radius_flag,omega_flag,torque_flag,angmom_flag;
@@ -101,6 +113,8 @@ class Atom : protected Pointers {
   int rho_flag,e_flag,cv_flag,vest_flag;
   int density_flag; 
   int p_flag;  
+  int n_bondhist; 
+  int radvary_flag; 
 
   // extra peratom info in restart file destined for fix & diag
 
@@ -113,19 +127,24 @@ class Atom : protected Pointers {
 
   // callback ptrs for atom arrays managed by fix classes
 
-  int nextra_grow,nextra_restart;             // # of callbacks of each type
-  int *extra_grow,*extra_restart;             // index of fix to callback to
+  int nextra_grow,nextra_restart,nextra_border;  // # of callbacks of each type
+  int *extra_grow,*extra_restart,*extra_border;  // index of fix to callback to
   int nextra_grow_max,nextra_restart_max;     // size of callback lists
+  int nextra_border_max;
   int nextra_store;
 
   int map_style;                  // default or user-specified style of map
                                   // 0 = none, 1 = array, 2 = hash
+  int map_tag_max;                // max atom ID that map() is setup for
 
   // spatial sorting of atoms
 
   int sortfreq;             // sort atoms every this many steps, 0 = off
   bigint nextsort;          // next timestep to sort on
 
+  // indices of atoms with same ID
+
+  int *sametag;      // sametag[I] = next atom with same ID, -1 if no more
   // functions
 
   Atom(class LAMMPS *);
@@ -133,7 +152,7 @@ class Atom : protected Pointers {
 
   void settings(class Atom *);
   void create_avec(const char *, int, char **, char *suffix = NULL);
-  class AtomVec *new_avec(const char *, int, char **, char *, int &);
+  class AtomVec *new_avec(const char *, char *, int &);
   void init();
   void setup();
 
@@ -141,7 +160,7 @@ class Atom : protected Pointers {
   void modify_params(int, char **);
   void tag_extend();
   int tag_consecutive();
-  bigint tag_max(); 
+  int tag_max(); 
 
   int parse_data(const char *);
   int count_words(const char *);
@@ -149,6 +168,7 @@ class Atom : protected Pointers {
   void data_atoms(int, char *);
   void data_vels(int, char *);
   void data_bonus(int, char *, class AtomVec *);
+  void data_bodies(int, char *, class AtomVecBody *);
 
   void data_bonds(int, char *);
   void data_angles(int, char *);
@@ -172,8 +192,12 @@ class Atom : protected Pointers {
   void delete_callback(const char *, int);
   void update_callback(int);
 
-  void *extract(char *, int &); 
-  void *extract(char * _id) 
+  int find_custom(char *, int &);
+  int add_custom(char *, int);
+  void remove_custom(int, int);
+
+  void *extract(const char *, int &); 
+  void *extract(const char * _id) 
   {
       int a = 0;
       return extract(_id,a);
@@ -187,10 +211,12 @@ class Atom : protected Pointers {
 
   // functions for global to local ID mapping
   // map lookup function inlined for efficiency
+  // return -1 if no map defined
 
   inline int map(int global) {
     if (map_style == 1) return map_array[global];
-    else return map_find_hash(global);
+    else if (map_style == 2) return map_find_hash(global);
+    else return -1;
   };
 
   void map_init();
@@ -204,8 +230,8 @@ class Atom : protected Pointers {
 
   // global to local ID mapping
 
-  int map_tag_max;
-  int *map_array;
+  int *map_array;       // direct map of length map_tag_max + 1
+  int smax;             // max size of sametag
 
   struct HashElem {
     int global;                   // key to search on = global ID
@@ -218,8 +244,6 @@ class Atom : protected Pointers {
   int map_nbucket;                // # of hash buckets
   int *map_bucket;                // ptr to 1st entry in each bucket
   HashElem *map_hash;             // hash table
-  int *primes;                    // table of prime #s for hashing
-  int nprimes;                    // # of primes
 
   // spatial sorting of atoms
 
@@ -238,6 +262,7 @@ class Atom : protected Pointers {
   char *memstr;                   // string of array names already counted
 
   void setup_sort_bins();
+  int next_prime(int);
 };
 
 }
@@ -269,11 +294,6 @@ E: Atom_modify sort and first options cannot be used together
 
 Self-explanatory.
 
-E: Cannot create an atom map unless atoms have IDs
-
-The simulation requires a mapping from global atom IDs to local atoms,
-but the atoms that have been defined have no IDs.
-
 E: Incorrect atom format in data file
 
 Number of values per atom line in the data file is not consistent with
@@ -295,6 +315,10 @@ See the read_data doc page for a description of how various kinds of
 bonus data must be formatted for certain atom styles.
 
 E: Invalid atom ID in Bonus section of data file
+Atom IDs must be positive integers and within range of defined
+atoms.
+
+E: Invalid atom ID in Bodies section of data file
 
 Atom IDs must be positive integers and within range of defined
 atoms.

@@ -7,17 +7,23 @@
 
 :line
 
-fix wall/gran/hooke command :h3
-fix wall/gran/hooke/history command :h3
-fix wall/gran/hooke/history/stiffness command :h3
-fix wall/gran/hertz/history command :h3
-fix wall/gran/hertz/history/stiffness command :h3
+fix wall/gran  command :h3
 
 [Syntax:]
 
-fix ID group-ID style wallstyle wallstyleargs general_keywords general_values model_keyword model_values ... :pre
+fix ID group-ID style model_keyword model_values wallstyle wallstyleargs general_keywords general_values  ... :pre
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
-style = {wall/gran/hooke} or {wall/gran/hooke/history} or {wall/gran/hertz/history} or {wall/gran/hooke/history/simple} or {wall/gran/hertz/history/simple} :l
+style = {wall/gran} :l
+
+zero or more model_keyword/value pairs may be appended :l
+  {model} values = described "here"_Section_gran_models.html
+  {tangential} values = described "here"_Section_gran_models.html
+  {rolling_friction} values = described "here"_Section_gran_models.html
+  {cohesion} values = described "here"_Section_gran_models.html
+  {surface} values = described "here"_Section_gran_models.html
+  {temperature} value = T0
+    T0 = Temperature of the wall (temperature units) :pre
+
 wallstyle = {mesh} or {primitive} :l
 wallstyle args for wallstyle {mesh} = {n_meshes} and {meshes} :l
   {n_meshes} value = nm
@@ -41,31 +47,12 @@ general_keyword =  {shear} or {store_force} :l
     vshear = magnitude of shear velocity (velocity units) :pre
   {store_force} value = 'yes' or 'no'
     yes, no = determines if the wall force exerted on the particles is stored in a "fix property/atom"_fix_property.html with id force_(ID), where (ID) is the id of the fix wall/gran command. 
-
-zero or more model_keyword/value pairs may be appended :l
-model_keyword = {rolling_friction} or {cohesion} or {tangential_damping} or {temperature} :l
-  {rolling_friction} values = 'cdt' or 'epsd' or 'off'
-    cdt = activates constant directional rolling friction model
-    epsd = activates elastic-plastic spring-dashpot model
-    off = no rolling friction model
-  {cohesion} values = 'sjkr' or 'sjkr2' or 'off'
-    sjkr = activates simplified JKR cohesion model
-    sjkr2 = activates variant of simplified JKR cohesion model
-    off = no cohesion model
-  {tangential_damping} values = 'on' or 'off'
-    on = activates tangential damping
-    off = no tangential damping
-  {viscous} = 'stokes' or 'off'
-    viscous = restitution coefficient varies with a local Stokes number of the particle
-    off = no modification to the restitution coefficient
-  {temperature} value = T0
-    T0 = Temperature of the wall (temperature units) :pre
 :ule
 
 [Examples:]
 
-fix zwalls all wall/gran/hertz/history primitive type 1 zplane 0.15
-fix meshwalls all wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2  :pre
+fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15
+fix meshwalls all wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2  :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 
@@ -83,14 +70,12 @@ touching it is the same as the corresponding equation on the
 "pair_style granular"_pair_gran.html doc page, in the limit of one of the
  two particles going to infinite radius and mass (flat wall).
 
-You must choose the {wallstyle} matching the pair style used, otherwise
-an error is created (e.g.: "pair gran/hertz/history is incompatible with
-fix wall/gran/hooke"). As with "pair_style granular"_pair_gran.html, you have
+You must choose the models matching the pair style used, otherwise
+an error is created. As with "pair_style granular"_pair_gran.html, you have
 to define the mechanical properties for each material you are used in the
 simulation with fix property commands. See "pair_style gran"_pair_gran.html
- for more details. Also, for style hooke/history simple the wall implementation 
-uses absolute damping if keyword {absolute_damping} is set to 'on' in 
-"pair_style gran"_pair_gran.html.
+for more details and "the model doc page"_Section_gran_models.html for
+details. 
 
 For wallstyle {mesh}, fix_id1, fix_id2 etc. must be IDs of valid fixes of 
 type "fix mesh/surface"_fix_mesh_surface.html, defining the granular mesh 
@@ -180,12 +165,12 @@ Any dimension (xyz) that has a planar granular wall must be non-periodic.
 [Related commands:]
 
 "fix mesh/surface"_fix_mesh_surface.html, "fix_move_mesh"_fix_move_mesh.html, "pair_style granular"_pair_gran.html
+Models for use with this command are described "here"_Section_gran_models.html
 
-[Default:]
+[Default:] 
 
+{model} = 'hertz'
+{tangential} = 'history'
 {rolling_friction} = 'off'
 {cohesion} = 'off'
-{tangential_damping} = 'on'
-{absolute_damping} = 'off'
-{store_force} = 'no'
-{viscous} = 'off'
+{surface} = 'default'

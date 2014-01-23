@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -45,7 +45,7 @@ void BondQuarticOMP::compute(int eflag, int vflag)
     ev_setup(eflag,vflag);
   } else evflag = 0;
 
- // insure pair->ev_tally() will use 1-4 virial contribution
+  // insure pair->ev_tally() will use 1-4 virial contribution
 
   if (vflag_global == 2)
     force->pair->vflag_either = force->pair->vflag_global = 1;
@@ -64,19 +64,20 @@ void BondQuarticOMP::compute(int eflag, int vflag)
     ThrData *thr = fix->get_thr(tid);
     ev_setup_thr(eflag, vflag, nall, eatom, vatom, thr);
 
-    if (evflag) {
-      if (eflag) {
-	if (force->newton_bond) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+    if (inum > 0) {
+      if (evflag) {
+        if (eflag) {
+          if (force->newton_bond) eval<1,1,1>(ifrom, ito, thr);
+          else eval<1,1,0>(ifrom, ito, thr);
+        } else {
+          if (force->newton_bond) eval<1,0,1>(ifrom, ito, thr);
+          else eval<1,0,0>(ifrom, ito, thr);
+        }
       } else {
-	if (force->newton_bond) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_bond) eval<0,0,1>(ifrom, ito, thr);
+        else eval<0,0,0>(ifrom, ito, thr);
       }
-    } else {
-      if (force->newton_bond) eval<0,0,1>(ifrom, ito, thr);
-      else eval<0,0,0>(ifrom, ito, thr);
     }
-
     reduce_thr(this, eflag, vflag, thr);
   } // end of omp parallel region
 }
@@ -109,7 +110,6 @@ void BondQuarticOMP::eval(int nfrom, int nto, ThrData * const thr)
     delx = x[i1][0] - x[i2][0];
     dely = x[i1][1] - x[i2][1];
     delz = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx,dely,delz);
 
     rsq = delx*delx + dely*dely + delz*delz;
 
@@ -122,12 +122,12 @@ void BondQuarticOMP::eval(int nfrom, int nto, ThrData * const thr)
     if (rsq > rc[type]*rc[type]) {
       bondlist[n][2] = 0;
       for (m = 0; m < atom->num_bond[i1]; m++)
-	if (atom->bond_atom[i1][m] == atom->tag[i2])
-	  atom->bond_type[i1][m] = 0;
+        if (atom->bond_atom[i1][m] == atom->tag[i2])
+          atom->bond_type[i1][m] = 0;
       if (i2 < atom->nlocal)
-	for (m = 0; m < atom->num_bond[i2]; m++)
-	  if (atom->bond_atom[i2][m] == atom->tag[i1])
-	    atom->bond_type[i2][m] = 0;
+        for (m = 0; m < atom->num_bond[i2]; m++)
+          if (atom->bond_atom[i2][m] == atom->tag[i1])
+            atom->bond_type[i2][m] = 0;
       continue;
     }
 
@@ -141,7 +141,7 @@ void BondQuarticOMP::eval(int nfrom, int nto, ThrData * const thr)
     ra = dr - b1[type];
     rb = dr - b2[type];
     fbond = -k[type]/r * (r2*(ra+rb) + 2.0*dr*ra*rb);
-    
+
     if (rsq < TWO_1_3) {
       sr2 = 1.0/rsq;
       sr6 = sr2*sr2*sr2;
@@ -181,18 +181,18 @@ void BondQuarticOMP::eval(int nfrom, int nto, ThrData * const thr)
       fpair = -fpair;
 
       if (NEWTON_BOND || i1 < nlocal) {
-	f[i1][0] += delx*fpair;
-	f[i1][1] += dely*fpair;
-	f[i1][2] += delz*fpair;
+        f[i1][0] += delx*fpair;
+        f[i1][1] += dely*fpair;
+        f[i1][2] += delz*fpair;
       }
       if (NEWTON_BOND || i2 < nlocal) {
-	f[i2][0] -= delx*fpair;
-	f[i2][1] -= dely*fpair;
-	f[i2][2] -= delz*fpair;
+        f[i2][0] -= delx*fpair;
+        f[i2][1] -= dely*fpair;
+        f[i2][2] -= delz*fpair;
       }
 
       if (EVFLAG) ev_tally_thr(force->pair,i1,i2,nlocal,NEWTON_BOND,
-			       evdwl,0.0,fpair,delx,dely,delz,thr);
+                               evdwl,0.0,fpair,delx,dely,delz,thr);
     }
   }
 }

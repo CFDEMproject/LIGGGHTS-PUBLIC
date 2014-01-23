@@ -14,6 +14,7 @@
 #ifndef LMP_ATOM_VEC_H
 #define LMP_ATOM_VEC_H
 
+#include "stdio.h"
 #include "pointers.h"
 
 namespace LAMMPS_NS {
@@ -41,8 +42,9 @@ class AtomVec : protected Pointers {
   int cudable;                         // 1 if atom style is CUDA-enabled
   int *maxsend;                        // CUDA-specific variable
 
-  AtomVec(class LAMMPS *, int, char **);
+  AtomVec(class LAMMPS *);
   virtual ~AtomVec() {}
+  virtual void settings(int, char **);
   virtual void init();
 
   virtual void grow(int) = 0;
@@ -76,12 +78,34 @@ class AtomVec : protected Pointers {
   virtual int pack_restart(int, double *) = 0;
   virtual int unpack_restart(double *) = 0;
 
+  virtual void write_restart_settings(FILE *) {}
+  virtual void read_restart_settings(FILE *) {}
+
   virtual void create_atom(int, double *) = 0;
-  virtual void data_atom(double *, int, char **) = 0;
+
+  virtual void data_atom(double *, tagint, char **) = 0;
   virtual void data_atom_bonus(int, char **) {}
   virtual int data_atom_hybrid(int, char **) {return 0;}
   virtual void data_vel(int, char **);
   virtual int data_vel_hybrid(int, char **) {return 0;}
+
+  virtual void pack_data(double **) = 0;
+  virtual int pack_data_hybrid(int, double *) {return 0;}
+  virtual void write_data(FILE *, int, double **) = 0;
+  virtual int write_data_hybrid(FILE *, double *) {return 0;}
+  virtual void pack_vel(double **);
+  virtual int pack_vel_hybrid(int, double *) {return 0;}
+  virtual void write_vel(FILE *, int, double **);
+  virtual int write_vel_hybrid(FILE *, double *) {return 0;}
+
+  int pack_bond(int **);
+  void write_bond(FILE *, int, int **, int);
+  int pack_angle(int **);
+  void write_angle(FILE *, int, int **, int);
+  void pack_dihedral(int **);
+  void write_dihedral(FILE *, int, int **, int);
+  void pack_improper(int **);
+  void write_improper(FILE *, int, int **, int);
 
   virtual bigint memory_usage() = 0;
 
@@ -90,6 +114,25 @@ class AtomVec : protected Pointers {
   int deform_vremap;                    // local copy of domain properties
   int deform_groupbit;
   double *h_rate;
+
+  // union data struct for packing 32-bit and 64-bit ints into double bufs
+  // this avoids aliasing issues by having 2 pointers (double,int)
+  //   to same buf memory
+  // constructor for 32-bit int prevents compiler
+  //   from possibly calling the double constructor when passed an int
+  // copy to a double *buf:
+  //   buf[m++] = ubuf(foo).d, where foo is a 32-bit or 64-bit int
+  // copy from a double *buf:
+  //   foo = (int) ubuf(buf[m++]).i;, where (int) or (tagint) match foo
+  //   the cast prevents compiler warnings about possible truncation
+
+  union ubuf {
+    double   d;
+    int64_t  i;
+    ubuf(double arg) : d(arg) {}
+    ubuf(int64_t arg) : i(arg) {}
+    ubuf(int arg) : i(arg) {}
+  };
 };
 
 }
@@ -97,6 +140,10 @@ class AtomVec : protected Pointers {
 #endif
 
 /* ERROR/WARNING messages:
+
+E: Invalid atom_style command
+
+Self-explanatory.
 
 E: USER-CUDA package requires a cuda enabled atom_style
 

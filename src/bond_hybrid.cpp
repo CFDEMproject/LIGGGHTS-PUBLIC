@@ -31,6 +31,7 @@ using namespace LAMMPS_NS;
 
 BondHybrid::BondHybrid(LAMMPS *lmp) : Bond(lmp)
 {
+  writedata = 0;
   nstyles = 0;
 }
 
@@ -213,7 +214,7 @@ void BondHybrid::settings(int narg, char **arg)
   while (i < narg) {
     for (m = 0; m < nstyles; m++)
       if (strcmp(arg[i],keywords[m]) == 0)
-        error->all(FLERR,"Bond style hybrid cannot use same pair style twice");
+        error->all(FLERR,"Bond style hybrid cannot use same bond style twice");
     if (strcmp(arg[i],"hybrid") == 0)
       error->all(FLERR,"Bond style hybrid cannot have hybrid as an argument");
     if (strcmp(arg[i],"none") == 0)
@@ -335,10 +336,12 @@ void BondHybrid::read_restart(FILE *fp)
 
 /* ---------------------------------------------------------------------- */
 
-double BondHybrid::single(int type, double rsq, int i, int j)
+double BondHybrid::single(int type, double rsq, int i, int j,
+                          double &fforce)
+
 {
   if (map[type] < 0) error->one(FLERR,"Invoked bond single on bond style none");
-  return styles[map[type]]->single(type,rsq,i,j);
+  return styles[map[type]]->single(type,rsq,i,j,fforce);
 }
 
 /* ----------------------------------------------------------------------

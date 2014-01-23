@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -67,7 +67,6 @@ void BondNonlinear::compute(int eflag, int vflag)
     delx = x[i1][0] - x[i2][0];
     dely = x[i1][1] - x[i2][1];
     delz = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx,dely,delz);
 
     rsq = delx*delx + dely*dely + delz*delz;
     r = sqrt(rsq);
@@ -126,9 +125,9 @@ void BondNonlinear::coeff(int narg, char **arg)
   int ilo,ihi;
   force->bounds(arg[0],atom->nbondtypes,ilo,ihi);
 
-  double epsilon_one = force->numeric(arg[1]);
-  double r0_one = force->numeric(arg[2]);
-  double lamda_one = force->numeric(arg[3]);
+  double epsilon_one = force->numeric(FLERR,arg[1]);
+  double r0_one = force->numeric(FLERR,arg[2]);
+  double lamda_one = force->numeric(FLERR,arg[3]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -180,14 +179,27 @@ void BondNonlinear::read_restart(FILE *fp)
   for (int i = 1; i <= atom->nbondtypes; i++) setflag[i] = 1;
 }
 
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void BondNonlinear::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->nbondtypes; i++)
+    fprintf(fp,"%d %g %g %g\n",i,epsilon[i],r0[i],lamda[i]);
+}
+
 /* ---------------------------------------------------------------------- */
 
-double BondNonlinear::single(int type, double rsq, int i, int j)
+double BondNonlinear::single(int type, double rsq, int i, int j,
+                             double &fforce)
 {
   double r = sqrt(rsq);
   double dr = r - r0[type];
   double drsq = dr*dr;
   double lamdasq = lamda[type]*lamda[type];
   double denom = lamdasq - drsq;
+  double denomsq = denom*denom;
+  fforce = -epsilon[type]/r * 2.0*dr*lamdasq/denomsq;
   return epsilon[type] * drsq / denom;
 }

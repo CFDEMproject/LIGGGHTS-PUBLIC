@@ -185,7 +185,7 @@
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::restart(double *list)
   {
-      int m, nglobal, nrecv_this, nO, sE, sM;
+      int m, nglobal, nrecv_this, sE, sM;
       bool dummy = false;
 
       m = 0;
@@ -248,7 +248,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBuffer(int n, int *list, double *buf,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBuffer(int n, int *list, double *buf, int operation, bool , bool, bool)
   {
       
       int nsend = 0;
@@ -281,7 +281,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBuffer(int first, int n, double *buf,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBuffer(int first, int n, double *buf, int operation, bool, bool, bool)
   {
       int nrecv = 0;
 
@@ -313,7 +313,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBufferReverse(int first, int n, double *buf,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBufferReverse(int, int, double*, int operation, bool, bool, bool)
   {
       int nsend = 0;
 
@@ -334,7 +334,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBufferReverse(int n, int *list, double *buf,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBufferReverse(int, int*, double*, int operation, bool, bool, bool)
   {
       int nrecv = 0;
 
@@ -356,7 +356,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::elemBufSize(int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::elemBufSize(int operation, bool, bool, bool)
   {
       int size_buf = 0;
 
@@ -399,7 +399,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::pushElemToBuffer(int i, double *buf,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::pushElemToBuffer(int i, double *buf, int operation, bool, bool, bool)
   {
       int nsend = 0;
 
@@ -432,7 +432,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::popElemFromBuffer(double *buf,int operation,bool scale,bool translate,bool rotate)
+  int MultiNodeMeshParallel<NUM_NODES>::popElemFromBuffer(double *buf, int operation, bool, bool, bool)
   {
       int nrecv = 0;
 

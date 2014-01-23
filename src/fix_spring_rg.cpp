@@ -23,10 +23,10 @@
 #include "atom.h"
 #include "update.h"
 #include "group.h"
-#include "force.h"
 #include "respa.h"
 #include "domain.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -38,10 +38,10 @@ FixSpringRG::FixSpringRG(LAMMPS *lmp, int narg, char **arg) :
 {
   if (narg != 5) error->all(FLERR,"Illegal fix spring/rg command");
 
-  k = atof(arg[3]);
+  k = force->numeric(FLERR,arg[3]);
   rg0_flag = 0;
   if (strcmp(arg[4],"NULL") == 0) rg0_flag = 1;
-  else rg0 = atof(arg[4]);
+  else rg0 = force->numeric(FLERR,arg[4]);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -110,25 +110,20 @@ void FixSpringRG::post_force(int vflag)
   double **x = atom->x;
   int *mask = atom->mask;
   int *type = atom->type;
-  int *image = atom->image;
+  tagint *image = atom->image;
   double *mass = atom->mass;
   int nlocal = atom->nlocal;
 
   double massfrac;
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
+  double unwrap[3];
 
-  int xbox,ybox,zbox;
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
+      domain->unmap(x[i],image[i],unwrap);
+      dx = unwrap[0] - xcm[0];
+      dy = unwrap[1] - xcm[1];
+      dz = unwrap[2] - xcm[2];
       term1 = 2.0 * k * (1.0 - rg0/rg);
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = (x[i][0] + xbox*xprd) - xcm[0];
-      dy = (x[i][1] + ybox*yprd) - xcm[1];
-      dz = (x[i][2] + zbox*zprd) - xcm[2];
       massfrac = mass[type[i]]/masstotal;
       f[i][0] -= term1*dx*massfrac;
       f[i][1] -= term1*dy*massfrac;

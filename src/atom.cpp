@@ -1,4 +1,14 @@
 /* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -8,7 +18,7 @@
    certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
 #include "mpi.h"
@@ -32,6 +42,7 @@
 #include "domain.h"
 #include "group.h"
 #include "accelerator_cuda.h"
+#include "atom_masks.h"
 #include "memory.h"
 #include "error.h"
 
@@ -41,6 +52,7 @@ using namespace LAMMPS_NS;
 #define DELTA_MEMSTR 1024
 #define EPSILON 1.0e-6
 #define CUDA_CHUNK 3000
+#define MAXBODY 20       // max # of lines in one body, also in ReadData class
 
 /* ---------------------------------------------------------------------- */
 
@@ -65,7 +77,8 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   // initialize atom arrays
   // customize by adding new array
 
-  tag = type = mask = image = NULL;
+  tag = type = mask = NULL;
+  image = NULL;
   x = v = f = NULL;
 
   molecule = NULL;
@@ -76,7 +89,7 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   density = NULL; 
   vfrac = s0 = NULL;
   x0 = NULL;
-  ellipsoid = line = tri = NULL;
+  ellipsoid = line = tri = body = NULL;
   spin = NULL;
   eradius = ervel = erforce = NULL;
   cs = csforce = vforce = ervelforce = NULL;
@@ -106,16 +119,23 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   improper_type = improper_atom1 = improper_atom2 = NULL;
   improper_atom3 = improper_atom4 = NULL;
 
+  // custom atom arrays
+
+  nivector = ndvector = 0;
+  ivector = NULL;
+  dvector = NULL;
+  iname = dname = NULL;
+
   // initialize atom style and array existence flags
   // customize by adding new flag
 
-  sphere_flag = ellipsoid_flag = line_flag = tri_flag = 0;
+  sphere_flag = ellipsoid_flag = line_flag = tri_flag = body_flag = 0;
   peri_flag = electron_flag = 0;
   wavepacket_flag = sph_flag = 0;
 
   molecule_flag = q_flag = mu_flag = 0;
   rmass_flag = radius_flag = omega_flag = torque_flag = angmom_flag = 0;
-  density_flag = NULL; 
+  density_flag = 0; 
   vfrac_flag = spin_flag = eradius_flag = ervel_flag = erforce_flag = 0;
   cs_flag = csforce_flag = vforce_flag = ervelforce_flag= etag_flag = 0;
   rho_flag = e_flag = cv_flag = vest_flag = 0;
@@ -128,33 +148,30 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
 
   // callback lists & extra restart info
 
-  nextra_grow = nextra_restart = 0;
-  extra_grow = extra_restart = NULL;
-  nextra_grow_max = nextra_restart_max = 0;
+  nextra_grow = nextra_restart = nextra_border = 0;
+  extra_grow = extra_restart = extra_border = NULL;
+  nextra_grow_max = nextra_restart_max = nextra_border_max = 0;
   nextra_store = 0;
   extra = NULL;
 
-  // default mapping values and hash table primes
+  // default mapping values
 
   tag_enable = 1;
   map_style = 0;
   map_tag_max = 0;
   map_nhash = 0;
 
-  nprimes = 38;
-  primes = new int[nprimes];
-  int plist[] = {5041,10007,20011,30011,40009,50021,60013,70001,80021,
-                 90001,100003,110017,120011,130003,140009,150001,160001,
-                 170003,180001,190027,200003,210011,220009,230003,240007,
-                 250007,260003,270001,280001,290011,300007,310019,320009,
-                 330017,340007,350003,362881,3628801};
-  for (int i = 0; i < nprimes; i++) primes[i] = plist[i];
-
-  // default atom style = atomic
+  smax = 0;
+  sametag = NULL;
+  map_array = NULL;
+  map_bucket = NULL;
+  map_hash = NULL;
 
   atom_style = NULL;
   avec = NULL;
-  create_avec("atomic",0,NULL,lmp->suffix);
+
+  datamask = ALL_MASK;
+  datamask_ext = ALL_MASK;
 
   radvary_flag = 0;
 }
@@ -196,6 +213,7 @@ Atom::~Atom()
   memory->destroy(ellipsoid);
   memory->destroy(line);
   memory->destroy(tri);
+  memory->destroy(body);
   memory->destroy(spin);
   memory->destroy(eradius);
   memory->destroy(ervel);
@@ -237,6 +255,22 @@ Atom::~Atom()
   memory->destroy(improper_atom3);
   memory->destroy(improper_atom4);
 
+  // delete custom atom arrays
+
+  for (int i = 0; i < nivector; i++) {
+    delete [] iname[i];
+    memory->destroy(ivector[i]);
+  }
+  for (int i = 0; i < ndvector; i++) {
+    delete [] dname[i];
+    memory->destroy(dvector[i]);
+  }
+
+  memory->sfree(iname);
+  memory->sfree(dname);
+  memory->sfree(ivector);
+  memory->sfree(dvector);
+
   // delete per-type arrays
 
   delete [] mass;
@@ -246,12 +280,12 @@ Atom::~Atom()
 
   memory->destroy(extra_grow);
   memory->destroy(extra_restart);
+  memory->destroy(extra_border);
   memory->destroy(extra);
 
   // delete mapping data structures
 
   map_delete();
-  delete [] primes;
 }
 
 /* ----------------------------------------------------------------------
@@ -286,8 +320,14 @@ void Atom::create_avec(const char *style, int narg, char **arg, char *suffix)
   rho_flag = p_flag = 0; 
   vfrac_flag = spin_flag = eradius_flag = ervel_flag = erforce_flag = 0;
 
+  // create instance of AtomVec
+  // use grow to initialize atom-based arrays to length 1
+  // so that x[0][0] can be referenced even if proc has no atoms
+
   int sflag;
-  avec = new_avec(style,narg,arg,suffix,sflag);
+  avec = new_avec(style,suffix,sflag);
+  avec->settings(narg,arg);
+  avec->grow(1);
 
   if (sflag) {
     char estyle[256];
@@ -311,8 +351,7 @@ void Atom::create_avec(const char *style, int narg, char **arg, char *suffix)
    generate an AtomVec class, first with suffix appended
 ------------------------------------------------------------------------- */
 
-AtomVec *Atom::new_avec(const char *style, int narg, char **arg,
-                        char *suffix, int &sflag)
+AtomVec *Atom::new_avec(const char *style, char *suffix, int &sflag)
 {
   if (suffix && lmp->suffix_enable) {
     sflag = 1;
@@ -323,7 +362,7 @@ AtomVec *Atom::new_avec(const char *style, int narg, char **arg,
 
 #define ATOM_CLASS
 #define AtomStyle(key,Class) \
-    else if (strcmp(estyle,#key) == 0) return new Class(lmp,narg,arg);
+    else if (strcmp(estyle,#key) == 0) return new Class(lmp);
 #include "style_atom.h"
 #undef AtomStyle
 #undef ATOM_CLASS
@@ -336,7 +375,7 @@ AtomVec *Atom::new_avec(const char *style, int narg, char **arg,
 
 #define ATOM_CLASS
 #define AtomStyle(key,Class) \
-  else if (strcmp(style,#key) == 0) return new Class(lmp,narg,arg);
+  else if (strcmp(style,#key) == 0) return new Class(lmp);
 #include "style_atom.h"
 #undef ATOM_CLASS
 
@@ -419,7 +458,8 @@ void Atom::modify_params(int narg, char **arg)
       else if (strcmp(arg[iarg+1],"hash") == 0) map_style = 2;
       else error->all(FLERR,"Illegal atom_modify command");
       if (domain->box_exist)
-        error->all(FLERR,"Atom_modify map command after simulation box is defined");
+        error->all(FLERR,
+                   "Atom_modify map command after simulation box is defined");
       iarg += 2;
     } else if (strcmp(arg[iarg],"first") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal atom_modify command");
@@ -435,8 +475,8 @@ void Atom::modify_params(int narg, char **arg)
       iarg += 2;
     } else if (strcmp(arg[iarg],"sort") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal atom_modify command");
-      sortfreq = atoi(arg[iarg+1]);
-      userbinsize = atof(arg[iarg+2]);
+      sortfreq = force->inumeric(FLERR,arg[iarg+1]);
+      userbinsize = force->numeric(FLERR,arg[iarg+2]);
       if (sortfreq < 0 || userbinsize < 0.0)
         error->all(FLERR,"Illegal atom_modify command");
       if (sortfreq >= 0 && firstgroupname)
@@ -445,243 +485,6 @@ void Atom::modify_params(int narg, char **arg)
       iarg += 3;
     } else error->all(FLERR,"Illegal atom_modify command");
   }
-}
-
-/* ----------------------------------------------------------------------
-   allocate and initialize array or hash table for global -> local map
-   set map_tag_max = largest atom ID (may be larger than natoms)
-   for array option:
-     array length = 1 to largest tag of any atom
-     set entire array to -1 as initial values
-   for hash option:
-     map_nhash = length of hash table
-     map_nbucket = # of hash buckets, prime larger than map_nhash
-       so buckets will only be filled with 0 or 1 atoms on average
-------------------------------------------------------------------------- */
-
-void Atom::map_init()
-{
-  map_delete();
-
-  if (tag_enable == 0)
-    error->all(FLERR,"Cannot create an atom map unless atoms have IDs");
-
-  int max = 0;
-  for (int i = 0; i < nlocal; i++) max = MAX(max,tag[i]);
-  MPI_Allreduce(&max,&map_tag_max,1,MPI_INT,MPI_MAX,world);
-
-  if (map_style == 1) {
-    memory->create(map_array,map_tag_max+1,"atom:map_array");
-    for (int i = 0; i <= map_tag_max; i++) map_array[i] = -1;
-
-  } else {
-
-    // map_nhash = max of atoms/proc or total atoms, times 2, at least 1000
-
-    int nper = static_cast<int> (natoms/comm->nprocs);
-    map_nhash = MAX(nper,nmax);
-    if (map_nhash > natoms) map_nhash = static_cast<int> (natoms);
-    if (comm->nprocs > 1) map_nhash *= 2;
-    map_nhash = MAX(map_nhash,1000);
-
-    // map_nbucket = prime just larger than map_nhash
-
-    int n = map_nhash/10000;
-    n = MIN(n,nprimes-1);
-    map_nbucket = primes[n];
-    if (map_nbucket < map_nhash && n < nprimes-1) map_nbucket = primes[n+1];
-
-    // set all buckets to empty
-    // set hash to map_nhash in length
-    // put all hash entries in free list and point them to each other
-
-    map_bucket = new int[map_nbucket];
-    for (int i = 0; i < map_nbucket; i++) map_bucket[i] = -1;
-
-    map_hash = new HashElem[map_nhash];
-    map_nused = 0;
-    map_free = 0;
-    for (int i = 0; i < map_nhash; i++) map_hash[i].next = i+1;
-    map_hash[map_nhash-1].next = -1;
-  }
-}
-
-/* ----------------------------------------------------------------------
-   clear global -> local map for all of my own and ghost atoms
-   for hash table option:
-     global ID may not be in table if image atom was already cleared
-------------------------------------------------------------------------- */
-
-void Atom::map_clear()
-{
-  if (map_style == 1) {
-    int nall = nlocal + nghost;
-    for (int i = 0; i < nall; i++) map_array[tag[i]] = -1;
-
-  } else {
-    int previous,global,ibucket,index;
-    int nall = nlocal + nghost;
-    for (int i = 0; i < nall; i++) {
-
-      // search for key
-      // if don't find it, done
-
-      previous = -1;
-      global = tag[i];
-      ibucket = global % map_nbucket;
-      index = map_bucket[ibucket];
-      while (index > -1) {
-        if (map_hash[index].global == global) break;
-        previous = index;
-        index = map_hash[index].next;
-      }
-      if (index == -1) continue;
-
-      // delete the hash entry and add it to free list
-      // special logic if entry is 1st in the bucket
-
-      if (previous == -1) map_bucket[ibucket] = map_hash[index].next;
-      else map_hash[previous].next = map_hash[index].next;
-
-      map_hash[index].next = map_free;
-      map_free = index;
-      map_nused--;
-    }
-  }
-}
-
-/* ----------------------------------------------------------------------
-   set global -> local map for all of my own and ghost atoms
-   loop in reverse order so that nearby images take precedence over far ones
-     and owned atoms take precedence over images
-   this enables valid lookups of bond topology atoms
-   for hash table option:
-     if hash table too small, re-init
-     global ID may already be in table if image atom was set
-------------------------------------------------------------------------- */
-
-void Atom::map_set()
-{
-  if (map_style == 1) {
-    int nall = nlocal + nghost;
-    for (int i = nall-1; i >= 0 ; i--) map_array[tag[i]] = i;
-
-  } else {
-    int previous,global,ibucket,index;
-    int nall = nlocal + nghost;
-    if (nall > map_nhash) map_init();
-
-    for (int i = nall-1; i >= 0 ; i--) {
-
-      // search for key
-      // if found it, just overwrite local value with index
-
-      previous = -1;
-      global = tag[i];
-      ibucket = global % map_nbucket;
-      index = map_bucket[ibucket];
-      while (index > -1) {
-        if (map_hash[index].global == global) break;
-        previous = index;
-        index = map_hash[index].next;
-      }
-      if (index > -1) {
-        map_hash[index].local = i;
-        continue;
-      }
-
-      // take one entry from free list
-      // add the new global/local pair as entry at end of bucket list
-      // special logic if this entry is 1st in bucket
-
-      index = map_free;
-      map_free = map_hash[map_free].next;
-      if (previous == -1) map_bucket[ibucket] = index;
-      else map_hash[previous].next = index;
-      map_hash[index].global = global;
-      map_hash[index].local = i;
-      map_hash[index].next = -1;
-      map_nused++;
-    }
-  }
-}
-
-/* ----------------------------------------------------------------------
-   set global to local map for one atom
-   for hash table option:
-     global ID may already be in table if atom was already set
-------------------------------------------------------------------------- */
-
-void Atom::map_one(int global, int local)
-{
-  if (map_style == 1) map_array[global] = local;
-
-  else {
-    // search for key
-    // if found it, just overwrite local value with index
-
-    int previous = -1;
-    int ibucket = global % map_nbucket;
-    int index = map_bucket[ibucket];
-    while (index > -1) {
-      if (map_hash[index].global == global) break;
-      previous = index;
-      index = map_hash[index].next;
-    }
-    if (index > -1) {
-      map_hash[index].local = local;
-      return;
-    }
-
-    // take one entry from free list
-    // add the new global/local pair as entry at end of bucket list
-    // special logic if this entry is 1st in bucket
-
-    index = map_free;
-    map_free = map_hash[map_free].next;
-    if (previous == -1) map_bucket[ibucket] = index;
-    else map_hash[previous].next = index;
-    map_hash[index].global = global;
-    map_hash[index].local = local;
-    map_hash[index].next = -1;
-    map_nused++;
-  }
-}
-
-/* ----------------------------------------------------------------------
-   free the array or hash table for global to local mapping
-------------------------------------------------------------------------- */
-
-void Atom::map_delete()
-{
-  if (map_style == 1) {
-    if (map_tag_max) memory->destroy(map_array);
-  } else {
-    if (map_nhash) {
-      delete [] map_bucket;
-      delete [] map_hash;
-    }
-    map_nhash = 0;
-  }
-  map_tag_max = 0;
-}
-
-/* ----------------------------------------------------------------------
-   lookup global ID in hash table, return local index
-------------------------------------------------------------------------- */
-
-int Atom::map_find_hash(int global)
-{
-  int local = -1;
-  int index = map_bucket[global % map_nbucket];
-  while (index > -1) {
-    if (map_hash[index].global == global) {
-      local = map_hash[index].local;
-      break;
-    }
-    index = map_hash[index].next;
-  }
-  return local;
 }
 
 /* ----------------------------------------------------------------------
@@ -722,7 +525,9 @@ void Atom::tag_extend()
 
 int Atom::tag_consecutive()
 {
-  int idmin = MAXTAGINT;
+  // change this when allow tagint = bigint
+  //int idmin = MAXTAGINT;
+  int idmin = MAXSMALLINT;
   int idmax = 0;
 
   for (int i = 0; i < nlocal; i++) {
@@ -741,9 +546,9 @@ int Atom::tag_consecutive()
    get max tag
 ------------------------------------------------------------------------- */
 
-bigint Atom::tag_max()
+int Atom::tag_max()
 {
-  bigint idmax = 0;
+  int idmax = 0;
 
   for (int i = 0; i < nlocal; i++) {
     idmax = MAX(idmax,tag[i]);
@@ -787,7 +592,8 @@ int Atom::count_words(const char *line)
 
 void Atom::data_atoms(int n, char *buf)
 {
-  int m,imagedata,xptr,iptr;
+  int m,xptr,iptr;
+  tagint imagedata;
   double xdata[3],lamda[3];
   double *coord;
   char *next;
@@ -867,10 +673,11 @@ void Atom::data_atoms(int n, char *buf)
     }
 
     if (imageflag)
-      imagedata = ((atoi(values[iptr+2]) + 512 & 1023) << 20) |
-        ((atoi(values[iptr+1]) + 512 & 1023) << 10) |
-        (atoi(values[iptr]) + 512 & 1023);
-    else imagedata = (512 << 20) | (512 << 10) | 512;
+      imagedata = ((tagint) (atoi(values[iptr]) + IMGMAX) & IMGMASK) |
+        (((tagint) (atoi(values[iptr+1]) + IMGMAX) & IMGMASK) << IMGBITS) |
+        (((tagint) (atoi(values[iptr+2]) + IMGMAX) & IMGMASK) << IMG2BITS);
+    else imagedata = ((tagint) IMGMAX << IMG2BITS) |
+           ((tagint) IMGMAX << IMGBITS) | IMGMAX;
 
     xdata[0] = atof(values[xptr]);
     xdata[1] = atof(values[xptr+1]);
@@ -983,6 +790,45 @@ void Atom::data_bonus(int n, char *buf, AtomVec *avec_bonus)
 }
 
 /* ----------------------------------------------------------------------
+   unpack n lines from atom-style specific section of data file
+   check that atom IDs are > 0 and <= map_tag_max
+   call style-specific routine to parse line
+------------------------------------------------------------------------- */
+
+void Atom::data_bodies(int n, char *buf, AtomVecBody *avec_body)
+{
+  int j,m,tagdata,ninteger,ndouble;
+
+  char **ivalues = new char*[10*MAXBODY];
+  char **dvalues = new char*[10*MAXBODY];
+
+  // loop over lines of body data
+  // tokenize the lines into ivalues and dvalues
+  // if I own atom tag, unpack its values
+
+  for (int i = 0; i < n; i++) {
+    if (i == 0) tagdata = atoi(strtok(buf," \t\n\r\f"));
+    else tagdata = atoi(strtok(NULL," \t\n\r\f"));
+    ninteger = atoi(strtok(NULL," \t\n\r\f"));
+    ndouble = atoi(strtok(NULL," \t\n\r\f"));
+
+    for (j = 0; j < ninteger; j++)
+      ivalues[j] = strtok(NULL," \t\n\r\f");
+    for (j = 0; j < ndouble; j++)
+      dvalues[j] = strtok(NULL," \t\n\r\f");
+
+    if (tagdata <= 0 || tagdata > map_tag_max)
+      error->one(FLERR,"Invalid atom ID in Bodies section of data file");
+
+    if ((m = map(tagdata)) >= 0)
+      avec_body->data_body(m,ninteger,ndouble,ivalues,dvalues);
+  }
+
+  delete [] ivalues;
+  delete [] dvalues;
+}
+
+/* ----------------------------------------------------------------------
    check that atom IDs are > 0 and <= map_tag_max
 ------------------------------------------------------------------------- */
 
@@ -1084,7 +930,8 @@ void Atom::data_dihedrals(int n, char *buf)
         atom4 <= 0 || atom4 > map_tag_max)
       error->one(FLERR,"Invalid atom ID in Dihedrals section of data file");
     if (itype <= 0 || itype > ndihedraltypes)
-      error->one(FLERR,"Invalid dihedral type in Dihedrals section of data file");
+      error->one(FLERR,
+                 "Invalid dihedral type in Dihedrals section of data file");
     if ((m = map(atom2)) >= 0) {
       dihedral_type[m][num_dihedral[m]] = itype;
       dihedral_atom1[m][num_dihedral[m]] = atom1;
@@ -1143,7 +990,8 @@ void Atom::data_impropers(int n, char *buf)
         atom4 <= 0 || atom4 > map_tag_max)
       error->one(FLERR,"Invalid atom ID in Impropers section of data file");
     if (itype <= 0 || itype > nimpropertypes)
-      error->one(FLERR,"Invalid improper type in Impropers section of data file");
+      error->one(FLERR,
+                 "Invalid improper type in Impropers section of data file");
     if ((m = map(atom2)) >= 0) {
       improper_type[m][num_improper[m]] = itype;
       improper_atom1[m][num_improper[m]] = atom1;
@@ -1210,7 +1058,8 @@ void Atom::set_mass(const char *str)
   int n = sscanf(str,"%d %lg",&itype,&mass_one);
   if (n != 2) error->all(FLERR,"Invalid mass line in data file");
 
-  if (itype < 1 || itype > ntypes) error->all(FLERR,"Invalid type for mass set");
+  if (itype < 1 || itype > ntypes)
+    error->all(FLERR,"Invalid type for mass set");
 
   mass[itype] = mass_one;
   mass_setflag[itype] = 1;
@@ -1226,7 +1075,8 @@ void Atom::set_mass(const char *str)
 void Atom::set_mass(int itype, double value)
 {
   if (mass == NULL) error->all(FLERR,"Cannot set mass for this atom style");
-  if (itype < 1 || itype > ntypes) error->all(FLERR,"Invalid type for mass set");
+  if (itype < 1 || itype > ntypes)
+    error->all(FLERR,"Invalid type for mass set");
 
   mass[itype] = value;
   mass_setflag[itype] = 1;
@@ -1557,7 +1407,7 @@ void Atom::setup_sort_bins()
 /* ----------------------------------------------------------------------
    register a callback to a fix so it can manage atom-based arrays
    happens when fix is created
-   flag = 0 for grow, 1 for restart
+   flag = 0 for grow, 1 for restart, 2 for border comm
 ------------------------------------------------------------------------- */
 
 void Atom::add_callback(int flag)
@@ -1590,6 +1440,13 @@ void Atom::add_callback(int flag)
     }
     extra_restart[nextra_restart] = ifix;
     nextra_restart++;
+  } else if (flag == 2) {
+    if (nextra_border == nextra_border_max) {
+      nextra_border_max += DELTA;
+      memory->grow(extra_border,nextra_border_max,"atom:extra_border");
+    }
+    extra_border[nextra_border] = ifix;
+    nextra_border++;
   }
 }
 
@@ -1617,11 +1474,19 @@ void Atom::delete_callback(const char *id, int flag)
 
   } else if (flag == 1) {
     int match;
-    for (match = 0; match < nextra_grow; match++)
+    for (match = 0; match < nextra_restart; match++)
       if (extra_restart[match] == ifix) break;
-    for (int i = ifix; i < nextra_restart-1; i++)
+    for (int i = match; i < nextra_restart-1; i++)
       extra_restart[i] = extra_restart[i+1];
     nextra_restart--;
+
+  } else if (flag == 2) {
+    int match;
+    for (match = 0; match < nextra_border; match++)
+      if (extra_border[match] == ifix) break;
+    for (int i = match; i < nextra_border-1; i++)
+      extra_border[i] = extra_border[i+1];
+    nextra_border--;
   }
 }
 
@@ -1636,6 +1501,95 @@ void Atom::update_callback(int ifix)
     if (extra_grow[i] > ifix) extra_grow[i]--;
   for (int i = 0; i < nextra_restart; i++)
     if (extra_restart[i] > ifix) extra_restart[i]--;
+  for (int i = 0; i < nextra_border; i++)
+    if (extra_border[i] > ifix) extra_border[i]--;
+}
+
+/* ----------------------------------------------------------------------
+   find custom per-atom vector with name
+   return index if found, and flag = 0/1 for int/double
+   return -1 if not found
+------------------------------------------------------------------------- */
+
+int Atom::find_custom(char *name, int &flag)
+{
+  for (int i = 0; i < nivector; i++)
+    if (iname[i] && strcmp(iname[i],name) == 0) {
+      flag = 0;
+      return i;
+    }
+
+  for (int i = 0; i < ndvector; i++)
+    if (dname[i] && strcmp(dname[i],name) == 0) {
+      flag = 1;
+      return i;
+    }
+
+  for (int i = 0; i < ndarray; i++)
+    if (dname[i] && strcmp(daname[i],name) == 0) {
+      flag = 2;
+      return i;
+    }
+
+  return -1;
+}
+
+/* ----------------------------------------------------------------------
+   add a custom variable with name of type flag = 0/1 for int/double
+   assumes name does not already exist
+   return index in ivector or dvector of its location
+------------------------------------------------------------------------- */
+
+int Atom::add_custom(char *name, int flag)
+{
+  int index;
+
+  if (flag == 0) {
+    index = nivector;
+    nivector++;
+    iname = (char **) memory->srealloc(iname,nivector*sizeof(char *),
+                                       "atom:iname");
+    int n = strlen(name) + 1;
+    iname[index] = new char[n];
+    strcpy(iname[index],name);
+    ivector = (int **) memory->srealloc(ivector,nivector*sizeof(int *),
+                                        "atom:ivector");
+    memory->create(ivector[index],nmax,"atom:ivector");
+  } else {
+    index = ndvector;
+    ndvector++;
+    dname = (char **) memory->srealloc(dname,ndvector*sizeof(char *),
+                                       "atom:dname");
+    int n = strlen(name) + 1;
+    dname[index] = new char[n];
+    strcpy(dname[index],name);
+    dvector = (double **) memory->srealloc(dvector,ndvector*sizeof(double *),
+                                           "atom:dvector");
+    memory->create(dvector[index],nmax,"atom:dvector");
+  }
+
+  return index;
+}
+
+/* ----------------------------------------------------------------------
+   remove a custom variable of type flag = 0/1 for int/double at index
+   free memory for vector and name and set ptrs to NULL
+   ivector/dvector and iname/dname lists never shrink
+------------------------------------------------------------------------- */
+
+void Atom::remove_custom(int flag, int index)
+{
+  if (flag == 0) {
+    memory->destroy(ivector[index]);
+    ivector[index] = NULL;
+    delete [] iname[index];
+    iname[index] = NULL;
+  } else {
+    memory->destroy(dvector[index]);
+    dvector[index] = NULL;
+    delete [] dname[index];
+    dname[index] = NULL;
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -1644,7 +1598,7 @@ void Atom::update_callback(int ifix)
    customize by adding names
 ------------------------------------------------------------------------- */
 
-void *Atom::extract(char *name,int &len)
+void *Atom::extract(const char *name,int &len) 
 {
   
   len = 0;
@@ -1652,22 +1606,33 @@ void *Atom::extract(char *name,int &len)
   if (strcmp(name,"nlocal") == 0) return (void *) &nlocal;
   if (strcmp(name,"mass") == 0) return (void *) mass;
 
-  len = 1;
+  len = 1; 
   if (strcmp(name,"id") == 0) return (void *) tag;
   if (strcmp(name,"type") == 0) return (void *) type;
-  if (strcmp(name,"rmass") == 0) return (void *) rmass;
-  if (strcmp(name,"radius") == 0) return (void *) radius;
-  if (strcmp(name,"density") == 0) return (void *) density;
+  if (strcmp(name,"mask") == 0) return (void *) mask;
+  if (strcmp(name,"image") == 0) return (void *) image;
+  if (strcmp(name,"rmass") == 0) return (void *) rmass; 
+  if (strcmp(name,"radius") == 0) return (void *) radius; 
+  if (strcmp(name,"density") == 0) return (void *) density; 
   if (strcmp(name,"rho") == 0) return (void *) rho;  
   if (strcmp(name,"pressure") == 0) return (void *) p;  
 
-  len = 3;
+  len = 3; 
   if (strcmp(name,"x") == 0) return (void *) x;
   if (strcmp(name,"v") == 0) return (void *) v;
   if (strcmp(name,"f") == 0) return (void *) f;
+  if (strcmp(name,"molecule") == 0) return (void *) molecule;
+  if (strcmp(name,"q") == 0) return (void *) q;
+  if (strcmp(name,"mu") == 0) return (void *) mu;
   if (strcmp(name,"omega") == 0) return (void *) omega;
+  if (strcmp(name,"amgmom") == 0) return (void *) angmom;
+  if (strcmp(name,"torque") == 0) return (void *) torque;
+  if (strcmp(name,"radius") == 0) return (void *) radius;
+  if (strcmp(name,"rmass") == 0) return (void *) rmass;
+  if (strcmp(name,"vfrac") == 0) return (void *) vfrac;
+  if (strcmp(name,"s0") == 0) return (void *) s0;
 
-  len = -1;
+  len = -1; 
   return NULL;
 }
 
@@ -1685,6 +1650,7 @@ bigint Atom::memory_usage()
   bigint bytes = avec->memory_usage();
   memory->destroy(memstr);
 
+  bytes += smax*sizeof(int);
   if (map_style == 1)
     bytes += memory->usage(map_array,map_tag_max+1);
   else if (map_style == 2) {

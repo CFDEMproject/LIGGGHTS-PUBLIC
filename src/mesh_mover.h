@@ -283,9 +283,9 @@ namespace LAMMPS_NS
           if(narg < 4) return 0;
 
           return new MeshMoverLinear(lmp,mesh,fix_mm,
-                          lmp->force->numeric(arg[1]),
-                          lmp->force->numeric(arg[2]),
-                          lmp->force->numeric(arg[3]));
+                          lmp->force->numeric(FLERR,arg[1]),
+                          lmp->force->numeric(FLERR,arg[2]),
+                          lmp->force->numeric(FLERR,arg[3]));
         } else if(strcmp(name,"linear/variable") == 0){
           if(narg < 4) return 0;
 
@@ -306,15 +306,15 @@ namespace LAMMPS_NS
 
             return new MeshMoverRotate(lmp,mesh,fix_mm,
                           // origin
-                          lmp->force->numeric(arg[2]),
-                          lmp->force->numeric(arg[3]),
-                          lmp->force->numeric(arg[4]),
+                          lmp->force->numeric(FLERR,arg[2]),
+                          lmp->force->numeric(FLERR,arg[3]),
+                          lmp->force->numeric(FLERR,arg[4]),
                           // axis
-                          lmp->force->numeric(arg[6]),
-                          lmp->force->numeric(arg[7]),
-                          lmp->force->numeric(arg[8]),
+                          lmp->force->numeric(FLERR,arg[6]),
+                          lmp->force->numeric(FLERR,arg[7]),
+                          lmp->force->numeric(FLERR,arg[8]),
                           // period
-                          lmp->force->numeric(arg[10]));
+                          lmp->force->numeric(FLERR,arg[10]));
           }
       } else if(strcmp(name,"rotate/variable") == 0){
           if(narg < 11) return 0;
@@ -329,13 +329,13 @@ namespace LAMMPS_NS
 
             return new MeshMoverRotateVariable(lmp,mesh,fix_mm,
                           // origin
-                          lmp->force->numeric(arg[2]),
-                          lmp->force->numeric(arg[3]),
-                          lmp->force->numeric(arg[4]),
+                          lmp->force->numeric(FLERR,arg[2]),
+                          lmp->force->numeric(FLERR,arg[3]),
+                          lmp->force->numeric(FLERR,arg[4]),
                           // axis
-                          lmp->force->numeric(arg[6]),
-                          lmp->force->numeric(arg[7]),
-                          lmp->force->numeric(arg[8]),
+                          lmp->force->numeric(FLERR,arg[6]),
+                          lmp->force->numeric(FLERR,arg[7]),
+                          lmp->force->numeric(FLERR,arg[8]),
                           // variable name for OMEGA (because var could be zero !)
                           arg[10]);
           }
@@ -350,11 +350,11 @@ namespace LAMMPS_NS
 
             return new MeshMoverWiggle(lmp,mesh,fix_mm,
                           //amplitude
-                          lmp->force->numeric(arg[2]),
-                          lmp->force->numeric(arg[3]),
-                          lmp->force->numeric(arg[4]),
+                          lmp->force->numeric(FLERR,arg[2]),
+                          lmp->force->numeric(FLERR,arg[3]),
+                          lmp->force->numeric(FLERR,arg[4]),
                           //period
-                          lmp->force->numeric(arg[6]));
+                          lmp->force->numeric(FLERR,arg[6]));
           }
         } else if(strcmp(name,"riggle") == 0){
           if(narg < 13) return 0;
@@ -371,21 +371,21 @@ namespace LAMMPS_NS
 
             return new MeshMoverRiggle(lmp,mesh,fix_mm,
                           // origin
-                          lmp->force->numeric(arg[2]),
-                          lmp->force->numeric(arg[3]),
-                          lmp->force->numeric(arg[4]),
+                          lmp->force->numeric(FLERR,arg[2]),
+                          lmp->force->numeric(FLERR,arg[3]),
+                          lmp->force->numeric(FLERR,arg[4]),
                           // axis
-                          lmp->force->numeric(arg[6]),
-                          lmp->force->numeric(arg[7]),
-                          lmp->force->numeric(arg[8]),
+                          lmp->force->numeric(FLERR,arg[6]),
+                          lmp->force->numeric(FLERR,arg[7]),
+                          lmp->force->numeric(FLERR,arg[8]),
                           // period
-                          lmp->force->numeric(arg[10]),
+                          lmp->force->numeric(FLERR,arg[10]),
                           // amplitude
-                          lmp->force->numeric(arg[12]));
+                          lmp->force->numeric(FLERR,arg[12]));
           }
         }
          else if(strcmp(name,"viblin") == 0){
-            int order = lmp->force->numeric(arg[6]);
+            int order = lmp->force->numeric(FLERR,arg[6]);
             if(narg < 10+2*order) return 0;
           else
           {
@@ -404,28 +404,28 @@ namespace LAMMPS_NS
             // creating array of amplitude and phase
             for (int zv=0; zv<order; zv++) {
                 //amplitude
-                amp[zv] = lmp->force->numeric(arg[8+zv]);
+                amp[zv] = lmp->force->numeric(FLERR,arg[8+zv]);
                 // angle of phase
-                pha[zv] = lmp->force->numeric(arg[9+order+zv]);
+                pha[zv] = lmp->force->numeric(FLERR,arg[9+order+zv]);
                }
 
             return new MeshMoverVibLin(lmp,mesh,fix_mm,
                           // direction
-                          lmp->force->numeric(arg[2]),
-                          lmp->force->numeric(arg[3]),
-                          lmp->force->numeric(arg[4]),
+                          lmp->force->numeric(FLERR,arg[2]),
+                          lmp->force->numeric(FLERR,arg[3]),
+                          lmp->force->numeric(FLERR,arg[4]),
                           // order
-                          lmp->force->numeric(arg[6]),
+                          lmp->force->numeric(FLERR,arg[6]),
                           // amplitudes
                           amp,
                           // phases
                           pha,
                           // periode
-                          lmp->force->numeric(arg[10+2*order]));
+                          lmp->force->numeric(FLERR,arg[10+2*order]));
           }
         }
         else if(strcmp(name,"vibrot") == 0){
-             int order = lmp->force->numeric(arg[10]);
+             int order = lmp->force->numeric(FLERR,arg[10]);
              if (narg < 14+2*order) return 0;
           else
           {
@@ -446,27 +446,27 @@ namespace LAMMPS_NS
             // creating array of amplitude and phase
             for (int zv=0; zv<order; zv++) {
                 //amplitude
-                amp[zv] = lmp->force->numeric(arg[12+zv]);
+                amp[zv] = lmp->force->numeric(FLERR,arg[12+zv]);
                 // angle of phase
-                pha[zv] = lmp->force->numeric(arg[13+order+zv]);
+                pha[zv] = lmp->force->numeric(FLERR,arg[13+order+zv]);
                }
             return new MeshMoverVibRot(lmp,mesh,fix_mm,
                           // origin px py pz
-                          lmp->force->numeric(arg[2]),
-                          lmp->force->numeric(arg[3]),
-                          lmp->force->numeric(arg[4]),
+                          lmp->force->numeric(FLERR,arg[2]),
+                          lmp->force->numeric(FLERR,arg[3]),
+                          lmp->force->numeric(FLERR,arg[4]),
                           // axis axisx axisy axisz
-                          lmp->force->numeric(arg[6]),
-                          lmp->force->numeric(arg[7]),
-                          lmp->force->numeric(arg[8]),
+                          lmp->force->numeric(FLERR,arg[6]),
+                          lmp->force->numeric(FLERR,arg[7]),
+                          lmp->force->numeric(FLERR,arg[8]),
                           // order
-                          lmp->force->numeric(arg[10]),
+                          lmp->force->numeric(FLERR,arg[10]),
                           // amplitudes
                           amp,
                           // phases
                           pha,
                           // periode
-                          lmp->force->numeric(arg[14+2*order]));
+                          lmp->force->numeric(FLERR,arg[14+2*order]));
            }
         }
         return 0;

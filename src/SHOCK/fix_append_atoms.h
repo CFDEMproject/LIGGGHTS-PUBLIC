@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -13,7 +13,7 @@
 
 #ifdef FIX_CLASS
 
-FixStyle(append_atoms,FixAppendAtoms)
+FixStyle(append/atoms,FixAppendAtoms)
 
 #else
 
@@ -42,9 +42,10 @@ class FixAppendAtoms : public Fix {
   class RanMars *randomx;
   class RanMars *randomt;
   int scaleflag, freq;
-  int *basistype, nbasis;
-  int advance, advance_sum;
-  double size, spatlead;
+  int nbasis;
+  int *basistype;
+  int advance,advance_sum;
+  double size,spatlead;
   char *spatialid;
   double tfactor;
   double *gfactor1,*gfactor2;
@@ -63,6 +64,10 @@ Self-explanatory.  Check the input script syntax and compare to the
 documentation for the command.  You can use -echo screen as a
 command-line option when running LAMMPS to see the offending line.
 
+E: Fix append/atoms requires a lattice be defined
+
+Use the lattice command for this purpose.
+
 E: Only zhi currently implemented for fix append/atoms
 
 Self-explanatory.
@@ -70,12 +75,16 @@ Self-explanatory.
 E: Append boundary must be shrink/minimum
 
 The boundary style of the face where atoms are added
-must be of type m (shrink/minimum). 
+must be of type m (shrink/minimum).
 
 E: Bad fix ID in fix append/atoms command
 
 The value of the fix_id for keyword spatial must start with the suffix
 f_.
+
+E: Invalid basis setting in fix append/atoms command
+
+UNDOCUMENTED
 
 E: Cannot use append/atoms in periodic dimension
 
@@ -87,15 +96,11 @@ E: Cannot append atoms to a triclinic box
 The simulation box must be defined with edges alligned with the
 Cartesian axes.
 
-E: Use of fix append/atoms with undefined lattice
-
-A lattice must be defined before using this fix.
-
 E: Fix ID for fix ave/spatial does not exist
 
 Self-explanatory.
 
-E: Must define lattice to append/atoms
+U: Use of fix append/atoms with undefined lattice
 
 A lattice must be defined before using this fix.
 

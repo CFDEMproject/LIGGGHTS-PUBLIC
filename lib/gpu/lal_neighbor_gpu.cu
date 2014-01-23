@@ -16,44 +16,57 @@
 
 #ifdef NV_KERNEL
 #include "lal_preprocessor.h"
-texture<float4> neigh_tex;
 #ifndef _DOUBLE_DOUBLE
-ucl_inline float4 fetch_pos(const int& i, const float4 *pos) 
-  { return tex1Dfetch(neigh_tex, i); }
+texture<float4> pos_tex;
+#else
+texture<int4,1> pos_tex;
 #endif
 
-__kernel void calc_cell_id(numtyp4 *pos, unsigned *cell_id, int *particle_id,
-                           numtyp boxlo0, 
-                           numtyp boxlo1, numtyp boxlo2, numtyp boxhi0, 
-                           numtyp boxhi1, numtyp boxhi2, numtyp cell_size, 
-                           int ncellx, int ncelly, int nall) {
+__kernel void calc_cell_id(const numtyp4 *restrict pos, 
+                           unsigned *restrict cell_id, 
+                           int *restrict particle_id,
+                           numtyp boxlo0, numtyp boxlo1, numtyp boxlo2, 
+                           numtyp i_cell_size, int ncellx, int ncelly, 
+                           int ncellz, int inum, int nall, 
+                           int cells_in_cutoff) {
   int i = threadIdx.x + blockIdx.x*blockDim.x;
 
   if (i < nall) {
-    numtyp4 p = fetch_pos(i,pos); //pos[i];
+    numtyp4 p;
+    fetch4(p,i,pos_tex); //pos[i];
 
     p.x -= boxlo0;
     p.y -= boxlo1;
     p.z -= boxlo2;
     
-    p.x = fmaxf(p.x, -cell_size);
-    p.x = fminf(p.x, boxhi0-boxlo0+cell_size);
-    p.y = fmaxf(p.y, -cell_size);
-    p.y = fminf(p.y, boxhi1-boxlo1+cell_size);
-    p.z = fmaxf(p.z, -cell_size);
-    p.z = fminf(p.z, boxhi2-boxlo2+cell_size);
+    int ix = int(p.x*i_cell_size+cells_in_cutoff);
+    int iy = int(p.y*i_cell_size+cells_in_cutoff);
+    int iz = int(p.z*i_cell_size+cells_in_cutoff);
     
-    unsigned int id = (unsigned int)(p.x/cell_size + 1.0) 
-      + (unsigned int)(p.y/cell_size + 1.0) * ncellx
-      + (unsigned int)(p.z/cell_size + 1.0) * ncellx * ncelly;
+    int offset_lo, offset_hi;
+    if (i<inum) {
+      offset_lo=cells_in_cutoff;
+      offset_hi=cells_in_cutoff+1;
+    } else {
+      offset_lo=0;
+      offset_hi=1;
+    }
     
-    cell_id[i] = id;
+    ix = max(ix,offset_lo);
+    ix = min(ix,ncellx-offset_hi);
+    iy = max(iy,offset_lo);
+    iy = min(iy,ncelly-offset_hi);
+    iz = max(iz,offset_lo);
+    iz = min(iz,ncellz-offset_hi);
+    
+    cell_id[i] = ix+iy*ncellx+iz*ncellx*ncelly;
     particle_id[i] = i;
   }
 }
 
-__kernel void kernel_calc_cell_counts(unsigned *cell_id,
-                                      int *cell_counts, int nall, int ncell) {
+__kernel void kernel_calc_cell_counts(const unsigned *restrict cell_id,
+                                      int *restrict cell_counts, 
+                                      int nall, int ncell) {
   int idx = threadIdx.x + blockIdx.x * blockDim.x;
   if (idx < nall) {
     int id = cell_id[idx];
@@ -78,12 +91,15 @@ __kernel void kernel_calc_cell_counts(unsigned *cell_id,
   }
 }
 
+#else
+#define pos_tex x_
 #endif
 
 
 
-__kernel void transpose(__global int *out, __global int *in, int columns_in, 
-                        int rows_in)
+__kernel void transpose(__global int *restrict out, 
+                        const __global int *restrict in, 
+                        int columns_in, int rows_in)
 {
 	__local int block[BLOCK_CELL_2D][BLOCK_CELL_2D+1];
 	
@@ -105,20 +121,21 @@ __kernel void transpose(__global int *out, __global int *in, int columns_in,
 		out[j*rows_in+i] = block[ti][tj];
 }
 
-__kernel void calc_neigh_list_cell(__global numtyp4 *x_, 
-                                   __global int *cell_particle_id, 
-                                   __global int *cell_counts, 
+__kernel void calc_neigh_list_cell(const __global numtyp4 *restrict x_, 
+                                   const __global int *restrict cell_particle_id, 
+                                   const __global int *restrict cell_counts, 
                                    __global int *nbor_list,
                                    __global int *host_nbor_list, 
                                    __global int *host_numj, 
                                    int neigh_bin_size, numtyp cell_size,
                                    int ncellx, int ncelly, int ncellz,
-                                   int inum, int nt, int nall, int t_per_atom)
+                                   int inum, int nt, int nall, int t_per_atom,
+                                   int cells_in_cutoff)
 {
   int tid = THREAD_ID_X;
-  int ix = BLOCK_ID_X;
-  int iy = BLOCK_ID_Y % ncelly;
-  int iz = BLOCK_ID_Y / ncelly;
+  int ix = BLOCK_ID_X + cells_in_cutoff;
+  int iy = BLOCK_ID_Y % (ncelly - cells_in_cutoff*2) + cells_in_cutoff;
+  int iz = BLOCK_ID_Y / (ncelly - cells_in_cutoff*2) + cells_in_cutoff;
   int bsx = BLOCK_SIZE_X;
 	  
   int icell = ix + iy*ncellx + iz*ncellx*ncelly;
@@ -129,9 +146,9 @@ __kernel void calc_neigh_list_cell(__global numtyp4 *x_,
   int icell_begin = cell_counts[icell];
   int icell_end = cell_counts[icell+1];
 
-  int nborz0 = max(iz-1,0), nborz1 = min(iz+1, ncellz-1),
-      nbory0 = max(iy-1,0), nbory1 = min(iy+1, ncelly-1),
-      nborx0 = max(ix-1,0), nborx1 = min(ix+1, ncellx-1);
+  int nborz0 = iz-cells_in_cutoff, nborz1 = iz+cells_in_cutoff, 
+      nbory0 = iy-cells_in_cutoff, nbory1 = iy+cells_in_cutoff,
+      nborx0 = ix-cells_in_cutoff, nborx1 = ix+cells_in_cutoff;
 
   numtyp4 diff;
   numtyp r2;
@@ -147,7 +164,7 @@ __kernel void calc_neigh_list_cell(__global numtyp4 *x_,
       pid_i = cell_particle_id[i];
 
     if (pid_i < nt) {
-      atom_i = fetch_pos(pid_i,x_); //pos[pid_i];
+      fetch4(atom_i,pid_i,pos_tex); //pos[i];
     }
     if (pid_i < inum) {
       stride=inum;
@@ -182,7 +199,7 @@ __kernel void calc_neigh_list_cell(__global numtyp4 *x_,
             if (tid < end_idx) {
               pid_j =  cell_particle_id[tid+k*bsx+jcell_begin];
               cell_list_sh[tid] = pid_j;
-              atom_j = fetch_pos(pid_j,x_); //[pid_j];
+              fetch4(atom_j,pid_j,pos_tex); //[pid_j];
               pos_sh[tid].x = atom_j.x;
               pos_sh[tid].y = atom_j.y;
               pos_sh[tid].z = atom_j.z;
@@ -221,8 +238,10 @@ __kernel void calc_neigh_list_cell(__global numtyp4 *x_,
 
 __kernel void kernel_special(__global int *dev_nbor, 
                              __global int *host_nbor_list, 
-                             __global int *host_numj, __global int *tag,
-                             __global int *nspecial, __global int *special,
+                             const __global int *host_numj, 
+                             const __global int *restrict tag,
+                             const __global int *restrict nspecial, 
+                             const __global int *restrict special,
                              int inum, int nt, int max_nbors, int t_per_atom) {
   int tid=THREAD_ID_X;
   int ii=fast_mul((int)BLOCK_ID_X,(int)(BLOCK_SIZE_X)/t_per_atom);

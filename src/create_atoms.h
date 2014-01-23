@@ -45,6 +45,9 @@ class CreateAtoms : protected Pointers {
   double xone[3];
   int remapflag;
 
+  int triclinic;
+  double sublo[3],subhi[3];   // epsilon-extended proc sub-box for adding atoms
+
   void add_single();
   void add_random();
   void add_lattice();
@@ -83,6 +86,10 @@ E: Create_atoms region ID does not exist
 
 A region ID used in the create_atoms command does not exist.
 
+E: Invalid basis setting in create_atoms command
+
+UNDOCUMENTED
+
 E: Cannot create atoms with undefined lattice
 
 Must use the lattice command before using the create_atoms
@@ -91,5 +98,9 @@ command.
 E: Too many total atoms
 
 See the setting for bigint in the src/lmptype.h file.
+
+E: No overlap of box and region for create_atoms
+
+Self-explanatory.
 
 */

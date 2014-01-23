@@ -42,7 +42,7 @@ compute_modify	thermo_temp dynamic yes
 
 #insert the first particles so that dump is not empty
 run		1
-dump		dmp all custom 800 dump.myOldModels id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+dump		dmp all custom 800 post/dump*.oldModels id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 
 #insert particles
 run		2000

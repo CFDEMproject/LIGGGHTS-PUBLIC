@@ -25,9 +25,12 @@ class Dihedral : protected Pointers {
  public:
   int allocated;
   int *setflag;
+  int writedata;                     // 1 if writes coeffs to data file
   double energy;                     // accumulated energy
   double virial[6];                  // accumlated virial
   double *eatom,**vatom;             // accumulated per-atom energy/virial
+  unsigned int datamask;
+  unsigned int datamask_ext;
 
   Dihedral(class LAMMPS *);
   virtual ~Dihedral();
@@ -38,7 +41,11 @@ class Dihedral : protected Pointers {
   virtual void coeff(int, char **) = 0;
   virtual void write_restart(FILE *) = 0;
   virtual void read_restart(FILE *) = 0;
+  virtual void write_data(FILE *) {}
   virtual double memory_usage();
+
+  virtual unsigned int data_mask() {return datamask;}
+  virtual unsigned int data_mask_ext() {return datamask_ext;}
 
  protected:
   int suffix_flag;             // suffix compatibility flag

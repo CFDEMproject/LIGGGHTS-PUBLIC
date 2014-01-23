@@ -196,7 +196,8 @@ list of fix styles available in LAMMPS:
 "nve"_fix_nve.html - constant NVE time integration
 "nve/asphere"_fix_nve_asphere.html - NVE for aspherical particles
 "nve/asphere/noforce"_fix_nve_asphere_noforce.html - NVE for aspherical particles without forces"
-nve/limit"_fix_nve_limit.html - NVE with limited step length
+"nve/body"_fix_nve_body.html - NVE for body particles
+"nve/limit"_fix_nve_limit.html - NVE with limited step length
 "nve/line"_fix_nve_line.html - NVE for line segments
 "nve/noforce"_fix_nve_noforce.html - NVE without forces (v only)
 "nve/sphere"_fix_nve_sphere.html - NVE for spherical particles
@@ -213,16 +214,23 @@ nve/limit"_fix_nve_limit.html - NVE with limited step length
 "press/berendsen"_fix_press_berendsen.html - pressure control by \
      Berendsen barostat
 "print"_fix_print.html - print text and variables during a simulation
+"property/atom"_fix_property_atom.html - add customized per-atom values
 "reax/bonds"_fix_reax_bonds.html - write out ReaxFF bond information \
 "recenter"_fix_recenter.html - constrain the center-of-mass position \
   of a group of atoms
 "restrain"_fix_restrain.html - constrain a bond, angle, dihedral
 "rigid"_fix_rigid.html - constrain one or more clusters of atoms to \
      move as a rigid body with NVE integration
+"rigid/nph"_fix_rigid.html - constrain one or more clusters of atoms to \
+     move as a rigid body with NPH integration
+"rigid/npt"_fix_rigid.html - constrain one or more clusters of atoms to \
+     move as a rigid body with NPT integration
 "rigid/nve"_fix_rigid.html - constrain one or more clusters of atoms to \
      move as a rigid body with alternate NVE integration
 "rigid/nvt"_fix_rigid.html - constrain one or more clusters of atoms to \
      move as a rigid body with NVT integration
+"rigid"_fix_rigid.html - constrain many small clusters of atoms to \
+     move as a rigid body with NVE integration
 "setforce"_fix_setforce.html - set the force on each atom
 "shake"_fix_shake.html - SHAKE constraints on bonds and/or angles
 "spring"_fix_spring.html - apply harmonic spring force to group of atoms

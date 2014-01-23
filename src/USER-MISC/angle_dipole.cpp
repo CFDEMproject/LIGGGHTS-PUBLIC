@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -66,7 +66,7 @@ void AngleDipole::compute(int eflag, int vflag)
   int nlocal = atom->nlocal;
   int newton_bond = force->newton_bond;
 
-  if (!newton_bond) 
+  if (!newton_bond)
     error->all(FLERR,"'newton' flag for bonded interactions must be 'on'");
 
   for (n = 0; n < nanglelist; n++) {
@@ -78,7 +78,6 @@ void AngleDipole::compute(int eflag, int vflag)
     delx = x[iRef][0] - x[iDip][0];
     dely = x[iRef][1] - x[iDip][1];
     delz = x[iRef][2] - x[iDip][2];
-    domain->minimum_image(delx,dely,delz);
 
     r = sqrt(delx*delx + dely*dely + delz*delz);
 
@@ -87,19 +86,19 @@ void AngleDipole::compute(int eflag, int vflag)
     deltaGamma = cosGamma - cos(gamma0[type]);
     kdg = k[type] * deltaGamma;
 
-    if (eflag) eangle = kdg * deltaGamma; // energy  
-      
-    tangle = 2.0 * kdg / rmu; 
-      
+    if (eflag) eangle = kdg * deltaGamma; // energy
+
+    tangle = 2.0 * kdg / rmu;
+
     torque[iDip][0] += tangle * (dely*mu[iDip][2] - delz*mu[iDip][1]);
     torque[iDip][1] += tangle * (delz*mu[iDip][0] - delx*mu[iDip][2]);
     torque[iDip][2] += tangle * (delx*mu[iDip][1] - dely*mu[iDip][0]);
-    
+
     f1[0] = f1[1] = f1[2] = f3[0] = f3[1] = f3[2] = 0.0;
-    
+
     if (evflag) // tally energy (virial=0 because force=0)
       ev_tally(iRef,iDip,iDummy,nlocal,newton_bond,eangle,f1,f3,
-	       0.0,0.0,0.0,0.0,0.0,0.0);
+               0.0,0.0,0.0,0.0,0.0,0.0);
   }
 }
 
@@ -129,8 +128,8 @@ void AngleDipole::coeff(int narg, char **arg)
   int ilo,ihi;
   force->bounds(arg[0],atom->nangletypes,ilo,ihi);
 
-  double k_one = force->numeric(arg[1]);
-  double gamma0_one = force->numeric(arg[2]);
+  double k_one = force->numeric(FLERR,arg[1]);
+  double gamma0_one = force->numeric(FLERR,arg[2]);
 
   // convert gamma0 from degrees to radians
 
@@ -165,7 +164,7 @@ void AngleDipole::write_restart(FILE *fp)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 reads coeffs from restart file, bcasts them 
+   proc 0 reads coeffs from restart file, bcasts them
 ------------------------------------------------------------------------- */
 
 void AngleDipole::read_restart(FILE *fp)
@@ -180,6 +179,16 @@ void AngleDipole::read_restart(FILE *fp)
   MPI_Bcast(&gamma0[1],atom->nangletypes,MPI_DOUBLE,0,world);
 
   for (int i = 1; i <= atom->nangletypes; i++) setflag[i] = 1;
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void AngleDipole::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->nangletypes; i++)
+    fprintf(fp,"%d %g %g\n",i,k[i],gamma0[i]);
 }
 
 /* ----------------------------------------------------------------------
@@ -203,5 +212,5 @@ double AngleDipole::single(int type, int iRef, int iDip, int iDummy)
   double deltaGamma = cosGamma - cos(gamma0[type]);
   double kdg = k[type] * deltaGamma;
 
-  return kdg * deltaGamma; // energy  
+  return kdg * deltaGamma; // energy
 }

@@ -30,7 +30,10 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-PairLJCutCoulCut::PairLJCutCoulCut(LAMMPS *lmp) : Pair(lmp) {}
+PairLJCutCoulCut::PairLJCutCoulCut(LAMMPS *lmp) : Pair(lmp)
+{
+  writedata = 1;
+}
 
 /* ---------------------------------------------------------------------- */
 
@@ -186,9 +189,9 @@ void PairLJCutCoulCut::settings(int narg, char **arg)
 {
   if (narg < 1 || narg > 2) error->all(FLERR,"Illegal pair_style command");
 
-  cut_lj_global = force->numeric(arg[0]);
+  cut_lj_global = force->numeric(FLERR,arg[0]);
   if (narg == 1) cut_coul_global = cut_lj_global;
-  else cut_coul_global = force->numeric(arg[1]);
+  else cut_coul_global = force->numeric(FLERR,arg[1]);
 
   // reset cutoffs that have been explicitly set
 
@@ -209,20 +212,21 @@ void PairLJCutCoulCut::settings(int narg, char **arg)
 
 void PairLJCutCoulCut::coeff(int narg, char **arg)
 {
-  if (narg < 4 || narg > 6) error->all(FLERR,"Incorrect args for pair coefficients");
+  if (narg < 4 || narg > 6) 
+    error->all(FLERR,"Incorrect args for pair coefficients");
   if (!allocated) allocate();
 
   int ilo,ihi,jlo,jhi;
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double epsilon_one = force->numeric(arg[2]);
-  double sigma_one = force->numeric(arg[3]);
+  double epsilon_one = force->numeric(FLERR,arg[2]);
+  double sigma_one = force->numeric(FLERR,arg[3]);
 
   double cut_lj_one = cut_lj_global;
   double cut_coul_one = cut_coul_global;
-  if (narg >= 5) cut_coul_one = cut_lj_one = force->numeric(arg[4]);
-  if (narg == 6) cut_coul_one = force->numeric(arg[5]);
+  if (narg >= 5) cut_coul_one = cut_lj_one = force->numeric(FLERR,arg[4]);
+  if (narg == 6) cut_coul_one = force->numeric(FLERR,arg[5]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -377,6 +381,7 @@ void PairLJCutCoulCut::write_restart_settings(FILE *fp)
   fwrite(&cut_coul_global,sizeof(double),1,fp);
   fwrite(&offset_flag,sizeof(int),1,fp);
   fwrite(&mix_flag,sizeof(int),1,fp);
+  fwrite(&tail_flag,sizeof(int),1,fp);
 }
 
 /* ----------------------------------------------------------------------
@@ -390,11 +395,34 @@ void PairLJCutCoulCut::read_restart_settings(FILE *fp)
     fread(&cut_coul_global,sizeof(double),1,fp);
     fread(&offset_flag,sizeof(int),1,fp);
     fread(&mix_flag,sizeof(int),1,fp);
+    fread(&tail_flag,sizeof(int),1,fp);
   }
   MPI_Bcast(&cut_lj_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&cut_coul_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
+  MPI_Bcast(&tail_flag,1,MPI_INT,0,world);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void PairLJCutCoulCut::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    fprintf(fp,"%d %g %g\n",i,epsilon[i][i],sigma[i][i]);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes all pairs to data file
+------------------------------------------------------------------------- */
+
+void PairLJCutCoulCut::write_data_all(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    for (int j = i; j <= atom->ntypes; j++)
+      fprintf(fp,"%d %d %g %g %g\n",i,j,epsilon[i][j],sigma[i][j],cut_lj[i][j]);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -428,4 +456,15 @@ double PairLJCutCoulCut::single(int i, int j, int itype, int jtype,
   }
 
   return eng;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void *PairLJCutCoulCut::extract(const char *str, int &dim)
+{
+  dim = 0;
+  if (strcmp(str,"cut_coul") == 0) return (void *) &cut_coul;
+  dim = 2;
+  if (strcmp(str,"epsilon") == 0) return (void *) epsilon;
+  return NULL;
 }

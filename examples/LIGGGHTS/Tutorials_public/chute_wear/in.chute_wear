@@ -25,7 +25,7 @@ fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.5
 fix 		m5 all property/global k_finnie peratomtypepair 1 1.0
 
 #New pair style
-pair_style 	gran/hertz/history #Hertzian without cohesion
+pair_style gran model hertz tangential history #Hertzian without cohesion
 pair_coeff	* *
 
 timestep	0.00001
@@ -33,9 +33,9 @@ timestep	0.00001
 fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
 
 #the chute
-fix		cad all mesh/surface/stress file simple_chute.stl type 1 wear finnie
-fix		inface all mesh/surface file insertion_face.stl type 1
-fix		granwalls all wall/gran/hertz/history mesh n_meshes 1 meshes cad
+fix		cad all mesh/surface/stress file meshes/simple_chute.stl type 1 wear finnie
+fix		inface all mesh/surface file meshes/insertion_face.stl type 1
+fix granwalls all wall/gran model hertz tangential history mesh n_meshes 1 meshes cad
 
 
 #distributions for insertion

@@ -36,6 +36,7 @@ class FixAveTime : public Fix {
   double compute_scalar();
   double compute_vector(int);
   double compute_array(int,int);
+  void reset_timestep(bigint);
 
  private:
   int me,nvalues;
@@ -47,9 +48,10 @@ class FixAveTime : public Fix {
   int nrows;
 
   int ave,nwindow,nsum,startstep,mode;
-  int noff;
+  int noff,overwrite;
   int *offlist;
   char *title1,*title2,*title3;
+  long filepos;
 
   int norm,iwindow,window_limit;
   double *vector;
@@ -163,5 +165,10 @@ E: Cannot open fix ave/time file %s
 
 The specified file cannot be opened.  Check that the path and name are
 correct.
+
+E: Fix ave/time missed timestep
+
+You cannot reset the timestep to a value beyond where the fix
+expects to next perform averaging.
 
 */

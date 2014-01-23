@@ -70,6 +70,7 @@ FixHeatGran::FixHeatGran(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg
 void FixHeatGran::post_create()
 {
   // register directional flux
+  fix_directionalHeatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("directionalHeatFlux","property/atom","vector",3,0,this->style,false));
   if(!fix_directionalHeatFlux)
   {
     char* fixarg[11];
@@ -86,8 +87,8 @@ void FixHeatGran::post_create()
     fixarg[10]="0.";
     fix_directionalHeatFlux = modify->add_fix_property_atom(11,fixarg,style);
   }
-  fix_ste = modify->find_fix_scalar_transport_equation("heattransfer");
 
+  fix_ste = modify->find_fix_scalar_transport_equation("heattransfer");
   if(!fix_ste)
   {
     char **newarg = new char*[15];

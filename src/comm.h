@@ -46,13 +46,15 @@ class Comm : protected Pointers {
                                     // -1 if no recv or send
   int other_partition_style;        // 0 = recv layout dims must be multiple of
                                     //     my layout dims
+  int maxexchange_atom;             // max contribution to exchange from AtomVec
+  int maxexchange_fix;              // max contribution to exchange from Fixes
   int nthreads;                     // OpenMP threads per MPI process
 
   Comm(class LAMMPS *);
   virtual ~Comm();
 
   virtual void init();
-  virtual void set_proc_grid();               // setup 3d grid of procs
+  virtual void set_proc_grid(int outflag = 1); // setup 3d grid of procs
   virtual void setup();                       // setup 3d comm pattern
   virtual void forward_comm(int dummy = 0);   // forward comm of atom coords
   virtual void reverse_comm();                // reverse comm of forces
@@ -63,10 +65,18 @@ class Comm : protected Pointers {
   virtual void reverse_comm_pair(class Pair *);    // reverse comm from a Pair
   virtual void forward_comm_fix(class Fix *);      // forward comm from a Fix
   virtual void reverse_comm_fix(class Fix *);      // reverse comm from a Fix
+  virtual void forward_comm_variable_fix(class Fix *); // variable-size variant
+  virtual void reverse_comm_variable_fix(class Fix *); // variable-size variant
   virtual void forward_comm_compute(class Compute *);  // forward from a Compute
   virtual void reverse_comm_compute(class Compute *);  // reverse from a Compute
   virtual void forward_comm_dump(class Dump *);    // forward comm from a Dump
   virtual void reverse_comm_dump(class Dump *);    // reverse comm from a Dump
+  void forward_comm_array(int, double **);         // forward comm of array
+
+  void ring(int, int, void *, int, void (*)(int, char *),   // ring comm
+            void *, int self = 1);
+  int read_lines_from_file(FILE *, int, int, char *);  // read/bcast file lines
+  int read_lines_from_file_universe(FILE *, int, int, char *);
 
   virtual void set(int, char **);         // set communication style
   void set_processors(int, char **);      // set 3d processor grid attributes
@@ -120,6 +130,9 @@ class Comm : protected Pointers {
   int maxsend,maxrecv;              // current size of send/recv buffer
   int maxforward,maxreverse;        // max # of datums in forward/reverse comm
 
+  int maxexchange;                  // max # of datums/atom in exchange comm
+  int bufextra;                     // extra space beyond maxsend in send buffer
+
   int updown(int, int, int, double, int, double *);
                                             // compare cutoff to procs
   virtual void grow_send(int,int);          // reallocate send buffer
@@ -131,6 +144,7 @@ class Comm : protected Pointers {
   virtual void free_swap();                 // free swap arrays
   virtual void free_multi();                // free multi arrays
 
+  bool use_gran_opt();
   bool decide(int i,int dim,double lo,double hi,int ineed);
   bool decide_wedge(int i,int dim,double lo,double hi,int ineed);
 
@@ -145,6 +159,11 @@ class Comm : protected Pointers {
 #endif
 
 /* ERROR/WARNING messages:
+
+W: OMP_NUM_THREADS environment is not set.
+
+This environment variable must be set appropriately to use the
+USER-OMP pacakge.
 
 E: Bad grid of processors
 

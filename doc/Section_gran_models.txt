@@ -1,0 +1,46 @@
+"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(lws,http://lammps.sandia.gov)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+3. Commands :h3
+
+This section describes what granular models can be used along with
+"pair gran"_pair_gran.html and "fix wall/gran"_fix_wall_gran.html :
+
+
+
+cohesion commands :h4
+
+Click on the style itself for a full description:
+
+"sjkr"_gran_cohesion_sjkr.html,
+"sjkr2"_gran_cohesion_sjkr2.html :tb(c=4,ea=c)
+
+model commands :h4
+
+Click on the style itself for a full description:
+
+"hertz"_gran_model_hertz.html,
+"hertz/stiffness"_gran_model_hertz_stiffness.html,
+"hooke"_gran_model_hooke.html,
+"hooke/stiffness"_gran_model_hooke_stiffness.html :tb(c=4,ea=c)
+
+rolling_friction commands :h4
+
+Click on the style itself for a full description:
+
+"cdt"_gran_rolling_friction_cdt.html,
+"epsd"_gran_rolling_friction_epsd2.html :tb(c=4,ea=c)
+
+tangential commands :h4
+
+Click on the style itself for a full description:
+
+"history"_gran_tangential_history.html,
+"no_history"_gran_tangential_no_history.html :tb(c=4,ea=c)
+

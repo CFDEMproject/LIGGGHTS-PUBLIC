@@ -1,4 +1,4 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -14,6 +14,7 @@
 #ifndef LMP_DUMP_H
 #define LMP_DUMP_H
 
+#include "mpi.h"
 #include "stdio.h"
 #include "pointers.h"
 
@@ -55,12 +56,21 @@ class Dump : protected Pointers {
   int compressed;            // 1 if dump file is written compressed, 0 no
   int binary;                // 1 if dump file is written binary, 0 no
   int multifile;             // 0 = one big file, 1 = one file per timestep
-  int multiproc;             // 0 = proc 0 writes for all, 1 = one file/proc
+
+  int multiproc;             // 0 = proc 0 writes for all, 
+                             // else # of procs writing files
+  int nclusterprocs;         // # of procs in my cluster that write to one file
+  int filewriter;            // 1 if this proc writes a file, else 0
+  int fileproc;              // ID of proc in my cluster who writes to file
+  char *multiname;           // dump filename with % converted to cluster ID
+  MPI_Comm clustercomm;      // MPI communicator within my cluster of procs
 
   int header_flag;           // 0 = item, 2 = xyz
   int flush_flag;            // 0 if no flush, 1 if flush every dump
   int sort_flag;             // 1 if sorted output
   int append_flag;           // 1 if open file in append mode, 0 if not
+  int buffer_allow;          // 1 if style allows for buffer_flag, 0 if not
+  int buffer_flag;           // 1 if buffer output as one big string, 0 if not
   int padflag;               // timestep padding in filename
   int singlefile_opened;     // 1 = one big file, already opened, else 0
   int sortcol;               // 0 to sort on ID, 1-N on columns
@@ -74,13 +84,14 @@ class Dump : protected Pointers {
   FILE *fp;                  // file to write dump to
   int size_one;              // # of quantities for one atom
   int nme;                   // # of atoms in this dump from me
+  int nsme;                  // # of chars in string output from me
 
   double boxxlo,boxxhi;      // local copies of domain values
   double boxylo,boxyhi;      // lo/hi are bounding box for triclinic
   double boxzlo,boxzhi;
   double boxxy,boxxz,boxyz;
 
-  bigint ntotal;             // # of per-atom lines in snapshot
+  bigint ntotal;             // total # of per-atom lines in snapshot
   int reorderflag;           // 1 if OK to reorder instead of sort
   int ntotal_reorder;        // # of atoms that must be in snapshot
   int nme_reorder;           // # of atoms I must own in snapshot
@@ -88,6 +99,9 @@ class Dump : protected Pointers {
 
   int maxbuf;                // size of buf
   double *buf;               // memory for atom quantities
+
+  int maxsbuf;               // size of sbuf
+  char *sbuf;                // memory for atom quantities in string format
 
   int maxids;                // size of ids
   int maxsort;               // size of bufsort, idsort, index
@@ -102,8 +116,9 @@ class Dump : protected Pointers {
   virtual void openfile();
   virtual int modify_param(int, char **) {return 0;}
   virtual void write_header(bigint) = 0;
-  virtual int count() = 0;
+  virtual int count();
   virtual void pack(int *) = 0;
+  virtual int convert_string(int, double *) {return 0;}
   virtual void write_data(int, double *) = 0;
 
   void sort();
@@ -117,6 +132,10 @@ class Dump : protected Pointers {
 #endif
 
 /* ERROR/WARNING messages:
+
+E: Cannot dump sort when multiple procs write the dump file
+
+UNDOCUMENTED
 
 E: Cannot dump sort on atom IDs with no atom IDs defined
 
@@ -137,18 +156,27 @@ integer for dump.
 
 E: Cannot open gzipped file
 
-LAMMPS is attempting to open a gzipped version of the specified file
-but was unsuccessful.  Check that the path and name are correct.
+LAMMPS was compiled without support for reading and writing gzipped
+files through a pipeline to the gzip program with -DLAMMPS_GZIP.
 
 E: Cannot open dump file
 
-The output file for the dump command cannot be opened.  Check that the
-path and name are correct.
+The specified file cannot be opened.  Check that the path and name are
+correct. If the file is a compressed file, also check that the gzip
+executable can be found and run.
 
 E: Illegal ... command
 
 Self-explanatory.  Check the input script syntax and compare to the
 documentation for the command.  You can use -echo screen as a
 command-line option when running LAMMPS to see the offending line.
+
+E: Cannot use dump_modify fileper without % in dump file name
+
+UNDOCUMENTED
+
+E: Cannot use dump_modify nfile without % in dump file name
+
+UNDOCUMENTED
 
 */

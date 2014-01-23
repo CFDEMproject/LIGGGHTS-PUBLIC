@@ -49,7 +49,7 @@ class FixSphDensityCorr : public FixSph {
   void updatePtrs();
   void post_create();
   virtual void init();
-  virtual void pre_force(int);
+  virtual void pre_force(int vflag);
 
  private:
   template <int> void pre_force_eval();

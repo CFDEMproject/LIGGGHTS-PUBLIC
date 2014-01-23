@@ -16,18 +16,18 @@
 #ifndef LAL_NEIGHBOR_SHARED_H
 #define LAL_NEIGHBOR_SHARED_H
 
-#ifdef USE_OPENCL
-
+#if defined(USE_OPENCL)
 #include "geryon/ocl_kernel.h"
 #include "geryon/ocl_texture.h"
 using namespace ucl_opencl;
-
+#elif defined(USE_CUDART)
+#include "geryon/nvc_kernel.h"
+#include "geryon/nvc_texture.h"
+using namespace ucl_cudart;
 #else
-
 #include "geryon/nvd_kernel.h"
 #include "geryon/nvd_texture.h"
 using namespace ucl_cudadr;
-
 #endif
 
 namespace LAMMPS_AL {
@@ -44,7 +44,8 @@ class NeighborShared {
   UCL_Texture neigh_tex;
 
   /// Compile kernels for neighbor lists
-  void compile_kernels(UCL_Device &dev, const int gpu_nbor);
+  void compile_kernels(UCL_Device &dev, const int gpu_nbor, 
+                       const std::string flags);
 
   // ----------------------------- Kernels
   UCL_Program *nbor_program, *build_program;

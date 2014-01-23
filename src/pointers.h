@@ -56,7 +56,8 @@ class Pointers {
     world(ptr->world),
     infile(ptr->infile),
     screen(ptr->screen),
-    logfile(ptr->logfile) {}
+    logfile(ptr->logfile),
+    thermofile(ptr->thermofile) {}
   virtual ~Pointers() {}
 
  protected:
@@ -81,6 +82,7 @@ class Pointers {
   FILE *&infile;
   FILE *&screen;
   FILE *&logfile;
+  FILE *&thermofile;
 };
 
 }

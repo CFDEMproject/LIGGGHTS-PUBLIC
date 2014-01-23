@@ -23,7 +23,7 @@ This section describes how to perform common tasks using LAMMPS.
 6.11 "Visualizing LAMMPS snapshots"_#howto_11
 6.12 "Triclinic (non-orthogonal) simulation boxes"_#howto_12
 6.13 "NEMD simulations"_#howto_13
-6.14 "Extended spherical and aspherical particles"_#howto_14
+6.14 "Finite-size spherical and aspherical particles"_#howto_14
 6.15 "Output from LAMMPS (thermo, dumps, computes, fixes, variables)"_#howto_15
 6.16 "Thermostatting, barostatting and computing temperature"_#howto_16
 6.17 "Walls"_#howto_17
@@ -47,10 +47,9 @@ run will continue from where the previous run left off.  Or binary
 restart files can be saved to disk using the "restart"_restart.html
 command.  At a later time, these binary files can be read via a
 "read_restart"_read_restart.html command in a new script.  Or they can
-be converted to text data files and read by a
-"read_data"_read_data.html command in a new script.  "This
-section"_Section_tools.html discusses the {restart2data} tool that is
-used to perform the conversion.
+be converted to text data files using the "-r command-line
+switch"_Section_start.html#start_7 and read by a
+"read_data"_read_data.html command in a new script.
 
 Here we give examples of 2 scripts that read either a binary restart
 file or a converted data file and then issue a new run command to
@@ -96,9 +95,9 @@ notice that the thermodynamic data match at step 50 (if you also put a
 uses random numbers in a way that does not allow for perfect restarts.
 
 As an alternate approach, the restart file could be converted to a data
-file using this tool:
+file as follows:
 
-restart2data tmp.restart.50 tmp.restart.data :pre
+lmp_g++ -r tmp.restart.50 tmp.restart.data :pre
 
 Then, this script could be used to re-run the last 50 steps:
 
@@ -159,7 +158,7 @@ so that any forces induced by other fixes will be zeroed out.
 Many of the example input scripts included in the LAMMPS distribution
 are for 2d models.
 
-IMPORTANT NOTE: Some models in LAMMPS treat particles as extended
+IMPORTANT NOTE: Some models in LAMMPS treat particles as finite-size
 spheres, as opposed to point particles.  In 2d, the particles will
 still be spheres, not disks, meaning their moment of inertia will be
 the same as in 3d.
@@ -440,40 +439,33 @@ set to 0.0, it corresponds to the original 1983 TIP3P model
 "(Jorgensen)"_#Jorgensen.
 
 O mass = 15.9994
-H mass = 1.008 :all(b),p
-
+H mass = 1.008
 O charge = -0.834
-H charge = 0.417 :all(b),p
-
+H charge = 0.417
 LJ epsilon of OO = 0.1521
 LJ sigma of OO = 3.1507
 LJ epsilon of HH = 0.0460
 LJ sigma of HH = 0.4000
 LJ epsilon of OH = 0.0836
-LJ sigma of OH = 1.7753 :all(b),p
-
+LJ sigma of OH = 1.7753
 K of OH bond = 450
-r0 of OH bond = 0.9572 :all(b),p
-
+r0 of OH bond = 0.9572
 K of HOH angle = 55
 theta of HOH angle = 104.52 :all(b),p
 
 These are the parameters to use for TIP3P with a long-range Coulombic
-solver (Ewald or PPPM in LAMMPS), see "(Price)"_#Price for details:
+solver (e.g. Ewald or PPPM in LAMMPS), see "(Price)"_#Price for
+details:
 
 O mass = 15.9994
-H mass = 1.008 :all(b),p
-
+H mass = 1.008
 O charge = -0.830
-H charge = 0.415 :all(b),p
-
+H charge = 0.415
 LJ epsilon of OO = 0.102
 LJ sigma of OO = 3.188
-LJ epsilon, sigma of OH, HH = 0.0 :all(b),p
-
+LJ epsilon, sigma of OH, HH = 0.0
 K of OH bond = 450
-r0 of OH bond = 0.9572 :all(b),p
-
+r0 of OH bond = 0.9572
 K of HOH angle = 55
 theta of HOH angle = 104.52 :all(b),p
 
@@ -491,15 +483,18 @@ This site M is located at a fixed distance away from the oxygen along
 the bisector of the HOH bond angle.  A bond style of {harmonic} and an
 angle style of {harmonic} or {charmm} should also be used.
 
-A TIP4P model is run with LAMMPS using two commands:
+A TIP4P model is run with LAMMPS using either this command
+for a cutoff model:
 
-"pair_style lj/cut/coul/long/tip4p"_pair_lj.html
+"pair_style lj/cut/tip4p/cut"_pair_lj.html
+
+or these two commands for a long-range model:
+
+"pair_style lj/cut/tip4p/long"_pair_lj.html
 "kspace_style pppm/tip4p"_kspace_style.html :ul
 
-Note that only a TIP4P model with long-range Coulombics is currently
-implemented.  A cutoff version may be added in the future.  for both
-models, the bond lengths and bond angles should be held fixed using
-the "fix shake"_fix_shake.html command.
+For both models, the bond lengths and bond angles should be held fixed
+using the "fix shake"_fix_shake.html command.
 
 These are the additional parameters (in real units) to set for O and H
 atoms and the water molecule to run a rigid TIP4P model with a cutoff
@@ -508,34 +503,57 @@ the "pair_style"_pair_style.html command, not as part of the pair
 coefficients.
 
 O mass = 15.9994
-H mass = 1.008 :all(b),p
-
+H mass = 1.008
 O charge = -1.040
-H charge = 0.520 :all(b),p
-
+H charge = 0.520
 r0 of OH bond = 0.9572
-theta of HOH angle = 104.52 :all(b),p
-
-OM distance = 0.15 :all(b),p
-
+theta of HOH angle = 104.52 
+OM distance = 0.15
 LJ epsilon of O-O = 0.1550
 LJ sigma of O-O = 3.1536
-LJ epsilon, sigma of OH, HH = 0.0 :all(b),p
+LJ epsilon, sigma of OH, HH = 0.0
+Coulombic cutoff = 8.5 :all(b),p
 
-These are the parameters to use for TIP4P with a long-range Coulombic
-solver (Ewald or PPPM in LAMMPS):
+For the TIP4/Ice model (J Chem Phys, 122, 234511 (2005);
+http://dx.doi.org/10.1063/1.1931662) these values can be used:
 
 O mass = 15.9994
-H mass = 1.008 :all(b),p
-
-O charge = -1.0484
-H charge = 0.5242 :all(b),p
-
+H mass =  1.008
+O charge = -1.1794
+H charge =  0.5897
 r0 of OH bond = 0.9572
-theta of HOH angle = 104.52 :all(b),p
+theta of HOH angle = 104.52
+OM distance = 0.1577
+LJ epsilon of O-O = 0.21084
+LJ sigma of O-O = 3.1668
+LJ epsilon, sigma of OH, HH = 0.0
+Coulombic cutoff = 8.5 :all(b),p
 
-OM distance = 0.1250 :all(b),p
+For the TIP4P/2005 model (J Chem Phys, 123, 234505 (2005);
+http://dx.doi.org/10.1063/1.2121687), these values can be used:
 
+O mass = 15.9994
+H mass =  1.008
+O charge = -1.1128
+H charge = 0.5564
+r0 of OH bond = 0.9572
+theta of HOH angle = 104.52
+OM distance = 0.1546
+LJ epsilon of O-O = 0.1852
+LJ sigma of O-O = 3.1589
+LJ epsilon, sigma of OH, HH = 0.0
+Coulombic cutoff = 8.5 :all(b),p
+
+These are the parameters to use for TIP4P with a long-range Coulombic
+solver (e.g. Ewald or PPPM in LAMMPS):
+
+O mass = 15.9994
+H mass = 1.008
+O charge = -1.0484
+H charge = 0.5242
+r0 of OH bond = 0.9572
+theta of HOH angle = 104.52
+OM distance = 0.1250
 LJ epsilon of O-O = 0.16275
 LJ sigma of O-O = 3.16435
 LJ epsilon, sigma of OH, HH = 0.0 :all(b),p
@@ -549,7 +567,7 @@ cutoff + 2*(OM distance), to shrink the size of the neighbor list.
 This leads to slightly larger cost for the long-range calculation, so
 you can test the trade-off for your model.  The OM distance and the LJ
 and Coulombic cutoffs are set in the "pair_style
-lj/cut/coul/long/tip4p"_pair_lj.html command.
+lj/cut/tip4p/long"_pair_lj.html command.
 
 Wikipedia also has a nice article on "water
 models"_http://en.wikipedia.org/wiki/Water_model.
@@ -569,15 +587,12 @@ These are the additional parameters (in real units) to set for O and H
 atoms and the water molecule to run a rigid SPC model.
 
 O mass = 15.9994
-H mass = 1.008 :all(b),p
-
+H mass = 1.008
 O charge = -0.820
-H charge = 0.410 :all(b),p
-
+H charge = 0.410
 LJ epsilon of OO = 0.1553
 LJ sigma of OO = 3.166
-LJ epsilon, sigma of OH, HH = 0.0 :all(b),p
-
+LJ epsilon, sigma of OH, HH = 0.0
 r0 of OH bond = 1.0
 theta of HOH angle = 109.47 :all(b),p
 
@@ -654,8 +669,8 @@ invoked with minimal overhead (no setup or clean-up) if you wish to do
 multiple short runs, driven by another program.
 
 Examples of driver codes that call LAMMPS as a library are included in
-the "couple" directory of the LAMMPS distribution; see couple/README
-for more details:
+the examples/COUPLE directory of the LAMMPS distribution; see
+examples/COUPLE/README for more details:
 
 simple: simple driver programs in C++ and C which invoke LAMMPS as a
 library :ulb,l
@@ -780,24 +795,22 @@ origin given by [a] = (xhi-xlo,0,0); [b] = (xy,yhi-ylo,0); [c] =
 (xz,yz,zhi-zlo).  {xy,xz,yz} can be 0.0 or positive or negative values
 and are called "tilt factors" because they are the amount of
 displacement applied to faces of an originally orthogonal box to
-transform it into the parallelepiped.  In LAMMPS the
-triclinic simulation box edge vectors [a], [b], and [c] cannot be
-arbitrary vectors.  As indicated, [a] must lie on the positive x axis.
-[b] must lie in the xy plane, with strictly positive y component. [c] may 
-have any orientation with strictly positive z component.
-The requirement that [a], [b], and [c] have strictly positive x, y,
-and z components, respectively, ensures
-that [a], [b], and [c] form a complete right-handed basis.
-These restrictions impose
-no loss of generality, since it is possible to rotate/invert 
-any set of 3 crystal basis vectors so that they conform to the restrictions.
+transform it into the parallelepiped.  In LAMMPS the triclinic
+simulation box edge vectors [a], [b], and [c] cannot be arbitrary
+vectors.  As indicated, [a] must lie on the positive x axis.  [b] must
+lie in the xy plane, with strictly positive y component. [c] may have
+any orientation with strictly positive z component.  The requirement
+that [a], [b], and [c] have strictly positive x, y, and z components,
+respectively, ensures that [a], [b], and [c] form a complete
+right-handed basis.  These restrictions impose no loss of generality,
+since it is possible to rotate/invert any set of 3 crystal basis
+vectors so that they conform to the restrictions.
 
 For example, assume that the 3 vectors [A],[B],[C] are the edge
-vectors of a general parallelepiped, where there is no restriction
-on [A],[B],[C] other than they form a complete right-handed basis i.e.
-[A] x [B] . [C] > 0.
-The equivalent LAMMPS [a],[b],[c] are a linear rotation of [A], [B], and
-[C] and can be computed as follows:
+vectors of a general parallelepiped, where there is no restriction on
+[A],[B],[C] other than they form a complete right-handed basis i.e.
+[A] x [B] . [C] > 0.  The equivalent LAMMPS [a],[b],[c] are a linear
+rotation of [A], [B], and [C] and can be computed as follows:
 
 :c,image(Eqs/transform.jpg)
 
@@ -859,26 +872,47 @@ The 9 parameters, as well as lx,ly,lz, can be output via the
 "thermo_style custom"_thermo_style.html command.
 
 To avoid extremely tilted boxes (which would be computationally
-inefficient), no tilt factor can skew the box more than half the
-distance of the parallel box length, which is the 1st dimension in the
-tilt factor (x for xz).  For example, if xlo = 2 and xhi = 12, then
-the x box length is 10 and the xy tilt factor must be between -5 and
-5.  Similarly, both xz and yz must be between -(xhi-xlo)/2 and
-+(yhi-ylo)/2.  Note that this is not a limitation, since if the
-maximum tilt factor is 5 (as in this example), then configurations
-with tilt = ..., -15, -5, 5, 15, 25, ... are geometrically all
-equivalent.  If the box tilt exceeds this limit during a dynamics run
-(e.g. via the "fix deform"_fix_deform.html command), then the box is
-"flipped" to an equivalent shape with a tilt factor within the bounds,
-so the run can continue.  See the "fix deform"_fix_deform.html doc
-page for further details.
+inefficient), LAMMPS normally requires that no tilt factor can skew
+the box more than half the distance of the parallel box length, which
+is the 1st dimension in the tilt factor (x for xz).  This is required
+both when the simulation box is created, e.g. via the
+"create_box"_create_box.html or "read_data"_read_data.html commands,
+as well as when the box shape changes dynamically during a simulation,
+e.g. via the "fix deform"_fix_deform.html or "fix npt"_fix_nh.html
+commands.
 
-The one exception to this rule is if the 1st dimension in the tilt
+For example, if xlo = 2 and xhi = 12, then the x box length is 10 and
+the xy tilt factor must be between -5 and 5.  Similarly, both xz and
+yz must be between -(xhi-xlo)/2 and +(yhi-ylo)/2.  Note that this is
+not a limitation, since if the maximum tilt factor is 5 (as in this
+example), then configurations with tilt = ..., -15, -5, 5, 15, 25,
+... are geometrically all equivalent.  If the box tilt exceeds this
+limit during a dynamics run (e.g. via the "fix deform"_fix_deform.html
+command), then the box is "flipped" to an equivalent shape with a tilt
+factor within the bounds, so the run can continue.  See the "fix
+deform"_fix_deform.html doc page for further details.
+
+One exception to this rule is if the 1st dimension in the tilt
 factor (x for xy) is non-periodic.  In that case, the limits on the
 tilt factor are not enforced, since flipping the box in that dimension
 does not change the atom positions due to non-periodicity.  In this
 mode, if you tilt the system to extreme angles, the simulation will
 simply become inefficient, due to the highly skewed simulation box.
+
+The limitation on not creating a simulation box with a tilt factor
+skewing the box more than half the distance of the parallel box length
+can be overridden via the "box"_box.html command.  Setting the {tilt}
+keyword to {large} allows any tilt factors to be specified.
+
+Box flips that may occur using the "fix deform"_fix_deform.html or
+"fix npt"_fix_nh.html commands can be turned off using the {flip no}
+option with either of the commands.
+
+Note that if a simulation box has a large tilt factor, LAMMPS will run
+less efficiently, due to the large volume of communication needed to
+acquire ghost atoms around a processor's irregular-shaped sub-domain.
+For extreme values of tilt, LAMMPS may also lose atoms and generate an
+error.
 
 Triclinic crystal structures are often defined using three lattice
 constants {a}, {b}, and {c}, and three angles {alpha}, {beta} and
@@ -984,14 +1018,14 @@ An alternative method for calculating viscosities is provided via the
 
 :line
 
-6.14 Extended spherical and aspherical particles :link(howto_14),h4
+6.14 Finite-size spherical and aspherical particles :link(howto_14),h4
 
-Typical MD models treat atoms or particles as point masses.
-Sometimes, however, it is desirable to have a model with finite-size
-particles such as spheres or aspherical ellipsoids.  The difference is
-that such particles have a moment of inertia, rotational energy, and
-angular momentum.  Rotation is induced by torque from interactions
-with other particles.
+Typical MD models treat atoms or particles as point masses.  Sometimes
+it is desirable to have a model with finite-size particles such as
+spheroids or ellipsoids or generalized aspherical bodies.  The
+difference is that such particles have a moment of inertia, rotational
+energy, and angular momentum.  Rotation is induced by torque coming
+from interactions with other particles.
 
 LAMMPS has several options for running simulations with these kinds of
 particles.  The following aspects are discussed in turn:
@@ -1000,21 +1034,36 @@ atom styles
 pair potentials
 time integration
 computes, thermodynamics, and dump output
-rigid bodies composed of extended particles :ul
+rigid bodies composed of finite-size particles :ul
+
+Example input scripts for these kinds of models are in the body,
+colloid, dipole, ellipse, line, peri, pour, and tri directories of the
+"examples directory"_Section_example.html in the LAMMPS distribution.
 
 Atom styles :h5
 
-There are 2 "atom styles"_atom_style.html that allow for definition of
-finite-size particles: sphere and ellipsoid.  The peri atom style also
-treats particles as having a volume, but that is internal to the
-"pair_style peri"_pair_peri.html potentials.  The dipole atom style is
-most often used in conjunction with finite-size particles.
+There are several "atom styles"_atom_style.html that allow for
+definition of finite-size particles: sphere, dipole, ellipsoid, line,
+tri, peri, and body.
 
 The sphere style defines particles that are spheriods and each
 particle can have a unique diameter and mass (or density).  These
 particles store an angular velocity (omega) and can be acted upon by
 torque.  The "set" command can be used to modify the diameter and mass
 of individual particles, after then are created.
+
+The dipole style does not actually define finite-size particles, but
+is often used in conjunction with spherical particles, via a command
+like
+
+atom_style hybrid sphere dipole :pre
+
+This is because when dipoles interact with each other, they induce
+torques, and a particle must be finite-size (i.e. have a moment of
+inertia) in order to respond and rotate.  See the "atom_style
+dipole"_atom_style.html command for details.  The "set" command can be
+used to modify the orientation and length of the dipole moment of
+individual particles, after then are created.
 
 The ellipsoid style defines particles that are ellipsoids and thus can
 be aspherical.  Each particle has a shape, specified by 3 diameters,
@@ -1026,48 +1075,59 @@ The "set" command can be used to modify the diameter, orientation, and
 mass of individual particles, after then are created.  It also has a
 brief explanation of what quaternions are.
 
-The dipole style does not define extended particles, but is often
-used in conjunction with spherical particles, via a command like
+The line style defines line segment particles with two end points and
+a mass (or density).  They can be used in 2d simulations, and they can
+be joined together to form rigid bodies which represent arbitrary
+polygons.
 
-atom_style hybrid sphere dipole :pre
+The tri style defines triangular particles with three corner points
+and a mass (or density).  They can be used in 3d simulations, and they
+can be joined together to form rigid bodies which represent arbitrary
+particles with a triangulated surface.
 
-This is because when dipoles interact with each other, they induce
-torques, and a particle must be extended (i.e. have a moment of
-inertia) in order to respond and rotate.  See the "atom_style
-dipole"_atom_style.html command for details.  The "set" command can be
-used to modify the orientation and length of the dipole moment of
-individual particles, after then are created.
+The peri style is used with "Peridynamic models"_pair_peri.html and
+defines particles as having a volume, that is used internally in the
+"pair_style peri"_pair_peri.html potentials.
+
+The body style allows for definition of particles which can represent
+complex entities, such as surface meshes of discrete points,
+collections of sub-particles, deformable objects, etc.  The body style
+is discussed in more detail on the "body"_body.html doc page.
 
 Note that if one of these atom styles is used (or multiple styles via
 the "atom_style hybrid"_atom_style.html command), not all particles in
-the system are required to be finite-size or aspherical.  For example,
-if the 3 shape parameters are set to the same value, the particle will
-be a sphere rather than an ellipsoid.  If the 3 shape parameters are
-all set to 0.0 or if the diameter is set to 0.0, it will be a point
-particle.  If the length of the dipole moment is set to zero, the
-particle will not have a point dipole associated with it.  The pair
-styles used to compute pairwise interactions will typically compute
-the correct interaction in these simplified (cheaper) cases.
-"Pair_style hybrid"_pair_hybrid.html can be used to insure the correct
+the system are required to be finite-size or aspherical.
+
+For example, in the ellipsoid style, if the 3 shape parameters are set
+to the same value, the particle will be a sphere rather than an
+ellipsoid.  If the 3 shape parameters are all set to 0.0 or if the
+diameter is set to 0.0, it will be a point particle.  In the line or
+tri style, if the lineflag or triflag is specified as 0, then it
+will be a point particle.
+
+Some of the pair styles used to compute pairwise interactions between
+finite-size particles also compute the correct interaction with point
+particles as well, e.g. the interaction between a point particle and a
+finite-size particle or between two point particles.  If necessary,
+"pair_style hybrid"_pair_hybrid.html can be used to insure the correct
 interactions are computed for the appropriate style of interactions.
 Likewise, using groups to partition particles (ellipsoids versus
 spheres versus point particles) will allow you to use the appropriate
 time integrators and temperature computations for each class of
 particles.  See the doc pages for various commands for details.
 
-Also note that for "2d simulations"_dimension.html, finite-size
-spheres and ellipsoids are still treated as 3d particles, rather than
-as circular disks or ellipses.  This means they have the same moment
-of inertia for a 3d extended object.  When their temperature is
-coomputed, the correct degrees of freedom are used for rotation in a
-2d versus 3d system.
+Also note that for "2d simulations"_dimension.html, atom styles sphere
+and ellipsoid still use 3d particles, rather than as circular disks or
+ellipses.  This means they have the same moment of inertia as the 3d
+object.  When temperature is computed, the correct degrees of freedom
+are used for rotation in a 2d versus 3d system.
 
 Pair potentials :h5
 
-When a system with extended particles is defined, the particles will
-only rotate and experience torque if the force field computes such
-interactions.  These are the various "pair styles"_pair_style.html
-that generate torque:
+When a system with finite-size particles is defined, the particles
+will only rotate and experience torque if the force field computes
+such interactions.  These are the various "pair
+styles"_pair_style.html that generate torque:
 
 "pair_style gran/history"_pair_gran.html
 "pair_style gran/hertzian"_pair_gran.html
@@ -1075,29 +1135,33 @@ that generate torque:
 "pair_style dipole/cut"_pair_dipole.html
 "pair_style gayberne"_pair_gayberne.html
 "pair_style resquared"_pair_resquared.html
-"pair_style lubricate"_pair_lubricate.html :ul
+"pair_style brownian"_pair_brownian.html
+"pair_style lubricate"_pair_lubricate.html
+"pair_style line/lj"_pair_line_lj.html
+"pair_style tri/lj"_pair_tri_lj.html
+"pair_style body"_pair_body.html :ul
 
-The "granular pair styles"_pair_gran.html are used with spherical
-particles.  The "dipole pair style"_pair_dipole.html is used with
-"atom_style dipole"_atom_style.html, which could be applied to
-spherical or ellipsoidal particles.  The "GayBerne"_pair_gayberne.html
-and "REsquared"_pair_resquared.html potentials require ellipsoidal
-particles, though they will also work if the 3 shape parameters are
-the same (a sphere).  The "lubrication potential"_pair_lubricate.html
-works with spherical particles.
+The granular pair styles are used with spherical particles.  The
+dipole pair style is used with the dipole atom style, which could be
+applied to spherical or ellipsoidal particles.  The GayBerne and
+REsquared potentials require ellipsoidal particles, though they will
+also work if the 3 shape parameters are the same (a sphere).  The
+Brownian and lubrication potentials are used with spherical particles.
+The line, tri, and body potentials are used with line segment,
+triangular, and body particles respectively.
 
 Time integration :h5
 
-There are 3 fixes that perform time integration on extended spherical
-particles, meaning the integrators update the rotational orientation
-and angular velocity or angular momentum of the particles:
+There are several fixes that perform time integration on finite-size
+spherical particles, meaning the integrators update the rotational
+orientation and angular velocity or angular momentum of the particles:
 
 "fix nve/sphere"_fix_nve_sphere.html
 "fix nvt/sphere"_fix_nvt_sphere.html
 "fix npt/sphere"_fix_npt_sphere.html :ul
 
 Likewise, there are 3 fixes that perform time integration on
-ellipsoids as extended aspherical particles:
+ellipsoidal particles:
 
 "fix nve/asphere"_fix_nve_asphere.html
 "fix nvt/asphere"_fix_nvt_asphere.html
@@ -1105,19 +1169,27 @@ ellipsoids as extended aspherical particles:
 
 The advantage of these fixes is that those which thermostat the
 particles include the rotational degrees of freedom in the temperature
-calculation and thermostatting.  Other thermostats can be used with
-fix nve/sphere or fix nve/asphere, such as fix langevin or fix
-temp/berendsen, but those thermostats only operate on the
-translational kinetic energy of the extended particles.
+calculation and thermostatting.  The "fix langevin"_fix_langevin
+command can also be used with its {omgea} or {angmom} options to
+thermostat the rotational degrees of freedom for spherical or
+ellipsoidal particles.  Other thermostatting fixes only operate on the
+translational kinetic energy of finite-size particles.
 
-Note that for mixtures of point and extended particles, you should
-only use these integration fixes on "groups"_group.html which contain
-extended particles.
+These fixes perform constant NVE time integration on line segment,
+triangular, and body particles:
+
+"fix nve/line"_fix_nve_line.html
+"fix nve/tri"_fix_nve_tri.html
+"fix nve/body"_fix_nve_body.html :ul
+
+Note that for mixtures of point and finite-size particles, these
+integration fixes can only be used with "groups"_group.html which
+contain finite-size particles.
 
 Computes, thermodynamics, and dump output :h5
 
-There are 4 computes that calculate the temperature or rotational energy
-of extended spherical or aspherical particles (ellipsoids):
+There are several computes that calculate the temperature or
+rotational energy of spherical or ellipsoidal particles:
 
 "compute temp/sphere"_compute_temp_sphere.html
 "compute temp/asphere"_compute_temp_asphere.html
@@ -1126,34 +1198,43 @@ of extended spherical or aspherical particles (ellipsoids):
 
 These include rotational degrees of freedom in their computation.  If
 you wish the thermodynamic output of temperature or pressure to use
-one of these computes (e.g. for a system entirely composed of extended
-particles), then the compute can be defined and the
-"thermo_modify"_thermo_modify.html command used.  Note that by
-default thermodynamic quantities will be calculated with a temperature
-that only includes translational degrees of freedom.  See the
+one of these computes (e.g. for a system entirely composed of
+finite-size particles), then the compute can be defined and the
+"thermo_modify"_thermo_modify.html command used.  Note that by default
+thermodynamic quantities will be calculated with a temperature that
+only includes translational degrees of freedom.  See the
 "thermo_style"_thermo_style.html command for details.
 
-The "dump custom"_dump.html command can output various attributes of
-extended particles, including the dipole moment (mu), the angular
-velocity (omega), the angular momentum (angmom), the quaternion
-(quat), and the torque (tq) on the particle.
+These commands can be used to output various attributes of finite-size
+particles:
 
-Rigid bodies composed of extended particles :h5
+"dump custom"_dump.html
+"compute property/atom"_compute_property_atom.html
+"dump local"_dump.html
+"compute body/local"_compute_body_local.html :ul
+
+Attributes include the dipole moment, the angular velocity, the
+angular momentum, the quaternion, the torque, the end-point and
+corner-point coordinates (for line and tri particles), and
+sub-particle attributes of body particles.
+
+Rigid bodies composed of finite-size particles :h5
 
 The "fix rigid"_fix_rigid.html command treats a collection of
 particles as a rigid body, computes its inertia tensor, sums the total
 force and torque on the rigid body each timestep due to forces on its
 constituent particles, and integrates the motion of the rigid body.
 
-If any of the constituent particles of a rigid body are extended
-particles (spheres or ellipsoids), then their contribution to the
-inertia tensor of the body is different than if they were point
-particles.  This means the rotational dynamics of the rigid body will
-be different.  Thus a model of a dimer is different if the dimer
-consists of two point masses versus two extended sphereoids, even if
-the two particles have the same mass.  Extended particles that
-experience torque due to their interaction with other particles will
-also impart that torque to a rigid body they are part of.
+If any of the constituent particles of a rigid body are finite-size
+particles (spheres or ellipsoids or line segments or triangles), then
+their contribution to the inertia tensor of the body is different than
+if they were point particles.  This means the rotational dynamics of
+the rigid body will be different.  Thus a model of a dimer is
+different if the dimer consists of two point masses versus two
+spheroids, even if the two particles have the same mass.  Finite-size
+particles that experience torque due to their interaction with other
+particles will also impart that torque to a rigid body they are part
+of.
 
 See the "fix rigid" command for example of complex rigid-body models
 it is possible to define in LAMMPS.
@@ -1161,6 +1242,15 @@ it is possible to define in LAMMPS.
 Note that the "fix shake"_fix_shake.html command can also be used to
 treat 2, 3, or 4 particles as a rigid body, but it always assumes the
 particles are point masses.
+
+Also note that body particles cannot be modeled with the "fix
+rigid"_fix_rigid.html command.  Body particles are treated by LAMMPS
+as single particles, though they can store internal state, such as a
+list of sub-particles.  Individual body partices are typically treated
+as rigid bodies, and their motion integrated with a command like "fix
+nve/body"_fix_nve_body.html.  Interactions between pairs of body
+particles are computed via a command like "pair_style
+body"_pair_body.html.
 
 :line
 
@@ -1257,6 +1347,17 @@ output.  In each case, the compute, fix, or variable must generate
 global values for input to the "thermo_style custom"_dump.html
 command.
 
+Note that thermodynamic output values can be "extensive" or
+"intensive".  The former scale with the number of atoms in the system
+(e.g. total energy), the latter do not (e.g. temperature).  The
+setting for "thermo_modify norm"_thermo_modify.html determines whether
+extensive quantities are normalized or not.  Computes and fixes
+produce either extensive or intensive values; see their individual doc
+pages for details.  "Equal-style variables"_variable.html produce only
+intensive values; you can include a division by "natoms" in the
+formula if desired, to make an extensive calculation produce an
+intensive result.
+
 Dump file output :h5,link(dump)
 
 Dump file output is specified by the "dump"_dump.html and
@@ -1283,7 +1384,7 @@ command.
 
 Fixes that write output files :h5,link(fixoutput)
 
-Sevarl fixes take various quantities as input and can write output
+Several fixes take various quantities as input and can write output
 files: "fix ave/time"_fix_ave_time.html, "fix
 ave/spatial"_fix_ave_spatial.html, "fix ave/histo"_fix_ave_histo.html,
 "fix ave/correlate"_fix_ave_correlate.html, and "fix
@@ -1318,7 +1419,7 @@ to a file of histogrammed quantities, which can be global or per-atom
 or local quantities.  The histogram output of this fix can also be
 used as input to other output commands.
 
-The "fix ave/correlate"_fix_ave_histo.html command enables direct
+The "fix ave/correlate"_fix_ave_correlate.html command enables direct
 output to a file of time-correlated quantities, which can be global
 scalars.  The correlation matrix output of this fix can also be used
 as input to other output commands.
@@ -1491,11 +1592,11 @@ All but the first 3 calculate velocity biases (i.e. advection
 velocities) that are removed when computing the thermal temperature.
 "Compute temp/sphere"_compute_temp_sphere.html and "compute
 temp/asphere"_compute_temp_asphere.html compute kinetic energy for
-extended particles that includes rotational degrees of freedom.  They
-both allow, as an extra argument, which is another temperature compute
-that subtracts a velocity bias.  This allows the translational
-velocity of extended spherical or aspherical particles to be adjusted
-in prescribed ways.
+finite-size particles that includes rotational degrees of freedom.
+They both allow, as an extra argument, which is another temperature
+compute that subtracts a velocity bias.  This allows the translational
+velocity of spherical or aspherical particles to be adjusted in
+prescribed ways.
 
 Thermostatting in LAMMPS is performed by "fixes"_fix.html, or in one
 case by a pair style.  Four thermostatting fixes are currently
@@ -1717,7 +1818,7 @@ converge and requires careful post-processing "(Shinoda)"_#Shinoda
 
 6.19 Library interface to LAMMPS :link(howto_19),h4
 
-As described in "Section_start 4"_Section_start.html#start_5, LAMMPS
+As described in "Section_start 5"_Section_start.html#start_5, LAMMPS
 can be built as a library, so that it can be called by another code,
 used in a "coupled manner"_Section_howto.html#howto_10 with other
 codes, or driven through a "Python interface"_Section_python.html.
@@ -1788,22 +1889,27 @@ details.
 The key idea of the library interface is that you can write any
 functions you wish to define how your code talks to LAMMPS and add
 them to src/library.cpp and src/library.h, as well as to the "Python
-interface"_Section_python.html.  The routines you add can access
-or change any LAMMPS data you wish.  The couple and python directories
-have example C++ and C and Python codes which show how a driver code
-can link to LAMMPS as a library, run LAMMPS on a subset of processors,
-grab data from LAMMPS, change it, and put it back into LAMMPS.
+interface"_Section_python.html.  The routines you add can access or
+change any LAMMPS data you wish.  The examples/COUPLE and python
+directories have example C++ and C and Python codes which show how a
+driver code can link to LAMMPS as a library, run LAMMPS on a subset of
+processors, grab data from LAMMPS, change it, and put it back into
+LAMMPS.
 
 :line
 
 6.20 Calculating thermal conductivity :link(howto_20),h4
 
 The thermal conductivity kappa of a material can be measured in at
-least 3 ways using various options in LAMMPS.  (See "this
+least 4 ways using various options in LAMMPS.  See the examples/KAPPA
+directory for scripts that implement the 4 methods discussed here for
+a simple Lennard-Jones fluid model.  Also, see "this
 section"_Section_howto.html#howto_21 of the manual for an analogous
-discussion for viscosity).  The thermal conducitivity tensor kappa is
-a measure of the propensity of a material to transmit heat energy in a
-diffusive manner as given by Fourier's law
+discussion for viscosity.
+
+The thermal conducitivity tensor kappa is a measure of the propensity
+of a material to transmit heat energy in a diffusive manner as given
+by Fourier's law
 
 J = -kappa grad(T)
 
@@ -1816,35 +1922,39 @@ scalar.
 The first method is to setup two thermostatted regions at opposite
 ends of a simulation box, or one in the middle and one at the end of a
 periodic box.  By holding the two regions at different temperatures
-with a "thermostatting fix"_Section_howto.html#howto_13, the energy added
-to the hot region should equal the energy subtracted from the cold
-region and be proportional to the heat flux moving between the
+with a "thermostatting fix"_Section_howto.html#howto_13, the energy
+added to the hot region should equal the energy subtracted from the
+cold region and be proportional to the heat flux moving between the
 regions.  See the paper by "Ikeshoji and Hafskjold"_#Ikeshoji for
 details of this idea.  Note that thermostatting fixes such as "fix
 nvt"_fix_nh.html, "fix langevin"_fix_langevin.html, and "fix
 temp/rescale"_fix_temp_rescale.html store the cumulative energy they
-add/subtract.  Alternatively, the "fix heat"_fix_heat.html command can
-used in place of thermostats on each of two regions, and the resulting
-temperatures of the two regions monitored with the "compute
-temp/region" command or the temperature profile of the intermediate
-region monitored with the "fix ave/spatial"_fix_ave_spatial.html and
-"compute ke/atom"_compute_ke_atom.html commands.
+add/subtract.
 
-The second method is to perform a reverse non-equilibrium MD
-simulation using the "fix
-thermal/conductivity"_fix_thermal_conductivity.html command which
-implements the rNEMD algorithm of Muller-Plathe.  Kinetic energy is
-swapped between atoms in two different layers of the simulation box.
-This induces a temperature gradient between the two layers which can
-be monitored with the "fix ave/spatial"_fix_ave_spatial.html and
-"compute ke/atom"_compute_ke_atom.html commands.  The fix tallies the
+Alternatively, as a second method, the "fix heat"_fix_heat.html
+command can used in place of thermostats on each of two regions to
+add/subtract specified amounts of energy to both regions.  In both
+cases, the resulting temperatures of the two regions can be monitored
+with the "compute temp/region" command and the temperature profile of
+the intermediate region can be monitored with the "fix
+ave/spatial"_fix_ave_spatial.html and "compute
+ke/atom"_compute_ke_atom.html commands.
+
+The third method is to perform a reverse non-equilibrium MD simulation
+using the "fix thermal/conductivity"_fix_thermal_conductivity.html
+command which implements the rNEMD algorithm of Muller-Plathe.
+Kinetic energy is swapped between atoms in two different layers of the
+simulation box.  This induces a temperature gradient between the two
+layers which can be monitored with the "fix
+ave/spatial"_fix_ave_spatial.html and "compute
+ke/atom"_compute_ke_atom.html commands.  The fix tallies the
 cumulative energy transfer that it performs.  See the "fix
 thermal/conductivity"_fix_thermal_conductivity.html command for
 details.
 
-The third method is based on the Green-Kubo (GK) formula which relates
-the ensemble average of the auto-correlation of the heat flux to
-kappa.  The heat flux can be calculated from the fluctuations of
+The fourth method is based on the Green-Kubo (GK) formula which
+relates the ensemble average of the auto-correlation of the heat flux
+to kappa.  The heat flux can be calculated from the fluctuations of
 per-atom potential and kinetic energies and per-atom stress tensor in
 a steady-state equilibrated simulation.  This is in contrast to the
 two preceding non-equilibrium methods, where energy flows continuously
@@ -1863,14 +1973,17 @@ formalism.
 
 6.21 Calculating viscosity :link(howto_21),h4
 
-The shear viscosity eta of a fluid can be measured in at least 3 ways
-using various options in LAMMPS.  (See "this
+The shear viscosity eta of a fluid can be measured in at least 4 ways
+using various options in LAMMPS.  See the examples/VISCOSITY directory
+for scripts that implement the 4 methods discussed here for a simple
+Lennard-Jones fluid model.  Also, see "this
 section"_Section_howto.html#howto_20 of the manual for an analogous
-discussion for thermal conductivity).  Eta is a measure of the
-propensity of a fluid to transmit momentum in a direction
-perpendicular to the direction of velocity or momentum flow.
-Alternatively it is the resistance the fluid has to being sheared.  It
-is given by
+discussion for thermal conductivity.
+
+Eta is a measure of the propensity of a fluid to transmit momentum in
+a direction perpendicular to the direction of velocity or momentum
+flow.  Alternatively it is the resistance the fluid has to being
+sheared.  It is given by
 
 J = -eta grad(Vstream)
 
@@ -1882,33 +1995,38 @@ momentum flows.  Viscosity thus has units of pressure-time.
 The first method is to perform a non-equlibrium MD (NEMD) simulation
 by shearing the simulation box via the "fix deform"_fix_deform.html
 command, and using the "fix nvt/sllod"_fix_nvt_sllod.html command to
-thermostat the fluid via the SLLOD equations of motion.  The velocity
-profile setup in the fluid by this procedure can be monitored by the
-"fix ave/spatial"_fix_ave_spatial.html command, which determines
+thermostat the fluid via the SLLOD equations of motion.
+Alternatively, as a second method, one or more moving walls can be
+used to shear the fluid in between them, again with some kind of
+thermostat that modifies only the thermal (non-shearing) components of
+velocity to prevent the fluid from heating up.
+
+In both cases, the velocity profile setup in the fluid by this
+procedure can be monitored by the "fix
+ave/spatial"_fix_ave_spatial.html command, which determines
 grad(Vstream) in the equation above.  E.g. the derivative in the
 y-direction of the Vx component of fluid motion or grad(Vstream) =
-dVx/dy.  In this case, the Pxy off-diagonal component of the pressure
-or stress tensor, as calculated by the "compute
-pressure"_compute_pressure.html command, can also be monitored, which
-is the J term in the equation above.  See "this
-section"_Section_howto.html#howto_13 of the manual for details on NEMD
-simulations.
+dVx/dy.  The Pxy off-diagonal component of the pressure or stress
+tensor, as calculated by the "compute pressure"_compute_pressure.html
+command, can also be monitored, which is the J term in the equation
+above.  See "this section"_Section_howto.html#howto_13 of the manual
+for details on NEMD simulations.
 
-The second method is to perform a reverse non-equilibrium MD
-simulation using the "fix viscosity"_fix_viscosity.html command which
-implements the rNEMD algorithm of Muller-Plathe.  Momentum in one
-dimension is swapped between atoms in two different layers of the
-simulation box in a different dimension.  This induces a velocity
-gradient which can be monitored with the "fix
-ave/spatial"_fix_ave_spatial.html command.  The fix tallies the
-cummulative momentum transfer that it performs.  See the "fix
-viscosity"_fix_viscosity.html command for details.
+The third method is to perform a reverse non-equilibrium MD simulation
+using the "fix viscosity"_fix_viscosity.html command which implements
+the rNEMD algorithm of Muller-Plathe.  Momentum in one dimension is
+swapped between atoms in two different layers of the simulation box in
+a different dimension.  This induces a velocity gradient which can be
+monitored with the "fix ave/spatial"_fix_ave_spatial.html command.
+The fix tallies the cummulative momentum transfer that it performs.
+See the "fix viscosity"_fix_viscosity.html command for details.
 
-The third method is based on the Green-Kubo (GK) formula which relates
-the ensemble average of the auto-correlation of the stress/pressure
-tensor to eta.  This can be done in a steady-state equilibrated
-simulation which is in contrast to the two preceding non-equilibrium
-methods, where momentum flows continuously through the simulation box.
+The fourth method is based on the Green-Kubo (GK) formula which
+relates the ensemble average of the auto-correlation of the
+stress/pressure tensor to eta.  This can be done in a steady-state
+equilibrated simulation which is in contrast to the two preceding
+non-equilibrium methods, where momentum flows continuously through the
+simulation box.
 
 Here is an example input script that calculates the viscosity of
 liquid Ar via the GK formalism:
@@ -1963,14 +2081,16 @@ variable     pyz equal pyz
 fix          SS all ave/correlate $s $p $d &
              v_pxy v_pxz v_pyz type auto file S0St.dat ave running
 variable     scale equal $\{convert\}/($\{kB\}*$T)*$V*$s*$\{dt\}
-variable     v11 equal trap(f_SS\[3/])*$\{scale\}
-variable     v22 equal trap(f_SS\[4/])*$\{scale\}
-variable     v33 equal trap(f_SS\[5/])*$\{scale\}
+variable     v11 equal trap(f_SS\[3\])*$\{scale\}
+variable     v22 equal trap(f_SS\[4\])*$\{scale\}
+variable     v33 equal trap(f_SS\[5\])*$\{scale\}
 thermo_style custom step temp press v_pxy v_pxz v_pyz v_v11 v_v22 v_v33
 run          100000
 variable     v equal (v_v11+v_v22+v_v33)/3.0
 variable     ndens equal count(all)/vol
 print        "average viscosity: $v \[Pa.s/] @ $T K, $\{ndens\} /A^3" :pre
+
+:line
 
 :line
 :line

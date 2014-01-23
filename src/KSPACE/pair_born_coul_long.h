@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -37,8 +37,10 @@ class PairBornCoulLong : public Pair {
   void read_restart(FILE *);
   void write_restart_settings(FILE *);
   void read_restart_settings(FILE *);
-  double single(int, int, int, int, double, double, double, double &);
-  void *extract(const char *, int &);
+  void write_data(FILE *);
+  void write_data_all(FILE *);
+  virtual double single(int, int, int, int, double, double, double, double &);
+  virtual void *extract(const char *, int &);
 
  protected:
   double cut_lj_global;
@@ -46,6 +48,7 @@ class PairBornCoulLong : public Pair {
   double cut_coul,cut_coulsq;
   double **a,**rho,**sigma,**c,**d;
   double **rhoinv,**born1,**born2,**born3,**offset;
+  double *cut_respa;
   double g_ewald;
 
   void allocate();
@@ -77,9 +80,8 @@ E: Pair style born/coul/long requires atom attribute q
 
 An atom style that defines this attribute must be used.
 
-E: Pair style is incompatible with KSpace style
+E: Pair style requires a KSpace style
 
-If a pair style with a long-range Coulombic component is selected,
-then a kspace style must also be used.
+No kspace style is defined.
 
 */

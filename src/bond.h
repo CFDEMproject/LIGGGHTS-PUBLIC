@@ -25,9 +25,12 @@ class Bond : protected Pointers {
  public:
   int allocated;
   int *setflag;
+  int writedata;                  // 1 if writes coeffs to data file
   double energy;                  // accumulated energies
   double virial[6];               // accumlated virial
   double *eatom,**vatom;          // accumulated per-atom energy/virial
+  unsigned int datamask;
+  unsigned int datamask_ext;
 
   Bond(class LAMMPS *);
   virtual ~Bond();
@@ -39,8 +42,11 @@ class Bond : protected Pointers {
   virtual double equilibrium_distance(int) = 0;
   virtual void write_restart(FILE *) = 0;
   virtual void read_restart(FILE *) = 0;
-  virtual double single(int, double, int, int) = 0;
+  virtual void write_data(FILE *) {}
+  virtual double single(int, double, int, int, double &) = 0;
   virtual double memory_usage();
+  virtual unsigned int data_mask() {return datamask;}
+  virtual unsigned int data_mask_ext() {return datamask_ext;}
 
  protected:
   int suffix_flag;             // suffix compatibility flag

@@ -63,26 +63,26 @@ FixSPHPressure::FixSPHPressure(LAMMPS *lmp, int narg, char **arg) :
     if (strcmp(arg[iarg],"absolut") == 0)
     {
       if (narg < iarg+2) error->fix_error(FLERR,this,"Not enough arguments for 'absolut' pressure style \n");
-      B = force->numeric(arg[iarg+1]);
+      B = force->numeric(FLERR,arg[iarg+1]);
       pressureStyle = PRESSURESTYLE_ABSOLUT;
       iarg += 2;
     }
     else if (strcmp(arg[iarg],"Tait") == 0)
     {
       if (narg < iarg+4) error->fix_error(FLERR,this,"Not enough arguments for 'Tait' pressure style \n");
-      B = force->numeric(arg[iarg+1]);
-      rho0 = force->numeric(arg[iarg+2]);
+      B = force->numeric(FLERR,arg[iarg+1]);
+      rho0 = force->numeric(FLERR,arg[iarg+2]);
       if (rho0 > 0) rho0inv = 1./rho0;
       else error->fix_error(FLERR,this," rho0 is zero or negativ \n");
-      gamma = force->numeric(arg[iarg+3]);
-      if (narg < iarg+5) 
-      {      
+      gamma = force->numeric(FLERR,arg[iarg+3]);
+      if (narg < iarg+5)
+      {
         P0 = 0;
         iarg += 4;
       }
-      else 
+      else
       {
-        P0 = force->numeric(arg[iarg+4]);
+        P0 = force->numeric(FLERR,arg[iarg+4]);
         iarg += 5;
       }
       pressureStyle = PRESSURESTYLE_TAIT;
@@ -90,8 +90,8 @@ FixSPHPressure::FixSPHPressure(LAMMPS *lmp, int narg, char **arg) :
     else if (strcmp(arg[iarg],"relativ") == 0)
     {
       if (narg < iarg+3) error->fix_error(FLERR,this,"Not enough arguments for 'relativ' pressure style \n");
-      B = force->numeric(arg[iarg+1]);
-      rho0 = force->numeric(arg[iarg+2]);
+      B = force->numeric(FLERR,arg[iarg+1]);
+      rho0 = force->numeric(FLERR,arg[iarg+2]);
       pressureStyle = PRESSURESTYLE_RELATIV;
       iarg += 3;
     }
@@ -154,15 +154,15 @@ void FixSPHPressure::pre_force(int vflag)
   // already have updated ghost positions due to regular communication
 
   // set pressure
-  
+
   if (pressureStyle == PRESSURESTYLE_TAIT)
   {
     for (int i = 0; i < nlocal; i++)
     {
-      
+
       if (mask[i] & groupbit)
       {
-        
+
       p[i] = B*(pow(rho[i]*rho0inv,gamma) - 1) + P0; // Tait's equation
     }
     }

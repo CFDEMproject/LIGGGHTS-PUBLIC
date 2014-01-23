@@ -35,6 +35,8 @@
 #include "atom_vec_tri.h"
 #include "comm.h"
 #include "update.h"
+#include "modify.h"
+#include "fix.h"
 #include "force.h"
 #include "pair.h"
 #include "domain.h"
@@ -42,11 +44,11 @@
 #include "angle.h"
 #include "dihedral.h"
 #include "improper.h"
+#include "special.h"
 #include "error.h"
 #include "memory.h"
 #include "modify.h" 
 #include "fix.h" 
-#include "special.h"
 
 using namespace LAMMPS_NS;
 
@@ -54,9 +56,10 @@ using namespace LAMMPS_NS;
 #define LB_FACTOR 1.1
 #define CHUNK 1024
 #define DELTA 4            // must be 2 or larger
+#define MAXBODY 20         // max # of lines in one body, also in Atom class
 
                            // customize for new sections
-#define NSECTIONS 23       // change when add to header::section_keywords
+#define NSECTIONS 25       // change when add to header::section_keywords
 
 /* ---------------------------------------------------------------------- */
 
@@ -80,6 +83,8 @@ ReadData::ReadData(LAMMPS *lmp) : Pointers(lmp)
   avec_line = (AtomVecLine *) atom->style_match("line");
   ntris = 0;
   avec_tri = (AtomVecTri *) atom->style_match("tri");
+  nbodies = 0;
+  avec_body = (AtomVecBody *) atom->style_match("body");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -90,6 +95,14 @@ ReadData::~ReadData()
   delete [] keyword;
   delete [] buffer;
   memory->sfree(arg);
+
+  for (int i = 0; i < nfix; i++) {
+    delete [] fix_header[i];
+    delete [] fix_section[i];
+  }
+  memory->destroy(fix_index);
+  memory->sfree(fix_header);
+  memory->sfree(fix_section);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -107,6 +120,42 @@ void ReadData::command(int narg, char **arg)
   
   if (domain->dimension == 2 && domain->zperiodic == 0)
     error->all(FLERR,"Cannot run 2d simulation with nonperiodic Z dimension");
+
+  // fixes that process data file info
+
+  nfix = 0;
+  fix_index = NULL;
+  fix_header = NULL;
+  fix_section = NULL;
+
+  int iarg = 1;
+  while (iarg < narg) {
+    if (strcmp(arg[iarg],"fix") == 0) {
+      if (iarg+4 > narg)
+        error->all(FLERR,"Illegal read_data command");
+      memory->grow(fix_index,nfix+1,"read_data:fix_index");
+      fix_header = (char **)
+        memory->srealloc(fix_header,(nfix+1)*sizeof(char *),
+                         "read_data:fix_header");
+      fix_section = (char **)
+        memory->srealloc(fix_section,(nfix+1)*sizeof(char *),
+                         "read_data:fix_section");
+      fix_index[nfix] = modify->find_fix(arg[iarg+1]);
+      if (fix_index[nfix] < 0)
+        error->all(FLERR,"Fix ID for read_data does not exist");
+      if (strcmp(arg[iarg+2],"NULL") == 0) fix_header[nfix] = NULL;
+      else {
+        int n = strlen(arg[iarg+2]) + 1;
+        fix_header[nfix] = new char[n];
+        strcpy(fix_header[nfix],arg[iarg+2]);
+      }
+      int n = strlen(arg[iarg+3]) + 1;
+      fix_section[nfix] = new char[n];
+      strcpy(fix_section[nfix],arg[iarg+3]);
+      nfix++;
+      iarg += 4;
+    } else error->all(FLERR,"Illegal read_data command");
+  }
 
   // scan data file to determine max topology needed per atom
   // allocate initial topology arrays
@@ -155,11 +204,12 @@ void ReadData::command(int narg, char **arg)
   if (!domain->box_exist) domain->box_exist = 1; 
   // problem setup using info from header
 
+      int n;
+
   if(!add_to_existing) 
   {
       update->ntimestep = 0;
 
-      int n;
       if (comm->nprocs == 1) n = static_cast<int> (atom->natoms);
       else n = static_cast<int> (LB_FACTOR * atom->natoms / comm->nprocs);
 
@@ -180,6 +230,20 @@ void ReadData::command(int narg, char **arg)
   int atomflag = 0;
 
   while (strlen(keyword)) {
+
+    // allow special fixes first chance to match and process the section
+    // if fix matches, continue to next section
+
+    if (nfix) {
+      for (n = 0; n < nfix; n++)
+        if (strcmp(keyword,fix_section[n]) == 0) {
+          fix(n,keyword);
+          parse_keyword(0,1);
+          break;
+        }
+      if (n < nfix) continue;
+    }
+
     if (strcmp(keyword,"Atoms") == 0) {
       atoms();
       atomflag = 1;
@@ -202,6 +266,11 @@ void ReadData::command(int narg, char **arg)
         error->all(FLERR,"Invalid data file section: Triangles");
       if (atomflag == 0) error->all(FLERR,"Must read Atoms before Triangles");
       bonus(ntris,(AtomVec *) avec_tri,"triangles");
+    } else if (strcmp(keyword,"Bodies") == 0) {
+      if (!avec_body)
+        error->all(FLERR,"Invalid data file section: Bodies");
+      if (atomflag == 0) error->all(FLERR,"Must read Atoms before Bodies");
+      bodies();
 
     } else if (strcmp(keyword,"Bonds") == 0) {
       if (atom->avec->bonds_allow == 0)
@@ -230,6 +299,10 @@ void ReadData::command(int narg, char **arg)
       if (force->pair == NULL)
         error->all(FLERR,"Must define pair_style before Pair Coeffs");
       paircoeffs();
+    } else if (strcmp(keyword,"PairIJ Coeffs") == 0) {
+      if (force->pair == NULL)
+        error->all(FLERR,"Must define pair_style before PairIJ Coeffs");
+      pairIJcoeffs();
     } else if (strcmp(keyword,"Bond Coeffs") == 0) {
       if (atom->avec->bonds_allow == 0)
         error->all(FLERR,"Invalid data file section: Bond Coeffs");
@@ -352,7 +425,7 @@ void ReadData::command(int narg, char **arg)
      else line has first keyword line for rest of file
 ------------------------------------------------------------------------- */
 
-void ReadData::header(int flag, int add)
+void ReadData::header(int flag, int add) 
 {
   int n;
   char *ptr;
@@ -360,9 +433,9 @@ void ReadData::header(int flag, int add)
   // customize for new sections
 
   const char *section_keywords[NSECTIONS] =
-    {"Atoms","Velocities","Ellipsoids","Lines","Triangles",
+    {"Atoms","Velocities","Ellipsoids","Lines","Triangles","Bodies",
      "Bonds","Angles","Dihedrals","Impropers",
-     "Masses","Pair Coeffs","Bond Coeffs","Angle Coeffs",
+     "Masses","Pair Coeffs","PairIJ Coeffs","Bond Coeffs","Angle Coeffs",
      "Dihedral Coeffs","Improper Coeffs",
      "BondBond Coeffs","BondAngle Coeffs","MiddleBondTorsion Coeffs",
      "EndBondTorsion Coeffs","AngleTorsion Coeffs",
@@ -403,12 +476,47 @@ void ReadData::header(int flag, int add)
 
     if (ptr = strchr(line,'#')) *ptr = '\0';
     if (strspn(line," \t\n\r") == strlen(line)) continue;
+    // allow special fixes first chance to match and process the line
+    // if fix matches, continue to next header line
+
+    if (nfix) {
+      for (n = 0; n < nfix; n++) {
+        if (!fix_header[n]) continue;
+        if (strstr(line,fix_header[n])) {
+          modify->fix[fix_index[n]]->read_data_header(line);
+          break;
+        }
+      }
+      if (n < nfix) continue;
+    }
 
     // search line for header keyword and set corresponding variable
 
     if (add_to_existing == 0) 
     {
-        if (strstr(line,"atoms")) sscanf(line,BIGINT_FORMAT,&atom->natoms);
+        if (strstr(line,"atoms")) {
+          sscanf(line,BIGINT_FORMAT,&atom->natoms);
+
+        // check for these first
+        // otherwise "triangles" will be matched as "angles"
+
+        } else if (strstr(line,"ellipsoids")) {
+          if (!avec_ellipsoid && me == 0)
+            error->one(FLERR,"No ellipsoids allowed with this atom style");
+          sscanf(line,BIGINT_FORMAT,&nellipsoids);
+        } else if (strstr(line,"lines")) {
+          if (!avec_line && me == 0)
+            error->one(FLERR,"No lines allowed with this atom style");
+          sscanf(line,BIGINT_FORMAT,&nlines);
+        } else if (strstr(line,"triangles")) {
+          if (!avec_tri && me == 0)
+            error->one(FLERR,"No triangles allowed with this atom style");
+          sscanf(line,BIGINT_FORMAT,&ntris);
+        } else if (strstr(line,"bodies")) {
+          if (!avec_body && me == 0)
+            error->one(FLERR,"No bodies allowed with this atom style");
+          sscanf(line,BIGINT_FORMAT,&nbodies);
+        }
 
         else if (strstr(line,"bonds")) sscanf(line,BIGINT_FORMAT,&atom->nbonds);
         else if (strstr(line,"angles")) sscanf(line,BIGINT_FORMAT,&atom->nangles);
@@ -427,20 +535,6 @@ void ReadData::header(int flag, int add)
 
         else if (strstr(line,"extra bond per atom"))
           sscanf(line,"%d",&atom->extra_bond_per_atom);
-
-        else if (strstr(line,"ellipsoids")) {
-          if (!avec_ellipsoid)
-            error->all(FLERR,"No ellipsoids allowed with this atom style");
-          sscanf(line,BIGINT_FORMAT,&nellipsoids);
-        } else if (strstr(line,"lines")) {
-          if (!avec_line)
-            error->all(FLERR,"No lines allowed with this atom style");
-          sscanf(line,BIGINT_FORMAT,&nlines);
-        } else if (strstr(line,"triangles")) {
-          if (!avec_tri)
-            error->all(FLERR,"No triangles allowed with this atom style");
-          sscanf(line,BIGINT_FORMAT,&ntris);
-        }
 
         else if (strstr(line,"xlo xhi"))
           sscanf(line,"%lg %lg",&domain->boxlo[0],&domain->boxhi[0]);
@@ -526,7 +620,7 @@ void ReadData::header(int flag, int add)
       atom->nangles < 0 || atom->nangles > MAXBIGINT ||
       atom->ndihedrals < 0 || atom->ndihedrals > MAXBIGINT ||
       atom->nimpropers < 0 || atom->nimpropers > MAXBIGINT) {
-    if (me == 0) error->one(FLERR,"System in data file is too big"); //- new from patch 17May2012
+    if (me == 0) error->one(FLERR,"System in data file is too big");
   }
 
   // check that exiting string is a valid section keyword
@@ -534,34 +628,34 @@ void ReadData::header(int flag, int add)
   parse_keyword(1,flag);
   for (n = 0; n < NSECTIONS; n++)
     if (strcmp(keyword,section_keywords[n]) == 0) break;
-  if (n == NSECTIONS && me == 0) {	//- new from patch 17May2012
+  if (n == NSECTIONS && me == 0) {
     char str[128];
     sprintf(str,"Unknown identifier in data file: %s",keyword);
-    error->one(FLERR,str);	//- new from patch 17May2012
+    error->one(FLERR,str);
   }
 
   // error check on consistency of header values
 
   if ((atom->nbonds || atom->nbondtypes) &&
-      atom->avec->bonds_allow == 0 && me == 0)		//- new from patch 17May2012
+      atom->avec->bonds_allow == 0 && me == 0)
     error->one(FLERR,"No bonds allowed with this atom style");
   if ((atom->nangles || atom->nangletypes) &&
-      atom->avec->angles_allow == 0 && me == 0)		//- new from patch 17May2012
+      atom->avec->angles_allow == 0 && me == 0)
     error->one(FLERR,"No angles allowed with this atom style");
   if ((atom->ndihedrals || atom->ndihedraltypes) &&
-      atom->avec->dihedrals_allow == 0 && me == 0)	//- new from patch 17May2012
+      atom->avec->dihedrals_allow == 0 && me == 0)
     error->one(FLERR,"No dihedrals allowed with this atom style");
   if ((atom->nimpropers || atom->nimpropertypes) &&
-      atom->avec->impropers_allow == 0 && me == 0)	//- new from patch 17May2012
+      atom->avec->impropers_allow == 0 && me == 0)
     error->one(FLERR,"No impropers allowed with this atom style");
 
-  if (atom->nbonds > 0 && atom->nbondtypes <= 0 && me == 0)		//- new from patch 17May2012
+  if (atom->nbonds > 0 && atom->nbondtypes <= 0 && me == 0)
     error->one(FLERR,"Bonds defined but no bond types");
-  if (atom->nangles > 0 && atom->nangletypes <= 0 && me == 0)		//- new from patch 17May2012
+  if (atom->nangles > 0 && atom->nangletypes <= 0 && me == 0)
     error->one(FLERR,"Angles defined but no angle types");
-  if (atom->ndihedrals > 0 && atom->ndihedraltypes <= 0 && me == 0)	//- new from patch 17May2012
+  if (atom->ndihedrals > 0 && atom->ndihedraltypes <= 0 && me == 0)
     error->one(FLERR,"Dihedrals defined but no dihedral types");
-  if (atom->nimpropers > 0 && atom->nimpropertypes <= 0 && me == 0)	//- new from patch 17May2012
+  if (atom->nimpropers > 0 && atom->nimpropertypes <= 0 && me == 0)
     error->one(FLERR,"Impropers defined but no improper types");
 }
 
@@ -571,7 +665,7 @@ void ReadData::header(int flag, int add)
 
 void ReadData::atoms()
 {
-  int i,m,nchunk;
+  int i,m,nchunk,eof;
 
   bigint nread = 0;
   bigint natoms = atom->natoms;
@@ -580,20 +674,9 @@ void ReadData::atoms()
   if (add_to_existing) natoms = natoms_add; 
 
   while (nread < natoms) {
-    if (natoms-nread > CHUNK) nchunk = CHUNK;
-    else nchunk = natoms-nread;
-    if (me == 0) {
-      char *eof;
-      m = 0;
-      for (i = 0; i < nchunk; i++) {
-        eof = fgets(&buffer[m],MAXLINE,fp);
-        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-        m += strlen(&buffer[m]);
-      }
-      m++;
-    }
-    MPI_Bcast(&m,1,MPI_INT,0,world);
-    MPI_Bcast(buffer,m,MPI_CHAR,0,world);
+    nchunk = MIN(natoms-nread,CHUNK);
+    eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
+    if (eof) error->all(FLERR,"Unexpected end of data file");
 
     atom->data_atoms(nchunk,buffer);
     nread += nchunk;
@@ -690,7 +773,7 @@ void ReadData::atoms()
 
 void ReadData::velocities()
 {
-  int i,m,nchunk;
+  int i,m,nchunk,eof;
 
   int mapflag = 0;
   if (atom->map_style == 0) {
@@ -705,20 +788,9 @@ void ReadData::velocities()
   if (add_to_existing ) natoms = natoms_add; 
 
   while (nread < natoms) {
-    if (natoms-nread > CHUNK) nchunk = CHUNK;
-    else nchunk = natoms-nread;
-    if (me == 0) {
-      char *eof;
-      m = 0;
-      for (i = 0; i < nchunk; i++) {
-        eof = fgets(&buffer[m],MAXLINE,fp);
-        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-        m += strlen(&buffer[m]);
-      }
-      m++;
-    }
-    MPI_Bcast(&m,1,MPI_INT,0,world);
-    MPI_Bcast(buffer,m,MPI_CHAR,0,world);
+    nchunk = MIN(natoms-nread,CHUNK);
+    eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
+    if (eof) error->all(FLERR,"Unexpected end of data file");
 
     atom->data_vels(nchunk,buffer);
     nread += nchunk;
@@ -742,7 +814,7 @@ void ReadData::velocities()
 
 void ReadData::bonus(bigint nbonus, AtomVec *ptr, const char *type)
 {
-  int i,m,nchunk;
+  int i,m,nchunk,eof;
 
   int mapflag = 0;
   if (atom->map_style == 0) {
@@ -756,22 +828,86 @@ void ReadData::bonus(bigint nbonus, AtomVec *ptr, const char *type)
   bigint natoms = nbonus;
 
   while (nread < natoms) {
-    if (natoms-nread > CHUNK) nchunk = CHUNK;
-    else nchunk = natoms-nread;
+    nchunk = MIN(natoms-nread,CHUNK);
+    eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
+    if (eof) error->all(FLERR,"Unexpected end of data file");
+    atom->data_bonus(nchunk,buffer,ptr);
+    nread += nchunk;
+  }
+
+  if (mapflag) {
+    atom->map_delete();
+    atom->map_style = 0;
+  }
     if (me == 0) {
+    if (screen) fprintf(screen,"  " BIGINT_FORMAT " %s\n",natoms,type);
+    if (logfile) fprintf(logfile,"  " BIGINT_FORMAT " %s\n",natoms,type);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   read all body data
+   variable amount of info per body, described by ninteger and ndouble
+   to find atoms, must build atom map if not a molecular system
+------------------------------------------------------------------------- */
+
+void ReadData::bodies()
+{
+  int i,m,nchunk,nmax,ninteger,ndouble,tmp,onebody;
       char *eof;
+  int mapflag = 0;
+  if (atom->map_style == 0) {
+    mapflag = 1;
+    atom->map_style = 1;
+    atom->map_init();
+    atom->map_set();
+  }
+
+  // nmax = max # of bodies to read in this chunk
+  // nchunk = actual # read
+
+  bigint nread = 0;
+  bigint natoms = nbodies;
+
+  while (nread < natoms) {
+    if (natoms-nread > CHUNK) nmax = CHUNK;
+    else nmax = natoms-nread;
+
+    if (me == 0) {
+      nchunk = 0;
+      nlines = 0;
       m = 0;
-      for (i = 0; i < nchunk; i++) {
+      while (nchunk < nmax && nlines <= CHUNK-MAXBODY) {
+        eof = fgets(&buffer[m],MAXLINE,fp);
+        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
+        sscanf(&buffer[m],"%d %d %d",&tmp,&ninteger,&ndouble);
+        m += strlen(&buffer[m]);
+
+        onebody = 0;
+        if (ninteger) onebody += (ninteger-1)/10 + 1;
+        if (ndouble) onebody += (ndouble-1)/10 + 1;
+        if (onebody+1 > MAXBODY)
+          error->one(FLERR,
+                     "Too many lines in one body in data file - boost MAXBODY");
+
+        for (i = 0; i < onebody; i++) {
         eof = fgets(&buffer[m],MAXLINE,fp);
         if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
         m += strlen(&buffer[m]);
       }
+        nchunk++;
+        nlines += onebody+1;
+      }
+
+      if (buffer[m-1] != '\n') strcpy(&buffer[m++],"\n");
       m++;
     }
+
+    MPI_Bcast(&nchunk,1,MPI_INT,0,world);
     MPI_Bcast(&m,1,MPI_INT,0,world);
     MPI_Bcast(buffer,m,MPI_CHAR,0,world);
 
-    atom->data_bonus(nchunk,buffer,ptr);
+    atom->data_bodies(nchunk,buffer,avec_body);
     nread += nchunk;
   }
 
@@ -781,8 +917,8 @@ void ReadData::bonus(bigint nbonus, AtomVec *ptr, const char *type)
   }
 
   if (me == 0) {
-    if (screen) fprintf(screen,"  " BIGINT_FORMAT " %s\n",natoms,type);
-    if (logfile) fprintf(logfile,"  " BIGINT_FORMAT " %s\n",natoms,type);
+    if (screen) fprintf(screen,"  " BIGINT_FORMAT " bodies\n",natoms);
+    if (logfile) fprintf(logfile,"  " BIGINT_FORMAT " bodies\n",natoms);
   }
 }
 
@@ -790,25 +926,16 @@ void ReadData::bonus(bigint nbonus, AtomVec *ptr, const char *type)
 
 void ReadData::bonds()
 {
-  int i,m,nchunk;
+  int i,m,nchunk,eof;
 
   bigint nread = 0;
   bigint nbonds = atom->nbonds;
+  bigint natoms = atom->natoms;
 
   while (nread < nbonds) {
     nchunk = MIN(nbonds-nread,CHUNK);
-    if (me == 0) {
-      char *eof;
-      m = 0;
-      for (i = 0; i < nchunk; i++) {
-        eof = fgets(&buffer[m],MAXLINE,fp);
-        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-        m += strlen(&buffer[m]);
-      }
-      m++;
-    }
-    MPI_Bcast(&m,1,MPI_INT,0,world);
-    MPI_Bcast(buffer,m,MPI_CHAR,0,world);
+    eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
+    if (eof) error->all(FLERR,"Unexpected end of data file");
 
     atom->data_bonds(nchunk,buffer);
     nread += nchunk;
@@ -836,25 +963,15 @@ void ReadData::bonds()
 
 void ReadData::angles()
 {
-  int i,m,nchunk;
+  int i,m,nchunk,eof;
 
   bigint nread = 0;
   bigint nangles = atom->nangles;
 
   while (nread < nangles) {
     nchunk = MIN(nangles-nread,CHUNK);
-    if (me == 0) {
-      char *eof;
-      m = 0;
-      for (i = 0; i < nchunk; i++) {
-        eof = fgets(&buffer[m],MAXLINE,fp);
-        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-        m += strlen(&buffer[m]);
-      }
-      m++;
-    }
-    MPI_Bcast(&m,1,MPI_INT,0,world);
-    MPI_Bcast(buffer,m,MPI_CHAR,0,world);
+    eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
+    if (eof) error->all(FLERR,"Unexpected end of data file");
 
     atom->data_angles(nchunk,buffer);
     nread += nchunk;
@@ -882,25 +999,15 @@ void ReadData::angles()
 
 void ReadData::dihedrals()
 {
-  int i,m,nchunk;
+  int i,m,nchunk,eof;
 
   bigint nread = 0;
   bigint ndihedrals = atom->ndihedrals;
 
   while (nread < ndihedrals) {
     nchunk = MIN(ndihedrals-nread,CHUNK);
-    if (me == 0) {
-      char *eof;
-      m = 0;
-      for (i = 0; i < nchunk; i++) {
-        eof = fgets(&buffer[m],MAXLINE,fp);
-        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-        m += strlen(&buffer[m]);
-      }
-      m++;
-    }
-    MPI_Bcast(&m,1,MPI_INT,0,world);
-    MPI_Bcast(buffer,m,MPI_CHAR,0,world);
+    eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
+    if (eof) error->all(FLERR,"Unexpected end of data file");
 
     atom->data_dihedrals(nchunk,buffer);
     nread += nchunk;
@@ -928,25 +1035,15 @@ void ReadData::dihedrals()
 
 void ReadData::impropers()
 {
-  int i,m,nchunk;
+  int i,m,nchunk,eof;
 
   bigint nread = 0;
   bigint nimpropers = atom->nimpropers;
 
   while (nread < nimpropers) {
     nchunk = MIN(nimpropers-nread,CHUNK);
-    if (me == 0) {
-      char *eof;
-      m = 0;
-      for (i = 0; i < nchunk; i++) {
-        eof = fgets(&buffer[m],MAXLINE,fp);
-        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-        m += strlen(&buffer[m]);
-      }
-      m++;
-    }
-    MPI_Bcast(&m,1,MPI_INT,0,world);
-    MPI_Bcast(buffer,m,MPI_CHAR,0,world);
+    eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
+    if (eof) error->all(FLERR,"Unexpected end of data file");
 
     atom->data_impropers(nchunk,buffer);
     nread += nchunk;
@@ -975,26 +1072,19 @@ void ReadData::impropers()
 void ReadData::mass()
 {
   int i,m;
+  char *next;
   char *buf = new char[atom->ntypes*MAXLINE];
+
+  int eof = comm->read_lines_from_file(fp,atom->ntypes,MAXLINE,buf);
+  if (eof) error->all(FLERR,"Unexpected end of data file");
+
   char *original = buf;
 
-  if (me == 0) {
-    char *eof;
-    m = 0;
-    for (i = 0; i < atom->ntypes; i++) {
-      eof = fgets(&buf[m],MAXLINE,fp);
-      if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-      m += strlen(&buf[m]);
-      buf[m-1] = '\0';
-    }
-  }
-
-  MPI_Bcast(&m,1,MPI_INT,0,world);
-  MPI_Bcast(buf,m,MPI_CHAR,0,world);
-
   for (i = 0; i < atom->ntypes; i++) {
+    next = strchr(buf,'\n');
+    *next = '\0';
     atom->set_mass(buf);
-    buf += strlen(buf) + 1;
+    buf = next + 1;
   }
   delete [] original;
 }
@@ -1003,29 +1093,43 @@ void ReadData::mass()
 
 void ReadData::paircoeffs()
 {
-  int i,m;
+  char *next;
   char *buf = new char[atom->ntypes*MAXLINE];
+  int eof = comm->read_lines_from_file(fp,atom->ntypes,MAXLINE,buf);
+  if (eof) error->all(FLERR,"Unexpected end of data file");
   char *original = buf;
 
-  if (me == 0) {
-    char *eof;
-    m = 0;
-    for (i = 0; i < atom->ntypes; i++) {
-      eof = fgets(&buf[m],MAXLINE,fp);
-      if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-      m += strlen(&buf[m]);
-      buf[m-1] = '\0';
-    }
-  }
-
-  MPI_Bcast(&m,1,MPI_INT,0,world);
-  MPI_Bcast(buf,m,MPI_CHAR,0,world);
-
-  for (i = 0; i < atom->ntypes; i++) {
-    m = strlen(buf) + 1;
+  for (int i = 0; i < atom->ntypes; i++) {
+    next = strchr(buf,'\n');
+    *next = '\0';
     parse_coeffs(buf,NULL,1);
     force->pair->coeff(narg,arg);
-    buf += m;
+    buf = next + 1;
+    }
+  delete [] original;
+  }
+
+/* ---------------------------------------------------------------------- */
+
+void ReadData::pairIJcoeffs()
+{
+  int i,j;
+  char *next;
+  
+  int nsq = atom->ntypes* (atom->ntypes+1) / 2;
+  char *buf = new char[nsq * MAXLINE];
+
+  int eof = comm->read_lines_from_file(fp,nsq,MAXLINE,buf);
+  if (eof) error->all(FLERR,"Unexpected end of data file");
+
+  char *original = buf;
+  for (i = 0; i < atom->ntypes; i++)
+    for (j = i; j < atom->ntypes; j++) {
+      next = strchr(buf,'\n');
+      *next = '\0';
+      parse_coeffs(buf,NULL,0);
+    force->pair->coeff(narg,arg);
+      buf = next + 1;
   }
   delete [] original;
 }
@@ -1034,29 +1138,19 @@ void ReadData::paircoeffs()
 
 void ReadData::bondcoeffs()
 {
-  int i,m;
+  char *next;
   char *buf = new char[atom->nbondtypes*MAXLINE];
+
+  int eof = comm->read_lines_from_file(fp,atom->nbondtypes,MAXLINE,buf);
+  if (eof) error->all(FLERR,"Unexpected end of data file");
+
   char *original = buf;
-
-  if (me == 0) {
-    char *eof;
-    m = 0;
-    for (i = 0; i < atom->nbondtypes; i++) {
-      eof = fgets(&buf[m],MAXLINE,fp);
-      if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-      m += strlen(&buf[m]);
-      buf[m-1] = '\0';
-    }
-  }
-
-  MPI_Bcast(&m,1,MPI_INT,0,world);
-  MPI_Bcast(buf,m,MPI_CHAR,0,world);
-
-  for (i = 0; i < atom->nbondtypes; i++) {
-    m = strlen(buf) + 1;
+  for (int i = 0; i < atom->nbondtypes; i++) {
+    next = strchr(buf,'\n');
+    *next = '\0';
     parse_coeffs(buf,NULL,0);
     force->bond->coeff(narg,arg);
-    buf += m;
+    buf = next + 1;
   }
   delete [] original;
 }
@@ -1065,31 +1159,21 @@ void ReadData::bondcoeffs()
 
 void ReadData::anglecoeffs(int which)
 {
-  int i,m;
+  char *next;
   char *buf = new char[atom->nangletypes*MAXLINE];
+
+  int eof = comm->read_lines_from_file(fp,atom->nangletypes,MAXLINE,buf);
+  if (eof) error->all(FLERR,"Unexpected end of data file");
+
   char *original = buf;
-
-  if (me == 0) {
-    char *eof;
-    m = 0;
-    for (i = 0; i < atom->nangletypes; i++) {
-      eof = fgets(&buf[m],MAXLINE,fp);
-      if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-      m += strlen(&buf[m]);
-      buf[m-1] = '\0';
-    }
-  }
-
-  MPI_Bcast(&m,1,MPI_INT,0,world);
-  MPI_Bcast(buf,m,MPI_CHAR,0,world);
-
-  for (i = 0; i < atom->nangletypes; i++) {
-    m = strlen(buf) + 1;
+  for (int i = 0; i < atom->nangletypes; i++) {
+    next = strchr(buf,'\n');
+    *next = '\0';
     if (which == 0) parse_coeffs(buf,NULL,0);
     else if (which == 1) parse_coeffs(buf,"bb",0);
     else if (which == 2) parse_coeffs(buf,"ba",0);
     force->angle->coeff(narg,arg);
-    buf += m;
+    buf = next + 1;
   }
   delete [] original;
 }
@@ -1098,26 +1182,16 @@ void ReadData::anglecoeffs(int which)
 
 void ReadData::dihedralcoeffs(int which)
 {
-  int i,m;
+  char *next;
   char *buf = new char[atom->ndihedraltypes*MAXLINE];
+
+  int eof = comm->read_lines_from_file(fp,atom->ndihedraltypes,MAXLINE,buf);
+  if (eof) error->all(FLERR,"Unexpected end of data file");
+
   char *original = buf;
-
-  if (me == 0) {
-    char *eof;
-    m = 0;
-    for (i = 0; i < atom->ndihedraltypes; i++) {
-      eof = fgets(&buf[m],MAXLINE,fp);
-      if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-      m += strlen(&buf[m]);
-      buf[m-1] = '\0';
-    }
-  }
-
-  MPI_Bcast(&m,1,MPI_INT,0,world);
-  MPI_Bcast(buf,m,MPI_CHAR,0,world);
-
-  for (i = 0; i < atom->ndihedraltypes; i++) {
-    m = strlen(buf) + 1;
+  for (int i = 0; i < atom->ndihedraltypes; i++) {
+    next = strchr(buf,'\n');
+    *next = '\0';
     if (which == 0) parse_coeffs(buf,NULL,0);
     else if (which == 1) parse_coeffs(buf,"mbt",0);
     else if (which == 2) parse_coeffs(buf,"ebt",0);
@@ -1125,7 +1199,7 @@ void ReadData::dihedralcoeffs(int which)
     else if (which == 4) parse_coeffs(buf,"aat",0);
     else if (which == 5) parse_coeffs(buf,"bb13",0);
     force->dihedral->coeff(narg,arg);
-    buf += m;
+    buf = next + 1;
   }
   delete [] original;
 }
@@ -1134,32 +1208,43 @@ void ReadData::dihedralcoeffs(int which)
 
 void ReadData::impropercoeffs(int which)
 {
-  int i,m;
+  char *next;
   char *buf = new char[atom->nimpropertypes*MAXLINE];
+
+  int eof = comm->read_lines_from_file(fp,atom->nimpropertypes,MAXLINE,buf);
+  if (eof) error->all(FLERR,"Unexpected end of data file");
+
   char *original = buf;
-
-  if (me == 0) {
-    char *eof;
-    m = 0;
-    for (i = 0; i < atom->nimpropertypes; i++) {
-      eof = fgets(&buf[m],MAXLINE,fp);
-      if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-      m += strlen(&buf[m]);
-      buf[m-1] = '\0';
-    }
-  }
-
-  MPI_Bcast(&m,1,MPI_INT,0,world);
-  MPI_Bcast(buf,m,MPI_CHAR,0,world);
-
-  for (i = 0; i < atom->nimpropertypes; i++) {
-    m = strlen(buf) + 1;
+  for (int i = 0; i < atom->nimpropertypes; i++) {
+    next = strchr(buf,'\n');
+    *next = '\0';
     if (which == 0) parse_coeffs(buf,NULL,0);
     else if (which == 1) parse_coeffs(buf,"aa",0);
     force->improper->coeff(narg,arg);
-    buf += m;
+    buf = next + 1;
   }
   delete [] original;
+}
+
+/* ----------------------------------------------------------------------
+   read fix section, pass lines to fix to process
+   n = index of fix
+------------------------------------------------------------------------- */
+
+void ReadData::fix(int ifix, char *keyword)
+{
+  int nchunk,eof;
+
+  bigint nlines = modify->fix[ifix]->read_data_skip_lines(keyword);
+
+  bigint nread = 0;
+  while (nread < nlines) {
+    nchunk = MIN(nlines-nread,CHUNK);
+    eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
+    if (eof) error->all(FLERR,"Unexpected end of data file");
+    modify->fix[ifix]->read_data_section(keyword,nchunk,buffer);
+    nread += nchunk;
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -1173,7 +1258,7 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
   char *eof;
 
   if (atom->natoms > MAXSMALLINT)
-    error->all(FLERR,"Molecular data file has too many atoms");
+    error->one(FLERR,"Molecular data file has too many atoms");
 
   // customize for new sections
 
@@ -1182,6 +1267,7 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
   int ellipsoid_flag = 0;
   int line_flag = 0;
   int tri_flag = 0;
+  int body_flag = 0;
 
   // customize for new sections
   // allocate topology counting vector
@@ -1193,6 +1279,21 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
   memory->create(count,cmax,"read_data:count");
 
   while (strlen(keyword)) {
+
+    // allow special fixes first chance to match and process the section
+    // if fix matches, continue to next section
+
+    if (nfix) {
+      for (i = 0; i < nfix; i++) {
+        if (strcmp(keyword,fix_section[i]) == 0) {
+          int n = modify->fix[fix_index[i]]->read_data_skip_lines(keyword);
+          skip_lines(n);
+          parse_keyword(0,0);
+          break;
+        }
+      }
+      if (i < nfix) continue;
+    }
      
     if (strcmp(keyword,"Masses") == 0) skip_lines(atom->ntypes);
     else if (strcmp(keyword,"Atoms") == 0) skip_lines(add_to_existing?natoms_add:natoms);  
@@ -1211,11 +1312,19 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
       if (!avec_tri) error->one(FLERR,"Invalid data file section: Triangles");
       tri_flag = 1;
       skip_lines(ntris);
+    } else if (strcmp(keyword,"Bodies") == 0) {
+      if (!avec_body) error->one(FLERR,"Invalid data file section: Bodies");
+      body_flag = 1;
+      skip_lines(nbodies);
 
     } else if (strcmp(keyword,"Pair Coeffs") == 0) {
       if (force->pair == NULL)
         error->one(FLERR,"Must define pair_style before Pair Coeffs");
       skip_lines(atom->ntypes);
+    } else if (strcmp(keyword,"PairIJ Coeffs") == 0) {
+      if (force->pair == NULL)
+        error->one(FLERR,"Must define pair_style before Pair Coeffs");
+      skip_lines(atom->ntypes*(atom->ntypes+1)/2);
     } else if (strcmp(keyword,"Bond Coeffs") == 0) {
       if (atom->avec->bonds_allow == 0)
         error->one(FLERR,"Invalid data file section: Bond Coeffs");
@@ -1442,6 +1551,8 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
     error->one(FLERR,"Needed bonus data not in data file");
   if (ntris && !tri_flag)
     error->one(FLERR,"Needed bonus data not in data file");
+  if (nbodies && !body_flag)
+    error->one(FLERR,"Needed bonus data not in data file");
 }
 
 /* ----------------------------------------------------------------------
@@ -1543,6 +1654,8 @@ void ReadData::parse_keyword(int first, int flag)
 
 /* ----------------------------------------------------------------------
    proc 0 reads N lines from file
+   NOTE: needs to be called with bigint in some cases
+         if called with int, will it be promoted to bigint?
 ------------------------------------------------------------------------- */
 
 void ReadData::skip_lines(int n)

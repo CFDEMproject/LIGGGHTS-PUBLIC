@@ -182,7 +182,7 @@ template<bool IMAGE>
 void ComputeNparticlesTracerRegion::compute_vector_eval(bool countMass, double& resultTot, double& resultMarked)
 {
     int nlocal = atom->nlocal;
-    int *image = atom->image;
+    tagint *image = atom->image;
     double **x     = atom->x;
     double *mass = atom->mass;  //mass per type
     double *rmass = atom->rmass;    //mass per particle
@@ -198,11 +198,11 @@ void ComputeNparticlesTracerRegion::compute_vector_eval(bool countMass, double& 
     {
         if (!(mask[i] & groupbit)) continue; //check if on current processor and in group
 
-        if(IMAGE && image_dim_ == 0 && ( ((image[i] & 1023) - 512      ) != image_no_) )
+        if(IMAGE && image_dim_ == 0 && ( ((image[i] & IMGMASK) - IMGMAX      ) != image_no_) )
             continue;
-        if(IMAGE && image_dim_ == 1 && ( ((image[i] >> 10 & 1023) - 512) != image_no_) )
+        if(IMAGE && image_dim_ == 1 && ( ((image[i] >> IMGBITS & IMGMASK) - IMGMAX) != image_no_) )
             continue;
-        if(IMAGE && image_dim_ == 2 && ( ((image[i] >> 20) - 512) != image_no_) )
+        if(IMAGE && image_dim_ == 2 && ( ((image[i] >> IMG2BITS) - IMGMAX) != image_no_) )
             continue;
 
         if( region->match(x[i][0],x[i][1],x[i][2]) )

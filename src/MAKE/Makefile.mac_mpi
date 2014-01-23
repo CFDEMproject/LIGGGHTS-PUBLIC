@@ -8,14 +8,18 @@ SHELL = /bin/sh
 # unless additional compiler/linker flags or libraries needed for your machine
 
 CC =		${MPI_GCC46_PATH}/mpic++
-CCFLAGS =	-O
+CCFLAGS =	-O3 
+SHFLAGS =	-fPIC
 DEPFLAGS =	-M
+
 LINK =		${MPI_GCC46_PATH}/mpic++
-LINKFLAGS =	-O
+LINKFLAGS =	-O3
 LIB =           
+SIZE =		size
+
 ARCHIVE =	ar
 ARFLAGS =	-rc
-SIZE =		size
+SHLIBFLAGS =	-shared
 
 # ---------------------------------------------------------------------
 # LAMMPS-specific settings
@@ -25,7 +29,7 @@ SIZE =		size
 # LAMMPS ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
 
-LMP_INC =	-DLAMMPS_GZIP -DQUIP_GFORTRAN
+LMP_INC =	-DLAMMPS_GZIP -DQUIP_GFORTRAN -DLAMMPS_JPEG
 
 # MPI library, REQUIRED
 # see discussion in doc/Section_start.html#2_2 (step 5)
@@ -51,12 +55,12 @@ FFT_INC =       -DFFT_FFTW -I${FFTW}/include
 FFT_PATH =	-L${FFTW}/lib
 FFT_LIB =	-lfftw
 
-# JPEG library, OPTIONAL
+# JPEG and/or PNG library, OPTIONAL
 # see discussion in doc/Section_start.html#2_2 (step 7)
-# only needed if -DLAMMPS_JPEG listed with LMP_INC
-# INC = path for jpeglib.h
-# PATH = path for JPEG library
-# LIB = name of JPEG library
+# only needed if -DLAMMPS_JPEG or -DLAMMPS_PNG listed with LMP_INC
+# INC = path(s) for jpeglib.h and/or png.h
+# PATH = path(s) for JPEG library and/or PNG library
+# LIB = name(s) of JPEG library and/or PNG library
 
 JPG_INC =       -I/opt/local/include
 JPG_PATH = 	-L/opt/local/lib
@@ -73,21 +77,30 @@ EXTRA_INC = $(LMP_INC) $(PKG_INC) $(MPI_INC) $(FFT_INC) $(JPG_INC) $(PKG_SYSINC)
 EXTRA_PATH = $(PKG_PATH) $(MPI_PATH) $(FFT_PATH) $(JPG_PATH) $(PKG_SYSPATH)
 EXTRA_LIB = $(PKG_LIB) $(MPI_LIB) $(FFT_LIB) $(JPG_LIB) $(PKG_SYSLIB)
 
+# Path to src files
+
+vpath %.cpp ..
+vpath %.h ..
+
 # Link target
 
 $(EXE):	$(OBJ)
 	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
 	$(SIZE) $(EXE)
 
-# Library target
+# Library targets
 
 lib:	$(OBJ)
 	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
 
+shlib:	$(OBJ)
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
+        $(OBJ) $(EXTRA_LIB) $(LIB)
+
 # Compilation rules
 
 %.o:%.cpp
-	$(CC) $(CCFLAGS) $(EXTRA_INC) -c $<
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(EXTRA_INC) -c $<
 
 %.d:%.cpp
 	$(CC) $(CCFLAGS) $(EXTRA_INC) $(DEPFLAGS) $< > $@

@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -61,6 +61,7 @@ class FixQEqReax : public Fix {
   int pack_flag;
   int nlevels_respa;
   class NeighList *list;
+  class PairReaxC *reaxc;
 
   double swa, swb;      // lower/upper Taper cutoff radius
   double Tap[8];        // Taper function
@@ -72,7 +73,7 @@ class FixQEqReax : public Fix {
   // fictitious charges
 
   double *s, *t;
-  double **s_hist, **t_hist;	
+  double **s_hist, **t_hist;
   int nprev;
 
   typedef struct{
@@ -92,11 +93,11 @@ class FixQEqReax : public Fix {
   double *p, *q, *r, *d;
 
   //GMRES storage
-  //double *g,*y;	  
+  //double *g,*y;
   //double **v;
   //double **h;
   //double *hc, *hs;
-  
+
   void pertype_parameters(char*);
   void init_shielding();
   void init_taper();
@@ -106,24 +107,24 @@ class FixQEqReax : public Fix {
   void allocate_matrix();
   void deallocate_matrix();
   void reallocate_matrix();
-  
+
   void init_matvec();
   void init_H();
   void compute_H();
   double calculate_H(double,double);
   void calculate_Q();
-  
+
   int CG(double*,double*);
   //int GMRES(double*,double*);
   void sparse_matvec(sparse_matrix*,double*,double*);
-  
+
   int pack_comm(int, int *, double *, int, int *);
   void unpack_comm(int, int, double *);
   int pack_reverse_comm(int, int, double *);
   void unpack_reverse_comm(int, int *, double *);
   double memory_usage();
   void grow_arrays(int);
-  void copy_arrays(int, int);
+  void copy_arrays(int, int, int);
   int pack_exchange(int, double *);
   int unpack_exchange(int, double *);
 

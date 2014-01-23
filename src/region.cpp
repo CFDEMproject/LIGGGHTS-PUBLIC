@@ -31,6 +31,7 @@
 #include "input.h"
 #include "variable.h"
 #include "error.h"
+#include "force.h"
 #include "random_park.h"
 #include "vector_liggghts.h" 
 #include "mpi_liggghts.h"  
@@ -53,9 +54,10 @@ Region::Region(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   style = new char[n];
   strcpy(style,arg[1]);
 
+  varshape = 0;
   xstr = ystr = zstr = tstr = NULL;
   dx = dy = dz = 0.0;
-  laststep = -1;
+  lastshape = lastdynamic = -1;
 
   random = NULL; 
 }
@@ -124,23 +126,33 @@ int Region::dynamic_check()
    XOR computes 0 if 2 args are the same, 1 if different
    note that inside() returns 1 for points on surface of region
    thus point on surface of exterior region will not match
+   if region has variable shape, invoke shape_update() once per timestep
    if region is dynamic, apply inverse transform to x,y,z
      unmove first, then unrotate, so don't have to change rotation point
+   caller is responsible for wrapping this call with
+     modify->clearstep_compute() and modify->addstep_compute() if needed
 ------------------------------------------------------------------------- */
 
 int Region::match(double x, double y, double z)
 {
+  if (varshape && update->ntimestep != lastshape) {
+    shape_update();
+    lastshape = update->ntimestep;
+  }
   if (dynamic) inverse_transform(x,y,z);
   return !(inside(x,y,z) ^ interior);
 }
 
 /* ----------------------------------------------------------------------
    generate list of contact points for interior or exterior regions
+   if region has variable shape, invoke shape_update() once per timestep
    if region is dynamic:
      before: inverse transform x,y,z (unmove, then unrotate)
      after: forward transform contact point xs,yx,zs (rotate, then move),
             then reset contact delx,dely,delz based on new contact point
             no need to do this if no rotation since delxyz doesn't change
+   caller is responsible for wrapping this call with
+     modify->clearstep_compute() and modify->addstep_compute() if needed
 ------------------------------------------------------------------------- */
 
 int Region::surface(double x, double y, double z, double cutoff)
@@ -149,6 +161,10 @@ int Region::surface(double x, double y, double z, double cutoff)
   double xs,ys,zs;
   double xnear[3],xorig[3];
 
+  if (varshape && update->ntimestep != lastshape) {
+    shape_update();
+    lastshape = update->ntimestep;
+  }
   if (dynamic) {
     xorig[0] = x;
     xorig[1] = y;
@@ -203,13 +219,13 @@ void Region::add_contact(int n, double *x, double xp, double yp, double zp)
 void Region::forward_transform(double &x, double &y, double &z)
 {
   if (rotateflag) {
-    if (update->ntimestep != laststep)
+    if (update->ntimestep != lastdynamic)
       theta = input->variable->compute_equal(tvar);
     rotate(x,y,z,theta);
   }
 
   if (moveflag) {
-    if (update->ntimestep != laststep) {
+    if (update->ntimestep != lastdynamic) {
       if (xstr) dx = input->variable->compute_equal(xvar);
       if (ystr) dy = input->variable->compute_equal(yvar);
       if (zstr) dz = input->variable->compute_equal(zvar);
@@ -219,7 +235,7 @@ void Region::forward_transform(double &x, double &y, double &z)
     z += dz;
   }
 
-  laststep = update->ntimestep;
+  lastdynamic = update->ntimestep;
 }
 
 /* ----------------------------------------------------------------------
@@ -230,7 +246,7 @@ void Region::forward_transform(double &x, double &y, double &z)
 void Region::inverse_transform(double &x, double &y, double &z)
 {
   if (moveflag) {
-    if (update->ntimestep != laststep) {
+    if (update->ntimestep != lastdynamic) {
       if (xstr) dx = input->variable->compute_equal(xvar);
       if (ystr) dy = input->variable->compute_equal(yvar);
       if (zstr) dz = input->variable->compute_equal(zvar);
@@ -241,12 +257,12 @@ void Region::inverse_transform(double &x, double &y, double &z)
   }
 
   if (rotateflag) {
-    if (update->ntimestep != laststep)
+    if (update->ntimestep != lastdynamic)
       theta = input->variable->compute_equal(tvar);
     rotate(x,y,z,-theta);
   }
 
-  laststep = update->ntimestep;
+  lastdynamic = update->ntimestep;
 }
 
 /* ----------------------------------------------------------------------
@@ -357,19 +373,19 @@ void Region::options(int narg, char **arg)
       int n = strlen(&arg[iarg+1][2]) + 1;
       tstr = new char[n];
       strcpy(tstr,&arg[iarg+1][2]);
-      point[0] = atof(arg[iarg+2]);
-      point[1] = atof(arg[iarg+3]);
-      point[2] = atof(arg[iarg+4]);
-      axis[0] = atof(arg[iarg+5]);
-      axis[1] = atof(arg[iarg+6]);
-      axis[2] = atof(arg[iarg+7]);
+      point[0] = force->numeric(FLERR,arg[iarg+2]);
+      point[1] = force->numeric(FLERR,arg[iarg+3]);
+      point[2] = force->numeric(FLERR,arg[iarg+4]);
+      axis[0] = force->numeric(FLERR,arg[iarg+5]);
+      axis[1] = force->numeric(FLERR,arg[iarg+6]);
+      axis[2] = force->numeric(FLERR,arg[iarg+7]);
       rotateflag = 1;
       iarg += 8;
     
     } else if (strcmp(arg[iarg],"seed") == 0) {
       if (iarg+2 > narg)
         error->all(FLERR,"Illegal region command");
-      seed = atoi(arg[iarg+1]);
+      seed = force->numeric(FLERR,arg[iarg+1]);
       iarg += 2;
     }
      else error->all(FLERR,"Illegal region command");
@@ -384,9 +400,6 @@ void Region::options(int narg, char **arg)
     error->all(FLERR,"Region union or intersect cannot be dynamic");
 
   // setup scaling
-
-  if (scaleflag && domain->lattice == NULL)
-    error->all(FLERR,"Use of region with undefined lattice");
 
   if (scaleflag) {
     xscale = domain->lattice->xlattice;
@@ -609,6 +622,13 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
     vol_local  = static_cast<double>(n_in_local )/static_cast<double>(n_test) * vol_bbox;
 
     MPI_Sum_Scalar(vol_local,vol_local_all,world);
+
+    if(vol_local_all < 1e-10)
+        error->all(FLERR,"Unable to calculate region volume. Possible sources of error: \n"
+                         "   (a) region volume is too small or out of domain\n"
+                         "   (b) particles for insertion are too large when using all_in yes\n"
+                         "   (c) region is 2d, but should be 3d\n");
+
     vol_local *= (vol_global/vol_local_all);
     
 }

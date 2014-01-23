@@ -18,7 +18,7 @@
 #include "group.h"
 #include "domain.h"
 #include "modify.h"
-#include "fix.h"
+#include "fix_store.h"
 #include "error.h"
 
 using namespace LAMMPS_NS;
@@ -49,27 +49,56 @@ ComputeMSD::ComputeMSD(LAMMPS *lmp, int narg, char **arg) :
     } else error->all(FLERR,"Illegal compute msd command");
   }
 
-  // create a new fix store/state style with or without com keyword
-  // id = compute-ID + store_state, fix group = compute group
+  // create a new fix STORE style
+  // id = compute-ID + COMPUTE_STORE, fix group = compute group
 
-  int n = strlen(id) + strlen("_store_state") + 1;
+  int n = strlen(id) + strlen("_COMPUTE_STORE") + 1;
   id_fix = new char[n];
   strcpy(id_fix,id);
-  strcat(id_fix,"_store_state");
+  strcat(id_fix,"_COMPUTE_STORE");
 
-  char **newarg = new char*[9];
+  char **newarg = new char*[5];
   newarg[0] = id_fix;
   newarg[1] = group->names[igroup];
-  newarg[2] = (char *) "store/state";
-  newarg[3] = (char *) "0";
-  newarg[4] = (char *) "xu";
-  newarg[5] = (char *) "yu";
-  newarg[6] = (char *) "zu";
-  newarg[7] = (char *) "com";
-  newarg[8] = (char *) "yes";
-  if (comflag) modify->add_fix(9,newarg);
-  else modify->add_fix(7,newarg);
+  newarg[2] = (char *) "STORE";
+  newarg[3] = (char *) "1";
+  newarg[4] = (char *) "3";
+  modify->add_fix(5,newarg);
+  fix = (FixStore *) modify->fix[modify->nfix-1];
   delete [] newarg;
+
+  // calculate xu,yu,zu for fix store array
+  // skip if reset from restart file
+
+  if (fix->restart_reset) fix->restart_reset = 0;
+  else {
+    double **xoriginal = fix->astore;
+
+    double **x = atom->x;
+    int *mask = atom->mask;
+    tagint *image = atom->image;
+    int nlocal = atom->nlocal;
+
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit) domain->unmap(x[i],image[i],xoriginal[i]);
+      else xoriginal[i][0] = xoriginal[i][1] = xoriginal[i][2] = 0.0;
+
+    // adjust for COM if requested
+    
+    if (comflag) {
+      double cm[3];
+      masstotal = group->mass(igroup);
+      group->xcm(igroup,masstotal,cm);
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit) {
+          xoriginal[i][0] -= cm[0];
+          xoriginal[i][1] -= cm[1];
+          xoriginal[i][2] -= cm[2];
+        }
+    }
+  }
+
+  // displacement vector
 
   vector = new double[4];
 }
@@ -94,21 +123,11 @@ void ComputeMSD::init()
 
   int ifix = modify->find_fix(id_fix);
   if (ifix < 0) error->all(FLERR,"Could not find compute msd fix ID");
-  fix = modify->fix[ifix];
+  fix = (FixStore *) modify->fix[ifix];
 
   // nmsd = # of atoms in group
 
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
-
-  nmsd = 0;
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit) nmsd++;
-
-  int nmsd_all;
-  MPI_Allreduce(&nmsd,&nmsd_all,1,MPI_INT,MPI_SUM,world);
-  nmsd = nmsd_all;
-
+  nmsd = group->count(igroup);
   masstotal = group->mass(igroup);
 }
 
@@ -129,11 +148,11 @@ void ComputeMSD::compute_vector()
   // relative to center of mass if comflag is set
   // for triclinic, need to unwrap current atom coord via h matrix
 
-  double **xoriginal = fix->array_atom;
+  double **xoriginal = fix->astore;
 
   double **x = atom->x;
   int *mask = atom->mask;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int nlocal = atom->nlocal;
 
   double *h = domain->h;
@@ -150,9 +169,9 @@ void ComputeMSD::compute_vector()
   if (domain->triclinic == 0) {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
-        xbox = (image[i] & 1023) - 512;
-        ybox = (image[i] >> 10 & 1023) - 512;
-        zbox = (image[i] >> 20) - 512;
+        xbox = (image[i] & IMGMASK) - IMGMAX;
+        ybox = (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
+        zbox = (image[i] >> IMG2BITS) - IMGMAX;
         dx = x[i][0] + xbox*xprd - cm[0] - xoriginal[i][0];
         dy = x[i][1] + ybox*yprd - cm[1] - xoriginal[i][1];
         dz = x[i][2] + zbox*zprd - cm[2] - xoriginal[i][2];
@@ -165,9 +184,9 @@ void ComputeMSD::compute_vector()
   } else {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
-        xbox = (image[i] & 1023) - 512;
-        ybox = (image[i] >> 10 & 1023) - 512;
-        zbox = (image[i] >> 20) - 512;
+        xbox = (image[i] & IMGMASK) - IMGMAX;
+        ybox = (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
+        zbox = (image[i] >> IMG2BITS) - IMGMAX;
         dx = x[i][0] + h[0]*xbox + h[5]*ybox + h[4]*zbox -
           cm[0] - xoriginal[i][0];
         dy = x[i][1] + h[1]*ybox + h[3]*zbox - cm[1] - xoriginal[i][1];

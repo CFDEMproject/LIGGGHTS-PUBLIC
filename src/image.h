@@ -35,16 +35,16 @@ class Image : protected Pointers {
   double *boxcolor;             // color to draw box outline with
   int background[3];            // RGB values of background
 
-  Image(class LAMMPS *);
+  Image(class LAMMPS *, int);
   ~Image();
   void buffers();
   void clear();
   void merge();
   void write_JPG(FILE *);
+  void write_PNG(FILE *);
   void write_PPM(FILE *);
   void view_params(double, double, double, double, double, double);
 
-  void color_minmax(int, double *, int);
   void draw_sphere(double *, double *, double);
   void draw_cube(double *, double *, double);
   void draw_cylinder(double *, double *, double *, double, int);
@@ -52,11 +52,14 @@ class Image : protected Pointers {
   void draw_box(double (*)[3], double);
   void draw_axes(double (*)[3], double);
 
-  int colormap(int, char **);
+  int map_dynamic(int);
+  int map_reset(int, int, char **);
+  int map_minmax(int, double, double);
+  double *map_value2color(int, double);
+
   int addcolor(char *, double, double, double);
   double *element2color(char *);
   double element2diam(char *);
-  double *value2color(double);
   double *color2rgb(const char *, int index=0);
   int default_colors();
 
@@ -64,9 +67,12 @@ class Image : protected Pointers {
   int me,nprocs;
   int npixels;
 
+  class ColorMap **maps;
+  int nmap;
+
   double *depthBuffer,*surfaceBuffer;
   double *depthcopy,*surfacecopy;
-  char *imageBuffer,*rgbcopy,*writeBuffer;
+  unsigned char *imageBuffer,*rgbcopy,*writeBuffer;
 
   // constant view params
 
@@ -106,24 +112,6 @@ class Image : protected Pointers {
   char **username;
   double **userrgb;
 
-  // color map
-
-  int mstyle,mrange;               // 2-letter style/range of color map
-  int mlo,mhi;                     // bounds = NUMERIC or MINVALUE or MAXVALUE
-  double mlovalue,mhivalue;        // user bounds if NUMERIC
-  double locurrent,hicurrent;      // current bounds for this snapshot
-  double mbinsize,mbinsizeinv;     // bin size for sequential color map
-
-  struct MapEntry {
-    int single,lo,hi;              // NUMERIC or MINVALUE or MAXVALUE
-    double svalue,lvalue,hvalue;   // actual value
-    double *color;                 // RGB values
-  };
-
-  MapEntry *mentry;
-  int nentry;
-  double interpolate[3];
-
   // SSAO RNG
 
   class RanMars *random;
@@ -146,6 +134,37 @@ class Image : protected Pointers {
                 (a[1] - b[1]) * (a[1] - b[1]) +
                 (a[2] - b[2]) * (a[2] - b[2]));
   }
+};
+
+// ColorMap class
+
+class ColorMap : protected Pointers {
+ public:
+  int dynamic;                     // 0/1 if lo/hi bounds are static/dynamic
+
+  ColorMap(class LAMMPS *, class Image*);
+  ~ColorMap();
+  int reset(int, char **);
+  int minmax(double, double);
+  double *value2color(double);
+
+ private:
+  class Image *image;              // caller with color2rgb() method
+  int mstyle,mrange;               // 2-letter style/range of color map
+  int mlo,mhi;                     // bounds = NUMERIC or MINVALUE or MAXVALUE
+  double mlovalue,mhivalue;        // user bounds if NUMERIC
+  double locurrent,hicurrent;      // current bounds for this snapshot
+  double mbinsize,mbinsizeinv;     // bin size for sequential color map
+  double interpolate[3];           // local storage for returned RGB color
+
+  struct MapEntry {
+    int single,lo,hi;              // NUMERIC or MINVALUE or MAXVALUE
+    double svalue,lvalue,hvalue;   // actual value
+    double *color;                 // RGB values
+  };
+
+  MapEntry *mentry;
+  int nentry;
 };
 
 }

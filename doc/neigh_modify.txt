@@ -13,7 +13,7 @@ neigh_modify command :h3
 neigh_modify keyword values ... :pre
 
 one or more keyword/value pairs may be listed :ulb,l
-keyword = {delay} or {every} or {check} or {once} or {include} or {exclude} or {page} or {one} or {binsize}
+keyword = {delay} or {every} or {check} or {once} or {cluster} or {include} or {exclude} or {page} or {one} or {binsize}
   {delay} value = N
     N = delay building until this many steps since last build
   {every} value = M
@@ -24,6 +24,9 @@ keyword = {delay} or {every} or {check} or {once} or {include} or {exclude} or {
   {once}
     {yes} = only build neighbor list once at start of run and never rebuild
     {no} = rebuild neighbor list according to other settings
+  {cluster}
+    {yes} = check bond,angle,etc neighbor list for nearby clusters
+    {no} = do not check bond,angle,etc neighbor list for nearby clusters
   {include} value = group-ID
     group-ID = only build pair neighbor lists for atoms in this group
   {exclude} values:
@@ -39,8 +42,8 @@ keyword = {delay} or {every} or {check} or {once} or {include} or {exclude} or {
     N = number of pairs stored in a single neighbor page
   {one} value = N
     N = max number of neighbors of one atom
-  {contactHistoryDistanceFactor} value = N
-    N = contact history distance factor used to keep contact history of non-contacting particles (must be > 1).
+  {contact_distance_factor} value = N
+    N = contact distance factor used to extend the range of granular neighbor lists (must be > 1).
   {binsize} value = size
     size = bin size for neighbor list construction (distance units) :pre
 :ule
@@ -52,7 +55,7 @@ neigh_modify exclude type 2 3
 neigh_modify exclude group frozen frozen check no
 neigh_modify exclude group residue1 chain3
 neigh_modify exclude molecule rigid
-neigh_modify delay 0 contactHistoryDistanceFactor 2.0 :pre
+neigh_modify delay 0 contact_distance_factor 1.5 :pre
 
 [Description:]
 
@@ -78,9 +81,27 @@ lists should be rebuilt.
 When the rRESPA integrator is used (see the "run_style"_run_style.html
 command), the {every} and {delay} parameters refer to the longest
 (outermost) timestep.
-The {contactHistoryDistanceFactor} setting has to be used while using fix liquid transfer. 
-This factor must be either 1 or greater than 1, to ensure that the extra contact history values are not lost
-when the neighbor lists are rebuilt. 
+
+The {contact_distance_factor} setting can be used to increase the range
+of granular neighbor lists. When {contact_distance_factor} > 1.0,
+instead of the standard criterion ri+rj+skin < distance, LIGGGHTS is
+checking for {contact_distance_factor} *(ri+rj)+skin < distance to
+decided if a pair of granular particles goes into a neighbor list.
+
+The {cluster} option does a sanity test every time neighbor lists are
+built for bond, angle, dihedral, and improper interactions, to check
+that each set of 2, 3, or 4 atoms is a cluster of nearby atoms.  It
+does this by computing the distance between pairs of atoms in the
+interaction and insuring they are not further apart than half the
+periodic box length.  If they are, an error is generated, since the
+interaction would be computed between far-away atoms instead of their
+nearby periodic images.  The only way this should happen is if the
+pairwise cutoff is so short that atoms that are part of the same
+interaction are not communicated as ghost atoms.  This is an unusual
+model (e.g. no pair interactions at all) and the problem can be fixed
+by use of the "communicate cutoff"_communicate.html command.  Note
+that to save time, the default {cluster} setting is {no}, so that this
+check is not performed.
 
 The {include} option limits the building of pairwise neighbor lists to
 atoms in the specified group.  This can be useful for models where a
@@ -122,6 +143,17 @@ times; they require one check for each time they have been specified.
 Note that the exclude options only affect pairwise interactions; see
 the "delete_bonds"_delete_bonds.html command for information on
 turning off bond interactions.
+
+IMPORTANT NOTE: Excluding pairwise interactions will not work
+correctly when also using a long-range solver via the
+"kspace_style"_kspace_style.html command.  LAMMPS will give a warning
+to this effect.  This is because the short-range pairwise interaction
+needs to subtract off a term from the total energy for pairs whose
+short-range interaction is excluded, to compensate for how the
+long-range solver treats the interaction.  This is done correctly for
+pairwise interactions that are excluded (or weighted) via the
+"special_bonds"_special_bonds.html command.  But it is not done for
+interactions that are excluded via these neigh_modify exclude options.
 
 The {page} and {one} options affect how memory is allocated for the
 neighbor lists.  For most simulations the default settings for these
@@ -177,4 +209,5 @@ space.
 [Default:]
 
 The option defaults are delay = 10, every = 1, check = yes, once = no,
-include = all, exclude = none, page = 100000, one = 2000, and binsize = 0.0.
+cluster = no, include = all, exclude = none, page = 100000, one =
+2000, and binsize = 0.0.

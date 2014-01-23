@@ -14,6 +14,7 @@
 #include "mpi.h"
 #include "timer.h"
 #include "memory.h"
+#include "modify.h"
 
 using namespace LAMMPS_NS;
 
@@ -36,6 +37,10 @@ Timer::~Timer()
 void Timer::init()
 {
   for (int i = 0; i < TIME_N; i++) array[i] = 0.0;
+
+  if(modify->timing) {
+    for (int i = 0; i < modify->nfix; i++) modify->fix[i]->reset_time_recording();
+  }
 }
 
 /* ---------------------------------------------------------------------- */

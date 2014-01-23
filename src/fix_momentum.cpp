@@ -18,6 +18,7 @@
 #include "domain.h"
 #include "group.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -32,7 +33,7 @@ FixMomentum::FixMomentum(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg)
 {
   if (narg < 4) error->all(FLERR,"Illegal fix momentum command");
-  nevery = atoi(arg[3]);
+  nevery = force->inumeric(FLERR,arg[3]);
   if (nevery <= 0) error->all(FLERR,"Illegal fix momentum command");
 
   linear = angular = 0;
@@ -42,9 +43,9 @@ FixMomentum::FixMomentum(LAMMPS *lmp, int narg, char **arg) :
     if (strcmp(arg[iarg],"linear") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix momentum command");
       linear = 1;
-      xflag = atoi(arg[iarg+1]);
-      yflag = atoi(arg[iarg+2]);
-      zflag = atoi(arg[iarg+3]);
+      xflag = force->inumeric(FLERR,arg[iarg+1]);
+      yflag = force->inumeric(FLERR,arg[iarg+2]);
+      zflag = force->inumeric(FLERR,arg[iarg+3]);
       iarg += 4;
     } else if (strcmp(arg[iarg],"angular") == 0) {
       angular = 1;
@@ -57,7 +58,8 @@ FixMomentum::FixMomentum(LAMMPS *lmp, int narg, char **arg) :
 
   if (linear)
     if (xflag < 0 || xflag > 1 || yflag < 0 || yflag > 1 ||
-        zflag < 0 || zflag > 1) error->all(FLERR,"Illegal fix momentum command");
+        zflag < 0 || zflag > 1) 
+      error->all(FLERR,"Illegal fix momentum command");
 
   // cannot have 0 atoms in group
 
@@ -118,23 +120,18 @@ void FixMomentum::end_of_step()
     double **x = atom->x;
     double **v = atom->v;
     int *mask = atom->mask;
-    int *image = atom->image;
+    tagint *image = atom->image;
     int nlocal = atom->nlocal;
 
-    int xbox,ybox,zbox;
     double dx,dy,dz;
-    double xprd = domain->xprd;
-    double yprd = domain->yprd;
-    double zprd = domain->zprd;
+    double unwrap[3];
 
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
-        xbox = (image[i] & 1023) - 512;
-        ybox = (image[i] >> 10 & 1023) - 512;
-        zbox = (image[i] >> 20) - 512;
-        dx = (x[i][0] + xbox*xprd) - xcm[0];
-        dy = (x[i][1] + ybox*yprd) - xcm[1];
-        dz = (x[i][2] + zbox*zprd) - xcm[2];
+        domain->unmap(x[i],image[i],unwrap);
+        dx = unwrap[0] - xcm[0];
+        dy = unwrap[1] - xcm[1];
+        dz = unwrap[2] - xcm[2];
         v[i][0] -= omega[1]*dz - omega[2]*dy;
         v[i][1] -= omega[2]*dx - omega[0]*dz;
         v[i][2] -= omega[0]*dy - omega[1]*dx;

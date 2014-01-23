@@ -21,8 +21,10 @@
 #include "domain.h"
 #include "comm.h"
 #include "group.h"
+#include "atom_masks.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 
@@ -84,6 +86,8 @@ Compute::Compute(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   // setup map for molecule IDs
 
   molmap = NULL;
+  datamask = ALL_MASK;
+  datamask_ext = ALL_MASK;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -107,7 +111,7 @@ void Compute::modify_params(int narg, char **arg)
   while (iarg < narg) {
     if (strcmp(arg[iarg],"extra") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal compute_modify command");
-      extra_dof = atoi(arg[iarg+1]);
+      extra_dof = force->inumeric(FLERR,arg[iarg+1]);
       iarg += 2;
     } else if (strcmp(arg[iarg],"dynamic") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal compute_modify command");
@@ -279,7 +283,8 @@ int Compute::molecules_in_group(int &idlo, int &idhi)
 
   MPI_Allreduce(&flag,&flagall,1,MPI_INT,MPI_SUM,world);
   if (flagall && comm->me == 0)
-    error->warning(FLERR,"One or more compute molecules has atoms not in group");
+    error->warning(FLERR,
+                   "One or more compute molecules has atoms not in group");
 
   // if molmap simply stores 1 to Nmolecules, then free it
 

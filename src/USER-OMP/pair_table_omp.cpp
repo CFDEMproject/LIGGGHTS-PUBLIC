@@ -57,11 +57,11 @@ void PairTableOMP::compute(int eflag, int vflag)
 
     if (evflag) {
       if (eflag) {
-	if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else {
       if (force->newton_pair) eval<0,0,1>(ifrom, ito, thr);
@@ -80,18 +80,18 @@ void PairTableOMP::eval(int iifrom, int iito, ThrData * const thr)
   double rsq,factor_lj,fraction,value,a,b;
   int *ilist,*jlist,*numneigh,**firstneigh;
   Table *tb;
-  
+
   union_int_float_t rsq_lookup;
   int tlm1 = tablength - 1;
 
   evdwl = 0.0;
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
-  const int * const type = atom->type;
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
+  const int * _noalias const type = atom->type;
   const int nlocal = atom->nlocal;
   const int tid = thr->get_tid();
-  const double * const special_lj = force->special_lj;
+  const double * _noalias const special_lj = force->special_lj;
   double fxtmp,fytmp,fztmp;
 
   ilist = list->ilist;
@@ -103,9 +103,9 @@ void PairTableOMP::eval(int iifrom, int iito, ThrData * const thr)
   for (ii = iifrom; ii < iito; ++ii) {
 
     i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
@@ -116,88 +116,88 @@ void PairTableOMP::eval(int iifrom, int iito, ThrData * const thr)
       factor_lj = special_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-	tb = &tables[tabindex[itype][jtype]];
+        tb = &tables[tabindex[itype][jtype]];
 
-	if (check_error_thr((rsq < tb->innersq),tid,
-			    FLERR,"Pair distance < table inner cutoff"))
-	  return;
- 
-	if (tabstyle == LOOKUP) {
-	  itable = static_cast<int> ((rsq - tb->innersq) * tb->invdelta);
+        if (check_error_thr((rsq < tb->innersq),tid,
+                            FLERR,"Pair distance < table inner cutoff"))
+          return;
 
-	  if (check_error_thr((itable >= tlm1),tid,
-			      FLERR,"Pair distance > table outer cutoff"))
-	    return;
+        if (tabstyle == LOOKUP) {
+          itable = static_cast<int> ((rsq - tb->innersq) * tb->invdelta);
 
-	  fpair = factor_lj * tb->f[itable];
-	} else if (tabstyle == LINEAR) {
-	  itable = static_cast<int> ((rsq - tb->innersq) * tb->invdelta);
+          if (check_error_thr((itable >= tlm1),tid,
+                              FLERR,"Pair distance > table outer cutoff"))
+            return;
 
-	  if (check_error_thr((itable >= tlm1),tid,
-			      FLERR,"Pair distance > table outer cutoff"))
-	    return;
+          fpair = factor_lj * tb->f[itable];
+        } else if (tabstyle == LINEAR) {
+          itable = static_cast<int> ((rsq - tb->innersq) * tb->invdelta);
 
-	  fraction = (rsq - tb->rsq[itable]) * tb->invdelta;
-	  value = tb->f[itable] + fraction*tb->df[itable];
-	  fpair = factor_lj * value;
-	} else if (tabstyle == SPLINE) {
-	  itable = static_cast<int> ((rsq - tb->innersq) * tb->invdelta);
+          if (check_error_thr((itable >= tlm1),tid,
+                              FLERR,"Pair distance > table outer cutoff"))
+            return;
 
-	  if (check_error_thr((itable >= tlm1),tid,
-			      FLERR,"Pair distance > table outer cutoff"))
-	    return;
+          fraction = (rsq - tb->rsq[itable]) * tb->invdelta;
+          value = tb->f[itable] + fraction*tb->df[itable];
+          fpair = factor_lj * value;
+        } else if (tabstyle == SPLINE) {
+          itable = static_cast<int> ((rsq - tb->innersq) * tb->invdelta);
 
-	  b = (rsq - tb->rsq[itable]) * tb->invdelta;
-	  a = 1.0 - b;
-	  value = a * tb->f[itable] + b * tb->f[itable+1] + 
-	    ((a*a*a-a)*tb->f2[itable] + (b*b*b-b)*tb->f2[itable+1]) * 
+          if (check_error_thr((itable >= tlm1),tid,
+                              FLERR,"Pair distance > table outer cutoff"))
+            return;
+
+          b = (rsq - tb->rsq[itable]) * tb->invdelta;
+          a = 1.0 - b;
+          value = a * tb->f[itable] + b * tb->f[itable+1] +
+            ((a*a*a-a)*tb->f2[itable] + (b*b*b-b)*tb->f2[itable+1]) *
             tb->deltasq6;
-	  fpair = factor_lj * value;
-	} else {
-	  rsq_lookup.f = rsq;
-	  itable = rsq_lookup.i & tb->nmask;
-	  itable >>= tb->nshiftbits;
-	  fraction = (rsq_lookup.f - tb->rsq[itable]) * tb->drsq[itable];
-	  value = tb->f[itable] + fraction*tb->df[itable];
-	  fpair = factor_lj * value;
-	}
+          fpair = factor_lj * value;
+        } else {
+          rsq_lookup.f = rsq;
+          itable = rsq_lookup.i & tb->nmask;
+          itable >>= tb->nshiftbits;
+          fraction = (rsq_lookup.f - tb->rsq[itable]) * tb->drsq[itable];
+          value = tb->f[itable] + fraction*tb->df[itable];
+          fpair = factor_lj * value;
+        }
 
-	fxtmp += delx*fpair;
-	fytmp += dely*fpair;
-	fztmp += delz*fpair;
-	if (NEWTON_PAIR || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        fxtmp += delx*fpair;
+        fytmp += dely*fpair;
+        fztmp += delz*fpair;
+        if (NEWTON_PAIR || j < nlocal) {
+          f[j].x -= delx*fpair;
+          f[j].y -= dely*fpair;
+          f[j].z -= delz*fpair;
+        }
 
-	if (EFLAG) {
-	  if (tabstyle == LOOKUP)
-	    evdwl = tb->e[itable];
-	  else if (tabstyle == LINEAR || tabstyle == BITMAP)
-	    evdwl = tb->e[itable] + fraction*tb->de[itable];
-	  else
-	    evdwl = a * tb->e[itable] + b * tb->e[itable+1] + 
-	      ((a*a*a-a)*tb->e2[itable] + (b*b*b-b)*tb->e2[itable+1]) * 
-	      tb->deltasq6;
-	  evdwl *= factor_lj;
-	}
+        if (EFLAG) {
+          if (tabstyle == LOOKUP)
+            evdwl = tb->e[itable];
+          else if (tabstyle == LINEAR || tabstyle == BITMAP)
+            evdwl = tb->e[itable] + fraction*tb->de[itable];
+          else
+            evdwl = a * tb->e[itable] + b * tb->e[itable+1] +
+              ((a*a*a-a)*tb->e2[itable] + (b*b*b-b)*tb->e2[itable+1]) *
+              tb->deltasq6;
+          evdwl *= factor_lj;
+        }
 
-	if (EVFLAG) ev_tally_thr(this,i,j,nlocal,NEWTON_PAIR,
-				 evdwl,0.0,fpair,delx,dely,delz,thr);
+        if (EVFLAG) ev_tally_thr(this,i,j,nlocal,NEWTON_PAIR,
+                                 evdwl,0.0,fpair,delx,dely,delz,thr);
       }
     }
 
-    f[i][0] += fxtmp;
-    f[i][1] += fytmp;
-    f[i][2] += fztmp;
+    f[i].x += fxtmp;
+    f[i].y += fytmp;
+    f[i].z += fztmp;
   }
 }
 

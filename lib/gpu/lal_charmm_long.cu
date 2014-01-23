@@ -14,27 +14,36 @@
 // ***************************************************************************/
 
 #ifdef NV_KERNEL
+
 #include "lal_aux_fun1.h"
+#ifndef _DOUBLE_DOUBLE
 texture<float4> pos_tex;
 texture<float> q_tex;
-#ifndef _DOUBLE_DOUBLE
-ucl_inline float4 fetch_pos(const int& i, const float4 *pos) 
-  { return tex1Dfetch(pos_tex, i); }
-ucl_inline float fetch_q(const int& i, const float *q) 
-  { return tex1Dfetch(q_tex, i); }
-#endif
+#else
+texture<int4,1> pos_tex;
+texture<int2> q_tex;
 #endif
 
-__kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
-                          const int lj_types, __global numtyp *sp_lj_in,
-                          __global int *dev_nbor, __global int *dev_packed,
-                          __global acctyp4 *ans, __global acctyp *engv, 
-                          const int eflag, const int vflag, const int inum, 
-                          const int nbor_pitch, __global numtyp *q_,
-                          const numtyp cut_coulsq, const numtyp qqrd2e,
-                          const numtyp g_ewald, const numtyp denom_lj,
-                          const numtyp cut_bothsq, const numtyp cut_ljsq,
-                          const numtyp cut_lj_innersq, const int t_per_atom) {
+#else
+#define pos_tex x_
+#define q_tex q_
+#endif
+
+__kernel void k_charmm_long(const __global numtyp4 *restrict x_,
+                            const __global numtyp4 *restrict lj1,
+                            const int lj_types, 
+                            const __global numtyp *restrict sp_lj_in,
+                            const __global int *dev_nbor,
+                            const __global int *dev_packed,
+                            __global acctyp4 *restrict ans,
+                            __global acctyp *restrict engv, 
+                            const int eflag, const int vflag, const int inum, 
+                            const int nbor_pitch, 
+                            const __global numtyp *restrict q_,
+                            const numtyp cut_coulsq, const numtyp qqrd2e,
+                            const numtyp g_ewald, const numtyp denom_lj,
+                            const numtyp cut_bothsq, const numtyp cut_ljsq,
+                            const numtyp cut_lj_innersq, const int t_per_atom) {
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
 
@@ -57,13 +66,14 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
     virial[i]=(acctyp)0;
 
   if (ii<inum) {
-    __global int *nbor, *list_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *list_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info(dev_nbor,dev_packed,nbor_pitch,t_per_atom,ii,offset,i,numj,
               n_stride,list_end,nbor);
   
-    numtyp4 ix=fetch_pos(i,x_); //x_[i];
-    numtyp qtmp=fetch_q(i,q_);
+    numtyp4 ix; fetch4(ix,i,pos_tex); //x_[i];
+    numtyp qtmp; fetch(qtmp,i,q_tex);
     int itype=ix.w;
 
     for ( ; nbor<list_end; nbor+=n_stride) {
@@ -74,7 +84,7 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
       factor_coul = (numtyp)1.0-sp_lj[sbmask(j)+4];
       j &= NEIGHMASK;
 
-      numtyp4 jx=fetch_pos(j,x_); //x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex); //x_[j];
       int jtype=jx.w;
 
       // Compute r12
@@ -110,7 +120,8 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
           numtyp expm2 = ucl_exp(-grij*grij);
           numtyp t = ucl_recip((numtyp)1.0 + EWALD_P*grij);
           _erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
-          prefactor = qqrd2e * qtmp*fetch_q(j,q_)/r;
+          fetch(prefactor,j,q_tex);
+          prefactor *= qqrd2e * qtmp/r;
           forcecoul = prefactor * (_erfc + EWALD_F*grij*expm2-factor_coul);
         } else
           forcecoul = (numtyp)0.0;
@@ -147,17 +158,21 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
   } // if ii
 }
 
-__kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp2 *ljd_in,
-                               __global numtyp* sp_lj_in, __global int *dev_nbor, 
-                               __global int *dev_packed, __global acctyp4 *ans,
-                               __global acctyp *engv, const int eflag,
-                               const int vflag, const int inum,
-                               const int nbor_pitch, __global numtyp *q_,
-                               const numtyp cut_coulsq, const numtyp qqrd2e,
-                               const numtyp g_ewald, const numtyp denom_lj,
-                               const numtyp cut_bothsq, const numtyp cut_ljsq, 
-                               const numtyp cut_lj_innersq,
-                               const int t_per_atom) {
+__kernel void k_charmm_long_fast(const __global numtyp4 *restrict x_, 
+                                 const __global numtyp2 *restrict ljd_in,
+                                 const __global numtyp *restrict sp_lj_in, 
+                                 const __global int *dev_nbor, 
+                                 const __global int *dev_packed, 
+                                 __global acctyp4 *restrict ans,
+                                 __global acctyp *restrict engv, 
+                                 const int eflag, const int vflag, 
+                                 const int inum, const int nbor_pitch, 
+                                 const __global numtyp *restrict q_,
+                                 const numtyp cut_coulsq, const numtyp qqrd2e,
+                                 const numtyp g_ewald, const numtyp denom_lj,
+                                 const numtyp cut_bothsq, const numtyp cut_ljsq, 
+                                 const numtyp cut_lj_innersq,
+                                 const int t_per_atom) {
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
 
@@ -165,7 +180,8 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp2 *ljd_in,
   __local numtyp sp_lj[8];
   if (tid<8)
     sp_lj[tid]=sp_lj_in[tid];
-  ljd[tid]=ljd_in[tid];
+  if (tid<MAX_BIO_SHARED_TYPES)
+    ljd[tid]=ljd_in[tid];
   if (tid+BLOCK_BIO_PAIR<MAX_BIO_SHARED_TYPES)
     ljd[tid+BLOCK_BIO_PAIR]=ljd_in[tid+BLOCK_BIO_PAIR];
   
@@ -180,13 +196,14 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp2 *ljd_in,
   __syncthreads();
   
   if (ii<inum) {
-    __global int *nbor, *list_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *list_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info(dev_nbor,dev_packed,nbor_pitch,t_per_atom,ii,offset,i,numj,
               n_stride,list_end,nbor);
   
-    numtyp4 ix=fetch_pos(i,x_); //x_[i];
-    numtyp qtmp=fetch_q(i,q_);
+    numtyp4 ix; fetch4(ix,i,pos_tex); //x_[i];
+    numtyp qtmp; fetch(qtmp,i,q_tex);
     int itype=ix.w;
 
     for ( ; nbor<list_end; nbor+=n_stride) {
@@ -197,7 +214,7 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp2 *ljd_in,
       factor_coul = (numtyp)1.0-sp_lj[sbmask(j)+4];
       j &= NEIGHMASK;
 
-      numtyp4 jx=fetch_pos(j,x_); //x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex); //x_[j];
       int jtype=jx.w;
 
       // Compute r12
@@ -239,7 +256,8 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp2 *ljd_in,
           numtyp expm2 = ucl_exp(-grij*grij);
           numtyp t = ucl_recip((numtyp)1.0 + EWALD_P*grij);
           _erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
-          prefactor = qqrd2e * qtmp*fetch_q(j,q_)/r;
+          fetch(prefactor,j,q_tex);
+          prefactor *= qqrd2e * qtmp/r;
           forcecoul = prefactor * (_erfc + EWALD_F*grij*expm2-factor_coul);
         } else
           forcecoul = (numtyp)0.0;

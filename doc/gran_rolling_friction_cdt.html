@@ -1,0 +1,47 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>gran rolling_friction cdt 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>rolling_friction cdt 
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info:</B>
+</P>
+<P>This part of <A HREF = "pair_gran.html">pair gran</A> and 
+<A HREF = "fix_wall_gran.html">fix wall/gran</A>
+is not availabe in LAMMPS.
+</P>
+<P><B>Description:</B>
+</P>
+<P>This model can be used as part of <A HREF = "pair_gran.html">pair gran</A> and 
+<A HREF = "fix_wall_gran.html">fix wall/gran</A>
+</P>
+<P>The constant directional torque (CDT) model adds an additional torque 
+contribution, equal to
+</P>
+<P>torque_rf = rmu*k_n*delta_n*w_r_shear/mag(w_r_shear)*(R*).
+</P>
+<P>w_r_shear is the projection of w_r into the shear plane, where w_r = w1-w2
+</P>
+<P>If the rolling friction model is activated, the coefficient of rolling friction (rmu) must be defined as
+</P>
+<PRE>fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
+</PRE>
+<P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
+</P>
+<P><B>(Ai)</B> Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
+</P>
+</HTML>

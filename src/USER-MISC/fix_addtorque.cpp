@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -56,7 +56,7 @@ FixAddTorque::FixAddTorque(LAMMPS *lmp, int narg, char **arg) :
     xstr = new char[n];
     strcpy(xstr,&arg[3][2]);
   } else {
-    xvalue = atof(arg[3]);
+    xvalue = force->numeric(FLERR,arg[3]);
     xstyle = CONSTANT;
   }
   if (strstr(arg[4],"v_") == arg[4]) {
@@ -64,7 +64,7 @@ FixAddTorque::FixAddTorque(LAMMPS *lmp, int narg, char **arg) :
     ystr = new char[n];
     strcpy(ystr,&arg[4][2]);
   } else {
-    yvalue = atof(arg[4]);
+    yvalue = force->numeric(FLERR,arg[4]);
     ystyle = CONSTANT;
   }
   if (strstr(arg[5],"v_") == arg[5]) {
@@ -72,10 +72,10 @@ FixAddTorque::FixAddTorque(LAMMPS *lmp, int narg, char **arg) :
     zstr = new char[n];
     strcpy(zstr,&arg[5][2]);
   } else {
-    zvalue = atof(arg[5]);
+    zvalue = force->numeric(FLERR,arg[5]);
     zstyle = CONSTANT;
   }
-  
+
   force_flag = 0;
   foriginal[0] = foriginal[1] = foriginal[2] = foriginal[3] = 0.0;
 }
@@ -109,19 +109,22 @@ void FixAddTorque::init()
 
   if (xstr) {
     xvar = input->variable->find(xstr);
-    if (xvar < 0) error->all(FLERR,"Variable name for fix addtorque does not exist");
+    if (xvar < 0) 
+      error->all(FLERR,"Variable name for fix addtorque does not exist");
     if (input->variable->equalstyle(xvar)) xstyle = EQUAL;
     else error->all(FLERR,"Variable for fix addtorque is invalid style");
   }
   if (ystr) {
     yvar = input->variable->find(ystr);
-    if (yvar < 0) error->all(FLERR,"Variable name for fix addtorque does not exist");
+    if (yvar < 0) 
+      error->all(FLERR,"Variable name for fix addtorque does not exist");
     if (input->variable->equalstyle(yvar)) ystyle = EQUAL;
     else error->all(FLERR,"Variable for fix addtorque is invalid style");
   }
   if (zstr) {
     zvar = input->variable->find(zstr);
-    if (zvar < 0) error->all(FLERR,"Variable name for fix addtorque does not exist");
+    if (zvar < 0) 
+      error->all(FLERR,"Variable name for fix addtorque does not exist");
     if (input->variable->equalstyle(zvar)) zstyle = EQUAL;
     else error->all(FLERR,"Variable for fix addtorque is invalid style");
   }
@@ -162,25 +165,23 @@ void FixAddTorque::post_force(int vflag)
   double **f = atom->f;
   int *mask = atom->mask;
   int *type = atom->type;
-  int *image = atom->image;
+  tagint *image = atom->image;
   double *mass = atom->mass;
   double *rmass = atom->rmass;
   int nlocal = atom->nlocal;
   double mvv2e = force->mvv2e;
-  
-  int xbox,ybox,zbox;
-  double dx,dy,dz,vx,vy,vz,fx,fy,fz,massone,omegadotr;
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
 
+  double dx,dy,dz,vx,vy,vz,fx,fy,fz,massone,omegadotr;
   double tcm[3],xcm[3],angmom[3],omega[3],itorque[3],domegadt[3],tlocal[3];
   double inertia[3][3];
+  double unwrap[3];
+
   // foriginal[0] = "potential energy" for added force
   // foriginal[123] = torque on atoms before extra force added
+
   foriginal[0] = foriginal[1] = foriginal[2] = foriginal[3] = 0.0;
   force_flag = 0;
-  
+
   if (varflag == EQUAL) {
     // variable torque, wrap with clear/add
     modify->clearstep_compute();
@@ -189,7 +190,7 @@ void FixAddTorque::post_force(int vflag)
     if (zstyle == EQUAL) zvalue = input->variable->compute_equal(zvar);
     modify->addstep_compute(update->ntimestep + 1);
   }
-  
+
   atom->check_mass();
   double masstotal = group->mass(igroup);
   group->xcm(igroup,masstotal,xcm);
@@ -200,12 +201,10 @@ void FixAddTorque::post_force(int vflag)
   tlocal[0] = tlocal[1] = tlocal[2] = 0.0;
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = (x[i][0] + xbox*xprd) - xcm[0];
-      dy = (x[i][1] + ybox*yprd) - xcm[1];
-      dz = (x[i][2] + zbox*zprd) - xcm[2];
+      domain->unmap(x[i],image[i],unwrap);
+      dx = unwrap[0] - xcm[0];
+      dy = unwrap[1] - xcm[1];
+      dz = unwrap[2] - xcm[2];
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
       omegadotr = omega[0]*dx+omega[1]*dy+omega[2]*dz;
@@ -214,20 +213,18 @@ void FixAddTorque::post_force(int vflag)
       tlocal[2] += massone * omegadotr * (dx*omega[1] - dy*omega[0]);
     }
   MPI_Allreduce(tlocal,itorque,3,MPI_DOUBLE,MPI_SUM,world);
-  
+
   tcm[0] = xvalue - mvv2e*itorque[0];
   tcm[1] = yvalue - mvv2e*itorque[1];
   tcm[2] = zvalue - mvv2e*itorque[2];
   group->omega(tcm,inertia,domegadt);
-  
+
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = (x[i][0] + xbox*xprd) - xcm[0];
-      dy = (x[i][1] + ybox*yprd) - xcm[1];
-      dz = (x[i][2] + zbox*zprd) - xcm[2];
+      domain->unmap(x[i],image[i],unwrap);
+      dx = unwrap[0] - xcm[0];
+      dy = unwrap[1] - xcm[1];
+      dz = unwrap[2] - xcm[2];
       vx = mvv2e*(dz*omega[1]-dy*omega[2]);
       vy = mvv2e*(dx*omega[2]-dz*omega[0]);
       vz = mvv2e*(dy*omega[0]-dx*omega[1]);
@@ -236,7 +233,7 @@ void FixAddTorque::post_force(int vflag)
       fx = massone * (dz*domegadt[1]-dy*domegadt[2] + vz*omega[1]-vy*omega[2]);
       fy = massone * (dx*domegadt[2]-dz*domegadt[0] + vx*omega[2]-vz*omega[0]);
       fz = massone * (dy*domegadt[0]-dx*domegadt[1] + vy*omega[0]-vx*omega[1]);
-      
+
       // potential energy = - x dot f
       foriginal[0] -= fx*x[i][0] + fy*x[i][1] + fz*x[i][2];
       foriginal[1] += dy*f[i][2] - dz*f[i][1];

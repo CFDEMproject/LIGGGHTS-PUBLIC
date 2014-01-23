@@ -19,7 +19,46 @@
 
 <LI>one or more keyword/value pairs may be appended 
 
-<LI>keyword = <I>acolor</I> or <I>adiam</I> or <I>amap</I> or <I>append</I> or <I>bcolor</I> or <I>bdiam</I> or <I>backcolor</I> or <I>boxcolor</I> or <I>color</I> or <I>every</I> or <I>flush</I> or <I>format</I> or <I>image</I> or <I>label</I> or <I>precision</I> or <I>region</I> or <I>scale</I> or <I>sort</I> or <I>thresh</I> or <I>unwrap</I> 
+<LI>these keywords apply to various dump styles 
+
+<LI>keyword = <I>append</I> or <I>buffer</I> or <I>element</I> or <I>every</I> or <I>fileper</I> or <I>first</I> or <I>flush</I> or <I>format</I> or <I>image</I> or <I>label</I> or <I>nfile</I> or <I>pad</I> or <I>precision</I> or <I>region</I> or <I>scale</I> or <I>sort</I> or <I>thresh</I> or <I>unwrap</I> 
+
+<PRE>  <I>append</I> arg = <I>yes</I> or <I>no</I>
+  <I>buffer</I> arg = <I>yes</I> or <I>no</I>
+  <I>element</I> args = E1 E2 ... EN, where N = # of atom types
+    E1,...,EN = element name, e.g. C or Fe or Ga
+  <I>every</I> arg = N
+    N = dump every this many timesteps
+    N can be a variable (see below)
+  <I>fileper</I> arg = Np
+    Np = write one file for every this many processors
+  <I>first</I> arg = <I>yes</I> or <I>no</I>
+  <I>format</I> arg = C-style format string for one line of output
+  <I>flush</I> arg = <I>yes</I> or <I>no</I>
+  <I>image</I> arg = <I>yes</I> or <I>no</I>
+  <I>label</I> arg = string
+    string = character string (e.g. BONDS) to use in header of dump local file
+  <I>nfile</I> arg = Nf
+    Nf = write this many files, one from each of Nf processors
+  <I>pad</I> arg = Nchar = # of characters to convert timestep to
+  <I>precision</I> arg = power-of-10 value from 10 to 1000000
+  <I>region</I> arg = region-ID or "none"
+  <I>scale</I> arg = <I>yes</I> or <I>no</I>
+  <I>sort</I> arg = <I>off</I> or <I>id</I> or N or -N
+     off = no sorting of per-atom lines within a snapshot
+     id = sort per-atom lines by atom ID
+     N = sort per-atom lines in ascending order by the Nth column
+     -N = sort per-atom lines in descending order by the Nth column
+  <I>thresh</I> args = attribute operation value
+    attribute = same attributes (x,fy,etotal,sxx,etc) used by dump custom style
+    operation = "<" or "<=" or ">" or ">=" or "==" or "!="
+    value = numeric value to compare to
+    these 3 args can be replaced by the word "none" to turn off thresholding
+  <I>unwrap</I> arg = <I>yes</I> or <I>no</I> 
+</PRE>
+<LI>these keywords apply only to the <I>image</I> and <I>movie</I> <A HREF = "dump_image.html">styles</A> 
+
+<LI>keyword = <I>acolor</I> or <I>adiam</I> or <I>amap</I> or <I>bcolor</I> or <I>bdiam</I> or <I>backcolor</I> or <I>boxcolor</I> or <I>color</I> or <I>bitrate</I> or <I>framerate</I> 
 
 <PRE>  <I>acolor</I> args = type color
     type = atom type or range of types (see below)
@@ -47,46 +86,23 @@
       color = name of color used for that subset of values
     entry = color (for sequential style)
       color = name of color used for a bin of values
-  <I>append</I> arg = <I>yes</I> or <I>no</I>
+  <I>backcolor</I> arg = color
+    color = name of color for background
   <I>bcolor</I> args = type color
     type = bond type or range of types (see below)
     color = name of color or color1/color2/...
   <I>bdiam</I> args = type diam
     type = bond type or range of types (see below)
     diam = diameter of bonds of that type (distance units)
-  <I>backcolor</I> arg = color
-    color = name of color for background
+  <I>bitrate</I> arg = rate
+    rate = target bitrate for movie in kbps
   <I>boxcolor</I> arg = color
     color = name of color for box lines
   <I>color</I> args = name R G B
     name = name of color
     R,G,B = red/green/blue numeric values from 0.0 to 1.0
-  <I>element</I> args = E1 E2 ... EN, where N = # of atom types
-    E1,...,EN = element name, e.g. C or Fe or Ga
-  <I>every</I> arg = N
-    N = dump every this many timesteps
-    N can be a variable (see below)
-  <I>first</I> arg = <I>yes</I> or <I>no</I>
-  <I>format</I> arg = C-style format string for one line of output
-  <I>flush</I> arg = <I>yes</I> or <I>no</I>
-  <I>image</I> arg = <I>yes</I> or <I>no</I>
-  <I>label</I> arg = string
-    string = character string (e.g. BONDS or simulation time) to use in header of dump local or dump custom file
-  <I>pad</I> arg = Nchar = # of characters to convert timestep to
-  <I>precision</I> arg = power-of-10 value from 10 to 1000000
-  <I>region</I> arg = region-ID or "none"
-  <I>scale</I> arg = <I>yes</I> or <I>no</I>
-  <I>sort</I> arg = <I>off</I> or <I>id</I> or N or -N
-     off = no sorting of per-atom lines within a snapshot
-     id = sort per-atom lines by atom ID
-     N = sort per-atom lines in ascending order by the Nth column
-     -N = sort per-atom lines in descending order by the Nth column
-  <I>thresh</I> args = attribute operation value
-    attribute = same attributes (x,fy,etotal,sxx,etc) used by dump custom style
-    operation = "<" or "<=" or ">" or ">=" or "==" or "!="
-    value = numeric value to compare to
-    these 3 args can be replaced by the word "none" to turn off thresholding
-  <I>unwrap</I> arg = <I>yes</I> or <I>no</I> 
+  <I>framerate</I> arg = fps
+    fps = frames per second for movie 
 </PRE>
 
 </UL>
@@ -96,7 +112,7 @@
 dump_modify myDump image yes scale no flush yes
 dump_modify 1 region mySphere thresh x < 0.0 thresh epair >= 3.2
 dump_modify xtcdump precision 10000
-dump_modify 1 every 1000
+dump_modify 1 every 1000 nfile 20
 dump_modify 1 every v_myVar
 dump_modify 1 amap min max cf 0.0 3 min green 0.5 yellow max blue boxcolor red 
 </PRE>
@@ -107,10 +123,299 @@ parameters are relevant to all dump styles.
 </P>
 <HR>
 
-<P>The <I>acolor</I> keyword applies only to the dump <I>image</I> style.  It can
-be used with the <A HREF = "dump_image.html">dump image</A> command, when its atom
-color setting is <I>type</I>, to set the color that atoms of each type will
-be drawn in the image.
+<HR>
+
+<P>These keywords apply to various dump styles, including the <A HREF = "dump_image.html">dump
+image</A> and <A HREF = "dump_image.html">dump movie</A> styles.  The
+description gives details.
+</P>
+<HR>
+
+<P>The <I>append</I> keyword applies to all dump styles except <I>cfg</I> and <I>xtc</I>
+and <I>dcd</I>.  It also applies only to text output files, not to binary
+or gzipped or image/movie files.  If specified as <I>yes</I>, then dump
+snapshots are appended to the end of an existing dump file.  If
+specified as <I>no</I>, then a new dump file will be created which will
+overwrite an existing file with the same name.  This keyword can only
+take effect if the dump_modify command is used after the
+<A HREF = "dump.html">dump</A> command, but before the first command that causes
+dump snapshots to be output, e.g. a <A HREF = "run.html">run</A> or
+<A HREF = "minimize.html">minimize</A> command.  Once the dump file has been opened,
+this keyword has no further effect.
+</P>
+<HR>
+
+<P>The <I>buffer</I> keyword applies only to dump styles <I>atom</I>, <I>custom</I>,
+<I>local</I>, and <I>xyz</I>.  It also applies only to text output files, not to
+binary or gzipped files.  If specified as <I>yes</I>, which is the default,
+then each processor writes its output into an internal text buffer,
+which is then sent to the processor(s) which perform file writes, and
+written by those processors(s) as one large chunk of text.  If
+specified as <I>no</I>, each processor sends its per-atom data in binary
+format to the processor(s) which perform file wirtes, and those
+processor(s) format and write it line by line into the output file.
+</P>
+<P>The buffering mode is typically faster since each processor does the
+relatively expensive task of formatting the output for its own atoms.
+However it requires about twice the memory (per processor) for the
+extra buffering.
+</P>
+<HR>
+
+<P>The <I>element</I> keyword applies only to the the dump <I>cfg</I>, <I>xyz</I>, and
+<I>image</I> styles.  It associates element names (e.g. H, C, Fe) with
+LAMMPS atom types.  See the list of element names at the bottom of
+this page.
+</P>
+<P>In the case of dump <I>cfg</I>, this allows the <A HREF = "http://mt.seas.upenn.edu/Archive/Graphics/A">AtomEye</A>
+visualization package to read the dump file and render atoms with the
+appropriate size and color.
+</P>
+<P>In the case of dump <I>image</I>, the output images will follow the same
+<A HREF = "http://mt.seas.upenn.edu/Archive/Graphics/A">AtomEye</A> convention.  An element name is specified for each
+atom type (1 to Ntype) in the simulation.  The same element name can
+be given to multiple atom types.
+</P>
+<P>In the case of <I>xyz</I> format dumps, there are no restrictions to what
+label can be used as an element name.  Any whitespace separated text
+will be accepted.
+</P>
+
+
+<HR>
+
+<P>The <I>every</I> keyword changes the dump frequency originally specified by
+the <A HREF = "dump.html">dump</A> command to a new value.  The every keyword can be
+specified in one of two ways.  It can be a numeric value in which case
+it must be > 0.  Or it can be an <A HREF = "variable.html">equal-style variable</A>,
+which should be specified as v_name, where name is the variable name.
+</P>
+<P>In this case, the variable is evaluated at the beginning of a run to
+determine the next timestep at which a dump snapshot will be written
+out.  On that timestep the variable will be evaluated again to
+determine the next timestep, etc.  Thus the variable should return
+timestep values.  See the stagger() and logfreq() and stride() math
+functions for <A HREF = "variable.html">equal-style variables</A>, as examples of
+useful functions to use in this context.  Other similar math functions
+could easily be added as options for <A HREF = "variable.html">equal-style
+variables</A>.  Also see the next() function, which allows
+use of a file-style variable which reads successive values from a
+file, each time the variable is evaluated.  Used with the <I>every</I>
+keyword, if the file contains a list of ascending timesteps, you can
+output snapshots whenever you wish.
+</P>
+<P>Note that when using the variable option with the <I>every</I> keyword, you
+need to use the <I>first</I> option if you want an initial snapshot written
+to the dump file.  The <I>every</I> keyword cannot be used with the dump
+<I>dcd</I> style.
+</P>
+<P>For example, the following commands will
+write snapshots at timesteps 0,10,20,30,100,200,300,1000,2000,etc:
+</P>
+<PRE>variable	s equal logfreq(10,3,10)
+dump		1 all atom 100 tmp.dump
+dump_modify	1 every v_s first yes 
+</PRE>
+<P>The following commands would write snapshots at the timesteps listed
+in file tmp.times:
+</P>
+<PRE>variable        f file tmp.times
+variable	s equal next(f)
+dump		1 all atom 100 tmp.dump
+dump_modify	1 every v_s 
+</PRE>
+<P>IMPORTANT NOTE: When using a file-style variable with the <I>every</I>
+keyword, the file of timesteps must list a first timestep that is
+beyond the current timestep (e.g. it cannot be 0).  And it must list
+one or more timesteps beyond the length of the run you perform.  This
+is because the dump command will generate an error if the next
+timestep it reads from the file is not a value greater than the
+current timestep.  Thus if you wanted output on steps 0,15,100 of a
+100-timestep run, the file should contain the values 15,100,101 and
+you should also use the dump_modify first command.  Any final value >
+100 could be used in place of 101.
+</P>
+<HR>
+
+<P>The <I>first</I> keyword determines whether a dump snapshot is written on
+the very first timestep after the dump command is invoked.  This will
+always occur if the current timestep is a multiple of N, the frequency
+specified in the <A HREF = "dump.html">dump</A> command, including timestep 0.  But
+if this is not the case, a dump snapshot will only be written if the
+setting of this keyword is <I>yes</I>.  If it is <I>no</I>, which is the
+default, then it will not be written.
+</P>
+<HR>
+
+<P>The <I>flush</I> keyword determines whether a flush operation is invoked
+after a dump snapshot is written to the dump file.  A flush insures
+the output in that file is current (no buffering by the OS), even if
+LAMMPS halts before the simulation completes.  Flushes cannot be
+performed with dump style <I>xtc</I>.
+</P>
+<P>The text-based dump styles have a default C-style format string which
+simply specifies %d for integers and %g for real values.  The <I>format</I>
+keyword can be used to override the default with a new C-style format
+string.  Do not include a trailing "\n" newline character in the
+format string.  This option has no effect on the <I>dcd</I> and <I>xtc</I> dump
+styles since they write binary files.  Note that for the <I>cfg</I> style,
+the first two fields (atom id and type) are not actually written into
+the CFG file, though you must include formats for them in the format
+string.
+</P>
+<HR>
+
+<P>The <I>fileper</I> keyword is documented below with the <I>nfile</I> keyword.
+</P>
+<HR>
+
+<P>The <I>image</I> keyword applies only to the dump <I>atom</I> style.  If the
+image value is <I>yes</I>, 3 flags are appended to each atom's coords which
+are the absolute box image of the atom in each dimension.  For
+example, an x image flag of -2 with a normalized coord of 0.5 means
+the atom is in the center of the box, but has passed thru the box
+boundary 2 times and is really 2 box lengths to the left of its
+current coordinate.  Note that for dump style <I>custom</I> these various
+values can be printed in the dump file by using the appropriate atom
+attributes in the dump command itself.
+</P>
+<HR>
+
+<P>The <I>label</I> keyword applies only to the dump <I>local</I> style.  When
+it writes local information, such as bond or angle topology
+to a dump file, it will use the specified <I>label</I> to format
+the header.  By default this includes 2 lines:
+</P>
+<PRE>ITEM: NUMBER OF ENTRIES
+ITEM: ENTRIES ... 
+</PRE>
+<P>The word "ENTRIES" will be replaced with the string specified,
+e.g. BONDS or ANGLES.
+</P>
+<HR>
+
+<P>The <I>nfile</I> or <I>fileper</I> keywords can be used in conjunction with the
+"%" wildcard character in the specified dump file name, for all dump
+styles except the <I>dcd</I>, <I>image</I>, <I>movie</I>, <I>xtc</I>, and <I>xyz</I> styles
+(for which "%" is not allowed).  As explained on the <A HREF = "dump.html">dump</A>
+command doc page, the "%" character causes the dump file to be written
+in pieces, one piece for each of P processors.  By default P = the
+number of processors the simulation is running on.  The <I>nfile</I> or
+<I>fileper</I> keyword can be used to set P to a smaller value, which can
+be more efficient when running on a large number of processors.
+</P>
+<P>The <I>nfile</I> keyword sets P to the specified Nf value.  For example, if
+Nf = 4, and the simulation is running on 100 processors, 4 files will
+be written, by processors 0,25,50,75.  Each will collect information
+from itself and the next 24 processors and write it to a dump file.
+</P>
+<P>For the <I>fileper</I> keyword, the specified value of Np means write one
+file for every Np processors.  For example, if Np = 4, every 4th
+processor (0,4,8,12,etc) will collect information from itself and the
+next 3 processors and write it to a dump file.
+</P>
+<HR>
+
+<P>The <I>pad</I> keyword only applies when the dump filename is specified
+with a wildcard "*" character which becomes the timestep.  If <I>pad</I> is
+0, which is the default, the timestep is converted into a string of
+unpadded length, e.g. 100 or 12000 or 2000000.  When <I>pad</I> is
+specified with <I>Nchar</I> > 0, the string is padded with leading zeroes
+so they are all the same length = <I>Nchar</I>.  For example, pad 7 would
+yield 0000100, 0012000, 2000000.  This can be useful so that
+post-processing programs can easily read the files in ascending
+timestep order.
+</P>
+<HR>
+
+<P>The <I>precision</I> keyword only applies to the dump <I>xtc</I> style.  A
+specified value of N means that coordinates are stored to 1/N
+nanometer accuracy, e.g. for N = 1000, the coordinates are written to
+1/1000 nanometer accuracy.
+</P>
+<HR>
+
+<P>The <I>region</I> keyword only applies to the dump <I>custom</I>, <I>cfg</I>,
+<I>image</I>, and <I>movie</I> styles.  If specified, only atoms in the region
+will be written to the dump file or included in the image/movie.  Only
+one region can be applied as a filter (the last one specified).  See
+the <A HREF = "region.html">region</A> command for more details.  Note that a region
+can be defined as the "inside" or "outside" of a geometric shape, and
+it can be the "union" or "intersection" of a series of simpler
+regions.
+</P>
+<HR>
+
+<P>The <I>scale</I> keyword applies only to the dump <I>atom</I> style.  A scale
+value of <I>yes</I> means atom coords are written in normalized units from
+0.0 to 1.0 in each box dimension.  If the simluation box is triclinic
+(tilted), then all atom coords will still be between 0.0 and 1.0.  A
+value of <I>no</I> means they are written in absolute distance units
+(e.g. Angstroms or sigma).
+</P>
+<HR>
+
+<P>The <I>sort</I> keyword determines whether lines of per-atom output in a
+snapshot are sorted or not.  A sort value of <I>off</I> means they will
+typically be written in indeterminate order, either in serial or
+parallel.  This is the case even in serial if the <A HREF = "atom_modify.html">atom_modify
+sort</A> option is turned on, which it is by default, to
+improve performance.  A sort value of <I>id</I> means sort the output by
+atom ID.  A sort value of N or -N means sort the output by the value
+in the Nth column of per-atom info in either ascending or descending
+order.
+</P>
+<P>The dump <I>local</I> style cannot be sorted by atom ID, since there are
+typically multiple lines of output per atom.  Some dump styles, such
+as <I>dcd</I> and <I>xtc</I>, require sorting by atom ID to format the output
+file correctly.  If multiple processors are writing the dump file, via
+the "%" wildcard in the dump filename, then sorting cannot be
+performed.
+</P>
+<P>IMPORTANT NOTE: Unless it is required by the dump style, sorting dump
+file output requires extra overhead in terms of CPU and communication
+cost, as well as memory, versus unsorted output.
+</P>
+<HR>
+
+<P>The <I>thresh</I> keyword only applies to the dump <I>custom</I>, <I>cfg</I>,
+<I>image</I>, and <I>movie</I> styles.  Multiple thresholds can be specified.
+Specifying "none" turns off all threshold criteria.  If thresholds are
+specified, only atoms whose attributes meet all the threshold criteria
+are written to the dump file or included in the image.  The possible
+attributes that can be tested for are the same as those that can be
+specified in the <A HREF = "dump.html">dump custom</A> command, with the exception
+of the <I>element</I> attribute, since it is not a numeric value.  Note
+that different attributes can be output by the dump custom command
+than are used as threshold criteria by the dump_modify command.
+E.g. you can output the coordinates and stress of atoms whose energy
+is above some threshold.
+</P>
+<HR>
+
+<P>The <I>unwrap</I> keyword only applies to the dump <I>dcd</I> and <I>xtc</I> styles.
+If set to <I>yes</I>, coordinates will be written "unwrapped" by the image
+flags for each atom.  Unwrapped means that if the atom has passed thru
+a periodic boundary one or more times, the value is printed for what
+the coordinate would be if it had not been wrapped back into the
+periodic box.  Note that these coordinates may thus be far outside the
+box size stored with the snapshot.
+</P>
+<HR>
+
+<HR>
+
+<P>These keywords apply only to the <A HREF = "dump_image.html">dump image</A> and
+<A HREF = "dump_image.html">dump movie</A> styles.  Any keyword that affects an
+image, also affects a movie, since the movie is simply a collection of
+images.  Some of the keywords only affect the <A HREF = "dump_image.html">dump
+movie</A> style.  The description gives details.
+</P>
+<HR>
+
+<P>The <I>acolor</I> keyword can be used with the <A HREF = "dump_image.html">dump image</A>
+command, when its atom color setting is <I>type</I>, to set the color that
+atoms of each type will be drawn in the image.
 </P>
 <P>The specified <I>type</I> should be an integer from 1 to Ntypes = the
 number of atom types.  A wildcard asterisk can be used in place of or
@@ -132,24 +437,24 @@ of the specified atom types.
 </P>
 <HR>
 
-<P>The <I>adiam</I> keyword applies only to the dump <I>image</I> style.  It can be
-used with the <A HREF = "dump_image.html">dump image</A> command, when its atom
-diameter setting is <I>type</I>, to set the size that atoms of each type
-will be drawn in the image.  The specified <I>type</I> should be an integer
-from 1 to Ntypes.  As with the <I>acolor</I> keyword, a wildcard asterisk
-can be used as part of the <I>type</I> argument to specify a range of atomt
-types.  The specified <I>diam</I> is the size in whatever distance
-<A HREF = "units.html">units</A> the input script is using, e.g. Angstroms.
+<P>The <I>adiam</I> keyword can be used with the <A HREF = "dump_image.html">dump image</A>
+command, when its atom diameter setting is <I>type</I>, to set the size
+that atoms of each type will be drawn in the image.  The specified
+<I>type</I> should be an integer from 1 to Ntypes.  As with the <I>acolor</I>
+keyword, a wildcard asterisk can be used as part of the <I>type</I>
+argument to specify a range of atomt types.  The specified <I>diam</I> is
+the size in whatever distance <A HREF = "units.html">units</A> the input script is
+using, e.g. Angstroms.
 </P>
 <HR>
 
-<P>The <I>amap</I> keyword applies only to the dump <I>image</I> style.  It can be
-used with the <A HREF = "dump_image.html">dump image</A> command, with its <I>atom</I>
-keyword, when its atom setting is an atom-attribute, to setup a color
-map.  The color map is used to assign a specific RGB (red/green/blue)
-color value to an individual atom when it is drawn, based on the
-atom's attribute, which is a numeric value, e.g. its x-component of
-velocity if the atom-attribute "vx" was specified.
+<P>The <I>amap</I> keyword can be used with the <A HREF = "dump_image.html">dump image</A>
+command, with its <I>atom</I> keyword, when its atom setting is an
+atom-attribute, to setup a color map.  The color map is used to assign
+a specific RGB (red/green/blue) color value to an individual atom when
+it is drawn, based on the atom's attribute, which is a numeric value,
+e.g. its x-component of velocity if the atom-attribute "vx" was
+specified.
 </P>
 <P>The basic idea of a color map is that the atom-attribute will be
 within a range of values, and that range is associated with a a series
@@ -255,23 +560,15 @@ color map without having to specify where all the bin boundaries are.
 </P>
 <HR>
 
-<P>The <I>append</I> keyword applies to all dump styles except <I>cfg</I> and <I>xtc</I>
-and <I>dcd</I>.  It also applies only to text output files, not to binary
-or gzipped files.  If specified as <I>yes</I>, then dump snapshots are
-appended to the end of an existing dump file.  If specified as <I>no</I>,
-then a new dump file will be created which will overwrite an existing
-file with the same name.  This keyword can only take effect if the
-dump_modify command is used after the <A HREF = "dump.html">dump</A> command, but
-before the first command that causes dump snapshots to be output,
-e.g. a <A HREF = "run.html">run</A> or <A HREF = "minimize.html">minimize</A> command.  Once the
-dump file has been opened, this keyword has no further effect.
+<P>The <I>backcolor</I> sets the background color of the images.  The color
+name can be any of the 140 pre-defined colors (see below) or a color
+name defined by the dump_modify color option.
 </P>
 <HR>
 
-<P>The <I>bcolor</I> keyword applies only to the dump <I>image</I> style.  It can
-be used with the <A HREF = "dump_image.html">dump image</A> command, with its <I>bond</I>
-keyword, when its color setting is <I>type</I>, to set the color that bonds
-of each type will be drawn in the image.
+<P>The <I>bcolor</I> keyword can be used with the <A HREF = "dump_image.html">dump image</A>
+command, with its <I>bond</I> keyword, when its color setting is <I>type</I>, to
+set the color that bonds of each type will be drawn in the image.
 </P>
 <P>The specified <I>type</I> should be an integer from 1 to Nbondtypes = the
 number of bond types.  A wildcard asterisk can be used in place of or
@@ -293,40 +590,45 @@ of the specified bond types.
 </P>
 <HR>
 
-<P>The <I>bdiam</I> keyword applies only to the dump <I>image</I> style.  It can be
-used with the <A HREF = "dump_image.html">dump image</A> command, with its <I>bond</I>
-keyword, when its diam setting is <I>type</I>, to set the diameter that
-bonds of each type will be drawn in the image.  The specified <I>type</I>
-should be an integer from 1 to Nbondtypes.  As with the <I>bcolor</I>
-keyword, a wildcard asterisk can be used as part of the <I>type</I>
-argument to specify a range of bond types.  The specified <I>diam</I> is
-the size in whatever distance <A HREF = "units.html">units</A> you are using,
-e.g. Angstroms.
+<P>The <I>bdiam</I> keyword can be used with the <A HREF = "dump_image.html">dump image</A>
+command, with its <I>bond</I> keyword, when its diam setting is <I>type</I>, to
+set the diameter that bonds of each type will be drawn in the image.
+The specified <I>type</I> should be an integer from 1 to Nbondtypes.  As
+with the <I>bcolor</I> keyword, a wildcard asterisk can be used as part of
+the <I>type</I> argument to specify a range of bond types.  The specified
+<I>diam</I> is the size in whatever distance <A HREF = "units.html">units</A> you are
+using, e.g. Angstroms.
 </P>
 <HR>
 
-<P>The <I>backcolor</I> keyword applies only to the dump <I>image</I> style.  It
-sets the background color of the images.  The color name can be any of
-the 140 pre-defined colors (see below) or a color name defined by the
+<P>The <I>bitrate</I> keyword can be used with the <A HREF = "dump_movie.html">dump
+movie</A> command to define the size of the resulting
+movie file and its quality via setting how many kbits per second are
+to be used for the movie file. Higher bitrates require less
+compression and will result in higher quality movies.  The quality is
+also determined by the compression format and encoder.  The default
+setting is 2000 kbit/s, which will result in average quality with
+older compression formats.
+</P>
+<P>IMPORTANT NOTE: Not all movie file formats supported by dump movie
+allow the bitrate to be set.  If not, the setting is silently ignored.
+</P>
+<HR>
+
+<P>The <I>boxcolor</I> keyword sets the color of the simulation box drawn
+around the atoms in each image.  See the "dump image box" command for
+how to specify that a box be drawn.  The color name can be any of the
+140 pre-defined colors (see below) or a color name defined by the
 dump_modify color option.
 </P>
 <HR>
 
-<P>The <I>boxcolor</I> keyword applies only to the dump <I>image</I> style.  It
-sets the color of the simulation box drawn around the atoms in each
-image.  See the "dump image box" command for how to specify that a box
-be drawn.  The color name can be any of the 140 pre-defined colors
-(see below) or a color name defined by the dump_modify color option.
-</P>
-<HR>
-
-<P>The <I>color</I> keyword applies only to the dump <I>image</I> style.  It allows
-definition of a new color name, in addition to the 140-predefined
-colors (see below), and associates 3 red/green/blue RGB values with
-that color name.  The color name can then be used with any other
-dump_modify keyword that takes a color name as a value.  The RGB
-values should each be floating point values between 0.0 and 1.0
-inclusive.
+<P>The <I>color</I> keyword allows definition of a new color name, in addition
+to the 140-predefined colors (see below), and associates 3
+red/green/blue RGB values with that color name.  The color name can
+then be used with any other dump_modify keyword that takes a color
+name as a value.  The RGB values should each be floating point values
+between 0.0 and 1.0 inclusive.
 </P>
 <P>When a color name is converted to RGB values, the user-defined color
 names are searched first, then the 140 pre-defined color names.  This
@@ -335,180 +637,20 @@ pre-defined color names with new RBG values.
 </P>
 <HR>
 
-<P>The <I>element</I> keyword applies only to the the dump <I>cfg</I> and <I>image</I>
-styles.  It associates element names (e.g. H, C, Fe) with LAMMPS atom
-types.  See the list of element names at the bottom of this page.  In
-the case of dump <I>cfg</I>, it allows the <A HREF = "http://mt.seas.upenn.edu/Archive/Graphics/A">AtomEye</A> visualization
-package to read the dump file and render atoms with the appropriate
-size and color.  In the case of dump <I>image</I>, the output images will
-follow the same <A HREF = "http://mt.seas.upenn.edu/Archive/Graphics/A">AtomEye</A> convention.  An element name is
-specified for each atom type (1 to Ntype) in the simulation.  The same
-element name can be given to multiple atom types.
-</P>
-
-
-<HR>
-
-<P>The <I>every</I> keyword changes the dump frequency originally specified by
-the <A HREF = "dump.html">dump</A> command to a new value.  The every keyword can be
-specified in one of two ways.  It can be a numeric value in which case
-it must be > 0.  Or it can be an <A HREF = "variable.html">equal-style variable</A>,
-which should be specified as v_name, where name is the variable name.
-In this case, the variable is evaluated at the beginning of a run to
-determine the next timestep at which a dump snapshot will be written
-out.  On that timestep, the variable will be evaluated again to
-determine the next timestep, etc.  Thus the variable should return
-timestep values.  See the stagger() and logfreq() math functions for
-<A HREF = "variable.html">equal-style variables</A>, as examples of useful functions
-to use in this context.  Other similar math functions could easily be
-added as options for <A HREF = "variable.html">equal-style variables</A>.  When
-using the variable option with the <I>every</I> keyword, you also need to
-use the <I>first</I> option if you want an initial snapshot written to the
-dump file.  The <I>every</I> keyword cannot be used with the dump <I>dcd</I>
-style.
-</P>
-<P>For example, the following commands will
-write snapshots at timesteps 0,10,20,30,100,200,300,1000,2000,etc:
-</P>
-<PRE>variable	s equal logfreq(10,3,10)
-dump		1 all atom 100 tmp.dump
-dump_modify	1 every v_s first yes 
-</PRE>
-<HR>
-
-<P>The <I>first</I> keyword determines whether a dump snapshot is written on
-the very first timestep after the dump command is invoked.  This will
-always occur if the current timestep is a multiple of N, the frequency
-specified in the <A HREF = "dump.html">dump</A> command, including timestep 0.  But
-if this is not the case, a dump snapshot will only be written if the
-setting of this keyword is <I>yes</I>.  If it is <I>no</I>, which is the
-default, then it will not be written.
+<P>The <I>framerate</I> keyword can be used with the <A HREF = "dump_movie.html">dump
+movie</A> command to define the duration of the resulting
+movie file.  Movie files written by the dump <I>movie</I> command have a
+default frame rate of 24 frames per second and the images generated
+will be converted at that rate.  Thus a sequence of 1000 dump images
+will result in a movie of about 42 seconds.  To make a movie run
+longer you can either generate images more frequently or lower the
+frame rate.  To speed a movie up, you can do the inverse.  Using a
+frame rate higher than 24 is not recommended, as it will result in
+simply dropping the rendered images. It is more efficient to dump
+images less frequently.
 </P>
 <HR>
 
-<P>The <I>flush</I> keyword determines whether a flush operation is invoked
-after a dump snapshot is written to the dump file.  A flush insures
-the output in that file is current (no buffering by the OS), even if
-LAMMPS halts before the simulation completes.  Flushes cannot be
-performed with dump style <I>xtc</I>.
-</P>
-<P>The text-based dump styles have a default C-style format string which
-simply specifies %d for integers and %g for real values.  The <I>format</I>
-keyword can be used to override the default with a new C-style format
-string.  Do not include a trailing "\n" newline character in the
-format string.  This option has no effect on the <I>dcd</I> and <I>xtc</I> dump
-styles since they write binary files.  Note that for the <I>cfg</I> style,
-the first two fields (atom id and type) are not actually written into
-the CFG file, though you must include formats for them in the format
-string.
-</P>
-<HR>
-
-<P>The <I>image</I> keyword applies only to the dump <I>atom</I> style.  If the
-image value is <I>yes</I>, 3 flags are appended to each atom's coords which
-are the absolute box image of the atom in each dimension.  For
-example, an x image flag of -2 with a normalized coord of 0.5 means
-the atom is in the center of the box, but has passed thru the box
-boundary 2 times and is really 2 box lengths to the left of its
-current coordinate.  Note that for dump style <I>custom</I> these various
-values can be printed in the dump file by using the appropriate atom
-attributes in the dump command itself.
-</P>
-<HR>
-
-<P>The <I>label</I> keyword applies only to the dump <I>local</I> style.  When
-it writes local informatoin, such as bond or angle topology
-to a dump file, it will use the specified <I>label</I> to format
-the header.  By default this includes 2 lines:
-</P>
-<PRE>ITEM: NUMBER OF ENTRIES
-ITEM: ENTRIES ... 
-</PRE>
-<P>The word "ENTRIES" will be replaced with the string specified,
-e.g. BONDS or ANGLES.
-</P>
-<HR>
-
-<P>The <I>pad</I> keyword only applies when the dump filename is specified
-with a wildcard "*" character which becomes the timestep.  If <I>pad</I> is
-0, which is the default, the timestep is converted into a string of
-unpadded length, e.g. 100 or 12000 or 2000000.  When <I>pad</I> is
-specified with <I>Nchar</I> > 0, the string is padded with leading zeroes
-so they are all the same length = <I>Nchar</I>.  For example, pad 7 would
-yield 0000100, 0012000, 2000000.  This can be useful so that
-post-processing programs can easily read the files in ascending
-timestep order.
-</P>
-<HR>
-
-<P>The <I>precision</I> keyword only applies to the dump <I>xtc</I> style.  A
-specified value of N means that coordinates are stored to 1/N
-nanometer accuracy, e.g. for N = 1000, the coordinates are written to
-1/1000 nanometer accuracy.
-</P>
-<HR>
-
-<P>The <I>region</I> keyword only applies to the dump <I>custom</I> and <I>cfg</I> and
-<I>image</I> styles.  If specified, only atoms in the region will be
-written to the dump file or included in the image.  Only one region
-can be applied as a filter (the last one specified).  See the
-<A HREF = "region.html">region</A> command for more details.  Note that a region can
-be defined as the "inside" or "outside" of a geometric shape, and it
-can be the "union" or "intersection" of a series of simpler regions.
-</P>
-<HR>
-
-<P>The <I>scale</I> keyword applies only to the dump <I>atom</I> style.  A scale
-value of <I>yes</I> means atom coords are written in normalized units from
-0.0 to 1.0 in each box dimension.  If the simluation box is triclinic
-(tilted), then all atom coords will still be between 0.0 and 1.0.  A
-value of <I>no</I> means they are written in absolute distance units
-(e.g. Angstroms or sigma).
-</P>
-<HR>
-
-<P>The <I>sort</I> keyword determines whether lines of per-atom output in a
-snapshot are sorted or not.  A sort value of <I>off</I> means they will
-typically be written in indeterminate order, either in serial or
-parallel.  This is the case even in serial if the <A HREF = "atom_modify.html">atom_modify
-sort</A> option is turned on, which it is by default, to
-improve performance.  A sort value of <I>id</I> means sort the output by
-atom ID.  A sort value of N or -N means sort the output by the value
-in the Nth column of per-atom info in either ascending or descending
-order.  The dump <I>local</I> style cannot be sorted by atom ID, since
-there are typically multiple lines of output per atom.  Some dump
-styles, such as <I>dcd</I> and <I>xtc</I>, require sorting by atom ID to format
-the output file correctly.
-</P>
-<P>IMPORTANT NOTE: Unless it is required by the dump style, sorting dump
-file output requires extra overhead in terms of CPU and communication
-cost, as well as memory, versus unsorted output.
-</P>
-<HR>
-
-<P>The <I>thresh</I> keyword only applies to the dump <I>custom</I> and <I>cfg</I> and
-<I>image</I> styles.  Multiple thresholds can be specified.  Specifying
-"none" turns off all threshold criteria.  If thresholds are specified,
-only atoms whose attributes meet all the threshold criteria are
-written to the dump file or included in the image.  The possible
-attributes that can be tested for are the same as those that can be
-specified in the <A HREF = "dump.html">dump custom</A> command, with the exception
-of the <I>element</I> attribute, since it is not a numeric value.  Note
-that different attributes can be output by the dump custom command
-than are used as threshold criteria by the dump_modify command.
-E.g. you can output the coordinates and stress of atoms whose energy
-is above some threshold.
-</P>
-<HR>
-
-<P>The <I>unwrap</I> keyword only applies to the dump <I>dcd</I> and <I>xtc</I> styles.
-If set to <I>yes</I>, coordinates will be written "unwrapped" by the image
-flags for each atom.  Unwrapped means that if the atom has passed thru
-a periodic boundary one or more times, the value is printed for what
-the coordinate would be if it had not been wrapped back into the
-periodic box.  Note that these coordinates may thus be far outside the
-box size stored with the snapshot.
-</P>
 <HR>
 
 <P><B>Restrictions:</B> none
@@ -521,22 +663,17 @@ box size stored with the snapshot.
 </P>
 <P>The option defaults are
 </P>
-<UL><LI>acolor = * red/green/blue/yellow/aqua/cyan
-<LI>adiam = * 1.0
-<LI>amap = min max cf 2 min blue max red
-<LI>append = no
-<LI>bcolor = * red/green/blue/yellow/aqua/cyan
-<LI>bdiam = * 0.5
-<LI>backcolor = black
-<LI>boxcolor = yellow
-<LI>color = 140 color names are pre-defined as listed below
+<UL><LI>append = no
+<LI>buffer = yes for dump styles <I>atom</I>, <I>custom</I>, <I>loca</I>, and <I>xyz</I>
 <LI>element = "C" for every atom type
 <LI>every = whatever it was set to via the <A HREF = "dump.html">dump</A> command
+<LI>fileper = # of processors
 <LI>first = no
 <LI>flush = yes
 <LI>format = %d and %g for each integer or floating point value
 <LI>image = no
 <LI>label = ENTRIES
+<LI>nfile = 1
 <LI>pad = 0
 <LI>precision = 1000
 <LI>region = none
@@ -545,6 +682,17 @@ box size stored with the snapshot.
 <LI>sort = id for dump styles <I>dcd</I>, <I>xtc</I>, and <I>xyz</I>
 <LI>thresh = none
 <LI>unwrap = no 
+</UL>
+<UL><LI>acolor = * red/green/blue/yellow/aqua/cyan
+<LI>adiam = * 1.0
+<LI>amap = min max cf 0.0 2 min blue max red
+<LI>backcolor = black
+<LI>bcolor = * red/green/blue/yellow/aqua/cyan
+<LI>bdiam = * 0.5
+<LI>bitrate = 2000
+<LI>boxcolor = yellow
+<LI>color = 140 color names are pre-defined as listed below
+<LI>framerate = 24 
 </UL>
 <HR>
 

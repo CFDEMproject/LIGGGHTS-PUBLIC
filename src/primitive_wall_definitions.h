@@ -53,7 +53,7 @@ namespace LAMMPS_NS
         NUM_WTYPE
     };
 
-    char *wallString[] =
+    const char *wallString[] =
     {
         "xplane",
         "yplane",

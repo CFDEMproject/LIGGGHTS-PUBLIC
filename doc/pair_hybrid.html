@@ -76,6 +76,13 @@ other pairwise potential for several different atom type pairs in your
 model, then you should just list the sub-style once and use the
 pair_coeff command to assign parameters for the different type pairs.
 </P>
+<P>IMPORTANT NOTE: An exception to this option to list an individual pair
+style multiple times are the pair styles implemented as Fortran
+libraries: <A HREF = "pair_meam.html">pair_style meam</A> and <A HREF = "pair_reax.html">pair_style
+reax</A> (<A HREF = "pair_reax_c.html">pair_style reax/c</A> is OK).
+This is because unlike a C++ class, they can not be instantiated
+multiple times, due to the manner in which they were coded in Fortran.
+</P>
 <P>In the pair_coeff commands, the name of a pair style must be added
 after the I,J type specification, with the remaining coefficients
 being those appropriate to that style.  If the pair style is used
@@ -240,6 +247,21 @@ neigh_modify exclude type 1 2
 <P>Either way, only neighbor lists with 1-1 or 2-2 interactions would be
 passed to the Tersoff potential, which means it would compute no
 3-body interactions containing both type 1 and 2 atoms.
+</P>
+<P>Here is another example, using hybrid/overlay, to use 2 many-body
+potentials together, in an overlapping manner.  Imagine you have CNT
+(C atoms) on a Si surface.  You want to use Tersoff for Si/Si and Si/C
+interactions, and AIREBO for C/C interactions.  Si atoms are type 1; C
+atoms are type 2.  Something like this will work:
+</P>
+<PRE>pair_style hybrid/overlay tersoff airebo 3.0
+pair_coeff * * tersoff SiC.tersoff.custom Si C
+pair_coeff * * airebo CH.airebo NULL C 
+</PRE>
+<P>Note that to prevent the Tersoff potential from computing C/C
+interactions, you would need to modify the SiC.tersoff file to turn
+off C/C interaction, i.e. by setting the appropriate coefficients to
+0.0.
 </P>
 <HR>
 

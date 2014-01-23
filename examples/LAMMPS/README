@@ -1,12 +1,26 @@
 LAMMPS example problems
 
+There are 3 flavors of sub-directories in this file, each with sample
+problems you can run with LAMMPS.
+
+lower-case directories = simple test problems for LAMMPS and its packages
+upper-case directories = more complex problems
+USER directory with its own sub-directories = tests for USER packages
+
+Each is discussed below.
+
+------------------------------------------
+
+Lower-case directories
+
 Each of these sub-directories contains a sample problem you can run
 with LAMMPS.  Most are 2d models so that they run quickly, requiring a
 few seconds to a few minutes to run on a desktop machine.  Each
 problem has an input script (in.*) and produces a log file (log.*) and
 (optionally) a dump file (dump.*) or image files (image.*) when it
 runs.  Some use a data file (data.*) of initial coordinates as
-additional input.
+additional input.  Some require that you install one or more optional
+LAMMPS packages.
 
 A few sample log file outputs on different machines and different
 numbers of processors are included in the directories to compare your
@@ -18,9 +32,25 @@ identical answers to those in the log of dump files included here.
 See the Errors section of the LAMMPS documentation for more
 discussion.
 
+If you uncomment the dump command in the input script, a text dump
+file will be produced, which can be animated by various visualization
+programs (see http://lammps.sandia.gov/viz.html).  It can also be
+animated using the xmovie tool described in the Additional Tools
+section of the LAMMPS documentation.
+
+If you uncomment the dump image command in the input script, and
+assuming you have built LAMMPS with a JPG library, JPG snapshot images
+will be produced when the simulation runs.  They can be quickly
+post-processed into a movie using commands described on the dump image
+doc page.
+
+Animations of many of these examples can be viewed on the Movies
+section of the LAMMPS WWW Site.
+
 These are the sample problems and their output in the various
 sub-directories:
 
+body:     body particles, 2d system
 colloid:  big colloid particles in a small particle solvent, 2d system
 comb:	  models using the COMB potential
 crack:	  crack propagation in a 2d solid
@@ -34,6 +64,7 @@ gpu:      use of the GPU package for GPU acceleration
 hugoniostat: Hugoniostat shock dynamics
 indent:	  spherical indenter into a 2d solid
 kim:      use of potentials in Knowledge Base for Interatomic Models (KIM)
+line:     line segment particles in 2d rigid bodies
 meam:	  MEAM test for SiC and shear (same as shear examples)
 melt:	  rapid melt of 3d LJ system
 micelle:  self-assembly of small lipid-like molecules into 2d bilayers
@@ -51,6 +82,8 @@ rigid:    rigid bodies modeled as independent or coupled
 shear:    sideways shear applied to 2d solid, with and without a void
 srd:      stochastic rotation dynamics (SRD) particles as solvent
 tad:      temperature-accelerated dynamics of vacancy diffusion in bulk Si
+tri:      triangular particles in rigid bodies
+voronoi:  test of Voronoi tesselation in compute voronoi/atom
 
 Here is how you might run and visualize one of the sample problems:
 
@@ -58,13 +91,10 @@ cd indent
 cp ../../src/lmp_linux .           # copy LAMMPS executable to this dir
 lmp_linux < in.indent              # run the problem
 
-If you uncomment the dump atom (or dump custom or dump cfg) line(s) in
-the input script a dump.* file will be produced by the run.  These can
-be animated using tools like VMD or AtomEye, or the xmovie tool
-described in the "Additional Tools" section of the LAMMPS
-documentation, e.g.
+Running the simulation produces the files {dump.indent} and
+{log.lammps}.  You can visualize the dump file as follows:
 
-% ../../tools/xmovie/xmovie -scale dump.indent
+../../tools/xmovie/xmovie -scale dump.indent
 
 If you uncomment the dump image line(s) in the input script a series
 of JPG images will be produced by the run.  These can be viewed
@@ -77,12 +107,28 @@ create a GIF file suitable for viewing in a browser.
 
 ------------------------------------------
 
-There is also an ELASTIC directory with an example script for
-computing elastic constants, using a zero temperature Si example.  See
-the in.elastic file for more info.
+Upper-case directories
 
-There is also a USER directory which contains subdirectories of
-user-provided examples for user packages.  See the README files in
-those directories for more info.  See the doc/Section_start.html file
-for more info about user packages.
+The ASPHERE directory has examples of how to model aspherical
+particles with or without solvent, in 3 styles LAMMPS provides.
+Namely point ellipsoids, rigid bodies, and generalized aspherical
+bodies built from line/triangle surface facets in 2d/3d.  See the
+ASPHERE/README file to get started.
+
+The COUPLE directory has examples of how to use LAMMPS as a library,
+either by itself or in tandem with another code or library.  See the
+COUPLE/README file to get started.
+
+The ELASTIC directory has an example script for computing elastic
+constants, using a zero temperature Si example.  See the
+ELASTIC/in.elastic file for more info.
+
+The KAPPA directory has an example scripts for computing the thermal
+conductivity (kappa) of a LJ liquid using 4 different methods.  See
+the KAPPA/README file for more info.
+
+The USER directory contains subdirectories of user-provided example
+scripts for ser packages.  See the README files in those directories
+for more info.  See the doc/Section_start.html file for more info
+about installing and building user packages.
 

@@ -22,25 +22,26 @@
 #include "math.h"
 #include "stdlib.h"
 #include "string.h"
+#include "fix_property_atom.h"
 #include "atom.h"
+#include "memory.h"
+#include "error.h"
+
 #include "atom_vec.h"
 #include "force.h"
 #include "update.h"
 #include "comm.h"
 #include "modify.h"
-#include "memory.h"
-#include "error.h"
 #include "group.h"
 #include "timer.h"
 #include "neighbor.h"
-#include "fix_property_atom.h"
+
 #include "mpi_liggghts.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
 #define EPSILON 0.001
-#define myAtof force->numeric 
 
 /* ---------------------------------------------------------------------- */
 
@@ -67,8 +68,16 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
     else if (strcmp(arg[4],"vector") == 0) data_style = FIXPROPERTY_ATOM_VECTOR;
     else error->all(FLERR,"Unknown style for fix property/atom. Valid styles are 'scalar' or 'vector'");
 
-    if (strcmp(arg[5],"yes") == 0) restart_peratom = 1;
-    else if (strcmp(arg[5],"no") == 0) restart_peratom = 0;
+    if (strcmp(arg[5],"yes") == 0)
+    {
+            restart_peratom = 1;
+            restart_global = 1;
+    }
+    else if (strcmp(arg[5],"no") == 0)
+    {
+         restart_peratom = 0;
+         restart_global = 0;
+    }
     else error->all(FLERR,"Unknown restart style for fix property/atom. Valid styles are 'yes' or 'no'");
 
     if (strcmp(arg[6],"yes") == 0) commGhost = 1;
@@ -95,7 +104,7 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
             create_attribute = 0;
             continue;
         }
-        defaultvalues[j] = myAtof(arg[8+j]);
+        defaultvalues[j] = force->numeric(FLERR,arg[8+j]);
     }
 
     if (data_style) size_peratom_cols = nvalues;
@@ -133,8 +142,9 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
     }
 
     // check if there is already a fix that tries to register a property with the same name
+    
     for (int ifix = 0; ifix < modify->nfix; ifix++)
-        if ((strcmp(modify->fix[ifix]->style,style) == 0) && (strcmp(((FixPropertyAtom*)(modify->fix[ifix]))->variablename,variablename)==0) )
+        if ((modify->fix[ifix]) && (strcmp(modify->fix[ifix]->style,style) == 0) && (strcmp(((FixPropertyAtom*)(modify->fix[ifix]))->variablename,variablename)==0) )
             error->fix_error(FLERR,this,"there is already a fix that registers a variable of the same name");
 
     // flags for vector output
@@ -258,7 +268,7 @@ void FixPropertyAtom::grow_arrays(int nmax)
    copy values within local atom-based arrays
 ------------------------------------------------------------------------- */
 
-void FixPropertyAtom::copy_arrays(int i, int j)
+void FixPropertyAtom::copy_arrays(int i, int j, int delflag)
 {
     if (data_style) for(int k=0;k<nvalues;k++) array_atom[j][k] = array_atom[i][k];
     else vector_atom[j]=vector_atom[i];
@@ -404,6 +414,37 @@ void FixPropertyAtom::unpack_reverse_comm(int n, int *list, double *buf)
     if (data_style) for(int k=0;k<nvalues;k++) array_atom[j][k]+=buf[m++];
     else vector_atom[j]+=buf[m++];
   }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixPropertyAtom::write_restart(FILE *fp)
+{
+  int n = 0;
+  double list[1];
+  list[n++] = static_cast<double>(nvalues);
+
+  if (comm->me == 0) {
+    int size = n * sizeof(double);
+    fwrite(&size,sizeof(int),1,fp);
+    fwrite(list,sizeof(double),n,fp);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   use state info from restart file to restart the Fix
+------------------------------------------------------------------------- */
+
+void FixPropertyAtom::restart(char *buf)
+{
+  int n = 0;
+  double *list = (double *) buf;
+  int nvalues_re;
+
+  nvalues_re = static_cast<int> (list[n++]);
+
+  if(nvalues_re != nvalues)
+    error->fix_error(FLERR,this,"restarted fix has incompatible data size");
 }
 
 /* ----------------------------------------------------------------------

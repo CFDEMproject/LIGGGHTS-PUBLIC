@@ -17,6 +17,7 @@
 
 #include "stdlib.h"
 #include "string.h"
+#include "unistd.h"
 #include "fix_ave_time.h"
 #include "update.h"
 #include "modify.h"
@@ -26,6 +27,7 @@
 #include "variable.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -47,12 +49,11 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
 
   MPI_Comm_rank(world,&me);
 
-  nevery = atoi(arg[3]);
-  nrepeat = atoi(arg[4]);
-  nfreq = atoi(arg[5]);
+  nevery = force->inumeric(FLERR,arg[3]);
+  nrepeat = force->inumeric(FLERR,arg[4]);
+  nfreq = force->inumeric(FLERR,arg[5]);
 
   global_freq = nfreq;
-  time_depend = 1;
 
   // scan values to count them
   // then read options so know mode = SCALAR/VECTOR before re-reading values
@@ -170,6 +171,8 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
     error->all(FLERR,"Illegal fix ave/time command");
   if (nfreq % nevery || (nrepeat-1)*nevery >= nfreq)
     error->all(FLERR,"Illegal fix ave/time command");
+  if (ave != RUNNING && overwrite)
+    error->all(FLERR,"Illegal fix ave/time command");
 
   for (int i = 0; i < nvalues; i++) {
     if (which[i] == COMPUTE && mode == SCALAR) {
@@ -181,7 +184,8 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
       if (argindex[i] && modify->compute[icompute]->vector_flag == 0)
         error->all(FLERR,"Fix ave/time compute does not calculate a vector");
       if (argindex[i] && argindex[i] > modify->compute[icompute]->size_vector)
-        error->all(FLERR,"Fix ave/time compute vector is accessed out-of-range");
+        error->all(FLERR,
+                   "Fix ave/time compute vector is accessed out-of-range");
 
     } else if (which[i] == COMPUTE && mode == VECTOR) {
       int icompute = modify->find_compute(ids[i]);
@@ -206,7 +210,8 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
       if (argindex[i] && argindex[i] > modify->fix[ifix]->size_vector)
         error->all(FLERR,"Fix ave/time fix vector is accessed out-of-range");
       if (nevery % modify->fix[ifix]->global_freq)
-        error->all(FLERR,"Fix for fix ave/time not computed at compatible time");
+        error->all(FLERR,
+                   "Fix for fix ave/time not computed at compatible time");
 
     } else if (which[i] == FIX && mode == VECTOR) {
       int ifix = modify->find_fix(ids[i]);
@@ -219,7 +224,8 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
       if (argindex[i] && argindex[i] > modify->fix[ifix]->size_array_cols)
         error->all(FLERR,"Fix ave/time fix array is accessed out-of-range");
       if (nevery % modify->fix[ifix]->global_freq)
-        error->all(FLERR,"Fix for fix ave/time not computed at compatible time");
+        error->all(FLERR,
+                   "Fix for fix ave/time not computed at compatible time");
 
     } else if (which[i] == VARIABLE) {
       int ivariable = input->variable->find(ids[i]);
@@ -280,6 +286,7 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
       }
       fprintf(fp,"\n");
     }
+    filepos = ftell(fp);
   }
 
   delete [] title1;
@@ -625,10 +632,15 @@ void FixAveTime::invoke_scalar(bigint ntimestep)
   // output result to file
 
   if (fp && me == 0) {
+    if (overwrite) fseek(fp,filepos,SEEK_SET);
     fprintf(fp,BIGINT_FORMAT,ntimestep);
     for (i = 0; i < nvalues; i++) fprintf(fp," %g",vector_total[i]/norm);
     fprintf(fp,"\n");
     fflush(fp);
+    if (overwrite) {
+      long fileend = ftell(fp);
+      ftruncate(fileno(fp),fileend);
+    }
   }
 }
 
@@ -763,6 +775,7 @@ void FixAveTime::invoke_vector(bigint ntimestep)
   // output result to file
 
   if (fp && me == 0) {
+    if (overwrite) fseek(fp,filepos,SEEK_SET);
     fprintf(fp,BIGINT_FORMAT " %d\n",ntimestep,nrows);
     for (i = 0; i < nrows; i++) {
       fprintf(fp,"%d",i+1);
@@ -820,6 +833,7 @@ void FixAveTime::options(int narg, char **arg)
   mode = SCALAR;
   noff = 0;
   offlist = NULL;
+  overwrite = 0;
   title1 = NULL;
   title2 = NULL;
   title3 = NULL;
@@ -847,14 +861,14 @@ void FixAveTime::options(int narg, char **arg)
       else error->all(FLERR,"Illegal fix ave/time command");
       if (ave == WINDOW) {
         if (iarg+3 > narg) error->all(FLERR,"Illegal fix ave/time command");
-        nwindow = atoi(arg[iarg+2]);
+        nwindow = force->inumeric(FLERR,arg[iarg+2]);
         if (nwindow <= 0) error->all(FLERR,"Illegal fix ave/time command");
       }
       iarg += 2;
       if (ave == WINDOW) iarg++;
     } else if (strcmp(arg[iarg],"start") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix ave/time command");
-      startstep = atoi(arg[iarg+1]);
+      startstep = force->inumeric(FLERR,arg[iarg+1]);
       iarg += 2;
     } else if (strcmp(arg[iarg],"mode") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix ave/time command");
@@ -865,8 +879,11 @@ void FixAveTime::options(int narg, char **arg)
     } else if (strcmp(arg[iarg],"off") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix ave/time command");
       memory->grow(offlist,noff+1,"ave/time:offlist");
-      offlist[noff++] = atoi(arg[iarg+1]);
+      offlist[noff++] = force->inumeric(FLERR,arg[iarg+1]);
       iarg += 2;
+    } else if (strcmp(arg[iarg],"overwrite") == 0) {
+      overwrite = 1;
+      iarg += 1;
     } else if (strcmp(arg[iarg],"title1") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix ave/spatial command");
       delete [] title1;
@@ -922,4 +939,11 @@ bigint FixAveTime::nextvalid()
     nvalid -= (nrepeat-1)*nevery;
   if (nvalid < update->ntimestep) nvalid += nfreq;
   return nvalid;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixAveTime::reset_timestep(bigint ntimestep)
+{
+  if (ntimestep > nvalid) error->all(FLERR,"Fix ave/time missed timestep");
 }

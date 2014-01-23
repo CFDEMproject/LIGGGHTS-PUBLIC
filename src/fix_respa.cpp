@@ -16,6 +16,7 @@
 #include "atom.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -27,7 +28,7 @@ FixRespa::FixRespa(LAMMPS *lmp, int narg, char **arg) :
 {
   // nlevels = # of rRESPA levels
 
-  nlevels = atoi(arg[3]);
+  nlevels = force->inumeric(FLERR,arg[3]);
 
   // perform initial allocation of atom-based arrays
   // register with Atom class
@@ -80,7 +81,7 @@ void FixRespa::grow_arrays(int nmax)
    copy values within local atom-based arrays
 ------------------------------------------------------------------------- */
 
-void FixRespa::copy_arrays(int i, int j)
+void FixRespa::copy_arrays(int i, int j, int delflag)
 {
   for (int k = 0; k < nlevels; k++) {
     f_level[j][k][0] = f_level[i][k][0];

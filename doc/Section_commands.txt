@@ -96,13 +96,45 @@ single leading "#" will comment out the entire command.
 
 (3) The line is searched repeatedly for $ characters, which indicate
 variables that are replaced with a text string.  See an exception in
-(6).  If the $ is followed by curly brackets, then the variable name
-is the text inside the curly brackets.  If no curly brackets follow
-the $, then the variable name is the single character immediately
-following the $.  Thus $\{myTemp\} and $x refer to variable names
-"myTemp" and "x".  See the "variable"_variable.html command for
-details of how strings are assigned to variables and how they are
-substituted for in input script commands.
+(6).
+
+If the $ is followed by curly brackets, then the variable name is the
+text inside the curly brackets.  If no curly brackets follow the $,
+then the variable name is the single character immediately following
+the $.  Thus $\{myTemp\} and $x refer to variable names "myTemp" and
+"x". 
+
+If the $ is followed by parenthesis, then the text inside the
+parenthesis is treated as an "immediate" variable and evaluated as an
+"equal-style variable"_variable.html.  This is a way to use numeric
+formulas in an input script without having to assign them to variable
+names.  For example, these 3 input script lines:
+
+variable X equal (xlo+xhi)/2+sqrt(v_area)
+region 1 block $X 2 INF INF EDGE EDGE
+variable X delete :pre
+
+can be replaced by 
+
+region 1 block $((xlo+xhi)/2+sqrt(v_area)) 2 INF INF EDGE EDGE :pre
+
+so that you do not have to define (or discard) a temporary variable X.
+
+Note that neither the curly-bracket or immediate form of variables can
+contain nested $ characters for other variables to substitute for.
+Thus you cannot do this:
+
+variable        a equal 2
+variable        b2 equal 4
+print           "B2 = $\{b$a\}" :pre
+
+Nor can you specify this $($x-1.0) for an immediate variable, but
+you could use $(v_x-1.0), since the latter is valid syntax for an
+"equal-style variable"_variable.html.
+
+See the "variable"_variable.html command for more details of how
+strings are assigned to variables and evaluated, and how they can be
+used in input script commands.
 
 (4) The line is broken into "words" separated by whitespace (tabs,
 spaces).  Note that words can thus contain letters, digits,
@@ -115,13 +147,14 @@ line are arguments.
 it can be enclosed in either double or single quotes.  E.g.
 
 print "Volume = $v"
-print 'Volume = $v' :pre
+print 'Volume = $v' 
+if "${steps} > 1000" then quit :pre
 
 The quotes are removed when the single argument is stored internally.
-See the "dump modify format"_dump_modify.html or "if"_if.html commands
-for examples.  A "#" or "$" character that is between quotes will not
-be treated as a comment indicator in (2) or substituted for as a
-variable in (3).
+See the "dump modify format"_dump_modify.html or "print"_print.html or
+"if"_if.html commands for examples.  A "#" or "$" character that is
+between quotes will not be treated as a comment indicator in (2) or
+substituted for as a variable in (3). 
 
 IMPORTANT NOTE: If the argument is itself a command that requires a
 quoted argument (e.g. using a "print"_print.html command as part of an
@@ -241,8 +274,8 @@ Atom definition:
 
 "create_atoms"_create_atoms.html, "create_box"_create_box.html,
 "lattice"_lattice.html, "read_data"_read_data.html,
-"read_restart"_read_restart.html, "region"_region.html,
-"replicate"_replicate.html
+"read_dump"_read_dump.html, "read_restart"_read_restart.html,
+"region"_region.html, "replicate"_replicate.html
 
 Force fields:
 
@@ -277,17 +310,18 @@ Computes:
 Output:
 
 "dump"_dump.html, "dump image"_dump_image.html,
-"dump_modify"_dump_modify.html, "restart"_restart.html,
-"thermo"_thermo.html, "thermo_modify"_thermo_modify.html,
-"thermo_style"_thermo_style.html, "undump"_undump.html,
-"write_restart"_write_restart.html
+"dump_modify"_dump_modify.html, "dump movie"_dump_image.html,
+"restart"_restart.html, "thermo"_thermo.html,
+"thermo_modify"_thermo_modify.html, "thermo_style"_thermo_style.html,
+"undump"_undump.html, "write_data"_write_data.html,
+"write_dump"_write_dump.html, "write_restart"_write_restart.html
 
 Actions:
 
 "delete_atoms"_delete_atoms.html, "delete_bonds"_delete_bonds.html,
-"displace_atoms"_displace_atoms.html,
-"change_box"_change_box.html, "minimize"_minimize.html,
-"neb"_neb.html "prd"_prd.html, "run"_run.html, "temper"_temper.html
+"displace_atoms"_displace_atoms.html, "change_box"_change_box.html,
+"minimize"_minimize.html, "neb"_neb.html "prd"_prd.html,
+"rerun"_rerun.html, "run"_run.html, "temper"_temper.html
 
 Miscellaneous:
 
@@ -317,6 +351,7 @@ in the command's documentation.
 "bond_coeff"_bond_coeff.html,
 "bond_style"_bond_style.html,
 "boundary"_boundary.html,
+"box"_box.html,
 "change_box"_change_box.html,
 "clear"_clear.html,
 "communicate"_communicate.html,
@@ -337,6 +372,7 @@ in the command's documentation.
 "fix"_fix.html,
 "fix_modify"_fix_modify.html,
 "group"_group.html,
+"group2ndx"_group2ndx.html,
 "if"_if.html,
 "improper_coeff"_improper_coeff.html,
 "improper_style"_improper_style.html,
@@ -356,8 +392,6 @@ in the command's documentation.
 "neighbor"_neighbor.html,
 "newton"_newton.html,
 "next"_next.html,
-"orient"_orient.html,
-"origin"_origin.html,
 "package"_package.html,
 "pair_coeff"_pair_coeff.html,
 "pair_modify"_pair_modify.html,
@@ -369,9 +403,11 @@ in the command's documentation.
 "processors"_processors.html,
 "quit"_quit.html,
 "read_data"_read_data.html,
+"read_dump"_read_dump.html,
 "read_restart"_read_restart.html,
 "region"_region.html,
 "replicate"_replicate.html,
+"rerun"_rerun.html,
 "reset_timestep"_reset_timestep.html,
 "restart"_restart.html,
 "run"_run.html,
@@ -392,6 +428,8 @@ in the command's documentation.
 "units"_units.html,
 "variable"_variable.html,
 "velocity"_velocity.html,
+"write_data"_write_data.html,
+"write_dump"_write_dump.html,
 "write_restart"_write_restart.html :tb(c=6,ea=c)
 
 :line
@@ -410,9 +448,12 @@ angle potentials.  Click on the style itself for a full description:
 "cosine/shift/exp"_angle_cosine_shift_exp.html,
 "cosine/squared"_angle_cosine_squared.html,
 "dipole"_angle_dipole.html,
+"fourier"_angle_fourier.html,
+"fourier/simple"_angle_fourier_simple.html,
 "harmonic"_angle_harmonic.html,
 "hybrid"_angle_hybrid.html,
 "none"_angle_none.html,
+"quartic"_angle_quartic.html,
 "sdk"_angle_sdk.html,
 "table"_angle_table.html :tb(c=4,ea=c)
 
@@ -429,7 +470,10 @@ package"_Section_accelerate.html.
 "cosine/shift/omp"_angle_cosine_shift.html,
 "cosine/squared/omp"_angle_cosine_squared.html,
 "dipole/omp"_angle_dipole.html,
+"fourier/omp"_angle_fourier.html,
+"fourier/simple/omp"_angle_fourier_simple.html,
 "harmonic/omp"_angle_harmonic.html,
+"quartic/omp"_angle_quartic.html,
 "table/omp"_angle_table.html :tb(c=4,ea=c)
 
 :line
@@ -477,6 +521,8 @@ each style or click on the style itself for a full description:
 "ackland/atom"_compute_ackland_atom.html,
 "angle/local"_compute_angle_local.html,
 "atom/molecule"_compute_atom_molecule.html,
+"basal/atom"_compute_basal_atom.html,
+"body/local"_compute_body_local.html,
 "bond/local"_compute_bond_local.html,
 "centro/atom"_compute_centro_atom.html,
 "cluster/atom"_compute_cluster_atom.html,
@@ -490,12 +536,14 @@ each style or click on the style itself for a full description:
 "displace/atom"_compute_displace_atom.html,
 "erotate/asphere"_compute_erotate_asphere.html,
 "erotate/sphere"_compute_erotate_sphere.html,
+"erotate/sphere/atom"_compute_erotate_sphere_atom.html,
 "event/displace"_compute_event_displace.html,
 "group/group"_compute_group_group.html,
 "gyration"_compute_gyration.html,
 "gyration/molecule"_compute_gyration_molecule.html,
 "heat/flux"_compute_heat_flux.html,
 "improper/local"_compute_improper_local.html,
+"inertia/molecule"_compute_inertia_molecule.html,
 "ke"_compute_ke.html,
 "ke/atom"_compute_ke_atom.html,
 "ke/atom/eff"_compute_ke_atom_eff.html,
@@ -505,6 +553,7 @@ each style or click on the style itself for a full description:
 "meso_t/atom"_compute_meso_t_atom.html,
 "msd"_compute_msd.html,
 "msd/molecule"_compute_msd_molecule.html,
+"msd/nongauss"_compute_msd_nongauss.html,
 "nparticles/tracer/region"_compute_nparticles_tracer_region.html,
 "pair"_compute_pair.html,
 "pair/gran/local"_compute_pair_gran_local.html,
@@ -516,7 +565,6 @@ each style or click on the style itself for a full description:
 "property/local"_compute_property_local.html,
 "property/molecule"_compute_property_molecule.html,
 "rdf"_compute_rdf.html,
-"rdf/gran"_compute_rdf.html,
 "reduce"_compute_reduce.html,
 "reduce/region"_compute_reduce.html,
 "slice"_compute_slice.html,
@@ -535,6 +583,7 @@ each style or click on the style itself for a full description:
 "temp/rotate"_compute_temp_rotate.html,
 "temp/sphere"_compute_temp_sphere.html,
 "ti"_compute_ti.html,
+"voronoi/atom"_compute_voronoi_atom.html,
 "wall/gran/local"_compute_pair_gran_local.html :tb(c=4,ea=c)
 
 These are accelerated compute styles, which can be used if LAMMPS is
@@ -557,12 +606,15 @@ description:
 "charmm"_dihedral_charmm.html,
 "class2"_dihedral_class2.html,
 "cosine/shift/exp"_dihedral_cosine_shift_exp.html,
+"fourier"_dihedral_fourier.html,
 "harmonic"_dihedral_harmonic.html,
 "helix"_dihedral_helix.html,
 "hybrid"_dihedral_hybrid.html,
 "multi/harmonic"_dihedral_multi_harmonic.html,
+"nharmonic"_dihedral_nharmonic.html,
 "none"_dihedral_none.html,
 "opls"_dihedral_opls.html,
+"quadratic"_dihedral_quadratic.html,
 "table"_dihedral_table.html :tb(c=4,ea=c)
 
 These are accelerated dihedral styles, which can be used if LAMMPS is
@@ -572,10 +624,13 @@ package"_Section_accelerate.html.
 "charmm/omp"_dihedral_charmm.html,
 "class2/omp"_dihedral_class2.html,
 "cosine/shift/exp/omp"_dihedral_cosine_shift_exp.html,
+"fourier/omp"_dihedral_fourier.html,
 "harmonic/omp"_dihedral_harmonic.html,
 "helix/omp"_dihedral_helix.html,
 "multi/harmonic/omp"_dihedral_multi_harmonic.html,
+"nharmonic/omp"_dihedral_nharmonic.html,
 "opls/omp"_dihedral_opls.html,
+"quadratic/omp"_dihedral_quadratic.html,
 "table/omp"_dihedral_table.html :tb(c=4,ea=c)
 
 :line
@@ -584,7 +639,9 @@ dump syles :h4
 
 Click on the style itself for a full description:
 
-"image"_dump_image.html :tb(c=4,ea=c)
+"image"_dump_image.html,
+"molfile"_dump_molfile.html,
+"movie"_dump_image.html :tb(c=4,ea=c)
 
 These are accelerated styles, which can be used if LAMMPS is built with the "appropriate accelerated package"_Section_accelerate.html.
 
@@ -612,6 +669,7 @@ of each style or click on the style itself for a full description:
 "bond/swap"_fix_bond_swap.html,
 "box/relax"_fix_box_relax.html,
 "check/timestep/gran"_fix_check_timestep_gran.html,
+"colvars"_fix_colvars.html,
 "deform"_fix_deform.html,
 "deposit"_fix_deposit.html,
 "drag"_fix_drag.html,
@@ -622,6 +680,7 @@ of each style or click on the style itself for a full description:
 "external"_fix_external.html,
 "freeze"_fix_freeze.html,
 "gcmc"_fix_gcmc.html,
+"gld"_fix_gld.html,
 "gravity"_fix_gravity.html,
 "heat"_fix_heat.html,
 "heat/gran"_fix_heat_gran_conduction.html,
@@ -633,6 +692,11 @@ of each style or click on the style itself for a full description:
 "insert/stream"_fix_insert_stream.html,
 "langevin"_fix_langevin.html,
 "langevin/eff"_fix_langevin_eff.html,
+"lb/fluid"_fix_lb_fluid.html,
+"lb/momentum"_fix_lb_momentum.html,
+"lb/pc"_fix_lb_pc.html,
+"lb/rigid/pc/sphere"_fix_lb_rigid_pc_sphere.html,
+"lb/viscous"_fix_lb_viscous.html,
 "lineforce"_fix_lineforce.html,
 "massflow/mesh"_fix_massflow_mesh.html,
 "mesh/surface"_fix_mesh_surface.html,
@@ -658,6 +722,7 @@ of each style or click on the style itself for a full description:
 "nve"_fix_nve.html,
 "nve/asphere"_fix_nve_asphere.html,
 "nve/asphere/noforce"_fix_nve_asphere_noforce.html,
+"nve/body"_fix_nve_body.html,
 "nve/eff"_fix_nve_eff.html,
 "nve/limit"_fix_nve_limit.html,
 "nve/line"_fix_nve_line.html,
@@ -673,6 +738,7 @@ of each style or click on the style itself for a full description:
 "orient/fcc"_fix_orient_fcc.html,
 "particledistribution/discrete"_fix_particledistribution_discrete.html,
 "particletemplate/sphere"_fix_particletemplate_sphere.html,
+"phonon"_fix_phonon.html,
 "planeforce"_fix_planeforce.html,
 "pour/legacy"_fix_pour.html,
 "press/berendsen"_fix_press_berendsen.html,
@@ -685,11 +751,15 @@ of each style or click on the style itself for a full description:
 "qeq/reax"_fix_qeq_reax.html,
 "reax/bonds"_fix_reax_bonds.html,
 "reax/c/bonds"_fix_reax_bonds.html,
+"reax/c/species"_fix_reaxc_species.html,
 "recenter"_fix_recenter.html,
 "restrain"_fix_restrain.html,
 "rigid"_fix_rigid.html,
+"rigid/nph"_fix_rigid.html,
+"rigid/npt"_fix_rigid.html,
 "rigid/nve"_fix_rigid.html,
 "rigid/nvt"_fix_rigid.html,
+"rigid/small"_fix_rigid.html,
 "setforce"_fix_setforce.html,
 "shake"_fix_shake.html,
 "smd"_fix_smd.html,
@@ -707,17 +777,17 @@ of each style or click on the style itself for a full description:
 "temp/rescale"_fix_temp_rescale.html,
 "temp/rescale/eff"_fix_temp_rescale_eff.html,
 "thermal/conductivity"_fix_thermal_conductivity.html,
+"ti/rs"_fix_ti_rs.html,
+"ti/spring"_fix_ti_spring.html,
 "tmd"_fix_tmd.html,
 "ttm"_fix_ttm.html,
+"tune/kspace"_fix_tune_kspace.html,
 "viscosity"_fix_viscosity.html,
 "viscous"_fix_viscous.html,
 "wall/colloid"_fix_wall.html,
-"wall/gran/hertz/history"_fix_wall_gran.html,
-"wall/gran/hertz/history/stiffness"_fix_wall_gran.html,
-"wall/gran/hooke"_fix_wall_gran.html,
-"wall/gran/hooke/history"_fix_wall_gran.html,
-"wall/gran/hooke/history/stiffness"_fix_wall_gran.html,
+"wall/gran"_fix_wall_gran.html,
 "wall/harmonic"_fix_wall.html,
+"wall/lj1043"_fix_wall.html,
 "wall/lj126"_fix_wall.html,
 "wall/lj93"_fix_wall.html,
 "wall/piston"_fix_wall_piston.html,
@@ -736,10 +806,22 @@ package"_Section_accelerate.html.
 "freeze/cuda"_fix_freeze.html,
 "gravity/cuda"_fix_gravity.html,
 "gravity/omp"_fix_gravity.html,
+"nph/asphere/omp"_fix_nph_asphere.html,
+"nph/omp"_fix_nh.html,
+"nph/sphere/omp"_fix_nph_sphere.html,
+"nphug/omp"_fix_nphug.html,
+"npt/asphere/omp"_fix_npt_asphere.html,
 "npt/cuda"_fix_nh.html,
+"npt/omp"_fix_nh.html,
+"npt/sphere/omp"_fix_npt_sphere.html,
 "nve/cuda"_fix_nve.html,
+"nve/omp"_fix_nve.html,
 "nve/sphere/omp"_fix_nve_sphere.html,
+"nvt/asphere/omp"_fix_nvt_asphere.html,
 "nvt/cuda"_fix_nh.html,
+"nvt/omp"_fix_nh.html,
+"nvt/sllod/omp"_fix_nvt_sllod.html,
+"nvt/sphere/omp"_fix_nvt_sphere.html,
 "qeq/comb/omp"_fix_qeq_comb.html,
 "setforce/cuda"_fix_setforce.html,
 "shake/cuda"_fix_shake.html,
@@ -757,10 +839,13 @@ of improper potentials.  Click on the style itself for a full
 description:
 
 "class2"_improper_class2.html,
+"cossq"_improper_cossq.html,
 "cvff"_improper_cvff.html,
+"fourier"_improper_fourier.html,
 "harmonic"_improper_harmonic.html,
 "hybrid"_improper_hybrid.html,
 "none"_improper_none.html,
+"ring"_improper_ring.html,
 "umbrella"_improper_umbrella.html :tb(c=4,ea=c)
 
 These are accelerated improper styles, which can be used if LAMMPS is
@@ -768,8 +853,11 @@ built with the "appropriate accelerated
 package"_Section_accelerate.html.
 
 "class2/omp"_improper_class2.html,
+"cossq/omp"_improper_cossq.html,
 "cvff/omp"_improper_cvff.html,
+"fourier/omp"_improper_fourier.html,
 "harmonic/omp"_improper_harmonic.html,
+"ring/omp"_improper_ring.html,
 "umbrella/omp"_improper_umbrella.html :tb(c=4,ea=c)
 
 :line
@@ -783,24 +871,29 @@ potentials.  Click on the style itself for a full description:
 "airebo"_pair_airebo.html,
 "awpmd/cut"_pair_awpmd.html,
 "beck"_pair_beck.html,
+"body"_pair_body.html,
+"bop"_pair_bop.html,
 "born"_pair_born.html,
 "born/coul/long"_pair_born.html,
+"born/coul/msm"_pair_born.html,
 "born/coul/wolf"_pair_born.html,
 "brownian"_pair_brownian.html,
 "brownian/poly"_pair_brownian.html,
 "buck"_pair_buck.html,
-"buck/coul"_pair_buck_coul.html,
 "buck/coul/cut"_pair_buck.html,
 "buck/coul/long"_pair_buck.html,
+"buck/coul/msm"_pair_buck.html,
+"buck/long/coul/long"_pair_buck_long.html,
 "colloid"_pair_colloid.html,
 "comb"_pair_comb.html,
+"comb3"_pair_comb.html,
 "coul/cut"_pair_coul.html,
 "coul/debye"_pair_coul.html,
 "coul/diel"_pair_coul_diel.html,
+"coul/dsf"_pair_coul.html,
 "coul/long"_pair_coul.html,
+"coul/msm"_pair_coul.html,
 "coul/wolf"_pair_coul.html,
-"dipole/cut"_pair_dipole.html,
-"dipole/sf"_pair_dipole.html,
 "dpd"_pair_dpd.html,
 "dpd/tstat"_pair_dpd.html,
 "dsmc"_pair_dsmc.html,
@@ -814,36 +907,43 @@ potentials.  Click on the style itself for a full description:
 "gauss"_pair_gauss.html,
 "gauss/cut"_pair_gauss.html,
 "gayberne"_pair_gayberne.html,
-"gran/hertz/history"_pair_gran.html,
-"gran/hertz/history/stiffness"_pair_gran.html,
-"gran/hooke"_pair_gran.html,
-"gran/hooke/history"_pair_gran.html,
-"gran/hooke/history/stiffness"_pair_gran.html,
+"gran"_pair_gran.html,
 "hbond/dreiding/lj"_pair_hbond_dreiding.html,
 "hbond/dreiding/morse"_pair_hbond_dreiding.html,
 "hybrid"_pair_hybrid.html,
 "hybrid/overlay"_pair_hybrid.html,
 "kim"_pair_kim.html,
+"lcbop"_pair_lcbop.html,
 "line/lj"_pair_line_lj.html,
+"list"_pair_list.html,
 "lj/charmm/coul/charmm"_pair_charmm.html,
 "lj/charmm/coul/charmm/implicit"_pair_charmm.html,
 "lj/charmm/coul/long"_pair_charmm.html,
+"lj/charmm/coul/msm"_pair_charmm.html,
 "lj/class2"_pair_class2.html,
 "lj/class2/coul/cut"_pair_class2.html,
 "lj/class2/coul/long"_pair_class2.html,
-"lj/coul"_pair_lj_coul.html,
 "lj/cubic"_pair_lj_cubic.html,
 "lj/cut"_pair_lj.html,
 "lj/cut/coul/cut"_pair_lj.html,
 "lj/cut/coul/debye"_pair_lj.html,
+"lj/cut/coul/dsf"_pair_lj.html,
 "lj/cut/coul/long"_pair_lj.html,
-"lj/cut/coul/long/tip4p"_pair_lj.html,
+"lj/cut/coul/msm"_pair_lj.html,
+"lj/cut/dipole/cut"_pair_dipole.html,
+"lj/cut/dipole/long"_pair_dipole.html,
+"lj/cut/tip4p/cut"_pair_lj.html,
+"lj/cut/tip4p/long"_pair_lj.html,
 "lj/expand"_pair_lj_expand.html,
 "lj/gromacs"_pair_gromacs.html,
 "lj/gromacs/coul/gromacs"_pair_gromacs.html,
+"lj/long/coul/long"_pair_lj_long.html,
+"lj/long/dipole/long"_pair_dipole.html,
+"lj/long/tip4p/long"_pair_lj_long.html,
 "lj/sdk"_pair_sdk.html,
 "lj/sdk/coul/long"_pair_sdk.html,
 "lj/sf"_pair_lj_sf.html,
+"lj/sf/dipole/sf"_pair_dipole.html,
 "lj/smooth"_pair_lj_smooth.html,
 "lj/smooth/linear"_pair_lj_smooth_linear.html,
 "lj96/cut"_pair_lj96.html,
@@ -852,10 +952,16 @@ potentials.  Click on the style itself for a full description:
 "lubricateU"_pair_lubricateU.html,
 "lubricateU/poly"_pair_lubricateU.html,
 "meam"_pair_meam.html,
+"mie/cut"_pair_mie.html,
 "morse"_pair_morse.html,
+"nb3b/harmonic"_pair_nb3b_harmonic.html,
+"nm/cut"_pair_nm.html,
+"nm/cut/coul/cut"_pair_nm.html,
+"nm/cut/coul/long"_pair_nm.html,
 "none"_pair_none.html,
 "peri/lps"_pair_peri.html,
 "peri/pmb"_pair_peri.html,
+"peri/ves"_pair_peri.html,
 "reax"_pair_reax.html,
 "reax/c"_pair_reax_c.html,
 "rebo"_pair_airebo.html,
@@ -872,11 +978,15 @@ potentials.  Click on the style itself for a full description:
 "sw"_pair_sw.html,
 "table"_pair_table.html,
 "tersoff"_pair_tersoff.html,
+"tersoff/mod"_pair_tersoff_mod.html,
 "tersoff/table"_pair_tersoff.html,
 "tersoff/zbl"_pair_tersoff_zbl.html,
+"tip4p/cut"_pair_coul.html,
+"tip4p/long"_pair_coul.html,
 "tri/lj"_pair_tri_lj.html,
 "yukawa"_pair_yukawa.html,
-"yukawa/colloid"_pair_yukawa_colloid.html :tb(c=4,ea=c)
+"yukawa/colloid"_pair_yukawa_colloid.html,
+"zbl"_pair_zbl.html :tb(c=4,ea=c)
 
 These are accelerated pair styles, which can be used if LAMMPS is
 built with the "appropriate accelerated
@@ -884,10 +994,15 @@ package"_Section_accelerate.html.
 
 "adp/omp"_pair_adp.html,
 "airebo/omp"_pair_airebo.html,
+"beck/gpu"_pair_beck.html,
 "beck/omp"_pair_beck.html,
 "born/coul/long/cuda"_pair_born.html,
+"born/coul/long/gpu"_pair_born.html,
 "born/coul/long/omp"_pair_born.html,
+"born/coul/msm/omp"_pair_born.html,
+"born/coul/wolf/gpu"_pair_born.html,
 "born/coul/wolf/omp"_pair_born.html,
+"born/gpu"_pair_born.html,
 "born/omp"_pair_born.html,
 "brownian/omp"_pair_brownian.html,
 "brownian/poly/omp"_pair_brownian.html,
@@ -897,19 +1012,22 @@ package"_Section_accelerate.html.
 "buck/coul/long/cuda"_pair_buck.html,
 "buck/coul/long/gpu"_pair_buck.html,
 "buck/coul/long/omp"_pair_buck.html,
-"buck/coul/omp"_pair_buck_coul.html,
+"buck/coul/msm/omp"_pair_buck.html,
 "buck/cuda"_pair_buck.html,
 "buck/gpu"_pair_buck.html,
+"buck/long/coul/long/omp"_pair_buck_long.html,
 "buck/omp"_pair_buck.html,
+"colloid/gpu"_pair_colloid.html,
 "colloid/omp"_pair_colloid.html,
 "comb/omp"_pair_comb.html,
 "coul/cut/omp"_pair_coul.html,
 "coul/debye/omp"_pair_coul.html,
+"coul/dsf/gpu"_pair_coul.html,
+"coul/dsf/omp"_pair_coul.html,
 "coul/long/gpu"_pair_coul.html,
 "coul/long/omp"_pair_coul.html,
+"coul/msm/omp"_pair_coul.html,
 "coul/wolf/omp"_pair_coul.html,
-"dipole/cut/omp"_pair_dipole.html,
-"dipole/sf/omp"_pair_dipole.html,
 "dpd/omp"_pair_dpd.html,
 "dpd/tstat/omp"_pair_dpd.html,
 "eam/alloy/cuda"_pair_eam.html,
@@ -927,6 +1045,7 @@ package"_Section_accelerate.html.
 "eam/opt"_pair_eam.html,
 "eim/omp"_pair_eim.html,
 "gauss/cut/omp"_pair_gauss.html,
+"gauss/gpu"_pair_gauss.html,
 "gauss/omp"_pair_gauss.html,
 "gayberne/gpu"_pair_gayberne.html,
 "gayberne/omp"_pair_gayberne.html,
@@ -943,34 +1062,40 @@ package"_Section_accelerate.html.
 "lj/charmm/coul/long/gpu"_pair_charmm.html,
 "lj/charmm/coul/long/omp"_pair_charmm.html,
 "lj/charmm/coul/long/opt"_pair_charmm.html,
-"lj/charmm/coul/pppm/omp"_pair_charmm.html,
+"lj/charmm/coul/msm/omp"_pair_charmm.html,
 "lj/class2/coul/cut/cuda"_pair_class2.html,
 "lj/class2/coul/cut/omp"_pair_class2.html,
 "lj/class2/coul/long/cuda"_pair_class2.html,
 "lj/class2/coul/long/gpu"_pair_class2.html,
 "lj/class2/coul/long/omp"_pair_class2.html,
-"lj/class2/coul/pppm/omp"_pair_class2.html,
 "lj/class2/cuda"_pair_class2.html,
 "lj/class2/gpu"_pair_class2.html,
 "lj/class2/omp"_pair_class2.html,
-"lj/coul/omp"_pair_lj_coul.html,
 "lj/cubic/omp"_pair_lj_cubic.html,
 "lj/cut/coul/cut/cuda"_pair_lj.html,
 "lj/cut/coul/cut/gpu"_pair_lj.html,
 "lj/cut/coul/cut/omp"_pair_lj.html,
 "lj/cut/coul/debye/cuda"_pair_lj.html,
+"lj/cut/coul/debye/gpu"_pair_lj.html,
 "lj/cut/coul/debye/omp"_pair_lj.html,
+"lj/cut/coul/dsf/gpu"_pair_lj.html,
+"lj/cut/coul/dsf/omp"_pair_lj.html,
 "lj/cut/coul/long/cuda"_pair_lj.html,
 "lj/cut/coul/long/gpu"_pair_lj.html,
 "lj/cut/coul/long/omp"_pair_lj.html,
 "lj/cut/coul/long/opt"_pair_lj.html,
-"lj/cut/coul/long/tip4p/omp"_pair_lj.html,
-"lj/cut/coul/long/tip4p/opt"_pair_lj.html,
+"lj/cut/coul/msm/gpu"_pair_lj.html,
+"lj/cut/coul/msm/omp"_pair_lj.html,
 "lj/cut/cuda"_pair_lj.html,
+"lj/cut/dipole/cut/gpu"_pair_dipole.html,
+"lj/cut/dipole/cut/omp"_pair_dipole.html,
 "lj/cut/experimental/cuda"_pair_lj.html,
 "lj/cut/gpu"_pair_lj.html,
 "lj/cut/omp"_pair_lj.html,
 "lj/cut/opt"_pair_lj.html,
+"lj/cut/tip4p/cut/omp"_pair_lj.html,
+"lj/cut/tip4p/long/omp"_pair_lj.html,
+"lj/cut/tip4p/long/opt"_pair_lj.html,
 "lj/expand/cuda"_pair_lj_expand.html,
 "lj/expand/gpu"_pair_lj_expand.html,
 "lj/expand/omp"_pair_lj_expand.html,
@@ -978,10 +1103,14 @@ package"_Section_accelerate.html.
 "lj/gromacs/coul/gromacs/omp"_pair_gromacs.html,
 "lj/gromacs/cuda"_pair_gromacs.html,
 "lj/gromacs/omp"_pair_gromacs.html,
+"lj/long/coul/long/omp"_pair_lj_long.html,
+"lj/long/coul/long/opt"_pair_lj_long.html,
 "lj/sdk/coul/long/gpu"_pair_sdk.html,
 "lj/sdk/coul/long/omp"_pair_sdk.html,
 "lj/sdk/gpu"_pair_sdk.html,
 "lj/sdk/omp"_pair_sdk.html,
+"lj/sf/dipole/sf/gpu"_pair_dipole.html,
+"lj/sf/dipole/sf/omp"_pair_dipole.html,
 "lj/sf/omp"_pair_lj_sf.html,
 "lj/smooth/cuda"_pair_lj_smooth.html,
 "lj/smooth/linear/omp"_pair_lj_smooth_linear.html,
@@ -991,23 +1120,35 @@ package"_Section_accelerate.html.
 "lj96/cut/omp"_pair_lj96.html,
 "lubricate/omp"_pair_lubricate.html,
 "lubricate/poly/omp"_pair_lubricate.html,
+"mie/cut/gpu"_pair_mie.html,
 "morse/cuda"_pair_morse.html,
 "morse/gpu"_pair_morse.html,
 "morse/omp"_pair_morse.html,
 "morse/opt"_pair_morse.html,
+"nb3b/harmonic/omp"_pair_nb3b_harmonic.html,
+"nm/cut/coul/cut/omp"_pair_nm.html,
+"nm/cut/coul/long/omp"_pair_nm.html,
+"nm/cut/omp"_pair_nm.html,
 "peri/lps/omp"_pair_peri.html,
 "peri/pmb/omp"_pair_peri.html,
 "rebo/omp"_pair_airebo.html,
 "resquared/gpu"_pair_resquared.html,
 "resquared/omp"_pair_resquared.html,
+"soft/gpu"_pair_soft.html,
 "soft/omp"_pair_soft.html,
 "sw/cuda"_pair_sw.html,
+"sw/gpu"_pair_sw.html,
 "sw/omp"_pair_sw.html,
 "table/gpu"_pair_table.html,
 "table/omp"_pair_table.html,
+"tersoff/mod/omp"_pair_tersoff_mod.html,
 "tersoff/table/omp"_pair_tersoff.html,
 "tersoff/zbl/omp"_pair_tersoff_zbl.html,
+"tip4p/cut/omp"_pair_coul.html,
+"tip4p/long/omp"_pair_coul.html,
 "tri/lj/omp"_pair_tri_lj.html,
+"yukawa/colloid/gpu"_pair_yukawa_colloid.html,
 "yukawa/colloid/omp"_pair_yukawa_colloid.html,
 "yukawa/gpu"_pair_yukawa.html,
-"yukawa/omp"_pair_yukawa.html :tb(c=4,ea=c)
+"yukawa/omp"_pair_yukawa.html,
+"zbl/omp"_pair_zbl.html :tb(c=4,ea=c)

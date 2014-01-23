@@ -29,16 +29,16 @@ namespace LAMMPS_NS {
 class CfdDatacoupling : protected Pointers {
  public:
 
-  CfdDatacoupling(class LAMMPS *,int,int, char **,class FixCfdCoupling*);
+  CfdDatacoupling(class LAMMPS *lmp, int jarg, int narg, char **arg, class FixCfdCoupling* fc);
   ~CfdDatacoupling();
 
   int get_iarg() {return iarg_;}
 
-  void add_pull_property(char*, char*);
-  void add_push_property(char*, char*);
+  void add_pull_property(const char*, const char*);
+  void add_push_property(const char*, const char*);
 
-  virtual void pull(char *,char *,void *&, char*);
-  virtual void push(char *,char *,void *&, char*);
+  virtual void pull(const char *name, const char *type, void *&ptr, const char *datatype);
+  virtual void push(const char *name, const char *type, void *&ptr, const char *datatype);
 
   virtual void allocate_external(int    **&data, int len2,int len1,int    initvalue);
   virtual void allocate_external(double **&data, int len2,int len1,double initvalue);
@@ -62,9 +62,9 @@ class CfdDatacoupling : protected Pointers {
   void grow_();
 
   // used to find properties
-  void* find_pull_property(char *name,char *type,int &len1,int &len2);
-  void* find_push_property(char *name,char *type,int &len1,int &len2);
-  void* find_property(int, char*, char*, int&, int&);
+  void* find_pull_property(const char *name, const char *type, int &len1, int &len2);
+  void* find_push_property(const char *name, const char *type, int &len1, int &len2);
+  void* find_property(int, const char*, const char*, int&, int&);
 
   // data members
 

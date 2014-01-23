@@ -42,11 +42,11 @@ class CfdDatacouplingMPI : public CfdDatacoupling {
 
   void exchange();
 
-  void pull(char *,char *,void *&,char *);
-  void push(char *,char *,void *&,char *);
+  virtual void pull(const char *name, const char *type, void *&ptr, const char *datatype);
+  virtual void push(const char *name, const char *type, void *&ptr, const char *datatype);
 
-  template <typename T> void pull_mpi(char *,char *,void *&);
-  template <typename T> void push_mpi(char *,char *,void *&);
+  template <typename T> void pull_mpi(const char *,const char *,void *&);
+  template <typename T> void push_mpi(const char *,const char *,void *&);
 
   virtual bool error_push()
   { return false;}
@@ -71,7 +71,7 @@ class CfdDatacouplingMPI : public CfdDatacoupling {
 /* ---------------------------------------------------------------------- */
 
 template <typename T>
-void CfdDatacouplingMPI::pull_mpi(char *name,char *type,void *&from)
+void CfdDatacouplingMPI::pull_mpi(const char *name,const char *type,void *&from)
 {
     int len1 = -1, len2 = -1, m;
 
@@ -145,7 +145,7 @@ void CfdDatacouplingMPI::pull_mpi(char *name,char *type,void *&from)
 /* ---------------------------------------------------------------------- */
 
 template <typename T>
-void CfdDatacouplingMPI::push_mpi(char *name,char *type,void *&to)
+void CfdDatacouplingMPI::push_mpi(const char *name,const char *type,void *&to)
 {
     int len1 = -1, len2 = -1, id;
 

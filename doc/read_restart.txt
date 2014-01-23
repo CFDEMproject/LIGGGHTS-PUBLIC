@@ -30,23 +30,37 @@ stored in a restart file is given below.
 
 Restart files are saved in binary format to enable exact restarts,
 meaning that the trajectories of a restarted run will precisely match
-those produced by the original run had it continued on.  Several
-things can prevent exact restarts due to round-off effects, in which
-case the trajectories in the 2 runs will slowly diverge.  These
+those produced by the original run had it continued on.
+
+Several things can prevent exact restarts due to round-off effects, in
+which case the trajectories in the 2 runs will slowly diverge.  These
 include running on a different number of processors or changing
 certain settings such as those set by the "newton"_newton.html or
 "processors"_processors.html commands.  LAMMPS will issue a warning in
-these cases.  Certain fixes will also not restart exactly, though they
-should provide statistically similar results.  These include "fix
-shake"_fix_shake.html and "fix langevin"_fix_langevin.html.  If a
-restarted run is immediately different than the run which produced the
-restart file, it could be a LAMMPS bug, so consider "reporting
-it"_Section_errors.html#err_2 if you think the behavior is wrong.
+these cases.
+
+Certain fixes will not restart exactly, though they should provide
+statistically similar results.  These include "fix
+shake"_fix_shake.html and "fix langevin"_fix_langevin.html.
+
+Certain pair styles will not restart exactly, though they should
+provide statistically similar results.  This is because the forces
+they compute depend on atom velocities, which are used at half-step
+values every timestep when forces are computed.  When a run restarts,
+forces are initially evaluated with a full-step velocity, which is
+different than if the run had continued.  These pair styles include
+"granular pair styles"_pair_gran.html, "pair dpd"_pair_dpd.html, and
+"pair lubricate"_pair_lubricate.html.
+
+If a restarted run is immediately different than the run which
+produced the restart file, it could be a LAMMPS bug, so consider
+"reporting it"_Section_errors.html#err_2 if you think the behavior is
+wrong.
 
 Because restart files are binary, they may not be portable to other
-machines.  They can be converted to ASCII data files using the
-"restart2data tool"_Section_tools.html#restart in the tools
-sub-directory of the LAMMPS distribution.
+machines.  In this case, you can use the "-r command-line
+switch"_Section_start.html#start_7 to convert a restart file to a data
+file.
 
 Similar to how restart files are written (see the
 "write_restart"_write_restart.html and "restart"_restart.html
@@ -64,16 +78,16 @@ set of multiple files to exist.  The "restart"_restart.html and
 "write_restart"_write_restart.html commands explain how such sets are
 created.  Read_restart will first read a filename where "%" is
 replaced by "base".  This file tells LAMMPS how many processors
-created the set.  Read_restart then reads the additional files.  For
-example, if the restart file was specified as save.% when it was
-written, then read_restart reads the files save.base, save.0, save.1,
-... save.P-1, where P is the number of processors that created the
-restart file.  The processors in the current LAMMPS simulation share
-the work of reading these files; each reads a roughly equal subset of
-the files.  The number of processors which created the set can be
-different the number of processors in the current LAMMPS simulation.
-This can be a fast mode of input on parallel machines that support
-parallel I/O.
+created the set and how many files are in it.  Read_restart then reads
+the additional files.  For example, if the restart file was specified
+as save.% when it was written, then read_restart reads the files
+save.base, save.0, save.1, ... save.P-1, where P is the number of
+processors that created the restart file.  The processors in the
+current LAMMPS simulation share the work of reading these files; each
+reads a roughly equal subset of the files.  The number of processors
+which created the set can be different the number of processors in the
+current LAMMPS simulation.  This can be a fast mode of input on
+parallel machines that support parallel I/O.
 
 :line
 
@@ -91,6 +105,11 @@ One exception is that some pair styles do not store their info in
 restart files.  The doc pages for individual pair styles note if this
 is the case.  This is also true of bond_style hybrid (and angle_style,
 dihedral_style, improper_style hybrid).
+
+All settings made by the "pair_modify"_pair_modify.html command,
+such as the shift and tail settings, are stored in the restart file
+with the pair style.  The one exception is the "pair_modify
+compute"_pair_modify.html setting is not stored.
 
 Information about "kspace_style"_kspace_style.html settings are not
 stored in the restart file.  Hence if you wish to use an Ewald or PPPM
@@ -124,16 +143,18 @@ bonds will still be broken when the restart file is read.
 IMPORTANT NOTE: No other information is stored in the restart file.
 This means that an input script that reads a restart file should
 specify settings for quantities like "timestep size"_timestep.html,
-"thermodynamic"_thermo_style.html, "neighbor list"_doc/neighbor.html
+"thermodynamic"_thermo_style.html, "neighbor list"_neighbor.html
 criteria including settings made via the
-"neigh_modify"_doc/neigh_modify.html comand, "dump"_dump.html file
+"neigh_modify"_neigh_modify.html comand, "dump"_dump.html file
 output, "geometric regions"_region.html, etc.
+
+:line
 
 [Restrictions:] none
 
 [Related commands:]
 
-"read_data"_read_data.html, "write_restart"_write_restart.html,
-"restart"_restart.html
+"read_data"_read_data.html, "read_dump"_read_dump.html,
+"write_restart"_write_restart.html, "restart"_restart.html
 
 [Default:] none

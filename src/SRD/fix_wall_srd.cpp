@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -25,6 +25,7 @@
 #include "variable.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -47,8 +48,8 @@ FixWallSRD::FixWallSRD(LAMMPS *lmp, int narg, char **arg) :
   int iarg = 3;
   while (iarg < narg) {
     if ((strcmp(arg[iarg],"xlo") == 0) || (strcmp(arg[iarg],"xhi") == 0) ||
-	(strcmp(arg[iarg],"ylo") == 0) || (strcmp(arg[iarg],"yhi") == 0) ||
-	(strcmp(arg[iarg],"zlo") == 0) || (strcmp(arg[iarg],"zhi") == 0)) {
+        (strcmp(arg[iarg],"ylo") == 0) || (strcmp(arg[iarg],"yhi") == 0) ||
+        (strcmp(arg[iarg],"zlo") == 0) || (strcmp(arg[iarg],"zhi") == 0)) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix wall/srd command");
 
       int newwall;
@@ -60,24 +61,24 @@ FixWallSRD::FixWallSRD(LAMMPS *lmp, int narg, char **arg) :
       else if (strcmp(arg[iarg],"zhi") == 0) newwall = ZHI;
 
       for (int m = 0; m < nwall; m++)
-	if (newwall == wallwhich[m])
-	  error->all(FLERR,"Wall defined twice in fix wall/srd command");
+        if (newwall == wallwhich[m])
+          error->all(FLERR,"Wall defined twice in fix wall/srd command");
 
       wallwhich[nwall] = newwall;
       if (strcmp(arg[iarg+1],"EDGE") == 0) {
-	wallstyle[nwall] = EDGE;
-	int dim = wallwhich[nwall] / 2;
-	int side = wallwhich[nwall] % 2;
-	if (side == 0) coord0[nwall] = domain->boxlo[dim];
-	else coord0[nwall] = domain->boxhi[dim];
+        wallstyle[nwall] = EDGE;
+        int dim = wallwhich[nwall] / 2;
+        int side = wallwhich[nwall] % 2;
+        if (side == 0) coord0[nwall] = domain->boxlo[dim];
+        else coord0[nwall] = domain->boxhi[dim];
       } else if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) {
-	wallstyle[nwall] = VARIABLE;
-	int n = strlen(&arg[iarg+1][2]) + 1;
-	varstr[nwall] = new char[n];
-	strcpy(varstr[nwall],&arg[iarg+1][2]);
+        wallstyle[nwall] = VARIABLE;
+        int n = strlen(&arg[iarg+1][2]) + 1;
+        varstr[nwall] = new char[n];
+        strcpy(varstr[nwall],&arg[iarg+1][2]);
       } else {
-	wallstyle[nwall] = CONSTANT;
-	coord0[nwall] = atof(arg[iarg+1]);
+        wallstyle[nwall] = CONSTANT;
+        coord0[nwall] = force->numeric(FLERR,arg[iarg+1]);
       }
 
       nwall++;
@@ -127,9 +128,6 @@ FixWallSRD::FixWallSRD(LAMMPS *lmp, int narg, char **arg) :
     if (wallstyle[m] == CONSTANT) flag = 1;
 
   if (flag) {
-    if (scaleflag && domain->lattice == NULL)
-      error->all(FLERR,"Use of fix wall with undefined lattice");
-
     double xscale,yscale,zscale;
     if (scaleflag) {
       xscale = domain->lattice->xlattice;
@@ -156,11 +154,11 @@ FixWallSRD::FixWallSRD(LAMMPS *lmp, int narg, char **arg) :
   if (dimflag[0] + dimflag[1] + dimflag[2] > 1) overlap = 1;
   else overlap = 0;
 
-  // set time_depend and varflag if any wall positions are variable
+  // set varflag if any wall positions are variable
 
   varflag = 0;
   for (int m = 0; m < nwall; m++)
-    if (wallstyle[m] == VARIABLE) time_depend = varflag = 1;
+    if (wallstyle[m] == VARIABLE) varflag = 1;
   laststep = -1;
 }
 
@@ -213,7 +211,7 @@ double FixWallSRD::compute_array(int i, int j)
 
   if (force_flag == 0) {
     MPI_Allreduce(&fwall[0][0],&fwall_all[0][0],3*nwall,
-		  MPI_DOUBLE,MPI_SUM,world);
+                  MPI_DOUBLE,MPI_SUM,world);
     force_flag = 1;
   }
   return fwall_all[i][j];
@@ -245,7 +243,7 @@ void FixWallSRD::wall_params(int flag)
       xwalllast[m] = xwall[m];
       xwall[m] = xnew;
       vwall[m] = (xwall[m] - xwalllast[m]) / dt;
-    } 
+    }
 
     fwall[m][0] = fwall[m][1] = fwall[m][2] = 0.0;
   }

@@ -59,9 +59,6 @@ ComputeTempRamp::ComputeTempRamp(LAMMPS *lmp, int narg, char **arg) :
 
   // setup scaling
 
-  if (scaleflag && domain->lattice == NULL)
-    error->all(FLERR,"Use of compute temp/ramp with undefined lattice");
-
   if (scaleflag) {
     xscale = domain->lattice->xlattice;
     yscale = domain->lattice->ylattice;
@@ -118,7 +115,7 @@ ComputeTempRamp::~ComputeTempRamp()
 
 /* ---------------------------------------------------------------------- */
 
-void ComputeTempRamp::init()
+void ComputeTempRamp::setup()
 {
   fix_dof = 0;
   for (int i = 0; i < modify->nfix; i++)
@@ -294,6 +291,6 @@ void ComputeTempRamp::restore_bias_all()
 
 double ComputeTempRamp::memory_usage()
 {
-  double bytes = maxbias * sizeof(double);
+  double bytes = 3*maxbias * sizeof(double);
   return bytes;
 }

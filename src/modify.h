@@ -26,6 +26,9 @@
 
 #include "stdio.h"
 #include "pointers.h"
+#include "fix.h"
+#include <map>
+#include <string>
 
 namespace LAMMPS_NS {
 
@@ -38,16 +41,17 @@ class Modify : protected Pointers {
   int n_final_integrate,n_end_of_step,n_thermo_energy;
   int n_initial_integrate_respa,n_post_integrate_respa;
   int n_pre_force_respa,n_post_force_respa,n_final_integrate_respa;
-  int n_min_pre_exchange,n_min_pre_force,n_min_post_force,n_min_energy;
+  int n_min_pre_exchange,n_min_pre_neighbor;
+  int n_min_pre_force,n_min_post_force,n_min_energy;
 
   int restart_pbc_any;       // 1 if any fix sets restart_pbc
   int nfix_restart_global;   // stored fix global info from restart file
   int nfix_restart_peratom;  // stored fix peratom info from restart file
 
-  int allow_early_fix;       // 1 if allow fix creation at start of script
-
   class Fix **fix;           // list of fixes
   int *fmask;                // bit mask for when each fix is applied
+
+  int timing;                // 1 if fix calls are timed
 
   int ncompute,maxcompute;   // list of computes
   class Compute **compute;
@@ -57,7 +61,7 @@ class Modify : protected Pointers {
   virtual void init();
   virtual void setup(int);
   virtual void setup_pre_exchange();
-  virtual void setup_pre_neighbor(); 
+  virtual void setup_pre_neighbor();
   virtual void setup_pre_force(int);
   virtual void initial_integrate(int);
   virtual void post_integrate();
@@ -79,8 +83,8 @@ class Modify : protected Pointers {
   void post_force_respa(int, int, int);
   void final_integrate_respa(int, int);
 
-  void setup_min_pre_force(int);
   void min_pre_exchange();
+  void min_pre_neighbor();
   void min_pre_force(int);
   void min_post_force(int);
 
@@ -98,6 +102,7 @@ class Modify : protected Pointers {
   void modify_fix(int, char **);
   void delete_fix(const char *,bool unfixflag = false); 
   int find_fix(const char *);
+
   class FixPropertyGlobal* add_fix_property_global(int narg,char **arg,const char *);
   class FixPropertyAtom* add_fix_property_atom(int narg,char **arg,const char *);
   class Fix* find_fix_property(const char *,const char *,const char *,int ,int,const char * );
@@ -113,9 +118,8 @@ class Modify : protected Pointers {
   int index_first_fix_of_style(const char *style); 
   int my_index(class Fix *fixptr);
   int index_first_fix_with_function(const int FUNCTION, bool integrate=false); 
-  class FixScalarTransportEquation* find_fix_scalar_transport_equation(const char *equation_id);
-
-  void box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double &zlo,double &zhi);
+  class FixScalarTransportEquation* find_fix_scalar_transport_equation(const char *equation_id); 
+  void box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double &zlo,double &zhi); 
 
   void add_compute(int, char **, char *suffix = NULL);
   void modify_compute(int, char **);
@@ -147,8 +151,9 @@ class Modify : protected Pointers {
   int *list_initial_integrate_respa,*list_post_integrate_respa;
   int *list_pre_force_respa,*list_post_force_respa;
   int *list_final_integrate_respa;
-  int *list_min_pre_exchange,*list_min_pre_force;
-  int *list_min_post_force,*list_min_energy;
+  int *list_min_pre_exchange,*list_min_pre_neighbor;
+  int *list_min_pre_force,*list_min_post_force;
+  int *list_min_energy;
 
   int *end_of_step_every;
 
@@ -169,6 +174,24 @@ class Modify : protected Pointers {
   void list_init_end_of_step(int, int &, int *&);
   void list_init_thermo_energy(int, int &, int *&);
   void list_init_compute();
+
+private:
+  inline void call_method_on_fixes(FixMethod method);
+  inline void call_method_on_fixes(FixMethod method, int *& ilist, int & inum);
+  inline void call_method_on_fixes(FixMethodWithVFlag method, int vflag);
+  inline void call_method_on_fixes(FixMethodWithVFlag method, int vflag, int *& ilist, int & inum);
+
+  inline void call_respa_method_on_fixes(FixMethodRESPA2 method, int arg1, int arg2, int *& ilist, int & inum);
+  inline void call_respa_method_on_fixes(FixMethodRESPA3 method, int arg1, int arg2, int arg3, int *& ilist, int & inum);
+
+  typedef Compute *(*ComputeCreator)(LAMMPS *, int, char **);
+  std::map<std::string,ComputeCreator> *compute_map;
+
+  typedef Fix *(*FixCreator)(LAMMPS *, int, char **);
+  std::map<std::string,FixCreator> *fix_map;
+
+  template <typename T> static Compute *compute_creator(LAMMPS *, int, char **);
+  template <typename T> static Fix *fix_creator(LAMMPS *, int, char **);
 };
 
 }
@@ -183,16 +206,16 @@ This is probably an error since you typically do not want to
 advance the positions or velocities of an atom more than once
 per timestep.
 
-E: Fix command before simulation box is defined
-
-The fix command cannot be used before a read_data, read_restart, or
-create_box command.
-
 E: Illegal ... command
 
 Self-explanatory.  Check the input script syntax and compare to the
 documentation for the command.  You can use -echo screen as a
 command-line option when running LAMMPS to see the offending line.
+
+E: Fix command before simulation box is defined
+
+The fix command cannot be used before a read_data, read_restart, or
+create_box command.
 
 E: Could not find fix group ID
 

@@ -28,6 +28,8 @@ class Universe : protected Pointers {
 
   FILE *uscreen;          // universe screen output
   FILE *ulogfile;         // universe logfile
+                          
+  FILE *uthermofile;      // universe thermofile
 
   int existflag;          // 1 if universe exists due to -partition flag
   int nworlds;            // # of worlds in universe
@@ -46,7 +48,7 @@ class Universe : protected Pointers {
   void reorder(char *, char *);
   void add_world(char *);
   int consistent();
-  void id(char *id);
+  void id(char *id);       
 };
 
 }

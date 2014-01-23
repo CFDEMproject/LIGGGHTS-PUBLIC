@@ -15,12 +15,17 @@
 #include "stdlib.h"
 #include "string.h"
 #include "region_cylinder.h"
+#include "update.h"
 #include "domain.h"
+#include "input.h"
+#include "variable.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 
 #define BIG 1.0e20
+enum{CONSTANT,VARIABLE};
 
 /* ---------------------------------------------------------------------- */
 
@@ -34,17 +39,31 @@ RegCylinder::RegCylinder(LAMMPS *lmp, int narg, char **arg) :
   axis = arg[2][0];
 
   if (axis == 'x') {
-    c1 = yscale*atof(arg[3]);
-    c2 = zscale*atof(arg[4]);
-    radius = yscale*atof(arg[5]);
+    c1 = yscale*force->numeric(FLERR,arg[3]);
+    c2 = zscale*force->numeric(FLERR,arg[4]);
   } else if (axis == 'y') {
-    c1 = xscale*atof(arg[3]);
-    c2 = zscale*atof(arg[4]);
-    radius = xscale*atof(arg[5]);
+    c1 = xscale*force->numeric(FLERR,arg[3]);
+    c2 = zscale*force->numeric(FLERR,arg[4]);
   } else if (axis == 'z') {
-    c1 = xscale*atof(arg[3]);
-    c2 = yscale*atof(arg[4]);
-    radius = xscale*atof(arg[5]);
+    c1 = xscale*force->numeric(FLERR,arg[3]);
+    c2 = yscale*force->numeric(FLERR,arg[4]);
+  }
+
+  rstr = NULL;
+  if (strstr(arg[5],"v_") == arg[5]) {
+    int n = strlen(&arg[5][2]) + 1;
+    rstr = new char[n];
+    strcpy(rstr,&arg[5][2]);
+    radius = 0.0;
+    rstyle = VARIABLE;
+    varshape = 1;
+    variable_check();
+    shape_update();
+  } else {
+    radius = force->numeric(FLERR,arg[5]);
+    if (axis == 'x') radius *= xscale;
+    else radius *= xscale;
+    rstyle = CONSTANT;
   }
 
   if (strcmp(arg[6],"INF") == 0 || strcmp(arg[6],"EDGE") == 0) {
@@ -66,12 +85,12 @@ RegCylinder::RegCylinder(LAMMPS *lmp, int narg, char **arg) :
       else lo = domain->boxlo_bound[2];
     }
   } else {
-    if (axis == 'x') lo = xscale*atof(arg[6]);
-    if (axis == 'y') lo = yscale*atof(arg[6]);
-    if (axis == 'z') lo = zscale*atof(arg[6]);
+    if (axis == 'x') lo = xscale*force->numeric(FLERR,arg[6]);
+    if (axis == 'y') lo = yscale*force->numeric(FLERR,arg[6]);
+    if (axis == 'z') lo = zscale*force->numeric(FLERR,arg[6]);
   }
 
-  if (strcmp(arg[7],"INF") == 0 || strcmp(arg[6],"EDGE") == 0) {
+  if (strcmp(arg[7],"INF") == 0 || strcmp(arg[7],"EDGE") == 0) {
     if (domain->box_exist == 0)
       error->all(FLERR,"Cannot use region INF or EDGE when box does not exist");
     if (axis == 'x') {
@@ -90,9 +109,9 @@ RegCylinder::RegCylinder(LAMMPS *lmp, int narg, char **arg) :
       else hi = domain->boxhi_bound[2];
     }
   } else {
-    if (axis == 'x') hi = xscale*atof(arg[7]);
-    if (axis == 'y') hi = yscale*atof(arg[7]);
-    if (axis == 'z') hi = zscale*atof(arg[7]);
+    if (axis == 'x') hi = xscale*force->numeric(FLERR,arg[7]);
+    if (axis == 'y') hi = yscale*force->numeric(FLERR,arg[7]);
+    if (axis == 'z') hi = zscale*force->numeric(FLERR,arg[7]);
   }
 
   // error check
@@ -100,6 +119,7 @@ RegCylinder::RegCylinder(LAMMPS *lmp, int narg, char **arg) :
   if (radius <= 0.0) error->all(FLERR,"Illegal region cylinder command");
 
   // extent of cylinder
+  // for variable radius, uses initial radius
 
   if (interior) {
     bboxflag = 1;
@@ -139,7 +159,16 @@ RegCylinder::RegCylinder(LAMMPS *lmp, int narg, char **arg) :
 
 RegCylinder::~RegCylinder()
 {
+  delete [] rstr;
   delete [] contact;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void RegCylinder::init()
+{
+  Region::init();
+  if (rstr) variable_check();
 }
 
 /* ----------------------------------------------------------------------
@@ -399,4 +428,30 @@ int RegCylinder::surface_exterior(double *x, double cutoff)
     if (contact[0].r < cutoff) return 1;
     return 0;
   }
+}
+
+/* ----------------------------------------------------------------------
+   change region shape via variable evaluation
+------------------------------------------------------------------------- */
+
+void RegCylinder::shape_update()
+{
+  radius = input->variable->compute_equal(rvar);
+  if (radius < 0.0)
+    error->one(FLERR,"Variable evaluation in region gave bad value");
+  if (axis == 'x') radius *= xscale;
+  else radius *= xscale;
+}
+
+/* ----------------------------------------------------------------------
+   error check on existence of variable
+------------------------------------------------------------------------- */
+
+void RegCylinder::variable_check()
+{
+  rvar = input->variable->find(rstr);
+  if (rvar < 0)
+    error->all(FLERR,"Variable name for region cylinder does not exist");
+  if (!input->variable->equalstyle(rvar))
+    error->all(FLERR,"Variable for region cylinder is invalid style");
 }

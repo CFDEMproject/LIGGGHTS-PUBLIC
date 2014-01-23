@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -71,11 +71,10 @@ void BondHarmonicShift::compute(int eflag, int vflag)
     delx = x[i1][0] - x[i2][0];
     dely = x[i1][1] - x[i2][1];
     delz = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx,dely,delz);
 
     rsq = delx*delx + dely*dely + delz*delz;
     r = sqrt(rsq);
-    
+
     dr = r - r0[type];
     rk = k[type] * dr;
 
@@ -84,7 +83,8 @@ void BondHarmonicShift::compute(int eflag, int vflag)
     if (r > 0.0) fbond = -2.0*rk/r;
     else fbond = 0.0;
 
-    if (eflag) ebond = k[type]*(dr*dr -(r0[type]-r1[type])*(r0[type]-r1[type]) );
+    if (eflag)
+      ebond = k[type]*(dr*dr -(r0[type]-r1[type])*(r0[type]-r1[type]) );
 
     // apply force to each of 2 atoms
 
@@ -115,7 +115,7 @@ void BondHarmonicShift::allocate()
   memory->create(r0,    n+1,"bond:r0");
   memory->create(r1,    n+1,"bond:r1");
   memory->create(setflag,n+1,"bond:setflag");
-  
+
   for (int i = 1; i <= n; i++) setflag[i] = 0;
 }
 
@@ -131,9 +131,9 @@ void BondHarmonicShift::coeff(int narg, char **arg)
   int ilo,ihi;
   force->bounds(arg[0],atom->nbondtypes,ilo,ihi);
 
-  double Umin = force->numeric(arg[1]);   // energy at minimum
-  double r0_one = force->numeric(arg[2]); // position of minimum
-  double r1_one = force->numeric(arg[3]);  // position where energy = 0
+  double Umin = force->numeric(FLERR,arg[1]);   // energy at minimum
+  double r0_one = force->numeric(FLERR,arg[2]); // position of minimum
+  double r1_one = force->numeric(FLERR,arg[3]);  // position where energy = 0
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -148,7 +148,7 @@ void BondHarmonicShift::coeff(int narg, char **arg)
 }
 
 /* ----------------------------------------------------------------------
-   return an equilbrium bond length 
+   return an equilbrium bond length
 ------------------------------------------------------------------------- */
 
 double BondHarmonicShift::equilibrium_distance(int i)
@@ -157,7 +157,7 @@ double BondHarmonicShift::equilibrium_distance(int i)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 writes out coeffs to restart file 
+   proc 0 writes out coeffs to restart file
 ------------------------------------------------------------------------- */
 
 void BondHarmonicShift::write_restart(FILE *fp)
@@ -168,7 +168,7 @@ void BondHarmonicShift::write_restart(FILE *fp)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 reads coeffs from restart file, bcasts them 
+   proc 0 reads coeffs from restart file, bcasts them
 ------------------------------------------------------------------------- */
 
 void BondHarmonicShift::read_restart(FILE *fp)
@@ -183,17 +183,19 @@ void BondHarmonicShift::read_restart(FILE *fp)
   MPI_Bcast(&k[1],atom->nbondtypes,MPI_DOUBLE,0,world);
   MPI_Bcast(&r0[1],atom->nbondtypes,MPI_DOUBLE,0,world);
   MPI_Bcast(&r1[1],atom->nbondtypes,MPI_DOUBLE,0,world);
-  
+
   for (int i = 1; i <= atom->nbondtypes; i++) setflag[i] = 1;
 }
 
 /* ---------------------------------------------------------------------- */
 
-double BondHarmonicShift::single(int type, double rsq, int i, int j)
+double BondHarmonicShift::single(int type, double rsq, int i, int j,
+				 double &fforce)
 {
-  double r = sqrt(rsq);  
+  double r = sqrt(rsq);
   double dr = r - r0[type];
   double dr2=r0[type]-r1[type];
-  
+
+  fforce =  -2.0*k[type]*dr/r;
   return k[type]*(dr*dr - dr2*dr2);
 }

@@ -7,15 +7,19 @@ SHELL = /bin/sh
 # specify flags and libraries needed for your compiler
 
 CC =		mpic++
-CCFLAGS =	-g -O2  \
-		 -funroll-loops -fstrict-aliasing -Wall -W -Wno-uninitialized
+CCFLAGS =	-O2 \
+		-funroll-loops -fstrict-aliasing -Wall -W -Wno-uninitialized
+SHFLAGS =	
 DEPFLAGS =	-M
+
 LINK =		mpic++
-LINKFLAGS =	-O
+LINKFLAGS =	-O2
 LIB =           -lstdc++
+SIZE =		size
+
 ARCHIVE =	ar
 ARFLAGS =	-rcsv
-SIZE =		size
+SHLIBFLAGS =	-shared
 
 # ---------------------------------------------------------------------
 # LAMMPS-specific settings
@@ -45,16 +49,16 @@ MPI_LIB =
 # PATH = path for FFT library
 # LIB = name of FFT library
 
-FFT_INC = 
+FFT_INC =       
 FFT_PATH = 
-FFT_LIB =
+FFT_LIB =	
 
-# JPEG library, OPTIONAL
+# JPEG and/or PNG library, OPTIONAL
 # see discussion in doc/Section_start.html#2_2 (step 7)
-# only needed if -DLAMMPS_JPEG listed with LMP_INC
-# INC = path for jpeglib.h
-# PATH = path for JPEG library
-# LIB = name of JPEG library
+# only needed if -DLAMMPS_JPEG or -DLAMMPS_PNG listed with LMP_INC
+# INC = path(s) for jpeglib.h and/or png.h
+# PATH = path(s) for JPEG library and/or PNG library
+# LIB = name(s) of JPEG library and/or PNG library
 
 JPG_INC =       
 JPG_PATH = 	
@@ -71,21 +75,30 @@ EXTRA_INC = $(LMP_INC) $(PKG_INC) $(MPI_INC) $(FFT_INC) $(JPG_INC) $(PKG_SYSINC)
 EXTRA_PATH = $(PKG_PATH) $(MPI_PATH) $(FFT_PATH) $(JPG_PATH) $(PKG_SYSPATH)
 EXTRA_LIB = $(PKG_LIB) $(MPI_LIB) $(FFT_LIB) $(JPG_LIB) $(PKG_SYSLIB)
 
+# Path to src files
+
+vpath %.cpp ..
+vpath %.h ..
+
 # Link target
 
 $(EXE):	$(OBJ)
 	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
 	$(SIZE) $(EXE)
 
-# Library target
+# Library targets
 
 lib:	$(OBJ)
 	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
 
+shlib:	$(OBJ)
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
+        $(OBJ) $(EXTRA_LIB) $(LIB)
+
 # Compilation rules
 
 %.o:%.cpp
-	$(CC) $(CCFLAGS) $(EXTRA_INC) -c $<
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(EXTRA_INC) -c $<
 
 %.d:%.cpp
 	$(CC) $(CCFLAGS) $(EXTRA_INC) $(DEPFLAGS) $< > $@

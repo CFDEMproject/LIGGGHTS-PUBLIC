@@ -55,12 +55,17 @@ ComputeTempCOM::~ComputeTempCOM()
 
 void ComputeTempCOM::init()
 {
+  masstotal = group->mass(igroup);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void ComputeTempCOM::setup()
+{
   fix_dof = 0;
   for (int i = 0; i < modify->nfix; i++)
     fix_dof += modify->fix[i]->dof(igroup);
   dof_compute();
-
-  masstotal = group->mass(igroup);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -159,7 +164,7 @@ void ComputeTempCOM::compute_vector()
    remove velocity bias from atom I to leave thermal velocity
 ------------------------------------------------------------------------- */
 
-void ComputeTempCOM::remove_bias(int i, double *v)
+void ComputeTempCOM::remove_bias(int, double *v)
 {
   v[0] -= vbias[0];
   v[1] -= vbias[1];
@@ -189,7 +194,7 @@ void ComputeTempCOM::remove_bias_all()
    assume remove_bias() was previously called
 ------------------------------------------------------------------------- */
 
-void ComputeTempCOM::restore_bias(int i, double *v)
+void ComputeTempCOM::restore_bias(int, double *v)
 {
   v[0] += vbias[0];
   v[1] += vbias[1];

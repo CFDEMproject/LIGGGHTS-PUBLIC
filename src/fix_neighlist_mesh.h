@@ -21,6 +21,7 @@
 
 /* ----------------------------------------------------------------------
    Contributing authors:
+   Richard Berger (JKU Linz)
    Philippe Seil (JKU Linz)
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
 ------------------------------------------------------------------------- */
@@ -36,9 +37,29 @@ FixStyle(neighlist/mesh,FixNeighlistMesh)
 
 #include "fix.h"
 #include "container.h"
+#include <vector>
+#include <algorithm>
 
 namespace LAMMPS_NS
 {
+
+struct BinBoundary {
+  int xlo;
+  int xhi;
+  int ylo;
+  int yhi;
+  int zlo;
+  int zhi;
+};
+
+struct TriangleNeighlist {
+  std::vector<int> contacts;
+  std::vector<int> bins;
+  BinBoundary boundary;
+  int nchecked;
+
+  TriangleNeighlist() : nchecked(0) {}
+};
 
 class FixNeighlistMesh : public Fix
 {
@@ -51,29 +72,43 @@ class FixNeighlistMesh : public Fix
     virtual void post_create();
     virtual void pre_delete(bool unfixflag);
 
-    void initializeNeighlist();
+    virtual void initializeNeighlist();
     virtual void setup_pre_force(int);
+    virtual void min_setup_pre_force(int);
 
     virtual void pre_neighbor(); 
     virtual void pre_force(int vflag); 
+    virtual void min_pre_force(int vflag); 
 
-    void getPointers(int *&cList, int *&nContact);
+    virtual void post_run();
 
-    int getSizeNumContacts() {return numContacts.size();}
-    int getTotalNumContacts() {return numAllContacts_;}
+    const std::vector<int> & get_contact_list(int iTri) const {
+      return triangles[iTri].contacts;
+    }
 
-  private:
+    virtual int getSizeNumContacts();
+    virtual int getTotalNumContacts() { return numAllContacts_; }
+    bool contactInList(int iTri, int iAtom)
+    {
+      std::vector<int> & neighbors = triangles[iTri].contacts;
+      return std::find(neighbors.begin(), neighbors.end(), iAtom) != neighbors.end();
+    }
+
+  protected:
 
     void handleTriangle(int iTri);
-    void getBinBoundariesFromBoundingBox(class BoundingBox &b,
-        int &ixMin,int &ixMax,int &iyMin,int &iyMax,int &izMin,int &izMax);
+    void getBinBoundariesFromBoundingBox(class BoundingBox &b, int &ixMin,int &ixMax,int &iyMin,int &iyMax,int &izMin,int &izMax);
+    void getBinBoundariesForTriangle(int iTri, int &ixMin,int &ixMax,int &iyMin,int &iyMax,int &izMin,int &izMax);
 
     class FixMeshSurface *caller_;
     class TriMesh *mesh_;
 
+    class FixPropertyAtom *fix_nneighs_;
+    char *fix_nneighs_name_;
+
     bool buildNeighList;
 
-    ScalarContainer<int> contactList, numContacts;
+    std::vector<TriangleNeighlist> triangles;
 
     int numAllContacts_;
 
@@ -85,7 +120,13 @@ class FixNeighlistMesh : public Fix
 
     double **x, *r;
 
-    bool movingMesh;
+    bool changingMesh;
+    bool changingDomain;
+
+    bigint last_bin_update;
+
+private:
+  void generate_bin_list(int nall);
 };
 
 } /* namespace LAMMPS_NS */

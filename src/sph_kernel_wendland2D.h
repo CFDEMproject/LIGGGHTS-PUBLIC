@@ -57,7 +57,7 @@ namespace SPH_KERNEL_NS {
    0.557042301 is 7 over 4pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_wendland2d(double s, double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_wendland2d(double s, double, double hinv)
 {
     return (0.557042301*hinv*hinv * (1.-0.5*s)*(1.-0.5*s)*(1.-0.5*s)*(1.-0.5*s) * (2.*s+1));
 }
@@ -70,7 +70,7 @@ inline double SPH_KERNEL_NS::sph_kernel_wendland2d(double s, double h, double hi
    1.114084602 is 14 over 4pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_wendland2d_der(double s,double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_wendland2d_der(double s, double, double hinv)
 {
     return (1.114084602*hinv*hinv*hinv * ((1-0.5*s)*(1-0.5*s)*(1-0.5*s)*((1-0.5*s)-(2.*s+1))));
 }

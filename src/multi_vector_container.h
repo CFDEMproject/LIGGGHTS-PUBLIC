@@ -35,8 +35,8 @@ namespace LAMMPS_NS{
   class MultiVectorContainer : public GeneralContainer <T, NUM_VEC, LEN_VEC>
   {
       public:
-          MultiVectorContainer(char *_id);
-          MultiVectorContainer(char *_id, char *_comm, char *_ref, char *_restart, int _scalePower = 1);
+          MultiVectorContainer(const char *_id);
+          MultiVectorContainer(const char *_id, const char *_comm, const char *_ref, const char *_restart, int _scalePower = 1);
           MultiVectorContainer(MultiVectorContainer<T,NUM_VEC,LEN_VEC> const &orig);
           virtual ~MultiVectorContainer();
   };
@@ -46,14 +46,14 @@ namespace LAMMPS_NS{
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  MultiVectorContainer<T,NUM_VEC,LEN_VEC>::MultiVectorContainer(char *_id)
+  MultiVectorContainer<T,NUM_VEC,LEN_VEC>::MultiVectorContainer(const char *_id)
   : GeneralContainer<T,NUM_VEC,LEN_VEC>(_id)
   {
 
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  MultiVectorContainer<T,NUM_VEC,LEN_VEC>::MultiVectorContainer(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower)
+  MultiVectorContainer<T,NUM_VEC,LEN_VEC>::MultiVectorContainer(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower)
   : GeneralContainer<T,NUM_VEC,LEN_VEC>(_id, _comm, _ref,_restart,_scalePower)
   {
 

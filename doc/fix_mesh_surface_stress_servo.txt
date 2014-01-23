@@ -20,11 +20,12 @@ zero or more servo_keyword/value pairs may be appended
 servo keywords = {com} (obligatory) or {dim} (obligatory) or {ctrlPV} (obligatory) or {vel_max} (obligatory) or {kp} or {ki} or {kd} :l
 {com} values = x, y, z
     x, y, z = coordinates of the center of mass of the body (distance units)
-{dim} value = x or y or z
-    x, y, z = dimension in which to apply servo wall 
 {ctrlPV} values = force or torque
     force = use force as controll process value, i.e. control force
     torque = use torque as controll process value, i.e. control torque
+{axis} args = x y z
+    x y z = vector direction to apply the controlled mesh motion
+    x or y or z can be a variable (see below) 
 {target_val} values = val
     val = target value for the controller (force units or torque units, depending on {ctrlPV})
 {vel_max} values = v
@@ -34,12 +35,16 @@ servo keywords = {com} (obligatory) or {dim} (obligatory) or {ctrlPV} (obligator
 {ki} values = k
     k = integral constant for PID controller
 {kd} values = k
-    k = differential constant for PID controller :pre
+    k = differential constant for PID controller
+{mode} values = auto
+    auto = use alternative controller algorithm 
+{ratio} values = dr
+    dr = constant for the alternative controller approach ({mode} = auto) :pre
 :ule
 
 [Examples:]
 
-fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force dim z  target_val 10 vel_max 1.
+fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
 
 [LIGGGHTS vs. LAMMPS Info:]
 
@@ -51,13 +56,14 @@ This fix implements the functionality of "fix mesh/surface/stress"_fix_mesh_surf
 it additionally assumes the mesh being a servo wall that compacts a particle packing until either a 
 total force (for {ctrlPV} = force)  or a total torque (for {ctrlPV} = torque) is acting on the mesh.
 The target value is defined via keyword {target_val}. The servo can act in any dimension 
-(as specified by the {dim} keyword), but only in one dimension at a time. 
-A negative value for {target_val} leads to a wall motion towards negative {dim}-direction and vice versa. The user has to specify 
+(as specified by the {axis} keyword). Only the direction of the axis is important; it's
+length is ignored.
+A negative value for {target_val} leads to a wall motion towards negative {axis}-direction and vice versa. The user has to specify 
 the center of mass (keyword {com}) and the maximum velocity allowed for the servo wall by keyword {vel_max}.
 Note that {vel_max} < "skin"_neighbor.html /(2* "timestep"_timestep.html ) is required.
 
 The controller itself is a proportional-integral-derivative (PID) controller which is controlled by
-3 constants kp, ki, kd:
+3 constants {kp}, {ki}, {kd}:
 
 output = kp * error + ki * errorsum + kd * errorchange
 
@@ -65,6 +71,8 @@ where 'error' is the current devation of the controll process value to the targe
 'errorsum' is the time integration (sum) of the error values and 'errorchange' its derivative. The controller
 also includes an "anti-wind-up scheme" which prohibits accumulation of erroneous controller output caused 
 by the integral part due to unavoidable long-lasting deviations.
+
+By using the keyword {mode} = auto an alternative controller approach is applied. It is a pure proportional controller with gain scheduling. In the absence of neighbour particles the servo wall may move with maximum velocity (defined by {vel_max}). Otherwise, the maximum wall velocity is defined by {ratio} * min(radius) / dt. Approaching {target_val} the maximum velocity decreases to 0.1 * {radio} * min(radius) / dt.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 

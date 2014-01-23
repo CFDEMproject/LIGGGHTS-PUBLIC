@@ -19,6 +19,14 @@
 //  
 //*****************************************************************
 
+#include <math.h>
+
+
+template<class Real>
+void ApplyPlaneRotation(Real &dx, Real &dy, Real &cs, Real &sn);
+
+template<class Real>
+void GeneratePlaneRotation(Real &dx, Real &dy, Real &cs, Real &sn);
 
 template < class Matrix, class Vector >
 void 
@@ -117,9 +125,6 @@ GMRES(const Operator &A, Vector &x, const Vector &b,
   delete [] v;
   return 1;
 }
-
-
-#include <math.h> 
 
 
 template<class Real> 

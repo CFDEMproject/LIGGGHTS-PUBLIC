@@ -79,14 +79,14 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
 
   if(strcmp(arg[iarg++],"nevery"))
     error->fix_error(FLERR,this,"expecting keyword 'nevery'");
-  exec_every_ = force->inumeric(arg[iarg++]);
+  exec_every_ = force->inumeric(FLERR,arg[iarg++]);
   if(exec_every_ < 1)
     error->fix_error(FLERR,this,"'nevery' > 0 required");
   nevery = exec_every_;
 
   if(strcmp(arg[iarg++],"cell_size_relative"))
     error->fix_error(FLERR,this,"expecting keyword 'cell_size_relative'");
-  cell_size_ideal_rel_ = force->numeric(arg[iarg++]);
+  cell_size_ideal_rel_ = force->numeric(FLERR,arg[iarg++]);
   if(cell_size_ideal_rel_ < 3.)
     error->fix_error(FLERR,this,"'cell_size_relative' > 3 required");
 

@@ -48,15 +48,22 @@ class ReadData : protected Pointers {
   int narg,maxarg,compressed;
   char **arg;
 
+  int nfix;           // # of extra fixes that process/store info in data file
+  int *fix_index;
+  char **fix_header;
+  char **fix_section;
+
   bigint nellipsoids;
   class AtomVecEllipsoid *avec_ellipsoid;
   bigint nlines;
   class AtomVecLine *avec_line;
   bigint ntris;
   class AtomVecTri *avec_tri;
+  bigint nbodies;
+  class AtomVecBody *avec_body;
 
-  int add_to_existing;
-  bigint natoms_add;
+  int add_to_existing;  
+  bigint natoms_add;    
 
   void open(char *);
   void scan(int &, int &, int &, int &);
@@ -69,6 +76,7 @@ class ReadData : protected Pointers {
   void atoms();
   void velocities();
   void bonus(bigint, class AtomVec *, const char *);
+  void bodies();
 
   void bonds();
   void angles();
@@ -77,10 +85,13 @@ class ReadData : protected Pointers {
 
   void mass();
   void paircoeffs();
+  void pairIJcoeffs();
   void bondcoeffs();
   void anglecoeffs(int);
   void dihedralcoeffs(int);
   void impropercoeffs(int);
+
+  void fix(int, char *);
 };
 
 }
@@ -105,6 +116,10 @@ E: Cannot run 2d simulation with nonperiodic Z dimension
 
 Use the boundary command to make the z dimension periodic in order to
 run a 2d simulation.
+
+E: Fix ID for read_data does not exist
+
+Self-explanatory.
 
 E: Must read Atoms before Velocities
 
@@ -135,6 +150,14 @@ Atom style does not allow triangles.
 E: Must read Atoms before Triangles
 
 The Atoms section of a data file must come before a Triangles section.
+
+E: Invalid data file section: Bodies
+
+Atom style does not allow bodies.
+
+E: Must read Atoms before Bodies
+
+The Atoms section of a data file must come before a Bodies section.
 
 E: Invalid data file section: Bonds
 
@@ -173,6 +196,10 @@ E: Must define pair_style before Pair Coeffs
 
 Must use a pair_style command before reading a data file that defines
 Pair Coeffs.
+
+E: Must define pair_style before PairIJ Coeffs
+
+UNDOCUMENTED
 
 E: Invalid data file section: Bond Coeffs
 
@@ -308,6 +335,10 @@ E: No triangles allowed with this atom style
 
 Self-explanatory.  Check data file.
 
+E: No bodies allowed with this atom style
+
+Self-explanatory.  Check data file.
+
 E: System in data file is too big
 
 See the setting for bigint in the src/lmptype.h file.
@@ -353,6 +384,11 @@ outside a non-periodic simulation box.
 E: Invalid atom ID in Atoms section of data file
 
 Atom IDs must be positive integers.
+
+E: Too many lines in one body in data file - boost MAXBODY
+
+MAXBODY is a setting at the top of the src/read_data.cpp file.
+Set it larger and re-compile the code.
 
 E: Bonds assigned incorrectly
 

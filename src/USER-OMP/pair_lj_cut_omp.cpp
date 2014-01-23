@@ -30,6 +30,7 @@ PairLJCutOMP::PairLJCutOMP(LAMMPS *lmp) :
 {
   suffix_flag |= Suffix::OMP;
   respa_enable = 0;
+  cut_respa = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -56,11 +57,11 @@ void PairLJCutOMP::compute(int eflag, int vflag)
 
     if (evflag) {
       if (eflag) {
-	if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else {
       if (force->newton_pair) eval<0,0,1>(ifrom, ito, thr);
@@ -74,34 +75,38 @@ void PairLJCutOMP::compute(int eflag, int vflag)
 template <int EVFLAG, int EFLAG, int NEWTON_PAIR>
 void PairLJCutOMP::eval(int iifrom, int iito, ThrData * const thr)
 {
-  int i,j,ii,jj,jnum,itype,jtype;
-  double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double rsq,r2inv,r6inv,forcelj,factor_lj;
-  int *ilist,*jlist,*numneigh,**firstneigh;
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
+  const int * _noalias const type = atom->type;
+  const double * _noalias const special_lj = force->special_lj;
+  const int * _noalias const ilist = list->ilist;
+  const int * _noalias const numneigh = list->numneigh;
+  const int * const * const firstneigh = list->firstneigh;
+
+  double xtmp,ytmp,ztmp,delx,dely,delz,fxtmp,fytmp,fztmp;
+  double rsq,r2inv,r6inv,forcelj,factor_lj,evdwl,fpair;
+
+  const int nlocal = atom->nlocal;
+  int j,jj,jnum,jtype;
 
   evdwl = 0.0;
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
-  const int * const type = atom->type;
-  const int nlocal = atom->nlocal;
-  const double * const special_lj = force->special_lj;
-  double fxtmp,fytmp,fztmp;
-
-  ilist = list->ilist;
-  numneigh = list->numneigh;
-  firstneigh = list->firstneigh;
-
   // loop over neighbors of my atoms
 
-  for (ii = iifrom; ii < iito; ++ii) {
+  for (int ii = iifrom; ii < iito; ++ii) {
+    const int i = ilist[ii];
+    const int itype = type[i];
+    const int    * _noalias const jlist = firstneigh[i];
+    const double * _noalias const cutsqi = cutsq[itype];
+    const double * _noalias const offseti = offset[itype];
+    const double * _noalias const lj1i = lj1[itype];
+    const double * _noalias const lj2i = lj2[itype];
+    const double * _noalias const lj3i = lj3[itype];
+    const double * _noalias const lj4i = lj4[itype];
 
-    i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
-    itype = type[i];
-    jlist = firstneigh[i];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     jnum = numneigh[i];
     fxtmp=fytmp=fztmp=0.0;
 
@@ -110,40 +115,39 @@ void PairLJCutOMP::eval(int iifrom, int iito, ThrData * const thr)
       factor_lj = special_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
-      if (rsq < cutsq[itype][jtype]) {
-	r2inv = 1.0/rsq;
-	r6inv = r2inv*r2inv*r2inv;
-	forcelj = r6inv * (lj1[itype][jtype]*r6inv - lj2[itype][jtype]);
-	fpair = factor_lj*forcelj*r2inv;
+      if (rsq < cutsqi[jtype]) {
+        r2inv = 1.0/rsq;
+        r6inv = r2inv*r2inv*r2inv;
+        forcelj = r6inv * (lj1i[jtype]*r6inv - lj2i[jtype]);
+        fpair = factor_lj*forcelj*r2inv;
 
-	fxtmp += delx*fpair;
-	fytmp += dely*fpair;
-	fztmp += delz*fpair;
-	if (NEWTON_PAIR || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        fxtmp += delx*fpair;
+        fytmp += dely*fpair;
+        fztmp += delz*fpair;
+        if (NEWTON_PAIR || j < nlocal) {
+          f[j].x -= delx*fpair;
+          f[j].y -= dely*fpair;
+          f[j].z -= delz*fpair;
+        }
 
-	if (EFLAG) {
-	  evdwl = r6inv*(lj3[itype][jtype]*r6inv-lj4[itype][jtype])
-	    - offset[itype][jtype];
-	  evdwl *= factor_lj;
-	}
+        if (EFLAG) {
+          evdwl = r6inv*(lj3i[jtype]*r6inv-lj4i[jtype]) - offseti[jtype];
+          evdwl *= factor_lj;
+        }
 
-	if (EVFLAG) ev_tally_thr(this,i,j,nlocal,NEWTON_PAIR,
-				 evdwl,0.0,fpair,delx,dely,delz,thr);
+        if (EVFLAG) ev_tally_thr(this,i,j,nlocal,NEWTON_PAIR,
+                                 evdwl,0.0,fpair,delx,dely,delz,thr);
       }
     }
-    f[i][0] += fxtmp;
-    f[i][1] += fytmp;
-    f[i][2] += fztmp;
+    f[i].x += fxtmp;
+    f[i].y += fytmp;
+    f[i].z += fztmp;
   }
 }
 

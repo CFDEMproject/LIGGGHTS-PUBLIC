@@ -33,7 +33,7 @@
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(char *_id)
+  GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(const char *_id)
   : ContainerBase(_id),
     numElem_(0),
     maxElem_(GROW)
@@ -42,7 +42,7 @@
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(char *_id, char *_comm, char *_ref, char *_restart, int _scalePower)
+  GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(const char *_id, const char *_comm, const char *_ref, const char *_restart, int _scalePower)
   : ContainerBase(_id, _comm, _ref, _restart, _scalePower),
     numElem_(0),
     maxElem_(GROW)

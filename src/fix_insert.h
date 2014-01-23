@@ -37,6 +37,7 @@ class FixInsert : public Fix {
 
   virtual int setmask();
   virtual void init();
+  virtual void setup_pre_exchange() {}
   void setup(int vflag);
   double extend_cut_ghost();
   void pre_exchange();
@@ -44,6 +45,8 @@ class FixInsert : public Fix {
 
   void write_restart(FILE *);
   virtual void restart(char *);
+
+  virtual void reset_timestep(bigint) {}
 
   double compute_vector(int index);
 

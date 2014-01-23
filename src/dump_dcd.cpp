@@ -68,7 +68,8 @@ DumpDCD::DumpDCD(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg)
   // allocate global array for atom coords
 
   bigint n = group->count(igroup);
-  if (n > MAXSMALLINT/sizeof(float)) error->all(FLERR,"Too many atoms for dump dcd");
+  if (n > MAXSMALLINT/sizeof(float)) 
+    error->all(FLERR,"Too many atoms for dump dcd");
   natoms = static_cast<int> (n);
 
   memory->create(coords,3*natoms,"dump:coords");
@@ -174,28 +175,13 @@ void DumpDCD::write_header(bigint n)
 
 /* ---------------------------------------------------------------------- */
 
-int DumpDCD::count()
-{
-  if (igroup == 0) return atom->nlocal;
-
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
-
-  int m = 0;
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit) m++;
-  return m;
-}
-
-/* ---------------------------------------------------------------------- */
-
 void DumpDCD::pack(int *ids)
 {
   int m,n;
 
   int *tag = atom->tag;
   double **x = atom->x;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
@@ -210,9 +196,9 @@ void DumpDCD::pack(int *ids)
 
     for (int i = 0; i < nlocal; i++) {
       if (mask[i] & groupbit) {
-        int ix = (image[i] & 1023) - 512;
-        int iy = (image[i] >> 10 & 1023) - 512;
-        int iz = (image[i] >> 20) - 512;
+        int ix = (image[i] & IMGMASK) - IMGMAX;
+        int iy = (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
+        int iz = (image[i] >> IMG2BITS) - IMGMAX;
 
         if (domain->triclinic) {
           buf[m++] = x[i][0] + ix * xprd + iy * xy + iz * xz;

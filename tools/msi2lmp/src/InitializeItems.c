@@ -4,122 +4,137 @@
 *
 */
 
+#include "msi2lmp.h"
 #include "Forcefield.h"
-#include "Msi2LMP2.h"
+
+#include <string.h>
 
 void InitializeItems(void)
 {
-   /* ATOM TYPES */
-   strcpy(ff_atomtypes.keyword,"#atom_types");
-   ff_atomtypes.number_of_members = 1;
-   ff_atomtypes.number_of_parameters = 1;
+  /* ATOM TYPES */
+  strcpy(ff_atomtypes.keyword,"#atom_types");
+  ff_atomtypes.number_of_members = 1;
+  ff_atomtypes.number_of_parameters = 1;
 
-   /* EQUIVALENCE */
+  /* EQUIVALENCE */
 
-   strcpy(equivalence.keyword, "#equivalence");
-   equivalence.number_of_members = 6;
-   equivalence.number_of_parameters = 0;
+  strcpy(equivalence.keyword,"#equivalence");
+  equivalence.number_of_members = 6;
+  equivalence.number_of_parameters = 0;
 
-   /* NON-BOND */
-   strcpy(ff_vdw.keyword, "#nonbond");
-   ff_vdw.number_of_members = 1;
-   ff_vdw.number_of_parameters = 2;
+  /* NON-BOND */
 
-   /* BOND */
-   ff_bond.number_of_members = 2;
-   if(forcefield == 1) {
-     strcpy(ff_bond.keyword, "#quadratic_bond");
-     ff_bond.number_of_parameters = 2;
-   }
-   else {
-     strcpy(ff_bond.keyword, "#quartic_bond");
-     ff_bond.number_of_parameters = 4;
-   }
+  strcpy(ff_vdw.keyword,"#nonbond");
+  ff_vdw.number_of_members = 1;
+  ff_vdw.number_of_parameters = 2;
 
-   /* ANGLE */
+  /* BOND */
 
-   ff_ang.number_of_members = 3;
-   if(forcefield ==1)
-   {
-      strcpy(ff_ang.keyword, "#quadratic_angle");
-      ff_ang.number_of_parameters = 2;
-   }
-   else {
-      strcpy(ff_ang.keyword, "#quartic_angle");
-      ff_ang.number_of_parameters = 4;
-   }
+  ff_bond.number_of_members = 2;
+  if (forcefield & (FF_TYPE_CLASS1|FF_TYPE_OPLSAA)) {
+    strcpy(ff_bond.keyword,"#quadratic_bond");
+    ff_bond.number_of_parameters = 2;
+  }
 
-   /* TORSION */
+  if (forcefield & FF_TYPE_CLASS2) {
+    strcpy(ff_bond.keyword,"#quartic_bond");
+    ff_bond.number_of_parameters = 4;
+  }
 
-   ff_tor.number_of_members = 4;
-   if (forcefield == 1) {
-     strcpy(ff_tor.keyword, "#torsion_1");
-     ff_tor.number_of_parameters = 3;
-   }
-   else {
-      strcpy(ff_tor.keyword, "#torsion_3");
-      ff_tor.number_of_parameters = 6;
-   }
+  /* MORSE */
 
-   /* OOP */
+  if (forcefield & FF_TYPE_CLASS1) {
+    ff_morse.number_of_members = 2;
+    strcpy(ff_morse.keyword,"#morse_bond");
+    ff_morse.number_of_parameters = 3;
+  }
 
-   ff_oop.number_of_members = 4;
-   if(forcefield == 1) {
-     strcpy(ff_oop.keyword, "#out_of_plane");
-     ff_oop.number_of_parameters = 3;
-   }
-   else {
-     strcpy(ff_oop.keyword,"#wilson_out_of_plane");
-     ff_oop.number_of_parameters = 2;
-   }
+  /* ANGLE */
 
-   if (forcefield == 1) return; /* Do not try to read cross terms for Class I forcefield */
+  ff_ang.number_of_members = 3;
+  if (forcefield & (FF_TYPE_CLASS1|FF_TYPE_OPLSAA)) {
+    strcpy(ff_ang.keyword,"#quadratic_angle");
+    ff_ang.number_of_parameters = 2;
+  }
 
-   /* BOND-BOND */
+  if (forcefield & FF_TYPE_CLASS2) {
+    strcpy(ff_ang.keyword,"#quartic_angle");
+    ff_ang.number_of_parameters = 4;
+  }
 
-   strcpy(ff_bonbon.keyword, "#bond-bond");
-   ff_bonbon.number_of_members = 3;
-   ff_bonbon.number_of_parameters = 1;
+  /* TORSION */
 
-   /* BOND-ANGLE */
+  ff_tor.number_of_members = 4;
+  if (forcefield & (FF_TYPE_CLASS1|FF_TYPE_OPLSAA)) {
+    strcpy(ff_tor.keyword,"#torsion_1");
+    ff_tor.number_of_parameters = 3;
+  } 
 
-   strcpy(ff_bonang.keyword, "#bond-angle");
-   ff_bonang.number_of_members = 3;
-   ff_bonang.number_of_parameters = 2;
+  if (forcefield & FF_TYPE_CLASS2) {
+    strcpy(ff_tor.keyword,"#torsion_3");
+    ff_tor.number_of_parameters = 6;
+  }
 
-   /* ANGLE-TORSION */
+  /* OOP */
 
-   strcpy(ff_angtor.keyword, "#angle-torsion_3");
-   ff_angtor.number_of_members = 4;
-   ff_angtor.number_of_parameters = 6;
+  ff_oop.number_of_members = 4;
+  if (forcefield & (FF_TYPE_CLASS1|FF_TYPE_OPLSAA)) {
+    strcpy(ff_oop.keyword,"#out_of_plane");
+    ff_oop.number_of_parameters = 3;
+  }
 
-   /* ANGLE-ANGLE-TORSION */
+  if (forcefield & FF_TYPE_CLASS2) {
+    strcpy(ff_oop.keyword,"#wilson_out_of_plane");
+    ff_oop.number_of_parameters = 2;
+  }
 
-   strcpy(ff_angangtor.keyword,"#angle-angle-torsion_1");
-   ff_angangtor.number_of_members = 4;
-   ff_angangtor.number_of_parameters = 1;
+  if (forcefield & FF_TYPE_CLASS2) {
+    /* BOND-BOND */
 
-   /* END-BOND-TORSION */
+    strcpy(ff_bonbon.keyword,"#bond-bond");
+    ff_bonbon.number_of_members = 3;
+    ff_bonbon.number_of_parameters = 1;
 
-   strcpy(ff_endbontor.keyword, "#end_bond-torsion_3");
-   ff_endbontor.number_of_members = 4;
-   ff_endbontor.number_of_parameters = 6;
+    /* BOND-ANGLE */
 
-   /* MID-BOND-TORSION */
+    strcpy(ff_bonang.keyword,"#bond-angle");
+    ff_bonang.number_of_members = 3;
+    ff_bonang.number_of_parameters = 2;
 
-   strcpy(ff_midbontor.keyword,"#middle_bond-torsion_3");
-   ff_midbontor.number_of_members = 4;
-   ff_midbontor.number_of_parameters = 3;
+    /* ANGLE-TORSION */
 
-   /* ANGLE-ANGLE */
+    strcpy(ff_angtor.keyword,"#angle-torsion_3");
+    ff_angtor.number_of_members = 4;
+    ff_angtor.number_of_parameters = 6;
 
-   strcpy(ff_angang.keyword, "#angle-angle");
-   ff_angang.number_of_members = 4;
-   ff_angang.number_of_parameters = 1;
+    /* ANGLE-ANGLE-TORSION */
 
-   /* BOND-BOND-1-3 */
+    strcpy(ff_angangtor.keyword,"#angle-angle-torsion_1");
+    ff_angangtor.number_of_members = 4;
+    ff_angangtor.number_of_parameters = 1;
 
-   strcpy(ff_bonbon13.keyword, "#bond-bond_1_3");
-   ff_bonbon13.number_of_members = 4;
-   ff_bonbon13.number_of_parameters = 1;
+    /* END-BOND-TORSION */
+
+    strcpy(ff_endbontor.keyword,"#end_bond-torsion_3");
+    ff_endbontor.number_of_members = 4;
+    ff_endbontor.number_of_parameters = 6;
+
+    /* MID-BOND-TORSION */
+
+    strcpy(ff_midbontor.keyword,"#middle_bond-torsion_3");
+    ff_midbontor.number_of_members = 4;
+    ff_midbontor.number_of_parameters = 3;
+
+    /* ANGLE-ANGLE */
+
+    strcpy(ff_angang.keyword,"#angle-angle");
+    ff_angang.number_of_members = 4;
+    ff_angang.number_of_parameters = 1;
+
+    /* BOND-BOND-1-3 */
+
+    strcpy(ff_bonbon13.keyword,"#bond-bond_1_3");
+    ff_bonbon13.number_of_members = 4;
+    ff_bonbon13.number_of_parameters = 1;
+  }
 }

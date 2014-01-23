@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -46,7 +46,9 @@ using namespace LAMMPS_NS;
 
 PairCoulLong::PairCoulLong(LAMMPS *lmp) : Pair(lmp)
 {
+  ewaldflag = pppmflag = 1;
   ftable = NULL;
+  qdist = 0.0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -91,7 +93,7 @@ void PairCoulLong::compute(int eflag, int vflag)
   ilist = list->ilist;
   numneigh = list->numneigh;
   firstneigh = list->firstneigh;
-  
+
   // loop over neighbors of my atoms
 
   for (ii = 0; ii < inum; ii++) {
@@ -116,54 +118,54 @@ void PairCoulLong::compute(int eflag, int vflag)
       jtype = type[j];
 
       if (rsq < cut_coulsq) {
-	r2inv = 1.0/rsq;
-	if (!ncoultablebits || rsq <= tabinnersq) {
-	  r = sqrt(rsq);
-	  grij = g_ewald * r;
-	  expm2 = exp(-grij*grij);
-	  t = 1.0 / (1.0 + EWALD_P*grij);
-	  erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
-	  prefactor = qqrd2e * scale[itype][jtype] * qtmp*q[j]/r;
-	  forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
-	  if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
-	} else {
-	  union_int_float_t rsq_lookup;
-	  rsq_lookup.f = rsq;
-	  itable = rsq_lookup.i & ncoulmask;
-	  itable >>= ncoulshiftbits;
-	  fraction = (rsq_lookup.f - rtable[itable]) * drtable[itable];
-	  table = ftable[itable] + fraction*dftable[itable];
-	  forcecoul = scale[itype][jtype] * qtmp*q[j] * table;
-	  if (factor_coul < 1.0) {
-	    table = ctable[itable] + fraction*dctable[itable];
-	    prefactor = scale[itype][jtype] * qtmp*q[j] * table;
-	    forcecoul -= (1.0-factor_coul)*prefactor;
-	  }
-	}
+        r2inv = 1.0/rsq;
+        if (!ncoultablebits || rsq <= tabinnersq) {
+          r = sqrt(rsq);
+          grij = g_ewald * r;
+          expm2 = exp(-grij*grij);
+          t = 1.0 / (1.0 + EWALD_P*grij);
+          erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
+          prefactor = qqrd2e * scale[itype][jtype] * qtmp*q[j]/r;
+          forcecoul = prefactor * (erfc + EWALD_F*grij*expm2);
+          if (factor_coul < 1.0) forcecoul -= (1.0-factor_coul)*prefactor;
+        } else {
+          union_int_float_t rsq_lookup;
+          rsq_lookup.f = rsq;
+          itable = rsq_lookup.i & ncoulmask;
+          itable >>= ncoulshiftbits;
+          fraction = (rsq_lookup.f - rtable[itable]) * drtable[itable];
+          table = ftable[itable] + fraction*dftable[itable];
+          forcecoul = scale[itype][jtype] * qtmp*q[j] * table;
+          if (factor_coul < 1.0) {
+            table = ctable[itable] + fraction*dctable[itable];
+            prefactor = scale[itype][jtype] * qtmp*q[j] * table;
+            forcecoul -= (1.0-factor_coul)*prefactor;
+          }
+        }
 
-	fpair = forcecoul * r2inv;
+        fpair = forcecoul * r2inv;
 
-	f[i][0] += delx*fpair;
-	f[i][1] += dely*fpair;
-	f[i][2] += delz*fpair;
-	if (newton_pair || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        f[i][0] += delx*fpair;
+        f[i][1] += dely*fpair;
+        f[i][2] += delz*fpair;
+        if (newton_pair || j < nlocal) {
+          f[j][0] -= delx*fpair;
+          f[j][1] -= dely*fpair;
+          f[j][2] -= delz*fpair;
+        }
 
-	if (eflag) {
-	  if (!ncoultablebits || rsq <= tabinnersq)
-	    ecoul = prefactor*erfc;
-	  else {
-	    table = etable[itable] + fraction*detable[itable];
-	    ecoul = scale[itype][jtype] * qtmp*q[j] * table;
-	  }
-	  if (factor_coul < 1.0) ecoul -= (1.0-factor_coul)*prefactor;
-	}
+        if (eflag) {
+          if (!ncoultablebits || rsq <= tabinnersq)
+            ecoul = prefactor*erfc;
+          else {
+            table = etable[itable] + fraction*detable[itable];
+            ecoul = scale[itype][jtype] * qtmp*q[j] * table;
+          }
+          if (factor_coul < 1.0) ecoul -= (1.0-factor_coul)*prefactor;
+        }
 
-	if (evflag) ev_tally(i,j,nlocal,newton_pair,
-			     0.0,ecoul,fpair,delx,dely,delz);
+        if (evflag) ev_tally(i,j,nlocal,newton_pair,
+                             0.0,ecoul,fpair,delx,dely,delz);
       }
     }
   }
@@ -198,7 +200,7 @@ void PairCoulLong::settings(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal pair_style command");
 
-  cut_coul = force->numeric(arg[0]);
+  cut_coul = force->numeric(FLERR,arg[0]);
 }
 
 /* ----------------------------------------------------------------------
@@ -239,24 +241,15 @@ void PairCoulLong::init_style()
 
   cut_coulsq = cut_coul * cut_coul;
 
-  // set & error check interior rRESPA cutoffs
-
-  if (strstr(update->integrate_style,"respa") &&
-      ((Respa *) update->integrate)->level_inner >= 0) {
-    cut_respa = ((Respa *) update->integrate)->cutoff;
-    if (cut_coul < cut_respa[3])
-      error->all(FLERR,"Pair cutoff < Respa interior cutoff");
-  } else cut_respa = NULL;
-
   // insure use of KSpace long-range solver, set g_ewald
 
- if (force->kspace == NULL) 
-    error->all(FLERR,"Pair style is incompatible with KSpace style");
+ if (force->kspace == NULL)
+    error->all(FLERR,"Pair style requires a KSpace style");
   g_ewald = force->kspace->g_ewald;
 
   // setup force tables
 
-  if (ncoultablebits) init_tables();
+  if (ncoultablebits) init_tables(cut_coul,NULL);
 }
 
 /* ----------------------------------------------------------------------
@@ -266,177 +259,7 @@ void PairCoulLong::init_style()
 double PairCoulLong::init_one(int i, int j)
 {
   scale[j][i] = scale[i][j];
-
-  return cut_coul;
-}
-
-/* ----------------------------------------------------------------------
-   setup force tables used in compute routines
-------------------------------------------------------------------------- */
-
-void PairCoulLong::init_tables()
-{
-  int masklo,maskhi;
-  double r,grij,expm2,derfc,rsw;
-  double qqrd2e = force->qqrd2e;
-
-  tabinnersq = tabinner*tabinner;
-  init_bitmap(tabinner,cut_coul,ncoultablebits,
-	      masklo,maskhi,ncoulmask,ncoulshiftbits);
-  
-  int ntable = 1;
-  for (int i = 0; i < ncoultablebits; i++) ntable *= 2;
-  
-  // linear lookup tables of length N = 2^ncoultablebits
-  // stored value = value at lower edge of bin
-  // d values = delta from lower edge to upper edge of bin
-
-  if (ftable) free_tables();
-  
-  memory->create(rtable,ntable,"pair:rtable");
-  memory->create(ftable,ntable,"pair:ftable");
-  memory->create(ctable,ntable,"pair:ctable");
-  memory->create(etable,ntable,"pair:etable");
-  memory->create(drtable,ntable,"pair:drtable");
-  memory->create(dftable,ntable,"pair:dftable");
-  memory->create(dctable,ntable,"pair:dctable");
-  memory->create(detable,ntable,"pair:detable");
-
-  if (cut_respa == NULL) {
-    vtable = ptable = dvtable = dptable = NULL;
-  } else {
-    memory->create(vtable,ntable,"pair:vtable");
-    memory->create(ptable,ntable,"pair:ptable");
-    memory->create(dvtable,ntable,"pair:dvtable");
-    memory->create(dptable,ntable,"pair:dptable");
-  }
-
-  union_int_float_t rsq_lookup;
-  union_int_float_t minrsq_lookup;
-  int itablemin;
-  minrsq_lookup.i = 0 << ncoulshiftbits;
-  minrsq_lookup.i |= maskhi;
-    
-  for (int i = 0; i < ntable; i++) {
-    rsq_lookup.i = i << ncoulshiftbits;
-    rsq_lookup.i |= masklo;
-    if (rsq_lookup.f < tabinnersq) {
-      rsq_lookup.i = i << ncoulshiftbits;
-      rsq_lookup.i |= maskhi;
-    }
-    r = sqrtf(rsq_lookup.f);
-    grij = g_ewald * r;
-    expm2 = exp(-grij*grij);
-    derfc = erfc(grij);
-    if (cut_respa == NULL) {
-      rtable[i] = rsq_lookup.f;
-      ftable[i] = qqrd2e/r * (derfc + EWALD_F*grij*expm2);
-      ctable[i] = qqrd2e/r;
-      etable[i] = qqrd2e/r * derfc;
-    } else {
-      rtable[i] = rsq_lookup.f;
-      ftable[i] = qqrd2e/r * (derfc + EWALD_F*grij*expm2 - 1.0);
-      ctable[i] = 0.0;
-      etable[i] = qqrd2e/r * derfc;
-      ptable[i] = qqrd2e/r;
-      vtable[i] = qqrd2e/r * (derfc + EWALD_F*grij*expm2);
-      if (rsq_lookup.f > cut_respa[2]*cut_respa[2]) {
-	if (rsq_lookup.f < cut_respa[3]*cut_respa[3]) {
-	  rsw = (r - cut_respa[2])/(cut_respa[3] - cut_respa[2]); 
-	  ftable[i] += qqrd2e/r * rsw*rsw*(3.0 - 2.0*rsw);
-	  ctable[i] = qqrd2e/r * rsw*rsw*(3.0 - 2.0*rsw);
-	} else {
-	  ftable[i] = qqrd2e/r * (derfc + EWALD_F*grij*expm2);
-	  ctable[i] = qqrd2e/r;
-	}
-      }
-    }
-    minrsq_lookup.f = MIN(minrsq_lookup.f,rsq_lookup.f);
-  }
-
-  tabinnersq = minrsq_lookup.f;
-  
-  int ntablem1 = ntable - 1;
-  
-  for (int i = 0; i < ntablem1; i++) {
-    drtable[i] = 1.0/(rtable[i+1] - rtable[i]);
-    dftable[i] = ftable[i+1] - ftable[i];
-    dctable[i] = ctable[i+1] - ctable[i];
-    detable[i] = etable[i+1] - etable[i];
-  }
-
-  if (cut_respa) {
-    for (int i = 0; i < ntablem1; i++) {
-      dvtable[i] = vtable[i+1] - vtable[i];
-      dptable[i] = ptable[i+1] - ptable[i];
-    }
-  }
-  
-  // get the delta values for the last table entries 
-  // tables are connected periodically between 0 and ntablem1
-    
-  drtable[ntablem1] = 1.0/(rtable[0] - rtable[ntablem1]);
-  dftable[ntablem1] = ftable[0] - ftable[ntablem1];
-  dctable[ntablem1] = ctable[0] - ctable[ntablem1];
-  detable[ntablem1] = etable[0] - etable[ntablem1];
-  if (cut_respa) {
-    dvtable[ntablem1] = vtable[0] - vtable[ntablem1];
-    dptable[ntablem1] = ptable[0] - ptable[ntablem1];
-  }
-
-  // get the correct delta values at itablemax    
-  // smallest r is in bin itablemin
-  // largest r is in bin itablemax, which is itablemin-1,
-  //   or ntablem1 if itablemin=0
-  // deltas at itablemax only needed if corresponding rsq < cut*cut
-  // if so, compute deltas between rsq and cut*cut 
-
-  double f_tmp,c_tmp,e_tmp,p_tmp,v_tmp;
-  itablemin = minrsq_lookup.i & ncoulmask;
-  itablemin >>= ncoulshiftbits;  
-  int itablemax = itablemin - 1; 
-  if (itablemin == 0) itablemax = ntablem1;     
-  rsq_lookup.i = itablemax << ncoulshiftbits;
-  rsq_lookup.i |= maskhi;
-
-  if (rsq_lookup.f < cut_coulsq) {
-    rsq_lookup.f = cut_coulsq;  
-    r = sqrtf(rsq_lookup.f);
-    grij = g_ewald * r;
-    expm2 = exp(-grij*grij);
-    derfc = erfc(grij);
-
-    if (cut_respa == NULL) {
-      f_tmp = qqrd2e/r * (derfc + EWALD_F*grij*expm2);
-      c_tmp = qqrd2e/r;
-      e_tmp = qqrd2e/r * derfc;
-    } else {
-      f_tmp = qqrd2e/r * (derfc + EWALD_F*grij*expm2 - 1.0);
-      c_tmp = 0.0;
-      e_tmp = qqrd2e/r * derfc;
-      p_tmp = qqrd2e/r;
-      v_tmp = qqrd2e/r * (derfc + EWALD_F*grij*expm2);
-      if (rsq_lookup.f > cut_respa[2]*cut_respa[2]) {
-        if (rsq_lookup.f < cut_respa[3]*cut_respa[3]) {
-          rsw = (r - cut_respa[2])/(cut_respa[3] - cut_respa[2]); 
-          f_tmp += qqrd2e/r * rsw*rsw*(3.0 - 2.0*rsw);
-          c_tmp = qqrd2e/r * rsw*rsw*(3.0 - 2.0*rsw);
-        } else {
-          f_tmp = qqrd2e/r * (derfc + EWALD_F*grij*expm2);
-          c_tmp = qqrd2e/r;
-        }
-      }
-    }
-
-    drtable[itablemax] = 1.0/(rsq_lookup.f - rtable[itablemax]);   
-    dftable[itablemax] = f_tmp - ftable[itablemax];
-    dctable[itablemax] = c_tmp - ctable[itablemax];
-    detable[itablemax] = e_tmp - etable[itablemax];
-    if (cut_respa) {
-      dvtable[itablemax] = v_tmp - vtable[itablemax];
-      dptable[itablemax] = p_tmp - ptable[itablemax];
-    }   
-  }
+  return cut_coul+2.0*qdist;
 }
 
 /* ----------------------------------------------------------------------
@@ -468,6 +291,8 @@ void PairCoulLong::write_restart_settings(FILE *fp)
   fwrite(&cut_coul,sizeof(double),1,fp);
   fwrite(&offset_flag,sizeof(int),1,fp);
   fwrite(&mix_flag,sizeof(int),1,fp);
+  fwrite(&ncoultablebits,sizeof(int),1,fp);
+  fwrite(&tabinner,sizeof(double),1,fp);
 }
 
 /* ----------------------------------------------------------------------
@@ -480,38 +305,22 @@ void PairCoulLong::read_restart_settings(FILE *fp)
     fread(&cut_coul,sizeof(double),1,fp);
     fread(&offset_flag,sizeof(int),1,fp);
     fread(&mix_flag,sizeof(int),1,fp);
+    fread(&ncoultablebits,sizeof(int),1,fp);
+    fread(&tabinner,sizeof(double),1,fp);
   }
   MPI_Bcast(&cut_coul,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
-}
-
-/* ----------------------------------------------------------------------
-   free memory for tables used in pair computations
-------------------------------------------------------------------------- */
-
-void PairCoulLong::free_tables()
-{
-  memory->destroy(rtable);
-  memory->destroy(drtable);
-  memory->destroy(ftable);
-  memory->destroy(dftable);
-  memory->destroy(ctable);
-  memory->destroy(dctable);
-  memory->destroy(etable);
-  memory->destroy(detable);
-  memory->destroy(vtable);
-  memory->destroy(dvtable);
-  memory->destroy(ptable);
-  memory->destroy(dptable);
+  MPI_Bcast(&ncoultablebits,1,MPI_INT,0,world);
+  MPI_Bcast(&tabinner,1,MPI_DOUBLE,0,world);
 }
 
 /* ---------------------------------------------------------------------- */
 
 double PairCoulLong::single(int i, int j, int itype, int jtype,
-			    double rsq,
-			    double factor_coul, double factor_lj,
-			    double &fforce)
+                            double rsq,
+                            double factor_coul, double factor_lj,
+                            double &fforce)
 {
   double r2inv,r,grij,expm2,t,erfc,prefactor;
   double fraction,table,forcecoul,phicoul;
@@ -542,7 +351,7 @@ double PairCoulLong::single(int i, int j, int itype, int jtype,
     }
   }
   fforce = forcecoul * r2inv;
-  
+
   if (!ncoultablebits || rsq <= tabinnersq)
     phicoul = prefactor*erfc;
   else {

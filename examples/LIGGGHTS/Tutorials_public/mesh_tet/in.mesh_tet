@@ -26,7 +26,7 @@ fix 		m5 all property/global characteristicVelocity scalar 2.
 fix 		m6 all property/global cohesionEnergyDensity peratomtypepair 1 500
 
 #New pair style
-pair_style 	gran/hertz/history  #Hertzian without cohesion
+pair_style gran model hertz tangential history #Hertzian without cohesion
 pair_coeff	* *
 
 timestep	0.00001
@@ -36,7 +36,7 @@ fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
 
 #region and insertion
 variable 	d equal 0.05
-region		mesh mesh/tet file test.vtk  scale 1. move 0. 0. 0.  rotate 0. 0. 0. units box
+region		mesh mesh/tet file data/test.vtk  scale 1. move 0. 0. 0.  rotate 0. 0. 0. units box
 group		nve_group region reg
 lattice		sc $d
 create_atoms	1 region mesh

@@ -33,7 +33,7 @@ namespace LAMMPS_NS {
     FixHeatGran(class LAMMPS *, int, char **);
     ~FixHeatGran(){};
     virtual void post_create();
-    virtual void pre_delete(bool unfixflag){};
+    virtual void pre_delete(bool unfixflag){ UNUSED(unfixflag); };
 
     void initial_integrate(int vflag);
 

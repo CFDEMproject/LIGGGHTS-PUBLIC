@@ -47,14 +47,14 @@ class FixCfdCoupling : public Fix {
   virtual void setup(int);
   virtual void min_setup(int);
   void end_of_step();
-  void post_force_respa(int, int, int);
+  void post_force_respa(int vflag, int ilevel, int iloop);
   void min_post_force(int);
 
   // pushing and pulling of properties
   //void pull(char *name,char *type,void *&ptr);
   //void push(char *name,char *type,void *&ptr);
-  void add_push_property(char *name,char *type);
-  void add_pull_property(char *name,char *type);
+  void add_push_property(const char *name, const char *type);
+  void add_pull_property(const char *name, const char *type);
   void check_datatransfer();
 
   int coupleThis() {return couple_this_;}

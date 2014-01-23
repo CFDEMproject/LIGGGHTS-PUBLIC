@@ -50,9 +50,9 @@ void Replicate::command(int narg, char **arg)
 
   // nrep = total # of replications
 
-  int nx = atoi(arg[0]);
-  int ny = atoi(arg[1]);
-  int nz = atoi(arg[2]);
+  int nx = force->inumeric(FLERR,arg[0]);
+  int ny = force->inumeric(FLERR,arg[1]);
+  int nz = force->inumeric(FLERR,arg[2]);
   int nrep = nx*ny*nz;
 
   // error and warning checks
@@ -82,7 +82,7 @@ void Replicate::command(int narg, char **arg)
   // maxmol = largest molecule tag across all existing atoms
 
   int maxmol = 0;
-  if (atom->molecular) {
+  if (atom->molecule_flag) {
     for (i = 0; i < atom->nlocal; i++) maxmol = MAX(atom->molecule[i],maxmol);
     int maxmol_all;
     MPI_Allreduce(&maxmol,&maxmol_all,1,MPI_INT,MPI_MAX,world);
@@ -127,10 +127,12 @@ void Replicate::command(int narg, char **arg)
   // if molecular and N > MAXTAGINT, error
   // if atomic and new N > MAXTAGINT, turn off tags for existing and new atoms
   // new system cannot exceed MAXBIGINT
+  // NOTE: change these 2 to MAXTAGINT when allow tagint = bigint
 
-  if (atom->molecular && (nrep*old->natoms < 0 || nrep*old->natoms > MAXTAGINT))
+  if (atom->molecular && 
+      (nrep*old->natoms < 0 || nrep*old->natoms > MAXSMALLINT))
     error->all(FLERR,"Replicated molecular system atom IDs are too big");
-  if (nrep*old->natoms < 0 || nrep*old->natoms > MAXTAGINT)
+  if (nrep*old->natoms < 0 || nrep*old->natoms > MAXSMALLINT)
     atom->tag_enable = 0;
   if (atom->tag_enable == 0)
     for (int i = 0; i < atom->nlocal; i++)
@@ -255,7 +257,8 @@ void Replicate::command(int narg, char **arg)
   AtomVec *old_avec = old->avec;
   AtomVec *avec = atom->avec;
 
-  int ix,iy,iz,image,atom_offset,mol_offset;
+  int ix,iy,iz,atom_offset,mol_offset;
+  tagint image;
   double x[3],lamda[3];
   double *coord;
   int tag_enable = atom->tag_enable;
@@ -276,7 +279,8 @@ void Replicate::command(int narg, char **arg)
 
           m = 0;
           while (m < n) {
-            image = (512 << 20) | (512 << 10) | 512;
+            image = ((tagint) IMGMAX << IMG2BITS) |
+              ((tagint) IMGMAX << IMGBITS) | IMGMAX;
             if (triclinic == 0) {
               x[0] = buf[m+1] + ix*old_xprd;
               x[1] = buf[m+2] + iy*old_yprd;
@@ -311,7 +315,7 @@ void Replicate::command(int narg, char **arg)
               atom->tag[i] += atom_offset;
               atom->image[i] = image;
 
-              if (atom->molecular) {
+              if (atom->molecule_flag) {
                 if (atom->molecule[i] > 0)
                   atom->molecule[i] += mol_offset;
                 if (atom->avec->bonds_allow)

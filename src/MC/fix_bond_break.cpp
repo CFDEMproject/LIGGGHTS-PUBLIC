@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -39,7 +39,7 @@ FixBondBreak::FixBondBreak(LAMMPS *lmp, int narg, char **arg) :
 
   MPI_Comm_rank(world,&me);
 
-  nevery = atoi(arg[3]);
+  nevery = force->inumeric(FLERR,arg[3]);
   if (nevery <= 0) error->all(FLERR,"Illegal fix bond/break command");
 
   force_reneighbor = 1;
@@ -49,8 +49,8 @@ FixBondBreak::FixBondBreak(LAMMPS *lmp, int narg, char **arg) :
   global_freq = 1;
   extvector = 0;
 
-  btype = atoi(arg[4]);
-  double cutoff = atof(arg[5]);
+  btype = force->inumeric(FLERR,arg[4]);
+  double cutoff = force->numeric(FLERR,arg[5]);
 
   if (btype < 1 || btype > atom->nbondtypes)
     error->all(FLERR,"Invalid bond type in fix bond/break command");
@@ -67,10 +67,10 @@ FixBondBreak::FixBondBreak(LAMMPS *lmp, int narg, char **arg) :
   while (iarg < narg) {
     if (strcmp(arg[iarg],"prob") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal fix bond/break command");
-      fraction = atof(arg[iarg+1]);
-      seed = atoi(arg[iarg+2]);
+      fraction = force->numeric(FLERR,arg[iarg+1]);
+      seed = force->inumeric(FLERR,arg[iarg+2]);
       if (fraction < 0.0 || fraction > 1.0)
-	error->all(FLERR,"Illegal fix bond/break command");
+        error->all(FLERR,"Illegal fix bond/break command");
       if (seed <= 0) error->all(FLERR,"Illegal fix bond/break command");
       iarg += 3;
     } else error->all(FLERR,"Illegal fix bond/break command");
@@ -140,9 +140,9 @@ void FixBondBreak::init()
   // warn if angles, dihedrals, impropers are being used
 
   if (force->angle || force->dihedral || force->improper) {
-    if (me == 0) 
+    if (me == 0)
       error->warning(FLERR,"Broken bonds will not alter angles, "
-		     "dihedrals, or impropers");
+                     "dihedrals, or impropers");
   }
 
   if (strstr(update->integrate_style,"respa"))
@@ -154,7 +154,7 @@ void FixBondBreak::init()
 void FixBondBreak::post_integrate()
 {
   int i,j,k,m,n,i1,i2,n1,n3,type;
-  double delx,dely,delz,rsq,min,max;
+  double delx,dely,delz,rsq;
   int *slist;
 
   if (update->ntimestep % nevery) return;
@@ -204,7 +204,6 @@ void FixBondBreak::post_integrate()
     delx = x[i1][0] - x[i2][0];
     dely = x[i1][1] - x[i2][1];
     delz = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx,dely,delz);
     rsq = delx*delx + dely*dely + delz*delz;
     if (rsq <= cutsq) continue;
 
@@ -249,13 +248,14 @@ void FixBondBreak::post_integrate()
     j = atom->map(partner[i]);
     if (partner[j] != tag[i]) continue;
 
-    // apply probability constraint
-    // MIN,MAX insures values are added in same order on different procs
+    // apply probability constraint using RN for atom with smallest ID
 
     if (fraction < 1.0) {
-      min = MIN(probability[i],probability[j]);
-      max = MAX(probability[i],probability[j]);
-      if (0.5*(min+max) >= fraction) continue;
+      if (tag[i] < tag[j]) {
+        if (probability[i] >= fraction) continue;
+      } else {
+        if (probability[j] >= fraction) continue;
+      }
     }
 
     // delete bond from atom I if I stores it
@@ -263,12 +263,12 @@ void FixBondBreak::post_integrate()
 
     for (m = 0; m < num_bond[i]; m++) {
       if (bond_atom[i][m] == partner[i]) {
-	for (k = m; k < num_bond[i]-1; k++) {
-	  bond_atom[i][k] = bond_atom[i][k+1];
-	  bond_type[i][k] = bond_type[i][k+1];
-	}
-	num_bond[i]--;
-	break;
+        for (k = m; k < num_bond[i]-1; k++) {
+          bond_atom[i][k] = bond_atom[i][k+1];
+          bond_type[i][k] = bond_type[i][k+1];
+        }
+        num_bond[i]--;
+        break;
       }
     }
 
@@ -284,7 +284,7 @@ void FixBondBreak::post_integrate()
     nspecial[i][0]--;
     nspecial[i][1]--;
     nspecial[i][2]--;
-    
+
     // count the broken bond once
 
     if (tag[i] < tag[j]) nbreak++;
@@ -311,7 +311,7 @@ void FixBondBreak::post_integrate_respa(int ilevel, int iloop)
 /* ---------------------------------------------------------------------- */
 
 int FixBondBreak::pack_comm(int n, int *list, double *buf,
-			     int pbc_flag, int *pbc)
+                             int pbc_flag, int *pbc)
 {
   int i,j,m;
 
@@ -378,7 +378,7 @@ double FixBondBreak::compute_vector(int n)
 }
 
 /* ----------------------------------------------------------------------
-   memory usage of local atom-based arrays 
+   memory usage of local atom-based arrays
 ------------------------------------------------------------------------- */
 
 double FixBondBreak::memory_usage()

@@ -34,7 +34,7 @@
 #include "force.h"
 #include "bounding_box.h"
 #include "input_mesh_tri.h"
-#include "fix_contact_history.h"
+#include "fix_contact_history_mesh.h"
 #include "fix_neighlist_mesh.h"
 #include "multi_node_mesh.h"
 #include "modify.h"
@@ -48,11 +48,12 @@ using namespace FixConst;
 
 FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
 : FixMesh(lmp, narg, arg),
-  fix_contact_history_(0),
+  fix_contact_history_mesh_(0),
   fix_mesh_neighlist_(0),
   stress_flag_(false),
   velFlag_(false),
   angVelFlag_(false),
+  n_dump_active_(0),
   curvature_(0.)
 {
     // check if type has been read
@@ -69,9 +70,9 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
           if (narg < iarg_+4) error->fix_error(FLERR,this,"not enough arguments");
           iarg_++;
           velFlag_ = true;
-          vSurf_[0] = force->numeric(arg[iarg_++]);
-          vSurf_[1] = force->numeric(arg[iarg_++]);
-          vSurf_[2] = force->numeric(arg[iarg_++]);
+          vSurf_[0] = force->numeric(FLERR,arg[iarg_++]);
+          vSurf_[1] = force->numeric(FLERR,arg[iarg_++]);
+          vSurf_[2] = force->numeric(FLERR,arg[iarg_++]);
           hasargs = true;
       } else if (strcmp(arg[iarg_],"surface_ang_vel") == 0) {
           if (narg < iarg_+11) error->fix_error(FLERR,this,"not enough arguments");
@@ -79,25 +80,25 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
           angVelFlag_ = true;
           if(strcmp(arg[iarg_++],"origin"))
               error->fix_error(FLERR,this,"expecting keyword 'origin' after 'rotation'");
-          origin_[0] = force->numeric(arg[iarg_++]);
-          origin_[1] = force->numeric(arg[iarg_++]);
-          origin_[2] = force->numeric(arg[iarg_++]);
+          origin_[0] = force->numeric(FLERR,arg[iarg_++]);
+          origin_[1] = force->numeric(FLERR,arg[iarg_++]);
+          origin_[2] = force->numeric(FLERR,arg[iarg_++]);
           if(strcmp(arg[iarg_++],"axis"))
               error->fix_error(FLERR,this,"expecting keyword 'axis' after definition of 'origin'");
-          axis_[0] = force->numeric(arg[iarg_++]);
-          axis_[1] = force->numeric(arg[iarg_++]);
-          axis_[2] = force->numeric(arg[iarg_++]);
+          axis_[0] = force->numeric(FLERR,arg[iarg_++]);
+          axis_[1] = force->numeric(FLERR,arg[iarg_++]);
+          axis_[2] = force->numeric(FLERR,arg[iarg_++]);
           if(vectorMag3D(axis_) < EPSILON_V)
               error->fix_error(FLERR,this,"'axis' vector must me non-zero");
           if(strcmp(arg[iarg_++],"omega"))
               error->fix_error(FLERR,this,"expecting keyword 'omega' after definition of 'axis'");
           // positive omega give anti-clockwise (CCW) rotation
-          omegaSurf_ = force->numeric(arg[iarg_++]);
+          omegaSurf_ = force->numeric(FLERR,arg[iarg_++]);
           hasargs = true;
       } else if (strcmp(arg[iarg_],"curvature") == 0) {
           if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
           iarg_++;
-          curvature_ = force->numeric(arg[iarg_++]);
+          curvature_ = force->numeric(FLERR,arg[iarg_++]);
           if(curvature_ < 0. || curvature_ > 60)
             error->fix_error(FLERR,this,"0° < curvature < 60° required");
           curvature_ = cos(curvature_*M_PI/180.);
@@ -141,6 +142,9 @@ void FixMeshSurface::post_create()
 
 void FixMeshSurface::pre_delete(bool unfixflag)
 {
+    if(unfixflag && n_dump_active_ > 0)
+        error->fix_error(FLERR,this,"can not unfix while dump command is active on mesh");
+
     FixMesh::pre_delete(unfixflag);
 
     // contact tracker and neighlist are created via fix wall/gran
@@ -164,8 +168,9 @@ void FixMeshSurface::setup_pre_force(int vflag)
 
     // create neigh list for owned and local elements
     
-    if(meshNeighlist())
+    if(meshNeighlist()) {
         meshNeighlist()->initializeNeighlist();
+    }
 
 }
 
@@ -221,8 +226,10 @@ void FixMeshSurface::createWallNeighList(int igrp)
 
 void FixMeshSurface::deleteWallNeighList()
 {
-    if(fix_mesh_neighlist_)
+    if(fix_mesh_neighlist_) {
       modify->delete_fix(fix_mesh_neighlist_->id);
+      fix_mesh_neighlist_ = NULL;
+    }
 }
 
 /* ----------------------------------------------------------------------
@@ -262,7 +269,7 @@ class FixNeighlistMesh* FixMeshSurface::createOtherNeighList(int igrp,const char
 
 void FixMeshSurface::createContactHistory(int dnum)
 {
-    if(fix_contact_history_) return;
+    if(fix_contact_history_mesh_) return;
 
     // create a contact tracker for the mesh
     char *contacthist_name = new char[strlen(id)+1+8];
@@ -273,17 +280,16 @@ void FixMeshSurface::createContactHistory(int dnum)
     char dnum_char[10];
     sprintf(dnum_char,"%d",dnum);
 
-    char **fixarg = new char*[6];
+    char **fixarg = new char*[5];
     fixarg[0] = contacthist_name;
     fixarg[1] = (char *) "all";
     fixarg[2] = (char *) "contacthistory/mesh";
-    fixarg[3] = (char *) "mesh";
+    fixarg[3]= dnum_char;
     fixarg[4] = my_id;
-    fixarg[5]= dnum_char;
 
-    modify->add_fix(6,fixarg);
+    modify->add_fix(5,fixarg);
 
-    fix_contact_history_ = static_cast<FixContactHistory*>(modify->find_fix_id(contacthist_name));
+    fix_contact_history_mesh_ = static_cast<FixContactHistoryMesh*>(modify->find_fix_id(contacthist_name));
 
     delete []fixarg;
     delete []contacthist_name;
@@ -293,8 +299,10 @@ void FixMeshSurface::createContactHistory(int dnum)
 void FixMeshSurface::deleteContactHistory()
 {
     // contact tracker and neighlist are created via fix wall/gran
-    if(fix_contact_history_)
-      modify->delete_fix(fix_contact_history_->id);
+    if(fix_contact_history_mesh_) {
+      modify->delete_fix(fix_contact_history_mesh_->id);
+      fix_contact_history_mesh_ = NULL;
+    }
 }
 
 /* ----------------------------------------------------------------------

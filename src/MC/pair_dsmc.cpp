@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -68,7 +68,7 @@ PairDSMC::~PairDSMC()
 void PairDSMC::compute(int eflag, int vflag)
 {
   double **x = atom->x;
-  double *mass = atom->mass; 
+  double *mass = atom->mass;
   int *type = atom->type;
   int nlocal = atom->nlocal;
 
@@ -111,7 +111,7 @@ void PairDSMC::compute(int eflag, int vflag)
       if (number_of_A > max_particle_list) {
         max_particle_list = number_of_A;
         memory->grow(particle_list,atom->ntypes+1,max_particle_list,
-		     "pair:particle_list");
+                     "pair:particle_list");
       }
 
       int m = first[itype][icell];
@@ -128,7 +128,7 @@ void PairDSMC::compute(int eflag, int vflag)
       for (jtype = itype; jtype <= atom->ntypes; ++jtype) {
         jmass = mass[jtype];
         number_of_B = number[jtype][icell];
-    
+
         reduced_mass = imass*jmass/(imass + jmass);
         total_mass = imass + jmass;
         jmass_tmass = jmass/total_mass;
@@ -136,32 +136,33 @@ void PairDSMC::compute(int eflag, int vflag)
 
         // if necessary, recompute V_sigma_max values
 
-        if (recompute_vsigmamax_stride && 
-	    (update->ntimestep % recompute_vsigmamax_stride == 0)) 
+        if (recompute_vsigmamax_stride &&
+            (update->ntimestep % recompute_vsigmamax_stride == 0))
           recompute_V_sigma_max(icell);
 
         // # of collisions to perform for itype-jtype pairs
 
         double &Vs_max = V_sigma_max[itype][jtype];
-        double num_of_collisions_double = number_of_A * number_of_B * 
-	  weighting * Vs_max * update->dt / vol;
+        double num_of_collisions_double = number_of_A * number_of_B *
+          weighting * Vs_max * update->dt / vol;
 
-        if ((itype == jtype) and number_of_B) 
-	  num_of_collisions_double *= 
-	    0.5 * double(number_of_B - 1) / double(number_of_B);
+        if ((itype == jtype) and number_of_B)
+          num_of_collisions_double *=
+            0.5 * double(number_of_B - 1) / double(number_of_B);
 
-        int num_of_collisions = 
-	  convert_double_to_equivalent_int(num_of_collisions_double);
+        int num_of_collisions =
+          convert_double_to_equivalent_int(num_of_collisions_double);
 
-        if (num_of_collisions > number_of_A) 
-	  error->warning(FLERR,"Pair dsmc: num_of_collisions > number_of_A",0);
-        if (num_of_collisions > number_of_B) 
-	  error->warning(FLERR,"Pair dsmc: num_of_collisions > number_of_B",0);
+        if (num_of_collisions > number_of_A)
+          error->warning(FLERR,"Pair dsmc: num_of_collisions > number_of_A",0);
+        if (num_of_collisions > number_of_B)
+          error->warning(FLERR,"Pair dsmc: num_of_collisions > number_of_B",0);
 
         // perform collisions on pairs of particles in icell
 
         for (int k = 0; k < num_of_collisions; k++) {
           if ((number_of_A < 1) or (number_of_B < 1)) break;
+          if ((itype == jtype) and (number_of_A < 2)) break;
           int ith_A = static_cast<int>(random->uniform()*number_of_A);
           int jth_B = static_cast<int>(random->uniform()*number_of_B);
           int i = particle_list[itype][ith_A];
@@ -208,12 +209,12 @@ void PairDSMC::settings(int narg, char **arg)
   if (narg != 6) error->all(FLERR,"Illegal pair_style command");
 
   cut_global = 0.0;
-  max_cell_size = force->numeric(arg[0]);
-  seed = force->inumeric(arg[1]);
-  weighting = force->numeric(arg[2]);
-  T_ref = force->numeric(arg[3]);
-  recompute_vsigmamax_stride = force->inumeric(arg[4]);
-  vsigmamax_samples = force->inumeric(arg[5]);
+  max_cell_size = force->numeric(FLERR,arg[0]);
+  seed = force->inumeric(FLERR,arg[1]);
+  weighting = force->numeric(FLERR,arg[2]);
+  T_ref = force->numeric(FLERR,arg[3]);
+  recompute_vsigmamax_stride = force->inumeric(FLERR,arg[4]);
+  vsigmamax_samples = force->inumeric(FLERR,arg[5]);
 
   // initialize Marsaglia RNG with processor-unique seed
 
@@ -230,7 +231,7 @@ void PairDSMC::settings(int narg, char **arg)
     int i,j;
     for (i = 1; i <= atom->ntypes; i++)
       for (j = i+1; j <= atom->ntypes; j++)
-	if (setflag[i][j]) cut[i][j] = cut_global;
+        if (setflag[i][j]) cut[i][j] = cut_global;
   }
 }
 
@@ -247,10 +248,10 @@ void PairDSMC::coeff(int narg, char **arg)
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double sigma_one = force->numeric(arg[2]);
+  double sigma_one = force->numeric(FLERR,arg[2]);
 
   double cut_one = cut_global;
-  if (narg == 4) cut_one = force->numeric(arg[3]);
+  if (narg == 4) cut_one = force->numeric(FLERR,arg[3]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -272,22 +273,22 @@ void PairDSMC::coeff(int narg, char **arg)
 void PairDSMC::init_style()
 {
   ncellsx = ncellsy = ncellsz = 1;
-  while (((domain->boxhi[0] - domain->boxlo[0])/ncellsx) > max_cell_size) 
+  while (((domain->boxhi[0] - domain->boxlo[0])/ncellsx) > max_cell_size)
     ncellsx++;
-  while (((domain->boxhi[1] - domain->boxlo[1])/ncellsy) > max_cell_size) 
+  while (((domain->boxhi[1] - domain->boxlo[1])/ncellsy) > max_cell_size)
     ncellsy++;
-  while (((domain->boxhi[2] - domain->boxlo[2])/ncellsz) > max_cell_size) 
+  while (((domain->boxhi[2] - domain->boxlo[2])/ncellsz) > max_cell_size)
     ncellsz++;
 
   cellx = (domain->boxhi[0] - domain->boxlo[0])/ncellsx;
   celly = (domain->boxhi[1] - domain->boxlo[1])/ncellsy;
   cellz = (domain->boxhi[2] - domain->boxlo[2])/ncellsz;
-  
+
   if (comm->me == 0) {
     if (screen) fprintf(screen,"DSMC cell size = %g x %g x %g\n",
-			cellx,celly,cellz);
+                        cellx,celly,cellz);
     if (logfile) fprintf(logfile,"DSMC cell size = %g x %g x %g\n",
-			 cellx,celly,cellz);
+                         cellx,celly,cellz);
   }
 
   total_ncells = ncellsx*ncellsy*ncellsz;
@@ -327,7 +328,7 @@ void PairDSMC::write_restart(FILE *fp)
     for (j = i; j <= atom->ntypes; j++) {
       fwrite(&setflag[i][j],sizeof(int),1,fp);
       if (setflag[i][j]) {
-	fwrite(&sigma[i][j],sizeof(double),1,fp);
+        fwrite(&sigma[i][j],sizeof(double),1,fp);
         fwrite(&cut[i][j],sizeof(double),1,fp);
       }
     }
@@ -349,12 +350,12 @@ void PairDSMC::read_restart(FILE *fp)
       if (me == 0) fread(&setflag[i][j],sizeof(int),1,fp);
       MPI_Bcast(&setflag[i][j],1,MPI_INT,0,world);
       if (setflag[i][j]) {
-	if (me == 0) {
+        if (me == 0) {
           fread(&sigma[i][j],sizeof(double),1,fp);
           fread(&cut[i][j],sizeof(double),1,fp);
         }
-	MPI_Bcast(&sigma[i][j],1,MPI_DOUBLE,0,world);
-	MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
+        MPI_Bcast(&sigma[i][j],1,MPI_DOUBLE,0,world);
+        MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
       }
     }
 }
@@ -400,7 +401,7 @@ void PairDSMC::read_restart_settings(FILE *fp)
 }
 
 /*-------------------------------------------------------------------------
-  rezero and recompute the V_sigma_max values this timestep for use during 
+  rezero and recompute the V_sigma_max values this timestep for use during
   the next nrezero timesteps
 -------------------------------------------------------------------------*/
 
@@ -412,9 +413,9 @@ void PairDSMC::recompute_V_sigma_max(int icell)
   if (number_of_A && number_of_B) {
     for (k = 0; k < vsigmamax_samples; k++) {
       i = particle_list[itype]
-	[static_cast<int>(random->uniform()*number_of_A)];
+        [static_cast<int>(random->uniform()*number_of_A)];
       j = particle_list[jtype]
-	[static_cast<int>(random->uniform()*number_of_B)];
+        [static_cast<int>(random->uniform()*number_of_B)];
       if (i == j) continue;
       Vsigma_max = MAX(Vsigma_max,V_sigma(i,j));
     }
@@ -444,9 +445,9 @@ double PairDSMC::V_sigma(int i, int j)
   // (omega - 0.5) = 0.17
   // 1/GAMMA(2.5 - omega) = 1.06418029298371
 
-  if (relative_velocity_sq != 0.0) 
+  if (relative_velocity_sq != 0.0)
     pair_sigma = sigma[itype][jtype]*
-      pow(kT_ref/(0.5*reduced_mass*relative_velocity_sq),0.17) * 
+      pow(kT_ref/(0.5*reduced_mass*relative_velocity_sq),0.17) *
       1.06418029298371;
   else
     pair_sigma = 0.0;
@@ -498,15 +499,15 @@ void PairDSMC::scatter_random(int i, int j, int icell)
     vj[1] = vcm[1] - delv[1]*imass_tmass;
     vj[2] = vcm[2] - delv[2]*imass_tmass;
   }
- 
+
   total_number_of_collisions++;
 }
 
-/* ----------------------------------------------------------------------  
-   This method converts the double supplied by the calling function into 
-   an int, which is returned. By adding a random number between 0 and 1 
-   to the double before converting it to an int, we ensure that, 
-   statistically, we round down with probability identical to the 
+/* ----------------------------------------------------------------------
+   This method converts the double supplied by the calling function into
+   an int, which is returned. By adding a random number between 0 and 1
+   to the double before converting it to an int, we ensure that,
+   statistically, we round down with probability identical to the
    remainder and up the rest of the time. So even though we're using an
    integer, we're statistically matching the exact expression represented
    by the double.

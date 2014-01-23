@@ -47,7 +47,6 @@ FixCfdCouplingForceImplicit::FixCfdCouplingForceImplicit(LAMMPS *lmp, int narg, 
     fix_Ksl_(0),
     fix_uf_(0)
 {
-
     int iarg = 3;
 
     bool hasargs = true;
@@ -68,7 +67,6 @@ FixCfdCouplingForceImplicit::FixCfdCouplingForceImplicit(LAMMPS *lmp, int narg, 
     }
 
   nevery = 1;
-  
 }
 
 /* ---------------------------------------------------------------------- */
@@ -97,7 +95,7 @@ void FixCfdCouplingForceImplicit::post_create()
     // register Ksl
     if(!fix_Ksl_)
     {
-        char* fixarg[9];
+        const char* fixarg[9];
         fixarg[0]="Ksl";
         fixarg[1]="all";
         fixarg[2]="property/atom";
@@ -107,13 +105,13 @@ void FixCfdCouplingForceImplicit::post_create()
         fixarg[6]="no";     // communicate ghost
         fixarg[7]="no";     // communicate rev
         fixarg[8]="0.";
-        fix_Ksl_ = modify->add_fix_property_atom(9,fixarg,style);
+        fix_Ksl_ = modify->add_fix_property_atom(9,(char**)fixarg,style);
     }
 
     // register uf
     if(!fix_uf_)
     {
-        char* fixarg[11];
+        const char* fixarg[11];
         fixarg[0]="uf";
         fixarg[1]="all";
         fixarg[2]="property/atom";
@@ -125,7 +123,7 @@ void FixCfdCouplingForceImplicit::post_create()
         fixarg[8]="0.";
         fixarg[9]="0.";
         fixarg[10]="0.";
-        fix_uf_ = modify->add_fix_property_atom(11,fixarg,style);
+        fix_uf_ = modify->add_fix_property_atom(11,(char**)fixarg,style);
     }
 }
 

@@ -61,7 +61,7 @@ namespace SPH_KERNEL_NS {
    0.1136821 is 5 over 14pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_cubicspline2d(double s, double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_cubicspline2d(double s, double, double hinv)
 {
     if (s < 1.)
     {
@@ -81,7 +81,7 @@ inline double SPH_KERNEL_NS::sph_kernel_cubicspline2d(double s, double h, double
    0.1136821 is 5 over 14pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_cubicspline2d_der(double s,double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_cubicspline2d_der(double s, double, double hinv)
 {
     if (s < 1.)
     {

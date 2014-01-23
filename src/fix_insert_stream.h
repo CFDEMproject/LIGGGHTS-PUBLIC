@@ -43,9 +43,12 @@ class FixInsertStream : public FixInsert {
 
   virtual int setmask();
   virtual void init();
+  virtual void setup_pre_exchange();
   virtual void end_of_step();
 
   void init_defaults();
+
+  virtual void reset_timestep(bigint newstep,bigint oldstep);
 
   void register_tracer_callback(class FixPropertyAtomTracerStream* tr);
 
@@ -72,6 +75,8 @@ class FixInsertStream : public FixInsert {
   double insertion_fraction();
   void calc_ins_fraction();
   virtual void finalize_insertion(int);
+
+  virtual void reset_releasedata(bigint newstep,bigint oldstep);
 
   // additional insertion settings
   int duration;            //duration for insertion in time-steps
@@ -101,9 +106,9 @@ class FixInsertStream : public FixInsert {
   bool i_am_integrator;
 
  private:
+
   class FixPropertyAtomTracerStream **tracer;
   int ntracer;
-
 };
 
 }

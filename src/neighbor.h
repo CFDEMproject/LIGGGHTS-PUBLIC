@@ -25,6 +25,7 @@
 #define LMP_NEIGHBOR_H
 
 #include "pointers.h"
+#include <algorithm> 
 
 namespace LAMMPS_NS {
 
@@ -40,7 +41,7 @@ class Neighbor : protected Pointers {
   int style;                       // 0,1,2 = nsq, bin, multi
   int every;                       // build every this many steps
   int delay;                       // delay build for this many steps
-  double contactHistoryDistanceFactor;// contact history distance factor to be used when fix_liquidTracking_inst is used
+  double contactDistanceFactor;    // contact distance factor to be used for non-contact touch (no radius overlap)
   int dist_check;                  // 0 = always build, 1 = only if 1/2 dist
   int ago;                         // how many steps ago neighboring occurred
   int pgsize;                      // size of neighbor page
@@ -52,10 +53,14 @@ class Neighbor : protected Pointers {
   double skin;                     // skin distance
   double cutneighmin;              // min neighbor cutoff for all type pairs
   double cutneighmax;              // max neighbor cutoff for all type pairs
+                                   
   double *cuttype;                 // for each type, max neigh cut w/ others
 
-  int ncalls;                      // # of times build has been called
-  int ndanger;                     // # of dangerous builds
+  bigint ncalls;                   // # of times build has been called
+  bigint ndanger;                  // # of dangerous builds
+  bigint lastcall;                 // timestep of last neighbor::build() call
+
+  bigint last_setup_bins_timestep;
 
   int nrequest;                    // requests for pairwise neighbor lists
   class NeighRequest **requests;   // from Pair, Fix, Compute, Command classes
@@ -64,6 +69,8 @@ class Neighbor : protected Pointers {
   int old_style;                   // previous run info to avoid
   int old_nrequest;                // re-creation of pairwise neighbor lists
   int old_triclinic;
+  int old_pgsize;
+  int old_oneatom;
   class NeighRequest **old_requests;
 
   int nlist;                       // pairwise neighbor lists
@@ -87,7 +94,8 @@ class Neighbor : protected Pointers {
   int decide();                     // decide whether to build or not
   virtual int check_distance();     // check max distance moved since last build
   void setup_bins();                // setup bins based on box and cutoff
-  virtual void build();             // create all neighbor lists (pair,bond)
+  virtual void build(int topoflag=1);  // create all neighbor lists (pair,bond)
+  virtual void build_topology();    // create all topology neighbor lists
   void build_one(int);              // create a single neighbor list
   void set(int, char **);           // set neighbor style and skin distance
   void modify_params(int, char**);  // modify parameters that control builds
@@ -117,6 +125,7 @@ class Neighbor : protected Pointers {
   double *cuttypesq;               // cuttype squared
 
   double triggersq;                // trigger = build when atom moves this dist
+  int cluster_check;               // 1 if check bond/angle/etc satisfies minimg
 
   double **xhold;                      // atom coords at last neighbor build
   
@@ -190,6 +199,7 @@ class Neighbor : protected Pointers {
   double bin_largest_distance(int, int, int); 
   int coord2bin(double *);              // mapping atom coord to a bin
   int coord2bin(double *, int &, int &, int&); // ditto
+  void bin_center(int ix, int iy, int iz, double * center);
 
   void binBorders(int, double &, double &, double &, double &, double &, double &); 
   void bin2XYZ(int, int &, int &, int &); 
@@ -208,9 +218,11 @@ class Neighbor : protected Pointers {
   PairPtr *pair_build;
 
   void half_nsq_no_newton(class NeighList *);
+  void half_nsq_no_newton_ghost(class NeighList *);
   void half_nsq_newton(class NeighList *);
 
   void half_bin_no_newton(class NeighList *);
+  void half_bin_no_newton_ghost(class NeighList *);
   void half_bin_newton(class NeighList *);
   void half_bin_newton_tri(class NeighList *);
 
@@ -245,9 +257,12 @@ class Neighbor : protected Pointers {
   void respa_bin_newton(class NeighList *);
   void respa_bin_newton_tri(class NeighList *);
 
-  // OpenMP multi-threaded neighbor list build versions
+  // include prototypes for multi-threaded neighbor lists
+  // builds or their corresponding dummy versions
 
+#define LMP_INSIDE_NEIGHBOR_H
 #include "accelerator_omp.h"
+#undef LMP_INSIDE_NEIGHBOR_H
 
   // pairwise stencil creation functions
 
@@ -255,7 +270,9 @@ class Neighbor : protected Pointers {
   StencilPtr *stencil_create;
 
   void stencil_half_bin_2d_no_newton(class NeighList *, int, int, int);
+  void stencil_half_ghost_bin_2d_no_newton(class NeighList *, int, int, int);
   void stencil_half_bin_3d_no_newton(class NeighList *, int, int, int);
+  void stencil_half_ghost_bin_3d_no_newton(class NeighList *, int, int, int);
   void stencil_half_bin_2d_newton(class NeighList *, int, int, int);
   void stencil_half_bin_3d_newton(class NeighList *, int, int, int);
   void stencil_half_bin_2d_newton_tri(class NeighList *, int, int, int);
@@ -284,14 +301,17 @@ class Neighbor : protected Pointers {
   BondPtr bond_build;                 // ptr to bond list functions
   void bond_all();                    // bond list with all bonds
   void bond_partial();                // exclude certain bonds
+  void bond_check();
 
   BondPtr angle_build;                // ptr to angle list functions
   void angle_all();                   // angle list with all angles
   void angle_partial();               // exclude certain angles
+  void angle_check();
 
   BondPtr dihedral_build;             // ptr to dihedral list functions
   void dihedral_all();                // dihedral list with all dihedrals
   void dihedral_partial();            // exclude certain dihedrals
+  void dihedral_check(int, int **);
 
   BondPtr improper_build;             // ptr to improper list functions
   void improper_all();                // improper list with all impropers
@@ -329,6 +349,9 @@ class Neighbor : protected Pointers {
     }
     return 0;
   };
+
+  void register_contact_dist_factor(double cdf)
+  { contactDistanceFactor = std::max(contactDistanceFactor,cdf); }
 };
 
 }
@@ -351,6 +374,16 @@ E: Invalid atom type in neighbor exclusion list
 
 Atom types must range from 1 to Ntypes inclusive.
 
+W: Neighbor exclusions used with KSpace solver may give inconsistent Coulombic energies
+
+This is because excluding specific pair interactions also excludes
+them from long-range interactions which may not be the desired effect.
+The special_bonds command handles this consistently by insuring
+excluded (or weighted) 1-2, 1-3, 1-4 interactions are treated
+consistently by both the short-range pair style and the long-range
+solver.  This is not done for exclusions of charged atom pairs via the
+neigh_modify exclude command.
+
 E: Neighbor include group not allowed with ghost neighbors
 
 This is a current restriction within LAMMPS.
@@ -366,10 +399,6 @@ Self-explanatory.
 E: Neighbor multi not yet enabled for rRESPA
 
 Self-explanatory.
-
-E: Neighbors of ghost atoms only allowed for full neighbor lists
-
-This is a current restriction within LAMMPS.
 
 E: Too many local+ghost atoms for neighbor list
 

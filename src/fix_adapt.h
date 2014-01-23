@@ -37,6 +37,7 @@ namespace LAMMPS_NS {
 class FixAdapt : public Fix {
  public:
   int diamflag;        // 1 if atom diameters will vary, for AtomVecGranular
+  int chgflag; 
 
   FixAdapt(class LAMMPS *, int, char **);
   ~FixAdapt();
@@ -113,5 +114,9 @@ Self-explanatory.
 E: Fix adapt requires atom attribute diameter
 
 The atom style being used does not specify an atom diameter.
+
+E: Fix adapt requires atom attribute charge
+
+The atom style being used does not specify an atom charge.
 
 */

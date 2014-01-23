@@ -30,15 +30,22 @@ class RegCylinder : public Region {
  public:
   RegCylinder(class LAMMPS *, int, char **);
   ~RegCylinder();
+  void init();
   int inside(double, double, double);
   int surface_interior(double *, double);
   int surface_exterior(double *, double);
+  void shape_update();
 
  private:
   char axis;
   double c1,c2;
   double radius;
   double lo,hi;
+  int rstyle,rvar;
+  char *rstr;
+
+  void variable_check();
+
 };
 
 }
@@ -58,5 +65,17 @@ E: Cannot use region INF or EDGE when box does not exist
 
 Regions that extend to the box boundaries can only be used after the
 create_box command has been used.
+
+E: Variable evaluation in region gave bad value
+
+Variable returned a radius < 0.0.
+
+E: Variable name for region cylinder does not exist
+
+Self-explanatory.
+
+E: Variable for region cylinder is invalid style
+
+Only equal-style varaibles are allowed.
 
 */

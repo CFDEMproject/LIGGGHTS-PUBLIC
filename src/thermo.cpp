@@ -31,7 +31,9 @@
 #include "update.h"
 #include "comm.h"
 #include "domain.h"
+#include "universe.h"
 #include "lattice.h"
+#include "group.h"
 #include "modify.h"
 #include "fix.h"
 #include "compute.h"
@@ -55,15 +57,17 @@ using namespace MathConst;
 
 // customize a new keyword by adding to this list:
 
-// step, elapsed, elaplong, dt, cpu, tpcpu, spcpu
+// step, elapsed, elaplong, dt, time, cpu, tpcpu, spcpu, cpuremain, part
 // atoms, temp, press, pe, ke, etotal, enthalpy
 // evdwl, ecoul, epair, ebond, eangle, edihed, eimp, emol, elong, etail
-// vol, lx, ly, lz, xlo, xhi, ylo, yhi, zlo, zhi, xy, xz, yz, xlat, ylat, zlat
+// vol, density, lx, ly, lz, xlo, xhi, ylo, yhi, zlo, zhi, xy, xz, yz,
+// xlat, ylat, zlat
 // pxx, pyy, pzz, pxy, pxz, pyz
 // fmax, fnorm
 // cella, cellb, cellc, cellalpha, cellbeta, cellgamma
 
 // customize a new thermo style by adding a DEFINE to this list
+// also insure allocation of line string is correct in constructor
 
 #define ONE "step temp epair emol etotal press"
 #define MULTI "etotal ke temp pe ebond eangle edihed eimp evdwl ecoul elong press"
@@ -77,7 +81,6 @@ enum{SCALAR,VECTOR,ARRAY};
 #define INVOKED_VECTOR 2
 #define INVOKED_ARRAY 4
 
-#define MAXLINE 8192               // make this 4x longer than Input::MAXLINE
 #define DELTA 8
 
 /* ---------------------------------------------------------------------- */
@@ -103,16 +106,24 @@ Thermo::Thermo(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   // custom style builds its own line of keywords
   // customize a new thermo style by adding to if statement
 
-  line = new char[MAXLINE];
+  // allocate line string used for 3 tasks
+  //   concat of custom style args
+  //   one-time thermo output of header line
+  //   each line of numeric thermo output
+  //   256 = extra for ONE or MULTI string or multi formatting
+  //   64 = max per-arg chars in header or numeric output
 
   if (strcmp(style,"one") == 0) {
+    line = new char[256+6*64];
     strcpy(line,ONE);
   } else if (strcmp(style,"multi") == 0) {
+    line = new char[256+12*64];
     strcpy(line,MULTI);
     lineflag = MULTILINE;
 
   } else if (strcmp(style,"custom") == 0) {
     if (narg == 1) error->all(FLERR,"Illegal thermo style custom command");
+    line = new char[256+narg*64];
     line[0] = '\0';
     for (int iarg = 1; iarg < narg; iarg++) {
       strcat(line,arg[iarg]);
@@ -285,6 +296,7 @@ void Thermo::header()
   if (me == 0) {
     if (screen) fprintf(screen,"%s",line);
     if (logfile) fprintf(logfile,"%s",line);
+    if (thermofile) fprintf(thermofile,"%s",line); 
   }
 }
 
@@ -347,9 +359,6 @@ void Thermo::compute(int flag)
     }
   }
 
-  // kludge for RedStorm timing issue
-  // if (ntimestep == 100) return;
-
   // print line to screen and logfile
 
   if (me == 0) {
@@ -357,6 +366,10 @@ void Thermo::compute(int flag)
     if (logfile) {
       fprintf(logfile,"%s",line);
       if (flushflag) fflush(logfile);
+    }
+    if (thermofile) { 
+      fprintf(thermofile,"%s",line);
+      if (flushflag) fflush(thermofile);
     }
   }
 }
@@ -422,17 +435,7 @@ void Thermo::modify_params(int narg, char **arg)
 
   int iarg = 0;
   while (iarg < narg) {
-    if (strcmp(arg[iarg],"every") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal thermo_modify command");
-      if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) {
-        delete [] output->var_thermo;
-        int n = strlen(&arg[iarg+1][2]) + 1;
-        output->var_thermo = new char[n];
-        strcpy(output->var_thermo,&arg[iarg+1][2]);
-      } else error->all(FLERR,"Illegal thermo_modify command");
-      output->thermo_every = 0;
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"temp") == 0) {
+    if (strcmp(arg[iarg],"temp") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal thermo_modify command");
       if (index_temp < 0) error->all(FLERR,"Thermo style does not use temp");
       delete [] id_compute[index_temp];
@@ -663,12 +666,19 @@ void Thermo::parse_fields(char *str)
       addfield("Elaplong",&Thermo::compute_elapsed_long,BIGINT);
     } else if (strcmp(word,"dt") == 0) {
       addfield("Dt",&Thermo::compute_dt,FLOAT);
+    } else if (strcmp(word,"time") == 0) {
+      addfield("Time",&Thermo::compute_time,FLOAT);
     } else if (strcmp(word,"cpu") == 0) {
       addfield("CPU",&Thermo::compute_cpu,FLOAT);
     } else if (strcmp(word,"tpcpu") == 0) {
       addfield("T/CPU",&Thermo::compute_tpcpu,FLOAT);
     } else if (strcmp(word,"spcpu") == 0) {
       addfield("S/CPU",&Thermo::compute_spcpu,FLOAT);
+    } else if (strcmp(word,"cpuremain") == 0) {
+      addfield("CPULeft",&Thermo::compute_cpuremain,FLOAT);
+    } else if (strcmp(word,"part") == 0) {
+      addfield("Part",&Thermo::compute_part,INT);
+
     } else if (strcmp(word,"cu") == 0) { 
       addfield("Cu",&Thermo::compute_cu,FLOAT);
     } else if (strcmp(word,"atoms") == 0) {
@@ -728,6 +738,8 @@ void Thermo::parse_fields(char *str)
 
     } else if (strcmp(word,"vol") == 0) {
       addfield("Volume",&Thermo::compute_vol,FLOAT);
+    } else if (strcmp(word,"density") == 0) {
+      addfield("Density",&Thermo::compute_density,FLOAT);
     } else if (strcmp(word,"lx") == 0) {
       addfield("Lx",&Thermo::compute_lx,FLOAT);
     } else if (strcmp(word,"ly") == 0) {
@@ -756,16 +768,10 @@ void Thermo::parse_fields(char *str)
       addfield("Yz",&Thermo::compute_yz,FLOAT);
 
     } else if (strcmp(word,"xlat") == 0) {
-      if (domain->lattice == NULL)
-        error->all(FLERR,"Thermo keyword requires lattice be defined");
       addfield("Xlat",&Thermo::compute_xlat,FLOAT);
     } else if (strcmp(word,"ylat") == 0) {
-      if (domain->lattice == NULL)
-        error->all(FLERR,"Thermo keyword requires lattice be defined");
       addfield("Ylat",&Thermo::compute_ylat,FLOAT);
     } else if (strcmp(word,"zlat") == 0) {
-      if (domain->lattice == NULL)
-        error->all(FLERR,"Thermo keyword requires lattice be defined");
       addfield("Zlat",&Thermo::compute_zlat,FLOAT);
 
     } else if (strcmp(word,"pxx") == 0) {
@@ -885,9 +891,11 @@ void Thermo::parse_fields(char *str)
 
       } else if (word[0] == 'v') {
         n = input->variable->find(id);
-        if (n < 0) error->all(FLERR,"Could not find thermo custom variable name");
+        if (n < 0)
+          error->all(FLERR,"Could not find thermo custom variable name");
         if (input->variable->equalstyle(n) == 0)
-          error->all(FLERR,"Thermo custom variable is not equal-style variable");
+          error->all(FLERR,
+                     "Thermo custom variable is not equal-style variable");
         if (argindex1[nfield])
           error->all(FLERR,"Thermo custom variable cannot be indexed");
 
@@ -973,6 +981,13 @@ int Thermo::add_variable(const char *id)
 
 int Thermo::evaluate_keyword(char *word, double *answer)
 {
+  // turn off normflag if natoms = 0 to avoid divide by 0
+  // normflag must be set for lo-level thermo routines that may be invoked
+
+  natoms = atom->natoms;
+  if (natoms == 0) normflag = 0;
+  else normflag = normvalue;
+
   // invoke a lo-level thermo routine to compute the variable value
   // if keyword requires a compute, error if thermo doesn't use the compute
   // if inbetween runs and needed compute is not current, error
@@ -987,38 +1002,57 @@ int Thermo::evaluate_keyword(char *word, double *answer)
 
   } else if (strcmp(word,"elapsed") == 0) {
     if (update->whichflag == 0)
-      error->all(FLERR,"This variable thermo keyword cannot be used between runs");
+      error->all(FLERR,
+                 "This variable thermo keyword cannot be used between runs");
     compute_elapsed();
     dvalue = bivalue;
 
   } else if (strcmp(word,"elaplong") == 0) {
     if (update->whichflag == 0)
-      error->all(FLERR,"This variable thermo keyword cannot be used between runs");
+      error->all(FLERR,
+                 "This variable thermo keyword cannot be used between runs");
     compute_elapsed_long();
     dvalue = bivalue;
 
   } else if (strcmp(word,"dt") == 0) {
     compute_dt();
 
+  } else if (strcmp(word,"time") == 0) {
+    compute_time();
+
   } else if (strcmp(word,"cpu") == 0) {
     if (update->whichflag == 0)
-      error->all(FLERR,"This variable thermo keyword cannot be used between runs");
+      error->all(FLERR,
+                 "This variable thermo keyword cannot be used between runs");
     compute_cpu();
 
   } else if (strcmp(word,"cu") == 0) {
     if (update->whichflag == 0)
-      error->all(FLERR,"This variable thermo keyword cannot be used between runs");
+      error->all(FLERR,
+                "This variable thermo keyword cannot be used between runs");
     compute_cu();
 
   } else if (strcmp(word,"tpcpu") == 0) {
     if (update->whichflag == 0)
-      error->all(FLERR,"This variable thermo keyword cannot be used between runs");
+      error->all(FLERR,
+                 "This variable thermo keyword cannot be used between runs");
     compute_tpcpu();
 
   } else if (strcmp(word,"spcpu") == 0) {
     if (update->whichflag == 0)
-      error->all(FLERR,"This variable thermo keyword cannot be used between runs");
+      error->all(FLERR,
+                 "This variable thermo keyword cannot be used between runs");
     compute_spcpu();
+
+  } else if (strcmp(word,"cpuremain") == 0) {
+    if (update->whichflag == 0)
+      error->all(FLERR,
+                 "This variable thermo keyword cannot be used between runs");
+    compute_cpuremain();
+
+  } else if (strcmp(word,"part") == 0) {
+    compute_part();
+    dvalue = ivalue;
 
   } else if (strcmp(word,"atoms") == 0) {
     compute_atoms();
@@ -1054,7 +1088,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
 
   } else if (strcmp(word,"pe") == 0) {
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     if (update->whichflag == 0) {
       if (pe->invoked_scalar != update->ntimestep)
         error->all(FLERR,"Compute used in variable thermo keyword between runs "
@@ -1081,7 +1116,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
 
   } else if (strcmp(word,"etotal") == 0) {
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     if (update->whichflag == 0) {
       if (pe->invoked_scalar != update->ntimestep)
         error->all(FLERR,"Compute used in variable thermo keyword between runs "
@@ -1105,7 +1141,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
 
   } else if (strcmp(word,"enthalpy") == 0) {
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     if (update->whichflag == 0) {
       if (pe->invoked_scalar != update->ntimestep)
         error->all(FLERR,"Compute used in variable thermo keyword between runs "
@@ -1142,7 +1179,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_evdwl();
 
@@ -1150,7 +1188,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_ecoul();
 
@@ -1158,7 +1197,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_epair();
 
@@ -1166,7 +1206,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_ebond();
 
@@ -1174,7 +1215,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_eangle();
 
@@ -1182,7 +1224,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_edihed();
 
@@ -1190,7 +1233,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_eimp();
 
@@ -1198,7 +1242,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_emol();
 
@@ -1206,7 +1251,8 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_elong();
 
@@ -1214,11 +1260,13 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     if (update->eflag_global != update->ntimestep)
       error->all(FLERR,"Energy was not tallied on needed timestep");
     if (!pe)
-      error->all(FLERR,"Thermo keyword in variable requires thermo to use/init pe");
+      error->all(FLERR,
+                 "Thermo keyword in variable requires thermo to use/init pe");
     pe->invoked_flag |= INVOKED_SCALAR;
     compute_etail();
 
   } else if (strcmp(word,"vol") == 0) compute_vol();
+  else if (strcmp(word,"density") == 0) compute_density();
   else if (strcmp(word,"lx") == 0) compute_lx();
   else if (strcmp(word,"ly") == 0) compute_ly();
   else if (strcmp(word,"lz") == 0) compute_lz();
@@ -1235,16 +1283,10 @@ int Thermo::evaluate_keyword(char *word, double *answer)
   else if (strcmp(word,"yz") == 0) compute_yz();
 
   else if (strcmp(word,"xlat") == 0) {
-    if (domain->lattice == NULL)
-      error->all(FLERR,"Thermo keyword in variable requires lattice be defined");
     compute_xlat();
   } else if (strcmp(word,"ylat") == 0) {
-    if (domain->lattice == NULL)
-      error->all(FLERR,"Thermo keyword in variable requires lattice be defined");
     compute_ylat();
   } else if (strcmp(word,"zlat") == 0) {
-    if (domain->lattice == NULL)
-      error->all(FLERR,"Thermo keyword in variable requires lattice be defined");
     compute_zlat();
 
   } else if (strcmp(word,"pxx") == 0) {
@@ -1442,6 +1484,13 @@ void Thermo::compute_dt()
 
 /* ---------------------------------------------------------------------- */
 
+void Thermo::compute_time()
+{
+  dvalue = update->atime + (update->ntimestep-update->atimestep)*update->dt;
+}
+
+/* ---------------------------------------------------------------------- */
+
 void Thermo::compute_cpu()
 {
   if (firststep == 0) dvalue = 0.0;
@@ -1521,9 +1570,26 @@ void Thermo::compute_cu()
 
 /* ---------------------------------------------------------------------- */
 
+void Thermo::compute_cpuremain()
+{
+  if (firststep == 0) dvalue = 0.0;
+  else dvalue = timer->elapsed(TIME_LOOP) *
+         (update->laststep - update->ntimestep) /
+         (update->ntimestep - update->firststep);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Thermo::compute_part()
+{
+  ivalue = universe->iworld;
+}
+
+/* ---------------------------------------------------------------------- */
+
 void Thermo::compute_atoms()
 {
-  bivalue = natoms;
+  bivalue = atom->natoms;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1716,6 +1782,15 @@ void Thermo::compute_vol()
     dvalue = domain->xprd * domain->yprd * domain->zprd;
   else
     dvalue = domain->xprd * domain->yprd;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Thermo::compute_density()
+{
+  double mass = group->mass(0);
+  compute_vol();
+  dvalue = force->mv2d * mass/dvalue;
 }
 
 /* ---------------------------------------------------------------------- */

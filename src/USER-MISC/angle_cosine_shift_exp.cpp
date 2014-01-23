@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -23,10 +23,12 @@
 #include "domain.h"
 #include "comm.h"
 #include "force.h"
+#include "math_const.h"
 #include "memory.h"
 #include "error.h"
 
 using namespace LAMMPS_NS;
+using namespace MathConst;
 
 #define SMALL 0.001
 
@@ -42,7 +44,7 @@ AngleCosineShiftExp::~AngleCosineShiftExp()
     memory->destroy(setflag);
     memory->destroy(umin);
     memory->destroy(a);
-    memory->destroy(opt1);    
+    memory->destroy(opt1);
     memory->destroy(cost);
     memory->destroy(sint);
     memory->destroy(theta0);
@@ -58,7 +60,7 @@ void AngleCosineShiftExp::compute(int eflag, int vflag)
   double delx1,dely1,delz1,delx2,dely2,delz2;
   double eangle,f1[3],f3[3],ff;
   double rsq1,rsq2,r1,r2,c,s,a11,a12,a22;
-  double exp2,aa,uumin,cccpsss,cssmscc;            
+  double exp2,aa,uumin,cccpsss,cssmscc;
 
   eangle = 0.0;
   if (eflag || vflag) ev_setup(eflag,vflag);
@@ -82,7 +84,6 @@ void AngleCosineShiftExp::compute(int eflag, int vflag)
     delx1 = x[i1][0] - x[i2][0];
     dely1 = x[i1][1] - x[i2][1];
     delz1 = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx1,dely1,delz1);
 
     rsq1 = delx1*delx1 + dely1*dely1 + delz1*delz1;
     r1 = sqrt(rsq1);
@@ -92,7 +93,6 @@ void AngleCosineShiftExp::compute(int eflag, int vflag)
     delx2 = x[i3][0] - x[i2][0];
     dely2 = x[i3][1] - x[i2][1];
     delz2 = x[i3][2] - x[i2][2];
-    domain->minimum_image(delx2,dely2,delz2);
 
     rsq2 = delx2*delx2 + dely2*dely2 + delz2*delz2;
     r2 = sqrt(rsq2);
@@ -106,9 +106,9 @@ void AngleCosineShiftExp::compute(int eflag, int vflag)
     // C= sine of angle
     s = sqrt(1.0 - c*c);
     if (s < SMALL) s = SMALL;
-    
+
     // force & energy
-        
+
     aa=a[type];
     uumin=umin[type];
 
@@ -119,19 +119,19 @@ void AngleCosineShiftExp::compute(int eflag, int vflag)
        {  //  |a|<0.01 so use expansions relative precision <1e-5
 //         std::cout << "Using expansion\n";
             if (eflag) eangle = -0.125*(1+cccpsss)*(4+aa*(cccpsss-1))*uumin;
-            ff=0.25*uumin*cssmscc*(2+aa*cccpsss)/s;   
+            ff=0.25*uumin*cssmscc*(2+aa*cccpsss)/s;
        }
      else
        {
-//   std::cout << "Not using expansion\n";            
+//   std::cout << "Not using expansion\n";
             exp2=exp(0.5*aa*(1+cccpsss));
             if (eflag) eangle = opt1[type]*(1-exp2);
-            ff=0.5*a[type]*opt1[type]*exp2*cssmscc/s;       
+            ff=0.5*a[type]*opt1[type]*exp2*cssmscc/s;
        }
 
     a11 =   ff*c/ rsq1;
     a12 =  -ff  / (r1*r2);
-    a22 =   ff*c/ rsq2;      
+    a22 =   ff*c/ rsq2;
 
     f1[0] = a11*delx1 + a12*delx2;
     f1[1] = a11*dely1 + a12*dely2;
@@ -161,7 +161,7 @@ void AngleCosineShiftExp::compute(int eflag, int vflag)
     }
 
     if (evflag) ev_tally(i1,i2,i3,nlocal,newton_bond,eangle,f1,f3,
-			 delx1,dely1,delz1,delx2,dely2,delz2);
+                         delx1,dely1,delz1,delx2,dely2,delz2);
   }
 }
 
@@ -196,19 +196,19 @@ void AngleCosineShiftExp::coeff(int narg, char **arg)
   int ilo,ihi;
   force->bounds(arg[0],atom->nangletypes,ilo,ihi);
 
-  double umin_   = force->numeric(arg[1]);
-  double theta0_ = force->numeric(arg[2]);
-  double a_      = force->numeric(arg[3]);
+  double umin_   = force->numeric(FLERR,arg[1]);
+  double theta0_ = force->numeric(FLERR,arg[2]);
+  double a_      = force->numeric(FLERR,arg[3]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
     doExpansion[i]=(fabs(a_)<0.001);
     umin[i]  = umin_;
     a[i]     = a_;
-    cost[i]  = cos(theta0_*3.14159265/180);
-    sint[i]  = sin(theta0_*3.14159265/180);
-    theta0[i]=     theta0_*3.14159265/180;
-    
+    cost[i]  = cos(theta0_*MY_PI / 180.0);
+    sint[i]  = sin(theta0_*MY_PI / 180.0);
+    theta0[i]=     theta0_*MY_PI / 180.0;
+
     if (!doExpansion[i]) opt1[i]=umin_/(exp(a_)-1);
 
     setflag[i] = 1;
@@ -226,7 +226,7 @@ double AngleCosineShiftExp::equilibrium_angle(int i)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 writes out coeffs to restart file 
+   proc 0 writes out coeffs to restart file
 ------------------------------------------------------------------------- */
 
 void AngleCosineShiftExp::write_restart(FILE *fp)
@@ -239,7 +239,7 @@ void AngleCosineShiftExp::write_restart(FILE *fp)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 reads coeffs from restart file, bcasts them 
+   proc 0 reads coeffs from restart file, bcasts them
 ------------------------------------------------------------------------- */
 
 void AngleCosineShiftExp::read_restart(FILE *fp)
@@ -268,6 +268,16 @@ void AngleCosineShiftExp::read_restart(FILE *fp)
              }
 }
 
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void AngleCosineShiftExp::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->nangletypes; i++)
+    fprintf(fp,"%d %g %g %g\n",i,umin[i],theta0[i]/MY_PI*180.0,a[i]);
+}
+
 /* ---------------------------------------------------------------------- */
 
 double AngleCosineShiftExp::single(int type, int i1, int i2, int i3)
@@ -279,7 +289,7 @@ double AngleCosineShiftExp::single(int type, int i1, int i2, int i3)
   double delz1 = x[i1][2] - x[i2][2];
   domain->minimum_image(delx1,dely1,delz1);
   double r1 = sqrt(delx1*delx1 + dely1*dely1 + delz1*delz1);
-  
+
   double delx2 = x[i3][0] - x[i2][0];
   double dely2 = x[i3][1] - x[i2][1];
   double delz2 = x[i3][2] - x[i2][2];

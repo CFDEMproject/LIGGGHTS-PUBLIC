@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -28,19 +28,31 @@
 #include "neighbor.h"
 #include "neigh_list.h"
 #include "integrate.h"
+#include "citeme.h"
 #include "memory.h"
 #include "error.h"
 
 using namespace LAMMPS_NS;
 
+static const char cite_pair_gayberne[] =
+  "pair gayberne command:\n\n"
+  "@Article{Brown09,\n"
+  " author =  {W. M. Brown, M. K. Petersen, S. J. Plimpton, and G. S. Grest},\n"
+  " title =   {Liquid crystal nanodroplets in solution},\n"
+  " journal = {J.~Chem.~Phys.},\n"
+  " year =    2009,\n"
+  " volume =  130,\n"
+  " pages =   {044901}\n"
+  "}\n\n";
+
 /* ---------------------------------------------------------------------- */
 
 PairGayBerne::PairGayBerne(LAMMPS *lmp) : Pair(lmp)
 {
-  avec = (AtomVecEllipsoid *) atom->style_match("ellipsoid");
-  if (!avec) error->all(FLERR,"Pair gayberne requires atom style ellipsoid");
+  if (lmp->citeme) lmp->citeme->add(cite_pair_gayberne);
 
   single_enable = 0;
+  writedata = 1;
 }
 
 /* ----------------------------------------------------------------------
@@ -99,7 +111,7 @@ void PairGayBerne::compute(int eflag, int vflag)
   ilist = list->ilist;
   numneigh = list->numneigh;
   firstneigh = list->firstneigh;
-  
+
   // loop over neighbors of my atoms
 
   for (ii = 0; ii < inum; ii++) {
@@ -135,81 +147,81 @@ void PairGayBerne::compute(int eflag, int vflag)
 
       if (rsq < cutsq[itype][jtype]) {
 
-	switch (form[itype][jtype]) {
-	case SPHERE_SPHERE:
-	  r2inv = 1.0/rsq;
-	  r6inv = r2inv*r2inv*r2inv;
-	  forcelj = r6inv * (lj1[itype][jtype]*r6inv - lj2[itype][jtype]);
-	  forcelj *= -r2inv;
-	  if (eflag) one_eng = 
-		       r6inv*(r6inv*lj3[itype][jtype]-lj4[itype][jtype]) -
-		       offset[itype][jtype];
-	  fforce[0] = r12[0]*forcelj;
-	  fforce[1] = r12[1]*forcelj;
-	  fforce[2] = r12[2]*forcelj;
-	  ttor[0] = ttor[1] = ttor[2] = 0.0;
-	  rtor[0] = rtor[1] = rtor[2] = 0.0;
-	  break;
+        switch (form[itype][jtype]) {
+        case SPHERE_SPHERE:
+          r2inv = 1.0/rsq;
+          r6inv = r2inv*r2inv*r2inv;
+          forcelj = r6inv * (lj1[itype][jtype]*r6inv - lj2[itype][jtype]);
+          forcelj *= -r2inv;
+          if (eflag) one_eng =
+                       r6inv*(r6inv*lj3[itype][jtype]-lj4[itype][jtype]) -
+                       offset[itype][jtype];
+          fforce[0] = r12[0]*forcelj;
+          fforce[1] = r12[1]*forcelj;
+          fforce[2] = r12[2]*forcelj;
+          ttor[0] = ttor[1] = ttor[2] = 0.0;
+          rtor[0] = rtor[1] = rtor[2] = 0.0;
+          break;
 
         case SPHERE_ELLIPSE:
-	  jquat = bonus[ellipsoid[j]].quat;
-	  MathExtra::quat_to_mat_trans(jquat,a2);
-	  MathExtra::diag_times3(well[jtype],a2,temp);
-	  MathExtra::transpose_times3(a2,temp,b2);
-	  MathExtra::diag_times3(shape2[jtype],a2,temp);
-	  MathExtra::transpose_times3(a2,temp,g2);
-	  one_eng = gayberne_lj(j,i,a2,b2,g2,r12,rsq,fforce,rtor);
-	  ttor[0] = ttor[1] = ttor[2] = 0.0;
-	  break;
+          jquat = bonus[ellipsoid[j]].quat;
+          MathExtra::quat_to_mat_trans(jquat,a2);
+          MathExtra::diag_times3(well[jtype],a2,temp);
+          MathExtra::transpose_times3(a2,temp,b2);
+          MathExtra::diag_times3(shape2[jtype],a2,temp);
+          MathExtra::transpose_times3(a2,temp,g2);
+          one_eng = gayberne_lj(j,i,a2,b2,g2,r12,rsq,fforce,rtor);
+          ttor[0] = ttor[1] = ttor[2] = 0.0;
+          break;
 
         case ELLIPSE_SPHERE:
-	  one_eng = gayberne_lj(i,j,a1,b1,g1,r12,rsq,fforce,ttor);
-	  rtor[0] = rtor[1] = rtor[2] = 0.0;
-	  break;
+          one_eng = gayberne_lj(i,j,a1,b1,g1,r12,rsq,fforce,ttor);
+          rtor[0] = rtor[1] = rtor[2] = 0.0;
+          break;
 
-	default:
-	  jquat = bonus[ellipsoid[j]].quat;
-	  MathExtra::quat_to_mat_trans(jquat,a2);
-	  MathExtra::diag_times3(well[jtype],a2,temp);
-	  MathExtra::transpose_times3(a2,temp,b2);
-	  MathExtra::diag_times3(shape2[jtype],a2,temp);
-	  MathExtra::transpose_times3(a2,temp,g2);
-	  one_eng = gayberne_analytic(i,j,a1,a2,b1,b2,g1,g2,r12,rsq,
-				      fforce,ttor,rtor);
-	  break;
-	}
+        default:
+          jquat = bonus[ellipsoid[j]].quat;
+          MathExtra::quat_to_mat_trans(jquat,a2);
+          MathExtra::diag_times3(well[jtype],a2,temp);
+          MathExtra::transpose_times3(a2,temp,b2);
+          MathExtra::diag_times3(shape2[jtype],a2,temp);
+          MathExtra::transpose_times3(a2,temp,g2);
+          one_eng = gayberne_analytic(i,j,a1,a2,b1,b2,g1,g2,r12,rsq,
+                                      fforce,ttor,rtor);
+          break;
+        }
 
         fforce[0] *= factor_lj;
-	fforce[1] *= factor_lj;
-	fforce[2] *= factor_lj;
+        fforce[1] *= factor_lj;
+        fforce[2] *= factor_lj;
         ttor[0] *= factor_lj;
-	ttor[1] *= factor_lj;
-	ttor[2] *= factor_lj;
+        ttor[1] *= factor_lj;
+        ttor[2] *= factor_lj;
 
         f[i][0] += fforce[0];
-	f[i][1] += fforce[1];
-	f[i][2] += fforce[2];
+        f[i][1] += fforce[1];
+        f[i][2] += fforce[2];
         tor[i][0] += ttor[0];
-	tor[i][1] += ttor[1];
-	tor[i][2] += ttor[2];
+        tor[i][1] += ttor[1];
+        tor[i][2] += ttor[2];
 
         if (newton_pair || j < nlocal) {
           rtor[0] *= factor_lj;
-	  rtor[1] *= factor_lj;
-	  rtor[2] *= factor_lj;
+          rtor[1] *= factor_lj;
+          rtor[2] *= factor_lj;
           f[j][0] -= fforce[0];
-	  f[j][1] -= fforce[1];
-	  f[j][2] -= fforce[2];
+          f[j][1] -= fforce[1];
+          f[j][2] -= fforce[2];
           tor[j][0] += rtor[0];
-	  tor[j][1] += rtor[1];
-	  tor[j][2] += rtor[2];
+          tor[j][1] += rtor[1];
+          tor[j][2] += rtor[2];
         }
 
         if (eflag) evdwl = factor_lj*one_eng;
 
-	if (evflag) ev_tally_xyz(i,j,nlocal,newton_pair,
-				 evdwl,0.0,fforce[0],fforce[1],fforce[2],
-				 -r12[0],-r12[1],-r12[2]);
+        if (evflag) ev_tally_xyz(i,j,nlocal,newton_pair,
+                                 evdwl,0.0,fforce[0],fforce[1],fforce[2],
+                                 -r12[0],-r12[1],-r12[2]);
       }
     }
   }
@@ -259,18 +271,18 @@ void PairGayBerne::settings(int narg, char **arg)
 {
   if (narg != 4) error->all(FLERR,"Illegal pair_style command");
 
-  gamma = force->numeric(arg[0]);
-  upsilon = force->numeric(arg[1])/2.0;
-  mu = force->numeric(arg[2]);
-  cut_global = force->numeric(arg[3]);
-  
+  gamma = force->numeric(FLERR,arg[0]);
+  upsilon = force->numeric(FLERR,arg[1])/2.0;
+  mu = force->numeric(FLERR,arg[2]);
+  cut_global = force->numeric(FLERR,arg[3]);
+
   // reset cutoffs that have been explicitly set
 
   if (allocated) {
     int i,j;
     for (i = 1; i <= atom->ntypes; i++)
       for (j = i+1; j <= atom->ntypes; j++)
-	if (setflag[i][j]) cut[i][j] = cut_global;
+        if (setflag[i][j]) cut[i][j] = cut_global;
   }
 }
 
@@ -288,17 +300,17 @@ void PairGayBerne::coeff(int narg, char **arg)
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double epsilon_one = force->numeric(arg[2]);
-  double sigma_one = force->numeric(arg[3]);
-  double eia_one = force->numeric(arg[4]);
-  double eib_one = force->numeric(arg[5]);
-  double eic_one = force->numeric(arg[6]);
-  double eja_one = force->numeric(arg[7]);
-  double ejb_one = force->numeric(arg[8]);
-  double ejc_one = force->numeric(arg[9]);
-  
+  double epsilon_one = force->numeric(FLERR,arg[2]);
+  double sigma_one = force->numeric(FLERR,arg[3]);
+  double eia_one = force->numeric(FLERR,arg[4]);
+  double eib_one = force->numeric(FLERR,arg[5]);
+  double eic_one = force->numeric(FLERR,arg[6]);
+  double eja_one = force->numeric(FLERR,arg[7]);
+  double ejb_one = force->numeric(FLERR,arg[8]);
+  double ejc_one = force->numeric(FLERR,arg[9]);
+
   double cut_one = cut_global;
-  if (narg == 11) cut_one = force->numeric(arg[10]);
+  if (narg == 11) cut_one = force->numeric(FLERR,arg[10]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -307,18 +319,18 @@ void PairGayBerne::coeff(int narg, char **arg)
       sigma[i][j] = sigma_one;
       cut[i][j] = cut_one;
       if (eia_one != 0.0 || eib_one != 0.0 || eic_one != 0.0) {
-	well[i][0] = pow(eia_one,-1.0/mu);
+        well[i][0] = pow(eia_one,-1.0/mu);
         well[i][1] = pow(eib_one,-1.0/mu);
-	well[i][2] = pow(eic_one,-1.0/mu);
-	if (eia_one == eib_one && eib_one == eic_one) setwell[i] = 2;
-	else setwell[i] = 1;
+        well[i][2] = pow(eic_one,-1.0/mu);
+        if (eia_one == eib_one && eib_one == eic_one) setwell[i] = 2;
+        else setwell[i] = 1;
       }
       if (eja_one != 0.0 || ejb_one != 0.0 || ejc_one != 0.0) {
-	well[j][0] = pow(eja_one,-1.0/mu);
+        well[j][0] = pow(eja_one,-1.0/mu);
         well[j][1] = pow(ejb_one,-1.0/mu);
-	well[j][2] = pow(ejc_one,-1.0/mu);
-	if (eja_one == ejb_one && ejb_one == ejc_one) setwell[j] = 2;
-	else setwell[j] = 1;
+        well[j][2] = pow(ejc_one,-1.0/mu);
+        if (eja_one == ejb_one && ejb_one == ejc_one) setwell[j] = 2;
+        else setwell[j] = 1;
       }
       setflag[i][j] = 1;
       count++;
@@ -335,6 +347,9 @@ void PairGayBerne::coeff(int narg, char **arg)
 
 void PairGayBerne::init_style()
 {
+  avec = (AtomVecEllipsoid *) atom->style_match("ellipsoid");
+  if (!avec) error->all(FLERR,"Pair gayberne requires atom style ellipsoid");
+
   neighbor->request(this);
 
   // per-type shape precalculations
@@ -343,13 +358,14 @@ void PairGayBerne::init_style()
 
   for (int i = 1; i <= atom->ntypes; i++) {
     if (!atom->shape_consistency(i,shape1[i][0],shape1[i][1],shape1[i][2]))
-      error->all(FLERR,"Pair gayberne requires atoms with same type have same shape");
+      error->all(FLERR,
+                 "Pair gayberne requires atoms with same type have same shape");
     if (shape1[i][0] == 0.0)
       shape1[i][0] = shape1[i][1] = shape1[i][2] = 1.0;
     shape2[i][0] = shape1[i][0]*shape1[i][0];
     shape2[i][1] = shape1[i][1]*shape1[i][1];
     shape2[i][2] = shape1[i][2]*shape1[i][2];
-    lshape[i] = (shape1[i][0]*shape1[i][1]+shape1[i][2]*shape1[i][2]) * 
+    lshape[i] = (shape1[i][0]*shape1[i][1]+shape1[i][2]*shape1[i][2]) *
       sqrt(shape1[i][0]*shape1[i][1]);
   }
 }
@@ -365,46 +381,45 @@ double PairGayBerne::init_one(int i, int j)
 
   if (setflag[i][j] == 0) {
     epsilon[i][j] = mix_energy(epsilon[i][i],epsilon[j][j],
-			       sigma[i][i],sigma[j][j]);
+                               sigma[i][i],sigma[j][j]);
     sigma[i][j] = mix_distance(sigma[i][i],sigma[j][j]);
     cut[i][j] = mix_distance(cut[i][i],cut[j][j]);
   }
-  
+
   lj1[i][j] = 48.0 * epsilon[i][j] * pow(sigma[i][j],12.0);
   lj2[i][j] = 24.0 * epsilon[i][j] * pow(sigma[i][j],6.0);
   lj3[i][j] = 4.0 * epsilon[i][j] * pow(sigma[i][j],12.0);
   lj4[i][j] = 4.0 * epsilon[i][j] * pow(sigma[i][j],6.0);
-     
+
   if (offset_flag) {
     double ratio = sigma[i][j] / cut[i][j];
     offset[i][j] = 4.0 * epsilon[i][j] * (pow(ratio,12.0) - pow(ratio,6.0));
   } else offset[i][j] = 0.0;
 
   int ishape = 0;
-  if (shape1[i][0] != shape1[i][1] || 
-      shape1[i][0] != shape1[i][2] || 
+  if (shape1[i][0] != shape1[i][1] ||
+      shape1[i][0] != shape1[i][2] ||
       shape1[i][1] != shape1[i][2]) ishape = 1;
   if (setwell[i] == 1) ishape = 1;
   int jshape = 0;
-  if (shape1[j][0] != shape1[j][1] || 
-      shape1[j][0] != shape1[j][2] || 
+  if (shape1[j][0] != shape1[j][1] ||
+      shape1[j][0] != shape1[j][2] ||
       shape1[j][1] != shape1[j][2]) jshape = 1;
   if (setwell[j] == 1) jshape = 1;
-  
+
   if (ishape == 0 && jshape == 0)
     form[i][i] = form[j][j] = form[i][j] = form[j][i] = SPHERE_SPHERE;
   else if (ishape == 0) {
     form[i][i] = SPHERE_SPHERE; form[j][j] = ELLIPSE_ELLIPSE;
-    form[i][j] = SPHERE_ELLIPSE; form[j][i] = ELLIPSE_SPHERE; 
+    form[i][j] = SPHERE_ELLIPSE; form[j][i] = ELLIPSE_SPHERE;
   } else if (jshape == 0) {
     form[j][j] = SPHERE_SPHERE; form[i][i] = ELLIPSE_ELLIPSE;
-    form[j][i] = SPHERE_ELLIPSE; form[i][j] = ELLIPSE_SPHERE; 
-  } else 
+    form[j][i] = SPHERE_ELLIPSE; form[i][j] = ELLIPSE_SPHERE;
+  } else
     form[i][i] = form[j][j] = form[i][j] = form[j][i] = ELLIPSE_ELLIPSE;
 
   epsilon[j][i] = epsilon[i][j];
   sigma[j][i] = sigma[i][j];
-  cut[j][i] = cut[i][j];
   lj1[j][i] = lj1[i][j];
   lj2[j][i] = lj2[i][j];
   lj3[j][i] = lj3[i][j];
@@ -507,6 +522,34 @@ void PairGayBerne::read_restart_settings(FILE *fp)
   MPI_Bcast(&cut_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void PairGayBerne::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    fprintf(fp,"%d %g %g %g %g %g %g %g %g\n",i,
+            epsilon[i][i],sigma[i][i],
+            pow(well[i][0],-mu),pow(well[i][1],-mu),pow(well[i][2],-mu),
+            pow(well[i][0],-mu),pow(well[i][1],-mu),pow(well[i][2],-mu));
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes all pairs to data file
+------------------------------------------------------------------------- */
+
+void PairGayBerne::write_data_all(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    for (int j = i; j <= atom->ntypes; j++)
+      fprintf(fp,"%d %d %g %g %g %g %g %g %g %g %g\n",i,j,
+              epsilon[i][i],sigma[i][i],
+              pow(well[i][0],-mu),pow(well[i][1],-mu),pow(well[i][2],-mu),
+              pow(well[j][0],-mu),pow(well[j][1],-mu),pow(well[j][2],-mu),
+              cut[i][j]);
 }
 
 /* ----------------------------------------------------------------------
@@ -696,9 +739,9 @@ double PairGayBerne::gayberne_analytic(const int i,const int j,double a1[3][3],
 ------------------------------------------------------------------------- */
 
 double PairGayBerne::gayberne_lj(const int i,const int j,double a1[3][3],
-				 double b1[3][3],double g1[3][3],
+                                 double b1[3][3],double g1[3][3],
                                  double *r12,const double rsq,double *fforce,
-				 double *ttor)
+                                 double *ttor)
 {
   double tempv[3], tempv2[3];
   double temp[3][3];
@@ -713,9 +756,9 @@ double PairGayBerne::gayberne_lj(const int i,const int j,double a1[3][3],
   // compute distance of closest approach
 
   double g12[3][3];
-  g12[0][0] = g1[0][0]+shape2[type[j]][0];  
-  g12[1][1] = g1[1][1]+shape2[type[j]][0];  
-  g12[2][2] = g1[2][2]+shape2[type[j]][0];  
+  g12[0][0] = g1[0][0]+shape2[type[j]][0];
+  g12[1][1] = g1[1][1]+shape2[type[j]][0];
+  g12[2][2] = g1[2][2]+shape2[type[j]][0];
   g12[0][1] = g1[0][1]; g12[1][0] = g1[1][0];
   g12[0][2] = g1[0][2]; g12[2][0] = g1[2][0];
   g12[1][2] = g1[1][2]; g12[2][1] = g1[2][1];
@@ -750,9 +793,9 @@ double PairGayBerne::gayberne_lj(const int i,const int j,double a1[3][3],
 
   double b12[3][3];
   double iota[3];
-  b12[0][0] = b1[0][0] + well[type[j]][0];  
-  b12[1][1] = b1[1][1] + well[type[j]][0];  
-  b12[2][2] = b1[2][2] + well[type[j]][0];  
+  b12[0][0] = b1[0][0] + well[type[j]][0];
+  b12[1][1] = b1[1][1] + well[type[j]][0];
+  b12[2][2] = b1[2][2] + well[type[j]][0];
   b12[0][1] = b1[0][1]; b12[1][0] = b1[1][0];
   b12[0][2] = b1[0][2]; b12[2][0] = b1[2][0];
   b12[1][2] = b1[1][2]; b12[2][1] = b1[2][1];
@@ -853,58 +896,58 @@ void PairGayBerne::compute_eta_torque(double m[3][3], double m2[3][3],
   double den = m[1][0]*m[0][2]*m[2][1]-m[0][0]*m[1][2]*m[2][1]-
     m[0][2]*m[2][0]*m[1][1]+m[0][1]*m[2][0]*m[1][2]-
     m[1][0]*m[0][1]*m[2][2]+m[0][0]*m[1][1]*m[2][2];
-  
+
   ans[0][0] = s[0]*(m[1][2]*m[0][1]*m2[0][2]+2.0*m[1][1]*m[2][2]*m2[0][0]-
-		    m[1][1]*m2[0][2]*m[0][2]-2.0*m[1][2]*m2[0][0]*m[2][1]+
-		    m2[0][1]*m[0][2]*m[2][1]-m2[0][1]*m[0][1]*m[2][2]-
-		    m[1][0]*m[2][2]*m2[0][1]+m[2][0]*m[1][2]*m2[0][1]+
-		    m[1][0]*m2[0][2]*m[2][1]-m2[0][2]*m[2][0]*m[1][1])/den;
-  
+                    m[1][1]*m2[0][2]*m[0][2]-2.0*m[1][2]*m2[0][0]*m[2][1]+
+                    m2[0][1]*m[0][2]*m[2][1]-m2[0][1]*m[0][1]*m[2][2]-
+                    m[1][0]*m[2][2]*m2[0][1]+m[2][0]*m[1][2]*m2[0][1]+
+                    m[1][0]*m2[0][2]*m[2][1]-m2[0][2]*m[2][0]*m[1][1])/den;
+
   ans[0][1] = s[0]*(m[0][2]*m2[0][0]*m[2][1]-m[2][2]*m2[0][0]*m[0][1]+
-		    2.0*m[0][0]*m[2][2]*m2[0][1]-m[0][0]*m2[0][2]*m[1][2]-
-		    2.0*m[2][0]*m[0][2]*m2[0][1]+m2[0][2]*m[1][0]*m[0][2]-
-		    m[2][2]*m[1][0]*m2[0][0]+m[2][0]*m2[0][0]*m[1][2]+
-		    m[2][0]*m2[0][2]*m[0][1]-m2[0][2]*m[0][0]*m[2][1])/den;
-  
+                    2.0*m[0][0]*m[2][2]*m2[0][1]-m[0][0]*m2[0][2]*m[1][2]-
+                    2.0*m[2][0]*m[0][2]*m2[0][1]+m2[0][2]*m[1][0]*m[0][2]-
+                    m[2][2]*m[1][0]*m2[0][0]+m[2][0]*m2[0][0]*m[1][2]+
+                    m[2][0]*m2[0][2]*m[0][1]-m2[0][2]*m[0][0]*m[2][1])/den;
+
   ans[0][2] = s[0]*(m[0][1]*m[1][2]*m2[0][0]-m[0][2]*m2[0][0]*m[1][1]-
-		    m[0][0]*m[1][2]*m2[0][1]+m[1][0]*m[0][2]*m2[0][1]-
-		    m2[0][1]*m[0][0]*m[2][1]-m[2][0]*m[1][1]*m2[0][0]+
-		    2.0*m[1][1]*m[0][0]*m2[0][2]-2.0*m[1][0]*m2[0][2]*m[0][1]+
-		    m[1][0]*m[2][1]*m2[0][0]+m[2][0]*m2[0][1]*m[0][1])/den;
-  
+                    m[0][0]*m[1][2]*m2[0][1]+m[1][0]*m[0][2]*m2[0][1]-
+                    m2[0][1]*m[0][0]*m[2][1]-m[2][0]*m[1][1]*m2[0][0]+
+                    2.0*m[1][1]*m[0][0]*m2[0][2]-2.0*m[1][0]*m2[0][2]*m[0][1]+
+                    m[1][0]*m[2][1]*m2[0][0]+m[2][0]*m2[0][1]*m[0][1])/den;
+
   ans[1][0] = s[1]*(-m[1][1]*m2[1][2]*m[0][2]+2.0*m[1][1]*m[2][2]*m2[1][0]+
-		    m[1][2]*m[0][1]*m2[1][2]-2.0*m[1][2]*m2[1][0]*m[2][1]+
-		    m2[1][1]*m[0][2]*m[2][1]-m2[1][1]*m[0][1]*m[2][2]-
-		    m[1][0]*m[2][2]*m2[1][1]+m[2][0]*m[1][2]*m2[1][1]-
-		    m2[1][2]*m[2][0]*m[1][1]+m[1][0]*m2[1][2]*m[2][1])/den;
-  
+                    m[1][2]*m[0][1]*m2[1][2]-2.0*m[1][2]*m2[1][0]*m[2][1]+
+                    m2[1][1]*m[0][2]*m[2][1]-m2[1][1]*m[0][1]*m[2][2]-
+                    m[1][0]*m[2][2]*m2[1][1]+m[2][0]*m[1][2]*m2[1][1]-
+                    m2[1][2]*m[2][0]*m[1][1]+m[1][0]*m2[1][2]*m[2][1])/den;
+
   ans[1][1] = s[1]*(m[0][2]*m2[1][0]*m[2][1]-m[0][1]*m[2][2]*m2[1][0]+
-		    2.0*m[2][2]*m[0][0]*m2[1][1]-m2[1][2]*m[0][0]*m[1][2]-
-		    2.0*m[2][0]*m2[1][1]*m[0][2]-m[1][0]*m[2][2]*m2[1][0]+
-		    m[2][0]*m[1][2]*m2[1][0]+m[1][0]*m2[1][2]*m[0][2]-
-		    m[0][0]*m2[1][2]*m[2][1]+m2[1][2]*m[0][1]*m[2][0])/den;
-  
+                    2.0*m[2][2]*m[0][0]*m2[1][1]-m2[1][2]*m[0][0]*m[1][2]-
+                    2.0*m[2][0]*m2[1][1]*m[0][2]-m[1][0]*m[2][2]*m2[1][0]+
+                    m[2][0]*m[1][2]*m2[1][0]+m[1][0]*m2[1][2]*m[0][2]-
+                    m[0][0]*m2[1][2]*m[2][1]+m2[1][2]*m[0][1]*m[2][0])/den;
+
   ans[1][2] = s[1]*(m[0][1]*m[1][2]*m2[1][0]-m[0][2]*m2[1][0]*m[1][1]-
-		    m[0][0]*m[1][2]*m2[1][1]+m[1][0]*m[0][2]*m2[1][1]+
-		    2.0*m[1][1]*m[0][0]*m2[1][2]-m[0][0]*m2[1][1]*m[2][1]+
-		    m[0][1]*m[2][0]*m2[1][1]-m2[1][0]*m[2][0]*m[1][1]-
-		    2.0*m[1][0]*m[0][1]*m2[1][2]+m[1][0]*m2[1][0]*m[2][1])/den;
-  
+                    m[0][0]*m[1][2]*m2[1][1]+m[1][0]*m[0][2]*m2[1][1]+
+                    2.0*m[1][1]*m[0][0]*m2[1][2]-m[0][0]*m2[1][1]*m[2][1]+
+                    m[0][1]*m[2][0]*m2[1][1]-m2[1][0]*m[2][0]*m[1][1]-
+                    2.0*m[1][0]*m[0][1]*m2[1][2]+m[1][0]*m2[1][0]*m[2][1])/den;
+
   ans[2][0] = s[2]*(-m[1][1]*m[0][2]*m2[2][2]+m[0][1]*m[1][2]*m2[2][2]+
-		    2.0*m[1][1]*m2[2][0]*m[2][2]-m[0][1]*m2[2][1]*m[2][2]+
-		    m[0][2]*m[2][1]*m2[2][1]-2.0*m2[2][0]*m[2][1]*m[1][2]-
-		    m[1][0]*m2[2][1]*m[2][2]+m[1][2]*m[2][0]*m2[2][1]-
-		    m[1][1]*m[2][0]*m2[2][2]+m[2][1]*m[1][0]*m2[2][2])/den;
-  
+                    2.0*m[1][1]*m2[2][0]*m[2][2]-m[0][1]*m2[2][1]*m[2][2]+
+                    m[0][2]*m[2][1]*m2[2][1]-2.0*m2[2][0]*m[2][1]*m[1][2]-
+                    m[1][0]*m2[2][1]*m[2][2]+m[1][2]*m[2][0]*m2[2][1]-
+                    m[1][1]*m[2][0]*m2[2][2]+m[2][1]*m[1][0]*m2[2][2])/den;
+
   ans[2][1] = s[2]*-(m[0][1]*m[2][2]*m2[2][0]-m[0][2]*m2[2][0]*m[2][1]-
-		     2.0*m2[2][1]*m[0][0]*m[2][2]+m[1][2]*m2[2][2]*m[0][0]+
-		     2.0*m2[2][1]*m[0][2]*m[2][0]+m[1][0]*m2[2][0]*m[2][2]-
-		     m[1][0]*m[0][2]*m2[2][2]-m[1][2]*m[2][0]*m2[2][0]+
-		     m[0][0]*m2[2][2]*m[2][1]-m2[2][2]*m[0][1]*m[2][0])/den;
-  
+                     2.0*m2[2][1]*m[0][0]*m[2][2]+m[1][2]*m2[2][2]*m[0][0]+
+                     2.0*m2[2][1]*m[0][2]*m[2][0]+m[1][0]*m2[2][0]*m[2][2]-
+                     m[1][0]*m[0][2]*m2[2][2]-m[1][2]*m[2][0]*m2[2][0]+
+                     m[0][0]*m2[2][2]*m[2][1]-m2[2][2]*m[0][1]*m[2][0])/den;
+
   ans[2][2] = s[2]*(m[0][1]*m[1][2]*m2[2][0]-m[0][2]*m2[2][0]*m[1][1]-
-		    m[0][0]*m[1][2]*m2[2][1]+m[1][0]*m[0][2]*m2[2][1]-
-		    m[1][1]*m[2][0]*m2[2][0]-m[2][1]*m2[2][1]*m[0][0]+
-		    2.0*m[1][1]*m2[2][2]*m[0][0]+m[2][1]*m[1][0]*m2[2][0]+
-		    m[2][0]*m[0][1]*m2[2][1]-2.0*m2[2][2]*m[1][0]*m[0][1])/den;
+                    m[0][0]*m[1][2]*m2[2][1]+m[1][0]*m[0][2]*m2[2][1]-
+                    m[1][1]*m[2][0]*m2[2][0]-m[2][1]*m2[2][1]*m[0][0]+
+                    2.0*m[1][1]*m2[2][2]*m[0][0]+m[2][1]*m[1][0]*m2[2][0]+
+                    m[2][0]*m[0][1]*m2[2][1]-2.0*m2[2][2]*m[1][0]*m[0][1])/den;
 }

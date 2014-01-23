@@ -22,7 +22,7 @@ fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.3
 fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.5
 
 #New pair style
-pair_style 	gran/hertz/history  #Hertzian without cohesion
+pair_style gran model hertz tangential history #Hertzian without cohesion
 pair_coeff	* *
 
 timestep	0.00001
@@ -30,10 +30,10 @@ timestep	0.00001
 fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
 
 #granular walls
-fix		cv all mesh/surface file conveyor.stl type 1 surface_vel -5. 0. 0.
-fix		bx all mesh/surface file box.stl      type 1 
-fix		inface all mesh/surface file insertion_face.stl type 1
-fix		wall all wall/gran/hertz/history mesh n_meshes 2 meshes bx cv 
+fix		cv all mesh/surface file meshes/conveyor.stl type 1 surface_vel -5. 0. 0.
+fix		bx all mesh/surface file meshes/box.stl      type 1 
+fix		inface all mesh/surface file meshes/insertion_face.stl type 1
+fix wall all wall/gran model hertz tangential history mesh n_meshes 2 meshes bx cv
 
 #distributions for insertion
 fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.015

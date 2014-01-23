@@ -27,8 +27,7 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-AtomVecCharge::AtomVecCharge(LAMMPS *lmp, int narg, char **arg) :
-  AtomVec(lmp, narg, arg)
+AtomVecCharge::AtomVecCharge(LAMMPS *lmp) : AtomVec(lmp)
 {
   molecular = 0;
   mass_type = 1;
@@ -107,7 +106,7 @@ void AtomVecCharge::copy(int i, int j, int delflag)
 
   if (atom->nextra_grow)
     for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
-      modify->fix[atom->extra_grow[iextra]]->copy_arrays(i,j);
+      modify->fix[atom->extra_grow[iextra]]->copy_arrays(i,j,delflag);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -288,9 +287,9 @@ int AtomVecCharge::pack_border(int n, int *list, double *buf,
       buf[m++] = x[j][0];
       buf[m++] = x[j][1];
       buf[m++] = x[j][2];
-      buf[m++] = tag[j];
-      buf[m++] = type[j];
-      buf[m++] = mask[j];
+      buf[m++] = ubuf(tag[j]).d;
+      buf[m++] = ubuf(type[j]).d;
+      buf[m++] = ubuf(mask[j]).d;
       buf[m++] = q[j];
     }
   } else {
@@ -308,12 +307,17 @@ int AtomVecCharge::pack_border(int n, int *list, double *buf,
       buf[m++] = x[j][0] + dx;
       buf[m++] = x[j][1] + dy;
       buf[m++] = x[j][2] + dz;
-      buf[m++] = tag[j];
-      buf[m++] = type[j];
-      buf[m++] = mask[j];
+      buf[m++] = ubuf(tag[j]).d;
+      buf[m++] = ubuf(type[j]).d;
+      buf[m++] = ubuf(mask[j]).d;
       buf[m++] = q[j];
     }
   }
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->pack_border(n,list,&buf[m]);
+
   return m;
 }
 
@@ -332,9 +336,9 @@ int AtomVecCharge::pack_border_vel(int n, int *list, double *buf,
       buf[m++] = x[j][0];
       buf[m++] = x[j][1];
       buf[m++] = x[j][2];
-      buf[m++] = tag[j];
-      buf[m++] = type[j];
-      buf[m++] = mask[j];
+      buf[m++] = ubuf(tag[j]).d;
+      buf[m++] = ubuf(type[j]).d;
+      buf[m++] = ubuf(mask[j]).d;
       buf[m++] = q[j];
       buf[m++] = v[j][0];
       buf[m++] = v[j][1];
@@ -356,9 +360,9 @@ int AtomVecCharge::pack_border_vel(int n, int *list, double *buf,
         buf[m++] = x[j][0] + dx;
         buf[m++] = x[j][1] + dy;
         buf[m++] = x[j][2] + dz;
-        buf[m++] = tag[j];
-        buf[m++] = type[j];
-        buf[m++] = mask[j];
+        buf[m++] = ubuf(tag[j]).d;
+        buf[m++] = ubuf(type[j]).d;
+        buf[m++] = ubuf(mask[j]).d;
         buf[m++] = q[j];
         buf[m++] = v[j][0];
         buf[m++] = v[j][1];
@@ -373,9 +377,9 @@ int AtomVecCharge::pack_border_vel(int n, int *list, double *buf,
         buf[m++] = x[j][0] + dx;
         buf[m++] = x[j][1] + dy;
         buf[m++] = x[j][2] + dz;
-        buf[m++] = tag[j];
-        buf[m++] = type[j];
-        buf[m++] = mask[j];
+        buf[m++] = ubuf(tag[j]).d;
+        buf[m++] = ubuf(type[j]).d;
+        buf[m++] = ubuf(mask[j]).d;
         buf[m++] = q[j];
         if (mask[i] & deform_groupbit) {
           buf[m++] = v[j][0] + dvx;
@@ -389,6 +393,11 @@ int AtomVecCharge::pack_border_vel(int n, int *list, double *buf,
       }
     }
   }
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->pack_border(n,list,&buf[m]);
+
   return m;
 }
 
@@ -419,11 +428,16 @@ void AtomVecCharge::unpack_border(int n, int first, double *buf)
     x[i][0] = buf[m++];
     x[i][1] = buf[m++];
     x[i][2] = buf[m++];
-    tag[i] = static_cast<int> (buf[m++]);
-    type[i] = static_cast<int> (buf[m++]);
-    mask[i] = static_cast<int> (buf[m++]);
+    tag[i] = (int) ubuf(buf[m++]).i;
+    type[i] = (int) ubuf(buf[m++]).i;
+    mask[i] = (int) ubuf(buf[m++]).i;
     q[i] = buf[m++];
   }
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->
+        unpack_border(n,first,&buf[m]);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -439,14 +453,19 @@ void AtomVecCharge::unpack_border_vel(int n, int first, double *buf)
     x[i][0] = buf[m++];
     x[i][1] = buf[m++];
     x[i][2] = buf[m++];
-    tag[i] = static_cast<int> (buf[m++]);
-    type[i] = static_cast<int> (buf[m++]);
-    mask[i] = static_cast<int> (buf[m++]);
+    tag[i] = (int) ubuf(buf[m++]).i;
+    type[i] = (int) ubuf(buf[m++]).i;
+    mask[i] = (int) ubuf(buf[m++]).i;
     q[i] = buf[m++];
     v[i][0] = buf[m++];
     v[i][1] = buf[m++];
     v[i][2] = buf[m++];
   }
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->
+        unpack_border(n,first,&buf[m]);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -476,10 +495,10 @@ int AtomVecCharge::pack_exchange(int i, double *buf)
   buf[m++] = v[i][0];
   buf[m++] = v[i][1];
   buf[m++] = v[i][2];
-  buf[m++] = tag[i];
-  buf[m++] = type[i];
-  buf[m++] = mask[i];
-  buf[m++] = image[i];
+  buf[m++] = ubuf(tag[i]).d;
+  buf[m++] = ubuf(type[i]).d;
+  buf[m++] = ubuf(mask[i]).d;
+  buf[m++] = ubuf(image[i]).d;
 
   buf[m++] = q[i];
 
@@ -505,10 +524,10 @@ int AtomVecCharge::unpack_exchange(double *buf)
   v[nlocal][0] = buf[m++];
   v[nlocal][1] = buf[m++];
   v[nlocal][2] = buf[m++];
-  tag[nlocal] = static_cast<int> (buf[m++]);
-  type[nlocal] = static_cast<int> (buf[m++]);
-  mask[nlocal] = static_cast<int> (buf[m++]);
-  image[nlocal] = static_cast<int> (buf[m++]);
+  tag[nlocal] = (int) ubuf(buf[m++]).i;
+  type[nlocal] = (int) ubuf(buf[m++]).i;
+  mask[nlocal] = (int) ubuf(buf[m++]).i;
+  image[nlocal] = (tagint) ubuf(buf[m++]).i;
 
   q[nlocal] = buf[m++];
 
@@ -553,10 +572,10 @@ int AtomVecCharge::pack_restart(int i, double *buf)
   buf[m++] = x[i][0];
   buf[m++] = x[i][1];
   buf[m++] = x[i][2];
-  buf[m++] = tag[i];
-  buf[m++] = type[i];
-  buf[m++] = mask[i];
-  buf[m++] = image[i];
+  buf[m++] = ubuf(tag[i]).d;
+  buf[m++] = ubuf(type[i]).d;
+  buf[m++] = ubuf(mask[i]).d;
+  buf[m++] = ubuf(image[i]).d;
   buf[m++] = v[i][0];
   buf[m++] = v[i][1];
   buf[m++] = v[i][2];
@@ -588,10 +607,10 @@ int AtomVecCharge::unpack_restart(double *buf)
   x[nlocal][0] = buf[m++];
   x[nlocal][1] = buf[m++];
   x[nlocal][2] = buf[m++];
-  tag[nlocal] = static_cast<int> (buf[m++]);
-  type[nlocal] = static_cast<int> (buf[m++]);
-  mask[nlocal] = static_cast<int> (buf[m++]);
-  image[nlocal] = static_cast<int> (buf[m++]);
+  tag[nlocal] = (int) ubuf(buf[m++]).i;
+  type[nlocal] = (int) ubuf(buf[m++]).i;
+  mask[nlocal] = (int) ubuf(buf[m++]).i;
+  image[nlocal] = (tagint) ubuf(buf[m++]).i;
   v[nlocal][0] = buf[m++];
   v[nlocal][1] = buf[m++];
   v[nlocal][2] = buf[m++];
@@ -624,7 +643,8 @@ void AtomVecCharge::create_atom(int itype, double *coord)
   x[nlocal][1] = coord[1];
   x[nlocal][2] = coord[2];
   mask[nlocal] = 1;
-  image[nlocal] = (512 << 20) | (512 << 10) | 512;
+  image[nlocal] = ((tagint) IMGMAX << IMG2BITS) |
+    ((tagint) IMGMAX << IMGBITS) | IMGMAX;
   v[nlocal][0] = 0.0;
   v[nlocal][1] = 0.0;
   v[nlocal][2] = 0.0;
@@ -639,7 +659,7 @@ void AtomVecCharge::create_atom(int itype, double *coord)
    initialize other atom quantities
 ------------------------------------------------------------------------- */
 
-void AtomVecCharge::data_atom(double *coord, int imagetmp, char **values)
+void AtomVecCharge::data_atom(double *coord, tagint imagetmp, char **values)
 {
   int nlocal = atom->nlocal;
   if (nlocal == nmax) grow(0);
@@ -677,6 +697,60 @@ int AtomVecCharge::data_atom_hybrid(int nlocal, char **values)
 {
   q[nlocal] = atof(values[0]);
 
+  return 1;
+}
+
+/* ----------------------------------------------------------------------
+   pack atom info for data file including 3 image flags
+------------------------------------------------------------------------- */
+
+void AtomVecCharge::pack_data(double **buf)
+{
+  int nlocal = atom->nlocal;
+  for (int i = 0; i < nlocal; i++) {
+    buf[i][0] = ubuf(tag[i]).d;
+    buf[i][1] = ubuf(type[i]).d;
+    buf[i][2] = q[i];
+    buf[i][3] = x[i][0];
+    buf[i][4] = x[i][1];
+    buf[i][5] = x[i][2];
+    buf[i][6] = ubuf((image[i] & IMGMASK) - IMGMAX).d;
+    buf[i][7] = ubuf((image[i] >> IMGBITS & IMGMASK) - IMGMAX).d;
+    buf[i][8] = ubuf((image[i] >> IMG2BITS) - IMGMAX).d;
+  }
+}
+
+/* ----------------------------------------------------------------------
+   pack hybrid atom info for data file
+------------------------------------------------------------------------- */
+
+int AtomVecCharge::pack_data_hybrid(int i, double *buf)
+{
+  buf[0] = q[i];
+  return 1;
+}
+
+/* ----------------------------------------------------------------------
+   write atom info to data file including 3 image flags
+------------------------------------------------------------------------- */
+
+void AtomVecCharge::write_data(FILE *fp, int n, double **buf)
+{
+  for (int i = 0; i < n; i++)
+    fprintf(fp,"%d %d %-1.16e %-1.16e %-1.16e %-1.16e %d %d %d\n",
+            (int) ubuf(buf[i][0]).i,(int) ubuf(buf[i][1]).i,
+            buf[i][2],buf[i][3],buf[i][4],buf[i][5],
+            (int) ubuf(buf[i][6]).i,(int) ubuf(buf[i][7]).i,
+            (int) ubuf(buf[i][8]).i);
+}
+
+/* ----------------------------------------------------------------------
+   write hybrid atom info to data file
+------------------------------------------------------------------------- */
+
+int AtomVecCharge::write_data_hybrid(FILE *fp, double *buf)
+{
+  fprintf(fp," %-1.16e",buf[0]);
   return 1;
 }
 

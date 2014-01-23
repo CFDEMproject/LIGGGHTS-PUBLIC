@@ -24,6 +24,7 @@
 #ifndef LMP_DOMAIN_H
 #define LMP_DOMAIN_H
 
+#include "math.h"
 #include "pointers.h"
 #include "error.h" 
 #include "comm.h" 
@@ -52,6 +53,7 @@ class Domain : protected Pointers {
                                          // 3 = shrink-wrap non-per w/ min
 
   int triclinic;                         // 0 = orthog box, 1 = triclinic
+  int tiltsmall;                         // 1 if limit tilt, else 0
 
                                          // orthogonal box
   double xprd,yprd,zprd;                 // global box dimensions
@@ -90,7 +92,12 @@ class Domain : protected Pointers {
   double h[6],h_inv[6];                           // shape matrix in Voigt notation
   double h_rate[6],h_ratelo[3];          // rate of box size/shape change
 
-  int box_change;                 // 1 if box bounds ever change, 0 if fixed
+  int box_change;                // 1 if any of next 3 flags are set, else 0
+  int box_change_size;           // 1 if box size changes, 0 if not
+  int box_change_shape;          // 1 if box shape changes, 0 if not
+                                 
+  int box_change_domain;         // 1 if proc sub-domains change, 0 if not
+
   int deform_flag;                // 1 if fix deform exist, else 0
   int deform_vremap;              // 1 if fix deform remaps v, else 0
   int deform_groupbit;            // atom group to perform v remap for
@@ -110,31 +117,46 @@ class Domain : protected Pointers {
   virtual void set_local_box();
   virtual void reset_box();
   virtual void pbc();
-  int minimum_image_check(double, double, double);
+  void image_check();
+  void box_too_small_check();
   void minimum_image(double &, double &, double &);
   void minimum_image(double *);
+  int closest_image(int, int);
   void closest_image(const double * const, const double * const,
                      double * const);
-  void remap(double *, int &);
+  void remap(double *, tagint &);
   void remap(double *);
   void remap_near(double *, double *);
-  void unmap(double *, int);
-  void unmap(double *, int, double *);
+  void unmap(double *, tagint);
+  void unmap(double *, tagint, double *);
   void image_flip(int, int, int);
   void set_lattice(int, char **);
   void add_region(int, char **);
   void delete_region(int, char **);
   int find_region(char *);
   virtual void set_boundary(int, char **, int); 
+  void set_box(int, char **);
   virtual void print_box(const char *); 
+  void boundary_string(char *);
 
   virtual void lamda2x(int);
   virtual void x2lamda(int);
-  void lamda2x(double *, double *);
-  void x2lamda(double *, double *);
+  virtual void lamda2x(double *, double *);
+  virtual void x2lamda(double *, double *);
   void x2lamda(double *, double *, double *, double *);
   void bbox(double *, double *, double *, double *);
   void box_corners();
+
+  // minimum image convention check
+  // return 1 if any distance > 1/2 of box size
+  // inline since called from neighbor build inner loop
+
+  inline int minimum_image_check(double dx, double dy, double dz) {
+    if (xperiodic && fabs(dx) > xprd_half) return 1;
+    if (yperiodic && fabs(dy) > yprd_half) return 1;
+    if (zperiodic && fabs(dz) > zprd_half) return 1;
+    return 0;
+  }
 
   int is_in_domain(double* pos); 
   int is_in_subdomain(double* pos); 
@@ -143,11 +165,11 @@ class Domain : protected Pointers {
   int is_periodic_ghost(int i); 
   bool is_owned_or_first_ghost(int i); 
 
-  virtual int is_in_domain_wedge(double* pos) {return 0;} 
-  virtual int is_in_subdomain_wedge(double* pos) {return 0;} 
-  virtual int is_in_extended_subdomain_wedge(double* pos) {return 0;} 
-  virtual double dist_subbox_borders_wedge(double* pos) {return 0.;} 
-  virtual int is_periodic_ghost_wedge(int i) {return 0;} 
+  virtual int is_in_domain_wedge(double* pos) { UNUSED(pos); return 0; } 
+  virtual int is_in_subdomain_wedge(double* pos) { UNUSED(pos); return 0; } 
+  virtual int is_in_extended_subdomain_wedge(double* pos) { UNUSED(pos); return 0; } 
+  virtual double dist_subbox_borders_wedge(double* pos) { UNUSED(pos); return 0.; } 
+  virtual int is_periodic_ghost_wedge(int i) { UNUSED(i); return 0;} 
 
   bool is_wedge; 
 
@@ -176,11 +198,55 @@ E: Triclinic box skew is too large
 
 The displacement in a skewed direction must be less than half the box
 length in that dimension.  E.g. the xy tilt must be between -half and
-+half of the x box length.
++half of the x box length.  This constraint can be relaxed by using
+the box tilt command.
+
+W: Triclinic box skew is large
+
+The displacement in a skewed direction is normally required to be less
+than half the box length in that dimension.  E.g. the xy tilt must be
+between -half and +half of the x box length.  You have relaxed the
+constraint using the box tilt command, but the warning means that a
+LAMMPS simulation may be inefficient as a result.
 
 E: Illegal simulation box
 
 The lower bound of the simulation box is greater than the upper bound.
+
+E: Bond atom missing in image check
+
+The 2nd atom in a particular bond is missing on this processor.
+Typically this is because the pairwise cutoff is set too short or the
+bond has blown apart and an atom is too far away.
+
+W: Inconsistent image flags
+
+The image flags for a pair on bonded atoms appear to be inconsistent.
+Inconsistent means that when the coordinates of the two atoms are
+unwrapped using the image flags, the two atoms are far apart.
+Specifically they are further apart than half a periodic box length.
+Or they are more than a box length apart in a non-periodic dimension.
+This is usually due to the initial data file not having correct image
+flags for the 2 atoms in a bond that straddles a periodic boundary.
+They should be different by 1 in that case.  This is a warning because
+inconsistent image flags will not cause problems for dynamics or most
+LAMMPS simulations.  However they can cause problems when such atoms
+are used with the fix rigid or replicate commands.
+
+E: Bond atom missing in box size check
+
+The 2nd atoms needed to compute a particular bond is missing on this
+processor.  Typically this is because the pairwise cutoff is set too
+short or the bond has blown apart and an atom is too far away.
+
+W: Bond/angle/dihedral extent > half of periodic box length
+
+This is a restriction because LAMMPS can be confused about which image
+of an atom in the bonded interaction is the correct one to use.
+"Extent" in this context means the maximum end-to-end length of the
+bond/angle/dihedral.  LAMMPS computes this by taking the maximum bond
+length, multiplying by the number of bonds in the interaction (e.g. 3
+for a dihedral) and adding a small amount of stretch.
 
 E: Illegal ... command
 

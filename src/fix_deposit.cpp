@@ -44,10 +44,10 @@ FixDeposit::FixDeposit(LAMMPS *lmp, int narg, char **arg) :
 
   // required args
 
-  ninsert = atoi(arg[3]);
-  ntype = atoi(arg[4]);
-  nfreq = atoi(arg[5]);
-  seed = atoi(arg[6]);
+  ninsert = force->inumeric(FLERR,arg[3]);
+  ntype = force->inumeric(FLERR,arg[4]);
+  nfreq = force->inumeric(FLERR,arg[5]);
+  seed = force->inumeric(FLERR,arg[6]);
 
   if (seed <= 0) error->all(FLERR,"Illegal fix deposit command");
 
@@ -55,6 +55,7 @@ FixDeposit::FixDeposit(LAMMPS *lmp, int narg, char **arg) :
 
   iregion = -1;
   idregion = NULL;
+  idnext = 0;
   globalflag = localflag = 0;
   lo = hi = deltasq = 0.0;
   nearsq = 0.0;
@@ -97,9 +98,6 @@ FixDeposit::FixDeposit(LAMMPS *lmp, int narg, char **arg) :
 
   // setup scaling
 
-  if (scaleflag && domain->lattice == NULL)
-    error->all(FLERR,"Use of fix deposit with undefined lattice");
-
   double xscale,yscale,zscale;
   if (scaleflag) {
     xscale = domain->lattice->xlattice;
@@ -130,6 +128,17 @@ FixDeposit::FixDeposit(LAMMPS *lmp, int narg, char **arg) :
   tx *= xscale;
   ty *= yscale;
   tz *= zscale;
+
+  // maxtag_all = current max tag for all atoms
+
+  if (idnext) {
+    int *tag = atom->tag;
+    int nlocal = atom->nlocal;
+
+    int maxtag = 0;
+    for (int i = 0; i < nlocal; i++) maxtag = MAX(maxtag,tag[i]);
+    MPI_Allreduce(&maxtag,&maxtag_all,1,MPI_INT,MPI_MAX,world);
+  }
 
   // random number generator, same for all procs
 
@@ -347,14 +356,19 @@ void FixDeposit::pre_exchange()
     error->warning(FLERR,"Particle deposition was unsuccessful",0);
 
   // reset global natoms
-  // set tag # of new particle beyond all previous atoms
+  // if idnext, set new atom ID to incremented maxtag_all
+  // else set new atom ID to value beyond all current atoms
   // if global map exists, reset it now instead of waiting for comm
-  // since deleting atoms messes up ghosts
+  // since adding an atom messes up ghosts
 
   if (success) {
     atom->natoms += 1;
     if (atom->tag_enable) {
-      atom->tag_extend();
+      if (idnext) {
+        maxtag_all++;
+        if (atom->nlocal && atom->tag[atom->nlocal-1] == 0) 
+          atom->tag[atom->nlocal-1] = maxtag_all;
+      } else atom->tag_extend();
       if (atom->map_style) {
         atom->nghost = 0;
         atom->map_init();
@@ -390,48 +404,54 @@ void FixDeposit::options(int narg, char **arg)
       idregion = new char[n];
       strcpy(idregion,arg[iarg+1]);
       iarg += 2;
+    } else if (strcmp(arg[iarg],"id") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal fix deposit command");
+      if (strcmp(arg[iarg+1],"max") == 0) idnext = 0;
+      else if (strcmp(arg[iarg+1],"next") == 0) idnext = 1;
+      else error->all(FLERR,"Illegal fix deposit command");
+      iarg += 2;
     } else if (strcmp(arg[iarg],"global") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal fix deposit command");
       globalflag = 1;
       localflag = 0;
-      lo = atof(arg[iarg+1]);
-      hi = atof(arg[iarg+2]);
+      lo = force->numeric(FLERR,arg[iarg+1]);
+      hi = force->numeric(FLERR,arg[iarg+2]);
       iarg += 3;
     } else if (strcmp(arg[iarg],"local") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix deposit command");
       localflag = 1;
       globalflag = 0;
-      lo = atof(arg[iarg+1]);
-      hi = atof(arg[iarg+2]);
-      deltasq = atof(arg[iarg+3])*atof(arg[iarg+3]);
+      lo = force->numeric(FLERR,arg[iarg+1]);
+      hi = force->numeric(FLERR,arg[iarg+2]);
+      deltasq = force->numeric(FLERR,arg[iarg+3])*force->numeric(FLERR,arg[iarg+3]);
       iarg += 4;
     } else if (strcmp(arg[iarg],"near") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix deposit command");
-      nearsq = atof(arg[iarg+1])*atof(arg[iarg+1]);
+      nearsq = force->numeric(FLERR,arg[iarg+1])*force->numeric(FLERR,arg[iarg+1]);
       iarg += 2;
     } else if (strcmp(arg[iarg],"attempt") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix deposit command");
-      maxattempt = atoi(arg[iarg+1]);
+      maxattempt = force->inumeric(FLERR,arg[iarg+1]);
       iarg += 2;
     } else if (strcmp(arg[iarg],"rate") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix deposit command");
       rateflag = 1;
-      rate = atof(arg[iarg+1]);
+      rate = force->numeric(FLERR,arg[iarg+1]);
       iarg += 2;
     } else if (strcmp(arg[iarg],"vx") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal fix deposit command");
-      vxlo = atof(arg[iarg+1]);
-      vxhi = atof(arg[iarg+2]);
+      vxlo = force->numeric(FLERR,arg[iarg+1]);
+      vxhi = force->numeric(FLERR,arg[iarg+2]);
       iarg += 3;
     } else if (strcmp(arg[iarg],"vy") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal fix deposit command");
-      vylo = atof(arg[iarg+1]);
-      vyhi = atof(arg[iarg+2]);
+      vylo = force->numeric(FLERR,arg[iarg+1]);
+      vyhi = force->numeric(FLERR,arg[iarg+2]);
       iarg += 3;
     } else if (strcmp(arg[iarg],"vz") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal fix deposit command");
-      vzlo = atof(arg[iarg+1]);
-      vzhi = atof(arg[iarg+2]);
+      vzlo = force->numeric(FLERR,arg[iarg+1]);
+      vzhi = force->numeric(FLERR,arg[iarg+2]);
       iarg += 3;
     } else if (strcmp(arg[iarg],"units") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix deposit command");
@@ -441,9 +461,9 @@ void FixDeposit::options(int narg, char **arg)
       iarg += 2;
     } else if (strcmp(arg[iarg],"target") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix deposit command");
-      tx = atof(arg[iarg+1]);
-      ty = atof(arg[iarg+2]);
-      tz = atof(arg[iarg+3]);
+      tx = force->numeric(FLERR,arg[iarg+1]);
+      ty = force->numeric(FLERR,arg[iarg+2]);
+      tz = force->numeric(FLERR,arg[iarg+3]);
       targetflag = 1;
       iarg += 4;
     } else error->all(FLERR,"Illegal fix deposit command");

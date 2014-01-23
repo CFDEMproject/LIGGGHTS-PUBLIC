@@ -15,20 +15,26 @@
 
 #ifdef NV_KERNEL
 #include "lal_aux_fun1.h"
-texture<float4> pos_tex;
 #ifndef _DOUBLE_DOUBLE
-ucl_inline float4 fetch_pos(const int& i, const float4 *pos) 
-  { return tex1Dfetch(pos_tex, i); }
+texture<float4> pos_tex;
+#else
+texture<int4,1> pos_tex;
 #endif
+#else
+#define pos_tex x_
 #endif
 
-__kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *coeff1,
-                          __global numtyp4* coeff2, const int lj_types, 
-                          __global numtyp *sp_lj_in, __global int *dev_nbor, 
-                          __global int *dev_packed, __global acctyp4 *ans,
-                          __global acctyp *engv, const int eflag, 
-                          const int vflag, const int inum,
-                          const int nbor_pitch, const int t_per_atom) {
+__kernel void k_buck(const __global numtyp4 *restrict x_, 
+                     const __global numtyp4 *restrict coeff1,
+                     const __global numtyp4 *restrict coeff2, 
+                     const int lj_types, 
+                     const __global numtyp *restrict sp_lj_in,
+                     const __global int *dev_nbor, 
+                     const __global int *dev_packed,
+                     __global acctyp4 *restrict ans,
+                     __global acctyp *restrict engv, 
+                     const int eflag,  const int vflag, const int inum,
+                     const int nbor_pitch, const int t_per_atom) {
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
 
@@ -46,12 +52,13 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *coeff1,
     virial[i]=(acctyp)0;
   
   if (ii<inum) {
-    __global int *nbor, *list_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *list_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info(dev_nbor,dev_packed,nbor_pitch,t_per_atom,ii,offset,i,numj,
               n_stride,list_end,nbor);
   
-    numtyp4 ix=fetch_pos(i,x_); //x_[i];
+    numtyp4 ix; fetch4(ix,i,pos_tex); //x_[i];
     int itype=ix.w;
 
     numtyp factor_lj;
@@ -61,7 +68,7 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *coeff1,
       factor_lj = sp_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      numtyp4 jx=fetch_pos(j,x_); //x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex); //x_[j];
       int jtype=jx.w;
 
       // Compute r12
@@ -104,13 +111,16 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *coeff1,
   } // if ii
 }
 
-__kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp4 *coeff1_in,
-                               __global numtyp4* coeff2_in, 
-                               __global numtyp* sp_lj_in, 
-                               __global int *dev_nbor, __global int *dev_packed, 
-                               __global acctyp4 *ans, __global acctyp *engv, 
-                               const int eflag, const int vflag, const int inum, 
-                               const int nbor_pitch, const int t_per_atom) {
+__kernel void k_buck_fast(const __global numtyp4 *restrict x_, 
+                          const __global numtyp4 *restrict coeff1_in,
+                          const __global numtyp4 *restrict coeff2_in, 
+                          const __global numtyp *restrict sp_lj_in, 
+                          const __global int *dev_nbor, 
+                          const __global int *dev_packed, 
+                          __global acctyp4 *restrict ans,
+                          __global acctyp *restrict engv, 
+                          const int eflag, const int vflag, const int inum, 
+                          const int nbor_pitch, const int t_per_atom) {
   int tid, ii, offset;
   atom_info(t_per_atom,ii,tid,offset);
   
@@ -135,12 +145,13 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp4 *coeff1_in
   __syncthreads();
   
   if (ii<inum) {
-    __global int *nbor, *list_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *list_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info(dev_nbor,dev_packed,nbor_pitch,t_per_atom,ii,offset,i,numj,
               n_stride,list_end,nbor);
 
-    numtyp4 ix=fetch_pos(i,x_); //x_[i];
+    numtyp4 ix; fetch4(ix,i,pos_tex); //x_[i];
     int iw=ix.w;
     int itype=fast_mul((int)MAX_SHARED_TYPES,iw);
 
@@ -151,7 +162,7 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp4 *coeff1_in
       factor_lj = sp_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      numtyp4 jx=fetch_pos(j,x_); //x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex); //x_[j];
       int mtype=itype+jx.w;
 
       // Compute r12

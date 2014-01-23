@@ -2,6 +2,6 @@
 
 shopt -s expand_aliases
 cd post
-lpp dump*chute
+lpp dump*.chute
 
 

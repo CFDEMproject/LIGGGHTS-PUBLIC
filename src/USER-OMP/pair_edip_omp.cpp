@@ -23,6 +23,13 @@
 #include "suffix.h"
 using namespace LAMMPS_NS;
 
+#define GRIDDENSITY 8000
+#define GRIDSTART 0.1
+
+// max number of interaction per atom for f(Z) environment potential
+
+#define leadDimInteractionList 64
+
 /* ---------------------------------------------------------------------- */
 
 PairEDIPOMP::PairEDIPOMP(LAMMPS *lmp) :
@@ -56,11 +63,11 @@ void PairEDIPOMP::compute(int eflag, int vflag)
 
     if (evflag) {
       if (eflag) {
-	if (vflag_atom) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (vflag_atom) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (vflag_atom) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (vflag_atom) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else eval<0,0,0>(ifrom, ito, thr);
 
@@ -140,9 +147,9 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
   double *pre_thrPow2B_ij = prePow2B_ij + tid * leadDimInteractionList;
   double *pre_thrForceCoord = preForceCoord + tid * leadDimInteractionList;
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
-  const int * const type = atom->type;
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
+  const int * _noalias const type = atom->type;
   const int nlocal = atom->nlocal;
 
   inum = list->inum;
@@ -158,9 +165,9 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
 
     i = ilist[ii];
     itype = map[type[i]];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
 
     jlist = firstneigh[i];
     jnum = numneigh[i];
@@ -173,9 +180,9 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
 
         double dr_ij[3], r_ij;
 
-        dr_ij[0] = xtmp - x[j][0];
-        dr_ij[1] = ytmp - x[j][1];
-        dr_ij[2] = ztmp - x[j][2];
+        dr_ij[0] = xtmp - x[j].x;
+        dr_ij[1] = ytmp - x[j].y;
+        dr_ij[2] = ztmp - x[j].z;
         r_ij = dr_ij[0]*dr_ij[0] + dr_ij[1]*dr_ij[1] + dr_ij[2]*dr_ij[2];
 
         jtype = map[type[j]];
@@ -197,8 +204,8 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
 
         interpolY1 = exp3B[interpolIDX];
         interpolY2 = exp3B[interpolIDX+1];
-        exp3B_ij = interpolY1 + (interpolY2 - interpolY1) * 
-	  (interpolTMP-interpolIDX);
+        exp3B_ij = interpolY1 + (interpolY2 - interpolY1) *
+          (interpolTMP-interpolIDX);
 
         exp3BDerived_ij = - exp3B_ij * gammInvRMinusCutoffA * invRMinusCutoffA;
 
@@ -207,8 +214,8 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
 
         interpolY1 = exp2B[interpolIDX];
         interpolY2 = exp2B[interpolIDX+1];
-        exp2B_ij = interpolY1 + (interpolY2 - interpolY1) * 
-	  (interpolTMP-interpolIDX);
+        exp2B_ij = interpolY1 + (interpolY2 - interpolY1) *
+          (interpolTMP-interpolIDX);
 
         exp2BDerived_ij = - exp2B_ij * sigmaInvRMinusCutoffA * invRMinusCutoffA;
 
@@ -217,8 +224,8 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
 
         interpolY1 = pow2B[interpolIDX];
         interpolY2 = pow2B[interpolIDX+1];
-        pow2B_ij = interpolY1 + (interpolY2 - interpolY1) * 
-	  (interpolTMP-interpolIDX);
+        pow2B_ij = interpolY1 + (interpolY2 - interpolY1) *
+          (interpolTMP-interpolIDX);
 
         pre_thrPow2B_ij[neighbor_j] = pow2B_ij;
 
@@ -228,15 +235,15 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
         else {
             interpolY1 = cutoffFunction[interpolIDX];
             interpolY2 = cutoffFunction[interpolIDX+1];
-            cutoffFunction_ij = interpolY1 + (interpolY2 - interpolY1) * 
-	      (interpolTMP-interpolIDX);
+            cutoffFunction_ij = interpolY1 + (interpolY2 - interpolY1) *
+              (interpolTMP-interpolIDX);
 
             zeta_i += cutoffFunction_ij;
 
             interpolY1 = cutoffFunctionDerived[interpolIDX];
             interpolY2 = cutoffFunctionDerived[interpolIDX+1];
-            zeta_iDerived = interpolY1 + (interpolY2 - interpolY1) * 
-	      (interpolTMP-interpolIDX);
+            zeta_iDerived = interpolY1 + (interpolY2 - interpolY1) *
+              (interpolTMP-interpolIDX);
 
             zeta_iDerivedInvR_ij = zeta_iDerived * invR_ij;
 
@@ -258,22 +265,22 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
 
     interpolY1 = expMinusBetaZeta_iZeta_iGrid[interpolIDX];
     interpolY2 = expMinusBetaZeta_iZeta_iGrid[interpolIDX+1];
-    expMinusBetaZeta_iZeta_i = interpolY1 + (interpolY2 - interpolY1) * 
+    expMinusBetaZeta_iZeta_i = interpolY1 + (interpolY2 - interpolY1) *
       (interpolTMP-interpolIDX);
 
     interpolY1 = qFunctionGrid[interpolIDX];
     interpolY2 = qFunctionGrid[interpolIDX+1];
-    qFunction = interpolY1 + (interpolY2 - interpolY1) * 
+    qFunction = interpolY1 + (interpolY2 - interpolY1) *
       (interpolTMP-interpolIDX);
 
     interpolY1 = tauFunctionGrid[interpolIDX];
     interpolY2 = tauFunctionGrid[interpolIDX+1];
-    tauFunction = interpolY1 + (interpolY2 - interpolY1) * 
+    tauFunction = interpolY1 + (interpolY2 - interpolY1) *
       (interpolTMP-interpolIDX);
 
     interpolY1 = tauFunctionDerivedGrid[interpolIDX];
     interpolY2 = tauFunctionDerivedGrid[interpolIDX+1];
-    tauFunctionDerived = interpolY1 + (interpolY2 - interpolY1) * 
+    tauFunctionDerived = interpolY1 + (interpolY2 - interpolY1) *
       (interpolTMP-interpolIDX);
 
     qFunctionDerived = -mu * qFunction;
@@ -290,9 +297,9 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
       j = jlist[neighbor_j];
       j &= NEIGHMASK;
 
-      dr_ij[0] = x[j][0] - xtmp;
-      dr_ij[1] = x[j][1] - ytmp;
-      dr_ij[2] = x[j][2] - ztmp;
+      dr_ij[0] = x[j].x - xtmp;
+      dr_ij[1] = x[j].y - ytmp;
+      dr_ij[2] = x[j].z - ztmp;
       r_ij = dr_ij[0]*dr_ij[0] + dr_ij[1]*dr_ij[1] + dr_ij[2]*dr_ij[2];
 
       jtype = map[type[j]];
@@ -313,8 +320,8 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
       forceModCoord += (forceModCoord_factor*exp2B_ij);
 
       exp2BDerived_ij = pre_thrExp2BDerived_ij[neighbor_j];
-      forceMod2B = exp2BDerived_ij * potential2B_factor + 
-	exp2B_ij * pow2BDerived_ij;
+      forceMod2B = exp2BDerived_ij * potential2B_factor +
+        exp2B_ij * pow2BDerived_ij;
 
       directorCos_ij_x = invR_ij * dr_ij[0];
       directorCos_ij_y = invR_ij * dr_ij[1];
@@ -327,20 +334,20 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
       f_ij[1] = forceMod2B * directorCos_ij_y;
       f_ij[2] = forceMod2B * directorCos_ij_z;
 
-      f[j][0] -= f_ij[0];
-      f[j][1] -= f_ij[1];
-      f[j][2] -= f_ij[2];
+      f[j].x -= f_ij[0];
+      f[j].y -= f_ij[1];
+      f[j].z -= f_ij[2];
 
-      f[i][0] += f_ij[0];
-      f[i][1] += f_ij[1];
-      f[i][2] += f_ij[2];
+      f[i].x += f_ij[0];
+      f[i].y += f_ij[1];
+      f[i].z += f_ij[2];
 
       // potential energy
 
       evdwl = (exp2B_ij * potential2B_factor);
 
       if (EVFLAG) ev_tally_thr(this,i, j, nlocal, /* newton_pair */ 1, evdwl, 0.0,
-			       -forceMod2B*invR_ij, dr_ij[0], dr_ij[1], dr_ij[2],thr);
+                               -forceMod2B*invR_ij, dr_ij[0], dr_ij[1], dr_ij[2],thr);
 
       // three-body Forces
 
@@ -353,9 +360,9 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
           ikparam = elem2param[itype][ktype][ktype];
           ijkparam = elem2param[itype][jtype][ktype];
 
-          dr_ik[0] = x[k][0] - xtmp;
-          dr_ik[1] = x[k][1] - ytmp;
-          dr_ik[2] = x[k][2] - ztmp;
+          dr_ik[0] = x[k].x - xtmp;
+          dr_ik[1] = x[k].y - ytmp;
+          dr_ik[2] = x[k].z - ztmp;
           r_ik = dr_ik[0]*dr_ik[0] + dr_ik[1]*dr_ik[1] + dr_ik[2]*dr_ik[2];
 
           if (r_ik > params[ikparam].cutsq) continue;
@@ -368,68 +375,68 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
           directorCos_ik_y = invR_ik * dr_ik[1];
           directorCos_ik_z = invR_ik * dr_ik[2];
 
-          cosTeta = directorCos_ij_x * directorCos_ik_x + 
-	    directorCos_ij_y * directorCos_ik_y +
-	    directorCos_ij_z * directorCos_ik_z;
+          cosTeta = directorCos_ij_x * directorCos_ik_x +
+            directorCos_ij_y * directorCos_ik_y +
+            directorCos_ij_z * directorCos_ik_z;
 
           cosTetaDiff = cosTeta + tauFunction;
           cosTetaDiffCosTetaDiff = cosTetaDiff * cosTetaDiff;
           qFunctionCosTetaDiffCosTetaDiff = cosTetaDiffCosTetaDiff * qFunction;
-          expMinusQFunctionCosTetaDiffCosTetaDiff = 
-	    exp(-qFunctionCosTetaDiffCosTetaDiff);
+          expMinusQFunctionCosTetaDiffCosTetaDiff =
+            exp(-qFunctionCosTetaDiffCosTetaDiff);
 
-          potentia3B_factor = lambda * 
-	    ((1.0 - expMinusQFunctionCosTetaDiffCosTetaDiff) + 
-	     eta * qFunctionCosTetaDiffCosTetaDiff);
+          potentia3B_factor = lambda *
+            ((1.0 - expMinusQFunctionCosTetaDiffCosTetaDiff) +
+             eta * qFunctionCosTetaDiffCosTetaDiff);
 
           exp3B_ik = pre_thrExp3B_ij[neighbor_k];
           exp3BDerived_ik = pre_thrExp3BDerived_ij[neighbor_k];
 
-          forceMod3B_factor1_ij = - exp3BDerived_ij * exp3B_ik * 
-	    potentia3B_factor;
-          forceMod3B_factor2 = 2.0 * lambda * exp3B_ij * exp3B_ik * 
-	    qFunction * cosTetaDiff *
-	    (eta + expMinusQFunctionCosTetaDiffCosTetaDiff);
+          forceMod3B_factor1_ij = - exp3BDerived_ij * exp3B_ik *
+            potentia3B_factor;
+          forceMod3B_factor2 = 2.0 * lambda * exp3B_ij * exp3B_ik *
+            qFunction * cosTetaDiff *
+            (eta + expMinusQFunctionCosTetaDiffCosTetaDiff);
           forceMod3B_factor2_ij = forceMod3B_factor2 * invR_ij;
 
-          f_ij[0] = forceMod3B_factor1_ij * directorCos_ij_x + 
-	    forceMod3B_factor2_ij *
-	    (cosTeta * directorCos_ij_x - directorCos_ik_x);
-          f_ij[1] = forceMod3B_factor1_ij * directorCos_ij_y + 
-	    forceMod3B_factor2_ij *
-	    (cosTeta * directorCos_ij_y - directorCos_ik_y);
-          f_ij[2] = forceMod3B_factor1_ij * directorCos_ij_z + 
-	    forceMod3B_factor2_ij *
-	    (cosTeta * directorCos_ij_z - directorCos_ik_z);
+          f_ij[0] = forceMod3B_factor1_ij * directorCos_ij_x +
+            forceMod3B_factor2_ij *
+            (cosTeta * directorCos_ij_x - directorCos_ik_x);
+          f_ij[1] = forceMod3B_factor1_ij * directorCos_ij_y +
+            forceMod3B_factor2_ij *
+            (cosTeta * directorCos_ij_y - directorCos_ik_y);
+          f_ij[2] = forceMod3B_factor1_ij * directorCos_ij_z +
+            forceMod3B_factor2_ij *
+            (cosTeta * directorCos_ij_z - directorCos_ik_z);
 
-          forceMod3B_factor1_ik = - exp3BDerived_ik * exp3B_ij * 
-	    potentia3B_factor;
+          forceMod3B_factor1_ik = - exp3BDerived_ik * exp3B_ij *
+            potentia3B_factor;
           forceMod3B_factor2_ik = forceMod3B_factor2 * invR_ik;
 
-          f_ik[0] = forceMod3B_factor1_ik * directorCos_ik_x + 
-	    forceMod3B_factor2_ik *
-	    (cosTeta * directorCos_ik_x - directorCos_ij_x);
-          f_ik[1] = forceMod3B_factor1_ik * directorCos_ik_y + 
-	    forceMod3B_factor2_ik *
-	    (cosTeta * directorCos_ik_y - directorCos_ij_y);
-          f_ik[2] = forceMod3B_factor1_ik * directorCos_ik_z + 
-	    forceMod3B_factor2_ik *
-	    (cosTeta * directorCos_ik_z - directorCos_ij_z);
+          f_ik[0] = forceMod3B_factor1_ik * directorCos_ik_x +
+            forceMod3B_factor2_ik *
+            (cosTeta * directorCos_ik_x - directorCos_ij_x);
+          f_ik[1] = forceMod3B_factor1_ik * directorCos_ik_y +
+            forceMod3B_factor2_ik *
+            (cosTeta * directorCos_ik_y - directorCos_ij_y);
+          f_ik[2] = forceMod3B_factor1_ik * directorCos_ik_z +
+            forceMod3B_factor2_ik *
+            (cosTeta * directorCos_ik_z - directorCos_ij_z);
 
-          forceModCoord += (forceMod3B_factor2 * 
-			    (tauFunctionDerived -  0.5 * mu * cosTetaDiff));
+          forceModCoord += (forceMod3B_factor2 *
+                            (tauFunctionDerived -  0.5 * mu * cosTetaDiff));
 
-          f[j][0] += f_ij[0];
-          f[j][1] += f_ij[1];
-          f[j][2] += f_ij[2];
+          f[j].x += f_ij[0];
+          f[j].y += f_ij[1];
+          f[j].z += f_ij[2];
 
-          f[k][0] += f_ik[0];
-          f[k][1] += f_ik[1];
-          f[k][2] += f_ik[2];
+          f[k].x += f_ik[0];
+          f[k].y += f_ik[1];
+          f[k].z += f_ik[2];
 
-          f[i][0] -= f_ij[0] + f_ik[0];
-          f[i][1] -= f_ij[1] + f_ik[1];
-          f[i][2] -= f_ij[2] + f_ik[2];
+          f[i].x -= f_ij[0] + f_ik[0];
+          f[i].y -= f_ij[1] + f_ik[1];
+          f[i].z -= f_ij[2] + f_ik[2];
 
           // potential energy
 
@@ -457,19 +464,19 @@ void PairEDIPOMP::eval(int iifrom, int iito, ThrData * const thr)
         f_ij[1] = forceModCoord_ij * dr_ij[1];
         f_ij[2] = forceModCoord_ij * dr_ij[2];
 
-        f[j][0] -= f_ij[0];
-        f[j][1] -= f_ij[1];
-        f[j][2] -= f_ij[2];
+        f[j].x -= f_ij[0];
+        f[j].y -= f_ij[1];
+        f[j].z -= f_ij[2];
 
-        f[i][0] += f_ij[0];
-        f[i][1] += f_ij[1];
-        f[i][2] += f_ij[2];
+        f[i].x += f_ij[0];
+        f[i].y += f_ij[1];
+        f[i].z += f_ij[2];
 
         // potential energy
 
         evdwl = 0.0;
         if (EVFLAG) ev_tally_thr(this,i, j, nlocal, /* newton_pair */ 1, 0.0, 0.0,
-				 forceModCoord_ij, dr_ij[0], dr_ij[1], dr_ij[2],thr);
+                                 forceModCoord_ij, dr_ij[0], dr_ij[1], dr_ij[2],thr);
     }
   }
 }

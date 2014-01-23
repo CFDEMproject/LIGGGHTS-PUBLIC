@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -35,7 +35,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-DihedralOPLS::DihedralOPLS(LAMMPS *lmp) : Dihedral(lmp) {}
+DihedralOPLS::DihedralOPLS(LAMMPS *lmp) : Dihedral(lmp)
+{
+  writedata = 1;
+}
 
 /* ---------------------------------------------------------------------- */
 
@@ -86,26 +89,22 @@ void DihedralOPLS::compute(int eflag, int vflag)
     vb1x = x[i1][0] - x[i2][0];
     vb1y = x[i1][1] - x[i2][1];
     vb1z = x[i1][2] - x[i2][2];
-    domain->minimum_image(vb1x,vb1y,vb1z);
 
     // 2nd bond
 
     vb2x = x[i3][0] - x[i2][0];
     vb2y = x[i3][1] - x[i2][1];
     vb2z = x[i3][2] - x[i2][2];
-    domain->minimum_image(vb2x,vb2y,vb2z);
 
     vb2xm = -vb2x;
     vb2ym = -vb2y;
     vb2zm = -vb2z;
-    domain->minimum_image(vb2xm,vb2ym,vb2zm);
 
     // 3rd bond
 
     vb3x = x[i4][0] - x[i3][0];
     vb3y = x[i4][1] - x[i3][1];
     vb3z = x[i4][2] - x[i3][2];
-    domain->minimum_image(vb3x,vb3y,vb3z);
 
     // c0 calculation
 
@@ -164,22 +163,22 @@ void DihedralOPLS::compute(int eflag, int vflag)
       int me;
       MPI_Comm_rank(world,&me);
       if (screen) {
-	char str[128];
-	sprintf(str,"Dihedral problem: %d " BIGINT_FORMAT " %d %d %d %d",
-		me,update->ntimestep,
-		atom->tag[i1],atom->tag[i2],atom->tag[i3],atom->tag[i4]);
-	error->warning(FLERR,str,0);
-	fprintf(screen,"  1st atom: %d %g %g %g\n",
-		me,x[i1][0],x[i1][1],x[i1][2]);
-	fprintf(screen,"  2nd atom: %d %g %g %g\n",
-		me,x[i2][0],x[i2][1],x[i2][2]);
-	fprintf(screen,"  3rd atom: %d %g %g %g\n",
-		me,x[i3][0],x[i3][1],x[i3][2]);
-	fprintf(screen,"  4th atom: %d %g %g %g\n",
-		me,x[i4][0],x[i4][1],x[i4][2]);
+        char str[128];
+        sprintf(str,"Dihedral problem: %d " BIGINT_FORMAT " %d %d %d %d",
+                me,update->ntimestep,
+                atom->tag[i1],atom->tag[i2],atom->tag[i3],atom->tag[i4]);
+        error->warning(FLERR,str,0);
+        fprintf(screen,"  1st atom: %d %g %g %g\n",
+                me,x[i1][0],x[i1][1],x[i1][2]);
+        fprintf(screen,"  2nd atom: %d %g %g %g\n",
+                me,x[i2][0],x[i2][1],x[i2][2]);
+        fprintf(screen,"  3rd atom: %d %g %g %g\n",
+                me,x[i3][0],x[i3][1],x[i3][2]);
+        fprintf(screen,"  4th atom: %d %g %g %g\n",
+                me,x[i4][0],x[i4][1],x[i4][2]);
       }
     }
-    
+
     if (c > 1.0) c = 1.0;
     if (c < -1.0) c = -1.0;
 
@@ -195,10 +194,10 @@ void DihedralOPLS::compute(int eflag, int vflag)
 
     p = k1[type]*(1.0 + c) + k2[type]*(1.0 - cos(2.0*phi)) +
       k3[type]*(1.0 + cos(3.0*phi)) + k4[type]*(1.0 - cos(4.0*phi)) ;
-    pd = k1[type] - 2.0*k2[type]*sin(2.0*phi)*siinv + 
+    pd = k1[type] - 2.0*k2[type]*sin(2.0*phi)*siinv +
       3.0*k3[type]*sin(3.0*phi)*siinv - 4.0*k4[type]*sin(4.0*phi)*siinv;
 
-    if (eflag) edihedral = p; 
+    if (eflag) edihedral = p;
 
     a = pd;
     c = c * a;
@@ -258,7 +257,7 @@ void DihedralOPLS::compute(int eflag, int vflag)
 
     if (evflag)
       ev_tally(i1,i2,i3,i4,nlocal,newton_bond,edihedral,f1,f3,f4,
-	       vb1x,vb1y,vb1z,vb2x,vb2y,vb2z,vb3x,vb3y,vb3z);
+               vb1x,vb1y,vb1z,vb2x,vb2y,vb2z,vb3x,vb3y,vb3z);
   }
 }
 
@@ -290,10 +289,10 @@ void DihedralOPLS::coeff(int narg, char **arg)
   int ilo,ihi;
   force->bounds(arg[0],atom->ndihedraltypes,ilo,ihi);
 
-  double k1_one = force->numeric(arg[1]);
-  double k2_one = force->numeric(arg[2]);
-  double k3_one = force->numeric(arg[3]);
-  double k4_one = force->numeric(arg[4]);
+  double k1_one = force->numeric(FLERR,arg[1]);
+  double k2_one = force->numeric(FLERR,arg[2]);
+  double k3_one = force->numeric(FLERR,arg[3]);
+  double k4_one = force->numeric(FLERR,arg[4]);
 
   // store 1/2 factor with prefactor
 
@@ -311,7 +310,7 @@ void DihedralOPLS::coeff(int narg, char **arg)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 writes out coeffs to restart file 
+   proc 0 writes out coeffs to restart file
 ------------------------------------------------------------------------- */
 
 void DihedralOPLS::write_restart(FILE *fp)
@@ -323,7 +322,7 @@ void DihedralOPLS::write_restart(FILE *fp)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 reads coeffs from restart file, bcasts them 
+   proc 0 reads coeffs from restart file, bcasts them
 ------------------------------------------------------------------------- */
 
 void DihedralOPLS::read_restart(FILE *fp)
@@ -340,6 +339,17 @@ void DihedralOPLS::read_restart(FILE *fp)
   MPI_Bcast(&k2[1],atom->ndihedraltypes,MPI_DOUBLE,0,world);
   MPI_Bcast(&k3[1],atom->ndihedraltypes,MPI_DOUBLE,0,world);
   MPI_Bcast(&k4[1],atom->ndihedraltypes,MPI_DOUBLE,0,world);
- 
+
   for (int i = 1; i <= atom->ndihedraltypes; i++) setflag[i] = 1;
 }
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void DihedralOPLS::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ndihedraltypes; i++)
+    fprintf(fp,"%d %g %g %g %g\n",i,2.0*k1[i],2.0*k2[i],2.0*k3[i],2.0*k4[i]);
+}
+

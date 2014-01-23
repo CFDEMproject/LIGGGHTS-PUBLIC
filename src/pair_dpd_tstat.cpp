@@ -30,6 +30,7 @@ using namespace LAMMPS_NS;
 PairDPDTstat::PairDPDTstat(LAMMPS *lmp) : PairDPD(lmp)
 {
   single_enable = 0;
+  writedata = 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -49,7 +50,7 @@ void PairDPDTstat::compute(int eflag, int vflag)
 
   if (t_start != t_stop) {
     double delta = update->ntimestep - update->beginstep;
-    delta /= update->endstep - update->beginstep;
+    if (delta != 0.0) delta /= update->endstep - update->beginstep;
     temperature = t_start + delta * (t_stop-t_start);
     double boltz = force->boltz;
     for (i = 1; i <= atom->ntypes; i++)
@@ -140,10 +141,10 @@ void PairDPDTstat::settings(int narg, char **arg)
 {
   if (narg != 4) error->all(FLERR,"Illegal pair_style command");
 
-  t_start = force->numeric(arg[0]);
-  t_stop = force->numeric(arg[1]);
-  cut_global = force->numeric(arg[2]);
-  seed = force->inumeric(arg[3]);
+  t_start = force->numeric(FLERR,arg[0]);
+  t_stop = force->numeric(FLERR,arg[1]);
+  cut_global = force->numeric(FLERR,arg[2]);
+  seed = force->inumeric(FLERR,arg[3]);
 
   temperature = t_start;
 
@@ -169,7 +170,8 @@ void PairDPDTstat::settings(int narg, char **arg)
 
 void PairDPDTstat::coeff(int narg, char **arg)
 {
-  if (narg < 3 || narg > 4) error->all(FLERR,"Incorrect args for pair coefficients");
+  if (narg < 3 || narg > 4) 
+    error->all(FLERR,"Incorrect args for pair coefficients");
   if (!allocated) allocate();
 
   int ilo,ihi,jlo,jhi;
@@ -177,10 +179,10 @@ void PairDPDTstat::coeff(int narg, char **arg)
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
   double a0_one = 0.0;
-  double gamma_one = force->numeric(arg[2]);
+  double gamma_one = force->numeric(FLERR,arg[2]);
 
   double cut_one = cut_global;
-  if (narg == 4) cut_one = force->numeric(arg[3]);
+  if (narg == 4) cut_one = force->numeric(FLERR,arg[3]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -194,6 +196,52 @@ void PairDPDTstat::coeff(int narg, char **arg)
   }
 
   if (count == 0) error->all(FLERR,"Incorrect args for pair coefficients");
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to restart file
+------------------------------------------------------------------------- */
+
+void PairDPDTstat::write_restart(FILE *fp)
+{
+  write_restart_settings(fp);
+
+  int i,j;
+  for (i = 1; i <= atom->ntypes; i++)
+    for (j = i; j <= atom->ntypes; j++) {
+      fwrite(&setflag[i][j],sizeof(int),1,fp);
+      if (setflag[i][j]) {
+        fwrite(&gamma[i][j],sizeof(double),1,fp);
+        fwrite(&cut[i][j],sizeof(double),1,fp);
+      }
+    }
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 reads from restart file, bcasts
+------------------------------------------------------------------------- */
+
+void PairDPDTstat::read_restart(FILE *fp)
+{
+  read_restart_settings(fp);
+
+  allocate();
+
+  int i,j;
+  int me = comm->me;
+  for (i = 1; i <= atom->ntypes; i++)
+    for (j = i; j <= atom->ntypes; j++) {
+      if (me == 0) fread(&setflag[i][j],sizeof(int),1,fp);
+      MPI_Bcast(&setflag[i][j],1,MPI_INT,0,world);
+      if (setflag[i][j]) {
+        if (me == 0) {
+          fread(&gamma[i][j],sizeof(double),1,fp);
+          fread(&cut[i][j],sizeof(double),1,fp);
+        }
+        MPI_Bcast(&gamma[i][j],1,MPI_DOUBLE,0,world);
+        MPI_Bcast(&cut[i][j],1,MPI_DOUBLE,0,world);
+      }
+    }
 }
 
 /* ----------------------------------------------------------------------
@@ -228,9 +276,32 @@ void PairDPDTstat::read_restart_settings(FILE *fp)
   MPI_Bcast(&seed,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
 
+  temperature = t_start;
+
   // initialize Marsaglia RNG with processor-unique seed
   // same seed that pair_style command initially specified
 
   if (random) delete random;
   random = new RanMars(lmp,seed + comm->me);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void PairDPDTstat::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    fprintf(fp,"%d %g\n",i,gamma[i][i]);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes all pairs to data file
+------------------------------------------------------------------------- */
+
+void PairDPDTstat::write_data_all(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    for (int j = i; j <= atom->ntypes; j++)
+      fprintf(fp,"%d %d %g %g\n",i,j,gamma[i][j],cut[i][j]);
 }

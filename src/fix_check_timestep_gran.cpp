@@ -26,9 +26,9 @@
 #include "math.h"
 #include "error.h"
 #include "fix_check_timestep_gran.h"
+#include "pair_gran.h"
 #include "mech_param_gran.h"
 #include "fix_property_global.h"
-#include "pair_gran_hooke_history.h"
 #include "force.h"
 #include "comm.h"
 #include "modify.h"
@@ -36,6 +36,8 @@
 #include "fix_mesh_surface.h"
 #include "neighbor.h"
 #include "mpi_liggghts.h"
+#include "property_registry.h"
+#include "global_properties.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <algorithm>
@@ -45,6 +47,7 @@
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
+using namespace MODEL_PARAMS;
 
 #define BIG 1000000.
 
@@ -74,6 +77,7 @@ FixCheckTimestepGran::FixCheckTimestepGran(LAMMPS *lmp, int narg, char **arg) :
   extvector = 1;
 
   fraction_rayleigh = fraction_hertz = fraction_skin = 0.;
+  Yeff = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -93,14 +97,11 @@ void FixCheckTimestepGran::init()
   if(!atom->radius_flag || !atom->density_flag)
     error->all(FLERR,"Fix check/timestep/gran can only be used together with atom style sphere");
 
-  pg = (PairGranHookeHistory*)force->pair_match("gran/hooke/history",1);
-  if(!pg) pg = (PairGranHookeHistory*)force->pair_match("gran/hertz/history",1);
-  if(!pg) pg = (PairGranHookeHistory*)force->pair_match("gran/hooke",1);
-  if(!pg) pg = (PairGranHookeHistory*)force->pair_match("gran/hertz/history/liquid",1); 
+  pg = (PairGran*)force->pair_match("gran",1);
+  if(!pg) pg = (PairGran*)force->pair_match("gran/omp",1);
 
   if (!pg)
-    error->all(FLERR,"Fix check/timestep/gran can only be used together with: gran/hooke/history, "
-                      "gran/hooke, gran/hertz/history, gran/hooke/history/stiffness, gran/hertz/history/liquid"); 
+    error->all(FLERR,"Fix check/timestep/gran can only be used together with: gran"); 
 
   mpg = pg->mpg;
   int max_type = mpg->max_type();
@@ -115,6 +116,9 @@ void FixCheckTimestepGran::init()
 
   if(!Y || !nu)
     error->all(FLERR,"Fix check/timestep/gran only works with a pair style that defines youngsModulus and poissonsRatio");
+
+  force->registry.registerProperty("Yeff", &MODEL_PARAMS::createYeff);
+  force->registry.connect("Yeff", Yeff);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -235,13 +239,13 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
   //  loop all particles
   //     test collision of particle with itself
   double hertz_time_min = 1000000.;
-  double hertz_time_i,meff,reff,Eeff;
+  double hertz_time_i,meff,reff;
 
   for(int ti = 1; ti < max_type+1; ti++)
   {
       for(int tj =  ti; tj < max_type+1; tj++)
       {
-          Eeff=pg->Yeff[ti][tj];
+          const double Eeff = Yeff[ti][tj];
 
           for(int i = 0; i < nlocal; i++)
           {

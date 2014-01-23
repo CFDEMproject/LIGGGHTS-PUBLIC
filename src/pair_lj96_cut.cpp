@@ -41,6 +41,7 @@ using namespace MathConst;
 PairLJ96Cut::PairLJ96Cut(LAMMPS *lmp) : Pair(lmp)
 {
   respa_enable = 1;
+  writedata = 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -434,7 +435,7 @@ void PairLJ96Cut::settings(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal pair_style command");
 
-  cut_global = force->numeric(arg[0]);
+  cut_global = force->numeric(FLERR,arg[0]);
 
   // reset cutoffs that have been explicitly set
 
@@ -452,18 +453,19 @@ void PairLJ96Cut::settings(int narg, char **arg)
 
 void PairLJ96Cut::coeff(int narg, char **arg)
 {
-  if (narg < 4 || narg > 5) error->all(FLERR,"Incorrect args for pair coefficients");
+  if (narg < 4 || narg > 5)
+    error->all(FLERR,"Incorrect args for pair coefficients");
   if (!allocated) allocate();
 
   int ilo,ihi,jlo,jhi;
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double epsilon_one = atof(arg[2]);
-  double sigma_one = atof(arg[3]);
+  double epsilon_one = force->numeric(FLERR,arg[2]);
+  double sigma_one = force->numeric(FLERR,arg[3]);
 
   double cut_one = cut_global;
-  if (narg == 5) cut_one = atof(arg[4]);
+  if (narg == 5) cut_one = force->numeric(FLERR,arg[4]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -662,6 +664,7 @@ void PairLJ96Cut::write_restart_settings(FILE *fp)
   fwrite(&cut_global,sizeof(double),1,fp);
   fwrite(&offset_flag,sizeof(int),1,fp);
   fwrite(&mix_flag,sizeof(int),1,fp);
+  fwrite(&tail_flag,sizeof(int),1,fp);
 }
 
 /* ----------------------------------------------------------------------
@@ -675,10 +678,33 @@ void PairLJ96Cut::read_restart_settings(FILE *fp)
     fread(&cut_global,sizeof(double),1,fp);
     fread(&offset_flag,sizeof(int),1,fp);
     fread(&mix_flag,sizeof(int),1,fp);
+    fread(&tail_flag,sizeof(int),1,fp);
   }
   MPI_Bcast(&cut_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
+  MPI_Bcast(&tail_flag,1,MPI_INT,0,world);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void PairLJ96Cut::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    fprintf(fp,"%d %g %g\n",i,epsilon[i][i],sigma[i][i]);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes all pairs to data file
+------------------------------------------------------------------------- */
+
+void PairLJ96Cut::write_data_all(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    for (int j = i; j <= atom->ntypes; j++)
+      fprintf(fp,"%d %d %g %g %g\n",i,j,epsilon[i][j],sigma[i][j],cut[i][j]);
 }
 
 /* ---------------------------------------------------------------------- */

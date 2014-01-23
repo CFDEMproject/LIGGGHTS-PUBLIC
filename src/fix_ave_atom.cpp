@@ -23,6 +23,7 @@
 #include "variable.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -38,11 +39,9 @@ FixAveAtom::FixAveAtom(LAMMPS *lmp, int narg, char **arg) :
 {
   if (narg < 7) error->all(FLERR,"Illegal fix ave/atom command");
 
-  time_depend = 1;
-
-  nevery = atoi(arg[3]);
-  nrepeat = atoi(arg[4]);
-  peratom_freq = atoi(arg[5]);
+  nevery = force->inumeric(FLERR,arg[3]);
+  nrepeat = force->inumeric(FLERR,arg[4]);
+  peratom_freq = force->inumeric(FLERR,arg[5]);
 
   // parse remaining values
 
@@ -130,7 +129,8 @@ FixAveAtom::FixAveAtom(LAMMPS *lmp, int narg, char **arg) :
       if (icompute < 0)
         error->all(FLERR,"Compute ID for fix ave/atom does not exist");
       if (modify->compute[icompute]->peratom_flag == 0)
-        error->all(FLERR,"Fix ave/atom compute does not calculate per-atom values");
+        error->all(FLERR,
+                   "Fix ave/atom compute does not calculate per-atom values");
       if (argindex[i] == 0 &&
           modify->compute[icompute]->size_peratom_cols != 0)
         error->all(FLERR,"Fix ave/atom compute does not "
@@ -149,13 +149,16 @@ FixAveAtom::FixAveAtom(LAMMPS *lmp, int narg, char **arg) :
       if (modify->fix[ifix]->peratom_flag == 0)
         error->all(FLERR,"Fix ave/atom fix does not calculate per-atom values");
       if (argindex[i] == 0 && modify->fix[ifix]->size_peratom_cols != 0)
-        error->all(FLERR,"Fix ave/atom fix does not calculate a per-atom vector");
+        error->all(FLERR,
+                   "Fix ave/atom fix does not calculate a per-atom vector");
       if (argindex[i] && modify->fix[ifix]->size_peratom_cols == 0)
-        error->all(FLERR,"Fix ave/atom fix does not calculate a per-atom array");
+        error->all(FLERR,
+                   "Fix ave/atom fix does not calculate a per-atom array");
       if (argindex[i] && argindex[i] > modify->fix[ifix]->size_peratom_cols)
         error->all(FLERR,"Fix ave/atom fix array is accessed out-of-range");
       if (nevery % modify->fix[ifix]->peratom_freq)
-        error->all(FLERR,"Fix for fix ave/atom not computed at compatible time");
+        error->all(FLERR,
+                   "Fix for fix ave/atom not computed at compatible time");
 
     } else if (which[i] == VARIABLE) {
       int ivariable = input->variable->find(ids[i]);
@@ -405,7 +408,7 @@ void FixAveAtom::grow_arrays(int nmax)
    copy values within local atom-based array
 ------------------------------------------------------------------------- */
 
-void FixAveAtom::copy_arrays(int i, int j)
+void FixAveAtom::copy_arrays(int i, int j, int delflag)
 {
   for (int m = 0; m < nvalues; m++)
     array[j][m] = array[i][m];
@@ -446,4 +449,11 @@ bigint FixAveAtom::nextvalid()
     nvalid -= (nrepeat-1)*nevery;
   if (nvalid < update->ntimestep) nvalid += peratom_freq;
   return nvalid;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixAveAtom::reset_timestep(bigint ntimestep)
+{
+  if (ntimestep > nvalid) error->all(FLERR,"Fix ave/atom missed timestep");
 }

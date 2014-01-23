@@ -1,11 +1,11 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -34,8 +34,8 @@ namespace LAMMPS_NS {
 class DumpXTC : public Dump {
  public:
   DumpXTC(class LAMMPS *, int, char**);
-  ~DumpXTC();
-	
+  virtual ~DumpXTC();
+
  private:
   int natoms,ntotal;
   int nevery_save;
@@ -49,7 +49,6 @@ class DumpXTC : public Dump {
   int modify_param(int, char **);
   void openfile();
   void write_header(bigint);
-  int count();
   void pack(int *);
   void write_data(int, double *);
   bigint memory_usage();

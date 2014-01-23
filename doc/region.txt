@@ -26,6 +26,7 @@ style = {delete} or {block} or {cone} or {cylinder} or {plane} or {prism} or {sp
     dim = {x} or {y} or {z} = axis of cylinder
     c1,c2 = coords of cylinder axis in other 2 dimensions (distance units)
     radius = cylinder radius (distance units)
+      radius can be a variable (see below)
     lo,hi = bounds of cylinder in dim (distance units)
   {plane} args = px py pz nx ny nz
     px,py,pz = point on the plane (distance units)
@@ -200,6 +201,17 @@ since if the maximum tilt factor is 5 (as in this example), then
 configurations with tilt = ..., -15, -5, 5, 15, 25, ... are all
 geometrically equivalent.
 
+The {radius} value for style {sphere} and {cylinder} can be specified
+as an equal-style "variable"_variable.html.  If the value is a
+variable, it should be specified as v_name, where name is the variable
+name.  In this case, the variable will be evaluated each timestep, and
+its value used to determine the radius of the region.
+
+Equal-style variables can specify formulas with various mathematical
+functions, and include "thermo_style"_thermo_style.html command
+keywords for the simulation box parameters and timestep and elapsed
+time.  Thus it is easy to specify a time-dependent radius.
+
 See "Section_howto 12"_Section_howto.html#howto_12 of the doc pages
 for a geometric description of triclinic boxes, as defined by LAMMPS,
 and how to transform these parameters to and from other commonly used
@@ -218,6 +230,11 @@ warning is generated if a vertex lies outside the simulation box.
 The {union} style creates a region consisting of the volume of all the
 listed regions combined.  The {intersect} style creates a region
 consisting of the volume that is common to all the listed regions.
+
+IMPORTANT NOTE: The {union} and {intersect} regions operate by
+invoking methods from their list of sub-regions.  Thus you cannot
+delete the sub-regions after defining the {union} or {intersection}
+region.
 
 :line
 

@@ -23,12 +23,15 @@
 #include "update.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 
 enum{INT,DOUBLE};
 
 #define INVOKED_LOCAL 16
+#define ONEFIELD 32
+#define DELTA 1048576
 
 /* ---------------------------------------------------------------------- */
 
@@ -39,11 +42,14 @@ DumpLocal::DumpLocal(LAMMPS *lmp, int narg, char **arg) :
 
   clearstep = 1;
 
-  nevery = atoi(arg[3]);
+  nevery = force->inumeric(FLERR,arg[3]);
 
   size_one = nfield = narg-5;
   pack_choice = new FnPtrPack[nfield];
   vtype = new int[nfield];
+
+  buffer_allow = 1;
+  buffer_flag = 1;
 
   // computes & fixes which the dump accesses
 
@@ -146,6 +152,15 @@ void DumpLocal::init_style()
     vformat[i] = strcat(vformat[i]," ");
   }
 
+  // setup boundary string
+
+  domain->boundary_string(boundstr);
+
+  // setup function ptrs
+
+  if (buffer_flag == 1) write_choice = &DumpLocal::write_string;
+  else write_choice = &DumpLocal::write_lines;
+
   // find current ptr for each compute,fix,variable
   // check that fix frequency is acceptable
 
@@ -194,6 +209,17 @@ void DumpLocal::write_header(bigint ndump)
     fprintf(fp,BIGINT_FORMAT "\n",update->ntimestep);
     fprintf(fp,"ITEM: NUMBER OF %s\n",label);
     fprintf(fp,BIGINT_FORMAT "\n",ndump);
+    if (domain->triclinic) {
+      fprintf(fp,"ITEM: BOX BOUNDS xy xz yz %s\n",boundstr);
+      fprintf(fp,"%g %g %g\n",boxxlo,boxxhi,boxxy);
+      fprintf(fp,"%g %g %g\n",boxylo,boxyhi,boxxz);
+      fprintf(fp,"%g %g %g\n",boxzlo,boxzhi,boxyz);
+    } else {
+      fprintf(fp,"ITEM: BOX BOUNDS %s\n",boundstr);
+      fprintf(fp,"%g %g\n",boxxlo,boxxhi);
+      fprintf(fp,"%g %g\n",boxylo,boxyhi);
+      fprintf(fp,"%g %g\n",boxzlo,boxzhi);
+    }
     fprintf(fp,"ITEM: %s %s\n",label,columns);
   }
 }
@@ -223,13 +249,15 @@ int DumpLocal::count()
   for (int i = 0; i < ncompute; i++) {
     if (nmine < 0) nmine = compute[i]->size_local_rows;
     else if (nmine != compute[i]->size_local_rows)
-      error->one(FLERR,"Dump local count is not consistent across input fields");
+      error->one(FLERR,
+                 "Dump local count is not consistent across input fields");
   }
 
   for (int i = 0; i < nfix; i++) {
     if (nmine < 0) nmine = fix[i]->size_local_rows;
     else if (nmine != fix[i]->size_local_rows)
-      error->one(FLERR,"Dump local count is not consistent across input fields");
+      error->one(FLERR,
+                 "Dump local count is not consistent across input fields");
   }
 
   return nmine;
@@ -242,9 +270,54 @@ void DumpLocal::pack(int *dummy)
   for (int n = 0; n < size_one; n++) (this->*pack_choice[n])(n);
 }
 
+/* ----------------------------------------------------------------------
+   convert mybuf of doubles to one big formatted string in sbuf
+   return -1 if strlen exceeds an int, since used as arg in MPI calls in Dump
+------------------------------------------------------------------------- */
+
+int DumpLocal::convert_string(int n, double *mybuf)
+{
+  int i,j;
+
+  int offset = 0;
+  int m = 0;
+  for (i = 0; i < n; i++) {
+    if (offset + size_one*ONEFIELD > maxsbuf) {
+      if ((bigint) maxsbuf + DELTA > MAXSMALLINT) return -1;
+      maxsbuf += DELTA;
+      memory->grow(sbuf,maxsbuf,"dump:sbuf");
+    }
+
+    for (j = 0; j < size_one; j++) {
+      if (vtype[j] == INT) 
+        offset += sprintf(&sbuf[offset],vformat[j],static_cast<int> (mybuf[m]));
+      else 
+        offset += sprintf(&sbuf[offset],vformat[j],mybuf[m]);
+      m++;
+    }
+    offset += sprintf(&sbuf[offset],"\n");
+  }
+
+  return offset;
+}
+
 /* ---------------------------------------------------------------------- */
 
 void DumpLocal::write_data(int n, double *mybuf)
+{
+  (this->*write_choice)(n,mybuf);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpLocal::write_string(int n, double *mybuf)
+{
+  fwrite(mybuf,sizeof(char),n,fp);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpLocal::write_lines(int n, double *mybuf)
 {
   int i,j;
 

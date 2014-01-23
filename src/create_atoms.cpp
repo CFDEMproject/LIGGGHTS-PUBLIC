@@ -27,7 +27,6 @@
 #include "create_atoms.h"
 #include "atom.h"
 #include "atom_vec.h"
-#include "force.h"
 #include "comm.h"
 #include "modify.h"
 #include "fix.h"
@@ -36,6 +35,7 @@
 #include "region.h"
 #include "random_park.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 
@@ -61,7 +61,7 @@ void CreateAtoms::command(int narg, char **arg)
   // parse arguments
 
   if (narg < 2) error->all(FLERR,"Illegal create_atoms command");
-  itype = atoi(arg[0]);
+  itype = force->inumeric(FLERR,arg[0]);
   if (itype <= 0 || itype > atom->ntypes)
     error->all(FLERR,"Invalid atom type in create_atoms command");
 
@@ -75,24 +75,26 @@ void CreateAtoms::command(int narg, char **arg)
     nregion = domain->find_region(arg[2]);
     if (nregion == -1) error->all(FLERR,
                                   "Create_atoms region ID does not exist");
+    domain->regions[nregion]->init();
     iarg = 3;;
   } else if (strcmp(arg[1],"single") == 0) {
     style = SINGLE;
     if (narg < 5) error->all(FLERR,"Illegal create_atoms command");
-    xone[0] = atof(arg[2]);
-    xone[1] = atof(arg[3]);
-    xone[2] = atof(arg[4]);
+    xone[0] = force->numeric(FLERR,arg[2]);
+    xone[1] = force->numeric(FLERR,arg[3]);
+    xone[2] = force->numeric(FLERR,arg[4]);
     iarg = 5;
   } else if (strcmp(arg[1],"random") == 0) {
     style = RANDOM;
     if (narg < 5) error->all(FLERR,"Illegal create_atoms command");
-    nrandom = atoi(arg[2]);
-    seed = atoi(arg[3]);
+    nrandom = force->inumeric(FLERR,arg[2]);
+    seed = force->inumeric(FLERR,arg[3]);
     if (strcmp(arg[4],"NULL") == 0) nregion = -1;
     else {
       nregion = domain->find_region(arg[4]);
       if (nregion == -1) error->all(FLERR,
                                     "Create_atoms region ID does not exist");
+      domain->regions[nregion]->init();
     }
     iarg = 5;
   } else error->all(FLERR,"Illegal create_atoms command");
@@ -102,22 +104,18 @@ void CreateAtoms::command(int narg, char **arg)
   int scaleflag = 1;
   remapflag = 0;
 
-  if (domain->lattice) {
-    nbasis = domain->lattice->nbasis;
-    basistype = new int[nbasis];
-    for (int i = 0; i < nbasis; i++) basistype[i] = itype;
-  }
+  nbasis = domain->lattice->nbasis;
+  basistype = new int[nbasis];
+  for (int i = 0; i < nbasis; i++) basistype[i] = itype;
 
   while (iarg < narg) {
     if (strcmp(arg[iarg],"basis") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal create_atoms command");
-      if (domain->lattice == NULL)
-        error->all(FLERR,"Cannot create atoms with undefined lattice");
-      int ibasis = atoi(arg[iarg+1]);
-      itype = atoi(arg[iarg+2]);
+      int ibasis = force->inumeric(FLERR,arg[iarg+1]);
+      itype = force->inumeric(FLERR,arg[iarg+2]);
       if (ibasis <= 0 || ibasis > nbasis ||
           itype <= 0 || itype > atom->ntypes)
-        error->all(FLERR,"Illegal create_atoms command");
+        error->all(FLERR,"Invalid basis setting in create_atoms command");
       basistype[ibasis-1] = itype;
       iarg += 3;
     } else if (strcmp(arg[iarg],"remap") == 0) {
@@ -142,24 +140,69 @@ void CreateAtoms::command(int narg, char **arg)
     if (seed <= 0) error->all(FLERR,"Illegal create_atoms command");
   }
 
-  // demand lattice be defined
-  // else setup scaling for single atom
+  // demand non-none lattice be defined for BOX and REGION
+  // else setup scaling for SINGLE and RANDOM
   // could use domain->lattice->lattice2box() to do conversion of
   //   lattice to box, but not consistent with other uses of units=lattice
   // triclinic remapping occurs in add_single()
 
   if (style == BOX || style == REGION) {
-    if (domain->lattice == NULL)
+    if (nbasis == 0)
       error->all(FLERR,"Cannot create atoms with undefined lattice");
   } else if (scaleflag == 1) {
-    if (domain->lattice == NULL)
-      error->all(FLERR,"Cannot create atoms with undefined lattice");
     xone[0] *= domain->lattice->xlattice;
     xone[1] *= domain->lattice->ylattice;
     xone[2] *= domain->lattice->zlattice;
   }
 
-  // add atoms
+  // set bounds for my proc in sublo[3] & subhi[3]
+  // if periodic and style = BOX or REGION, i.e. using lattice:
+  //   should create exactly 1 atom when 2 images are both "on" the boundary
+  //   either image may be slightly inside/outside true box due to round-off
+  //   if I am lo proc, decrement lower bound by EPSILON
+  //     this will insure lo image is created
+  //   if I am hi proc, decrement upper bound by 2.0*EPSILON
+  //     this will insure hi image is not created
+  //   thus insertion box is EPSILON smaller than true box
+  //     and is shifted away from true boundary
+  //     which is where atoms are likely to be generated
+
+  triclinic = domain->triclinic;
+
+  double epsilon[3];
+  if (triclinic) epsilon[0] = epsilon[1] = epsilon[2] = EPSILON;
+  else {
+    epsilon[0] = domain->prd[0] * EPSILON;
+    epsilon[1] = domain->prd[1] * EPSILON;
+    epsilon[2] = domain->prd[2] * EPSILON;
+  }
+
+  if (triclinic == 0) {
+    sublo[0] = domain->sublo[0]; subhi[0] = domain->subhi[0];
+    sublo[1] = domain->sublo[1]; subhi[1] = domain->subhi[1];
+    sublo[2] = domain->sublo[2]; subhi[2] = domain->subhi[2];
+  } else {
+    sublo[0] = domain->sublo_lamda[0]; subhi[0] = domain->subhi_lamda[0];
+    sublo[1] = domain->sublo_lamda[1]; subhi[1] = domain->subhi_lamda[1];
+    sublo[2] = domain->sublo_lamda[2]; subhi[2] = domain->subhi_lamda[2];
+  }
+
+  if (style == BOX || style == REGION) {
+    if (domain->xperiodic) {
+      if (comm->myloc[0] == 0) sublo[0] -= epsilon[0];
+      if (comm->myloc[0] == comm->procgrid[0]-1) subhi[0] -= 2.0*epsilon[0];
+    }
+    if (domain->yperiodic) {
+      if (comm->myloc[1] == 0) sublo[1] -= epsilon[1];
+      if (comm->myloc[1] == comm->procgrid[1]-1) subhi[1] -= 2.0*epsilon[1];
+    }
+    if (domain->zperiodic) {
+      if (comm->myloc[2] == 0) sublo[2] -= epsilon[2];
+      if (comm->myloc[2] == comm->procgrid[2]-1) subhi[2] -= 2.0*epsilon[2];
+    }
+  }
+
+  // add atoms in one of 3 ways
 
   bigint natoms_previous = atom->natoms;
   int nlocal_previous = atom->nlocal;
@@ -203,24 +246,33 @@ void CreateAtoms::command(int narg, char **arg)
   // reset simulation now that more atoms are defined
   // add tags for newly created atoms if possible
   // if global map exists, reset it
-  // if a molecular system, set nspecial to 0 for new atoms
+  // change these to MAXTAGINT when allow tagint = bigint
 
-  if (atom->natoms > MAXTAGINT) atom->tag_enable = 0;
-  if (atom->natoms <= MAXTAGINT) atom->tag_extend();
+  if (atom->natoms > MAXSMALLINT) {
+    if (comm->me == 0) 
+      error->warning(FLERR,"Total atom count exceeds ID limit, "
+                     "atoms will not have individual IDs");
+    atom->tag_enable = 0;
+  }
+  if (atom->natoms <= MAXSMALLINT) atom->tag_extend();
 
   if (atom->map_style) {
     atom->nghost = 0;
     atom->map_init();
     atom->map_set();
   }
-  if (atom->molecular) {
-    int **nspecial = atom->nspecial;
-    for (int i = nlocal_previous; i < atom->nlocal; i++) {
-      nspecial[i][0] = 0;
-      nspecial[i][1] = 0;
-      nspecial[i][2] = 0;
-    }
-  }
+
+  // if a molecular system, set nspecial to 0 for new atoms
+  // NOTE: 31May12, don't think this is needed, avec->create_atom() does it
+
+  //if (atom->molecular) {
+  //  int **nspecial = atom->nspecial;
+  //  for (int i = nlocal_previous; i < atom->nlocal; i++) {
+  //    nspecial[i][0] = 0;
+  //    nspecial[i][1] = 0;
+  //    nspecial[i][2] = 0;
+  //  }
+  //}
 
   // error checks on coarsegraining
   if(force->cg_active())
@@ -234,29 +286,19 @@ void CreateAtoms::command(int narg, char **arg)
 
 void CreateAtoms::add_single()
 {
-  double *sublo,*subhi;
 
   // remap atom if requested
 
   if (remapflag) {
-    int imagetmp = (512 << 20) | (512 << 10) | 512;
+    tagint imagetmp = ((tagint) IMGMAX << IMG2BITS) |
+      ((tagint) IMGMAX << IMGBITS) | IMGMAX;
     domain->remap(xone,imagetmp);
-  }
-
-  // sub-domain bounding box, in lamda units if triclinic
-
-  if (domain->triclinic == 0) {
-    sublo = domain->sublo;
-    subhi = domain->subhi;
-  } else {
-    sublo = domain->sublo_lamda;
-    subhi = domain->subhi_lamda;
   }
 
   // if triclinic, convert to lamda coords (0-1)
 
   double lamda[3],*coord;
-  if (domain->triclinic) {
+  if (triclinic) {
     domain->x2lamda(xone,lamda);
     coord = lamda;
   } else coord = xone;
@@ -282,7 +324,7 @@ void CreateAtoms::add_random()
 {
   double xlo,ylo,zlo,xhi,yhi,zhi,zmid;
   double lamda[3],*coord;
-  double *sublo,*subhi,*boxlo,*boxhi;
+  double *boxlo,*boxhi;
 
   // random number generator, same for all procs
 
@@ -292,7 +334,7 @@ void CreateAtoms::add_random()
   // in real units, even if triclinic
   // only limit bbox by region if its bboxflag is set (interior region)
 
-  if (domain->triclinic == 0) {
+  if (triclinic == 0) {
     xlo = domain->boxlo[0]; xhi = domain->boxhi[0];
     ylo = domain->boxlo[1]; yhi = domain->boxhi[1];
     zlo = domain->boxlo[2]; zhi = domain->boxhi[2];
@@ -302,6 +344,8 @@ void CreateAtoms::add_random()
     ylo = domain->boxlo_bound[1]; yhi = domain->boxhi_bound[1];
     zlo = domain->boxlo_bound[2]; zhi = domain->boxhi_bound[2];
     zmid = zlo + 0.5*(zhi-zlo);
+    boxlo = domain->boxlo_lamda;
+    boxhi = domain->boxhi_lamda;
   }
 
   if (nregion >= 0 && domain->regions[nregion]->bboxflag) {
@@ -313,21 +357,12 @@ void CreateAtoms::add_random()
     zhi = MIN(zhi,domain->regions[nregion]->extent_zhi);
   }
 
-  // sub-domain bounding box, in lamda units if triclinic
-
-  if (domain->triclinic == 0) {
-    sublo = domain->sublo;
-    subhi = domain->subhi;
-  } else {
-    sublo = domain->sublo_lamda;
-    subhi = domain->subhi_lamda;
-    boxlo = domain->boxlo_lamda;
-    boxhi = domain->boxhi_lamda;
-  }
-
   // generate random positions for each new atom within bounding box
   // iterate until atom is within region and triclinic simulation box
   // if final atom position is in my subbox, create it
+
+  if (xlo > xhi || ylo > yhi || zlo > zhi)
+    error->all(FLERR,"No overlap of box and region for create_atoms");
 
   int valid;
   for (int i = 0; i < nrandom; i++) {
@@ -341,7 +376,7 @@ void CreateAtoms::add_random()
       if (nregion >= 0 &&
           domain->regions[nregion]->match(xone[0],xone[1],xone[2]) == 0)
         valid = 0;
-      if (domain->triclinic) {
+      if (triclinic) {
         domain->x2lamda(xone,lamda);
         coord = lamda;
         if (coord[0] < boxlo[0] || coord[0] >= boxhi[0] ||
@@ -381,7 +416,6 @@ void CreateAtoms::add_lattice()
   // for triclinic, use bounding box of my subbox
   // xyz min to max = bounding box around the domain corners in lattice space
 
-  int triclinic = domain->triclinic;
   double bboxlo[3],bboxhi[3];
 
   if (triclinic == 0) {
@@ -431,50 +465,6 @@ void CreateAtoms::add_lattice()
   if (xmin < 0.0) ilo--;
   if (ymin < 0.0) jlo--;
   if (zmin < 0.0) klo--;
-
-  // set bounds for my proc
-  // if periodic:
-  //   should create exactly 1 atom when 2 images are both "on" the boundary
-  //   either image may be slightly inside/outside true box due to round-off
-  //   if I am lo proc, decrement lower bound by EPSILON
-  //     this will insure lo image is created
-  //   if I am hi proc, decrement upper bound by 2.0*EPSILON
-  //     this will insure hi image is not created
-  //   thus insertion box is EPSILON smaller than true box
-  //     and is shifted away from true boundary
-  //     which is where atoms are likely to be generated
-
-  double epsilon[3];
-  if (triclinic) epsilon[0] = epsilon[1] = epsilon[2] = EPSILON;
-  else {
-    epsilon[0] = domain->prd[0] * EPSILON;
-    epsilon[1] = domain->prd[1] * EPSILON;
-    epsilon[2] = domain->prd[2] * EPSILON;
-  }
-
-  double sublo[3],subhi[3];
-  if (triclinic == 0) {
-    sublo[0] = domain->sublo[0]; subhi[0] = domain->subhi[0];
-    sublo[1] = domain->sublo[1]; subhi[1] = domain->subhi[1];
-    sublo[2] = domain->sublo[2]; subhi[2] = domain->subhi[2];
-  } else {
-    sublo[0] = domain->sublo_lamda[0]; subhi[0] = domain->subhi_lamda[0];
-    sublo[1] = domain->sublo_lamda[1]; subhi[1] = domain->subhi_lamda[1];
-    sublo[2] = domain->sublo_lamda[2]; subhi[2] = domain->subhi_lamda[2];
-  }
-
-  if (domain->xperiodic) {
-    if (comm->myloc[0] == 0) sublo[0] -= epsilon[0];
-    if (comm->myloc[0] == comm->procgrid[0]-1) subhi[0] -= 2.0*epsilon[0];
-  }
-  if (domain->yperiodic) {
-    if (comm->myloc[1] == 0) sublo[1] -= epsilon[1];
-    if (comm->myloc[1] == comm->procgrid[1]-1) subhi[1] -= 2.0*epsilon[1];
-  }
-  if (domain->zperiodic) {
-    if (comm->myloc[2] == 0) sublo[2] -= epsilon[2];
-    if (comm->myloc[2] == comm->procgrid[2]-1) subhi[2] -= 2.0*epsilon[2];
-  }
 
   // iterate on 3d periodic lattice of unit cells using loop bounds
   // iterate on nbasis atoms in each unit cell

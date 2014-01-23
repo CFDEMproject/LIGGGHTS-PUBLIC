@@ -131,17 +131,17 @@ void PairSphArtviscTenscorr::settings(int narg, char **arg)
       // parameters for artifical viscosity
       if (iarg+4 > narg) error->all(FLERR, "Illegal pair_style sph command");
       artVisc_flag = 1;
-      alpha = force->numeric(arg[iarg+1]);
+      alpha = force->numeric(FLERR,arg[iarg+1]);
       viscosity_ = alpha;
-      beta = force->numeric(arg[iarg+2]);
-      eta = force->numeric(arg[iarg+3]);
+      beta = force->numeric(FLERR,arg[iarg+2]);
+      eta = force->numeric(FLERR,arg[iarg+3]);
       iarg += 4;
     } else if (strcmp(arg[iarg],"tensCorr") == 0) {
       // parameters for tensile correction
       if (iarg+3 > narg) error->all(FLERR, "Illegal pair_style sph command");
       tensCorr_flag = 1;
-      epsilon = force->numeric(arg[iarg+1]);
-      deltaP = force->numeric(arg[iarg+2]);
+      epsilon = force->numeric(FLERR,arg[iarg+1]);
+      deltaP = force->numeric(FLERR,arg[iarg+2]);
       iarg += 3;
     } else error->all(FLERR, "Illegal pair_style sph command");
   }
@@ -263,7 +263,7 @@ void PairSphArtviscTenscorr::write_restart(FILE *fp)
 void PairSphArtviscTenscorr::read_restart(FILE *fp)
 {
   read_restart_settings(fp);
-  PairSph::allocate();
+  allocate();
 
   int i,j;
   int me = comm->me;

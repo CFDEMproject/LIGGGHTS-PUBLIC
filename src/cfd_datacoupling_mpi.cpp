@@ -72,7 +72,7 @@ void CfdDatacouplingMPI::exchange()
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingMPI::pull(char *name,char *type,void *&from,char *datatype)
+void CfdDatacouplingMPI::pull(const char *name,const char *type,void *&from,const char *datatype)
 {
     CfdDatacoupling::pull(name,type,from,datatype);
 
@@ -85,7 +85,7 @@ void CfdDatacouplingMPI::pull(char *name,char *type,void *&from,char *datatype)
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingMPI::push(char *name,char *type,void *&to,char *datatype)
+void CfdDatacouplingMPI::push(const char *name,const char *type,void *&to,const char *datatype)
 {
     CfdDatacoupling::push(name,type,to,datatype);
 

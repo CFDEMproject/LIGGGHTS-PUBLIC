@@ -54,6 +54,11 @@ interactions, if defined.  Finally, there is a term for the <I>Nf</I>
 Currently, only the <A HREF = "fix_shake.html">fix shake</A> and <A HREF = "fix_rigid.html">fix
 rigid</A> commands contribute to this term.
 </P>
+<P>IMPORTANT NOTE: For granular systems, this formular neglects the 
+contribution of average velocity in the kinetic energy contribution.
+This is corrected in the compute ave/euler command (currently no doc
+available).
+</P>
 <P>As the coefficients in the formula imply, a virial contribution
 produced by a small set of atoms (e.g. 4 atoms in a dihedral or 3
 atoms in a Tersoff 3-body interaction) is assigned in equal portions
@@ -76,9 +81,10 @@ pairwise interactions between 1-4 atoms.  The virial contribution of
 these terms is included in the pair virial, not the dihedral virial.
 </P>
 <P>The KSpace contribution is calculated using the method in
-<A HREF = "#Heyes">(Heyes)</A> for the Ewald method and a related method for PPPM,
-as specified by the <A HREF = "kspace_style.html">kspace_style pppm</A> command.
-For PPPM, the calcluation requires 6 extra FFTs each timestep that
+<A HREF = "#Heyes">(Heyes)</A> for the Ewald method and by the methodology described
+in <A HREF = "#Sirk">(Sirk)</A> for PPPM.  The choice of KSpace solver is specified
+by the <A HREF = "kspace_style.html">kspace_style pppm</A> command.  Note that for
+PPPM, the calcluation requires 6 extra FFTs each timestep that
 per-atom stress is calculated.  Thus it can significantly increase the
 cost of the PPPM calculation if it is needed on a large fraction of
 the simulation timesteps.
@@ -126,5 +132,9 @@ options.
 <A NAME = "Heyes"></A>
 
 <P><B>(Heyes)</B> Heyes, Phys Rev B 49, 755 (1994),
+</P>
+<A NAME = "Sirk"></A>
+
+<P><B>(Sirk)</B> Sirk, Moore, Brown, J Chem Phys, 138, 064505 (2013).
 </P>
 </HTML>

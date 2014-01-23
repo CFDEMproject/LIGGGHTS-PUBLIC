@@ -1,18 +1,22 @@
-# library build makefile for colvars module
+# library build -*- makefile -*- for colvars module
+
+# which file will be copied to Makefile.lammps
+
+EXTRAMAKE = Makefile.lammps.empty
 
 # ------ SETTINGS ------
 
 CXX =		g++
-CXXFLAGS =	-O2 -g -funroll-loops # -DCOLVARS_DEBUG
+CXXFLAGS =	-O2 -g -fPIC -funroll-loops # -DCOLVARS_DEBUG
 ARCHIVE =	ar
 ARCHFLAG =	-rscv
 SHELL =		/bin/sh
 
 # ------ DEFINITIONS ------
 
-SRC = colvaratoms.cpp colvarbias_abf.cpp colvarbias.cpp colvarbias_meta.cpp	\
- colvar.cpp colvarcomp_angles.cpp colvarcomp.cpp colvarcomp_coordnums.cpp	\
- colvarcomp_distances.cpp colvarcomp_protein.cpp colvarcomp_rotations.cpp	\
+SRC = colvaratoms.cpp colvarbias_abf.cpp colvarbias.cpp colvarbias_meta.cpp \
+ colvar.cpp colvarcomp_angles.cpp colvarcomp.cpp colvarcomp_coordnums.cpp   \
+ colvarcomp_distances.cpp colvarcomp_protein.cpp colvarcomp_rotations.cpp   \
  colvargrid.cpp colvarmodule.cpp colvarparse.cpp colvarvalue.cpp
 
 LIB = libcolvars.a
@@ -21,7 +25,10 @@ EXE = #colvars_standalone
 
 # ------ MAKE PROCEDURE ------
 
-default: $(LIB) $(EXE)
+default: $(LIB) $(EXE) Makefile.lammps
+
+Makefile.lammps:
+	@cp $(EXTRAMAKE) Makefile.lammps
 
 $(LIB):	$(OBJ)
 	$(ARCHIVE) $(ARFLAGS) $(LIB) $(OBJ)

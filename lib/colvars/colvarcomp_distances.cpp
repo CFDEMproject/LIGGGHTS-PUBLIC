@@ -8,9 +8,6 @@
 
 
 
-/// \file cvc_distance.cpp \brief Collective variables
-/// determining various type of distances between two groups
-
 // "twogroup" flag defaults to true; set to false by selfCoordNum
 // (only distance-derived component based on only one group)
 
@@ -48,12 +45,6 @@ colvar::distance::distance()
 
 void colvar::distance::calc_value()
 {
-  group1.reset_atoms_data();
-  group2.reset_atoms_data();
-
-  group1.read_positions();
-  group2.read_positions();
-
   if (b_no_PBC) {
     dist_v = group2.center_of_mass() - group1.center_of_mass();
   } else {
@@ -113,12 +104,6 @@ colvar::distance_vec::distance_vec()
 
 void colvar::distance_vec::calc_value()
 {
-  group1.reset_atoms_data();
-  group2.reset_atoms_data();
-
-  group1.read_positions();
-  group2.read_positions();
-
   if (b_no_PBC) {
     x.rvector_value = group2.center_of_mass() - group1.center_of_mass();
   } else {
@@ -128,7 +113,7 @@ void colvar::distance_vec::calc_value()
 }
 
 void colvar::distance_vec::calc_gradients()
-{ 
+{
   // gradients are not stored: a 3x3 matrix for each atom would be
   // needed to store just the identity matrix
 }
@@ -155,7 +140,7 @@ colvar::distance_z::distance_z (std::string const &conf)
   // TODO detect PBC from MD engine (in simple cases)
   // and then update period in real time
   if (period != 0.0)
-    b_periodic = true;    
+    b_periodic = true;
 
   if ((wrap_center != 0.0) && (period == 0.0)) {
     cvm::fatal_error ("Error: wrapAround was defined in a distanceZ component,"
@@ -168,7 +153,7 @@ colvar::distance_z::distance_z (std::string const &conf)
   atom_groups.push_back (&ref1);
   // this group is optional
   parse_group (conf, "ref2", ref2, true);
- 
+
   if (ref2.size()) {
     atom_groups.push_back (&ref2);
     cvm::log ("Using axis joining the centers of mass of groups \"ref\" and \"ref2\"");
@@ -179,7 +164,10 @@ colvar::distance_z::distance_z (std::string const &conf)
     if (get_keyval (conf, "axis", axis, cvm::rvector (0.0, 0.0, 1.0))) {
       if (axis.norm2() == 0.0)
         cvm::fatal_error ("Axis vector is zero!");
-      axis = axis.unit();
+      if (axis.norm2() != 1.0) {
+        axis = axis.unit();
+        cvm::log ("The normalized axis is: "+cvm::to_str (axis)+".\n");
+      }
     }
     fixed_axis = true;
   }
@@ -202,12 +190,6 @@ colvar::distance_z::distance_z()
 
 void colvar::distance_z::calc_value()
 {
-  main.reset_atoms_data();
-  ref1.reset_atoms_data();
-
-  main.read_positions();
-  ref1.read_positions();
-
   if (fixed_axis) {
     if (b_no_PBC) {
       dist_v = main.center_of_mass() - ref1.center_of_mass();
@@ -216,8 +198,6 @@ void colvar::distance_z::calc_value()
                                        main.center_of_mass());
     }
   } else {
-    ref2.reset_atoms_data();
-    ref2.read_positions();
 
     if (b_no_PBC) {
       dist_v = main.center_of_mass() -
@@ -307,12 +287,6 @@ colvar::distance_xy::distance_xy()
 
 void colvar::distance_xy::calc_value()
 {
-  ref1.reset_atoms_data();
-  main.reset_atoms_data();
-
-  ref1.read_positions();
-  main.read_positions();
-
   if (b_no_PBC) {
     dist_v = main.center_of_mass() - ref1.center_of_mass();
   } else {
@@ -320,9 +294,6 @@ void colvar::distance_xy::calc_value()
                                      main.center_of_mass());
   }
   if (!fixed_axis) {
-    ref2.reset_atoms_data();
-    ref2.read_positions();
-
     if (b_no_PBC) {
       v12 = ref2.center_of_mass() - ref1.center_of_mass();
     } else {
@@ -412,12 +383,6 @@ colvar::distance_dir::distance_dir()
 
 void colvar::distance_dir::calc_value()
 {
-  group1.reset_atoms_data();
-  group2.reset_atoms_data();
-
-  group1.read_positions();
-  group2.read_positions();
-
   if (b_no_PBC) {
     dist_v = group2.center_of_mass() - group1.center_of_mass();
   } else {
@@ -451,40 +416,53 @@ void colvar::distance_dir::apply_force (colvarvalue const &force)
 
 
 
-colvar::distance6::distance6 (std::string const &conf)
+colvar::distance_inv::distance_inv (std::string const &conf)
   : distance (conf)
 {
-  function_type = "distance6";
+  function_type = "distance_inv";
+  get_keyval (conf, "exponent", exponent, 6);
+  if (exponent%2) {
+    cvm::fatal_error ("Error: odd exponent provided, can only use even ones.\n");
+  }
+  if (exponent <= 0) {
+    cvm::fatal_error ("Error: negative or zero exponent provided.\n");
+  }
+
+  for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++) {
+    for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
+      if (ai1->id == ai2->id)
+        cvm::fatal_error ("Error: group1 and group1 have some atoms in common: this is not allowed for distanceInv.\n");
+    }
+  }
+
   b_inverse_gradients = false;
   b_Jacobian_derivative = false;
   x.type (colvarvalue::type_scalar);
 }
 
-colvar::distance6::distance6()
+colvar::distance_inv::distance_inv()
 {
-  function_type = "distance6";
+  function_type = "distance_inv";
+  exponent = 6;
   b_inverse_gradients = false;
   b_Jacobian_derivative = false;
   b_1site_force = false;
   x.type (colvarvalue::type_scalar);
 }
 
-void colvar::distance6::calc_value()
+void colvar::distance_inv::calc_value()
 {
-  group1.reset_atoms_data();
-  group2.reset_atoms_data();
-
-  group1.read_positions();
-  group2.read_positions();
-
   x.real_value = 0.0;
   if (b_no_PBC) {
     for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++) {
       for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
         cvm::rvector const dv = ai2->pos - ai1->pos;
         cvm::real const d2 = dv.norm2();
-        x.real_value += 1.0/(d2*d2*d2);
-        cvm::rvector const dsumddv = -6.0/(d2*d2*d2*d2) * dv;
+        cvm::real dinv = 1.0;
+        for (int ne = 0; ne < exponent/2; ne++)
+          dinv *= 1.0/d2;
+        x.real_value += dinv;
+        cvm::rvector const dsumddv = -(cvm::real (exponent)) * dinv/d2 * dv;
         ai1->grad += -1.0 * dsumddv;
         ai2->grad +=        dsumddv;
       }
@@ -494,30 +472,39 @@ void colvar::distance6::calc_value()
       for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
         cvm::rvector const dv = cvm::position_distance (ai1->pos, ai2->pos);
         cvm::real const d2 = dv.norm2();
-        x.real_value += 1.0/(d2*d2*d2);
-        cvm::rvector const dsumddv = -6.0/(d2*d2*d2*d2) * dv;
+        cvm::real dinv = 1.0;
+        for (int ne = 0; ne < exponent/2; ne++)
+          dinv *= 1.0/d2;
+        x.real_value += dinv;
+        cvm::rvector const dsumddv = -(cvm::real (exponent)) * dinv/d2 * dv;
         ai1->grad += -1.0 * dsumddv;
         ai2->grad +=        dsumddv;
       }
     }
   }
 
-  x.real_value = std::pow (x.real_value, -1.0/6.0);
+  x.real_value *= 1.0 / cvm::real (group1.size() * group2.size());
+  x.real_value = std::pow (x.real_value, -1.0/(cvm::real (exponent)));
 }
 
-void colvar::distance6::calc_gradients()
+void colvar::distance_inv::calc_gradients()
 {
+  cvm::real const dxdsum = (-1.0/(cvm::real (exponent))) * std::pow (x.real_value, exponent+1) / cvm::real (group1.size() * group2.size());
+  for (cvm::atom_iter ai1 = group1.begin(); ai1 != group1.end(); ai1++) {
+    ai1->grad *= dxdsum;
+  }
+  for (cvm::atom_iter ai2 = group2.begin(); ai2 != group2.end(); ai2++) {
+    ai2->grad *= dxdsum;
+  }
 }
 
-void colvar::distance6::apply_force (colvarvalue const &force)
+void colvar::distance_inv::apply_force (colvarvalue const &force)
 {
-  cvm::real const dxdsum = (-1.0/6.0) * std::pow (x.real_value, -7.0/6.0);
-
   if (!group1.noforce)
-    group1.apply_colvar_force (dxdsum * force.real_value);
+    group1.apply_colvar_force (force.real_value);
 
   if (!group2.noforce)
-    group2.apply_colvar_force (dxdsum * force.real_value);
+    group2.apply_colvar_force (force.real_value);
 }
 
 
@@ -530,6 +517,14 @@ colvar::gyration::gyration (std::string const &conf)
   b_Jacobian_derivative = true;
   parse_group (conf, "atoms", atoms);
   atom_groups.push_back (&atoms);
+
+  if (atoms.b_user_defined_fit) {
+    cvm::log ("WARNING: explicit fitting parameters were provided for atom group \"atoms\".");
+  } else {
+    atoms.b_center = true;
+    atoms.ref_pos.assign (1, cvm::atom_pos (0.0, 0.0, 0.0));
+  }
+
   x.type (colvarvalue::type_scalar);
 }
 
@@ -545,10 +540,6 @@ colvar::gyration::gyration()
 
 void colvar::gyration::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions();
-  atoms.apply_translation ((-1.0) * atoms.center_of_geometry());
-
   x.real_value = 0.0;
   for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
     x.real_value += (ai->pos).norm2();
@@ -562,6 +553,11 @@ void colvar::gyration::calc_gradients()
   cvm::real const drdx = 1.0/(cvm::real (atoms.size()) * x.real_value);
   for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
     ai->grad = drdx * ai->pos;
+  }
+
+  if (b_debug_gradients) {
+    cvm::log ("Debugging gradients:\n");
+    debug_gradients (atoms);
   }
 }
 
@@ -594,11 +590,11 @@ void colvar::gyration::apply_force (colvarvalue const &force)
 
 
 colvar::inertia::inertia (std::string const &conf)
-  : cvc (conf)
+  : gyration (conf)
 {
   function_type = "inertia";
-  parse_group (conf, "atoms", atoms);
-  atom_groups.push_back (&atoms);
+  b_inverse_gradients = false;
+  b_Jacobian_derivative = false;
   x.type (colvarvalue::type_scalar);
 }
 
@@ -612,23 +608,22 @@ colvar::inertia::inertia()
 
 void colvar::inertia::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions();
-  atoms.apply_translation ((-1.0) * atoms.center_of_geometry());
-
   x.real_value = 0.0;
   for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
-    x.real_value += ai->mass * (ai->pos).norm2();
+    x.real_value += (ai->pos).norm2();
   }
-  x.real_value = std::sqrt (x.real_value / atoms.total_mass);
 }
 
 
 void colvar::inertia::calc_gradients()
 {
-  cvm::real const drdx = 1.0/(atoms.total_mass * x.real_value);
   for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
-    ai->grad = drdx * ai->mass * ai->pos;
+    ai->grad = 2.0 * ai->pos;
+  }
+
+  if (b_debug_gradients) {
+    cvm::log ("Debugging gradients:\n");
+    debug_gradients (atoms);
   }
 }
 
@@ -647,7 +642,10 @@ colvar::inertia_z::inertia_z (std::string const &conf)
   if (get_keyval (conf, "axis", axis, cvm::rvector (0.0, 0.0, 1.0))) {
     if (axis.norm2() == 0.0)
       cvm::fatal_error ("Axis vector is zero!");
-    axis = axis.unit();
+    if (axis.norm2() != 1.0) {
+      axis = axis.unit();
+      cvm::log ("The normalized axis is: "+cvm::to_str (axis)+".\n");
+    }
   }
   x.type (colvarvalue::type_scalar);
 }
@@ -662,24 +660,23 @@ colvar::inertia_z::inertia_z()
 
 void colvar::inertia_z::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions();
-  atoms.apply_translation ((-1.0) * atoms.center_of_geometry());
-
   x.real_value = 0.0;
   for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
     cvm::real const iprod = ai->pos * axis;
-    x.real_value += ai->mass * iprod * iprod;
+    x.real_value += iprod * iprod;
   }
-  x.real_value = std::sqrt (x.real_value / atoms.total_mass);
 }
 
 
 void colvar::inertia_z::calc_gradients()
 {
-  cvm::real const drdx = 1.0/(atoms.total_mass * x.real_value);
   for (cvm::atom_iter ai = atoms.begin(); ai != atoms.end(); ai++) {
-    ai->grad = drdx * ai->mass * (ai->pos * axis) * axis;
+    ai->grad = 2.0 * (ai->pos * axis) * axis;
+  }
+
+  if (b_debug_gradients) {
+    cvm::log ("Debugging gradients:\n");
+    debug_gradients (atoms);
   }
 }
 
@@ -693,38 +690,98 @@ void colvar::inertia_z::apply_force (colvarvalue const &force)
 
 
 colvar::rmsd::rmsd (std::string const &conf)
-  : orientation (conf)
+  : cvc (conf)
 {
   b_inverse_gradients = true;
   b_Jacobian_derivative = true;
   function_type = "rmsd";
   x.type (colvarvalue::type_scalar);
 
-  ref_pos_sum2 = 0.0;
-  for (size_t i = 0; i < ref_pos.size(); i++) {
-    ref_pos_sum2 += ref_pos[i].norm2();
+  parse_group (conf, "atoms", atoms);
+  atom_groups.push_back (&atoms);
+
+  if (atoms.b_dummy)
+    cvm::fatal_error ("Error: \"atoms\" cannot be a dummy atom.");
+
+  if (atoms.ref_pos_group != NULL) {
+    cvm::log ("The option \"refPositionsGroup\" (alternative group for fitting) was enabled: "
+              "Jacobian derivatives of the RMSD will not be calculated.\n");
+    b_Jacobian_derivative = false;
+  }
+
+  // the following is a simplified version of the corresponding atom group options;
+  // we need this because the reference coordinates defined inside the atom group
+  // may be used only for fitting, and even more so if ref_pos_group is used
+  if (get_keyval (conf, "refPositions", ref_pos, ref_pos)) {
+    cvm::log ("Using reference positions from configuration file to calculate the variable.\n");
+    if (ref_pos.size() != atoms.size()) {
+      cvm::fatal_error ("Error: the number of reference positions provided ("+
+                        cvm::to_str (ref_pos.size())+
+                        ") does not match the number of atoms of group \"atoms\" ("+
+                        cvm::to_str (atoms.size())+").\n");
+    }
+  }
+  {
+    std::string ref_pos_file;
+    if (get_keyval (conf, "refPositionsFile", ref_pos_file, std::string (""))) {
+
+      if (ref_pos.size()) {
+        cvm::fatal_error ("Error: cannot specify \"refPositionsFile\" and "
+                          "\"refPositions\" at the same time.\n");
+      }
+
+      std::string ref_pos_col;
+      double ref_pos_col_value;
+
+      if (get_keyval (conf, "refPositionsCol", ref_pos_col, std::string (""))) {
+        // if provided, use PDB column to select coordinates
+        bool found = get_keyval (conf, "refPositionsColValue", ref_pos_col_value, 0.0);
+        if (found && !ref_pos_col_value)
+          cvm::fatal_error ("Error: refPositionsColValue, "
+                            "if provided, must be non-zero.\n");
+      } else {
+        // if not, rely on existing atom indices for the group
+        atoms.create_sorted_ids();
+      }
+
+      ref_pos.resize (atoms.size());
+      cvm::load_coords (ref_pos_file.c_str(), ref_pos, atoms.sorted_ids,
+                        ref_pos_col, ref_pos_col_value);
+    }
+  }
+
+  if (atoms.b_user_defined_fit) {
+    cvm::log ("WARNING: explicit fitting parameters were provided for atom group \"atoms\".");
+  } else {
+    // Default: fit everything
+    cvm::log ("Enabling \"centerReference\" and \"rotateReference\", to minimize RMSD before calculating it as a variable: "
+              "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.\n");
+    atoms.b_center = true;
+    atoms.b_rotate = true;
+    // default case: reference positions for calculating the rmsd are also those used
+    // for fitting
+    atoms.ref_pos = ref_pos;
+    atoms.center_ref_pos();
+
+    // request the calculation of the derivatives of the rotation defined by the atom group
+    atoms.rot.request_group1_gradients (atoms.size());
+    // request derivatives of optimal rotation wrt reference coordinates for Jacobian:
+    // this is only required for ABF, but we do both groups here for better caching
+    atoms.rot.request_group2_gradients (atoms.size());
   }
 }
 
-  
+
 void colvar::rmsd::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions();
+  // rotational-translational fit is handled by the atom group
 
-  atoms_cog = atoms.center_of_geometry();
-  rot.calc_optimal_rotation (ref_pos, atoms.positions_shifted (-1.0 * atoms_cog));
-
-  cvm::real group_pos_sum2 = 0.0;
-  for (size_t i = 0; i < atoms.size(); i++) {
-    group_pos_sum2 += (atoms[i].pos - atoms_cog).norm2();
+  x.real_value = 0.0;
+  for (size_t ia = 0; ia < atoms.size(); ia++) {
+    x.real_value += (atoms[ia].pos - ref_pos[ia]).norm2();
   }
-
-  // value of the RMSD (Coutsias et al)
-  cvm::real const MSD = 1.0/(cvm::real (atoms.size())) *
-    ( group_pos_sum2 + ref_pos_sum2 - 2.0 * rot.lambda );
-
-  x.real_value = (MSD > 0.0) ? std::sqrt (MSD) : 0.0;
+  x.real_value /= cvm::real (atoms.size()); // MSD
+  x.real_value = std::sqrt (x.real_value);
 }
 
 
@@ -735,8 +792,12 @@ void colvar::rmsd::calc_gradients()
     0.0;
 
   for (size_t ia = 0; ia < atoms.size(); ia++) {
-    atoms[ia].grad  = (drmsddx2 * 2.0 * (atoms[ia].pos - atoms_cog -
-                                         rot.q.rotate (ref_pos[ia])));
+    atoms[ia].grad = (drmsddx2 * 2.0 * (atoms[ia].pos - ref_pos[ia]));
+  }
+
+  if (b_debug_gradients) {
+    cvm::log ("Debugging gradients:\n");
+    debug_gradients (atoms);
   }
 }
 
@@ -752,9 +813,9 @@ void colvar::rmsd::calc_force_invgrads()
 {
   atoms.read_system_forces();
   ft.real_value = 0.0;
-    
+
   // Note: gradient square norm is 1/N_atoms
-          
+
   for (size_t ia = 0; ia < atoms.size(); ia++) {
     ft.real_value += atoms[ia].grad * atoms[ia].system_force;
   }
@@ -764,46 +825,50 @@ void colvar::rmsd::calc_force_invgrads()
 
 void colvar::rmsd::calc_Jacobian_derivative()
 {
-  // divergence of the back-rotated target coordinates
+  // divergence of the rotated coordinates (including only derivatives of the rotation matrix)
   cvm::real divergence = 0.0;
- 
-  // gradient of the rotation matrix
-  cvm::matrix2d <cvm::rvector, 3, 3> grad_rot_mat;
 
-  // gradients of products of 2 quaternion components 
-  cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
+  if (atoms.b_rotate) {
 
-  for (size_t ia = 0; ia < atoms.size(); ia++) {
+    // gradient of the rotation matrix
+    cvm::matrix2d <cvm::rvector, 3, 3> grad_rot_mat;
+    // gradients of products of 2 quaternion components
+    cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
+    for (size_t ia = 0; ia < atoms.size(); ia++) {
 
-    // Gradient of optimal quaternion wrt current Cartesian position
-    cvm::vector1d< cvm::rvector, 4 >      &dq = rot.dQ0_2[ia];
+      // Gradient of optimal quaternion wrt current Cartesian position
+      cvm::vector1d< cvm::rvector, 4 >      &dq = atoms.rot.dQ0_1[ia];
 
-    g11 = 2.0 * (rot.q)[1]*dq[1];
-    g22 = 2.0 * (rot.q)[2]*dq[2];
-    g33 = 2.0 * (rot.q)[3]*dq[3];
-    g01 = (rot.q)[0]*dq[1] + (rot.q)[1]*dq[0];
-    g02 = (rot.q)[0]*dq[2] + (rot.q)[2]*dq[0];
-    g03 = (rot.q)[0]*dq[3] + (rot.q)[3]*dq[0];
-    g12 = (rot.q)[1]*dq[2] + (rot.q)[2]*dq[1];
-    g13 = (rot.q)[1]*dq[3] + (rot.q)[3]*dq[1];
-    g23 = (rot.q)[2]*dq[3] + (rot.q)[3]*dq[2];
+      g11 = 2.0 * (atoms.rot.q)[1]*dq[1];
+      g22 = 2.0 * (atoms.rot.q)[2]*dq[2];
+      g33 = 2.0 * (atoms.rot.q)[3]*dq[3];
+      g01 = (atoms.rot.q)[0]*dq[1] + (atoms.rot.q)[1]*dq[0];
+      g02 = (atoms.rot.q)[0]*dq[2] + (atoms.rot.q)[2]*dq[0];
+      g03 = (atoms.rot.q)[0]*dq[3] + (atoms.rot.q)[3]*dq[0];
+      g12 = (atoms.rot.q)[1]*dq[2] + (atoms.rot.q)[2]*dq[1];
+      g13 = (atoms.rot.q)[1]*dq[3] + (atoms.rot.q)[3]*dq[1];
+      g23 = (atoms.rot.q)[2]*dq[3] + (atoms.rot.q)[3]*dq[2];
 
-    // Gradient of the rotation matrix wrt current Cartesian position
-    grad_rot_mat[0][0] = -2.0 * (g22 + g33); 
-    grad_rot_mat[1][0] =  2.0 * (g12 + g03); 
-    grad_rot_mat[2][0] =  2.0 * (g13 - g02); 
-    grad_rot_mat[0][1] =  2.0 * (g12 - g03); 
-    grad_rot_mat[1][1] = -2.0 * (g11 + g33); 
-    grad_rot_mat[2][1] =  2.0 * (g01 + g23); 
-    grad_rot_mat[0][2] =  2.0 * (g02 + g13); 
-    grad_rot_mat[1][2] =  2.0 * (g23 - g01); 
-    grad_rot_mat[2][2] = -2.0 * (g11 + g22); 
+      // Gradient of the rotation matrix wrt current Cartesian position
+      grad_rot_mat[0][0] = -2.0 * (g22 + g33);
+      grad_rot_mat[1][0] =  2.0 * (g12 + g03);
+      grad_rot_mat[2][0] =  2.0 * (g13 - g02);
+      grad_rot_mat[0][1] =  2.0 * (g12 - g03);
+      grad_rot_mat[1][1] = -2.0 * (g11 + g33);
+      grad_rot_mat[2][1] =  2.0 * (g01 + g23);
+      grad_rot_mat[0][2] =  2.0 * (g02 + g13);
+      grad_rot_mat[1][2] =  2.0 * (g23 - g01);
+      grad_rot_mat[2][2] = -2.0 * (g11 + g22);
 
-    cvm::atom_pos &y = ref_pos[ia]; 
+      cvm::atom_pos &y = ref_pos[ia];
 
-    for (size_t i = 0; i < 3; i++) {
-      for (size_t j = 0; j < 3; j++) {
-        divergence += grad_rot_mat[i][j][i] * y[j];
+      for (size_t alpha = 0; alpha < 3; alpha++) {
+        for (size_t beta = 0; beta < 3; beta++) {
+          divergence += grad_rot_mat[beta][alpha][alpha] * y[beta];
+        // Note: equation was derived for inverse rotation (see colvars paper)
+        // so here the matrix is transposed
+        // (eq would give   divergence += grad_rot_mat[alpha][beta][alpha] * y[beta];)
+        }
       }
     }
   }
@@ -811,128 +876,6 @@ void colvar::rmsd::calc_Jacobian_derivative()
   jd.real_value = x.real_value > 0.0 ? (3.0 * atoms.size() - 4.0 - divergence) / x.real_value : 0.0;
 }
 
-
-
-colvar::logmsd::logmsd (std::string const &conf)
-  : orientation (conf)
-{
-  b_inverse_gradients = true;
-  b_Jacobian_derivative = true;
-  function_type = "logmsd";
-  x.type (colvarvalue::type_scalar);
-
-  ref_pos_sum2 = 0.0;
-  for (size_t i = 0; i < ref_pos.size(); i++) {
-    ref_pos_sum2 += ref_pos[i].norm2();
-  }
-}
-
-  
-void colvar::logmsd::calc_value()
-{
-  atoms.reset_atoms_data();
-  atoms.read_positions();
-
-  if (cvm::debug())
-    cvm::log ("colvar::logmsd: current com: "+
-              cvm::to_str (atoms.center_of_mass())+"\n");
-
-  atoms_cog = atoms.center_of_geometry();
-  rot.calc_optimal_rotation (ref_pos, atoms.positions_shifted (-1.0 * atoms_cog));
-
-  cvm::real group_pos_sum2 = 0.0;
-  for (size_t i = 0; i < atoms.size(); i++) {
-    group_pos_sum2 += (atoms[i].pos-atoms_cog).norm2();
-  }
-
-  // value of the MSD (Coutsias et al)
-  MSD = 1.0/(cvm::real (atoms.size())) *
-    ( group_pos_sum2 + ref_pos_sum2 - 2.0 * rot.lambda );
-
-  x.real_value = (MSD > 0.0) ? std::log(MSD) : 0.0;
-}
-
-
-void colvar::logmsd::calc_gradients()
-{
-  cvm::real fact = (MSD > 0.0) ? 2.0/(cvm::real (atoms.size()) * MSD) : 0.0;
-
-  for (size_t ia = 0; ia < atoms.size(); ia++) {
-    atoms[ia].grad = fact * (atoms[ia].pos - atoms_cog - rot.dL0_2[ia]);
-  }
-}
-
-
-void colvar::logmsd::apply_force (colvarvalue const &force)
-{
-  if (!atoms.noforce)
-    atoms.apply_colvar_force (force.real_value);
-}
-
-
-void colvar::logmsd::calc_force_invgrads()
-{
-  atoms.read_system_forces();
-  ft.real_value = 0.0;
-    
-  // Note: gradient square norm is 4.0 / (N_atoms * E)
-          
-  for (size_t ia = 0; ia < atoms.size(); ia++) {
-    ft.real_value += atoms[ia].grad * atoms[ia].system_force;
-  }
-  ft.real_value *= atoms.size() * MSD / 4.0;
-}
-
-
-void colvar::logmsd::calc_Jacobian_derivative()
-{
-  // divergence of the back-rotated target coordinates
-  cvm::real divergence = 0.0;
- 
-  // gradient of the rotation matrix
-  cvm::matrix2d <cvm::rvector, 3, 3> grad_rot_mat;
-
-  // gradients of products of 2 quaternion components 
-  cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
- 
-  for (size_t ia = 0; ia < atoms.size(); ia++) {
-
-    // Gradient of optimal quaternion wrt current Cartesian position
-    cvm::vector1d< cvm::rvector, 4 >      &dq = rot.dQ0_2[ia];
-
-    g11 = 2.0 * (rot.q)[1]*dq[1];
-    g22 = 2.0 * (rot.q)[2]*dq[2];
-    g33 = 2.0 * (rot.q)[3]*dq[3];
-    g01 = (rot.q)[0]*dq[1] + (rot.q)[1]*dq[0];
-    g02 = (rot.q)[0]*dq[2] + (rot.q)[2]*dq[0];
-    g03 = (rot.q)[0]*dq[3] + (rot.q)[3]*dq[0];
-    g12 = (rot.q)[1]*dq[2] + (rot.q)[2]*dq[1];
-    g13 = (rot.q)[1]*dq[3] + (rot.q)[3]*dq[1];
-    g23 = (rot.q)[2]*dq[3] + (rot.q)[3]*dq[2];
-
-    // Gradient of the rotation matrix wrt current Cartesian position
-    // Note: we are only going to use "diagonal" terms: grad_rot_mat[i][j][i]
-    grad_rot_mat[0][0] = -2.0 * (g22 + g33); 
-    grad_rot_mat[1][0] =  2.0 * (g12 + g03); 
-    grad_rot_mat[2][0] =  2.0 * (g13 - g02); 
-    grad_rot_mat[0][1] =  2.0 * (g12 - g03); 
-    grad_rot_mat[1][1] = -2.0 * (g11 + g33); 
-    grad_rot_mat[2][1] =  2.0 * (g01 + g23); 
-    grad_rot_mat[0][2] =  2.0 * (g02 + g13); 
-    grad_rot_mat[1][2] =  2.0 * (g23 - g01); 
-    grad_rot_mat[2][2] = -2.0 * (g11 + g22); 
-
-    cvm::atom_pos &y = ref_pos[ia]; 
-
-    for (size_t i = 0; i < 3; i++) {
-      for (size_t j = 0; j < 3; j++) {
-        divergence += grad_rot_mat[i][j][i] * y[j];
-      }
-    }
-  }
-
-  jd.real_value = (3.0 * atoms.size() - 3.0 - divergence) / 2.0;
-}
 
 
 
@@ -947,22 +890,23 @@ colvar::eigenvector::eigenvector (std::string const &conf)
   parse_group (conf, "atoms", atoms);
   atom_groups.push_back (&atoms);
 
-  if (atoms.b_rotate) {
-    cvm::fatal_error ("Error: rotateReference should be disabled:"
-        "eigenvector component will set it internally.");
-  }
-
-  if (get_keyval (conf, "refPositions", ref_pos, ref_pos)) {
-    cvm::log ("Using reference positions from input file.\n");
-    if (ref_pos.size() != atoms.size()) {
-      cvm::fatal_error ("Error: reference positions do not "
-                        "match the number of requested atoms.\n");
-    }
-  }
 
   {
+    bool const b_inline = get_keyval (conf, "refPositions", ref_pos, ref_pos);
+
+    if (b_inline) {
+      cvm::log ("Using reference positions from input file.\n");
+      if (ref_pos.size() != atoms.size()) {
+        cvm::fatal_error ("Error: reference positions do not "
+                          "match the number of requested atoms.\n");
+      }
+    }
+
     std::string file_name;
     if (get_keyval (conf, "refPositionsFile", file_name)) {
+
+      if (b_inline)
+        cvm::fatal_error ("Error: refPositions and refPositionsFile cannot be specified at the same time.\n");
 
       std::string file_col;
       double file_col_value;
@@ -982,34 +926,60 @@ colvar::eigenvector::eigenvector (std::string const &conf)
     }
   }
 
-  // Set mobile frame of reference for atom group
-  atoms.b_center = true;
-  atoms.b_rotate = true;
-  atoms.ref_pos = ref_pos;
+  // save for later the geometric center of the provided positions (may not be the origin)
+  cvm::rvector ref_pos_center (0.0, 0.0, 0.0);
+  for (size_t i = 0; i < atoms.size(); i++) {
+    ref_pos_center += ref_pos[i];
+  }
+  ref_pos_center *= 1.0 / atoms.size();
 
-  // now load the eigenvector
-  if (get_keyval (conf, "vector", eigenvec, eigenvec)) {
-    cvm::log ("Using vector components from input file.\n");
-    if (eigenvec.size() != atoms.size()) {
-      cvm::fatal_error ("Error: vector components do not "
-                        "match the number of requested atoms.\n");
-    }
+  if (atoms.b_user_defined_fit) {
+    cvm::log ("WARNING: explicit fitting parameters were provided for atom group \"atoms\".\n");
+  } else {
+    // default: fit everything
+    cvm::log ("Enabling \"centerReference\" and \"rotateReference\", to minimize RMSD before calculating the vector projection: "
+              "if this is not the desired behavior, disable them explicitly within the \"atoms\" block.\n");
+    atoms.b_center = true;
+    atoms.b_rotate = true;
+    atoms.ref_pos = ref_pos;
+    atoms.center_ref_pos();
+
+    // request the calculation of the derivatives of the rotation defined by the atom group
+    atoms.rot.request_group1_gradients (atoms.size());
+    // request derivatives of optimal rotation wrt reference coordinates for Jacobian:
+    // this is only required for ABF, but we do both groups here for better caching
+    atoms.rot.request_group2_gradients (atoms.size());
   }
 
   {
+    bool const b_inline = get_keyval (conf, "vector", eigenvec, eigenvec);
+    // now load the eigenvector
+    if (b_inline) {
+      cvm::log ("Using vector components from input file.\n");
+      if (eigenvec.size() != atoms.size()) {
+        cvm::fatal_error ("Error: vector components do not "
+                          "match the number of requested atoms.\n");
+      }
+    }
+
     std::string file_name;
     if (get_keyval (conf, "vectorFile", file_name)) {
 
-      std::string file_col;
-      if (!get_keyval (conf, "vectorCol", file_col, std::string (""))) {
-        cvm::fatal_error ("Error: parameter vectorCol is required if vectorFile is set.\n");
-      }
+      if (b_inline)
+        cvm::fatal_error ("Error: vector and vectorFile cannot be specified at the same time.\n");
 
+      std::string file_col;
       double file_col_value;
-      bool found = get_keyval (conf, "vectorColValue", file_col_value, 0.0);
-      if (found && !file_col_value)
-        cvm::fatal_error ("Error: eigenvectorColValue, "
-                          "if provided, must be non-zero.\n");
+      if (get_keyval (conf, "vectorCol", file_col, std::string (""))) {
+        // use PDB flags if column is provided
+        bool found = get_keyval (conf, "vectorColValue", file_col_value, 0.0);
+        if (found && !file_col_value)
+          cvm::fatal_error ("Error: vectorColValue, "
+                            "if provided, must be non-zero.\n");
+      } else {
+        // if not, use atom indices
+        atoms.create_sorted_ids();
+      }
 
       eigenvec.resize (atoms.size());
       cvm::load_coords (file_name.c_str(), eigenvec, atoms.sorted_ids, file_col, file_col_value);
@@ -1021,33 +991,71 @@ colvar::eigenvector::eigenvector (std::string const &conf)
                       "and eigenvector must be defined.\n");
   }
 
-  cvm::rvector center (0.0, 0.0, 0.0);
-  eigenvec_invnorm2 = 0.0;
-
+  cvm::atom_pos eig_center (0.0, 0.0, 0.0);
   for (size_t i = 0; i < atoms.size(); i++) {
-    center += eigenvec[i];
+    eig_center += eigenvec[i];
+  }
+  eig_center *= 1.0 / atoms.size();
+  cvm::log ("Geometric center of the provided vector: "+cvm::to_str (eig_center)+"\n");
+
+  bool b_difference_vector = false;
+  get_keyval (conf, "differenceVector", b_difference_vector, false);
+
+  if (b_difference_vector) {
+
+    if (atoms.b_center) {
+      // both sets should be centered on the origin for fitting
+      for (size_t i = 0; i < atoms.size(); i++) {
+        eigenvec[i] -= eig_center;
+        ref_pos[i]  -= ref_pos_center;
+      }
+    }
+    if (atoms.b_rotate) {
+      atoms.rot.calc_optimal_rotation (eigenvec, ref_pos);
+      for (size_t i = 0; i < atoms.size(); i++) {
+        eigenvec[i] = atoms.rot.rotate (eigenvec[i]);
+      }
+    }
+    cvm::log ("\"differenceVector\" is on: subtracting the reference positions from the provided vector: v = v - x0.\n");
+    for (size_t i = 0; i < atoms.size(); i++) {
+      eigenvec[i] -= ref_pos[i];
+    }
+    if (atoms.b_center) {
+      // bring back the ref positions to where they were
+      for (size_t i = 0; i < atoms.size(); i++) {
+        ref_pos[i] += ref_pos_center;
+      }
+    }
+
+  } else {
+    cvm::log ("Centering the provided vector to zero.\n");
+    for (size_t i = 0; i < atoms.size(); i++) {
+      eigenvec[i] -= eig_center;
+    }
   }
 
-  cvm::log ("Subtracting sum of eigenvector components: " + cvm::to_str (center) + "\n");
+  // cvm::log ("The first three components (v1x, v1y, v1z) of the resulting vector are: "+cvm::to_str (eigenvec[0])+".\n");
 
+  // for inverse gradients
+  eigenvec_invnorm2 = 0.0;
   for (size_t i = 0; i < atoms.size(); i++) {
-    eigenvec[i] = eigenvec[i] - center;
     eigenvec_invnorm2 += eigenvec[i].norm2();
   }
   eigenvec_invnorm2 = 1.0 / eigenvec_invnorm2;
 
-  // request derivatives of optimal rotation wrt 2nd group
-  // for Jacobian
-  atoms.rot.request_group1_gradients(atoms.size());
-  atoms.rot.request_group2_gradients(atoms.size());
+  if (b_difference_vector) {
+    cvm::log ("\"differenceVector\" is on: normalizing the vector.\n");
+    for (size_t i = 0; i < atoms.size(); i++) {
+      eigenvec[i] *= eigenvec_invnorm2;
+    }
+  } else {
+    cvm::log ("The norm of the vector is |v| = "+cvm::to_str (eigenvec_invnorm2)+".\n");
+  }
 }
 
-  
+
 void colvar::eigenvector::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions(); // this will also update atoms.rot
-
   x.real_value = 0.0;
   for (size_t i = 0; i < atoms.size(); i++) {
     x.real_value += (atoms[i].pos - ref_pos[i]) * eigenvec[i];
@@ -1057,80 +1065,14 @@ void colvar::eigenvector::calc_value()
 
 void colvar::eigenvector::calc_gradients()
 {
-  // There are two versions of this code
-  // The simple version is not formally exact, but its
-  // results are numerically indistinguishable from the
-  // exact one. The exact one is more expensive and possibly
-  // less stable in cases where the optimal rotation
-  // becomes ill-defined.
-
-  // Version A: simple, intuitive, cheap, robust. Wrong.
-  // Works just fine in practice.
   for (size_t ia = 0; ia < atoms.size(); ia++) {
     atoms[ia].grad = eigenvec[ia];
   }
 
-/*
-  // Version B: complex, expensive, fragile. Right.
- 
-  // gradient of the rotation matrix
-  cvm::matrix2d <cvm::rvector, 3, 3> grad_rot_mat;
-
-  cvm::quaternion &quat0 = atoms.rot.q;
-
-  // gradients of products of 2 quaternion components
-  cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
-
-  // a term that involves the rotation gradients
-  cvm::rvector rot_grad_term;
-
-  cvm::atom_pos x_relative;
-  cvm::atom_pos atoms_cog = atoms.center_of_geometry();
-
-  for (size_t ia = 0; ia < atoms.size(); ia++) {
-
-    // Gradient of optimal quaternion wrt current Cartesian position
-    // WARNING: we want derivatives wrt the FIRST group here (unlike RMSD)
-    cvm::vector1d< cvm::rvector, 4 >      &dq = atoms.rot.dQ0_1[ia];
-
-    g11 = 2.0 * quat0[1]*dq[1];
-    g22 = 2.0 * quat0[2]*dq[2];
-    g33 = 2.0 * quat0[3]*dq[3];
-    g01 = quat0[0]*dq[1] + quat0[1]*dq[0];
-    g02 = quat0[0]*dq[2] + quat0[2]*dq[0];
-    g03 = quat0[0]*dq[3] + quat0[3]*dq[0];
-    g12 = quat0[1]*dq[2] + quat0[2]*dq[1];
-    g13 = quat0[1]*dq[3] + quat0[3]*dq[1];
-    g23 = quat0[2]*dq[3] + quat0[3]*dq[2];
-
-    // Gradient of the rotation matrix wrt current Cartesian position
-    grad_rot_mat[0][0] = -2.0 * (g22 + g33);
-    grad_rot_mat[1][0] =  2.0 * (g12 + g03);
-    grad_rot_mat[2][0] =  2.0 * (g13 - g02);
-    grad_rot_mat[0][1] =  2.0 * (g12 - g03);
-    grad_rot_mat[1][1] = -2.0 * (g11 + g33);
-    grad_rot_mat[2][1] =  2.0 * (g01 + g23);
-    grad_rot_mat[0][2] =  2.0 * (g02 + g13);
-    grad_rot_mat[1][2] =  2.0 * (g23 - g01);
-    grad_rot_mat[2][2] = -2.0 * (g11 + g22);
-
-    // this term needs to be rotated back, so we sum it separately
-    rot_grad_term.reset();
-
-    for (size_t ja = 0; ja < atoms.size(); ja++) {
-      x_relative = atoms[ja].pos - atoms_cog;
-
-      for (size_t i = 0; i < 3; i++) {
-        for (size_t j = 0; j < 3; j++) {
-          rot_grad_term += eigenvec[ja][i] * grad_rot_mat[i][j] * x_relative[j];
-        }
-      }
-    }
-
-    // Rotate correction term back to reference frame
-    atoms[ia].grad = eigenvec[ia] + quat0.rotate (rot_grad_term);
+  if (b_debug_gradients) {
+    cvm::log ("Debugging gradients:\n");
+    debug_gradients (atoms);
   }
-*/
 }
 
 
@@ -1145,7 +1087,7 @@ void colvar::eigenvector::calc_force_invgrads()
 {
   atoms.read_system_forces();
   ft.real_value = 0.0;
-    
+
   for (size_t ia = 0; ia < atoms.size(); ia++) {
     ft.real_value += eigenvec_invnorm2 * atoms[ia].grad *
       atoms[ia].system_force;
@@ -1159,10 +1101,9 @@ void colvar::eigenvector::calc_Jacobian_derivative()
   cvm::matrix2d <cvm::rvector, 3, 3> grad_rot_mat;
   cvm::quaternion &quat0 = atoms.rot.q;
 
-  // gradients of products of 2 quaternion components 
+  // gradients of products of 2 quaternion components
   cvm::rvector g11, g22, g33, g01, g02, g03, g12, g13, g23;
 
-  cvm::atom_pos x_relative; 
   cvm::real sum = 0.0;
 
   for (size_t ia = 0; ia < atoms.size(); ia++) {
@@ -1184,15 +1125,15 @@ void colvar::eigenvector::calc_Jacobian_derivative()
 
     // Gradient of the inverse rotation matrix wrt current Cartesian position
     // (transpose of the gradient of the direct rotation)
-    grad_rot_mat[0][0] = -2.0 * (g22 + g33); 
-    grad_rot_mat[0][1] =  2.0 * (g12 + g03); 
-    grad_rot_mat[0][2] =  2.0 * (g13 - g02); 
-    grad_rot_mat[1][0] =  2.0 * (g12 - g03); 
-    grad_rot_mat[1][1] = -2.0 * (g11 + g33); 
-    grad_rot_mat[1][2] =  2.0 * (g01 + g23); 
-    grad_rot_mat[2][0] =  2.0 * (g02 + g13); 
-    grad_rot_mat[2][1] =  2.0 * (g23 - g01); 
-    grad_rot_mat[2][2] = -2.0 * (g11 + g22); 
+    grad_rot_mat[0][0] = -2.0 * (g22 + g33);
+    grad_rot_mat[0][1] =  2.0 * (g12 + g03);
+    grad_rot_mat[0][2] =  2.0 * (g13 - g02);
+    grad_rot_mat[1][0] =  2.0 * (g12 - g03);
+    grad_rot_mat[1][1] = -2.0 * (g11 + g33);
+    grad_rot_mat[1][2] =  2.0 * (g01 + g23);
+    grad_rot_mat[2][0] =  2.0 * (g02 + g13);
+    grad_rot_mat[2][1] =  2.0 * (g23 - g01);
+    grad_rot_mat[2][2] = -2.0 * (g11 + g22);
 
     for (size_t i = 0; i < 3; i++) {
       for (size_t j = 0; j < 3; j++) {
@@ -1201,8 +1142,9 @@ void colvar::eigenvector::calc_Jacobian_derivative()
     }
   }
 
-  jd.real_value = sum * std::sqrt (eigenvec_invnorm2); 
+  jd.real_value = sum * std::sqrt (eigenvec_invnorm2);
 }
+
 
 
 

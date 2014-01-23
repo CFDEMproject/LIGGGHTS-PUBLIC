@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -75,7 +75,6 @@ void AngleHarmonic::compute(int eflag, int vflag)
     delx1 = x[i1][0] - x[i2][0];
     dely1 = x[i1][1] - x[i2][1];
     delz1 = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx1,dely1,delz1);
 
     rsq1 = delx1*delx1 + dely1*dely1 + delz1*delz1;
     r1 = sqrt(rsq1);
@@ -85,7 +84,6 @@ void AngleHarmonic::compute(int eflag, int vflag)
     delx2 = x[i3][0] - x[i2][0];
     dely2 = x[i3][1] - x[i2][1];
     delz2 = x[i3][2] - x[i2][2];
-    domain->minimum_image(delx2,dely2,delz2);
 
     rsq2 = delx2*delx2 + dely2*dely2 + delz2*delz2;
     r2 = sqrt(rsq2);
@@ -94,10 +92,10 @@ void AngleHarmonic::compute(int eflag, int vflag)
 
     c = delx1*delx2 + dely1*dely2 + delz1*delz2;
     c /= r1*r2;
-        
+
     if (c > 1.0) c = 1.0;
     if (c < -1.0) c = -1.0;
-        
+
     s = sqrt(1.0 - c*c);
     if (s < SMALL) s = SMALL;
     s = 1.0/s;
@@ -142,7 +140,7 @@ void AngleHarmonic::compute(int eflag, int vflag)
     }
 
     if (evflag) ev_tally(i1,i2,i3,nlocal,newton_bond,eangle,f1,f3,
-			 delx1,dely1,delz1,delx2,dely2,delz2);
+                         delx1,dely1,delz1,delx2,dely2,delz2);
   }
 }
 
@@ -172,8 +170,8 @@ void AngleHarmonic::coeff(int narg, char **arg)
   int ilo,ihi;
   force->bounds(arg[0],atom->nangletypes,ilo,ihi);
 
-  double k_one = force->numeric(arg[1]);
-  double theta0_one = force->numeric(arg[2]);
+  double k_one = force->numeric(FLERR,arg[1]);
+  double theta0_one = force->numeric(FLERR,arg[2]);
 
   // convert theta0 from degrees to radians
 
@@ -206,7 +204,7 @@ void AngleHarmonic::write_restart(FILE *fp)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 reads coeffs from restart file, bcasts them 
+   proc 0 reads coeffs from restart file, bcasts them
 ------------------------------------------------------------------------- */
 
 void AngleHarmonic::read_restart(FILE *fp)
@@ -223,6 +221,16 @@ void AngleHarmonic::read_restart(FILE *fp)
   for (int i = 1; i <= atom->nangletypes; i++) setflag[i] = 1;
 }
 
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void AngleHarmonic::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->nangletypes; i++)
+    fprintf(fp,"%d %g %g\n",i,k[i],theta0[i]/MY_PI*180.0);
+}
+
 /* ---------------------------------------------------------------------- */
 
 double AngleHarmonic::single(int type, int i1, int i2, int i3)
@@ -234,7 +242,7 @@ double AngleHarmonic::single(int type, int i1, int i2, int i3)
   double delz1 = x[i1][2] - x[i2][2];
   domain->minimum_image(delx1,dely1,delz1);
   double r1 = sqrt(delx1*delx1 + dely1*dely1 + delz1*delz1);
-  
+
   double delx2 = x[i3][0] - x[i2][0];
   double dely2 = x[i3][1] - x[i2][1];
   double delz2 = x[i3][2] - x[i2][2];

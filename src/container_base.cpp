@@ -45,7 +45,7 @@ using namespace LAMMPS_NS;
   {
   }
 
-  ContainerBase::ContainerBase(char *_id)
+  ContainerBase::ContainerBase(const char *_id)
   : id_(0),
     communicationType_(COMM_TYPE_MANUAL),
     refFrame_(REF_FRAME_UNDEFINED),
@@ -56,7 +56,7 @@ using namespace LAMMPS_NS;
       strcpy(id_,_id);
   }
 
-  ContainerBase::ContainerBase(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower)
+  ContainerBase::ContainerBase(const char *_id, const char* _comm, const char* _ref, const char *_restart,int _scalePower)
   : id_(0),
     communicationType_(COMM_TYPE_MANUAL),
     refFrame_(REF_FRAME_UNDEFINED),
@@ -78,14 +78,14 @@ using namespace LAMMPS_NS;
 
   ContainerBase::~ContainerBase()
   {
-      if(id_) delete []id_;
+      delete []id_;
   }
 
   /* ----------------------------------------------------------------------
    set comm and reference properties
   ------------------------------------------------------------------------- */
 
-  void ContainerBase::setProperties(char *_id, char* _comm, char* _ref, char *_restart, int _scalePower)
+  void ContainerBase::setProperties(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower)
   {
       id_ = new char[strlen(_id)+1];
       strcpy(id_,_id);

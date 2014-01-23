@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -39,8 +39,8 @@ class PRD : protected Pointers {
 
   int equal_size_replicas,natoms;
   int neigh_every,neigh_delay,neigh_dist_check;
-  int nbuild,ndanger;
   int quench_reneighbor;
+  bigint nbuild,ndanger;
 
   double time_dephase,time_dynamics,time_quench,time_comm,time_output;
   double time_start;
@@ -50,7 +50,7 @@ class PRD : protected Pointers {
   double **xall;
 
   int ncoincident;
-  
+
   class RanPark *random_select;
   class RanMars *random_dephase;
   class Compute *compute_event;
@@ -120,7 +120,11 @@ after the PRD simulation.
 
 E: Too many timesteps
 
-The cummulative timesteps must fit in a 64-bit integer.
+The cumulative timesteps must fit in a 64-bit integer.
+
+E: Cannot use PRD with a changing box
+
+The current box dimensions are not copied between replicas
 
 E: Cannot use PRD with a time-dependent fix defined
 
@@ -137,7 +141,7 @@ which is enabled by default, via the atom_modify command.
 
 E: Too many iterations
 
-You must use a number of iterations that fit in a 32-bit integer 
+You must use a number of iterations that fit in a 32-bit integer
 for minimization.
 
 */

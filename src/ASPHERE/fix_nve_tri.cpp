@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -32,11 +32,6 @@ FixNVETri::FixNVETri(LAMMPS *lmp, int narg, char **arg) :
   if (narg != 3) error->all(FLERR,"Illegal fix nve/tri command");
 
   time_integrate = 1;
-
-  // error checks
-
-  avec = (AtomVecTri *) atom->style_match("tri");
-  if (!avec) error->all(FLERR,"Fix nve/tri requires atom style tri");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -56,6 +51,11 @@ int FixNVETri::setmask()
 void FixNVETri::init()
 {
   int i,itype;
+
+  // error checks
+
+  avec = (AtomVecTri *) atom->style_match("tri");
+  if (!avec) error->all(FLERR,"Fix nve/tri requires atom style tri");
 
   if (domain->dimension != 3)
     error->all(FLERR,"Fix nve/tri can only be used for 3d simulations");
@@ -109,7 +109,7 @@ void FixNVETri::initial_integrate(int vflag)
       x[i][2] += dtv * v[i][2];
 
       // update angular momentum by 1/2 step
-      
+
       angmom[i][0] += dtf * torque[i][0];
       angmom[i][1] += dtf * torque[i][1];
       angmom[i][2] += dtf * torque[i][2];
@@ -119,9 +119,9 @@ void FixNVETri::initial_integrate(int vflag)
       // returns new normalized quaternion
 
       MathExtra::mq_to_omega(angmom[i],bonus[tri[i]].quat,
-			     bonus[tri[i]].inertia,omega);
+                             bonus[tri[i]].inertia,omega);
       MathExtra::richardson(bonus[tri[i]].quat,angmom[i],omega,
-			    bonus[tri[i]].inertia,dtq);
+                            bonus[tri[i]].inertia,dtq);
     }
 }
 
@@ -149,7 +149,7 @@ void FixNVETri::final_integrate()
       v[i][0] += dtfm * f[i][0];
       v[i][1] += dtfm * f[i][1];
       v[i][2] += dtfm * f[i][2];
-  
+
       angmom[i][0] += dtf * torque[i][0];
       angmom[i][1] += dtf * torque[i][1];
       angmom[i][2] += dtf * torque[i][2];

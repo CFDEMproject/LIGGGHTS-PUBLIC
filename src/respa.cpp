@@ -22,7 +22,6 @@
 #include "atom.h"
 #include "domain.h"
 #include "comm.h"
-#include "atom.h"
 #include "force.h"
 #include "pair.h"
 #include "bond.h"
@@ -47,13 +46,13 @@ Respa::Respa(LAMMPS *lmp, int narg, char **arg) : Integrate(lmp, narg, arg)
 {
   if (narg < 1) error->all(FLERR,"Illegal run_style respa command");
 
-  nlevels = atoi(arg[0]);
+  nlevels = force->inumeric(FLERR,arg[0]);
   if (nlevels < 1) error->all(FLERR,"Respa levels must be >= 1");
 
   if (narg < nlevels) error->all(FLERR,"Illegal run_style respa command");
   loop = new int[nlevels];
   for (int iarg = 1; iarg < nlevels; iarg++) {
-    loop[iarg-1] = atoi(arg[iarg]);
+    loop[iarg-1] = force->inumeric(FLERR,arg[iarg]);
     if (loop[iarg-1] <= 0) error->all(FLERR,"Illegal run_style respa command");
   }
   loop[nlevels-1] = 1;
@@ -69,43 +68,43 @@ Respa::Respa(LAMMPS *lmp, int narg, char **arg) : Integrate(lmp, narg, arg)
   while (iarg < narg) {
     if (strcmp(arg[iarg],"bond") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_bond = atoi(arg[iarg+1]) - 1;
+      level_bond = force->inumeric(FLERR,arg[iarg+1]) - 1;
       iarg += 2;
     } else if (strcmp(arg[iarg],"angle") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_angle = atoi(arg[iarg+1]) - 1;
+      level_angle = force->inumeric(FLERR,arg[iarg+1]) - 1;
       iarg += 2;
     } else if (strcmp(arg[iarg],"dihedral") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_dihedral = atoi(arg[iarg+1]) - 1;
+      level_dihedral = force->inumeric(FLERR,arg[iarg+1]) - 1;
       iarg += 2;
     } else if (strcmp(arg[iarg],"improper") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_improper = atoi(arg[iarg+1]) - 1;
+      level_improper = force->inumeric(FLERR,arg[iarg+1]) - 1;
       iarg += 2;
     } else if (strcmp(arg[iarg],"pair") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_pair = atoi(arg[iarg+1]) - 1;
+      level_pair = force->inumeric(FLERR,arg[iarg+1]) - 1;
       iarg += 2;
     } else if (strcmp(arg[iarg],"inner") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_inner = atoi(arg[iarg+1]) - 1;
-      cutoff[0] = atof(arg[iarg+2]);
-      cutoff[1] = atof(arg[iarg+3]);
+      level_inner = force->inumeric(FLERR,arg[iarg+1]) - 1;
+      cutoff[0] = force->numeric(FLERR,arg[iarg+2]);
+      cutoff[1] = force->numeric(FLERR,arg[iarg+3]);
       iarg += 4;
     } else if (strcmp(arg[iarg],"middle") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_middle = atoi(arg[iarg+1]) - 1;
-      cutoff[2] = atof(arg[iarg+2]);
-      cutoff[3] = atof(arg[iarg+3]);
+      level_middle = force->inumeric(FLERR,arg[iarg+1]) - 1;
+      cutoff[2] = force->numeric(FLERR,arg[iarg+2]);
+      cutoff[3] = force->numeric(FLERR,arg[iarg+3]);
       iarg += 4;
     } else if (strcmp(arg[iarg],"outer") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_outer = atoi(arg[iarg+1]) - 1;
+      level_outer = force->inumeric(FLERR,arg[iarg+1]) - 1;
       iarg += 2;
     } else if (strcmp(arg[iarg],"kspace") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal run_style respa command");
-      level_kspace = atoi(arg[iarg+1]) - 1;
+      level_kspace = force->inumeric(FLERR,arg[iarg+1]) - 1;
       iarg += 2;
     } else error->all(FLERR,"Illegal run_style respa command");
   }
@@ -148,7 +147,7 @@ Respa::Respa(LAMMPS *lmp, int narg, char **arg) : Integrate(lmp, narg, arg)
     if (screen) {
       fprintf(screen,"Respa levels:\n");
       for (int i = 0; i < nlevels; i++) {
-        fprintf(screen,"  %d =",i);
+        fprintf(screen,"  %d =",i+1);
         if (level_bond == i) fprintf(screen," bond");
         if (level_angle == i) fprintf(screen," angle");
         if (level_dihedral == i) fprintf(screen," dihedral");
@@ -164,7 +163,7 @@ Respa::Respa(LAMMPS *lmp, int narg, char **arg) : Integrate(lmp, narg, arg)
     if (logfile) {
       fprintf(logfile,"Respa levels:\n");
       for (int i = 0; i < nlevels; i++) {
-        fprintf(logfile,"  %d =",i);
+        fprintf(logfile,"  %d =",i+1);
         if (level_bond == i) fprintf(logfile," bond");
         if (level_angle == i) fprintf(logfile," angle");
         if (level_dihedral == i) fprintf(logfile," dihedral");
@@ -190,12 +189,12 @@ Respa::Respa(LAMMPS *lmp, int narg, char **arg) : Integrate(lmp, narg, arg)
   }
   if (level_pair == -1 && level_middle == -1) {
     if (level_inner < level_improper || level_outer < level_inner ||
-        level_kspace != level_outer)
+        level_kspace < level_outer)
       error->all(FLERR,"Invalid order of forces within respa levels");
   }
   if (level_pair == -1 && level_middle >= 0) {
     if (level_inner < level_improper || level_middle < level_inner ||
-        level_outer < level_inner || level_kspace != level_outer)
+        level_outer < level_inner || level_kspace < level_outer)
       error->all(FLERR,"Invalid order of forces within respa levels");
   }
 
@@ -279,6 +278,11 @@ void Respa::init()
 
   ev_setup();
 
+  // detect if fix omp is present and will clear force arrays
+
+  int ifix = modify->find_fix("package_omp");
+  if (ifix >= 0) external_force_clear = 1;
+
   // set flags for what arrays to clear in force_clear()
   // need to clear additionals arrays if they exist
 
@@ -343,6 +347,9 @@ void Respa::setup()
   if (atom->sortfreq > 0) atom->sort();
   comm->borders();
   if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
+  domain->image_check();
+  domain->box_too_small_check();
+  modify->setup_pre_neighbor();
   neighbor->build();
   neighbor->ncalls = 0;
 
@@ -353,14 +360,6 @@ void Respa::setup()
   for (int ilevel = 0; ilevel < nlevels; ilevel++) {
     force_clear(newton[ilevel]);
     modify->setup_pre_force_respa(vflag,ilevel);
-    if (level_bond == ilevel && force->bond)
-      force->bond->compute(eflag,vflag);
-    if (level_angle == ilevel && force->angle)
-      force->angle->compute(eflag,vflag);
-    if (level_dihedral == ilevel && force->dihedral)
-      force->dihedral->compute(eflag,vflag);
-    if (level_improper == ilevel && force->improper)
-      force->improper->compute(eflag,vflag);
     if (level_pair == ilevel && pair_compute_flag)
       force->pair->compute(eflag,vflag);
     if (level_inner == ilevel && pair_compute_flag)
@@ -369,6 +368,14 @@ void Respa::setup()
       force->pair->compute_middle();
     if (level_outer == ilevel && pair_compute_flag)
       force->pair->compute_outer(eflag,vflag);
+    if (level_bond == ilevel && force->bond)
+      force->bond->compute(eflag,vflag);
+    if (level_angle == ilevel && force->angle)
+      force->angle->compute(eflag,vflag);
+    if (level_dihedral == ilevel && force->dihedral)
+      force->dihedral->compute(eflag,vflag);
+    if (level_improper == ilevel && force->improper)
+      force->improper->compute(eflag,vflag);
     if (level_kspace == ilevel && force->kspace) {
       force->kspace->setup();
       if (kspace_compute_flag) force->kspace->compute(eflag,vflag);
@@ -379,7 +386,7 @@ void Respa::setup()
 
   modify->setup(vflag);
   sum_flevel_f();
-  output->setup(1);
+  output->setup();
   update->setupflag = 0;
 }
 
@@ -398,6 +405,7 @@ void Respa::setup_minimal(int flag)
   // build neighbor lists
 
   if (flag) {
+    modify->setup_pre_exchange();
     if (triclinic) domain->x2lamda(atom->nlocal);
     domain->pbc();
     domain->reset_box();
@@ -406,6 +414,9 @@ void Respa::setup_minimal(int flag)
     comm->exchange();
     comm->borders();
     if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
+    domain->image_check();
+    domain->box_too_small_check();
+    modify->setup_pre_neighbor();
     neighbor->build();
     neighbor->ncalls = 0;
   }
@@ -417,14 +428,6 @@ void Respa::setup_minimal(int flag)
   for (int ilevel = 0; ilevel < nlevels; ilevel++) {
     force_clear(newton[ilevel]);
     modify->setup_pre_force_respa(vflag,ilevel);
-    if (level_bond == ilevel && force->bond)
-      force->bond->compute(eflag,vflag);
-    if (level_angle == ilevel && force->angle)
-      force->angle->compute(eflag,vflag);
-    if (level_dihedral == ilevel && force->dihedral)
-      force->dihedral->compute(eflag,vflag);
-    if (level_improper == ilevel && force->improper)
-      force->improper->compute(eflag,vflag);
     if (level_pair == ilevel && pair_compute_flag)
       force->pair->compute(eflag,vflag);
     if (level_inner == ilevel && pair_compute_flag)
@@ -433,6 +436,14 @@ void Respa::setup_minimal(int flag)
       force->pair->compute_middle();
     if (level_outer == ilevel && pair_compute_flag)
       force->pair->compute_outer(eflag,vflag);
+    if (level_bond == ilevel && force->bond)
+      force->bond->compute(eflag,vflag);
+    if (level_angle == ilevel && force->angle)
+      force->angle->compute(eflag,vflag);
+    if (level_dihedral == ilevel && force->dihedral)
+      force->dihedral->compute(eflag,vflag);
+    if (level_improper == ilevel && force->improper)
+      force->improper->compute(eflag,vflag);
     if (level_kspace == ilevel && force->kspace) {
       force->kspace->setup();
       if (kspace_compute_flag) force->kspace->compute(eflag,vflag);
@@ -480,6 +491,8 @@ void Respa::cleanup()
 {
   modify->post_run();
   modify->delete_fix("RESPA");
+  domain->box_too_small_check();
+  update->update_time();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -530,6 +543,10 @@ void Respa::recurse(int ilevel)
         if (modify->n_pre_neighbor) modify->pre_neighbor();
         neighbor->build();
         timer->stamp(TIME_NEIGHBOR);
+      } else if (ilevel == 0) {
+        timer->stamp();
+        comm->forward_comm();
+        timer->stamp(TIME_COMM);
       }
 
     } else if (ilevel == 0) {
@@ -538,27 +555,16 @@ void Respa::recurse(int ilevel)
       timer->stamp(TIME_COMM);
     }
 
+    // force computations
+    // important that ordering is same as Verlet
+    // so that any order dependencies are the same
+    // when potentials are invoked at same level
+
     force_clear(newton[ilevel]);
     if (modify->n_pre_force_respa)
       modify->pre_force_respa(vflag,ilevel,iloop);
 
     timer->stamp();
-    if (level_bond == ilevel && force->bond) {
-      force->bond->compute(eflag,vflag);
-      timer->stamp(TIME_BOND);
-    }
-    if (level_angle == ilevel && force->angle) {
-      force->angle->compute(eflag,vflag);
-      timer->stamp(TIME_BOND);
-    }
-    if (level_dihedral == ilevel && force->dihedral) {
-      force->dihedral->compute(eflag,vflag);
-      timer->stamp(TIME_BOND);
-    }
-    if (level_improper == ilevel && force->improper) {
-      force->improper->compute(eflag,vflag);
-      timer->stamp(TIME_BOND);
-    }
     if (level_pair == ilevel && pair_compute_flag) {
       force->pair->compute(eflag,vflag);
       timer->stamp(TIME_PAIR);
@@ -574,6 +580,22 @@ void Respa::recurse(int ilevel)
     if (level_outer == ilevel && pair_compute_flag) {
       force->pair->compute_outer(eflag,vflag);
       timer->stamp(TIME_PAIR);
+    }
+    if (level_bond == ilevel && force->bond) {
+      force->bond->compute(eflag,vflag);
+      timer->stamp(TIME_BOND);
+    }
+    if (level_angle == ilevel && force->angle) {
+      force->angle->compute(eflag,vflag);
+      timer->stamp(TIME_BOND);
+    }
+    if (level_dihedral == ilevel && force->dihedral) {
+      force->dihedral->compute(eflag,vflag);
+      timer->stamp(TIME_BOND);
+    }
+    if (level_improper == ilevel && force->improper) {
+      force->improper->compute(eflag,vflag);
+      timer->stamp(TIME_BOND);
     }
     if (level_kspace == ilevel && kspace_compute_flag) {
       force->kspace->compute(eflag,vflag);
@@ -599,8 +621,6 @@ void Respa::recurse(int ilevel)
 
 void Respa::force_clear(int newtonflag)
 {
-  int i;
-
   if (external_force_clear) return;
 
   // clear global force array
@@ -609,37 +629,15 @@ void Respa::force_clear(int newtonflag)
   int nall;
   if (newtonflag) nall = atom->nlocal + atom->nghost;
   else nall = atom->nlocal;
-  int ntot = nall * comm->nthreads;
 
-  double **f = atom->f;
-  for (i = 0; i < ntot; i++) {
-    f[i][0] = 0.0;
-    f[i][1] = 0.0;
-    f[i][2] = 0.0;
-  }
+  size_t nbytes = sizeof(double) * nall;
 
-  if (torqueflag) {
-    double **torque = atom->torque;
-    for (i = 0; i < nall; i++) {
-      torque[i][0] = 0.0;
-      torque[i][1] = 0.0;
-      torque[i][2] = 0.0;
-    }
-  }
-
-  if (erforceflag) {
-    double *erforce = atom->erforce;
-    for (i = 0; i < nall; i++) erforce[i] = 0.0;
-  }
-
-  if (e_flag) {
-    double *de = atom->de;
-    for (i = 0; i < nall; i++) de[i] = 0.0;
-  }
-
-  if (rho_flag) {
-    double *drho = atom->drho;
-    for (i = 0; i < nall; i++) drho[i] = 0.0;
+  if (nbytes > 0 ) {
+    memset(&(atom->f[0][0]),0,3*nbytes);
+    if (torqueflag)  memset(&(atom->torque[0][0]),0,3*nbytes);
+    if (erforceflag) memset(&(atom->erforce[0]),  0,  nbytes);
+    if (e_flag)      memset(&(atom->de[0]),       0,  nbytes);
+    if (rho_flag)    memset(&(atom->drho[0]),     0,  nbytes);
   }
 }
 

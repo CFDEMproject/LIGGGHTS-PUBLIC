@@ -16,9 +16,10 @@
 #include "atom.h"
 #include "comm.h"
 #include "force.h"
+#include "suffix.h"
+#include "atom_masks.h"
 #include "memory.h"
 #include "error.h"
-#include "suffix.h"
 
 using namespace LAMMPS_NS;
 
@@ -27,6 +28,7 @@ using namespace LAMMPS_NS;
 Improper::Improper(LAMMPS *lmp) : Pointers(lmp)
 {
   energy = 0.0;
+  writedata = 0;
 
   allocated = 0;
   suffix_flag = Suffix::NONE;
@@ -34,6 +36,10 @@ Improper::Improper(LAMMPS *lmp) : Pointers(lmp)
   maxeatom = maxvatom = 0;
   eatom = NULL;
   vatom = NULL;
+  setflag = NULL;
+
+  datamask = ALL_MASK;
+  datamask_ext = ALL_MASK;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -50,7 +56,8 @@ Improper::~Improper()
 
 void Improper::init()
 {
-  if (!allocated) error->all(FLERR,"Improper coeffs are not set");
+  if (!allocated && atom->nimpropertypes) 
+    error->all(FLERR,"Improper coeffs are not set");
   for (int i = 1; i <= atom->nimpropertypes; i++)
     if (setflag[i] == 0) error->all(FLERR,"All improper coeffs are not set");
 }

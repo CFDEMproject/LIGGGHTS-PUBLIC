@@ -37,7 +37,7 @@ class FixDeform : public Fix {
   void end_of_step();
 
  private:
-  int triclinic,scaleflag;
+  int triclinic,scaleflag,flipflag;
   int flip,flipxy,flipxz,flipyz;
   double *h_rate,*h_ratelo;
   int varflag;                     // 1 if VARIABLE option is used, 0 if not
@@ -96,10 +96,6 @@ E: Cannot use fix deform tilt on a shrink-wrapped 2nd dim
 This is because the shrink-wrapping will change the value
 of the strain implied by the tilt factor.
 
-E: Use of fix deform with undefined lattice
-
-A lattice must be defined to use fix deform with units = lattice.
-
 E: Fix deform volume setting is invalid
 
 Cannot use volume style unless other dimensions are being controlled.
@@ -135,5 +131,9 @@ E: Fix deform is changing yz too much with xy
 When both yz and xy are changing, it induces changes in xz if the
 box must flip from one tilt extreme to another.  Thus it is not
 allowed for yz to grow so much that a flip is induced.
+
+U: Use of fix deform with undefined lattice
+
+A lattice must be defined to use fix deform with units = lattice.
 
 */

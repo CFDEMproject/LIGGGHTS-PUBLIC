@@ -215,7 +215,7 @@ protected:
   cvm::real ext_gamma;
   /// Amplitude of Gaussian white noise for Langevin extended dynamics
   cvm::real ext_sigma;
-  
+
   /// \brief Harmonic restraint force
   colvarvalue fr;
 
@@ -287,6 +287,9 @@ public:
 
   /// Disable the specified task
   void disable (colvar::task const &t);
+
+  /// Get ready for a run and possibly re-initialize internal data
+  void setup();
 
   /// Destructor
   ~colvar();
@@ -370,6 +373,9 @@ public:
   /// Write the collective variable to a restart file
   std::ostream & write_restart (std::ostream &os);
 
+  /// Write output files (if defined, e.g. in analysis mode)
+  void write_output_files();
+
 
 protected:
 
@@ -377,7 +383,7 @@ protected:
   colvarvalue            x_old;
 
   /// Time series of values and velocities used in correlation
-  /// functions 
+  /// functions
   std::list< std::list<colvarvalue> > acf_x_history, acf_v_history;
   /// Time series of values and velocities used in correlation
   /// functions (pointers)x
@@ -471,14 +477,13 @@ public:
   class distance;
   class distance_z;
   class distance_xy;
-  class distance6;
+  class distance_inv;
   class angle;
   class dihedral;
   class coordnum;
   class selfcoordnum;
   class h_bond;
   class rmsd;
-  class logmsd;
   class orientation_angle;
   class tilt;
   class spin_angle;

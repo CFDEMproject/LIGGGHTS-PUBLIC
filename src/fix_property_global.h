@@ -81,6 +81,7 @@ class FixPropertyGlobal : public Fix {
   int data_style;            // 0 if a scalar is registered, 1 if vector, 2 if 2d array (matrix)
   int nvalues;
   bool is_symmetric;         // flag if values must be symmetric (only applicable for matrix)
+  bool is_atomtype_bound;    // flag if # values is bound to # atom types
   double *values;            // original values to be stored in this fix
   double *values_recomputed; // values to be stored in this fix, recomputed by eg another fix
   double **array;

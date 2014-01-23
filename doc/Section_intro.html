@@ -131,7 +131,7 @@ it to LAMMPS.
 <LI>  coarse-grained mesoscale models
 <LI>  finite-size spherical and ellipsoidal particles
 <LI>  finite-size  line segment (2d) and triangle (3d) particles
-<LI>  point dipolar particles
+<LI>  point dipole particles
 <LI>  rigid collections of particles
 <LI>  hybrid combinations of these 
 </UL>
@@ -144,7 +144,7 @@ commands)
 </P>
 <UL><LI>  pairwise potentials: Lennard-Jones, Buckingham, Morse, Born-Mayer-Huggins,     Yukawa, soft, class 2 (COMPASS), hydrogen bond, tabulated
 <LI>  charged pairwise potentials: Coulombic, point-dipole
-<LI>  manybody potentials: EAM, Finnis/Sinclair EAM, modified EAM (MEAM),     embedded ion method (EIM), EDIP, ADP, Stillinger-Weber, Tersoff, REBO, AIREBO, ReaxFF, COMB
+<LI>  manybody potentials: EAM, Finnis/Sinclair EAM, modified EAM (MEAM),     embedded ion method (EIM), EDIP, ADP, Stillinger-Weber, Tersoff,     REBO, AIREBO, ReaxFF, COMB
 <LI>  electron force field (eFF, AWPMD)
 <LI>  coarse-grained potentials: DPD, GayBerne, REsquared, colloidal, DLVO
 <LI>  mesoscopic potentials: granular, Peridynamics, SPH
@@ -156,8 +156,8 @@ commands)
 <LI>  water potentials: TIP3P, TIP4P, SPC
 <LI>  implicit solvent potentials: hydrodynamic lubrication, Debye
 <LI>  <A HREF = "http://openkim.org">KIM archive</A> of potentials
-<LI>  long-range Coulombics and dispersion: Ewald, Wolf,     PPPM (similar to particle-mesh Ewald), Ewald/N for long-range Lennard-Jones
-<LI>  force-field compatibility with common CHARMM, AMBER, DREIDING, OPLS, GROMACS, COMPASS options
+<LI>  long-range interactions for charge, point-dipoles, and LJ dispersion:     Ewald, Wolf, PPPM (similar to particle-mesh Ewald)
+<LI>  force-field compatibility with common CHARMM, AMBER, DREIDING,     OPLS, GROMACS, COMPASS options
 <LI>  handful of GPU-enabled pair styles
 <LI>  hybrid potentials: multiple pair, bond, angle, dihedral, improper     potentials can be used in one simulation
 <LI>  overlaid potentials: superposition of multiple pair potentials 
@@ -200,7 +200,8 @@ commands)
 <LI>  Brownian dynamics
 <LI>  rigid body integration
 <LI>  energy minimization via conjugate gradient or steepest descent relaxation
-<LI>  rRESPA hierarchical timestepping 
+<LI>  rRESPA hierarchical timestepping
+<LI>  rerun command for post-processing of dump files 
 </UL>
 <H4>Diagnostics 
 </H4>
@@ -247,11 +248,12 @@ Pizza.py WWW site</A>.
 <P>These are LAMMPS capabilities which you may not think of as typical
 molecular dynamics options:
 </P>
-<UL><LI><A HREF = "fix_srd.html">stochastic rotation dynamics (SRD)</A>
+<UL><LI><A HREF = "body.html">generalized aspherical particles</A>
+<LI><A HREF = "fix_srd.html">stochastic rotation dynamics (SRD)</A>
 <LI><A HREF = "fix_imd.html">real-time visualization and interactive MD</A>
 <LI><A HREF = "fix_atc.html">atom-to-continuum coupling</A> with finite elements
 <LI>coupled rigid body integration via the <A HREF = "fix_poems.html">POEMS</A> library
-<LI><A HREF = "doc/fix_gcmc.html">grand canonical Monte Carlo</A> insertions/deletions
+<LI><A HREF = "fix_gcmc.html">grand canonical Monte Carlo</A> insertions/deletions
 <LI><A HREF = "pair_dsmc.html">Direct Simulation Monte Carlo</A> for low-density fluids
 <LI><A HREF = "pair_peri.html">Peridynamics mesoscale modeling</A>
 <LI><A HREF = "fix_tmd.html">targeted</A> and <A HREF = "fix_smd.html">steered</A> molecular dynamics
@@ -525,7 +527,6 @@ and efforts.
 <LI>Ilya Valuev (JIHT), valuev at physik.hu-berlin.de, USER-AWPMD package for wave-packet MD
 <LI>Christian Trott (U Tech Ilmenau), christian.trott at tu-ilmenau.de, USER-CUDA package
 <LI>Andres Jaramillo-Botero (Caltech), ajaramil at wag.caltech.edu, USER-EFF package for electron force field
-<LI>Pieter in' t Veld (BASF), pieter.intveld at basf.com, USER-EWALDN package for 1/r^N long-range solvers
 <LI>Christoph Kloss (JKU), Christoph.Kloss at jku.at, USER-LIGGGHTS package for granular models and granular/fluid coupling
 <LI>Metin Aktulga (LBL), hmaktulga at lbl.gov, USER-REAXC package for C version of ReaxFF
 <LI>Georg Gunzenmuller (EMI), georg.ganzenmueller at emi.fhg.de, USER-SPH package 

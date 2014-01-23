@@ -72,10 +72,9 @@ colvar::orientation::orientation (std::string const &conf)
     rot.request_group2_gradients (atoms.size());
   }
 
-  rot.b_debug_gradients = this->b_debug_gradients;
 }
 
-  
+
 colvar::orientation::orientation()
   : cvc ()
 {
@@ -86,8 +85,8 @@ colvar::orientation::orientation()
 
 void colvar::orientation::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions();
+  // atoms.reset_atoms_data();
+  // atoms.read_positions();
 
   atoms_cog = atoms.center_of_geometry();
 
@@ -143,8 +142,8 @@ colvar::orientation_angle::orientation_angle()
 
 void colvar::orientation_angle::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions();
+  // atoms.reset_atoms_data();
+  // atoms.read_positions();
 
   atoms_cog = atoms.center_of_geometry();
 
@@ -161,7 +160,7 @@ void colvar::orientation_angle::calc_value()
 void colvar::orientation_angle::calc_gradients()
 {
   cvm::real const dxdq0 =
-    ( ((rot.q).q0 * (rot.q).q0 < 1.0) ? 
+    ( ((rot.q).q0 * (rot.q).q0 < 1.0) ?
       ((180.0 / PI) * (-2.0) / std::sqrt (1.0 - ((rot.q).q0 * (rot.q).q0))) :
       0.0 );
 
@@ -207,8 +206,8 @@ colvar::tilt::tilt()
 
 void colvar::tilt::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions();
+  // atoms.reset_atoms_data();
+  // atoms.read_positions();
 
   atoms_cog = atoms.center_of_geometry();
 
@@ -229,36 +228,9 @@ void colvar::tilt::calc_gradients()
     }
   }
 
-  if (cvm::debug()) {
-
-    std::vector<cvm::atom_pos> pos_test (atoms.positions_shifted (-1.0 * atoms_cog));
-
-    for (size_t comp = 0; comp < 3; comp++) {
-      
-      // correct this cartesian component for the "new" center of geometry
-      for (size_t ia = 0; ia < atoms.size(); ia++) {
-        pos_test[ia][comp] -=
-          cvm::debug_gradients_step_size / cvm::real (atoms.size());
-      }
-
-      for (size_t ia = 0; ia < atoms.size(); ia++) {
-
-        pos_test[ia][comp] += cvm::debug_gradients_step_size;
-        rot.calc_optimal_rotation (ref_pos, pos_test);
-        pos_test[ia][comp] -= cvm::debug_gradients_step_size;
-
-        cvm::log ("|dx(real) - dx(pred)|/dx(real) = "+
-                  cvm::to_str (std::fabs (rot.cos_theta (axis) - x.real_value -
-                                       cvm::debug_gradients_step_size * atoms[ia].grad[comp]) /
-                               std::fabs (rot.cos_theta (axis) - x.real_value),
-                               cvm::cv_width, cvm::cv_prec)+".\n");
-      }
-
-      for (size_t ia = 0; ia < atoms.size(); ia++) {
-        pos_test[ia][comp] +=
-          cvm::debug_gradients_step_size / cvm::real (atoms.size());
-      }
-    }
+  if (b_debug_gradients) {
+    cvm::log ("Debugging tilt component gradients:\n");
+    debug_gradients (atoms);
   }
 }
 
@@ -304,8 +276,8 @@ colvar::spin_angle::spin_angle()
 
 void colvar::spin_angle::calc_value()
 {
-  atoms.reset_atoms_data();
-  atoms.read_positions();
+  // atoms.reset_atoms_data();
+  // atoms.read_positions();
 
   atoms_cog = atoms.center_of_geometry();
 
@@ -324,38 +296,6 @@ void colvar::spin_angle::calc_gradients()
     atoms[ia].grad = cvm::rvector (0.0, 0.0, 0.0);
     for (size_t iq = 0; iq < 4; iq++) {
       atoms[ia].grad += (dxdq[iq] * (rot.dQ0_2[ia])[iq]);
-    }
-  }
-
-  if (cvm::debug()) {
-
-    std::vector<cvm::atom_pos> pos_test (atoms.positions_shifted (-1.0 * atoms_cog));
-
-    for (size_t comp = 0; comp < 3; comp++) {
-      
-      // correct this cartesian component for the "new" center of geometry
-      for (size_t ia = 0; ia < atoms.size(); ia++) {
-        pos_test[ia][comp] -=
-          cvm::debug_gradients_step_size / cvm::real (atoms.size());
-      }
-
-      for (size_t ia = 0; ia < atoms.size(); ia++) {
-
-        pos_test[ia][comp] += cvm::debug_gradients_step_size;
-        rot.calc_optimal_rotation (ref_pos, pos_test);
-        pos_test[ia][comp] -= cvm::debug_gradients_step_size;
-
-        cvm::log ("|dx(real) - dx(pred)|/dx(real) = "+
-                  cvm::to_str (std::fabs (rot.spin_angle (axis) - x.real_value -
-                                       cvm::debug_gradients_step_size * atoms[ia].grad[comp]) /
-                               std::fabs (rot.spin_angle (axis) - x.real_value),
-                               cvm::cv_width, cvm::cv_prec)+".\n");
-      }
-
-      for (size_t ia = 0; ia < atoms.size(); ia++) {
-        pos_test[ia][comp] +=
-          cvm::debug_gradients_step_size / cvm::real (atoms.size());
-      }
     }
   }
 }

@@ -69,7 +69,12 @@ void ComputeTempRegion::init()
   iregion = domain->find_region(idregion);
   if (iregion == -1)
     error->all(FLERR,"Region ID for compute temp/region does not exist");
+}
 
+/* ---------------------------------------------------------------------- */
+
+void ComputeTempRegion::setup()
+{
   dof = 0.0;
 }
 
@@ -245,6 +250,6 @@ void ComputeTempRegion::restore_bias_all()
 
 double ComputeTempRegion::memory_usage()
 {
-  double bytes = maxbias * sizeof(double);
+  double bytes = 3*maxbias * sizeof(double);
   return bytes;
 }

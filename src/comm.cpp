@@ -53,6 +53,10 @@
 #include "memory.h"
 #include "fix_insert.h"
 
+#ifdef _OPENMP
+#include "omp.h"
+#endif
+
 using namespace LAMMPS_NS;
 
 #define BUFFACTOR 1.5
@@ -100,15 +104,26 @@ Comm::Comm(LAMMPS *lmp) : Pointers(lmp)
 
   // use of OpenMP threads
   // query OpenMP for number of threads/process set by user at run-time
-  // need to be in a parallel area for this operation
+  // if the OMP_NUM_THREADS environment variable is not set, we default
+  // to using 1 thread. This follows the principle of the least surprise,
+  // while practically all OpenMP implementations violate it by using
+  // as many threads as there are (virtual) CPU cores by default.
 
   nthreads = 1;
 #ifdef _OPENMP
-#pragma omp parallel default(shared)
-  {
-#pragma omp master
-    { nthreads = omp_get_num_threads(); }
+  if (getenv("OMP_NUM_THREADS") == NULL) {
+    nthreads = 1;
+    if (me == 0)
+      error->warning(FLERR,"OMP_NUM_THREADS environment is not set.");
+  } else {
+    nthreads = omp_get_max_threads();
   }
+
+  // enforce consistent number of threads across all MPI tasks
+
+  MPI_Bcast(&nthreads,1,MPI_INT,0,world);
+  omp_set_num_threads(nthreads);
+
   if (me == 0) {
     if (screen)
       fprintf(screen,"  using %d OpenMP thread(s) per MPI task\n",nthreads);
@@ -118,9 +133,14 @@ Comm::Comm(LAMMPS *lmp) : Pointers(lmp)
 #endif
 
   // initialize comm buffers & exchange memory
+  // NOTE: allow for AtomVec to set maxexchange_atom, e.g. for atom_style body
+
+  maxexchange_atom = maxexchange_fix = 0;
+  maxexchange = maxexchange_atom + maxexchange_fix;
+  bufextra = maxexchange + BUFEXTRA;
 
   maxsend = BUFMIN;
-  memory->create(buf_send,maxsend+BUFEXTRA,"comm:buf_send");
+  memory->create(buf_send,maxsend+bufextra,"comm:buf_send");
   maxrecv = BUFMIN;
   memory->create(buf_recv,maxrecv,"comm:buf_recv");
 
@@ -167,7 +187,7 @@ Comm::~Comm()
    map processors to grid, setup xyz split for a uniform grid
 ------------------------------------------------------------------------- */
 
-void Comm::set_proc_grid()
+void Comm::set_proc_grid(int outflag)
 {
   // recv 3d proc grid of another partition if my 3d grid depends on it
 
@@ -250,7 +270,7 @@ void Comm::set_proc_grid()
 
   // print 3d grid info to screen and logfile
 
-  if (me == 0) {
+  if (outflag && me == 0) {
     if (screen) {
       fprintf(screen,"  %d by %d by %d MPI processor grid\n",
               procgrid[0],procgrid[1],procgrid[2]);
@@ -325,7 +345,7 @@ void Comm::init()
   if (ghost_velocity) comm_x_only = 0;
 
   // set per-atom sizes for forward/reverse/border comm
-  // augment by velocity quantities if needed
+  // augment by velocity and fix quantities if needed
 
   size_forward = atom->avec->size_forward;
   size_reverse = atom->avec->size_reverse;
@@ -334,11 +354,16 @@ void Comm::init()
   if (ghost_velocity) size_forward += atom->avec->size_velocity;
   if (ghost_velocity) size_border += atom->avec->size_velocity;
 
+  for (int i = 0; i < modify->nfix; i++)
+    size_border += modify->fix[i]->comm_border;
+
+  // maxexchange = max # of datums/atom in exchange communication
   // maxforward = # of datums in largest forward communication
   // maxreverse = # of datums in largest reverse communication
   // query pair,fix,compute,dump for their requirements
   // pair style can force reverse comm even if newton off
 
+  maxexchange = BUFMIN + maxexchange_fix;
   maxforward = MAX(size_forward,size_border);
   maxreverse = size_reverse;
 
@@ -561,10 +586,10 @@ void Comm::setup()
       dw_->n2(nright);
       dw_->center(c);
       double cutghmax = MathExtraLiggghts::max(cutghost[0],cutghost[1],cutghost[2]);
-      pleft[0] = c[0] - nleft[0] * (atom->radius ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
-      pleft[1] = c[1] - nleft[1] * (atom->radius ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
-      pright[0] = c[0] - nright[0] * (atom->radius ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
-      pright[1] = c[1] - nright[1] * (atom->radius ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
+      pleft[0]  = c[0] - nleft[0]  * (use_gran_opt() ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
+      pleft[1]  = c[1] - nleft[1]  * (use_gran_opt() ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
+      pright[0] = c[0] - nright[0] * (use_gran_opt() ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
+      pright[1] = c[1] - nright[1] * (use_gran_opt() ? (cutghmax / 2. + neighbor->skin/2.) : cutghmax);
       
   }
   
@@ -608,7 +633,7 @@ void Comm::setup()
         if (style == SINGLE) {
           if (ineed < 2) slablo[iswap] = -BIG;
           else slablo[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
-          slabhi[iswap] = sublo[dim] + (atom->radius ? (cutghost[dim] / 2. + neighbor->skin/2.) : cutghost[dim]); 
+          slabhi[iswap] = sublo[dim] + (use_gran_opt() ? (cutghost[dim] / 2. + neighbor->skin/2.) : cutghost[dim]); 
         } else {
           for (i = 1; i <= ntypes; i++) {
             if (ineed < 2) multilo[iswap][i] = -BIG;
@@ -629,7 +654,7 @@ void Comm::setup()
         sendproc[iswap] = procneigh[dim][1];
         recvproc[iswap] = procneigh[dim][0];
         if (style == SINGLE) {
-          slablo[iswap] = subhi[dim] - (atom->radius ? (cutghost[dim] / 2. + neighbor->skin/2.) : cutghost[dim]); 
+          slablo[iswap] = subhi[dim] - (use_gran_opt() ? (cutghost[dim] / 2. + neighbor->skin/2.) : cutghost[dim]); 
           if (ineed < 2) slabhi[iswap] = BIG;
           else slabhi[iswap] = 0.5 * (sublo[dim] + subhi[dim]);
         } else {
@@ -850,8 +875,20 @@ void Comm::exchange()
   // b/c atoms migrate to new procs in exchange() and
   // new ghosts are created in borders()
   // map_set() is done at end of borders()
+  // clear ghost count and any ghost bonus data internal to AtomVec
 
   if (map_style) atom->map_clear();
+  atom->nghost = 0;
+  atom->avec->clear_bonus();
+
+  // insure send buf is large enough for single atom
+  // fixes can change per-atom size requirement on-the-fly
+
+  int bufextra_old = bufextra;
+  maxexchange = maxexchange_atom + maxexchange_fix;
+  bufextra = maxexchange + BUFEXTRA;
+  if (bufextra > bufextra_old)
+    memory->grow(buf_send,maxsend+bufextra,"comm:buf_send");
 
   // subbox bounds for orthogonal or triclinic
 
@@ -942,8 +979,8 @@ void Comm::exchange()
    borders: list nearby atoms to send to neighboring procs at every timestep
    one list is created for every swap that will be made
    as list is made, actually do swaps
-   this does equivalent of a communicate (so don't need to explicitly
-     call communicate routine on reneighboring timestep)
+   this does equivalent of a communicate, so don't need to explicitly
+     call communicate routine on reneighboring timestep
    this routine is called before every reneighboring
    for triclinic, atoms must be in lamda coords (0-1) before borders is called
 ------------------------------------------------------------------------- */
@@ -959,11 +996,6 @@ void Comm::borders()
   MPI_Request request;
   MPI_Status status;
   AtomVec *avec = atom->avec;
-
-  // clear old ghosts and any ghost bonus data internal to AtomVec
-
-  atom->nghost = 0;
-  atom->avec->clear_bonus();
 
   // do swaps over all 3 dimensions
 
@@ -1099,8 +1131,7 @@ void Comm::borders()
 
       // pack up list of border atoms
 
-      if (nsend*size_border > maxsend)
-        grow_send(nsend*size_border,0);
+      if (nsend*size_border > maxsend) grow_send(nsend*size_border,0);
       if (ghost_velocity)
         n = avec->pack_border_vel(nsend,sendlist[iswap],buf_send,
                                   pbc_flag[iswap],pbc[iswap]);
@@ -1236,6 +1267,7 @@ void Comm::reverse_comm_pair(Pair *pair)
 
 /* ----------------------------------------------------------------------
    forward communication invoked by a Fix
+   n = constant number of datums per atom
 ------------------------------------------------------------------------- */
 
 void Comm::forward_comm_fix(Fix *fix)
@@ -1273,6 +1305,7 @@ void Comm::forward_comm_fix(Fix *fix)
 
 /* ----------------------------------------------------------------------
    reverse communication invoked by a Fix
+   n = constant number of datums per atom
 ------------------------------------------------------------------------- */
 
 void Comm::reverse_comm_fix(Fix *fix)
@@ -1297,6 +1330,81 @@ void Comm::reverse_comm_fix(Fix *fix)
                   world,&request);
       if (recvnum[iswap])
         MPI_Send(buf_send,n*recvnum[iswap],MPI_DOUBLE,recvproc[iswap],0,world);
+      if (sendnum[iswap]) MPI_Wait(&request,&status);
+      buf = buf_recv;
+    } else buf = buf_send;
+
+    // unpack buffer
+
+    fix->unpack_reverse_comm(sendnum[iswap],sendlist[iswap],buf);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   forward communication invoked by a Fix
+   n = total datums for all atoms, allows for variable number/atom
+------------------------------------------------------------------------- */
+
+void Comm::forward_comm_variable_fix(Fix *fix)
+{
+  int iswap,n;
+  double *buf;
+  MPI_Request request;
+  MPI_Status status;
+
+  for (iswap = 0; iswap < nswap; iswap++) {
+
+    // pack buffer
+
+    n = fix->pack_comm(sendnum[iswap],sendlist[iswap],
+                       buf_send,pbc_flag[iswap],pbc[iswap]);
+
+    // exchange with another proc
+    // if self, set recv buffer to send buffer
+
+    if (sendproc[iswap] != me) {
+      if (recvnum[iswap])
+        MPI_Irecv(buf_recv,maxrecv,MPI_DOUBLE,recvproc[iswap],0,
+                  world,&request);
+      if (sendnum[iswap])
+        MPI_Send(buf_send,n,MPI_DOUBLE,sendproc[iswap],0,world);
+      if (recvnum[iswap]) MPI_Wait(&request,&status);
+      buf = buf_recv;
+    } else buf = buf_send;
+
+    // unpack buffer
+
+    fix->unpack_comm(recvnum[iswap],firstrecv[iswap],buf);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   reverse communication invoked by a Fix
+   n = total datums for all atoms, allows for variable number/atom
+------------------------------------------------------------------------- */
+
+void Comm::reverse_comm_variable_fix(Fix *fix)
+{
+  int iswap,n;
+  double *buf;
+  MPI_Request request;
+  MPI_Status status;
+
+  for (iswap = nswap-1; iswap >= 0; iswap--) {
+
+    // pack buffer
+
+    n = fix->pack_reverse_comm(recvnum[iswap],firstrecv[iswap],buf_send);
+
+    // exchange with another proc
+    // if self, set recv buffer to send buffer
+
+    if (sendproc[iswap] != me) {
+      if (sendnum[iswap])
+        MPI_Irecv(buf_recv,maxrecv,MPI_DOUBLE,sendproc[iswap],0,
+                  world,&request);
+      if (recvnum[iswap])
+        MPI_Send(buf_send,n,MPI_DOUBLE,recvproc[iswap],0,world);
       if (sendnum[iswap]) MPI_Wait(&request,&status);
       buf = buf_recv;
     } else buf = buf_send;
@@ -1454,7 +1562,169 @@ void Comm::reverse_comm_dump(Dump *dump)
 }
 
 /* ----------------------------------------------------------------------
-   realloc the size of the send buffer as needed with BUFFACTOR & BUFEXTRA
+   forward communication of N values in array
+------------------------------------------------------------------------- */
+
+void Comm::forward_comm_array(int n, double **array)
+{
+  int i,j,k,m,iswap,last;
+  double *buf;
+  MPI_Request request;
+  MPI_Status status;
+
+  // NOTE: check that buf_send and buf_recv are big enough
+
+  for (iswap = 0; iswap < nswap; iswap++) {
+
+    // pack buffer
+
+    m = 0;
+    for (i = 0; i < sendnum[iswap]; i++) {
+      j = sendlist[iswap][i];
+      for (k = 0; k < n; k++)
+        buf_send[m++] = array[j][k];
+    }
+
+    // exchange with another proc
+    // if self, set recv buffer to send buffer
+
+    if (sendproc[iswap] != me) {
+      if (recvnum[iswap])
+        MPI_Irecv(buf_recv,n*recvnum[iswap],MPI_DOUBLE,recvproc[iswap],0,
+                  world,&request);
+      if (sendnum[iswap])
+        MPI_Send(buf_send,n*sendnum[iswap],MPI_DOUBLE,sendproc[iswap],0,world);
+      if (recvnum[iswap]) MPI_Wait(&request,&status);
+      buf = buf_recv;
+    } else buf = buf_send;
+
+    // unpack buffer
+
+    m = 0;
+    last = firstrecv[iswap] + recvnum[iswap];
+    for (i = firstrecv[iswap]; i < last; i++)
+      for (k = 0; k < n; k++)
+        array[i][k] = buf[m++];
+  }
+}
+
+/* ----------------------------------------------------------------------
+   communicate inbuf around full ring of processors with messtag
+   nbytes = size of inbuf = n datums * nper bytes
+   callback() is invoked to allow caller to process/update each proc's inbuf
+   if self=1 (default), then callback() is invoked on final iteration
+     using original inbuf, which may have been updated
+   for non-NULL outbuf, final updated inbuf is copied to it
+     outbuf = inbuf is OK
+------------------------------------------------------------------------- */
+
+void Comm::ring(int n, int nper, void *inbuf, int messtag,
+                void (*callback)(int, char *), void *outbuf, int self)
+{
+  MPI_Request request;
+  MPI_Status status;
+
+  int nbytes = n*nper;
+  int maxbytes;
+  MPI_Allreduce(&nbytes,&maxbytes,1,MPI_INT,MPI_MAX,world);
+
+  char *buf,*bufcopy;
+  memory->create(buf,maxbytes,"comm:buf");
+  memory->create(bufcopy,maxbytes,"comm:bufcopy");
+  memcpy(buf,inbuf,nbytes);
+
+  int next = me + 1;
+  int prev = me - 1;
+  if (next == nprocs) next = 0;
+  if (prev < 0) prev = nprocs - 1;
+
+  for (int loop = 0; loop < nprocs; loop++) {
+    if (me != next) {
+      MPI_Irecv(bufcopy,maxbytes,MPI_CHAR,prev,messtag,world,&request);
+      MPI_Send(buf,nbytes,MPI_CHAR,next,messtag,world);
+      MPI_Wait(&request,&status);
+      MPI_Get_count(&status,MPI_CHAR,&nbytes);
+      memcpy(buf,bufcopy,nbytes);
+    }
+    if (self || loop < nprocs-1) callback(nbytes/nper,buf);
+  }
+
+  if (outbuf) memcpy(outbuf,buf,nbytes);
+
+  memory->destroy(buf);
+  memory->destroy(bufcopy);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 reads Nlines from file into buf and bcasts buf to all procs
+   caller allocates buf to max size needed
+   each line is terminated by newline, even if last line in file is not
+   return 0 if successful, 1 if get EOF error before read is complete
+------------------------------------------------------------------------- */
+
+int Comm::read_lines_from_file(FILE *fp, int nlines, int maxline, char *buf)
+{
+  int m;
+
+  if (me == 0) {
+    m = 0;
+    for (int i = 0; i < nlines; i++) {
+      if (!fgets(&buf[m],maxline,fp)) {
+	m = 0;
+	break;
+      }
+      m += strlen(&buf[m]);
+    }
+    if (m) {
+      if (buf[m-1] != '\n') strcpy(&buf[m++],"\n");
+      m++;
+    }
+  }
+
+  MPI_Bcast(&m,1,MPI_INT,0,world);
+  if (m == 0) return 1;
+  MPI_Bcast(buf,m,MPI_CHAR,0,world);
+  return 0;
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 reads Nlines from file into buf and bcasts buf to all procs
+   caller allocates buf to max size needed
+   each line is terminated by newline, even if last line in file is not
+   return 0 if successful, 1 if get EOF error before read is complete
+------------------------------------------------------------------------- */
+
+int Comm::read_lines_from_file_universe(FILE *fp, int nlines, int maxline,
+                                        char *buf)
+{
+  int m;
+
+  int me_universe = universe->me;
+  MPI_Comm uworld = universe->uworld;
+
+  if (me_universe == 0) {
+    m = 0;
+    for (int i = 0; i < nlines; i++) {
+      if (!fgets(&buf[m],maxline,fp)) {
+	m = 0;
+	break;
+      }
+      m += strlen(&buf[m]);
+    }
+    if (m) {
+      if (buf[m-1] != '\n') strcpy(&buf[m++],"\n");
+      m++;
+    }
+  }
+
+  MPI_Bcast(&m,1,MPI_INT,0,uworld);
+  if (m == 0) return 1;
+  MPI_Bcast(buf,m,MPI_CHAR,0,uworld);
+  return 0;
+}
+
+/* ----------------------------------------------------------------------
+   realloc the size of the send buffer as needed with BUFFACTOR and bufextra
    if flag = 1, realloc
    if flag = 0, don't need to realloc with copy, just free/malloc
 ------------------------------------------------------------------------- */
@@ -1463,10 +1733,10 @@ void Comm::grow_send(int n, int flag)
 {
   maxsend = static_cast<int> (BUFFACTOR * n);
   if (flag)
-    memory->grow(buf_send,(maxsend+BUFEXTRA),"comm:buf_send");
+    memory->grow(buf_send,maxsend+bufextra,"comm:buf_send");
   else {
     memory->destroy(buf_send);
-    memory->create(buf_send,maxsend+BUFEXTRA,"comm:buf_send");
+    memory->create(buf_send,maxsend+bufextra,"comm:buf_send");
   }
 }
 
@@ -1600,7 +1870,7 @@ void Comm::set(int narg, char **arg)
       iarg += 2;
     } else if (strcmp(arg[iarg],"cutoff") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal communicate command");
-      cutghostuser = atof(arg[iarg+1]);
+      cutghostuser = force->numeric(FLERR,arg[iarg+1]);
       if (cutghostuser < 0.0)
         error->all(FLERR,"Invalid cutoff in communicate command");
       iarg += 2;
@@ -1624,11 +1894,11 @@ void Comm::set_processors(int narg, char **arg)
   if (narg < 3) error->all(FLERR,"Illegal processors command");
 
   if (strcmp(arg[0],"*") == 0) user_procgrid[0] = 0;
-  else user_procgrid[0] = atoi(arg[0]);
+  else user_procgrid[0] = force->inumeric(FLERR,arg[0]);
   if (strcmp(arg[1],"*") == 0) user_procgrid[1] = 0;
-  else user_procgrid[1] = atoi(arg[1]);
+  else user_procgrid[1] = force->inumeric(FLERR,arg[1]);
   if (strcmp(arg[2],"*") == 0) user_procgrid[2] = 0;
-  else user_procgrid[2] = atoi(arg[2]);
+  else user_procgrid[2] = force->inumeric(FLERR,arg[2]);
 
   if (user_procgrid[0] < 0 || user_procgrid[1] < 0 || user_procgrid[2] < 0)
     error->all(FLERR,"Illegal processors command");
@@ -1649,13 +1919,13 @@ void Comm::set_processors(int narg, char **arg)
         if (iarg+6 > narg) error->all(FLERR,"Illegal processors command");
         gridflag = TWOLEVEL;
 
-        ncores = atoi(arg[iarg+2]);
+        ncores = force->inumeric(FLERR,arg[iarg+2]);
         if (strcmp(arg[iarg+3],"*") == 0) user_coregrid[0] = 0;
-        else user_coregrid[0] = atoi(arg[iarg+3]);
+        else user_coregrid[0] = force->inumeric(FLERR,arg[iarg+3]);
         if (strcmp(arg[iarg+4],"*") == 0) user_coregrid[1] = 0;
-        else user_coregrid[1] = atoi(arg[iarg+4]);
+        else user_coregrid[1] = force->inumeric(FLERR,arg[iarg+4]);
         if (strcmp(arg[iarg+5],"*") == 0) user_coregrid[2] = 0;
-        else user_coregrid[2] = atoi(arg[iarg+5]);
+        else user_coregrid[2] = force->inumeric(FLERR,arg[iarg+5]);
 
         if (ncores <= 0 || user_coregrid[0] < 0 ||
             user_coregrid[1] < 0 || user_coregrid[2] < 0)
@@ -1698,8 +1968,8 @@ void Comm::set_processors(int narg, char **arg)
         error->all(FLERR,
                    "Cannot use processors part command "
                    "without using partitions");
-      int isend = atoi(arg[iarg+1]);
-      int irecv = atoi(arg[iarg+2]);
+      int isend = force->inumeric(FLERR,arg[iarg+1]);
+      int irecv = force->inumeric(FLERR,arg[iarg+2]);
       if (isend < 1 || isend > universe->nworlds ||
           irecv < 1 || irecv > universe->nworlds || isend == irecv)
         error->all(FLERR,"Invalid partitions in processors part command");
@@ -1755,9 +2025,10 @@ void Comm::set_processors(int narg, char **arg)
 bigint Comm::memory_usage()
 {
   bigint bytes = 0;
+  bytes += nprocs * sizeof(int);    // grid2proc
   for (int i = 0; i < nswap; i++)
     bytes += memory->usage(sendlist[i],maxsendlist[i]);
-  bytes += memory->usage(buf_send,maxsend+BUFEXTRA);
+  bytes += memory->usage(buf_send,maxsend+bufextra);
   bytes += memory->usage(buf_recv,maxrecv);
   return bytes;
 }

@@ -119,8 +119,10 @@ void Verlet::setup()
   
   comm->setup();
   if (neighbor->style) neighbor->setup_bins();
+  
   comm->exchange();
   if (atom->sortfreq > 0) atom->sort();
+  
   comm->borders();
   if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
   
@@ -155,7 +157,7 @@ void Verlet::setup()
 
   modify->setup(vflag);
   
-  output->setup(1);
+  output->setup();
   
   update->setupflag = 0;
 }
@@ -175,6 +177,7 @@ void Verlet::setup_minimal(int flag)
   // build neighbor lists
 
   if (flag) {
+    modify->setup_pre_exchange();
     if (triclinic) domain->x2lamda(atom->nlocal);
     domain->pbc();
     domain->reset_box();
@@ -183,7 +186,9 @@ void Verlet::setup_minimal(int flag)
     comm->exchange();
     comm->borders();
     if (triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
-    modify->setup_pre_neighbor(); 
+    domain->image_check();
+    domain->box_too_small_check();
+    modify->setup_pre_neighbor();
     neighbor->build();
     neighbor->ncalls = 0;
   }
@@ -283,13 +288,16 @@ void Verlet::run(int n)
     }
 
     // force computations
-    
+    // important for pair to come before bonded contributions
+    // since some bonded potentials tally pairwise energy/virial
+    // and Pair:ev_tally() needs to be called before any tallying
+
     force_clear();
     if (n_pre_force) modify->pre_force(vflag);
 
     timer->stamp();
 
-    if (force->pair) {
+    if (pair_compute_flag) {
       force->pair->compute(eflag,vflag);
       timer->stamp(TIME_PAIR);
     }
@@ -338,16 +346,17 @@ void Verlet::run(int n)
 void Verlet::cleanup()
 {
   modify->post_run();
+  domain->box_too_small_check();
+  update->update_time();
 }
 
 /* ----------------------------------------------------------------------
    clear force on own & ghost atoms
-   setup and clear other arrays as needed
+   clear other arrays as needed
 ------------------------------------------------------------------------- */
 
 void Verlet::force_clear()
 {
-  if (external_force_clear) return;
   int i;
 
   if (external_force_clear) return;

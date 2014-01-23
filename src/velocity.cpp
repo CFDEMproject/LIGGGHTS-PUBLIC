@@ -26,6 +26,7 @@
 #include "variable.h"
 #include "force.h"
 #include "modify.h"
+#include "fix.h"
 #include "compute.h"
 #include "compute_temp.h"
 #include "random_park.h"
@@ -86,6 +87,7 @@ void Velocity::command(int narg, char **arg)
   rotation_flag = 0;
   loop_flag = ALL;
   scale_flag = 1;
+  rfix = -1;
 
   // read options from end of input line
   // change defaults as options specify
@@ -100,8 +102,8 @@ void Velocity::command(int narg, char **arg)
   // create() invoked differently, so can be called externally
 
   if (style == CREATE) {
-    double t_desired = atof(arg[2]);
-    int seed = atoi(arg[3]);
+    double t_desired = force->numeric(FLERR,arg[2]);
+    int seed = force->inumeric(FLERR,arg[3]);
     create(t_desired,seed);
   }
   else if (style == SET) set(narg-2,&arg[2]);
@@ -156,6 +158,7 @@ void Velocity::create(double t_desired, int seed)
   if (igroup != temperature->igroup && comm->me == 0)
     error->warning(FLERR,"Mismatch between velocity and compute groups");
   temperature->init();
+  temperature->setup();
 
   // store a copy of current velocities
 
@@ -213,9 +216,11 @@ void Velocity::create(double t_desired, int seed)
     if (atom->natoms > MAXSMALLINT)
       error->all(FLERR,"Too big a problem to use velocity create loop all");
     if (atom->tag_enable == 0)
-      error->all(FLERR,"Cannot use velocity create loop all unless atoms have IDs");
+      error->all(FLERR,
+                 "Cannot use velocity create loop all unless atoms have IDs");
     if (atom->tag_consecutive() == 0)
-      error->all(FLERR,"Atom IDs must be consecutive for velocity create loop all");
+      error->all(FLERR,
+                 "Atom IDs must be consecutive for velocity create loop all");
 
     // loop over all atoms in system
     // generate RNGs for all atoms, only assign to ones I own
@@ -354,41 +359,35 @@ void Velocity::set(int narg, char **arg)
     xstr = new char[n];
     strcpy(xstr,&arg[0][2]);
   } else if (strcmp(arg[0],"NULL") == 0) xstyle = NONE;
-  else vx = atof(arg[0]);
+  else vx = force->numeric(FLERR,arg[0]);
 
   if (strstr(arg[1],"v_") == arg[1]) {
     int n = strlen(&arg[1][2]) + 1;
     ystr = new char[n];
     strcpy(ystr,&arg[1][2]);
   } else if (strcmp(arg[1],"NULL") == 0) ystyle = NONE;
-  else vy = atof(arg[1]);
+  else vy = force->numeric(FLERR,arg[1]);
 
   if (strstr(arg[2],"v_") == arg[2]) {
     int n = strlen(&arg[2][2]) + 1;
     zstr = new char[n];
     strcpy(zstr,&arg[2][2]);
   } else if (strcmp(arg[2],"NULL") == 0) zstyle = NONE;
-  else vz = atof(arg[2]);
+  else vz = force->numeric(FLERR,arg[2]);
 
   // set and apply scale factors
 
   xscale = yscale = zscale = 1.0;
 
   if (xstyle && !xstr) {
-    if (scale_flag && domain->lattice == NULL)
-      error->all(FLERR,"Use of velocity with undefined lattice");
     if (scale_flag) xscale = domain->lattice->xlattice;
     vx *= xscale;
   }
   if (ystyle && !ystr) {
-    if (scale_flag && domain->lattice == NULL)
-      error->all(FLERR,"Use of velocity with undefined lattice");
     if (scale_flag) yscale = domain->lattice->ylattice;
     vy *= yscale;
   }
   if (zstyle && !zstr) {
-    if (scale_flag && domain->lattice == NULL)
-      error->all(FLERR,"Use of velocity with undefined lattice");
     if (scale_flag) zscale = domain->lattice->zlattice;
     vz *= zscale;
   }
@@ -397,21 +396,24 @@ void Velocity::set(int narg, char **arg)
 
   if (xstr) {
     xvar = input->variable->find(xstr);
-    if (xvar < 0) error->all(FLERR,"Variable name for velocity set does not exist");
+    if (xvar < 0)
+      error->all(FLERR,"Variable name for velocity set does not exist");
     if (input->variable->equalstyle(xvar)) xstyle = EQUAL;
     else if (input->variable->atomstyle(xvar)) xstyle = ATOM;
     else error->all(FLERR,"Variable for velocity set is invalid style");
   }
   if (ystr) {
     yvar = input->variable->find(ystr);
-    if (yvar < 0) error->all(FLERR,"Variable name for velocity set does not exist");
+    if (yvar < 0)
+      error->all(FLERR,"Variable name for velocity set does not exist");
     if (input->variable->equalstyle(yvar)) ystyle = EQUAL;
     else if (input->variable->atomstyle(yvar)) ystyle = ATOM;
     else error->all(FLERR,"Variable for velocity set is invalid style");
   }
   if (zstr) {
     zvar = input->variable->find(zstr);
-    if (zvar < 0) error->all(FLERR,"Variable name for velocity set does not exist");
+    if (zvar < 0)
+      error->all(FLERR,"Variable name for velocity set does not exist");
     if (input->variable->equalstyle(zvar)) zstyle = EQUAL;
     else if (input->variable->atomstyle(zvar)) zstyle = ATOM;
     else error->all(FLERR,"Variable for velocity set is invalid style");
@@ -505,7 +507,7 @@ void Velocity::set(int narg, char **arg)
 
 void Velocity::scale(int narg, char **arg)
 {
-  double t_desired = atof(arg[0]);
+  double t_desired = force->numeric(FLERR,arg[0]);
 
   // if temperature = NULL, create a new ComputeTemp with the velocity group
 
@@ -526,6 +528,7 @@ void Velocity::scale(int narg, char **arg)
   if (igroup != temperature->igroup && comm->me == 0)
     error->warning(FLERR,"Mismatch between velocity and compute groups");
   temperature->init();
+  temperature->setup();
 
   // scale temp to desired value
 
@@ -544,9 +547,6 @@ void Velocity::scale(int narg, char **arg)
 void Velocity::ramp(int narg, char **arg)
 {
   // set scale factors
-
-  if (scale_flag && domain->lattice == NULL)
-    error->all(FLERR,"Use of velocity with undefined lattice");
 
   if (scale_flag) {
     xscale = domain->lattice->xlattice;
@@ -568,14 +568,14 @@ void Velocity::ramp(int narg, char **arg)
 
   double v_lo,v_hi;
   if (v_dim == 0) {
-    v_lo = xscale*atof(arg[1]);
-    v_hi = xscale*atof(arg[2]);
+    v_lo = xscale*force->numeric(FLERR,arg[1]);
+    v_hi = xscale*force->numeric(FLERR,arg[2]);
   } else if (v_dim == 1) {
-    v_lo = yscale*atof(arg[1]);
-    v_hi = yscale*atof(arg[2]);
+    v_lo = yscale*force->numeric(FLERR,arg[1]);
+    v_hi = yscale*force->numeric(FLERR,arg[2]);
   } else if (v_dim == 2) {
-    v_lo = zscale*atof(arg[1]);
-    v_hi = zscale*atof(arg[2]);
+    v_lo = zscale*force->numeric(FLERR,arg[1]);
+    v_hi = zscale*force->numeric(FLERR,arg[2]);
   }
 
   int coord_dim;
@@ -586,14 +586,14 @@ void Velocity::ramp(int narg, char **arg)
 
   double coord_lo,coord_hi;
   if (coord_dim == 0) {
-    coord_lo = xscale*atof(arg[4]);
-    coord_hi = xscale*atof(arg[5]);
+    coord_lo = xscale*force->numeric(FLERR,arg[4]);
+    coord_hi = xscale*force->numeric(FLERR,arg[5]);
   } else if (coord_dim == 1) {
-    coord_lo = yscale*atof(arg[4]);
-    coord_hi = yscale*atof(arg[5]);
+    coord_lo = yscale*force->numeric(FLERR,arg[4]);
+    coord_hi = yscale*force->numeric(FLERR,arg[5]);
   } else if (coord_dim == 2) {
-    coord_lo = zscale*atof(arg[4]);
-    coord_hi = zscale*atof(arg[5]);
+    coord_lo = zscale*force->numeric(FLERR,arg[4]);
+    coord_hi = zscale*force->numeric(FLERR,arg[5]);
   }
 
   // vramp = ramped velocity component for v_dim
@@ -619,13 +619,39 @@ void Velocity::ramp(int narg, char **arg)
 
 /* ----------------------------------------------------------------------
    zero linear or angular momentum of a group
+   if using rigid/small requires init of entire system since
+      its methods perform forward/reverse comm,
+      comm::init needs neighbor::init needs pair::init needs kspace::init, etc
+      also requires setup_pre_neighbor call to setup bodies
 ------------------------------------------------------------------------- */
 
 void Velocity::zero(int narg, char **arg)
 {
-  if (strcmp(arg[0],"linear") == 0) zero_momentum();
-  else if (strcmp(arg[0],"angular") == 0) zero_rotation();
-  else error->all(FLERR,"Illegal velocity command");
+  if (strcmp(arg[0],"linear") == 0) {
+    if (rfix < 0) zero_momentum();
+    else {
+      if (strcmp(modify->fix[rfix]->style,"rigid/small") == 0) {
+        lmp->init();
+        modify->fix[rfix]->setup_pre_neighbor();
+        modify->fix[rfix]->zero_momentum();
+      } else if (strstr(modify->fix[rfix]->style,"rigid")) {
+        modify->fix[rfix]->zero_momentum();
+      } else error->all(FLERR,"Velocity rigid used with non-rigid fix-ID");
+    }
+
+  } else if (strcmp(arg[0],"angular") == 0) {
+    if (rfix < 0) zero_rotation();
+    else {
+      if (strcmp(modify->fix[rfix]->style,"rigid/small") == 0) {
+        lmp->init();
+        modify->fix[rfix]->setup_pre_neighbor();
+        modify->fix[rfix]->zero_rotation();
+      } else if (strstr(modify->fix[rfix]->style,"rigid")) {
+        modify->fix[rfix]->zero_rotation();
+      } else error->all(FLERR,"Velocity rigid used with non-rigid fix-ID");
+    }
+
+  } else error->all(FLERR,"Illegal velocity command");
 }
 
 /* ----------------------------------------------------------------------
@@ -656,10 +682,10 @@ void Velocity::rescale(double t_old, double t_new)
 
 void Velocity::zero_momentum()
 {
-  // cannot have 0 atoms in group
+  // cannot have no atoms in group
 
   if (group->count(igroup) == 0)
-    error->all(FLERR,"Cannot zero momentum of 0 atoms");
+    error->all(FLERR,"Cannot zero momentum of no atoms");
 
   // compute velocity of center-of-mass of group
 
@@ -689,10 +715,10 @@ void Velocity::zero_rotation()
 {
   int i;
 
-  // cannot have 0 atoms in group
+  // cannot have no atoms in group
 
   if (group->count(igroup) == 0)
-    error->all(FLERR,"Cannot zero momentum of 0 atoms");
+    error->all(FLERR,"Cannot zero momentum of no atoms");
 
   // compute omega (angular velocity) of group around center-of-mass
 
@@ -710,23 +736,18 @@ void Velocity::zero_rotation()
   double **x = atom->x;
   double **v = atom->v;
   int *mask = atom->mask;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int nlocal = atom->nlocal;
 
-  int xbox,ybox,zbox;
   double dx,dy,dz;
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
+  double unwrap[3];
 
   for (i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = (x[i][0] + xbox*xprd) - xcm[0];
-      dy = (x[i][1] + ybox*yprd) - xcm[1];
-      dz = (x[i][2] + zbox*zprd) - xcm[2];
+      domain->unmap(x[i],image[i],unwrap);
+      dx = unwrap[0] - xcm[0];
+      dy = unwrap[1] - xcm[1];
+      dz = unwrap[2] - xcm[2];
       v[i][0] -= omega[1]*dz - omega[2]*dy;
       v[i][1] -= omega[2]*dx - omega[0]*dz;
       v[i][2] -= omega[0]*dy - omega[1]*dx;
@@ -776,7 +797,8 @@ void Velocity::options(int narg, char **arg)
         error->all(FLERR,"Could not find velocity temperature ID");
       temperature = modify->compute[icompute];
       if (temperature->tempflag == 0)
-        error->all(FLERR,"Velocity temperature ID does not compute temperature");
+        error->all(FLERR,
+                   "Velocity temperature ID does not compute temperature");
       iarg += 2;
     } else if (strcmp(arg[iarg],"loop") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal velocity command");
@@ -784,6 +806,11 @@ void Velocity::options(int narg, char **arg)
       else if (strcmp(arg[iarg+1],"local") == 0) loop_flag = LOCAL;
       else if (strcmp(arg[iarg+1],"geom") == 0) loop_flag = GEOM;
       else error->all(FLERR,"Illegal velocity command");
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"rigid") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal velocity command");
+      rfix = modify->find_fix(arg[iarg+1]);
+      if (rfix < 0) error->all(FLERR,"Fix ID for velocity does not exist");
       iarg += 2;
     } else if (strcmp(arg[iarg],"units") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal velocity command");

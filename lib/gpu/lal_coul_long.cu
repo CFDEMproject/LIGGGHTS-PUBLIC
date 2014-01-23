@@ -14,24 +14,127 @@
 // ***************************************************************************/
 
 #ifdef NV_KERNEL
+
 #include "lal_aux_fun1.h"
+#ifndef _DOUBLE_DOUBLE
 texture<float4> pos_tex;
 texture<float> q_tex;
-#ifndef _DOUBLE_DOUBLE
-ucl_inline float4 fetch_pos(const int& i, const float4 *pos) 
-  { return tex1Dfetch(pos_tex, i); }
-ucl_inline float fetch_q(const int& i, const float *q) 
-  { return tex1Dfetch(q_tex, i); }
-#endif
+#else
+texture<int4,1> pos_tex;
+texture<int2> q_tex;
 #endif
 
-__kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
-                          __global numtyp4* lj3, const int lj_types,
-                          __global numtyp *sp_cl_in, __global int *dev_nbor,
-                          __global int *dev_packed, __global acctyp4 *ans,
-                          __global acctyp *engv, const int eflag,
-                          const int vflag, const int inum,
-                          const int nbor_pitch, __global numtyp *q_,
+#else
+#define pos_tex x_
+#define q_tex q_
+#endif
+
+#if (ARCH < 300)
+
+#define store_answers_lq(f, e_coul, virial, ii, inum, tid,                  \
+                        t_per_atom, offset, eflag, vflag, ans, engv)        \
+  if (t_per_atom>1) {                                                       \
+    __local acctyp red_acc[6][BLOCK_PAIR];                                  \
+                                                                            \
+    red_acc[0][tid]=f.x;                                                    \
+    red_acc[1][tid]=f.y;                                                    \
+    red_acc[2][tid]=f.z;                                                    \
+    red_acc[3][tid]=e_coul;                                                 \
+                                                                            \
+    for (unsigned int s=t_per_atom/2; s>0; s>>=1) {                         \
+      if (offset < s) {                                                     \
+        for (int r=0; r<4; r++)                                             \
+          red_acc[r][tid] += red_acc[r][tid+s];                             \
+      }                                                                     \
+    }                                                                       \
+                                                                            \
+    f.x=red_acc[0][tid];                                                    \
+    f.y=red_acc[1][tid];                                                    \
+    f.z=red_acc[2][tid];                                                    \
+    e_coul=red_acc[3][tid];                                                 \
+                                                                            \
+    if (vflag>0) {                                                          \
+      for (int r=0; r<6; r++)                                               \
+        red_acc[r][tid]=virial[r];                                          \
+                                                                            \
+      for (unsigned int s=t_per_atom/2; s>0; s>>=1) {                       \
+        if (offset < s) {                                                   \
+          for (int r=0; r<6; r++)                                           \
+            red_acc[r][tid] += red_acc[r][tid+s];                           \
+        }                                                                   \
+      }                                                                     \
+                                                                            \
+      for (int r=0; r<6; r++)                                               \
+        virial[r]=red_acc[r][tid];                                          \
+    }                                                                       \
+  }                                                                         \
+                                                                            \
+  if (offset==0) {                                                          \
+    __global acctyp *ap1=engv+ii;                                           \
+    if (eflag>0) {                                                          \
+      *ap1=(acctyp)0;                                                       \
+      ap1+=inum;                                                            \
+      *ap1=e_coul*(acctyp)0.5;                                              \
+      ap1+=inum;                                                            \
+    }                                                                       \
+    if (vflag>0) {                                                          \
+      for (int i=0; i<6; i++) {                                             \
+        *ap1=virial[i]*(acctyp)0.5;                                         \
+        ap1+=inum;                                                          \
+      }                                                                     \
+    }                                                                       \
+    ans[ii]=f;                                                              \
+  }
+
+#else
+
+#define store_answers_lq(f, e_coul, virial, ii, inum, tid,                  \
+                         t_per_atom, offset, eflag, vflag, ans, engv)       \
+  if (t_per_atom>1) {                                                       \
+    for (unsigned int s=t_per_atom/2; s>0; s>>=1) {                         \
+        f.x += shfl_xor(f.x, s, t_per_atom);                                \
+        f.y += shfl_xor(f.y, s, t_per_atom);                                \
+        f.z += shfl_xor(f.z, s, t_per_atom);                                \
+        e_coul += shfl_xor(e_coul, s, t_per_atom);                          \
+    }                                                                       \
+    if (vflag>0) {                                                          \
+      for (unsigned int s=t_per_atom/2; s>0; s>>=1) {                       \
+          for (int r=0; r<6; r++)                                           \
+            virial[r] += shfl_xor(virial[r], s, t_per_atom);                \
+      }                                                                     \
+    }                                                                       \
+  }                                                                         \
+  if (offset==0) {                                                          \
+    __global acctyp *ap1=engv+ii;                                           \
+    if (eflag>0) {                                                          \
+      *ap1=(acctyp)0;                                                       \
+      ap1+=inum;                                                            \
+      *ap1=e_coul*(acctyp)0.5;                                              \
+      ap1+=inum;                                                            \
+    }                                                                       \
+    if (vflag>0) {                                                          \
+      for (int i=0; i<6; i++) {                                             \
+        *ap1=virial[i]*(acctyp)0.5;                                         \
+        ap1+=inum;                                                          \
+      }                                                                     \
+    }                                                                       \
+    ans[ii]=f;                                                              \
+  }
+
+#endif
+
+__kernel void k_coul_long(const __global numtyp4 *restrict x_, 
+                          const __global numtyp4 *restrict lj1,
+                          const __global numtyp4 *restrict lj3, 
+                          const int lj_types,
+                          const __global numtyp *restrict sp_cl_in, 
+                          const __global int *dev_nbor,
+                          const __global int *dev_packed, 
+                          __global acctyp4 *restrict ans,
+                          __global acctyp *restrict engv, 
+                          const int eflag, const int vflag, const int inum,
+                          const int nbor_pitch, 
+                          const __global numtyp *restrict q_,
                           const numtyp cut_coulsq, const numtyp qqrd2e,
                           const numtyp g_ewald, const int t_per_atom) {
   int tid, ii, offset;
@@ -51,13 +154,14 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
     virial[i]=(acctyp)0;
 
   if (ii<inum) {
-    __global int *nbor, *list_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *list_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info(dev_nbor,dev_packed,nbor_pitch,t_per_atom,ii,offset,i,numj,
               n_stride,list_end,nbor);
 
-    numtyp4 ix=fetch_pos(i,x_); //x_[i];
-    numtyp qtmp=fetch_q(i,q_);
+    numtyp4 ix; fetch4(ix,i,pos_tex); //x_[i];
+    numtyp qtmp; fetch(qtmp,i,q_tex);
 
     for ( ; nbor<list_end; nbor+=n_stride) {
       int j=*nbor;
@@ -66,7 +170,7 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
       factor_coul = (numtyp)1.0-sp_cl[sbmask(j)];
       j &= NEIGHMASK;
 
-      numtyp4 jx=fetch_pos(j,x_); //x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex); //x_[j];
 
       // Compute r12
       numtyp delx = ix.x-jx.x;
@@ -75,16 +179,17 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
       numtyp rsq = delx*delx+dely*dely+delz*delz;
 
       if (rsq < cut_coulsq) {
-	numtyp r2inv=ucl_recip(rsq);
-	numtyp force, prefactor, _erfc;
+        numtyp r2inv=ucl_recip(rsq);
+        numtyp force, prefactor, _erfc;
 
-	numtyp r = ucl_rsqrt(r2inv);
-	numtyp grij = g_ewald * r;
-	numtyp expm2 = ucl_exp(-grij*grij);
-	numtyp t = ucl_recip((numtyp)1.0 + EWALD_P*grij);
-	_erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
-	prefactor = qqrd2e * qtmp*fetch_q(j,q_)/r;
-	force = prefactor * (_erfc + EWALD_F*grij*expm2-factor_coul) * r2inv;
+        numtyp r = ucl_rsqrt(r2inv);
+        numtyp grij = g_ewald * r;
+        numtyp expm2 = ucl_exp(-grij*grij);
+        numtyp t = ucl_recip((numtyp)1.0 + EWALD_P*grij);
+        _erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
+        fetch(prefactor,j,q_tex);
+        prefactor *= qqrd2e * qtmp/r;
+        force = prefactor * (_erfc + EWALD_F*grij*expm2-factor_coul) * r2inv;
 
         f.x+=delx*force;
         f.y+=dely*force;
@@ -104,71 +209,22 @@ __kernel void kernel_pair(__global numtyp4 *x_, __global numtyp4 *lj1,
       }
 
     } // for nbor
-
-    // Reduce answers
-    if (t_per_atom>1) {
-      __local acctyp red_acc[6][BLOCK_PAIR];
-
-      red_acc[0][tid]=f.x;
-      red_acc[1][tid]=f.y;
-      red_acc[2][tid]=f.z;
-      red_acc[3][tid]=e_coul;
-
-      for (unsigned int s=t_per_atom/2; s>0; s>>=1) {
-        if (offset < s) {
-          for (int r=0; r<4; r++)
-            red_acc[r][tid] += red_acc[r][tid+s];
-        }
-      }
-
-      f.x=red_acc[0][tid];
-      f.y=red_acc[1][tid];
-      f.z=red_acc[2][tid];
-      e_coul=red_acc[3][tid];
-
-      if (vflag>0) {
-        for (int r=0; r<6; r++)
-          red_acc[r][tid]=virial[r];
-
-        for (unsigned int s=t_per_atom/2; s>0; s>>=1) {
-          if (offset < s) {
-            for (int r=0; r<6; r++)
-              red_acc[r][tid] += red_acc[r][tid+s];
-          }
-        }
-
-        for (int r=0; r<6; r++)
-          virial[r]=red_acc[r][tid];
-      }
-    }
-
-    // Store answers
-    if (offset==0) {
-      __global acctyp *ap1=engv+ii;
-      if (eflag>0) {
-        *ap1=(acctyp)0;
-        ap1+=inum;
-        *ap1=e_coul;
-        ap1+=inum;
-      }
-      if (vflag>0) {
-        for (int i=0; i<6; i++) {
-          *ap1=virial[i];
-          ap1+=inum;
-        }
-      }
-      ans[ii]=f;
-    }
+    store_answers_lq(f,e_coul,virial,ii,inum,tid,t_per_atom,offset,eflag,
+                     vflag,ans,engv);
   } // if ii
 }
 
-__kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp4 *lj1_in,
-                               __global numtyp4* lj3_in,
-                               __global numtyp* sp_cl_in,
-                               __global int *dev_nbor, __global int *dev_packed,
-                               __global acctyp4 *ans, __global acctyp *engv,
+__kernel void k_coul_long_fast(const __global numtyp4 *restrict x_, 
+                               const __global numtyp4 *restrict lj1_in,
+                               const __global numtyp4 *restrict lj3_in,
+                               const __global numtyp *restrict sp_cl_in,
+                               const __global int *dev_nbor, 
+                               const __global int *dev_packed,
+                               __global acctyp4 *restrict ans, 
+                               __global acctyp *restrict engv,
                                const int eflag, const int vflag, const int inum,
-                               const int nbor_pitch, __global numtyp *q_,
+                               const int nbor_pitch, 
+                               const __global numtyp *restrict q_,
                                const numtyp cut_coulsq, const numtyp qqrd2e,
                                const numtyp g_ewald, const int t_per_atom) {
   int tid, ii, offset;
@@ -188,13 +244,14 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp4 *lj1_in,
   __syncthreads();
 
   if (ii<inum) {
-    __global int *nbor, *list_end;
-    int i, numj, n_stride;
+    const __global int *nbor, *list_end;
+    int i, numj;
+    __local int n_stride;
     nbor_info(dev_nbor,dev_packed,nbor_pitch,t_per_atom,ii,offset,i,numj,
               n_stride,list_end,nbor);
 
-    numtyp4 ix=fetch_pos(i,x_); //x_[i];
-    numtyp qtmp=fetch_q(i,q_);
+    numtyp4 ix; fetch4(ix,i,pos_tex); //x_[i];
+    numtyp qtmp; fetch(qtmp,i,q_tex);
 
     for ( ; nbor<list_end; nbor+=n_stride) {
       int j=*nbor;
@@ -203,7 +260,7 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp4 *lj1_in,
       factor_coul = (numtyp)1.0-sp_cl[sbmask(j)];
       j &= NEIGHMASK;
 
-      numtyp4 jx=fetch_pos(j,x_); //x_[j];
+      numtyp4 jx; fetch4(jx,j,pos_tex); //x_[j];
 
       // Compute r12
       numtyp delx = ix.x-jx.x;
@@ -212,16 +269,17 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp4 *lj1_in,
       numtyp rsq = delx*delx+dely*dely+delz*delz;
 
       if (rsq < cut_coulsq) {
-	numtyp r2inv=ucl_recip(rsq);
-	numtyp force, prefactor, _erfc;
+        numtyp r2inv=ucl_recip(rsq);
+        numtyp force, prefactor, _erfc;
 
-	numtyp r = ucl_rsqrt(r2inv);
-	numtyp grij = g_ewald * r;
-	numtyp expm2 = ucl_exp(-grij*grij);
-	numtyp t = ucl_recip((numtyp)1.0 + EWALD_P*grij);
-	_erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
-	prefactor = qqrd2e * qtmp*fetch_q(j,q_)/r;
-	force = prefactor * (_erfc + EWALD_F*grij*expm2-factor_coul) * r2inv;
+        numtyp r = ucl_rsqrt(r2inv);
+        numtyp grij = g_ewald * r;
+        numtyp expm2 = ucl_exp(-grij*grij);
+        numtyp t = ucl_recip((numtyp)1.0 + EWALD_P*grij);
+        _erfc = t * (A1+t*(A2+t*(A3+t*(A4+t*A5)))) * expm2;
+        fetch(prefactor,j,q_tex);
+        prefactor *= qqrd2e * qtmp/r;
+        force = prefactor * (_erfc + EWALD_F*grij*expm2-factor_coul) * r2inv;
 
         f.x+=delx*force;
         f.y+=dely*force;
@@ -241,61 +299,8 @@ __kernel void kernel_pair_fast(__global numtyp4 *x_, __global numtyp4 *lj1_in,
       }
 
     } // for nbor
-
-    // Reduce answers
-    if (t_per_atom>1) {
-      __local acctyp red_acc[6][BLOCK_PAIR];
-
-      red_acc[0][tid]=f.x;
-      red_acc[1][tid]=f.y;
-      red_acc[2][tid]=f.z;
-      red_acc[3][tid]=e_coul;
-
-      for (unsigned int s=t_per_atom/2; s>0; s>>=1) {
-        if (offset < s) {
-          for (int r=0; r<4; r++)
-            red_acc[r][tid] += red_acc[r][tid+s];
-        }
-      }
-
-      f.x=red_acc[0][tid];
-      f.y=red_acc[1][tid];
-      f.z=red_acc[2][tid];
-      e_coul=red_acc[3][tid];
-
-      if (vflag>0) {
-        for (int r=0; r<6; r++)
-          red_acc[r][tid]=virial[r];
-
-        for (unsigned int s=t_per_atom/2; s>0; s>>=1) {
-          if (offset < s) {
-            for (int r=0; r<6; r++)
-              red_acc[r][tid] += red_acc[r][tid+s];
-          }
-        }
-
-        for (int r=0; r<6; r++)
-          virial[r]=red_acc[r][tid];
-      }
-    }
-
-    // Store answers
-    if (offset==0) {
-      __global acctyp *ap1=engv+ii;
-      if (eflag>0) {
-        *ap1=(acctyp)0;
-        ap1+=inum;
-        *ap1=e_coul;
-        ap1+=inum;
-      }
-      if (vflag>0) {
-        for (int i=0; i<6; i++) {
-          *ap1=virial[i];
-          ap1+=inum;
-        }
-      }
-      ans[ii]=f;
-    }
+    store_answers_lq(f,e_coul,virial,ii,inum,tid,t_per_atom,offset,eflag,
+                     vflag,ans,engv);
   } // if ii
 }
 

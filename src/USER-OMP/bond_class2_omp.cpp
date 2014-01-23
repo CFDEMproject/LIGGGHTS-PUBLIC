@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -59,19 +59,20 @@ void BondClass2OMP::compute(int eflag, int vflag)
     ThrData *thr = fix->get_thr(tid);
     ev_setup_thr(eflag, vflag, nall, eatom, vatom, thr);
 
-    if (evflag) {
-      if (eflag) {
-	if (force->newton_bond) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+    if (inum > 0) {
+      if (evflag) {
+        if (eflag) {
+          if (force->newton_bond) eval<1,1,1>(ifrom, ito, thr);
+          else eval<1,1,0>(ifrom, ito, thr);
+        } else {
+          if (force->newton_bond) eval<1,0,1>(ifrom, ito, thr);
+          else eval<1,0,0>(ifrom, ito, thr);
+        }
       } else {
-	if (force->newton_bond) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_bond) eval<0,0,1>(ifrom, ito, thr);
+        else eval<0,0,0>(ifrom, ito, thr);
       }
-    } else {
-      if (force->newton_bond) eval<0,0,1>(ifrom, ito, thr);
-      else eval<0,0,0>(ifrom, ito, thr);
     }
-
     reduce_thr(this, eflag, vflag, thr);
   } // end of omp parallel region
 }
@@ -83,20 +84,19 @@ void BondClass2OMP::eval(int nfrom, int nto, ThrData * const thr)
   double delx,dely,delz,ebond,fbond;
   double rsq,r,dr,dr2,dr3,dr4,de_bond;
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
-  const int * const * const bondlist = neighbor->bondlist;
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
+  const int3_t * _noalias const bondlist = (int3_t *) neighbor->bondlist[0];
   const int nlocal = atom->nlocal;
 
   for (n = nfrom; n < nto; n++) {
-    i1 = bondlist[n][0];
-    i2 = bondlist[n][1];
-    type = bondlist[n][2];
+    i1 = bondlist[n].a;
+    i2 = bondlist[n].b;
+    type = bondlist[n].t;
 
-    delx = x[i1][0] - x[i2][0];
-    dely = x[i1][1] - x[i2][1];
-    delz = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx,dely,delz);
+    delx = x[i1].x - x[i2].x;
+    dely = x[i1].y - x[i2].y;
+    delz = x[i1].z - x[i2].z;
 
     rsq = delx*delx + dely*dely + delz*delz;
     r = sqrt(rsq);
@@ -116,18 +116,18 @@ void BondClass2OMP::eval(int nfrom, int nto, ThrData * const thr)
     // apply force to each of 2 atoms
 
     if (NEWTON_BOND || i1 < nlocal) {
-      f[i1][0] += delx*fbond;
-      f[i1][1] += dely*fbond;
-      f[i1][2] += delz*fbond;
+      f[i1].x += delx*fbond;
+      f[i1].y += dely*fbond;
+      f[i1].z += delz*fbond;
     }
 
     if (NEWTON_BOND || i2 < nlocal) {
-      f[i2][0] -= delx*fbond;
-      f[i2][1] -= dely*fbond;
-      f[i2][2] -= delz*fbond;
+      f[i2].x -= delx*fbond;
+      f[i2].y -= dely*fbond;
+      f[i2].z -= delz*fbond;
     }
 
     if (EVFLAG) ev_tally_thr(this,i1,i2,nlocal,NEWTON_BOND,
-			     ebond,fbond,delx,dely,delz,thr);
+                             ebond,fbond,delx,dely,delz,thr);
   }
 }

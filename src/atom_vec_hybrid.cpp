@@ -27,29 +27,61 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-AtomVecHybrid::AtomVecHybrid(LAMMPS *lmp, int narg, char **arg) :
-  AtomVec(lmp, narg, arg)
+AtomVecHybrid::AtomVecHybrid(LAMMPS *lmp) : AtomVec(lmp) {}
+
+/* ---------------------------------------------------------------------- */
+
+AtomVecHybrid::~AtomVecHybrid()
 {
-  int i,k,dummy;
+  for (int k = 0; k < nstyles; k++) delete styles[k];
+  delete [] styles;
+  for (int k = 0; k < nstyles; k++) delete [] keywords[k];
+  delete [] keywords;
+}
 
-  if (narg < 1) error->all(FLERR,"Illegal atom_style command");
+/* ----------------------------------------------------------------------
+   process sub-style args
+------------------------------------------------------------------------- */
 
-  // create sub-styles
+void AtomVecHybrid::settings(int narg, char **arg)
+{
+  // build list of all known atom styles
 
-  nstyles = narg;
-  styles = new AtomVec*[nstyles];
-  keywords = new char*[nstyles];
+  build_styles();
 
-  for (i = 0; i < narg; i++) {
-    for (k = 0; k < i; k++)
-      if (strcmp(arg[i],keywords[k]) == 0)
-        error->all(FLERR,"Atom style hybrid cannot use same atom style twice");
-    if (strcmp(arg[i],"hybrid") == 0)
+  // allocate list of sub-styles as big as possibly needed if no extra args
+
+  styles = new AtomVec*[narg];
+  keywords = new char*[narg];
+
+  // allocate each sub-style
+  // call settings() with set of args that are not atom style names
+  // use known_style() to determine which args these are
+
+  int i,jarg,dummy;
+
+  int iarg = 0;
+  nstyles = 0;
+  while (iarg < narg) {
+    if (strcmp(arg[iarg],"hybrid") == 0)
       error->all(FLERR,"Atom style hybrid cannot have hybrid as an argument");
-    styles[i] = atom->new_avec(arg[i],0,NULL,NULL,dummy);
-    keywords[i] = new char[strlen(arg[i])+1];
-    strcpy(keywords[i],arg[i]);
+    for (i = 0; i < nstyles; i++)
+      if (strcmp(arg[iarg],keywords[i]) == 0)
+        error->all(FLERR,"Atom style hybrid cannot use same atom style twice");
+    styles[nstyles] = atom->new_avec(arg[iarg],NULL,dummy);
+    keywords[nstyles] = new char[strlen(arg[iarg])+1];
+    strcpy(keywords[nstyles],arg[iarg]);
+    jarg = iarg + 1;
+    while (jarg < narg && !known_style(arg[jarg])) jarg++;
+    styles[nstyles]->settings(jarg-iarg-1,&arg[iarg+1]);
+    iarg = jarg;
+    nstyles++;
   }
+
+  // free allstyles created by build_styles()
+
+  for (int i = 0; i < nallstyles; i++) delete [] allstyles[i];
+  delete [] allstyles;
 
   // hybrid settings are MAX or MIN of sub-style settings
   // hybrid sizes are minimial values plus extra values for each sub-style
@@ -64,7 +96,7 @@ AtomVecHybrid::AtomVecHybrid(LAMMPS *lmp, int narg, char **arg) :
   size_data_vel = 4;
   xcol_data = 3;
 
-  for (k = 0; k < nstyles; k++) {
+  for (int k = 0; k < nstyles; k++) {
     molecular = MAX(molecular,styles[k]->molecular);
     bonds_allow = MAX(bonds_allow,styles[k]->bonds_allow);
     angles_allow = MAX(angles_allow,styles[k]->angles_allow);
@@ -85,16 +117,6 @@ AtomVecHybrid::AtomVecHybrid(LAMMPS *lmp, int narg, char **arg) :
   size_velocity = 3;
   if (atom->omega_flag) size_velocity += 3;
   if (atom->angmom_flag) size_velocity += 3;
-}
-
-/* ---------------------------------------------------------------------- */
-
-AtomVecHybrid::~AtomVecHybrid()
-{
-  for (int k = 0; k < nstyles; k++) delete styles[k];
-  delete [] styles;
-  for (int k = 0; k < nstyles; k++) delete [] keywords[k];
-  delete [] keywords;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -165,7 +187,7 @@ void AtomVecHybrid::copy(int i, int j, int delflag)
 
   if (atom->nextra_grow)
     for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
-      modify->fix[atom->extra_grow[iextra]]->copy_arrays(i,j);
+      modify->fix[atom->extra_grow[iextra]]->copy_arrays(i,j,delflag);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -430,9 +452,9 @@ int AtomVecHybrid::pack_border(int n, int *list, double *buf,
       buf[m++] = x[j][0];
       buf[m++] = x[j][1];
       buf[m++] = x[j][2];
-      buf[m++] = tag[j];
-      buf[m++] = type[j];
-      buf[m++] = mask[j];
+      buf[m++] = ubuf(tag[j]).d;
+      buf[m++] = ubuf(type[j]).d;
+      buf[m++] = ubuf(mask[j]).d;
     }
   } else {
     if (domain->triclinic == 0) {
@@ -449,9 +471,9 @@ int AtomVecHybrid::pack_border(int n, int *list, double *buf,
       buf[m++] = x[j][0] + dx;
       buf[m++] = x[j][1] + dy;
       buf[m++] = x[j][2] + dz;
-      buf[m++] = tag[j];
-      buf[m++] = type[j];
-      buf[m++] = mask[j];
+      buf[m++] = ubuf(tag[j]).d;
+      buf[m++] = ubuf(type[j]).d;
+      buf[m++] = ubuf(mask[j]).d;
     }
   }
 
@@ -459,6 +481,10 @@ int AtomVecHybrid::pack_border(int n, int *list, double *buf,
 
   for (k = 0; k < nstyles; k++)
     m += styles[k]->pack_border_hybrid(n,list,&buf[m]);
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->pack_border(n,list,&buf[m]);
 
   return m;
 }
@@ -480,9 +506,9 @@ int AtomVecHybrid::pack_border_vel(int n, int *list, double *buf,
       buf[m++] = x[j][0];
       buf[m++] = x[j][1];
       buf[m++] = x[j][2];
-      buf[m++] = tag[j];
-      buf[m++] = type[j];
-      buf[m++] = mask[j];
+      buf[m++] = ubuf(tag[j]).d;
+      buf[m++] = ubuf(type[j]).d;
+      buf[m++] = ubuf(mask[j]).d;
       buf[m++] = v[j][0];
       buf[m++] = v[j][1];
       buf[m++] = v[j][2];
@@ -513,9 +539,9 @@ int AtomVecHybrid::pack_border_vel(int n, int *list, double *buf,
         buf[m++] = x[j][0] + dx;
         buf[m++] = x[j][1] + dy;
         buf[m++] = x[j][2] + dz;
-        buf[m++] = tag[j];
-        buf[m++] = type[j];
-        buf[m++] = mask[j];
+        buf[m++] = ubuf(tag[j]).d;
+        buf[m++] = ubuf(type[j]).d;
+        buf[m++] = ubuf(mask[j]).d;
         buf[m++] = v[j][0];
         buf[m++] = v[j][1];
         buf[m++] = v[j][2];
@@ -539,9 +565,9 @@ int AtomVecHybrid::pack_border_vel(int n, int *list, double *buf,
         buf[m++] = x[j][0] + dx;
         buf[m++] = x[j][1] + dy;
         buf[m++] = x[j][2] + dz;
-        buf[m++] = tag[j];
-        buf[m++] = type[j];
-        buf[m++] = mask[j];
+        buf[m++] = ubuf(tag[j]).d;
+        buf[m++] = ubuf(type[j]).d;
+        buf[m++] = ubuf(mask[j]).d;
         if (mask[i] & deform_groupbit) {
           buf[m++] = v[j][0] + dvx;
           buf[m++] = v[j][1] + dvy;
@@ -570,6 +596,10 @@ int AtomVecHybrid::pack_border_vel(int n, int *list, double *buf,
   for (k = 0; k < nstyles; k++)
     m += styles[k]->pack_border_hybrid(n,list,&buf[m]);
 
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->pack_border(n,list,&buf[m]);
+
   return m;
 }
 
@@ -586,15 +616,20 @@ void AtomVecHybrid::unpack_border(int n, int first, double *buf)
     x[i][0] = buf[m++];
     x[i][1] = buf[m++];
     x[i][2] = buf[m++];
-    tag[i] = static_cast<int> (buf[m++]);
-    type[i] = static_cast<int> (buf[m++]);
-    mask[i] = static_cast<int> (buf[m++]);
+    tag[i] = (int) ubuf(buf[m++]).i;
+    type[i] = (int) ubuf(buf[m++]).i;
+    mask[i] = (int) ubuf(buf[m++]).i;
   }
 
   // unpack sub-style contributions as contiguous chunks
 
   for (k = 0; k < nstyles; k++)
     m += styles[k]->unpack_border_hybrid(n,first,&buf[m]);
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->
+        unpack_border(n,first,&buf[m]);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -612,9 +647,9 @@ void AtomVecHybrid::unpack_border_vel(int n, int first, double *buf)
     x[i][0] = buf[m++];
     x[i][1] = buf[m++];
     x[i][2] = buf[m++];
-    tag[i] = static_cast<int> (buf[m++]);
-    type[i] = static_cast<int> (buf[m++]);
-    mask[i] = static_cast<int> (buf[m++]);
+    tag[i] = (int) ubuf(buf[m++]).i;
+    type[i] = (int) ubuf(buf[m++]).i;
+    mask[i] = (int) ubuf(buf[m++]).i;
     v[i][0] = buf[m++];
     v[i][1] = buf[m++];
     v[i][2] = buf[m++];
@@ -634,6 +669,11 @@ void AtomVecHybrid::unpack_border_vel(int n, int first, double *buf)
 
   for (k = 0; k < nstyles; k++)
     m += styles[k]->unpack_border_hybrid(n,first,&buf[m]);
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->
+        unpack_border(n,first,&buf[m]);
 }
 
 /* ----------------------------------------------------------------------
@@ -780,6 +820,22 @@ int AtomVecHybrid::unpack_restart(double *buf)
   return m;
 }
 
+/* ---------------------------------------------------------------------- */
+
+void AtomVecHybrid::write_restart_settings(FILE *fp)
+{
+  for (int k = 0; k < nstyles; k++)
+    styles[k]->write_restart_settings(fp);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void AtomVecHybrid::read_restart_settings(FILE *fp)
+{
+  for (int k = 0; k < nstyles; k++)
+    styles[k]->read_restart_settings(fp);
+}
+
 /* ----------------------------------------------------------------------
    create one atom of itype at coord
    create each sub-style one after the other
@@ -803,7 +859,7 @@ void AtomVecHybrid::create_atom(int itype, double *coord)
    grow() occurs here so arrays for all sub-styles are grown
 ------------------------------------------------------------------------- */
 
-void AtomVecHybrid::data_atom(double *coord, int imagetmp, char **values)
+void AtomVecHybrid::data_atom(double *coord, tagint imagetmp, char **values)
 {
   int nlocal = atom->nlocal;
   if (nlocal == nmax) grow(0);
@@ -861,6 +917,135 @@ void AtomVecHybrid::data_vel(int m, char **values)
   int n = 3;
   for (int k = 0; k < nstyles; k++)
     n += styles[k]->data_vel_hybrid(m,&values[n]);
+}
+
+/* ----------------------------------------------------------------------
+   pack atom info for data file including 3 image flags
+------------------------------------------------------------------------- */
+
+void AtomVecHybrid::pack_data(double **buf)
+{
+  int k,m;
+
+  int nlocal = atom->nlocal;
+  for (int i = 0; i < nlocal; i++) {
+    buf[i][0] = ubuf(tag[i]).d;
+    buf[i][1] = ubuf(type[i]).d;
+    buf[i][2] = x[i][0];
+    buf[i][3] = x[i][1];
+    buf[i][4] = x[i][2];
+
+    m = 5;
+    for (k = 0; k < nstyles; k++)
+      m += styles[k]->pack_data_hybrid(i,&buf[i][m]);
+
+    buf[i][m] = ubuf((image[i] & IMGMASK) - IMGMAX).d;
+    buf[i][m+1] = ubuf((image[i] >> IMGBITS & IMGMASK) - IMGMAX).d;
+    buf[i][m+2] = ubuf((image[i] >> IMG2BITS) - IMGMAX).d;
+  }
+}
+
+/* ----------------------------------------------------------------------
+   write atom info to data file including 3 image flags
+------------------------------------------------------------------------- */
+
+void AtomVecHybrid::write_data(FILE *fp, int n, double **buf)
+{
+  int k,m;
+
+  for (int i = 0; i < n; i++) {
+    fprintf(fp,"%d %d %-1.16e %-1.16e %-1.16e",
+            (int) ubuf(buf[i][0]).i,(int) ubuf(buf[i][1]).i,
+            buf[i][2],buf[i][3],buf[i][4]);
+
+    m = 5;
+    for (k = 0; k < nstyles; k++)
+      m += styles[k]->write_data_hybrid(fp,&buf[i][m]);
+
+    fprintf(fp," %d %d %d\n",
+            (int) ubuf(buf[i][m]).i,(int) ubuf(buf[i][m+1]).i,
+            (int) ubuf(buf[i][m+2]).i);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   pack velocity info for data file
+------------------------------------------------------------------------- */
+
+void AtomVecHybrid::pack_vel(double **buf)
+{
+  int k,m;
+
+  int nlocal = atom->nlocal;
+  for (int i = 0; i < nlocal; i++) {
+    buf[i][0] = ubuf(tag[i]).d;
+    buf[i][1] = v[i][0];
+    buf[i][2] = v[i][1];
+    buf[i][3] = v[i][2];
+
+    m = 4;
+    for (k = 0; k < nstyles; k++)
+      m += styles[k]->pack_vel_hybrid(i,&buf[i][m]);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   write velocity info to data file
+------------------------------------------------------------------------- */
+
+void AtomVecHybrid::write_vel(FILE *fp, int n, double **buf)
+{
+  int k,m;
+
+  for (int i = 0; i < n; i++) {
+    fprintf(fp,"%d %g %g %g",
+            (int) ubuf(buf[i][0]).i,buf[i][1],buf[i][2],buf[i][3]);
+
+    m = 4;
+    for (k = 0; k < nstyles; k++)
+      m += styles[k]->write_vel_hybrid(fp,&buf[i][m]);
+
+    fprintf(fp,"\n");
+  }
+}
+
+/* ----------------------------------------------------------------------
+   allstyles = list of all atom styles in this LAMMPS executable
+------------------------------------------------------------------------- */
+
+void AtomVecHybrid::build_styles()
+{
+  nallstyles = 0;
+#define ATOM_CLASS
+#define AtomStyle(key,Class) nallstyles++;
+#include "style_atom.h"
+#undef AtomStyle
+#undef ATOM_CLASS
+
+  allstyles = new char*[nallstyles];
+
+  int n;
+  nallstyles = 0;
+#define ATOM_CLASS
+#define AtomStyle(key,Class)                \
+  n = strlen(#key) + 1;                     \
+  allstyles[nallstyles] = new char[n];      \
+  strcpy(allstyles[nallstyles],#key);       \
+  nallstyles++;
+#include "style_atom.h"
+#undef AtomStyle
+#undef ATOM_CLASS
+}
+
+/* ----------------------------------------------------------------------
+   allstyles = list of all known atom styles
+------------------------------------------------------------------------- */
+
+int AtomVecHybrid::known_style(char *str)
+{
+  for (int i = 0; i < nallstyles; i++)
+    if (strcmp(str,allstyles[i]) == 0) return 1;
+  return 0;
 }
 
 /* ----------------------------------------------------------------------

@@ -208,7 +208,7 @@
       strcpy(_id,id_);
   }
 
-  inline bool ContainerBase::matches_id(char *_id)
+  inline bool ContainerBase::matches_id(const char *_id)
   {
       if(strcmp(_id,id_) == 0) return true;
       return false;

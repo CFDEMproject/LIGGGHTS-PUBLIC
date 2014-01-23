@@ -44,32 +44,32 @@ namespace LAMMPS_NS
         // per-element properties
 
         template<typename T>
-        T* addElementProperty(char *_id, char* _comm, char* _ref,char *_restart,int _scalePower = 1);
+        T* addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower = 1);
 
         template<typename T>
-        T* getElementProperty(char *_id);
+        T* getElementProperty(const char *_id);
 
-        inline ContainerBase* getElementPropertyBase(char *_id);
+        inline ContainerBase* getElementPropertyBase(const char *_id);
 
-        inline int getElementPropertyIndex(char *_id);
+        inline int getElementPropertyIndex(const char *_id);
 
         template<typename T, typename U>
-        void setElementProperty(char *_id, U def);
+        void setElementProperty(const char *_id, U def);
 
-        void removeElementProperty(char *_id);
+        void removeElementProperty(const char *_id);
 
         // global (e.g. mesh) properties
 
         template<typename T>
-        T* addGlobalProperty(char *_id, char* _comm, char* _ref,char *_restart, int _scalePower = 1);
+        T* addGlobalProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower = 1);
 
         template<typename T>
-        T* getGlobalProperty(char *_id);
+        T* getGlobalProperty(const char *_id);
 
         template<typename T, typename U>
-        void setGlobalProperty(char *_id, U def);
+        void setGlobalProperty(const char *_id, U def);
 
-        void removeGlobalProperty(char *_id);
+        void removeGlobalProperty(const char *_id);
 
         // operation with
         // per-element properties
@@ -84,8 +84,8 @@ namespace LAMMPS_NS
         void storeOrig();
         void resetToOrig();
 
-        inline void storeGlobalPropOrig(char *_id);
-        inline void resetGlobalPropToOrig(char *_id);
+        inline void storeGlobalPropOrig(const char *_id);
+        inline void resetGlobalPropToOrig(const char *_id);
 
         inline void moveElement(int i, double *delta);
         void move(double *vecTotal, double *vecIncremental);

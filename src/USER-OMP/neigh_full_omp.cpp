@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -16,7 +16,9 @@
 #include "neigh_list.h"
 #include "atom.h"
 #include "comm.h"
+#include "domain.h"
 #include "group.h"
+#include "my_page.h"
 #include "error.h"
 
 using namespace LAMMPS_NS;
@@ -56,24 +58,16 @@ void Neighbor::full_nsq_omp(NeighList *list)
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
 
-  int npage = tid;
-  int npnt = 0;
+  // each thread has its own page allocator
+  MyPage<int> &ipage = list->ipage[tid];
+  ipage.reset();
 
   // loop over owned atoms, storing neighbors
 
   for (i = ifrom; i < ito; i++) {
 
-#if defined(_OPENMP)
-#pragma omp critical
-#endif
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage += nthreads;
-      if (npage >= list->maxpage) list->add_pages(nthreads);
-    }
-
-    neighptr = &(list->pages[npage][npnt]);
     n = 0;
+    neighptr = ipage.vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -94,18 +88,21 @@ void Neighbor::full_nsq_omp(NeighList *list)
       delz = ztmp - x[j][2];
       rsq = delx*delx + dely*dely + delz*delz;
       if (rsq <= cutneighsq[itype][jtype]) {
-	if (molecular) {
-	  which = find_special(special[i],nspecial[i],tag[j]);
-	  if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
-	} else neighptr[n++] = j;
+        if (molecular) {
+          which = find_special(special[i],nspecial[i],tag[j]);
+          if (which == 0) neighptr[n++] = j;
+          else if (domain->minimum_image_check(delx,dely,delz))
+            neighptr[n++] = j;
+          else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
+        } else neighptr[n++] = j;
       }
     }
 
     ilist[i] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage.vgot(n);
+    if (ipage.status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
   NEIGH_OMP_CLOSE;
@@ -115,7 +112,7 @@ void Neighbor::full_nsq_omp(NeighList *list)
 
 /* ----------------------------------------------------------------------
    N^2 search for all neighbors
-   include neighbors of ghost atoms (no "special neighbors" for ghosts)
+   include neighbors of ghost atoms, but no "special neighbors" for ghosts
    every neighbor pair appears in list of both atoms i and j
 ------------------------------------------------------------------------- */
 
@@ -148,24 +145,16 @@ void Neighbor::full_nsq_ghost_omp(NeighList *list)
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
 
-  int npage = tid;
-  int npnt = 0;
+  // each thread has its own page allocator
+  MyPage<int> &ipage = list->ipage[tid];
+  ipage.reset();
 
   // loop over owned & ghost atoms, storing neighbors
 
   for (i = ifrom; i < ito; i++) {
 
-#if defined(_OPENMP)
-#pragma omp critical
-#endif
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage += nthreads;
-      if (npage >= list->maxpage) list->add_pages(nthreads);
-    }
-
-    neighptr = &(list->pages[npage][npnt]);
     n = 0;
+    neighptr = ipage.vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -174,46 +163,48 @@ void Neighbor::full_nsq_ghost_omp(NeighList *list)
 
     // loop over all atoms, owned and ghost
     // skip i = j
+    // no molecular test when i = ghost atom
 
     if (i < nlocal) {
       for (j = 0; j < nall; j++) {
-	if (i == j) continue;
-	jtype = type[j];
-	if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
-	
-	delx = xtmp - x[j][0];
-	dely = ytmp - x[j][1];
-	delz = ztmp - x[j][2];
-	rsq = delx*delx + dely*dely + delz*delz;
+        if (i == j) continue;
+        jtype = type[j];
+        if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
 
-	if (rsq <= cutneighsq[itype][jtype]) {
-	  if (molecular) {
-	    which = find_special(special[i],nspecial[i],tag[j]);
-	    if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
-	  } else neighptr[n++] = j;
-	}
+        delx = xtmp - x[j][0];
+        dely = ytmp - x[j][1];
+        delz = ztmp - x[j][2];
+        rsq = delx*delx + dely*dely + delz*delz;
+        if (rsq <= cutneighsq[itype][jtype]) {
+          if (molecular) {
+            which = find_special(special[i],nspecial[i],tag[j]);
+            if (which == 0) neighptr[n++] = j;
+            else if (domain->minimum_image_check(delx,dely,delz))
+              neighptr[n++] = j;
+            else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
+          } else neighptr[n++] = j;
+        }
       }
     } else {
       for (j = 0; j < nall; j++) {
-	if (i == j) continue;
-	jtype = type[j];
-	if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
-	
-	delx = xtmp - x[j][0];
-	dely = ytmp - x[j][1];
-	delz = ztmp - x[j][2];
-	rsq = delx*delx + dely*dely + delz*delz;
+        if (i == j) continue;
+        jtype = type[j];
+        if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
 
-	if (rsq <= cutneighghostsq[itype][jtype])
-	  neighptr[n++] = j;
+        delx = xtmp - x[j][0];
+        dely = ytmp - x[j][1];
+        delz = ztmp - x[j][2];
+        rsq = delx*delx + dely*dely + delz*delz;
+
+        if (rsq <= cutneighghostsq[itype][jtype]) neighptr[n++] = j;
       }
     }
 
     ilist[i] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage.vgot(n);
+    if (ipage.status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
   NEIGH_OMP_CLOSE;
@@ -260,24 +251,16 @@ void Neighbor::full_bin_omp(NeighList *list)
   int nstencil = list->nstencil;
   int *stencil = list->stencil;
 
-  int npage = tid;
-  int npnt = 0;
+  // each thread has its own page allocator
+  MyPage<int> &ipage = list->ipage[tid];
+  ipage.reset();
 
   // loop over owned atoms, storing neighbors
 
   for (i = ifrom; i < ito; i++) {
 
-#if defined(_OPENMP)
-#pragma omp critical
-#endif
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage += nthreads;
-      if (npage >= list->maxpage) list->add_pages(nthreads);
-    }
-
-    neighptr = &(list->pages[npage][npnt]);
     n = 0;
+    neighptr = ipage.vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -291,30 +274,33 @@ void Neighbor::full_bin_omp(NeighList *list)
 
     for (k = 0; k < nstencil; k++) {
       for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
-	if (i == j) continue;
+        if (i == j) continue;
 
-	jtype = type[j];
-	if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
+        jtype = type[j];
+        if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
 
-	delx = xtmp - x[j][0];
-	dely = ytmp - x[j][1];
-	delz = ztmp - x[j][2];
-	rsq = delx*delx + dely*dely + delz*delz;
+        delx = xtmp - x[j][0];
+        dely = ytmp - x[j][1];
+        delz = ztmp - x[j][2];
+        rsq = delx*delx + dely*dely + delz*delz;
 
-	if (rsq <= cutneighsq[itype][jtype]) {
-	  if (molecular) {
-	    which = find_special(special[i],nspecial[i],tag[j]);
-	    if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
-	  } else neighptr[n++] = j;
-	}
+        if (rsq <= cutneighsq[itype][jtype]) {
+          if (molecular) {
+            which = find_special(special[i],nspecial[i],tag[j]);
+            if (which == 0) neighptr[n++] = j;
+            else if (domain->minimum_image_check(delx,dely,delz))
+              neighptr[n++] = j;
+            else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
+          } else neighptr[n++] = j;
+        }
       }
     }
 
     ilist[i] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage.vgot(n);
+    if (ipage.status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
   NEIGH_OMP_CLOSE;
@@ -365,24 +351,16 @@ void Neighbor::full_bin_ghost_omp(NeighList *list)
   int *stencil = list->stencil;
   int **stencilxyz = list->stencilxyz;
 
-  int npage = tid;
-  int npnt = 0;
+  // each thread has its own page allocator
+  MyPage<int> &ipage = list->ipage[tid];
+  ipage.reset();
 
   // loop over owned & ghost atoms, storing neighbors
 
   for (i = ifrom; i < ito; i++) {
 
-#if defined(_OPENMP)
-#pragma omp critical
-#endif
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage += nthreads;
-      if (npage >= list->maxpage) list->add_pages(nthreads);
-    }
-
-    neighptr = &(list->pages[npage][npnt]);
     n = 0;
+    neighptr = ipage.vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -392,61 +370,64 @@ void Neighbor::full_bin_ghost_omp(NeighList *list)
     // loop over all atoms in surrounding bins in stencil including self
     // when i is a ghost atom, must check if stencil bin is out of bounds
     // skip i = j
+    // no molecular test when i = ghost atom
 
     if (i < nlocal) {
       ibin = coord2bin(x[i]);
       for (k = 0; k < nstencil; k++) {
-	for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
-	  if (i == j) continue;
-	  
-	  jtype = type[j];
-	  if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
-	
-	  delx = xtmp - x[j][0];
-	  dely = ytmp - x[j][1];
-	  delz = ztmp - x[j][2];
-	  rsq = delx*delx + dely*dely + delz*delz;
+        for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
+          if (i == j) continue;
 
-	  if (rsq <= cutneighsq[itype][jtype]) {
-	    if (molecular) {
-	      which = find_special(special[i],nspecial[i],tag[j]);
-	      if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
-	    } else neighptr[n++] = j;
-	  }
-	}
+          jtype = type[j];
+          if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
+
+          delx = xtmp - x[j][0];
+          dely = ytmp - x[j][1];
+          delz = ztmp - x[j][2];
+          rsq = delx*delx + dely*dely + delz*delz;
+
+          if (rsq <= cutneighsq[itype][jtype]) {
+            if (molecular) {
+              which = find_special(special[i],nspecial[i],tag[j]);
+              if (which == 0) neighptr[n++] = j;
+              else if (domain->minimum_image_check(delx,dely,delz))
+                neighptr[n++] = j;
+              else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
+            } else neighptr[n++] = j;
+          }
+        }
       }
 
     } else {
       ibin = coord2bin(x[i],xbin,ybin,zbin);
       for (k = 0; k < nstencil; k++) {
-	xbin2 = xbin + stencilxyz[k][0];
-	ybin2 = ybin + stencilxyz[k][1];
-	zbin2 = zbin + stencilxyz[k][2];
-	if (xbin2 < 0 || xbin2 >= mbinx ||
-	    ybin2 < 0 || ybin2 >= mbiny ||
-	    zbin2 < 0 || zbin2 >= mbinz) continue;
-	for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
-	  if (i == j) continue;
-	  
-	  jtype = type[j];
-	  if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
-	
-	  delx = xtmp - x[j][0];
-	  dely = ytmp - x[j][1];
-	  delz = ztmp - x[j][2];
-	  rsq = delx*delx + dely*dely + delz*delz;
+        xbin2 = xbin + stencilxyz[k][0];
+        ybin2 = ybin + stencilxyz[k][1];
+        zbin2 = zbin + stencilxyz[k][2];
+        if (xbin2 < 0 || xbin2 >= mbinx ||
+            ybin2 < 0 || ybin2 >= mbiny ||
+            zbin2 < 0 || zbin2 >= mbinz) continue;
+        for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
+          if (i == j) continue;
 
-	  if (rsq <= cutneighghostsq[itype][jtype])
-	    neighptr[n++] = j;
-	}
+          jtype = type[j];
+          if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
+
+          delx = xtmp - x[j][0];
+          dely = ytmp - x[j][1];
+          delz = ztmp - x[j][2];
+          rsq = delx*delx + dely*dely + delz*delz;
+
+          if (rsq <= cutneighghostsq[itype][jtype]) neighptr[n++] = j;
+        }
       }
     }
 
     ilist[i] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage.vgot(n);
+    if (ipage.status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
   NEIGH_OMP_CLOSE;
@@ -498,22 +479,14 @@ void Neighbor::full_multi_omp(NeighList *list)
   int **stencil_multi = list->stencil_multi;
   double **distsq_multi = list->distsq_multi;
 
-  int npage = tid;
-  int npnt = 0;
+  // each thread has its own page allocator
+  MyPage<int> &ipage = list->ipage[tid];
+  ipage.reset();
 
   for (i = ifrom; i < ito; i++) {
 
-#if defined(_OPENMP)
-#pragma omp critical
-#endif
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage += nthreads;
-      if (npage >= list->maxpage) list->add_pages(nthreads);
-    }
-
-    neighptr = &(list->pages[npage][npnt]);
     n = 0;
+    neighptr = ipage.vget();
 
     itype = type[i];
     xtmp = x[i][0];
@@ -531,31 +504,34 @@ void Neighbor::full_multi_omp(NeighList *list)
     ns = nstencil_multi[itype];
     for (k = 0; k < ns; k++) {
       for (j = binhead[ibin+s[k]]; j >= 0; j = bins[j]) {
-	jtype = type[j];
-	if (cutsq[jtype] < distsq[k]) continue;
-	if (i == j) continue;
+        jtype = type[j];
+        if (cutsq[jtype] < distsq[k]) continue;
+        if (i == j) continue;
 
-	if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
+        if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
 
-	delx = xtmp - x[j][0];
-	dely = ytmp - x[j][1];
-	delz = ztmp - x[j][2];
-	rsq = delx*delx + dely*dely + delz*delz;
+        delx = xtmp - x[j][0];
+        dely = ytmp - x[j][1];
+        delz = ztmp - x[j][2];
+        rsq = delx*delx + dely*dely + delz*delz;
 
-	if (rsq <= cutneighsq[itype][jtype]) {
-	  if (molecular) {
-	    which = find_special(special[i],nspecial[i],tag[j]);
-	    if (which >= 0) neighptr[n++] = j ^ (which << SBBITS);
-	  } else neighptr[n++] = j;
-	}
+        if (rsq <= cutneighsq[itype][jtype]) {
+          if (molecular) {
+            which = find_special(special[i],nspecial[i],tag[j]);
+            if (which == 0) neighptr[n++] = j;
+            else if (domain->minimum_image_check(delx,dely,delz))
+              neighptr[n++] = j;
+            else if (which > 0) neighptr[n++] = j ^ (which << SBBITS);
+          } else neighptr[n++] = j;
+        }
       }
     }
 
     ilist[i] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage.vgot(n);
+    if (ipage.status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
   NEIGH_OMP_CLOSE;

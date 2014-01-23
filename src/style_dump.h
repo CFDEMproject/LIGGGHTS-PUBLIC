@@ -9,4 +9,5 @@
 #include "dump_local.h"
 #include "dump_mesh_stl.h"
 #include "dump_mesh_vtk.h"
+#include "dump_movie.h"
 #include "dump_xyz.h"

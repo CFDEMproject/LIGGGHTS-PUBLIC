@@ -5,31 +5,31 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
-#ifdef PAIR_CLASS                    
+#ifdef PAIR_CLASS
 
-PairStyle(peri/lps,PairPeriLPS)      
+PairStyle(peri/lps,PairPeriLPS)
 
-#else                                 
+#else
 
-#ifndef LMP_PAIR_PERI_LPS_H          
-#define LMP_PAIR_PERI_LPS_H          
+#ifndef LMP_PAIR_PERI_LPS_H
+#define LMP_PAIR_PERI_LPS_H
 
 #include "pair.h"
 
 namespace LAMMPS_NS {
 
-class PairPeriLPS : public Pair {    
+class PairPeriLPS : public Pair {
  public:
-  PairPeriLPS(class LAMMPS *);       
-  virtual ~PairPeriLPS();                                   
-  int pack_comm(int, int *, double *, int, int *);  
-  void unpack_comm(int, int, double *);             
+  PairPeriLPS(class LAMMPS *);
+  virtual ~PairPeriLPS();
+  int pack_comm(int, int *, double *, int, int *);
+  void unpack_comm(int, int, double *);
 
   virtual void compute(int, int);
   void settings(int, char **);
@@ -40,20 +40,19 @@ class PairPeriLPS : public Pair {
   void read_restart(FILE *);
   void write_restart_settings(FILE *) {}
   void read_restart_settings(FILE *) {}
-  double single(int, int, int, int, double, double, double, double &);
   double memory_usage();
   double influence_function(double, double, double);
-  void compute_dilatation();   
+  void compute_dilatation();
 
  protected:
   int ifix_peri;
-  double **bulkmodulus;                
-  double **shearmodulus;               
-  double **s00, **alpha;                  
+  double **bulkmodulus;
+  double **shearmodulus;
+  double **s00, **alpha;
   double **cut;
- 
-  double *s0_new;                  
-  double *theta;                      
+
+  double *s0_new;
+  double *theta;
   int nmax;
 
   void allocate();
@@ -90,10 +89,6 @@ E: Pair peri requires an atom map, see atom_modify
 Even for atomic systems, an atom map is required to find Peridynamic
 bonds.  Use the atom_modify command to define one.
 
-E: Pair peri requires a lattice be defined
-
-Use the lattice command for this purpose.
-
 E: Pair peri lattice is not identical in x, y, and z
 
 The lattice defined by the lattice command must be cubic.
@@ -106,5 +101,9 @@ E: Divide by 0 in influence function of pair peri/lps
 
 This should not normally occur.  It is likely a problem with your
 model.
+
+U: Pair peri requires a lattice be defined
+
+Use the lattice command for this purpose.
 
 */

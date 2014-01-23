@@ -19,12 +19,12 @@
 #include "string.h"
 #include "fix_spring_self.h"
 #include "atom.h"
-#include "force.h"
 #include "update.h"
 #include "domain.h"
 #include "respa.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -42,13 +42,13 @@ FixSpringSelf::FixSpringSelf(LAMMPS *lmp, int narg, char **arg) :
   global_freq = 1;
   extscalar = 1;
 
-  k = atof(arg[3]);
+  k = force->numeric(FLERR,arg[3]);
   if (k <= 0.0) error->all(FLERR,"Illegal fix spring/self command");
 
   xflag = yflag = zflag = 1;
   if (narg == 5) {
     if (strcmp(arg[4],"xyz") == 0) {
-      ; /* default */
+      xflag = yflag = zflag = 1;
     } else if (strcmp(arg[4],"xy") == 0) {
       zflag = 0;
     } else if (strcmp(arg[4],"xz") == 0) {
@@ -76,23 +76,12 @@ FixSpringSelf::FixSpringSelf(LAMMPS *lmp, int narg, char **arg) :
 
   double **x = atom->x;
   int *mask = atom->mask;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int nlocal = atom->nlocal;
 
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
-  int xbox,ybox,zbox;
-
   for (int i = 0; i < nlocal; i++) {
-    if (mask[i] & groupbit) {
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      xoriginal[i][0] = x[i][0] + xbox*xprd;
-      xoriginal[i][1] = x[i][1] + ybox*yprd;
-      xoriginal[i][2] = x[i][2] + zbox*zprd;
-    } else xoriginal[i][0] = xoriginal[i][1] = xoriginal[i][2] = 0.0;
+    if (mask[i] & groupbit) domain->unmap(x[i],image[i],xoriginal[i]);
+    else xoriginal[i][0] = xoriginal[i][1] = xoriginal[i][2] = 0.0;
   }
 
   espring = 0.0;
@@ -163,24 +152,19 @@ void FixSpringSelf::post_force(int vflag)
   double **x = atom->x;
   double **f = atom->f;
   int *mask = atom->mask;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int nlocal = atom->nlocal;
 
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
-  int xbox,ybox,zbox;
   double dx,dy,dz;
+  double unwrap[3];
   espring = 0.0;
 
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = x[i][0] + xbox*xprd - xoriginal[i][0];
-      dy = x[i][1] + ybox*yprd - xoriginal[i][1];
-      dz = x[i][2] + zbox*zprd - xoriginal[i][2];
+      domain->unmap(x[i],image[i],unwrap);
+      dx = unwrap[0] - xoriginal[i][0];
+      dy = unwrap[1] - xoriginal[i][1];
+      dz = unwrap[2] - xoriginal[i][2];
       if (!xflag) dx = 0.0;
       if (!yflag) dy = 0.0;
       if (!zflag) dz = 0.0;
@@ -241,7 +225,7 @@ void FixSpringSelf::grow_arrays(int nmax)
    copy values within local atom-based array
 ------------------------------------------------------------------------- */
 
-void FixSpringSelf::copy_arrays(int i, int j)
+void FixSpringSelf::copy_arrays(int i, int j, int delflag)
 {
   xoriginal[j][0] = xoriginal[i][0];
   xoriginal[j][1] = xoriginal[i][1];

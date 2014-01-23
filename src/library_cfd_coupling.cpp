@@ -84,7 +84,7 @@ void* locate_coupling_fix(void *ptr)
 
 void data_liggghts_to_of(char *name,char *type,void *ptr,void *&data,char* datatype)
 {
-    LAMMPS *lmp = (LAMMPS *) ptr;
+    //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
     fcfd->get_dc()->push(name,type,data,datatype);
 }
@@ -93,7 +93,7 @@ void data_liggghts_to_of(char *name,char *type,void *ptr,void *&data,char* datat
 
 void data_of_to_liggghts(char *name,char *type,void *ptr,void *data,char* datatype)
 {
-    LAMMPS *lmp = (LAMMPS *) ptr;
+    //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
     fcfd->get_dc()->pull(name,type,data,datatype);
 }
@@ -114,7 +114,7 @@ void update_rm(void *ptr)
 
 void allocate_external_int(int    **&data, int len2,int len1,int    initvalue,void *ptr)
 {
-    LAMMPS *lmp = (LAMMPS *) ptr;
+    //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
     fcfd->get_dc()->allocate_external(data,len2,len1,initvalue);
 }
@@ -122,7 +122,7 @@ void allocate_external_int(int    **&data, int len2,int len1,int    initvalue,vo
 
 void allocate_external_int(int    **&data, int len2,char *keyword,int    initvalue,void *ptr)
 {
-    LAMMPS *lmp = (LAMMPS *) ptr;
+    //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
     fcfd->get_dc()->allocate_external(data,len2,keyword,initvalue);
 }
@@ -131,7 +131,7 @@ void allocate_external_int(int    **&data, int len2,char *keyword,int    initval
 
 void allocate_external_double(double **&data, int len2,int len1,double initvalue,void *ptr)
 {
-    LAMMPS *lmp = (LAMMPS *) ptr;
+    //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
     fcfd->get_dc()->allocate_external(data,len2,len1,initvalue);
 }
@@ -140,7 +140,7 @@ void allocate_external_double(double **&data, int len2,int len1,double initvalue
 
 void allocate_external_double(double **&data, int len2,char* keyword,double initvalue,void *ptr)
 {
-    LAMMPS *lmp = (LAMMPS *) ptr;
+    //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
     fcfd->get_dc()->allocate_external(data,len2,keyword,initvalue);
 }

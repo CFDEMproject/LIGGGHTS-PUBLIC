@@ -26,6 +26,8 @@
 
 #include "stdio.h"
 #include "pointers.h"
+#include <map>
+#include <string>
 
 namespace LAMMPS_NS {
 
@@ -40,26 +42,35 @@ class Input : protected Pointers {
   void file();                   // process all input
   void file(const char *);       // process an input script
   char *one(const char *);       // process a single command
-  void substitute(char *, int);  // substitute for variables in a string
+  void substitute(char *&, char *&, int &, int &, int);
+                                 // substitute for variables in a string
 
- protected: //modified C.K.
+ protected: 
   int me;                      // proc ID
   char *command;               // ptr to current command
   int maxarg;                  // max # of args in arg
-  char *line,*copy,*work;      // input line & copy of it
+  char *line,*copy,*work;      // input line & copy and work string
+  int maxline,maxcopy,maxwork; // max lengths of char strings
   int echo_screen;             // 0 = no, 1 = yes
   int echo_log;                // 0 = no, 1 = yes
   int nfile,maxfile;           // current # and max # of open input files
   int label_active;            // 0 = no label, 1 = looking for label
   char *labelstr;              // label string being looked for
   int jump_skip;               // 1 if skipping next jump, 0 otherwise
+  int ifthenelse_flag;         // 1 if executing commands inside an if-then-else
 
   FILE **infiles;              // list of open input files
-  FILE *nonlammps_file;        // nonlammps file modified C.K.
+  FILE *nonlammps_file;        
+
+  typedef void (*CommandCreator)(LAMMPS *, int, char **);
+  std::map<std::string,CommandCreator> *command_map;
+
+  template <typename T> static void command_creator(LAMMPS *, int, char **);
 
   void parse();                      // parse an input text line
-  void parse_nonlammps();      // parse a nonlammps file modified C.K.
-  char *nextword(char *, char **);   // find next word in string, with quotes
+  void parse_nonlammps();            
+  char *nextword(char *, char **);       // find next word in string with quotes
+  void reallocate(char *&, int &, int);  // reallocate a char string
   int execute_command();             // execute a single command
 
   void clear();                // input script commands
@@ -83,6 +94,7 @@ class Input : protected Pointers {
   void bond_coeff();
   void bond_style();
   void boundary();
+  void box();
   void communicate();
   void compute();
   void compute_modify();
@@ -103,6 +115,7 @@ class Input : protected Pointers {
   void mass();
   void min_modify();
   void min_style();
+  void modify_timing();
   void neigh_modify();
   void neighbor_command();
   void newton();
@@ -138,18 +151,13 @@ E: Label wasn't found in input script
 
 Self-explanatory.
 
-E: Input line too long: %s
-
-This is a hard (very large) limit defined in the input.cpp file.
-
 E: Unknown command: %s
 
 The command is not known to LAMMPS.  Check the input script.
 
-E: Another input script is already being processed
+E: Invalid use of library file() function
 
-Cannot attempt to open a 2nd input script, when the original file is
-still being processed.
+UNDOCUMENTED
 
 E: Cannot open input script %s
 
@@ -168,20 +176,24 @@ E: Invalid variable name
 
 Variable name used in an input script line is invalid.
 
+E: Invalid immediate variable
+
+Syntax of immediate value is incorrect.
+
 E: Substitution for illegal variable
 
 Input script line contained a variable that could not be substituted
 for.
-
-E: Input line too long after variable substitution
-
-This is a hard (very large) limit defined in the input.cpp file.
 
 E: Illegal ... command
 
 Self-explanatory.  Check the input script syntax and compare to the
 documentation for the command.  You can use -echo screen as a
 command-line option when running LAMMPS to see the offending line.
+
+E: Cannot use include command within an if command
+
+UNDOCUMENTED
 
 E: Cannot open logfile %s
 
@@ -233,6 +245,11 @@ E: Boundary command after simulation box is defined
 
 The boundary command cannot be used after a read_data, read_restart,
 or create_box command.
+
+E: Box command after simulation box is defined
+
+The box command cannot be used after a read_data, read_restart, or
+create_box command.
 
 E: Dihedral_coeff command before simulation box is defined
 
@@ -335,5 +352,10 @@ E: Units command after simulation box is defined
 
 The units command cannot be used after a read_data, read_restart, or
 create_box command.
+
+U: Another input script is already being processed
+
+Cannot attempt to open a 2nd input script, when the original file is
+still being processed.
 
 */

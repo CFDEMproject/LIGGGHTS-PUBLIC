@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -16,6 +16,7 @@
 #include "neigh_list.h"
 #include "atom.h"
 #include "comm.h"
+#include "my_page.h"
 #include "error.h"
 
 using namespace LAMMPS_NS;
@@ -48,27 +49,16 @@ void Neighbor::half_from_full_no_newton_omp(NeighList *list)
   int *numneigh_full = list->listfull->numneigh;
   int **firstneigh_full = list->listfull->firstneigh;
 
-  // each thread works on its own page
-  int npage = tid;
-  int npnt = 0;
+  // each thread has its own page allocator
+  MyPage<int> &ipage = list->ipage[tid];
+  ipage.reset();
 
   // loop over atoms in full list
 
   for (ii = ifrom; ii < ito; ii++) {
 
-#if defined(_OPENMP)
-#pragma omp critical
-#endif
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage += nthreads;
-      // only one thread at a time may check whether we 
-      // need new neighbor list pages and then add to them.
-      if (npage >= list->maxpage) list->add_pages(nthreads);
-    }
-
-    neighptr = &(list->pages[npage][npnt]);
     n = 0;
+    neighptr = ipage.vget();
 
     // loop over parent full list
 
@@ -85,8 +75,8 @@ void Neighbor::half_from_full_no_newton_omp(NeighList *list)
     ilist[ii] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage.vgot(n);
+    if (ipage.status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
   NEIGH_OMP_CLOSE;
@@ -124,27 +114,16 @@ void Neighbor::half_from_full_newton_omp(NeighList *list)
   int *numneigh_full = list->listfull->numneigh;
   int **firstneigh_full = list->listfull->firstneigh;
 
-  // each thread works on its own page
-  int npage = tid;
-  int npnt = 0;
+  // each thread has its own page allocator
+  MyPage<int> &ipage = list->ipage[tid];
+  ipage.reset();
 
   // loop over parent full list
 
   for (ii = ifrom; ii < ito; ii++) {
 
-#if defined(_OPENMP)
-#pragma omp critical
-#endif
-    if (pgsize - npnt < oneatom) {
-      npnt = 0;
-      npage += nthreads;
-      // only one thread at a time may check  whether we
-      // need new neighbor list pages and then add to them.
-      if (npage >= list->maxpage) list->add_pages(nthreads);
-    }
-
-    neighptr = &(list->pages[npage][npnt]);
     n = 0;
+    neighptr = ipage.vget();
 
     i = ilist_full[ii];
     xtmp = x[i][0];
@@ -160,13 +139,13 @@ void Neighbor::half_from_full_newton_omp(NeighList *list)
       joriginal = jlist[jj];
       j = joriginal & NEIGHMASK;
       if (j < nlocal) {
-	if (i > j) continue;
+        if (i > j) continue;
       } else {
-	if (x[j][2] < ztmp) continue;
-	if (x[j][2] == ztmp) {
-	  if (x[j][1] < ytmp) continue;
-	  if (x[j][1] == ytmp && x[j][0] < xtmp) continue;
-	}
+        if (x[j][2] < ztmp) continue;
+        if (x[j][2] == ztmp) {
+          if (x[j][1] < ytmp) continue;
+          if (x[j][1] == ytmp && x[j][0] < xtmp) continue;
+        }
       }
       neighptr[n++] = joriginal;
     }
@@ -174,11 +153,10 @@ void Neighbor::half_from_full_newton_omp(NeighList *list)
     ilist[ii] = i;
     firstneigh[i] = neighptr;
     numneigh[i] = n;
-    npnt += n;
-    if (n > oneatom)
+    ipage.vgot(n);
+    if (ipage.status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
   }
   NEIGH_OMP_CLOSE;
   list->inum = inum_full;
 }
-

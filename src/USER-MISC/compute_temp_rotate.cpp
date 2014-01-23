@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -34,7 +34,7 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeTempRotate::ComputeTempRotate(LAMMPS *lmp, int narg, char **arg) : 
+ComputeTempRotate::ComputeTempRotate(LAMMPS *lmp, int narg, char **arg) :
   Compute(lmp, narg, arg)
 {
   if (narg != 3) error->all(FLERR,"Illegal compute temp/rotate command");
@@ -63,12 +63,17 @@ ComputeTempRotate::~ComputeTempRotate()
 
 void ComputeTempRotate::init()
 {
+  masstotal = group->mass(igroup);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void ComputeTempRotate::setup()
+{
   fix_dof = 0;
   for (int i = 0; i < modify->nfix; i++)
     fix_dof += modify->fix[i]->dof(igroup);
   dof_compute();
-
-  masstotal = group->mass(igroup);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -89,11 +94,8 @@ double ComputeTempRotate::compute_scalar()
 {
   double vthermal[3];
   double vcm[3],xcm[3],inertia[3][3],angmom[3],omega[3];
-  int xbox,ybox,zbox;
   double dx,dy,dz;
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
+  double unwrap[3];
 
   invoked_scalar = update->ntimestep;
 
@@ -109,7 +111,7 @@ double ComputeTempRotate::compute_scalar()
   double *mass = atom->mass;
   double *rmass = atom->rmass;
   int *type = atom->type;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
@@ -120,29 +122,25 @@ double ComputeTempRotate::compute_scalar()
   }
 
   double t = 0.0;
-  
+
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
-      
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = (x[i][0] + xbox*xprd) - xcm[0];
-      dy = (x[i][1] + ybox*yprd) - xcm[1];
-      dz = (x[i][2] + zbox*zprd) - xcm[2];
+      domain->unmap(x[i],image[i],unwrap);
+      dx = unwrap[0] - xcm[0];
+      dy = unwrap[1] - xcm[1];
+      dz = unwrap[2] - xcm[2];
       vbiasall[i][0] = vcm[0] + dz*omega[1]-dy*omega[2];
       vbiasall[i][1] = vcm[1] + dx*omega[2]-dz*omega[0];
       vbiasall[i][2] = vcm[2] + dy*omega[0]-dx*omega[1];
-
       vthermal[0] = v[i][0] - vbiasall[i][0];
       vthermal[1] = v[i][1] - vbiasall[i][1];
       vthermal[2] = v[i][2] - vbiasall[i][2];
       if (rmass)
-	t += (vthermal[0]*vthermal[0] + vthermal[1]*vthermal[1] + 
-	      vthermal[2]*vthermal[2]) * rmass[i];
+        t += (vthermal[0]*vthermal[0] + vthermal[1]*vthermal[1] +
+              vthermal[2]*vthermal[2]) * rmass[i];
       else
-	t += (vthermal[0]*vthermal[0] + vthermal[1]*vthermal[1] + 
-	      vthermal[2]*vthermal[2]) * mass[type[i]];
+        t += (vthermal[0]*vthermal[0] + vthermal[1]*vthermal[1] +
+              vthermal[2]*vthermal[2]) * mass[type[i]];
     }
 
   MPI_Allreduce(&t,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
@@ -155,14 +153,10 @@ double ComputeTempRotate::compute_scalar()
 
 void ComputeTempRotate::compute_vector()
 {
-  int i;
   double vthermal[3];
   double vcm[3],xcm[3],inertia[3][3],angmom[3],omega[3];
-  int xbox,ybox,zbox;
   double dx,dy,dz;
-  double xprd = domain->xprd;
-  double yprd = domain->yprd;
-  double zprd = domain->zprd;
+  double unwrap[3];
 
   invoked_vector = update->ntimestep;
 
@@ -178,7 +172,7 @@ void ComputeTempRotate::compute_vector()
   double *mass = atom->mass;
   double *rmass = atom->rmass;
   int *type = atom->type;
-  int *image = atom->image;
+  tagint *image = atom->image;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
@@ -189,25 +183,20 @@ void ComputeTempRotate::compute_vector()
   }
 
   double massone,t[6];
-  for (i = 0; i < 6; i++) t[i] = 0.0;
+  for (int i = 0; i < 6; i++) t[i] = 0.0;
 
-  for (i = 0; i < nlocal; i++)
+  for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
-
-      xbox = (image[i] & 1023) - 512;
-      ybox = (image[i] >> 10 & 1023) - 512;
-      zbox = (image[i] >> 20) - 512;
-      dx = (x[i][0] + xbox*xprd) - xcm[0];
-      dy = (x[i][1] + ybox*yprd) - xcm[1];
-      dz = (x[i][2] + zbox*zprd) - xcm[2];
+      domain->unmap(x[i],image[i],unwrap);
+      dx = unwrap[0] - xcm[0];
+      dy = unwrap[1] - xcm[1];
+      dz = unwrap[2] - xcm[2];
       vbiasall[i][0] = vcm[0] + dz*omega[1]-dy*omega[2];
       vbiasall[i][1] = vcm[1] + dx*omega[2]-dz*omega[0];
       vbiasall[i][2] = vcm[2] + dy*omega[0]-dx*omega[1];
-
       vthermal[0] = v[i][0] - vbiasall[i][0];
       vthermal[1] = v[i][1] - vbiasall[i][1];
       vthermal[2] = v[i][2] - vbiasall[i][2];
-
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
       t[0] += massone * vthermal[0]*vthermal[0];
@@ -219,7 +208,7 @@ void ComputeTempRotate::compute_vector()
     }
 
   MPI_Allreduce(t,vector,6,MPI_DOUBLE,MPI_SUM,world);
-  for (i = 0; i < 6; i++) vector[i] *= force->mvv2e;
+  for (int i = 0; i < 6; i++) vector[i] *= force->mvv2e;
 }
 
 /* ----------------------------------------------------------------------
@@ -242,9 +231,9 @@ void ComputeTempRotate::remove_bias_all()
   double **v = atom->v;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
-  
+
   for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit) {   
+    if (mask[i] & groupbit) {
       v[i][0] -= vbiasall[i][0];
       v[i][1] -= vbiasall[i][1];
       v[i][2] -= vbiasall[i][2];
@@ -273,7 +262,7 @@ void ComputeTempRotate::restore_bias_all()
   double **v = atom->v;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
-  
+
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
       v[i][0] += vbiasall[i][0];

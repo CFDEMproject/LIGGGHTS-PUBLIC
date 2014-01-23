@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -33,6 +33,10 @@ class PairLubricateUPoly : public PairLubricateU {
   void init_style();
 
  private:
+  double vol_P;
+  int flagdeform, flagwall, flagVF, flagHI;
+  class FixWall *wallfix;
+
   void iterate(double **, int);
   void compute_RE(double **);
   void compute_RU(double **);
@@ -52,6 +56,10 @@ Self-explanatory.  Check the input script syntax and compare to the
 documentation for the command.  You can use -echo screen as a
 command-line option when running LAMMPS to see the offending line.
 
+W: Cannot include log terms without 1/r terms; setting flagHI to 1
+
+Self-explanatory.
+
 E: Pair lubricateU/poly requires newton pair off
 
 Self-explanatory.
@@ -67,5 +75,9 @@ Self-explanatory.
 E: Pair lubricate/poly requires extended particles
 
 One of the particles has radius 0.0.
+
+E: Cannot use multiple fix wall commands with pair lubricateU
+
+Self-explanatory.
 
 */

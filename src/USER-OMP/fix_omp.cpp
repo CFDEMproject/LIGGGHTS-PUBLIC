@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -22,6 +22,7 @@
 #include "force.h"
 #include "neighbor.h"
 #include "neigh_request.h"
+#include "universe.h"
 #include "update.h"
 #include "integrate.h"
 #include "min.h"
@@ -64,12 +65,13 @@ static int get_tid()
 
 /* ---------------------------------------------------------------------- */
 
-FixOMP::FixOMP(LAMMPS *lmp, int narg, char **arg) :  Fix(lmp, narg, arg),
-              thr(NULL), last_omp_style(NULL), last_pair_hybrid(NULL),
-              _nthr(-1), _neighbor(true), _newton(false)
+FixOMP::FixOMP(LAMMPS *lmp, int narg, char **arg) 
+  :  Fix(lmp, narg, arg),
+     thr(NULL), last_omp_style(NULL), last_pair_hybrid(NULL),
+     _nthr(-1), _neighbor(true), _mixed(false), _reduced(true)
 {
-  if ((narg < 4) || (narg > 6)) error->all(FLERR,"Illegal fix OMP command");
-  if (strcmp(arg[1],"all") != 0) error->all(FLERR,"Illegal fix OMP command");
+  if ((narg < 4) || (narg > 7)) error->all(FLERR,"Illegal package omp command");
+  if (strcmp(arg[1],"all") != 0) error->all(FLERR,"fix OMP has to operate on group 'all'");
 
   int nthreads = 1;
   if (narg > 3) {
@@ -78,66 +80,59 @@ FixOMP::FixOMP(LAMMPS *lmp, int narg, char **arg) :  Fix(lmp, narg, arg),
 #pragma omp parallel default(none) shared(nthreads)
       nthreads = omp_get_num_threads();
     else
-      nthreads = atoi(arg[3]);
+      nthreads = force->inumeric(FLERR,arg[3]);
 #endif
   }
 
   if (nthreads < 1)
-    error->all(FLERR,"Illegal number of threads requested.");
+    error->all(FLERR,"Illegal number of OpenMP threads requested");
 
+  int reset_thr = 0;
   if (nthreads != comm->nthreads) {
 #if defined(_OPENMP)
+    reset_thr = 1;
     omp_set_num_threads(nthreads);
 #endif
     comm->nthreads = nthreads;
-    if (comm->me == 0) {
-      if (screen)
-	fprintf(screen,"  reset %d OpenMP thread(s) per MPI task\n", nthreads);
-      if (logfile)
-	fprintf(logfile,"  reset %d OpenMP thread(s) per MPI task\n", nthreads);
-    }
   }
 
-  if (narg > 4) {
-    if (strcmp(arg[4],"force/neigh") == 0)
+  int iarg = 4;
+  while (iarg < narg) {
+    if (strcmp(arg[iarg],"force/neigh") == 0)
       _neighbor = true;
-    else if (strcmp(arg[4],"force") == 0)
+    else if (strcmp(arg[iarg],"force") == 0)
       _neighbor = false;
+    else if (strcmp(arg[iarg],"mixed") == 0)
+      _mixed = true;
+    else if (strcmp(arg[iarg],"double") == 0)
+      _mixed = false;
     else
-      error->all(FLERR,"Illegal fix omp mode requested.");
-
-    if (comm->me == 0) {
-      const char * const mode = _neighbor ? "OpenMP capable" : "serial";
-      
-      if (screen)
-	fprintf(screen,"  using %s neighbor list subroutines\n", mode);
-      if (logfile)
-	fprintf(logfile,"  using %s neighbor list subroutines\n", mode);
-    }
+      error->all(FLERR,"Illegal package omp mode requested");
+    ++iarg;
   }
 
-#if 0 /* to be enabled when we can switch between half and full neighbor lists */
-  if (narg > 5) {
-    if (strcmp(arg[5],"neigh/half") == 0)
-      _newton = true;
-    else if (strcmp(arg[5],"neigh/full") == 0)
-	_newton = false;
-    else
-      error->all(FLERR,"Illegal fix OMP command");
+  // print summary of settings
+  if (comm->me == 0) {
+    const char * const nmode = _neighbor ? "multi-threaded" : "serial";
+    const char * const kmode = _mixed ? "mixed" : "double";
 
-    if (comm->me == 0) {
-      const char * const mode = _newton ? "half" : "full";
-      
-      if (screen)
-	fprintf(screen,"  using /omp styles with %s neighbor list builds\n", mode);
-      if (logfile)
-	fprintf(logfile,"  using /omp styles with %s neighbor list builds\n", mode);
+    if (screen) {
+      if (reset_thr)
+	fprintf(screen,"set %d OpenMP thread(s) per MPI task\n", nthreads);
+      fprintf(screen,"using %s neighbor list subroutines\n", nmode);
+      fprintf(screen,"prefer %s precision OpenMP force kernels\n", kmode);
+    }
+    
+    if (logfile) {
+      if (reset_thr)
+	fprintf(logfile,"set %d OpenMP thread(s) per MPI task\n", nthreads);
+      fprintf(logfile,"using %s neighbor list subroutines\n", nmode);
+      fprintf(logfile,"prefer %s precision OpenMP force kernels\n", kmode);
     }
   }
-#endif
 
   // allocate list for per thread accumulator manager class instances
-  // and then have each thread create an instance of this class to 
+  // and then have each thread create an instance of this class to
   // encourage the OS to use storage that is "close" to each thread's CPU.
   thr = new ThrData *[nthreads];
   _nthr = nthreads;
@@ -191,15 +186,27 @@ int FixOMP::setmask()
 
 void FixOMP::init()
 {
-  if (strstr(update->integrate_style,"respa") != NULL)
-    error->all(FLERR,"Cannot use r-RESPA with /omp styles");
+  if ((strstr(update->integrate_style,"respa") != NULL)
+      && (strstr(update->integrate_style,"respa/omp") == NULL))
+    error->all(FLERR,"Need to use respa/omp for r-RESPA with /omp styles");
 
-  int check_hybrid;
+  int check_hybrid, kspace_split;
   last_pair_hybrid = NULL;
   last_omp_style = NULL;
-  char *last_omp_name = NULL;
-  char *last_hybrid_name = NULL;
-  char *last_force_name = NULL;
+  const char *last_omp_name = NULL;
+  const char *last_hybrid_name = NULL;
+  const char *last_force_name = NULL;
+
+  // support for verlet/split operation.
+  // kspace_split == 0 : regular processing
+  // kspace_split < 0  : master partition, does not do kspace
+  // kspace_split > 0  : slave partition, only does kspace
+  if (strstr(update->integrate_style,"verlet/split") != NULL) {
+    if (universe->iworld == 0) kspace_split = -1;
+    else kspace_split = 1;
+  } else {
+    kspace_split = 0;
+  }
 
 // determine which is the last force style with OpenMP
 // support as this is the one that has to reduce the forces
@@ -211,44 +218,48 @@ void FixOMP::init()
          (strcmp(force->name ## _style,"hybrid/overlay") == 0) )	\
       check_hybrid=1;							\
     if (force->name->suffix_flag & Suffix::OMP) {			\
-      last_force_name = #name;						\
+      last_force_name = (const char *) #name;				\
       last_omp_name = force->name ## _style;				\
       last_omp_style = (void *) force->name;				\
     }									\
   }
 
-#define CheckHybridForOMP(name,Class)					\
-  if (check_hybrid) {							\
-    Class ## Hybrid *style = (Class ## Hybrid *) force->name;		\
-    for (int i=0; i < style->nstyles; i++) {				\
-      if (style->styles[i]->suffix_flag & Suffix::OMP) {		\
-	last_force_name = #name;					\
-	last_omp_name = style->keywords[i];				\
-	last_omp_style = style->styles[i];				\
-      }									\
-    }									\
+#define CheckHybridForOMP(name,Class) \
+  if (check_hybrid) {					      \
+    Class ## Hybrid *style = (Class ## Hybrid *) force->name; \
+    for (int i=0; i < style->nstyles; i++) {		      \
+      if (style->styles[i]->suffix_flag & Suffix::OMP) {      \
+        last_force_name = (const char *) #name;		      \
+        last_omp_name = style->keywords[i];		      \
+        last_omp_style = style->styles[i];		      \
+      }							      \
+    }							      \
   }
 
-  CheckStyleForOMP(pair);
-  CheckHybridForOMP(pair,Pair);
-  if (check_hybrid) {
-    last_pair_hybrid = last_omp_style;
-    last_hybrid_name = last_omp_name;
+  if (kspace_split <= 0) {
+    CheckStyleForOMP(pair);
+    CheckHybridForOMP(pair,Pair);
+    if (check_hybrid) {
+      last_pair_hybrid = last_omp_style;
+      last_hybrid_name = last_omp_name;
+    }
+
+    CheckStyleForOMP(bond);
+    CheckHybridForOMP(bond,Bond);
+
+    CheckStyleForOMP(angle);
+    CheckHybridForOMP(angle,Angle);
+
+    CheckStyleForOMP(dihedral);
+    CheckHybridForOMP(dihedral,Dihedral);
+
+    CheckStyleForOMP(improper);
+    CheckHybridForOMP(improper,Improper);
   }
-
-  CheckStyleForOMP(bond);
-  CheckHybridForOMP(bond,Bond);
-
-  CheckStyleForOMP(angle);
-  CheckHybridForOMP(angle,Angle);
-
-  CheckStyleForOMP(dihedral);
-  CheckHybridForOMP(dihedral,Dihedral);
-
-  CheckStyleForOMP(improper);
-  CheckHybridForOMP(improper,Improper);
-
-  CheckStyleForOMP(kspace);
+  
+  if (kspace_split >= 0) {
+    CheckStyleForOMP(kspace);
+  }
 
 #undef CheckStyleForOMP
 #undef CheckHybridForOMP
@@ -258,22 +269,22 @@ void FixOMP::init()
   if (comm->me == 0) {
     if (last_omp_style) {
       if (last_pair_hybrid) {
-	if (screen)
-	  fprintf(screen,"Hybrid pair style last /omp style %s\n", last_hybrid_name);
-	if (logfile)
-	  fprintf(logfile,"Hybrid pair style last /omp style %s\n", last_hybrid_name);
+        if (screen)
+          fprintf(screen,"Hybrid pair style last /omp style %s\n", last_hybrid_name);
+        if (logfile)
+          fprintf(logfile,"Hybrid pair style last /omp style %s\n", last_hybrid_name);
       }
       if (screen)
-	fprintf(screen,"Last active /omp style is %s_style %s\n",
-		last_force_name, last_omp_name);
+        fprintf(screen,"Last active /omp style is %s_style %s\n",
+                last_force_name, last_omp_name);
       if (logfile)
-	fprintf(logfile,"Last active /omp style is %s_style %s\n",
-		last_force_name, last_omp_name);
+        fprintf(logfile,"Last active /omp style is %s_style %s\n",
+                last_force_name, last_omp_name);
     } else {
       if (screen)
-	fprintf(screen,"No /omp style for force computation currently active\n");
+        fprintf(screen,"No /omp style for force computation currently active\n");
       if (logfile)
-	fprintf(screen,"No /omp style for force computation currently active\n");
+        fprintf(logfile,"No /omp style for force computation currently active\n");
     }
   }
 }
@@ -316,7 +327,9 @@ void FixOMP::pre_force(int)
     const int tid = get_tid();
     thr[tid]->check_tid(tid);
     thr[tid]->init_force(nall,f,torque,erforce,de,drho);
-  }
+  } // end of omp parallel region
+
+  _reduced = false;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -325,6 +338,6 @@ double FixOMP::memory_usage()
 {
   double bytes = comm->nthreads * (sizeof(ThrData *) + sizeof(ThrData));
   bytes += comm->nthreads * thr[0]->memory_usage();
-  
+
   return bytes;
 }

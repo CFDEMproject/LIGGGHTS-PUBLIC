@@ -157,10 +157,7 @@ int Modify::n_computes_style(const char *style)
 
 int Modify::n_fixes_style_strict(const char *style)
 {
-    int n_fixes,len;
-
-    n_fixes = 0;
-    len = strlen(style);
+    int n_fixes = 0;
 
     for(int ifix = 0; ifix < nfix; ifix++)
       if(strcmp(fix[ifix]->style,style) == 0)

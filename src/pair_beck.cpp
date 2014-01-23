@@ -25,8 +25,10 @@
 #include "neigh_list.h"
 #include "memory.h"
 #include "error.h"
+#include "math_special.h"
 
 using namespace LAMMPS_NS;
+using namespace MathSpecial;
 
 /* ---------------------------------------------------------------------- */
 
@@ -105,7 +107,7 @@ void PairBeck::compute(int eflag, int vflag)
         alphaij = alpha[itype][jtype];
         betaij = beta[itype][jtype];
         term1 = aaij*aaij + rsq;
-        term2 = 1.0/pow(term1,5);
+        term2 = powint(term1,-5);
         term3 = 21.672 + 30.0*aaij*aaij + 6.0*rsq;
         term4 = alphaij + r5*betaij;
         term5 = alphaij + 6.0*r5*betaij;
@@ -125,7 +127,7 @@ void PairBeck::compute(int eflag, int vflag)
         }
 
         if (eflag) {
-          term6 = 1.0/pow(term1,3);
+          term6 = powint(term1,-3);
           term1inv = 1.0/term1;
           evdwl = AA[itype][jtype]*exp(-1.0*r*term4);
           evdwl -= BB[itype][jtype]*term6*(1.0+(2.709+3.0*aaij*aaij)*term1inv);
@@ -172,7 +174,7 @@ void PairBeck::settings(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal pair_style command");
 
-  cut_global = atof(arg[0]);
+  cut_global = force->numeric(FLERR,arg[0]);
 
   // reset cutoffs that have been explicitly set
 
@@ -200,14 +202,14 @@ void PairBeck::coeff(int narg, char **arg)
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double AA_one = atof(arg[2]);
-  double BB_one = atof(arg[3]);
-  double aa_one = atof(arg[4]);
-  double alpha_one = atof(arg[5]);
-  double beta_one = atof(arg[6]);
+  double AA_one = force->numeric(FLERR,arg[2]);
+  double BB_one = force->numeric(FLERR,arg[3]);
+  double aa_one = force->numeric(FLERR,arg[4]);
+  double alpha_one = force->numeric(FLERR,arg[5]);
+  double beta_one = force->numeric(FLERR,arg[6]);
 
   double cut_one = cut_global;
-  if (narg == 8) cut_one = atof(arg[7]);
+  if (narg == 8) cut_one = force->numeric(FLERR,arg[7]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -239,7 +241,6 @@ double PairBeck::init_one(int i, int j)
   aa[j][i] = aa[i][j];
   alpha[j][i] = alpha[i][j];
   beta[j][i] = beta[i][j];
-  cut[j][i] = cut[i][j];
 
   return cut[i][j];
 }
@@ -344,7 +345,7 @@ double PairBeck::single(int i, int j, int itype, int jtype,
   alphaij = alpha[itype][jtype];
   betaij = beta[itype][jtype];
   term1 = aaij*aaij + rsq;
-  term2 = 1.0/pow(term1,5);
+  term2 = powint(term1,-5);
   term3 = 21.672 + 30.0*aaij*aaij + 6.0*rsq;
   term4 = alphaij + r5*betaij;
   term5 = alphaij + 6.0*r5*betaij;
@@ -353,7 +354,7 @@ double PairBeck::single(int i, int j, int itype, int jtype,
   force_beck -= BB[itype][jtype]*r*term2*term3;
   fforce = factor_lj*force_beck*rinv;
 
-  term6 = 1.0/pow(term1,3);
+  term6 = powint(term1,-3);
   term1inv = 1.0/term1;
   phi_beck = AA[itype][jtype]*exp(-1.0*r*term4);
   phi_beck -= BB[itype][jtype]*term6*(1.0+(2.709+3.0*aaij*aaij)*term1inv);

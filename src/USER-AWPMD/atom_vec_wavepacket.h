@@ -2,12 +2,12 @@
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
-   
+
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
-   
+
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
@@ -28,10 +28,10 @@ AtomStyle(wavepacket,AtomVecWavepacket)
 #include "atom_vec.h"
 
 namespace LAMMPS_NS {
-  
+
 class AtomVecWavepacket : public AtomVec {
 public:
-  AtomVecWavepacket(class LAMMPS *, int, char **);
+  AtomVecWavepacket(class LAMMPS *);
   ~AtomVecWavepacket() {}
   void grow(int);
   void grow_reset();
@@ -58,16 +58,25 @@ public:
   int pack_restart(int, double *);
   int unpack_restart(double *);
   void create_atom(int, double *);
-  void data_atom(double *, int, char **);
+  void data_atom(double *, tagint, char **);
   int data_atom_hybrid(int, char **);
   void data_vel(int, char **);
   int data_vel_hybrid(int, char **);
+  void pack_data(double **);
+  int pack_data_hybrid(int, double *);
+  void write_data(FILE *, int, double **);
+  int write_data_hybrid(FILE *, double *);
+  void pack_vel(double **);
+  int pack_vel_hybrid(int, double *);
+  void write_vel(FILE *, int, double **);
+  int write_vel_hybrid(FILE *, double *);
   bigint memory_usage();
-  
+
 private:
-  int *tag,*type,*mask,*image;
+  int *tag,*type,*mask;
+  tagint *image;
   double **x,**v,**f;
-  
+
   ///\en spin: -1 or 1 for electron, 0 for ion (compatible with eff)
   int *spin;
   ///\en charge: must be specified in the corresponding units (-1 for electron in real units, eff compatible)
@@ -91,7 +100,7 @@ private:
    ///\en (generalized) force on radius velocity, size is N
   double *ervelforce;
 };
- 
+
 }
 
 #endif

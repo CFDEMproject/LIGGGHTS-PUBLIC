@@ -1,0 +1,69 @@
+atom_style	granular
+atom_modify	map array
+boundary	m m m
+newton		off
+
+communicate	single vel yes
+#processors	2 1 1
+
+reset_timestep  0
+reset_timestep  50000
+
+
+units		si
+
+region		reg block -1 1 -1 1 -0.05 2.85 units box
+#create_box	1 reg
+read_restart    liggghts.restart
+
+
+neighbor	0.01 bin
+neigh_modify	delay 0
+
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.9
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.05
+fix 		m5 all property/global characteristicVelocity scalar 2.
+fix 		m6 all property/global cohesionEnergyDensity peratomtypepair 1 500
+
+#New pair style
+pair_style gran model hertz tangential history #Hertzian without cohesion
+pair_coeff	* *
+
+timestep	0.00001
+
+fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+#particle distributions
+fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.015
+fix		pts2 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.025
+fix		pdd1 all particledistribution/discrete 1. 2 pts1 0.3 pts2 0.7
+
+#region and insertion
+fix		ins_mesh all mesh/surface file meshes/face.stl type 1 scale 0.005
+group	nve_group region reg
+fix		ins nve_group insert/stream seed 100001 distributiontemplate pdd1 nparticles 5000 &
+		vel constant 0. -0.5 -2. particlerate 1000 &
+		overlapcheck yes insertion_face ins_mesh extrude_length 0.6
+
+#apply nve integration to all particles that are inserted as single particles
+fix		integr nve_group nve/sphere
+
+#output settings, include total thermal energy
+compute		1 all erotate/sphere
+thermo_style	custom step atoms ke c_1 vol
+thermo		1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+run		1
+dump		dmp all custom 800 post/dump*.stream id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+
+#insert particles
+run             50000
+

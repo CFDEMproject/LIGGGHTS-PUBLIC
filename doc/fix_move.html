@@ -94,6 +94,14 @@ then the position and velocity of that component is time integrated
 the same as the <A HREF = "fix_nve.html">fix nve</A> command would perform, using
 the corresponding force component on the atom.
 </P>
+<P>Note that the <I>linear</I> style is identical to using the <I>variable</I>
+style with an <A HREF = "variable.html">equal-style variable</A> that uses the
+vdisplace() function.  E.g.
+</P>
+<PRE>variable V equal 10.0
+variable x equal vdisplace(0.0,$V)
+fix 1 boundary move variable v_x NULL NULL v_V NULL NULL 
+</PRE>
 <P>The <I>wiggle</I> style moves atoms in an oscillatory fashion, so that
 their position <I>X</I> = (x,y,z) as a function of time is given in vector
 notation as
@@ -110,6 +118,17 @@ position and velocity of that component is time integrated the same as
 the <A HREF = "fix_nve.html">fix nve</A> command would perform, using the
 corresponding force component on the atom.
 </P>
+<P>Note that the <I>wiggle</I> style is identical to using the <I>variable</I>
+style with <A HREF = "variable.html">equal-style variables</A> that use the
+swiggle() and cwiggle() functions.  E.g.
+</P>
+<PRE>variable A equal 10.0
+variable T equal 5.0
+variable omega equal 2.0*PI/$T
+variable x equal swiggle(0.0,$A,$T)
+variable v equal v_omega*($A-cwiggle(0.0,$A,$T))
+fix 1 boundary move variable v_x NULL NULL v_v NULL NULL 
+</PRE>
 <P>The <I>rotate</I> style rotates atoms around a rotation axis <I>R</I> =
 (Rx,Ry,Rz) that goes thru a point <I>P</I> = (Px,Py,Pz).  The <I>period</I> of
 the rotation is also specified.  This style also sets the velocity of
@@ -178,11 +197,16 @@ position and velocity of atoms on the outermost rRESPA level.
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
 <P>This fix writes the original coordinates of moving atoms to <A HREF = "restart.html">binary
-restart files</A>, so that the motion can be continuous in a
-restarted simulation.  See the <A HREF = "read_restart.html">read_restart</A>
-command for info on how to re-specify a fix in an input script that
-reads a restart file, so that the operation of the fix continues in an
-uninterrupted fashion.
+restart files</A>, as well as the initial timestep, so that
+the motion can be continuous in a restarted simulation.  See the
+<A HREF = "read_restart.html">read_restart</A> command for info on how to re-specify
+a fix in an input script that reads a restart file, so that the
+operation of the fix continues in an uninterrupted fashion.
+</P>
+<P>IMPORTANNT NOTE: Because the move positions are a function of the
+current timestep and the initial timestep, you cannot reset the
+timestep to a different value after reading a restart file, if you
+expect a fix move command to work in an uninterrupted fashion.
 </P>
 <P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this
 fix.  
@@ -201,7 +225,7 @@ minimization</A>.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "fix_nve.html">fix nve</A>
+<P><A HREF = "fix_nve.html">fix nve</A>, <A HREF = "displace_atoms.html">displace_atoms</A>
 </P>
 <P><B>Default:</B> none
 </P>

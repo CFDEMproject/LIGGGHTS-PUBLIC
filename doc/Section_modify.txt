@@ -26,9 +26,10 @@ and extending its source code.
 10.9 "Minimization styles"_#mod_9
 10.10 "Pairwise potentials"_#mod_10
 10.11 "Region styles"_#mod_11
-10.12 "Thermodynamic output options"_#mod_12
-10.13 "Variable options"_#mod_13
-10.14 "Submitting new features for inclusion in LAMMPS"_#mod_14 :all(b)
+10.12 "Body styles"_#mod_12
+10.13 "Thermodynamic output options"_#mod_13
+10.14 "Variable options"_#mod_14
+10.15 "Submitting new features for inclusion in LAMMPS"_#mod_15 :all(b)
 
 LAMMPS is designed in a modular fashion so as to be easy to modify and
 extend with new functionality.  In fact, about 75% of its source code
@@ -136,11 +137,12 @@ details on this at the bottom of this page. :l,ule
 
 10.1 Atom styles :link(mod_1),h4
 
-Classes that define an atom style are derived from the AtomVec class
-and managed by the Atom class.  The atom style determines what
-quantities are associated with an atom. A new atom style can be
-created if one of the existing atom styles does not define all
-the arrays you need to store and communicate with atoms.
+Classes that define an "atom style"_atom_style.html are derived from
+the AtomVec class and managed by the Atom class.  The atom style
+determines what attributes are associated with an atom.  A new atom
+style can be created if one of the existing atom styles does not
+define all the attributes you need to store and communicate with
+atoms.
 
 Atom_vec_atomic.cpp is a simple example of an atom style.
 
@@ -184,6 +186,36 @@ that you must set when defining a new atom style, which are documented
 in atom_vec.h.  New atom arrays are defined in atom.cpp.  Search for
 the word "customize" and you will find locations you will need to
 modify.
+
+IMPORTANT NOTE: It is possible to add some attributes, such as a
+molecule ID, to atom styles that do not have them via the "fix
+property/atom"_fix_property_atom.html command.  This command also
+allows new custom attributes consisting of extra integer or
+floating-point values to be added to atoms.  See the "fix
+property/atom"_fix_property_atom.html doc page for examples of cases
+where this is useful and details on how to initialize, access, and
+output the custom values.
+
+New "pair styles"_pair_style.html, "fixes"_fix.html, or
+"computes"_compute.html can be added to LAMMPS, as discussed below.
+The code for these classes can use the per-atom properties defined by
+fix property/atom.  The Atom class has a find_custom() method that is
+useful in this context:
+
+int index = atom->find_custom(char *name, int &flag); :pre
+
+The "name" of a custom attribute, as specified in the "fix
+property/atom"_fix_property_atom.html command, is checked to verify
+that it exists and its index is returned.  The method also sets flag =
+0/1 depending on whether it is an integer or floating-point attribute.
+The vector of values associated with the attribute can then be
+accessed using the returned index as
+
+int *ivector = atom->ivector\[index\];
+double *dvector = atom->dvector\[index\]; :pre
+
+Ivector or dvector are vectors of length Nlocal = # of owned atoms,
+which store the attributes of individual atoms.
 
 :line
 
@@ -476,7 +508,36 @@ match: determine whether a point is in the region :tb(s=:)
 
 :line
 
-10.12 Thermodynamic output options :link(mod_12),h4
+10.11 Body styles :link(mod_12),h4
+
+Classes that define body particles are derived from the Body class.
+Body particles can represent complex entities, such as surface meshes
+of discrete points, collections of sub-particles, deformable objects,
+etc.
+
+See "Section_howto 14"_Section_howto.html#howto_14 of the manual for
+an overview of using body particles and the "body"_body.html doc page
+for details on the various body styles LAMMPS supports.  New styles
+can be created to add new kinds of body particles to LAMMPS.
+
+Body_nparticle.cpp is an example of a body particle that is treated as
+a rigid body containing N sub-particles.
+
+Here is a brief description of methods you define in your new derived
+class.  See body.h for details.
+
+data_body: process a line from the Bodies section of a data file
+noutrow: number of sub-particles output is generated for
+noutcol: number of values per-sub-particle output is generated for
+output: output values for the Mth sub-particle
+pack_comm_body: body attributes to communicate every timestep
+unpack_comm_body: unpacking of those attributes
+pack_border_body: body attributes to communicate when reneighboring is done
+unpack_border_body: unpacking of those attributes :tb(s=:)
+
+:line
+
+10.13 Thermodynamic output options :link(mod_13),h4
 
 There is one class that computes and prints thermodynamic information
 to the screen and log file; see the file thermo.cpp.
@@ -505,7 +566,7 @@ by adding a new keyword to the thermo command.
 
 :line
 
-10.13 Variable options :link(mod_13),h4
+10.14 Variable options :link(mod_14),h4
 
 There is one class that computes and stores "variable"_variable.html
 information in LAMMPS; see the file variable.cpp.  The value
@@ -546,7 +607,7 @@ then be accessed by variables) was discussed
 :line
 :line
 
-10.14 Submitting new features for inclusion in LAMMPS :link(mod_14),h4
+10.15 Submitting new features for inclusion in LAMMPS :link(mod_15),h4
 
 We encourage users to submit new features that they add to LAMMPS to
 "the developers"_http://lammps.sandia.gov/authors.html, especially if
@@ -574,13 +635,13 @@ The previous sections of this doc page describe how to add new
 features of various kinds to LAMMPS.  Packages are simply collections
 of one or more new class files which are invoked as a new "style"
 within a LAMMPS input script.  If designed correctly, these additions
-do not require changes to the main core of LAMMPS; they are simply
-add-on files.  If you think your new feature requires non-trivial
-changes in core LAMMPS files, you'll need to "communicate with the
-developers"_http://lammps.sandia.gov/authors.html, since we may or may
-not want to make those changes.  An example of a trivial change is
-making a parent-class method "virtual" when you derive a new child
-class from it.
+typically do not require changes to the main core of LAMMPS; they are
+simply add-on files.  If you think your new feature requires
+non-trivial changes in core LAMMPS files, you'll need to "communicate
+with the developers"_http://lammps.sandia.gov/authors.html, since we
+may or may not want to make those changes.  An example of a trivial
+change is making a parent-class method "virtual" when you derive a new
+child class from it.
 
 Here is what you need to do to submit a user package or single file
 for our consideration.  Following these steps will save time for both
@@ -588,6 +649,14 @@ you and us.  See existing package files for examples.
 
 All source files you provide must compile with the most current
 version of LAMMPS. :ulb,l
+
+If you want your file(s) to be added to main LAMMPS or one of its
+standard packages, then it needs to be written in a style compatible
+with other LAMMPS source files.  This is so the developers can
+understand it and hopefully maintain it.  This basically means that
+the code accesses data structures, performs its operations, and is
+formatted similar to other LAMMPS source files, including the use of
+the error class for error and warning messages. :l
 
 If your contribution is a single file (actually a *.cpp and *.h file)
 it can most rapidly be added to the USER-MISC directory.  Send us the
@@ -607,10 +676,11 @@ directory. :l
 
 Your new source files need to have the LAMMPS copyright, GPL notice,
 and your name at the top, like other LAMMPS source files.  They need
-to create a class that is inside the LAMMPS namespace.  Other than
-that, your files can do whatever is necessary to implement the new
-features.  They don't have to be written in the same stylistic format
-and syntax as other LAMMPS files, though that would be nice. :l
+to create a class that is inside the LAMMPS namespace.  If the file is
+for one of the USER packages, including USER-MISC, then we are not as
+picky about the coding style (see above).  I.e. they do not need to be
+in the same stylistic format and syntax as other LAMMPS files, though
+that would be nice. :l
 
 Finally, you must also send a documentation file for each new command
 or style you are adding to LAMMPS.  This will be one file for a

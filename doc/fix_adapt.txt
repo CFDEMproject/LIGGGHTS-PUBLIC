@@ -31,7 +31,7 @@ zero or more keyword/value pairs may be appended :l
 keyword = {scale} or {reset} :l
   {scale} value = {no} or {yes}
     {no} = the variable value is the new setting
-    {yes} = the variable value multiplies the original setting :pre
+    {yes} = the variable value multiplies the original setting
   {reset} value = {no} or {yes}
     {no} = values will remain altered at the end of a run
     {yes} = reset altered values to their original values at the end of a run :pre
@@ -52,7 +52,11 @@ attributes which can be varied by this fix are discussed below.  Many
 other fixes can also be used to time-vary simulation parameters,
 e.g. the "fix deform" command will change the simulation box
 size/shape and the "fix move" command will change atom positions and
-velocities in a prescribed manner.
+velocities in a prescribed manner.  Also note that many commands allow
+variables as arguments for specific parameters, if described in that
+manner on their doc pages.  An equal-style variable can calculate a
+time-dependent quantity, so this is another way to vary a simulation
+parameter over time.
 
 If {N} is specified as 0, the specified attributes are only changed
 once, before the simulation begins.  This is all that is needed if the
@@ -65,10 +69,6 @@ this fix will or will not be reset back to their original values at
 the end of a simulation.  Even if {reset} is specified as {yes}, a
 restart file written during a simulation will contain the modified
 settings.
-
-IMPORTANT NOTE: Currently, only the {pair} and {kspace} params
-are resettable.  {Atom} attributes are not.  This will be
-added at some point.
 
 If the {scale} keyword is set to {no}, then the value the parameter is
 set to will be whatever the variable generates.  If the {scale}
@@ -102,8 +102,8 @@ styles and their energy formulas for the meaning of these parameters:
 "coul/cut"_pair_coul.html: scale: type pairs:
 "coul/debye"_pair_coul.html: scale: type pairs:
 "coul/long"_pair_coul.html: scale: type pairs:
-"lj/cut"_pair_lj.html: epsilon: type pairs:
-"lj/cut/opt"_pair_lj.html: epsilon: type pairs:
+"lj/cut"_pair_lj.html: epsilon,sigma: type pairs:
+"lj/expand"_pair_lj_expand.html: epsilon,sigma,delta: type pairs:
 "lubricate"_pair_lubricate.html: mu: global:
 "gauss"_pair_gauss.html: a: type pairs:
 "soft"_pair_soft.html: a: type pairs :tb(c=3,s=:)
@@ -151,7 +151,7 @@ asterisks imply type pairs where J < I, they are ignored.
 IMPROTANT NOTE: If "pair_style hybrid or
 hybrid/overlay"_pair_hybrid.html is being used, then the {pstyle} will
 be a sub-style name.  You must specify I,J arguments that correspond
-to type pair values defined (via the "pair_coeff"_doc/pair_coeff.html
+to type pair values defined (via the "pair_coeff"_pair_coeff.html
 command) for that sub-style.
 
 The {v_name} argument for keyword {pair} is the name of an
@@ -190,16 +190,16 @@ The {atom} keyword enables various atom properties to be changed.  The
 {aparam} argument is the name of the parameter to change.  This is the
 current list of atom parameters that can be varied by this fix:
 
+charge = charge on particle
 diameter = diameter of particle :ul
 
 The {v_name} argument of the {atom} keyword is the name of an
-"equal-style or atom-style variable"_variable.html which will be 
-evaluated each time this fix is invoked to set the parameter to 
-a new value. It should be specified as v_name, where name is the 
-variable name. See the discussion above describing the formulas 
-associated with equal-style or atom-style variables. The new 
-value is assigned to the corresponding attribute for all atoms 
-in the fix group.
+"equal-style variable"_variable.html which will be evaluated each time
+this fix is invoked to set the parameter to a new value.  It should be
+specified as v_name, where name is the variable name.  See the
+discussion above describing the formulas associated with equal-style
+variables.  The new value is assigned to the corresponding attribute
+for all atoms in the fix group.
 
 If the atom parameter is {diameter} and per-atom density and per-atom
 mass are defined for particles (e.g. "atom_style
@@ -213,6 +213,8 @@ over the course of a 1000-step simulation:
 
 variable size equal ramp(1.0,0.1)
 fix 1 center adapt 10 atom diameter v_size :pre
+
+:line
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 

@@ -8,6 +8,7 @@
 
 pair_style sw command :h3
 pair_style sw/cuda command :h3
+pair_style sw/gpu command :h3
 pair_style sw/omp command :h3
 
 [Syntax:]
@@ -39,6 +40,9 @@ where N is the number of LAMMPS atom types:
 
 filename
 N element names = mapping of SW elements to atom types :ul
+
+See the "pair_coeff"_pair_coeff.html doc page for alternate ways
+to specify the path for the potential file.
 
 As an example, imagine a file SiC.sw has Stillinger-Weber values for
 Si and C.  If your LAMMPS simulation has 4 atoms types and you want
@@ -192,6 +196,8 @@ potentials directory) are parameterized for metal "units"_units.html.
 You can use the SW potential with any LAMMPS units, but you would need
 to create your own SW potential file with coefficients listed in the
 appropriate units if your simulation doesn't use "metal" units.
+
+The sw/gpu style is currently limited to a single element.
 
 [Related commands:]
 

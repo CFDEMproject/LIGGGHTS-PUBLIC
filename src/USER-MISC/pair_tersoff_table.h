@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -54,8 +54,8 @@ class PairTersoffTable : public Pair {
     int ielement,jelement,kelement;
     int powermint;
   };
-  
-  
+
+
   double cutmax;                // max cutoff for all elements
   int nelements;                // # of unique elements
   char **elements;              // names of unique elements
@@ -70,22 +70,20 @@ class PairTersoffTable : public Pair {
   void read_file(char *);
   void setup();
 
-  // max number of interaction per atom for environment potential
-  static const int leadingDimensionInteractionList = 64;
   // pre-loop coordination functions
+
   double **preGtetaFunction, **preGtetaFunctionDerived;
   double *preCutoffFunction, *preCutoffFunctionDerived;
   void allocatePreLoops(void);
   void deallocatePreLoops(void);
+
   // grids
-  static const double GRIDSTART = 0.1;
-  static const int GRIDDENSITY_FCUTOFF = 5000;
-  static const int GRIDDENSITY_EXP = 12000;
-  static const int GRIDDENSITY_GTETA = 12000;
-  static const int GRIDDENSITY_BIJ = 7500;
+
   double minArgumentExponential;
   double *exponential, ***cutoffFunction, ***cutoffFunctionDerived;
-  double **gtetaFunction, **gtetaFunctionDerived, **betaZetaPower, **betaZetaPowerDerived;
+  double **gtetaFunction, **gtetaFunctionDerived;
+  double **betaZetaPower, **betaZetaPowerDerived;
+
   void allocateGrids(void);
   void deallocateGrids(void);
 };

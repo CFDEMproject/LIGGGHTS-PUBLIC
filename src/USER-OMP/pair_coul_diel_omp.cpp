@@ -56,11 +56,11 @@ void PairCoulDielOMP::compute(int eflag, int vflag)
 
     if (evflag) {
       if (eflag) {
-	if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else {
       if (force->newton_pair) eval<0,0,1>(ifrom, ito, thr);
@@ -83,12 +83,12 @@ void PairCoulDielOMP::eval(int iifrom, int iito, ThrData * const thr)
 
   ecoul = 0.0;
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
-  const double * const q = atom->q;
-  const int * const type = atom->type;
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
+  const double * _noalias const q = atom->q;
+  const int * _noalias const type = atom->type;
   const int nlocal = atom->nlocal;
-  const double * const special_coul = force->special_coul;
+  const double * _noalias const special_coul = force->special_coul;
   const double qqrd2e = force->qqrd2e;
   double fxtmp,fytmp,fztmp;
 
@@ -102,9 +102,9 @@ void PairCoulDielOMP::eval(int iifrom, int iito, ThrData * const thr)
 
     i = ilist[ii];
     qtmp = q[i];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
@@ -116,43 +116,43 @@ void PairCoulDielOMP::eval(int iifrom, int iito, ThrData * const thr)
       factor_coul = special_coul[sbmask(j)];
       j &= NEIGHMASK;
 
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
-	r = sqrt(rsq);
-	rarg = (r-rme[itype][jtype])/sigmae[itype][jtype];
-	th=tanh(rarg);
-	epsr=a_eps+b_eps*th;
-	depsdr=b_eps * (1.0 - th*th) / sigmae[itype][jtype];
-	
-	forcecoul = qqrd2e*qtmp*q[j]*((eps_s*(epsr+r*depsdr)/epsr/epsr) -1.)/rsq;
-	fpair = factor_coul*forcecoul/r;
-	
-	fxtmp += delx*fpair;
-	fytmp += dely*fpair;
-	fztmp += delz*fpair;
-	if (NEWTON_PAIR || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        r = sqrt(rsq);
+        rarg = (r-rme[itype][jtype])/sigmae[itype][jtype];
+        th=tanh(rarg);
+        epsr=a_eps+b_eps*th;
+        depsdr=b_eps * (1.0 - th*th) / sigmae[itype][jtype];
 
-	if (EFLAG) {
-	  ecoul = (qqrd2e*qtmp*q[j]*((eps_s/epsr) -1.)/r) - offset[itype][jtype];
-	  ecoul *= factor_coul;
-	}
+        forcecoul = qqrd2e*qtmp*q[j]*((eps_s*(epsr+r*depsdr)/epsr/epsr) -1.)/rsq;
+        fpair = factor_coul*forcecoul/r;
 
-	if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
-				 0.0,ecoul,fpair,delx,dely,delz,thr);
+        fxtmp += delx*fpair;
+        fytmp += dely*fpair;
+        fztmp += delz*fpair;
+        if (NEWTON_PAIR || j < nlocal) {
+          f[j].x -= delx*fpair;
+          f[j].y -= dely*fpair;
+          f[j].z -= delz*fpair;
+        }
+
+        if (EFLAG) {
+          ecoul = (qqrd2e*qtmp*q[j]*((eps_s/epsr) -1.)/r) - offset[itype][jtype];
+          ecoul *= factor_coul;
+        }
+
+        if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
+                                 0.0,ecoul,fpair,delx,dely,delz,thr);
       }
     }
-    f[i][0] += fxtmp;
-    f[i][1] += fytmp;
-    f[i][2] += fztmp;
+    f[i].x += fxtmp;
+    f[i].y += fytmp;
+    f[i].z += fztmp;
   }
 }
 

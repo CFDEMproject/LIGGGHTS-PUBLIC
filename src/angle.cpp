@@ -17,9 +17,10 @@
 #include "comm.h"
 #include "force.h"
 #include "math_const.h"
+#include "suffix.h"
+#include "atom_masks.h"
 #include "memory.h"
 #include "error.h"
-#include "suffix.h"
 
 using namespace LAMMPS_NS;
 using namespace MathConst;
@@ -29,6 +30,7 @@ using namespace MathConst;
 Angle::Angle(LAMMPS *lmp) : Pointers(lmp)
 {
   energy = 0.0;
+  writedata = 1;
 
   allocated = 0;
   suffix_flag = Suffix::NONE;
@@ -36,6 +38,10 @@ Angle::Angle(LAMMPS *lmp) : Pointers(lmp)
   maxeatom = maxvatom = 0;
   eatom = NULL;
   vatom = NULL;
+  setflag = NULL;
+
+  datamask = ALL_MASK;
+  datamask_ext = ALL_MASK;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -52,7 +58,8 @@ Angle::~Angle()
 
 void Angle::init()
 {
-  if (!allocated) error->all(FLERR,"Angle coeffs are not set");
+  if (!allocated && atom->nangletypes) 
+    error->all(FLERR,"Angle coeffs are not set");
   for (int i = 1; i <= atom->nangletypes; i++)
     if (setflag[i] == 0) error->all(FLERR,"All angle coeffs are not set");
 

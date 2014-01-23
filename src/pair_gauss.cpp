@@ -63,7 +63,7 @@ void PairGauss::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double r,rsq,r2inv,forcelj;
+  double r,rsq;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = 0.0;
@@ -109,11 +109,8 @@ void PairGauss::compute(int eflag, int vflag)
       if (eflag_global && rsq < 0.5/b[itype][jtype]) occ++;
 
       if (rsq < cutsq[itype][jtype]) {
-        r2inv = 1.0/rsq;
-        r = sqrt(rsq);
-        forcelj = - 2.0*a[itype][jtype]*b[itype][jtype] * rsq *
+        fpair = -2.0*a[itype][jtype]*b[itype][jtype] *
           exp(-b[itype][jtype]*rsq);
-        fpair = forcelj*r2inv;
 
         f[i][0] += delx*fpair;
         f[i][1] += dely*fpair;
@@ -168,7 +165,7 @@ void PairGauss::settings(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal pair_style command");
 
-  cut_global = atof(arg[0]);
+  cut_global = force->numeric(FLERR,arg[0]);
 
   // reset cutoffs that have been explicity set
 
@@ -186,18 +183,19 @@ void PairGauss::settings(int narg, char **arg)
 
 void PairGauss::coeff(int narg, char **arg)
 {
-  if (narg < 4 || narg > 5) error->all(FLERR,"Incorrect args for pair coefficients");
+  if (narg < 4 || narg > 5) 
+    error->all(FLERR,"Incorrect args for pair coefficients");
   if (!allocated) allocate();
 
   int ilo, ihi, jlo, jhi;
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double a_one = atof(arg[2]);
-  double b_one = atof(arg[3]);
+  double a_one = force->numeric(FLERR,arg[2]);
+  double b_one = force->numeric(FLERR,arg[3]);
 
   double cut_one = cut_global;
-  if (narg == 5) cut_one = atof(arg[4]);
+  if (narg == 5) cut_one = force->numeric(FLERR,arg[4]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -219,7 +217,11 @@ void PairGauss::coeff(int narg, char **arg)
 
 double PairGauss::init_one(int i, int j)
 {
-  if (setflag[i][j] == 0) error->all(FLERR,"All pair coeffs are not set");
+ 
+  // This error is triggered when ti is performed on lj/cut tail
+  // in presence of extra atom type for tether sites
+  // "i = 2 j = 1 ERROR: All pair coeffs are not set (pair_gauss.cpp:223)"
+  //  if (setflag[i][j] == 0) error->all(FLERR,"All pair coeffs are not set");
 
   if (offset_flag) offset[i][j] = a[i][j]*exp(-b[i][j]*cut[i][j]*cut[i][j]);
   else offset[i][j] = 0.0;
@@ -313,15 +315,9 @@ double PairGauss::single(int i, int j, int itype, int jtype, double rsq,
                          double factor_coul, double factor_lj,
                          double &fforce)
 {
-  double r2inv,forcelj,philj,r;
-
-  r = sqrt(rsq);
-
-  r2inv = 1.0/rsq;
-  philj = -(a[itype][jtype]*exp(-b[itype][jtype]*rsq) - offset[itype][jtype]);
-
-  forcelj = -2.0*a[itype][jtype]*b[itype][jtype]*rsq*exp(-b[itype][jtype]*rsq);
-  fforce = forcelj*r2inv;
+  double philj = 
+    -(a[itype][jtype]*exp(-b[itype][jtype]*rsq) - offset[itype][jtype]);
+  fforce = -2.0*a[itype][jtype]*b[itype][jtype] * exp(-b[itype][jtype]*rsq);
   return philj;
 }
 

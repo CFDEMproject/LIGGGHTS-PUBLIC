@@ -41,10 +41,10 @@ class EAM : public BaseAtomic<numtyp, acctyp> {
   int init(const int ntypes, double host_cutforcesq, int **host_type2rhor,
            int **host_type2z2r, int *host_type2frho, double ***host_rhor_spline,
            double ***host_z2r_spline, double ***host_frho_spline, double rdr,
-           double rdrho, int nrhor, int nrho, int nz2r, int nfrho, int nr,
-           const int nlocal, const int nall, const int max_nbors,
-           const int maxspecial, const double cell_size, const double gpu_split,
-           FILE *_screen);
+           double rdrho, double rhomax, int nrhor, int nrho, int nz2r, 
+           int nfrho, int nr, const int nlocal, const int nall, 
+           const int max_nbors, const int maxspecial, const double cell_size,
+           const double gpu_split, FILE *_screen);
   
   // Copy charges to device asynchronously
   inline void add_fp_data() {
@@ -52,8 +52,8 @@ class EAM : public BaseAtomic<numtyp, acctyp> {
     if (nghost>0) {
       UCL_H_Vec<numtyp> host_view;
       UCL_D_Vec<numtyp> dev_view;
-      host_view.view_offset(_nlocal,host_fp);
-      dev_view.view_offset(_nlocal,dev_fp);
+      host_view.view_offset(_nlocal,_fp.host);
+      dev_view.view_offset(_nlocal,_fp.device);
       ucl_copy(dev_view,host_view,nghost,true);
     }
   }
@@ -112,7 +112,7 @@ class EAM : public BaseAtomic<numtyp, acctyp> {
   UCL_D_Vec<numtyp4> frho_spline1, frho_spline2;
   UCL_D_Vec<numtyp4> rhor_spline1, rhor_spline2;
     
-  numtyp _cutforcesq,_rdr,_rdrho;
+  numtyp _cutforcesq,_rdr,_rdrho, _rhomax;
   
   int _nfrho,_nrhor,_nrho,_nz2r,_nr;
   
@@ -128,8 +128,7 @@ class EAM : public BaseAtomic<numtyp, acctyp> {
   bool _compiled_energy;
   
   /// Per-atom arrays
-  UCL_H_Vec<numtyp> host_fp;
-  UCL_D_Vec<numtyp> dev_fp;
+  UCL_Vector<numtyp,numtyp> _fp;
   
 protected:
   bool _allocated;

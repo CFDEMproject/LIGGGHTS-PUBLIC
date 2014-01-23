@@ -75,7 +75,7 @@ PairSph::PairSph(LAMMPS *lmp) : Pair(lmp)
     char **fixarg;
     fixarg=new char*[11];
     for (int kk=0;kk<11;kk++) fixarg[kk]=new char[30];
-    
+
     strcpy(fixarg[0],"fgradP");
     fixarg[1]="all";
     fixarg[2]="property/atom";
@@ -107,7 +107,7 @@ PairSph::~PairSph()
   if(kernel_style) delete []kernel_style;
   if(fppaSl) modify->delete_fix("sl");
 //  if(fppaSlType) modify->delete_fix("sl");
-  
+
   if(fix_fgradP_) modify->delete_fix(fix_fgradP_->id);
 }
 
@@ -140,7 +140,7 @@ void PairSph::setKernelAndLength(int narg, char **arg)
   // smoothing length
 
   //if(strcmp(arg[iarg+1],"default_value")) error->all(FLERR, "Fix transportequation/scalar: expecting keyword 'default_value'");
-  sl_0 = force->numeric(arg[iarg+1]); // in case of mass_type == 1, this is only a dummy!
+  sl_0 = force->numeric(FLERR,arg[iarg+1]); // in case of mass_type == 1, this is only a dummy!
   iarg += 2;
 
 }

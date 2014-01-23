@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -50,7 +50,7 @@ void AngleDipoleOMP::compute(int eflag, int vflag)
     ev_setup(eflag,vflag);
   } else evflag = 0;
 
-  if (!force->newton_bond) 
+  if (!force->newton_bond)
     error->all(FLERR,"'newton' flag for bonded interactions must be 'on'");
 
   const int nall = atom->nlocal + atom->nghost;
@@ -67,11 +67,12 @@ void AngleDipoleOMP::compute(int eflag, int vflag)
     ThrData *thr = fix->get_thr(tid);
     ev_setup_thr(eflag, vflag, nall, eatom, vatom, thr);
 
-    if (eflag)
-      eval<1>(ifrom, ito, thr);
-    else
-      eval<0>(ifrom, ito, thr);
-
+    if (inum > 0) {
+      if (eflag)
+        eval<1>(ifrom, ito, thr);
+      else
+        eval<0>(ifrom, ito, thr);
+    }
     reduce_thr(this, eflag, vflag, thr);
   } // end of omp parallel region
 
@@ -83,7 +84,7 @@ void AngleDipoleOMP::eval(int nfrom, int nto, ThrData * const thr)
   int iRef,iDip,iDummy,n,type;
   double delx,dely,delz;
   double eangle,tangle;
-  double r,dr,cosGamma,deltaGamma,kdg,rmu;
+  double r,cosGamma,deltaGamma,kdg,rmu;
 
   const double * const * const x = atom->x;   // position vector
   const double * const * const mu = atom->mu; // point-dipole components and moment magnitude
@@ -102,7 +103,6 @@ void AngleDipoleOMP::eval(int nfrom, int nto, ThrData * const thr)
     delx = x[iRef][0] - x[iDip][0];
     dely = x[iRef][1] - x[iDip][1];
     delz = x[iRef][2] - x[iDip][2];
-    domain->minimum_image(delx,dely,delz);
 
     r = sqrt(delx*delx + dely*dely + delz*delz);
 
@@ -111,16 +111,16 @@ void AngleDipoleOMP::eval(int nfrom, int nto, ThrData * const thr)
     deltaGamma = cosGamma - cos(gamma0[type]);
     kdg = k[type] * deltaGamma;
 
-    if (EFLAG) eangle = kdg * deltaGamma; // energy  
-      
-    tangle = 2.0 * kdg / rmu; 
-      
+    if (EFLAG) eangle = kdg * deltaGamma; // energy
+
+    tangle = 2.0 * kdg / rmu;
+
     torque[iDip][0] += tangle * (dely*mu[iDip][2] - delz*mu[iDip][1]);
     torque[iDip][1] += tangle * (delz*mu[iDip][0] - delx*mu[iDip][2]);
     torque[iDip][2] += tangle * (delx*mu[iDip][1] - dely*mu[iDip][0]);
 
     if (EFLAG) // tally energy (virial=0 because force=0)
       ev_tally_thr(this,iRef,iDip,iDummy,nlocal,/* NEWTON_BOND */ 1,
-		   eangle,f1,f3,0.0,0.0,0.0,0.0,0.0,0.0,thr);
+                   eangle,f1,f3,0.0,0.0,0.0,0.0,0.0,0.0,thr);
   }
 }

@@ -1,0 +1,135 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>gran model hooke/stiffness 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>model hertz keyword values 
+</PRE>
+<LI>zero or more keyword/value pairs may be appended 
+
+<PRE>  <I>absolute_damping</I> values = 'on' or 'off'
+    on = activates tangential damping
+    off = no tangential damping 
+</PRE>
+<PRE>  <I>tangential_damping</I> values = 'on' or 'off'
+    on = activates tangential damping
+    off = no tangential damping 
+</PRE>
+<P><B>LIGGGHTS vs. LAMMPS Info:</B>
+</P>
+<P>This part of <A HREF = "pair_gran.html">pair gran</A> and 
+<A HREF = "fix_wall_gran.html">fix wall/gran</A>
+is not availabe in LAMMPS.
+</P>
+<P><B>Description:</B>
+</P>
+<P>This granular model uses the following formula for the frictional force between two granular 
+particles, when the distance r between two particles of radii Ri and Rj is less than their 
+contact distance d = Ri + Rj. There is no force between the particles when r > d.
+</P>
+<P>For the case of <I>absolute_damping</I> = 'off' (which is default), the specified damping 
+coefficient is multiplied by the effective mass. The forces are implemented as
+</P>
+<CENTER><IMG SRC = "Eqs/pair_gran_html_m566a9984.png">
+</CENTER>
+<P>For the case of <I>absolute_damping</I> = 'on', this multiplication is omitted and the forces become
+</P>
+<CENTER><IMG SRC = "Eqs/pair_gran_html_m76cd8bd9.png">
+</CENTER>
+<P>In the first term is the normal force between the two particles and the second term is the 
+tangential force. The normal force has 2 terms, a spring force and a damping force. The 
+tangential force also has 2 terms: a shear force and a damping force. The shear force is 
+a "history" effect that accounts for the tangential displacement ("tangential overlap") 
+between the particles for the duration of the time they are in contact.
+This term is controlled by the <A HREF = "Section_gran_models.html">tangential model</A> in action
+Keyword <I>tangential_damping</I> can be used to eliminate the second part of the force in 
+tangential direction. The way how the Coulomb friction limit acts is also controlled
+by the <A HREF = "Section_gran_models.html">tangential model</A> chosen by the user.
+</P>
+<P>The quantities in the equations are as follows:
+</P>
+<UL><LI>delta_n = d - r = overlap distance of 2 particles  
+
+<LI>k_n = elastic constant for normal contact 
+
+<LI>k_t = elastic constant for tangential contact 
+
+<LI>gamma_n = viscoelastic damping constant for normal contact 
+
+<LI>gamma_t = viscoelastic damping constant for tangential contact 
+
+<LI>delta_t = tangential displacement vector between 2 spherical particles which is truncated to satisfy a frictional yield criterion 
+
+<LI>rmu = coefficient of rolling friction 
+
+<LI>contactradius = contact radius, equal to particle radius - 0.5 * delta_n 
+
+<LI>v_n = normal component of the relative velocity of the 2 particles 
+
+<LI>v_t = tangential component of the relative velocity of the 2 particles 
+
+<LI>w_r = relative rotational velocity of the 2 particles 
+
+
+</UL>
+<P>To define those k_n_specified, k_t_specified, gamma_n_specified, and gamma_t_specified coefficients
+(material properties), it is mandatory to use multiple <A HREF = "fix_property.html">fix property/global</A> commands:
+</P>
+<PRE>fix id all property/global kn peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for k_n between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+fix id all property/global kt peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for k_t between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+fix id all property/global gamman peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for gamma_n between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+fix id all property/global gammat peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for gamma_t between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
+</PRE>
+<P>If the absolute damping implementation is used (<I>absolute_damping</I> = 'on'), the damping coefficients
+ must be named gamman_abs and gammat_abs instead of gamman, gammat as follows:
+</P>
+<PRE>fix id all property/global gamman_abs peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for gamma_n between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+fix id all property/global gammat_abs peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for gamma_t between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
+</PRE>
+<P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
+</P>
+<P>The coefficient of friction cof is the upper limit of the tangential force through 
+the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the total tangential and normal 
+force components in the formulas above. Thus in the Hookean case, the tangential force 
+between 2 particles grows according to a tangential spring and dash-pot model until 
+Ft/Fn = cof and is then held at Ft = Fn*cof until the particles lose contact. 
+In the Hertzian case, a similar analogy holds, though the spring is no longer linear.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>If using SI units, youngsModulus must be > 5e6
+If using CGS units, youngsModulus must be > 5e5
+</P>
+<P><B>Default:</B> 
+</P>
+<P><I>tangential_damping</I> = 'on'
+</P>
+<P><B>(Di Renzo)</B> Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525–541 (2004).
+</P>
+<P><B>(Ai)</B> Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
+</P>
+<P><B>(Brilliantov)</B> Brilliantov, Spahn, Hertzsch, Poschel, Phys Rev E, 53, p 5382-5392 (1996).
+</P>
+<P><B>(Silbert)</B> Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
+</P>
+<P><B>(Zhang)</B> Zhang and Makse, Phys Rev E, 72, p 011301 (2005). 
+</P>
+</HTML>

@@ -22,7 +22,7 @@ fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.05
 fix 		m5 all property/global characteristicVelocity scalar 2.
 
 #pair style
-pair_style 	gran/hooke/history #Hooke without cohesion
+pair_style gran model hooke tangential history #Hooke without cohesion
 pair_coeff	* *
 
 timestep	0.00005
@@ -31,15 +31,15 @@ fix		1 all nve/sphere
 fix		2 all gravity 9.81 vector 0.0 0.0 -1.0
 
 #box walls
-fix		boxwalls_x1 all wall/gran/hooke/history primitive type 1 xplane -1.0
-fix		boxwalls_x2 all wall/gran/hooke/history primitive type 1 xplane +1.0
-fix		boxwalls_y1 all wall/gran/hooke/history primitive type 1 yplane -0.5
-fix		boxwalls_y2 all wall/gran/hooke/history primitive type 1 yplane +0.5
-fix		boxwalls_z1 all wall/gran/hooke/history primitive type 1 zplane -0.5
-fix		boxwalls_z2 all wall/gran/hooke/history primitive type 1 zplane +0.5 
+fix boxwalls_x1 all wall/gran model hooke tangential history primitive type 1 xplane -1.0
+fix boxwalls_x2 all wall/gran model hooke tangential history primitive type 1 xplane +1.0
+fix boxwalls_y1 all wall/gran model hooke tangential history primitive type 1 yplane -0.5
+fix boxwalls_y2 all wall/gran model hooke tangential history primitive type 1 yplane +0.5
+fix boxwalls_z1 all wall/gran model hooke tangential history primitive type 1 zplane -0.5
+fix boxwalls_z2 all wall/gran model hooke tangential history primitive type 1 zplane +0.5
 
 #import mesh from cad:
-fix		cad1 all mesh/surface file bucket.stl type 1  move -50. -250. 0. &
+fix		cad1 all mesh/surface file meshes/bucket.stl type 1  move -50. -250. 0. &
 		scale 0.002  rotate axis 0. 1. 0. angle 90.  rotate axis 0. 0. 1. angle 90.
 
 #particle insertion
@@ -67,7 +67,7 @@ unfix	ins
 run		29999 upto
 
 #use the imported mesh as granular wall
-fix		bucket_wall all wall/gran/hooke/history mesh n_meshes 1 meshes cad1
+fix bucket_wall all wall/gran model hooke tangential history mesh n_meshes 1 meshes cad1
 run		30000 upto
 
 #moving mesh

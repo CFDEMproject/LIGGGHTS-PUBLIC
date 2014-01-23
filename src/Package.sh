@@ -1,10 +1,6 @@
 # Package.sh = package management, called from Makefile
 # Syntax: sh Package.sh DIR status/update/overwrite/diff
 
-# style used to translate dir name to package name
-
-style=`echo $1 | sed 'y/-ABCDEFGHIJKLMNOPQRSTUVWXYZ/_abcdefghijklmnopqrstuvwxyz/'`
-
 # package is already installed if any package *.cpp or *.h file is in src
 # else not installed
 
@@ -17,9 +13,8 @@ for file in *.cpp *.h; do
   fi
 done
 
-# status
-# if installed:
-# issue warning if any package file is not in src or is different
+# status, only if installed
+# issue warning for any package file not in src or that is different
 
 if (test $2 = "status") then
   if (test $installed = 1) then
@@ -27,7 +22,7 @@ if (test $2 = "status") then
     for file in *.cpp *.h; do
       if (test ! -e ../$file) then
         echo "  src/$file does not exist"
-      elif (test "`diff --brief $file ../$file`" != "") then
+      elif (! cmp -s $file ../$file) then
         echo "  src/$file and $1/$file are different"
       fi
     done
@@ -35,48 +30,40 @@ if (test $2 = "status") then
     echo "Installed  NO: package $1"
   fi
 
-# update
-# if installed:
-# cp package file to src if doesn't exist or is different
+# update, only if installed
+# perform a re-install, but only if the package is already installed
 
 elif (test $2 = "update") then
   echo "Updating src files from $1 package files"
   if (test $installed = 1) then
-    if (test ! -e Package.sh) then
-      for file in *.cpp *.h; do
-        if (test ! -e ../$file) then
-          echo "  creating src/$file"
-          cp $file ..
-        elif (test "`diff --brief $file ../$file`" != "") then
-          echo "  updating src/$file"
-          cp $file ..
-        fi
-      done
+    echo "  updating package $1"
+    if (test -e Install.sh) then
+      /bin/sh Install.sh 2
     else
-      /bin/sh Package.sh
+      /bin/sh ../Install.sh 2
     fi
+    cd ..
+    /bin/sh Depend.sh $1
   else
-    echo "  $1 package is not installed, no action"
+    echo "  $1 package is not installed"
   fi
 
-# overwrite
-# if installed:
-# if package file not in src, issue warning
-# if src file different than package file, overwrite package file
+# overwrite, only if installed
+# overwrite package file with src file, if the two are different
 
 elif (test $2 = "overwrite") then
   echo "Overwriting $1 package files with src files"
   if (test $installed = 1) then
     for file in *.cpp *.h; do
       if (test ! -e ../$file) then
-        echo "  src/$file does not exist"
-      elif (test "`diff --brief $file ../$file`" != "") then
+        continue
+      elif (! cmp -s $file ../$file) then
         echo "  overwriting $1/$file"
         cp ../$file .
       fi
     done
   else
-    echo "  $1 package is not installed, no action"
+    echo "  $1 package is not installed"
   fi
 
 # diff
@@ -88,18 +75,13 @@ elif (test $2 = "diff") then
     echo "Installed YES: package $1"
     for file in *.cpp *.h; do
       if (test ! -e ../$file) then
-        echo "************************************************************************"
         echo "  src/$file does not exist"
-        echo "************************************************************************"
-      elif (test "`diff --brief $file ../$file`" != "") then
-        echo "************************************************************************"
+      elif (! cmp -s $file ../$file) then
+        echo "************************************************"
         echo "diff $1/$file src/$file "
-        echo "************************************************************************"
+        echo "************************************************"
 	diff $file  ../$file 
       fi
     done
   fi
 fi
-
-
-

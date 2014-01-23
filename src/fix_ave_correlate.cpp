@@ -19,6 +19,7 @@
 
 #include "stdlib.h"
 #include "string.h"
+#include "unistd.h"
 #include "fix_ave_correlate.h"
 #include "update.h"
 #include "modify.h"
@@ -27,6 +28,7 @@
 #include "variable.h"
 #include "memory.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -48,12 +50,11 @@ FixAveCorrelate::FixAveCorrelate(LAMMPS * lmp, int narg, char **arg):
 
   MPI_Comm_rank(world,&me);
 
-  nevery = atoi(arg[3]);
-  nrepeat = atoi(arg[4]);
-  nfreq = atoi(arg[5]);
+  nevery = force->inumeric(FLERR,arg[3]);
+  nrepeat = force->inumeric(FLERR,arg[4]);
+  nfreq = force->inumeric(FLERR,arg[5]);
 
   global_freq = nfreq;
-  time_depend = 1;
 
   // parse values until one isn't recognized
 
@@ -101,6 +102,7 @@ FixAveCorrelate::FixAveCorrelate(LAMMPS * lmp, int narg, char **arg):
   startstep = 0;
   prefactor = 1.0;
   fp = NULL;
+  overwrite = 0;
   char *title1 = NULL;
   char *title2 = NULL;
   char *title3 = NULL;
@@ -124,11 +126,11 @@ FixAveCorrelate::FixAveCorrelate(LAMMPS * lmp, int narg, char **arg):
       iarg += 2;
     } else if (strcmp(arg[iarg],"start") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix ave/correlate command");
-      startstep = atoi(arg[iarg+1]);
+      startstep = force->inumeric(FLERR,arg[iarg+1]);
       iarg += 2;
     } else if (strcmp(arg[iarg],"prefactor") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix ave/correlate command");
-      prefactor = atof(arg[iarg+1]);
+      prefactor = force->numeric(FLERR,arg[iarg+1]);
       iarg += 2;
     } else if (strcmp(arg[iarg],"file") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix ave/correlate command");
@@ -141,6 +143,9 @@ FixAveCorrelate::FixAveCorrelate(LAMMPS * lmp, int narg, char **arg):
         }
       }
       iarg += 2;
+    } else if (strcmp(arg[iarg],"overwrite") == 0) {
+      overwrite = 1;
+      iarg += 1;
     } else if (strcmp(arg[iarg],"title1") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix ave/correlate command");
       delete [] title1;
@@ -173,6 +178,8 @@ FixAveCorrelate::FixAveCorrelate(LAMMPS * lmp, int narg, char **arg):
   if (nfreq % nevery)
     error->all(FLERR,"Illegal fix ave/correlate command");
   if (ave == ONE && nfreq < (nrepeat-1)*nevery)
+    error->all(FLERR,"Illegal fix ave/correlate command");
+  if (ave != RUNNING && overwrite)
     error->all(FLERR,"Illegal fix ave/correlate command");
 
   for (int i = 0; i < nvalues; i++) {
@@ -257,6 +264,7 @@ FixAveCorrelate::FixAveCorrelate(LAMMPS * lmp, int narg, char **arg):
             fprintf(fp," %s*%s",arg[6+i],arg[6+j]);
       fprintf(fp,"\n");
     }
+    filepos = ftell(fp);
   }
 
   delete [] title1;
@@ -463,9 +471,10 @@ void FixAveCorrelate::end_of_step()
         save_corr[i][j] = 0.0;
   }
 
-  // output to file
+  // output result to file
 
   if (fp && me == 0) {
+    if (overwrite) fseek(fp,filepos,SEEK_SET);
     fprintf(fp,BIGINT_FORMAT " %d\n",ntimestep,nrepeat);
     for (i = 0; i < nrepeat; i++) {
       fprintf(fp,"%d %d %d",i+1,i*nevery,count[i]);
@@ -478,6 +487,10 @@ void FixAveCorrelate::end_of_step()
       fprintf(fp,"\n");
     }
     fflush(fp);
+    if (overwrite) {
+      long fileend = ftell(fp);
+      ftruncate(fileno(fp),fileend);
+    }
   }
 
   // zero accumulation if requested
@@ -529,7 +542,7 @@ void FixAveCorrelate::accumulate()
     for (k = 0; k < nsample; k++) {
       ipair = 0;
       for (i = 0; i < nvalues; i++)
-        for (j = 0; j < i-1; j++)
+        for (j = 0; j < i; j++)
           corr[k][ipair++] += values[m][i]*values[n][j];
       m--;
       if (m < 0) m = nrepeat-1;
@@ -549,7 +562,7 @@ void FixAveCorrelate::accumulate()
     for (k = 0; k < nsample; k++) {
       ipair = 0;
       for (i = 0; i < nvalues; i++)
-        for (j = 0; j < i; j++)
+        for (j = 0; j <= i; j++)
           corr[k][ipair++] += values[m][i]*values[n][j];
       m--;
       if (m < 0) m = nrepeat-1;
@@ -591,4 +604,11 @@ bigint FixAveCorrelate::nextvalid()
   if (startstep > nvalid) nvalid = startstep;
   if (nvalid % nevery) nvalid = (nvalid/nevery)*nevery + nevery;
   return nvalid;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixAveCorrelate::reset_timestep(bigint ntimestep)
+{
+  if (ntimestep > nvalid) error->all(FLERR,"Fix ave/correlate missed timestep");
 }

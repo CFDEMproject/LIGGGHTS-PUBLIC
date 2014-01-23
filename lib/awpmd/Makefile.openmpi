@@ -1,5 +1,9 @@
 SHELL = /bin/sh
 
+# which file will be copied to Makefile.lammps
+
+EXTRAMAKE = Makefile.lammps.installed
+
 # ------ FILES ------
 
 SRC = \
@@ -33,7 +37,7 @@ OBJ =   $(SRC:.cpp=.o)
 # the same MPI library that LAMMPS is built with
 
 CC =	    mpic++ 
-CCFLAGS = -O -Isystems/interact/TCP/ -Isystems/interact -Iivutils/include
+CCFLAGS = -O -fPIC -Isystems/interact/TCP/ -Isystems/interact -Iivutils/include
 ARCHIVE =	ar
 ARCHFLAG =	-rc
 DEPFLAGS =  -M
@@ -46,6 +50,7 @@ SYSLIB =
 
 lib: 	$(OBJ)
 	$(ARCHIVE) $(ARFLAGS) $(LIB) $(OBJ)
+	@cp $(EXTRAMAKE) Makefile.lammps
 
 # ------ COMPILE RULES ------
 

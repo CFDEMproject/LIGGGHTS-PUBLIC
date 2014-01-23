@@ -34,6 +34,7 @@
 #include "atom.h"
 #include "comm.h"
 #include "pair.h"
+#include "pair_gran.h"
 #include "pair_hybrid.h"
 #include "pair_hybrid_overlay.h"
 #include "bond.h"
@@ -46,11 +47,29 @@
 #include "memory.h"
 #include "error.h"
 
+#include "contact_models.h"
+#include "style_surface_model.h"
+#include "style_normal_model.h"
+#include "style_tangential_model.h"
+#include "style_cohesion_model.h"
+#include "style_rolling_model.h"
+#include "pair_gran_base.h"
+#include "fix_wall_gran_base.h"
+
 using namespace LAMMPS_NS;
+using namespace ContactModels;
+
+int PairContactHistorySetup::add_value(std::string name, std::string newtonflag) {
+  return pg->add_history_value(name, newtonflag);
+}
+
+int WallContactHistorySetup::add_value(std::string name, std::string newtonflag) {
+  return fix->add_history_value(name, newtonflag);
+}
 
 /* ---------------------------------------------------------------------- */
 
-Force::Force(LAMMPS *lmp) : Pointers(lmp)
+Force::Force(LAMMPS *lmp) : Pointers(lmp), registry(lmp)
 {
   newton = newton_pair = newton_bond = 1;
 
@@ -86,6 +105,75 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp)
   strcpy(improper_style,str);
   kspace_style = new char[n];
   strcpy(kspace_style,str);
+
+  // register contact model string to contact mappings
+#define SURFACE_MODEL(identifier,str,constant) \
+  surface_model_map[#str] = identifier;
+#include "style_surface_model.h"
+#undef SURFACE_MODEL
+
+#define NORMAL_MODEL(identifier,str,constant) \
+  normal_model_map[#str] = identifier;
+#include "style_normal_model.h"
+#undef NORMAL_MODEL
+
+#define TANGENTIAL_MODEL(identifier,str,constant) \
+  tangential_model_map[#str] = identifier;
+#include "style_tangential_model.h"
+#undef TANGENTIAL_MODEL
+
+  cohesion_model_map["off"] = COHESION_OFF;
+#define COHESION_MODEL(identifier,str,constant) \
+  cohesion_model_map[#str] = identifier;
+#include "style_cohesion_model.h"
+#undef COHESION_MODEL
+
+  rolling_model_map["off"] = ROLLING_OFF;
+#define ROLLING_MODEL(identifier,str,constant) \
+  rolling_model_map[#str] = identifier;
+#include "style_rolling_model.h"
+#undef ROLLING_MODEL
+
+  // register granular pair styles
+#define GRAN_MODEL(MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE) \
+  register_granular_pair_style<MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE>();
+#include "style_contact_model.h"
+#undef GRAN_MODEL
+
+  // register granular wall fixes
+#define GRAN_MODEL(MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE) \
+  register_granular_wall_fix<MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE>();
+#include "style_contact_model.h"
+#undef GRAN_MODEL
+
+  // fill pair map with pair styles listed in style_pair.h
+
+  pair_map = new std::map<std::string,PairCreator>();
+
+#define PAIR_CLASS
+#define PairStyle(key,Class) \
+  (*pair_map)[#key] = &pair_creator<Class>;
+#include "style_pair.h"
+#undef PairStyle
+#undef PAIR_CLASS
+}
+
+template<int MODEL, int TANGENTIAL, int COHESION, int ROLLING, int SURFACE>
+void Force::register_granular_pair_style() {
+  typedef GranStyle<MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE> Style;
+  typedef ContactModel<Style> CModel;
+  typedef PairGranBase<CModel> PairGranInst;
+  int64_t hashcode = Style::HASHCODE;
+  granular_pair_style_creators[hashcode] = &create_pair_style_instance<PairGranInst>;
+}
+
+template<int MODEL, int TANGENTIAL, int COHESION, int ROLLING, int SURFACE>
+void Force::register_granular_wall_fix() {
+  typedef GranStyle<MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE> Style;
+  typedef ContactModel<Style> CModel;
+  typedef FixWallGranBase<CModel> FixWallGranBaseInst;
+  int64_t hashcode = Style::HASHCODE;
+  granular_wall_fix_creators[hashcode] = &create_fix_instance<FixWallGranBaseInst>;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -105,12 +193,15 @@ Force::~Force()
   if (dihedral) delete dihedral;
   if (improper) delete improper;
   if (kspace) delete kspace;
+
+  delete pair_map;
 }
 
 /* ---------------------------------------------------------------------- */
 
 void Force::init()
 {
+  registry.init();
   qqrd2e = qqr2e/dielectric;
 
   if (kspace) kspace->init();         // kspace must come before pair
@@ -122,16 +213,16 @@ void Force::init()
 }
 
 /* ----------------------------------------------------------------------
-   create a pair style, called from input script or restart file
+   create a pair style, called from input script
 ------------------------------------------------------------------------- */
 
-void Force::create_pair(const char *style, const char *suffix)
+void Force::create_pair(const char *style, int & narg, char ** & args, const char *suffix)
 {
   delete [] pair_style;
   if (pair) delete pair;
 
   int sflag;
-  pair = new_pair(style,suffix,sflag);
+  pair = new_pair(style,narg,args,suffix,sflag);
 
   if (sflag) {
     char estyle[256];
@@ -147,39 +238,240 @@ void Force::create_pair(const char *style, const char *suffix)
 }
 
 /* ----------------------------------------------------------------------
-   generate a pair class, first with suffix appended
+   create a pair style, called from restart file
 ------------------------------------------------------------------------- */
 
-Pair *Force::new_pair(const char *style, const char *suffix, int &sflag)
+void Force::create_pair_from_restart(FILE * fp, const char *style, const char *suffix)
+{
+  delete [] pair_style;
+  if (pair) delete pair;
+
+  int sflag;
+  pair = new_pair_from_restart(fp, style,suffix,sflag);
+
+  if (sflag) {
+    char estyle[256];
+    sprintf(estyle,"%s/%s",style,suffix);
+    int n = strlen(estyle) + 1;
+    pair_style = new char[n];
+    strcpy(pair_style,estyle);
+  } else {
+    int n = strlen(style) + 1;
+    pair_style = new char[n];
+    strcpy(pair_style,style);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   generate a pair class
+   try first with suffix appended
+------------------------------------------------------------------------- */
+
+Pair *Force::new_pair(const char *style, int & narg, char ** & args, const char *suffix, int &sflag)
 {
   if (suffix && lmp->suffix_enable) {
     sflag = 1;
     char estyle[256];
     sprintf(estyle,"%s/%s",style,suffix);
 
-    if (0) return NULL;
-
-#define PAIR_CLASS
-#define PairStyle(key,Class) \
-    else if (strcmp(estyle,#key) == 0) return new Class(lmp);
-#include "style_pair.h"
-#undef PairStyle
-#undef PAIR_CLASS
+    if (pair_map->find(estyle) != pair_map->end()) {
+      PairCreator pair_creator = (*pair_map)[estyle];
+      return pair_creator(lmp);
+    }
 
   }
 
   sflag = 0;
 
   if (strcmp(style,"none") == 0) return NULL;
+  if (pair_map->find(style) != pair_map->end()) {
+    PairCreator pair_creator = (*pair_map)[style];
+    return pair_creator(lmp);
+  } else if (strcmp(style,"gran") == 0) {
+    
+    return new_granular_pair(narg, args);
+  }
 
-#define PAIR_CLASS
-#define PairStyle(key,Class) \
-  else if (strcmp(style,#key) == 0) return new Class(lmp);
-#include "style_pair.h"
-#undef PAIR_CLASS
+  error->all(FLERR,"Invalid pair style");
 
-  else error->all(FLERR,"Invalid pair style");
   return NULL;
+}
+
+/* ----------------------------------------------------------------------
+   generate a pair class from restart file, first with suffix appended
+------------------------------------------------------------------------- */
+
+Pair *Force::new_pair_from_restart(FILE * fp, const char *style, const char *suffix, int &sflag)
+{
+  if (suffix && lmp->suffix_enable) {
+    sflag = 1;
+    char estyle[256];
+    sprintf(estyle,"%s/%s",style,suffix);
+
+    if (pair_map->find(estyle) != pair_map->end()) {
+      PairCreator pair_creator = (*pair_map)[estyle];
+      return pair_creator(lmp);
+    }
+  }
+
+  sflag = 0;
+
+  if (strcmp(style,"none") == 0) return NULL;
+  if (pair_map->find(style) != pair_map->end()) {
+    PairCreator pair_creator = (*pair_map)[style];
+    return pair_creator(lmp);
+  }
+  else if (strcmp(style,"gran") == 0) {
+    
+    return new_granular_pair_from_restart(fp);
+  }
+
+  error->all(FLERR,"Invalid pair style");
+  return NULL;
+}
+
+Pair *Force::new_granular_pair_from_restart(FILE * fp)
+{
+  int me = comm->me;
+
+  int64_t selected = -1;
+  if(me == 0){
+    // read model hashcode, but reset file pointer afterwards.
+    // this way read_restart_settings can still read the hashcode (sanity check)
+    fread(&selected, sizeof(int64_t), 1, fp);
+    fseek(fp, -sizeof(int64_t), SEEK_CUR);
+  }
+  MPI_Bcast(&selected,8,MPI_CHAR,0,world);
+
+  if(granular_pair_style_creators.find(selected) != granular_pair_style_creators.end()) {
+    return granular_pair_style_creators[selected](lmp);
+  }
+
+  error->all(FLERR,"Invalid pair style");
+  return NULL;
+}
+
+int64_t Force::select_contact_model(int & narg, char ** & args)
+{
+  // this method will consume arguments to determine which granular contact model is active
+
+  // default configuration
+  int model = -1;
+  int tangential = TANGENTIAL_NO_HISTORY;
+  int cohesion = COHESION_OFF;
+  int rolling = ROLLING_OFF;
+  int surface = SURFACE_DEFAULT;
+
+  // select normal model
+  if (narg > 1 && strcmp(args[0], "model") == 0) {
+    if (normal_model_map.find(args[1]) != normal_model_map.end()) {
+      model = normal_model_map[args[1]];
+    }
+
+    if(narg > 2) args = &args[2];
+    narg -= 2;
+  }
+
+  // OPTIONAL: select tangential model
+  if (narg > 1 && strcmp(args[0], "tangential") == 0) {
+    if (tangential_model_map.find(args[1]) != tangential_model_map.end()) {
+      tangential = tangential_model_map[args[1]];
+    } else {
+      tangential = -1;
+    }
+
+    if(narg > 2) args = &args[2];
+    narg -= 2;
+  }
+
+  // OPTIONAL: select cohesion model
+  if (narg > 1 && strcmp(args[0], "cohesion") == 0) {
+    if (cohesion_model_map.find(args[1]) != cohesion_model_map.end()) {
+      cohesion = cohesion_model_map[args[1]];
+    } else {
+      cohesion = -1;
+    }
+
+    if(narg > 2) args = &args[2];
+    narg -= 2;
+  }
+
+  // OPTIONAL: select rolling model
+  if (narg > 1 && strcmp(args[0], "rolling_friction") == 0) {
+    if (rolling_model_map.find(args[1]) != rolling_model_map.end()) {
+      rolling = rolling_model_map[args[1]];
+    } else {
+      rolling = -1;
+    }
+
+    if(narg > 2) args = &args[2];
+    narg -= 2;
+  }
+
+  // OPTIONAL: select surface model
+  if (narg > 1 && strcmp(args[0], "surface") == 0) {
+    if (surface_model_map.find(args[1]) != surface_model_map.end()) {
+      surface = surface_model_map[args[1]];
+    } else {
+      surface = -1;
+    }
+
+    if(narg > 2) args = &args[2];
+    narg -= 2;
+  }
+
+  if(model != -1 && tangential != -1 && cohesion != -1 && rolling != -1 && surface != -1) {
+    return generate_gran_hashcode(model, tangential, cohesion, rolling, surface);
+  }
+  return -1;
+}
+
+Pair *Force::new_granular_pair(int & narg, char ** & args)
+{
+  int64_t selected = select_contact_model(narg, args);
+
+  if(selected != -1) {
+    if(granular_pair_style_creators.find(selected) != granular_pair_style_creators.end()) {
+      return granular_pair_style_creators[selected](lmp);
+    }
+  }
+
+  error->all(FLERR,"Invalid pair style");
+  return NULL;
+}
+
+Fix* Force::new_granular_wall_fix(int narg, char ** args) {
+  int nremaining = narg - 3;
+  char ** remaining_args = &args[3];
+
+  int64_t selected = select_contact_model(nremaining, remaining_args);
+
+  if(selected != -1) {
+    char ** fix_args = new char*[3+nremaining];
+    fix_args[0] = args[0];
+    fix_args[1] = args[1];
+    fix_args[2] = args[2];
+    for(int i = 0; i < nremaining; i++) {
+      fix_args[3+i] = remaining_args[i];
+    }
+
+    if(granular_wall_fix_creators.find(selected) != granular_wall_fix_creators.end()) {
+      return granular_wall_fix_creators[selected](lmp, nremaining+3, fix_args);
+    }
+  }
+
+  error->all(FLERR,"Invalid granular wall fix");
+  return NULL;
+}
+
+/* ----------------------------------------------------------------------
+   one instance per pair style in style_pair.h
+------------------------------------------------------------------------- */
+
+template <typename T>
+Pair *Force::pair_creator(LAMMPS *lmp)
+{
+  return new T(lmp);
 }
 
 /* ----------------------------------------------------------------------
@@ -651,22 +943,22 @@ void Force::set_special(int narg, char **arg)
    compute bounds implied by numeric str with a possible wildcard asterik
    1 = lower bound, nmax = upper bound
    5 possibilities:
-     (1) i = i to i, (2) * = 1 to nmax,
-     (3) i* = i to nmax, (4) *j = 1 to j, (5) i*j = i to j
+     (1) i = i to i, (2) * = nmin to nmax,
+     (3) i* = i to nmax, (4) *j = nmin to j, (5) i*j = i to j
    return nlo,nhi
 ------------------------------------------------------------------------- */
 
-void Force::bounds(char *str, int nmax, int &nlo, int &nhi)
+void Force::bounds(char *str, int nmax, int &nlo, int &nhi, int nmin)
 {
   char *ptr = strchr(str,'*');
 
   if (ptr == NULL) {
     nlo = nhi = atoi(str);
   } else if (strlen(str) == 1) {
-    nlo = 1;
+    nlo = nmin;
     nhi = nmax;
   } else if (ptr == str) {
-    nlo = 1;
+    nlo = nmin;
     nhi = atoi(ptr+1);
   } else if (strlen(ptr+1) == 0) {
     nlo = atoi(str);
@@ -676,24 +968,25 @@ void Force::bounds(char *str, int nmax, int &nlo, int &nhi)
     nhi = atoi(ptr+1);
   }
 
-  if (nlo < 1 || nhi > nmax) error->all(FLERR,"Numeric index is out of bounds");
+  if (nlo < nmin || nhi > nmax)
+    error->all(FLERR,"Numeric index is out of bounds");
 }
 
 /* ----------------------------------------------------------------------
    read a floating point value from a string
    generate an error if not a legitimate floating point value
-   called by force fields to check validity of their arguments
+   called by various commands to check validity of their arguments
 ------------------------------------------------------------------------- */
 
-double Force::numeric(char *str)
+double Force::numeric(const char *file, int line, char *str)
 {
   int n = strlen(str);
   for (int i = 0; i < n; i++) {
     if (isdigit(str[i])) continue;
     if (str[i] == '-' || str[i] == '+' || str[i] == '.') continue;
     if (str[i] == 'e' || str[i] == 'E') continue;
-    error->all(FLERR,"Expected floating point parameter in "
-               "input script or data file");
+    error->all(file,line,"Expected floating point parameter "
+               "in input script or data file");
   }
 
   return atof(str);
@@ -702,15 +995,16 @@ double Force::numeric(char *str)
 /* ----------------------------------------------------------------------
    read an integer value from a string
    generate an error if not a legitimate integer value
-   called by force fields to check validity of their arguments
+   called by various commands to check validity of their arguments
 ------------------------------------------------------------------------- */
 
-int Force::inumeric(char *str)
+int Force::inumeric(const char *file, int line, char *str)
 {
   int n = strlen(str);
   for (int i = 0; i < n; i++) {
     if (isdigit(str[i]) || str[i] == '-' || str[i] == '+') continue;
-    error->all(FLERR,"Expected integer parameter in input script or data file");
+    error->all(file,line,
+               "Expected integer parameter in input script or data file");
   }
 
   return atoi(str);

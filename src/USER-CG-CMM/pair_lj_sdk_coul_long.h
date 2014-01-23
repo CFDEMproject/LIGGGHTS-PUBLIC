@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -40,10 +40,12 @@ class PairLJSDKCoulLong : public Pair {
   double init_one(int, int);
   void write_restart(FILE *);
   void read_restart(FILE *);
+  void write_data(FILE *);
+  void write_data_all(FILE *);
   virtual void write_restart_settings(FILE *);
   virtual void read_restart_settings(FILE *);
   virtual double single(int, int, int, int, double, double, double, double &);
-  void *extract(const char *, int &);
+  virtual void *extract(const char *, int &);
   virtual double memory_usage();
 
  protected:
@@ -54,7 +56,7 @@ class PairLJSDKCoulLong : public Pair {
   int **lj_type;
 
   // cutoff and offset for minimum of LJ potential
-  // to be used in SDK angle potential, which 
+  // to be used in SDK angle potential, which
   // uses only the repulsive part of the potential
 
   double **rminsq, **emin;
@@ -62,14 +64,7 @@ class PairLJSDKCoulLong : public Pair {
   double cut_lj_global;
   double g_ewald;
 
-  double tabinnersq;
-  double *rtable,*drtable,*ftable,*dftable,*ctable,*dctable;
-  double *etable,*detable;
-  int ncoulshiftbits,ncoulmask;
-
   void allocate();
-  void init_tables();
-  void free_tables();
 
  private:
   template <int EVFLAG, int EFLAG, int NEWTON_PAIR> void eval();

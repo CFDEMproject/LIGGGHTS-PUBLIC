@@ -53,8 +53,12 @@ class FixPropertyAtom : public Fix {
 
   double memory_usage();
   void grow_arrays(int);
-  void copy_arrays(int, int);
+  void copy_arrays(int, int,int);
   virtual void set_arrays(int);
+
+  void write_restart(FILE *);
+  virtual void restart(char *);
+
   int pack_exchange(int, double *);
   int unpack_exchange(int, double *);
   int pack_restart(int, double *);
@@ -67,7 +71,7 @@ class FixPropertyAtom : public Fix {
   void unpack_reverse_comm(int, int *, double *);
   double compute_vector(int n);
 
-  virtual void mark_tracers(int ilo, int ihi) {}
+  virtual void mark_tracers(int ilo, int ihi) { UNUSED(ilo); UNUSED(ihi); }
 
  protected:
   void parse_args(int narg, char **arg);

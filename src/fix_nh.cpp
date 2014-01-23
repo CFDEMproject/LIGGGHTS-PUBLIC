@@ -22,6 +22,7 @@
 #include "math_extra.h"
 #include "atom.h"
 #include "force.h"
+#include "group.h"
 #include "comm.h"
 #include "irregular.h"
 #include "modify.h"
@@ -65,6 +66,7 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   pcouple = NONE;
   drag = 0.0;
   allremap = 1;
+  id_dilate = NULL;
   mtchain = mpchain = 3;
   nc_tchain = nc_pchain = 1;
   mtk_flag = 1;
@@ -73,6 +75,7 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   eta_mass_flag = 1;
   omega_mass_flag = 0;
   etap_mass_flag = 0;
+  flipflag = 1;
 
   // turn on tilt factor scaling, whenever applicable
 
@@ -91,7 +94,7 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   fixedpoint[1] = 0.5*(domain->boxlo[1]+domain->boxhi[1]);
   fixedpoint[2] = 0.5*(domain->boxlo[2]+domain->boxhi[2]);
 
-  // Used by FixNVTSllod to preserve non-default value
+  // used by FixNVTSllod to preserve non-default value
 
   mtchain_default_flag = 1;
 
@@ -112,9 +115,10 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     if (strcmp(arg[iarg],"temp") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       tstat_flag = 1;
-      t_start = atof(arg[iarg+1]);
-      t_stop = atof(arg[iarg+2]);
-      t_period = atof(arg[iarg+3]);
+      t_start = force->numeric(FLERR,arg[iarg+1]);
+      t_target = t_start;
+      t_stop = force->numeric(FLERR,arg[iarg+2]);
+      t_period = force->numeric(FLERR,arg[iarg+3]);
       if (t_start < 0.0 || t_stop <= 0.0)
         error->all(FLERR,
                    "Target temperature for fix nvt/npt/nph cannot be 0.0");
@@ -123,9 +127,9 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     } else if (strcmp(arg[iarg],"iso") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       pcouple = XYZ;
-      p_start[0] = p_start[1] = p_start[2] = atof(arg[iarg+1]);
-      p_stop[0] = p_stop[1] = p_stop[2] = atof(arg[iarg+2]);
-      p_period[0] = p_period[1] = p_period[2] = atof(arg[iarg+3]);
+      p_start[0] = p_start[1] = p_start[2] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[0] = p_stop[1] = p_stop[2] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[0] = p_period[1] = p_period[2] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[0] = p_flag[1] = p_flag[2] = 1;
       if (dimension == 2) {
         p_start[2] = p_stop[2] = p_period[2] = 0.0;
@@ -135,9 +139,9 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     } else if (strcmp(arg[iarg],"aniso") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       pcouple = NONE;
-      p_start[0] = p_start[1] = p_start[2] = atof(arg[iarg+1]);
-      p_stop[0] = p_stop[1] = p_stop[2] = atof(arg[iarg+2]);
-      p_period[0] = p_period[1] = p_period[2] = atof(arg[iarg+3]);
+      p_start[0] = p_start[1] = p_start[2] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[0] = p_stop[1] = p_stop[2] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[0] = p_period[1] = p_period[2] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[0] = p_flag[1] = p_flag[2] = 1;
       if (dimension == 2) {
         p_start[2] = p_stop[2] = p_period[2] = 0.0;
@@ -148,13 +152,13 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       pcouple = NONE;
       scalexy = scalexz = scaleyz = 0;
-      p_start[0] = p_start[1] = p_start[2] = atof(arg[iarg+1]);
-      p_stop[0] = p_stop[1] = p_stop[2] = atof(arg[iarg+2]);
-      p_period[0] = p_period[1] = p_period[2] = atof(arg[iarg+3]);
+      p_start[0] = p_start[1] = p_start[2] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[0] = p_stop[1] = p_stop[2] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[0] = p_period[1] = p_period[2] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[0] = p_flag[1] = p_flag[2] = 1;
       p_start[3] = p_start[4] = p_start[5] = 0.0;
       p_stop[3] = p_stop[4] = p_stop[5] = 0.0;
-      p_period[3] = p_period[4] = p_period[5] = atof(arg[iarg+3]);
+      p_period[3] = p_period[4] = p_period[5] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[3] = p_flag[4] = p_flag[5] = 1;
       if (dimension == 2) {
         p_start[2] = p_stop[2] = p_period[2] = 0.0;
@@ -167,25 +171,25 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       iarg += 4;
     } else if (strcmp(arg[iarg],"x") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      p_start[0] = atof(arg[iarg+1]);
-      p_stop[0] = atof(arg[iarg+2]);
-      p_period[0] = atof(arg[iarg+3]);
+      p_start[0] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[0] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[0] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[0] = 1;
       deviatoric_flag = 1;
       iarg += 4;
     } else if (strcmp(arg[iarg],"y") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      p_start[1] = atof(arg[iarg+1]);
-      p_stop[1] = atof(arg[iarg+2]);
-      p_period[1] = atof(arg[iarg+3]);
+      p_start[1] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[1] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[1] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[1] = 1;
       deviatoric_flag = 1;
       iarg += 4;
     } else if (strcmp(arg[iarg],"z") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      p_start[2] = atof(arg[iarg+1]);
-      p_stop[2] = atof(arg[iarg+2]);
-      p_period[2] = atof(arg[iarg+3]);
+      p_start[2] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[2] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[2] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[2] = 1;
       deviatoric_flag = 1;
       iarg += 4;
@@ -194,34 +198,34 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
     } else if (strcmp(arg[iarg],"yz") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      scaleyz = 0;
-      p_start[3] = atof(arg[iarg+1]);
-      p_stop[3] = atof(arg[iarg+2]);
-      p_period[3] = atof(arg[iarg+3]);
+      p_start[3] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[3] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[3] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[3] = 1;
       deviatoric_flag = 1;
+      scaleyz = 0;
       iarg += 4;
       if (dimension == 2)
         error->all(FLERR,"Invalid fix nvt/npt/nph command for a 2d simulation");
     } else if (strcmp(arg[iarg],"xz") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      scalexz = 0;
-      p_start[4] = atof(arg[iarg+1]);
-      p_stop[4] = atof(arg[iarg+2]);
-      p_period[4] = atof(arg[iarg+3]);
+      p_start[4] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[4] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[4] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[4] = 1;
       deviatoric_flag = 1;
+      scalexz = 0;
       iarg += 4;
       if (dimension == 2)
         error->all(FLERR,"Invalid fix nvt/npt/nph command for a 2d simulation");
     } else if (strcmp(arg[iarg],"xy") == 0) {
-      scalexy = 0;
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      p_start[5] = atof(arg[iarg+1]);
-      p_stop[5] = atof(arg[iarg+2]);
-      p_period[5] = atof(arg[iarg+3]);
+      p_start[5] = force->numeric(FLERR,arg[iarg+1]);
+      p_stop[5] = force->numeric(FLERR,arg[iarg+2]);
+      p_period[5] = force->numeric(FLERR,arg[iarg+3]);
       p_flag[5] = 1;
       deviatoric_flag = 1;
+      scalexy = 0;
       iarg += 4;
 
     } else if (strcmp(arg[iarg],"couple") == 0) {
@@ -236,25 +240,34 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
     } else if (strcmp(arg[iarg],"drag") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      drag = atof(arg[iarg+1]);
+      drag = force->numeric(FLERR,arg[iarg+1]);
       if (drag < 0.0) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"dilate") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       if (strcmp(arg[iarg+1],"all") == 0) allremap = 1;
-      else if (strcmp(arg[iarg+1],"partial") == 0) allremap = 0;
-      else error->all(FLERR,"Illegal fix nvt/npt/nph command");
+      else {
+        allremap = 0;
+        delete [] id_dilate;
+        int n = strlen(arg[iarg+1]) + 1;
+        id_dilate = new char[n];
+        strcpy(id_dilate,arg[iarg+1]);
+        int idilate = group->find(id_dilate);
+        if (idilate == -1)
+          error->all(FLERR,"Fix nvt/npt/nph dilate group ID does not exist");
+      }
       iarg += 2;
+
     } else if (strcmp(arg[iarg],"tchain") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      mtchain = atoi(arg[iarg+1]);
+      mtchain = force->inumeric(FLERR,arg[iarg+1]);
       // used by FixNVTSllod to preserve non-default value
       mtchain_default_flag = 0;
       if (mtchain < 1) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"pchain") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      mpchain = atoi(arg[iarg+1]);
+      mpchain = force->inumeric(FLERR,arg[iarg+1]);
       if (mpchain < 0) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"mtk") == 0) {
@@ -265,17 +278,17 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       iarg += 2;
     } else if (strcmp(arg[iarg],"tloop") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      nc_tchain = atoi(arg[iarg+1]);
+      nc_tchain = force->inumeric(FLERR,arg[iarg+1]);
       if (nc_tchain < 0) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"ploop") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      nc_pchain = atoi(arg[iarg+1]);
+      nc_pchain = force->inumeric(FLERR,arg[iarg+1]);
       if (nc_pchain < 0) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"nreset") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      nreset_h0 = atoi(arg[iarg+1]);
+      nreset_h0 = force->inumeric(FLERR,arg[iarg+1]);
       if (nreset_h0 < 0) error->all(FLERR,"Illegal fix nvt/npt/nph command");
       iarg += 2;
     } else if (strcmp(arg[iarg],"scalexy") == 0) {
@@ -296,11 +309,17 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
       else if (strcmp(arg[iarg+1],"no") == 0) scaleyz = 0;
       else error->all(FLERR,"Illegal fix nvt/npt/nph command");
       iarg += 2;
+    } else if (strcmp(arg[iarg],"flip") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
+      if (strcmp(arg[iarg+1],"yes") == 0) flipflag = 1;
+      else if (strcmp(arg[iarg+1],"no") == 0) flipflag = 0;
+      else error->all(FLERR,"Illegal fix nvt/npt/nph command");
+      iarg += 2;
     } else if (strcmp(arg[iarg],"fixedpoint") == 0) {
       if (iarg+4 > narg) error->all(FLERR,"Illegal fix nvt/npt/nph command");
-      fixedpoint[0] = atof(arg[iarg+1]);
-      fixedpoint[1] = atof(arg[iarg+2]);
-      fixedpoint[2] = atof(arg[iarg+3]);
+      fixedpoint[0] = force->numeric(FLERR,arg[iarg+1]);
+      fixedpoint[1] = force->numeric(FLERR,arg[iarg+2]);
+      fixedpoint[2] = force->numeric(FLERR,arg[iarg+3]);
       iarg += 4;
     } else error->all(FLERR,"Illegal fix nvt/npt/nph command");
   }
@@ -348,13 +367,13 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
   if (scaleyz == 1 && domain->zperiodic == 0)
     error->all(FLERR,"Cannot use fix nvt/npt/nph "
-               "with yz dynamics when z is non-periodic dimension");
+               "with yz scaling when z is non-periodic dimension");
   if (scalexz == 1 && domain->zperiodic == 0)
     error->all(FLERR,"Cannot use fix nvt/npt/nph "
-               "with xz dynamics when z is non-periodic dimension");
+               "with xz scaling when z is non-periodic dimension");
   if (scalexy == 1 && domain->yperiodic == 0)
     error->all(FLERR,"Cannot use fix nvt/npt/nph "
-               "with xy dynamics when y is non-periodic dimension");
+               "with xy scaling when y is non-periodic dimension");
 
   if (p_flag[3] && scaleyz == 1)
     error->all(FLERR,"Cannot use fix nvt/npt/nph with "
@@ -408,7 +427,6 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
     if (p_flag[i]) pstat_flag = 1;
 
   if (pstat_flag) {
-    box_change = 1;
     if (p_flag[0] || p_flag[1] || p_flag[2]) box_change_size = 1;
     if (p_flag[3] || p_flag[4] || p_flag[5]) box_change_shape = 1;
     no_change_box = 1;
@@ -423,10 +441,12 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   else if (pcouple == XYZ || (dimension == 2 && pcouple == XY)) pstyle = ISO;
   else pstyle = ANISO;
 
-  // reneighboring only forced if flips will occur due to shape changes
+  // pre_exchange only required if flips can occur due to shape changes
 
-  if (p_flag[3] || p_flag[4] || p_flag[5]) force_reneighbor = 1;
-  if (scaleyz || scalexz || scalexy) force_reneighbor = 1;
+  pre_exchange_flag = 0;
+  if (flipflag && (p_flag[3] || p_flag[4] || p_flag[5])) pre_exchange_flag = 1;
+  if (flipflag && (domain->yz != 0.0 || domain->xz != 0.0 || domain->xy != 0.0))
+    pre_exchange_flag = 1;
 
   // convert input periods to frequencies
 
@@ -495,7 +515,7 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
   nrigid = 0;
   rfix = NULL;
 
-  if (force_reneighbor) irregular = new Irregular(lmp);
+  if (pre_exchange_flag) irregular = new Irregular(lmp);
   else irregular = NULL;
 
   // initialize vol0,t0 to zero to signal uninitialized
@@ -508,6 +528,7 @@ FixNH::FixNH(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
 FixNH::~FixNH()
 {
+  delete [] id_dilate;
   delete [] rfix;
 
   delete irregular;
@@ -546,7 +567,7 @@ int FixNH::setmask()
   mask |= THERMO_ENERGY;
   mask |= INITIAL_INTEGRATE_RESPA;
   mask |= FINAL_INTEGRATE_RESPA;
-  if (force_reneighbor) mask |= PRE_EXCHANGE;
+  if (pre_exchange_flag) mask |= PRE_EXCHANGE;
   return mask;
 }
 
@@ -554,6 +575,15 @@ int FixNH::setmask()
 
 void FixNH::init()
 {
+  // recheck that dilate group has not been deleted
+
+  if (allremap == 0) {
+    int idilate = group->find(id_dilate);
+    if (idilate == -1)
+      error->all(FLERR,"Fix nvt/npt/nph dilate group ID does not exist");
+    dilate_group_bit = group->bitmask[idilate];
+  }
+
   // ensure no conflict with fix deform
 
   if (pstat_flag)
@@ -571,7 +601,7 @@ void FixNH::init()
 
   int icompute = modify->find_compute(id_temp);
   if (icompute < 0)
-    error->all(FLERR,"Temperature ID for fix nvt/nph/npt does not exist");
+    error->all(FLERR,"Temperature ID for fix nvt/npt does not exist");
   temperature = modify->compute[icompute];
 
   if (temperature->tempbias) which = BIAS;
@@ -951,7 +981,7 @@ void FixNH::couple()
 
 /* ----------------------------------------------------------------------
    change box size
-   remap all atoms or fix group atoms depending on allremap flag
+   remap all atoms or dilate group atoms depending on allremap flag
    if rigid bodies exist, scale rigid body centers-of-mass
 ------------------------------------------------------------------------- */
 
@@ -975,7 +1005,7 @@ void FixNH::remap()
   if (allremap) domain->x2lamda(nlocal);
   else {
     for (i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit)
+      if (mask[i] & dilate_group_bit)
         domain->x2lamda(x[i],x[i]);
   }
 
@@ -1105,9 +1135,12 @@ void FixNH::remap()
 
   // tilt factor to cell length ratio can not exceed TILTMAX in one step
 
-  if (domain->yz < -TILTMAX*domain->yprd || domain->yz > TILTMAX*domain->yprd ||
-      domain->xz < -TILTMAX*domain->xprd || domain->xz > TILTMAX*domain->xprd ||
-      domain->xy < -TILTMAX*domain->xprd || domain->xy > TILTMAX*domain->xprd)
+  if (domain->yz < -TILTMAX*domain->yprd ||
+      domain->yz > TILTMAX*domain->yprd ||
+      domain->xz < -TILTMAX*domain->xprd ||
+      domain->xz > TILTMAX*domain->xprd ||
+      domain->xy < -TILTMAX*domain->xprd ||
+      domain->xy > TILTMAX*domain->xprd)
     error->all(FLERR,"Fix npt/nph has tilted box too far in one step - "
                "periodic cell is too far from equilibrium state");
 
@@ -1119,7 +1152,7 @@ void FixNH::remap()
   if (allremap) domain->lamda2x(nlocal);
   else {
     for (i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit)
+      if (mask[i] & dilate_group_bit)
         domain->lamda2x(x[i],x[i]);
   }
 
@@ -1290,11 +1323,13 @@ int FixNH::modify_param(int narg, char **arg)
     strcpy(id_temp,arg[1]);
 
     int icompute = modify->find_compute(arg[1]);
-    if (icompute < 0) error->all(FLERR,"Could not find fix_modify temperature ID");
+    if (icompute < 0)
+      error->all(FLERR,"Could not find fix_modify temperature ID");
     temperature = modify->compute[icompute];
 
     if (temperature->tempflag == 0)
-      error->all(FLERR,"Fix_modify temperature ID does not compute temperature");
+      error->all(FLERR,
+                 "Fix_modify temperature ID does not compute temperature");
     if (temperature->igroup != 0 && comm->me == 0)
       error->warning(FLERR,"Temperature for fix modify is not for group all");
 
@@ -1571,7 +1606,7 @@ double FixNH::compute_vector(int n)
 
 void FixNH::reset_target(double t_new)
 {
-  t_start = t_stop = t_new;
+  t_target = t_start = t_stop = t_new;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1595,6 +1630,19 @@ void FixNH::reset_dt()
 
   if (tstat_flag)
     tdrag_factor = 1.0 - (update->dt * t_freq * drag / nc_tchain);
+}
+
+/* ----------------------------------------------------------------------
+   extract thermostat properties
+------------------------------------------------------------------------- */
+
+void *FixNH::extract(const char *str, int &dim)
+{
+  dim=0;
+  if (strcmp(str,"t_target") == 0) {
+    return &t_target;
+  }
+  return NULL;
 }
 
 /* ----------------------------------------------------------------------
@@ -2045,9 +2093,7 @@ void FixNH::compute_deviatoric()
 void FixNH::compute_temp_target()
 {
   double delta = update->ntimestep - update->beginstep;
-  if (update->endstep > update->beginstep)
-    delta /= update->endstep - update->beginstep;
-  else delta = 0.0;
+  if (delta != 0.0) delta /= update->endstep - update->beginstep;
 
   t_target = t_start + delta * (t_stop-t_start);
   ke_target = tdof * boltz * t_target;
@@ -2060,9 +2106,7 @@ void FixNH::compute_temp_target()
 void FixNH::compute_press_target()
 {
   double delta = update->ntimestep - update->beginstep;
-  if (update->endstep > update->beginstep)
-    delta /= update->endstep - update->beginstep;
-  else delta = 0.0;
+  if (delta != 0.0) delta /= update->endstep - update->beginstep;
 
   p_hydro = 0.0;
   for (int i = 0; i < 3; i++)
@@ -2138,7 +2182,7 @@ void FixNH::nh_omega_dot()
 }
 
 /* ----------------------------------------------------------------------
-  if any tilt ratios exceed 0.5, set flip = 1 and compute new tilt values
+  if any tilt ratios exceed limits, set flip = 1 and compute new tilt values
   do not flip in x or y if non-periodic (can tilt but not flip)
     this is b/c the box length would be changed (dramatically) by flip
   if yz tilt exceeded, adjust C vector by one B vector
@@ -2146,9 +2190,11 @@ void FixNH::nh_omega_dot()
   if xy tilt exceeded, adjust B vector by one A vector
   check yz first since it may change xz, then xz check comes after
   if any flip occurs, create new box in domain
-  remap() puts atoms outside the new box back into the new box
   image_flip() adjusts image flags due to box shape change induced by flip
+  remap() puts atoms outside the new box back into the new box
   perform irregular on atoms in lamda coords to migrate atoms to new procs
+  important that image_flip comes before remap, since remap may change
+    image flags to new values, making eqs in doc of Domain:image_flip incorrect
 ------------------------------------------------------------------------- */
 
 void FixNH::pre_exchange()
@@ -2156,7 +2202,7 @@ void FixNH::pre_exchange()
   double xprd = domain->xprd;
   double yprd = domain->yprd;
 
-  // flip is triggered when tilt exceeds 0.5 by an amount DELTAFLIP
+  // flip is only triggered when tilt exceeds 0.5 by DELTAFLIP
   // this avoids immediate re-flipping due to tilt oscillations
 
   double xtiltmax = (0.5+DELTAFLIP)*xprd;
@@ -2201,11 +2247,12 @@ void FixNH::pre_exchange()
     domain->set_global_box();
     domain->set_local_box();
 
+    domain->image_flip(flipxy,flipxz,flipyz);
+
     double **x = atom->x;
-    int *image = atom->image;
+    tagint *image = atom->image;
     int nlocal = atom->nlocal;
     for (int i = 0; i < nlocal; i++) domain->remap(x[i],image[i]);
-    domain->image_flip(flipxy,flipxz,flipyz);
 
     domain->x2lamda(atom->nlocal);
     irregular->migrate_atoms();

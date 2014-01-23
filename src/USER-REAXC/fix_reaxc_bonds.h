@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -22,8 +22,7 @@ FixStyle(reax/c/bonds,FixReaxCBonds)
 
 #include "stdio.h"
 #include "fix.h"
-#include "pair_reax_c.h"
-#include "reaxc_defs.h"
+#include "pointers.h"
 
 namespace LAMMPS_NS {
 
@@ -37,16 +36,25 @@ class FixReaxCBonds : public Fix {
   void end_of_step();
 
  private:
-  int me;
-  int nfreq;
+  int me, nprocs, nmax, ntypes, maxsize;
+  int *numneigh, **neighid;
+  double **abo;
   FILE *fp;
 
-  void OutputReaxCBonds(bigint, FILE*);
-  int nint(const double&);
+  void allocate();
+  void destroy();
+  void Output_ReaxC_Bonds(bigint, FILE *);
+  void FindBond(struct _reax_list*, int &);
+  void PassBuffer(double *, int &);
+  void RecvBuffer(double *, int, int, int, int);
+  int nint(const double &);
+  double memory_usage();
 
+  bigint nvalid, nextvalid();
+  struct _reax_list *lists;
   class PairReaxC *reaxc;
+  class NeighList *list;
 };
-
 }
 
 #endif

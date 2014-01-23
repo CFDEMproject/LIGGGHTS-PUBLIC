@@ -82,7 +82,7 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
         hasargs = false;
         if(strcmp(arg[iarg_],"type") == 0) {
             iarg_++;
-            atom_type_mesh_ = force->inumeric(arg[iarg_++]);
+            atom_type_mesh_ = force->inumeric(FLERR,arg[iarg_++]);
             if(atom_type_mesh_ < 1)
                 error->fix_error(FLERR,this,"'type' > 0 required");
             hasargs = true;
@@ -107,7 +107,7 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
         } else if (strcmp(arg[iarg_],"precision") == 0) {
             if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
             iarg_++;
-            precision_ = force->numeric(arg[iarg_++]);
+            precision_ = force->numeric(FLERR,arg[iarg_++]);
             if(precision_ < 0. || precision_ > 0.001)
               error->fix_error(FLERR,this,"0 < precision < 0.001 required");
             hasargs = true;
@@ -128,7 +128,7 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
       hasargs = false;
       if(strcmp(arg[iarg_],"move") == 0) {
           if (narg < iarg_+4) error->fix_error(FLERR,this,"not enough arguments");
-          moveMesh(force->numeric(arg[iarg_+1]),force->numeric(arg[iarg_+2]),force->numeric(arg[iarg_+3]));
+          moveMesh(force->numeric(FLERR,arg[iarg_+1]),force->numeric(FLERR,arg[iarg_+2]),force->numeric(FLERR,arg[iarg_+3]));
           manipulated_ = true;
           iarg_ += 4;
           hasargs = true;
@@ -139,14 +139,14 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
               error->fix_error(FLERR,this,"expecting keyword 'axis' after keyword 'rotate'");
           if(strcmp(arg[iarg_+5],"angle"))
               error->fix_error(FLERR,this,"expecting keyword 'angle' after axis definition");
-          rotateMesh(force->numeric(arg[iarg_+2]),force->numeric(arg[iarg_+3]),force->numeric(arg[iarg_+4]),
-                   force->numeric(arg[iarg_+6]));
+          rotateMesh(force->numeric(FLERR,arg[iarg_+2]),force->numeric(FLERR,arg[iarg_+3]),force->numeric(FLERR,arg[iarg_+4]),
+                   force->numeric(FLERR,arg[iarg_+6]));
           manipulated_ = true;
           iarg_ += 7;
           hasargs = true;
       } else if(strcmp(arg[iarg_],"scale") == 0) {
           if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
-          scaleMesh(force->numeric(arg[iarg_+1]));
+          scaleMesh(force->numeric(FLERR,arg[iarg_+1]));
           manipulated_ = true;
           iarg_ += 2;
           hasargs = true;
@@ -204,6 +204,7 @@ void FixMesh::create_mesh(char *mesh_fname)
         InputMeshTri *mesh_input = new InputMeshTri(lmp,0,NULL);
         
         mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_);
+        
         delete mesh_input;
     }
     else error->one(FLERR,"Illegal implementation of create_mesh();");

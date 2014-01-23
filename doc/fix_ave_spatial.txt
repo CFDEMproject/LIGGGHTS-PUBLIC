@@ -32,7 +32,7 @@ value = vx, vy, vz, fx, fy, fz, density/mass, density/number, c_ID, c_ID\[I\], f
   v_name = per-atom vector calculated by an atom-style variable with name :pre
 
 zero or more keyword/arg pairs may be appended :l
-keyword = {norm} or {units} or {file} or {ave} or {title1} or {title2} or {title3} or {std} :l
+keyword = {norm} or {units} or {file} or {ave} or {overwrite} or {title1} or {title2} or {title3} or {std} :l
   {units} arg = {box} or {lattice} or {reduced}
   {norm} arg = {all} or {sample}
   {region} arg = region-ID
@@ -43,6 +43,7 @@ keyword = {norm} or {units} or {file} or {ave} or {title1} or {title2} or {title
     window M = output average of M most recent Nfreq steps
   {file} arg = filename
     filename = file to write results to
+  {overwrite} arg = none = overwrite output file with only latest output
   {title1} arg = string
     string = text to print as 1st line of output file
   {title2} arg = string
@@ -183,7 +184,7 @@ definition of density for each choice of units, e.g. gram/cm^3.
 If a value begins with "c_", a compute ID must follow which has been
 previously defined in the input script.  If no bracketed integer is
 appended, the per-atom vector calculated by the compute is used.  If a
-bracketed interger is appended, the Ith column of the per-atom array
+bracketed integer is appended, the Ith column of the per-atom array
 calculated by the compute is used.  Users can also write code for
 their own compute styles and "add them to LAMMPS"_Section_modify.html.
 
@@ -283,6 +284,10 @@ quantities.  If the value of the {units} keyword is {box} or
 {units} keyword is {reduced}, the "coord" is printed in reduced units
 (0-1).
 
+The {overwrite} keyword will continuously overwrite the output file
+with the latest output, so that it only contains one timestep worth of
+output.  This option can only be used with the {ave running} setting.
+
 The {title1} and {title2} and {title3} keywords allow specification of
 the strings that will be printed as the first 3 lines of the output
 file, assuming the {file} keyword was used.  LAMMPS uses default
@@ -301,7 +306,9 @@ replaced with the appropriate fields from the fix ave/spatial command.
 The Coord2 and Coord3 entries in the third line only appear for 2d and
 3d bins respectively.  For 1d bins, the word Coord1 is replaced by
 just Coord.
+
 :line
+
 If the {std} keyword is set, mean and standard deviation of the specified values (value1, value2, etc.) over samples of a defined size are calculated. The sample size has to be defined by a lower limit (N1) and an upper limit (N2>N1). 
 All bins containing a particle count between N1 and N2 (including N1 and N2) are used as samples. Every {Nfreq} timestep a line is written to a file specified after N1 and N2, including the following numbers: timestep, total number of atoms, total number of bins, maximum number of atoms per bin, number of empty bins, number of bins including less atoms than N1, number of bins including more atoms than N2, number of samples, average number of atoms per sample, followed by three quantities for each defined value: true average (over all atoms), average over the chosen samples, standard deviation over the chosen samples. 
 For the calculation of the standard deviation the (known) true average is used instead of the samples average (the latter is only an estimate for the true average!).

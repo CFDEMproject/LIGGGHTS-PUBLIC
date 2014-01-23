@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -66,7 +66,6 @@ void BondHarmonic::compute(int eflag, int vflag)
     delx = x[i1][0] - x[i2][0];
     dely = x[i1][1] - x[i2][1];
     delz = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx,dely,delz);
 
     rsq = delx*delx + dely*dely + delz*delz;
     r = sqrt(rsq);
@@ -124,8 +123,8 @@ void BondHarmonic::coeff(int narg, char **arg)
   int ilo,ihi;
   force->bounds(arg[0],atom->nbondtypes,ilo,ihi);
 
-  double k_one = force->numeric(arg[1]);
-  double r0_one = force->numeric(arg[2]);
+  double k_one = force->numeric(FLERR,arg[1]);
+  double r0_one = force->numeric(FLERR,arg[2]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -139,7 +138,7 @@ void BondHarmonic::coeff(int narg, char **arg)
 }
 
 /* ----------------------------------------------------------------------
-   return an equilbrium bond length 
+   return an equilbrium bond length
 ------------------------------------------------------------------------- */
 
 double BondHarmonic::equilibrium_distance(int i)
@@ -148,7 +147,7 @@ double BondHarmonic::equilibrium_distance(int i)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 writes out coeffs to restart file 
+   proc 0 writes out coeffs to restart file
 ------------------------------------------------------------------------- */
 
 void BondHarmonic::write_restart(FILE *fp)
@@ -158,7 +157,7 @@ void BondHarmonic::write_restart(FILE *fp)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 reads coeffs from restart file, bcasts them 
+   proc 0 reads coeffs from restart file, bcasts them
 ------------------------------------------------------------------------- */
 
 void BondHarmonic::read_restart(FILE *fp)
@@ -175,12 +174,25 @@ void BondHarmonic::read_restart(FILE *fp)
   for (int i = 1; i <= atom->nbondtypes; i++) setflag[i] = 1;
 }
 
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void BondHarmonic::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->nbondtypes; i++)
+    fprintf(fp,"%d %g %g\n",i,k[i],r0[i]);
+}
+
 /* ---------------------------------------------------------------------- */
 
-double BondHarmonic::single(int type, double rsq, int i, int j)
+double BondHarmonic::single(int type, double rsq, int i, int j,
+                        double &fforce)
 {
   double r = sqrt(rsq);
   double dr = r - r0[type];
   double rk = k[type] * dr;
+  fforce = 0;
+  if (r > 0.0) fforce = -2.0*rk/r;
   return rk*dr;
 }

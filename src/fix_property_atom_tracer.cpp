@@ -95,8 +95,11 @@ FixPropertyAtomTracer::FixPropertyAtomTracer(LAMMPS *lmp, int narg, char **arg,b
                 error->fix_error(FLERR,this,"not enough arguments for 'mark_step'");
             iarg_++;
             step_ = atoi(arg[iarg_++]);
-            if(step_ < 0 || step_ < update->ntimestep)
-                error->fix_error(FLERR,this,"mark_step > 0 required, mark_step must not be before current time-step");
+            if(step_ < 0)
+                error->fix_error(FLERR,this,"mark_step > 0 required");
+            
+            if(step_ < update->ntimestep)
+                first_mark_ = false;
             hasargs = true;
         } else if(strcmp(arg[iarg_],"marker_style") == 0) {
             if(narg < iarg_+2)

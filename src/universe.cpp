@@ -27,8 +27,9 @@
 #include "stdio.h"
 #include "universe.h"
 #include "version.h"
-#include "version_liggghts.h"
+#include "version_liggghts.h" 
 #include "error.h"
+#include "force.h"
 #include "memory.h"
 
 using namespace LAMMPS_NS;
@@ -41,7 +42,7 @@ using namespace LAMMPS_NS;
 
 Universe::Universe(LAMMPS *lmp, MPI_Comm communicator) : Pointers(lmp)
 {
-  version = new char[strlen(LAMMPS_VERSION)+strlen(LIGGGHTS_VERSION)+50]; 
+  version = new char[strlen(LAMMPS_VERSION)+strlen(LIGGGHTS_VERSION)+100]; 
 
   sprintf(version,"Version %s based on LAMMPS %s",LIGGGHTS_VERSION,LAMMPS_VERSION); 
 
@@ -51,6 +52,7 @@ Universe::Universe(LAMMPS *lmp, MPI_Comm communicator) : Pointers(lmp)
 
   uscreen = stdout;
   ulogfile = NULL;
+  uthermofile = NULL; 
 
   existflag = 0;
   nworlds = 0;
@@ -94,7 +96,7 @@ void Universe::reorder(char *style, char *arg)
   if (uworld != uorig) MPI_Comm_free(&uworld);
 
   if (strcmp(style,"nth") == 0) {
-    int n = atoi(arg);
+    int n = force->inumeric(FLERR,arg);
     if (n <= 0)
       error->universe_all(FLERR,"Invalid -reorder N value");
     if (nprocs % n)

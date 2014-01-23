@@ -146,8 +146,10 @@ void FixScalarTransportEquation::updatePtrs()
 void FixScalarTransportEquation::post_create()
 {
   char **fixarg;
-  fixarg=new char*[9];
-  for (int kk=0;kk<9;kk++) fixarg[kk] = new char[30];
+  fixarg = new char*[9];
+  fixarg[0] = new char[50];
+  fixarg[3] = new char[50];
+  fixarg[8] = new char[50];
 
   if (fix_quantity==NULL) {
   //register Temp as property/atom
@@ -163,6 +165,8 @@ void FixScalarTransportEquation::post_create()
     modify->add_fix(9,fixarg);
     fix_quantity=static_cast<FixPropertyAtom*>(modify->find_fix_property(quantity_name,"property/atom","scalar",0,0,style));
   }
+
+  delete [] (fixarg[8]);
 
   if (fix_flux==NULL){
     //register heatFlux as property/atom
@@ -194,6 +198,8 @@ void FixScalarTransportEquation::post_create()
     fix_source=static_cast<FixPropertyAtom*>(modify->find_fix_property(source_name,"property/atom","scalar",0,0,style));
   }
 
+  delete [] (fixarg[0]);
+  delete [] (fixarg[3]);
   delete []fixarg;
 
   updatePtrs();

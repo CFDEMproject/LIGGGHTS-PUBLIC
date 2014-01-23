@@ -57,7 +57,7 @@ namespace SPH_KERNEL_NS {
    0.079577 is 1 over 4pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_cubicspline(double s, double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_cubicspline(double s, double, double hinv)
 {
     if (s < 1.)
     {
@@ -77,7 +77,7 @@ inline double SPH_KERNEL_NS::sph_kernel_cubicspline(double s, double h, double h
    0.079577 is 1 over 4pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_cubicspline_der(double s,double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_cubicspline_der(double s, double, double hinv)
 {
     if (s < 1.)
     {

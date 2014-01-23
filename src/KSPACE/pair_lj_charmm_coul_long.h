@@ -1,11 +1,11 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -39,12 +39,14 @@ class PairLJCharmmCoulLong : public Pair {
   void read_restart(FILE *);
   void write_restart_settings(FILE *);
   void read_restart_settings(FILE *);
-  double single(int, int, int, int, double, double, double, double &);
+  void write_data(FILE *);
+  void write_data_all(FILE *);
+  virtual double single(int, int, int, int, double, double, double, double &);
 
   void compute_inner();
   void compute_middle();
-  void compute_outer(int, int);
-  void *extract(const char *, int &);
+  virtual void compute_outer(int, int);
+  virtual void *extract(const char *, int &);
 
  protected:
   int implicit;
@@ -59,14 +61,7 @@ class PairLJCharmmCoulLong : public Pair {
   double *cut_respa;
   double g_ewald;
 
-  double tabinnersq;
-  double *rtable,*drtable,*ftable,*dftable,*ctable,*dctable;
-  double *etable,*detable,*ptable,*dptable,*vtable,*dvtable;
-  int ncoulshiftbits,ncoulmask;
-
   void allocate();
-  void init_tables();
-  void free_tables();
 };
 
 }
@@ -104,9 +99,8 @@ E: Pair inner cutoff < Respa interior cutoff
 One or more pairwise cutoffs are too short to use with the specified
 rRESPA cutoffs.
 
-E: Pair style is incompatible with KSpace style
+E: Pair style requires a KSpace style
 
-If a pair style with a long-range Coulombic component is selected,
-then a kspace style must also be used.
+No kspace style is defined.
 
 */

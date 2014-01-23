@@ -10,19 +10,31 @@ pair_style coul/cut command :h3
 pair_style coul/cut/omp command :h3
 pair_style coul/debye command :h3
 pair_style coul/debye/omp command :h3
+pair_style coul/dsf command :h3
+pair_style coul/dsf/gpu command :h3
+pair_style coul/dsf/omp command :h3
 pair_style coul/long command :h3
 pair_style coul/long/omp command :h3
 pair_style coul/long/gpu command :h3
+pair_style coul/msm command :h3
+pair_style coul/msm/omp command :h3
 pair_style coul/wolf command :h3
 pair_style coul/wolf/omp command :h3
+pair_style tip4p/cut command :h3
+pair_style tip4p/long command :h3
+pair_style tip4p/cut/omp command :h3
+pair_style tip4p/long/omp command :h3
 
 [Syntax:]
 
 pair_style coul/cut cutoff
 pair_style coul/debye kappa cutoff
+pair_style coul/dsf alpha cutoff
 pair_style coul/long cutoff
 pair_style coul/long/gpu cutoff 
-pair_sytle coul/wolf alpha cutoff :pre
+pair_style coul/wolf alpha cutoff
+pair_style tip4p/cut otype htype btype atype qdist cutoff
+pair_style tip4p/long otype htype btype atype qdist cutoff :pre
 
 cutoff = global cutoff for Coulombic interactions
 kappa = Debye length (inverse distance units) 
@@ -38,11 +50,23 @@ pair_style coul/debye 1.4 3.0
 pair_coeff * *
 pair_coeff 2 2 3.5 :pre
 
+pair_style coul/dsf 0.05 10.0
+pair_coeff * * :pre
+
 pair_style coul/long 10.0
 pair_coeff * * :pre
 
+pair_style coul/msm 10.0
+pair_coeff * * :pre
+
 pair_style coul/wolf 0.2 9.0
-pair_coeff * *
+pair_coeff * * :pre
+
+pair_style tip4p/cut 1 2 7 8 0.15 12.0
+pair_coeff * * :pre
+
+pair_style tip4p/long 1 2 7 8 0.15 10.0
+pair_coeff * * :pre
 
 [Description:]
 
@@ -64,6 +88,17 @@ Coulombic term, given by
 where kappa is the Debye length.  This potential is another way to
 mimic the screening effect of a polar solvent.
 
+Style {coul/dsf} computes Coulombic interactions via the damped 
+shifted force model described in "Fennell"_#Fennell, given by:
+
+:c,image(Eqs/pair_coul_dsf.jpg)
+
+where {alpha} is the damping parameter and erfc() is the
+complementary error-function. The potential corrects issues in the
+Wolf model (described below) to provide consistent forces and energies
+(the Wolf potential is not differentiable at the cutoff) and smooth
+decay to zero.
+
 Style {coul/wolf} computes Coulombic interactions via the Wolf
 summation method, described in "Wolf"_#Wolf, given by:
 
@@ -82,13 +117,40 @@ forces calcluated by the Wolf summation method approach those of the
 Ewald sum.  So it is a means of getting effective long-range
 interactions with a short-range potential.
 
-Style {coul/long} computes the same Coulombic interactions as style
-{coul/cut} except that an additional damping factor is applied so it
-can be used in conjunction with the "kspace_style"_kspace_style.html
-command and its {ewald} or {pppm} option.  The Coulombic cutoff
-specified for this style means that pairwise interactions within this
-distance are computed directly; interactions outside that distance are
-computed in reciprocal space.
+Styles {coul/long} and {coul/msm} compute the same Coulombic
+interactions as style {coul/cut} except that an additional damping
+factor is applied so it can be used in conjunction with the
+"kspace_style"_kspace_style.html command and its {ewald} or {pppm}
+option.  The Coulombic cutoff specified for this style means that
+pairwise interactions within this distance are computed directly;
+interactions outside that distance are computed in reciprocal space.
+
+Styles {tip4p/cut} and {tip4p/long} implement the coulomb part of
+the TIP4P water model of "(Jorgensen)"_#Jorgensen, which introduces
+a massless site located a short distance away from the oxygen atom
+along the bisector of the HOH angle.  The atomic types of the oxygen and
+hydrogen atoms, the bond and angle types for OH and HOH interactions,
+and the distance to the massless charge site are specified as
+pair_style arguments.  Style {tip4p/cut} uses a global cutoff for
+Coulomb interactions; style {tip4p/long} is for use with a long-range
+Coulombic solver (Ewald or PPPM).
+
+IMPORTANT NOTE: For each TIP4P water molecule in your system, the atom
+IDs for the O and 2 H atoms must be consecutive, with the O atom
+first.  This is to enable LAMMPS to "find" the 2 H atoms associated
+with each O atom.  For example, if the atom ID of an O atom in a TIP4P
+water molecule is 500, then its 2 H atoms must have IDs 501 and 502.
+
+See the "howto section"_Section_howto.html#howto_8 for more
+information on how to use the TIP4P pair styles and lists of
+parameters to set.  Note that the neighobr list cutoff for Coulomb
+interactions is effectively extended by a distance 2*qdist when using
+the TIP4P pair style, to account for the offset distance of the
+fictitious charges on O atoms in water molecules.  Thus it is
+typically best in an efficiency sense to use a LJ cutoff >= Coulomb
+cutoff + 2*qdist, to shrink the size of the neighbor list.  This leads
+to slightly larger cost for the long-range calculation, so you can
+test the trade-off for your model.
 
 These potentials are designed to be combined with other pair
 potentials via the "pair_style hybrid/overlay"_pair_hybrid.html
@@ -108,9 +170,10 @@ For {coul/cut} and {coul/debye}, the cutoff coefficient is optional.
 If it is not used (as in some of the examples above), the default
 global value specified in the pair_style command is used.
 
-For {coul/long} no cutoff can be specified for an individual I,J type
-pair via the pair_coeff command.  All type pairs use the same global
-Coulombic cutoff specified in the pair_style command.
+For {coul/long} and {coul/msm} no cutoff can be specified for an
+individual I,J type pair via the pair_coeff command.  All type pairs
+use the same global Coulombic cutoff specified in the pair_style
+command.
 
 :line
 
@@ -165,15 +228,17 @@ This pair style can only be used via the {pair} keyword of the
 
 [Restrictions:]
 
-The {coul/long} style is part of the KSPACE package.  It is only
-enabled if LAMMPS was built with that package (which it is by
-default).  See the "Making LAMMPS"_Section_start.html#start_3 section
+The {coul/long}, {coul/msm} and {tip4p/long} styles are part of the
+KSPACE package.  They are only enabled if LAMMPS was built with that
+package (which it is by default).
+ See the "Making LAMMPS"_Section_start.html#start_3 section
 for more info.
 
 [Related commands:]
 
 "pair_coeff"_pair_coeff.html, "pair_style
 hybrid/overlay"_pair_hybrid.html
+"kspace_style"_kspace_style.html
 
 [Default:] none
 
@@ -182,3 +247,7 @@ hybrid/overlay"_pair_hybrid.html
 :link(Wolf)
 [(Wolf)] D. Wolf, P. Keblinski, S. R. Phillpot, J. Eggebrecht, J Chem
 Phys, 110, 8254 (1999).
+
+:link(Fennell)
+[(Fennell)] C. J. Fennell, J. D. Gezelter, J Chem Phys, 124, 
+234104 (2006).

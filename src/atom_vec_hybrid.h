@@ -20,6 +20,7 @@ AtomStyle(hybrid,AtomVecHybrid)
 #ifndef LMP_ATOM_VEC_HYBRID_H
 #define LMP_ATOM_VEC_HYBRID_H
 
+#include "stdio.h"
 #include "atom_vec.h"
 
 namespace LAMMPS_NS {
@@ -30,8 +31,9 @@ class AtomVecHybrid : public AtomVec {
   class AtomVec **styles;
   char **keywords;
 
-  AtomVecHybrid(class LAMMPS *, int, char **);
+  AtomVecHybrid(class LAMMPS *);
   ~AtomVecHybrid();
+  void settings(int, char **);
   void init();
   void grow(int);
   void grow_reset();
@@ -52,16 +54,29 @@ class AtomVecHybrid : public AtomVec {
   int size_restart();
   int pack_restart(int, double *);
   int unpack_restart(double *);
+  void write_restart_settings(FILE *);
+  void read_restart_settings(FILE *);
   void create_atom(int, double *);
-  void data_atom(double *, int, char **);
+  void data_atom(double *, tagint, char **);
   int data_atom_hybrid(int, char **) {return 0;}
   void data_vel(int, char **);
+  void pack_data(double **);
+  void write_data(FILE *, int, double **);
+  void pack_vel(double **);
+  void write_vel(FILE *, int, double **);
   bigint memory_usage();
 
  private:
-  int *tag,*type,*mask,*image;
+  int *tag,*type,*mask;
+  tagint *image;
   double **x,**v,**f;
   double **omega,**angmom;
+
+  int nallstyles;
+  char **allstyles;
+
+  void build_styles();
+  int known_style(char *);
 };
 
 }
@@ -71,17 +86,11 @@ class AtomVecHybrid : public AtomVec {
 
 /* ERROR/WARNING messages:
 
-E: Illegal ... command
-
-Self-explanatory.  Check the input script syntax and compare to the
-documentation for the command.  You can use -echo screen as a
-command-line option when running LAMMPS to see the offending line.
-
-E: Atom style hybrid cannot use same atom style twice
+E: Atom style hybrid cannot have hybrid as an argument
 
 Self-explanatory.
 
-E: Atom style hybrid cannot have hybrid as an argument
+E: Atom style hybrid cannot use same atom style twice
 
 Self-explanatory.
 

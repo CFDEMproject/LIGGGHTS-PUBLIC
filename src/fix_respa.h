@@ -27,6 +27,7 @@ namespace LAMMPS_NS {
 class FixRespa : public Fix {
   friend class Respa;
   friend class FixShake;
+  friend class FixShake2;
 
  public:
   FixRespa(class LAMMPS *, int, char **);
@@ -36,7 +37,7 @@ class FixRespa : public Fix {
 
   double memory_usage();
   void grow_arrays(int);
-  void copy_arrays(int, int);
+  void copy_arrays(int, int, int);
   int pack_exchange(int, double *);
   int unpack_exchange(int, double *);
 

@@ -35,6 +35,7 @@ class FixAveHisto : public Fix {
   void end_of_step();
   double compute_vector(int);
   double compute_array(int,int);
+  void reset_timestep(bigint);
 
  private:
   int me,nvalues;
@@ -44,7 +45,8 @@ class FixAveHisto : public Fix {
   char **ids;
   FILE *fp;
   double lo,hi,binsize,bininv;
-  int kind,beyond;
+  int kind,beyond,overwrite;
+  long filepos;
 
   double stats[4],stats_total[4],stats_all[4];
   double **stats_list;
@@ -216,5 +218,10 @@ E: Cannot open fix ave/histo file %s
 
 The specified file cannot be opened.  Check that the path and name are
 correct.
+
+E: Fix ave/histo missed timestep
+
+You cannot reset the timestep to a value beyond where the fix
+expects to next perform averaging.
 
 */

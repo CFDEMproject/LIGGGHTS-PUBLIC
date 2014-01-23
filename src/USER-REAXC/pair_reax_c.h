@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -46,6 +46,8 @@ class PairReaxC : public Pair {
   double init_one(int, int);
   void *extract(const char *, int &);
   int fixbond_flag, fixspecies_flag;
+  int **tmpid;
+  double ** tmpbo, **tmpr;
 
   control_params *control;
   reax_system *system;
@@ -59,7 +61,7 @@ class PairReaxC : public Pair {
   double cutmax;
   int *map;
   class FixReaxC *fix_reax;
-  
+
   double *chi,*eta,*gamma;
   int qeqflag;
   int setup_flag;
@@ -73,9 +75,23 @@ class PairReaxC : public Pair {
   int write_reax_lists();
   void read_reax_forces();
   void setup();
+
+  int nmax;
+  void FindBond();
+  double memory_usage();
 };
-  
+
 }
 
 #endif
 #endif
+
+/* ERROR/WARNING messages:
+
+E: Too many ghost atoms
+
+Number of ghost atoms has increased too much during simulation and has exceeded 
+the size of reax/c arrays.  Increase safe_zone and min_cap in pair_style reax/c 
+command
+
+*/

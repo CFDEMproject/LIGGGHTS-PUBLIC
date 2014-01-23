@@ -10,14 +10,23 @@ read_data command :h3
 
 [Syntax:]
 
-read_data file :pre
+read_data file keyword args ... :pre
 
-file = name of data file to read in :ul
+file = name of data file to read in :ulb,l
+zero or more keyword/arg pairs may be appended :l
+keyword = {fix} :l
+  {fix} args = fix-ID header-string section-string
+    fix-ID = ID of fix to process header lines and sections of data file
+    header-string = header lines containing this string will be passed to fix
+    section-string = section names with this string will be passed to fix :pre
+:ule
+
 
 [Examples:]
 
 read_data data.lj
-read_data ../run7/data.polymer.gz :pre
+read_data ../run7/data.polymer.gz
+read_data data.protein fix mycmap crossterm CMAP :pre
 
 [Description:]
 
@@ -47,12 +56,24 @@ depends on the section keyword as described below.  Zero or more blank
 lines can be used between sections.  Sections can appear in any order,
 with a few exceptions as noted below.
 
+The keyword {fix} can be used one or more times.  Each usage specifies
+a fix that will be used to process a specific portion of the data
+file.  Any header line containing {header-string} and any section with
+a name containing {section-string} will be passed to the specified
+fix.  See the "fix property/atom"_fix_property_atom.html command for
+an example of a fix that operates in this manner.  The doc page for
+the fix defines the syntax of the header line(s) and section(s) that
+it reads from the data file.  Note that the {header-string} can be
+specified as NULL, in which case no header lines are passed to the
+fix.  This means that it can infer the length of its Section from
+standard header settings, such as the number of atoms.
+
 The formatting of individual lines in the data file (indentation,
 spacing between words and numbers) is not important except that header
 and section keywords (e.g. atoms, xlo xhi, Masses, Bond Coeffs) must
 be capitalized as shown and can't have extra white space between their
-words - e.g. two spaces or a tab between "Bond" and "Coeffs" is not
-valid.
+words - e.g. two spaces or a tab between the 2 words in "xlo xhi" or
+the 2 words in "Bond Coeffs", is not valid.
 
 :line
 
@@ -79,6 +100,7 @@ is different than the default.
 {ellipsoids} = # of ellipsoids in system
 {lines} = # of line segments in system
 {triangles} = # of triangles in system
+{bodies} = # of bodies in system
 {xlo xhi} = simulation box boundaries in x dimension
 {ylo yhi} = simulation box boundaries in y dimension
 {zlo zhi} = simulation box boundaries in z dimension
@@ -155,21 +177,23 @@ added to the system when a simulation runs, e.g. by using the "fix
 bond/create"_fix_bond_create.html command.  This will pre-allocate
 space in LAMMPS data structures for storing the new bonds.
 
-The "ellipsoids" and "lines" and "triangles" settings are only used
-with "atom_style ellipsoid or line or tri"_atom_style.html and
-specifies how many of the atoms are finite-size ellipsoids or lines or
-triangles; the remainder are point particles.  See the discussion of
-ellipsoidflag and the {Ellipsoids} section below.  See the discussion
-of lineflag and the {Lines} section below.  See the discussion of
-triangleflag and the {Triangles} section below.
+The "ellipsoids" and "lines" and "triangles" and "bodies" settings are
+only used with "atom_style ellipsoid or line or tri or
+body"_atom_style.html and specify how many of the atoms are
+finite-size ellipsoids or lines or triangles or bodies; the remainder
+are point particles.  See the discussion of ellipsoidflag and the
+{Ellipsoids} section below.  See the discussion of lineflag and the
+{Lines} section below.  See the discussion of triangleflag and the
+{Triangles} section below.  See the discussion of bodyflag and the
+{Bodies} section below.
 
 :line
 
 These are the section keywords for the body of the file.
 
-{Atoms, Velocities, Masses, Ellipsoids, Lines, Triangles} = atom-property sections 
+{Atoms, Velocities, Masses, Ellipsoids, Lines, Triangles, Bodies} = atom-property sections 
 {Bonds, Angles, Dihedrals, Impropers} = molecular topology sections 
-{Pair Coeffs, Bond Coeffs, Angle Coeffs, Dihedral Coeffs, \
+{Pair Coeffs, PairIJ Coeffs, Bond Coeffs, Angle Coeffs, Dihedral Coeffs, \
    Improper Coeffs} = force field sections
 {BondBond Coeffs, BondAngle Coeffs, MiddleBondTorsion Coeffs, \
    EndBondTorsion Coeffs, AngleTorsion Coeffs, AngleAngleTorsion Coeffs, \
@@ -269,6 +293,7 @@ of analysis.
 
 angle: atom-ID molecule-ID atom-type x y z
 atomic: atom-ID atom-type x y z
+body: atom-ID atom-type bodyflag mass x y z
 bond: atom-ID molecule-ID atom-type x y z
 charge: atom-ID atom-type q x y z
 dipole: atom-ID atom-type q x y z mux muy muz
@@ -294,8 +319,10 @@ diameter = diameter of spherical atom (distance units)
 ellipsoidflag = 1 for ellipsoidal particles, 0 for point particles
 lineflag = 1 for line segment particles, 0 for point particles
 triangleflag = 1 for triangular particles, 0 for point particles
+bodyflag = 1 for body particles, 0 for point particles
 density = density of particle (mass/distance^3 or mass/distance^2 or mass/distance units, depending on dimensionality of particle)
-volume = volume of atom (distance^3 units)
+mass = mass of particle (mass units)
+volume = volume of particle (distance^3 units)
 x,y,z = coordinates of atom
 mux,muy,muz = components of dipole moment of atom (dipole units)
 rho = density (need units) for SPH particles
@@ -330,24 +357,26 @@ keep track of molecule assignments.
 The diameter specifies the size of a finite-size spherical particle.
 It can be set to 0.0, which means that atom is a point particle.
 
-The ellipsoidflag, lineflag, and triangleflag determine whether the
-particle is a finite-size ellipsoid or line or triangle of finite
-size, or a point particle.  Additional attributes must be defined for
-each ellipsoid in the {Ellipsoids} section.  Additional attributes
-must be defined for each line in the {Lines} section.  Additional
-attributes must be defined for each triangle in the {Triangles}
-section.
+The ellipsoidflag, lineflag, triangleflag, and bodyflag determine
+whether the particle is a finite-size ellipsoid or line or triangle or
+body of finite size, or whether the particle is a point particle.
+Additional attributes must be defined for each ellipsoid, line,
+triangle, or body in the corresponding {Ellipsoids}, {Lines},
+{Triangles}, or {Bodies} section.
 
 Some pair styles and fixes and computes that operate on finite-size
 particles allow for a mixture of finite-size and point particles.  See
 the doc pages of individual commands for details.
 
-The density is used in conjunction with the particle volume for
-finite-size particles to set the mass of the particle as mass =
-density * volume.  In this context, volume can be a 3d quantity (for
-spheres or ellipsoids), a 2d quantity (for triangles), or a 1d
-quantity (for line segments).  If the volume is 0.0, meaning a point
-particle, then the density value is used as the mass.
+For finite-size particles, the density is used in conjunction with the
+particle volume to set the mass of each particle as mass = density *
+volume.  In this context, volume can be a 3d quantity (for spheres or
+ellipsoids), a 2d quantity (for triangles), or a 1d quantity (for line
+segments).  If the volume is 0.0, meaning a point particle, then the
+density value is used as the mass.  One exception is for the body atom
+style, in which case the mass of each particle (body or point
+particle) is specified explicitly.  This is because the volume of the
+body is unknown.
 
 For atom_style hybrid, following the 5 initial values (ID,type,x,y,z),
 specific values for each sub-style must be listed.  The order of the
@@ -363,6 +392,12 @@ atom_style hybrid charge sphere :pre
 were used in the input script, each atom line would have these fields:
 
 atom-ID atom-type x y z q diameter density :pre
+
+Note that if a non-standard value is defined by multiple sub-styles,
+it must appear mutliple times in the atom line.  E.g. the atom line
+for atom_style hybrid dipole full would list "q" twice:
+
+atom-ID atom-type x y z q mux muy myz molecule-ID q :pre
 
 Atom lines (all lines or none of them) can optionally list 3 trailing
 integer values: nx,ny,nz.  For periodic dimensions, they specify which
@@ -387,6 +422,50 @@ Atom velocities and other atom quantities not defined above are set to
 a {Velocities} section in the data file or by a
 "velocity"_velocity.html or "set"_set.html command in the input
 script.
+
+:line
+
+{Bodies} section:
+
+one or more lines per body :ulb,l
+first line syntax: atom-ID ninteger ndouble :l
+  ninteger = # of integer quantities for this particle
+  ndouble = # of floating-point quantities for this particle :pre
+0 or more integer lines: one line for every 10 integer quantities :l
+0 or more double lines: one line for every 10 double quantities :l
+example: :l
+  12 3 6
+  2 3 2
+  1.0 2.0 3.0 1.0 2.0 4.0 :pre
+example: :l
+  12 0 14
+  1.0 2.0 3.0 1.0 2.0 4.0 1.0 2.0 3.0 1.0
+  2.0 4.0 4.0 2.0 :pre
+:ule
+
+The {Bodies} section must appear if "atom_style body"_atom_style.html
+is used and any atoms listed in the {Atoms} section have a bodyflag =
+1.  The number of bodies should be specified in the header section via
+the "bodies" keyword.
+
+Each body can have a variable number of integer and/or floating-point
+values.  The number and meaning of the values is defined by the body
+style, as described in the "body"_body.html doc page.  The body style
+is given as an argument to the "atom_style body"_atom_style.html
+command.
+
+The ninteger and ndouble values determine how many integer and
+floating-point values are specified for this particle.  Ninteger and
+ndouble can be as large as needed and can be different for every body.
+Integer values are then listed on subsequent lines, 10 values per
+line.  Floating-point values follow on subsequent lines, again 10 per
+line.  If the number of lines is not evenly divisible by 10, the last
+line in that group contains the remaining values, e.g. 4 values out of
+14 in the last example above, for floating-point values.  If there are
+no values of a particular type, no lines appear for that type,
+e.g. there are no integer lines in the last example above.
+
+The {Bodies} section must appear after the {Atoms} section.
 
 :line
 
@@ -495,7 +574,7 @@ one line per ellipsoid :ulb,l
 line syntax: atom-ID shapex shapey shapez quatw quati quatj quatk :l
   atom-ID = ID of atom which is an ellipsoid
   shapex,shapey,shapez = 3 diameters of ellipsoid (distance units)
-  quatw,quati,quatj,quatk = quaternion components for orientation of atom
+  quatw,quati,quatj,quatk = quaternion components for orientation of atom :pre
 example: :l
   12 1 2 1 1 0 0 0 :pre
 :ule
@@ -581,7 +660,7 @@ one line per line segment :ulb,l
 line syntax: atom-ID x1 y1 x2 y2 :l
   atom-ID = ID of atom which is a line segment
   x1,y1 = 1st end point
-  x2,y2 = 2nd end point
+  x2,y2 = 2nd end point :pre
 example: :l
   12 1.0 0.0 2.0 0.0 :pre
 :ule
@@ -641,8 +720,37 @@ example: :l
 
 The number and meaning of the coefficients are specific to the defined
 pair style.  See the "pair_style"_pair_style.html and
-"pair_coeff"_pair_coeff.html commands for details.  Coefficients can
-also be set via the "pair_coeff"_pair_coeff.html command in the input
+"pair_coeff"_pair_coeff.html commands for details.  Since pair
+coefficients for types I != J are not specified, these will be
+generated automatically by the pair style's mixing rule.  See the
+individual pair_style doc pages and the "pair_modify
+mix"_pair_modify.html command for details.  Pair coefficients can also
+be set via the "pair_coeff"_pair_coeff.html command in the input
+script.
+
+:line
+
+{PairIJ Coeffs} section:
+
+one line per pair of atom types for all I,J with I <= J :ulb,l
+line syntax: ID1 ID2 coeffs :l
+  ID1 = atom type I = 1-N
+  ID2 = atom type J = I-N, with I <= J
+  coeffs = list of coeffs :pre
+examples: :l
+  3 3 0.022 2.35197 0.022 2.35197
+  3 5 0.022 2.35197 0.022 2.35197 :pre
+:ule
+
+This section must have N*(N+1)/2 lines where N = # of atom types.  The
+number and meaning of the coefficients are specific to the defined
+pair style.  See the "pair_style"_pair_style.html and
+"pair_coeff"_pair_coeff.html commands for details.  Since pair
+coefficients for types I != J are all specified, these values will
+turn off the default mixing rule defined by the pair style.  See the
+individual pair_style doc pages and the "pair_modify
+mix"_pair_modify.html command for details.  Pair coefficients can also
+be set via the "pair_coeff"_pair_coeff.html command in the input
 script.
 
 :line
@@ -654,7 +762,7 @@ line syntax: atom-ID x1 y1 x2 y2 :l
   atom-ID = ID of atom which is a line segment
   x1,y1,z1 = 1st corner point
   x2,y2,z2 = 2nd corner point
-  x3,y3,z3 = 3rd corner point
+  x3,y3,z3 = 3rd corner point :pre
 example: :l
   12 0.0 0.0 0.0 2.0 0.0 1.0 0.0 2.0 1.0 :pre
 :ule
@@ -680,10 +788,10 @@ one line per atom
 line syntax: depends on atom style :ul
 
 all styles except those listed: atom-ID vx vy vz
-dipole: atom-ID vx vy vz wx wy wz
 electron: atom-ID vx vy vz ervel
 ellipsoid: atom-ID vx vy vz lx ly lz
-sphere: atom-ID vx vy vz wx wy wz :tb(s=:)
+sphere: atom-ID vx vy vz wx wy wz
+hybrid: atom-ID vx vy vz sub-style1 sub-style2 ... :tb(s=:)
 
 where the keywords have these meanings:
 
@@ -701,6 +809,22 @@ Vx, vy, vz, and ervel are in "units"_units.html of velocity.  Lx, ly,
 lz are in units of angular momentum (distance-velocity-mass).  Wx, Wy,
 Wz are in units of angular velocity (radians/time).
 
+For atom_style hybrid, following the 4 initial values (ID,vx,vy,vz),
+specific values for each sub-style must be listed.  The order of the
+sub-styles is the same as they were listed in the
+"atom_style"_atom_style.html command.  The sub-style specific values
+are those that are not the 5 standard ones (ID,vx,vy,vz).  For
+example, for the "sphere" sub-style, "wx", "wy", "wz" values would
+appear.  These are listed in the same order they appear as listed
+above.  Thus if
+
+atom_style hybrid electron sphere :pre
+
+were used in the input script, each velocity line would have these
+fields:
+
+atom-ID vx vy vz ervel wx wy wz :pre
+
 Translational velocities can also be set by the
 "velocity"_velocity.html command in the input script.
 
@@ -714,6 +838,7 @@ LAMMPS"_Section_start.html#start_2 section of the documentation.
 
 [Related commands:]
 
-"read_restart"_read_restart.html, "create_atoms"_create_atoms.html
+"read_dump"_read_dump.html, "read_restart"_read_restart.html,
+"create_atoms"_create_atoms.html, "write_data"_write_data.html
 
 [Default:] none

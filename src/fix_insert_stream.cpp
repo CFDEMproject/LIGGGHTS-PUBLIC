@@ -370,11 +370,19 @@ void FixInsertStream::init()
 
 /* ---------------------------------------------------------------------- */
 
+void FixInsertStream::setup_pre_exchange()
+{
+
+}
+
+/* ---------------------------------------------------------------------- */
+
 double FixInsertStream::insertion_fraction()
 {
     
     // have to re-calculate insertion fraction for my subbox
-    // in case simulation box is changing
+    // in case subdomains of simulation box are changing
+    
     if(domain->box_change || do_ins_fraction_calc || ins_face->isMoving())
         calc_ins_fraction();
 
@@ -796,4 +804,38 @@ void FixInsertStream::end_of_step()
         }
     }
 
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixInsertStream::reset_timestep(bigint newstep,bigint oldstep)
+{
+    
+    reset_releasedata(newstep,oldstep);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixInsertStream::reset_releasedata(bigint newstep,bigint oldstep)
+{
+  
+  int nlocal = atom->nlocal;
+  double **x = atom->x;
+  double **release_data = fix_release->array_atom;
+
+  for(int i = 0; i < nlocal; i++)
+  {
+        
+        // first 3 values is original position to integrate
+        vectorCopy3D(x[i],release_data[i]);
+
+        // 4th value is insertion step
+        release_data[i][3] -= static_cast<double>(oldstep-newstep);
+
+        // 5th value is step to release
+        release_data[i][4] -= static_cast<double>(oldstep-newstep);
+
+        // 6-8th value is integration velocity
+        vectorCopy3D(v_normal,&release_data[i][5]);
+  }
 }

@@ -43,14 +43,14 @@ class AssociativePointerArray
         ~AssociativePointerArray();
 
         template <typename U>
-        U* add(char *_id, char* _comm, char* _ref, char *_restart,int _scalePower = 1);
+        U* add(const char *_id, const char* _comm, const char* _ref, const char *_restart,int _scalePower = 1);
 
-        void remove(char *_id);
+        void remove(const char *_id);
 
         template <typename U>
-        U* getPointerById(char *_id);
+        U* getPointerById(const char *_id);
 
-        T* getBasePointerById(char *_id);
+        T* getBasePointerById(const char *_id);
 
         template <typename U>
         U* getPointerByIndex(int i);
@@ -70,9 +70,9 @@ class AssociativePointerArray
         inline void clearReverse(bool scale,bool translate,bool rotate);
 
         inline void storeOrig(class AssociativePointerArray &orig);
-        inline void storeOrig(char *_id,class AssociativePointerArray &orig);
+        inline void storeOrig(const char *_id,class AssociativePointerArray &orig);
         inline bool reset(class AssociativePointerArray &orig);
-        inline bool reset(char *_id,class AssociativePointerArray &orig);
+        inline bool reset(const char *_id,class AssociativePointerArray &orig);
 
         void rotate(double *dQ);
         void move(double *delta);
@@ -93,7 +93,7 @@ class AssociativePointerArray
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
-        int idToIndex(char *_id);
+        int idToIndex(const char *_id);
         void indexToId(int index, char *_id);
 
       private:

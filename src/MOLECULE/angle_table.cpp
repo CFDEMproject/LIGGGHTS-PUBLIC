@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -39,8 +39,9 @@ enum{LINEAR,SPLINE};
 
 /* ---------------------------------------------------------------------- */
 
-AngleTable::AngleTable(LAMMPS *lmp) : Angle(lmp) 
+AngleTable::AngleTable(LAMMPS *lmp) : Angle(lmp)
 {
+  writedata = 0;
   ntables = 0;
   tables = NULL;
 }
@@ -51,7 +52,7 @@ AngleTable::~AngleTable()
 {
   for (int m = 0; m < ntables; m++) free_table(&tables[m]);
   memory->sfree(tables);
-  
+
   if (allocated) {
     memory->destroy(setflag);
     memory->destroy(theta0);
@@ -91,7 +92,6 @@ void AngleTable::compute(int eflag, int vflag)
     delx1 = x[i1][0] - x[i2][0];
     dely1 = x[i1][1] - x[i2][1];
     delz1 = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx1,dely1,delz1);
 
     rsq1 = delx1*delx1 + dely1*dely1 + delz1*delz1;
     r1 = sqrt(rsq1);
@@ -101,7 +101,6 @@ void AngleTable::compute(int eflag, int vflag)
     delx2 = x[i3][0] - x[i2][0];
     dely2 = x[i3][1] - x[i2][1];
     delz2 = x[i3][2] - x[i2][2];
-    domain->minimum_image(delx2,dely2,delz2);
 
     rsq2 = delx2*delx2 + dely2*dely2 + delz2*delz2;
     r2 = sqrt(rsq2);
@@ -110,10 +109,10 @@ void AngleTable::compute(int eflag, int vflag)
 
     c = delx1*delx2 + dely1*dely2 + delz1*delz2;
     c /= r1*r2;
-        
+
     if (c > 1.0) c = 1.0;
     if (c < -1.0) c = -1.0;
-             
+
     s = sqrt(1.0 - c*c);
     if (s < SMALL) s = SMALL;
     s = 1.0/s;
@@ -122,10 +121,10 @@ void AngleTable::compute(int eflag, int vflag)
 
     theta = acos(c);
     uf_lookup(type,theta,u,mdu);
-    
+
     if (eflag) eangle = u;
 
-    a = mdu * s;               
+    a = mdu * s;
     a11 = a*c / rsq1;
     a12 = -a / (r1*r2);
     a22 = a*c / rsq2;
@@ -158,7 +157,7 @@ void AngleTable::compute(int eflag, int vflag)
     }
 
     if (evflag) ev_tally(i1,i2,i3,nlocal,newton_bond,eangle,f1,f3,
-			 delx1,dely1,delz1,delx2,dely2,delz2);
+                         delx1,dely1,delz1,delx2,dely2,delz2);
   }
 }
 
@@ -177,7 +176,7 @@ void AngleTable::allocate()
 }
 
 /* ----------------------------------------------------------------------
-   global settings 
+   global settings
 ------------------------------------------------------------------------- */
 
 void AngleTable::settings(int narg, char **arg)
@@ -188,7 +187,7 @@ void AngleTable::settings(int narg, char **arg)
   else if (strcmp(arg[0],"spline") == 0) tabstyle = SPLINE;
   else error->all(FLERR,"Unknown table style in angle style table");
 
-  tablength = force->inumeric(arg[1]);
+  tablength = force->inumeric(FLERR,arg[1]);
   if (tablength < 2) error->all(FLERR,"Illegal number of angle table entries");
 
   // delete old tables, since cannot just change settings
@@ -217,10 +216,10 @@ void AngleTable::coeff(int narg, char **arg)
 
   int ilo,ihi;
   force->bounds(arg[0],atom->nangletypes,ilo,ihi);
-  
+
   int me;
   MPI_Comm_rank(world,&me);
-  tables = (Table *) 
+  tables = (Table *)
     memory->srealloc(tables,(ntables+1)*sizeof(Table),"angle:tables");
   Table *tb = &tables[ntables];
   null_table(tb);
@@ -236,12 +235,12 @@ void AngleTable::coeff(int narg, char **arg)
   ahi = tb->afile[tb->ninput-1];
   if (fabs(alo-0.0) > TINY || fabs(ahi-180.0) > TINY)
     error->all(FLERR,"Angle table must range from 0 to 180 degrees");
-    
+
   // convert theta from degrees to radians
 
   for (int i = 0; i < tb->ninput; i++){
     tb->afile[i] *= MY_PI/180.0;
-    tb->ffile[i] *= 180.0/MY_PI; 
+    tb->ffile[i] *= 180.0/MY_PI;
   }
 
   // spline read-in and compute a,e,f vectors within table
@@ -293,7 +292,7 @@ void AngleTable::read_restart(FILE *fp)
     fread(&tabstyle,sizeof(int),1,fp);
     fread(&tablength,sizeof(int),1,fp);
   }
-  MPI_Bcast(&tabstyle,1,MPI_DOUBLE,0,world);
+  MPI_Bcast(&tabstyle,1,MPI_INT,0,world);
   MPI_Bcast(&tablength,1,MPI_INT,0,world);
 
   allocate();
@@ -310,7 +309,7 @@ double AngleTable::single(int type, int i1, int i2, int i3)
   double delz1 = x[i1][2] - x[i2][2];
   domain->minimum_image(delx1,dely1,delz1);
   double r1 = sqrt(delx1*delx1 + dely1*dely1 + delz1*delz1);
-  
+
   double delx2 = x[i3][0] - x[i2][0];
   double dely2 = x[i3][1] - x[i2][1];
   double delz2 = x[i3][2] - x[i2][2];
@@ -347,7 +346,7 @@ void AngleTable::free_table(Table *tb)
   memory->destroy(tb->ffile);
   memory->destroy(tb->e2file);
   memory->destroy(tb->f2file);
-  
+
   memory->destroy(tb->ang);
   memory->destroy(tb->e);
   memory->destroy(tb->de);
@@ -381,7 +380,8 @@ void AngleTable::read_table(Table *tb, char *file, char *keyword)
       error->one(FLERR,"Did not find keyword in table file");
     if (strspn(line," \t\n") == strlen(line)) continue;    // blank line
     if (line[0] == '#') continue;                          // comment
-    if (strstr(line,keyword) == line) break;               // matching keyword
+    char *word = strtok(line," \t\n\r");
+    if (strcmp(word,keyword) == 0) break;           // matching keyword
     fgets(line,MAXLINE,fp);                         // no match, skip section
     param_extract(tb,line);
     fgets(line,MAXLINE,fp);
@@ -426,7 +426,7 @@ void AngleTable::spline_table(Table *tb)
 
   if (tb->fpflag == 0) {
     tb->fplo = (tb->ffile[1] - tb->ffile[0]) / (tb->afile[1] - tb->afile[0]);
-    tb->fphi = (tb->ffile[tb->ninput-1] - tb->ffile[tb->ninput-2]) / 
+    tb->fphi = (tb->ffile[tb->ninput-1] - tb->ffile[tb->ninput-2]) /
       (tb->afile[tb->ninput-1] - tb->afile[tb->ninput-2]);
   }
 
@@ -447,7 +447,7 @@ void AngleTable::compute_table(Table *tb)
   tb->delta = MY_PI / tlm1;
   tb->invdelta = 1.0/tb->delta;
   tb->deltasq6 = tb->delta*tb->delta / 6.0;
-  
+
   // N-1 evenly spaced bins in angle from 0 to PI
   // ang,e,f = value at lower edge of bin
   // de,df values = delta values of e,f
@@ -465,18 +465,18 @@ void AngleTable::compute_table(Table *tb)
   for (int i = 0; i < tablength; i++) {
     a = i*tb->delta;
     tb->ang[i] = a;
-	  tb->e[i] = splint(tb->afile,tb->efile,tb->e2file,tb->ninput,a);
-	  tb->f[i] = splint(tb->afile,tb->ffile,tb->f2file,tb->ninput,a);
+          tb->e[i] = splint(tb->afile,tb->efile,tb->e2file,tb->ninput,a);
+          tb->f[i] = splint(tb->afile,tb->ffile,tb->f2file,tb->ninput,a);
   }
-        
+
   for (int i = 0; i < tlm1; i++) {
     tb->de[i] = tb->e[i+1] - tb->e[i];
     tb->df[i] = tb->f[i+1] - tb->f[i];
   }
-     
+
   double ep0 = - tb->f[0];
   double epn = - tb->f[tlm1];
-  spline(tb->ang,tb->e,tablength,ep0,epn,tb->e2);  
+  spline(tb->ang,tb->e,tablength,ep0,epn,tb->e2);
   spline(tb->ang,tb->f,tablength,tb->fplo,tb->fphi,tb->f2);
 }
 
@@ -490,8 +490,8 @@ void AngleTable::param_extract(Table *tb, char *line)
 {
   tb->ninput = 0;
   tb->fpflag = 0;
-  tb->theta0 = 180.0; 
-  
+  tb->theta0 = 180.0;
+
   char *word = strtok(line," \t\n\r\f");
   while (word) {
     if (strcmp(word,"N") == 0) {
@@ -552,7 +552,7 @@ void AngleTable::bcast_table(Table *tb)
 ------------------------------------------------------------------------- */
 
 void AngleTable::spline(double *x, double *y, int n,
-		       double yp1, double ypn, double *y2)
+                       double yp1, double ypn, double *y2)
 {
   int i,k;
   double p,qn,sig,un;
@@ -598,7 +598,7 @@ double AngleTable::splint(double *xa, double *ya, double *y2a, int n, double x)
   h = xa[khi]-xa[klo];
   a = (xa[khi]-x) / h;
   b = (x-xa[klo]) / h;
-  y = a*ya[klo] + b*ya[khi] + 
+  y = a*ya[klo] + b*ya[khi] +
     ((a*a*a-a)*y2a[klo] + (b*b*b-b)*y2a[khi]) * (h*h)/6.0;
   return y;
 }
@@ -613,7 +613,7 @@ void AngleTable::uf_lookup(int type, double x, double &u, double &f)
   double fraction,a,b;
 
   Table *tb = &tables[tabindex[type]];
-  
+
   if (tabstyle == LINEAR) {
     itable = static_cast<int> ( x * tb->invdelta);
     fraction = (x - tb->ang[itable]) * tb->invdelta;
@@ -622,16 +622,16 @@ void AngleTable::uf_lookup(int type, double x, double &u, double &f)
   } else if (tabstyle == SPLINE) {
     itable = static_cast<int> ( x * tb->invdelta);
     fraction = (x - tb->ang[itable]) * tb->invdelta;
-    
+
     b = (x - tb->ang[itable]) * tb->invdelta;
     a = 1.0 - b;
-    u = a * tb->e[itable] + b * tb->e[itable+1] + 
-      ((a*a*a-a)*tb->e2[itable] + (b*b*b-b)*tb->e2[itable+1]) * 
+    u = a * tb->e[itable] + b * tb->e[itable+1] +
+      ((a*a*a-a)*tb->e2[itable] + (b*b*b-b)*tb->e2[itable+1]) *
       tb->deltasq6;
-    f = a * tb->f[itable] + b * tb->f[itable+1] + 
-      ((a*a*a-a)*tb->f2[itable] + (b*b*b-b)*tb->f2[itable+1]) * 
+    f = a * tb->f[itable] + b * tb->f[itable+1] +
+      ((a*a*a-a)*tb->f2[itable] + (b*b*b-b)*tb->f2[itable+1]) *
       tb->deltasq6;
-  } 
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -644,7 +644,7 @@ void AngleTable::u_lookup(int type, double x, double &u)
   double fraction,a,b;
 
   Table *tb = &tables[tabindex[type]];
-  
+
   if (tabstyle == LINEAR) {
     itable = static_cast<int> ( x * tb->invdelta);
     fraction = (x - tb->ang[itable]) * tb->invdelta;
@@ -652,11 +652,11 @@ void AngleTable::u_lookup(int type, double x, double &u)
   } else if (tabstyle == SPLINE) {
     itable = static_cast<int> ( x * tb->invdelta);
     fraction = (x - tb->ang[itable]) * tb->invdelta;
-    
+
     b = (x - tb->ang[itable]) * tb->invdelta;
     a = 1.0 - b;
-    u = a * tb->e[itable] + b * tb->e[itable+1] + 
-      ((a*a*a-a)*tb->e2[itable] + (b*b*b-b)*tb->e2[itable+1]) * 
+    u = a * tb->e[itable] + b * tb->e[itable+1] +
+      ((a*a*a-a)*tb->e2[itable] + (b*b*b-b)*tb->e2[itable+1]) *
       tb->deltasq6;
-  } 
+  }
 }

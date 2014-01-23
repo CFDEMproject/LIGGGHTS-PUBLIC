@@ -44,8 +44,8 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-AtomVecSPH::AtomVecSPH(LAMMPS *lmp, int narg, char **arg) :
-      AtomVec(lmp, narg, arg)
+AtomVecSPH::AtomVecSPH(LAMMPS *lmp) :
+      AtomVec(lmp)
 {
   molecular = 0;
 
@@ -148,7 +148,7 @@ void AtomVecSPH::copy(int i, int j, int delflag)
 
   if (atom->nextra_grow)
     for (int iextra = 0; iextra < atom->nextra_grow; iextra++)
-      modify->fix[atom->extra_grow[iextra]]->copy_arrays(i,j);
+      modify->fix[atom->extra_grow[iextra]]->copy_arrays(i,j,delflag);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -419,6 +419,11 @@ int AtomVecSPH::pack_border(int n, int *list, double *buf,
       buf[m++] = vest[j][2];
     }
   }
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->pack_border(n,list,&buf[m]);
+
   return m;
 }
 
@@ -479,6 +484,11 @@ int AtomVecSPH::pack_border_vel(int n, int *list, double *buf,
       buf[m++] = v[j][2];
     }
   }
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->pack_border(n,list,&buf[m]);
+
   return m;
 }
 
@@ -521,6 +531,11 @@ void AtomVecSPH::unpack_border(int n, int first, double *buf)
     vest[i][1] = buf[m++];
     vest[i][2] = buf[m++];
   }
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->
+        unpack_border(n,first,&buf[m]);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -549,6 +564,11 @@ void AtomVecSPH::unpack_border_vel(int n, int first, double *buf)
     v[i][1] = buf[m++];
     v[i][2] = buf[m++];
   }
+
+  if (atom->nextra_border)
+    for (int iextra = 0; iextra < atom->nextra_border; iextra++)
+      m += modify->fix[atom->extra_border[iextra]]->
+        unpack_border(n,first,&buf[m]);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -584,7 +604,8 @@ int AtomVecSPH::pack_exchange(int i, double *buf)
   buf[m++] = tag[i];
   buf[m++] = type[i];
   buf[m++] = mask[i];
-  buf[m++] = image[i];
+  buf[m] = 0.0;      // for valgrind
+  *((tagint *) &buf[m++]) = image[i];
 
   buf[m++] = p[i];
   buf[m++] = rho[i];
@@ -618,7 +639,7 @@ int AtomVecSPH::unpack_exchange(double *buf)
   tag[nlocal] = static_cast<int> (buf[m++]);
   type[nlocal] = static_cast<int> (buf[m++]);
   mask[nlocal] = static_cast<int> (buf[m++]);
-  image[nlocal] = static_cast<int> (buf[m++]);
+  image[nlocal] = *((tagint *) &buf[m++]);
 
   p[nlocal] = buf[m++];
   rho[nlocal] =  buf[m++];
@@ -671,7 +692,8 @@ int AtomVecSPH::pack_restart(int i, double *buf)
   buf[m++] = tag[i];
   buf[m++] = type[i];
   buf[m++] = mask[i];
-  buf[m++] = image[i];
+  buf[m] = 0.0;      // for valgrind
+  *((tagint *) &buf[m++]) = image[i];
   buf[m++] = v[i][0];
   buf[m++] = v[i][1];
   buf[m++] = v[i][2];
@@ -711,7 +733,7 @@ int AtomVecSPH::unpack_restart(double *buf)
   tag[nlocal] = static_cast<int> (buf[m++]);
   type[nlocal] = static_cast<int> (buf[m++]);
   mask[nlocal] = static_cast<int> (buf[m++]);
-  image[nlocal] = static_cast<int> (buf[m++]);
+  image[nlocal] = *((tagint *) &buf[m++]);
   v[nlocal][0] = buf[m++];
   v[nlocal][1] = buf[m++];
   v[nlocal][2] = buf[m++];
@@ -749,7 +771,8 @@ void AtomVecSPH::create_atom(int itype, double *coord)
   x[nlocal][1] = coord[1];
   x[nlocal][2] = coord[2];
   mask[nlocal] = 1;
-  image[nlocal] = (512 << 20) | (512 << 10) | 512;
+  image[nlocal] = ((tagint) IMGMAX << IMG2BITS) |
+    ((tagint) IMGMAX << IMGBITS) | IMGMAX;
   v[nlocal][0] = 0.0;
   v[nlocal][1] = 0.0;
   v[nlocal][2] = 0.0;
@@ -771,20 +794,20 @@ void AtomVecSPH::create_atom(int itype, double *coord)
    initialize other atom quantities
 ------------------------------------------------------------------------- */
 
-void AtomVecSPH::data_atom(double *coord, int imagetmp, char **values)
+void AtomVecSPH::data_atom(double *coord, tagint imagetmp, char **values)
 {
   int nlocal = atom->nlocal;
   if (nlocal == nmax) grow(0);
 
-  tag[nlocal] = force->inumeric(values[0]);
+  tag[nlocal] = force->inumeric(FLERR,values[0]);
   if (tag[nlocal] <= 0)
     error->one(FLERR,"Invalid atom ID in Atoms section of data file");
 
-  type[nlocal] = force->inumeric(values[1]);
+  type[nlocal] = force->inumeric(FLERR,values[1]);
   if (type[nlocal] <= 0 || type[nlocal] > atom->ntypes)
     error->one(FLERR,"Invalid atom type in Atoms section of data file");
 
-  rho[nlocal] = force->numeric(values[2]);
+  rho[nlocal] = force->numeric(FLERR,values[2]);
   if (rho[nlocal] <= 0.0)
     error->one(FLERR,"Invalid rho in Atoms section of data file");
 
@@ -817,7 +840,7 @@ void AtomVecSPH::data_atom(double *coord, int imagetmp, char **values)
 
 int AtomVecSPH::data_atom_hybrid(int nlocal, char **values)
 {
-  rho[nlocal] = force->numeric(values[0]);
+  rho[nlocal] = force->numeric(FLERR,values[0]);
   if (rho[nlocal] <= 0.0)
     error->one(FLERR,"Invalid rho in Atoms section of data file");
 
@@ -830,9 +853,9 @@ int AtomVecSPH::data_atom_hybrid(int nlocal, char **values)
 
 void AtomVecSPH::data_vel(int m, char **values)
 {
-  v[m][0] = force->numeric(values[0]);
-  v[m][1] = force->numeric(values[1]);
-  v[m][2] = force->numeric(values[2]);
+  v[m][0] = force->numeric(FLERR,values[0]);
+  v[m][1] = force->numeric(FLERR,values[1]);
+  v[m][2] = force->numeric(FLERR,values[2]);
 }
 
 /* ----------------------------------------------------------------------
@@ -842,6 +865,121 @@ void AtomVecSPH::data_vel(int m, char **values)
 int AtomVecSPH::data_vel_hybrid(int m, char **values)
 {
   return 0;
+}
+
+/* ----------------------------------------------------------------------
+   pack atom info for data file including 3 image flags
+------------------------------------------------------------------------- */
+
+void AtomVecSPH::pack_data(double **buf)
+{
+  
+  error->all(FLERR,"This feature is not supported by SPH");
+  int nlocal = atom->nlocal;
+  for (int i = 0; i < nlocal; i++) {
+    buf[i][0] = tag[i];
+    buf[i][1] = type[i];
+    //ATTENTION GAP HERE
+    buf[i][4] = x[i][0];
+    buf[i][5] = x[i][1];
+    buf[i][6] = x[i][2];
+    buf[i][7] = (image[i] & IMGMASK) - IMGMAX;
+    buf[i][8] = (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
+    buf[i][9] = (image[i] >> IMG2BITS) - IMGMAX;
+  }
+}
+
+/* ----------------------------------------------------------------------
+   pack hybrid atom info for data file
+------------------------------------------------------------------------- */
+
+int AtomVecSPH::pack_data_hybrid(int i, double *buf)
+{
+  
+  error->all(FLERR,"This feature is not supported by SPH");
+
+  return 0;
+}
+
+/* ----------------------------------------------------------------------
+   write atom info to data file including 3 image flags
+------------------------------------------------------------------------- */
+
+void AtomVecSPH::write_data(FILE *fp, int n, double **buf)
+{
+  
+  error->all(FLERR,"This feature is not supported by SPH");
+  for (int i = 0; i < n; i++)
+    fprintf(fp,"%d %d %-1.16e %-1.16e %-1.16e %-1.16e %-1.16e %d %d %d\n",
+            (int) buf[i][0],(int) buf[i][1],
+            buf[i][2],buf[i][3],
+            buf[i][4],buf[i][5],buf[i][6],
+            (int) buf[i][7],(int) buf[i][8],(int) buf[i][9]);
+}
+
+/* ----------------------------------------------------------------------
+   write hybrid atom info to data file
+------------------------------------------------------------------------- */
+
+int AtomVecSPH::write_data_hybrid(FILE *fp, double *buf)
+{
+  
+  error->all(FLERR,"This feature is not supported by SPH");
+  fprintf(fp," %-1.16e %-1.16e",buf[0],buf[1]);
+  return 2;
+}
+
+/* ----------------------------------------------------------------------
+   pack velocity info for data file
+------------------------------------------------------------------------- */
+
+void AtomVecSPH::pack_vel(double **buf)
+{
+  
+  error->all(FLERR,"This feature is not supported by SPH");
+  int nlocal = atom->nlocal;
+  for (int i = 0; i < nlocal; i++) {
+    buf[i][0] = tag[i];
+    buf[i][1] = v[i][0];
+    buf[i][2] = v[i][1];
+    buf[i][3] = v[i][2];
+  }
+}
+
+/* ----------------------------------------------------------------------
+   pack hybrid velocity info for data file
+------------------------------------------------------------------------- */
+
+int AtomVecSPH::pack_vel_hybrid(int i, double *buf)
+{
+  
+  error->all(FLERR,"This feature is not supported by SPH");
+  return 0;
+}
+
+/* ----------------------------------------------------------------------
+   write velocity info to data file
+------------------------------------------------------------------------- */
+
+void AtomVecSPH::write_vel(FILE *fp, int n, double **buf)
+{
+  
+  error->all(FLERR,"This feature is not supported by SPH");
+  for (int i = 0; i < n; i++)
+    fprintf(fp,"%d %-1.16e %-1.16e %-1.16e %-1.16e %-1.16e %-1.16e\n",
+            (int) buf[i][0],buf[i][1],buf[i][2],buf[i][3],
+            buf[i][4],buf[i][5],buf[i][6]);
+}
+
+/* ----------------------------------------------------------------------
+   write hybrid velocity info to data file
+------------------------------------------------------------------------- */
+
+int AtomVecSPH::write_vel_hybrid(FILE *fp, double *buf)
+{
+  error->all(FLERR,"This feature is not supported by SPH");
+  fprintf(fp," %-1.16e %-1.16e %-1.16e",buf[0],buf[1],buf[2]);
+  return 3;
 }
 
 /* ----------------------------------------------------------------------

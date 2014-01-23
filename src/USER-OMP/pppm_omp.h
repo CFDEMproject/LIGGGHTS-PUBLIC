@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -25,23 +25,29 @@ KSpaceStyle(pppm/omp,PPPMOMP)
 
 namespace LAMMPS_NS {
 
-  class PPPMOMP : public PPPM, public ThrOMP {
+class PPPMOMP : public PPPM, public ThrOMP {
  public:
   PPPMOMP(class LAMMPS *, int, char **);
   virtual ~PPPMOMP () {};
-  virtual void setup();
   virtual void compute(int, int);
 
  protected:
   virtual void allocate();
   virtual void deallocate();
-  virtual void fieldforce();
-  virtual void fieldforce_peratom();
-  virtual void make_rho();
 
+  virtual void compute_gf_ik();
+  virtual void compute_gf_ad();
+
+  virtual void make_rho();
+  virtual void fieldforce_ik();
+  virtual void fieldforce_ad();
+  virtual void fieldforce_peratom();
+
+ private:
   void compute_rho1d_thr(FFT_SCALAR * const * const, const FFT_SCALAR &,
-			 const FFT_SCALAR &, const FFT_SCALAR &);
-//  void compute_rho_coeff();
+                         const FFT_SCALAR &, const FFT_SCALAR &);
+  void compute_drho1d_thr(FFT_SCALAR * const * const, const FFT_SCALAR &,
+			  const FFT_SCALAR &, const FFT_SCALAR &);
 //  void slabcorr(int);
 
 };

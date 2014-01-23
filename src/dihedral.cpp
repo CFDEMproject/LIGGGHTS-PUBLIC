@@ -17,9 +17,10 @@
 #include "comm.h"
 #include "force.h"
 #include "pair.h"
+#include "suffix.h"
+#include "atom_masks.h"
 #include "memory.h"
 #include "error.h"
-#include "suffix.h"
 
 using namespace LAMMPS_NS;
 
@@ -31,12 +32,17 @@ using namespace LAMMPS_NS;
 Dihedral::Dihedral(LAMMPS *lmp) : Pointers(lmp)
 {
   energy = 0.0;
+  writedata = 0;
 
   allocated = 0;
 
   maxeatom = maxvatom = 0;
   eatom = NULL;
   vatom = NULL;
+  setflag = NULL;
+
+  datamask = ALL_MASK;
+  datamask_ext = ALL_MASK;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -53,7 +59,8 @@ Dihedral::~Dihedral()
 
 void Dihedral::init()
 {
-  if (!allocated) error->all(FLERR,"Dihedral coeffs are not set");
+  if (!allocated && atom->ndihedraltypes) 
+    error->all(FLERR,"Dihedral coeffs are not set");
   for (int i = 1; i <= atom->ndihedraltypes; i++)
     if (setflag[i] == 0) error->all(FLERR,"All dihedral coeffs are not set");
   init_style();

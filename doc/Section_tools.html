@@ -54,18 +54,22 @@ own sub-directories with their own Makefiles.
 <LI><A HREF = "#eff">eff</A>
 <LI><A HREF = "#emacs">emacs</A>
 <LI><A HREF = "#ipp">ipp</A>
+<LI><A HREF = "#kate">kate</A>
 <LI><A HREF = "#arc">lmp2arc</A>
 <LI><A HREF = "#cfg">lmp2cfg</A>
 <LI><A HREF = "#vmd">lmp2vmd</A>
 <LI><A HREF = "#matlab">matlab</A>
 <LI><A HREF = "#micelle">micelle2d</A>
+<LI><A HREF = "#moltemplate">moltemplate</A>
 <LI><A HREF = "#msi">msi2lmp</A>
+<LI><A HREF = "#phonon">phonon</A>
+<LI><A HREF = "#polybond">polymer bonding</A>
 <LI><A HREF = "#pymol">pymol_asphere</A>
 <LI><A HREF = "#pythontools">python</A>
 <LI><A HREF = "#reax">reax</A>
 <LI><A HREF = "#restart">restart2data</A>
-<LI><A HREF = "#thermo_extract">thermo_extract</A>
 <LI><A HREF = "#vim">vim</A>
+<LI><A HREF = "#xmgrace">xmgrace</A>
 <LI><A HREF = "#xmovie">xmovie</A> 
 </UL>
 <HR>
@@ -223,6 +227,17 @@ tools/createatoms tool's input file.
 </P>
 <HR>
 
+<H4><A NAME = "kate"></A>kate tool 
+</H4>
+<P>The file in the tools/kate directory is an add-on to the Kate editor
+in the KDE suite that allow syntax highlighting of LAMMPS input
+scripts.  See the README.txt file for details.
+</P>
+<P>The file was provided by Alessandro Luigi Sellerio
+(alessandro.sellerio at ieni.cnr.it).
+</P>
+<HR>
+
 <H4><A NAME = "arc"></A>lmp2arc tool 
 </H4>
 <P>The lmp2arc sub-directory contains a tool for converting LAMMPS output
@@ -297,6 +312,20 @@ definition file.  This tool was used to create the system for the
 </P>
 <HR>
 
+<H4><A NAME = "moltemplate"></A>moltemplate tool 
+</H4>
+<P>The moltemplate sub-directory contains a Python-based tool for
+building molecular systems based on a text-file description, and
+creating LAMMPS data files that encode their molecular topology as
+lists of bonds, angles, dihedrals, etc.  See the README.TXT file for
+more information.
+</P>
+<P>This tool was written by Andrew Jewett (jewett.aij at gmail.com), who
+supports it.  It has its own WWW page at
+<A HREF = "http://moltemplate.org">http://moltemplate.org</A>.
+</P>
+<HR>
+
 <H4><A NAME = "msi"></A>msi2lmp tool 
 </H4>
 <P>The msi2lmp sub-directory contains a tool for creating LAMMPS input
@@ -310,6 +339,35 @@ its Discover MD code).  See the README file for more information.
 <P>This tool may be out-of-date with respect to the current LAMMPS and
 Insight versions.  Since we don't use it at Sandia, you'll need to
 experiment with it yourself.
+</P>
+<HR>
+
+<H4><A NAME = "phonon"></A>phonon tool 
+</H4>
+<P>The phonon sub-directory contains a post-processing tool useful for
+analyzing the output of the <A HREF = "fix_phonon.html">fix phonon</A> command in
+the USER-PHONON package.
+</P>
+<P>See the README file for instruction on building the tool and what
+library it needs.  And see the examples/USER/phonon directory
+for example problems that can be post-processed with this tool.
+</P>
+<P>This tool was written by Ling-Ti Kong at Shanghai Jiao Tong
+University.
+</P>
+<HR>
+
+<H4><A NAME = "polybond"></A>polymer bonding tool 
+</H4>
+<P>The polybond sub-directory contains a Python-based tool useful for
+performing "programmable polymer bonding".  The Python file
+lmpsdata.py provides a "Lmpsdata" class with various methods which can
+be invoked by a user-written Python script to create data files with
+complex bonding topologies.
+</P>
+<P>See the Manual.pdf for details and example scripts.
+</P>
+<P>This tool was written by Zachary Kraus at Georgia Tech.
 </P>
 <HR>
 
@@ -359,6 +417,23 @@ the README.txt file for more info.
 
 <H4><A NAME = "restart"></A>restart2data tool 
 </H4>
+<P>IMPORTANT NOTE: This tool is now obsolete and is not included in the
+current LAMMPS distribution.  This is becaues there is now a
+<A HREF = "write_data.html">write_data</A> command, which can create a data file
+from within an input script.  Running LAMMPS with the "-r"
+<A HREF = "Section_start.html#start_7">command-line switch</A> as follows:
+</P>
+<P>lmp_g++ -r restartfile datafile
+</P>
+<P>is the same as running a 2-line input script:
+</P>
+<P>read_restart restartfile
+write_data datafile
+</P>
+<P>which will produce the same data file that the restart2data tool used
+to create.  The following information is included in case you have an
+older version of LAMMPS which still includes the restart2data tool.
+</P>
 <P>The file restart2data.cpp converts a binary LAMMPS restart file into
 an ASCII data file.  The syntax for running the tool is
 </P>
@@ -385,20 +460,6 @@ of files are written by LAMMPS, and how the files are named.
 </P>
 <HR>
 
-<H4><A NAME = "thermo_extract"></A>thermo_extract tool 
-</H4>
-<P>The thermo_extract tool reads one of more LAMMPS log files and
-extracts a thermodynamic value (e.g. Temp, Press).  It spits out the
-time,value as 2 columns of numbers so the tool can be used as a quick
-way to plot some quantity of interest.  See the header of the
-thermo_extract.c file for the syntax of how to run it and other
-details.
-</P>
-<P>This tool was written by Vikas Varshney at Wright Patterson AFB
-(vikas.varshney at gmail.com).
-</P>
-<HR>
-
 <H4><A NAME = "vim"></A>vim tool 
 </H4>
 <P>The files in the tools/vim directory are add-ons to the VIM editor
@@ -407,6 +468,21 @@ file for details.
 </P>
 <P>These files were provided by Gerolf Ziegenhain (gerolf at
 ziegenhain.com)
+</P>
+<HR>
+
+<H4><A NAME = "xmgrace"></A>xmgrace tool 
+</H4>
+<P>The files in the tools/xmgrace directory can be used to plot the
+thermodynamic data in LAMMPS log files via the xmgrace plotting
+package.  There are several tools in the directory that can be used in
+post-processing mode.  The lammpsplot.cpp file can be compiled and
+used to create plots from the current state of a running LAMMPS
+simulation.
+</P>
+<P>See the README file for details.
+</P>
+<P>These files were provided by Vikas Varshney (vv0210 at gmail.com)
 </P>
 <HR>
 

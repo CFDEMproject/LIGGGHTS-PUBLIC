@@ -1,17 +1,13 @@
 #ifndef EXTRINSIC_MODEL_TWO_TEMPERATURE
 #define EXTRINSIC_MODEL_TWO_TEMPERATURE
 
-// ATC_Transfer headers
-#include "MatrixLibrary.h"
-#include "ATC_TypeDefs.h"
+#include <string>
+
 #include "ExtrinsicModel.h"
 #include "FieldEulerIntegrator.h"
 
-using namespace std;
 namespace ATC {
-
-  // forward declarations
-  class ATC_Transfer;
+  class ATC_Coupling;
   class PrescribedDataManager;
   class ExtrinsicModel;
   class PhysicsModel;
@@ -19,6 +15,7 @@ namespace ATC {
   /**
    *  @class  ExtrinsicModelTwoTemperature
    *  @brief  add electron temperature physics to phonon physics
+   *          owned field: ELECTRON_TEMPERATURE
    */
 
   //--------------------------------------------------------
@@ -34,7 +31,7 @@ namespace ATC {
     // constructor
     ExtrinsicModelTwoTemperature(ExtrinsicModelManager * modelManager,
                    ExtrinsicModelType modelType,
-                   string matFileName);
+                   std::string matFileName);
 
     // destructor
     virtual ~ExtrinsicModelTwoTemperature();
@@ -58,7 +55,7 @@ namespace ATC {
     virtual void set_sources(FIELDS & fields, FIELDS & sources);
 
     /** Add model-specific output data */
-    virtual void output(double dt, OUTPUT_LIST & outputData);
+    virtual void output(OUTPUT_LIST & outputData);
   
   protected:
     /** electron time integration flag */

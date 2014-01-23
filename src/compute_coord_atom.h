@@ -31,16 +31,19 @@ class ComputeCoordAtom : public Compute {
   void init();
   void init_list(int, class NeighList *);
   void compute_peratom();
-  template<bool MIX> void compute_peratom_eval();
+  template<bool MIX> void compute_peratom_eval(); 
   double memory_usage();
 
  private:
-  int nmax;
+  int nmax,ncol;
   double cutsq;
   class NeighList *list;
-  double *coordination;
 
-  bool mix;
+  bool mix; 
+
+  int *typelo,*typehi;
+  double *cvec;
+  double **carray;
 };
 
 }

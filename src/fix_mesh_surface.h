@@ -37,7 +37,7 @@ FixStyle(mesh/surface/planar,FixMeshSurface)
 
 #include "fix_mesh.h"
 #include "tri_mesh.h"
-#include "fix_contact_history.h"
+#include "fix_contact_history_mesh.h"
 #include "fix_neighlist_mesh.h"
 #include "custom_value_tracker.h"
 
@@ -74,8 +74,8 @@ namespace LAMMPS_NS
         inline int atomTypeWall()
         { return atom_type_mesh_;}
 
-        inline class FixContactHistory* contactHistory()
-        { return fix_contact_history_;}
+        inline class FixContactHistoryMesh* contactHistory()
+        { return fix_contact_history_mesh_;}
 
         inline class FixNeighlistMesh* meshNeighlist()
         { return fix_mesh_neighlist_;}
@@ -86,9 +86,15 @@ namespace LAMMPS_NS
         bool surfaceVel()
         { return (velFlag_ || angVelFlag_); }
 
+        void dumpAdd()
+        { n_dump_active_++; }
+
+        void dumpRemove()
+        { n_dump_active_--; }
+
       protected:
 
-        class FixContactHistory *fix_contact_history_;
+        class FixContactHistoryMesh *fix_contact_history_mesh_;
         class FixNeighlistMesh *fix_mesh_neighlist_;
 
         // flag for stressanalysis
@@ -110,6 +116,9 @@ namespace LAMMPS_NS
         double origin_[3];
         double axis_[3];
         double omegaSurf_;
+
+        // flag if dump mesh/* or dump stl is active
+        int n_dump_active_;
 
         // mesh curvature
         double curvature_;

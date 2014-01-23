@@ -1,22 +1,35 @@
 #include "ElectronHeatFlux.h"
-#include "StringManip.h"
 #include "ATC_Error.h"
 
 #include <iostream>
 #include <fstream>
+#include <vector>
+
+using ATC_Utility::command_line;
+using ATC_Utility::str2dbl;
+using std::fstream;
+using std::map;
+using std::string;
+using std::vector;
 
 namespace ATC {
-using namespace ATC_STRING;
 
-ElectronHeatFluxLinear::ElectronHeatFluxLinear(
-  fstream &fileId, map<string,double> & parameters) 
-  : ElectronHeatFlux(),
+ElectronHeatFlux::ElectronHeatFlux(ElectronHeatCapacity * electronHeatCapacity)
+  :
+  electronHeatCapacity_(electronHeatCapacity)
+{
+  // do nothing
+}
+
+ElectronHeatFluxLinear::ElectronHeatFluxLinear(fstream &fileId, map<string,double> & parameters,
+                                               ElectronHeatCapacity * electronHeatCapacity) 
+  : ElectronHeatFlux(electronHeatCapacity),
   conductivity_(0)
 {
-  if (!fileId.is_open()) throw ATC_Error(0,"cannot open material file");
+  if (!fileId.is_open()) throw ATC_Error("cannot open material file");
   vector<string> line;
   while(fileId.good()) {
-    get_command_line(fileId, line);
+    command_line(fileId, line);
     if (line.size() == 0) continue;
     if (line[0] == "end") return;
     else if (line[0] == "conductivity") {
@@ -24,20 +37,20 @@ ElectronHeatFluxLinear::ElectronHeatFluxLinear(
       parameters["electron_thermal_conductivity"] = conductivity_;
     }
     else {
-      throw ATC_Error(0, "unrecognized material function "+line[0]);
+      throw ATC_Error( "unrecognized material function "+line[0]);
     }
   }
 }
 
-ElectronHeatFluxPowerLaw::ElectronHeatFluxPowerLaw(
-  fstream &fileId, map<string,double> & parameters) 
-  : ElectronHeatFlux(),
+ElectronHeatFluxPowerLaw::ElectronHeatFluxPowerLaw(fstream &fileId, map<string,double> & parameters,
+                                                   ElectronHeatCapacity * electronHeatCapacity) 
+  : ElectronHeatFlux(electronHeatCapacity),
   conductivity_(0)
 {
-  if (!fileId.is_open()) throw ATC_Error(0,"cannot open material file");
+  if (!fileId.is_open()) throw ATC_Error("cannot open material file");
   vector<string> line;
   while(fileId.good()) {
-    get_command_line(fileId, line);
+    command_line(fileId, line);
     if (line.size() == 0) continue;
     if (line[0] == "end") return;
     else if (line[0] == "conductivity") {
@@ -45,23 +58,24 @@ ElectronHeatFluxPowerLaw::ElectronHeatFluxPowerLaw(
       parameters["electron_thermal_conductivity"] = conductivity_;
     }
     else {
-      throw ATC_Error(0, "unrecognized material function "+line[0]);
+      throw ATC_Error( "unrecognized material function "+line[0]);
     }
   }
 }
 
 ElectronHeatFluxThermopower::ElectronHeatFluxThermopower(
   fstream &fileId, map<string,double> & parameters,
-  /*const*/ ElectronFlux * electronFlux) 
-  : ElectronHeatFlux(),
-  electronFlux_(electronFlux),
-  conductivity_(0),
-  seebeckCoef_(0)
+  /*const*/ ElectronFlux * electronFlux,
+  ElectronHeatCapacity * electronHeatCapacity) 
+  : ElectronHeatFlux(electronHeatCapacity),
+    conductivity_(0),
+    seebeckCoef_(0),
+    electronFlux_(electronFlux)
 {
-  if (!fileId.is_open()) throw ATC_Error(0,"cannot open material file");
+  if (!fileId.is_open()) throw ATC_Error("cannot open material file");
   vector<string> line;
   while(fileId.good()) {
-    get_command_line(fileId, line);
+    command_line(fileId, line);
     if (line.size() == 0) continue;
     if (line[0] == "end") return;
     double value = str2dbl(line[1]);
@@ -70,8 +84,9 @@ ElectronHeatFluxThermopower::ElectronHeatFluxThermopower(
       parameters["electron_thermal_conductivity"] = conductivity_;
     }
     else {
-      throw ATC_Error(0, "unrecognized material function "+line[0]);
+      throw ATC_Error( "unrecognized material function "+line[0]);
     }
+    
     seebeckCoef_ = parameters["seebeck_coefficient"];
   }
 }

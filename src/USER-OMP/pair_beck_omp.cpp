@@ -19,9 +19,11 @@
 #include "force.h"
 #include "neighbor.h"
 #include "neigh_list.h"
+#include "math_special.h"
 
 #include "suffix.h"
 using namespace LAMMPS_NS;
+using namespace MathSpecial;
 
 /* ---------------------------------------------------------------------- */
 
@@ -56,11 +58,11 @@ void PairBeckOMP::compute(int eflag, int vflag)
 
     if (evflag) {
       if (eflag) {
-	if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else {
       if (force->newton_pair) eval<0,0,1>(ifrom, ito, thr);
@@ -84,8 +86,8 @@ void PairBeckOMP::eval(int iifrom, int iito, ThrData * const thr)
 
   evdwl = 0.0;
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
   int *type = atom->type;
   int nlocal = atom->nlocal;
   double *special_lj = force->special_lj;
@@ -100,9 +102,9 @@ void PairBeckOMP::eval(int iifrom, int iito, ThrData * const thr)
   for (ii = iifrom; ii < iito; ++ii) {
 
     i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
@@ -113,52 +115,52 @@ void PairBeckOMP::eval(int iifrom, int iito, ThrData * const thr)
       factor_lj = special_lj[sbmask(j)];
       j &= NEIGHMASK;
 
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
       jtype = type[j];
 
       if (rsq < cutsq[itype][jtype]) {
         r = sqrt(rsq);
-        r5 = rsq*rsq*r; 
+        r5 = rsq*rsq*r;
         aaij = aa[itype][jtype];
         alphaij = alpha[itype][jtype];
         betaij = beta[itype][jtype];
         term1 = aaij*aaij + rsq;
-        term2 = 1.0/pow(term1,5);
+        term2 = powint(term1,-5);
         term3 = 21.672 + 30.0*aaij*aaij + 6.0*rsq;
         term4 = alphaij + r5*betaij;
-        term5 = alphaij + 6.0*r5*betaij; 
+        term5 = alphaij + 6.0*r5*betaij;
         rinv  = 1.0/r;
-	force_beck = AA[itype][jtype]*exp(-1.0*r*term4)*term5;
-        force_beck -= BB[itype][jtype]*r*term2*term3; 
- 
-	fpair = factor_lj*force_beck*rinv;
-        
-	f[i][0] += delx*fpair;
-	f[i][1] += dely*fpair;
-	f[i][2] += delz*fpair;
-	if (NEWTON_PAIR || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        force_beck = AA[itype][jtype]*exp(-1.0*r*term4)*term5;
+        force_beck -= BB[itype][jtype]*r*term2*term3;
 
-	if (EFLAG) {
-          term6 = 1.0/pow(term1,3);
+        fpair = factor_lj*force_beck*rinv;
+
+        f[i].x += delx*fpair;
+        f[i].y += dely*fpair;
+        f[i].z += delz*fpair;
+        if (NEWTON_PAIR || j < nlocal) {
+          f[j].x -= delx*fpair;
+          f[j].y -= dely*fpair;
+          f[j].z -= delz*fpair;
+        }
+
+        if (EFLAG) {
+          term6 = powint(term1,-3);
           term1inv = 1.0/term1;
           evdwl = AA[itype][jtype]*exp(-1.0*r*term4);
           evdwl -= BB[itype][jtype]*term6*(1.0+(2.709+3.0*aaij*aaij)*term1inv);
-	}
+        }
 
-	if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
-				 evdwl,0.0,fpair,delx,dely,delz,thr);
+        if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
+                                 evdwl,0.0,fpair,delx,dely,delz,thr);
       }
     }
-    f[i][0] += fxtmp;
-    f[i][1] += fytmp;
-    f[i][2] += fztmp;
+    f[i].x += fxtmp;
+    f[i].y += fytmp;
+    f[i].z += fztmp;
   }
 }
 

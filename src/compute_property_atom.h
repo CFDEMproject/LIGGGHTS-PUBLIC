@@ -28,19 +28,21 @@ class ComputePropertyAtom : public Compute {
  public:
   ComputePropertyAtom(class LAMMPS *, int, char **);
   ~ComputePropertyAtom();
-  void init() {}
+  void init();
   void compute_peratom();
   double memory_usage();
 
  private:
   int nvalues;
   int nmax;
+  int *index;
   double *vector;
   double **array;
   double *buf;
   class AtomVecEllipsoid *avec_ellipsoid;
   class AtomVecLine *avec_line;
   class AtomVecTri *avec_tri;
+  class AtomVecBody *avec_body;
 
   typedef void (ComputePropertyAtom::*FnPtrPack)(int);
   FnPtrPack *pack_choice;              // ptrs to pack functions
@@ -118,6 +120,9 @@ class ComputePropertyAtom : public Compute {
   void pack_corner3x(int);
   void pack_corner3y(int);
   void pack_corner3z(int);
+
+  void pack_iname(int);
+  void pack_dname(int);
 };
 
 }

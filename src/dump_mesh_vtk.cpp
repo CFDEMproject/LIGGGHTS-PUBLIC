@@ -214,6 +214,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           {
               FixMeshSurface *fms = static_cast<FixMeshSurface*>(modify->fix[ifix]);
               meshList_[nMesh_] = fms->triMesh();
+              fms->dumpAdd();
               nMesh_++;
           }
           hasargs = true;
@@ -271,8 +272,33 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
 
 DumpMeshVTK::~DumpMeshVTK()
 {
+  for (int iMesh = 0; iMesh < nMesh_; iMesh++)
+  {
+      static_cast<FixMeshSurface*>(modify->find_fix_id(meshList_[iMesh]->mesh_id()))->dumpRemove();
+  }
+
   delete[] meshList_;
   memory->destroy(buf_all_);
+
+  delete [] sigma_n_;
+  delete [] sigma_t_;
+  delete [] wear_;
+  delete [] v_node_;
+  delete [] f_node_;
+  delete [] T_;
+  delete [] min_active_edge_dist_;
+
+  for(int i = 0; i < n_container_bases_; i++)
+  {
+      delete [] scalar_containers_[i];
+      delete [] vector_containers_[i];
+      delete [] scalar_container_names_[i];
+      delete [] vector_container_names_[i];
+  }
+  delete [] scalar_containers_;
+  delete [] vector_containers_;
+  delete [] scalar_container_names_;
+  delete [] vector_container_names_;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -391,6 +417,8 @@ void DumpMeshVTK::getRefs()
       {
           sigma_n_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("sigma_n");
           sigma_t_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("sigma_t");
+          if(0 == comm->me && (!sigma_n_[i] || !sigma_t_[i]))
+            error->warning(FLERR,"Trying to dump stress for mesh which does not calculate stress, will dump '0' instead");
       }
   }
   if(dump_what_ & DUMP_STRESSCOMPONENTS)
@@ -413,6 +441,8 @@ void DumpMeshVTK::getRefs()
       for(int i = 0; i < nMesh_; i++)
       {
           wear_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("wear");
+          if(0 == comm->me && !wear_[i])
+            error->warning(FLERR,"Trying to dump wear for mesh which does not calculate wear, will dump '0' instead");
       }
   }
   if(dump_what_ & DUMP_TEMP)
@@ -420,6 +450,8 @@ void DumpMeshVTK::getRefs()
       for(int i = 0; i < nMesh_; i++)
       {
           T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("T");
+          if(0 == comm->me && !wear_[i])
+            error->warning(FLERR,"Trying to dump temperature for mesh which does not calculate temperature, will dump '0' instead");
       }
   }
   if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)

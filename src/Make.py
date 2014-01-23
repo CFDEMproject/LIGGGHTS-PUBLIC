@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 # if necessary, edit preceding line to point to your Python
 # or launch as "python Make.py ..."
 
@@ -71,8 +71,9 @@ support = ["Makefile","Make.sh","Makefile.package.empty",
 
 # packages that have external libs with their external lib dir
 
-extlibs = {"USER-ATC": "atc", "USER-AWPMD": "awpmd", "USER-CUDA": "cuda",
-           "GPU": "gpu","MEAM": "meam", "POEMS": "poems", "REAX": "reax"}
+extlibs = {"USER-ATC": "atc", "USER-AWPMD": "awpmd", "USER-COLVARS": "colvars",
+           "USER-CUDA": "cuda","GPU": "gpu","MEAM": "meam", "POEMS": "poems",
+           "REAX": "reax"}
 
 # help messages
 
@@ -415,14 +416,6 @@ def need_from_input_script(file,lookup):
       for suffix in suffixes: files.append("fix_" + args[2] + "/" + suffix)
     elif cmd == "region":
       files.append("region_" + args[1])
-    elif cmd == "cfd_datacoupling":
-      files.append("cfd_datacoupling_" + args[1])
-    elif cmd == "cfd_regionmodel":
-      files.append("cfd_regionmodel_" + args[1])
-    elif cmd == "lb":
-      files.append("lb_" + args[1])
-    elif cmd == "sph_kernel":
-      files.append("sph_kernel_" + args[1])
     else:
       tmpfile = cmd + ".cpp"
       if tmpfile not in cfiles: continue

@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -34,7 +34,8 @@ class BondHarmonic : public Bond {
   double equilibrium_distance(int);
   void write_restart(FILE *);
   void read_restart(FILE *);
-  double single(int, double, int, int);
+  void write_data(FILE *);
+  double single(int, double, int, int, double &);
 
  protected:
   double *k,*r0;

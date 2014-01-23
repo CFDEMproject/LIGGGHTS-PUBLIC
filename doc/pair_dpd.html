@@ -44,11 +44,11 @@ pair_coeff 1 1 1.0 1.0
 </P>
 <P>Style <I>dpd/tstat</I> invokes a DPD thermostat on pairwise interactions,
 which is equivalent to the non-conservative portion of the DPD force
-field.  This thermostat can be used in conjunction with any <A HREF = "pair_style.html">pair
-style</A>, and in leiu of per-particle thermostats like
-<A HREF = "fix_langevin.html">fix langevin</A> or ensemble thermostats like Nose
-Hoover as implemented by <A HREF = "fix_nh.html">fix nvt</A>.  To use <I>dpd/stat</I>
-with another pair style, use the <A HREF = "pair_hybrid.html">pair_style
+field.  This pair-wise thermostat can be used in conjunction with any
+<A HREF = "pair_style.html">pair style</A>, and in leiu of per-particle thermostats
+like <A HREF = "fix_langevin.html">fix langevin</A> or ensemble thermostats like
+Nose Hoover as implemented by <A HREF = "fix_nh.html">fix nvt</A>.  To use
+<I>dpd/stat</I> as a thermostat for another pair style, use the <A HREF = "pair_hybrid.html">pair_style
 hybrid/overlay</A> command to compute both the desired
 pair interaction and the thermostat for each pair of particles.
 </P>
@@ -171,6 +171,12 @@ often and see if system energies/trajectories change.
 <P>These pair styles requires you to use the <A HREF = "communicate.html">communicate vel
 yes</A> option so that velocites are stored by ghost
 atoms.
+</P>
+<P>These pair styles will not restart exactly when using the
+<A HREF = "read_restart.html">read_restart</A> command, though they should provide
+statistically similar results.  This is because the forces they
+compute depend on atom velocities.  See the
+<A HREF = "read_restart.html">read_restart</A> command for more details.
 </P>
 <P><B>Related commands:</B>
 </P>

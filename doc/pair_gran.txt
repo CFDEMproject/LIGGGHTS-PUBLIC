@@ -7,63 +7,39 @@
 
 :line
 
-pair_style gran/hooke command :h3
-pair_style gran/hooke/history command :h3
-pair_style gran/hertz/history command :h3
-pair_style gran/hooke/history/stiffness command :h3
-pair_style gran/hertz/history/stiffness command :h3
+pair_style gran command :h3
 
 [Syntax:]
 
-pair_style style keyword values :pre
+pair_style model keyword value :pre
 
-style = {gran/hooke} or {gran/hooke/history} or {gran/hertz/history} or {gran/hooke/history/simple} or {gran/hertz/history/simple} or {absolute_damping} :ulb,l
-zero or more keyword/value pairs may be appended :l
-  {rolling_friction} values = 'cdt' or 'epsd' or 'epsd2' or 'off'
-    cdt = activates constant directional rolling friction model
-    epsd = activates elastic-plastic spring-dashpot model
-    epsd2 = actiavtes an alternative version of the elastic-plastic spring-dashpot model
-    off = no rolling friction model
-  {cohesion} values = 'sjkr' or 'sjkr2' or'off'
-    sjkr = activates simplified JKR cohesion model
-    sjkr2 = activates variant of simplified JKR cohesion model
-    off = no cohesion model
-  {tangential_damping} values = 'on' or 'off'
-    on = activates tangential damping
-    off = no tangential damping
-  {viscous} = 'stokes' or 'off'
-    viscous = restitution coefficient varies with a local Stokes number of the particle
-    off = no modification to the restitution coefficient
-  {absolute_damping} values = 'on' or 'off'
-    on = activates absolute damping (for hooke/history/simple only)
-    off = deactivates absolute damping (for hooke/history/simple only) :pre
+zero or more model_keyword/value pairs may be appended :l
+  {model} values = described "here"_Section_gran_models.html
+  {tangential} values = described "here"_Section_gran_models.html
+  {rolling_friction} values = described "here"_Section_gran_models.html
+  {cohesion} values = described "here"_Section_gran_models.html
+  {surface} values = described "here"_Section_gran_models.html :pre
 :ule
 
 [Examples:]
 
-pair_style gran/hooke/history 
-pair_style gran/hertz/history rolling_friction cdt
-pair_style gran/hertz/history cohesion sjkr  :pre
+pair_style gran model hooke tangential history 
+pair_style gran model hertz tangential history rolling_friction cdt
+pair_style gran model hertz tangential no_history cohesion sjkr  :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 
-This LIGGGHTS command offers the following improvements vs. LAMMPS: The stiffness and damping coefficients k_n, k_t, gamma_n, gamma_t are now derived from the material properties. Also, a new model for macroscopic cohesion is introduced.
+This LIGGGHTS command offers the following improvements vs. LAMMPS: The stiffness and 
+damping coefficients k_n, k_t, gamma_n, gamma_t can now be derived from the material 
+properties. Also, a new model for macroscopic cohesion is introduced.
 
 [General description:]
 
-The {gran} styles use the following formula for the frictional force between two granular particles, when the distance r between two particles of radii Ri and Rj is less than their contact distance d = Ri + Rj. There is no force between the particles when r > d: 
+The {gran} styles use the following formula for the frictional force between two granular 
+particles, when the distance r between two particles of radii Ri and Rj is less than their 
+contact distance d = Ri + Rj. Typically, there is no force between the particles when r > d.
 
 :c,image(Eqs/pair_gran_html_60b8ced2.png)
-
-In the first term is the normal force between the two particles and the second term is the 
-tangential force. The normal force has 2 terms, a contact force and a damping force. The 
-tangential force also has 2 terms: a shear force and a damping force. The shear force is 
-a "history" effect that accounts for the tangential displacement ("tangential overlap") 
-between the particles for the duration of the time they are in contact. This term is 
-included in pair styles {hooke/history} and {hertz/history}, but is not included in 
-pair style {hooke}. Keyword {tangential_damping} can be used to eliminate the second
-part of the force in tangential direction. Additional keywords control model settings such as 
-{rolling_friction} and {cohesion}.
 
 The quantities in the equations are as follows:
 
@@ -72,172 +48,24 @@ k_n = elastic constant for normal contact :l
 k_t = elastic constant for tangential contact :l
 gamma_n = viscoelastic damping constant for normal contact :l
 gamma_t = viscoelastic damping constant for tangential contact :l
-delta_t = tangential displacement vector between 2 spherical particles which is truncated to satisfy a frictional yield criterion :l
-rmu = coefficient of rolling friction :l
-contactradius = contact radius, equal to particle radius - 0.5 * delta_n :l
-v_n = normal component of the relative velocity of the 2 particles :l
-v_t = tangential component of the relative velocity of the 2 particles :l
-w_r = relative rotational velocity of the 2 particles :l
+delta_t = tangential displacement vector between 2 spherical particles :l
 :ule
 
-[Hertz/history:]
+In the first term is the normal force between the two particles and the second term is the 
+tangential force. The normal force has 2 terms, a contact force and a damping force. The 
+tangential force also has 2 terms: a shear force and a damping force. The shear force is 
+a "history" effect that accounts for the tangential displacement ("tangential overlap") 
+between the particles for the duration of the time they are in contact. 
 
-For hertz/history, the Kn, Kt, gamma_n, and gamma_t coefficients are calculated as follows from the material properties:
+The concrete implementation for k_n, k_t, gamma_n, gamma_t and the shear history
+depend on the concrete models as chosen by the user. They are described on separate 
+doc pages "here"_Section_gran_models.html
 
-:c,image(Eqs/pair_gran_html_m5aad056c.png)
+Also, other models may add additional forces or torques on the particles, such as
+cohesive or rolling friction forces. These are also described on separate 
+doc pages "here"_Section_gran_models.html
 
-[Hooke and hooke/history:]
-
-For hooke and hooke/history, the k_n, k_t, gamma_n, and gamma_t coefficients are calculated as follows from the material properties:
-
-:c,image(Eqs/pair_gran_html_147eaf38.png)
-
-Therby, the following definitions apply to two particles in contact:
-
-:c,image(Eqs/pair_gran_html_m225ba7de.png)
-
-To define those material properties, it is mandatory to use multiple "fix property/global"_fix_property.html commands:
-
-fix id all property/global youngsModulus peratomtype value_1 value_2 ...
-    (value_i=value for Youngs Modulus of atom type i)
-fix id all property/global poissonsRatio peratomtype value_1 value_2 ...
-    (value_i=value for Poisson ratio of atom type i)
-fix id all property/global coefficientRestitution peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the coefficient of restitution between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
-fix id all property/global coefficientFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the (static) coefficient of friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
-
-The "characteristic impact velocity" is only used for hooke styles: 
-
-fix id all property/global characteristicVelocity scalar value
-    (value=value for characteristic impact velocity) :pre
-
-[Hertz/history/stiffness and hooke/history/stiffness:]
-
-For hooke/history/stiffness with {absolute_damping} = 'off' (which is default), the 
-specified damping coefficient is multiplied by the effective mass. The forces are implemented as
-
-:c,image(Eqs/pair_gran_html_m566a9984.png)
-
-For hooke/history/stiffness with {absolute_damping} = 'on', this multiplication is omitted
-and the forces become
-
-:c,image(Eqs/pair_gran_html_m76cd8bd9.png)
-
-For hertz/history/stiffness, the force implementation as
-
-:c,image(Eqs/pair_gran_html_m4dff7906.png)
-
-The k_n_specified, k_t_specified, gamma_n_specified, and gamma_t_specified coefficients are 
-given by the user as follows from the material properties:
-
-fix id all property/global kn peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for k_n between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
-fix id all property/global kt peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for k_t between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
-fix id all property/global gamman peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for gamma_n between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
-fix id all property/global gammat peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for gamma_t between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
-
-For the hooke model, if the absolute damping implementation is used ({absolute_damping} = 'on'), 
-the damping coefficients must be named gamman_abs and gammat_abs instead of gamman, 
-gammat as follows:
-
-fix id all property/global gamman_abs peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for gamma_n between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
-fix id all property/global gammat_abs peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for gamma_t between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
-
-General comments, cohesion model, rolling friction model :h3
-
-IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
-
-For all pair styles, the coefficient of friction cof is the upper limit of the tangential force through 
-the Coulomb criterion Ft = cof *Fn, where Ft and Fn are the total tangential and normal force components 
-in the formulas above. Thus in the Hookean case, the tangential force between 2 particles grows according 
-to a tangential spring and dash-pot model until Ft/Fn = cof and is then held at Ft = Fn*cof until the 
-particles lose contact. In the Hertzian case, a similar analogy holds, though the spring is no longer linear.
-
-The optional [rolling friction model] (a constant directional torque model, see Ai et al) is activated via
-{rolling_friction} = 'cdt', and adds an additional torque contribution, equal to
-
-torque_rf = rmu*k_n*delta_n*w_r_shear/mag(w_r_shear)*(R*).
-
-w_r_shear is the projection of w_r into the shear plane, where w_r = w1-w2
-
-If the rolling friction model is activated, the coefficient of rolling friction (rmu) must be defined as
-
-fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
-
-The command {rolling_friction} = 'epsd' activates an elastic-plastic spring-dashpot model (see Ai et al.) that adds an additional torque contribution, equal to
-
-:c,image(Eqs/pair_gran_hooke_eqEpsd1.gif)
-
-where the torque due to the spring M_rk is calculated as
-
-:c,image(Eqs/pair_gran_hooke_eqEpsd2.gif)
-
-Here k_r denotes the rolling stiffness and dtheta_r is the incremental relative rotation between the particles. The spring torque is limited by the full mobilisation torque M_rm that is determined by the normal force F_n and the coefficient of rolling friction (rmu) (compare the CDT model).
-
-The viscous damping torque M_rd is implemented as
-
-:c,image(Eqs/pair_gran_hooke_eqEpsd3.gif)
-
-where in the current implementation the damping is disabled in case of full mobilisation (f = 0). The damping coefficient C_r may be expressed as:
-
-:c,image(Eqs/pair_gran_hooke_eqEpsd4.gif)
-
-Here I_i/j is the moment of inertia and m_i/j is the mass of the particles i and j, respectively. In addition to rmu (see CDT model), eta_r is the required material property that must be defined as
-
-fix id all property/global coefficientRollingViscousDamping peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
-
-The command {rolling_friction} = 'epsd2' activates an alternative version of the 'epsd' model (see Iwashita and Oda). In contrast to the original model the rolling stiffness k_r is defined as
-
-:c,image(Eqs/pair_gran_hooke_eqEpsd5.gif)
-
-where k_t is the abovementioned tangential stiffness. Furthermore, the viscous damping torque M_rd is disabled at all.
-
-A simple linear [cohesion model] can be activated by setting {cohesion} = 'sjkr' or 'sjkr2'
-(simplified Johnson-Kendall-Roberts model). If two particle are in contact, 
-it adds an additional normal force tending to maintain the contact, which writes 
-
-F = k A, 
-
-where A is the particle contact area and k is the cohesion energy density in J/m3. 
-For {sjkr}, the sphere-sphere contact area is calculated as (http://mathworld.wolfram.com/Sphere-SphereIntersection.html)
-
-A = Pi/4 * ((dist-Ri-Rj)*(dist+Ri-Rj)*(dist-Ri+Rj)*(dist+Ri+Rj) )/(dist*dist)
-
-where dist is the distance between the particle centers.
-For {sjkr2}, the sphere-sphere contact area is calculated as
-
-A = 2*Pi * delta_n * (2R*)
-
-If you are using the linear cohesion model, you must also define the cohesion energy density:
-
-fix id all property/global cohesionEnergyDensity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the cohesion energy density (in Energy/Length3 units) between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
-
-IMPORTANT NOTE: The cohesion model has been derived for the Hertzian Style, it may note be 
-appropriate for the Hookean styles.
-
-Viscous model :h3
-
-Using option {viscous} = stokes adapts the coefficient of restitution as proposed by
-"(Legendre)"_#Legendre, {viscous} = off performs no modification.
-
-One has to provide the 3 peratomtypepair parameters via a "fix property/global"_fix_property.html
-command needed for the viscous damping:
-
-fix id all property/global FluidViscosity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for fluid viscosity between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
-fix id all property/global CriticalStokes peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for critical Stokes number between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
-fix id all property/global MaximumRestitution peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for maximum coefficient of restitution between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
+[General comments:]
 
 For granular styles there are no additional coefficients to set for each pair of atom types 
 via the "pair_coeff"_pair_coeff.html command. All settings are global and are made via the 
@@ -268,40 +96,25 @@ command. They do not support the inner, middle, outer keywords.
 
 [Restrictions:]
 
-These pair styles require that atoms store torque and angular velocity (omega) as defined by the "atom_style"_atom_style.html. They also require a per-particle radius is stored. The {granular} atom style does all of this.
+These pair styles require that atoms store torque and angular velocity (omega) as 
+defined by the "atom_style"_atom_style.html. They also require a per-particle radius is 
+stored. The {sphere} or {granular} atom style does all of this.
 
-This pair style requires you to use the "communicate vel yes"_communicate.html option so that velocites are stored by ghost atoms.
+This pair style requires you to use the "communicate vel yes"_communicate.html option so that 
+velocites are stored by ghost atoms.
 
 Only unit system that are self-consistent (si, cgs, lj) can be used with this pair style.
-
-Parameters are restricted to their physical range (e.g. FluidViscosity > 0)
-If using SI units, youngsModulus must be > 5e6
-If using CGS units, youngsModulus must be > 5e5
 
 [Related commands:]
 
 "pair_coeff"_pair_coeff.html
+Models for use with this command are described "here"_Section_gran_models.html
 
 [Default:] 
 
+{model} = 'hertz'
+{tangential} = 'history'
 {rolling_friction} = 'off'
 {cohesion} = 'off'
-{tangential_damping} = 'on'
-{absolute_damping} = 'off'
-{store_force} = 'no'
-{viscous} = 'off'
+{surface} = 'default'
 
-:line
-
-[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525–541 (2004).
-
-[(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
-
-[(Brilliantov)] Brilliantov, Spahn, Hertzsch, Poschel, Phys Rev E, 53, p 5382-5392 (1996).
-
-[(Silbert)] Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
-
-[(Zhang)] Zhang and Makse, Phys Rev E, 72, p 011301 (2005). 
-
-:link(Legendre)
-[(Legendre)] Legendre, Daniel and Guiraud. Phys. Fluids 17, 097105 (2005).

@@ -27,6 +27,8 @@ namespace LAMMPS_NS {
 
 class FixDeposit : public Fix {
  public:
+  int ntype;      // type of deposited atom, visible to PairGran
+
   FixDeposit(class LAMMPS *, int, char **);
   ~FixDeposit();
   int setmask();
@@ -36,7 +38,7 @@ class FixDeposit : public Fix {
   void restart(char *);
 
  private:
-  int ninsert,ntype,nfreq,seed;
+  int ninsert,nfreq,seed;
   int iregion,globalflag,localflag,maxattempt,rateflag,scaleflag,targetflag;
   char *idregion;
   double lo,hi,deltasq,nearsq,rate;
@@ -44,6 +46,7 @@ class FixDeposit : public Fix {
   double xlo,xhi,ylo,yhi,zlo,zhi;
   double tx,ty,tz;
   int nfirst,ninserted;
+  int idnext,maxtag_all;
   class RanPark *random;
 
   void options(int, char **);
@@ -79,11 +82,6 @@ E: Deposition region extends outside simulation box
 
 Self-explanatory.
 
-E: Use of fix deposit with undefined lattice
-
-Must use lattice command with compute fix deposit command if units
-option is set to lattice.
-
 E: Region ID for fix deposit does not exist
 
 Self-explanatory.
@@ -93,5 +91,10 @@ W: Particle deposition was unsuccessful
 The fix deposit command was not able to insert as many atoms as
 needed.  The requested volume fraction may be too high, or other atoms
 may be in the insertion region.
+
+U: Use of fix deposit with undefined lattice
+
+Must use lattice command with compute fix deposit command if units
+option is set to lattice.
 
 */

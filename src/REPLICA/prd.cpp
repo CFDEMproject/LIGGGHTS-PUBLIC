@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -35,7 +35,7 @@
 #include "compute.h"
 #include "fix.h"
 #include "fix_event_prd.h"
-#include "force.h"  
+#include "force.h"
 #include "pair.h"
 #include "random_park.h"
 #include "random_mars.h"
@@ -62,33 +62,33 @@ void PRD::command(int narg, char **arg)
 
   // error checks
 
-  if (domain->box_exist == 0) 
+  if (domain->box_exist == 0)
     error->all(FLERR,"PRD command before simulation box is defined");
-  if (universe->nworlds != universe->nprocs && 
-      atom->map_style == 0) 
+  if (universe->nworlds != universe->nprocs &&
+      atom->map_style == 0)
     error->all(FLERR,"Cannot use PRD with multi-processor replicas "
-	       "unless atom map exists");
-  if (universe->nworlds == 1 && comm->me == 0) 
+               "unless atom map exists");
+  if (universe->nworlds == 1 && comm->me == 0)
     error->warning(FLERR,"Running PRD with only one replica");
 
   if (narg < 7) error->universe_all(FLERR,"Illegal prd command");
 
-  nsteps = atoi(arg[0]);
-  t_event = atoi(arg[1]);
-  n_dephase = atoi(arg[2]);
-  t_dephase = atoi(arg[3]);
-  t_corr = atoi(arg[4]);
+  nsteps = force->inumeric(FLERR,arg[0]);
+  t_event = force->inumeric(FLERR,arg[1]);
+  n_dephase = force->inumeric(FLERR,arg[2]);
+  t_dephase = force->inumeric(FLERR,arg[3]);
+  t_corr = force->inumeric(FLERR,arg[4]);
 
   char *id_compute = new char[strlen(arg[5])+1];
   strcpy(id_compute,arg[5]);
-  int seed = atoi(arg[6]);
-  
+  int seed = force->inumeric(FLERR,arg[6]);
+
   options(narg-7,&arg[7]);
 
   // total # of timesteps must be multiple of t_event
 
   if (t_event <= 0) error->universe_all(FLERR,"Invalid t_event in prd command");
-  if (nsteps % t_event) 
+  if (nsteps % t_event)
     error->universe_all(FLERR,"PRD nsteps must be multiple of t_event");
   if (t_corr % t_event)
     error->universe_all(FLERR,"PRD t_corr must be multiple of t_event");
@@ -103,16 +103,18 @@ void PRD::command(int narg, char **arg)
   MPI_Comm_rank(world,&me);
   MPI_Comm_size(world,&nprocs);
 
-  // comm_replica = communicator between same proc across replicas
-  // not used if replicas have unequal number of procs
-  // equal_size_replicas = 1 if all replicas have same # of procs
+  // comm_replica = communicator between all proc 0s across replicas
 
   int color = me;
   MPI_Comm_split(universe->uworld,color,0,&comm_replica);
 
-  flag = 0;
-  if (nreplica*nprocs == nprocs_universe) flag = 1;
-  MPI_Allreduce(&flag,&equal_size_replicas,1,MPI_INT,MPI_MIN,universe->uworld);
+  // equal_size_replicas = 1 if all replicas have same # of procs
+  // no longer used
+
+  //flag = 0;
+  //if (nreplica*nprocs == nprocs_universe) flag = 1;
+  //MPI_Allreduce(&flag,&equal_size_replicas,1,MPI_INT,MPI_MIN,
+  //              universe->uworld);
 
   // workspace for inter-replica communication via gathers
 
@@ -137,7 +139,7 @@ void PRD::command(int narg, char **arg)
   random_dephase = new RanMars(lmp,seed+iworld);
 
   // create ComputeTemp class to monitor temperature
-  
+
   char **args = new char*[3];
   args[0] = (char *) "prd_temp";
   args[1] = (char *) "all";
@@ -195,7 +197,7 @@ void PRD::command(int narg, char **arg)
   neigh_dist_check = neighbor->dist_check;
 
   if (neigh_every != 1 || neigh_delay != 0 || neigh_dist_check != 1) {
-    if (me == 0) 
+    if (me == 0)
       error->warning(FLERR,"Resetting reneighboring criteria during PRD");
   }
 
@@ -223,6 +225,11 @@ void PRD::command(int narg, char **arg)
 
   update->minimize->init();
 
+  // cannot use PRD with a changing box
+
+  if (domain->box_change)
+    error->all(FLERR,"Cannot use PRD with a changing box");
+
   // cannot use PRD with time-dependent fixes or regions or atom sorting
 
   for (int i = 0; i < modify->nfix; i++)
@@ -238,16 +245,16 @@ void PRD::command(int narg, char **arg)
 
   // perform PRD simulation
 
-  if (me_universe == 0 && universe->uscreen) 
+  if (me_universe == 0 && universe->uscreen)
     fprintf(universe->uscreen,"Setting up PRD ...\n");
 
   if (me_universe == 0) {
-    if (universe->uscreen) 
+    if (universe->uscreen)
       fprintf(universe->uscreen,"Step CPU Clock Event "
-	      "Correlated Coincident Replica\n");
-    if (universe->ulogfile) 
+              "Correlated Coincident Replica\n");
+    if (universe->ulogfile)
       fprintf(universe->ulogfile,"Step CPU Clock Event "
-	      "Correlated Coincident Replica\n");
+              "Correlated Coincident Replica\n");
   }
 
   // store hot state and quenched event for replica 0
@@ -312,11 +319,16 @@ void PRD::command(int narg, char **arg)
 
     share_event(ireplica,1);
     log_event();
-    
+
     int restart_flag = 0;
-    if (output->restart_every && universe->iworld == 0)
-      if (fix_event->event_number % output->restart_every == 0)
+    if (output->restart_flag && universe->iworld == 0) {
+      if (output->restart_every_single &&
+          fix_event->event_number % output->restart_every_single == 0)
         restart_flag = 1;
+      if (output->restart_every_double &&
+          fix_event->event_number % output->restart_every_double == 0)
+        restart_flag = 1;
+    }
 
     // correlated event loop
     // other procs could be dephasing during this time
@@ -337,7 +349,7 @@ void PRD::command(int narg, char **arg)
         corr_endstep = update->ntimestep + t_corr;
       } else fix_event->restore_state();
     }
-    
+
     // full init/setup since are starting all replicas after event
     // event replica bcasts temp to all replicas if temp_dephase is not set
 
@@ -350,14 +362,14 @@ void PRD::command(int narg, char **arg)
     if (t_corr > 0) replicate(ireplica);
     if (temp_flag == 0) {
       if (ireplica == universe->iworld)
-	temp_dephase = temperature->compute_scalar();
+        temp_dephase = temperature->compute_scalar();
       MPI_Bcast(&temp_dephase,1,MPI_DOUBLE,universe->root_proc[ireplica],
-        	      universe->uworld);
+                      universe->uworld);
     }
 
     timer->barrier_stop(TIME_LOOP);
     time_comm += timer->array[TIME_LOOP];
-    
+
     // write restart file of hot coords
 
     if (restart_flag) {
@@ -383,20 +395,20 @@ void PRD::command(int narg, char **arg)
   neighbor->ndanger = ndanger;
 
   if (me_universe == 0) {
-    if (universe->uscreen) 
+    if (universe->uscreen)
       fprintf(universe->uscreen,
-	      "Loop time of %g on %d procs for %d steps with " BIGINT_FORMAT 
-	      " atoms\n",
-	      timer->array[TIME_LOOP],nprocs_universe,nsteps,atom->natoms);
-    if (universe->ulogfile) 
+              "Loop time of %g on %d procs for %d steps with " BIGINT_FORMAT
+              " atoms\n",
+              timer->array[TIME_LOOP],nprocs_universe,nsteps,atom->natoms);
+    if (universe->ulogfile)
       fprintf(universe->ulogfile,
-	      "Loop time of %g on %d procs for %d steps with " BIGINT_FORMAT 
-	      " atoms\n",
+              "Loop time of %g on %d procs for %d steps with " BIGINT_FORMAT
+              " atoms\n",
               timer->array[TIME_LOOP],nprocs_universe,nsteps,atom->natoms);
   }
-  
+
   finish->end(2);
-  
+
   update->whichflag = 0;
   update->firststep = update->laststep = 0;
   update->beginstep = update->endstep = 0;
@@ -414,7 +426,7 @@ void PRD::command(int narg, char **arg)
   memory->destroy(tagall);
   memory->destroy(xall);
   memory->destroy(imageall);
-  
+
   delete [] id_compute;
   MPI_Comm_free(&comm_replica);
   delete random_select;
@@ -475,7 +487,7 @@ void PRD::dynamics()
   update->integrate->setup();
   // this may be needed if don't do full init
   //modify->addstep_compute_all(update->ntimestep);
-  int ncalls = neighbor->ncalls;
+  bigint ncalls = neighbor->ncalls;
 
   timer->barrier_start(TIME_LOOP);
   update->integrate->run(t_event);
@@ -498,7 +510,7 @@ void PRD::quench()
   bigint ntimestep_hold = update->ntimestep;
   bigint endstep_hold = update->endstep;
 
-  // need to change whichflag so that minimize->setup() calling 
+  // need to change whichflag so that minimize->setup() calling
   // modify->setup() will call fix->min_setup()
 
   update->whichflag = 2;
@@ -541,7 +553,7 @@ void PRD::quench()
 
 /* ----------------------------------------------------------------------
    check for an event in any replica
-   if replica_num is non-negative only check for event on replica_num 
+   if replica_num is non-negative only check for event on replica_num
    if multiple events, choose one at random
    return -1 if no event
    else return ireplica = world in which event occured
@@ -554,31 +566,46 @@ int PRD::check_event(int replica_num)
   worldflag = 0;
   if (compute_event->compute_scalar() > 0.0) worldflag = 1;
   if (replica_num >= 0 && replica_num != universe->iworld) worldflag = 0;
-  
+
   timer->barrier_start(TIME_LOOP);
+
   if (me == 0) MPI_Allreduce(&worldflag,&universeflag,1,
-		             MPI_INT,MPI_SUM,comm_replica);
+                             MPI_INT,MPI_SUM,comm_replica);
   MPI_Bcast(&universeflag,1,MPI_INT,0,world);
-  ncoincident = universeflag;  
+
+  ncoincident = universeflag;
+
   if (!universeflag) ireplica = -1;
   else {
+
+    // multiple events, choose one at random
+    // iwhich = random # from 1 to N, N = # of events to choose from
+    // scanflag = 1 to N on replicas with an event, 0 on non-event replicas
+    // exit with worldflag = 1 on chosen replica, 0 on all others
+    // note worldflag is already 0 on replicas that didn't perform event
+
     if (universeflag > 1) {
-      int iwhich = static_cast<int> 
-	(universeflag*random_select->uniform()) + 1;
-      if (me == 0) MPI_Scan(&worldflag,&scanflag,1,
-			    MPI_INT,MPI_SUM,comm_replica);
+      int iwhich = static_cast<int>
+        (universeflag*random_select->uniform()) + 1;
+
+      if (me == 0)
+        MPI_Scan(&worldflag,&scanflag,1,MPI_INT,MPI_SUM,comm_replica);
       MPI_Bcast(&scanflag,1,MPI_INT,0,world);
+
       if (scanflag != iwhich) worldflag = 0;
     }
 
     if (worldflag) replicaflag = universe->iworld;
     else replicaflag = 0;
+
     if (me == 0) MPI_Allreduce(&replicaflag,&ireplica,1,
-  			     MPI_INT,MPI_SUM,comm_replica);
+                               MPI_INT,MPI_SUM,comm_replica);
     MPI_Bcast(&ireplica,1,MPI_INT,0,world);
   }
+
   timer->barrier_stop(TIME_LOOP);
   time_comm += timer->array[TIME_LOOP];
+
   return ireplica;
 }
 
@@ -601,7 +628,7 @@ void PRD::share_event(int ireplica, int flag)
   replicate(ireplica);
   timer->barrier_stop(TIME_LOOP);
   time_comm += timer->array[TIME_LOOP];
-  
+
   // adjust time for last correlated event check (not on first event)
 
   int corr_adjust = t_corr;
@@ -618,7 +645,7 @@ void PRD::share_event(int ireplica, int flag)
 
   // don't change the clock or timestep if this is a restart
 
-  if (flag == 0 && fix_event->event_number != 0) 
+  if (flag == 0 && fix_event->event_number != 0)
     fix_event->store_event_prd(fix_event->event_timestep,0);
   else {
     fix_event->store_event_prd(update->ntimestep,delta);
@@ -626,10 +653,10 @@ void PRD::share_event(int ireplica, int flag)
     fix_event->correlated_event = 0;
     if (flag == 2) fix_event->correlated_event = 1;
     fix_event->ncoincident = ncoincident;
-  } 
+  }
   if (flag == 0) fix_event->event_number--;
 
-  // dump snapshot of quenched coords
+  // dump snapshot of quenched coords, only on replica 0
   // must reneighbor and compute forces before dumping
   // since replica 0 possibly has new state from another replica
   // addstep_compute_all insures eng/virial are calculated if needed
@@ -662,21 +689,21 @@ void PRD::log_event()
   if (universe->me == 0) {
     if (universe->uscreen)
       fprintf(universe->uscreen,
-	      BIGINT_FORMAT " %.3f %d %d %d %d %d\n",
+              BIGINT_FORMAT " %.3f %d %d %d %d %d\n",
               fix_event->event_timestep,
-	      timer->elapsed(TIME_LOOP),
-	      fix_event->clock,
+              timer->elapsed(TIME_LOOP),
+              fix_event->clock,
               fix_event->event_number,fix_event->correlated_event,
-	      fix_event->ncoincident,
+              fix_event->ncoincident,
               fix_event->replica_number);
     if (universe->ulogfile)
       fprintf(universe->ulogfile,
-	      BIGINT_FORMAT " %.3f %d %d %d %d %d\n",
+              BIGINT_FORMAT " %.3f %d %d %d %d %d\n",
               fix_event->event_timestep,
-	      timer->elapsed(TIME_LOOP),
-	      fix_event->clock,
+              timer->elapsed(TIME_LOOP),
+              fix_event->clock,
               fix_event->event_number,fix_event->correlated_event,
-	      fix_event->ncoincident,
+              fix_event->ncoincident,
               fix_event->replica_number);
   }
 }
@@ -685,9 +712,7 @@ void PRD::log_event()
   communicate atom coords and image flags in ireplica to all other replicas
   one proc per replica:
     direct overwrite via bcast
-  equal procs per replica and no replica reneighbored:
-    direct overwrite via bcast
-  unequal procs per replica or reneighboring occurred:
+  else atoms could be stored in different order or on different procs:
     collect to root proc of event replica
     bcast to roots of other replicas
     bcast within each replica
@@ -700,19 +725,13 @@ void PRD::replicate(int ireplica)
   int nprocs_universe = universe->nprocs;
   int i,m,flag,commflag;
 
-  int *counts = new int[nprocs];
-
-  if (nreplica == nprocs_universe) commflag = 0;
-  else if (equal_size_replicas) {
-    flag = 0;
-    if (quench_reneighbor) flag = 1;
-    MPI_Allreduce(&flag,&commflag,1,MPI_INT,MPI_MAX,universe->uworld);
-  } else commflag = 1;
-
-  if (commflag == 0) {
+  if (nreplica == nprocs_universe) {
     MPI_Bcast(atom->image,atom->nlocal,MPI_INT,ireplica,comm_replica);
     MPI_Bcast(atom->x[0],3*atom->nlocal,MPI_DOUBLE,ireplica,comm_replica);
+
   } else {
+    int *counts = new int[nprocs];
+
     if (universe->iworld == ireplica) {
       MPI_Gather(&atom->nlocal,1,MPI_INT,counts,1,MPI_INT,0,world);
       displacements[0] = 0;
@@ -721,12 +740,12 @@ void PRD::replicate(int ireplica)
       MPI_Gatherv(atom->tag,atom->nlocal,MPI_INT,
                   tagall,counts,displacements,MPI_INT,0,world);
       MPI_Gatherv(atom->image,atom->nlocal,MPI_INT,
-      	          imageall,counts,displacements,MPI_INT,0,world);
+                        imageall,counts,displacements,MPI_INT,0,world);
       for (i = 0; i < nprocs; i++) counts[i] *= 3;
       for (i = 0; i < nprocs-1; i++)
         displacements[i+1] = displacements[i] + counts[i];
       MPI_Gatherv(atom->x[0],3*atom->nlocal,MPI_DOUBLE,
-      	          xall[0],counts,displacements,MPI_DOUBLE,0,world);
+                        xall[0],counts,displacements,MPI_DOUBLE,0,world);
     }
 
     if (me == 0) {
@@ -751,13 +770,13 @@ void PRD::replicate(int ireplica)
         atom->image[m] = imageall[i];
       }
     }
-  }
 
-  delete [] counts;
+    delete [] counts;
+  }
 }
 
 /* ----------------------------------------------------------------------
-   parse optional parameters at end of PRD input line 
+   parse optional parameters at end of PRD input line
 ------------------------------------------------------------------------- */
 
 void PRD::options(int narg, char **arg)
@@ -765,7 +784,7 @@ void PRD::options(int narg, char **arg)
   if (narg < 0) error->all(FLERR,"Illegal prd command");
 
   // set defaults
-  
+
   etol = 0.1;
   ftol = 0.1;
   maxiter = 40;

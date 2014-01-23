@@ -40,10 +40,6 @@
 #include "mpi_liggghts.h"
 #include "vector_liggghts.h"
 
-#if defined(_WIN32) || defined(_WIN64)
-double inline round(double d) {  return floor(d + 0.5); }
-#endif
-
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
@@ -59,7 +55,8 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
 {
   if (narg < 7) error->fix_error(FLERR,this,"not enough arguments");
 
-  time_depend = 1; 
+  time_depend = 1;
+
   restart_global = 1;
 
   setup_flag = false;
@@ -575,6 +572,7 @@ void FixInsert::pre_exchange()
   }
   else if(ninsert_this < 0)
   {
+      
       error->one(FLERR,"Particle insertion: Internal error");
   }
 

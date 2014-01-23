@@ -29,14 +29,7 @@
 
 using namespace LAMMPS_NS;
 
-#define LOOKUP 0
-#define LINEAR 1
-#define SPLINE 2
-#define BITMAP 3
-
-#define R   1
-#define RSQ 2
-#define BMP 3
+enum{NONE,RLINEAR,RSQ,BMP};
 
 #define MAXLINE 1024
 
@@ -186,15 +179,15 @@ void PairTable::compute(int eflag, int vflag)
 void PairTable::allocate()
 {
   allocated = 1;
-  int nt = atom->ntypes;
+  const int nt = atom->ntypes + 1;
 
-  memory->create(setflag,nt+1,nt+1,"pair:setflag");
-  for (int i = 1; i <= nt; i++)
-    for (int j = i; j <= nt; j++)
-      setflag[i][j] = 0;
+  memory->create(setflag,nt,nt,"pair:setflag");
+  memory->create(cutsq,nt,nt,"pair:cutsq");
+  memory->create(tabindex,nt,nt,"pair:tabindex");
 
-  memory->create(cutsq,nt+1,nt+1,"pair:cutsq");
-  memory->create(tabindex,nt+1,nt+1,"pair:tabindex");
+  memset(&setflag[0][0],0,nt*nt*sizeof(int));
+  memset(&cutsq[0][0],0,nt*nt*sizeof(double));
+  memset(&tabindex[0][0],0,nt*nt*sizeof(int));
 }
 
 /* ----------------------------------------------------------------------
@@ -203,7 +196,7 @@ void PairTable::allocate()
 
 void PairTable::settings(int narg, char **arg)
 {
-  if (narg != 2) error->all(FLERR,"Illegal pair_style command");
+  if (narg < 2) error->all(FLERR,"Illegal pair_style command");
 
   // new settings
 
@@ -213,8 +206,22 @@ void PairTable::settings(int narg, char **arg)
   else if (strcmp(arg[0],"bitmap") == 0) tabstyle = BITMAP;
   else error->all(FLERR,"Unknown table style in pair_style command");
 
-  tablength = force->inumeric(arg[1]);
+  tablength = force->inumeric(FLERR,arg[1]);
   if (tablength < 2) error->all(FLERR,"Illegal number of pair table entries");
+
+  // optional keywords
+  // assert the tabulation is compatible with a specific long-range solver
+
+  int iarg = 2;
+  while (iarg < narg) {
+    if (strcmp(arg[iarg],"ewald") == 0) ewaldflag = 1;
+    else if (strcmp(arg[iarg],"pppm") == 0) pppmflag = 1;
+    else if (strcmp(arg[iarg],"msm") == 0) msmflag = 1;
+    else if (strcmp(arg[iarg],"dispersion") == 0) dispersionflag = 1;
+    else if (strcmp(arg[iarg],"tip4p") == 0) tip4pflag = 1;
+    else error->all(FLERR,"Illegal pair_style command");
+    iarg++;
+  }
 
   // delete old tables, since cannot just change settings
 
@@ -256,7 +263,7 @@ void PairTable::coeff(int narg, char **arg)
 
   // set table cutoff
 
-  if (narg == 5) tb->cut = force->numeric(arg[4]);
+  if (narg == 5) tb->cut = force->numeric(FLERR,arg[4]);
   else if (tb->rflag) tb->cut = tb->rhi;
   else tb->cut = tb->rfile[tb->ninput-1];
 
@@ -350,7 +357,8 @@ void PairTable::read_table(Table *tb, char *file, char *keyword)
       error->one(FLERR,"Did not find keyword in table file");
     if (strspn(line," \t\n\r") == strlen(line)) continue;  // blank line
     if (line[0] == '#') continue;                          // comment
-    if (strstr(line,keyword) == line) break;               // matching keyword
+    char *word = strtok(line," \t\n\r");
+    if (strcmp(word,keyword) == 0) break;           // matching keyword
     fgets(line,MAXLINE,fp);                         // no match, skip section
     param_extract(tb,line);
     fgets(line,MAXLINE,fp);
@@ -390,7 +398,7 @@ void PairTable::read_table(Table *tb, char *file, char *keyword)
     fgets(line,MAXLINE,fp);
     sscanf(line,"%d %lg %lg %lg",&itmp,&rtmp,&tb->efile[i],&tb->ffile[i]);
 
-    if (tb->rflag == R)
+    if (tb->rflag == RLINEAR)
       rtmp = tb->rlo + (tb->rhi - tb->rlo)*i/(tb->ninput-1);
     else if (tb->rflag == RSQ) {
       rtmp = tb->rlo*tb->rlo +
@@ -482,7 +490,7 @@ void PairTable::spline_table(Table *tb)
 void PairTable::param_extract(Table *tb, char *line)
 {
   tb->ninput = 0;
-  tb->rflag = 0;
+  tb->rflag = NONE;
   tb->fpflag = 0;
 
   char *word = strtok(line," \t\n\r\f");
@@ -492,7 +500,7 @@ void PairTable::param_extract(Table *tb, char *line)
       tb->ninput = atoi(word);
     } else if (strcmp(word,"R") == 0 || strcmp(word,"RSQ") == 0 ||
                strcmp(word,"BITMAP") == 0) {
-      if (strcmp(word,"R") == 0) tb->rflag = R;
+      if (strcmp(word,"R") == 0) tb->rflag = RLINEAR;
       else if (strcmp(word,"RSQ") == 0) tb->rflag = RSQ;
       else if (strcmp(word,"BITMAP") == 0) tb->rflag = BMP;
       word = strtok(NULL," \t\n\r\f");
@@ -874,6 +882,11 @@ void PairTable::write_restart_settings(FILE *fp)
 {
   fwrite(&tabstyle,sizeof(int),1,fp);
   fwrite(&tablength,sizeof(int),1,fp);
+  fwrite(&ewaldflag,sizeof(int),1,fp);
+  fwrite(&pppmflag,sizeof(int),1,fp);
+  fwrite(&msmflag,sizeof(int),1,fp);
+  fwrite(&dispersionflag,sizeof(int),1,fp);
+  fwrite(&tip4pflag,sizeof(int),1,fp);
 }
 
 /* ----------------------------------------------------------------------
@@ -885,9 +898,19 @@ void PairTable::read_restart_settings(FILE *fp)
   if (comm->me == 0) {
     fread(&tabstyle,sizeof(int),1,fp);
     fread(&tablength,sizeof(int),1,fp);
+    fread(&ewaldflag,sizeof(int),1,fp);
+    fread(&pppmflag,sizeof(int),1,fp);
+    fread(&msmflag,sizeof(int),1,fp);
+    fread(&dispersionflag,sizeof(int),1,fp);
+    fread(&tip4pflag,sizeof(int),1,fp);
   }
-  MPI_Bcast(&tabstyle,1,MPI_DOUBLE,0,world);
+  MPI_Bcast(&tabstyle,1,MPI_INT,0,world);
   MPI_Bcast(&tablength,1,MPI_INT,0,world);
+  MPI_Bcast(&ewaldflag,1,MPI_INT,0,world);
+  MPI_Bcast(&pppmflag,1,MPI_INT,0,world);
+  MPI_Bcast(&msmflag,1,MPI_INT,0,world);
+  MPI_Bcast(&dispersionflag,1,MPI_INT,0,world);
+  MPI_Bcast(&tip4pflag,1,MPI_INT,0,world);
 }
 
 /* ---------------------------------------------------------------------- */

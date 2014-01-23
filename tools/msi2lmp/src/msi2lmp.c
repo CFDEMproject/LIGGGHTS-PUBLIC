@@ -1,8 +1,22 @@
 /*
 *
-*  msi2lmp.exe  V3.6
+*  msi2lmp.exe
 *
-*   v3.6 KLA - Changes to output to either lammps 2001 (F90 version) or to 
+*   v3.9.1 AK- Bugfix for Class2. Free allocated memory. Print version number.
+*
+*   v3.9 AK  - Rudimentary support for OPLS-AA
+*
+*   v3.8 AK  - Some refactoring and cleanup of global variables
+*            - Bugfixes for argument parsing and improper definitions
+*            - improved handling of box dimensions and image flags
+*            - port to compiling on windows using MinGW
+*            - more consistent print level handling
+*            - more consistent handling of missing parameters
+*            - Added a regression test script with examples.
+*
+*   V3.7 STM - Added support for triclinic cells
+*
+*   v3.6 KLA - Changes to output to either lammps 2001 (F90 version) or to
 *              lammps 2005 (C++ version)
 *
 *   v3.4 JEC - a number of minor changes due to way newline and EOF are generated
@@ -11,7 +25,7 @@
 *              in the process.
 *
 *   v3.1 JEC - changed IO interface to standard in/out, forcefield file
-*              location can be indicated by environmental variable; added 
+*              location can be indicated by environmental variable; added
 *              printing options, consistency checks and forcefield
 *              parameter versions sensitivity (highest one used)
 *
@@ -21,7 +35,7 @@
 *              sets)
 *
 *   v2.0 MDP - got internal coordinate information from mdf file and
-*              forcefield parameters from frc file thus eliminating 
+*              forcefield parameters from frc file thus eliminating
 *              need for Discover
 *
 *   V1.0 SL  - original version. Used .car file and internal coordinate
@@ -31,48 +45,56 @@
 *  program to produce a LAMMPS data file.
 *
 *  The program is started by supplying information at the command prompt
-* according to the usage described below.  
+* according to the usage described below.
 *
-*  USAGE: msi2lmp3 ROOTNAME {-print #} {-class #} {-frc FRC_FILE} -2001
+*  USAGE: msi2lmp3 ROOTNAME {-print #} {-class #} {-frc FRC_FILE} {-ignore} {-nocenter}
 *
 *  -- msi2lmp3 is the name of the executable
 *  -- ROOTNAME is the base name of the .car and .mdf files
+*  -- all opther flags are optional and can be abbreviated (e.g. -p instead of -print)
 *
 *  -- -print
 *        # is the print level:  0  - silent except for errors
 *                               1  - minimal (default)
-*                               2  - more verbose 
-*  -- -class 
-*        # is the class of forcefield to use (I  = Class I e.g., CVFF)
-*		  			     (II = Class II e.g., CFFx )
+*                               2  - more verbose
+*                               3  - even more verbose
+*  -- -class
+*        # is the class of forcefield to use (I  or 1 = Class I e.g., CVFF, clayff)
+*                                            (II or 2 = Class II e.g., CFFx, COMPASS)
+*                                            (O  or 0 = OPLS-AA)
 *     default is -class I
 *
-*  -- -frc   - specifies name of the forcefield file (e.g., cff91)
-* 
+*  -- -ignore   - tells msi2lmp to ignore warnings and errors and keep going
+*
+*  -- -nocenter - tells msi2lmp to not center the box around the (geometrical)
+*                 center of the atoms, but around the origin
+*
+*  -- -shift    - tells msi2lmp to shift the entire system (box and coordinates)
+*                 by a vector (default: 0.0 0.0 0.0)
+*
+*  -- -frc      - specifies name of the forcefield file (e.g., cff91)
+*
 *     If the name includes a hard wired directory (i.e., if the name
 *     starts with . or /), then the name is used alone. Otherwise,
-*     the program looks for the forcefield file in $BIOSYM_LIBRARY.
-*     If $BIOSYM_LIBRARY is not set, then the current directory is 
+*     the program looks for the forcefield file in $MSI2LMP_LIBRARY.
+*     If $MSI2LMP_LIBRARY is not set, then the current directory is
 *     used.
 *
 *     If the file name does not include a dot after the first
 *     character, then .frc is appended to the name.
 *
-*     For example,  -frc cvff (assumes cvff.frc is in $BIOSYM_LIBRARY
+*     For example,  -frc cvff (assumes cvff.frc is in $MSI2LMP_LIBRARY
 *                              or .)
 *
-*                   -frc cff/cff91 (assumes cff91.frc is in 
-*                                   $BIOSYM_LIBRARY/cff or ./cff)
+*                   -frc cff/cff91 (assumes cff91.frc is in
+*                                   $MSI2LMP_LIBRARY/cff or ./cff)
 *
-*                   -frc /usr/local/biosym/forcefields/cff95 (absolute
+*                   -frc /usr/local/forcefields/cff95 (absolute
 *                                                             location)
 *
-*     By default, the program uses $BIOSYM_LIBRARY/cvff.frc
+*     By default, the program uses $MSI2LMP_LIBRARY/cvff.frc
 *
-*  -- -2001 will output a data file for the FORTRAN 90 version of LAMMPS (2001)
-*     By default, the program will output for the C++ version of LAMMPS.
-*
-*  -- output is written to a file called ROOTNAME.lammps{01/05}
+*  -- output is written to a file called ROOTNAME.data
 *
 *
 ****************************************************************
@@ -106,173 +128,289 @@
 * November 2000
 */
 
-#define MAIN
+#include "msi2lmp.h"
 
-#include "Msi2LMP2.h"
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+static const char version[] = "v3.9.1 / 08-Oct-2013";
+
+/* global variables */
+
+char  *rootname;
+double pbc[6];
+double box[3][3];
+double shift[3];
+int    periodic = 1;
+int    TriclinicFlag = 0;
+int    forcefield = 0;
+int    centerflag = 1;
+
+int    pflag;
+int    iflag;
+int   *no_atoms;
+int    no_molecules;
+int    replicate[3];
+int    total_no_atoms = 0;
+int    total_no_bonds = 0;
+int    total_no_angles = 0;
+int    total_no_dihedrals = 0;
+int    total_no_angle_angles = 0;
+int    total_no_oops = 0;
+int    no_atom_types = 0;
+int    no_bond_types = 0;
+int    no_angle_types = 0;
+int    no_dihedral_types = 0;
+int    no_oop_types = 0;
+int    no_angleangle_types = 0;
+char   *FrcFileName = NULL;
+FILE   *CarF = NULL;
+FILE   *FrcF = NULL;
+FILE   *PrmF = NULL;
+FILE   *MdfF = NULL;
+FILE   *RptF = NULL;
+
+struct Atom *atoms = NULL;
+struct MoleculeList *molecule = NULL;
+struct BondList *bonds = NULL;
+struct AngleList *angles = NULL;
+struct DihedralList *dihedrals = NULL;
+struct OOPList *oops = NULL;
+struct AngleAngleList *angleangles = NULL;
+struct AtomTypeList *atomtypes = NULL;
+struct BondTypeList *bondtypes = NULL;
+struct AngleTypeList *angletypes = NULL;
+struct DihedralTypeList *dihedraltypes = NULL;
+struct OOPTypeList *ooptypes = NULL;
+struct AngleAngleTypeList *angleangletypes = NULL;
+
+void condexit(int val)
+{
+    if (iflag == 0) exit(val);
+}
+
+static int check_arg(char **arg, const char *flag, int num, int argc)
+{
+  if (num >= argc) {
+    printf("Missing argument to \"%s\" flag\n",flag);
+    return 1;
+  }
+  if (arg[num][0] == '-') {
+    printf("Incorrect argument to \"%s\" flag: %s\n",flag,arg[num]);
+    return 1;
+  }
+  return 0;
+}
 
 int main (int argc, char *argv[])
 {
-   int n,i,found_dot;		/* Counter */
-   int outv;
-   char *string;
-   char *frc_dir_name;
-   char *frc_file_name;
-   FILE *DatF;
+  int n,i,found_sep;
+  const char *frc_dir_name = NULL;
+  const char *frc_file_name = NULL;
 
- /* Functions called from within main */
+  pflag = 1;
+  iflag = 0;
+  forcefield = FF_TYPE_CLASS1 | FF_TYPE_COMMON;
+  shift[0] = shift[1] = shift[2] = 0.0;
 
-/* All code is located in .c file with function name */
-   extern void FrcMenu();
-   extern void ReadCarFile();
-   extern void ReadMdfFile();
-   extern void ReadFrcFile();
-   extern void MakeLists();
-   extern void GetParameters(int);
-   extern void CheckLists();
-   extern void WriteDataFile(FILE *,char *,int);
+  frc_dir_name = getenv("MSI2LMP_LIBRARY");
 
+  if (argc < 2) {
+    printf("usage: %s <rootname> [-class <I|1|II|2>] [-frc <path to frc file>] [-print #] [-ignore] [-nocenter]\n",argv[0]);
+    return 1;
+  } else { /* rootname was supplied as first argument, copy to rootname */
+    int len = strlen(argv[1]) + 1;
+    rootname = (char *)malloc(len);
+    strcpy(rootname,argv[1]);
+  }
+
+  n = 2;
+  while (n < argc) {
+    if (strncmp(argv[n],"-c",2) == 0) {
+      n++;
+      if (check_arg(argv,"-class",n,argc))
+        return 2;
+      if ((strcmp(argv[n],"I") == 0) || (strcmp(argv[n],"1") == 0)) {
+        forcefield = FF_TYPE_CLASS1 | FF_TYPE_COMMON;
+      } else if ((strcmp(argv[n],"II") == 0) || (strcmp(argv[n],"2") == 0)) {
+        forcefield = FF_TYPE_CLASS2 | FF_TYPE_COMMON;
+      } else if ((strcmp(argv[n],"O") == 0) || (strcmp(argv[n],"0") == 0)) {
+        forcefield = FF_TYPE_OPLSAA | FF_TYPE_COMMON;
+      } else {
+        printf("Unrecognized Forcefield class: %s\n",argv[n]);
+        return 3;
+      }
+    } else if (strncmp(argv[n],"-f",2) == 0) {
+      n++;
+      if (check_arg(argv,"-frc",n,argc))
+        return 4;
+      frc_file_name = argv[n];
+    } else if (strncmp(argv[n],"-s",2) == 0) {
+      if (n+3 > argc) {
+        printf("Missing argument(s) to \"-shift\" flag\n");
+        return 1;
+      }
+      shift[0] = atof(argv[++n]);
+      shift[1] = atof(argv[++n]);
+      shift[2] = atof(argv[++n]);
+    } else if (strncmp(argv[n],"-i",2) == 0 ) {
+      iflag = 1;
+    } else if (strncmp(argv[n],"-n",2) == 0 ) {
+      centerflag = 0;
+    } else if (strncmp(argv[n],"-p",2) == 0) {
+      n++;
+      if (check_arg(argv,"-print",n,argc))
+        return 5;
+      pflag = atoi(argv[n]);
+    } else {
+      printf("Unrecognized option: %s\n",argv[n]);
+      return 6;
+    }
+    n++;
+  }
+
+  /* set defaults, if nothing else was given */
+  if (frc_dir_name == NULL)
+#if (_WIN32)
+    frc_dir_name = "..\\frc_files";
+#else
+  frc_dir_name = "../frc_files";
+#endif
+  if (frc_file_name == NULL)
+    frc_file_name = "cvff.frc";
+
+  found_sep=0;
+#ifdef _WIN32
+  if (isalpha(frc_file_name[0]) && (frc_file_name[1] == ':'))
+    found_sep=1; /* windows drive letter => full path. */
+#endif
+
+  n = strlen(frc_file_name);
+  for (i=0; i < n; ++i) {
+#ifdef _WIN32
+    if ((frc_file_name[i] == '/') || (frc_file_name[i] == '\\'))
+      found_sep=1+i;
+#else
+    if (frc_file_name[i] == '/')
+      found_sep=1+i;
+#endif
+  }
+
+  /* full pathname given */
+  if (found_sep) {
+    i = 0;
+    /* need to append extension? */
+    if ((n < 5) || (strcmp(frc_file_name+n-4,".frc") !=0))
+      i=1;
+
+    FrcFileName = (char *)malloc(n+1+i*4);
+    strcpy(FrcFileName,frc_file_name);
+    if (i) strcat(FrcFileName,".frc");
+  } else {
+    i = 0;
+    /* need to append extension? */
+    if ((n < 5) || (strcmp(frc_file_name+n-4,".frc") !=0))
+      i=1;
+
+    FrcFileName = (char *)malloc(n+2+i*4+strlen(frc_dir_name));
+    strcpy(FrcFileName,frc_dir_name);
+#ifdef _WIN32
+    strcat(FrcFileName,"\\");
+#else
+    strcat(FrcFileName,"/");
+#endif
+    strcat(FrcFileName,frc_file_name);
+    if (i) strcat(FrcFileName,".frc");
+  }
+
+
+  if (pflag > 0) {
+    printf("\nRunning msi2lmp %s ...\n",version);
+    if (forcefield & FF_TYPE_CLASS1) puts(" Forcefield: Class I");
+    if (forcefield & FF_TYPE_CLASS2) puts(" Forcefield: Class II");
+    if (forcefield & FF_TYPE_OPLSAA) puts(" Forcefield: OPLS-AA");
+    printf(" Forcefield file name: %s\n",FrcFileName);
+  }
+
+  n = 0;
+  if (forcefield & FF_TYPE_CLASS1) {
+    if (strstr(FrcFileName,"cvff") != NULL) ++n;
+    if (strstr(FrcFileName,"clayff") != NULL) ++n;
+  } else if (forcefield & FF_TYPE_OPLSAA) {
+    if (strstr(FrcFileName,"oplsaa") != NULL) ++n;
+  } else if (forcefield & FF_TYPE_CLASS2) {
+    if (strstr(FrcFileName,"pcff") != NULL) ++n;
+    if (strstr(FrcFileName,"cff91") != NULL) ++n;
+    if (strstr(FrcFileName,"compass") != NULL) ++n;
+  }
+
+  if (n == 0) {
+    if (iflag > 0) fputs(" WARNING",stderr);
+    else           fputs(" Error  ",stderr);
     
-   outv = 2005;
-   pflag = 1;
-   forcefield = 1;		/* Variable that identifies forcefield to use */
+    fputs("- forcefield name and class appear to be inconsistent\n\n",stderr);
+    if (iflag == 0) return 7;
+  }
 
-   frc_file_name = (char *) calloc(160,sizeof(char));
-   frc_dir_name = (char *) calloc(160,sizeof(char));
+  /* Read in .car file */
+  ReadCarFile();
 
-   frc_dir_name = getenv("BIOSYM_LIBRARY");
-    
-   if (frc_dir_name == NULL) {
-    frc_file_name = strcpy(frc_file_name,"../biosym_frc_files/clayff.frc");
-   }
-   else {
-     for (i=0; i < strlen(frc_dir_name); i++)
-       frc_file_name[i] = frc_dir_name[i];
-     frc_file_name = strcat(frc_file_name,"/cvff.frc");
-   }
+  /*Read in .mdf file */
 
-    
-    
-   if (argc < 2) { /* If no rootname was supplied, prompt for it */
-     fprintf(stderr,"The rootname of the .car and .mdf files must be entered\n");
-   }
-   else /* rootname was supplied as first argument, copy to rootname */
-     sprintf(rootname,"%s",argv[1]);
-    
-   n = 2;
-   while (n < argc) {
-     if (strcmp(argv[n],"-class") == 0) {
-       if (strcmp(argv[n+1],"I") == 0) {
-	 forcefield = 1;
-	 n++;
-       }
-       else if (strcmp(argv[n+1],"II") == 0) {
-	 forcefield = 2;
-	 n++;
-       }
-       else {
-	 fprintf(stderr,"Unrecognized Forcefield class: %s\n",
-		argv[n+1]);
-	 n++;
-       }
-     }
-     else if (strcmp(argv[n],"-2001") == 0) {
-       outv = 2001;
-       n++;
-     }
-     else if (strcmp(argv[n],"-frc") == 0) {
-       if ((frc_dir_name != NULL) && (argv[n+1][0] != '.')) {
-	 for (i=0; i < strlen(frc_dir_name); i++) {
-	   frc_file_name[i] = frc_dir_name[i];
-	 }
-	 frc_file_name[strlen(frc_dir_name)] = '\0';
-	 frc_file_name = strcat(frc_file_name,"/");
-	 frc_file_name = strcat(frc_file_name,argv[n+1]);
-       }
-       else {
-	 frc_file_name = strcpy(frc_file_name,argv[n+1]);
-       }
-       found_dot = 0;
-       for (i=1; i < strlen(frc_file_name); i++) {
-	 if (frc_file_name[i] == '.') found_dot = 1;
-       }
-       if (found_dot == 0) 
-	 frc_file_name = strcat(frc_file_name,".frc");
-       n++;
-     }
-     else if (strstr(argv[n],"-p") != NULL) {
-       pflag = atoi(argv[n+1]);
-       n++;
-     }
-     else {
-       fprintf(stderr,"Unrecognized option: %s\n",argv[n]);
-     }
-     n++;
-   }
-   for (i=0; i < strlen(frc_file_name); i++) 
-     FrcFileName[i] = frc_file_name[i];
-   free(frc_file_name);
+  ReadMdfFile();
 
-   if (pflag > 0) {
-     fprintf(stderr,"\nRunning Msi2lmp.....\n\n");
-     fprintf(stderr," Forcefield file name: %s\n",FrcFileName);
-     fprintf(stderr," Forcefield class: %d\n\n",forcefield);
-   }
+  /* Define bonds, angles, etc...*/
 
-   if (((forcefield == 1) && (strstr(FrcFileName,"cff") != NULL) ||
-	(forcefield == 2) && (strstr(FrcFileName,"cvff") != NULL))) {
-     fprintf(stderr," WARNING - forcefield name and class appear to\n");
-     fprintf(stderr,"           be inconsistent - Errors may result\n\n");
-   }
+  if (pflag > 0)
+    printf("\n Building internal coordinate lists \n");
+  MakeLists();
 
- /* Read in .car file */
-    printf("I am before read car file\n");
-   ReadCarFile();
-   printf("I am after read car file\n");
- /*Read in .mdf file */
+  /* Read .frc file into memory */
 
-   ReadMdfFile();
-   printf("I am after read mdf file\n");
- /* Define bonds, angles, etc...*/
+  if (pflag > 0)
+    printf("\n Reading forcefield file \n");
+  ReadFrcFile();
 
-   if (pflag > 0) fprintf(stderr,"\n Building internal coordinate lists \n");
-   MakeLists();
+  /* Get forcefield parameters */
 
- /* Read .frc file into memory */
-	
-  // Commented out to create conversion file suitable for non-orthogonal boxes Sept 13, 2010 SLTM  	
-   if (pflag > 0) fprintf(stderr,"\n Reading forcefield file \n");
-   ReadFrcFile();
-
- /* Get forcefield parameters */
-
-   if (pflag > 0) fprintf(stderr,"\n Get parameters for this molecular system\n");
-   GetParameters(forcefield);
+  if (pflag > 0)
+    printf("\n Get force field parameters for this system\n");
+  GetParameters();
 
   /* Do internal check of internal coordinate lists */
+  if (pflag > 0)
+    printf("\n Check parameters for internal consistency\n");
+  CheckLists();
 
-   if (pflag > 0) fprintf(stderr,"\n Check parameters for internal consistency\n");
-   CheckLists();
+  /* Write out the final data */
+  WriteDataFile(rootname);
 
-   if (outv == 2001) {  fprintf(stderr,"\n Writing LAMMPS 2001 data file\n");
-   WriteDataFile01(rootname,forcefield);
-   }
-   else if (outv == 2005) {fprintf(stderr,"\n Writing LAMMPS 2005 data file\n");
-   WriteDataFile05(rootname,forcefield);
-   }
+  /* free up memory to detect possible memory corruption */
+  free(rootname);
+  free(FrcFileName);
+  ClearFrcData();
 
-   if (pflag > 0) fprintf(stderr,"\nNormal program termination\n");
-}
-#include <ctype.h>
-int blank_line(char *line)
-{
-  int i,n;
-  for (i=0,n=0; i < strlen(line); i++) {
-    if (isalnum((unsigned char)line[i])) n++;
+  for (n=0; n < no_molecules; n++) {
+    free(molecule[n].residue);
   }
-  if (n > 0) {
-    return(0);
-  }
-  else {
-    return(1);
-  }
+
+  free(no_atoms);
+  free(molecule);
+  free(atoms);
+  free(atomtypes);
+  if (bonds) free(bonds);
+  if (bondtypes) free(bondtypes);
+  if (angles) free(angles);
+  if (angletypes) free(angletypes);
+  if (dihedrals) free(dihedrals);
+  if (dihedraltypes) free(dihedraltypes);
+  if (oops) free(oops);
+  if (ooptypes) free(ooptypes);
+  if (angleangles) free(angleangles);
+  if (angleangletypes) free(angleangletypes);
+
+  if (pflag > 0)
+    printf("\nNormal program termination\n");
+  return 0;
 }

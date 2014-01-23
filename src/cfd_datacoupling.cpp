@@ -40,7 +40,7 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-CfdDatacoupling::CfdDatacoupling(class LAMMPS *lmp, int jarg,int narg, char **arg,FixCfdCoupling* fc) :
+CfdDatacoupling::CfdDatacoupling(class LAMMPS *lmp, int jarg, int, char **, class FixCfdCoupling*) :
     Pointers(lmp)
 {
       iarg_ = jarg;
@@ -79,7 +79,6 @@ CfdDatacoupling::~CfdDatacoupling()
 void CfdDatacoupling::init()
 {
     // multisphere - can be NULL
-    FixMultisphere *fix_multisphere;
     ms_ = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
 
     if(ms_) ms_data_ = &ms_->data();
@@ -108,7 +107,7 @@ void CfdDatacoupling::grow_()
    pull property from other code
 ------------------------------------------------------------------------- */
 
-void CfdDatacoupling::pull(char *name,char *type,void *&ptr,char *datatype)
+void CfdDatacoupling::pull(const char *name, const char *type, void *&, const char *)
 {
     // for MPI this is called by the library interface
     // check if the requested property was registered by a LIGGGHTS model
@@ -143,7 +142,7 @@ void CfdDatacoupling::pull(char *name,char *type,void *&ptr,char *datatype)
    push property to other code
 ------------------------------------------------------------------------- */
 
-void CfdDatacoupling::push(char *name,char *type,void *&ptr,char *datatype)
+void CfdDatacoupling::push(const char *name, const char *type, void *&, const char *)
 {
     // for MPI this is called by the library interface
     // check if the requested property was registered by a LIGGGHTS model
@@ -206,7 +205,7 @@ void CfdDatacoupling::check_datatransfer()
    request a property to be pulled. called by models that implement physics
 ------------------------------------------------------------------------- */
 
-void CfdDatacoupling::add_pull_property(char *name,char *type)
+void CfdDatacoupling::add_pull_property(const char *name, const char *type)
 {
     
     if(strlen(name) >= MAXLENGTH) error->all(FLERR,"Fix couple/cfd: Maximum string length for a variable exceeded");
@@ -239,7 +238,7 @@ void CfdDatacoupling::add_pull_property(char *name,char *type)
    request a property to be pushed. called by models that implement physics
 ------------------------------------------------------------------------- */
 
-void CfdDatacoupling::add_push_property(char *name,char *type)
+void CfdDatacoupling::add_push_property(const char *name, const char *type)
 {
     
     if(strlen(name) >= MAXLENGTH)
@@ -271,13 +270,13 @@ void CfdDatacoupling::add_push_property(char *name,char *type)
 
 /* ---------------------------------------------------------------------- */
 
-void* CfdDatacoupling::find_pull_property(char *name,char *type,int &len1,int &len2)
+void* CfdDatacoupling::find_pull_property(const char *name, const char *type, int &len1, int &len2)
 {
     return find_property(0,name,type,len1,len2);
 }
 
 /* ---------------------------------------------------------------------- */
-void* CfdDatacoupling::find_push_property(char *name,char *type,int &len1,int &len2)
+void* CfdDatacoupling::find_push_property(const char *name, const char *type, int &len1, int &len2)
 {
     return find_property(1,name,type,len1,len2);
 }
@@ -289,11 +288,10 @@ void* CfdDatacoupling::find_push_property(char *name,char *type,int &len1,int &l
    last 2 args are the data length and are used for all data
 ------------------------------------------------------------------------- */
 
-void* CfdDatacoupling::find_property(int push,char *name,char *type,int &len1,int &len2)
+void* CfdDatacoupling::find_property(int, const char *name, const char *type, int &len1, int &len2)
 {
     
     void *ptr = NULL;
-    int flag = 0;
 
     // possiblility 1
     // may be atom property - look up in atom class
@@ -304,7 +302,7 @@ void* CfdDatacoupling::find_property(int push,char *name,char *type,int &len1,in
     {
         len1 = atom->tag_max();
         // check if length correct
-        if((strcmp(type,"scalar-atom") == 0) && (len2 != 1) || (strcmp(type,"vector-atom") == 0) && (len2 != 3))
+        if(((strcmp(type,"scalar-atom") == 0) && (len2 != 1)) || ((strcmp(type,"vector-atom") == 0) && (len2 != 3)))
             return NULL;
         return ptr;
     }
@@ -316,10 +314,10 @@ void* CfdDatacoupling::find_property(int push,char *name,char *type,int &len1,in
     if(ms_)
     {
         ptr = ms_->extract(name,len1,len2);
-        if((strcmp(type,"scalar-multisphere") == 0) && (len2 != 1) || (strcmp(type,"vector-multisphere") == 0) && (len2 != 3))
+        if(((strcmp(type,"scalar-multisphere") == 0) && (len2 != 1)) || ((strcmp(type,"vector-multisphere") == 0) && (len2 != 3)))
             return NULL;
 
-        if(ptr || (len1 >= 0) && (len2 >= 0))
+        if(ptr || ((len1 >= 0) && (len2 >= 0)))
         return ptr;
     }
 
@@ -379,28 +377,28 @@ void* CfdDatacoupling::find_property(int push,char *name,char *type,int &len1,in
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacoupling::allocate_external(int    **&data, int len2,int len1,int    initvalue)
+void CfdDatacoupling::allocate_external(int**&, int, int, int)
 {
     error->all(FLERR,"CFD datacoupling setting used in LIGGGHTS is incompatible with setting in OF");
 }
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacoupling::allocate_external(double **&data, int len2,int len1,double initvalue)
+void CfdDatacoupling::allocate_external(double**&, int, int, double)
 {
     error->all(FLERR,"CFD datacoupling setting used in LIGGGHTS is incompatible with setting in OF");
 }
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacoupling::allocate_external(int    **&data, int len2,char *keyword,int initvalue)
+void CfdDatacoupling::allocate_external(int**&, int, char *, int)
 {
     error->all(FLERR,"CFD datacoupling setting used in LIGGGHTS is incompatible with setting in OF");
 }
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacoupling::allocate_external(double **&data, int len2,char *keyword,double initvalue)
+void CfdDatacoupling::allocate_external(double**&, int, char*, double)
 {
     error->all(FLERR,"CFD datacoupling setting used in LIGGGHTS is incompatible with setting in OF");
 }

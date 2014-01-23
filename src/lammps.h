@@ -1,4 +1,4 @@
-/* ----------------------------------------------------------------------
+/* -*- c++ -*- ----------------------------------------------------------
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -41,10 +41,14 @@ class LAMMPS {
   FILE *infile;                  // infile
   FILE *screen;                  // screen output
   FILE *logfile;                 // logfile
+  FILE *thermofile;              
 
   char *suffix;                  // suffix to add to input script style names
   int suffix_enable;             // 1 if suffix enabled, 0 if disabled
+  int cite_enable;               // 1 if generating log.cite, 0 if disabled
   class Cuda *cuda;              // CUDA accelerator class
+
+  class CiteMe *citeme;          // citation info
 
   bool wedgeflag;
 
@@ -55,7 +59,9 @@ class LAMMPS {
   void init();
   void destroy();
 
-  void print_styles();
+ private:
+  void help();
+  void print_style(const char *, int &);
 };
 
 }
@@ -146,10 +152,6 @@ The size of the MPI datatype does not match the size of a bigint.
 E: Small, tag, big integers are not sized correctly
 
 See description of these 3 data types in src/lmptype.h.
-
-E: 64-bit atom IDs are not yet supported
-
-See description of this data type in src/lmptype.h.
 
 E: Cannot use -cuda on without USER-CUDA installed
 

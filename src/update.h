@@ -25,6 +25,8 @@ class Update : protected Pointers {
   bigint ntimestep;               // current step (dynamics or min iterations)
   int nsteps;                     // # of steps to run (dynamics or min iter)
   int whichflag;                  // 0 for unset, 1 for dynamics, 2 for min
+  double atime;                   // simulation time at atime_step
+  bigint atimestep;               // last timestep atime was updated
   bigint firststep,laststep;      // 1st & last step of this run
   bigint beginstep,endstep;       // 1st and last step of multiple runs
   int first_update;               // 0 before initial update, 1 after
@@ -51,6 +53,8 @@ class Update : protected Pointers {
   void create_integrate(int, char **, char *);
   void create_minimize(int, char **);
   void reset_timestep(int, char **);
+  void reset_timestep(bigint);
+  void update_time();
   bigint memory_usage();
 
  private:
@@ -82,16 +86,13 @@ E: Illegal integrate style
 
 Self-explanatory.
 
-E: Cannot reset timestep with dump file already written to
+E: Timestep must be >= 0
 
-Changing the timestep will confuse when a dump file is written.  Use
-the undump command, then restart the dump file.
+Specified timestep is invalid.
 
-E: Cannot reset timestep with restart file already written
+E: Too big a timestep
 
-Changing the timestep will confuse when a restart file is written.
-Use the "restart 0" command to turn off restarts, then start them
-again.
+Specified timestep is too large.
 
 E: Cannot reset timestep with a time-dependent fix defined
 
@@ -103,13 +104,5 @@ E: Cannot reset timestep with a dynamic region defined
 Dynamic regions (see the region command) have a time dependence.
 Thus you cannot change the timestep when one or more of these
 are defined.
-
-E: Timestep must be >= 0
-
-Specified timestep is invalid.
-
-E: Too big a timestep
-
-Specified timestep is too large.
 
 */

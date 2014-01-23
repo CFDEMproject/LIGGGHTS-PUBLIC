@@ -22,20 +22,6 @@
 
 #define IJ_SIZE 131072
 
-#ifdef USE_OPENCL
-
-#include "geryon/ocl_timer.h"
-#include "geryon/ocl_mat.h"
-using namespace ucl_opencl;
-
-#else
-
-#include "geryon/nvd_timer.h"
-#include "geryon/nvd_mat.h"
-using namespace ucl_cudadr;
-
-#endif
-
 namespace LAMMPS_AL {
 
 class Neighbor {
@@ -61,16 +47,25 @@ class Neighbor {
     * \param pre_cut True if cutoff test will be performed in separate kernel
     *                than the force kernel 
     * \param threads_per_atom Number of threads used per atom for force
-    *                         calculation **/
+    *                         calculation 
+    * \param compile_flags Flags for JIT compiling **/
   bool init(NeighborShared *shared, const int inum, const int host_inum,
             const int max_nbors, const int maxspecial, UCL_Device &dev,
             const int gpu_nbor, const int gpu_host, const bool pre_cut,
             const int block_cell_2d, const int block_cell_id, 
             const int block_nbor_build, const int threads_per_atom,
-            const int warp_size, const bool time_device);
+            const int warp_size, const bool time_device, 
+            const std::string compile_flags);
 
   /// Set the size of the cutoff+skin
-  inline void cell_size(const double size) { _cell_size=size; }
+  inline void cell_size(const double size, const double cutoff) { 
+    _cell_size=size;
+    _cutoff=cutoff;
+    if (cutoff>size)
+      _cells_in_cutoff=static_cast<int>(ceil(cutoff/size));
+    else
+      _cells_in_cutoff=1;
+  }
   
   /// Get the size of the cutoff+skin
   inline double cell_size() const { return _cell_size; }
@@ -150,6 +145,10 @@ class Neighbor {
   void get_host(const int inum, int *ilist, int *numj, 
                 int **firstneigh, const int block_size);
   
+  /// Copy neighbor list from host for 3-body (first time or from a rebuild)  
+  void get_host3(const int inum, const int nlist, int *ilist, int *numj, 
+                 int **firstneigh, const int block_size);
+  
   /// Return the stride in elements for each nbor row
   inline int nbor_pitch() const { return _nbor_pitch; }
   
@@ -203,25 +202,20 @@ class Neighbor {
 
   // ----------------- Data for GPU Neighbor Calculation ---------------
 
-  /// Host storage for device calculated neighbor lists
-  /** Same storage format as device matrix **/
-  UCL_H_Vec<int> host_nbor;
-  /// Device storage for neighbor list matrix that will be copied to host
+  /// Host/Device storage for device calculated neighbor lists
   /** - 1st row is numj
     * - Remaining rows are by atom, columns are nbors **/
-  UCL_D_Vec<int> dev_host_nbor;
-  UCL_D_Vec<int> dev_host_numj;
+  UCL_Vector<int,int> nbor_host;
+  UCL_D_Vec<int> dev_numj_host;
   UCL_H_Vec<int> host_ilist;
   UCL_H_Vec<int*> host_jlist;
   /// Device storage for special neighbor counts
   UCL_D_Vec<int> dev_nspecial;
   /// Device storage for special neighbors
   UCL_D_Vec<int> dev_special, dev_special_t;
-  /// Host storage for number of particles per cell
-  UCL_H_Vec<int> host_cell_counts;
+  /// Host/Device storage for number of particles per cell
+  UCL_Vector<int,int> cell_counts;
   int *cell_iter;
-  /// Device storage for number of particles per cell
-  UCL_D_Vec<int> dev_cell_counts;
 
   /// Device timers
   UCL_Timer time_nbor, time_kernel, time_hybrid1, time_hybrid2, time_transpose;
@@ -232,13 +226,14 @@ class Neighbor {
   bool _allocated, _use_packing, _nbor_time_avail, _time_device;
   int _gpu_nbor, _max_atoms, _max_nbors, _max_host, _nbor_pitch, _maxspecial;
   bool _gpu_host, _alloc_packed;
-  double _cell_size, _bin_time;
+  double _cutoff, _cell_size, _bin_time;
 
   double _gpu_bytes, _c_bytes, _cell_bytes;
   void alloc(bool &success);
   
   int _block_cell_2d, _block_cell_id, _max_block_nbor_build, _block_nbor_build;
   int _ncells, _threads_per_atom, _total_atoms;
+  int _cells_in_cutoff;
 
   template <class numtyp, class acctyp>
   inline void resize_max_neighbors(const int maxn, bool &success);

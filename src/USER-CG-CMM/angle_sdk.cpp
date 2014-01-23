@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -88,7 +88,6 @@ void AngleSDK::compute(int eflag, int vflag)
     delx1 = x[i1][0] - x[i2][0];
     dely1 = x[i1][1] - x[i2][1];
     delz1 = x[i1][2] - x[i2][2];
-    domain->minimum_image(delx1,dely1,delz1);
 
     rsq1 = delx1*delx1 + dely1*dely1 + delz1*delz1;
     r1 = sqrt(rsq1);
@@ -98,7 +97,6 @@ void AngleSDK::compute(int eflag, int vflag)
     delx2 = x[i3][0] - x[i2][0];
     dely2 = x[i3][1] - x[i2][1];
     delz2 = x[i3][2] - x[i2][2];
-    domain->minimum_image(delx2,dely2,delz2);
 
     rsq2 = delx2*delx2 + dely2*dely2 + delz2*delz2;
     r2 = sqrt(rsq2);
@@ -107,62 +105,63 @@ void AngleSDK::compute(int eflag, int vflag)
 
     c = delx1*delx2 + dely1*dely2 + delz1*delz2;
     c /= r1*r2;
-        
+
     if (c > 1.0) c = 1.0;
     if (c < -1.0) c = -1.0;
-        
+
     s = sqrt(1.0 - c*c);
     if (s < SMALL) s = SMALL;
     s = 1.0/s;
 
-    // 1-3 LJ interaction. 
+    // 1-3 LJ interaction.
     // we only want to use the repulsive part,
     // and it can be scaled (or off).
     // so this has to be done here and not in the
     // general non-bonded code.
 
+    f13 = e13 = delx3 = dely3 = delz3 = 0.0;
+
     if (repflag) {
-      
+
       delx3 = x[i1][0] - x[i3][0];
       dely3 = x[i1][1] - x[i3][1];
       delz3 = x[i1][2] - x[i3][2];
-      domain->minimum_image(delx3,dely3,delz3);
       rsq3 = delx3*delx3 + dely3*dely3 + delz3*delz3;
 
       const int type1 = atom->type[i1];
       const int type3 = atom->type[i3];
-      
+
       f13=0.0;
       e13=0.0;
-    
+
       if (rsq3 < rminsq[type1][type3]) {
-	const int ljt = lj_type[type1][type3];
-	const double r2inv = 1.0/rsq3;
+        const int ljt = lj_type[type1][type3];
+        const double r2inv = 1.0/rsq3;
 
-	if (ljt == LJ12_4) {
-	  const double r4inv=r2inv*r2inv;
+        if (ljt == LJ12_4) {
+          const double r4inv=r2inv*r2inv;
 
-	  f13 = r4inv*(lj1[type1][type3]*r4inv*r4inv - lj2[type1][type3]);
-	  if (eflag) e13 = r4inv*(lj3[type1][type3]*r4inv*r4inv - lj4[type1][type3]);
-	  
-	} else if (ljt == LJ9_6) {
-	  const double r3inv = r2inv*sqrt(r2inv);
-	  const double r6inv = r3inv*r3inv;
+          f13 = r4inv*(lj1[type1][type3]*r4inv*r4inv - lj2[type1][type3]);
+          if (eflag) e13 = r4inv*(lj3[type1][type3]*r4inv*r4inv - lj4[type1][type3]);
 
-	  f13 = r6inv*(lj1[type1][type3]*r3inv - lj2[type1][type3]);
-	  if (eflag) e13 = r6inv*(lj3[type1][type3]*r3inv - lj4[type1][type3]);
+        } else if (ljt == LJ9_6) {
+          const double r3inv = r2inv*sqrt(r2inv);
+          const double r6inv = r3inv*r3inv;
 
-	} else if (ljt == LJ12_6) {
-	  const double r6inv = r2inv*r2inv*r2inv;
+          f13 = r6inv*(lj1[type1][type3]*r3inv - lj2[type1][type3]);
+          if (eflag) e13 = r6inv*(lj3[type1][type3]*r3inv - lj4[type1][type3]);
 
-	  f13 = r6inv*(lj1[type1][type3]*r6inv - lj2[type1][type3]);
-	  if (eflag) e13 = r6inv*(lj3[type1][type3]*r6inv - lj4[type1][type3]);
-	}
+        } else if (ljt == LJ12_6) {
+          const double r6inv = r2inv*r2inv*r2inv;
 
-	// make sure energy is 0.0 at the cutoff.
-	if (eflag) e13 -= emin[type1][type3];
+          f13 = r6inv*(lj1[type1][type3]*r6inv - lj2[type1][type3]);
+          if (eflag) e13 = r6inv*(lj3[type1][type3]*r6inv - lj4[type1][type3]);
+        }
 
-	f13 *= r2inv;
+        // make sure energy is 0.0 at the cutoff.
+        if (eflag) e13 -= emin[type1][type3];
+
+        f13 *= r2inv;
       }
     }
 
@@ -207,8 +206,9 @@ void AngleSDK::compute(int eflag, int vflag)
 
     if (evflag) {
       ev_tally(i1,i2,i3,nlocal,newton_bond,eangle,f1,f3,
-			 delx1,dely1,delz1,delx2,dely2,delz2);
-      ev_tally13(i1,i3,nlocal,newton_bond,e13,f13,delx3,dely3,delz3);
+                         delx1,dely1,delz1,delx2,dely2,delz2);
+      if (repflag)
+        ev_tally13(i1,i3,nlocal,newton_bond,e13,f13,delx3,dely3,delz3);
     }
   }
 }
@@ -242,19 +242,19 @@ void AngleSDK::coeff(int narg, char **arg)
   int ilo,ihi;
   force->bounds(arg[0],atom->nangletypes,ilo,ihi);
 
-  double k_one = force->numeric(arg[1]);
-  double theta0_one = force->numeric(arg[2]);
+  double k_one = force->numeric(FLERR,arg[1]);
+  double theta0_one = force->numeric(FLERR,arg[2]);
   double repscale_one;
 
   // backward compatibility with old cg/cmm style input:
   // this had <lj_type> <epsilon> <sigma>
   // if epsilon is set to 0.0 we accept it as repscale 0.0
-  // otherwise assume repscale 1.0, since we were using 
+  // otherwise assume repscale 1.0, since we were using
   // epsilon to turn repulsion on or off.
   if (narg == 6) {
-    repscale_one = force->numeric(arg[4]);
+    repscale_one = force->numeric(FLERR,arg[4]);
     if (repscale_one > 0.0) repscale_one = 1.0;
-  } else if (narg == 4) repscale_one = force->numeric(arg[3]);
+  } else if (narg == 4) repscale_one = force->numeric(FLERR,arg[3]);
   else if (narg == 3) repscale_one = 1.0;
   else error->all(FLERR,"Incorrect args for angle coefficients");
 
@@ -273,7 +273,7 @@ void AngleSDK::coeff(int narg, char **arg)
 }
 
 /* ----------------------------------------------------------------------
-   error check and initialize all values needed for force computation 
+   error check and initialize all values needed for force computation
 ------------------------------------------------------------------------- */
 
 void AngleSDK::init_style()
@@ -324,7 +324,7 @@ void AngleSDK::write_restart(FILE *fp)
 }
 
 /* ----------------------------------------------------------------------
-   proc 0 reads coeffs from restart file, bcasts them 
+   proc 0 reads coeffs from restart file, bcasts them
 ------------------------------------------------------------------------- */
 
 void AngleSDK::read_restart(FILE *fp)
@@ -343,11 +343,21 @@ void AngleSDK::read_restart(FILE *fp)
   for (int i = 1; i <= atom->nangletypes; i++) setflag[i] = 1;
 }
 
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void AngleSDK::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->nangletypes; i++)
+    fprintf(fp,"%d %g %g\n",i,k[i],theta0[i]/MY_PI*180.0);
+}
+
 /* ---------------------------------------------------------------------- */
 
-void AngleSDK::ev_tally13(int i, int j, int nlocal, int newton_bond, 
-			  double evdwl, double fpair,
-			  double delx, double dely, double delz)
+void AngleSDK::ev_tally13(int i, int j, int nlocal, int newton_bond,
+                          double evdwl, double fpair,
+                          double delx, double dely, double delz)
 {
   double v[6];
 
@@ -367,7 +377,7 @@ void AngleSDK::ev_tally13(int i, int j, int nlocal, int newton_bond,
       if (newton_bond || j < nlocal) eatom[i] += 0.5*evdwl;
     }
   }
-  
+
   if (vflag_either) {
     v[0] = delx*delx*fpair;
     v[1] = dely*dely*fpair;
@@ -436,7 +446,7 @@ double AngleSDK::single(int type, int i1, int i2, int i3)
   double delz1 = x[i1][2] - x[i2][2];
   domain->minimum_image(delx1,dely1,delz1);
   double r1 = sqrt(delx1*delx1 + dely1*dely1 + delz1*delz1);
-  
+
   double delx2 = x[i3][0] - x[i2][0];
   double dely2 = x[i3][1] - x[i2][1];
   double delz2 = x[i3][2] - x[i2][2];
@@ -451,7 +461,7 @@ double AngleSDK::single(int type, int i1, int i2, int i3)
   double e13=0.0;
   if (repflag) {
 
-    // 1-3 LJ interaction. 
+    // 1-3 LJ interaction.
     double delx3 = x[i1][0] - x[i3][0];
     double dely3 = x[i1][1] - x[i3][1];
     double delz3 = x[i1][2] - x[i3][2];
@@ -459,28 +469,28 @@ double AngleSDK::single(int type, int i1, int i2, int i3)
 
     const int type1 = atom->type[i1];
     const int type3 = atom->type[i3];
-      
+
     const double rsq3 = delx3*delx3 + dely3*dely3 + delz3*delz3;
-  
+
     if (rsq3 < rminsq[type1][type3]) {
       const int ljt = lj_type[type1][type3];
       const double r2inv = 1.0/rsq3;
 
       if (ljt == LJ12_4) {
-	const double r4inv=r2inv*r2inv;
+        const double r4inv=r2inv*r2inv;
 
-	e13 = r4inv*(lj3[type1][type3]*r4inv*r4inv - lj4[type1][type3]);
-	  
+        e13 = r4inv*(lj3[type1][type3]*r4inv*r4inv - lj4[type1][type3]);
+
       } else if (ljt == LJ9_6) {
-	const double r3inv = r2inv*sqrt(r2inv);
-	const double r6inv = r3inv*r3inv;
+        const double r3inv = r2inv*sqrt(r2inv);
+        const double r6inv = r3inv*r3inv;
 
-	e13 = r6inv*(lj3[type1][type3]*r3inv - lj4[type1][type3]);
+        e13 = r6inv*(lj3[type1][type3]*r3inv - lj4[type1][type3]);
 
       } else if (ljt == LJ12_6) {
-	const double r6inv = r2inv*r2inv*r2inv;
+        const double r6inv = r2inv*r2inv*r2inv;
 
-	e13 = r6inv*(lj3[type1][type3]*r6inv - lj4[type1][type3]);
+        e13 = r6inv*(lj3[type1][type3]*r6inv - lj4[type1][type3]);
       }
 
       // make sure energy is 0.0 at the cutoff.

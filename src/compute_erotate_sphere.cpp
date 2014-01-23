@@ -1,4 +1,14 @@
 /* ----------------------------------------------------------------------
+   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   Transfer Simulations
+
+   LIGGGHTS is part of the CFDEMproject
+   www.liggghts.com | www.cfdem.com
+
+   This file was modified with respect to the release in LAMMPS
+   Modifications are Copyright 2009-2012 JKU Linz
+                     Copyright 2012-     DCS Computing GmbH, Linz
+
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -8,7 +18,7 @@
    certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
-   See the README file in the top-level LAMMPS directory.
+   See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
 
 #include "mpi.h"
@@ -50,6 +60,7 @@ ComputeERotateSphere::ComputeERotateSphere(LAMMPS *lmp, int narg, char **arg) :
 void ComputeERotateSphere::init()
 {
   pfactor = 0.5 * force->mvv2e * INERTIA;
+
   fix_ms =  static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0)); 
 }
 
@@ -66,7 +77,7 @@ double ComputeERotateSphere::compute_scalar()
   int nlocal = atom->nlocal;
 
   // sum rotational energy for each particle
-  // point particles will not contribute due to radius = 0
+  // point particles will not contribute, due to radius = 0.0
 
   double erotate = 0.0;
   for (int i = 0; i < nlocal; i++)

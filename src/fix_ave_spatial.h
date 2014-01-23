@@ -35,17 +35,17 @@ class FixAveSpatial : public Fix {
   void end_of_step();
   double compute_array(int,int);
   double memory_usage();
+  void reset_timestep(bigint);
 
  private:
   int me,nvalues;
   int nrepeat,nfreq,irepeat;
   bigint nvalid;
-  int ndim,normflag,regionflag,iregion;
+  int ndim,normflag,regionflag,iregion,overwrite;
   char *tstring,*sstring,*idregion;
   int *which,*argindex,*value2index;
   char **ids;
   FILE *fp;
-  FILE *fp2;
   class Region *region;
 
   int ave,nwindow,scaleflag;
@@ -53,6 +53,7 @@ class FixAveSpatial : public Fix {
   double xscale,yscale,zscale;
   double bin_volume;
 
+  long filepos;
   int dim[3],originflag[3],nlayers[3];
   double origin[3],delta[3];
   double offset[3],invdelta[3];
@@ -69,9 +70,6 @@ class FixAveSpatial : public Fix {
   double **values_one,**values_many,**values_sum;
   double *count_total,**count_list;
   double **values_total,***values_list;
-
-  int calcStd;
-  int lowerLimit, upperLimit;
 
   void setup_bins();
   void atom2bin1d();
@@ -162,10 +160,6 @@ E: Fix ave/spatial for triclinic boxes requires units reduced
 
 Self-explanatory.
 
-E: Use of fix ave/spatial with undefined lattice
-
-A lattice must be defined to use fix ave/spatial with units = lattice.
-
 E: Fix ave/spatial settings invalid with changing box
 
 If the ave setting is "running" or "window" and the box size/shape
@@ -176,5 +170,14 @@ E: Fix for fix ave/spatial not computed at compatible time
 
 Fixes generate their values on specific timesteps.  Fix ave/spatial is
 requesting a value on a non-allowed timestep.
+
+E: Fix ave/spatial missed timestep
+
+You cannot reset the timestep to a value beyond where the fix
+expects to next perform averaging.
+
+U: Use of fix ave/spatial with undefined lattice
+
+A lattice must be defined to use fix ave/spatial with units = lattice.
 
 */

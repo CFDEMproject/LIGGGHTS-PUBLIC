@@ -33,7 +33,10 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-PairBuckCoulCut::PairBuckCoulCut(LAMMPS *lmp) : Pair(lmp) {}
+PairBuckCoulCut::PairBuckCoulCut(LAMMPS *lmp) : Pair(lmp)
+{
+  writedata = 1;
+}
 
 /* ---------------------------------------------------------------------- */
 
@@ -193,9 +196,9 @@ void PairBuckCoulCut::settings(int narg, char **arg)
 {
   if (narg < 1 || narg > 2) error->all(FLERR,"Illegal pair_style command");
 
-  cut_lj_global = force->numeric(arg[0]);
+  cut_lj_global = force->numeric(FLERR,arg[0]);
   if (narg == 1) cut_coul_global = cut_lj_global;
-  else cut_coul_global = force->numeric(arg[1]);
+  else cut_coul_global = force->numeric(FLERR,arg[1]);
 
   // reset cutoffs that have been explicitly set
 
@@ -216,22 +219,23 @@ void PairBuckCoulCut::settings(int narg, char **arg)
 
 void PairBuckCoulCut::coeff(int narg, char **arg)
 {
-  if (narg < 5 || narg > 7) error->all(FLERR,"Incorrect args for pair coefficients");
+  if (narg < 5 || narg > 7) 
+    error->all(FLERR,"Incorrect args for pair coefficients");
   if (!allocated) allocate();
 
   int ilo,ihi,jlo,jhi;
   force->bounds(arg[0],atom->ntypes,ilo,ihi);
   force->bounds(arg[1],atom->ntypes,jlo,jhi);
 
-  double a_one = force->numeric(arg[2]);
-  double rho_one = force->numeric(arg[3]);
+  double a_one = force->numeric(FLERR,arg[2]);
+  double rho_one = force->numeric(FLERR,arg[3]);
   if (rho_one <= 0) error->all(FLERR,"Incorrect args for pair coefficients");
-  double c_one = force->numeric(arg[4]);
+  double c_one = force->numeric(FLERR,arg[4]);
 
   double cut_lj_one = cut_lj_global;
   double cut_coul_one = cut_coul_global;
-  if (narg >= 6) cut_coul_one = cut_lj_one = force->numeric(arg[5]);
-  if (narg == 7) cut_coul_one = force->numeric(arg[6]);
+  if (narg >= 6) cut_coul_one = cut_lj_one = force->numeric(FLERR,arg[5]);
+  if (narg == 7) cut_coul_one = force->numeric(FLERR,arg[6]);
 
   int count = 0;
   for (int i = ilo; i <= ihi; i++) {
@@ -388,6 +392,7 @@ void PairBuckCoulCut::write_restart_settings(FILE *fp)
   fwrite(&cut_coul_global,sizeof(double),1,fp);
   fwrite(&offset_flag,sizeof(int),1,fp);
   fwrite(&mix_flag,sizeof(int),1,fp);
+  fwrite(&tail_flag,sizeof(int),1,fp);
 }
 
 /* ----------------------------------------------------------------------
@@ -401,11 +406,35 @@ void PairBuckCoulCut::read_restart_settings(FILE *fp)
     fread(&cut_coul_global,sizeof(double),1,fp);
     fread(&offset_flag,sizeof(int),1,fp);
     fread(&mix_flag,sizeof(int),1,fp);
+    fread(&tail_flag,sizeof(int),1,fp);
   }
   MPI_Bcast(&cut_lj_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&cut_coul_global,1,MPI_DOUBLE,0,world);
   MPI_Bcast(&offset_flag,1,MPI_INT,0,world);
   MPI_Bcast(&mix_flag,1,MPI_INT,0,world);
+  MPI_Bcast(&tail_flag,1,MPI_INT,0,world);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes to data file
+------------------------------------------------------------------------- */
+
+void PairBuckCoulCut::write_data(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    fprintf(fp,"%d %g %g %g\n",i,a[i][i],rho[i][i],c[i][i]);
+}
+
+/* ----------------------------------------------------------------------
+   proc 0 writes all pairs to data file
+------------------------------------------------------------------------- */
+
+void PairBuckCoulCut::write_data_all(FILE *fp)
+{
+  for (int i = 1; i <= atom->ntypes; i++)
+    for (int j = i; j <= atom->ntypes; j++)
+      fprintf(fp,"%d %d %g %g %g %g %g\n",i,j,
+              a[i][j],rho[i][j],c[i][j],cut_lj[i][j],cut_coul[i][j]);
 }
 
 /* ---------------------------------------------------------------------- */

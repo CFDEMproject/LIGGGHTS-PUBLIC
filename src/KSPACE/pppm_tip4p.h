@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -33,10 +33,12 @@ class PPPMTIP4P : public PPPM {
  protected:
   virtual void particle_map();
   virtual void make_rho();
-  virtual void fieldforce();
+  virtual void fieldforce_ik();
+  virtual void fieldforce_ad();
+  virtual void fieldforce_peratom();
 
  private:
-  void find_M(int, int &, int &, double *); 
+  void find_M(int, int &, int &, double *);
 };
 
 }

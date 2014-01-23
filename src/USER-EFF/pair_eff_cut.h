@@ -2,12 +2,12 @@
  LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
  http://lammps.sandia.gov, Sandia National Laboratories
  Steve Plimpton, sjplimp@sandia.gov
- 
+
  Copyright (2003) Sandia Corporation.  Under the terms of Contract
  DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
- certain rights in this software.  This software is distributed under 
+ certain rights in this software.  This software is distributed under
  the GNU General Public License.
- 
+
  See the README file in the top-level LAMMPS directory.
  ------------------------------------------------------------------------- */
 
@@ -38,19 +38,20 @@ class PairEffCut : public Pair {
   void read_restart(FILE *);
   virtual void write_restart_settings(FILE *);
   virtual void read_restart_settings(FILE *);
-  
+
   void min_xf_pointers(int, double **, double **);
   void min_xf_get(int);
   void min_x_set(int);
   double memory_usage();
 
  private:
-  int limit_size_flag, flexible_pressure_flag;
+  int limit_eradius_flag, pressure_with_evirials_flag;
   double cut_global;
   double **cut;
-  double PAULI_CORE_A, PAULI_CORE_B, PAULI_CORE_C;
+  int ecp_type[100];
+  double PAULI_CORE_A[100], PAULI_CORE_B[100], PAULI_CORE_C[100], PAULI_CORE_D[100], PAULI_CORE_E[100];
   double hhmss2e, h2e;
-  
+
   int nmax;
   double *min_eradius,*min_erforce;
 
@@ -58,7 +59,7 @@ class PairEffCut : public Pair {
   void virial_eff_compute();
   void ev_tally_eff(int, int, int, int, double, double);
 };
- 
+
 }
 
 #endif

@@ -2,16 +2,16 @@
 #define COLVARMODULE_H
 
 #ifndef COLVARS_VERSION
-#define COLVARS_VERSION "2012-06-20"
+#define COLVARS_VERSION "2013-10-22"
 #endif
 
 #ifndef COLVARS_DEBUG
 #define COLVARS_DEBUG false
 #endif
 
-/// \file colvarmodule.h 
+/// \file colvarmodule.h
 /// \brief Collective variables main module
-/// 
+///
 /// This file declares the main class for defining and manipulating
 /// collective variables: there should be only one instance of this
 /// class, because several variables are made static (i.e. they are
@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <fstream>
 #include <cmath>
@@ -40,7 +41,7 @@ class colvarproxy;
 /// Class to control the collective variables calculation.  An object
 /// (usually one) of this class is spawned from the MD program,
 /// containing all i/o routines and general interface.
-/// 
+///
 /// At initialization, the colvarmodule object creates a proxy object
 /// to provide a transparent interface between the MD program and the
 /// child objects
@@ -54,7 +55,7 @@ private:
 public:
 
   friend class colvarproxy;
-  
+
   /// Defining an abstract real number allows to switch precision
   typedef  double    real;
   /// Residue identifier
@@ -147,7 +148,7 @@ public:
   /// \brief Number of histograms initialized (no limit on the
   /// number)
   static size_t n_histo_biases;
-   
+
   /// \brief Whether debug output should be enabled (compile-time option)
   static inline bool debug()
   {
@@ -157,8 +158,9 @@ public:
 
   /// \brief Constructor \param config_name Configuration file name
   /// \param restart_name (optional) Restart file name
-  colvarmodule (char const *config_name, 
+  colvarmodule (char const *config_name,
                 colvarproxy *proxy_in);
+
   /// Destructor
   ~colvarmodule();
 
@@ -168,11 +170,21 @@ public:
   /// Initialize collective variable biases
   void init_biases (std::string const &conf);
 
-  /// Load new configuration - force constant and/or centers only
-  void change_configuration(std::string const &name, std::string const &conf);
+  /// Re-initialize data at the beginning of a run. For use with
+  /// MD codes that can change system parameters like atom masses
+  /// between run commands.
+  void setup();
 
-  /// Calculate change in energy from using alternate configuration
-  real energy_difference(std::string const &name, std::string const &conf);
+  /// Load new configuration for the given bias -
+  /// currently works for harmonic (force constant and/or centers)
+  void change_configuration (std::string const &bias_name, std::string const &conf);
+
+  /// Read a colvar value
+  std::string read_colvar(std::string const &name);
+
+  /// Calculate change in energy from using alt. config. for the given bias -
+  /// currently works for harmonic (force constant and/or centers)
+  real energy_difference (std::string const &bias_name, std::string const &conf);
 
   /// Calculate collective variables and biases
   void calc();
@@ -192,16 +204,16 @@ public:
   bool read_traj (char const *traj_filename,
                   size_t      traj_read_begin,
                   size_t      traj_read_end);
- 
+
   /// Get the pointer of a colvar from its name (returns NULL if not found)
   static colvar * colvar_p (std::string const &name);
 
   /// Quick conversion of an object to a string
-  template<typename T> static std::string to_str (T const &x, 
+  template<typename T> static std::string to_str (T const &x,
                                                   size_t const &width = 0,
                                                   size_t const &prec = 0);
   /// Quick conversion of a vector of objects to a string
-  template<typename T> static std::string to_str (std::vector<T> const &x, 
+  template<typename T> static std::string to_str (std::vector<T> const &x,
                                                   size_t const &width = 0,
                                                   size_t const &prec = 0);
 
@@ -245,10 +257,10 @@ public:
 
   /// \brief Time step of MD integrator (fs)
   static real dt();
-  
+
   /// Request calculation of system force from MD engine
   static void request_system_force();
-  
+
   /// Print a message to the main log
   static void log (std::string const &message);
 
@@ -276,7 +288,7 @@ public:
 
   /// \brief Get the closest periodic image to a reference position
   /// \param pos The position to look for the closest periodic image
-  /// \param ref_pos (optional) The reference position 
+  /// \param ref_pos (optional) The reference position
   static void select_closest_image (atom_pos &pos,
                                     atom_pos const &ref_pos);
 
@@ -286,6 +298,16 @@ public:
   /// without using position_distance()
   static void select_closest_images (std::vector<atom_pos> &pos,
                                      atom_pos const &ref_pos);
+
+
+  /// \brief Names of groups from a Gromacs .ndx file to be read at startup
+  static std::list<std::string> index_group_names;
+
+  /// \brief Groups from a Gromacs .ndx file read at startup
+  static std::list<std::vector<int> > index_groups;
+
+  /// \brief Read a Gromacs .ndx file
+  static void read_index_file (char const *filename);
 
 
   /// \brief Create atoms from a file \param filename name of the file
@@ -298,14 +320,18 @@ public:
                           double const pdb_field_value = 0.0);
 
   /// \brief Load the coordinates for a group of atoms from a file
-  /// (usually a PDB); the number of atoms in "filename" must match
-  /// the number of elements in "pos"
+  /// (PDB or XYZ)
   static void load_coords (char const *filename,
                            std::vector<atom_pos> &pos,
                            const std::vector<int> &indices,
                            std::string const &pdb_field,
                            double const pdb_field_value = 0.0);
 
+  /// \brief Load the coordinates for a group of atoms from an
+  /// XYZ file
+  static void load_coords_xyz (char const *filename,
+                              std::vector<atom_pos> &pos,
+                              const std::vector<int> &indices);
 
   /// Frequency for collective variables trajectory output
   static size_t cv_traj_freq;
@@ -369,7 +395,7 @@ std::ostream & operator << (std::ostream &os, cvm::rvector const &v);
 std::istream & operator >> (std::istream &is, cvm::rvector &v);
 
 
-template<typename T> std::string cvm::to_str (T const &x, 
+template<typename T> std::string cvm::to_str (T const &x,
                                               size_t const &width,
                                               size_t const &prec) {
   std::ostringstream os;
@@ -382,7 +408,7 @@ template<typename T> std::string cvm::to_str (T const &x,
   return os.str();
 }
 
-template<typename T> std::string cvm::to_str (std::vector<T> const &x, 
+template<typename T> std::string cvm::to_str (std::vector<T> const &x,
                                               size_t const &width,
                                               size_t const &prec) {
   if (!x.size()) return std::string ("");
@@ -432,7 +458,7 @@ inline void cvm::request_system_force()
 {
   proxy->request_system_force (true);
 }
-  
+
 inline void cvm::select_closest_image (atom_pos &pos,
                                        atom_pos const &ref_pos)
 {
@@ -471,7 +497,19 @@ inline void cvm::load_coords (char const *file_name,
                               std::string const &pdb_field,
                               double const pdb_field_value)
 {
-  proxy->load_coords (file_name, pos, indices, pdb_field, pdb_field_value);
+  // Differentiate between PDB and XYZ files
+  // for XYZ files, use CVM internal parser
+  // otherwise call proxy function for PDB
+
+  char const *ext = strlen(file_name) > 4 ? file_name + (strlen(file_name) - 4) : file_name;
+  if ( !strncmp(ext, ".xyz", 4) || !strncmp(ext, ".XYZ", 4) ) {
+    if ( pdb_field.size() > 0 ) {
+      cvm::fatal_error ("Error: PDB column may not be specified for XYZ coordinate file.\n");
+    }
+    cvm::load_coords_xyz (file_name, pos, indices);
+  } else {
+    proxy->load_coords (file_name, pos, indices, pdb_field, pdb_field_value);
+  }
 }
 
 inline void cvm::backup_file (char const *filename)

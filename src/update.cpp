@@ -38,6 +38,8 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp)
   char *str;
 
   ntimestep = 0;
+  atime = 0.0;
+  atimestep = 0;
   first_update = 0;
 
   whichflag = 0;
@@ -132,6 +134,7 @@ void Update::set_units(const char *style)
     force->hhmrr2e = 0.0;
     force->mvh2r = 0.0;
     force->angstrom = 1.0;
+    force->femtosecond = 1.0;
     force->qelectron = 1.0;
 
     dt = 0.005;
@@ -152,6 +155,7 @@ void Update::set_units(const char *style)
     force->hhmrr2e = 0.0957018663603261;
     force->mvh2r = 1.5339009481951;
     force->angstrom = 1.0;
+    force->femtosecond = 1.0;
     force->qelectron = 1.0;
 
     dt = 1.0;
@@ -172,6 +176,7 @@ void Update::set_units(const char *style)
     force->hhmrr2e = 0.0;
     force->mvh2r = 0.0;
     force->angstrom = 1.0;
+    force->femtosecond = 1.0e-3;
     force->qelectron = 1.0;
 
     dt = 0.001;
@@ -192,6 +197,7 @@ void Update::set_units(const char *style)
     force->hhmrr2e = 0.0;
     force->mvh2r = 0.0;
     force->angstrom = 1.0e-10;
+    force->femtosecond = 1.0e-15;
     force->qelectron = 1.6021765e-19;
 
     dt = 1.0e-8;
@@ -212,6 +218,7 @@ void Update::set_units(const char *style)
     force->hhmrr2e = 0.0;
     force->mvh2r = 0.0;
     force->angstrom = 1.0e-8;
+    force->femtosecond = 1.0e-15;
     force->qelectron = 4.8032044e-10;
 
     dt = 1.0e-8;
@@ -232,10 +239,53 @@ void Update::set_units(const char *style)
     force->hhmrr2e = 0.0;
     force->mvh2r = 0.0;
     force->angstrom = 1.88972612;
+    force->femtosecond = 0.0241888428;
     force->qelectron = 1.0;
 
     dt = 0.001;
     neighbor->skin = 2.0;
+
+  } else if (strcmp(style,"micro") == 0) {
+    force->boltz = 1.3806504e-8;
+    force->hplanck = 6.62606896e-13;
+    force->mvv2e = 1.0;
+    force->ftm2v = 1.0;
+    force->mv2d = 1.0;
+    force->nktv2p = 1.0;
+    force->qqr2e = 8.9876e30;
+    force->qe2f = 1.0;
+    force->vxmu2f = 1.0;
+    force->xxt2kmu = 1.0;
+    force->e_mass = 0.0;    // not yet set
+    force->hhmrr2e = 0.0;
+    force->mvh2r = 0.0;
+    force->angstrom = 1.0e-4;
+    force->femtosecond = 1.0e-9;
+    force->qelectron = 1.6021765e-19;
+
+    dt = 2.0;
+    neighbor->skin = 0.1;
+
+  } else if (strcmp(style,"nano") == 0) {
+    force->boltz = 0.013806503;
+    force->hplanck = 6.62606896e-4;
+    force->mvv2e = 1.0;
+    force->ftm2v = 1.0;
+    force->mv2d = 1.0;
+    force->nktv2p = 1.0;
+    force->qqr2e = 8.9876e39;
+    force->qe2f = 1.0;
+    force->vxmu2f = 1.0;
+    force->xxt2kmu = 1.0;
+    force->e_mass = 0.0;    // not yet set
+    force->hhmrr2e = 0.0;
+    force->mvh2r = 0.0;
+    force->angstrom = 1.0e-1;
+    force->femtosecond = 1.0e-6;
+    force->qelectron = 1.6021765e-19;
+
+    dt = 0.00045;
+    neighbor->skin = 0.1;
 
   } else error->all(FLERR,"Illegal units command");
 
@@ -338,33 +388,47 @@ void Update::create_minimize(int narg, char **arg)
 }
 
 /* ----------------------------------------------------------------------
-   reset timestep from input script
-   do not allow dump files or a restart to be defined
-   do not allow any timestep-dependent fixes to be defined
-   do not allow any dynamic regions to be defined
-   reset eflag/vflag global so nothing will think eng/virial are current
-   reset invoked flags of computes,
-     so nothing will think they are current between runs
-   clear timestep list of computes that store future invocation times
+   reset timestep as called from input script
 ------------------------------------------------------------------------- */
 
 void Update::reset_timestep(int narg, char **arg)
 {
   if (narg != 1) error->all(FLERR,"Illegal reset_timestep command");
+  bigint newstep = ATOBIGINT(arg[0]);
+  reset_timestep(newstep);
+}
 
-  for (int i = 0; i < output->ndump; i++)
-    if (output->last_dump[i] >= 0)
-      error->all(FLERR,"Cannot reset timestep with dump file already written to");
-  if (output->restart && output->last_restart >= 0)
-    error->all(FLERR,"Cannot reset timestep with restart file already written");
+/* ----------------------------------------------------------------------
+   reset timestep
+   set atimestep to new timestep, so future update_time() calls will be correct
+   trigger reset of timestep for output and for fixes that require it
+   do not allow any timestep-dependent fixes to be defined
+   reset eflag/vflag global so nothing will think eng/virial are current
+   reset invoked flags of computes,
+     so nothing will think they are current between runs
+   clear timestep list of computes that store future invocation times
+   called from rerun command and input script (indirectly)
+------------------------------------------------------------------------- */
 
-  for (int i = 0; i < modify->nfix; i++)
+void Update::reset_timestep(bigint newstep)
+{
+  
+  bigint oldtimestep = ntimestep;
+
+  ntimestep = newstep;
+  if (ntimestep < 0) error->all(FLERR,"Timestep must be >= 0");
+  if (ntimestep > MAXBIGINT) error->all(FLERR,"Too big a timestep");
+
+  atimestep = ntimestep;
+
+  output->reset_timestep(ntimestep);
+
+  for (int i = 0; i < modify->nfix; i++) {
     if (modify->fix[i]->time_depend)
-      error->all(FLERR,"Cannot reset timestep with a time-dependent fix defined");
-
-  for (int i = 0; i < domain->nregion; i++)
-    if (domain->regions[i]->dynamic_check())
-      error->all(FLERR,"Cannot reset timestep with a dynamic region defined");
+      error->all(FLERR,
+                 "Cannot reset timestep with a time-dependent fix defined");
+    modify->fix[i]->reset_timestep(ntimestep,oldtimestep);
+  }
 
   eflag_global = vflag_global = -1;
 
@@ -379,9 +443,22 @@ void Update::reset_timestep(int narg, char **arg)
   for (int i = 0; i < modify->ncompute; i++)
     if (modify->compute[i]->timeflag) modify->compute[i]->clearstep();
 
-  ntimestep = ATOBIGINT(arg[0]);
-  if (ntimestep < 0) error->all(FLERR,"Timestep must be >= 0");
-  if (ntimestep > MAXBIGINT) error->all(FLERR,"Too big a timestep");
+  // NOTE: 7Jun12, adding rerun command, don't think this is required
+
+  //for (int i = 0; i < domain->nregion; i++)
+  //  if (domain->regions[i]->dynamic_check())
+  //    error->all(FLERR,"Cannot reset timestep with a dynamic region defined");
+}
+
+/* ----------------------------------------------------------------------
+   update elapsed simulation time
+   called at end of runs or when timestep size changes
+------------------------------------------------------------------------- */
+
+void Update::update_time()
+{
+  atime += (ntimestep-atimestep) * dt;
+  atimestep = ntimestep;
 }
 
 /* ----------------------------------------------------------------------

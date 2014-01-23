@@ -72,9 +72,7 @@ class FixMeshSurfaceStressServo : public FixMeshSurfaceStress {
       void set_v_node();
       void set_v_node_rotate();
       double getMaxRad();
-
-      int dim_;
-      double axis_[3],totalPhi_;
+      int modify_param(int, char **);
 
       // properties of mesh
 
@@ -83,36 +81,40 @@ class FixMeshSurfaceStressServo : public FixMeshSurfaceStress {
       VectorContainer<double,3> &omegacm_;
       VectorContainer<double,3> &xcm_orig_;
 
-      // servo settings and controller
-
-      bool mode_flag_;
-      double vel_max_,vel_min_,set_point_,set_point_inv_,ctrl_output_max_,ctrl_output_min_,ratio_;
-      char *sp_str_;
-      int sp_var_, sp_style_;
-      double *control_output_,*process_value_;
-      int pv_flag_;
-      double err_, sum_err_, old_process_value_;
-      double kp_,ki_,kd_;
-
-      // timesteps and flags for integration
-
-      double dtf_,dtv_;
-
-      bool int_flag_;
-      int modify_param(int, char **);
-
       // position and velocity for each node
 
       double*** nodes_;
       MultiVectorContainer<double,3,3> &v_;
 
+      // servo settings and controller
+
+      double axis_[3],totalPhi_;
+      double *ctrl_op_,*pv_vec_;
+      double vel_max_,vel_min_,ctrl_op_max_,ctrl_op_min_,ratio_;
+      double sp_mag_,sp_mag_inv_;
+      double pv_mag_,old_pv_mag_;
+      double err_, sum_err_;
+      double kp_,ki_,kd_;
+
+      // variable set point
+      int sp_var_, sp_style_;
+      char *sp_str_;
+
+      // flags
+      bool int_flag_;
+      bool mode_flag_;
+      int ctrl_style_;
+
+      // timesteps
+      double dtf_,dtv_;
+
+      // for area calculation
+      class ModifiedAndrew *mod_andrew_;
+
       // signum function
       template <typename T> int sgn(T val) {
           return (T(0) < val) - (val < T(0));
       }
-
-      // for area calculation
-      class ModifiedAndrew *mod_andrew_;
 
 }; //end class
 

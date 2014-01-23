@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -15,7 +15,10 @@
    Contributing author: Axel Kohlmeyer (Temple U)
 ------------------------------------------------------------------------- */
 
-#include "math.h"
+#include <cmath>
+#include <cstdlib>
+#include <cstdio>
+
 #include "dihedral_table_omp.h"
 #include "atom.h"
 #include "comm.h"
@@ -25,11 +28,76 @@
 #include "update.h"
 #include "error.h"
 
+#include "math_const.h"
+#include "math_extra.h"
+
 #include "suffix.h"
+
 using namespace LAMMPS_NS;
-using namespace DIHEDRAL_TABLE_NS;
+using namespace MathConst;
+using namespace MathExtra;
+
 #define TOLERANCE 0.05
 #define SMALL     0.001
+
+// --------------------------------------------
+// ------- Calculate the dihedral angle -------
+// --------------------------------------------
+static const int g_dim=3;
+
+static double Phi(double const *x1, //array holding x,y,z coords atom 1
+                  double const *x2, // :       :      :      :        2
+                  double const *x3, // :       :      :      :        3
+                  double const *x4, // :       :      :      :        4
+                  Domain *domain, //<-periodic boundary information
+                  // The following arrays are of doubles with g_dim elements.
+                  // (g_dim is a constant known at compile time, usually 3).
+                  // Their contents is calculated by this function.
+                  // Space for these vectors must be allocated in advance.
+                  // (This is not hidden internally because these vectors
+                  //  may be needed outside the function, later on.)
+                  double *vb12, // will store x2-x1
+                  double *vb23, // will store x3-x2
+                  double *vb34, // will store x4-x3
+                  double *n123, // will store normal to plane x1,x2,x3
+                  double *n234) // will store normal to plane x2,x3,x4
+{
+
+  for (int d=0; d < g_dim; ++d) {
+    vb12[d] = x2[d] - x1[d]; // 1st bond
+    vb23[d] = x3[d] - x2[d]; // 2nd bond
+    vb34[d] = x4[d] - x3[d]; // 3rd bond
+  }
+
+  //Consider periodic boundary conditions:
+  domain->minimum_image(vb12[0],vb12[1],vb12[2]);
+  domain->minimum_image(vb23[0],vb23[1],vb23[2]);
+  domain->minimum_image(vb34[0],vb34[1],vb34[2]);
+
+  //--- Compute the normal to the planes formed by atoms 1,2,3 and 2,3,4 ---
+
+  cross3(vb23, vb12, n123);        // <- n123=vb23 x vb12
+  cross3(vb23, vb34, n234);        // <- n234=vb23 x vb34
+
+  norm3(n123);
+  norm3(n234);
+
+  double cos_phi = -dot3(n123, n234);
+
+  if (cos_phi > 1.0)
+    cos_phi = 1.0;
+  else if (cos_phi < -1.0)
+    cos_phi = -1.0;
+
+  double phi = acos(cos_phi);
+
+  if (dot3(n123, vb34) > 0.0) {
+    phi = -phi;   //(Note: Negative dihedral angles are possible only in 3-D.)
+    phi += MY_2PI; //<- This insure phi is always in the range 0 to 2*PI
+  }
+  return phi;
+} // DihedralTable::Phi()
+
 
 /* ---------------------------------------------------------------------- */
 
@@ -62,19 +130,20 @@ void DihedralTableOMP::compute(int eflag, int vflag)
     ThrData *thr = fix->get_thr(tid);
     ev_setup_thr(eflag, vflag, nall, eatom, vatom, thr);
 
-    if (evflag) {
-      if (eflag) {
-	if (force->newton_bond) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+    if (inum > 0) {
+      if (evflag) {
+        if (eflag) {
+          if (force->newton_bond) eval<1,1,1>(ifrom, ito, thr);
+          else eval<1,1,0>(ifrom, ito, thr);
+        } else {
+          if (force->newton_bond) eval<1,0,1>(ifrom, ito, thr);
+          else eval<1,0,0>(ifrom, ito, thr);
+        }
       } else {
-	if (force->newton_bond) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_bond) eval<0,0,1>(ifrom, ito, thr);
+        else eval<0,0,0>(ifrom, ito, thr);
       }
-    } else {
-      if (force->newton_bond) eval<0,0,1>(ifrom, ito, thr);
-      else eval<0,0,0>(ifrom, ito, thr);
     }
-
     reduce_thr(this, eflag, vflag, thr);
   } // end of omp parallel region
 }
@@ -82,8 +151,7 @@ void DihedralTableOMP::compute(int eflag, int vflag)
 template <int EVFLAG, int EFLAG, int NEWTON_BOND>
 void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
 {
-  
-  int i1,i2,i3,i4,i,m,n,type;
+  int i1,i2,i3,i4,n,type;
   double edihedral,f1[3],f2[3],f3[3],f4[3];
 
   const double * const * const x = atom->x;
@@ -94,19 +162,19 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
   // The dihedral angle "phi" is the angle between n123 and n234
   // the planes defined by atoms i1,i2,i3, and i2,i3,i4.
   //
-  // Definitions of vectors: vb12, vb23, vb34, perp12on23 
+  // Definitions of vectors: vb12, vb23, vb34, perp12on23
   //                         proj12on23, perp43on32, proj43on32
   //
   //  Note: The positions of the 4 atoms are labeled x[i1], x[i2], x[i3], x[i4]
   //        (which are also vectors)
   //
-  //             proj12on23                          proj34on23          
-  //             --------->                         ----------->         
-  //                           .                                         
-  //                          .                                          
-  //                         .                                  
-  //                  x[i2] .                       x[i3]                 
-  //    .                __@----------vb23-------->@ . . . .           . 
+  //             proj12on23                          proj34on23
+  //             --------->                         ----------->
+  //                           .
+  //                          .
+  //                         .
+  //                  x[i2] .                       x[i3]
+  //    .                __@----------vb23-------->@ . . . .           .
   //   /|\                /|                        \                  |
   //    |                /                           \                 |
   //    |               /                             \                |
@@ -119,9 +187,9 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
   //    |        /                                           \         |
   //            @                                             \        |
   //                                                          _\|     \|/
-  //         x[i1]                                              @     
-  //                                                           
-  //                                                           x[i4]   
+  //         x[i1]                                              @
+  //
+  //                                                           x[i4]
   //
 
   double vb12[g_dim]; // displacement vector from atom i1 towards atom i2
@@ -133,8 +201,8 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
 
   //  n123 & n234: These two unit vectors are normal to the planes
   //               defined by atoms 1,2,3 and 2,3,4.
-  double n123[g_dim]; //n123=vb12 x vb23 / |vb12 x vb23|  ("x" is cross product)
-  double n234[g_dim]; //n234=vb34 x vb23 / |vb34 x vb23|  ("x" is cross product)
+  double n123[g_dim]; //n123=vb23 x vb12 / |vb23 x vb12|  ("x" is cross product)
+  double n234[g_dim]; //n234=vb23 x vb34 / |vb23 x vb34|  ("x" is cross product)
 
   double proj12on23[g_dim];
   //    proj12on23[d] = (vb23[d]/|vb23|) * DotProduct(vb12,vb23)/|vb12|*|vb23|
@@ -159,11 +227,11 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
     //
 
     // Phi() calculates the dihedral angle.
-    // This function also calculates the vectors: 
+    // This function also calculates the vectors:
     // vb12, vb23, vb34, n123, and n234, which we will need later.
 
 
-    double phi = Phi(x[i1], x[i2], x[i3], x[i4], domain, 
+    double phi = Phi(x[i1], x[i2], x[i3], x[i4], domain,
                      vb12, vb23, vb34, n123, n234);
 
 
@@ -171,7 +239,7 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
     //
     // Gradient variables:
     //
-    // dphi_dx1, dphi_dx2, dphi_dx3, dphi_dx4 are the gradients of phi with 
+    // dphi_dx1, dphi_dx2, dphi_dx3, dphi_dx4 are the gradients of phi with
     // respect to the atomic positions of atoms i1, i2, i3, i4, respectively.
     // As an example, consider dphi_dx1.  The d'th element is:
     double dphi_dx1[g_dim]; //                 d phi
@@ -179,9 +247,9 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
     double dphi_dx3[g_dim]; //               d x[i1][d]
     double dphi_dx4[g_dim]; //where d=0,1,2 corresponds to x,y,z  (if g_dim==3)
 
-    double dot123             = DotProduct(vb12, vb23);
-    double dot234             = DotProduct(vb23, vb34);
-    double L23sqr             = DotProduct(vb23, vb23);
+    double dot123             = dot3(vb12, vb23);
+    double dot234             = dot3(vb23, vb34);
+    double L23sqr             = dot3(vb23, vb23);
     double L23                = sqrt(L23sqr);   // (central bond length)
     double inv_L23sqr = 0.0;
     double inv_L23    = 0.0;
@@ -201,15 +269,14 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
       perp34on23[d] = vb34[d] - proj34on23[d];
     }
 
-
     // --- Compute the gradient vectors dphi/dx1 and dphi/dx4: ---
 
     // These two gradients point in the direction of n123 and n234,
     // and are scaled by the distances of atoms 1 and 4 from the central axis.
     // Distance of atom 1 to central axis:
-    double perp12on23_len = sqrt(DotProduct(perp12on23, perp12on23));
+    double perp12on23_len = sqrt(dot3(perp12on23, perp12on23));
     // Distance of atom 4 to central axis:
-    double perp34on23_len = sqrt(DotProduct(perp34on23, perp34on23));
+    double perp34on23_len = sqrt(dot3(perp34on23, perp34on23));
 
     double inv_perp12on23 = 0.0;
     if (perp12on23_len != 0.0) inv_perp12on23 = 1.0 / perp12on23_len;
@@ -223,8 +290,8 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
 
     // --- Compute the gradient vectors dphi/dx2 and dphi/dx3: ---
     //
-    // This is more tricky because atoms 2 and 3 are shared by both planes 
-    // 123 and 234 (the angle between which defines "phi").  Moving either 
+    // This is more tricky because atoms 2 and 3 are shared by both planes
+    // 123 and 234 (the angle between which defines "phi").  Moving either
     // one of these atoms effects both the 123 and 234 planes
     // Both the 123 and 234 planes intersect with the plane perpendicular to the
     // central bond axis (vb23).  The two lines where these intersections occur
@@ -257,42 +324,19 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
 
     for (int d=0; d < g_dim; ++d) {
       // Recall that the n123 and n234 plane normal vectors are proportional to
-      // the dphi/dx1 and dphi/dx2 gradients vectors 
+      // the dphi/dx1 and dphi/dx2 gradients vectors
       // It turns out we can save slightly more CPU cycles by expressing
-      // dphi/dx2 and dphi/dx3 as linear combinations of dphi/dx1 and dphi/dx2 
+      // dphi/dx2 and dphi/dx3 as linear combinations of dphi/dx1 and dphi/dx2
       // which we computed already (instead of n123 & n234).
       dphi_dx2[d] = dphi123_dx2_coef*dphi_dx1[d] + dphi234_dx2_coef*dphi_dx4[d];
       dphi_dx3[d] = dphi123_dx3_coef*dphi_dx1[d] + dphi234_dx3_coef*dphi_dx4[d];
     }
 
 
-
-
-    #ifdef DIH_DEBUG_NUM
-    // ----- Numerical test? -----
-
-    cerr << "  -- testing gradient for dihedral (n="<<n<<") for atoms ("
-         << i1 << "," << i2 << "," << i3 << "," << i4 << ") --" << endl;
-
-    PrintGradientComparison(*this, dphi_dx1, dphi_dx2, dphi_dx3, dphi_dx4, 
-                            domain, x[i1], x[i2], x[i3], x[i4]);
-
-    for (int d=0; d < g_dim; ++d) {
-      // The sum of all the gradients should be near 0. (translational symmetry)
-      cerr <<"sum_gradients["<<d<<"]="<<dphi_dx1[d]<<"+"<<dphi_dx2[d]<<"+"<<dphi_dx3[d]<<"+"<<dphi_dx4[d]<<"="<<dphi_dx1[d]+dphi_dx2[d]+dphi_dx3[d]+dphi_dx4[d]<<endl;
-      // These should sum to zero
-      assert(abs(dphi_dx1[d]+dphi_dx2[d]+dphi_dx3[d]+dphi_dx4[d]) < 0.0002/L23);
-    }
-    #endif // #ifdef DIH_DEBUG_NUM
-
-
-
-
     // ----- Step 3: Calculate the energy and force in the phi direction -----
 
     // tabulated force & energy
     double u, m_du_dphi; //u = energy.   m_du_dphi = "minus" du/dphi
-    assert((0.0 <= phi) && (phi <= TWOPI));
 
     uf_lookup(type, phi, u, m_du_dphi);
 
@@ -340,7 +384,7 @@ void DihedralTableOMP::eval(int nfrom, int nto, ThrData * const thr)
 
     if (EVFLAG)
       ev_tally_thr(this,i1,i2,i3,i4,nlocal,NEWTON_BOND,edihedral,f1,f3,f4,
-		   vb12[0],vb12[1],vb12[2],vb23[0],vb23[1],vb23[2],vb34[0],
-		   vb34[1],vb34[2],thr);
+                   vb12[0],vb12[1],vb12[2],vb23[0],vb23[1],vb23[2],vb34[0],
+                   vb34[1],vb34[2],thr);
   }
 }

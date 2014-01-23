@@ -63,7 +63,7 @@ CfdRegionmodelNone::~CfdRegionmodelNone()
 
 void CfdRegionmodelNone::init()
 {
-    char* fixarg[9];
+    const char* fixarg[9];
     if(!inRegion)
     {
         fixarg[0]="inRegion";
@@ -75,7 +75,7 @@ void CfdRegionmodelNone::init()
         fixarg[6]="no";    
         fixarg[7]="no";    
         fixarg[8]="1.";
-        modify->add_fix(9,fixarg);
+        modify->add_fix(9,(char**)fixarg);
     }
 
     inRegion = static_cast<FixPropertyAtom*>(modify->find_fix_property("inRegion","property/atom","scalar",1,0,"cfd_regionmodel none"));
@@ -89,7 +89,7 @@ void CfdRegionmodelNone::init()
         fixarg[4]="vector";
         fixarg[5]="0.";
         fixarg[6]="0.";
-        modify->add_fix(7,fixarg);
+        modify->add_fix(7,(char**)fixarg);
     }
 
     outRegion = static_cast<FixPropertyGlobal*>(modify->find_fix_property("outRegion","property/global","vector",2,0,"cfd_regionmodel none"));

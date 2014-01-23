@@ -31,8 +31,10 @@
 #define LMP_FIX_WALL_GRAN_H
 
 #include "fix_mesh_surface.h"
+#include "contact_interface.h"
 
 namespace LAMMPS_NS {
+using namespace ContactModels;
 
 class FixWallGran : public Fix {
 
@@ -67,6 +69,10 @@ class FixWallGran : public Fix {
 
   inline int iarg()
   { return iarg_; }
+
+  int add_history_value(std::string name, std::string newtonflag) {
+      return dnum_++;
+  }
 
   inline int dnum()
   { return dnum_; }
@@ -113,7 +119,7 @@ class FixWallGran : public Fix {
   { r0_ = _r0; }
 
   virtual void init_granular() {}
-  virtual void init_heattransfer() {}
+  void init_heattransfer();
   bool heattransfer_flag_;
 
   // mesh and primitive force implementations
@@ -122,10 +128,8 @@ class FixWallGran : public Fix {
 
   // virtual functions that allow implementation of the
   // actual physics in the derived classes
-  virtual void compute_force(int i,double deltan,double rsq,double meff_wall,
-                            double dx,double dy,double dz,double *vwall,
-                            double *c_history,double area_ratio) = 0;
-  virtual void addHeatFlux(class TriMesh *mesh,int i,double rsq,double area_ratio) {};
+  virtual void compute_force(CollisionData & cdata, double *vwall) = 0;
+  void addHeatFlux(class TriMesh *mesh,int i,double rsq,double area_ratio);
 
   // sets flag that neigh list shall be built
   virtual void pre_neighbor();
@@ -138,11 +142,19 @@ class FixWallGran : public Fix {
   class FixMeshSurface **FixMesh_list_;
 
   // pair style, fix rigid for correct damping
-  char *pairstyle_;
-  class PairGran *pairgran_;
   class FixRigid *fix_rigid_;
   int *body_;
   double *masstotal_;
+
+  // heat transfer
+  class FixPropertyAtom *fppa_T;
+  class FixPropertyAtom *fppa_hf;
+
+  double Temp_wall;
+  double Q,Q_add;
+
+  const double *th_cond;
+  double const* const* deltan_ratio;
 
  private:
 
@@ -181,8 +193,7 @@ class FixWallGran : public Fix {
 
   void post_force_wall(int vflag);
 
-  inline void post_force_eval_contact(int iPart, double deltan, double *delta, double *v_wall,
-                    double *c_history, int iMesh = -1, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
+  inline void post_force_eval_contact(CollisionData & cdata, double * v_wall, int iMesh = -1, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
 };
 
 }

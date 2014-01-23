@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -21,13 +21,15 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "memory.h"
+
 using namespace LAMMPS_NS;
 
+/* ---------------------------------------------------------------------- */
 
-ThrData::ThrData(int tid) 
-  : _f(NULL), _torque(NULL), _erforce(NULL), _de(NULL), _drho(NULL), _mu(NULL),
-    _lambda(NULL), _rhoB(NULL), _D_values(NULL), _rho(NULL), _fp(NULL),
-    _rho1d(NULL), _tid(tid) 
+ThrData::ThrData(int tid)
+  : _f(0),_torque(0),_erforce(0),_de(0),_drho(0),_mu(0),_lambda(0),_rhoB(0),
+    _D_values(0),_rho(0),_fp(0),_rho1d(0),_drho1d(0),_tid(tid)
 {
   // nothing else to do here.
 }
@@ -44,7 +46,7 @@ void ThrData::check_tid(int tid)
 /* ---------------------------------------------------------------------- */
 
 void ThrData::init_force(int nall, double **f, double **torque,
-			 double *erforce, double *de, double *drho)
+                         double *erforce, double *de, double *drho)
 {
   eng_vdwl=eng_coul=eng_bond=eng_angle=eng_dihed=eng_imprp=eng_kspce=0.0;
   memset(virial_pair,0,6*sizeof(double));
@@ -137,6 +139,61 @@ void ThrData::init_eim(int nall, double *rho, double *fp)
 }
 
 /* ----------------------------------------------------------------------
+   if order > 0 : set up per thread storage for PPPM
+   if order < 0 : free per thread storage for PPPM
+------------------------------------------------------------------------- */
+#if defined(FFT_SINGLE)
+typedef float FFT_SCALAR;
+#else
+typedef double FFT_SCALAR;
+#endif
+
+void ThrData::init_pppm(int order, Memory *memory)
+{
+  FFT_SCALAR **rho1d, **drho1d;
+  if (order > 0) {
+      memory->create2d_offset(rho1d,3,-order/2,order/2,"thr_data:rho1d");
+      memory->create2d_offset(drho1d,3,-order/2,order/2,"thr_data:drho1d");
+      _rho1d = static_cast<void *>(rho1d);
+      _drho1d = static_cast<void *>(drho1d);
+  } else {
+    order = -order;
+    rho1d = static_cast<FFT_SCALAR **>(_rho1d);
+    drho1d = static_cast<FFT_SCALAR **>(_drho1d);
+    memory->destroy2d_offset(rho1d,-order/2);
+    memory->destroy2d_offset(drho1d,-order/2);
+  }
+}
+
+/* ----------------------------------------------------------------------
+   if order > 0 : set up per thread storage for PPPM
+   if order < 0 : free per thread storage for PPPM
+------------------------------------------------------------------------- */
+#if defined(FFT_SINGLE)
+typedef float FFT_SCALAR;
+#else
+typedef double FFT_SCALAR;
+#endif
+
+void ThrData::init_pppm_disp(int order_6, Memory *memory)
+{
+  FFT_SCALAR **rho1d_6, **drho1d_6;
+  if (order_6 > 0) {
+      memory->create2d_offset(rho1d_6,3,-order_6/2,order_6/2,"thr_data:rho1d_6");
+      memory->create2d_offset(drho1d_6,3,-order_6/2,order_6/2,"thr_data:drho1d_6");
+      _rho1d_6 = static_cast<void *>(rho1d_6);
+      _drho1d_6 = static_cast<void *>(drho1d_6);
+  } else {
+    order_6 = -order_6;
+    rho1d_6 = static_cast<FFT_SCALAR **>(_rho1d_6);
+    drho1d_6 = static_cast<FFT_SCALAR **>(_drho1d_6);
+    memory->destroy2d_offset(rho1d_6,-order_6/2);
+    memory->destroy2d_offset(drho1d_6,-order_6/2);
+  }
+}
+
+
+/* ----------------------------------------------------------------------
    compute global pair virial via summing F dot r over own & ghost atoms
    at this point, only pairwise forces have been accumulated in atom->f
 ------------------------------------------------------------------------- */
@@ -184,7 +241,7 @@ void ThrData::virial_fdotr_compute(double **x, int nlocal, int nghost, int nfirs
 
 /* ---------------------------------------------------------------------- */
 
-double ThrData::memory_usage() 
+double ThrData::memory_usage()
 {
   double bytes = (7 + 6*6) * sizeof(double);
   bytes += 2 * sizeof(double*);
@@ -205,7 +262,7 @@ double ThrData::memory_usage()
 void LAMMPS_NS::data_reduce_thr(double *dall, int nall, int nthreads, int ndim, int tid)
 {
 #if defined(_OPENMP)
-  // NOOP in non-threaded execution.
+  // NOOP in single-threaded execution.
   if (nthreads == 1) return;
 #pragma omp barrier
   {
@@ -214,19 +271,75 @@ void LAMMPS_NS::data_reduce_thr(double *dall, int nall, int nthreads, int ndim, 
     const int ifrom = tid*idelta;
     const int ito   = ((ifrom + idelta) > nvals) ? nvals : (ifrom + idelta);
 
-    // this if protects against having more threads than atoms
-    if (ifrom < nvals) { 
-      for (int m = ifrom; m < ito; ++m) {
-	for (int n = 1; n < nthreads; ++n) {
-	  dall[m] += dall[n*nvals + m];
-	  dall[n*nvals + m] = 0.0;
-	}
+#if defined(USER_OMP_NO_UNROLL)
+    if (ifrom < nvals) {
+      int m = 0;
+
+      for (m = ifrom; m < ito; ++m) {
+        for (int n = 1; n < nthreads; ++n) {
+          dall[m] += dall[n*nvals + m];
+          dall[n*nvals + m] = 0.0;
+        }
       }
     }
+#else
+    // this if protects against having more threads than atoms
+    if (ifrom < nvals) {
+      int m = 0;
+
+      // for architectures that have L1 D-cache line sizes of 64 bytes
+      // (8 doubles) wide, explictly unroll this loop to  compute 8
+      // contiguous values in the array at a time
+      // -- modify this code based on the size of the cache line
+      double t0, t1, t2, t3, t4, t5, t6, t7;
+      for (m = ifrom; m < (ito-7); m+=8) {
+        t0 = dall[m  ];
+        t1 = dall[m+1];
+        t2 = dall[m+2];
+        t3 = dall[m+3];
+        t4 = dall[m+4];
+        t5 = dall[m+5];
+        t6 = dall[m+6];
+        t7 = dall[m+7];
+        for (int n = 1; n < nthreads; ++n) {
+          t0 += dall[n*nvals + m  ];
+          t1 += dall[n*nvals + m+1];
+          t2 += dall[n*nvals + m+2];
+          t3 += dall[n*nvals + m+3];
+          t4 += dall[n*nvals + m+4];
+          t5 += dall[n*nvals + m+5];
+          t6 += dall[n*nvals + m+6];
+          t7 += dall[n*nvals + m+7];
+          dall[n*nvals + m  ] = 0.0;
+          dall[n*nvals + m+1] = 0.0;
+          dall[n*nvals + m+2] = 0.0;
+          dall[n*nvals + m+3] = 0.0;
+          dall[n*nvals + m+4] = 0.0;
+          dall[n*nvals + m+5] = 0.0;
+          dall[n*nvals + m+6] = 0.0;
+          dall[n*nvals + m+7] = 0.0;
+        }
+        dall[m  ] = t0;
+        dall[m+1] = t1;
+        dall[m+2] = t2;
+        dall[m+3] = t3;
+        dall[m+4] = t4;
+        dall[m+5] = t5;
+        dall[m+6] = t6;
+        dall[m+7] = t7;
+      }
+      // do the last < 8 values
+      for (; m < ito; m++) {
+        for (int n = 1; n < nthreads; ++n) {
+          dall[m] += dall[n*nvals + m];
+          dall[n*nvals + m] = 0.0;
+        }
+      }
+    }
+#endif
   }
 #else
   // NOOP in non-threaded execution.
   return;
 #endif
 }
-

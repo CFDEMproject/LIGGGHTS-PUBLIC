@@ -26,7 +26,7 @@ namespace LAMMPS_NS {
 
 class AtomVecAtomic : public AtomVec {
  public:
-  AtomVecAtomic(class LAMMPS *, int, char **);
+  AtomVecAtomic(class LAMMPS *);
   virtual ~AtomVecAtomic() {}
   void grow(int);
   void grow_reset();
@@ -47,11 +47,14 @@ class AtomVecAtomic : public AtomVec {
   int pack_restart(int, double *);
   int unpack_restart(double *);
   void create_atom(int, double *);
-  void data_atom(double *, int, char **);
+  void data_atom(double *, tagint, char **);
+  void pack_data(double **);
+  void write_data(FILE *, int, double **);
   bigint memory_usage();
 
  protected:
-  int *tag,*type,*mask,*image;
+  int *tag,*type,*mask;
+  tagint *image;
   double **x,**v,**f;
 };
 

@@ -67,19 +67,19 @@ void PairEIMOMP::compute(int eflag, int vflag)
     loop_setup_thr(ifrom, ito, tid, inum, nthreads);
     ThrData *thr = fix->get_thr(tid);
     ev_setup_thr(eflag, vflag, nall, eatom, vatom, thr);
-    
+
     if (force->newton_pair)
       thr->init_eim(nall, rho, fp);
     else
       thr->init_eim(atom->nlocal, rho, fp);
-    
+
     if (evflag) {
       if (eflag) {
-	if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
-	else eval<1,1,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,1,1>(ifrom, ito, thr);
+        else eval<1,1,0>(ifrom, ito, thr);
       } else {
-	if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
-	else eval<1,0,0>(ifrom, ito, thr);
+        if (force->newton_pair) eval<1,0,1>(ifrom, ito, thr);
+        else eval<1,0,0>(ifrom, ito, thr);
       }
     } else {
       if (force->newton_pair) eval<0,0,1>(ifrom, ito, thr);
@@ -102,14 +102,14 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
   evdwl = 0.0;
 
 
-  const double * const * const x = atom->x;
-  double * const * const f = thr->get_f();
+  const dbl3_t * _noalias const x = (dbl3_t *) atom->x[0];
+  dbl3_t * _noalias const f = (dbl3_t *) thr->get_f()[0];
   double * const rho_t = thr->get_rho();
   double * const fp_t = thr->get_fp();
   const int tid = thr->get_tid();
   const int nthreads = comm->nthreads;
 
-  const int * const type = atom->type;
+  const int * _noalias const type = atom->type;
   const int nlocal = atom->nlocal;
   const int nall = nlocal + atom->nghost;
 
@@ -124,9 +124,9 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
 
   for (ii = iifrom; ii < iito; ii++) {
     i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
@@ -135,23 +135,23 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
       j = jlist[jj];
       j &= NEIGHMASK;
       jtype = type[j];
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
 
       if (rsq < cutforcesq[itype][jtype]) {
-	p = sqrt(rsq)*rdr + 1.0;
-	m = static_cast<int> (p);
-	m = MIN(m,nr-1);
-	p -= m;
-	p = MIN(p,1.0);
-	coeff = Fij_spline[type2Fij[itype][jtype]][m];
-	rho_t[i] += ((coeff[3]*p + coeff[4])*p + coeff[5])*p + coeff[6];
-	if (NEWTON_PAIR || j < nlocal) {
-	  coeff = Fij_spline[type2Fij[jtype][itype]][m];
-	  rho_t[j] += ((coeff[3]*p + coeff[4])*p + coeff[5])*p + coeff[6];
-	}
+        p = sqrt(rsq)*rdr + 1.0;
+        m = static_cast<int> (p);
+        m = MIN(m,nr-1);
+        p -= m;
+        p = MIN(p,1.0);
+        coeff = Fij_spline[type2Fij[itype][jtype]][m];
+        rho_t[i] += ((coeff[3]*p + coeff[4])*p + coeff[5])*p + coeff[6];
+        if (NEWTON_PAIR || j < nlocal) {
+          coeff = Fij_spline[type2Fij[jtype][itype]][m];
+          rho_t[j] += ((coeff[3]*p + coeff[4])*p + coeff[5])*p + coeff[6];
+        }
       }
     }
   }
@@ -170,9 +170,9 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
 #if defined(_OPENMP)
 #pragma omp master
 #endif
-    { 
+    {
       rhofp = 1;
-      comm->reverse_comm_pair(this); 
+      comm->reverse_comm_pair(this);
     }
 
   } else {
@@ -185,33 +185,33 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
 #if defined(_OPENMP)
 #pragma omp master
 #endif
-  { 
+  {
     rhofp = 1;
-    comm->forward_comm_pair(this); 
+    comm->forward_comm_pair(this);
   }
 
   // wait until master is finished communicating
   sync_threads();
- 
+
   for (ii = iifrom; ii < iito; ii++) {
     i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
- 
+
     for (jj = 0; jj < jnum; jj++) {
       j = jlist[jj];
       j &= NEIGHMASK;
       jtype = type[j];
- 
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
- 
+
       if (rsq < cutforcesq[itype][jtype]) {
         p = sqrt(rsq)*rdr + 1.0;
         m = static_cast<int> (p);
@@ -221,8 +221,8 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
         coeff = Gij_spline[type2Gij[itype][jtype]][m];
         fp_t[i] += rho[j]*(((coeff[3]*p + coeff[4])*p + coeff[5])*p + coeff[6]);
         if (NEWTON_PAIR || j < nlocal) {
-          fp_t[j] += rho[i]*(((coeff[3]*p + coeff[4])*p + coeff[5])*p + 
-			   coeff[6]);
+          fp_t[j] += rho[i]*(((coeff[3]*p + coeff[4])*p + coeff[5])*p +
+                           coeff[6]);
         }
       }
     }
@@ -242,9 +242,9 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
 #if defined(_OPENMP)
 #pragma omp master
 #endif
-    { 
+    {
       rhofp = 2;
-      comm->reverse_comm_pair(this); 
+      comm->reverse_comm_pair(this);
     }
 
   } else {
@@ -257,9 +257,9 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
 #if defined(_OPENMP)
 #pragma omp master
 #endif
-  { 
+  {
     rhofp = 2;
-    comm->forward_comm_pair(this); 
+    comm->forward_comm_pair(this);
   }
 
   // wait until master is finished communicating
@@ -279,9 +279,9 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
 
   for (ii = iifrom; ii < iito; ii++) {
     i = ilist[ii];
-    xtmp = x[i][0];
-    ytmp = x[i][1];
-    ztmp = x[i][2];
+    xtmp = x[i].x;
+    ytmp = x[i].y;
+    ztmp = x[i].z;
     itype = type[i];
     fxtmp = fytmp = fztmp = 0.0;
 
@@ -292,18 +292,18 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
       j = jlist[jj];
       j &= NEIGHMASK;
       jtype = type[j];
-      delx = xtmp - x[j][0];
-      dely = ytmp - x[j][1];
-      delz = ztmp - x[j][2];
+      delx = xtmp - x[j].x;
+      dely = ytmp - x[j].y;
+      delz = ztmp - x[j].z;
       rsq = delx*delx + dely*dely + delz*delz;
 
       if (rsq < cutforcesq[itype][jtype]) {
-	r = sqrt(rsq);
-	p = r*rdr + 1.0;
-	m = static_cast<int> (p);
-	m = MIN(m,nr-1);
-	p -= m;
-	p = MIN(p,1.0);
+        r = sqrt(rsq);
+        p = r*rdr + 1.0;
+        m = static_cast<int> (p);
+        m = MIN(m,nr-1);
+        p -= m;
+        p = MIN(p,1.0);
 
         // rhoip = derivative of (density at atom j due to atom i)
         // rhojp = derivative of (density at atom i due to atom j)
@@ -324,23 +324,23 @@ void PairEIMOMP::eval(int iifrom, int iito, ThrData * const thr)
                fp[i]*rhojp + fp[j]*rhoip;
         recip = 1.0/r;
         fpair = -psip*recip;
-	fxtmp += delx*fpair;
-	fytmp += dely*fpair;
-	fztmp += delz*fpair;
-	if (NEWTON_PAIR || j < nlocal) {
-	  f[j][0] -= delx*fpair;
-	  f[j][1] -= dely*fpair;
-	  f[j][2] -= delz*fpair;
-	}
+        fxtmp += delx*fpair;
+        fytmp += dely*fpair;
+        fztmp += delz*fpair;
+        if (NEWTON_PAIR || j < nlocal) {
+          f[j].x -= delx*fpair;
+          f[j].y -= dely*fpair;
+          f[j].z -= delz*fpair;
+        }
 
-	if (EFLAG) evdwl = phi-q0[itype]*q0[jtype]*coul;
-	if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
-				 evdwl,0.0,fpair,delx,dely,delz,thr);
+        if (EFLAG) evdwl = phi-q0[itype]*q0[jtype]*coul;
+        if (EVFLAG) ev_tally_thr(this, i,j,nlocal,NEWTON_PAIR,
+                                 evdwl,0.0,fpair,delx,dely,delz,thr);
       }
     }
-    f[i][0] += fxtmp;
-    f[i][1] += fytmp;
-    f[i][2] += fztmp;
+    f[i].x += fxtmp;
+    f[i].y += fytmp;
+    f[i].z += fztmp;
   }
 }
 

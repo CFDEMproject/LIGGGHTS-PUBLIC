@@ -37,23 +37,23 @@
 #include "math_const.h"
 #include "memory.h"
 #include "error.h"
-#include "fix_property_atom.h"
-#include "modify.h"
-#include "update.h"
+#include "fix_property_atom.h" 
+#include "modify.h" 
+#include "update.h" 
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
 using namespace MathConst;
 
 enum{PAIR,KSPACE,ATOM};
-enum{DIAMETER};
+enum{DIAMETER,CHARGE};
 
 /* ---------------------------------------------------------------------- */
 
 FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 {
   if (narg < 5) error->all(FLERR,"Illegal fix adapt command");
-  nevery = atoi(arg[3]);
+  nevery = force->inumeric(FLERR,arg[3]);
   if (nevery < 0) error->all(FLERR,"Illegal fix adapt command");
 
   // count # of adaptations
@@ -84,6 +84,7 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 
   nadapt = 0;
   diamflag = 0;
+  chgflag = 0;
 
   iarg = 4;
   while (iarg < narg) {
@@ -125,6 +126,9 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         
         rad_mass_vary_flag = 1;
         diamflag = 1;
+      } else if (strcmp(arg[iarg+1],"charge") == 0) {
+        adapt[nadapt].aparam = CHARGE; 
+        chgflag = 1; 
       } else error->all(FLERR,"Illegal fix adapt command");
       if (strstr(arg[iarg+2],"v_") == arg[iarg+2]) {
         int n = strlen(&arg[iarg+2][2]) + 1;
@@ -252,7 +256,8 @@ void FixAdapt::init()
       Pair *pair = force->pair_match(ad->pstyle,1);
       if (pair == NULL) error->all(FLERR,"Fix adapt pair style does not exist");
       void *ptr = pair->extract(ad->pparam,ad->pdim);
-      if (ptr == NULL) error->all(FLERR,"Fix adapt pair style param not supported");
+      if (ptr == NULL) 
+        error->all(FLERR,"Fix adapt pair style param not supported");
 
       ad->pdim = 2;
       if (ad->pdim == 0) ad->scalar = (double *) ptr;
@@ -279,6 +284,10 @@ void FixAdapt::init()
       if (ad->aparam == DIAMETER) {
         if (!atom->radius_flag)
           error->all(FLERR,"Fix adapt requires atom attribute diameter");
+      }
+      if (ad->aparam == CHARGE) {
+	    if (!atom->q_flag)
+	      error->all(FLERR,"Fix adapt requires atom attribute charge");
       }
     }
   }
@@ -395,6 +404,12 @@ void FixAdapt::change_settings()
                 radius[i]*radius[i]*radius[i] * density;
             }
         }
+      } else if (ad->aparam == CHARGE) {
+        double *q = atom->q; 
+        int *mask = atom->mask;
+        int nlocal = atom->nlocal;
+        for (i = 0; i < nlocal; i++)
+          if (mask[i] & groupbit) q[i] = value; 
       }
     }
   }

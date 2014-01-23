@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -26,14 +26,15 @@
 #include "respa.h"
 #include "domain.h"
 #include "error.h"
+#include "force.h"
 #include "group.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
-enum { SMD_NONE=0, 
-       SMD_TETHER=1<<0, SMD_COUPLE=1<<1, 
-       SMD_CVEL=1<<2, SMD_CFOR=1<<3, 
+enum { SMD_NONE=0,
+       SMD_TETHER=1<<0, SMD_COUPLE=1<<1,
+       SMD_CVEL=1<<2, SMD_CFOR=1<<3,
        SMD_AUTOX=1<<4, SMD_AUTOY=1<<5, SMD_AUTOZ=1<<6};
 
 #define SMALL 0.001
@@ -60,49 +61,49 @@ FixSMD::FixSMD(LAMMPS *lmp, int narg, char **arg) :
   if (strcmp(arg[argoffs],"cvel") == 0) {
     if (narg < argoffs+3) error->all(FLERR,"Illegal fix smd command");
     styleflag |= SMD_CVEL;
-    k_smd = atof(arg[argoffs+1]);
-    v_smd = atof(arg[argoffs+2]); // to be multiplied by update->dt when used.
+    k_smd = force->numeric(FLERR,arg[argoffs+1]);
+    v_smd = force->numeric(FLERR,arg[argoffs+2]); // to be multiplied by update->dt when used.
     argoffs += 3;
   } else if (strcmp(arg[argoffs],"cfor") == 0) {
     if (narg < argoffs+2) error->all(FLERR,"Illegal fix smd command");
     styleflag |= SMD_CFOR;
-    f_smd = atof(arg[argoffs+1]);
+    f_smd = force->numeric(FLERR,arg[argoffs+1]);
     argoffs += 2;
   } else error->all(FLERR,"Illegal fix smd command");
-  
+
   if (strcmp(arg[argoffs],"tether") == 0) {
     if (narg < argoffs+5) error->all(FLERR,"Illegal fix smd command");
     styleflag |= SMD_TETHER;
     if (strcmp(arg[argoffs+1],"NULL") == 0) xflag = 0;
-    else xc = atof(arg[argoffs+1]);
+    else xc = force->numeric(FLERR,arg[argoffs+1]);
     if (strcmp(arg[argoffs+2],"NULL") == 0) yflag = 0;
-    else yc = atof(arg[argoffs+2]);
+    else yc = force->numeric(FLERR,arg[argoffs+2]);
     if (strcmp(arg[argoffs+3],"NULL") == 0) zflag = 0;
-    else zc = atof(arg[argoffs+3]);
-    r0 = atof(arg[argoffs+4]);
+    else zc = force->numeric(FLERR,arg[argoffs+3]);
+    r0 = force->numeric(FLERR,arg[argoffs+4]);
     if (r0 < 0) error->all(FLERR,"R0 < 0 for fix smd command");
     argoffs += 5;
   } else if (strcmp(arg[argoffs],"couple") == 0) {
     if (narg < argoffs+6) error->all(FLERR,"Illegal fix smd command");
     styleflag |= SMD_COUPLE;
     igroup2 = group->find(arg[argoffs+1]);
-    if (igroup2 == -1) 
-      error->all(FLERR,"Could not find fix smd couple group ID"); 
-    if (igroup2 == igroup) 
-      error->all(FLERR,"Two groups cannot be the same in fix smd couple"); 
+    if (igroup2 == -1)
+      error->all(FLERR,"Could not find fix smd couple group ID");
+    if (igroup2 == igroup)
+      error->all(FLERR,"Two groups cannot be the same in fix smd couple");
     group2bit = group->bitmask[igroup2];
 
     if (strcmp(arg[argoffs+2],"NULL") == 0) xflag = 0;
     else if (strcmp(arg[argoffs+2],"auto") == 0) styleflag |= SMD_AUTOX;
-    else xc = atof(arg[argoffs+2]);
+    else xc = force->numeric(FLERR,arg[argoffs+2]);
     if (strcmp(arg[argoffs+3],"NULL") == 0) yflag = 0;
     else if (strcmp(arg[argoffs+3],"auto") == 0) styleflag |= SMD_AUTOY;
-    else yc = atof(arg[argoffs+3]);
+    else yc = force->numeric(FLERR,arg[argoffs+3]);
     if (strcmp(arg[argoffs+4],"NULL") == 0) zflag = 0;
     else if (strcmp(arg[argoffs+4],"auto") == 0) styleflag |= SMD_AUTOZ;
-    else zc = atof(arg[argoffs+4]);
-    
-    r0 = atof(arg[argoffs+5]);
+    else zc = force->numeric(FLERR,arg[argoffs+4]);
+
+    r0 = force->numeric(FLERR,arg[argoffs+5]);
     if (r0 < 0) error->all(FLERR,"R0 < 0 for fix smd command");
     argoffs +=6;
   } else error->all(FLERR,"Illegal fix smd command");
@@ -144,7 +145,7 @@ void FixSMD::init()
     if (styleflag & SMD_AUTOZ) dz = xcm2[2] - xcm[2];
     else dz = zc;
   }
-    
+
   if (!xflag) dx = 0.0;
   if (!yflag) dy = 0.0;
   if (!zflag) dz = 0.0;
@@ -154,7 +155,7 @@ void FixSMD::init()
     yn = dy/r_old;
     zn = dz/r_old;
   }
-    
+
   if (strstr(update->integrate_style,"respa"))
     nlevels_respa = ((Respa *) update->integrate)->nlevels;
 }
@@ -190,14 +191,14 @@ void FixSMD::smd_tether()
   group->xcm(igroup,masstotal,xcm);
 
   // fx,fy,fz = components of k * (r-r0)
-  
+
   double dx,dy,dz,fx,fy,fz,r,dr;
-  
+
   dx = xcm[0] - xc;
   dy = xcm[1] - yc;
   dz = xcm[2] - zc;
   r_now = sqrt(dx*dx + dy*dy + dz*dz);
-  
+
   if (!xflag) dx = 0.0;
   if (!yflag) dy = 0.0;
   if (!zflag) dz = 0.0;
@@ -218,7 +219,7 @@ void FixSMD::smd_tether()
     fy = f_smd*dy/r;
     fz = f_smd*dz/r;
   }
-    
+
   // apply restoring force to atoms in group
   // f = -k*(r-r0)*mass/masstotal
 
@@ -226,22 +227,36 @@ void FixSMD::smd_tether()
   int *mask = atom->mask;
   int *type = atom->type;
   double *mass = atom->mass;
+  double *rmass = atom->rmass;
+  double massfrac;
   int nlocal = atom->nlocal;
-  
+
   ftotal[0] = ftotal[1] = ftotal[2] = 0.0;
   force_flag = 0;
 
-  double massfrac;
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit) {
-      massfrac = mass[type[i]]/masstotal;
-      f[i][0] -= fx*massfrac;
-      f[i][1] -= fy*massfrac;
-      f[i][2] -= fz*massfrac;
-      ftotal[0] -= fx*massfrac;
-      ftotal[1] -= fy*massfrac;
-      ftotal[2] -= fz*massfrac;
-    }
+  if (rmass) {
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit) {
+        massfrac = rmass[i]/masstotal;
+        f[i][0] -= fx*massfrac;
+        f[i][1] -= fy*massfrac;
+        f[i][2] -= fz*massfrac;
+        ftotal[0] -= fx*massfrac;
+        ftotal[1] -= fy*massfrac;
+        ftotal[2] -= fz*massfrac;
+      }
+  } else {
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit) {
+        massfrac = mass[type[i]]/masstotal;
+        f[i][0] -= fx*massfrac;
+        f[i][1] -= fy*massfrac;
+        f[i][2] -= fz*massfrac;
+        ftotal[0] -= fx*massfrac;
+        ftotal[1] -= fy*massfrac;
+        ftotal[2] -= fz*massfrac;
+      }
+  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -251,7 +266,7 @@ void FixSMD::smd_couple()
   double xcm[3],xcm2[3];
   group->xcm(igroup,masstotal,xcm);
   group->xcm(igroup2,masstotal2,xcm2);
-  
+
   // renormalize direction of spring
   double dx,dy,dz,r,dr;
   if (styleflag & SMD_AUTOX) dx = xcm2[0] - xcm[0];
@@ -274,10 +289,10 @@ void FixSMD::smd_couple()
     dy = xcm2[1] - xcm[1];
     dz = xcm2[2] - xcm[2];
     r_now = sqrt(dx*dx + dy*dy + dz*dz);
-    
+
     dx -= xn*r_old;
     dy -= yn*r_old;
-    dz -= zn*r_old;  
+    dz -= zn*r_old;
 
     if (!xflag) dx = 0.0;
     if (!yflag) dy = 0.0;
@@ -314,27 +329,48 @@ void FixSMD::smd_couple()
   int *mask = atom->mask;
   int *type = atom->type;
   double *mass = atom->mass;
+  double *rmass = atom->rmass;
   int nlocal = atom->nlocal;
 
   ftotal[0] = ftotal[1] = ftotal[2] = 0.0;
   force_flag = 0;
 
   double massfrac;
-  for (int i = 0; i < nlocal; i++) {         
-    if (mask[i] & groupbit) {
-      massfrac = mass[type[i]]/masstotal;
-      f[i][0] += fx*massfrac;
-      f[i][1] += fy*massfrac;
-      f[i][2] += fz*massfrac;
-      ftotal[0] += fx*massfrac;
-      ftotal[1] += fy*massfrac;
-      ftotal[2] += fz*massfrac;
+  if (rmass) {
+    for (int i = 0; i < nlocal; i++) {
+      if (mask[i] & groupbit) {
+        massfrac = rmass[i]/masstotal;
+        f[i][0] += fx*massfrac;
+        f[i][1] += fy*massfrac;
+        f[i][2] += fz*massfrac;
+        ftotal[0] += fx*massfrac;
+        ftotal[1] += fy*massfrac;
+        ftotal[2] += fz*massfrac;
+      }
+      if (mask[i] & group2bit) {
+        massfrac = rmass[i]/masstotal2;
+        f[i][0] -= fx*massfrac;
+        f[i][1] -= fy*massfrac;
+        f[i][2] -= fz*massfrac;
+      }
     }
-    if (mask[i] & group2bit) {
-      massfrac = mass[type[i]]/masstotal2;
-      f[i][0] -= fx*massfrac;
-      f[i][1] -= fy*massfrac;
-      f[i][2] -= fz*massfrac;
+  } else {
+    for (int i = 0; i < nlocal; i++) {
+      if (mask[i] & groupbit) {
+        massfrac = mass[type[i]]/masstotal;
+        f[i][0] += fx*massfrac;
+        f[i][1] += fy*massfrac;
+        f[i][2] += fz*massfrac;
+        ftotal[0] += fx*massfrac;
+        ftotal[1] += fy*massfrac;
+        ftotal[2] += fz*massfrac;
+      }
+      if (mask[i] & group2bit) {
+        massfrac = mass[type[i]]/masstotal2;
+        f[i][0] -= fx*massfrac;
+        f[i][1] -= fy*massfrac;
+        f[i][2] -= fz*massfrac;
+      }
     }
   }
 }
@@ -345,7 +381,7 @@ void FixSMD::write_restart(FILE *fp)
 {
 #define RESTART_ITEMS 5
   double buf[RESTART_ITEMS], fsign;
-  
+
   if (comm->me == 0) {
     // make sure we project the force into the direction of the pulling.
     fsign  = (v_smd<0.0) ? -1.0 : 1.0;

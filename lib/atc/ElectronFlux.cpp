@@ -1,12 +1,25 @@
 #include "ElectronFlux.h"
-#include "StringManip.h"
 #include "ATC_Error.h"
 
 #include <iostream>
 #include <fstream>
+#include <map>
+#include <string>
+#include <vector>
+
+using ATC_Utility::command_line;
+using ATC_Utility::str2dbl;
+using std::fstream;
+using std::map;
+using std::string;
+using std::vector;
 
 namespace ATC {
-using namespace ATC_STRING;
+
+ElectronFlux::ElectronFlux() :
+  maskX_(false),maskY_(false),maskZ_(false)
+{}
+
 
 ElectronFluxLinear::ElectronFluxLinear(
   fstream &fileId, map<string,double> & parameters) 
@@ -14,10 +27,10 @@ ElectronFluxLinear::ElectronFluxLinear(
   electronMobility_(0),
   electronDiffusivity_(0)
 {
-  if (!fileId.is_open()) throw ATC_Error(0,"cannot open material file");
+  if (!fileId.is_open()) throw ATC_Error("cannot open material file");
   vector<string> line;
   while(fileId.good()) {
-    get_command_line(fileId, line);
+    command_line(fileId, line);
     if (line.size() == 0) continue;
     if (line[0] == "end") return;
     double value = str2dbl(line[1]);
@@ -29,8 +42,11 @@ ElectronFluxLinear::ElectronFluxLinear(
       electronDiffusivity_ = value;
       parameters["electron_diffusivity"] = electronDiffusivity_;
     }
+    else if (line[0] == "mask_x") { maskX_ = true; }
+    else if (line[0] == "mask_y") { maskY_ = true; }
+    else if (line[0] == "mask_z") { maskZ_ = true; }
     else {
-      throw ATC_Error(0, "unrecognized material function "+line[0]);
+      throw ATC_Error( "unrecognized material function "+line[0]);
     }
   }
 }
@@ -41,10 +57,10 @@ ElectronFluxThermopower::ElectronFluxThermopower(
   electronMobility_(0),
   seebeckCoef_(0)
 {
-  if (!fileId.is_open()) throw ATC_Error(0,"cannot open material file");
+  if (!fileId.is_open()) throw ATC_Error("cannot open material file");
   vector<string> line;
   while(fileId.good()) {
-    get_command_line(fileId, line);
+    command_line(fileId, line);
     if (line.size() == 0) continue; 
     if (line[0] == "end") return;
     double value = str2dbl(line[1]);
@@ -57,7 +73,26 @@ ElectronFluxThermopower::ElectronFluxThermopower(
       parameters["seebeck_coefficient"] = seebeckCoef_;
     }
     else {
-      throw ATC_Error(0, "unrecognized material function "+line[0]);
+      throw ATC_Error( "unrecognized material function "+line[0]);
+    }
+  }
+}
+
+ElectronFluxConvection::ElectronFluxConvection(
+  fstream &fileId, map<string,double> & parameters) 
+  : ElectronFlux()
+{
+  if (!fileId.is_open()) throw ATC_Error("cannot open material file");
+  vector<string> line;
+  while(fileId.good()) {
+    command_line(fileId, line);
+    if (line.size() == 0) continue;
+    if (line[0] == "end") return;
+    else if (line[0] == "mask_x") { maskX_ = true; }
+    else if (line[0] == "mask_y") { maskY_ = true; }
+    else if (line[0] == "mask_z") { maskZ_ = true; }
+    else {
+      throw ATC_Error( "unrecognized material function "+line[0]);
     }
   }
 }

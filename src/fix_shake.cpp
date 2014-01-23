@@ -38,6 +38,10 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 using namespace MathConst;
 
+// allocate space for static class variable
+
+FixShake *FixShake::fsptr;
+
 #define BIG 1.0e20
 #define MASSDELTA 0.1
 
@@ -75,9 +79,9 @@ FixShake::FixShake(LAMMPS *lmp, int narg, char **arg) :
 
   if (narg < 8) error->all(FLERR,"Illegal fix shake command");
 
-  tolerance = atof(arg[3]);
-  max_iter = atoi(arg[4]);
-  output_every = atoi(arg[5]);
+  tolerance = force->numeric(FLERR,arg[3]);
+  max_iter = force->inumeric(FLERR,arg[4]);
+  output_every = force->inumeric(FLERR,arg[5]);
 
   // parse SHAKE args for bond and angle types
   // will be used by find_clusters
@@ -106,27 +110,28 @@ FixShake::FixShake(LAMMPS *lmp, int narg, char **arg) :
       atom->check_mass();
 
     } else if (mode == 'b') {
-      int i = atoi(arg[next]);
+      int i = force->inumeric(FLERR,arg[next]);
       if (i < 1 || i > atom->nbondtypes)
         error->all(FLERR,"Invalid bond type index for fix shake");
       bond_flag[i] = 1;
 
     } else if (mode == 'a') {
-      int i = atoi(arg[next]);
+      int i = force->inumeric(FLERR,arg[next]);
       if (i < 1 || i > atom->nangletypes)
         error->all(FLERR,"Invalid angle type index for fix shake");
       angle_flag[i] = 1;
 
     } else if (mode == 't') {
-      int i = atoi(arg[next]);
+      int i = force->inumeric(FLERR,arg[next]);
       if (i < 1 || i > atom->ntypes)
         error->all(FLERR,"Invalid atom type index for fix shake");
       type_flag[i] = 1;
 
     } else if (mode == 'm') {
-      double massone = atof(arg[next]);
+      double massone = force->numeric(FLERR,arg[next]);
       if (massone == 0.0) error->all(FLERR,"Invalid atom mass for fix shake");
-      if (nmass == atom->ntypes) error->all(FLERR,"Too many masses for fix shake");
+      if (nmass == atom->ntypes)
+        error->all(FLERR,"Too many masses for fix shake");
       mass_list[nmass++] = massone;
 
     } else error->all(FLERR,"Illegal fix shake command");
@@ -391,10 +396,11 @@ void FixShake::setup(int vflag)
   // setup SHAKE output
 
   bigint ntimestep = update->ntimestep;
-  next_output = ntimestep + output_every;
-  if (output_every == 0) next_output = update->laststep + 1;
-  if (output_every && ntimestep % output_every != 0)
-    next_output = (ntimestep/output_every)*output_every + output_every;
+  if (output_every) {
+    next_output = ntimestep + output_every;
+    if (ntimestep % output_every != 0)
+      next_output = (ntimestep/output_every)*output_every + output_every;
+  } else next_output = -1;
 
   // half timestep constraint on pre-step, full timestep thereafter
 
@@ -407,9 +413,15 @@ void FixShake::setup(int vflag)
     dtv = step_respa[0];
     dtf_innerhalf = 0.5 * step_respa[0] * force->ftm2v;
     dtf_inner = dtf_innerhalf;
-    ((Respa *) update->integrate)->copy_flevel_f(nlevels_respa-1);
-    post_force_respa(vflag,nlevels_respa-1,0);
-    ((Respa *) update->integrate)->copy_f_flevel(nlevels_respa-1);
+
+    // apply correction to all rRESPA levels
+
+    for (int ilevel = 0; ilevel < nlevels_respa; ilevel++) {
+      ((Respa *) update->integrate)->copy_flevel_f(ilevel);
+      post_force_respa(vflag,ilevel,loop_respa[ilevel]-1);
+      ((Respa *) update->integrate)->copy_f_flevel(ilevel);
+    }
+
     dtf_inner = step_respa[0] * force->ftm2v;
   }
 }
@@ -519,7 +531,7 @@ void FixShake::post_force(int vflag)
   int m;
   for (int i = 0; i < nlist; i++) {
     m = list[i];
-    if (shake_flag[m] == 2) shake2(m);
+    if (shake_flag[m] == 2) shake(m);
     else if (shake_flag[m] == 3) shake3(m);
     else if (shake_flag[m] == 4) shake4(m);
     else shake3angle(m);
@@ -537,10 +549,12 @@ void FixShake::post_force_respa(int vflag, int ilevel, int iloop)
 
   if (ilevel == nlevels_respa-1 && update->ntimestep == next_output) stats();
 
-  // enforce SHAKE constraints on every loop iteration of every rRESPA level
-  // except last loop iteration of inner levels
+  // might be OK to skip enforcing SHAKE constraings
+  // on last iteration of inner levels if pressure not requested
+  // however, leads to slightly different trajectories
 
-  if (ilevel < nlevels_respa-1 && iloop == loop_respa[ilevel]-1) return;
+  //if (ilevel < nlevels_respa-1 && iloop == loop_respa[ilevel]-1 && !vflag)
+  //  return;
 
   // xshake = unconstrained move with current v,f as function of level
   // communicate results if necessary
@@ -548,9 +562,12 @@ void FixShake::post_force_respa(int vflag, int ilevel, int iloop)
   unconstrained_update_respa(ilevel);
   if (nprocs > 1) comm->forward_comm_fix(this);
 
-  // virial setup, only need to compute on outermost level
+  // virial setup only needed on last iteration of innermost level
+  //   and if pressure is requested
+  // virial accumulation happens via evflag at last iteration of each level
 
-  if (ilevel == nlevels_respa-1 && vflag) v_setup(vflag);
+  if (ilevel == 0 && iloop == loop_respa[ilevel]-1 && vflag) v_setup(vflag);
+  if (iloop == loop_respa[ilevel]-1) evflag = 1;
   else evflag = 0;
 
   // loop over clusters to add constraint forces
@@ -558,7 +575,7 @@ void FixShake::post_force_respa(int vflag, int ilevel, int iloop)
   int m;
   for (int i = 0; i < nlist; i++) {
     m = list[i];
-    if (shake_flag[m] == 2) shake2(m);
+    if (shake_flag[m] == 2) shake(m);
     else if (shake_flag[m] == 3) shake3(m);
     else if (shake_flag[m] == 4) shake4(m);
     else shake3angle(m);
@@ -654,7 +671,7 @@ void FixShake::find_clusters()
   int max = 0;
   for (i = 0; i < nlocal; i++) max = MAX(max,nspecial[i][0]);
 
-  int *npartner,*nshake;
+  int *npartner;
   memory->create(npartner,nlocal,"shake:npartner");
   memory->create(nshake,nlocal,"shake:nshake");
 
@@ -717,10 +734,7 @@ void FixShake::find_clusters()
     }
   }
 
-  MPI_Allreduce(&nbuf,&nbufmax,1,MPI_INT,MPI_MAX,world);
-
-  buf = new int[nbufmax];
-  bufcopy = new int[nbufmax];
+  memory->create(buf,nbuf,"shake:buf");
 
   // fill buffer with info
 
@@ -743,39 +757,9 @@ void FixShake::find_clusters()
   }
 
   // cycle buffer around ring of procs back to self
-  // when receive buffer, scan bond partner IDs for atoms I own
-  // if I own partner:
-  //   fill in mask and type and massflag
-  //   search for bond with 1st atom and fill in bondtype
 
-  messtag = 1;
-  for (loop = 0; loop < nprocs; loop++) {
-    i = 0;
-    while (i < size) {
-      m = atom->map(buf[i+1]);
-      if (m >= 0 && m < nlocal) {
-        buf[i+2] = mask[m];
-        buf[i+3] = type[m];
-        if (nmass) {
-          if (rmass) massone = rmass[m];
-          else massone = mass[type[m]];
-          buf[i+4] = masscheck(massone);
-        }
-        if (buf[i+5] == 0) {
-          n = bondfind(m,buf[i],buf[i+1]);
-          if (n >= 0) buf[i+5] = bond_type[m][n];
-        }
-      }
-      i += nper;
-    }
-    if (me != next) {
-      MPI_Irecv(bufcopy,nbufmax,MPI_INT,prev,messtag,world,&request);
-      MPI_Send(buf,size,MPI_INT,next,messtag,world);
-      MPI_Wait(&request,&status);
-      MPI_Get_count(&status,MPI_INT,&size);
-      for (j = 0; j < size; j++) buf[j] = bufcopy[j];
-    }
-  }
+  fsptr = this;
+  comm->ring(size,sizeof(int),buf,1,ring_bonds,buf);
 
   // store partner info returned to me
 
@@ -791,8 +775,7 @@ void FixShake::find_clusters()
     m += nper;
   }
 
-  delete [] buf;
-  delete [] bufcopy;
+  memory->destroy(buf);
 
   // error check for unfilled partner info
   // if partner_type not set, is an error
@@ -883,10 +866,7 @@ void FixShake::find_clusters()
     }
   }
 
-  MPI_Allreduce(&nbuf,&nbufmax,1,MPI_INT,MPI_MAX,world);
-
-  buf = new int[nbufmax];
-  bufcopy = new int[nbufmax];
+  memory->create(buf,nbuf,"shake:buf");
 
   // fill buffer with info
 
@@ -903,28 +883,12 @@ void FixShake::find_clusters()
   }
 
   // cycle buffer around ring of procs back to self
-  // when receive buffer, scan bond partner IDs for atoms I own
-  // if I own partner, fill in nshake value
 
-  messtag = 2;
-  for (loop = 0; loop < nprocs; loop++) {
-    i = 0;
-    while (i < size) {
-      m = atom->map(buf[i+1]);
-      if (m >= 0 && m < nlocal) buf[i+2] = nshake[m];
-      i += 3;
-    }
-    if (me != next) {
-      MPI_Irecv(bufcopy,nbufmax,MPI_INT,prev,messtag,world,&request);
-      MPI_Send(buf,size,MPI_INT,next,messtag,world);
-      MPI_Wait(&request,&status);
-      MPI_Get_count(&status,MPI_INT,&size);
-      for (j = 0; j < size; j++) buf[j] = bufcopy[j];
-    }
-  }
+  fsptr = this;
+  comm->ring(size,sizeof(int),buf,2,ring_nshake,buf);
 
   // store partner info returned to me
-
+  
   m = 0;
   while (m < size) {
     i = atom->map(buf[m]);
@@ -934,8 +898,7 @@ void FixShake::find_clusters()
     m += 3;
   }
 
-  delete [] buf;
-  delete [] bufcopy;
+  memory->destroy(buf);
 
   // -----------------------------------------------------
   // error checks
@@ -1048,10 +1011,7 @@ void FixShake::find_clusters()
     }
   }
 
-  MPI_Allreduce(&nbuf,&nbufmax,1,MPI_INT,MPI_MAX,world);
-
-  buf = new int[nbufmax];
-  bufcopy = new int[nbufmax];
+  memory->create(buf,nbuf,"shake:buf");
 
   // fill buffer with info
 
@@ -1077,37 +1037,11 @@ void FixShake::find_clusters()
   }
 
   // cycle buffer around ring of procs back to self
-  // when receive buffer, scan for ID that I own
-  // if I own ID, fill in shake array values
 
-  messtag = 3;
-  for (loop = 0; loop < nprocs; loop++) {
-    i = 0;
-    while (i < size) {
-      m = atom->map(buf[i]);
-      if (m >= 0 && m < nlocal) {
-        shake_flag[m] = buf[i+1];
-        shake_atom[m][0] = buf[i+2];
-        shake_atom[m][1] = buf[i+3];
-        shake_atom[m][2] = buf[i+4];
-        shake_atom[m][3] = buf[i+5];
-        shake_type[m][0] = buf[i+6];
-        shake_type[m][1] = buf[i+7];
-        shake_type[m][2] = buf[i+8];
-      }
-      i += 9;
-    }
-    if (me != next) {
-      MPI_Irecv(bufcopy,nbufmax,MPI_INT,prev,messtag,world,&request);
-      MPI_Send(buf,size,MPI_INT,next,messtag,world);
-      MPI_Wait(&request,&status);
-      MPI_Get_count(&status,MPI_INT,&size);
-      for (j = 0; j < size; j++) buf[j] = bufcopy[j];
-    }
-  }
+  fsptr = this;
+  comm->ring(size,sizeof(int),buf,3,ring_shake,NULL);
 
-  delete [] buf;
-  delete [] bufcopy;
+  memory->destroy(buf);
 
   // -----------------------------------------------------
   // free local memory
@@ -1195,6 +1129,99 @@ void FixShake::find_clusters()
 }
 
 /* ----------------------------------------------------------------------
+   when receive buffer, scan bond partner IDs for atoms I own
+   if I own partner:
+     fill in mask and type and massflag
+     search for bond with 1st atom and fill in bondtype
+------------------------------------------------------------------------- */
+
+void FixShake::ring_bonds(int ndatum, char *cbuf)
+{
+  Atom *atom = fsptr->atom;
+  double *rmass = atom->rmass;
+  double *mass = atom->mass;
+  int *mask = atom->mask;
+  int **bond_type = atom->bond_type;
+  int *type = atom->type;
+  int nlocal = atom->nlocal;
+  int nmass = fsptr->nmass;
+
+  int *buf = (int *) cbuf;
+  int m,n;
+  double massone;
+
+  for (int i = 0; i < ndatum; i += 6) {
+    m = atom->map(buf[i+1]);
+    if (m >= 0 && m < nlocal) {
+      buf[i+2] = mask[m];
+      buf[i+3] = type[m];
+      if (nmass) {
+        if (rmass) massone = rmass[m];
+        else massone = mass[type[m]];
+        buf[i+4] = fsptr->masscheck(massone);
+      }
+      if (buf[i+5] == 0) {
+        n = fsptr->bondfind(m,buf[i],buf[i+1]);
+        if (n >= 0) buf[i+5] = bond_type[m][n];
+      }
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------
+   when receive buffer, scan bond partner IDs for atoms I own
+   if I own partner, fill in nshake value
+------------------------------------------------------------------------- */
+
+void FixShake::ring_nshake(int ndatum, char *cbuf)
+{
+  Atom *atom = fsptr->atom;
+  int nlocal = atom->nlocal;
+
+  int *nshake = fsptr->nshake;
+
+  int *buf = (int *) cbuf;
+  int m;
+
+  for (int i = 0; i < ndatum; i += 3) {
+    m = atom->map(buf[i+1]);
+    if (m >= 0 && m < nlocal) buf[i+2] = nshake[m];
+  }
+}
+
+/* ----------------------------------------------------------------------
+   when receive buffer, scan bond partner IDs for atoms I own
+   if I own partner, fill in nshake value
+------------------------------------------------------------------------- */
+
+void FixShake::ring_shake(int ndatum, char *cbuf)
+{
+  Atom *atom = fsptr->atom;
+  int nlocal = atom->nlocal;
+
+  int *shake_flag = fsptr->shake_flag;
+  int **shake_atom = fsptr->shake_atom;
+  int **shake_type = fsptr->shake_type;
+
+  int *buf = (int *) cbuf;
+  int m;
+
+  for (int i = 0; i < ndatum; i += 9) {
+    m = atom->map(buf[i]);
+    if (m >= 0 && m < nlocal) {
+      shake_flag[m] = buf[i+1];
+      shake_atom[m][0] = buf[i+2];
+      shake_atom[m][1] = buf[i+3];
+      shake_atom[m][2] = buf[i+4];
+      shake_atom[m][3] = buf[i+5];
+      shake_type[m][0] = buf[i+6];
+      shake_type[m][1] = buf[i+7];
+      shake_type[m][2] = buf[i+8];
+    }
+  }
+}
+
+/* ----------------------------------------------------------------------
    check if massone is within MASSDELTA of any mass in mass_list
    return 1 if yes, 0 if not
 ------------------------------------------------------------------------- */
@@ -1250,7 +1277,7 @@ void FixShake::unconstrained_update_respa(int ilevel)
   // for levels > 0 this includes more than one velocity update
   // xshake = predicted position from call to this routine at level N =
   // x + dt0 (v + dtN/m fN + 1/2 dt(N-1)/m f(N-1) + ... + 1/2 dt0/m f0)
-  // also set dtfsq = dt0*dtN so that shake2,shake3,etc can use it
+  // also set dtfsq = dt0*dtN so that shake,shake3,etc can use it
 
   double ***f_level = ((FixRespa *) modify->fix[ifix_respa])->f_level;
   dtfsq = dtf_inner * step_respa[ilevel];
@@ -1296,7 +1323,7 @@ void FixShake::unconstrained_update_respa(int ilevel)
 
 /* ---------------------------------------------------------------------- */
 
-void FixShake::shake2(int m)
+void FixShake::shake(int m)
 {
   int nlist,list[2];
   double v[6];
@@ -2247,7 +2274,7 @@ void FixShake::grow_arrays(int nmax)
    copy values within local atom-based arrays
 ------------------------------------------------------------------------- */
 
-void FixShake::copy_arrays(int i, int j)
+void FixShake::copy_arrays(int i, int j, int delflag)
 {
   int flag = shake_flag[j] = shake_flag[i];
   if (flag == 1) {
@@ -2285,6 +2312,33 @@ void FixShake::copy_arrays(int i, int j)
 void FixShake::set_arrays(int i)
 {
   shake_flag[i] = 0;
+}
+
+/* ----------------------------------------------------------------------
+   update one atom's array values, called when atom is created
+------------------------------------------------------------------------- */
+
+void FixShake::update_arrays(int i, int atom_offset)
+{
+  int flag = shake_flag[i];
+
+  if (flag == 1) {
+    shake_atom[i][0] += atom_offset;
+    shake_atom[i][1] += atom_offset;
+    shake_atom[i][2] += atom_offset;
+  } else if (flag == 2) { 
+    shake_atom[i][0] += atom_offset;
+    shake_atom[i][1] += atom_offset;
+  } else if (flag == 3) {
+    shake_atom[i][0] += atom_offset;
+    shake_atom[i][1] += atom_offset;
+    shake_atom[i][2] += atom_offset;
+  } else if (flag == 4) {
+    shake_atom[i][0] += atom_offset;
+    shake_atom[i][1] += atom_offset;
+    shake_atom[i][2] += atom_offset;
+    shake_atom[i][3] += atom_offset;
+  }
 }
 
 /* ----------------------------------------------------------------------

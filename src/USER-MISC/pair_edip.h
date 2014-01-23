@@ -5,7 +5,7 @@
 
    Copyright (2003) Sandia Corporation.  Under the terms of Contract
    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under 
+   certain rights in this software.  This software is distributed under
    the GNU General Public License.
 
    See the README file in the top-level LAMMPS directory.
@@ -51,11 +51,8 @@ class PairEDIP : public Pair {
   double *preExp2BDerived_ij;
   double *prePow2B_ij;
   double *preForceCoord;
-  
-  // grids
 
-  static const int GRIDDENSITY = 8000;
-  static const double GRIDSTART = 0.1;
+  // grids
 
   double *cutoffFunction;
   double *cutoffFunctionDerived;
@@ -97,10 +94,6 @@ class PairEDIP : public Pair {
   int nparams;                  // # of stored parameter sets
   int maxparam;                 // max # of parameter sets
   Param *params;                // parameter set for an I-J-K interaction
-
-  // max number of interaction per atom for f(Z) environment potential
-
-  static const int leadDimInteractionList = 64;
 
   void allocate();
   void allocatePreLoops(void);

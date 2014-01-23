@@ -36,7 +36,7 @@ ComputeClusterAtom::ComputeClusterAtom(LAMMPS *lmp, int narg, char **arg) :
 {
   if (narg != 4) error->all(FLERR,"Illegal compute cluster/atom command");
 
-  double cutoff = atof(arg[3]);
+  double cutoff = force->numeric(FLERR,arg[3]);
   cutsq = cutoff*cutoff;
 
   peratom_flag = 1;
@@ -63,7 +63,8 @@ void ComputeClusterAtom::init()
   if (force->pair == NULL)
     error->all(FLERR,"Compute cluster/atom requires a pair style be defined");
   if (sqrt(cutsq) > force->pair->cutforce)
-    error->all(FLERR,"Compute cluster/atom cutoff is longer than pairwise cutoff");
+    error->all(FLERR,
+               "Compute cluster/atom cutoff is longer than pairwise cutoff");
 
   // need an occasional full neighbor list
   // full required so that pair of atoms on 2 procs both set their clusterID

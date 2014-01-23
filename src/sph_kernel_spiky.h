@@ -58,7 +58,7 @@ namespace SPH_KERNEL_NS {
    0.07460388 is 15 over 64*pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_spiky(double s, double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_spiky(double s, double, double hinv)
 {
   if (s < 2.)
   {
@@ -89,7 +89,7 @@ inline double SPH_KERNEL_NS::sph_kernel_spiky(double s, double h, double hinv)
    0.223811639 is 45 over 64*pi
 ------------------------------------------------------------------------- */
 
-inline double SPH_KERNEL_NS::sph_kernel_spiky_der(double s,double h, double hinv)
+inline double SPH_KERNEL_NS::sph_kernel_spiky_der(double s, double, double hinv)
 {
     if (s < 2.)
     {

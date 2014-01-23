@@ -45,11 +45,13 @@ class Device {
     * - -2 if GPU not found
     * - -4 if GPU library not compiled for GPU
     * - -6 if GPU could not be initialized for use
-    * - -7 if accelerator sharing is not currently allowed on system **/
+    * - -7 if accelerator sharing is not currently allowed on system 
+    * - -11 if vendor_string has the wrong number of parameters **/
   int init_device(MPI_Comm world, MPI_Comm replica, const int first_gpu, 
-                   const int last_gpu, const int gpu_mode, 
-                   const double particle_split, const int nthreads,
-                   const int t_per_atom);
+                  const int last_gpu, const int gpu_mode, 
+                  const double particle_split, const int nthreads,
+                  const int t_per_atom, const double cell_size, 
+                  char *vendor_string);
 
   /// Initialize the device for Atom and Neighbor storage
   /** \param rot True if quaternions need to be stored
@@ -228,10 +230,14 @@ class Device {
   inline int block_nbor_build() const { return _block_nbor_build; }
   /// Return the block size for "bio" pair styles
   inline int block_bio_pair() const { return _block_bio_pair; }
+  /// Return the block size for "ellipse" pair styles
+  inline int block_ellipse() const { return _block_ellipse; }
   /// Return the maximum number of atom types for shared mem with "bio" styles
   inline int max_bio_shared_types() const { return _max_bio_shared_types; }
   /// Architecture gpu code compiled for (returns 0 for OpenCL)
   inline double ptx_arch() const { return _ptx_arch; }
+  /// Number of threads executing concurrently on same multiproc
+  inline int warp_size() const { return _warp_size; }
 
   // -------------------- SHARED DEVICE ROUTINES -------------------- 
   // Perform asynchronous zero of integer array 
@@ -239,7 +245,7 @@ class Device {
     int num_blocks=static_cast<int>(ceil(static_cast<double>(numel)/
                                     _block_pair));
     k_zero.set_size(num_blocks,_block_pair);
-    k_zero.run(&mem.begin(),&numel);
+    k_zero.run(&mem,&numel);
   }
 
   // -------------------------- DEVICE DATA ------------------------- 
@@ -276,6 +282,8 @@ class Device {
       pppm_double->precompute(ago,nlocal,nall,host_x,host_type,success,charge,
                               boxlo,prd);
   }
+  
+  inline std::string compile_string() { return _ocl_compile_string; }
 
  private:
   std::queue<Answer<numtyp,acctyp> *> ans_queue;
@@ -288,10 +296,11 @@ class Device {
   double _particle_split;
   double _cpu_full;
   double _ptx_arch;
+  double _cell_size; // -1 if the cutoff is used
 
   int _num_mem_threads, _warp_size, _threads_per_atom, _threads_per_charge;
   int _pppm_max_spline, _pppm_block;
-  int _block_pair, _max_shared_types;
+  int _block_pair, _block_ellipse, _max_shared_types;
   int _block_cell_2d, _block_cell_id, _block_nbor_build;
   int _block_bio_pair, _max_bio_shared_types;
 
@@ -301,6 +310,9 @@ class Device {
   int compile_kernels();
 
   int _data_in_estimate, _data_out_estimate;
+  
+  std::string _ocl_vendor_name, _ocl_vendor_string, _ocl_compile_string;
+  int set_ocl_params(char *);
   
   template <class t>
   inline std::string toa(const t& in) {

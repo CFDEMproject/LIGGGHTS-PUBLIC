@@ -25,16 +25,16 @@ fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.05
 
 
 #New pair style
-pair_style 	gran/hertz/history #  Hertzian without cohesion
+pair_style gran model hertz tangential history #  Hertzian without cohesion
 pair_coeff	* *
 
 timestep	0.000025
 
 fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
 
-fix		zwalls1 all wall/gran/hertz/history   primitive type 1  zplane 0.0
-fix		zwalls2 all wall/gran/hertz/history   primitive type 1  zplane 0.15
-fix		cylwalls all wall/gran/hertz/history primitive type 1  zcylinder 0.05 0. 0.
+fix zwalls1 all wall/gran model hertz tangential history primitive type 1  zplane 0.0
+fix zwalls2 all wall/gran model hertz tangential history primitive type 1  zplane 0.15
+fix cylwalls all wall/gran model hertz tangential history primitive type 1  zcylinder 0.05 0. 0.
 
 #heat transfer
 fix 		ftco all property/global thermalConductivity peratomtype 5.

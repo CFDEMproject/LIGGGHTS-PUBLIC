@@ -25,6 +25,7 @@
 #include "modify.h"
 #include "comm.h"
 #include "error.h"
+#include "force.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -44,13 +45,13 @@ FixRecenter::FixRecenter(LAMMPS *lmp, int narg, char **arg) :
 
   if (strcmp(arg[3],"NULL") == 0) xflag = 0;
   else if (strcmp(arg[3],"INIT") == 0) xinitflag = 1;
-  else xcom = atof(arg[3]);
+  else xcom = force->numeric(FLERR,arg[3]);
   if (strcmp(arg[4],"NULL") == 0) yflag = 0;
   else if (strcmp(arg[4],"INIT") == 0) yinitflag = 1;
-  else ycom = atof(arg[4]);
+  else ycom = force->numeric(FLERR,arg[4]);
   if (strcmp(arg[5],"NULL") == 0) zflag = 0;
   else if (strcmp(arg[5],"INIT") == 0) zinitflag = 1;
-  else zcom = atof(arg[5]);
+  else zcom = force->numeric(FLERR,arg[5]);
 
   // optional args
 
@@ -74,9 +75,6 @@ FixRecenter::FixRecenter(LAMMPS *lmp, int narg, char **arg) :
   }
 
   // scale xcom,ycom,zcom
-
-  if (scaleflag == LATTICE && domain->lattice == NULL)
-    error->all(FLERR,"Use of fix recenter with undefined lattice");
 
   double xscale,yscale,zscale;
   if (scaleflag == LATTICE) {
