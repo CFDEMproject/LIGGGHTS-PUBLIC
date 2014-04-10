@@ -1,4 +1,4 @@
-# openmpi = Ubuntu 12.04 Core 6, mpic++, OpenMPI-1.1, FFTW2
+# openmpi = Ubuntu 12.04, mpic++, OpenMPI-1.6
 
 SHELL = /bin/sh
 
@@ -7,11 +7,11 @@ SHELL = /bin/sh
 # specify flags and libraries needed for your compiler
 
 CC =		mpic++
-CCFLAGS =	-g -O2  \
-		 -funroll-loops -fstrict-aliasing -Wall -W -Wno-uninitialized
+CCFLAGS =	-O2  \
+		 -funroll-loops -fstrict-aliasing -Wall -Wno-uninitialized
 DEPFLAGS =	-M
 LINK =		mpic++
-LINKFLAGS =	-O
+LINKFLAGS =	-O2
 LIB =           -lstdc++
 ARCHIVE =	ar
 ARFLAGS =	-rcsv
@@ -65,7 +65,7 @@ JPG_LIB =
 # PATH = path for VTK library
 # LIB = name of VTK library
 
-VTK_INC = -I/usr/include/vtk-5.2 -I/usr/include/eigen2
+VTK_INC = -I/usr/include/vtk-5.8
 VTK_PATH = 
 VTK_LIB = -lvtkCommon -lvtkHybrid -lvtkFiltering -lvtkRendering -lvtkIO -lvtkexoIIc -lvtkParallel -lvtkGraphics -lvtkverdict -lvtkImaging -lvtkftgl -lvtkDICOMParser -lvtkmetaio
 
@@ -79,6 +79,11 @@ include	Makefile.package
 EXTRA_INC = $(LMP_INC) $(PKG_INC) $(MPI_INC) $(FFT_INC) $(JPG_INC) $(VTK_INC) $(PKG_SYSINC)
 EXTRA_PATH = $(PKG_PATH) $(MPI_PATH) $(FFT_PATH) $(JPG_PATH) $(VTK_PATH) $(PKG_SYSPATH)
 EXTRA_LIB = $(PKG_LIB) $(MPI_LIB) $(FFT_LIB) $(JPG_LIB) $(VTK_LIB) $(PKG_SYSLIB)
+
+# Path to src files
+
+vpath %.cpp ..
+vpath %.h ..
 
 # Link target
 

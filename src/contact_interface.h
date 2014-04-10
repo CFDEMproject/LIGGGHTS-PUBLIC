@@ -116,27 +116,7 @@ struct ForceData {
 namespace LAMMPS_NS {
   class IContactHistorySetup {
   public:
-    virtual int add_value(std::string name, std::string newtonflag) = 0;
-  };
-
-  class PairContactHistorySetup : public IContactHistorySetup {
-    class PairGran * pg;
-
-  public:
-    PairContactHistorySetup(class PairGran * pg) : pg(pg) {}
-    virtual ~PairContactHistorySetup(){}
-
-    int add_value(std::string name, std::string newtonflag);
-  };
-
-  class WallContactHistorySetup : public IContactHistorySetup {
-    class FixWallGran * fix;
-
-  public:
-    WallContactHistorySetup(class FixWallGran * fix) : fix(fix) {}
-    virtual ~WallContactHistorySetup(){}
-
-    int add_value(std::string, std::string);
+    virtual int add_history_value(std::string name, std::string newtonflag) = 0;
   };
 }
 

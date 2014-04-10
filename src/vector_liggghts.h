@@ -444,7 +444,7 @@ inline void printVec4D(FILE *out, const char *name, double *vec)
 
 inline void printVecN(FILE *out, const char *name, double *vec, int n)
 {
-    fprintf(out," vector %s:\n",name);
+    fprintf(out," vector %s:",name);
     for(int i = 0; i < n; i++)
         fprintf(out,"%f ",vec[i]);
     fprintf(out,"\n");
@@ -452,7 +452,7 @@ inline void printVecN(FILE *out, const char *name, double *vec, int n)
 
 inline void printVecN(FILE *out, const char *name, int *vec, int n)
 {
-    fprintf(out," vector %s:\n",name);
+    fprintf(out," vector %s:",name);
     for(int i = 0; i < n; i++)
         fprintf(out,"%d ",vec[i]);
     fprintf(out,"\n");

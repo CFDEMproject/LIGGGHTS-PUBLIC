@@ -24,6 +24,8 @@ class NeighRequest : protected Pointers {
   int id;                // ID of request
                          // used to track multiple requests from one class
 
+  int64_t pairgran_hashcode; 
+                             
   // which class is requesting the list, one flag is 1, others are 0
 
   int pair;              // set by default
@@ -37,7 +39,7 @@ class NeighRequest : protected Pointers {
   int half;              // 1 if half neigh list (set by default)
   int full;              // 1 if full neigh list
 
-  int gran;              // 1 if granular list 
+  int gran;              // 1 if granular list
   int granhistory;       // 1 if granular history list
 
   int respainner;        // 1 if a rRESPA inner list

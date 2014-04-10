@@ -173,8 +173,7 @@ double FixCheckTimestepSph::compute_vector(int n)
 template <int MASSFLAG>
 void FixCheckTimestepSph::calc_courant_estims_eval()
 {
-
-  int i,j,ii,jj,inum,jnum,itype,jtype;
+  int i,j,ii,jj,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   double delvx,delvy,delvz,mu;
   double sli,slj,slCom,cut;
@@ -196,7 +195,7 @@ void FixCheckTimestepSph::calc_courant_estims_eval()
   courant_time = BIG;
 
   // calculate minimum courant time step
-  inum = list->inum;
+  //inum = list->inum;
   ilist = list->ilist;
   numneigh = list->numneigh;
   firstneigh = list->firstneigh;

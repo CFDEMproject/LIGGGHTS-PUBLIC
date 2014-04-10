@@ -48,8 +48,8 @@ using namespace FixConst;
 
 FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 : Fix(lmp, narg, arg),
-  mesh_(NULL),
   atom_type_mesh_(-1),
+  mesh_(NULL),
   setupFlag_(false),
   pOpFlag_(false),
   manipulated_(false),

@@ -39,7 +39,8 @@
 namespace LAMMPS_NS {
 using namespace ContactModels;
 
-class PairGran : public Pair {
+class PairGran : public Pair, public IContactHistorySetup {
+
  public:
 
   friend class FixWallGran;
@@ -66,6 +67,8 @@ class PairGran : public Pair {
   virtual void read_restart_settings(FILE *){}
   virtual void reset_dt();
   double memory_usage();
+
+  virtual int64_t hashcode() = 0;
 
   int  cplenable()
   { return cpl_enable; }
@@ -94,6 +97,8 @@ class PairGran : public Pair {
   class FixRigid* fr_pair()
   { return fix_rigid; }
 
+  virtual double stressStrainExponent() = 0;
+
   class MechParamGran *mpg;
 
   int fix_extra_dnum_index(class Fix *fix);
@@ -108,7 +113,11 @@ class PairGran : public Pair {
     return offset;
   }
 
+  void do_store_contact_forces()
+  { store_contact_forces = true; }
+
  protected:
+
   struct HistoryArg {
     std::string name;
     std::string newtonflag;
@@ -152,6 +161,10 @@ class PairGran : public Pair {
   // stuff for compute pair gran local
   int cpl_enable;
   class ComputePairGranLocal *cpl;
+
+  // storage for per-contact forces
+  bool store_contact_forces;
+  class FixPropertyAtomContact *fix_contact_forces;
 
   // storage of rigid body masses for use in granular interactions
 

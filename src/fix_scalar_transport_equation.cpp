@@ -145,64 +145,63 @@ void FixScalarTransportEquation::updatePtrs()
 
 void FixScalarTransportEquation::post_create()
 {
-  char **fixarg;
-  fixarg = new char*[9];
-  fixarg[0] = new char[50];
-  fixarg[3] = new char[50];
-  fixarg[8] = new char[50];
+  const char *fixarg[9];
 
   if (fix_quantity==NULL) {
-  //register Temp as property/atom
-    strcpy(fixarg[0],quantity_name);
+    //register Temp as property/atom
+    fixarg[0]=quantity_name;
     fixarg[1]="all";
     fixarg[2]="property/atom";
-    strcpy(fixarg[3],quantity_name);
+    fixarg[3]=quantity_name;
     fixarg[4]="scalar"; 
     fixarg[5]="yes";    
     fixarg[6]="yes";    
     fixarg[7]="no";    
-    sprintf(fixarg[8],"%e",quantity_0);
-    modify->add_fix(9,fixarg);
+    char arg8[30];
+    sprintf(arg8,"%e",quantity_0);
+    fixarg[8]=arg8;
+    modify->add_fix(9,const_cast<char**>(fixarg));
     fix_quantity=static_cast<FixPropertyAtom*>(modify->find_fix_property(quantity_name,"property/atom","scalar",0,0,style));
   }
 
-  delete [] (fixarg[8]);
-
   if (fix_flux==NULL){
     //register heatFlux as property/atom
-    strcpy(fixarg[0],flux_name);
+    fixarg[0]=flux_name;
     fixarg[1]="all";
     fixarg[2]="property/atom";
-    strcpy(fixarg[3],flux_name);
+    fixarg[3]=flux_name;
     fixarg[4]="scalar"; 
     fixarg[5]="yes";    
     fixarg[6]="no";    
     fixarg[7]="yes";    
     fixarg[8]="0.";     
-    modify->add_fix(9,fixarg);
+    modify->add_fix(9,const_cast<char**>(fixarg));
     fix_flux=static_cast<FixPropertyAtom*>(modify->find_fix_property(flux_name,"property/atom","scalar",0,0,style));
   }
 
   if (fix_source==NULL){
     //register heatSource as property/atom
-    strcpy(fixarg[0],source_name);
+    fixarg[0]=source_name;
     fixarg[1]="all";
     fixarg[2]="property/atom";
-    strcpy(fixarg[3],source_name);
+    fixarg[3]=source_name;
     fixarg[4]="scalar"; 
     fixarg[5]="yes";    
     fixarg[6]="yes";    
     fixarg[7]="no";    
     fixarg[8]="0.";     
-    modify->add_fix(9,fixarg);
+    modify->add_fix(9,const_cast<char**>(fixarg));
     fix_source=static_cast<FixPropertyAtom*>(modify->find_fix_property(source_name,"property/atom","scalar",0,0,style));
   }
 
-  delete [] (fixarg[0]);
-  delete [] (fixarg[3]);
-  delete []fixarg;
-
   updatePtrs();
+}
+
+/* ---------------------------------------------------------------------- */
+
+double* FixScalarTransportEquation::get_capacity()
+{
+    return capacity;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -319,7 +318,7 @@ double FixScalarTransportEquation::compute_scalar()
     double capacity;
 
     updatePtrs();
-    
+
     double quantity_sum = 0.;
 
     if(capacity_flag)
@@ -328,6 +327,7 @@ double FixScalarTransportEquation::compute_scalar()
         {
            capacity = fix_capacity->compute_vector(type[i]-1);
            quantity_sum += capacity * rmass[i] * quantity[i];
+           
         }
     }
     else
@@ -338,7 +338,8 @@ double FixScalarTransportEquation::compute_scalar()
         }
     }
 
-   MPI_Sum_Scalar(quantity_sum,world);
+    MPI_Sum_Scalar(quantity_sum,world);
+
     return quantity_sum;
 }
 

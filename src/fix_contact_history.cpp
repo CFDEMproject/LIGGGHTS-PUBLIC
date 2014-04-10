@@ -34,6 +34,7 @@
 #include "update.h"
 #include "modify.h"
 #include "memory.h"
+#include "math_extra_liggghts.h"
 #include "error.h"
 
 using namespace LAMMPS_NS;
@@ -43,6 +44,8 @@ using namespace FixConst;
 
 FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
+  dnum_(0),
+  variablename_(0),
   newtonflag_(0),
   history_id_(0),
   index_decide_noncontacting_(-1),
@@ -78,9 +81,23 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
   //=====================
 
   if(narg < 4)
-    error->fix_error(FLERR,this,"not enough parameters");
+   error->fix_error(FLERR,this,"not enough parameters");
 
   iarg_ = 3;
+
+  if(!MathExtraLiggghts::is_int(arg[iarg_]))
+  {
+    int n = strlen(arg[iarg_]) + 1;
+    variablename_ = new char[n];
+    strcpy(variablename_,arg[iarg_]);
+    iarg_++;
+  }
+  else
+  {
+    int n = strlen("contacthistory") + 1;
+    variablename_ = new char[n];
+    strcpy(variablename_,"contacthistory");
+  }
 
   // read dnum
   dnum_ = atoi(arg[iarg_++]);
@@ -89,7 +106,8 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
     error->fix_error(FLERR,this,"dnum must be >=0");
 
   // do not proceed for derived classes
-  if(strcmp(style,"contacthistory"))
+  
+  if(!strstr(style,"property") && strcmp(style,"contacthistory"))
     return;
 
   // parse args
@@ -111,6 +129,7 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
     newtonflag_[i] = atoi(arg[iarg_++]);
     if(newtonflag_[i] != 0 && newtonflag_[i] != 1)
         error->fix_error(FLERR,this,"newtonflag must be either 0 or 1");
+
   }
 }
 
@@ -131,6 +150,7 @@ FixContactHistory::~FixContactHistory()
   if(ipage_) delete [] ipage_;
   if(dpage_) delete [] dpage_;
 
+  if(variablename_) delete [] variablename_;
   if(newtonflag_) delete [] newtonflag_;
 
   if(history_id_)
@@ -272,6 +292,7 @@ void FixContactHistory::pre_exchange()
     i = ilist[ii];
     jlist = firstneigh[i];
     jnum = numneigh[i];
+    
     touch = firsttouch[i];
 
     for (jj = 0; jj < jnum; jj++) {
@@ -343,7 +364,7 @@ void FixContactHistory::pre_exchange()
 
   maxtouch_ = 0;
   for (i = 0; i < nlocal; i++) maxtouch_ = MAX(maxtouch_,npartner_[i]);
-  comm->maxexchange_fix = MAX(comm->maxexchange_fix,4*maxtouch_+1);
+  comm->maxexchange_fix = MAX(comm->maxexchange_fix,(dnum_+1)*maxtouch_+1);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -432,10 +453,10 @@ int FixContactHistory::pack_exchange(int i, double *buf)
   // Comm::BUFEXTRA may need to be increased
 
   int m = 0;
-  buf[m++] = npartner_[i];
+  buf[m++] = ubuf(npartner_[i]).d;
   for (int n = 0; n < npartner_[i]; n++) {
     
-    buf[m++] = partner_[i][n];
+    buf[m++] = ubuf(partner_[i][n]).d;
     for (int d = 0; d < dnum_; d++) {
       buf[m++] = contacthistory_[i][n*dnum_+d];
     }
@@ -452,13 +473,13 @@ int FixContactHistory::unpack_exchange(int nlocal, double *buf)
   // allocate new chunks from ipage,dpage for incoming values
 
   int m = 0;
-  npartner_[nlocal] = static_cast<int> (buf[m++]);
+  npartner_[nlocal] = ubuf(buf[m++]).i;
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
   partner_[nlocal] = ipage_->get(npartner_[nlocal]);
   contacthistory_[nlocal] = dpage_->get(dnum_*npartner_[nlocal]);
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
-    partner_[nlocal][n] = static_cast<int> (buf[m++]);
+    partner_[nlocal][n] = ubuf(buf[m++]).i;
     for (int d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = buf[m++];
     }
@@ -494,7 +515,8 @@ void FixContactHistory::restart(char *buf)
   double *list = (double *) buf;
 
   int unpack_dnum = static_cast<int> (list[n++]);
-  int unpack_maxtouch = static_cast<int> (list[n++]);
+  //int unpack_maxtouch = static_cast<int> (list[n++]);
+
   if(unpack_dnum != dnum_)
     error->fix_error(FLERR,this,"saved simulation state used different contact history model - can not restart");
 }
@@ -508,9 +530,9 @@ int FixContactHistory::pack_restart(int i, double *buf)
   int m = 0;
   
   buf[m++] = (dnum_+1)*npartner_[i] + 2;
-  buf[m++] = npartner_[i];
+  buf[m++] = ubuf(npartner_[i]).d;
   for (int n = 0; n < npartner_[i]; n++) {
-    buf[m++] = partner_[i][n];
+    buf[m++] = ubuf(partner_[i][n]).d;
     for (int d = 0; d < dnum_; d++) {
       buf[m++] = contacthistory_[i][n*dnum_+d];
       
@@ -538,17 +560,14 @@ void FixContactHistory::unpack_restart(int nlocal, int nth)
   m++;
 
   // allocate new chunks from ipage,dpage for incoming values
-
-  int d;
-
-  npartner_[nlocal] = static_cast<int> (extra[nlocal][m++]);
+  npartner_[nlocal] = ubuf(extra[nlocal][m++]).i;
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
   partner_[nlocal] = ipage_->get(npartner_[nlocal]);
   contacthistory_[nlocal] = dpage_->get(npartner_[nlocal]*dnum_);
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
-    partner_[nlocal][n] = static_cast<int> (extra[nlocal][m++]);
-    for (d = 0; d < dnum_; d++) {
+    partner_[nlocal][n] = ubuf(extra[nlocal][m++]).i;
+    for (int d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = extra[nlocal][m++];
     }
   }

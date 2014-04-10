@@ -92,6 +92,7 @@
       break;
     }
 
+    // return distance - radius of the particle
     return d - rSphere;
   }
 

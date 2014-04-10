@@ -75,6 +75,7 @@ namespace LAMMPS_NS
         // per-element properties
 
         inline void copyElement(int from, int to);
+        inline void addUninitializedElement();
         inline void addZeroElement();
         inline void deleteElement(int i);
         inline void deleteForwardElement(int i,bool scale,bool translate,bool rotate);

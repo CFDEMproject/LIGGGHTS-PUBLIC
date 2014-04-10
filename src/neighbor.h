@@ -246,6 +246,7 @@ class Neighbor : protected Pointers {
   void granular_nsq_no_newton(class NeighList *);
   void granular_nsq_newton(class NeighList *);
   void granular_bin_no_newton(class NeighList *);
+  void granular_bin_no_newton_ghost(NeighList *list); 
   void granular_bin_newton(class NeighList *);
   void granular_bin_newton_tri(class NeighList *);
 

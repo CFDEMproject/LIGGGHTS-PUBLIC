@@ -47,6 +47,8 @@ class FixScalarTransportEquation : public Fix {
   double compute_scalar();
   bool match_equation_id(const char*);
 
+  double *get_capacity();
+
  private:
   int nlevels_respa;
 

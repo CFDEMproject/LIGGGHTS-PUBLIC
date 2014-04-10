@@ -112,7 +112,7 @@ namespace LAMMPS_NS
 
   void PrimitiveWall::buildNeighList(double treshold, double **x, double *r, int nPart)
   {
-    neighlist.empty();
+    neighlist.clearContainer();
     for(int iPart=0;iPart<nPart;iPart++)
     {
       

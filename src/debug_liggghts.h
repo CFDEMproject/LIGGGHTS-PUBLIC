@@ -32,6 +32,11 @@
 
 namespace LAMMPS_NS {
 
+inline void __trace__()
+{
+    
+}
+
 inline void __debug__(LAMMPS* lmp)
 {
     

@@ -91,19 +91,22 @@ if (test $1 = "style") then
   style LB_CLASS        ""          lb  
   style SPH_KERNEL_CLASS  sph_kernel_  sph_kernel  pair_sph-fix_sph
 elif (test $1 = "models") then
+  sed_ex="sed -E" # BSD sed
+  sed --version 2>&1 | grep -i gnu &> /dev/null
+  [ $? -eq 0 ] && sed_ex="sed -r" # GNU sed
 
-  surface_models=`grep -s -E '^SURFACE_MODEL' surface_model_*.h | sed -E 's/.*SURFACE_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
-  normal_models=`grep -s -E '^NORMAL_MODEL' normal_model_*.h | sed -E 's/.*NORMAL_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
-  tangential_models=`grep -s -E '^TANGENTIAL_MODEL' tangential_model_*.h | sed -E 's/.*TANGENTIAL_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
-  cohesion_models=`grep -s -E '^COHESION_MODEL' cohesion_model_*.h | sed -E 's/.*COHESION_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
-  rolling_models=`grep -s -E '^ROLLING_MODEL' rolling_model_*.h | sed -E 's/.*ROLLING_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
+  surface_models=`grep -s -E '^SURFACE_MODEL' surface_model_*.h | $sed_ex 's/.*SURFACE_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
+  normal_models=`grep -s -E '^NORMAL_MODEL' normal_model_*.h | $sed_ex 's/.*NORMAL_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
+  tangential_models=`grep -s -E '^TANGENTIAL_MODEL' tangential_model_*.h | $sed_ex 's/.*TANGENTIAL_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
+  cohesion_models=`grep -s -E '^COHESION_MODEL' cohesion_model_*.h | $sed_ex 's/.*COHESION_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
+  rolling_models=`grep -s -E '^ROLLING_MODEL' rolling_model_*.h | $sed_ex 's/.*ROLLING_MODEL\((.+),\s*(.+),\s*(.+)\)/\1/'`
 
   # check for duplicate constants
-  sm_duplicates=`grep -s -E '^SURFACE_MODEL' surface_model_*.h | sed -E 's/.*SURFACE_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
-  nm_duplicates=`grep -s -E '^NORMAL_MODEL' normal_model_*.h | sed -E 's/.*NORMAL_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
-  tm_duplicates=`grep -s -E '^TANGENTIAL_MODEL' tangential_model_*.h | sed -E 's/.*TANGENTIAL_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
-  cm_duplicates=`grep -s -E '^COHESION_MODEL' cohesion_model_*.h | sed -E 's/.*COHESION_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
-  rm_duplicates=`grep -s -E '^ROLLING_MODEL' rolling_model_*.h | sed -E 's/.*ROLLING_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
+  sm_duplicates=`grep -s -E '^SURFACE_MODEL' surface_model_*.h | $sed_ex 's/.*SURFACE_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
+  nm_duplicates=`grep -s -E '^NORMAL_MODEL' normal_model_*.h | $sed_ex 's/.*NORMAL_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
+  tm_duplicates=`grep -s -E '^TANGENTIAL_MODEL' tangential_model_*.h | $sed_ex 's/.*TANGENTIAL_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
+  cm_duplicates=`grep -s -E '^COHESION_MODEL' cohesion_model_*.h | $sed_ex 's/.*COHESION_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
+  rm_duplicates=`grep -s -E '^ROLLING_MODEL' rolling_model_*.h | $sed_ex 's/.*ROLLING_MODEL\((.+),\s*(.+),\s*(.+)\)/\3/' | sort | uniq -d`
 
   if [ -n "$sm_duplicates" ]; then echo "ERROR: duplicate surface model identifiers:"; echo $sm_duplicates; exit -1; fi
   if [ -n "$nm_duplicates" ]; then echo "ERROR: duplicate normal model identifiers:"; echo $nm_duplicates; exit -1; fi
@@ -139,8 +142,13 @@ elif (test $1 = "models") then
     done
   done
 
-  grep -v -f style_contact_model.blacklist $tmpfile > $filteredfile
-  rm $tmpfile
+  if (test -e style_contact_model.blacklist) then
+    grep -v -f style_contact_model.blacklist $tmpfile > $filteredfile
+    rm $tmpfile
+  else
+    mv $tmpfile $filteredfile
+  fi
+
 
   if (test ! -e $filteredfile) then
     rm -f $stylefile

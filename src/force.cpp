@@ -59,14 +59,6 @@
 using namespace LAMMPS_NS;
 using namespace ContactModels;
 
-int PairContactHistorySetup::add_value(std::string name, std::string newtonflag) {
-  return pg->add_history_value(name, newtonflag);
-}
-
-int WallContactHistorySetup::add_value(std::string name, std::string newtonflag) {
-  return fix->add_history_value(name, newtonflag);
-}
-
 /* ---------------------------------------------------------------------- */
 
 Force::Force(LAMMPS *lmp) : Pointers(lmp), registry(lmp)

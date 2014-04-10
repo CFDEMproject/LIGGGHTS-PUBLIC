@@ -46,27 +46,24 @@ namespace MODEL_PARAMS
 
   ScalarProperty* createCharacteristicVelocity(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCohesionEnergyDensity(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  VectorProperty * createYoungsModulus(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  VectorProperty * createPoissonsRatio(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createYeff(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createGeff(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createCoeffRest(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createCoeffRestLog(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createBetaEff(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  VectorProperty* createYoungsModulus(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  VectorProperty* createPoissonsRatio(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createYeff(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createGeff(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createCoeffRest(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createCoeffRestLog(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createBetaEff(PropertyRegistry & registry, const char * caller, bool sanity_checks);
 
   MatrixProperty* createCoeffFrict(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffRollFrict(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffRollVisc(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createCoeffMu(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createCoeffRestMax(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createCoeffStc(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createCoeffMu(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createCoeffRestMax(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createCoeffStc(PropertyRegistry & registry, const char * caller, bool sanity_checks);
 
-  // ------------------------------ HAMAKER --------------------------------
-  MatrixProperty* createHamakerConstant(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty* createHamakerMinimumParticleDistance(PropertyRegistry & registry, const char * caller, bool sanity_checks);
-  MatrixProperty * createHamakerMaxEff(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createLiquidVolume(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createSurfaceTension(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  VectorProperty* createContactAngle(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createKn(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createKt(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createGamman(PropertyRegistry & registry, const char * caller, bool sanity_checks);

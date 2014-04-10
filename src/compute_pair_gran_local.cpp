@@ -67,7 +67,7 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
 
   for (int iarg = 3; iarg < narg; iarg++)
   {
-    int i = iarg-3;
+    //int i = iarg-3;
     if (strcmp(arg[iarg],"pos") == 0) posflag = 1;
     else if (strcmp(arg[iarg],"id") == 0) idflag = 1;
     else if (strcmp(arg[iarg],"force") == 0) fflag = 1;
@@ -285,14 +285,12 @@ void ComputePairGranLocal::compute_local()
 
 int ComputePairGranLocal::count_pairs()
 {
-  int i,j,m,n,ii,jj,inum,jnum,itype,jtype;
+  int i,j,m,n,ii,jj,inum,jnum;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int *ilist,*jlist,*numneigh,**firstneigh;
-  double *fbuf,*tbuf,*hbuf;
 
   double **x = atom->x;
   double *radius = atom->radius;
-  int *type = atom->type;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
   int nall = nlocal + atom->nghost;
@@ -316,7 +314,6 @@ int ComputePairGranLocal::count_pairs()
     xtmp = x[i][0];
     ytmp = x[i][1];
     ztmp = x[i][2];
-    itype = type[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
 
@@ -332,7 +329,6 @@ int ComputePairGranLocal::count_pairs()
       dely = ytmp - x[j][1];
       delz = ztmp - x[j][2];
       rsq = delx*delx + dely*dely + delz*delz;
-      jtype = type[j];
       if (rsq >= (radius[i]+radius[j])*(radius[i]+radius[j])) continue;
       m++;
     }
@@ -358,7 +354,7 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
 {
     double del[3],r,rsq,radi,radj,contactArea;
     double *xi, *xj,xi_w[3],xj_w[3];
-    int nlocal,is_ghost;
+    int nlocal;
 
     if (!(atom->mask[i] & groupbit)) return;
     if (!(atom->mask[j] & groupbit)) return;

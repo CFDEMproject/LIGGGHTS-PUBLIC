@@ -44,8 +44,8 @@ using namespace FixConst;
 FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
   : Fix(lmp,narg,arg),
     fix_mesh_(0),
-    mesh_(0),
     move_(0),
+    mesh_(0),
     time_(0),
     time_since_setup_(0)
 {

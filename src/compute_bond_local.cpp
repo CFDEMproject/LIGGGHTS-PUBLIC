@@ -117,8 +117,7 @@ int ComputeBondLocal::compute_bonds(int flag)
 {
   int i,m,n,atom1,atom2;
   double delx,dely,delz,rsq;
-  double *dbuf,*ebuf,*fbuf;
-  double *ptr;
+  double *ptr; 
 
   double **x = atom->x;
   int *num_bond = atom->num_bond;

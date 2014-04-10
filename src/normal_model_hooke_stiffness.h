@@ -59,20 +59,27 @@ namespace ContactModels
       registry.registerProperty("k_n", &MODEL_PARAMS::createKn);
       registry.registerProperty("k_t", &MODEL_PARAMS::createKt);
 
-      registry.connect("k_n", k_n);
-      registry.connect("k_t", k_t);
+      registry.connect("k_n", k_n,"model hooke/stiffness");
+      registry.connect("k_t", k_t,"model hooke/stiffness");
 
       if(absolute_damping) {
         registry.registerProperty("gamman_abs", &MODEL_PARAMS::createGammanAbs);
         registry.registerProperty("gammat_abs", &MODEL_PARAMS::createGammatAbs);
-        registry.connect("gamman_abs", gamma_n);
-        registry.connect("gammat_abs", gamma_t);
+        registry.connect("gamman_abs", gamma_n,"model hooke/stiffness");
+        registry.connect("gammat_abs", gamma_t,"model hooke/stiffness");
       } else {
         registry.registerProperty("gamman", &MODEL_PARAMS::createGamman);
         registry.registerProperty("gammat", &MODEL_PARAMS::createGammat);
-        registry.connect("gamman", gamma_n);
-        registry.connect("gammat", gamma_t);
+        registry.connect("gamman", gamma_n,"model hooke/stiffness");
+        registry.connect("gammat", gamma_t,"model hooke/stiffness");
       }
+    }
+
+    // effective exponent for stress-strain relationship
+    
+    inline double stressStrainExponent()
+    {
+      return 1.;
     }
 
     inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)

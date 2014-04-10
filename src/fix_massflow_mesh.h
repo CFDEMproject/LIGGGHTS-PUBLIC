@@ -67,8 +67,8 @@ class FixMassflowMesh : public Fix {
   double pref_[3];
   double sidevec_[3];
 
-  bool    havePointAtOutlet_;
-  bool    insideOut_;
+  bool   havePointAtOutlet_;
+  bool   insideOut_;
   double pointAtOutlet_[3];
 
   // true if any given particle is

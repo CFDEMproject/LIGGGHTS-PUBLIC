@@ -392,6 +392,20 @@ void FixWallGran::init()
 
         // init for derived classes
         init_granular();
+
+        // disallow more than one wall of non-rimitive style
+        
+        if(is_mesh_wall())
+        {
+            int nfix = modify->n_fixes_style("wall/gran");
+            for (int ifix = 0; ifix < nfix; ifix++)
+            {
+                FixWallGran *fwg = static_cast<FixWallGran*>(modify->find_fix_style("wall/gran",ifix));
+                if (fwg == this) continue;
+                if (fwg->is_mesh_wall())
+                    error->fix_error(FLERR,this,"More than one wall of type 'mesh' is not supported");
+            }
+        }
     }
     
 }
@@ -527,12 +541,12 @@ void FixWallGran::post_force_mesh(int vflag)
 {
     
     // contact properties
-    double force_old[3],force_wall[3],v_wall[3],bary[3];
+    double v_wall[3],bary[3];
     double delta[3],deltan;
     MultiVectorContainer<double,3,3> *vMeshC;
     double ***vMesh;
     int nlocal = atom->nlocal;
-    int nTriAll, iPart;
+    int nTriAll;
 
     CollisionData cdata;
     cdata.is_wall = true;
@@ -898,7 +912,7 @@ void FixWallGran::addHeatFlux(TriMesh *mesh,int ip, double delta_n, double area_
     if(deltan_ratio)
        delta_n *= deltan_ratio[itype-1][atom_type_wall_-1];
 
-    r = ri + delta_n;
+    r = ri - delta_n;
 
     Acont = (reff_wall*reff_wall-r*r)*M_PI*area_ratio; //contact area sphere-wall
     tcop = th_cond[itype-1]; //types start at 1, array at 0

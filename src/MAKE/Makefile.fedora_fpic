@@ -1,4 +1,4 @@
-# openmpi = Fedora Core 6, mpic++, OpenMPI-1.1, FFTW2
+# openmpi = Fedora, mpic++, OpenMPI-1.6
 
 SHELL = /bin/sh
 
@@ -8,7 +8,7 @@ SHELL = /bin/sh
 
 CC =		mpic++
 CCFLAGS =	-O2 \
-		-funroll-loops -fstrict-aliasing -Wall -W -Wno-uninitialized -fPIC
+		-funroll-loops -fstrict-aliasing -Wall -Wno-uninitialized -fPIC
 SHFLAGS =       -fPIC
 DEPFLAGS =	-M
 

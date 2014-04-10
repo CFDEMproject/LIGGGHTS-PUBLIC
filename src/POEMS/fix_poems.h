@@ -28,6 +28,7 @@ class FixPOEMS : public Fix  {
  public:
   FixPOEMS(class LAMMPS *, int narg, char **arg);
   ~FixPOEMS();
+  virtual void post_create();
   int setmask();
   void init();
   void setup(int);
@@ -39,7 +40,7 @@ class FixPOEMS : public Fix  {
   void final_integrate_respa(int, int);
 
   void grow_arrays(int);
-  void copy_arrays(int, int, int);
+  void copy_arrays(int, int);
   int pack_exchange(int, double *);
   int unpack_exchange(int, double *);
   double memory_usage();
@@ -49,7 +50,14 @@ class FixPOEMS : public Fix  {
   void deform(int);
   void reset_dt();
 
+  void updatePtrs();
+
+ protected:
+  class FixPropertyAtom* fix_xcm;
+  class FixPropertyAtom* fix_segmentOrientation;
+
  private:
+  bool mydebug;
   int me;
   double dtv,dtf,dthalf;
   double *step_respa;
@@ -73,7 +81,7 @@ class FixPOEMS : public Fix  {
   double **xcm;             // coords of center-of-mass of each rigid body
   double **vcm;             // velocity of center-of-mass of each
   double **fcm;             // force on center-of-mass of each
-  double **inertia;         // 6 inertia components of each (xx,yy,zz,xy,yz,xz)
+  double **inertia;         // 3 inertia components of each (xx,yy,zz,xy,yz,xz)
   double **ex_space,**ey_space,**ez_space;
                             // orientation of each body in space coords
   double **angmom;          // angular momentum of each in space coords
@@ -86,7 +94,7 @@ class FixPOEMS : public Fix  {
   int ncluster;             // # of independent clusters of coupled bodies
   int njoint;               // # of interbody joints
   int **jointbody;          // indices of 2 rigid bodies in each joint (1-N)
-  double **xjoint;          // coords of each joint point
+  double **xjoint;          // coords of each joint point, NOT updated!
   int nfree;                // # of isolated unconnected bodies
   int *freelist;            // indices of isolated bodies (1-N)
 

@@ -660,7 +660,7 @@ void Domain::box_too_small_check()
   double **x = atom->x;
   int nlocal = atom->nlocal;
 
-  double delx,dely,delz,rsq,r;
+  double delx,dely,delz,rsq; 
   double maxbondme = 0.0;
 
   for (i = 0; i < nlocal; i++)

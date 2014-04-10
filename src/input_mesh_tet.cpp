@@ -86,13 +86,11 @@ void InputMeshTet::meshtetfile(const char *filename, class RegTetMesh *mesh, boo
 void InputMeshTet::meshtetfile_vtk(class RegTetMesh *mesh)
 {
   int n,m;
-  int iVertex = 0;
 
   double phix = (mesh->rot_angle[0])*M_PI/180.;
   double phiy = (mesh->rot_angle[1])*M_PI/180.;
   double phiz = (mesh->rot_angle[2])*M_PI/180.;
 
-  int flag_normalize = 0;
   int flag_outside = 0;
 
   double **points;

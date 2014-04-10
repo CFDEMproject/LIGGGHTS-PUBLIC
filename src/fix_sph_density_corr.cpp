@@ -165,7 +165,7 @@ void FixSphDensityCorr::post_create()
     fixarg[6]="yes";
     fixarg[7]="no";
     fixarg[8]="0.";
-    modify->add_fix(9,(char**)fixarg);
+    modify->add_fix(9,const_cast<char**>(fixarg));
     fix_quantity=static_cast<FixPropertyAtom*>(modify->find_fix_property(quantity_name,"property/atom","scalar",0,0,style));
   }
 }

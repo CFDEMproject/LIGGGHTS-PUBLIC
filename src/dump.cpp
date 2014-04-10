@@ -105,7 +105,7 @@ Dump::Dump(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   multiname = NULL;
 
   char *ptr;
-  if (ptr = strchr(filename,'%')) {
+  if ((ptr = strchr(filename,'%'))) { 
     multiproc = 1;
     nclusterprocs = 1;
     filewriter = 1;

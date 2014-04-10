@@ -124,17 +124,17 @@ public:
 
   FixPropertyGlobal* getGlobalProperty(const char *varname, const char *style, const char *svmstyle, int len1, int len2, const char *caller);
 
-  ScalarProperty * getScalarProperty(std::string varname);
-  VectorProperty * getVectorProperty(std::string varname);
-  MatrixProperty * getMatrixProperty(std::string varname);
+  ScalarProperty * getScalarProperty(std::string varname,const char *caller);
+  VectorProperty * getVectorProperty(std::string varname,const char *caller);
+  MatrixProperty * getMatrixProperty(std::string varname,const char *caller);
 
   void registerProperty(std::string varname, ScalarPropertyCreator creator, bool sanity_checks = false);
   void registerProperty(std::string varname, VectorPropertyCreator creator, bool sanity_checks = false);
   void registerProperty(std::string varname, MatrixPropertyCreator creator, bool sanity_checks = false);
 
-  void connect(std::string varname, double ** & variable);
-  void connect(std::string varname, double * & variable);
-  void connect(std::string varname, double & variable);
+  void connect(std::string varname, double ** & variable, const char *caller);
+  void connect(std::string varname, double * & variable, const char *caller);
+  void connect(std::string varname, double & variable, const char *caller);
 
   void init();
 

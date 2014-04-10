@@ -11,11 +11,11 @@
 
 <HR>
 
-<H3>gran rolling_friction epsd 
+<H3>gran rolling_friction epsd2 
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>rolling_friction epsd 
+<PRE>rolling_friction epsd2 
 </PRE>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>
 </P>
@@ -38,9 +38,9 @@ torque contribution. It is similar to the <A HREF = "gran_rolling_friction_epsd.
 </P>
 <P>The coefficient of rolling friction (rmu) must be defined as
 </P>
-<P>fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
-</P>
+<PRE>fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
+</PRE>
 <PRE>This coefficient rmu is equal to the rmu as defined in the <A HREF = "gran_rolling_friction_cdt.html">CDT model</A>. 
 </PRE>
 <P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...

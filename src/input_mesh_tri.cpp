@@ -97,7 +97,6 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
 void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
 {
   int n,m;
-  int iVertex = 0;
 
   double **points;
   int ipoint,npoints = 0;

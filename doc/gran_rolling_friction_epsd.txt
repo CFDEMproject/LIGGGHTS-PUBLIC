@@ -53,7 +53,7 @@ respectively.
 The coefficient of rolling friction (rmu) must be defined as
 
 fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
 
 This coefficient rmu is equal to the rmu as defined in the "CDT model"_gran_rolling_friction_cdt.html.
 In addition to rmu, eta_r is the required material property that must be defined as

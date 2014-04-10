@@ -73,10 +73,12 @@ class AtomVecSphere : public AtomVec {
   void data_vel(int, char **);
   int data_vel_hybrid(int, char **);
   void pack_data(double **);
+  void pack_data(double **buf,int tag_offset); 
   int pack_data_hybrid(int, double *);
   void write_data(FILE *, int, double **);
   int write_data_hybrid(FILE *, double *);
   void pack_vel(double **);
+  void pack_vel(double **buf,int tag_offset); 
   int pack_vel_hybrid(int, double *);
   void write_vel(FILE *, int, double **);
   int write_vel_hybrid(FILE *, double *);

@@ -465,7 +465,10 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
         beyond = ptr + 2;
         value = variable->retrieve(var);
       }
-      if (value == NULL) error->one(FLERR,"Substitution for illegal variable");
+      if (value == NULL) {
+          
+          error->one(FLERR,"Substitution for illegal variable");
+      }
 
       // check if storage in str2 needs to be expanded
       // re-initialize ptr and ptr2 to the point beyond the variable.
@@ -1443,9 +1446,9 @@ void Input::pair_modify()
 void Input::pair_style()
 {
   if (narg < 1) error->all(FLERR,"Illegal pair_style command");
-  
+
   /*
-  if (force->pair && strcmp(arg[0],force->pair_style) == 0) {
+  if (!modify->fix_restart_in_progress() && force->pair && strcmp(arg[0],force->pair_style) == 0) {
     force->pair->settings(narg-1,&arg[1]);
     return;
   }*/

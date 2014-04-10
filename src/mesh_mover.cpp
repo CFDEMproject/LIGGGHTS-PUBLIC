@@ -231,7 +231,7 @@ void MeshMoverWiggle::initial_integrate(double dTAbs,double dTSetup,double dt)
 
     double dX[3],dx[3],vNode[3];
     double sine =   sin(omega_ * dTAbs) - sin(omega_ * (dTAbs-dTSetup));
-    double cosine = cos(omega_ * dTAbs) - cos(omega_ * (dTAbs-dTSetup));
+    //double cosine = cos(omega_ * dTAbs) - cos(omega_ * (dTAbs-dTSetup));
 
     int size = mesh_->size();
     int numNodes = mesh_->numNodes();
@@ -294,7 +294,7 @@ MeshMoverRotate::~MeshMoverRotate()
 
 void MeshMoverRotate::initial_integrate(double dTAbs,double dTSetup,double dt)
 {
-    double xOld[3],node[3],vRot[3],omegaVec[3],rPA[3];
+    double node[3],vRot[3],omegaVec[3],rPA[3];
     double reference_point[3];
     double totalPhi = omega_*dTSetup;
     double incrementalPhi = omega_*dt;
@@ -399,9 +399,9 @@ void MeshMoverRotateVariable::setup()
 
 /* ---------------------------------------------------------------------- */
 
-void MeshMoverRotateVariable::initial_integrate(double dTAbs,double dTSetup,double dt)
+void MeshMoverRotateVariable::initial_integrate(double,double,double dt)
 {
-    double xOld[3],node[3],vRot[3],omegaVec[3],rPA[3];
+    double node[3],vRot[3],omegaVec[3],rPA[3];
     double reference_point[3];
     double incrementalPhi;
 
@@ -479,7 +479,7 @@ MeshMoverRiggle::~MeshMoverRiggle()
 
 void MeshMoverRiggle::initial_integrate(double dTAbs,double dTSetup,double dt)
 {
-    double xOld[3],node[3],vRot[3],omegaVec[3],rPA[3];
+    double node[3],vRot[3],omegaVec[3],rPA[3];
 
     double sine =   amplitude_*(sin(omega_ * dTAbs)-sin(omega_ * (dTAbs-dTSetup)));
     double vel_prefactor = omega_*amplitude_*cos(omega_ * dTAbs);
@@ -624,7 +624,7 @@ MeshMoverVibRot::~MeshMoverVibRot()
 
 void MeshMoverVibRot::initial_integrate(double dTAbs,double dTSetup,double dt)
 {
-    double xOld[3],node[3],omegaVec[3],rPA[3],vRot[3];
+    double node[3],omegaVec[3],rPA[3],vRot[3];
 
     double arg = 0;
     double vR = 0;

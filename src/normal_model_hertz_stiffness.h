@@ -48,6 +48,7 @@ namespace ContactModels
       gamma_t(NULL),
       tangential_damping(false)
     {
+      
     }
 
     void registerSettings(Settings & settings)
@@ -62,10 +63,17 @@ namespace ContactModels
       registry.registerProperty("gamma_n", &MODEL_PARAMS::createGamman);
       registry.registerProperty("gamma_t", &MODEL_PARAMS::createGammat);
 
-      registry.connect("k_n", k_n);
-      registry.connect("k_t", k_t);
-      registry.connect("gamma_n", gamma_n);
-      registry.connect("gamma_t", gamma_t);
+      registry.connect("k_n", k_n,"model hertz/stiffness");
+      registry.connect("k_t", k_t,"model hertz/stiffness");
+      registry.connect("gamma_n", gamma_n,"model hertz/stiffness");
+      registry.connect("gamma_t", gamma_t,"model hertz/stiffness");
+    }
+
+    // effective exponent for stress-strain relationship
+    
+    inline double stressStrainExponent()
+    {
+      return 1.5;
     }
 
     inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)

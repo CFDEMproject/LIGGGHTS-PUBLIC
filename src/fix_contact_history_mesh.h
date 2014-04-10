@@ -75,6 +75,11 @@ class FixContactHistoryMesh : public FixContactHistory {
   void cleanUpContacts();
   void cleanUpContactJumps();
   
+  // OMP interface
+  void resetDeletionPage(int tid);
+  void markForDeletion(int tid, int ifrom, int ito);
+  void cleanUpContacts(int ifrom, int ito);
+
   void reset_history();
 
   // return # of contacts
@@ -87,9 +92,9 @@ class FixContactHistoryMesh : public FixContactHistory {
   MyPage<double> *dpage1_;     // pages of contact history with neighbors
   MyPage<int> *ipage2_;        // pages of neighbor tri IDs
   MyPage<double> *dpage2_;     // pages of contact history with neighbors
-  MyPage<bool> *delpage_;      // pages of deletion flags with neighbors
+  MyPage<bool> ** keeppage_;      // pages of deletion flags with neighbors
 
-  bool **delflag_;
+  bool **keepflag_;
 
   void allocate_pages();
 
@@ -108,7 +113,7 @@ class FixContactHistoryMesh : public FixContactHistory {
   double *swap_;
 
   void sort_contacts();
-  void swap(int ilocal,int ineigh, int jneigh, bool delflag_swap);
+  void swap(int ilocal,int ineigh, int jneigh, bool keepflag_swap);
 };
 
 // *************************************

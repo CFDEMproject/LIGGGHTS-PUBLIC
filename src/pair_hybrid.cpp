@@ -188,16 +188,15 @@ void PairHybrid::allocate()
 
 void PairHybrid::settings(int narg, char **arg)
 {
-  int i,m,istyle;
-
+  
   if (narg < 1) error->all(FLERR,"Illegal pair_style command");
 
   // delete old lists, since cannot just change settings
 
   if (nstyles) {
-    for (m = 0; m < nstyles; m++) delete styles[m];
+    for (int m = 0; m < nstyles; m++) delete styles[m]; 
     delete [] styles;
-    for (m = 0; m < nstyles; m++) delete [] keywords[m];
+    for (int m = 0; m < nstyles; m++) delete [] keywords[m]; 
     delete [] keywords;
   }
 
@@ -216,6 +215,8 @@ void PairHybrid::settings(int narg, char **arg)
   keywords = new char*[narg];
   multiple = new int[narg];
 
+  memset(styles, 0, sizeof(Pair*)*narg);
+
   // allocate each sub-style
   // call settings() with set of args that are not pair style names
   // use force->pair_map to determine which args these are
@@ -229,15 +230,18 @@ void PairHybrid::settings(int narg, char **arg)
       error->all(FLERR,"Pair style hybrid cannot have hybrid as an argument");
     if (strcmp(arg[iarg],"none") == 0)
       error->all(FLERR,"Pair style hybrid cannot have none as an argument");
-    int nremaining = narg - iarg;
-    char ** remaining_args = &arg[iarg+1];
-    styles[nstyles] = force->new_pair(arg[iarg],nremaining,remaining_args,lmp->suffix,dummy);
+
+    // find next pair style
     int n = strlen(arg[iarg]) + 1;
     keywords[nstyles] = new char[n];
     strcpy(keywords[nstyles],arg[iarg]);
     jarg = iarg + 1;
     while (jarg < narg && !force->pair_map->count(arg[jarg])) jarg++;
-    styles[nstyles]->settings(jarg-iarg-1,&arg[iarg+1]);
+
+    int nremaining = jarg - iarg - 1;
+    char ** remaining_args = &arg[iarg+1];
+    styles[nstyles] = force->new_pair(arg[iarg],nremaining,remaining_args,lmp->suffix,dummy);
+    styles[nstyles]->settings(nremaining,remaining_args);
     iarg = jarg;
     nstyles++;
   }

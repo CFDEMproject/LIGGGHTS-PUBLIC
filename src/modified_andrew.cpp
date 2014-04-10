@@ -180,7 +180,7 @@ double ModifiedAndrew::area(vector<Point> H){
   double a = 0.0;
   Point m = mean_point(H);
 
-  for (int i = 1; i < H.size(); i++){
+  for (size_t i = 1; i < H.size(); i++){
     a += area(H[i-1],m,H[i]);
   }
 
@@ -205,7 +205,7 @@ Point ModifiedAndrew::mean_point(vector<Point> P){
 
   double x_accum, y_accum;
 
-  for (int i = 1; i < P.size(); i++){
+  for (size_t i = 1; i < P.size(); i++){
     x_accum += P[i].x;
     y_accum += P[i].y;
   }

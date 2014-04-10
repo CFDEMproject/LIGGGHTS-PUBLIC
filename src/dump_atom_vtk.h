@@ -38,25 +38,6 @@ DumpStyle(atom/vtk,DumpATOMVTK)
 #include <iostream>
 #include <vector>
 #include <fstream>
-
-#include<vtkCellArray.h>
-#include<vtkFloatArray.h>
-#include<vtkDoubleArray.h>
-#include<vtkIntArray.h>
-#include<vtkPoints.h>
-#include<vtkPointData.h>
-#include<vtkCellData.h>
-#include<vtkSmartPointer.h>
-#include<vtkUnstructuredGrid.h>
-#include<vtkPolyData.h>
-#include<vtkXMLUnstructuredGridWriter.h>
-#include<vtkXMLPolyDataWriter.h>
-#include<vtkZLibDataCompressor.h>
-#include<vtkTriangle.h>
-#include<vtkLine.h>
-#include<vtkQuad.h>
-
-#include <Eigen/Core>
 #include "update.h"
 
 namespace LAMMPS_NS {
@@ -72,10 +53,20 @@ class DumpATOMVTK : public Dump {
   void pack(int *);
   void write_data(int, double *);
 
-  typedef Eigen::Matrix<double, 3, 1> V3;
   int n_calls_;
   char * filecurrent;
   void setFileCurrent();
+
+  class V3 {
+    public:
+      V3() {v[0]=v[1]=v[2]=0.0;}
+      V3(double x, double y, double z) {v[0]=x;v[1]=y;v[2]=z;}
+      double& operator[](int idx) {return v[idx];}
+      const double& operator[](int idx) const {return v[idx];}
+      double v[3];
+  };
+
+  typedef DumpATOMVTK::V3 V3;
 
   class DataVTK {
     public:
@@ -95,13 +86,13 @@ class DumpATOMVTK : public Dump {
   class vtkExportData {
     private:
       std::vector<DumpATOMVTK::DataVTK> vtkData;
-      ofstream fileVTK;
+      std::ofstream fileVTK;
       const char * _fileName;
       bool _setFileName;
     public:
       vtkExportData();
       void add(DumpATOMVTK::DataVTK &);
-      const int size();
+      int size();
       void writeSER();
       void setFileName(const char *);
       void show();

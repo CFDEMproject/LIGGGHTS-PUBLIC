@@ -32,9 +32,6 @@
 enum{RANDOM_CONSTANT,RANDOM_UNIFORM,RANDOM_GAUSSIAN,RANDOM_LOGNORMAL};
 
 namespace LMP_PROBABILITY_NS {
-
-   #define MATH_E 2.718281828459
-
   class PDF
   {
     public:
@@ -150,19 +147,18 @@ namespace LMP_PROBABILITY_NS {
   template<> inline double cubic_expectancy_value<RANDOM_UNIFORM>(PDF *pdf)
   {
      if(pdf->mass_shift_)
-        /*return 0.5 * (pdf->min_ + pdf->max_);*/
         pdf->error->all(FLERR,"mass distribution not implemented for uniform");
-     else
-        return 0.25*(pdf->max_*pdf->max_*pdf->max_+
-                     pdf->max_*pdf->max_*pdf->min_+
-                     pdf->max_*pdf->min_*pdf->min_+
-                     pdf->min_*pdf->min_*pdf->min_);
+      
+     return 0.25*(pdf->max_*pdf->max_*pdf->max_+
+                  pdf->max_*pdf->max_*pdf->min_+
+                  pdf->max_*pdf->min_*pdf->min_+
+                  pdf->min_*pdf->min_*pdf->min_);
   }
 
   template<> inline double expectancy_value<RANDOM_UNIFORM>(PDF *pdf)
   {
      if(!pdf->mass_shift_)
-        return pow(0.5 * (pdf->min_ + pdf->max_),3.);
+        return 0.5 * (pdf->min_ + pdf->max_);
      else
         return sqrt(pdf->h1_/(2.*(pdf->h2_-0.5)));
   }
@@ -230,8 +226,8 @@ namespace LMP_PROBABILITY_NS {
 
       // also here, take +- 3 sigma as min/max
       // change in expectancy considered negligable
-      double min =  pow(MATH_E,mu_ - 3. * sigma_);
-      double max =  pow(MATH_E,mu_ + 3. * sigma_);
+      double min =  exp(mu_ - 3. * sigma_);
+      double max =  exp(mu_ + 3. * sigma_);
       set_min_max(min, max);
       if(min_ < 0.)
             error->all(FLERR,"Probablity distribution: exp(mu-3*sigma) < 0, please increase mu or decrease sigma");
@@ -240,13 +236,13 @@ namespace LMP_PROBABILITY_NS {
   template<> inline double cubic_expectancy_value<RANDOM_LOGNORMAL>(PDF *pdf)
   {
      if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for lognormal");
-     return pow(MATH_E,3.*pdf->mu_+4.5*pdf->sigma_*pdf->sigma_);
+     return exp(3.*pdf->mu_+4.5*pdf->sigma_*pdf->sigma_);
   }
 
   template<> inline double expectancy_value<RANDOM_LOGNORMAL>(PDF *pdf)
   {
      if(pdf->mass_shift_) pdf->error->all(FLERR,"mass distribution not implemented for lognormal");
-     return pow(MATH_E,pdf->mu_ + 0.5 * pdf->sigma_ * pdf->sigma_);
+     return exp(pdf->mu_ + 0.5 * pdf->sigma_ * pdf->sigma_);
   }
 
   template<> inline double rand_value<RANDOM_LOGNORMAL>(PDF *pdf,LAMMPS_NS::RanPark *rp)
@@ -255,7 +251,7 @@ namespace LMP_PROBABILITY_NS {
      double value;
      do
      {
-         value = pow(MATH_E,pdf->mu_ + rp->gaussian() * pdf->sigma_);
+         value = exp(pdf->mu_ + rp->gaussian() * pdf->sigma_);
      } while (value < pdf->min_ || value > pdf->max_);
      return value;
   }

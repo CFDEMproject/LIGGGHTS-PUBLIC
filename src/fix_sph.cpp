@@ -125,7 +125,7 @@ void FixSph::init()
 
   } else {
     if (fppaSl == NULL) {
-      fppaSl=static_cast<FixPropertyAtom*>(modify->find_fix_property("sl","property/atom","scalar",0,0,false));
+      fppaSl=static_cast<FixPropertyAtom*>(modify->find_fix_property("sl","property/atom","scalar",0,0,"FixSph",false));
     }
     if(!fppaSl) error->all(FLERR,"Fix sph only works with a fix property/atom that defines sl. Internal error!");
   }

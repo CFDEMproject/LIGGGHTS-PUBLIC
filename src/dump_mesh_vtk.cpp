@@ -69,11 +69,11 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   dataMode_(0),
   nMesh_(0),
   meshList_(0),
-  dump_what_(0),
   n_calls_(0),
   n_all_(0),
   n_all_max_(0),
   buf_all_(0),
+  dump_what_(0),
   sigma_n_(0),
   sigma_t_(0),
   wear_(0),
@@ -357,9 +357,6 @@ void DumpMeshVTK::init_style()
   size_one += n_scalar_containers_*1;
   size_one += n_vector_containers_*3;
 
-  ScalarContainer<double> *cb1;
-  VectorContainer<double,3> *cb2;
-
   delete [] format;
 }
 
@@ -511,7 +508,7 @@ void DumpMeshVTK::getGeneralRefs()
 
 void DumpMeshVTK::pack(int *ids)
 {
-  int m = 0, cbsize;
+  int m = 0;
   double node[3];
   TriMesh *mesh;
   ScalarContainer<double> *cb1;

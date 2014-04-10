@@ -55,12 +55,13 @@ SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::SurfaceMesh(LAMMPS *lmp)
     edgeVec_      (*this->prop().template addElementProperty< MultiVectorContainer<double,NUM_NODES,3> >  ("edgeVec",      "comm_none","frame_scale_trans_invariant","restart_no")),
     edgeNorm_     (*this->prop().template addElementProperty< MultiVectorContainer<double,NUM_NODES,3> >  ("edgeNorm",     "comm_none","frame_scale_trans_invariant","restart_no")),
     surfaceNorm_  (*this->prop().template addElementProperty< VectorContainer<double,3> >                 ("surfaceNorm",  "comm_none","frame_scale_trans_invariant","restart_no")),
-    edgeActive_   (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("edgeActive",   "comm_exchange_borders","frame_invariant","restart_no")),
-    cornerActive_ (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("cornerActive", "comm_exchange_borders","frame_invariant","restart_no")),
-    hasNonCoplanarSharedNode_(*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >("hasNonCoplanarSharedNode","comm_exchange_borders","frame_invariant", "restart_no")),
+    obtuseAngleIndex_   (*this->prop().template addElementProperty< ScalarContainer<int> >                ("obtuseAngleIndex","comm_exchange_borders","frame_invariant","restart_no")),
     nNeighs_      (*this->prop().template addElementProperty< ScalarContainer<int> >                      ("nNeighs",      "comm_exchange_borders","frame_invariant","restart_no")),
     neighFaces_   (*this->prop().template addElementProperty< VectorContainer<int,NUM_NEIGH_MAX> >        ("neighFaces",   "comm_exchange_borders","frame_invariant","restart_no")),
-    obtuseAngleIndex_   (*this->prop().template addElementProperty< ScalarContainer<int> >                ("obtuseAngleIndex","comm_exchange_borders","frame_invariant","restart_no"))
+    hasNonCoplanarSharedNode_(*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >("hasNonCoplanarSharedNode","comm_exchange_borders","frame_invariant", "restart_no")),
+    edgeActive_   (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("edgeActive",   "comm_exchange_borders","frame_invariant","restart_no")),
+    cornerActive_ (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("cornerActive", "comm_exchange_borders","frame_invariant","restart_no"))
+
 {
     
     areaMesh_.add(0.);
@@ -137,8 +138,6 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::recalcLocalSurfProperties()
     // areaMeshGlobal [areaMesh_(0)] and areaMeshOwned [areaMesh_(1)]
     // calculated here
 
-    double areaAccOff;
-
     areaMesh_(0) = 0.;
     areaMesh_(1) = 0.;
 
@@ -176,8 +175,6 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::recalcLocalSurfProperties()
 template<int NUM_NODES, int NUM_NEIGH_MAX>
 void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::recalcGhostSurfProperties()
 {
-    double pos[3], areaCheck;
-    int n_succ, n_iter;
     int nlocal = this->sizeLocal();
     int nall = this->sizeLocal()+this->sizeGhost();
 
@@ -398,7 +395,7 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
       for(int j = i+1; j < nall; j++)
       {
         
-        int iNode(0), jNode(0), iEdge(0), jEdge(0);
+        int iEdge(0), jEdge(0);
 
         if(shareEdge(i,j,iEdge,jEdge))
           handleSharedEdge(i,iEdge,j,jEdge, areCoplanar(TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::id(j)));
@@ -747,6 +744,7 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::handleSharedEdge(int iSrf, int iEdge,
     
     if(neighflag)
     {
+        
         if(nNeighs_(iSrf) == NUM_NEIGH_MAX || nNeighs_(jSrf) == NUM_NEIGH_MAX)
         {
             int ii;
@@ -1044,7 +1042,7 @@ double SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::edgeNodeDist(int iSrf, int iEdge, i
 template<int NUM_NODES, int NUM_NEIGH_MAX>
 double SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::edgePointDist(int iSrf, int iEdge, double *point)
 {
-        double nodeToP[3], dot, dot2;
+        double nodeToP[3], dot;
 
         vectorSubtract3D(point,MultiNodeMesh<NUM_NODES>::node_(iSrf)[iEdge],nodeToP);
         dot = vectorDot3D(edgeVec(iSrf)[iEdge],nodeToP);

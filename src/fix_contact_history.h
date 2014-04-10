@@ -32,6 +32,7 @@ FixStyle(contacthistory,FixContactHistory)
 
 #include "fix.h"
 #include "my_page.h"
+#include "vector_liggghts.h"
 
 namespace LAMMPS_NS {
 
@@ -62,11 +63,25 @@ class FixContactHistory : public Fix {
   int size_restart(int);
   int maxsize_restart();
 
+  // inline access
+  inline int n_partner(int i)
+  { return npartner_[i]; }
+
+  inline int partner(int i,int j)
+  { return partner_[i][j]; }
+
+  inline void contacthistory(int i,int j,double *h)
+  { vectorCopyN(&(contacthistory_[i][j*dnum_]),h,dnum_); }
+
+  inline double* contacthistory(int i,int j)
+  { return &(contacthistory_[i][j*dnum_]); }
+
  protected:
 
   int iarg_;
 
   int dnum_;                      
+  char *variablename_;
   int *newtonflag_;
   char **history_id_;
   int index_decide_noncontacting_;

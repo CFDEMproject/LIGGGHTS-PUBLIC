@@ -186,6 +186,17 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
+  void AssociativePointerArray<T>::addUninitializedElement()
+  {
+      for(int i=0;i<numElem_;i++)
+        content_[i]->addUninitialized(1);
+  }
+
+  /* ----------------------------------------------------------------------
+   add an element and initialize its properties with 0
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
   void AssociativePointerArray<T>::addZeroElement()
   {
       for(int i=0;i<numElem_;i++)

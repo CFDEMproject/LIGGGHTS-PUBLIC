@@ -109,8 +109,8 @@ ReadData::~ReadData()
 
 void ReadData::command(int narg, char **arg)
 {
-  if (narg != 1  && narg != 2) error->all(FLERR,"Illegal read_data command"); 
-  
+  if (narg < 1) error->all(FLERR,"Illegal read_data command"); 
+
   if (narg == 2 && strcmp(arg[1],"add") == 0) add_to_existing = 1;
 
   if (domain->box_exist && !add_to_existing)
@@ -154,7 +154,12 @@ void ReadData::command(int narg, char **arg)
       strcpy(fix_section[nfix],arg[iarg+3]);
       nfix++;
       iarg += 4;
-    } else error->all(FLERR,"Illegal read_data command");
+    } else { 
+        // case something else than "add"
+        if(strcmp(arg[iarg],"add")) error->all(FLERR,"Illegal read_data command");
+        // case "add"
+        else iarg++;
+    }
   }
 
   // scan data file to determine max topology needed per atom
@@ -204,7 +209,7 @@ void ReadData::command(int narg, char **arg)
   if (!domain->box_exist) domain->box_exist = 1; 
   // problem setup using info from header
 
-      int n;
+  int n;
 
   if(!add_to_existing) 
   {
@@ -474,7 +479,7 @@ void ReadData::header(int flag, int add)
     // trim anything from '#' onward
     // if line is blank, continue
 
-    if (ptr = strchr(line,'#')) *ptr = '\0';
+    if ((ptr = strchr(line,'#'))) *ptr = '\0';
     if (strspn(line," \t\n\r") == strlen(line)) continue;
     // allow special fixes first chance to match and process the line
     // if fix matches, continue to next header line
@@ -576,21 +581,21 @@ void ReadData::header(int flag, int add)
         {
             double lo,hi;
             sscanf(line,"%lg %lg",&lo,&hi);
-            if(lo < domain->boxlo[0] && domain->boundary[0][0] == 1 || hi > domain->boxhi[0] && domain->boundary[0][1] == 1)
+            if((lo < domain->boxlo[0] && domain->boundary[0][0] == 1) || (hi > domain->boxhi[0] && domain->boundary[0][1] == 1)) 
                 error->all(FLERR,"Atom coordinates in data file extend outside simulation domain");
         }
         else if (strstr(line,"ylo yhi"))
         {
             double lo,hi;
             sscanf(line,"%lg %lg",&lo,&hi);
-            if(lo < domain->boxlo[1] && domain->boundary[1][0] == 1 || hi > domain->boxhi[1] && domain->boundary[1][1] == 1)
+            if((lo < domain->boxlo[1] && domain->boundary[1][0] == 1) || (hi > domain->boxhi[1] && domain->boundary[1][1] == 1)) 
                 error->all(FLERR,"Atom coordinates in data file extend outside simulation domain");
         }
         else if (strstr(line,"zlo zhi"))
         {
             double lo,hi;
             sscanf(line,"%lg %lg",&lo,&hi);
-            if(lo < domain->boxlo[2] && domain->boundary[2][0] == 1 || hi > domain->boxhi[2] && domain->boundary[2][1] == 1)
+            if((lo < domain->boxlo[2] && domain->boundary[2][0] == 1) || (hi > domain->boxhi[2] && domain->boundary[2][1] == 1)) 
                 error->all(FLERR,"Atom coordinates in data file extend outside simulation domain");
         }
         else if( (strstr(line,"bonds")) ||
@@ -665,7 +670,7 @@ void ReadData::header(int flag, int add)
 
 void ReadData::atoms()
 {
-  int i,m,nchunk,eof;
+  int nchunk,eof; 
 
   bigint nread = 0;
   bigint natoms = atom->natoms;
@@ -773,7 +778,7 @@ void ReadData::atoms()
 
 void ReadData::velocities()
 {
-  int i,m,nchunk,eof;
+  int nchunk,eof; 
 
   int mapflag = 0;
   if (atom->map_style == 0) {
@@ -814,7 +819,7 @@ void ReadData::velocities()
 
 void ReadData::bonus(bigint nbonus, AtomVec *ptr, const char *type)
 {
-  int i,m,nchunk,eof;
+  int nchunk,eof; 
 
   int mapflag = 0;
   if (atom->map_style == 0) {
@@ -926,12 +931,11 @@ void ReadData::bodies()
 
 void ReadData::bonds()
 {
-  int i,m,nchunk,eof;
+  int i,nchunk,eof; 
 
   bigint nread = 0;
   bigint nbonds = atom->nbonds;
-  bigint natoms = atom->natoms;
-
+  
   while (nread < nbonds) {
     nchunk = MIN(nbonds-nread,CHUNK);
     eof = comm->read_lines_from_file(fp,nchunk,MAXLINE,buffer);
@@ -963,7 +967,7 @@ void ReadData::bonds()
 
 void ReadData::angles()
 {
-  int i,m,nchunk,eof;
+  int i,nchunk,eof; 
 
   bigint nread = 0;
   bigint nangles = atom->nangles;
@@ -999,7 +1003,7 @@ void ReadData::angles()
 
 void ReadData::dihedrals()
 {
-  int i,m,nchunk,eof;
+  int i,nchunk,eof; 
 
   bigint nread = 0;
   bigint ndihedrals = atom->ndihedrals;
@@ -1035,7 +1039,7 @@ void ReadData::dihedrals()
 
 void ReadData::impropers()
 {
-  int i,m,nchunk,eof;
+  int i,nchunk,eof; 
 
   bigint nread = 0;
   bigint nimpropers = atom->nimpropers;
@@ -1071,7 +1075,7 @@ void ReadData::impropers()
 
 void ReadData::mass()
 {
-  int i,m;
+  
   char *next;
   char *buf = new char[atom->ntypes*MAXLINE];
 
@@ -1080,7 +1084,7 @@ void ReadData::mass()
 
   char *original = buf;
 
-  for (i = 0; i < atom->ntypes; i++) {
+  for (int i = 0; i < atom->ntypes; i++) { 
     next = strchr(buf,'\n');
     *next = '\0';
     atom->set_mass(buf);
@@ -1115,7 +1119,7 @@ void ReadData::pairIJcoeffs()
 {
   int i,j;
   char *next;
-  
+
   int nsq = atom->ntypes* (atom->ntypes+1) / 2;
   char *buf = new char[nsq * MAXLINE];
 
@@ -1678,7 +1682,7 @@ void ReadData::skip_lines(int n)
 void ReadData::parse_coeffs(char *line, const char *addstr, int dupflag)
 {
   char *ptr;
-  if (ptr = strchr(line,'#')) *ptr = '\0';
+  if ((ptr = strchr(line,'#'))) *ptr = '\0';
 
   narg = 0;
   char *word = strtok(line," \t\n\r\f");

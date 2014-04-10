@@ -34,8 +34,8 @@
   template<int NUM_NODES>
   MultiNodeMeshParallel<NUM_NODES>::MultiNodeMeshParallel(LAMMPS *lmp)
   : MultiNodeMesh<NUM_NODES>(lmp),
-    nLocal_(0), nGhost_(0), nGlobal_(0), nGlobalOrig_(0),
     doParallellization_(true),
+    nLocal_(0), nGhost_(0), nGlobal_(0), nGlobalOrig_(0),
     isParallel_(false),
     isInsertionMesh_(false),
     maxsend_(0), maxrecv_(0),
@@ -236,12 +236,11 @@
    {
        if(!doParallellization_) return;
 
-       double sublo[3],subhi[3], cut, extent_acc;
+       double sublo[3],subhi[3], extent_acc;
        double rBound_max, cut_ghost;
        double **sublo_all, **subhi_all;
 
        int nprocs = this->comm->nprocs;
-       int me = this->comm->me;
        int myloc[3], loc_dim, nextproc, need_this;
 
        // get required size of communication per element
@@ -707,7 +706,7 @@
       MPI_Status status;
       MPI_Comm world = this->world;
 
-      int nprocs = this->comm->nprocs;
+      //int nprocs = this->comm->nprocs;
       int *procgrid = this->comm->procgrid;
       int procneigh[3][2];
 
@@ -789,7 +788,6 @@
       {
           int iswap, twoneed, nfirst, nlast, n, nsend, nrecv, smax, rmax;
           bool sendflag, dummy = false;
-          double *buf;
           double lo,hi;
           MPI_Request request;
           MPI_Status status;
@@ -871,12 +869,12 @@
                       if (nrecv)
                           MPI_Wait(&request,&status);
 
-                      buf = buf_recv_;
+                      //buf = buf_recv_;
                   }
                   else
                   {
                       nrecv = nsend;
-                      buf = buf_send_;
+                      //buf = buf_send_;
                   }
 
                   // unpack buffer
@@ -942,7 +940,7 @@
   template<int NUM_NODES>
   void MultiNodeMeshParallel<NUM_NODES>::forwardComm()
   {
-      int n,iElem;
+      int n;
       MPI_Request request;
       MPI_Status status;
       int me = this->comm->me;
@@ -996,7 +994,6 @@
       int n;
       MPI_Request request;
       MPI_Status status;
-      double *buf;
       int me = this->comm->me;
 
       bool scale = this->isScaling();

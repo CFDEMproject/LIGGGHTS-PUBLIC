@@ -86,7 +86,7 @@ namespace LAMMPS_NS
 
         virtual int numNodes() = 0;
 
-        virtual inline class CustomValueTracker& prop() = 0;
+        virtual class CustomValueTracker& prop() = 0;
 
         /*
         virtual ContainerBase* container(double type,int lenVec) = 0;

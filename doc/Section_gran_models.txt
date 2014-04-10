@@ -35,7 +35,8 @@ rolling_friction commands :h4
 Click on the style itself for a full description:
 
 "cdt"_gran_rolling_friction_cdt.html,
-"epsd"_gran_rolling_friction_epsd2.html :tb(c=4,ea=c)
+"epsd"_gran_rolling_friction_epsd.html,
+"epsd2"_gran_rolling_friction_epsd2.html :tb(c=4,ea=c)
 
 tangential commands :h4
 

@@ -38,6 +38,8 @@ class WriteData : protected Pointers {
   bigint nbonds_local,nbonds;
   bigint nangles_local,nangles;
 
+  int tag_offset, tag_max; 
+
   void header();
   void type_arrays();
   void force_fields();

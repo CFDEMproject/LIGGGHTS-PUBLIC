@@ -361,8 +361,10 @@ all meshes used in the simulation are dumped.
 
 The {mesh/vtk} style can be used to dump active mesh geometries 
 defined via "fix mesh"_fix_mesh.html commands to a series of VTK files. 
-Different keywords can be used to dump the per-triangle stress, id, 
-velocity, wear, stress components, area or the process which owns the element
+Different keywords can be used to dump the per-triangle stress (force 
+magnitude / element area), id, velocity, wear, stress components 
+(fx / element area, fy / element area, fz / element area), area (area
+of each element) or the process which owns the element
 (visulatisation of the parallel decomposition) into the specified file using a 
 VTK file format. The list of mesh IDs is optional. As with the stl style, 
 all active meshes are dumped if you do not supply the optional list of 

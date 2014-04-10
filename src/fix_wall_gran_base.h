@@ -43,15 +43,15 @@ using namespace ContactModels;
 template<typename ContactModel>
 class FixWallGranBase : public FixWallGran {
  public:
-  FixWallGranBase(class LAMMPS * lmp, int narg, char **args) : FixWallGran(lmp, narg, args), hsetup(NULL), cmodel(NULL) {
-    // copy arguments for later use to init contact model
-    nfixargs = narg-3;
+  FixWallGranBase(class LAMMPS * lmp, int narg, char **args) : FixWallGran(lmp, narg, args), cmodel(lmp, this) {
+    // copy remaining arguments for later use to init contact model
+    nfixargs = narg - iarg_;
     fixargs = new char*[nfixargs];
 
     for(int i = 0; i < nfixargs; i++)
     {
-      fixargs[i] = new char[strlen(args[3+i])+1];
-      strcpy(fixargs[i], args[3+i]);
+      fixargs[i] = new char[strlen(args[iarg_+i])+1];
+      strcpy(fixargs[i], args[iarg_+i]);
     }
   }
 
@@ -59,33 +59,24 @@ class FixWallGranBase : public FixWallGran {
   {
     for(int i = 0; i < nfixargs; i++) delete [] fixargs[i];
     delete [] fixargs;
-    delete cmodel;
   }
 
  protected:
-  WallContactHistorySetup * hsetup;
-  ContactModel * cmodel;
+  ContactModel cmodel;
   int nfixargs;
   char ** fixargs;
 
-  void post_create() {
-    // create contact model and register history values
-    if(!hsetup)
-      hsetup = new WallContactHistorySetup(this);
-    if(!cmodel)
-      cmodel = new ContactModel(lmp, hsetup);
-
-    // create contact history
-    FixWallGran::post_create();
-  }
-
   void init_granular() {
-    cmodel->connectToProperties(force->registry);
+    cmodel.connectToProperties(force->registry);
 
     Settings settings(lmp);
-    cmodel->registerSettings(settings);
+    cmodel.registerSettings(settings);
     settings.registerDoubleSetting("temperature", Temp_wall, -1.0);
-    settings.parseArguments(nfixargs, fixargs);
+    bool success = settings.parseArguments(nfixargs, fixargs);
+
+    if(!success) {
+      error->fix_error(FLERR, this, settings.error_message.c_str());
+    }
   }
 
   inline void force_update(double * const f, double * const torque,
@@ -140,7 +131,7 @@ class FixWallGranBase : public FixWallGran {
     cdata.radsum = radius;
     cdata.mi = mass;
 
-    cmodel->collision(cdata, i_forces, j_forces);
+    cmodel.collision(cdata, i_forces, j_forces);
 
     if(computeflag_)
     {

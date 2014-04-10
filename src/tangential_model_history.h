@@ -49,9 +49,9 @@ namespace ContactModels
     TangentialModel(LAMMPS * lmp, IContactHistorySetup * hsetup) : Pointers(lmp),
       coeffFrict(NULL)
     {
-      history_offset = hsetup->add_value("shearx", "1");
-      hsetup->add_value("sheary", "1");
-      hsetup->add_value("shearz", "1");
+      history_offset = hsetup->add_history_value("shearx", "1");
+      hsetup->add_history_value("sheary", "1");
+      hsetup->add_history_value("shearz", "1");
 
     }
 
@@ -60,7 +60,7 @@ namespace ContactModels
     inline void connectToProperties(PropertyRegistry & registry)
     {
       registry.registerProperty("coeffFrict", &MODEL_PARAMS::createCoeffFrict);
-      registry.connect("coeffFrict", coeffFrict);
+      registry.connect("coeffFrict", coeffFrict,"tangential_model history");
     }
 
     inline void collision(const CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)

@@ -38,8 +38,8 @@
     customValues_(*(new CustomValueTracker(lmp,this))),
     id_ (*this->prop().template addElementProperty< ScalarContainer<int> >("id","comm_exchange_borders"/*ID does never change*/,"frame_invariant","restart_yes")),
     lineNo_(this->prop().template addElementProperty< ScalarContainer<int> >("lineNo","comm_none"/*so deleting after setup does not interefere*/,"frame_invariant","restart_no")),
-    mapArray_(0),
     mapTagMax_(0),
+    mapArray_(0),
     verbose_(false)
   {
   }

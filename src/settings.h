@@ -70,10 +70,11 @@ public:
 
   string name;
   int num_params;
+  string error_message;
 };
 
 template<typename T>
-class EnumSetting : Setting
+class EnumSetting : public Setting
 {
 public:
   EnumSetting(string name) : Setting(name, 1)
@@ -96,13 +97,17 @@ public:
   }
 
   int parseArguments(char ** args) {
-    if(name != args[0]) return 0;
+    if(name != args[0]) return 0; // argument not consumed
     string selected(args[1]);
     if(options.find(selected) != options.end()){
       current.setValue(options[selected]);
       return 2; // argument consumed
+    } else {
+      char msg[50];
+      sprintf(msg, "while parsing '%s' argument: unknown option: '%s'", name.c_str(), args[1]);
+      error_message = msg;
     }
-    return 0; // argument not consumed
+    return -1; // error while parsing argument
   }
 
 private:
@@ -110,7 +115,7 @@ private:
   map<string, T> options;
 };
 
-class DoubleSetting : Setting
+class DoubleSetting : public Setting
 {
 public:
   DoubleSetting(string name) : Setting(name, 1)
@@ -154,6 +159,8 @@ class Settings : protected Pointers
   typedef map<string, DoubleSetting*> DoubleMap;
 
 public:
+  std::string error_message;
+
   Settings(LAMMPS * lmp) : Pointers(lmp) {}
   ~Settings() {
     for(OnOffMap::iterator it = onOffSettings.begin(); it != onOffSettings.end(); ++it) {
@@ -161,6 +168,10 @@ public:
     }
 
     for(EnumMap::iterator it = enumSettings.begin(); it != enumSettings.end(); ++it) {
+      delete it->second;
+    }
+
+    for(DoubleMap::iterator it = doubleSettings.begin(); it != doubleSettings.end(); ++it) {
       delete it->second;
     }
   }
@@ -182,7 +193,7 @@ public:
     doubleSettings[name]->registerTarget(variable);
   }
 
-  void parseArguments(int nargs, char ** args) {
+  bool parseArguments(int nargs, char ** args) {
     bool found = false;
     int remaining = nargs;
     char ** remaining_args = args;
@@ -196,6 +207,9 @@ public:
         if(consumed > 0) {
           found = true;
           break;
+        } else if(consumed < 0) {
+          error_message = it->second->error_message;
+          return false;
         }
       }
 
@@ -205,6 +219,9 @@ public:
           if(consumed > 0) {
             found = true;
             break;
+          } else if(consumed < 0) {
+            error_message = it->second->error_message;
+            return false;
           }
         }
       }
@@ -215,6 +232,9 @@ public:
           if(consumed > 0) {
             found = true;
             break;
+          } else if(consumed < 0) {
+            error_message = it->second->error_message;
+            return false;
           }
         }
       }
@@ -223,10 +243,13 @@ public:
         remaining -= consumed;
         remaining_args = &remaining_args[consumed];
       } else {
-        remaining--;
-        if(remaining > 0) remaining_args = &remaining_args[1];
+        char msg[30];
+        sprintf(msg, "Unknown argument: '%s'", remaining_args[0]);
+        error_message = msg;
+        return false;
       }
     }
+    return true;
   }
 
 private:

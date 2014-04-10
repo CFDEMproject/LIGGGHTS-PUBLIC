@@ -35,6 +35,10 @@
 #include "memory.h"
 #include "error.h"
 
+#if defined(_OPENMP)
+#include "omp.h"
+#endif
+
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
@@ -46,8 +50,8 @@ FixContactHistoryMesh::FixContactHistoryMesh(LAMMPS *lmp, int narg, char **arg) 
   dpage1_(0),
   ipage2_(0),
   dpage2_(0),
-  delpage_(0),
-  delflag_(0),
+  keeppage_(0),
+  keepflag_(0),
   mesh_(0),
   fix_neighlist_mesh_(0),
   fix_nneighs_(0),
@@ -64,8 +68,8 @@ FixContactHistoryMesh::FixContactHistoryMesh(LAMMPS *lmp, int narg, char **arg) 
   swap_ = new double[dnum_];
 
   // initial allocation of delflag
-  delflag_ = (bool **) memory->srealloc(delflag_,atom->nmax*sizeof(bool *),
-                                      "contact_history:delflag");
+  keepflag_ = (bool **) memory->srealloc(keepflag_,atom->nmax*sizeof(bool *),
+                                      "contact_history:keepflag");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -78,14 +82,22 @@ FixContactHistoryMesh::~FixContactHistoryMesh()
   if(dpage1_) delete [] dpage1_;
   if(ipage2_) delete [] ipage2_;
   if(dpage2_) delete [] dpage2_;
-  if(delpage_) delete [] delpage_;
+
+  if(keeppage_) {
+    for(int i = 0; i < comm->nthreads; i++) {
+      delete keeppage_[i];
+      keeppage_[i] = NULL;
+    }
+    delete [] keeppage_;
+    keeppage_ = NULL;
+  }
 
   ipage_ = 0;
   dpage_ = 0;
 
   delete [] swap_;
 
-  if(delflag_) memory->sfree(delflag_);
+  if(keepflag_) memory->sfree(keepflag_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -130,7 +142,15 @@ void FixContactHistoryMesh::allocate_pages()
     delete [] dpage1_;
     delete [] ipage2_;
     delete [] dpage2_;
-    delete [] delpage_;
+
+    if(keeppage_) {
+      for(int i = 0; i < comm->nthreads; i++) {
+        delete keeppage_[i];
+        keeppage_[i] = NULL;
+      }
+      delete [] keeppage_;
+      keeppage_ = NULL;
+    }
 
     pgsize_ = neighbor->pgsize;
     oneatom_ = neighbor->oneatom;
@@ -139,14 +159,28 @@ void FixContactHistoryMesh::allocate_pages()
     dpage1_ = new MyPage<double>[nmypage];
     ipage2_ = new MyPage<int>[nmypage];
     dpage2_ = new MyPage<double>[nmypage];
-    delpage_ = new MyPage<bool>[nmypage];
+    keeppage_ = new MyPage<bool>*[nmypage];
     for (int i = 0; i < nmypage; i++) {
       ipage1_[i].init(oneatom_,pgsize_);
       dpage1_[i].init(oneatom_,pgsize_);
       ipage2_[i].init(oneatom_,pgsize_);
       dpage2_[i].init(oneatom_,pgsize_);
-      delpage_[i].init(oneatom_,pgsize_);
     }
+
+#if defined(_OPENMP)
+    #pragma omp parallel
+    {
+      const int tid = omp_get_thread_num();
+      // make sure page is allocated in memory near core
+      keeppage_[tid] = new MyPage<bool>();
+      keeppage_[tid]->init(oneatom_,pgsize_);
+    }
+#else
+    for (int i = 0; i < nmypage; i++) {
+      keeppage_[i] = new MyPage<bool>();
+      keeppage_[i]->init(oneatom_,pgsize_);
+    }
+#endif
 
     if(use_first)
     {
@@ -191,7 +225,7 @@ void FixContactHistoryMesh::pre_exchange()
 
    maxtouch_ = 0;
    for (int i = 0; i < nlocal; i++) maxtouch_ = MAX(maxtouch_,npartner_[i]);
-   comm->maxexchange_fix = MAX(comm->maxexchange_fix,4*maxtouch_+1);
+   comm->maxexchange_fix = MAX(comm->maxexchange_fix,(dnum_+1)*maxtouch_+1);
 }
 
 /* ----------------------------------------------------------------------
@@ -233,10 +267,7 @@ void FixContactHistoryMesh::pre_force(int dummy)
     int nlocal = atom->nlocal;
     int *partner_prev;
     double *contacthistory_prev;
-    double *nn = fix_nneighs_->vector_atom;
 
-    MyPage<int>    *ipage_prev = ipage_;
-    MyPage<double> *dpage_prev = dpage_;
     MyPage<int>    *ipage_next = (ipage_ == ipage1_) ? ipage2_ : ipage1_;
     MyPage<double> *dpage_next = (dpage_ == dpage1_) ? dpage2_ : dpage1_;
 
@@ -245,7 +276,7 @@ void FixContactHistoryMesh::pre_force(int dummy)
 
     for (int i = 0; i < nlocal; i++)
     {
-        nneighs_next = static_cast<int>(round(nn[i]));
+        nneighs_next = fix_nneighs_->get_vector_atom_int(i);
 
         partner_prev = partner_[i];
         contacthistory_prev = contacthistory_[i];
@@ -285,7 +316,7 @@ void FixContactHistoryMesh::sort_contacts()
 
     for(int i = 0; i < nlocal; i++)
     {
-        nneighs = static_cast<int>(round(fix_nneighs_->vector_atom[i]));
+        nneighs = fix_nneighs_->get_vector_atom_int(i);
 
         if(0 == nneighs)
             continue;
@@ -316,18 +347,36 @@ void FixContactHistoryMesh::sort_contacts()
 
 void FixContactHistoryMesh::markAllContacts()
 {
-    int nneighs;
     int nlocal = atom->nlocal;
-    double *nn = fix_nneighs_->vector_atom;
-    delpage_->reset();
+    keeppage_[0]->reset(true);
 
     for(int i = 0; i < nlocal; i++)
     {
-      nneighs = static_cast<int>(round(nn[i]));
+      const int nneighs = fix_nneighs_->get_vector_atom_int(i);
+      keepflag_[i] = keeppage_[0]->get(nneighs);
+    }
+}
 
-      delflag_[i] = delpage_->get(nneighs);
-      for(int ii = 0; ii < nneighs; ii++)
-          delflag_[i][ii] = true;
+/* ----------------------------------------------------------------------
+     mark all contacts for deletion
+------------------------------------------------------------------------- */
+
+void FixContactHistoryMesh::resetDeletionPage(int tid)
+{
+    // keep pages are initalized with 0 (= false)
+    keeppage_[tid]->reset(true);
+}
+
+/* ----------------------------------------------------------------------
+     mark all contacts for deletion
+------------------------------------------------------------------------- */
+
+void FixContactHistoryMesh::markForDeletion(int tid, int ifrom, int ito)
+{
+    for(int i = ifrom; i < ito; i++)
+    {
+      const int nneighs = fix_nneighs_->get_vector_atom_int(i);
+      keepflag_[i] = keeppage_[tid]->get(nneighs);
     }
 }
 
@@ -335,18 +384,23 @@ void FixContactHistoryMesh::markAllContacts()
 
 void FixContactHistoryMesh::cleanUpContacts()
 {
-    int nlocal = atom->nlocal;
-    int nneighs;
+    cleanUpContacts(0, atom->nlocal);
+}
 
-    for(int i = 0; i < nlocal; i++)
+/* ---------------------------------------------------------------------- */
+
+void FixContactHistoryMesh::cleanUpContacts(int ifrom, int ito)
+{
+    
+    for(int i = ifrom; i < ito; i++)
     {
-        nneighs = static_cast<int>(round(fix_nneighs_->vector_atom[i]));
+        const int nneighs = fix_nneighs_->get_vector_atom_int(i);
 
         for(int j = 0; j < nneighs; j++)
         {
             // delete values
             
-            if(delflag_[i][j])
+            if(!keepflag_[i][j])
             {
                 if(partner_[i][j] > -1)
                 {
@@ -360,6 +414,7 @@ void FixContactHistoryMesh::cleanUpContacts()
         
     }
 }
+
 /* ---------------------------------------------------------------------- */
 
 void FixContactHistoryMesh::cleanUpContactJumps()
@@ -378,7 +433,7 @@ void FixContactHistoryMesh::cleanUpContactJumps()
 
             iTri = mesh_->map(partner_[i][ipartner]);
             
-            if(iTri > -1 && !fix_neighlist_mesh_->contactInList(iTri,i))
+            if(iTri == -1 || (iTri > -1 && !fix_neighlist_mesh_->contactInList(iTri,i)))
             {
                 
                 partner_[i][ipartner] = -1;
@@ -398,11 +453,10 @@ void FixContactHistoryMesh::cleanUpContactJumps()
 void FixContactHistoryMesh::reset_history()
 {
     int nlocal = atom->nlocal;
-    int nneighs;
 
     for(int i = 0; i < nlocal; i++)
     {
-        nneighs = static_cast<int>(round(fix_nneighs_->vector_atom[i]));
+        const int nneighs = fix_nneighs_->get_vector_atom_int(i);
 
         // zeroize values
         for(int j = 0; j < nneighs; j++)
@@ -432,8 +486,8 @@ void FixContactHistoryMesh::min_pre_force(int dummy)
 void FixContactHistoryMesh::grow_arrays(int nmax)
 {
   FixContactHistory::grow_arrays(nmax);
-  delflag_ = (bool **) memory->srealloc(delflag_,nmax*sizeof(bool *),
-                                      "contact_history:delflag");
+  keepflag_ = (bool **) memory->srealloc(keepflag_,nmax*sizeof(bool *),
+                                      "contact_history:keepflag");
 }
 
 /* ----------------------------------------------------------------------
@@ -449,7 +503,7 @@ void FixContactHistoryMesh::copy_arrays(int i, int j, int delflag)
   // OK, b/c will reset ipage,dpage on next reneighboring
 
   FixContactHistory::copy_arrays(i,j,delflag);
-  delflag_[j] = delflag_[i];
+  keepflag_[j] = keepflag_[i];
 }
 
 /* ----------------------------------------------------------------------
@@ -461,15 +515,15 @@ int FixContactHistoryMesh::unpack_exchange(int nlocal, double *buf)
   // allocate new chunks from ipage,dpage for incoming values
   
   int m = 0;
-  int nneighs = static_cast<int>(round(fix_nneighs_->vector_atom[nlocal]));
+  const int nneighs = fix_nneighs_->get_vector_atom_int(nlocal);
 
-  npartner_[nlocal] = static_cast<int> (buf[m++]);
+  npartner_[nlocal] = ubuf(buf[m++]).i;
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
   partner_[nlocal] = ipage_->get(nneighs);
   contacthistory_[nlocal] = dpage_->get(dnum_*nneighs);
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
-    partner_[nlocal][n] = static_cast<int> (buf[m++]);
+    partner_[nlocal][n] = ubuf(buf[m++]).i;
     
     for (int d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = buf[m++];
@@ -509,13 +563,13 @@ void FixContactHistoryMesh::unpack_restart(int nlocal, int nth)
   
   int d;
 
-  npartner_[nlocal] = static_cast<int> (extra[nlocal][m++]);
+  npartner_[nlocal] = ubuf(extra[nlocal][m++]).i;
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
   partner_[nlocal] = ipage_->get(npartner_[nlocal]);
   contacthistory_[nlocal] = dpage_->get(npartner_[nlocal]*dnum_);
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
-    partner_[nlocal][n] = static_cast<int> (extra[nlocal][m++]);
+    partner_[nlocal][n] = ubuf(extra[nlocal][m++]).i;
     for (d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = extra[nlocal][m++];
       
@@ -551,7 +605,7 @@ double FixContactHistoryMesh::memory_usage()
     bytes += dpage1_[i].size();
     bytes += ipage2_[i].size();
     bytes += dpage2_[i].size();
-    bytes += delpage_[i].size();
+    bytes += keeppage_[i]->size();
   }
 
   return bytes;

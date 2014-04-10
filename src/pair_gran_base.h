@@ -24,6 +24,7 @@
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
+
 #ifndef PAIR_GRAN_BASE_H_
 #define PAIR_GRAN_BASE_H_
 
@@ -31,6 +32,7 @@
 #include "pair_gran.h"
 #include "neighbor.h"
 #include "neigh_list.h"
+#include "fix_property_atom_contact.h"
 #include "os_specific.h"
 
 namespace LAMMPS_NS
@@ -42,7 +44,6 @@ class PairGranBase : public PairGran {
   CollisionData * aligned_cdata;
   ForceData * aligned_i_forces;
   ForceData * aligned_j_forces;
-  PairContactHistorySetup hsetup;
   ContactModel cmodel;
 
   inline void force_update(double * const f, double * const torque,
@@ -54,14 +55,14 @@ class PairGranBase : public PairGran {
   }
 
 protected:
-  virtual bool forceoff(){ return false; };
+  virtual bool forceoff(){ return false; }
 
 public:
   PairGranBase(class LAMMPS * lmp) : PairGran(lmp),
     aligned_cdata(aligned_malloc<CollisionData>(32)),
     aligned_i_forces(aligned_malloc<ForceData>(32)),
     aligned_j_forces(aligned_malloc<ForceData>(32)),
-    hsetup(this), cmodel(lmp, &hsetup) {
+    cmodel(lmp, this) {
   }
 
   virtual ~PairGranBase() {
@@ -70,10 +71,17 @@ public:
     aligned_free(aligned_j_forces);
   }
 
+  int64_t hashcode()
+  { return cmodel.hashcode(); }
+
   virtual void settings(int nargs, char ** args) {
     Settings settings(lmp);
     cmodel.registerSettings(settings);
-    settings.parseArguments(nargs, args);
+    bool success = settings.parseArguments(nargs, args);
+
+    if(!success) {
+      error->all(FLERR,settings.error_message.c_str());
+    }
   }
 
   virtual void init_granular() {
@@ -96,6 +104,11 @@ public:
       if(hashcode != ContactModel::STYLE_HASHCODE)
         error->all(FLERR,"wrong pair style loaded!");
     }
+  }
+
+  double stressStrainExponent()
+  {
+    return cmodel.stressStrainExponent();
   }
 
   virtual void compute_force(int eflag, int vflag, int addflag)
@@ -257,11 +270,32 @@ public:
 
           if (evflag)
             Pair::ev_tally_xyz(i, j, nlocal, newton_pair, 0.0, 0.0,i_forces.delta_F[0],i_forces.delta_F[1],i_forces.delta_F[2],cdata.delta[0],cdata.delta[1],cdata.delta[2]);
+
+          if (store_contact_forces)
+          {
+            double forces_torques_i[6],forces_torques_j[6];
+
+            if(!fix_contact_forces->has_partner(i,atom->tag[j]))
+            {
+                vectorCopy3D(i_forces.delta_F,&(forces_torques_i[0]));
+                vectorCopy3D(i_forces.delta_torque,&(forces_torques_i[3]));
+                fix_contact_forces->add_partner(i,atom->tag[j],forces_torques_i);
+            }
+            if(!fix_contact_forces->has_partner(j,atom->tag[i]))
+            {
+                vectorCopy3D(j_forces.delta_F,&(forces_torques_j[0]));
+                vectorCopy3D(j_forces.delta_torque,&(forces_torques_j[3]));
+                fix_contact_forces->add_partner(j,atom->tag[i],forces_torques_j);
+            }
+          }
         }
       }
     }
 
     cmodel.endPass(cdata, i_forces, j_forces);
+
+    if(store_contact_forces)
+        fix_contact_forces->do_forward_comm();
   }
 };
 }

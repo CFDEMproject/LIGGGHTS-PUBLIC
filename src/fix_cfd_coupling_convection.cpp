@@ -83,7 +83,7 @@ void FixCfdCouplingConvection::post_create()
   //  register convective flux
   if(!fix_convectiveFlux)
   {
-        char* fixarg[11];
+        const char* fixarg[11];
         fixarg[0]="convectiveHeatFlux";
         fixarg[1]="all";
         fixarg[2]="property/atom";
@@ -93,33 +93,32 @@ void FixCfdCouplingConvection::post_create()
         fixarg[6]="yes";    
         fixarg[7]="no";    
         fixarg[8]="0.";
-        fix_convectiveFlux = modify->add_fix_property_atom(9,fixarg,style);
+        fix_convectiveFlux = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
   }
 
   //  add heat transfer model if not yet active
   FixScalarTransportEquation *fix_ste = modify->find_fix_scalar_transport_equation("heattransfer");
   if(!fix_ste)
   {
-        char **newarg = new char*[15];
-        newarg[0] = (char *) "ste_heattransfer";
+        const char *newarg[15];
+        newarg[0] = "ste_heattransfer";
         newarg[1] = group->names[igroup];
-        newarg[2] = (char *) "transportequation/scalar";
-        newarg[3] = (char *) "equation_id";
-        newarg[4] = (char *) "heattransfer";
-        newarg[5] = (char *) "quantity";
-        newarg[6] = (char *) "Temp";
-        newarg[7] = (char *) "default_value";
-        newarg[8] = new char[30];
-        sprintf(newarg[8],"%f",T0);
-        newarg[9] = (char *) "flux_quantity";
-        newarg[10] = (char *) "heatFlux";
-        newarg[11] = (char *) "source_quantity";
-        newarg[12] = (char *) "heatSource";
-        newarg[13] = (char *) "capacity_quantity";
-        newarg[14] = (char *) "thermalCapacity";
-        modify->add_fix(15,newarg);
-        delete [] newarg[8];
-        delete [] newarg;
+        newarg[2] = "transportequation/scalar";
+        newarg[3] = "equation_id";
+        newarg[4] = "heattransfer";
+        newarg[5] = "quantity";
+        newarg[6] = "Temp";
+        newarg[7] = "default_value";
+        char arg8[30];
+        sprintf(arg8,"%f",T0);
+        newarg[8] = arg8;
+        newarg[9] = "flux_quantity";
+        newarg[10] = "heatFlux";
+        newarg[11] = "source_quantity";
+        newarg[12] = "heatSource";
+        newarg[13] = "capacity_quantity";
+        newarg[14] = "thermalCapacity";
+        modify->add_fix(15,const_cast<char**>(newarg));
   }
 }
 
@@ -150,10 +149,8 @@ void FixCfdCouplingConvection::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixCfdCouplingConvection::post_force(int vflag)
+void FixCfdCouplingConvection::post_force(int)
 {
-  double **x = atom->x;
-  double **f = atom->f;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 

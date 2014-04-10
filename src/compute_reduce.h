@@ -11,9 +11,17 @@
    See the README file in the top-level LAMMPS directory.
 ------------------------------------------------------------------------- */
 
+/* ----------------------------------------------------------------------
+Contributing authors for SPH:
+Andreas Eitzlmayr (Institute for Process and Particle Engineering, TU Graz)
+andreas.eitzlmayr@tugraz.at
+Christoph Kloss (DCS)
+------------------------------------------------------------------------- */
+
 #ifdef COMPUTE_CLASS
 
 ComputeStyle(reduce,ComputeReduce)
+ComputeStyle(reduce/sph,ComputeReduce) 
 
 #else
 

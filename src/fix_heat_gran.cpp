@@ -60,9 +60,6 @@ FixHeatGran::FixHeatGran(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg
   global_freq = 1; 
 
   cpl = NULL;
-
-  FHG_init_flag = false;
-
 }
 
 /* ---------------------------------------------------------------------- */
@@ -73,7 +70,7 @@ void FixHeatGran::post_create()
   fix_directionalHeatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("directionalHeatFlux","property/atom","vector",3,0,this->style,false));
   if(!fix_directionalHeatFlux)
   {
-    char* fixarg[11];
+    const char* fixarg[11];
     fixarg[0]="directionalHeatFlux";
     fixarg[1]="all";
     fixarg[2]="property/atom";
@@ -85,33 +82,31 @@ void FixHeatGran::post_create()
     fixarg[8]="0.";
     fixarg[9]="0.";
     fixarg[10]="0.";
-    fix_directionalHeatFlux = modify->add_fix_property_atom(11,fixarg,style);
+    fix_directionalHeatFlux = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
   }
 
   fix_ste = modify->find_fix_scalar_transport_equation("heattransfer");
   if(!fix_ste)
   {
-    char **newarg = new char*[15];
-    newarg[0] = (char *) "ste_heattransfer";
+    const char * newarg[15];
+    newarg[0] = "ste_heattransfer";
     newarg[1] = group->names[igroup];
-    newarg[2] = (char *) "transportequation/scalar";
-    newarg[3] = (char *) "equation_id";
-    newarg[4] = (char *) "heattransfer";
-    newarg[5] = (char *) "quantity";
-    newarg[6] = (char *) "Temp";
-    newarg[7] = (char *) "default_value";
-    newarg[8] = new char[30];
-    sprintf(newarg[8],"%f",T0);
-    newarg[9] = (char *) "flux_quantity";
-    newarg[10] = (char *) "heatFlux";
-    newarg[11] = (char *) "source_quantity";
-    newarg[12] = (char *) "heatSource";
-    newarg[13] = (char *) "capacity_quantity";
-    newarg[14] = (char *) "thermalCapacity";
-    modify->add_fix(15,newarg);
-
-    delete [] newarg[8];
-    delete [] newarg;
+    newarg[2] = "transportequation/scalar";
+    newarg[3] = "equation_id";
+    newarg[4] = "heattransfer";
+    newarg[5] = "quantity";
+    newarg[6] = "Temp";
+    newarg[7] = "default_value";
+    char arg8[30];
+    sprintf(arg8,"%f",T0);
+    newarg[8] = arg8;
+    newarg[9] = "flux_quantity";
+    newarg[10] = "heatFlux";
+    newarg[11] = "source_quantity";
+    newarg[12] = "heatSource";
+    newarg[13] = "capacity_quantity";
+    newarg[14] = "thermalCapacity";
+    modify->add_fix(15,(char**)newarg);
   }
 }
 
@@ -131,27 +126,28 @@ void FixHeatGran::updatePtrs(){
 
 void FixHeatGran::init(){
 
-  if (!atom->radius_flag || !atom->rmass_flag) error->all(FLERR,"Please use a granular atom style for fix heat/gran");
+  if (!atom->radius_flag || !atom->rmass_flag)
+    error->all(FLERR,"Please use a granular atom style for fix heat/gran");
 
     // check if a fix of this style already exists
   if(modify->n_fixes_style(style) > 1)
     error->fix_error(FLERR,this,"cannot have more than one fix of this style");
 
-  if(!force->pair_match("gran", 0)) error->all(FLERR,"Please use a granular pair style for fix heat/gran");
+  if(!force->pair_match("gran", 0))
+    error->fix_error(FLERR,this,"needs a granular pair style to be used");
 
   pair_gran = static_cast<PairGran*>(force->pair_match("gran", 0));
   history_flag = pair_gran->is_history();
 
   fix_ste = modify->find_fix_scalar_transport_equation("heattransfer");
-  if(!fix_ste) error->all(FLERR,"Fix heat/gran needs a fix transportequation/scalar to work with");
+  if(!fix_ste) error->fix_error(FLERR,this,"needs a fix transportequation/scalar to work with");
 
   fix_temp = static_cast<FixPropertyAtom*>(modify->find_fix_property("Temp","property/atom","scalar",0,0,style));
   fix_heatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatFlux","property/atom","scalar",0,0,style));
   fix_heatSource = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatSource","property/atom","scalar",0,0,style));
   fix_directionalHeatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("directionalHeatFlux","property/atom","vector",0,0,style));
-  updatePtrs();
 
-  FHG_init_flag = true;
+  updatePtrs();
 }
 
 /* ---------------------------------------------------------------------- */

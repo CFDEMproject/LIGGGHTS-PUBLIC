@@ -47,9 +47,9 @@ namespace ContactModels
 
     RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup) : Pointers(lmp), coeffRollFrict(NULL), coeffRollVisc(NULL)
     {
-      history_offset = hsetup->add_value("r_torquex_old", "1");
-      hsetup->add_value("r_torquey_old", "1");
-      hsetup->add_value("r_torquez_old", "1");
+      history_offset = hsetup->add_history_value("r_torquex_old", "1");
+      hsetup->add_history_value("r_torquey_old", "1");
+      hsetup->add_history_value("r_torquez_old", "1");
       STATIC_ASSERT(Style::TANGENTIAL == TANGENTIAL_HISTORY);
       
     }
@@ -59,8 +59,8 @@ namespace ContactModels
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("coeffRollFrict", &MODEL_PARAMS::createCoeffRollFrict);
       registry.registerProperty("coeffRollVisc", &MODEL_PARAMS::createCoeffRollVisc);
-      registry.connect("coeffRollFrict", coeffRollFrict);
-      registry.connect("coeffRollVisc", coeffRollVisc);
+      registry.connect("coeffRollFrict", coeffRollFrict,"rolling_model epsd");
+      registry.connect("coeffRollVisc", coeffRollVisc,"rolling_model epsd");
     }
 
     void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) 

@@ -788,9 +788,10 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
   }
 
   if (fix[ifix] == NULL){ 
-    char errmsg[30+strlen(arg[2])];
-    sprintf(errmsg,"Invalid fix style: \" %s \"",arg[2]);
+    char * errmsg = new char[30+strlen(arg[2])]; 
+    sprintf(errmsg,"Invalid fix style: \"%s\"",arg[2]);
     error->all(FLERR,errmsg);
+    delete [] errmsg; 
   } 
 
   // set fix mask values and increment nfix (if new)
@@ -882,6 +883,7 @@ void Modify::delete_fix(const char *id, bool unfixflag)
   fix[ifix]->pre_delete(unfixflag);
 
   delete fix[ifix];
+  fix[ifix] = NULL; 
   atom->update_callback(ifix);
 
   // move other Fixes and fmask down in list one slot

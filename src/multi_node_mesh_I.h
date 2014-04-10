@@ -36,19 +36,19 @@
   MultiNodeMesh<NUM_NODES>::MultiNodeMesh(LAMMPS *lmp)
   : AbstractMesh(lmp),
     node_("node"),
+    node_orig_(0),
     nodesLastRe_("nodesLastRe"),
     center_("center"),
     rBound_("rBound"),
-    node_orig_(0),
+    random_(new RanPark(lmp,179424799)), // big prime #
+    mesh_id_(0),
     precision_(EPSILON_PRECISION),
     autoRemoveDuplicates_(false),
     nMove_(0),
-    stepLastReset_(-1),
     nScale_(0),
     nTranslate_(0),
     nRotate_(0),
-    random_(new RanPark(lmp,179424799)), // big prime #
-    mesh_id_(0)
+    stepLastReset_(-1)
   {
   }
 
@@ -746,7 +746,7 @@
     int nlocal = sizeLocal();
     double ***node = node_.begin();
 
-    nodesLastRe_.empty();
+    nodesLastRe_.clearContainer();
     for(int i = 0; i < nlocal; i++)
         nodesLastRe_.add(node[i]);
   }

@@ -90,10 +90,12 @@ class AtomVec : protected Pointers {
   virtual int data_vel_hybrid(int, char **) {return 0;}
 
   virtual void pack_data(double **) = 0;
+  virtual void pack_data(double **buf,int tag_offset) { pack_data(buf); } 
   virtual int pack_data_hybrid(int, double *) {return 0;}
   virtual void write_data(FILE *, int, double **) = 0;
   virtual int write_data_hybrid(FILE *, double *) {return 0;}
   virtual void pack_vel(double **);
+  virtual void pack_vel(double **buf,int tag_offset) { pack_vel(buf); } 
   virtual int pack_vel_hybrid(int, double *) {return 0;}
   virtual void write_vel(FILE *, int, double **);
   virtual int write_vel_hybrid(FILE *, double *) {return 0;}

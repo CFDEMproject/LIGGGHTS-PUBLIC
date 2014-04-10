@@ -54,13 +54,20 @@ namespace ContactModels
     }
 
     void connectToProperties(PropertyRegistry & registry) {
-      registry.registerProperty("Yeff", &MODEL_PARAMS::createYeff);
-      registry.registerProperty("Geff", &MODEL_PARAMS::createGeff);
-      registry.registerProperty("betaeff", &MODEL_PARAMS::createBetaEff);
+      registry.registerProperty("Yeff", &MODEL_PARAMS::createYeff,"model hertz");
+      registry.registerProperty("Geff", &MODEL_PARAMS::createGeff,"model hertz");
+      registry.registerProperty("betaeff", &MODEL_PARAMS::createBetaEff,"model hertz");
 
-      registry.connect("Yeff", Yeff);
-      registry.connect("Geff", Geff);
-      registry.connect("betaeff", betaeff);
+      registry.connect("Yeff", Yeff,"model hertz");
+      registry.connect("Geff", Geff,"model hertz");
+      registry.connect("betaeff", betaeff,"model hertz");
+    }
+
+    // effective exponent for stress-strain relationship
+    
+    inline double stressStrainExponent()
+    {
+      return 1.5;
     }
 
     inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)

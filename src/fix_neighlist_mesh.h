@@ -126,7 +126,7 @@ class FixNeighlistMesh : public Fix
     bigint last_bin_update;
 
 private:
-  void generate_bin_list(int nall);
+  void generate_bin_list(size_t nall);
 };
 
 } /* namespace LAMMPS_NS */

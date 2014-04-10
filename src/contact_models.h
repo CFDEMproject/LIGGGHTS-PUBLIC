@@ -53,6 +53,7 @@ namespace ContactModels
   static const int TOUCH_TANGENTIAL_MODEL  = 1 << 2;
   static const int TOUCH_ROLLING_MODEL     = 1 << 3;
   static const int TOUCH_SURFACE_MODEL     = 1 << 4;
+  static const int TOUCH_FIX               = 1 << 31;
 
   template
   <
@@ -108,6 +109,8 @@ namespace ContactModels
     inline void connectToProperties(PropertyRegistry & registry);
     inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
     inline void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
+
+    inline double stressStrainExponent();
   };
 
   template<int Model, typename Style>
@@ -179,6 +182,9 @@ namespace ContactModels
     {
     }
 
+    int64_t hashcode()
+    { return STYLE_HASHCODE; }
+
     inline void registerSettings(Settings & settings)
     {
       surfaceModel.registerSettings(settings);
@@ -213,6 +219,11 @@ namespace ContactModels
       cohesionModel.endPass(cdata, i_forces, j_forces);
       normalModel.endPass(cdata, i_forces, j_forces);
       surfaceModel.endPass(cdata, i_forces, j_forces);
+    }
+
+    inline double stressStrainExponent()
+    {
+      return normalModel.stressStrainExponent();
     }
 
     inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)

@@ -49,11 +49,9 @@ namespace MODEL_PARAMS
   static const char * FLUID_VISCOSITY = "FluidViscosity";
   static const char * MAXIMUM_RESTITUTION = "MaximumRestitution";
   static const char * CRITITCAL_STOKES = "CriticalStokes";
-  static const char * HAMAKER_CONSTANT = "hamakerConstant";
-  static const char * MINIMUM_PARTICLE_DISTANCE = "minParticleDist";
   static const char * LIQUID_VOLUME = "liquidVolume";
   static const char * SURFACE_TENSION = "surfaceTension";
-
+  static const char * CONTACT_ANGLE = "contactAngle";
   static const char * COEFFICIENT_MAX_ELASTIC_STIFFNESS = "coefficientMaxElasticStiffness";
   static const char * COEFFICIENT_ADHESION_STIFFNESS = "coefficientAdhesionStiffness";
   static const char * COEFFICIENT_PLASTICITY_DEPTH = "coefficientPlasticityDepth";
@@ -97,7 +95,7 @@ namespace MODEL_PARAMS
     LAMMPS * lmp = registry.getLAMMPS();
     ScalarProperty* charVelScalar = createScalarProperty(registry, CHARACTERISTIC_VELOCITY, caller);
     double charVel = charVelScalar->data;
-    
+
     if(sanity_checks)
     {
       if(strcmp(lmp->update->unit_style,"si") == 0  && charVel < 1e-2)
@@ -172,8 +170,8 @@ namespace MODEL_PARAMS
     registry.registerProperty(POISSONS_RATIO, &createPoissonsRatio);
 
     MatrixProperty * matrix = new MatrixProperty(max_type+1, max_type+1);
-    VectorProperty * youngsModulus = registry.getVectorProperty(YOUNGS_MODULUS);
-    VectorProperty * poissonRatio = registry.getVectorProperty(POISSONS_RATIO);
+    VectorProperty * youngsModulus = registry.getVectorProperty(YOUNGS_MODULUS,caller);
+    VectorProperty * poissonRatio = registry.getVectorProperty(POISSONS_RATIO,caller);
     double * Y = youngsModulus->data;
     double * v = poissonRatio->data;
 
@@ -200,8 +198,8 @@ namespace MODEL_PARAMS
     registry.registerProperty(POISSONS_RATIO, &createPoissonsRatio);
 
     MatrixProperty * matrix = new MatrixProperty(max_type+1, max_type+1);
-    VectorProperty * youngsModulus = registry.getVectorProperty(YOUNGS_MODULUS);
-    VectorProperty * poissonRatio = registry.getVectorProperty(POISSONS_RATIO);
+    VectorProperty * youngsModulus = registry.getVectorProperty(YOUNGS_MODULUS,caller);
+    VectorProperty * poissonRatio = registry.getVectorProperty(POISSONS_RATIO,caller);
     double * Y = youngsModulus->data;
     double * v = poissonRatio->data;
 
@@ -251,13 +249,12 @@ namespace MODEL_PARAMS
 
   MatrixProperty * createCoeffRestLog(PropertyRegistry & registry, const char * caller, bool)
   {
-    LAMMPS * lmp = registry.getLAMMPS();
     const int max_type = registry.max_type();
 
     registry.registerProperty(COEFFICIENT_RESTITUTION, &createCoeffRest);
 
     MatrixProperty * matrix = new MatrixProperty(max_type+1, max_type+1);
-    MatrixProperty * coeffRestProp = registry.getMatrixProperty(COEFFICIENT_RESTITUTION);
+    MatrixProperty * coeffRestProp = registry.getMatrixProperty(COEFFICIENT_RESTITUTION,caller);
     double ** coeffRest = coeffRestProp->data;
 
     for(int i=1;i< max_type+1; i++)
@@ -273,13 +270,12 @@ namespace MODEL_PARAMS
 
   MatrixProperty * createBetaEff(PropertyRegistry & registry, const char * caller, bool)
   {
-    LAMMPS * lmp = registry.getLAMMPS();
     const int max_type = registry.max_type();
 
     registry.registerProperty(COEFFICIENT_RESTITUTION_LOG, &createCoeffRestLog);
 
     MatrixProperty * matrix = new MatrixProperty(max_type+1, max_type+1);
-    MatrixProperty * coeffRestLogProp = registry.getMatrixProperty(COEFFICIENT_RESTITUTION_LOG);
+    MatrixProperty * coeffRestLogProp = registry.getMatrixProperty(COEFFICIENT_RESTITUTION_LOG,caller);
     double ** coeffRestLog = coeffRestLogProp->data;
 
     for(int i=1;i< max_type+1; i++)
@@ -389,47 +385,6 @@ namespace MODEL_PARAMS
    return matrix;
   }
 
-  // ------------------------------ HAMAKER --------------------------------
-  MatrixProperty* createHamakerConstant(PropertyRegistry & registry, const char * caller, bool)
-  {
-    return createPerTypePairProperty(registry, HAMAKER_CONSTANT, caller);
-  }
-
-  MatrixProperty* createHamakerMinimumParticleDistance(PropertyRegistry & registry, const char * caller, bool)
-  {
-    return createPerTypePairProperty(registry, MINIMUM_PARTICLE_DISTANCE, caller);
-  }
-
-  MatrixProperty * createHamakerMaxEff(PropertyRegistry & registry, const char * caller, bool)
-  {
-   LAMMPS * lmp = registry.getLAMMPS();
-   double skin = lmp->neighbor->skin;
-   const int max_type = registry.max_type();
-
-   MatrixProperty * matrix = new MatrixProperty(max_type+1, max_type+1);
-   MatrixProperty * hCutEffProp = registry.getMatrixProperty(MINIMUM_PARTICLE_DISTANCE);
-   double ** hCutEff = hCutEffProp->data;
-   double maxhMaxEff = -1.0;
-
-   for(int i=1;i< max_type+1; i++)
-   {
-     for(int j=1;j<max_type+1;j++)
-     {
-       const double hMaxEff= hCutEff[i][j]*100; // force f(hMax)/f(hCut) = 0.0001
-       matrix->data[i][j] = hMaxEff;
-       maxhMaxEff = max(maxhMaxEff,hMaxEff); // get maximum hMaxEff for skin check
-     }
-   }
-
-   // check skin
-   if(skin < maxhMaxEff) {
-     if(lmp->screen) fprintf(lmp->screen,"Maximum cutoff distance (~ minParticleDist) = %f. Skin = %f\n",maxhMaxEff,skin);
-     lmp->error->all(FLERR,"Skin is too small for Hamaker model.\n");
-   }
-
-   return matrix;
-  }
-
   ScalarProperty* createLiquidVolume(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, LIQUID_VOLUME, caller);
@@ -438,6 +393,31 @@ namespace MODEL_PARAMS
   ScalarProperty* createSurfaceTension(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, SURFACE_TENSION, caller);
+  }
+
+  VectorProperty * createContactAngle(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+    const int max_type = registry.max_type();
+
+    VectorProperty * vec = new VectorProperty(max_type+1);
+    FixPropertyGlobal * ca = registry.getGlobalProperty(CONTACT_ANGLE,"property/global","peratomtype",max_type,0,caller);
+
+    for(int i=1; i < max_type+1; i++)
+    {
+      const double vi = ca->compute_vector(i-1);
+
+      // error checks on v
+      if(sanity_checks)
+      {
+        if(vi < 0. || vi > 180)
+          lmp->error->all(FLERR,"0 <= contactAngle <= 180° required");
+      }
+
+      vec->data[i] = vi;
+    }
+
+    return vec;
   }
 
   MatrixProperty* createKn(PropertyRegistry & registry, const char * caller, bool)

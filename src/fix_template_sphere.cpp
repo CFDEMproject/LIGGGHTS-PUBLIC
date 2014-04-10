@@ -182,7 +182,6 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
           iarg += 5;
       }
       else error->fix_error(FLERR,this,"invalid radius random style");
-      volume_expect = 4.*expectancy(pdf_radius)*expectancy(pdf_radius)*expectancy(pdf_radius)*M_PI/3.;
     }
     else if (strcmp(arg[iarg],"density") == 0) {
       hasargs = true;

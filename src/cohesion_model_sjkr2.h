@@ -37,7 +37,7 @@ COHESION_MODEL(COHESION_SJKR2,sjkr2,2)
 namespace ContactModels {
   using namespace std;
   using namespace LAMMPS_NS;
-  
+
   template<typename Style>
   class CohesionModel<COHESION_SJKR2, Style> : protected Pointers {
   public:
@@ -51,7 +51,7 @@ namespace ContactModels {
 
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("cohEnergyDens", &MODEL_PARAMS::createCohesionEnergyDensity);
-      registry.connect("cohEnergyDens", cohEnergyDens);
+      registry.connect("cohEnergyDens", cohEnergyDens,"cohesion_model sjkr2");
     }
 
     void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) 
@@ -69,6 +69,8 @@ namespace ContactModels {
 
       const double Fn_coh = -cohEnergyDens[cdata.itype][cdata.jtype]*Acont;
       cdata.Fn += Fn_coh;
+
+      if(cdata.touch) *cdata.touch |= TOUCH_COHESION_MODEL;
 
       // apply normal force
       if(cdata.is_wall) {
@@ -93,7 +95,10 @@ namespace ContactModels {
 
     void beginPass(CollisionData&, ForceData&, ForceData&){}
     void endPass(CollisionData&, ForceData&, ForceData&){}
-    void noCollision(ContactData&, ForceData&, ForceData&){}
+    void noCollision(ContactData& cdata, ForceData&, ForceData&)
+    {
+        if(cdata.touch) *cdata.touch &= ~TOUCH_COHESION_MODEL;
+    }
 
   private:
     double ** cohEnergyDens;

@@ -90,6 +90,7 @@ Pair::Pair(LAMMPS *lmp) : Pointers(lmp)
   vatom = NULL;
 
   listgranhistory = NULL;
+  list = listhalf = listfull = listgranhistory = listinner = listmiddle = listouter = NULL; 
 
   datamask = ALL_MASK;
   datamask_ext = ALL_MASK;
@@ -181,11 +182,11 @@ void Pair::init()
 
   if (manybody_flag && atom->molecular) {
     int flag = 0;
-    if (atom->nbonds > 0 && force->special_lj[1] == 0.0 && 
+    if (atom->nbonds > 0 && force->special_lj[1] == 0.0 &&
         force->special_coul[1] == 0.0) flag = 1;
-    if (atom->nangles > 0 && force->special_lj[2] == 0.0 && 
+    if (atom->nangles > 0 && force->special_lj[2] == 0.0 &&
         force->special_coul[2] == 0.0) flag = 1;
-    if (atom->ndihedrals > 0 && force->special_lj[3] == 0.0 && 
+    if (atom->ndihedrals > 0 && force->special_lj[3] == 0.0 &&
         force->special_coul[3] == 0.0) flag = 1;
     if (flag && comm->me == 0)
       error->warning(FLERR,"Using a manybody potential with "
@@ -235,14 +236,12 @@ void Pair::init()
 
 void Pair::reinit()
 {
-  int i,j;
-  double tmp;
-
+  
   etail = ptail = 0.0;
 
-  for (i = 1; i <= atom->ntypes; i++)
-    for (j = i; j <= atom->ntypes; j++) {
-      tmp = init_one(i,j);
+  for (int i = 1; i <= atom->ntypes; i++) 
+    for (int j = i; j <= atom->ntypes; j++) { 
+      init_one(i,j);
       if (tail_flag) {
         etail += etail_ij;
         ptail += ptail_ij;
@@ -290,9 +289,9 @@ void Pair::init_tables(double cut_coul, double *cut_respa)
   if (force->kspace == NULL)
     error->all(FLERR,"Pair style requres a KSpace style");
   double g_ewald = force->kspace->g_ewald;
-  
+
   double cut_coulsq = cut_coul * cut_coul;
-  
+
   tabinnersq = tabinner*tabinner;
   init_bitmap(tabinner,cut_coul,ncoultablebits,
               masklo,maskhi,ncoulmask,ncoulshiftbits);
@@ -496,36 +495,36 @@ void Pair::init_tables(double cut_coul, double *cut_respa)
 void Pair::init_tables_disp(double cut_lj_global)
 {
   int masklo,maskhi;
-  double r, rsq, r2inv, force_coul, force_lj;
+  double rsq; 
   double g_ewald_6 = force->kspace->g_ewald_6;
   double g2 = g_ewald_6*g_ewald_6, g6 = g2*g2*g2, g8 = g6*g2;
-  
+
   tabinnerdispsq = tabinner_disp*tabinner_disp;
   init_bitmap(tabinner_disp,cut_lj_global,ndisptablebits,
               masklo,maskhi,ndispmask,ndispshiftbits);
-  
+
   int ntable = 1;
   for (int i = 0; i < ndisptablebits; i++) ntable *= 2;
-  
+
   // linear lookup tables of length N = 2^ndisptablebits
   // stored value = value at lower edge of bin
   // d values = delta from lower edge to upper edge of bin
-  
+
   if (fdisptable) free_disp_tables();
-  
+
   memory->create(rdisptable,ntable,"pair:rdisptable");
   memory->create(fdisptable,ntable,"pair:fdisptable");
   memory->create(edisptable,ntable,"pair:edisptable");
   memory->create(drdisptable,ntable,"pair:drdisptable");
   memory->create(dfdisptable,ntable,"pair:dfdisptable");
   memory->create(dedisptable,ntable,"pair:dedisptable");
-  
+
   union_int_float_t rsq_lookup;
   union_int_float_t minrsq_lookup;
   int itablemin;
   minrsq_lookup.i = 0 << ndispshiftbits;
   minrsq_lookup.i |= maskhi;
-  
+
   for (int i = 0; i < ntable; i++) {
     rsq_lookup.i = i << ndispshiftbits;
     rsq_lookup.i |= masklo;
@@ -533,43 +532,43 @@ void Pair::init_tables_disp(double cut_lj_global)
       rsq_lookup.i = i << ndispshiftbits;
       rsq_lookup.i |= maskhi;
     }
-    r = sqrtf(rsq_lookup.f);
+    
     rsq = rsq_lookup.f;
     register double x2 = g2*rsq, a2 = 1.0/x2;
     x2 = a2*exp(-x2);
-    
+
     rdisptable[i] = rsq_lookup.f;
     fdisptable[i] = g8*(((6.0*a2+6.0)*a2+3.0)*a2+1.0)*x2*rsq;
     edisptable[i] = g6*((a2+1.0)*a2+0.5)*x2;
-    
+
     minrsq_lookup.f = MIN(minrsq_lookup.f,rsq_lookup.f);
   }
-  
+
   tabinnerdispsq = minrsq_lookup.f;
-  
+
   int ntablem1 = ntable - 1;
-  
+
   for (int i = 0; i < ntablem1; i++) {
     drdisptable[i] = 1.0/(rdisptable[i+1] - rdisptable[i]);
     dfdisptable[i] = fdisptable[i+1] - fdisptable[i];
     dedisptable[i] = edisptable[i+1] - edisptable[i];
   }
-  
+
   // get the delta values for the last table entries
   // tables are connected periodically between 0 and ntablem1
-  
+
   drdisptable[ntablem1] = 1.0/(rdisptable[0] - rdisptable[ntablem1]);
   dfdisptable[ntablem1] = fdisptable[0] - fdisptable[ntablem1];
   dedisptable[ntablem1] = edisptable[0] - edisptable[ntablem1];
-  
+
   // get the correct delta values at itablemax
   // smallest r is in bin itablemin
   // largest r is in bin itablemax, which is itablemin-1,
   //   or ntablem1 if itablemin=0
   // deltas at itablemax only needed if corresponding rsq < cut*cut
   // if so, compute deltas between rsq and cut*cut
-  
-  double f_tmp,c_tmp,e_tmp,p_tmp = 0.0,v_tmp = 0.0;
+
+  double f_tmp,e_tmp; 
   double cut_lj_globalsq;
   itablemin = minrsq_lookup.i & ndispmask;
   itablemin >>= ndispshiftbits;
@@ -577,16 +576,15 @@ void Pair::init_tables_disp(double cut_lj_global)
   if (itablemin == 0) itablemax = ntablem1;
   rsq_lookup.i = itablemax << ndispshiftbits;
   rsq_lookup.i |= maskhi;
-  
+
   if (rsq_lookup.f < (cut_lj_globalsq = cut_lj_global * cut_lj_global)) {
     rsq_lookup.f = cut_lj_globalsq;
-    r = sqrtf(rsq_lookup.f);
     
     register double x2 = g2*rsq, a2 = 1.0/x2;
     x2 = a2*exp(-x2);
     f_tmp = g8*(((6.0*a2+6.0)*a2+3.0)*a2+1.0)*x2*rsq;
     e_tmp = g6*((a2+1.0)*a2+0.5)*x2;
-    
+
     drdisptable[itablemax] = 1.0/(rsq_lookup.f - rdisptable[itablemax]);
     dfdisptable[itablemax] = f_tmp - fdisptable[itablemax];
     dedisptable[itablemax] = e_tmp - edisptable[itablemax];
@@ -849,7 +847,7 @@ void Pair::ev_tally(int i, int j, int nlocal, int newton_pair,
     }
   }
 }
- 
+
 /* ----------------------------------------------------------------------
    tally eng_vdwl and virial into global and per-atom accumulators
    can use this version with full neighbor lists
@@ -1154,7 +1152,7 @@ void Pair::ev_tally4(int i, int j, int k, int m, double evdwl,
 void Pair::ev_tally_tip4p(int key, int *list, double *v,
                           double ecoul, double alpha)
 {
-  int i,j;
+  int i; 
 
   if (eflag_either) {
     if (eflag_global) eng_coul += ecoul;
@@ -1437,7 +1435,7 @@ void Pair::virial_fdotr_compute()
       virial[5] += f[i][2]*x[i][1];
     }
   }
-  
+
   // prevent multiple calls to update the virial
   // when a hybrid pair style uses both a gpu and non-gpu pair style
   // or when respa is used with gpu pair styles
@@ -1629,7 +1627,7 @@ void Pair::init_bitmap(double inner, double outer, int ntablebits,
    open a potential file as specified by name
    failing that, search in dir specified by env variable LAMMPS_POTENTIALS
 ------------------------------------------------------------------------- */
-  
+
 FILE *Pair::open_potential(const char *name)
 {
   FILE *fp;
@@ -1663,7 +1661,7 @@ FILE *Pair::open_potential(const char *name)
   newpath[len1+1] = 0;
 #endif
   strcat(newpath,pot);
-  
+
   fp = fopen(newpath,"r");
   delete[] newpath;
   return fp;
@@ -1681,7 +1679,7 @@ const char *Pair::potname(const char *path)
 
 #if defined(_WIN32)
   // skip over the disk drive part of windows pathnames
-  if (isalpha(path[0]) && path[1] == ':') 
+  if (isalpha(path[0]) && path[1] == ':')
     path += 2;
 #endif
 

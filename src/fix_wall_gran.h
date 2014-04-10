@@ -36,7 +36,7 @@
 namespace LAMMPS_NS {
 using namespace ContactModels;
 
-class FixWallGran : public Fix {
+class FixWallGran : public Fix, public IContactHistorySetup {
 
  public:
   FixWallGran(class LAMMPS *, int, char **);

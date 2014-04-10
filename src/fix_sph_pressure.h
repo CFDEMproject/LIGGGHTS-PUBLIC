@@ -52,6 +52,11 @@ class FixSPHPressure : public FixSph {
   void init();
   void pre_force(int);
 
+  double return_rho0() {
+    if (pressureStyle == PRESSURESTYLE_ABSOLUT) return 0;
+    else return rho0;
+  };
+
  private:
   int pressureStyle;
   double B,rho0,rho0inv,gamma,P0;

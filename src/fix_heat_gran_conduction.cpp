@@ -39,22 +39,22 @@ using namespace FixConst;
 
 FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) : FixHeatGran(lmp, narg, arg)
 {
-  int iarg = 5;
+  iarg_ = 5;
 
   area_correction_flag = 0;
 
   bool hasargs = true;
-  while(iarg < narg && hasargs)
+  while(iarg_ < narg && hasargs)
   {
     hasargs = false;
-    if(strcmp(arg[iarg],"area_correction") == 0) {
-      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments for keyword 'area_correction'");
-      if(strcmp(arg[iarg+1],"yes") == 0)
+    if(strcmp(arg[iarg_],"area_correction") == 0) {
+      if (iarg_+2 > narg) error->fix_error(FLERR,this,"not enough arguments for keyword 'area_correction'");
+      if(strcmp(arg[iarg_+1],"yes") == 0)
         area_correction_flag = 1;
-      else if(strcmp(arg[iarg+1],"no") == 0)
+      else if(strcmp(arg[iarg_+1],"no") == 0)
         area_correction_flag = 0;
-      else error->fix_error(FLERR,this,"");
-      iarg += 2;
+      else error->fix_error(FLERR,this,"expecting 'yes' otr 'no' after 'area_correction'");
+      iarg_ += 2;
       hasargs = true;
     } else if(strcmp(style,"heat/gran/conduction") == 0)
         error->fix_error(FLERR,this,"unknown keyword");
@@ -76,7 +76,10 @@ FixHeatGranCond::~FixHeatGranCond()
 
 /* ---------------------------------------------------------------------- */
 
-// post_create() of parent is fine
+void FixHeatGranCond::post_create()
+{
+  FixHeatGran::post_create();
+}
 
 /* ---------------------------------------------------------------------- */
 
@@ -101,14 +104,11 @@ int FixHeatGranCond::setmask()
 
 void FixHeatGranCond::init()
 {
+  // initialize base class
+  FixHeatGran::init();
+
   const double *Y, *nu, *Y_orig;
   double expo, Yeff_ij, Yeff_orig_ij, ratio;
-  Fix *ymo_fix;
-
-  if (FHG_init_flag == false){
-    FixHeatGran::init();
-  }
-
   int max_type = pair_gran->mpg->max_type();
 
   if (conductivity) delete []conductivity;
@@ -125,14 +125,12 @@ void FixHeatGranCond::init()
 
   // calculate heat transfer correction
 
-  ymo_fix = NULL;
   if(area_correction_flag)
   {
-    ymo_fix = modify->find_fix_property("youngsModulusOriginal","property/global","peratomtype",0,0,style);
+    if(!force->pair_match("gran",0))
+        error->fix_error(FLERR,this,"area correction only works with using granular pair styles");
 
-    if(force->pair_match("gran/hooke",0)) expo = 1.;
-    else if(force->pair_match("gran/hertz",0)) expo = 2./3.;
-    else error->fix_error(FLERR,this,"area correction could not identify the granular pair style you are using, supported are hooke and hertz types");
+    expo = 1./pair_gran->stressStrainExponent();
 
     Y = static_cast<FixPropertyGlobal*>(modify->find_fix_property("youngsModulus","property/global","peratomtype",max_type,0,style))->get_values();
     nu = static_cast<FixPropertyGlobal*>(modify->find_fix_property("poissonsRatio","property/global","peratomtype",max_type,0,style))->get_values();
@@ -167,8 +165,8 @@ void FixHeatGranCond::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixHeatGranCond::post_force(int vflag){
-
+void FixHeatGranCond::post_force(int vflag)
+{
   //template function for using touchflag or not
   if(history_flag == 0) post_force_eval<0>(vflag,0);
   if(history_flag == 1) post_force_eval<1>(vflag,0);
@@ -192,7 +190,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
   double hc,contactArea,delta_n,flux,dirFlux[3];
   int i,j,ii,jj,inum,jnum;
   double xtmp,ytmp,ztmp,delx,dely,delz;
-  double radi,radj,radsum,rsq,r,rinv,rsqinv,tcoi,tcoj;
+  double radi,radj,radsum,rsq,r,tcoi,tcoj;
   int *ilist,*jlist,*numneigh,**firstneigh;
   int *touch,**firsttouch;
 
@@ -210,7 +208,6 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
   if(HISTFLAG) firsttouch = pair_gran->listgranhistory->firstneigh;
 
   double *radius = atom->radius;
-  double *rmass = atom->rmass;
   double **x = atom->x;
   int *type = atom->type;
   int nlocal = atom->nlocal;
@@ -245,7 +242,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
         radsum = radi + radj;
       }
 
-      if (HISTFLAG && touch[jj] || !HISTFLAG && (rsq < radsum*radsum)) {  //contact
+      if ((HISTFLAG && touch[jj]) || (!HISTFLAG && (rsq < radsum*radsum))) {  //contact
         
         if(HISTFLAG)
         {

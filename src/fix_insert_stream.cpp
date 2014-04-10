@@ -136,8 +136,7 @@ void FixInsertStream::post_create()
   
   if(modify->n_fixes_style(style) == 1)
   {
-        char* fixarg[22];
-
+        const char* fixarg[22];
         fixarg[0]="release_fix_insert_stream";
         fixarg[1]="all";
         fixarg[2]="property/atom";
@@ -160,7 +159,7 @@ void FixInsertStream::post_create()
         fixarg[19]="0.";
         fixarg[20]="0.";
         fixarg[21]="0.";
-        modify->add_fix_property_atom(22,fixarg,style);
+        modify->add_fix_property_atom(22,const_cast<char**>(fixarg),style);
   }
 }
 
@@ -216,7 +215,6 @@ void FixInsertStream::register_tracer_callback(FixPropertyAtomTracerStream* tr)
 void FixInsertStream::calc_insertion_properties()
 {
     double dt,dot,extrude_vec[3],t1[3],t2[3];
-    double *fnorm;
 
     // error check on insertion face
     if(face_style == FACE_NONE)

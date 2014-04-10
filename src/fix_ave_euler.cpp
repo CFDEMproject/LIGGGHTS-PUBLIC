@@ -119,13 +119,13 @@ void FixAveEuler::post_create()
   //  register per particle properties
   if(!compute_stress_)
   {
-        char* arg[4];
+        const char* arg[4];
         arg[0]="stress_faveu";
         arg[1]="all";
         arg[2]="stress/atom";
         arg[3]="pair";
 
-        modify->add_compute(4,arg);
+        modify->add_compute(4,(char**)arg);
         compute_stress_ = static_cast<ComputeStressAtom*>(modify->compute[modify->find_compute(arg[0])]);
   }
 }

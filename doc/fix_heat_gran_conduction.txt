@@ -26,7 +26,7 @@ keyword = {area_correction} :l
 
 [Examples:]
 
-fix 3 hg heat/gran/conduction temperature 273.15 :pre
+fix 3 hg heat/gran/conduction initial_temperature 273.15 :pre
 
 [LIGGGHTS vs. LAMMPS info:]
 
@@ -110,7 +110,7 @@ minimization"_minimize.html.
 
 [Restrictions:]
 
-Area correction currently only works with pair styles pair/gran/hooke/* and pair/gran/hertz/*
+none
 
 [Related commands:]
 

@@ -248,6 +248,22 @@ class Fix : protected Pointers {
     double delta_time = MPI_Wtime() - previous_time;
     recorded_time += delta_time;
   }
+
+  union ubuf {  
+    double   d;
+    int64_t  i;
+    ubuf(double arg) : d(arg) {}
+    ubuf(int64_t arg) : i(arg) {}
+    ubuf(int arg) : i(arg) {}
+  };
+
+  int get_vector_atom_int(int index) {  
+    return ubuf(vector_atom[index]).i;
+  }
+
+  void set_vector_atom_int(int index, int value) {  
+    vector_atom[index] = ubuf(value).d;
+  }
 };
 
 typedef void (Fix::*FixMethod)();

@@ -49,7 +49,7 @@ namespace ContactModels
         kn2kc(NULL),
         phiF(NULL)
     {
-      history_offset = hsetup->add_value("deltaMax", "1");
+      history_offset = hsetup->add_history_value("deltaMax", "1");
     }
 
     inline void registerSettings(Settings & settings){
@@ -63,9 +63,16 @@ namespace ContactModels
       registry.registerProperty("kn2kc", &MODEL_PARAMS::createCoeffAdhesionStiffness);
       registry.registerProperty("phiF", &MODEL_PARAMS::createCoeffPlasticityDepth);
 
-      registry.connect("kn2kcMax", kn2k2Max);
-      registry.connect("kn2kc", kn2kc);
-      registry.connect("phiF", phiF);
+      registry.connect("kn2kcMax", kn2k2Max,"model hooke/hysteresis");
+      registry.connect("kn2kc", kn2kc,"model hooke/hysteresis");
+      registry.connect("phiF", phiF,"model hooke/hysteresis");
+    }
+
+    // effective exponent for stress-strain relationship
+    
+    inline double stressStrainExponent()
+    {
+      return 1.;
     }
 
     inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)

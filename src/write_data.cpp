@@ -65,7 +65,7 @@ void WriteData::command(int narg, char **arg)
   int n = strlen(arg[0]) + 16;
   char *file = new char[n];
 
-  if (ptr = strchr(arg[0],'*')) {
+  if ((ptr = strchr(arg[0],'*'))) { 
     *ptr = '\0';
     sprintf(file,"%s" BIGINT_FORMAT "%s",arg[0],update->ntimestep,ptr+1);
   } else strcpy(file,arg[0]);
@@ -74,6 +74,9 @@ void WriteData::command(int narg, char **arg)
 
   pairflag = II;
 
+  tag_offset = tag_max = 0; 
+  bool tag_flag = false;
+
   int iarg = 1;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"pair") == 0) {
@@ -81,6 +84,12 @@ void WriteData::command(int narg, char **arg)
       if (strcmp(arg[iarg+1],"ii") == 0) pairflag = II;
       else if (strcmp(arg[iarg+1],"ij") == 0) pairflag = IJ;
       else error->all(FLERR,"Illegal write_data command");
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"tag_offset") == 0) { 
+      if (iarg+2 > narg) error->all(FLERR,"Illegal write_data command");
+      tag_offset = atoi(arg[iarg+1]);
+      printf("Applying a tag offset of %d to atom data\n",tag_offset);
+      tag_flag = true;
       iarg += 2;
     } else error->all(FLERR,"Illegal write_data command");
   }
@@ -109,6 +118,13 @@ void WriteData::command(int narg, char **arg)
   write(file);
 
   delete [] file;
+
+  if(tag_flag && 0 == comm->me)
+  {
+    FILE *fpt = fopen("max_tag","w");
+    fprintf(fpt,"%d\n",tag_max);
+    fclose(fpt);
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -179,8 +195,10 @@ void WriteData::write(char *file)
   // extra sections managed by fixes
 
   for (int i = 0; i < modify->nfix; i++)
-    if (modify->fix[i]->wd_section) 
+    if (modify->fix[i]->wd_section)
       for (int m = 0; m < modify->fix[i]->wd_section; m++) fix(i,m);
+
+  tag_max = static_cast<bigint>(atom->tag_max()) + tag_offset;
 
   // close data file
 
@@ -220,10 +238,10 @@ void WriteData::header()
   }
 
   for (int i = 0; i < modify->nfix; i++)
-    if (modify->fix[i]->wd_header) 
-      for (int m = 0; m < modify->fix[i]->wd_header; m++) 
+    if (modify->fix[i]->wd_header)
+      for (int m = 0; m < modify->fix[i]->wd_header; m++)
         modify->fix[i]->write_data_header(fp,m);
-  
+
   fprintf(fp,"\n");
 
   fprintf(fp,"%-1.16e %-1.16e xlo xhi\n",domain->boxlo[0],domain->boxhi[0]);
@@ -271,12 +289,12 @@ void WriteData::force_fields()
     fprintf(fp,"\nAngle Coeffs\n\n");
     force->angle->write_data(fp);
   }
-  if (atom->avec->dihedrals_allow && force->dihedral && 
+  if (atom->avec->dihedrals_allow && force->dihedral &&
       force->dihedral->writedata) {
     fprintf(fp,"\nDihedral Coeffs\n\n");
     force->dihedral->write_data(fp);
   }
-  if (atom->avec->impropers_allow && force->improper && 
+  if (atom->avec->impropers_allow && force->improper &&
       force->improper->writedata) {
     fprintf(fp,"\nImproper Coeffs\n\n");
     force->improper->write_data(fp);
@@ -304,7 +322,7 @@ void WriteData::atoms()
 
   // pack my atom data into buf
 
-  atom->avec->pack_data(buf);
+  atom->avec->pack_data(buf,tag_offset); 
 
   // write one chunk of atoms per proc to file
   // proc 0 pings each proc, receives its chunk, writes to file
@@ -327,7 +345,7 @@ void WriteData::atoms()
 
       atom->avec->write_data(fp,recvrow,buf);
     }
-    
+
   } else {
     MPI_Recv(&tmp,0,MPI_INT,0,0,world,&status);
     MPI_Rsend(&buf[0][0],sendrow*ncol,MPI_DOUBLE,0,0,world);
@@ -357,7 +375,7 @@ void WriteData::velocities()
 
   // pack my velocity data into buf
 
-  atom->avec->pack_vel(buf);
+  atom->avec->pack_vel(buf,tag_offset); 
 
   // write one chunk of velocities per proc to file
   // proc 0 pings each proc, receives its chunk, writes to file
@@ -377,10 +395,10 @@ void WriteData::velocities()
         MPI_Get_count(&status,MPI_DOUBLE,&recvrow);
         recvrow /= ncol;
       } else recvrow = sendrow;
-      
+
       atom->avec->write_vel(fp,recvrow,buf);
     }
-    
+
   } else {
     MPI_Recv(&tmp,0,MPI_INT,0,0,world,&status);
     MPI_Rsend(&buf[0][0],sendrow*ncol,MPI_DOUBLE,0,0,world);
@@ -408,7 +426,7 @@ void WriteData::bonds()
 
   // pack my bond data into buf
 
-  int foo = atom->avec->pack_bond(buf);
+  atom->avec->pack_bond(buf); 
 
   // write one chunk of info per proc to file
   // proc 0 pings each proc, receives its chunk, writes to file
@@ -433,7 +451,7 @@ void WriteData::bonds()
       atom->avec->write_bond(fp,recvrow,buf,index);
       index += recvrow;
     }
-    
+
   } else {
     MPI_Recv(&tmp,0,MPI_INT,0,0,world,&status);
     MPI_Rsend(&buf[0][0],sendrow*ncol,MPI_INT,0,0,world);
@@ -482,11 +500,11 @@ void WriteData::angles()
         MPI_Get_count(&status,MPI_INT,&recvrow);
         recvrow /= ncol;
       } else recvrow = sendrow;
-      
+
       atom->avec->write_angle(fp,recvrow,buf,index);
       index += recvrow;
     }
-    
+
   } else {
     MPI_Recv(&tmp,0,MPI_INT,0,0,world,&status);
     MPI_Rsend(&buf[0][0],sendrow*ncol,MPI_INT,0,0,world);
@@ -553,11 +571,11 @@ void WriteData::dihedrals()
         MPI_Get_count(&status,MPI_INT,&recvrow);
         recvrow /= ncol;
       } else recvrow = sendrow;
-      
+
       atom->avec->write_dihedral(fp,recvrow,buf,index);
       index += recvrow;
     }
-    
+
   } else {
     MPI_Recv(&tmp,0,MPI_INT,0,0,world,&status);
     MPI_Rsend(&buf[0][0],sendrow*ncol,MPI_INT,0,0,world);
@@ -624,11 +642,11 @@ void WriteData::impropers()
         MPI_Get_count(&status,MPI_INT,&recvrow);
         recvrow /= ncol;
       } else recvrow = sendrow;
-      
+
       atom->avec->write_improper(fp,recvrow,buf,index);
       index += recvrow;
     }
-    
+
   } else {
     MPI_Recv(&tmp,0,MPI_INT,0,0,world,&status);
     MPI_Rsend(&buf[0][0],sendrow*ncol,MPI_INT,0,0,world);
@@ -681,7 +699,7 @@ void WriteData::fix(int ifix, int mth)
       modify->fix[ifix]->write_data_section(mth,fp,recvrow,buf,index);
       index += recvrow;
     }
-    
+
   } else {
     MPI_Recv(&tmp,0,MPI_INT,0,0,world,&status);
     MPI_Rsend(&buf[0][0],sendrow*ncol,MPI_DOUBLE,0,0,world);

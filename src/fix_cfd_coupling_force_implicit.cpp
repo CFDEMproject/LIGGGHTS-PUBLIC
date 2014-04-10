@@ -105,7 +105,7 @@ void FixCfdCouplingForceImplicit::post_create()
         fixarg[6]="no";     // communicate ghost
         fixarg[7]="no";     // communicate rev
         fixarg[8]="0.";
-        fix_Ksl_ = modify->add_fix_property_atom(9,(char**)fixarg,style);
+        fix_Ksl_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
     }
 
     // register uf
@@ -123,7 +123,7 @@ void FixCfdCouplingForceImplicit::post_create()
         fixarg[8]="0.";
         fixarg[9]="0.";
         fixarg[10]="0.";
-        fix_uf_ = modify->add_fix_property_atom(11,(char**)fixarg,style);
+        fix_uf_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
     }
 }
 
@@ -150,10 +150,8 @@ void FixCfdCouplingForceImplicit::init()
 
 /* ---------------------------------------------------------------------- */
 
-void FixCfdCouplingForceImplicit::post_force(int vflag)
+void FixCfdCouplingForceImplicit::post_force(int)
 {
-
-  double **x = atom->x;
   double **v = atom->v;
   double **f = atom->f;
   int *mask = atom->mask;
@@ -196,7 +194,6 @@ void FixCfdCouplingForceImplicit::end_of_step()
 
   if(!useCN_) return; //return if CN not used
   
-  double **x = atom->x;
   double **v = atom->v;
   double **f = atom->f;
   double *rmass = atom->rmass;
@@ -207,7 +204,7 @@ void FixCfdCouplingForceImplicit::end_of_step()
   int nlocal = atom->nlocal;
   double *Ksl = fix_Ksl_->vector_atom;
   double **uf = fix_uf_->array_atom;
-  double **dragforce = fix_dragforce_->array_atom;
+  //double **dragforce = fix_dragforce_->array_atom;
   double KslMDeltaT, deltaU;
   double vN32[3];
   double frc[3];

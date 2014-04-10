@@ -30,6 +30,7 @@
 #include "vector_liggghts.h"
 #include "math_extra.h"
 #include "random_park.h"
+#include "ctype.h"
 
 #define TOLERANCE_ORTHO 1e-10
 
@@ -86,6 +87,8 @@ namespace MathExtraLiggghts {
   inline void calcBaryTriCoords(double *p, double *edgeVec0, double *edgeVec1, double *edgeVec2, double *edgeLen, double *bary);
 
   inline void random_unit_quat(LAMMPS_NS::RanPark *random,double *quat);
+
+  inline bool is_int(char *str);
 };
 
 /* ----------------------------------------------------------------------
@@ -545,6 +548,20 @@ void MathExtraLiggghts::random_unit_quat(LAMMPS_NS::RanPark *random,double *quat
     quat[1] = h1 * cos(2.*M_PI*u2);
     quat[2] = h2 * sin(2.*M_PI*u3);
     quat[3] = h2 * cos(2.*M_PI*u3);
+}
+
+/* ----------------------------------------------------------------------
+   check if char * string is int
+------------------------------------------------------------------------- */
+
+bool MathExtraLiggghts::is_int(char *str)
+{
+    int n = strlen(str);
+    for (int i = 0; i < n; i++)
+      if (0 == isdigit(str[i]))
+        return false;
+
+    return true;
 }
 
 #endif

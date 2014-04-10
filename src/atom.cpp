@@ -572,7 +572,7 @@ int Atom::count_words(const char *line)
   strcpy(copy,line);
 
   char *ptr;
-  if (ptr = strchr(copy,'#')) *ptr = '\0';
+  if ((ptr = strchr(copy,'#'))) *ptr = '\0'; 
 
   if (strtok(copy," \t\n\r\f") == NULL) {
     memory->destroy(copy);
@@ -1672,7 +1672,7 @@ bigint Atom::memory_usage()
 
 int Atom::memcheck(const char *str)
 {
-  int n = strlen(str) + 3;
+  size_t n = strlen(str) + 3;
   char *padded = new char[n];
   strcpy(padded," ");
   strcat(padded,str);

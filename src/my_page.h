@@ -62,6 +62,7 @@ class MyPage {
     pages = NULL;
     npage = 0;
     errorflag = 0;
+    zeroize = false; 
   }
 
   // (re)initialize allocation params
@@ -178,6 +179,22 @@ class MyPage {
     page = pages[ipage];
   }
 
+  // clear all pages, zeroize allocated memory and
+  // ensure that all future pages are initialized with zero
+
+  void reset(bool zeroize_pages) { 
+    ndatum = nchunk = 0;
+    index = ipage = 0;
+    page = pages[ipage];
+    zeroize = zeroize_pages;
+
+    if(zeroize) {
+      for(int i=0; i < npage; i++) {
+        memset(pages[i], 0, pagesize*sizeof(T));
+      }
+    }
+  }
+
   // return total size of allocated pages
 
   int size() const {
@@ -205,6 +222,8 @@ class MyPage {
                   // 1 = chunk size exceeded maxchunk
                   // 2 = memory allocation error
 
+  bool zeroize;   // new pages allocated are initialized with zero 
+
   void allocate() {
     npage += pagedelta;
     pages = (T **) realloc(pages,npage*sizeof(T *));
@@ -220,8 +239,12 @@ class MyPage {
         errorflag = 2;
       pages[i] = (T *) ptr;
 #else
-      pages[i] = (T *) malloc(pagesize*sizeof(T));
+      if(zeroize) 
+        pages[i] = (T *) calloc(pagesize,sizeof(T));
+      else
+        pages[i] = (T *) malloc(pagesize*sizeof(T));
       if (!pages[i]) errorflag = 2;
+
 #endif
     }
   }

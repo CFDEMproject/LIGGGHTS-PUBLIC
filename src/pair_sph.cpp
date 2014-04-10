@@ -72,14 +72,11 @@ PairSph::PairSph(LAMMPS *lmp) : Pair(lmp)
 
     mass_type = atom->avec->mass_type; // get flag for mass per type
 
-    char **fixarg;
-    fixarg=new char*[11];
-    for (int kk=0;kk<11;kk++) fixarg[kk]=new char[30];
-
-    strcpy(fixarg[0],"fgradP");
+    const char *fixarg[11];
+    fixarg[0]="fgradP";
     fixarg[1]="all";
     fixarg[2]="property/atom";
-    strcpy(fixarg[3],"fgradP");
+    fixarg[3]="fgradP";
     fixarg[4]="vector";
     fixarg[5]="yes";
     fixarg[6]="yes";
@@ -87,8 +84,7 @@ PairSph::PairSph(LAMMPS *lmp) : Pair(lmp)
     fixarg[8]="0.";
     fixarg[9]="0.";
     fixarg[10]="0.";
-    fix_fgradP_ = modify->add_fix_property_atom(11,fixarg,"PairSph");
-    delete []fixarg;
+    fix_fgradP_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),"PairSph");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -254,20 +250,19 @@ void PairSph::init_style()
     // register per-particle property smoothing length
 
     if (fppaSl == NULL) {
-      char **fixarg = new char*[9];
-      for (int kk=0;kk<9;kk++) fixarg[kk]=new char[30];
-
-      fixarg[0]=(char *) "sl";
-      fixarg[1]=(char *) "all";
-      fixarg[2]=(char *) "property/atom";
-      fixarg[3]=(char *) "sl";
-      fixarg[4]=(char *) "scalar";
-      fixarg[5]=(char *) "yes"; // restart_peratom = 1
-      fixarg[6]=(char *) "yes"; // commGhost = 1
-      fixarg[7]=(char *) "no";  // commGhostRev = 0
-      sprintf(fixarg[8],"%f",sl_0); // default value
-      modify->add_fix(9,fixarg);
-      delete []fixarg;
+      const char * fixarg[9];
+      fixarg[0]="sl";
+      fixarg[1]="all";
+      fixarg[2]="property/atom";
+      fixarg[3]="sl";
+      fixarg[4]="scalar";
+      fixarg[5]="yes"; // restart_peratom = 1
+      fixarg[6]="yes"; // commGhost = 1
+      fixarg[7]="no";  // commGhostRev = 0
+      char arg8[30];
+      sprintf(arg8,"%f",sl_0); // default value
+      fixarg[8]=arg8;
+      modify->add_fix(9,const_cast<char**>(fixarg));
 
       fppaSl=static_cast<FixPropertyAtom*>(modify->find_fix_property("sl","property/atom","scalar",0,0,force->pair_style));
     }

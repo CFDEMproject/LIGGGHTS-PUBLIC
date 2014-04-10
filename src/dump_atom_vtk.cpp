@@ -32,6 +32,16 @@
 #include "error.h"
 #include "memory.h"
 #include "comm.h"
+#include <sstream>
+#include<vtkCellArray.h>
+#include<vtkDoubleArray.h>
+#include<vtkIntArray.h>
+#include<vtkPoints.h>
+#include<vtkPointData.h>
+#include<vtkCellData.h>
+#include<vtkSmartPointer.h>
+#include<vtkUnstructuredGrid.h>
+#include<vtkXMLUnstructuredGridWriter.h>
 
 using namespace LAMMPS_NS;
 
@@ -62,7 +72,7 @@ void DumpATOMVTK::init_style()
 
 /* ---------------------------------------------------------------------- */
 
-void DumpATOMVTK::write_header(bigint n)
+void DumpATOMVTK::write_header(bigint /* n */)
 {
 }
 
@@ -214,7 +224,7 @@ DumpATOMVTK::vtkExportData::vtkExportData() {
 }
 /* ---------------------------------------------------------------------- */
 
-const int DumpATOMVTK::vtkExportData::size() {
+int DumpATOMVTK::vtkExportData::size() {
   return vtkData.size();
 }
 
@@ -257,7 +267,7 @@ void DumpATOMVTK::vtkExportData::writeSER() {
   spheresForce->SetNumberOfComponents(3);
   spheresForce->SetName("force");
 
-  for (int i=0; i < vtkData.size(); i++) {
+  for (unsigned int i=0; i < vtkData.size(); i++) {
     vtkIdType pid[1];
     pid[0] = spheresPos->InsertNextPoint(vtkData[i]._Pos[0], vtkData[i]._Pos[1], vtkData[i]._Pos[2]);
     radii->InsertNextValue(vtkData[i]._Rad);
@@ -303,7 +313,7 @@ void DumpATOMVTK::vtkExportData::writeSER() {
 /* ---------------------------------------------------------------------- */
 
 void DumpATOMVTK::vtkExportData::show() {
-  for (int i=0; i < vtkData.size(); i++) {
+  for (unsigned int i=0; i < vtkData.size(); i++) {
     std::cerr << vtkData[i].serialize();
   }
 }
@@ -328,7 +338,7 @@ void DumpATOMVTK::setFileCurrent() {
     else {
       char bif[8],pad[16];
       strcpy(bif,BIGINT_FORMAT);
-      sprintf(pad,"%%s%%0%d_%d%s%%s",padflag,&bif[1]);
+      sprintf(pad,"%%s%%0%d_%%d%s%%s",padflag,&bif[1]);
       sprintf(filecurrent,pad,filename,comm->me,update->ntimestep,ptr+1);
     }
     *ptr = '*';

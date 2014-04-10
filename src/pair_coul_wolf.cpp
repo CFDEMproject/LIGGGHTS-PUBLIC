@@ -50,11 +50,11 @@ PairCoulWolf::~PairCoulWolf()
 
 void PairCoulWolf::compute(int eflag, int vflag)
 {
-  int i,j,ii,jj,inum,jnum,itype,jtype;
+  int i,j,ii,jj,inum,jnum; 
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,ecoul,fpair;
   double rsq,forcecoul,factor_coul;
   double prefactor;
-  double r,rexp;
+  double r; 
   int *ilist,*jlist,*numneigh,**firstneigh;
   double erfcc,erfcd,v_sh,dvdrr,e_self,e_shift,f_shift,qisq;
 
@@ -65,9 +65,9 @@ void PairCoulWolf::compute(int eflag, int vflag)
   double **x = atom->x;
   double **f = atom->f;
   double *q = atom->q;
-  int *type = atom->type;
+  
   int nlocal = atom->nlocal;
-  int nall = nlocal + atom->nghost;
+  
   double *special_coul = force->special_coul;
   int newton_pair = force->newton_pair;
   double qqrd2e = force->qqrd2e;
@@ -92,7 +92,7 @@ void PairCoulWolf::compute(int eflag, int vflag)
     xtmp = x[i][0];
     ytmp = x[i][1];
     ztmp = x[i][2];
-    itype = type[i];
+    
     jlist = firstneigh[i];
     jnum = numneigh[i];
 
@@ -109,8 +109,7 @@ void PairCoulWolf::compute(int eflag, int vflag)
       dely = ytmp - x[j][1];
       delz = ztmp - x[j][2];
       rsq = delx*delx + dely*dely + delz*delz;
-      jtype = type[j];
-
+      
       if (rsq < cut_coulsq) {
         r = sqrt(rsq);
         prefactor = qqrd2e*qtmp*q[j]/r;
@@ -211,7 +210,7 @@ void PairCoulWolf::init_style()
   if (!atom->q_flag)
     error->all(FLERR,"Pair coul/wolf requires atom attribute q");
 
-  int irequest = neighbor->request(this);
+  neighbor->request(this); 
 
   cut_coulsq = cut_coul*cut_coul;
 }
@@ -295,8 +294,8 @@ double PairCoulWolf::single(int i, int j, int itype, int jtype, double rsq,
                             double factor_coul, double factor_lj,
                             double &fforce)
 {
-  double r6inv,r,prefactor,rexp;
-  double forcecoul,forceborn,phicoul;
+  double r,prefactor; 
+  double forcecoul,phicoul; 
   double e_shift,f_shift,dvdrr,erfcc,erfcd;
 
   e_shift = erfc(alf*cut_coul) / cut_coul;

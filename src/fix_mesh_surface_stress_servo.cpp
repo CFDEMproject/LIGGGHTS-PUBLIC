@@ -416,7 +416,8 @@ void FixMeshSurfaceStressServo::final_integrate()
   FixMeshSurfaceStress::final_integrate();
 
   // calcualte area
-  double area = mod_andrew_->area();
+  // double area = mod_andrew_->area();
+  mod_andrew_->area();
 
   double dfdt;
 

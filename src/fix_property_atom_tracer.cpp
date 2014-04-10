@@ -43,22 +43,22 @@ using namespace FixConst;
 
 FixPropertyAtomTracer::FixPropertyAtomTracer(LAMMPS *lmp, int narg, char **arg,bool parse) :
   FixPropertyAtom(lmp, narg, arg, false),
+  iarg_(3),
   marker_style_(MARKER_DIRAC),
   step_(-1),
   check_every_(10),
   first_mark_(true),
-  nmarked_(0),
-  nmarked_last_(0),
-  iarg_(3),
   iregion_(-1),
-  idregion_(0)
+  idregion_(0),
+  nmarked_last_(0),
+  nmarked_(0)
 {
     // do the base class stuff
 
     int n = strlen(id) + 1;
     tracer_name_ = new char[n];
     strcpy(tracer_name_,id);
-    char *baseargs[9];
+    const char *baseargs[9];
     baseargs[0] = tracer_name_; 
     baseargs[1] = "all";
     baseargs[2] = "property/atom/tracer";
@@ -68,7 +68,7 @@ FixPropertyAtomTracer::FixPropertyAtomTracer(LAMMPS *lmp, int narg, char **arg,b
     baseargs[6] = "yes";    
     baseargs[7] = "no";    
     baseargs[8] = "0.";
-    parse_args(9,baseargs);
+    parse_args(9,(char**)baseargs);
 
     // do the derived class stuff
 

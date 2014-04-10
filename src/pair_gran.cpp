@@ -51,6 +51,7 @@
 #include "fix_pour.h"
 #include "fix_property_global.h"
 #include "fix_property_atom.h"
+#include "fix_property_atom_contact.h"
 #include "compute_pair_gran_local.h"
 #include "pair_gran.h"
 
@@ -91,6 +92,10 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
   computeflag = 0;
 
   needs_neighlist = true;
+
+  store_contact_forces = false;
+  fix_contact_forces = 0;
+  store_contact_forces = 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -380,15 +385,44 @@ void PairGran::init_style()
     if(force->newton_pair == 1) error->all(FLERR,"Have to implement rev comm of energy terms");
   }
 
+  // register per-particle properties for energy tracking
+  if(store_contact_forces && 0 == fix_contact_forces)
+  {
+    char **fixarg = new char*[17];
+    fixarg[0]=(char *) "CONTACTFORCES";
+    fixarg[1]=(char *) "all";
+    fixarg[2]=(char *) "property/atom/contact";
+    fixarg[3]=(char *) "contactforces";
+    fixarg[4]=(char *) "6";
+    fixarg[5]=(char *) "fx";
+    fixarg[6]=(char *) "0";
+    fixarg[7]=(char *) "fy";
+    fixarg[8]=(char *) "0";
+    fixarg[9]=(char *) "fz";
+    fixarg[10]=(char *) "0";
+    fixarg[11]=(char *) "ty";
+    fixarg[12]=(char *) "0";
+    fixarg[13]=(char *) "ty";
+    fixarg[14]=(char *) "0";
+    fixarg[15]=(char *) "ty";
+    fixarg[16]=(char *) "0";
+    modify->add_fix(17,fixarg);
+    fix_contact_forces = static_cast<FixPropertyAtomContact*>(modify->find_fix_id("CONTACTFORCES"));
+    delete []fixarg;
+  }
+
   // need a gran neigh list and optionally a granular history neigh list
 
   if(needs_neighlist)
   {
       int irequest = neighbor->request(this);
+      neighbor->requests[irequest]->pairgran_hashcode = hashcode();
       neighbor->requests[irequest]->half = 0;
       neighbor->requests[irequest]->gran = 1;
+
       if (history) {
         irequest = neighbor->request(this);
+        neighbor->requests[irequest]->pairgran_hashcode = hashcode();
         neighbor->requests[irequest]->id = 1; 
         neighbor->requests[irequest]->half = 0;
         neighbor->requests[irequest]->granhistory = 1;
@@ -479,6 +513,7 @@ int PairGran::fix_extra_dnum_index(class Fix *fix)
 
 void PairGran::init_list(int id, NeighList *ptr)
 {
+  
   if (id == 0) list = ptr;
   else if (id == 1) listgranhistory = ptr;
 }

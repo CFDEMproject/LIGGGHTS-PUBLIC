@@ -38,12 +38,7 @@
 #include "mpi_liggghts.h"
 #include "property_registry.h"
 #include "global_properties.h"
-
-#if defined(_WIN32) || defined(_WIN64)
 #include <algorithm>
-#define fmax std::max
-#define fmin std::min
-#endif
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -118,7 +113,7 @@ void FixCheckTimestepGran::init()
     error->all(FLERR,"Fix check/timestep/gran only works with a pair style that defines youngsModulus and poissonsRatio");
 
   force->registry.registerProperty("Yeff", &MODEL_PARAMS::createYeff);
-  force->registry.connect("Yeff", Yeff);
+  force->registry.connect("Yeff", Yeff,this->style);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -173,7 +168,6 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
   int nlocal = atom->nlocal;
 
   int max_type = mpg->max_type();
-  int min_type = 1;
 
   //check rayleigh time and vmax of particles
   rayleigh_time = BIG;
@@ -231,7 +225,7 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
  MPI_Max_Scalar(vmax_mesh,world);
 
   // decide vmax - either particle-particle or particle-mesh contact
-  vmax = fmax(2.*vmax,vmax+vmax_mesh);
+  vmax = std::max(2.*vmax,vmax+vmax_mesh);
 
   // check estimation for hertz time
   // this is not exact...

@@ -1131,6 +1131,29 @@ void AtomVecSphere::pack_data(double **buf)
 }
 
 /* ----------------------------------------------------------------------
+   pack atom info for data file including 3 image flags
+------------------------------------------------------------------------- */
+
+void AtomVecSphere::pack_data(double **buf,int tag_offset)
+{
+  int nlocal = atom->nlocal;
+  for (int i = 0; i < nlocal; i++) {
+    buf[i][0] = ubuf(tag[i]+tag_offset).d; 
+    buf[i][1] = ubuf(type[i]).d;
+    buf[i][2] = 2.0*radius[i];
+    if (radius[i] == 0.0) buf[i][3] = rmass[i];
+    else
+      buf[i][3] = rmass[i] / (4.0*MY_PI/3.0 * radius[i]*radius[i]*radius[i]);
+    buf[i][4] = x[i][0];
+    buf[i][5] = x[i][1];
+    buf[i][6] = x[i][2];
+    buf[i][7] = ubuf((image[i] & IMGMASK) - IMGMAX).d;
+    buf[i][8] = ubuf((image[i] >> IMGBITS & IMGMASK) - IMGMAX).d;
+    buf[i][9] = ubuf((image[i] >> IMG2BITS) - IMGMAX).d;
+  }
+}
+
+/* ----------------------------------------------------------------------
    pack hybrid atom info for data file
 ------------------------------------------------------------------------- */
 
@@ -1176,6 +1199,24 @@ void AtomVecSphere::pack_vel(double **buf)
   int nlocal = atom->nlocal;
   for (int i = 0; i < nlocal; i++) {
     buf[i][0] = ubuf(tag[i]).d;
+    buf[i][1] = v[i][0];
+    buf[i][2] = v[i][1];
+    buf[i][3] = v[i][2];
+    buf[i][4] = omega[i][0];
+    buf[i][5] = omega[i][1];
+    buf[i][6] = omega[i][2];
+  }
+}
+
+/* ----------------------------------------------------------------------
+   pack velocity info for data file
+------------------------------------------------------------------------- */
+
+void AtomVecSphere::pack_vel(double **buf,int tag_offset) 
+{
+  int nlocal = atom->nlocal;
+  for (int i = 0; i < nlocal; i++) {
+    buf[i][0] = ubuf(tag[i]+tag_offset).d;
     buf[i][1] = v[i][0];
     buf[i][2] = v[i][1];
     buf[i][3] = v[i][2];

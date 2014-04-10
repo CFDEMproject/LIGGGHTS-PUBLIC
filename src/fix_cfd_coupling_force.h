@@ -53,10 +53,11 @@ class FixCfdCouplingForce : public Fix  {
   double dragforce_total[3];
   class FixCfdCoupling* fix_coupling_;
   class FixPropertyAtom* fix_dragforce_;
+  class FixPropertyAtom* fix_hdtorque_; // hdtorque = hydrodynamic torque
   class FixPropertyAtom* fix_volumeweight_;
 
  private:
-  bool use_force_, use_dens_, use_type_;
+  bool use_force_, use_torque_, use_dens_, use_type_;
 };
 
 }

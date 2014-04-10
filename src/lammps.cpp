@@ -95,6 +95,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   suffix_enable = 0;
   char *rfile = NULL;
   char *dfile = NULL;
+  int tag_offset = 0; 
 
   wedgeflag = false; 
 
@@ -202,6 +203,15 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
       rfile = arg[iarg+1];
       dfile = arg[iarg+2];
       iarg += 3;
+    } else if (strcmp(arg[iarg],"-restart_offset") == 0 ||
+               strcmp(arg[iarg],"-roff") == 0) {
+      if (iarg+4 > narg)
+        error->universe_all(FLERR,"Invalid command-line argument");
+      restartflag = 1;
+      rfile = arg[iarg+1];
+      dfile = arg[iarg+2];
+      tag_offset = atoi(arg[iarg+3]);
+      iarg += 4;
     } else if (strcmp(arg[iarg],"-nocite") == 0 ||
                strcmp(arg[iarg],"-nc") == 0) {
       citeflag = 0;
@@ -494,7 +504,11 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     char cmd[128];
     sprintf(cmd,"read_restart %s\n",rfile);
     input->one(cmd);
-    sprintf(cmd,"write_data %s\n",dfile);
+    
+    if(0 == tag_offset)
+        sprintf(cmd,"write_data %s\n",dfile);
+    else
+        sprintf(cmd,"write_data %s tag_offset %d\n",dfile,tag_offset);
     input->one(cmd);
     error->done();
   }
@@ -670,7 +684,7 @@ void LAMMPS::help()
           "-screen none/filename       : where to send screen output (-sc)\n"
           "-suffix cuda/gpu/opt/omp    : style suffix to apply (-sf)\n"
           "-var varname value          : set index style variable (-v)\n\n");
-  
+
   fprintf(screen,"Style options compiled with this executable\n\n");
 
   int pos = 80;
@@ -796,7 +810,7 @@ void LAMMPS::print_style(const char *str, int &pos)
   if (isupper(str[0])) return;
 
   int len = strlen(str);
-  if (pos+len > 80) { 
+  if (pos+len > 80) {
     fprintf(screen,"\n");
     pos = 0;
   }

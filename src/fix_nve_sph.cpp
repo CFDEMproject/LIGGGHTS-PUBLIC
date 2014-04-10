@@ -151,8 +151,8 @@ void FixNVESph::final_integrate()
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
-  double *rho = atom->rho;
-  double *drho = atom->drho;
+  //double *rho = atom->rho; 
+  //double *drho = atom->drho;
   double *e = atom->e;
   double *de = atom->de;
 

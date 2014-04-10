@@ -37,15 +37,19 @@ namespace LAMMPS_NS {
   public:
     FixHeatGranCond(class LAMMPS *, int, char **);
     ~FixHeatGranCond();
+    virtual void post_create();
     void pre_delete(bool);
 
     int setmask();
     void init();
-    void post_force(int);
+    virtual void post_force(int);
 
     void cpl_evaluate(class ComputePairGranLocal *);
     void register_compute_pair_local(ComputePairGranLocal *);
     void unregister_compute_pair_local(ComputePairGranLocal *);
+
+  protected:
+    int iarg_;
 
   private:
     template <int> void post_force_eval(int,int);

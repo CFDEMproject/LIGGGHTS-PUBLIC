@@ -474,13 +474,27 @@ void Neighbor::init()
 
   int same = 1;
   if (style != old_style) same = 0;
+  
   if (triclinic != old_triclinic) same = 0;
+  
   if (pgsize != old_pgsize) same = 0;
+  
   if (oneatom != old_oneatom) same = 0;
-  if (nrequest != old_nrequest) same = 0;
+  
+  if (nrequest != old_nrequest) {
+    same = 0;
+    
+  }
   else
     for (i = 0; i < nrequest; i++)
-      if (requests[i]->identical(old_requests[i]) == 0) same = 0;
+    {
+      if (requests[i]->identical(old_requests[i]) == 0)  {
+        same = 0;
+        
+      }
+      
+      //if (requests[i]->gran || requests[i]->granhistory) same = 0; 
+    }
 
 #ifdef NEIGH_LIST_DEBUG
   if (comm->me == 0) printf("SAME flag %d\n",same);
@@ -1315,7 +1329,7 @@ int Neighbor::decide()
 int Neighbor::check_distance()
 {
   double delx,dely,delz,rsq;
-  double delta,deltasq,delta1,delta2,delr,delrsq,trigger; 
+  double delta,deltasq,delta1,delta2,delr,delrsq; 
 
   if (boxcheck) {
     if (triclinic == 0) {

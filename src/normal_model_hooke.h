@@ -68,24 +68,31 @@ namespace ContactModels
       registry.registerProperty("Geff", &MODEL_PARAMS::createGeff);
       registry.registerProperty("charVel", &MODEL_PARAMS::createCharacteristicVelocity);
 
-      registry.connect("Yeff", Yeff);
-      registry.connect("Geff", Geff);
-      registry.connect("charVel", charVel);
+      registry.connect("Yeff", Yeff,"model hooke");
+      registry.connect("Geff", Geff,"model hooke");
+      registry.connect("charVel", charVel,"model hooke");
 
       if(viscous) {
         registry.registerProperty("coeffMu", &MODEL_PARAMS::createCoeffMu);
         registry.registerProperty("coeffStc", &MODEL_PARAMS::createCoeffStc);
         registry.registerProperty("coeffRestMax", &MODEL_PARAMS::createCoeffRestMax);
 
-        registry.connect("coeffMu", coeffMu);
-        registry.connect("coeffStc", coeffStc);
-        registry.connect("coeffRestMax", coeffRestMax);
+        registry.connect("coeffMu", coeffMu,"model hooke viscous");
+        registry.connect("coeffStc", coeffStc,"model hooke viscous");
+        registry.connect("coeffRestMax", coeffRestMax,"model hooke viscous");
         //registry.connect("log(coeffRestMax)+coeffStc", logRestMaxPlusStc);
       } else {
         registry.registerProperty("coeffRestLog", &MODEL_PARAMS::createCoeffRestLog);
 
-        registry.connect("coeffRestLog", coeffRestLog);
+        registry.connect("coeffRestLog", coeffRestLog,"model hooke viscous");
       }
+    }
+
+    // effective exponent for stress-strain relationship
+    
+    inline double stressStrainExponent()
+    {
+      return 1.;
     }
 
     inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)

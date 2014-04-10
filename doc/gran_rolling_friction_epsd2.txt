@@ -7,11 +7,11 @@
 
 :line
 
-gran rolling_friction epsd :h3
+gran rolling_friction epsd2 :h3
 
 [Syntax:]
 
-rolling_friction epsd :pre
+rolling_friction epsd2 :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 
@@ -35,7 +35,7 @@ where k_t is the abovementioned tangential stiffness. Furthermore, the viscous d
 The coefficient of rolling friction (rmu) must be defined as
 
 fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
 
 This coefficient rmu is equal to the rmu as defined in the "CDT model"_gran_rolling_friction_cdt.html. :pre
 

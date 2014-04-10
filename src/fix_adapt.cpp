@@ -193,22 +193,19 @@ void FixAdapt::post_create()
 
   if (fppat == NULL)
   {
-    char **fixarg;
-    fixarg=new char*[9];
-    for (int kk=0;kk<9;kk++) fixarg[kk]=new char[50];
+    const char *fixarg[9];
     
-    sprintf(fixarg[0],"adaptProp_%s",id);
-    sprintf(fixid,    "adaptProp_%s",id);
+    sprintf(fixid,"adaptProp_%s",id);
+    fixarg[0]=fixid;
     fixarg[1]="all";
     fixarg[2]="property/atom";
-    sprintf(fixarg[3],"adaptProp_%s",id);
+    fixarg[3]=fixid;
     fixarg[4]="scalar"; 
     fixarg[5]="no";    
     fixarg[6]="no";    
     fixarg[7]="no";    
     fixarg[8]="0.";     
-    modify->add_fix(9,fixarg);
-    delete []fixarg;
+    modify->add_fix(9,const_cast<char**>(fixarg));
 
     fppat = static_cast<FixPropertyAtom*>(modify->find_fix_property(fixid,"property/atom","scalar",0,0,style));
   }

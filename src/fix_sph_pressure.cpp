@@ -164,6 +164,8 @@ void FixSPHPressure::pre_force(int vflag)
       {
 
       p[i] = B*(pow(rho[i]*rho0inv,gamma) - 1) + P0; // Tait's equation
+      // Added a background pressure P0 (see e.g., S. Adami, X.Y. Hu, N.A. Adams,
+      // J. Comput. Phys. 241 (2013) 292-307)
     }
     }
   }

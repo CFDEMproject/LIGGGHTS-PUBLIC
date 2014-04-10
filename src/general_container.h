@@ -127,7 +127,7 @@ namespace LAMMPS_NS
           inline int capacity()
           { return maxElem_; }
 
-          inline void empty()
+          inline void clearContainer()
           { numElem_ = 0; }
 
       protected:

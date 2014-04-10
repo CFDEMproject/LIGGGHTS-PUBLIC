@@ -258,7 +258,7 @@ class Atom : protected Pointers {
   double bininvx,bininvy,bininvz; // inverse actual bin sizes
   double bboxlo[3],bboxhi[3];     // bounding box of my sub-domain
 
-  int memlength;                  // allocated size of memstr
+  size_t memlength;                  // allocated size of memstr  
   char *memstr;                   // string of array names already counted
 
   void setup_sort_bins();

@@ -283,7 +283,7 @@ void FixGravity::post_force(int vflag)
 
   if (rmass) {
     for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit && (!fm || fm && fm->belongs_to(i) < 0)) { 
+      if ((mask[i] & groupbit) && (!fm || (fm && fm->belongs_to(i) < 0))) { 
         massone = rmass[i];
         f[i][0] += massone*xacc;
         f[i][1] += massone*yacc;
@@ -292,7 +292,7 @@ void FixGravity::post_force(int vflag)
       }
   } else {
     for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit && (!fm || fm && fm->belongs_to(i) < 0)) { 
+      if ((mask[i] & groupbit) && (!fm || (fm && fm->belongs_to(i) < 0))) { 
         massone = mass[type[i]];
         f[i][0] += massone*xacc;
         f[i][1] += massone*yacc;

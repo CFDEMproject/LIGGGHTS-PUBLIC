@@ -54,7 +54,7 @@ namespace ContactModels
 
     inline void connectToProperties(PropertyRegistry & registry){
       registry.registerProperty("coeffFrict", &MODEL_PARAMS::createCoeffFrict);
-      registry.connect("coeffFrict", coeffFrict);
+      registry.connect("coeffFrict", coeffFrict,"tangential_model history");
     }
 
     inline void collision(const CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) {

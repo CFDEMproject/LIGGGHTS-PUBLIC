@@ -53,7 +53,7 @@ namespace ContactModels
     void connectToProperties(PropertyRegistry & registry)
     {
       registry.registerProperty("coeffRollFrict", &MODEL_PARAMS::createCoeffRollFrict);
-      registry.connect("coeffRollFrict", coeffRollFrict);
+      registry.connect("coeffRollFrict", coeffRollFrict,"rolling_model cdt");
     }
 
     void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) 

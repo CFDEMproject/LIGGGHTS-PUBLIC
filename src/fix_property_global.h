@@ -80,6 +80,8 @@ class FixPropertyGlobal : public Fix {
   char *variablename;        // name of the variable (used for identification by other fixes)
   int data_style;            // 0 if a scalar is registered, 1 if vector, 2 if 2d array (matrix)
   int nvalues;
+  int nvalues_new_array;
+
   bool is_symmetric;         // flag if values must be symmetric (only applicable for matrix)
   bool is_atomtype_bound;    // flag if # values is bound to # atom types
   double *values;            // original values to be stored in this fix

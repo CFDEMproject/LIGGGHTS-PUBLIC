@@ -196,7 +196,7 @@ void FixTemplateMultiplespheres::calc_bounding_sphere()
 {
   r_bound = LARGE;
   int *visited = new int[nspheres];
-  double d[3],delta,dist;
+  double d[3],dist;
 
   for(int shuffle = 0; shuffle < N_SHUFFLE_BOUND; shuffle ++)
   {
@@ -290,7 +290,6 @@ void FixTemplateMultiplespheres::calc_center_of_mass()
   int nsuccess = 0;
 
   double x_try[3],xcm[3],dist_j_sqr;
-  int n_found = 0;
 
   vectorZeroize3D(xcm);
 

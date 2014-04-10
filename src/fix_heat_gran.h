@@ -60,7 +60,6 @@ namespace LAMMPS_NS {
     double *Temp;       
     double T0;          
     double **directionalHeatFlux;
-    bool FHG_init_flag; 
 
     class PairGran *pair_gran;
     int history_flag;

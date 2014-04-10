@@ -44,6 +44,7 @@ PropertyRegistry::PropertyRegistry(LAMMPS* lmp) : Pointers(lmp), mpg(lmp)
 
 PropertyRegistry::~PropertyRegistry()
 {
+  init();
 }
 
 int PropertyRegistry::max_type()
@@ -61,11 +62,11 @@ FixPropertyGlobal* PropertyRegistry::getGlobalProperty(const char *varname, cons
   return static_cast<FixPropertyGlobal*>(modify->find_fix_property(varname, style, svmstyle, len1, len2, caller));
 }
 
-ScalarProperty * PropertyRegistry::getScalarProperty(string varname)
+ScalarProperty * PropertyRegistry::getScalarProperty(string varname,const char *caller)
 {
   if(scalars.find(varname) == scalars.end()) {
     if(scalar_creators.find(varname) != scalar_creators.end()) {
-      scalars[varname] = (*scalar_creators[varname])(*this, "", use_sanity_checks[varname]);
+      scalars[varname] = (*scalar_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       error->message(FLERR, "unknown scalar property");
     }
@@ -73,11 +74,11 @@ ScalarProperty * PropertyRegistry::getScalarProperty(string varname)
   return scalars[varname];
 }
 
-VectorProperty * PropertyRegistry::getVectorProperty(string varname)
+VectorProperty * PropertyRegistry::getVectorProperty(string varname,const char *caller)
 {
   if(vectors.find(varname) == vectors.end()) {
     if(vector_creators.find(varname) != vector_creators.end()) {
-      vectors[varname] = (*vector_creators[varname])(*this, "", use_sanity_checks[varname]);
+      vectors[varname] = (*vector_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       error->message(FLERR, "unknown vector property");
     }
@@ -85,11 +86,11 @@ VectorProperty * PropertyRegistry::getVectorProperty(string varname)
   return vectors[varname];
 }
 
-MatrixProperty * PropertyRegistry::getMatrixProperty(string varname)
+MatrixProperty * PropertyRegistry::getMatrixProperty(string varname,const char *caller)
 {
   if(matrices.find(varname) == matrices.end()) {
     if(matrix_creators.find(varname) != matrix_creators.end()) {
-      matrices[varname] = (*matrix_creators[varname])(*this, "", use_sanity_checks[varname]);
+      matrices[varname] = (*matrix_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       error->message(FLERR, "unknown matrix property");
     }
@@ -127,11 +128,11 @@ void PropertyRegistry::registerProperty(string varname, MatrixPropertyCreator cr
   }
 }
 
-void PropertyRegistry::connect(string varname, double ** & variable)
+void PropertyRegistry::connect(string varname, double ** & variable, const char *caller)
 {
   if(matrices.find(varname) == matrices.end()) {
     if(matrix_creators.find(varname) != matrix_creators.end()) {
-      matrices[varname] = (*matrix_creators[varname])(*this, "", use_sanity_checks[varname]);
+      matrices[varname] = (*matrix_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
     }
@@ -139,11 +140,11 @@ void PropertyRegistry::connect(string varname, double ** & variable)
   matrices[varname]->connect(variable);
 }
 
-void PropertyRegistry::connect(string varname, double * & variable)
+void PropertyRegistry::connect(string varname, double * & variable, const char *caller)
 {
   if(vectors.find(varname) == vectors.end()) {
     if(vector_creators.find(varname) != vector_creators.end()) {
-      vectors[varname] = (*vector_creators[varname])(*this, "", use_sanity_checks[varname]);
+      vectors[varname] = (*vector_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
     }
@@ -151,11 +152,11 @@ void PropertyRegistry::connect(string varname, double * & variable)
   vectors[varname]->connect(variable);
 }
 
-void PropertyRegistry::connect(string varname, double & variable)
+void PropertyRegistry::connect(string varname, double & variable, const char *caller)
 {
   if(scalars.find(varname) == scalars.end()) {
     if(scalar_creators.find(varname) != scalar_creators.end()) {
-      scalars[varname] = (*scalar_creators[varname])(*this, "", use_sanity_checks[varname]);
+      scalars[varname] = (*scalar_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
     }
@@ -165,6 +166,15 @@ void PropertyRegistry::connect(string varname, double & variable)
 
 void PropertyRegistry::init()
 {
+  for(std::map<string,ScalarProperty*>::iterator it = scalars.begin(); it != scalars.end(); ++it) {
+      delete it->second;
+  }
+  for(std::map<string,VectorProperty*>::iterator it = vectors.begin(); it != vectors.end(); ++it) {
+      delete it->second;
+  }
+  for(std::map<string,MatrixProperty*>::iterator it = matrices.begin(); it != matrices.end(); ++it) {
+      delete it->second;
+  }
   scalars.clear();
   vectors.clear();
   matrices.clear();
