@@ -11,6 +11,7 @@ class FixPropertyAtomContact : public Fix {
 
   inline bool has_partner(int,int)
   {
+    return false;
   }
 
   inline void add_partner(int,int,double*)
