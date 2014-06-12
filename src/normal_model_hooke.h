@@ -35,6 +35,7 @@ NORMAL_MODEL(HOOKE,hooke,0)
 #include "force.h"
 #include "update.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   template<typename Style>
@@ -52,7 +53,10 @@ namespace ContactModels
       coeffStc(NULL),
       charVel(0.0),
       viscous(false),
-      tangential_damping(false)
+      tangential_damping(false),
+      limitForce(false),
+      ktToKn(false),
+      displayedSettings(false)
     {
       
     }
@@ -61,6 +65,8 @@ namespace ContactModels
     {
       settings.registerOnOff("viscous", viscous);
       settings.registerOnOff("tangential_damping", tangential_damping, true);
+      settings.registerOnOff("limitForce", limitForce);
+      settings.registerOnOff("ktToKnUser", ktToKn);
     }
 
     inline void connectToProperties(PropertyRegistry & registry) {
@@ -107,6 +113,20 @@ namespace ContactModels
 
       const double sqrtval = sqrt(reff);
 
+      if(!displayedSettings)
+      {
+        displayedSettings = true;
+        /*
+        if(ktToKn)
+            if(0 == comm->me) fprintf(screen," NormalModel<HOOKE>: will use user-modified ktToKn of 2/7.\n");
+        if(tangential_damping)
+            if(0 == comm->me) fprintf(screen," NormalModel<HOOKE>: will apply tangential damping.\n");
+        if(viscous)
+            if(0 == comm->me) fprintf(screen," NormalModel<HOOKE>: will apply damping based on Stokes number.\n");
+        if(limitForce)
+            if(0 == comm->me) fprintf(screen," NormalModel<HOOKE>: will limit normal force.\n");
+        */
+      }
       if (viscous)  {
          // Stokes Number from MW Schmeeckle (2001)
          const double stokes=cdata.meff*cdata.vn/(6.0*M_PI*coeffMu[itype][jtype]*reff*reff);
@@ -118,6 +138,7 @@ namespace ContactModels
 
       double kn = 16./15.*sqrtval*(Yeff[itype][jtype])*pow(15.*meff*charVel*charVel/(16.*sqrtval*Yeff[itype][jtype]),0.2);
       double kt = kn;
+      if(ktToKn) kt *= 0.285714286; //2//7
       const double gamman=sqrt(4.*meff*kn/(1.+(M_PI/coeffRestLogChosen)*(M_PI/coeffRestLogChosen)));
       const double gammat = tangential_damping ? gamman : 0.0;
 
@@ -127,7 +148,13 @@ namespace ContactModels
 
       const double Fn_damping = -gamman*cdata.vn;
       const double Fn_contact = kn*(cdata.radsum-cdata.r);
-      const double Fn = Fn_damping + Fn_contact;
+      double Fn                         = Fn_damping + Fn_contact;
+
+      //limit force to avoid the artefact of negative repulsion force
+      if(limitForce && (Fn<0.0) )
+      {
+          Fn = 0.0;
+      }
       cdata.Fn = Fn;
 
       cdata.kn = kn;
@@ -171,7 +198,11 @@ namespace ContactModels
 
     bool viscous;
     bool tangential_damping;
+    bool limitForce;
+    bool ktToKn;
+    bool displayedSettings;
   };
+}
 }
 #endif // NORMAL_MODEL_HOOKE_H_
 #endif

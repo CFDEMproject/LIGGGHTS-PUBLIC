@@ -53,7 +53,7 @@ namespace LAMMPS_NS
         NUM_WTYPE
     };
 
-    const char *wallString[] =
+    static const char *wallString[] =
     {
         "xplane",
         "yplane",
@@ -63,7 +63,7 @@ namespace LAMMPS_NS
         "zcylinder"
     };
 
-    int numArgs[] =
+    static int numArgs[] =
     {
         1,
         1,
@@ -92,8 +92,8 @@ namespace LAMMPS_NS
      * declaration of choosing functions
      * definitions need to be after ALL definitions of resolveContactTemplate and resolveNeighlistTemplate
      */
-    double chooseContactTemplate(double *x, double r, double *delta, double *param, WallType wType);
-    bool chooseNeighlistTemplate(double *x, double r, double treshold, double *param, WallType wType);
+    inline double chooseContactTemplate(double *x, double r, double *delta, double *param, WallType wType);
+    inline bool chooseNeighlistTemplate(double *x, double r, double treshold, double *param, WallType wType);
 
 /* ---------------------------------------------------------------------- */
 
@@ -184,7 +184,7 @@ namespace LAMMPS_NS
 
 /* ---------------------------------------------------------------------- */
 
-    double chooseContactTemplate(double *x, double r, double *delta, double *param, WallType wType)
+    inline double chooseContactTemplate(double *x, double r, double *delta, double *param, WallType wType)
     {
       //TODO: find a way to create switch statement automatically
       switch(wType){
@@ -206,7 +206,7 @@ namespace LAMMPS_NS
       }
     }
 
-    bool chooseNeighlistTemplate(double *x, double r, double treshold, double *param, WallType wType)
+    inline bool chooseNeighlistTemplate(double *x, double r, double treshold, double *param, WallType wType)
     {
       //TODO: create switch statement automatically
       switch(wType){
@@ -228,7 +228,7 @@ namespace LAMMPS_NS
       }
     }
 
-    int chooseAxis(WallType wType)
+    inline int chooseAxis(WallType wType)
     {
       //TODO: create switch statement automatically
       switch(wType){
@@ -243,7 +243,8 @@ namespace LAMMPS_NS
         return -1;
       }
     }
-    double chooseCalcRadialDistance(double *pos, double *param, double &dx, double &dy, double &dz, WallType wType)
+
+    inline double chooseCalcRadialDistance(double *pos, double *param, double &dx, double &dy, double &dz, WallType wType)
     {
       //TODO: create switch statement automatically
       switch(wType){
@@ -263,7 +264,7 @@ namespace LAMMPS_NS
       }
     }
 
-    int chooseNumArgs(char *style)
+    inline int chooseNumArgs(char *style)
     {
         for(int i = 0; i < NUM_WTYPE; i++)
             if(strcmp(style,wallString[i]) == 0)

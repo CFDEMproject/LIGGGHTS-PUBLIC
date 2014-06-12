@@ -52,8 +52,6 @@ using namespace FixConst;
 #define BIG 1.0e20
 #define NEXCEPT 4       // change when add to exceptions in add_fix()
 
-Fix * create_gran_wall_fix(LAMMPS* lmp, int nargs, char** arg);
-
 /* ---------------------------------------------------------------------- */
 
 Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
@@ -109,7 +107,6 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
 #include "style_fix.h"
 #undef FixStyle
 #undef FIX_CLASS
-  (*fix_map)["wall/gran"] = &create_gran_wall_fix;
 
   // fill map with computes listed in style_compute.h
 
@@ -699,10 +696,6 @@ int Modify::min_reset_ref()
 /* ----------------------------------------------------------------------
    add a new fix or replace one with same ID
 ------------------------------------------------------------------------- */
-
-Fix * create_gran_wall_fix(LAMMPS* lmp, int nargs, char** arg) {
-  return lmp->force->new_granular_wall_fix(nargs, arg);
-}
 
 void Modify::add_fix(int narg, char **arg, char *suffix)
 {

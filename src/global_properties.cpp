@@ -50,7 +50,9 @@ namespace MODEL_PARAMS
   static const char * MAXIMUM_RESTITUTION = "MaximumRestitution";
   static const char * CRITITCAL_STOKES = "CriticalStokes";
   static const char * LIQUID_VOLUME = "liquidVolume";
+  static const char * HISTORY_INDEX = "historyIndex";
   static const char * SURFACE_TENSION = "surfaceTension";
+  static const char * SWITCH_MODEL = "switchModel";
   static const char * CONTACT_ANGLE = "contactAngle";
   static const char * COEFFICIENT_MAX_ELASTIC_STIFFNESS = "coefficientMaxElasticStiffness";
   static const char * COEFFICIENT_ADHESION_STIFFNESS = "coefficientAdhesionStiffness";
@@ -393,6 +395,16 @@ namespace MODEL_PARAMS
   ScalarProperty* createSurfaceTension(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, SURFACE_TENSION, caller);
+  }
+
+  ScalarProperty* createSwitchModel(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createScalarProperty(registry, SWITCH_MODEL, caller);
+  }
+
+  ScalarProperty* createHistoryIndex(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createScalarProperty(registry, HISTORY_INDEX, caller);
   }
 
   VectorProperty * createContactAngle(PropertyRegistry & registry, const char * caller, bool sanity_checks)

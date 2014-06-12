@@ -35,6 +35,7 @@ ROLLING_MODEL(ROLLING_EPSD,epsd,2)
 #include "domain.h"
 #include "math_extra_liggghts.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   using namespace LAMMPS_NS;
@@ -201,6 +202,7 @@ namespace ContactModels
       }
     }
   };
+}
 }
 #endif // ROLLING_MODEL_EPSD_H_
 #endif

@@ -197,7 +197,7 @@ FixPOEMS::FixPOEMS(LAMMPS *lmp, int narg, char **arg) :
 
   //create FixPropertyAtom
   fix_xcm = NULL;
-  fix_segmentOrientation = NULL;
+  fix_orientationEx = NULL;
   
   // create all nbody-length arrays
   nrigid = new int[nbody];
@@ -249,11 +249,11 @@ FixPOEMS::FixPOEMS(LAMMPS *lmp, int narg, char **arg) :
   
   // delete temporary atom map
 //  fprintf(screen, "delete temporary atom map..\n");
-//  if (mapflag) 
-//  {
+  if (mapflag) 
+  {
 //    atom->map_delete();
 //    atom->map_style = 0;
-//  }
+  }
 
   // create POEMS instance 
   poems = new Workspace;
@@ -330,7 +330,7 @@ void FixPOEMS::post_create()
   // see fix_property_atom.cpp for meaning of fixargs 
   if(!fix_xcm)
   {
-        char* fixarg[11];
+        const char* fixarg[11];
         fixarg[0]="xcm";
         fixarg[1]="all";
         fixarg[2]="property/atom";
@@ -342,15 +342,15 @@ void FixPOEMS::post_create()
         fixarg[8]="0.";
 	    fixarg[9]="0.";
 	    fixarg[10]="0.";
-	    fix_xcm = modify->add_fix_property_atom(11,fixarg,style);
+	    fix_xcm = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
   }
-  if(!fix_segmentOrientation)
+  if(!fix_orientationEx)
   {
-        char* fixarg[11];
-        fixarg[0]="segmentOrientation";
+        const char* fixarg[11];
+        fixarg[0]="orientationEx";
         fixarg[1]="all";
         fixarg[2]="property/atom";
-        fixarg[3]="segmentOrientation";
+        fixarg[3]="orientationEx";
         fixarg[4]="vector";
         fixarg[5]="no";
         fixarg[6]="yes";
@@ -358,7 +358,8 @@ void FixPOEMS::post_create()
         fixarg[8]="0.";
 	    fixarg[9]="0.";
 	    fixarg[10]="0.";
-	    fix_segmentOrientation = modify->add_fix_property_atom(11,fixarg,style);
+	    fix_orientationEx = 
+	            modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
   }
 
 }
@@ -367,7 +368,7 @@ void FixPOEMS::post_create()
 
 void FixPOEMS::updatePtrs()
 {
-  double **x = atom->x;
+  //double **x = atom->x;
   int nlocal = atom->nlocal;
   int i, ibody;
 
@@ -386,16 +387,16 @@ void FixPOEMS::updatePtrs()
      //Need to refresh first
      if(njoint)
      {
-           fix_segmentOrientation->array_atom[i][0] = ex_space[ibody][0] ;
-           fix_segmentOrientation->array_atom[i][1] = ex_space[ibody][1] ;
-           fix_segmentOrientation->array_atom[i][2] = ex_space[ibody][2] ;
+           fix_orientationEx->array_atom[i][0] = ex_space[ibody][0] ;
+           fix_orientationEx->array_atom[i][1] = ex_space[ibody][1] ;
+           fix_orientationEx->array_atom[i][2] = ex_space[ibody][2] ;
  
 
-//                fprintf(screen, "i: %d segmentOrientation: %g %g %g \n", 
+//                fprintf(screen, "i: %d orientationEx: %g %g %g \n", 
 //                        i,
-//                        fix_segmentOrientation->array_atom[i][0],
-//                        fix_segmentOrientation->array_atom[i][1],
-//                        fix_segmentOrientation->array_atom[i][2]); 
+//                        fix_orientationEx->array_atom[i][0],
+//                        fix_orientationEx->array_atom[i][1],
+//                        fix_orientationEx->array_atom[i][2]); 
      }
     }
   }
@@ -661,7 +662,7 @@ void FixPOEMS::init()
   for (ibody = 0; ibody < nbody; ibody++)
     for (i = 0; i < 6; i++) sum[ibody][i] = 0.0;
 
-  double ddx,ddy,ddz;
+//  double ddx,ddy,ddz;
 
   for (i = 0; i < nlocal; i++) {
     if (natom2body[i]) {
@@ -682,12 +683,12 @@ void FixPOEMS::init()
         massone = mass[type[i]];		
       }
 
-      ddx = dx*ex_space[ibody][0] + dy*ex_space[ibody][1] + 
-	dz*ex_space[ibody][2];
-      ddy = dx*ey_space[ibody][0] + dy*ey_space[ibody][1] +
-	dz*ey_space[ibody][2];
-      ddz = dx*ez_space[ibody][0] + dy*ez_space[ibody][1] +
-	dz*ez_space[ibody][2];
+//      ddx = dx*ex_space[ibody][0] + dy*ex_space[ibody][1] + 
+//	dz*ex_space[ibody][2];
+//      ddy = dx*ey_space[ibody][0] + dy*ey_space[ibody][1] +
+//	dz*ey_space[ibody][2];
+//      ddz = dx*ez_space[ibody][0] + dy*ez_space[ibody][1] +
+//	dz*ez_space[ibody][2];
 
 //HARDCODE
 	float radius=0.05;
@@ -724,7 +725,7 @@ void FixPOEMS::init()
 
   // find fix and assign values
   fix_xcm = static_cast<FixPropertyAtom*>(modify->find_fix_property("xcm","property/atom","vector",0,0,style));
-  fix_segmentOrientation= static_cast<FixPropertyAtom*>(modify->find_fix_property("segmentOrientation","property/atom","vector",0,0,style));
+  fix_orientationEx= static_cast<FixPropertyAtom*>(modify->find_fix_property("orientationEx","property/atom","vector",0,0,style));
 
 }
 
@@ -832,7 +833,7 @@ void FixPOEMS::setup(int vflag)
 		    njoint,jointbody,xjoint,nfree,freelist,
 		    dthalf,dtv,force->ftm2v,total_ke);
 
-   int currAtom=1;
+  // int currAtom=1;
 /*   fprintf(screen, "masstotal: %g, currAtom: %d xcm %g %g %g,vcm %g %g %g ,omega %g %g %g, xjoint  %g %g %g\n",
 		     masstotal[currAtom], currAtom,
              xcm[currAtom][0], xcm[currAtom][1], xcm[currAtom][2],
@@ -1107,12 +1108,14 @@ void FixPOEMS::readfile(char *file)
     if (ptr == NULL || ptr[0] == '#') continue;
     ptr = strtok(NULL," ,\t\n\0");
 
-    while (ptr = strtok(NULL," ,\t\n\0")) { //FIXME?
+    while (ptr) 
+    { //FIXME?
       id = atoi(ptr);
       i = atom->map(id);
       if (i < 0 || i >= nlocal) continue;
       if (natom2body[i] < MAXBODY) atom2body[i][natom2body[i]] = nbody;
       natom2body[i]++;
+      ptr = strtok(NULL," ,\t\n\0");
     }
     nbody++;
   }
@@ -1156,7 +1159,7 @@ int FixPOEMS::readline(FILE *fp, char **pline, int *pmaxline)
 void FixPOEMS::jointbuild()
 {
 
-  int i,j;
+  int i; //,j;
 
   //WE DONT WANT JOINT ATOMS; RATHER JOINTS
   // convert atom2body into list of joint atoms on this proc
@@ -1164,7 +1167,7 @@ void FixPOEMS::jointbuild()
   // an atom in N rigid bodies, infers N-1 joints between 1st body and others
   // mylist = [0],[1] = 2 body indices, [2] = global ID of joint atom
   double **x = atom->x;
-  int *tag = atom->tag;
+//  int *tag = atom->tag;
   int nlocal = atom->nlocal;
  
   int local_cpu_joint = nlocal-1; //HARDCODE: number of joints on this CPU

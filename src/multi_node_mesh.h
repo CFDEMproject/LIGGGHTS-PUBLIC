@@ -92,6 +92,9 @@ namespace LAMMPS_NS
         inline bool isMoving()
         { return nMove_ > 0; }
 
+        inline int nMove()
+        { return nMove_; }
+
         inline bool isScaling()
         { return nScale_ > 0; }
 

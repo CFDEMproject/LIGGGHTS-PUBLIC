@@ -22,9 +22,7 @@
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
-
-// this class cannot be instantiated
-
+FixStyle(wall/gran,FixWallGran)
 #else
 
 #ifndef LMP_FIX_WALL_GRAN_H
@@ -32,12 +30,17 @@
 
 #include "fix_mesh_surface.h"
 #include "contact_interface.h"
+#include "granular_wall.h"
+#include <string>
+#include <vector>
+#include "fix_contact_property_atom_wall.h"
+#include "compute_pair_gran_local.h"
+
+namespace LCM = LIGGGHTS::ContactModels;
 
 namespace LAMMPS_NS {
-using namespace ContactModels;
 
-class FixWallGran : public Fix, public IContactHistorySetup {
-
+class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
  public:
   FixWallGran(class LAMMPS *, int, char **);
   ~FixWallGran();
@@ -49,12 +52,12 @@ class FixWallGran : public Fix, public IContactHistorySetup {
   virtual void pre_delete(bool unfixflag);
   virtual void init();
   virtual void setup(int vflag);
-  void post_force(int vflag);
-  void post_force_pgl();
-  void post_force_respa(int, int, int);
+  virtual void post_force(int vflag);
+  virtual void post_force_pgl();
+  virtual void post_force_respa(int, int, int);
 
-  int min_type();
-  int max_type();
+  virtual int min_type();
+  virtual int max_type();
 
   /* PUBLIC ACCESS FUNCTIONS */
 
@@ -87,7 +90,12 @@ class FixWallGran : public Fix, public IContactHistorySetup {
   { return atom_type_wall_; }
 
   inline bool is_mesh_wall()
-  { return meshwall_ == 1; }
+  { return 1 == meshwall_; }
+
+  inline bool store_force_contact()
+  { return store_force_contact_; }
+
+  class PrimitiveWall* primitiveWall();
 
   int n_contacts_all();
   int n_contacts_all(int);
@@ -95,8 +103,53 @@ class FixWallGran : public Fix, public IContactHistorySetup {
   int n_contacts_local(int);
   int is_moving();
 
-  void register_compute_wall_local(class ComputePairGranLocal *,int&);
-  void unregister_compute_wall_local(class ComputePairGranLocal *ptr);
+  void register_compute_wall_local(ComputePairGranLocal *,int&);
+  void unregister_compute_wall_local(ComputePairGranLocal *ptr);
+
+  ComputePairGranLocal * compute_pair_gran_local() {
+    return cwl_;
+  }
+
+  int addflag() const {
+    return addflag_;
+  }
+
+  int body(int i) {
+    return body_[i];
+  }
+
+  double masstotal(int i) {
+    return masstotal_[i];
+  }
+
+  class FixRigid *fix_rigid() {
+    return fix_rigid_;
+  }
+
+  void add_contactforce_wall(int ip, const LCM::ForceData & i_forces)
+  {
+    // add to fix wallforce contact
+    // always add 0 as ID
+    double forces_torques_i[6];
+
+    if(!fix_wallforce_contact_->has_partner(ip,0))
+    {
+      vectorCopy3D(i_forces.delta_F,&(forces_torques_i[0]));
+      vectorCopy3D(i_forces.delta_torque,&(forces_torques_i[3]));
+      fix_wallforce_contact_->add_partner(ip,0,forces_torques_i);
+    }
+  }
+
+  void cwl_add_wall_2(const LCM::CollisionData & cdata, const LCM::ForceData & i_forces)
+  {
+    const double fx = i_forces.delta_F[0];
+    const double fy = i_forces.delta_F[1];
+    const double fz = i_forces.delta_F[2];
+    const double tor1 = i_forces.delta_torque[0]*cdata.area_ratio;
+    const double tor2 = i_forces.delta_torque[1]*cdata.area_ratio;
+    const double tor3 = i_forces.delta_torque[2]*cdata.area_ratio;
+    cwl_->add_wall_2(cdata.i,fx,fy,fz,tor1,tor2,tor3,cdata.contact_history,cdata.rsq);
+  }
 
  protected:
 
@@ -106,7 +159,7 @@ class FixWallGran : public Fix, public IContactHistorySetup {
   int computeflag_;
 
   int addflag_;
-  class ComputePairGranLocal *cwl_;
+  ComputePairGranLocal *cwl_;
 
   double dt_;
   int shearupdate_;
@@ -119,8 +172,12 @@ class FixWallGran : public Fix, public IContactHistorySetup {
   { r0_ = _r0; }
 
   virtual void init_granular() {}
+
+  // heat transfer
   void init_heattransfer();
   bool heattransfer_flag_;
+  // model for contact area calculation
+  int area_calculation_mode_;
 
   // mesh and primitive force implementations
   virtual void post_force_mesh(int);
@@ -128,7 +185,7 @@ class FixWallGran : public Fix, public IContactHistorySetup {
 
   // virtual functions that allow implementation of the
   // actual physics in the derived classes
-  virtual void compute_force(CollisionData & cdata, double *vwall) = 0;
+  virtual void compute_force(LCM::CollisionData & cdata, double *vwall);
   void addHeatFlux(class TriMesh *mesh,int i,double rsq,double area_ratio);
 
   // sets flag that neigh list shall be built
@@ -140,8 +197,6 @@ class FixWallGran : public Fix, public IContactHistorySetup {
   // references to mesh walls
   int n_FixMesh_;
   class FixMeshSurface **FixMesh_list_;
-
-  // pair style, fix rigid for correct damping
   class FixRigid *fix_rigid_;
   int *body_;
   double *masstotal_;
@@ -151,12 +206,17 @@ class FixWallGran : public Fix, public IContactHistorySetup {
   class FixPropertyAtom *fppa_hf;
 
   double Temp_wall;
+  double fixed_contact_area_;
   double Q,Q_add;
 
   const double *th_cond;
   double const* const* deltan_ratio;
 
- private:
+  LIGGGHTS::Walls::IGranularWall * impl;
+
+  // per-contact force storage
+  bool store_force_contact_;
+  class FixContactPropertyAtomWall *fix_wallforce_contact_;
 
   int nlevels_respa_;
 
@@ -191,9 +251,9 @@ class FixWallGran : public Fix, public IContactHistorySetup {
   // max neigh cutoff - as in Neighbor
   double cutneighmax_;
 
-  void post_force_wall(int vflag);
+  virtual void post_force_wall(int vflag);
 
-  inline void post_force_eval_contact(CollisionData & cdata, double * v_wall, int iMesh = -1, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
+  inline void post_force_eval_contact(LCM::CollisionData & cdata, double * v_wall, int iMesh = -1, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
 };
 
 }

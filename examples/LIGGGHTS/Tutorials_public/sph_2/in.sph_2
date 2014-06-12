@@ -45,8 +45,13 @@ group         wall  type 2
 
 neighbor      ${skin} bin
 
-fix 		      m1 all property/global speedOfSound peratomtype 20. 20.
+fix           m1 all property/global speedOfSound peratomtype 20. 20.
 fix           m2 all property/global sl peratomtype $h $h
+fix           m3 all property/global artViscAlpha peratomtype 4.1666e-3 4.1666e-3
+fix           m4 all property/global artViscBeta peratomtype 0. 0.
+fix           m5 all property/global artViscEta  scalar ${eta}
+fix           m6 all property/global tensCorrEpsilon scalar 0.2
+fix           m7 all property/global tensCorrDeltaP peratomtype ${lat} ${lat}
 
 #sph pair style
 # mhu = 1e-3 (water) ~ alpha * cAB * h
@@ -54,7 +59,7 @@ fix           m2 all property/global sl peratomtype $h $h
 # pair_style    sph kernel_style h [artVisc alpha beta cAB eta] [tensCorr epsilon]
 # artifical viscosity [Monaghan and Gingold (1983)] and tensile correction [Monaghan (2000)]
 
-pair_style 	  sph/artVisc/tensCorr cubicspline2d $h artVisc 4.1666e-3 0. ${eta} tensCorr 0.2 ${lat}
+pair_style 	  sph/artVisc/tensCorr cubicspline2d $h artVisc tensCorr
 #pair_coeff	  1 1 sph/artVisc/tensCorr
 #pair_coeff    1 2 sph/artVisc/tensCorr
 #pair_coeff    2 2 none

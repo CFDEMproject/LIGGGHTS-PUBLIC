@@ -124,7 +124,8 @@ void FixHeatGran::updatePtrs(){
 
 /* ---------------------------------------------------------------------- */
 
-void FixHeatGran::init(){
+void FixHeatGran::init()
+{
 
   if (!atom->radius_flag || !atom->rmass_flag)
     error->all(FLERR,"Please use a granular atom style for fix heat/gran");

@@ -35,6 +35,7 @@ TANGENTIAL_MODEL(TANGENTIAL_HISTORY,history,1)
 #include "global_properties.h"
 #include "atom.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   template<typename Style>
@@ -167,6 +168,7 @@ namespace ContactModels
     inline void beginPass(CollisionData&, ForceData&, ForceData&){}
     inline void endPass(CollisionData&, ForceData&, ForceData&){}
   };
+}
 }
 #endif // TANGENTIAL_MODEL_HISTORY_H_
 #endif

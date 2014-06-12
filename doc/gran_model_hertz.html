@@ -19,7 +19,10 @@
 </PRE>
 <LI>zero or more keyword/value pairs may be appended 
 
-<PRE>  <I>tangential_damping</I> values = 'on' or 'off'
+<PRE>  <I>limitForce</I> values = 'on' or 'off'
+    on = ensures that the normal force is never attractive (an artefact that can occur at the end of a collision).
+    off = standard implementation that might lead to attractive forces.
+  <I>tangential_damping</I> values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping 
 </PRE>
@@ -92,20 +95,26 @@ fix id all property/global coefficientFriction peratomtypepair n_atomtypes value
 </PRE>
 <P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 </P>
-<P><B>Restrictions:</B>
+<P><B>Force Limiting:</B>
+</P>
+<P>Note, that not using limitForce might lead to attractive forces between particles and walls, especially in case the coefficient of restitution is small. Be sure you include this key word for the pair style and the wall model if you like to avoid this.
+<B>Restrictions:</B>
 </P>
 <P>If using SI units, youngsModulus must be > 5e6
 If using CGS units, youngsModulus must be > 5e5
+When using the limitForce, the specified coefficient of restitution is only approximate. This might become problematic for low coefficients of resitution as showin in Schwager and Poschel.
 </P>
 <P><B>Default:</B> 
 </P>
 <P><I>tangential_damping</I> = 'on'
+<I>limitForce</I> = 'off'
 </P>
 <P><B>(Di Renzo)</B> Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525–541 (2004).
 </P>
 <P><B>(Ai)</B> Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
 </P>
 <P><B>(Brilliantov)</B> Brilliantov, Spahn, Hertzsch, Poschel, Phys Rev E, 53, p 5382-5392 (1996).
+<B>(Schwager)</B> Schwager, Poschel, Gran Matt, 9, p 465-469 (2007).
 </P>
 <P><B>(Silbert)</B> Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
 </P>

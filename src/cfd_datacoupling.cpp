@@ -372,6 +372,34 @@ void* CfdDatacoupling::find_property(int, const char *name, const char *type, in
            return (void*) static_cast<FixPropertyGlobal*>(fix)->array;
        }
     }
+    else if(strcmp(name,"ex") == 0) 
+    {
+        // possiblility 4A - Dipole is specified as atom property (requires DIPOLE package)
+        ptr = atom->extract("mu",len2); 
+        printf("len2 of mu: %d \n", len2);
+        if(ptr)
+        {
+            len1 = atom->tag_max();
+            // check if length correct
+            if( (strcmp(type,"vector-atom") == 0) && (len2 != 3) )
+                return NULL;
+            return ptr;
+        }
+        
+        // possiblility 4B - Quaternion is specified as atom property (requires ASPHERE package)
+        // requires a fix that computes orientation data from quaternion,
+        // or another fix that provides orientationEx (e.g., from POEMS)
+        //TODO: Write fix that computes orientation from quaternion
+        //TODO: Check if correct data is drawn in case a FixPOEMS is used
+        fix = modify->find_fix_property("orientationEx","property/atom","vector",0,0,"cfd coupling",false);
+        if(fix)
+        {
+               len1 = atom->tag_max();
+               len2 = 3;
+               return (void*) static_cast<FixPropertyAtom*>(fix)->array_atom;
+        }
+        else printf("WARNING: Fix with name 'orientationEx' not found that stores orientation information. \n");
+    }
     return NULL;
 }
 

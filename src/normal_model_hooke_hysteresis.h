@@ -36,6 +36,7 @@ NORMAL_MODEL(HOOKE_HYSTERESIS,hooke/hysteresis,2)
 #include "update.h"
 #include "global_properties.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   template<typename Style>
@@ -50,6 +51,7 @@ namespace ContactModels
         phiF(NULL)
     {
       history_offset = hsetup->add_history_value("deltaMax", "1");
+      
     }
 
     inline void registerSettings(Settings & settings){
@@ -186,6 +188,7 @@ namespace ContactModels
     double **phiF;
     int history_offset;
   };
+}
 }
 #endif // NORMAL_MODEL_HOOKE_HYSTERESIS_H_
 #endif

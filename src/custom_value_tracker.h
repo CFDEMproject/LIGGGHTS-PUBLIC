@@ -44,7 +44,7 @@ namespace LAMMPS_NS
         // per-element properties
 
         template<typename T>
-        T* addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower = 1);
+        T* addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower = 1, int _init_len = 0);
 
         template<typename T>
         T* getElementProperty(const char *_id);

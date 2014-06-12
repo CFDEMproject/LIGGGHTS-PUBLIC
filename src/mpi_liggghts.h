@@ -39,165 +39,92 @@ namespace LAMMPS_NS
 template<typename T>
 inline MPI_Datatype mpi_type()
 {
-    printf("**************ILLEGAL CALL TO mpi_type()*************");
-    return 0;
+  printf("**************ILLEGAL CALL TO mpi_type()*************");
+  return 0;
 }
 
 template<>
 inline MPI_Datatype mpi_type<double>()
 {
-    return MPI_DOUBLE;
+  return MPI_DOUBLE;
 }
 
 template<>
 inline MPI_Datatype mpi_type<int>()
 {
-    return MPI_INT;
+  return MPI_INT;
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Sum_Vector(double *vector,int len, MPI_Comm comm)
+template<typename T>
+inline void MPI_Sum_Vector(T* vector, int len, MPI_Comm comm)
 {
-    double *vector_all = new double [len];
-    MPI_Allreduce(vector,vector_all,len,MPI_DOUBLE,MPI_SUM,comm);
-    for(int i = 0; i < len; i++) vector[i] = vector_all[i];
-    delete []vector_all;
+  MPI_Allreduce(MPI_IN_PLACE, vector, len, mpi_type<T>(), MPI_SUM, comm);
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Sum_Scalar(double &scalar,MPI_Comm comm)
+template<typename T>
+inline void MPI_Sum_Scalar(T& scalar, MPI_Comm comm)
 {
-    double scalar_all;
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_DOUBLE,MPI_SUM,comm);
-    scalar = scalar_all;
+  MPI_Allreduce(MPI_IN_PLACE, &scalar, 1, mpi_type<T>(), MPI_SUM, comm);
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Sum_Scalar(double &scalar,double &scalar_all,MPI_Comm comm)
+template<typename T>
+inline void MPI_Sum_Scalar(T& scalar, T& scalar_all, MPI_Comm comm)
 {
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_DOUBLE,MPI_SUM,comm);
+  MPI_Allreduce(&scalar, &scalar_all, 1, mpi_type<T>(), MPI_SUM, comm);
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Sum_Vector(int *vector,int len,MPI_Comm comm)
+template<typename T>
+inline void MPI_Min_Scalar(T& scalar, MPI_Comm comm)
 {
-    int *vector_all = new int [len];
-    MPI_Allreduce(vector,vector_all,len,MPI_INT,MPI_SUM,comm);
-    for(int i = 0; i < len; i++) vector[i] = vector_all[i];
-    delete []vector_all;
+  MPI_Allreduce(MPI_IN_PLACE, &scalar, 1, mpi_type<T>(), MPI_MIN, comm);
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Sum_Scalar(int &scalar,MPI_Comm comm)
+template<typename T>
+inline void MPI_Min_Scalar(T scalar, T& scalar_all, MPI_Comm comm)
 {
-    int scalar_all;
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_INT,MPI_SUM,comm);
-    scalar = scalar_all;
+  MPI_Allreduce(&scalar, &scalar_all, 1, mpi_type<T>(), MPI_MIN, comm);
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Sum_Scalar(int &scalar,int &scalar_all,MPI_Comm comm)
+template<typename T>
+inline void MPI_Max_Scalar(T& scalar, MPI_Comm comm)
 {
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_INT,MPI_SUM,comm);
+  MPI_Allreduce(MPI_IN_PLACE, &scalar, 1, mpi_type<T>(), MPI_MAX, comm);
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Min_Scalar(double &scalar,MPI_Comm comm)
+template<typename T>
+inline void MPI_Max_Scalar(T scalar, T& scalar_all, MPI_Comm comm)
 {
-    double scalar_all;
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_DOUBLE,MPI_MIN,comm);
-    scalar = scalar_all;
-}
-/* ---------------------------------------------------------------------- */
-
-inline void MPI_Min_Scalar(double scalar, double &scalar_all,MPI_Comm comm)
-{
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_DOUBLE,MPI_MIN,comm);
+  MPI_Allreduce(&scalar, &scalar_all, 1, mpi_type<T>(), MPI_MAX, comm);
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Max_Scalar(double &scalar,MPI_Comm comm)
+template<typename T>
+inline void MPI_Max_Vector(T *vector, int len, MPI_Comm comm)
 {
-    double scalar_all;
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_DOUBLE,MPI_MAX,comm);
-    scalar = scalar_all;
+  MPI_Allreduce(MPI_IN_PLACE, vector, len, mpi_type<T>(), MPI_MAX, comm);
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void MPI_Max_Scalar(double scalar, double &scalar_all,MPI_Comm comm)
+template<typename T>
+inline void MPI_Min_Vector(T* vector, int len, MPI_Comm comm)
 {
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_DOUBLE,MPI_MAX,comm);
-}
-
-/* ---------------------------------------------------------------------- */
-
-inline void MPI_Min_Scalar(int &scalar,MPI_Comm comm)
-{
-    int scalar_all;
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_INT,MPI_MIN,comm);
-    scalar = scalar_all;
-}
-
-/* ---------------------------------------------------------------------- */
-
-inline void MPI_Min_Scalar(int scalar, int &scalar_all,MPI_Comm comm)
-{
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_INT,MPI_MIN,comm);
-}
-
-/* ---------------------------------------------------------------------- */
-
-inline void MPI_Max_Scalar(int &scalar,MPI_Comm comm)
-{
-    int scalar_all;
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_INT,MPI_MAX,comm);
-    scalar = scalar_all;
-}
-
-/* ---------------------------------------------------------------------- */
-
-inline void MPI_Max_Scalar(int scalar, int &scalar_all,MPI_Comm comm)
-{
-    MPI_Allreduce(&scalar,&scalar_all,1,MPI_INT,MPI_MAX,comm);
-}
-
-/* ---------------------------------------------------------------------- */
-
-inline void MPI_Max_Vector(double *vector,int len,MPI_Comm comm)
-{
-    double *vector_all = new double[len];
-    MPI_Allreduce(vector,vector_all,len,MPI_DOUBLE,MPI_MAX,comm);
-    for(int i = 0; i < len; i++) vector[i] = vector_all[i];
-    delete []vector_all;
-}
-
-/* ---------------------------------------------------------------------- */
-
-inline void MPI_Max_Vector(int *vector,int len,MPI_Comm comm)
-{
-    int *vector_all = new int[len];
-    MPI_Allreduce(vector,vector_all,len,MPI_INT,MPI_MAX,comm);
-    for(int i = 0; i < len; i++) vector[i] = vector_all[i];
-    delete []vector_all;
-}
-
-/* ---------------------------------------------------------------------- */
-
-inline void MPI_Min_Vector(int *vector,int len,MPI_Comm comm)
-{
-    int *vector_all = new int[len];
-    MPI_Allreduce(vector,vector_all,len,MPI_INT,MPI_MIN,comm);
-    for(int i = 0; i < len; i++) vector[i] = vector_all[i];
-    delete []vector_all;
+  MPI_Allreduce(MPI_IN_PLACE, vector, len, mpi_type<T>(), MPI_MIN, comm);
 }
 
 /* ---------------------------------------------------------------------- */

@@ -94,7 +94,7 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   // since don't know a priori which are invoked via variables by this fix
   // once in end_of_step() can set timestep for ones actually invoked
 
-  int nfirst = (update->ntimestep/nevery)*nevery + nevery;
+  bigint nfirst = (update->ntimestep/nevery)*nevery + nevery;
   modify->addstep_compute_all(nfirst);
 }
 

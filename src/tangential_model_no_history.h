@@ -34,6 +34,7 @@ TANGENTIAL_MODEL(TANGENTIAL_NO_HISTORY,no_history,0)
 #include "math.h"
 #include "global_properties.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   using namespace std;
@@ -48,6 +49,7 @@ namespace ContactModels
 
     TangentialModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp), coeffFrict(NULL)
     {
+      
     }
 
     inline void registerSettings(Settings&){}
@@ -113,6 +115,7 @@ namespace ContactModels
     inline void endPass(CollisionData&, ForceData&, ForceData&){}
     inline void noCollision(ContactData&, ForceData&, ForceData&){}
   };
+}
 }
 #endif // TANGENTIAL_MODEL_NO_HISTORY_H_
 #endif

@@ -54,7 +54,7 @@ class FixPOEMS : public Fix  {
 
  protected:
   class FixPropertyAtom* fix_xcm;
-  class FixPropertyAtom* fix_segmentOrientation;
+  class FixPropertyAtom* fix_orientationEx;
 
  private:
   bool mydebug;

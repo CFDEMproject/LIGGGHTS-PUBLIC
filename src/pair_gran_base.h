@@ -32,15 +32,20 @@
 #include "pair_gran.h"
 #include "neighbor.h"
 #include "neigh_list.h"
-#include "fix_property_atom_contact.h"
+#include "fix_contact_property_atom.h"
 #include "os_specific.h"
 
-namespace LAMMPS_NS
-{
+#include "granular_pair_style.h"
+
+namespace LIGGGHTS {
 using namespace ContactModels;
 
+namespace PairStyles {
+
+using namespace LAMMPS_NS;
+
 template<typename ContactModel>
-class PairGranBase : public PairGran {
+class Granular : private Pointers, public IGranularPairStyle {
   CollisionData * aligned_cdata;
   ForceData * aligned_i_forces;
   ForceData * aligned_j_forces;
@@ -54,18 +59,15 @@ class PairGranBase : public PairGran {
     }
   }
 
-protected:
-  virtual bool forceoff(){ return false; }
-
 public:
-  PairGranBase(class LAMMPS * lmp) : PairGran(lmp),
+  Granular(class LAMMPS * lmp, PairGran* parent) : Pointers(lmp),
     aligned_cdata(aligned_malloc<CollisionData>(32)),
     aligned_i_forces(aligned_malloc<ForceData>(32)),
     aligned_j_forces(aligned_malloc<ForceData>(32)),
-    cmodel(lmp, this) {
+    cmodel(lmp, parent) {
   }
 
-  virtual ~PairGranBase() {
+  virtual ~Granular() {
     aligned_free(aligned_cdata);
     aligned_free(aligned_i_forces);
     aligned_free(aligned_j_forces);
@@ -99,7 +101,8 @@ public:
     int me = comm->me;
     int64_t hashcode = -1;
     if(me == 0){
-      fread(&hashcode, sizeof(int64_t), 1, fp);
+      size_t dummy = fread(&hashcode, sizeof(int64_t), 1, fp);
+      UNUSED(dummy);
       // sanity check
       if(hashcode != ContactModel::STYLE_HASHCODE)
         error->all(FLERR,"wrong pair style loaded!");
@@ -111,12 +114,12 @@ public:
     return cmodel.stressStrainExponent();
   }
 
-  virtual void compute_force(int eflag, int vflag, int addflag)
+  virtual void compute_force(PairGran * pg, int eflag, int vflag, int addflag)
   {
     if (eflag || vflag)
-      ev_setup(eflag, vflag);
+      pg->ev_setup(eflag, vflag);
     else
-      evflag = vflag_fdotr = 0;
+      pg->evflag = pg->vflag_fdotr = 0;
 
     double **x = atom->x;
     double **v = atom->v;
@@ -131,15 +134,17 @@ public:
     int nlocal = atom->nlocal;
     const int newton_pair = force->newton_pair;
 
-    int inum = list->inum;
-    int * ilist = list->ilist;
-    int * numneigh = list->numneigh;
+    int inum = pg->list->inum;
+    int * ilist = pg->list->ilist;
+    int * numneigh = pg->list->numneigh;
 
-    int ** firstneigh = list->firstneigh;
-    int ** firsttouch = listgranhistory ? listgranhistory->firstneigh : NULL;
-    double ** firstshear = listgranhistory ? listgranhistory->firstdouble : NULL;
+    int ** firstneigh = pg->list->firstneigh;
+    int ** firsttouch = pg->listgranhistory ? pg->listgranhistory->firstneigh : NULL;
+    double ** firstshear = pg->listgranhistory ? pg->listgranhistory->firstdouble : NULL;
 
-    const int dnum = PairGran::dnum();
+    const int dnum = pg->dnum();
+    const bool store_contact_forces = pg->storeContactForces();
+    const int freeze_group_bit = pg->freeze_group_bit();
 
     // clear data, just to be safe
     memset(aligned_cdata, 0, sizeof(CollisionData));
@@ -151,8 +156,8 @@ public:
     ForceData & i_forces = *aligned_i_forces;
     ForceData & j_forces = *aligned_j_forces;
     cdata.is_wall = false;
-    cdata.computeflag = computeflag;
-    cdata.shearupdate = shearupdate;
+    cdata.computeflag = pg->computeflag();
+    cdata.shearupdate = pg->shearupdate();
 
     cmodel.beginPass(cdata, i_forces, j_forces);
 
@@ -218,7 +223,8 @@ public:
             mi = mass[itype];
             mj = mass[jtype];
           }
-          if (fix_rigid) {
+          if (pg->fr_pair()) {
+            const double * mass_rigid = pg->mr_pair();
             if (mass_rigid[i] > 0.0) mi = mass_rigid[i];
             if (mass_rigid[j] > 0.0) mj = mass_rigid[j];
           }
@@ -257,7 +263,7 @@ public:
         }
 
         if(cdata.has_force_update) {
-          if (computeflag) {
+          if (cdata.computeflag) {
             force_update(f[i], torque[i], i_forces);
 
             if(newton_pair || j < nlocal) {
@@ -265,27 +271,27 @@ public:
             }
           }
 
-          if (cpl && addflag)
-            cpl_add_pair(cdata, i_forces);
+          if (pg->cpl() && addflag)
+            pg->cpl_add_pair(cdata, i_forces);
 
-          if (evflag)
-            Pair::ev_tally_xyz(i, j, nlocal, newton_pair, 0.0, 0.0,i_forces.delta_F[0],i_forces.delta_F[1],i_forces.delta_F[2],cdata.delta[0],cdata.delta[1],cdata.delta[2]);
+          if (pg->evflag)
+            pg->ev_tally_xyz(i, j, nlocal, newton_pair, 0.0, 0.0,i_forces.delta_F[0],i_forces.delta_F[1],i_forces.delta_F[2],cdata.delta[0],cdata.delta[1],cdata.delta[2]);
 
           if (store_contact_forces)
           {
             double forces_torques_i[6],forces_torques_j[6];
 
-            if(!fix_contact_forces->has_partner(i,atom->tag[j]))
+            if(!pg->fix_contact_forces()->has_partner(i,atom->tag[j]))
             {
                 vectorCopy3D(i_forces.delta_F,&(forces_torques_i[0]));
                 vectorCopy3D(i_forces.delta_torque,&(forces_torques_i[3]));
-                fix_contact_forces->add_partner(i,atom->tag[j],forces_torques_i);
+                pg->fix_contact_forces()->add_partner(i,atom->tag[j],forces_torques_i);
             }
-            if(!fix_contact_forces->has_partner(j,atom->tag[i]))
+            if(!pg->fix_contact_forces()->has_partner(j,atom->tag[i]))
             {
                 vectorCopy3D(j_forces.delta_F,&(forces_torques_j[0]));
                 vectorCopy3D(j_forces.delta_torque,&(forces_torques_j[3]));
-                fix_contact_forces->add_partner(j,atom->tag[i],forces_torques_j);
+                pg->fix_contact_forces()->add_partner(j,atom->tag[i],forces_torques_j);
             }
           }
         }
@@ -295,8 +301,11 @@ public:
     cmodel.endPass(cdata, i_forces, j_forces);
 
     if(store_contact_forces)
-        fix_contact_forces->do_forward_comm();
+        pg->fix_contact_forces()->do_forward_comm();
   }
 };
+
+}
+
 }
 #endif /* PAIR_GRAN_BASE_H_ */

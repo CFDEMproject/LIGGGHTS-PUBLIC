@@ -42,7 +42,7 @@ NEW: fix ID group-ID wall/gran {MODEL-SELECTION} {WALL-OPTIONS} {MODEL-SETTINGS}
 
 MODEL-SELECTION :h3
 {MODEL-SELECTION} = model {M} \[tangential {T}\] \[cohesion {C}\] \[rolling_friction {R}\] :pre
-{M} = hooke | hooke_stiffness | hooke_hysteresis | hertz | hertz_stiffness :pre
+{M} = hooke | hooke/stiffness | hooke/hysteresis | hertz | hertz/stiffness :pre
 {T} = [no_history] | history :pre
 {C} = [off] | sjkr | sjkr2 | hamaker :pre
 {R} = [off] | cdt | epsd :pre

@@ -51,6 +51,7 @@ FixNeighlistMesh::FixNeighlistMesh(LAMMPS *lmp, int narg, char **arg)
   fix_nneighs_name_(0),
   buildNeighList(false),
   numAllContacts_(0),
+  globalNumAllContacts_(false),
   mbinx(0),
   mbiny(0),
   mbinz(0),
@@ -97,7 +98,7 @@ void FixNeighlistMesh::post_create()
         fixarg[2]="property/atom";
         fixarg[3]=fix_nneighs_name_;
         fixarg[4]="scalar"; // 1 vector per particle to be registered
-        fixarg[5]="no";    // restart
+        fixarg[5]="yes";    // restart - REQUIRED!
         fixarg[6]="no";     // communicate ghost
         fixarg[7]="no";     // communicate rev
         fixarg[8]="0.";
@@ -250,7 +251,9 @@ void FixNeighlistMesh::pre_force(int)
       numAllContacts_ += triangle.contacts.size();
     }
 
-    MPI_Sum_Scalar(numAllContacts_,world);
+    if(globalNumAllContacts_) {
+      MPI_Sum_Scalar(numAllContacts_,world);
+    }
 }
 
 /* ---------------------------------------------------------------------- */

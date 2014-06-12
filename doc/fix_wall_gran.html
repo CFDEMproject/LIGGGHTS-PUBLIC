@@ -21,15 +21,13 @@
 
 <LI>style = <I>wall/gran</I> 
 
-<LI>zero or more model_keyword/value pairs may be appended 
+<LI>zero or more model_keyword/value pairs may be appended. They must be appended in the following order 
 
 <PRE>  <I>model</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>tangential</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>rolling_friction</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>cohesion</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>surface</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>temperature</I> value = T0
-    T0 = Temperature of the wall (temperature units) 
+  <I>surface</I> values = described <A HREF = "Section_gran_models.html">here</A> 
 </PRE>
 <LI>wallstyle = <I>mesh</I> or <I>primitive</I> 
 
@@ -56,10 +54,13 @@
 
 <PRE>  <I>shear</I> values = dim vshear
     dim = <I>x</I> or <I>y</I> or <I>z</I>
-    vshear = magnitude of shear velocity (velocity units) 
-</PRE>
+    vshear = magnitude of shear velocity (velocity units)
+  <I>temperature</I> value = T0
+    T0 = Temperature of the wall (temperature units) 
+  <I>contact_area</I> values = 'overlap' or 'constant <B>value</B>' or 'projection'
   <I>store_force</I> value = 'yes' or 'no'
-    yes, no = determines if the wall force exerted on the particles is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID) is the id of the fix wall/gran command. 
+    yes, no = determines if the wall force exerted on the particles is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID) is the id of the fix wall/gran command.  
+</PRE>
 
 </UL>
 <P><B>Examples:</B>
@@ -128,9 +129,11 @@ or <I>angular_velocity</I> in <A HREF = "fix_mesh_surface.html">fix mesh/surface
 </P>
 <P>The keyword <I>temperature</I> is used to assign a constant temperature to the wall.
 This setting gets effective in conjunction with heat conduction via
-<A HREF = "fix_heat_gran.html">fix heat/gran</A>. For <I>wallstyle mesh</I>, the value
+<A HREF = "fix_heat_gran_conduction.html">fix heat/gran/conduction</A>. For <I>wallstyle mesh</I>, the value
 for the temperature given in this command is ignored and the temperature
 value is specified per mesh via <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>.
+Contact area calculation can be controlled by keyword <I>contact_area</I> in the
+same manner as for <A HREF = "fix_heat_gran_conduction.html">fix heat/gran/conduction</A>.
 </P>
 <P>By specifying <I>store_force</I> = 'yes', you can instruct the command to
 store the wall force exerted on the particles in a

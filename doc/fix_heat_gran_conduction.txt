@@ -20,7 +20,8 @@ heat/gran/conduction or fix heat/gran = style name of this fix command :l
 initial_temperature = obligatory keyword :l
 T0 = initial (default) temperature for the particles :l
 zero or more keyword/value pairs may be appended :l
-keyword = {area_correction} :l
+keyword = {contact_area} or {area_correction} :l
+  {contact_area} values = {overlap} or {constant [value]} or {projection}
   {area_correction} values = {yes} or {no} :pre
 
 
@@ -66,12 +67,22 @@ set region srcreg property/peratom heatSource 0.5 :pre
 
 :line
 
+Contact area calculation:
+
+Using keyword {contact_area}, you can choose from 3 modes of calulating
+the contact area for particle-particle heat transfer: If {overlap} is used,
+the contact area is calculated from the area of the sphere-sphere intersection
+If {constant} is used, a constant user-defined overlap area is assumed.
+If {projection} is used, the overlap area is assumed to be equal to rmin*rmin*Pi,
+where rmin is the radius of the smaller of the two particles in contact.
+
 Area correction:
 
-Fix heat/gran/conduction can perform an area correction via keyword {area_correction}
-to account for the fact that the Young's modulus might have been decreased in order to speed-up
-the simulation. In this case, you have to specify the original
-Young's modulus of each material by means of a
+For {contact_area}  = overlap, an area correction can additionally
+be performed using keyword {area_correction} to account for the fact that 
+the Young's modulus might have been decreased in order to speed-up the 
+simulation, thus artificially increasing the overlap. In this case, you have 
+to specify the original Young's modulus of each material by means of a
 "fix property/global"_fix_property.html command:
 
 fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
@@ -80,8 +91,8 @@ fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
 This area correction is performed by scaling the contact area with
 (Y*/Y*,orig)^a, where Y* and Y*,orig are calculated as defined in
 "pair_style gran"_pair_gran.html .
-The scaling factor is given as a=1 for pair/gran/hooke/* and a=2/3 for
-pair/gran/hertz/*.
+The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz 
+interaction.
 
 [Output info:]
 
@@ -117,5 +128,5 @@ none
 "compute temp"_compute_temp.html, "compute
 temp/region"_compute_temp_region.html
 
-[Default:] {area_correction} = {off}
+[Default:] {contact_area} = overlap, {area_correction} = {off}
 

@@ -39,6 +39,8 @@
 
 using namespace LAMMPS_NS;
 
+namespace LIGGGHTS {
+
 namespace ContactModels
 {
   static const int CM_REGISTER_SETTINGS     = 1 << 0;
@@ -79,13 +81,7 @@ namespace ContactModels
         (((int64_t)S) << 16);
   };
 
-  static int64_t generate_gran_hashcode(int model, int tangential, int cohesion, int rolling, int surface) {
-    return (((int64_t)model)) |
-        (((int64_t)tangential) << 4) |
-        (((int64_t)cohesion) << 8) |
-        (((int64_t)rolling) << 12) |
-        (((int64_t)surface) << 16);
-  }
+  int64_t generate_gran_hashcode(int model, int tangential, int cohesion, int rolling, int surface);
 
   template<int Model, typename Style>
   class SurfaceModel {
@@ -274,6 +270,33 @@ namespace ContactModels
     void collision(CollisionData&, ForceData&, ForceData&){}
     void noCollision(ContactData&, ForceData&, ForceData&){}
   };
+
+  class Factory {
+    typedef std::map<std::string, int> ModelTable;
+
+    ModelTable surface_models;
+    ModelTable normal_models;
+    ModelTable tangential_models;
+    ModelTable cohesion_models;
+    ModelTable rolling_models;
+
+    Factory();
+    Factory(const Factory &){}
+  public:
+    static Factory & instance();
+    static int64_t select(int & narg, char ** & args);
+
+    void addNormalModel(const std::string & name, int identifier);
+    void addTangentialModel(const std::string & name, int identifier);
+    void addCohesionModel(const std::string & name, int identifier);
+    void addRollingModel(const std::string & name, int identifier);
+    void addSurfaceModel(const std::string & name, int identifier);
+
+  private:
+    int64_t select_model(int & narg, char ** & args);
+  };
+
+}
 }
 
 #endif /* CONTACT_MODELS_H_ */

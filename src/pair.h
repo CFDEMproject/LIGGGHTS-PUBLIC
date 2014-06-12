@@ -175,7 +175,7 @@ class Pair : protected Pointers {
   virtual unsigned int data_mask() {return datamask;}
   virtual unsigned int data_mask_ext() {return datamask_ext;}
 
- protected:
+ public: // FIXME: was protected
   enum{GEOMETRIC,ARITHMETIC,SIXTHPOWER};   // mixing options
 
   int allocated;               // 0/1 = whether arrays are allocated

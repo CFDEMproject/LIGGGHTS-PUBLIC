@@ -30,6 +30,8 @@
 #include "compute.h"
 #include "group.h"
 #include "update.h"
+#include "fix_property_atom.h"
+#include "fix_property_global.h"
 #include "domain.h"
 #include "memory.h"
 #include "error.h"
@@ -98,6 +100,21 @@ Fix* Modify::find_fix_style(const char *style, int rank)
 }
 
 /* ----------------------------------------------------------------------
+   find a compute with the requested style
+------------------------------------------------------------------------- */
+
+Compute* Modify::find_compute_style_strict(const char *style, int rank)
+{
+    for(int icompute = 0; icompute < ncompute; icompute++)
+      if(strcmp(compute[icompute]->style,style) == 0)
+      {
+          if(rank > 0) rank --;
+          else return compute[icompute];
+      }
+    return NULL;
+}
+
+/* ----------------------------------------------------------------------
    find a fix by ID, return NULL if not found
 ------------------------------------------------------------------------- */
 
@@ -108,6 +125,19 @@ Fix* Modify::find_fix_id(const char *id)
     if (strcmp(id,fix[ifix]->id) == 0) break;
   if (ifix == nfix) return NULL;
   return fix[ifix];
+}
+
+/* ----------------------------------------------------------------------
+   find a compute by ID, return NULL if not found
+------------------------------------------------------------------------- */
+
+Compute* Modify::find_compute_id(const char *id)
+{
+  int icompute;
+  for (icompute = 0; icompute < ncompute; icompute++)
+    if (strcmp(id,compute[icompute]->id) == 0) break;
+  if (icompute == ncompute) return NULL;
+  return compute[icompute];
 }
 
 /* ----------------------------------------------------------------------
@@ -188,7 +218,7 @@ bool Modify::i_am_first_of_style(Fix *fix_to_check)
 
 /* ----------------------------------------------------------------------
    
-   returns the index of first fix of specified style
+   returns the index of first/last fix of specified style
 ------------------------------------------------------------------------- */
 
 int Modify::index_first_fix_of_style(const char *style)
@@ -198,6 +228,17 @@ int Modify::index_first_fix_of_style(const char *style)
             return ifix;
 
     return -1;
+}
+
+int Modify::index_last_fix_of_style(const char *style)
+{
+    int idx = -1;
+
+    for(int ifix = 0; ifix < nfix; ifix++)
+        if(strcmp(fix[ifix]->style,style) == 0)
+            idx = ifix;
+
+    return idx;
 }
 
 /* ----------------------------------------------------------------------
@@ -256,9 +297,9 @@ Fix* Modify::find_fix_property(const char *varname,const char *style,const char 
 
   for(ifix = 0; ifix < nfix; ifix++)
   {
-      if(strncmp(fix[ifix]->style,"property/atom",13) == 0)
+      if(strncmp(fix[ifix]->style,"property/atom",13) == 0 && dynamic_cast<FixPropertyAtom*>(fix[ifix]))
          fix_i = static_cast<FixPropertyAtom*>(fix[ifix])->check_fix(varname,svmstyle,len1,len2,caller,errflag);
-      else if(strcmp(fix[ifix]->style,"property/global") == 0)
+      else if(strcmp(fix[ifix]->style,"property/global") == 0 && dynamic_cast<FixPropertyGlobal*>(fix[ifix]))
          fix_i = static_cast<FixPropertyGlobal*>(fix[ifix])->check_fix(varname,svmstyle,len1,len2,caller,errflag);
 
       // check_fix returns either this or NULL

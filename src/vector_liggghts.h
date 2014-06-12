@@ -54,22 +54,22 @@ inline void vectorNormalize3D(double *v)
     v[2] *= invnorm;
 }
 
-inline double vectorMag3D(double *v)
+inline double vectorMag3D(const double *v)
 {
   return (  sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])  );
 }
 
-inline double vectorMag3DSquared(double *v)
+inline double vectorMag3DSquared(const double *v)
 {
   return (  v[0]*v[0]+v[1]*v[1]+v[2]*v[2]  );
 }
 
-inline double vectorMag4D(double *v)
+inline double vectorMag4D(const double *v)
 {
   return (  sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]+v[3]*v[3])  );
 }
 
-inline double pointDistance(double *point1, double *point2)
+inline double pointDistance(const double *point1, const double *point2)
 {
   return
   (
@@ -82,28 +82,28 @@ inline double pointDistance(double *point1, double *point2)
   );
 }
 
-inline double vectorMag4DSquared(double *v)
+inline double vectorMag4DSquared(const double *v)
 {
   return (  v[0]*v[0]+v[1]*v[1]+v[2]*v[2]+v[3]*v[3]  );
 }
 
-inline double vectorDot3D(double *v1,double *v2)
+inline double vectorDot3D(const double *v1, const double *v2)
 {
   return (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2]);
 }
 
-inline double vectorDot2D(double *v1,double *v2)
+inline double vectorDot2D(const double *v1, const double *v2)
 {
   return (v1[0]*v2[0]+v1[1]*v2[1]);
 }
 
-inline void vectorCopy2D(double *from,double *to)
+inline void vectorCopy2D(const double *from, double *to)
 {
   to[0]=from[0];
   to[1]=from[1];
 }
 
-inline void vectorCopy3D(double *from,double *to)
+inline void vectorCopy3D(const double *from, double *to)
 {
   to[0]=from[0];
   to[1]=from[1];
@@ -117,13 +117,13 @@ inline void vectorFlip3D(double *v)
   v[2]=-v[2];
 }
 
-inline void vectorCopyN(double *from,double *to,int N)
+inline void vectorCopyN(const double *from, double *to, int N)
 {
     for(int i = 0; i < N; i++)
        to[i] = from[i];
 }
 
-inline void vectorCopy3D(int *from,int *to)
+inline void vectorCopy3D(const int *from, int *to)
 {
   to[0]=from[0];
   to[1]=from[1];
@@ -195,7 +195,7 @@ inline void vectorComponentMax3D(double *v1,double *v2,double *max)
         max[2] = v2[2];
 }
 
-inline void vectorCopy4D(double *from,double *to)
+inline void vectorCopy4D(const double *from, double *to)
 {
   to[0]=from[0];
   to[1]=from[1];
@@ -203,27 +203,27 @@ inline void vectorCopy4D(double *from,double *to)
   to[3]=from[3];
 }
 
-inline void vectorScalarMultN(int n,double *v,double s)
+inline void vectorScalarMultN(int n,double *v, double s)
 {
     for(int i = 0; i < n; i++)
         v[i] = s*v[i];
 }
 
-inline void vectorScalarMult3D(double *v,double s)
+inline void vectorScalarMult3D(double *v, double s)
 {
   v[0]=s*v[0];
   v[1]=s*v[1];
   v[2]=s*v[2];
 }
 
-inline void vectorScalarMult3D(double *v,double s,double *result)
+inline void vectorScalarMult3D(double *v, double s, double *result)
 {
   result[0]=s*v[0];
   result[1]=s*v[1];
   result[2]=s*v[2];
 }
 
-inline void vectorScalarDiv3D(double *v,double s)
+inline void vectorScalarDiv3D(double *v, double s)
 {
   double sinv = 1./s;
   v[0]=sinv*v[0];
@@ -231,21 +231,21 @@ inline void vectorScalarDiv3D(double *v,double s)
   v[2]=sinv*v[2];
 }
 
-inline void vectorScalarAdd3D(double *v,double s)
+inline void vectorScalarAdd3D(double *v, double s)
 {
   v[0]+=s;
   v[1]+=s;
   v[2]+=s;
 }
 
-inline void vectorScalarSubtract3D(double *v,double s)
+inline void vectorScalarSubtract3D(double *v, double s)
 {
   v[0]-=s;
   v[1]-=s;
   v[2]-=s;
 }
 
-inline void vectorNegate3D(double *v,double *result)
+inline void vectorNegate3D(double *v, double *result)
 {
   result[0]=-v[0];
   result[1]=-v[1];
@@ -259,7 +259,7 @@ inline void vectorNegate3D(double *v)
   v[2]=-v[2];
 }
 
-inline void vectorScalarDiv3D(double *v,double s,double *result)
+inline void vectorScalarDiv3D(double *v, double s, double *result)
 {
   double sinv = 1./s;
   result[0]=sinv*v[0];
@@ -267,14 +267,26 @@ inline void vectorScalarDiv3D(double *v,double s,double *result)
   result[2]=sinv*v[2];
 }
 
-inline void vectorAdd3D(const double *v1,const double *v2, double *result)
+inline void vectorAdd3D(const double *v1, const double *v2, double *result)
 {
   result[0]=v1[0]+v2[0];
   result[1]=v1[1]+v2[1];
   result[2]=v1[2]+v2[2];
 }
 
-inline void vectorAddMultiple3D(const double *v1,double v2factor,const double *v2, double *result)
+inline void vectorAddN(double *v1, const double *v2, int n)
+{
+  for(int i = 0; i < n; i++)
+    v1[i] += v2[i];
+}
+
+inline void vectorAddN(int *v1, const int *v2, int n)
+{
+  for(int i = 0; i < n; i++)
+    v1[i] += v2[i];
+}
+
+inline void vectorAddMultiple3D(const double *v1, double v2factor, const double *v2, double *result)
 {
   result[0]=v1[0]+v2factor*v2[0];
   result[1]=v1[1]+v2factor*v2[1];

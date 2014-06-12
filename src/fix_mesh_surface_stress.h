@@ -49,6 +49,7 @@ namespace LAMMPS_NS
         virtual void post_create();
 
         virtual void init();
+        virtual void setup(int vflag) {}
         virtual int setmask();
 
         virtual void setup_pre_force(int vflag);

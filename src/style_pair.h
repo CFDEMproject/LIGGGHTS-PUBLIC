@@ -11,6 +11,7 @@
 #include "pair_dpd_tstat.h"
 #include "pair_gauss.h"
 #include "pair_gran.h"
+#include "pair_gran_proxy.h"
 #include "pair_hybrid.h"
 #include "pair_hybrid_overlay.h"
 #include "pair_lj96_cut.h"

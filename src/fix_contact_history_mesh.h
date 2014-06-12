@@ -92,7 +92,7 @@ class FixContactHistoryMesh : public FixContactHistory {
   MyPage<double> *dpage1_;     // pages of contact history with neighbors
   MyPage<int> *ipage2_;        // pages of neighbor tri IDs
   MyPage<double> *dpage2_;     // pages of contact history with neighbors
-  MyPage<bool> ** keeppage_;      // pages of deletion flags with neighbors
+  MyPage<bool> ** keeppage_;   // pages of deletion flags with neighbors
 
   bool **keepflag_;
 
@@ -111,6 +111,7 @@ class FixContactHistoryMesh : public FixContactHistory {
   class FixPropertyAtom* fix_nneighs_;
   bool build_neighlist_;
   double *swap_;
+  int numpages_;
 
   void sort_contacts();
   void swap(int ilocal,int ineigh, int jneigh, bool keepflag_swap);

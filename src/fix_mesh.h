@@ -47,6 +47,7 @@ namespace LAMMPS_NS
         virtual void pre_delete(bool unfixflag);
 
         virtual void init() {}
+        virtual void setup(int vflag) {}
 
         virtual int setmask();
         void setup_pre_force(int);

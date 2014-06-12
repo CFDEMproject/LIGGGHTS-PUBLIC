@@ -87,12 +87,22 @@ class FixNeighlistMesh : public Fix
     }
 
     virtual int getSizeNumContacts();
-    virtual int getTotalNumContacts() { return numAllContacts_; }
+
+    void enableTotalNumContacts(bool enable)
+    {
+      globalNumAllContacts_ = enable;
+    }
+
+    int getTotalNumContacts() { return numAllContacts_; }
+
     bool contactInList(int iTri, int iAtom)
     {
       std::vector<int> & neighbors = triangles[iTri].contacts;
       return std::find(neighbors.begin(), neighbors.end(), iAtom) != neighbors.end();
     }
+
+    inline class FixPropertyAtom* fix_nneighs()
+    { return fix_nneighs_; };
 
   protected:
 
@@ -111,6 +121,7 @@ class FixNeighlistMesh : public Fix
     std::vector<TriangleNeighlist> triangles;
 
     int numAllContacts_;
+    bool globalNumAllContacts_;
 
     int mbinx,mbiny,mbinz,maxhead, *bins, *binhead;
     double skin;
@@ -125,8 +136,7 @@ class FixNeighlistMesh : public Fix
 
     bigint last_bin_update;
 
-private:
-  void generate_bin_list(size_t nall);
+    void generate_bin_list(size_t nall);
 };
 
 } /* namespace LAMMPS_NS */

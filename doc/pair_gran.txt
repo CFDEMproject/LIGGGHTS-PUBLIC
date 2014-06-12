@@ -13,7 +13,7 @@ pair_style gran command :h3
 
 pair_style model keyword value :pre
 
-zero or more model_keyword/value pairs may be appended :l
+zero or more model_keyword/value pairs may be appended. They must be appended in the following order :l
   {model} values = described "here"_Section_gran_models.html
   {tangential} values = described "here"_Section_gran_models.html
   {rolling_friction} values = described "here"_Section_gran_models.html

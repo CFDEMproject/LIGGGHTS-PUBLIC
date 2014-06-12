@@ -29,6 +29,7 @@
 
 #include <string>
 
+namespace LIGGGHTS {
 namespace ContactModels {
 
 struct ContactData {
@@ -113,11 +114,11 @@ struct ForceData {
 };
 }
 
-namespace LAMMPS_NS {
-  class IContactHistorySetup {
-  public:
-    virtual int add_history_value(std::string name, std::string newtonflag) = 0;
-  };
+class IContactHistorySetup {
+public:
+  virtual int add_history_value(std::string name, std::string newtonflag) = 0;
+};
+
 }
 
 #endif /* CONTACT_INTERFACE_H_ */

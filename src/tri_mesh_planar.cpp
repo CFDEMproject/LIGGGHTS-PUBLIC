@@ -48,7 +48,7 @@ void TriMeshPlanar::postInitialSetup()
 {
     // works for non-parallel mesh only
     if(!isPlanar())
-        error->all(FLERR,"Face defined as planar face is in fact not planar");
+        error->all(FLERR,"Face defined as planar face is in fact not planar. You might want to check the 'curvature' setting");
 
     if(this->isParallel())
         error->all(FLERR,"internal error");

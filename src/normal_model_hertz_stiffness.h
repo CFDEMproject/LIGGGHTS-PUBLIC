@@ -33,6 +33,7 @@ NORMAL_MODEL(HERTZ_STIFFNESS,hertz/stiffness,4)
 #include "global_properties.h"
 #include "math.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   template<typename Style>
@@ -46,7 +47,9 @@ namespace ContactModels
       k_t(NULL),
       gamma_n(NULL),
       gamma_t(NULL),
-      tangential_damping(false)
+      tangential_damping(false),
+      limitForce(false),
+      displayedSettings(false)
     {
       
     }
@@ -54,6 +57,7 @@ namespace ContactModels
     void registerSettings(Settings & settings)
     {
       settings.registerOnOff("tangential_damping", tangential_damping, true);
+      settings.registerOnOff("limitForce", limitForce);
     }
 
     void connectToProperties(PropertyRegistry & registry)
@@ -91,13 +95,28 @@ namespace ContactModels
 
       if(!tangential_damping) gammat = 0.0;
 
+      if(!displayedSettings)
+      {
+        displayedSettings = true;
+
+        /*
+        if(limitForce)
+            if(0 == comm->me) fprintf(screen," NormalModel<HERTZ_STIFFNESS>: will limit normal force.\n");
+        */
+      }
       // convert Kn and Kt from pressure units to force/distance^2
       kn /= force->nktv2p;
       kt /= force->nktv2p;
 
       const double Fn_damping = -gamman*cdata.vn;
       const double Fn_contact = kn*(cdata.radsum-cdata.r);
-      const double Fn = Fn_contact + Fn_damping;
+      double Fn                       = Fn_damping + Fn_contact;
+
+      //limit force to avoid the artefact of negative repulsion force
+      if(limitForce && (Fn<0.0) )
+      {
+          Fn = 0.0;
+      }
 
       cdata.Fn = Fn;
       cdata.kn = kn;
@@ -133,7 +152,10 @@ namespace ContactModels
     double ** gamma_t;
 
     bool tangential_damping;
+    bool limitForce;
+    bool displayedSettings;
   };
+}
 }
 #endif // NORMAL_MODEL_HERTZ_STIFFNESS_H_
 #endif

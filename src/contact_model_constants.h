@@ -24,6 +24,8 @@
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
+namespace LIGGGHTS {
+
 namespace ContactModels
 {
   // This file declares global constant identifiers which are used by contact 
@@ -61,4 +63,6 @@ static const int identifier = constant;
   static const int identifier = constant;
 #include "style_rolling_model.h"
 #undef ROLLING_MODEL
+}
+
 }

@@ -31,9 +31,10 @@
 
 <LI>zero or more keyword/value pairs may be appended 
 
-<LI>keyword = <I>area_correction</I> 
+<LI>keyword = <I>contact_area</I> or <I>area_correction</I> 
 
-<PRE>  <I>area_correction</I> values = <I>yes</I> or <I>no</I> 
+<PRE>  <I>contact_area</I> values = <I>overlap</I> or <I>constant <B>value</B></I> or <I>projection</I>
+  <I>area_correction</I> values = <I>yes</I> or <I>no</I> 
 </PRE>
 <P><B>Examples:</B>
 </P>
@@ -77,12 +78,22 @@ set region srcreg property/peratom heatSource 0.5
 </PRE>
 <HR>
 
+<P>Contact area calculation:
+</P>
+<P>Using keyword <I>contact_area</I>, you can choose from 3 modes of calulating
+the contact area for particle-particle heat transfer: If <I>overlap</I> is used,
+the contact area is calculated from the area of the sphere-sphere intersection
+If <I>constant</I> is used, a constant user-defined overlap area is assumed.
+If <I>projection</I> is used, the overlap area is assumed to be equal to rmin*rmin*Pi,
+where rmin is the radius of the smaller of the two particles in contact.
+</P>
 <P>Area correction:
 </P>
-<P>Fix heat/gran/conduction can perform an area correction via keyword <I>area_correction</I>
-to account for the fact that the Young's modulus might have been decreased in order to speed-up
-the simulation. In this case, you have to specify the original
-Young's modulus of each material by means of a
+<P>For <I>contact_area</I>  = overlap, an area correction can additionally
+be performed using keyword <I>area_correction</I> to account for the fact that 
+the Young's modulus might have been decreased in order to speed-up the 
+simulation, thus artificially increasing the overlap. In this case, you have 
+to specify the original Young's modulus of each material by means of a
 <A HREF = "fix_property.html">fix property/global</A> command:
 </P>
 <PRE>fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
@@ -91,8 +102,8 @@ Young's modulus of each material by means of a
 <P>This area correction is performed by scaling the contact area with
 (Y*/Y*,orig)^a, where Y* and Y*,orig are calculated as defined in
 <A HREF = "pair_gran.html">pair_style gran</A> .
-The scaling factor is given as a=1 for pair/gran/hooke/* and a=2/3 for
-pair/gran/hertz/*.
+The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz 
+interaction.
 </P>
 <P><B>Output info:</B>
 </P>
@@ -128,6 +139,6 @@ minimization</A>.
 <P><A HREF = "compute_temp.html">compute temp</A>, <A HREF = "compute_temp_region.html">compute
 temp/region</A>
 </P>
-<P><B>Default:</B> <I>area_correction</I> = <I>off</I>
+<P><B>Default:</B> <I>contact_area</I> = overlap, <I>area_correction</I> = <I>off</I>
 </P>
 </HTML>

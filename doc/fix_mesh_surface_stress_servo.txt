@@ -45,6 +45,7 @@ servo keywords = {com} (obligatory) or {dim} (obligatory) or {ctrlPV} (obligator
 [Examples:]
 
 fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
+fix servo all mesh/surface/stress/servo file stirrer.stl type 1 com 0. 0. 0. ctrlPV torque axis 0. 0. 1. target_val 10 vel_max 1. ratio 0.01 mode auto :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 
@@ -67,12 +68,12 @@ The controller itself is a proportional-integral-derivative (PID) controller whi
 
 output = kp * error + ki * errorsum + kd * errorchange
 
-where 'error' is the current devation of the controll process value to the target value, 
+where 'error' is the current deviation of the controll process value to the target value, 
 'errorsum' is the time integration (sum) of the error values and 'errorchange' its derivative. The controller
 also includes an "anti-wind-up scheme" which prohibits accumulation of erroneous controller output caused 
 by the integral part due to unavoidable long-lasting deviations.
 
-By using the keyword {mode} = auto an alternative controller approach is applied. It is a pure proportional controller with gain scheduling. In the absence of neighbour particles the servo wall may move with maximum velocity (defined by {vel_max}). Otherwise, the maximum wall velocity is defined by {ratio} * min(radius) / dt. Approaching {target_val} the maximum velocity decreases to 0.1 * {radio} * min(radius) / dt.
+By using the keyword {mode} = auto an alternative controller approach is applied. It is a pure proportional controller with gain scheduling. In the absence of neighbour particles the servo wall may move with maximum velocity (defined by {vel_max}). Otherwise, the maximum wall velocity is defined by {ratio} * min(radius) / dt. Approaching {target_val} the maximum velocity decreases to 0.1 * {ratio} * min(radius) / dt.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -94,6 +95,8 @@ When using this fix, along with scaling or rotate the body, all the servo_keywor
 the state after scaling/rotation.
 Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary. 
 In this case, an error is generated. See "boundary"_boundary.html command for details.
+This fix can not be used in conjunction with another fix that manipulates mesh geometry,
+such as a "fix move/mesh"_fix_move_mesh.html
 
 [Related commands:]
 

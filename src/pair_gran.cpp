@@ -51,7 +51,7 @@
 #include "fix_pour.h"
 #include "fix_property_global.h"
 #include "fix_property_atom.h"
-#include "fix_property_atom_contact.h"
+#include "fix_contact_property_atom.h"
 #include "compute_pair_gran_local.h"
 #include "pair_gran.h"
 
@@ -83,19 +83,18 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
   nmax = 0;
 
   cpl_enable = 1;
-  cpl = NULL;
+  cpl_ = NULL;
 
   energytrack_enable = 0;
   fppaCPEn = fppaCDEn = fppaCPEt = fppaCDEVt = fppaCDEFt = fppaCTFW = fppaDEH = NULL;
   CPEn = CDEn = CPEt = CDEVt = CDEFt = CTFW = DEH = NULL;
 
-  computeflag = 0;
+  computeflag_ = 0;
 
   needs_neighlist = true;
 
-  store_contact_forces = false;
-  fix_contact_forces = 0;
-  store_contact_forces = 0;
+  fix_contact_forces_ = 0;
+  store_contact_forces_ = 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -103,6 +102,7 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
 PairGran::~PairGran()
 {
   if (fix_history) modify->delete_fix("contacthistory");
+  if (fix_contact_forces_) modify->delete_fix(fix_contact_forces_->id);
 
   if (suffix) delete[] suffix;
 
@@ -117,7 +117,7 @@ PairGran::~PairGran()
   delete mpg;
 
   // tell cpl that pair gran is deleted
-  if(cpl) cpl->reference_deleted();
+  if(cpl_) cpl_->reference_deleted();
 
   //unregister energy terms as property/atom
   if (fppaCPEn) modify->delete_fix("CPEn");
@@ -136,13 +136,13 @@ PairGran::~PairGran()
 
 void PairGran::updatePtrs()
 {
-        if(fppaCPEn) CPEn = fppaCPEn->vector_atom;
-        if(fppaCDEn) CDEn = fppaCDEn->vector_atom;
-        if(fppaCPEt) CPEt = fppaCPEt->vector_atom;
-        if(fppaCDEVt) CDEVt = fppaCDEVt->vector_atom;
-        if(fppaCDEFt) CDEFt = fppaCDEFt->vector_atom;
-        if(fppaCTFW) CTFW = fppaCTFW->vector_atom;
-        if(fppaDEH) DEH = fppaDEH->vector_atom;
+   if(fppaCPEn) CPEn = fppaCPEn->vector_atom;
+   if(fppaCDEn) CDEn = fppaCDEn->vector_atom;
+   if(fppaCPEt) CPEt = fppaCPEt->vector_atom;
+   if(fppaCDEVt) CDEVt = fppaCDEVt->vector_atom;
+   if(fppaCDEFt) CDEFt = fppaCDEFt->vector_atom;
+   if(fppaCTFW) CTFW = fppaCTFW->vector_atom;
+   if(fppaDEH) DEH = fppaDEH->vector_atom;
 }
 
 /* ----------------------------------------------------------------------
@@ -270,7 +270,7 @@ void PairGran::init_style()
         for(int ifix = 0; ifix < nfix; ifix++)
         {
             if(fix_dnum[ifix]->n_history_extra())
-                if(!fix_dnum[ifix]->history_args(&fixarg[5+2*dnum_index[ifix]]))
+                if(!fix_dnum[ifix]->history_args(&fixarg[4+2*dnum_index[ifix]]))
                     error->all(FLERR,"Missing history_args() implementation for fix that requests extra history");
         }
 
@@ -386,12 +386,12 @@ void PairGran::init_style()
   }
 
   // register per-particle properties for energy tracking
-  if(store_contact_forces && 0 == fix_contact_forces)
+  if(store_contact_forces_ && 0 == fix_contact_forces_)
   {
     char **fixarg = new char*[17];
-    fixarg[0]=(char *) "CONTACTFORCES";
+    fixarg[0]=(char *) "contactforces";
     fixarg[1]=(char *) "all";
-    fixarg[2]=(char *) "property/atom/contact";
+    fixarg[2]=(char *) "contactproperty/atom";
     fixarg[3]=(char *) "contactforces";
     fixarg[4]=(char *) "6";
     fixarg[5]=(char *) "fx";
@@ -404,10 +404,10 @@ void PairGran::init_style()
     fixarg[12]=(char *) "0";
     fixarg[13]=(char *) "ty";
     fixarg[14]=(char *) "0";
-    fixarg[15]=(char *) "ty";
+    fixarg[15]=(char *) "tz";
     fixarg[16]=(char *) "0";
     modify->add_fix(17,fixarg);
-    fix_contact_forces = static_cast<FixPropertyAtomContact*>(modify->find_fix_id("CONTACTFORCES"));
+    fix_contact_forces_ = static_cast<FixContactPropertyAtom*>(modify->find_fix_id("contactforces"));
     delete []fixarg;
   }
 
@@ -430,12 +430,12 @@ void PairGran::init_style()
       }
   }
 
-  // check for freeze Fix and set freeze_group_bit
+  // check for freeze Fix and set freeze_group_bit_
 
   for (i = 0; i < modify->nfix; i++)
     if (strcmp(modify->fix[i]->style,"freeze") == 0) break;
-  if (i < modify->nfix) freeze_group_bit = modify->fix[i]->groupbit;
-  else freeze_group_bit = 0;
+  if (i < modify->nfix) freeze_group_bit_ = modify->fix[i]->groupbit;
+  else freeze_group_bit_ = 0;
 
   // set maxrad_dynamic and maxrad_frozen for each type
   for (i = 1; i <= atom->ntypes; i++)
@@ -463,7 +463,7 @@ void PairGran::init_style()
   int nlocal = atom->nlocal;
 
   for (i = 0; i < nlocal; i++)
-    if (mask[i] & freeze_group_bit)
+    if (mask[i] & freeze_group_bit_)
       onerad_frozen[type[i]] = MAX(onerad_frozen[type[i]],radius[i]);
     else
       onerad_dynamic[type[i]] = MAX(onerad_dynamic[type[i]],radius[i]);
@@ -480,15 +480,15 @@ void PairGran::init_style()
 
 void PairGran::register_compute_pair_local(ComputePairGranLocal *ptr,int &dnum_compute)
 {
-   if(cpl != NULL) error->all(FLERR,"Pair gran allows only one compute of type pair/local");
-   cpl = ptr;
+   if(cpl_ != NULL) error->all(FLERR,"Pair gran allows only one compute of type pair/local");
+   cpl_ = ptr;
    dnum_compute = dnum_pairgran; //history values
 }
 
 void PairGran::unregister_compute_pair_local(ComputePairGranLocal *ptr)
 {
-   if(cpl != ptr) error->all(FLERR,"Illegal situation in PairGran::unregister_compute_pair_local");
-   cpl = NULL;
+   if(cpl_ != ptr) error->all(FLERR,"Illegal situation in PairGran::unregister_compute_pair_local");
+   cpl_ = NULL;
 }
 
 /* ----------------------------------------------------------------------
@@ -563,9 +563,9 @@ void PairGran::compute(int eflag, int vflag)
     comm->forward_comm_pair(this);
   }
 
-   computeflag = 1;
-   shearupdate = 1;
-   if (update->setupflag) shearupdate = 0;
+   computeflag_ = 1;
+   shearupdate_ = 1;
+   if (update->setupflag) shearupdate_ = 0;
 
    compute_force(eflag,vflag,0);
 }
@@ -596,15 +596,15 @@ void PairGran::compute_pgl(int eflag, int vflag)
     comm->forward_comm_pair(this);
   }
 
-  bool reset_computeflag = (computeflag == 1) ? true : false;
+  bool reset_computeflag = (computeflag_ == 1) ? true : false;
 
-  computeflag = 0;
-  shearupdate = 0;
+  computeflag_ = 0;
+  shearupdate_ = 0;
 
   compute_force(eflag,vflag,1);
 
   if(reset_computeflag)
-    computeflag = 1;
+    computeflag_ = 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -677,7 +677,7 @@ void PairGran::reset_dt()
 void *PairGran::extract(const char *str, int &dim)
 {
   dim = 0;
-  if (strcmp(str,"computeflag") == 0) return (void *) &computeflag;
+  if (strcmp(str,"computeflag") == 0) return (void *) &computeflag_;
   return NULL;
 }
 
@@ -689,4 +689,8 @@ double PairGran::memory_usage()
 {
   double bytes = nmax * sizeof(double);
   return bytes;
+}
+
+bool PairGran::forceoff() {
+  return false;
 }

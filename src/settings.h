@@ -104,7 +104,7 @@ public:
       return 2; // argument consumed
     } else {
       char msg[50];
-      sprintf(msg, "while parsing '%s' argument: unknown option: '%s'", name.c_str(), args[1]);
+      sprintf(msg, "while parsing '%s' argument: unknown option or wrong keyword order: '%s'", name.c_str(), args[1]);
       error_message = msg;
     }
     return -1; // error while parsing argument

@@ -94,10 +94,6 @@ class Force : protected Pointers {
   void create_pair_from_restart(FILE* fp,const char *, const char *suffix = NULL);
   class Pair *new_pair(const char *, int & narg, char** & args, const char *, int &);
   class Pair *new_pair_from_restart(FILE* fp, const char *, const char *, int &);
-  class Pair *new_granular_pair(int & narg, char ** & args);
-  class Pair *new_granular_pair_from_restart(FILE * fp);
-
-  class Fix* new_granular_wall_fix(int narg, char ** args);
 
   class Pair *pair_match(const char *, int);
 
@@ -140,39 +136,7 @@ class Force : protected Pointers {
 
   double coarsegraining; 
   bool error_coarsegraining; 
-
-  typedef class Pair*(*GranularPairCreator)(LAMMPS*);
-  typedef class Fix*(*GranularWallFixCreator)(LAMMPS*,int,char**);
-  std::map<int64_t, GranularPairCreator> granular_pair_style_creators;
-  std::map<int64_t, GranularWallFixCreator> granular_wall_fix_creators;
-  std::map<std::string, int> surface_model_map;
-  std::map<std::string, int> normal_model_map;
-  std::map<std::string, int> tangential_model_map;
-  std::map<std::string, int> cohesion_model_map;
-  std::map<std::string, int> rolling_model_map;
-
-  int64_t select_contact_model(int & narg, char ** & args);
-
-  template<int MODEL, int TANGENTIAL, int COHESION, int ROLLING, int SURFACE>
-  void register_granular_pair_style();
-
-  template<int MODEL, int TANGENTIAL, int COHESION, int ROLLING, int SURFACE>
-  void register_granular_wall_fix();
 };
-
-class Pair;
-class Fix;
-
-template<typename T>
-Pair * create_pair_style_instance(LAMMPS* lmp) {
-  return new T(lmp);
-}
-
-template<typename T>
-Fix * create_fix_instance(LAMMPS* lmp, int narg, char ** args) {
-  return new T(lmp, narg, args);
-}
-
 }
 
 #endif

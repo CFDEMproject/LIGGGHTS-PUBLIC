@@ -36,12 +36,12 @@
 #include <vector>
 #include <string>
 
+namespace LCM = LIGGGHTS::ContactModels;
+
 namespace LAMMPS_NS {
-using namespace ContactModels;
 
-class PairGran : public Pair, public IContactHistorySetup {
-
- public:
+class PairGran : public Pair, public LIGGGHTS::IContactHistorySetup {
+public:
 
   friend class FixWallGran;
   friend class FixCheckTimestepGran;
@@ -75,7 +75,7 @@ class PairGran : public Pair, public IContactHistorySetup {
   void register_compute_pair_local(class ComputePairGranLocal *,int&);
   void unregister_compute_pair_local(class ComputePairGranLocal *ptr);
 
-  inline void cpl_add_pair(CollisionData & cdata, ForceData & i_forces)
+  inline void cpl_add_pair(LCM::CollisionData & cdata, LCM::ForceData & i_forces)
   {
     const double fx = i_forces.delta_F[0];
     const double fy = i_forces.delta_F[1];
@@ -83,7 +83,7 @@ class PairGran : public Pair, public IContactHistorySetup {
     const double tor1 = i_forces.delta_torque[0];
     const double tor2 = i_forces.delta_torque[1];
     const double tor3 = i_forces.delta_torque[2];
-    cpl->add_pair(cdata.i, cdata.j, fx,fy,fz,tor1,tor2,tor3,cdata.contact_history);
+    cpl_->add_pair(cdata.i, cdata.j, fx,fy,fz,tor1,tor2,tor3,cdata.contact_history);
   }
 
   /* PUBLIC ACCESS FUNCTIONS */
@@ -94,8 +94,38 @@ class PairGran : public Pair, public IContactHistorySetup {
   int dnum_pair()
   { return dnum_pairgran; }
 
+  inline int dnum()
+  { return dnum_all; }
+
+  inline class ComputePairGranLocal * cpl() {
+    return cpl_;
+  }
+
+  inline bool storeContactForces() {
+    return store_contact_forces_;
+  }
+
+  inline int freeze_group_bit() const {
+    return freeze_group_bit_;
+  }
+
+  inline int computeflag() const {
+    return computeflag_;
+  }
+
+  inline int shearupdate() const {
+    return shearupdate_;
+  }
+
+  class FixContactPropertyAtom * fix_contact_forces() {
+    return fix_contact_forces_;
+  }
+
   class FixRigid* fr_pair()
   { return fix_rigid; }
+
+  double * mr_pair()
+  { return mass_rigid; }
 
   virtual double stressStrainExponent() = 0;
 
@@ -114,7 +144,7 @@ class PairGran : public Pair, public IContactHistorySetup {
   }
 
   void do_store_contact_forces()
-  { store_contact_forces = true; }
+  { store_contact_forces_ = true; }
 
  protected:
 
@@ -135,9 +165,7 @@ class PairGran : public Pair, public IContactHistorySetup {
   }
 
   virtual void compute_force(int eflag, int vflag,int addflag) = 0;
-  virtual bool forceoff() = 0;
-  inline int dnum()
-  { return dnum_all; }
+  virtual bool forceoff();
 
   virtual void updatePtrs();
 
@@ -160,11 +188,11 @@ class PairGran : public Pair, public IContactHistorySetup {
 
   // stuff for compute pair gran local
   int cpl_enable;
-  class ComputePairGranLocal *cpl;
+  class ComputePairGranLocal *cpl_;
 
   // storage for per-contact forces
-  bool store_contact_forces;
-  class FixPropertyAtomContact *fix_contact_forces;
+  bool store_contact_forces_;
+  class FixContactPropertyAtom *fix_contact_forces_;
 
   // storage of rigid body masses for use in granular interactions
 
@@ -173,15 +201,15 @@ class PairGran : public Pair, public IContactHistorySetup {
   int nmax;                  // allocated size of mass_rigid
 
   double dt;
-  int freeze_group_bit;
+  int freeze_group_bit_;
 
   // contact history
   int history;
   int dnum_pairgran;
   class FixContactHistory *fix_history;
-  int shearupdate;
+  int shearupdate_;
 
-  int computeflag;
+  int computeflag_;
 
   double *onerad_dynamic,*onerad_frozen;
   double *maxrad_dynamic,*maxrad_frozen;

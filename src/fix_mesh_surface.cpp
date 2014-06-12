@@ -35,6 +35,7 @@
 #include "bounding_box.h"
 #include "input_mesh_tri.h"
 #include "fix_contact_history_mesh.h"
+#include "fix_contact_property_atom_wall.h"
 #include "fix_neighlist_mesh.h"
 #include "multi_node_mesh.h"
 #include "modify.h"
@@ -50,6 +51,7 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
 : FixMesh(lmp, narg, arg),
   fix_contact_history_mesh_(0),
   fix_mesh_neighlist_(0),
+  fix_meshforce_contact_(0),
   stress_flag_(false),
   velFlag_(false),
   angVelFlag_(false),
@@ -99,7 +101,7 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
           if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
           iarg_++;
           curvature_ = force->numeric(FLERR,arg[iarg_++]);
-          if(curvature_ < 0. || curvature_ > 60)
+          if(curvature_ <= 0. || curvature_ > 60)
             error->fix_error(FLERR,this,"0° < curvature < 60° required");
           curvature_ = cos(curvature_*M_PI/180.);
           hasargs = true;
@@ -302,6 +304,51 @@ void FixMeshSurface::deleteContactHistory()
     if(fix_contact_history_mesh_) {
       modify->delete_fix(fix_contact_history_mesh_->id);
       fix_contact_history_mesh_ = NULL;
+    }
+}
+
+/* ----------------------------------------------------------------------
+   called from fix wall/gran out of post_create()
+------------------------------------------------------------------------- */
+
+void FixMeshSurface::createMeshforceContact()
+{
+    if(fix_meshforce_contact_) return;
+
+    char **fixarg = new char*[19];
+    char fixid[200],propertyid[200];
+    sprintf(fixid,"contactforces_%s",id);
+    sprintf(propertyid,"contactforces_%s",id);
+    fixarg[0]=(char *) fixid;
+    fixarg[1]=(char *) "all";
+    fixarg[2]=(char *) "contactproperty/atom";
+    fixarg[3]=(char *) propertyid;
+    fixarg[4]=(char *) "6";
+    fixarg[5]=(char *) "fx";
+    fixarg[6]=(char *) "0";
+    fixarg[7]=(char *) "fy";
+    fixarg[8]=(char *) "0";
+    fixarg[9]=(char *) "fz";
+    fixarg[10]=(char *) "0";
+    fixarg[11]=(char *) "ty";
+    fixarg[12]=(char *) "0";
+    fixarg[13]=(char *) "ty";
+    fixarg[14]=(char *) "0";
+    fixarg[15]=(char *) "tz";
+    fixarg[16]=(char *) "0";
+    fixarg[17]=(char *) "primitive";
+    fixarg[18]=(char *) this->id;
+    modify->add_fix(19,fixarg);
+    fix_meshforce_contact_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
+    delete []fixarg;
+}
+
+void FixMeshSurface::deleteMeshforceContact()
+{
+    // contact tracker and neighlist are created via fix wall/gran
+    if(fix_meshforce_contact_) {
+      modify->delete_fix(fix_meshforce_contact_->id);
+      fix_meshforce_contact_ = NULL;
     }
 }
 

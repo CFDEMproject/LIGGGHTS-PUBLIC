@@ -92,6 +92,9 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
     if ((nvalues == 1) && (data_style != FIXPROPERTY_ATOM_SCALAR))
       error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with vector style. Provide more than 1 value or use style 'scalar'");
 
+    if ((nvalues >1) && (data_style != FIXPROPERTY_ATOM_VECTOR))
+      error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with vector style. Provide 1 value or use style 'vector'");
+
     defaultvalues = new double[nvalues];
 
     // fix handles properties that need to be initialized at particle creation
@@ -175,7 +178,7 @@ FixPropertyAtom::~FixPropertyAtom()
 Fix* FixPropertyAtom::check_fix(const char *varname,const char *svmstyle,int len1,int len2,const char *caller,bool errflag)
 {
     char errmsg[400];
-
+    
     if(strcmp(varname,variablename) == 0)
     {
         if(strcmp(svmstyle,"scalar") == 0) len1 = 1;

@@ -35,6 +35,7 @@ SURFACE_MODEL(SURFACE_DEFAULT,default,0)
 #include "force.h"
 #include "update.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   template<typename Style>
@@ -45,6 +46,7 @@ namespace ContactModels
 
     SurfaceModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp)
     {
+      
     }
 
     inline void registerSettings(Settings&) {}
@@ -116,6 +118,7 @@ namespace ContactModels
     void beginPass(CollisionData&, ForceData&, ForceData&){}
     void endPass(CollisionData&, ForceData&, ForceData&){}
   };
+}
 }
 #endif // SURFACE_MODEL_DEFAULT_H_
 #endif

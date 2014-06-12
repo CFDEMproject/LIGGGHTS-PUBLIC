@@ -34,6 +34,7 @@ ROLLING_MODEL(ROLLING_CDT,cdt,1)
 #include "math.h"
 #include "math_extra_liggghts.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   using namespace LAMMPS_NS;
@@ -46,6 +47,7 @@ namespace ContactModels
     RollingModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp), coeffRollFrict(NULL)
     {
       STATIC_ASSERT(Style::MODEL == HOOKE);
+      
     }
 
     void registerSettings(Settings&) {}
@@ -130,6 +132,7 @@ namespace ContactModels
   private:
     double ** coeffRollFrict;
   };
+}
 }
 #endif // ROLLING_MODEL_CDT_H_
 #endif

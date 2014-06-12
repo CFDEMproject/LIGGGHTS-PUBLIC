@@ -24,10 +24,12 @@
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
+
 #ifndef LMP_FIX_WALL_GRAN_BASE_H
 #define LMP_FIX_WALL_GRAN_BASE_H
 
 #include "fix_wall_gran.h"
+#include "fix_contact_property_atom_wall.h"
 #include "contact_interface.h"
 #include "compute_pair_gran_local.h"
 #include "settings.h"
@@ -35,47 +37,40 @@
 #include "force.h"
 #include <stdlib.h>
 #include "contact_models.h"
+#include "granular_wall.h"
 
-namespace LAMMPS_NS {
-
+namespace LIGGGHTS {
 using namespace ContactModels;
+namespace Walls {
 
 template<typename ContactModel>
-class FixWallGranBase : public FixWallGran {
- public:
-  FixWallGranBase(class LAMMPS * lmp, int narg, char **args) : FixWallGran(lmp, narg, args), cmodel(lmp, this) {
-    // copy remaining arguments for later use to init contact model
-    nfixargs = narg - iarg_;
-    fixargs = new char*[nfixargs];
-
-    for(int i = 0; i < nfixargs; i++)
-    {
-      fixargs[i] = new char[strlen(args[iarg_+i])+1];
-      strcpy(fixargs[i], args[iarg_+i]);
-    }
-  }
-
-  ~FixWallGranBase()
-  {
-    for(int i = 0; i < nfixargs; i++) delete [] fixargs[i];
-    delete [] fixargs;
-  }
-
- protected:
+class Granular : private Pointers, public IGranularWall {
   ContactModel cmodel;
-  int nfixargs;
-  char ** fixargs;
+  FixWallGran * parent;
 
-  void init_granular() {
+public:
+  Granular(LAMMPS * lmp, FixWallGran * parent) :
+    Pointers(lmp),
+    cmodel(lmp, parent),
+    parent(parent)
+  {
+  }
+
+  virtual ~Granular() {
+  }
+
+  virtual void init_granular() {
     cmodel.connectToProperties(force->registry);
+  }
 
+  virtual void settings(int nargs, char ** args) {
     Settings settings(lmp);
     cmodel.registerSettings(settings);
-    settings.registerDoubleSetting("temperature", Temp_wall, -1.0);
-    bool success = settings.parseArguments(nfixargs, fixargs);
+    bool success = settings.parseArguments(nargs, args);
 
     if(!success) {
-      error->fix_error(FLERR, this, settings.error_message.c_str());
+      // TODO: Error handling
+      error->fix_error(FLERR, parent, settings.error_message.c_str());
     }
   }
 
@@ -87,7 +82,7 @@ class FixWallGranBase : public FixWallGran {
     }
   }
 
-  virtual void compute_force(CollisionData & cdata, double *vwall)
+  virtual void compute_force(FixWallGran * wg, CollisionData & cdata, double *vwall)
   {
     const int ip = cdata.i;
 
@@ -99,8 +94,8 @@ class FixWallGranBase : public FixWallGran {
     double mass = atom->rmass[ip];
     int *type = atom->type;
 
-    if(fix_rigid_ && body_[ip] >= 0)
-      mass = masstotal_[body_[ip]];
+    if(wg->fix_rigid() && wg->body(ip) >= 0)
+      mass = wg->masstotal(wg->body(ip));
 
     const double r = cdata.r;
     const double rinv = 1.0/r;
@@ -119,13 +114,11 @@ class FixWallGranBase : public FixWallGran {
     cdata.en[0] = enx;
     cdata.en[1] = eny;
     cdata.en[2] = enz;
-    cdata.computeflag = computeflag_;
-    cdata.shearupdate = shearupdate_;
     cdata.i = ip;
     cdata.radi = radius;
     cdata.touch = NULL;
     cdata.itype = type[ip];
-    cdata.jtype = atom_type_wall_;
+
     cdata.r = r;
     cdata.rinv = rinv;
     cdata.radsum = radius;
@@ -133,26 +126,21 @@ class FixWallGranBase : public FixWallGran {
 
     cmodel.collision(cdata, i_forces, j_forces);
 
-    if(computeflag_)
-    {
+    if(cdata.computeflag) {
       force_update(f, torque, i_forces);
     }
 
-    if(cwl_ && addflag_)
-      cwl_add_wall_2(cdata, i_forces);
-  }
+    if (wg->store_force_contact()) {
+      wg->add_contactforce_wall(ip,i_forces);
+    }
 
-  void cwl_add_wall_2(CollisionData & cdata, ForceData & i_forces)
-  {
-    const double fx = i_forces.delta_F[0];
-    const double fy = i_forces.delta_F[1];
-    const double fz = i_forces.delta_F[2];
-    const double tor1 = i_forces.delta_torque[0]*cdata.area_ratio;
-    const double tor2 = i_forces.delta_torque[1]*cdata.area_ratio;
-    const double tor3 = i_forces.delta_torque[2]*cdata.area_ratio;
-    cwl_->add_wall_2(cdata.i,fx,fy,fz,tor1,tor2,tor3,cdata.contact_history,cdata.rsq);
+    if(wg->compute_pair_gran_local() && wg->addflag()) {
+      wg->cwl_add_wall_2(cdata, i_forces);
+    }
   }
 };
+
+}
 
 }
 

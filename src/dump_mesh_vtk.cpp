@@ -203,7 +203,9 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
 
           int ifix = modify->find_fix(arg[iarg++]);
 
-          if(ifix == -1)
+          FixMeshSurface *fms = (ifix < 0) ? 0 : dynamic_cast<FixMeshSurface*>(modify->fix[ifix]);
+
+          if(!fms)
           {
               n_container_bases_++;
               memory->grow(container_args_,n_container_bases_,100,"container_args_");
@@ -212,7 +214,6 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           }
           else
           {
-              FixMeshSurface *fms = static_cast<FixMeshSurface*>(modify->fix[ifix]);
               meshList_[nMesh_] = fms->triMesh();
               fms->dumpAdd();
               nMesh_++;
@@ -446,8 +447,8 @@ void DumpMeshVTK::getRefs()
   {
       for(int i = 0; i < nMesh_; i++)
       {
-          T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("T");
-          if(0 == comm->me && !wear_[i])
+          T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("Temp");
+          if(0 == comm->me && !T_[i])
             error->warning(FLERR,"Trying to dump temperature for mesh which does not calculate temperature, will dump '0' instead");
       }
   }

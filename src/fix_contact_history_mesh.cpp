@@ -33,6 +33,7 @@
 #include "update.h"
 #include "modify.h"
 #include "memory.h"
+#include "math_extra_liggghts.h"
 #include "error.h"
 
 #if defined(_OPENMP)
@@ -55,7 +56,8 @@ FixContactHistoryMesh::FixContactHistoryMesh(LAMMPS *lmp, int narg, char **arg) 
   mesh_(0),
   fix_neighlist_mesh_(0),
   fix_nneighs_(0),
-  build_neighlist_(true)
+  build_neighlist_(true),
+  numpages_(0)
 {
   
   // parse args
@@ -84,7 +86,7 @@ FixContactHistoryMesh::~FixContactHistoryMesh()
   if(dpage2_) delete [] dpage2_;
 
   if(keeppage_) {
-    for(int i = 0; i < comm->nthreads; i++) {
+    for(int i = 0; i < numpages_; i++) {
       delete keeppage_[i];
       keeppage_[i] = NULL;
     }
@@ -144,7 +146,7 @@ void FixContactHistoryMesh::allocate_pages()
     delete [] dpage2_;
 
     if(keeppage_) {
-      for(int i = 0; i < comm->nthreads; i++) {
+      for(int i = 0; i < numpages_; i++) {
         delete keeppage_[i];
         keeppage_[i] = NULL;
       }
@@ -154,17 +156,17 @@ void FixContactHistoryMesh::allocate_pages()
 
     pgsize_ = neighbor->pgsize;
     oneatom_ = neighbor->oneatom;
-    int nmypage = comm->nthreads;
-    ipage1_ = new MyPage<int>[nmypage];
-    dpage1_ = new MyPage<double>[nmypage];
-    ipage2_ = new MyPage<int>[nmypage];
-    dpage2_ = new MyPage<double>[nmypage];
-    keeppage_ = new MyPage<bool>*[nmypage];
-    for (int i = 0; i < nmypage; i++) {
+    numpages_ = comm->nthreads;
+    ipage1_ = new MyPage<int>[numpages_];
+    dpage1_ = new MyPage<double>[numpages_];
+    ipage2_ = new MyPage<int>[numpages_];
+    dpage2_ = new MyPage<double>[numpages_];
+    keeppage_ = new MyPage<bool>*[numpages_];
+    for (int i = 0; i < numpages_; i++) {
       ipage1_[i].init(oneatom_,pgsize_);
-      dpage1_[i].init(oneatom_,pgsize_);
+      dpage1_[i].init(oneatom_*MathExtraLiggghts::max(1,dnum_),pgsize_);
       ipage2_[i].init(oneatom_,pgsize_);
-      dpage2_[i].init(oneatom_,pgsize_);
+      dpage2_[i].init(oneatom_*MathExtraLiggghts::max(1,dnum_),pgsize_);
     }
 
 #if defined(_OPENMP)
@@ -176,7 +178,7 @@ void FixContactHistoryMesh::allocate_pages()
       keeppage_[tid]->init(oneatom_,pgsize_);
     }
 #else
-    for (int i = 0; i < nmypage; i++) {
+    for (int i = 0; i < numpages_; i++) {
       keeppage_[i] = new MyPage<bool>();
       keeppage_[i]->init(oneatom_,pgsize_);
     }
@@ -283,7 +285,10 @@ void FixContactHistoryMesh::pre_force(int dummy)
 
         partner_[i] = ipage_next->get(nneighs_next);
         vectorInitializeN(partner_[i],nneighs_next,-1);
+        
         contacthistory_[i] = dpage_next->get(nneighs_next*dnum_);
+        if(!contacthistory_[i])
+            error->one(FLERR,"mesh neighbor list overflow, boost neigh_modify one");
         vectorZeroizeN(contacthistory_[i],nneighs_next*dnum_);
 
         if(npartner_[i] > nneighs_next)
@@ -354,6 +359,8 @@ void FixContactHistoryMesh::markAllContacts()
     {
       const int nneighs = fix_nneighs_->get_vector_atom_int(i);
       keepflag_[i] = keeppage_[0]->get(nneighs);
+      if (!keepflag_[i])
+        error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
     }
 }
 
@@ -377,6 +384,8 @@ void FixContactHistoryMesh::markForDeletion(int tid, int ifrom, int ito)
     {
       const int nneighs = fix_nneighs_->get_vector_atom_int(i);
       keepflag_[i] = keeppage_[tid]->get(nneighs);
+      if (!keepflag_[i])
+        error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
     }
 }
 
@@ -522,6 +531,9 @@ int FixContactHistoryMesh::unpack_exchange(int nlocal, double *buf)
   partner_[nlocal] = ipage_->get(nneighs);
   contacthistory_[nlocal] = dpage_->get(dnum_*nneighs);
 
+  if (!partner_[nlocal] || !contacthistory_[nlocal])
+        error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
+
   for (int n = 0; n < npartner_[nlocal]; n++) {
     partner_[nlocal][n] = ubuf(buf[m++]).i;
     
@@ -568,6 +580,9 @@ void FixContactHistoryMesh::unpack_restart(int nlocal, int nth)
   partner_[nlocal] = ipage_->get(npartner_[nlocal]);
   contacthistory_[nlocal] = dpage_->get(npartner_[nlocal]*dnum_);
 
+  if (!partner_[nlocal] || !contacthistory_[nlocal])
+        error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
+
   for (int n = 0; n < npartner_[nlocal]; n++) {
     partner_[nlocal][n] = ubuf(extra[nlocal][m++]).i;
     for (d = 0; d < dnum_; d++) {
@@ -599,8 +614,7 @@ double FixContactHistoryMesh::memory_usage()
   bytes += nmax * sizeof(int *);
   bytes += nmax * sizeof(double *);
 
-  int nmypage = comm->nthreads;
-  for (int i = 0; i < nmypage; i++) {
+  for (int i = 0; i < numpages_; i++) {
     bytes += ipage1_[i].size();
     bytes += dpage1_[i].size();
     bytes += ipage2_[i].size();

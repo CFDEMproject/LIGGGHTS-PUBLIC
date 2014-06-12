@@ -53,8 +53,9 @@ servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV
 </UL>
 <P><B>Examples:</B>
 </P>
-<P>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
-</P>
+<PRE>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
+fix servo all mesh/surface/stress/servo file stirrer.stl type 1 com 0. 0. 0. ctrlPV torque axis 0. 0. 1. target_val 10 vel_max 1. ratio 0.01 mode auto 
+</PRE>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>
 </P>
 <P>This command is not available in LAMMPS.
@@ -76,12 +77,12 @@ Note that <I>vel_max</I> < <A HREF = "neighbor.html">skin</A> /(2* <A HREF = "ti
 </P>
 <P>output = kp * error + ki * errorsum + kd * errorchange
 </P>
-<P>where 'error' is the current devation of the controll process value to the target value, 
+<P>where 'error' is the current deviation of the controll process value to the target value, 
 'errorsum' is the time integration (sum) of the error values and 'errorchange' its derivative. The controller
 also includes an "anti-wind-up scheme" which prohibits accumulation of erroneous controller output caused 
 by the integral part due to unavoidable long-lasting deviations.
 </P>
-<P>By using the keyword <I>mode</I> = auto an alternative controller approach is applied. It is a pure proportional controller with gain scheduling. In the absence of neighbour particles the servo wall may move with maximum velocity (defined by <I>vel_max</I>). Otherwise, the maximum wall velocity is defined by <I>ratio</I> * min(radius) / dt. Approaching <I>target_val</I> the maximum velocity decreases to 0.1 * <I>radio</I> * min(radius) / dt.
+<P>By using the keyword <I>mode</I> = auto an alternative controller approach is applied. It is a pure proportional controller with gain scheduling. In the absence of neighbour particles the servo wall may move with maximum velocity (defined by <I>vel_max</I>). Otherwise, the maximum wall velocity is defined by <I>ratio</I> * min(radius) / dt. Approaching <I>target_val</I> the maximum velocity decreases to 0.1 * <I>ratio</I> * min(radius) / dt.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
@@ -103,6 +104,8 @@ to change the controller params inbetween two runs.
 the state after scaling/rotation.
 Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary. 
 In this case, an error is generated. See <A HREF = "boundary.html">boundary</A> command for details.
+This fix can not be used in conjunction with another fix that manipulates mesh geometry,
+such as a <A HREF = "fix_move_mesh.html">fix move/mesh</A>
 </P>
 <P><B>Related commands:</B>
 </P>

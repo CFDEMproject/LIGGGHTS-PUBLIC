@@ -52,14 +52,19 @@ namespace LAMMPS_NS {
     int iarg_;
 
   private:
-    template <int> void post_force_eval(int,int);
+    template <int,int> void post_force_eval(int,int);
 
-    class FixPropertyGlobal* fix_conductivity;
-    double *conductivity;
+    class FixPropertyGlobal* fix_conductivity_;
+    double *conductivity_;
+
+    // model for contact area calculation
+    int area_calculation_mode_;
+
+    double fixed_contact_area_;
 
     // for heat transfer area correction
-    int area_correction_flag;
-    double const* const* deltan_ratio;
+    int area_correction_flag_;
+    double const* const* deltan_ratio_;
   };
 
 }

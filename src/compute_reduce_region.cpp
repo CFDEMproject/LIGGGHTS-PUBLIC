@@ -29,7 +29,7 @@
 using namespace LAMMPS_NS;
 
 enum{SUM,MINN,MAXX,AVE};
-enum{X,V,F,COMPUTE,FIX,VARIABLE};
+enum{X,V,F,COMPUTE,FIX,VARIABLE,RHO,P}; 
 enum{PERATOM,LOCAL};
 
 #define INVOKED_VECTOR 2

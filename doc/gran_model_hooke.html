@@ -22,8 +22,14 @@
 <PRE>  <I>tangential_damping</I> values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping
-  <I>viscous</I> = 'stokes' or 'off'
-    viscous = restitution coefficient varies with a local Stokes number of the particle
+  <I>ktToKnUser</I> values = 'on' or 'off'
+    on = uses a different kt, namely kt = 2/7 * kn.
+    off = standard implementation kt = kn.
+  <I>limitForce</I> values = 'on' or 'off'
+    on = ensures that the normal force is never attractive (an artefact that can occur at the end of a collision).
+    off = standard implementation that might lead to attractive forces.
+  <I>viscous</I> = 'on' or 'off'
+    on = restitution coefficient varies with a local Stokes number of the particle. Requires additional global properties to be specified
     off = no modification to the restitution coefficient  
 </PRE>
 <P><B>LIGGGHTS vs. LAMMPS Info:</B>
@@ -102,6 +108,10 @@ fix id all property/global coefficientFriction peratomtypepair n_atomtypes value
 </PRE>
 <P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 </P>
+<P><B>Force Limiting:</B>
+</P>
+<P>Note, that not using limitForce might lead to attractive forces between particles and walls, especially in case the coefficient of restitution is small. Be sure you include this key word for the pair style and the wall model if you like to avoid this.
+</P>
 <P><B>Viscous model:</B>
 </P>
 <P>Using option <I>viscous</I> = stokes adapts the coefficient of restitution as proposed by
@@ -131,11 +141,14 @@ In the Hertzian case, a similar analogy holds, though the spring is no longer li
 <P>If using SI units, youngsModulus must be > 5e6
 If using CGS units, youngsModulus must be > 5e5
 When using <I>viscous</I>, FluidViscosity has to be  > 0
+When using the limitForce, the specified coefficient of restitution is only approximate. This might become problematic for low coefficients of resitution as showin in Schwager and Poschel.
 </P>
 <P><B>Default:</B> 
 </P>
 <P><I>viscous</I> = 'off'
 <I>tangential_damping</I> = 'on'
+<I>ktToKnUser</I> = 'off'
+<I>limitForce</I> = 'off'
 </P>
 <A NAME = "Legendre"></A>
 
@@ -146,6 +159,8 @@ When using <I>viscous</I>, FluidViscosity has to be  > 0
 <P><B>(Ai)</B> Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
 </P>
 <P><B>(Brilliantov)</B> Brilliantov, Spahn, Hertzsch, Poschel, Phys Rev E, 53, p 5382-5392 (1996).
+</P>
+<P><B>(Schwager)</B> Schwager, Poschel, Gran Matt, 9, p 465-469 (2007).
 </P>
 <P><B>(Silbert)</B> Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
 </P>

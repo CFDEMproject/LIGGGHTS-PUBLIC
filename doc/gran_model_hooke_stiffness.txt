@@ -15,7 +15,10 @@ model hertz keyword values :pre
 zero or more keyword/value pairs may be appended :l
   {absolute_damping} values = 'on' or 'off'
     on = activates tangential damping
-    off = no tangential damping :pre
+    off = no tangential damping
+  {limitForce} values = 'on' or 'off'
+    on = ensures that the normal force is never attractive (an artefact that can occur at the end of a collision).
+    off = standard implementation that might lead to attractive forces.
   {tangential_damping} values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping :pre
@@ -95,20 +98,30 @@ between 2 particles grows according to a tangential spring and dash-pot model un
 Ft/Fn = cof and is then held at Ft = Fn*cof until the particles lose contact. 
 In the Hertzian case, a similar analogy holds, though the spring is no longer linear.
 
+[Force Limiting:]
+
+Note, that not using limitForce might lead to attractive forces between particles and walls, especially in case the coefficient of restitution is small. Be sure you include this key word for the pair style and the wall model if you like to avoid this.
+
+
 [Restrictions:]
 
 If using SI units, youngsModulus must be > 5e6
 If using CGS units, youngsModulus must be > 5e5
+When using the limitForce, the specified coefficient of restitution is only approximate. This might become problematic for low coefficients of resitution as showin in Schwager and Poschel.
+
 
 [Default:] 
 
 {tangential_damping} = 'on'
+{limitForce} = 'off'
 
 [(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525–541 (2004).
 
 [(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
 
 [(Brilliantov)] Brilliantov, Spahn, Hertzsch, Poschel, Phys Rev E, 53, p 5382-5392 (1996).
+
+[(Schwager)] Schwager, Poschel, Gran Matt, 9, p 465-469 (2007).
 
 [(Silbert)] Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
 

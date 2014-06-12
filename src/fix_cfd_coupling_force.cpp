@@ -45,9 +45,10 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
     fix_hdtorque_(0),
     fix_volumeweight_(0),
     use_force_(true),
-    use_torque_(true),                                                                              
+    use_torque_(true),
     use_dens_(false),
-    use_type_(false)
+    use_type_(false),
+    use_property_(false)
 {
     int iarg = 3;
 
@@ -78,6 +79,19 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 use_type_ = false;
             else
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_type'");
+            iarg++;
+            hasargs = true;
+        } else if(strcmp(arg[iarg],"transfer_property") == 0) {
+            if(narg < iarg+5)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_type'");
+            iarg++;
+            use_property_ = true;
+            if(strcmp(arg[iarg++],"name"))
+                error->fix_error(FLERR,this,"expecting 'name' after 'transfer_property'");
+            sprintf(property_name,"%s",arg[iarg++]);
+            if(strcmp(arg[iarg++],"type"))
+                error->fix_error(FLERR,this,"expecting 'type' after property name");
+            sprintf(property_type,"%s",arg[iarg++]);
             iarg++;
             hasargs = true;
         } else if (strcmp(this->style,"couple/cfd/force") == 0) {
@@ -197,6 +211,8 @@ void FixCfdCouplingForce::init()
     if(use_type_) fix_coupling_->add_push_property("type","scalar-atom");
     if(use_dens_) fix_coupling_->add_push_property("density","scalar-atom");
     fix_coupling_->add_push_property("volumeweight","scalar-atom");
+
+    if(use_property_) fix_coupling_->add_push_property(property_name,property_type);
 
     // values to come from OF
     if(use_force_) fix_coupling_->add_pull_property("dragforce","vector-atom");

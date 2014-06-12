@@ -38,6 +38,7 @@ FixStyle(mesh/surface/planar,FixMeshSurface)
 #include "fix_mesh.h"
 #include "tri_mesh.h"
 #include "fix_contact_history_mesh.h"
+#include "fix_contact_property_atom.h"
 #include "fix_neighlist_mesh.h"
 #include "custom_value_tracker.h"
 
@@ -54,6 +55,7 @@ namespace LAMMPS_NS
         virtual void pre_delete(bool unfixflag);
 
         virtual void init() {}
+        virtual void setup(int vflag) {}
 
         virtual int setmask();
         virtual void setup_pre_force(int);
@@ -61,12 +63,14 @@ namespace LAMMPS_NS
         virtual void pre_force(int);
         virtual void final_integrate();
 
-        void createWallNeighList(int igrp);
-        class FixNeighlistMesh* createOtherNeighList(int igrp,const char *nId);
+        virtual void createWallNeighList(int igrp);
+        virtual class FixNeighlistMesh* createOtherNeighList(int igrp,const char *nId);
         void createContactHistory(int dnum);
+        void createMeshforceContact();
 
         void deleteWallNeighList();
         void deleteContactHistory();
+        void deleteMeshforceContact();
 
         inline bool trackStress()
         {return stress_flag_;}
@@ -79,6 +83,12 @@ namespace LAMMPS_NS
 
         inline class FixNeighlistMesh* meshNeighlist()
         { return fix_mesh_neighlist_;}
+
+        inline bool hasNeighList()
+        { return fix_mesh_neighlist_?true:false; }
+
+        inline class FixContactPropertyAtomWall* meshforceContact()
+        { return fix_meshforce_contact_;}
 
         inline class TriMesh *triMesh()
         { return static_cast<TriMesh*>(mesh()); }
@@ -96,6 +106,7 @@ namespace LAMMPS_NS
 
         class FixContactHistoryMesh *fix_contact_history_mesh_;
         class FixNeighlistMesh *fix_mesh_neighlist_;
+        class FixContactPropertyAtomWall *fix_meshforce_contact_;
 
         // flag for stressanalysis
         bool stress_flag_;

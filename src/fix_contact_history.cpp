@@ -91,6 +91,7 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
     variablename_ = new char[n];
     strcpy(variablename_,arg[iarg_]);
     iarg_++;
+    
   }
   else
   {
@@ -218,7 +219,7 @@ void FixContactHistory::allocate_pages()
     dpage_ = new MyPage<double>[nmypage];
     for (int i = 0; i < nmypage; i++) {
       ipage_[i].init(oneatom_,pgsize_);
-      dpage_[i].init(oneatom_,pgsize_);
+      dpage_[i].init(oneatom_*MathExtraLiggghts::max(1,dnum_),pgsize_);
     }
   }
 }
@@ -477,6 +478,8 @@ int FixContactHistory::unpack_exchange(int nlocal, double *buf)
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
   partner_[nlocal] = ipage_->get(npartner_[nlocal]);
   contacthistory_[nlocal] = dpage_->get(dnum_*npartner_[nlocal]);
+  if (partner_[nlocal] == NULL || contacthistory_[nlocal] == NULL)
+      error->one(FLERR,"Contact history overflow, boost neigh_modify one");
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
     partner_[nlocal][n] = ubuf(buf[m++]).i;
@@ -564,6 +567,8 @@ void FixContactHistory::unpack_restart(int nlocal, int nth)
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
   partner_[nlocal] = ipage_->get(npartner_[nlocal]);
   contacthistory_[nlocal] = dpage_->get(npartner_[nlocal]*dnum_);
+  if (partner_[nlocal] == NULL || contacthistory_[nlocal] == NULL)
+      error->one(FLERR,"Contact history overflow, boost neigh_modify one");
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
     partner_[nlocal][n] = ubuf(extra[nlocal][m++]).i;

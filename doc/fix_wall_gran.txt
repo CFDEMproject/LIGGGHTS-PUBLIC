@@ -15,14 +15,12 @@ fix ID group-ID style model_keyword model_values wallstyle wallstyleargs general
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 style = {wall/gran} :l
 
-zero or more model_keyword/value pairs may be appended :l
+zero or more model_keyword/value pairs may be appended. They must be appended in the following order :l
   {model} values = described "here"_Section_gran_models.html
   {tangential} values = described "here"_Section_gran_models.html
   {rolling_friction} values = described "here"_Section_gran_models.html
   {cohesion} values = described "here"_Section_gran_models.html
-  {surface} values = described "here"_Section_gran_models.html
-  {temperature} value = T0
-    T0 = Temperature of the wall (temperature units) :pre
+  {surface} values = described "here"_Section_gran_models.html :pre
 
 wallstyle = {mesh} or {primitive} :l
 wallstyle args for wallstyle {mesh} = {n_meshes} and {meshes} :l
@@ -44,9 +42,12 @@ zero or more general_keyword/value pairs may be appended :l
 general_keyword =  {shear} or {store_force} :l
   {shear} values = dim vshear
     dim = {x} or {y} or {z}
-    vshear = magnitude of shear velocity (velocity units) :pre
+    vshear = magnitude of shear velocity (velocity units)
+  {temperature} value = T0
+    T0 = Temperature of the wall (temperature units) 
+  {contact_area} values = 'overlap' or 'constant [value]' or 'projection'
   {store_force} value = 'yes' or 'no'
-    yes, no = determines if the wall force exerted on the particles is stored in a "fix property/atom"_fix_property.html with id force_(ID), where (ID) is the id of the fix wall/gran command. 
+    yes, no = determines if the wall force exerted on the particles is stored in a "fix property/atom"_fix_property.html with id force_(ID), where (ID) is the id of the fix wall/gran command.  :pre
 :ule
 
 [Examples:]
@@ -115,9 +116,11 @@ or {angular_velocity} in "fix mesh/surface"_fix_mesh_surface.html.
 
 The keyword {temperature} is used to assign a constant temperature to the wall.
 This setting gets effective in conjunction with heat conduction via
-"fix heat/gran"_fix_heat_gran.html. For {wallstyle mesh}, the value
+"fix heat/gran/conduction"_fix_heat_gran_conduction.html. For {wallstyle mesh}, the value
 for the temperature given in this command is ignored and the temperature
 value is specified per mesh via "fix mesh/surface"_fix_mesh_surface.html.
+Contact area calculation can be controlled by keyword {contact_area} in the
+same manner as for "fix heat/gran/conduction"_fix_heat_gran_conduction.html.
 
 By specifying {store_force} = 'yes', you can instruct the command to
 store the wall force exerted on the particles in a

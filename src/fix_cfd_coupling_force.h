@@ -58,6 +58,10 @@ class FixCfdCouplingForce : public Fix  {
 
  private:
   bool use_force_, use_torque_, use_dens_, use_type_;
+
+  bool use_property_;
+  char property_name[200];
+  char property_type[200];
 };
 
 }

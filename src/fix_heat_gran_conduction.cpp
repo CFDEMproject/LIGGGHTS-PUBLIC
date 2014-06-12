@@ -27,6 +27,7 @@
 #include "fix_property_global.h"
 #include "force.h"
 #include "math_extra.h"
+#include "math_extra_liggghts.h"
 #include "mech_param_gran.h"
 #include "modify.h"
 #include "neigh_list.h"
@@ -35,34 +36,64 @@
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
+// modes for conduction contact area calaculation
+// same as in fix_wall_gran.cpp
+
+enum{ CONDUCTION_CONTACT_AREA_OVERLAP,
+      CONDUCTION_CONTACT_AREA_CONSTANT,
+      CONDUCTION_CONTACT_AREA_PROJECTION};
+
 /* ---------------------------------------------------------------------- */
 
-FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) : FixHeatGran(lmp, narg, arg)
+FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) :
+  FixHeatGran(lmp, narg, arg),
+  fix_conductivity_(0),
+  conductivity_(0),
+  area_calculation_mode_(CONDUCTION_CONTACT_AREA_OVERLAP),
+  fixed_contact_area_(0.),
+  area_correction_flag_(0),
+  deltan_ratio_(0)
 {
   iarg_ = 5;
-
-  area_correction_flag = 0;
 
   bool hasargs = true;
   while(iarg_ < narg && hasargs)
   {
     hasargs = false;
-    if(strcmp(arg[iarg_],"area_correction") == 0) {
+    if(strcmp(arg[iarg_],"contact_area") == 0) {
+
+      if(strcmp(arg[iarg_+1],"overlap") == 0)
+        area_calculation_mode_ =  CONDUCTION_CONTACT_AREA_OVERLAP;
+      else if(strcmp(arg[iarg_+1],"projection") == 0)
+        area_calculation_mode_ =  CONDUCTION_CONTACT_AREA_PROJECTION;
+      else if(strcmp(arg[iarg_+1],"constant") == 0)
+      {
+        if (iarg_+3 > narg)
+            error->fix_error(FLERR,this,"not enough arguments for keyword 'contact_area constant'");
+        area_calculation_mode_ =  CONDUCTION_CONTACT_AREA_CONSTANT;
+        fixed_contact_area_ = force->numeric(FLERR,arg[iarg_+2]);
+        if (fixed_contact_area_ <= 0.)
+            error->fix_error(FLERR,this,"'contact_area constant' value must be > 0");
+        iarg_++;
+      }
+      else error->fix_error(FLERR,this,"expecting 'yes' otr 'no' after 'area_correction'");
+      iarg_ += 2;
+      hasargs = true;
+    } else if(strcmp(arg[iarg_],"area_correction") == 0) {
       if (iarg_+2 > narg) error->fix_error(FLERR,this,"not enough arguments for keyword 'area_correction'");
       if(strcmp(arg[iarg_+1],"yes") == 0)
-        area_correction_flag = 1;
+        area_correction_flag_ = 1;
       else if(strcmp(arg[iarg_+1],"no") == 0)
-        area_correction_flag = 0;
-      else error->fix_error(FLERR,this,"expecting 'yes' otr 'no' after 'area_correction'");
+        area_correction_flag_ = 0;
+      else error->fix_error(FLERR,this,"expecting 'overlap', 'projection' or 'constant' after 'contact_area'");
       iarg_ += 2;
       hasargs = true;
     } else if(strcmp(style,"heat/gran/conduction") == 0)
         error->fix_error(FLERR,this,"unknown keyword");
   }
 
-  fix_conductivity = NULL;
-  conductivity = NULL;
-
+  if(CONDUCTION_CONTACT_AREA_OVERLAP != area_calculation_mode_ && 1 == area_correction_flag_)
+    error->fix_error(FLERR,this,"can use 'area_correction' only for 'contact_area = overlap'");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -70,8 +101,8 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) : FixH
 FixHeatGranCond::~FixHeatGranCond()
 {
 
-  if (conductivity)
-    delete []conductivity;
+  if (conductivity_)
+    delete []conductivity_;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -111,21 +142,23 @@ void FixHeatGranCond::init()
   double expo, Yeff_ij, Yeff_orig_ij, ratio;
   int max_type = pair_gran->mpg->max_type();
 
-  if (conductivity) delete []conductivity;
-  conductivity = new double[max_type];
-  fix_conductivity = static_cast<FixPropertyGlobal*>(modify->find_fix_property("thermalConductivity","property/global","peratomtype",max_type,0,style));
+  if (conductivity_) delete []conductivity_;
+  conductivity_ = new double[max_type];
+  fix_conductivity_ =
+    static_cast<FixPropertyGlobal*>(modify->find_fix_property("thermalConductivity","property/global","peratomtype",max_type,0,style));
 
   // pre-calculate conductivity for possible contact material combinations
   for(int i=1;i< max_type+1; i++)
       for(int j=1;j<max_type+1;j++)
       {
-          conductivity[i-1] = fix_conductivity->compute_vector(i-1);
-          if(conductivity[i-1] < 0.) error->all(FLERR,"Fix heat/gran/conduction: Thermal conductivity must not be < 0");
+          conductivity_[i-1] = fix_conductivity_->compute_vector(i-1);
+          if(conductivity_[i-1] < 0.)
+            error->all(FLERR,"Fix heat/gran/conduction: Thermal conductivity must not be < 0");
       }
 
   // calculate heat transfer correction
 
-  if(area_correction_flag)
+  if(area_correction_flag_)
   {
     if(!force->pair_match("gran",0))
         error->fix_error(FLERR,this,"area correction only works with using granular pair styles");
@@ -153,7 +186,7 @@ void FixHeatGranCond::init()
     }
 
     // get reference to deltan_ratio
-    deltan_ratio = static_cast<FixPropertyGlobal*>(modify->find_fix_property("youngsModulusOriginal","property/global","peratomtype",max_type,0,style))->get_array_modified();
+    deltan_ratio_ = static_cast<FixPropertyGlobal*>(modify->find_fix_property("youngsModulusOriginal","property/global","peratomtype",max_type,0,style))->get_array_modified();
   }
 
   updatePtrs();
@@ -167,10 +200,21 @@ void FixHeatGranCond::init()
 
 void FixHeatGranCond::post_force(int vflag)
 {
-  //template function for using touchflag or not
-  if(history_flag == 0) post_force_eval<0>(vflag,0);
-  if(history_flag == 1) post_force_eval<1>(vflag,0);
 
+  if(history_flag == 0 && CONDUCTION_CONTACT_AREA_OVERLAP == area_calculation_mode_)
+    post_force_eval<0,CONDUCTION_CONTACT_AREA_OVERLAP>(vflag,0);
+  if(history_flag == 1 && CONDUCTION_CONTACT_AREA_OVERLAP == area_calculation_mode_)
+    post_force_eval<1,CONDUCTION_CONTACT_AREA_OVERLAP>(vflag,0);
+
+  if(history_flag == 0 && CONDUCTION_CONTACT_AREA_CONSTANT == area_calculation_mode_)
+    post_force_eval<0,CONDUCTION_CONTACT_AREA_CONSTANT>(vflag,0);
+  if(history_flag == 1 && CONDUCTION_CONTACT_AREA_CONSTANT == area_calculation_mode_)
+    post_force_eval<1,CONDUCTION_CONTACT_AREA_CONSTANT>(vflag,0);
+
+  if(history_flag == 0 && CONDUCTION_CONTACT_AREA_PROJECTION == area_calculation_mode_)
+    post_force_eval<0,CONDUCTION_CONTACT_AREA_PROJECTION>(vflag,0);
+  if(history_flag == 1 && CONDUCTION_CONTACT_AREA_PROJECTION == area_calculation_mode_)
+    post_force_eval<1,CONDUCTION_CONTACT_AREA_PROJECTION>(vflag,0);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -178,13 +222,26 @@ void FixHeatGranCond::post_force(int vflag)
 void FixHeatGranCond::cpl_evaluate(ComputePairGranLocal *caller)
 {
   if(caller != cpl) error->all(FLERR,"Illegal situation in FixHeatGranCond::cpl_evaluate");
-  if(history_flag == 0) post_force_eval<0>(0,1);
-  if(history_flag == 1) post_force_eval<1>(0,1);
+
+  if(history_flag == 0 && CONDUCTION_CONTACT_AREA_OVERLAP == area_calculation_mode_)
+    post_force_eval<0,CONDUCTION_CONTACT_AREA_OVERLAP>(0,1);
+  if(history_flag == 1 && CONDUCTION_CONTACT_AREA_OVERLAP == area_calculation_mode_)
+    post_force_eval<1,CONDUCTION_CONTACT_AREA_OVERLAP>(0,1);
+
+  if(history_flag == 0 && CONDUCTION_CONTACT_AREA_CONSTANT == area_calculation_mode_)
+    post_force_eval<0,CONDUCTION_CONTACT_AREA_CONSTANT>(0,1);
+  if(history_flag == 1 && CONDUCTION_CONTACT_AREA_CONSTANT == area_calculation_mode_)
+    post_force_eval<1,CONDUCTION_CONTACT_AREA_CONSTANT>(0,1);
+
+  if(history_flag == 0 && CONDUCTION_CONTACT_AREA_PROJECTION == area_calculation_mode_)
+    post_force_eval<0,CONDUCTION_CONTACT_AREA_PROJECTION>(0,1);
+  if(history_flag == 1 && CONDUCTION_CONTACT_AREA_PROJECTION == area_calculation_mode_)
+    post_force_eval<1,CONDUCTION_CONTACT_AREA_PROJECTION>(0,1);
 }
 
 /* ---------------------------------------------------------------------- */
 
-template <int HISTFLAG>
+template <int HISTFLAG,int CONTACTAREA>
 void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
 {
   double hc,contactArea,delta_n,flux,dirFlux[3];
@@ -257,17 +314,28 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
 
         r = sqrt(rsq);
 
-        if(area_correction_flag)
+        if(CONTACTAREA == CONDUCTION_CONTACT_AREA_OVERLAP)
         {
-          delta_n = radsum - r;
-          delta_n *= deltan_ratio[type[i]-1][type[j]-1];
-          r = radsum - delta_n;
+            
+            if(area_correction_flag_)
+            {
+              delta_n = radsum - r;
+              delta_n *= deltan_ratio_[type[i]-1][type[j]-1];
+              r = radsum - delta_n;
+            }
+
+            contactArea = - M_PI/4 * ( (r-radi-radj)*(r+radi-radj)*(r-radi+radj)*(r+radi+radj) )/(r*r); //contact area of the two spheres
+        }
+        else if (CONTACTAREA == CONDUCTION_CONTACT_AREA_CONSTANT)
+            contactArea = fixed_contact_area_;
+        else if (CONTACTAREA == CONDUCTION_CONTACT_AREA_PROJECTION)
+        {
+            double rmax = MathExtraLiggghts::max(radi,radj);
+            contactArea = M_PI*rmax*rmax;
         }
 
-        contactArea = - M_PI/4 * ( (r-radi-radj)*(r+radi-radj)*(r-radi+radj)*(r+radi+radj) )/(r*r); //contact area of the two spheres
-
-        tcoi = conductivity[type[i]-1];
-        tcoj = conductivity[type[j]-1];
+        tcoi = conductivity_[type[i]-1];
+        tcoj = conductivity_[type[j]-1];
         if (tcoi < SMALL || tcoj < SMALL) hc = 0.;
         else hc = 4.*tcoi*tcoj/(tcoi+tcoj)*sqrt(contactArea);
 

@@ -63,6 +63,8 @@ namespace MODEL_PARAMS
 
   ScalarProperty* createLiquidVolume(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createSurfaceTension(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  ScalarProperty* createSwitchModel(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  ScalarProperty* createHistoryIndex(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   VectorProperty* createContactAngle(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createKn(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createKt(PropertyRegistry & registry, const char * caller, bool sanity_checks);

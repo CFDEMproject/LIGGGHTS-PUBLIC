@@ -47,17 +47,7 @@
 #include "memory.h"
 #include "error.h"
 
-#include "contact_models.h"
-#include "style_surface_model.h"
-#include "style_normal_model.h"
-#include "style_tangential_model.h"
-#include "style_cohesion_model.h"
-#include "style_rolling_model.h"
-#include "pair_gran_base.h"
-#include "fix_wall_gran_base.h"
-
 using namespace LAMMPS_NS;
-using namespace ContactModels;
 
 /* ---------------------------------------------------------------------- */
 
@@ -98,46 +88,6 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp), registry(lmp)
   kspace_style = new char[n];
   strcpy(kspace_style,str);
 
-  // register contact model string to contact mappings
-#define SURFACE_MODEL(identifier,str,constant) \
-  surface_model_map[#str] = identifier;
-#include "style_surface_model.h"
-#undef SURFACE_MODEL
-
-#define NORMAL_MODEL(identifier,str,constant) \
-  normal_model_map[#str] = identifier;
-#include "style_normal_model.h"
-#undef NORMAL_MODEL
-
-#define TANGENTIAL_MODEL(identifier,str,constant) \
-  tangential_model_map[#str] = identifier;
-#include "style_tangential_model.h"
-#undef TANGENTIAL_MODEL
-
-  cohesion_model_map["off"] = COHESION_OFF;
-#define COHESION_MODEL(identifier,str,constant) \
-  cohesion_model_map[#str] = identifier;
-#include "style_cohesion_model.h"
-#undef COHESION_MODEL
-
-  rolling_model_map["off"] = ROLLING_OFF;
-#define ROLLING_MODEL(identifier,str,constant) \
-  rolling_model_map[#str] = identifier;
-#include "style_rolling_model.h"
-#undef ROLLING_MODEL
-
-  // register granular pair styles
-#define GRAN_MODEL(MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE) \
-  register_granular_pair_style<MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE>();
-#include "style_contact_model.h"
-#undef GRAN_MODEL
-
-  // register granular wall fixes
-#define GRAN_MODEL(MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE) \
-  register_granular_wall_fix<MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE>();
-#include "style_contact_model.h"
-#undef GRAN_MODEL
-
   // fill pair map with pair styles listed in style_pair.h
 
   pair_map = new std::map<std::string,PairCreator>();
@@ -148,24 +98,6 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp), registry(lmp)
 #include "style_pair.h"
 #undef PairStyle
 #undef PAIR_CLASS
-}
-
-template<int MODEL, int TANGENTIAL, int COHESION, int ROLLING, int SURFACE>
-void Force::register_granular_pair_style() {
-  typedef GranStyle<MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE> Style;
-  typedef ContactModel<Style> CModel;
-  typedef PairGranBase<CModel> PairGranInst;
-  int64_t hashcode = Style::HASHCODE;
-  granular_pair_style_creators[hashcode] = &create_pair_style_instance<PairGranInst>;
-}
-
-template<int MODEL, int TANGENTIAL, int COHESION, int ROLLING, int SURFACE>
-void Force::register_granular_wall_fix() {
-  typedef GranStyle<MODEL,TANGENTIAL,COHESION,ROLLING,SURFACE> Style;
-  typedef ContactModel<Style> CModel;
-  typedef FixWallGranBase<CModel> FixWallGranBaseInst;
-  int64_t hashcode = Style::HASHCODE;
-  granular_wall_fix_creators[hashcode] = &create_fix_instance<FixWallGranBaseInst>;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -279,9 +211,6 @@ Pair *Force::new_pair(const char *style, int & narg, char ** & args, const char 
   if (pair_map->find(style) != pair_map->end()) {
     PairCreator pair_creator = (*pair_map)[style];
     return pair_creator(lmp);
-  } else if (strcmp(style,"gran") == 0) {
-    
-    return new_granular_pair(narg, args);
   }
 
   error->all(FLERR,"Invalid pair style");
@@ -313,146 +242,8 @@ Pair *Force::new_pair_from_restart(FILE * fp, const char *style, const char *suf
     PairCreator pair_creator = (*pair_map)[style];
     return pair_creator(lmp);
   }
-  else if (strcmp(style,"gran") == 0) {
-    
-    return new_granular_pair_from_restart(fp);
-  }
 
   error->all(FLERR,"Invalid pair style");
-  return NULL;
-}
-
-Pair *Force::new_granular_pair_from_restart(FILE * fp)
-{
-  int me = comm->me;
-
-  int64_t selected = -1;
-  if(me == 0){
-    // read model hashcode, but reset file pointer afterwards.
-    // this way read_restart_settings can still read the hashcode (sanity check)
-    fread(&selected, sizeof(int64_t), 1, fp);
-    fseek(fp, -sizeof(int64_t), SEEK_CUR);
-  }
-  MPI_Bcast(&selected,8,MPI_CHAR,0,world);
-
-  if(granular_pair_style_creators.find(selected) != granular_pair_style_creators.end()) {
-    return granular_pair_style_creators[selected](lmp);
-  }
-
-  error->all(FLERR,"Invalid pair style");
-  return NULL;
-}
-
-int64_t Force::select_contact_model(int & narg, char ** & args)
-{
-  // this method will consume arguments to determine which granular contact model is active
-
-  // default configuration
-  int model = -1;
-  int tangential = TANGENTIAL_NO_HISTORY;
-  int cohesion = COHESION_OFF;
-  int rolling = ROLLING_OFF;
-  int surface = SURFACE_DEFAULT;
-
-  // select normal model
-  if (narg > 1 && strcmp(args[0], "model") == 0) {
-    if (normal_model_map.find(args[1]) != normal_model_map.end()) {
-      model = normal_model_map[args[1]];
-    }
-
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
-
-  // OPTIONAL: select tangential model
-  if (narg > 1 && strcmp(args[0], "tangential") == 0) {
-    if (tangential_model_map.find(args[1]) != tangential_model_map.end()) {
-      tangential = tangential_model_map[args[1]];
-    } else {
-      tangential = -1;
-    }
-
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
-
-  // OPTIONAL: select cohesion model
-  if (narg > 1 && strcmp(args[0], "cohesion") == 0) {
-    if (cohesion_model_map.find(args[1]) != cohesion_model_map.end()) {
-      cohesion = cohesion_model_map[args[1]];
-    } else {
-      cohesion = -1;
-    }
-
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
-
-  // OPTIONAL: select rolling model
-  if (narg > 1 && strcmp(args[0], "rolling_friction") == 0) {
-    if (rolling_model_map.find(args[1]) != rolling_model_map.end()) {
-      rolling = rolling_model_map[args[1]];
-    } else {
-      rolling = -1;
-    }
-
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
-
-  // OPTIONAL: select surface model
-  if (narg > 1 && strcmp(args[0], "surface") == 0) {
-    if (surface_model_map.find(args[1]) != surface_model_map.end()) {
-      surface = surface_model_map[args[1]];
-    } else {
-      surface = -1;
-    }
-
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
-
-  if(model != -1 && tangential != -1 && cohesion != -1 && rolling != -1 && surface != -1) {
-    return generate_gran_hashcode(model, tangential, cohesion, rolling, surface);
-  }
-  return -1;
-}
-
-Pair *Force::new_granular_pair(int & narg, char ** & args)
-{
-  int64_t selected = select_contact_model(narg, args);
-
-  if(selected != -1) {
-    if(granular_pair_style_creators.find(selected) != granular_pair_style_creators.end()) {
-      return granular_pair_style_creators[selected](lmp);
-    }
-  }
-
-  error->all(FLERR,"Invalid pair style");
-  return NULL;
-}
-
-Fix* Force::new_granular_wall_fix(int narg, char ** args) {
-  int nremaining = narg - 3;
-  char ** remaining_args = &args[3];
-
-  int64_t selected = select_contact_model(nremaining, remaining_args);
-
-  if(selected != -1) {
-    char ** fix_args = new char*[3+nremaining];
-    fix_args[0] = args[0];
-    fix_args[1] = args[1];
-    fix_args[2] = args[2];
-    for(int i = 0; i < nremaining; i++) {
-      fix_args[3+i] = remaining_args[i];
-    }
-
-    if(granular_wall_fix_creators.find(selected) != granular_wall_fix_creators.end()) {
-      return granular_wall_fix_creators[selected](lmp, nremaining+3, fix_args);
-    }
-  }
-
-  error->all(FLERR,"Invalid granular wall fix");
   return NULL;
 }
 

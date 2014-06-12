@@ -46,26 +46,36 @@
 #include "comm.h"
 #include "error.h"
 #include "fix_property_atom.h"
+#include "fix_contact_property_atom_wall.h"
 #include "math_extra.h"
 #include "math_extra_liggghts.h"
 #include "compute_pair_gran_local.h"
 #include "fix_neighlist_mesh.h"
 #include "fix_mesh_surface_stress.h"
-#include "primitive_wall.h"
 #include "tri_mesh.h"
+#include "primitive_wall.h"
 #include "primitive_wall_definitions.h"
 #include "mpi_liggghts.h"
 #include "neighbor.h"
 #include "contact_interface.h"
 #include "fix_property_global.h"
 #include <vector>
+#include "granular_wall.h"
 
-using namespace ContactModels;
 using namespace LAMMPS_NS;
 using namespace FixConst;
 using namespace LAMMPS_NS::PRIMITIVE_WALL_DEFINITIONS;
+using namespace LIGGGHTS::Walls;
+using namespace LIGGGHTS::ContactModels;
 
 const double SMALL = 1e-12;
+
+  // modes for conduction contact area calaculation
+  // same as in fix_heat_gran_conduction.cpp
+
+  enum{ CONDUCTION_CONTACT_AREA_OVERLAP,
+        CONDUCTION_CONTACT_AREA_CONSTANT,
+        CONDUCTION_CONTACT_AREA_PROJECTION};
 
 /* ---------------------------------------------------------------------- */
 
@@ -79,6 +89,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
     // defaults
     store_force_ = false;
+    store_force_contact_ = false;
     stress_flag_ = false;
     n_FixMesh_ = 0;
     dnum_ = 0;
@@ -93,7 +104,8 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     atom_type_wall_ = 1; // will be overwritten during execution, but other fixes require a value here
 
     // initializations
-    fix_wallforce_ = NULL;
+    fix_wallforce_ = 0;
+    fix_wallforce_contact_ = 0;
     fix_rigid_ = NULL;
     heattransfer_flag_ = false;
 
@@ -111,7 +123,10 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     meshwall_ = -1;
 
     Temp_wall = -1.;
+    fixed_contact_area_ = 0.;
     Q = Q_add = 0.;
+
+    area_calculation_mode_ = CONDUCTION_CONTACT_AREA_OVERLAP;
 
     // parse args
     //style = new char[strlen(arg[2])+2];
@@ -119,6 +134,14 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
     iarg_ = 3;
     narg_ = narg;
+
+    int nremaining = narg - 3;
+    char ** remaining_args = &arg[3];
+
+    int64_t variant = Factory::instance().selectVariant("gran", nremaining, remaining_args);
+    impl = Factory::instance().create("gran", variant, lmp, this);
+
+    iarg_ = narg - nremaining;
 
     bool hasargs = true;
     while(iarg_ < narg && hasargs)
@@ -177,6 +200,14 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
            else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'store_force'");
            hasargs = true;
            iarg_ += 2;
+        } else if (strcmp(arg[iarg_],"store_force_contact") == 0) {
+           if (iarg_+2 > narg)
+              error->fix_error(FLERR,this," not enough arguments");
+           if (strcmp(arg[iarg_+1],"yes") == 0) store_force_contact_ = true;
+           else if (strcmp(arg[iarg_+1],"no") == 0) store_force_contact_ = false;
+           else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'store_force_contact_'");
+           hasargs = true;
+           iarg_ += 2;
         } else if (strcmp(arg[iarg_],"n_meshes") == 0) {
           if (meshwall_ != 1)
              error->fix_error(FLERR,this,"have to use keyword 'mesh' before using 'n_meshes'");
@@ -233,8 +264,36 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
           hasargs = true;
           iarg_ += 3;
+        } else if (strcmp(arg[iarg_],"temperature") == 0) {
+            if (iarg_+1 >= narg)
+              error->fix_error(FLERR,this,"not enough arguments for 'temperature'");
+            Temp_wall = force->numeric(FLERR,arg[iarg_+1]);
+            hasargs = true;
+            iarg_ += 2;
+        } else if(strcmp(arg[iarg_],"contact_area") == 0) {
+
+          if(strcmp(arg[iarg_+1],"overlap") == 0)
+            area_calculation_mode_ =  CONDUCTION_CONTACT_AREA_OVERLAP;
+          else if(strcmp(arg[iarg_+1],"projection") == 0)
+            area_calculation_mode_ =  CONDUCTION_CONTACT_AREA_PROJECTION;
+          else if(strcmp(arg[iarg_+1],"constant") == 0)
+          {
+            if (iarg_+3 > narg)
+                error->fix_error(FLERR,this,"not enough arguments for keyword 'contact_area constant'");
+            area_calculation_mode_ =  CONDUCTION_CONTACT_AREA_CONSTANT;
+            fixed_contact_area_ = force->numeric(FLERR,arg[iarg_+2]);
+            if (fixed_contact_area_ <= 0.)
+                error->fix_error(FLERR,this,"'contact_area constant' value must be > 0");
+            iarg_++;
+          }
+          else error->fix_error(FLERR,this,"expecting 'overlap', 'projection' or 'constant' after 'contact_area'");
+          iarg_ += 2;
+          hasargs = true;
         }
     }
+
+    if(impl)
+      impl->settings(narg - iarg_, &arg[iarg_]);
 
     // error checks
 
@@ -280,6 +339,36 @@ void FixWallGran::post_create()
           delete []wallforce_name;
    }
 
+   if(store_force_contact_ && 0 == meshwall_)
+   {
+        char **fixarg = new char*[19];
+        char fixid[200],ownid[200];
+        sprintf(fixid,"contactforces_%s",id);
+        sprintf(ownid,"%s",id);
+        fixarg[0]=fixid;
+        fixarg[1]=(char *) "all";
+        fixarg[2]=(char *) "contactproperty/atom/wall";
+        fixarg[3]=fixid;
+        fixarg[4]=(char *) "6";
+        fixarg[5]=(char *) "fx";
+        fixarg[6]=(char *) "0";
+        fixarg[7]=(char *) "fy";
+        fixarg[8]=(char *) "0";
+        fixarg[9]=(char *) "fz";
+        fixarg[10]=(char *) "0";
+        fixarg[11]=(char *) "tx";
+        fixarg[12]=(char *) "0";
+        fixarg[13]=(char *) "ty";
+        fixarg[14]=(char *) "0";
+        fixarg[15]=(char *) "tz";
+        fixarg[16]=(char *) "0";
+        fixarg[17]=(char *) "primitive";
+        fixarg[18]=ownid;
+        modify->add_fix(19,fixarg);
+        fix_wallforce_contact_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
+        delete []fixarg;
+   }
+
    // create neighbor list for each mesh
    
    for(int i=0;i<n_FixMesh_;i++)
@@ -287,6 +376,9 @@ void FixWallGran::post_create()
        
        FixMesh_list_[i]->createWallNeighList(igroup);
        FixMesh_list_[i]->createContactHistory(dnum());
+
+       if(store_force_contact_)
+         FixMesh_list_[i]->createMeshforceContact();
    }
 
    // contact history for primitive wall
@@ -323,6 +415,9 @@ void FixWallGran::pre_delete(bool unfixflag)
     if(unfixflag && fix_history_primitive_)
         modify->delete_fix(fix_history_primitive_->id);
 
+   if(unfixflag && store_force_contact_)
+        modify->delete_fix(fix_wallforce_contact_->id);
+
     if(unfixflag)
     {
        for(int i=0;i<n_FixMesh_;i++)
@@ -340,6 +435,7 @@ FixWallGran::~FixWallGran()
 {
     if(primitiveWall_ != 0) delete primitiveWall_;
     if(FixMesh_list_) delete []FixMesh_list_;
+    delete impl;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -370,6 +466,11 @@ int FixWallGran::max_type()
 
 /* ---------------------------------------------------------------------- */
 
+PrimitiveWall* FixWallGran::primitiveWall()
+{ return primitiveWall_; }
+
+/* ---------------------------------------------------------------------- */
+
 void FixWallGran::init()
 {
     dt_ = update->dt;
@@ -377,21 +478,19 @@ void FixWallGran::init()
     // case granular
     if(strncmp(style,"wall/gran",9) == 0)
     {
-        //check if wall style and pair style fit together
-        char *pairstyle = new char[strlen(style)-9+1];
-        strcpy(pairstyle,&style[9]);
-
-        PairGran * pairgran_ = (PairGran*)force->pair_match(pairstyle,0);
-        delete []pairstyle;
-
         // check if a fix rigid is registered - important for damp
-        fix_rigid_ = pairgran_->fr_pair();
+        fix_rigid_ = static_cast<FixRigid*>(modify->find_fix_style_strict("rigid",0));
 
         if (strcmp(update->integrate_style,"respa") == 0)
           nlevels_respa_ = ((Respa *) update->integrate)->nlevels;
 
-        // init for derived classes
-        init_granular();
+        if(impl)
+          impl->init_granular();
+        else
+        {
+          // init for derived classes
+          init_granular();
+        }
 
         // disallow more than one wall of non-rimitive style
         
@@ -524,6 +623,15 @@ void FixWallGran::post_force_wall(int vflag)
     post_force_mesh(vflag);
   else
     post_force_primitive(vflag);
+
+  if(meshwall_ == 0 && store_force_contact_)
+    fix_wallforce_contact_->do_forward_comm();
+
+  if(meshwall_ == 1 && store_force_contact_)
+  {
+    for(int imesh = 0; imesh < n_FixMesh_; imesh++)
+        FixMesh_list_[imesh]->meshforceContact()->do_forward_comm();
+  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -560,6 +668,9 @@ void FixWallGran::post_force_mesh(int vflag)
       // mark all contacts for delettion at this point
       
       if(fix_contact) fix_contact->markAllContacts();
+
+      if(store_force_contact_)
+        fix_wallforce_contact_ = FixMesh_list_[iMesh]->meshforceContact();
 
       // get neighborList and numNeigh
       FixNeighlistMesh * meshNeighlist = FixMesh_list_[iMesh]->meshNeighlist();
@@ -717,6 +828,10 @@ void FixWallGran::post_force_primitive(int vflag)
   }
 }
 
+void FixWallGran::compute_force(CollisionData &, double *)
+{
+}
+
 /* ----------------------------------------------------------------------
    actually calculate force, called for both mesh and primitive
 ------------------------------------------------------------------------- */
@@ -732,6 +847,10 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
   cdata.meff = rmass_ ? rmass_[iPart] : atom->mass[atom->type[iPart]];
   cdata.area_ratio = 1.;
 
+  cdata.computeflag = computeflag_;
+  cdata.shearupdate = shearupdate_;
+  cdata.jtype = atom_type_wall_;
+
   double force_old[3], f_pw[3];
 
   // if force should be stored - remember old force
@@ -746,7 +865,10 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
       cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint);
   }
 
-  compute_force(cdata, v_wall);
+  if(impl)
+    impl->compute_force(this, cdata, v_wall);
+  else
+    compute_force(cdata, v_wall); // LEGACY CODE (SPH)
 
   // if force should be stored or evaluated
   if(store_force_ || stress_flag_)
@@ -863,6 +985,8 @@ void FixWallGran::init_heattransfer()
     fppa_hf = NULL;
     deltan_ratio = NULL;
 
+    // decide if heat transfer is to be calculated
+
     if (!is_mesh_wall() && Temp_wall < 0.) return;
     else if (is_mesh_wall())
     {
@@ -874,6 +998,8 @@ void FixWallGran::init_heattransfer()
 
         if(!heatflag) return;
     }
+
+    // heat transfer is to be calculated - continue with initializations
 
     // set flag so addHeatFlux function is called
     heattransfer_flag_ = true;
@@ -909,12 +1035,23 @@ void FixWallGran::addHeatFlux(TriMesh *mesh,int ip, double delta_n, double area_
     double *Temp_p = fppa_T->vector_atom;
     double *heatflux = fppa_hf->vector_atom;
 
-    if(deltan_ratio)
-       delta_n *= deltan_ratio[itype-1][atom_type_wall_-1];
+    if(CONDUCTION_CONTACT_AREA_OVERLAP == area_calculation_mode_)
+    {
+        
+        if(deltan_ratio)
+           delta_n *= deltan_ratio[itype-1][atom_type_wall_-1];
 
-    r = ri - delta_n;
+        r = ri - delta_n;
 
-    Acont = (reff_wall*reff_wall-r*r)*M_PI*area_ratio; //contact area sphere-wall
+        Acont = (reff_wall*reff_wall-r*r)*M_PI*area_ratio; //contact area sphere-wall
+    }
+    else if (CONDUCTION_CONTACT_AREA_CONSTANT == area_calculation_mode_)
+        Acont = fixed_contact_area_;
+    else if (CONDUCTION_CONTACT_AREA_PROJECTION == area_calculation_mode_)
+    {
+        Acont = M_PI*ri*ri;
+    }
+
     tcop = th_cond[itype-1]; //types start at 1, array at 0
     tcowall = th_cond[atom_type_wall_-1];
 

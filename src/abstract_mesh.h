@@ -65,6 +65,7 @@ namespace LAMMPS_NS
         virtual void unregisterMove(bool _scale, bool _translate, bool _rotate) = 0;
 
         virtual bool isMoving() = 0;
+        virtual int nMove() = 0;
 
         // get node j of element i
         

@@ -31,6 +31,7 @@ NORMAL_MODEL(HOOKE_STIFFNESS,hooke/stiffness,1)
 #define NORMAL_MODEL_HOOKE_STIFFNESS_H_
 #include "contact_models.h"
 
+namespace LIGGGHTS {
 namespace ContactModels
 {
   template<typename Style>
@@ -45,14 +46,18 @@ namespace ContactModels
       gamma_n(NULL),
       gamma_t(NULL),
       tangential_damping(false),
-      absolute_damping(false)
+      absolute_damping(false),
+      limitForce(false),
+      displayedSettings(false)
     {
+      
     }
 
     void registerSettings(Settings & settings)
     {
       settings.registerOnOff("tangential_damping", tangential_damping, true);
       settings.registerOnOff("absolute_damping", absolute_damping);
+      settings.registerOnOff("limitForce", limitForce);
     }
 
     void connectToProperties(PropertyRegistry & registry) {
@@ -92,6 +97,15 @@ namespace ContactModels
       double kt = k_t[itype][jtype];
       double gamman, gammat;
 
+      if(!displayedSettings)
+      {
+        displayedSettings = true;
+
+        /*
+        if(limitForce)
+            if(0 == comm->me) fprintf(screen," NormalModel<HOOKE_STIFFNESS>: will limit normal force.\n");
+        */
+      }
       if(absolute_damping)
       {
         gamman = gamma_n[itype][jtype];
@@ -111,7 +125,13 @@ namespace ContactModels
 
       const double Fn_damping = -gamman*cdata.vn;    
       const double Fn_contact = kn*(cdata.radsum-cdata.r);
-      const double Fn = Fn_contact + Fn_damping;
+      double Fn                       = Fn_damping + Fn_contact;
+
+      //limit force to avoid the artefact of negative repulsion force
+      if(limitForce && (Fn<0.0) )
+      {
+          Fn = 0.0;
+      }
 
       cdata.Fn = Fn;
 
@@ -149,7 +169,10 @@ namespace ContactModels
 
     bool tangential_damping;
     bool absolute_damping;
+    bool limitForce;
+    bool displayedSettings;
   };
+}
 }
 #endif // NORMAL_MODEL_HOOKE_STIFFNESS_H_
 #endif

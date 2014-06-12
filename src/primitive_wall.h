@@ -29,6 +29,7 @@
 #define LMP_PRIMITIVE_WALL
 
 #include "container.h"
+#include "neighbor.h"
 #include "primitive_wall_definitions.h"
 
 namespace LAMMPS_NS
@@ -41,22 +42,34 @@ namespace LAMMPS_NS
   class PrimitiveWall : protected Pointers
   {
       public:
-        PrimitiveWall(LAMMPS *lmp,PRIMITIVE_WALL_DEFINITIONS::WallType wType_, int nParam_, double *param_);
-        virtual
-        ~PrimitiveWall();
 
-        int getNeighbors(int *&contactPtr);
-        void handleContact(int iPart,double *&c_history);
-        void handleNoContact(int iPart);
-        void setContactHistorySize(int nPart);
+        PrimitiveWall(LAMMPS *lmp,PRIMITIVE_WALL_DEFINITIONS::WallType wType_, int nParam_, double *param_)
+        : Pointers(lmp), neighlist("neighlist"), wType(wType_), nParam(nParam_)
+        {
+            param = new double[nParam];
+            for(int i=0;i<nParam;i++)
+              param[i] = param_[i];
+        }
 
-        void buildNeighList(double neighCutoff, double **x, double *r, int nPart);
+        virtual ~PrimitiveWall()
+        {
+            delete []param;
+        }
 
-        double resolveContact(double *x, double r, double *delta);
-        bool resolveNeighlist(double *x, double r, double treshold);
+        inline int getNeighbors(int *&contactPtr);
+        inline void handleContact(int iPart,double *&c_history);
+        inline void handleNoContact(int iPart);
+        inline void setContactHistorySize(int nPart);
 
-        int axis();
-        double calcRadialDistance(double *pos, double *distvec);
+        inline void buildNeighList(double neighCutoff, double **x, double *r, int nPart);
+
+        inline double resolveContact(double *x, double r, double *delta);
+        inline bool resolveNeighlist(double *x, double r, double treshold);
+
+        inline int axis();
+        inline double calcRadialDistance(double *pos, double *distvec);
+
+        inline int isNear(int iPart,double treshold);
 
       private:
         ScalarContainer<int> neighlist;
@@ -70,19 +83,6 @@ namespace LAMMPS_NS
   /*
    * implementation of class PrimitiveWall starts here
    */
-
-  PrimitiveWall::PrimitiveWall(LAMMPS *lmp,PRIMITIVE_WALL_DEFINITIONS::WallType wType_, int nParam_, double *param_)
-  : Pointers(lmp), neighlist("neighlist"), wType(wType_), nParam(nParam_)
-  {
-    param = new double[nParam];
-    for(int i=0;i<nParam;i++)
-      param[i] = param_[i];
-  }
-
-  PrimitiveWall::~PrimitiveWall()
-  {
-    delete []param;
-  }
 
   double PrimitiveWall::resolveContact(double *x, double r, double *delta)
   {
@@ -119,6 +119,14 @@ namespace LAMMPS_NS
       if(resolveNeighlist(x[iPart],r?r[iPart]:0.,treshold))
         neighlist.add(iPart);
     }
+  }
+
+  int PrimitiveWall::isNear(int iPart,double treshold)
+  {
+    if(resolveNeighlist(atom->x[iPart],atom->radius?atom->radius[iPart]:0.,treshold))
+        return 1;
+
+    return 0;
   }
 } /* namespace LAMMPS_NS */
 #endif /* PRIMITIVEWALL_H_ */

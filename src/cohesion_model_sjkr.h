@@ -32,6 +32,7 @@ COHESION_MODEL(COHESION_SJKR,sjkr,1)
 #include "contact_models.h"
 #include "math.h"
 
+namespace LIGGGHTS {
 namespace ContactModels {
   using namespace std;
   using namespace LAMMPS_NS;
@@ -101,6 +102,7 @@ namespace ContactModels {
   private:
     double ** cohEnergyDens;
   };
+}
 }
 
 #endif // COHESION_MODEL_SJKR_H_

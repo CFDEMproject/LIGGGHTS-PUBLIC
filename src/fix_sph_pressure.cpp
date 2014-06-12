@@ -92,8 +92,17 @@ FixSPHPressure::FixSPHPressure(LAMMPS *lmp, int narg, char **arg) :
       if (narg < iarg+3) error->fix_error(FLERR,this,"Not enough arguments for 'relativ' pressure style \n");
       B = force->numeric(FLERR,arg[iarg+1]);
       rho0 = force->numeric(FLERR,arg[iarg+2]);
+      if (narg < iarg+4)
+      {
+        P0 = 0;
+        iarg += 3;
+      }
+      else
+      {
+        P0 = force->numeric(FLERR,arg[iarg+3]);
+        iarg += 4;
+      }
       pressureStyle = PRESSURESTYLE_RELATIV;
-      iarg += 3;
     }
     else error->fix_error(FLERR,this,"Unknown style. Valid styles are 'absolut' or 'Tait' \n");
 
@@ -175,7 +184,7 @@ void FixSPHPressure::pre_force(int vflag)
     {
       if (mask[i] & groupbit)
       {
-        p[i] = B * (rho[i] - rho0);
+        p[i] = B * (rho[i] - rho0) + P0;
       }
     }
   }
