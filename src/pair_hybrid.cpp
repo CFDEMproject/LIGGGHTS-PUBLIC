@@ -240,7 +240,7 @@ void PairHybrid::settings(int narg, char **arg)
 
     int nremaining = jarg - iarg - 1;
     char ** remaining_args = &arg[iarg+1];
-    styles[nstyles] = force->new_pair(arg[iarg],nremaining,remaining_args,lmp->suffix,dummy);
+    styles[nstyles] = force->new_pair(arg[iarg],lmp->suffix,dummy);
     styles[nstyles]->settings(nremaining,remaining_args);
     iarg = jarg;
     nstyles++;

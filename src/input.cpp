@@ -1483,7 +1483,7 @@ void Input::pair_style()
   }*/
   int num_remaining_arg = narg - 1;
   char ** remaining_args = &arg[1];
-  force->create_pair(arg[0], num_remaining_arg, remaining_args, lmp->suffix);
+  force->create_pair(arg[0], lmp->suffix);
   if (force->pair) force->pair->settings(num_remaining_arg,remaining_args);
 }
 

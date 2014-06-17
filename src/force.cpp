@@ -140,13 +140,13 @@ void Force::init()
    create a pair style, called from input script
 ------------------------------------------------------------------------- */
 
-void Force::create_pair(const char *style, int & narg, char ** & args, const char *suffix)
+void Force::create_pair(const char *style, const char *suffix)
 {
   delete [] pair_style;
   if (pair) delete pair;
 
   int sflag;
-  pair = new_pair(style,narg,args,suffix,sflag);
+  pair = new_pair(style,suffix,sflag);
 
   if (sflag) {
     char estyle[256];
@@ -191,7 +191,7 @@ void Force::create_pair_from_restart(FILE * fp, const char *style, const char *s
    try first with suffix appended
 ------------------------------------------------------------------------- */
 
-Pair *Force::new_pair(const char *style, int & narg, char ** & args, const char *suffix, int &sflag)
+Pair *Force::new_pair(const char *style, const char *suffix, int &sflag)
 {
   if (suffix && lmp->suffix_enable) {
     sflag = 1;
