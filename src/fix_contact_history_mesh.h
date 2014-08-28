@@ -55,6 +55,7 @@ class FixContactHistoryMesh : public FixContactHistory {
   void pre_exchange();
 
   void setup_pre_force(int dummy);
+  void setup_pre_neighbor();
   void min_setup_pre_force(int dummy);
   void pre_force(int dummy);
   void min_pre_force(int dummy);

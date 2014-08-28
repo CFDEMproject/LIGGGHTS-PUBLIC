@@ -100,10 +100,10 @@ void PairHybrid::compute(int eflag, int vflag)
 
   for (m = 0; m < nstyles; m++) {
 
-    // invoke compute() unless 
+    // invoke compute() unless
     // outerflag is set and sub-style has a compute_outer() method
 
-    if (outerflag && styles[m]->respa_enable) 
+    if (outerflag && styles[m]->respa_enable)
       styles[m]->compute_outer(eflag,vflag_substyle);
     else styles[m]->compute(eflag,vflag_substyle);
 
@@ -240,7 +240,7 @@ void PairHybrid::settings(int narg, char **arg)
 
     int nremaining = jarg - iarg - 1;
     char ** remaining_args = &arg[iarg+1];
-    styles[nstyles] = force->new_pair(arg[iarg],nremaining,remaining_args,lmp->suffix,dummy);
+    styles[nstyles] = force->new_pair(arg[iarg],lmp->suffix,dummy);
     styles[nstyles]->settings(nremaining,remaining_args);
     iarg = jarg;
     nstyles++;

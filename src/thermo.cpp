@@ -1545,10 +1545,11 @@ void Thermo::compute_spcpu()
 
 void Thermo::compute_cu()
 {
+/*
   if (firststep == 0) dvalue = 0.0;
-  else dvalue = atom->natoms * static_cast<double>(update->ntimestep - update->firststep) /
+  else dvalue = static_cast<double>(atom->natoms) * static_cast<double>(update->ntimestep - update->firststep) /
                (static_cast<double>(comm->nprocs) * timer->elapsed(TIME_LOOP));
-
+*/
   double new_cpu;
   int new_step = update->ntimestep;
 
@@ -1565,7 +1566,7 @@ void Thermo::compute_cu()
   }
 
   last_step = new_step;
-  last_cu = new_cpu;
+  last_spcpu = new_cpu;
 }
 
 /* ---------------------------------------------------------------------- */

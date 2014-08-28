@@ -24,9 +24,10 @@ compute ID group-ID wall/gran/local keywords ...
 
 <LI>zero or more keywords may be appended 
 
-<LI>keyword = <I>pos</I> or <I>id</I> or <I>force</I> or <I>torque</I> or <I>history</I> or <I>contactArea</I> 
+<LI>keyword = <I>pos</I> or <I>vel</I> or <I>id</I> or <I>force</I> or <I>torque</I> or <I>history</I> or <I>contactArea</I> 
 
 <PRE>  <I>pos</I> = positions of particles in contact (6 values)
+  <I>vel</I> = velocities of particles in contact (6 values)
   <I>id</I> = IDs of particles in contact and a periodicity flag (3 values) or IDs of the mesh, the triangle and the particle (3 values)
   <I>force</I> = contact force (3 values)
   <I>torque</I> = torque divided by particle diameter (3 values)
@@ -68,7 +69,8 @@ dedicated fix mesh command. For how to output the trangle id,
 see "dump mesh/gran/VTK command"dump.html.
 </P>
 <P>The output <I>pos</I> is the particle positions (6 values) in distance
-<A HREF = "units.html">units</A>. For computing pairwise data, the output <I>id</I> will
+<A HREF = "units.html">units</A>. Keyword <I>vel</I> will do the same for velocities.
+For computing pairwise data, the output <I>id</I> will
 be the two particle IDs (using this option requires to use an atom
 map) and a flag that is 1 for interaction over a periodic boundary
 and 0 otherwise. For computing particle-wall data, the output <I>id</I>
@@ -120,7 +122,7 @@ For accessing particle-wall contact data, only mesh walls can be used.
 <P><B>Default:</B>
 </P>
 <P>By default, all of the outputs keywords (except the heat flux) are activated,
-i.e. when no keyword is used, positions, ids, forces, torques, history
+i.e. when no keyword is used, positions velocities, ids, forces, torques, history
 and contact area are output.
 </P>
 </HTML>

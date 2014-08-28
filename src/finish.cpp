@@ -331,6 +331,26 @@ void Finish::end(int flag)
           fprintf(logfile,"  Modify   time (%%) = %g (%g)\n",
                   time,time/time_loop*100.0);
       }
+
+      if(modify->timing > 1) {
+        double * modify_times = NULL;
+        if (me == 0) modify_times = new double[comm->nprocs];
+        MPI_Gather(&timer->array[TIME_MODIFY], 1, MPI_DOUBLE, modify_times, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+        if (me == 0) {
+            for (int p = 0; p < comm->nprocs; ++p) {
+              if (screen)
+                fprintf(screen,"  Modify   time [%d] (%%) = %g (%g)\n", p,
+                    modify_times[p],modify_times[p]/time_loop*100.0);
+
+              if(logfile)
+                fprintf(logfile,"  Modify   time [%d] (%%) = %g (%g)\n", p,
+                        modify_times[p],modify_times[p]/time_loop*100.0);
+            }
+        }
+
+        delete [] modify_times;
+      }
     }
 
     time = time_other;
@@ -442,6 +462,26 @@ void Finish::end(int flag)
           fprintf(logfile,"Modfy time (%%) = %g (%g)\n",
                   time,time/time_loop*100.0);
       }
+
+      if(modify->timing > 1) {
+        double * modify_times = NULL;
+        if (me == 0) modify_times = new double[comm->nprocs];
+        MPI_Gather(&timer->array[TIME_MODIFY], 1, MPI_DOUBLE, modify_times, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+        if (me == 0) {
+            for (int p = 0; p < comm->nprocs; ++p) {
+              if (screen)
+                fprintf(screen,"  Modify   time [%d] (%%) = %g (%g)\n", p,
+                    modify_times[p],modify_times[p]/time_loop*100.0);
+
+              if(logfile)
+                fprintf(logfile,"  Modify   time [%d] (%%) = %g (%g)\n", p,
+                        modify_times[p],modify_times[p]/time_loop*100.0);
+            }
+        }
+
+        delete [] modify_times;
+      }
     }
 
     time = time_other;
@@ -457,6 +497,9 @@ void Finish::end(int flag)
     }
 
     if(modify->timing) {
+      double * fix_times = NULL;
+      if (me == 0) fix_times = new double[comm->nprocs];
+
       // output fix timings
       for(int i = 0; i < modify->nfix; i++) {
         Fix * fix = modify->fix[i];
@@ -472,7 +515,22 @@ void Finish::end(int flag)
               fprintf(logfile,"Fix %s %s time (%%) = %g (%g)\n",
                   fix->id, fix->style, time,time/time_loop*100.0);
         }
+
+        if(modify->timing > 1) {
+          time = fix->get_recorded_time();
+          MPI_Gather(&time, 1, MPI_DOUBLE, fix_times, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+          if (me == 0) {
+             for (int p = 0; p < comm->nprocs; ++p) {
+               if (screen)
+                 fprintf(screen,"  [%d] Fix %s %s time %g\n", p, fix->id, fix->style, fix_times[p]);
+               if (logfile)
+                 fprintf(logfile," [%d] Fix %s %s time %g\n", p, fix->id, fix->style, fix_times[p]);
+             }
+          }
+        }
       }
+      delete [] fix_times;
     }
   }
 

@@ -39,8 +39,8 @@ namespace ContactModels {
   using namespace std;
   using namespace LAMMPS_NS;
 
-  template<typename Style>
-  class CohesionModel<COHESION_SJKR2, Style> : protected Pointers {
+  template<>
+  class CohesionModel<COHESION_SJKR2> : protected Pointers {
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
 
@@ -54,6 +54,10 @@ namespace ContactModels {
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("cohEnergyDens", &MODEL_PARAMS::createCohesionEnergyDensity);
       registry.connect("cohEnergyDens", cohEnergyDens,"cohesion_model sjkr2");
+
+      // error checks on coarsegraining
+      if(force->cg_active())
+        error->cg(FLERR,"cohesion model sjkr2");
     }
 
     void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) 

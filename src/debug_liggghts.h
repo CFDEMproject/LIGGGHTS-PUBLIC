@@ -23,6 +23,7 @@
 #define LMP_DEBUG_LIGGGHTS_H
 
 #include "lammps.h"
+#include "comm.h"
 #include "string.h"
 #include "stdlib.h"
 #include "style_fix.h"

@@ -479,10 +479,10 @@ void Set::command(int narg, char **arg)
     } else if (strncmp(arg[iarg],"property/atom",13) == 0) { 
       if (iarg+1 > narg)
         error->all(FLERR,"Illegal set command for property/atom");
+      //find the fix (there should be only one fix with the same variablename, this is ensured by the fix itself)
       int n = strlen(arg[iarg+1]) + 1;
       char* variablename = new char[n];
       strcpy(variablename,arg[iarg+1]);
-      //find the fix (there should be only one fix with the same variablename, this is ensured by the fix itself)
       updFix = NULL;
       for (int ifix = 0; ifix < (lmp->modify->nfix); ifix++){
         if ((strncmp(modify->fix[ifix]->style,"property/atom",13) == 0) && (strcmp(((FixPropertyAtom*)(modify->fix[ifix]))->variablename,variablename)==0) ){
@@ -492,15 +492,33 @@ void Set::command(int narg, char **arg)
       delete []variablename;
       if (updFix==NULL)
         error->all(FLERR,"Could not identify the per-atom property you want to set");
-
       nUpdValues=updFix->nvalues;
+
       if (nUpdValues != (narg-iarg-2) )
         error->all(FLERR,"The number of values for the set property/atom does not match the number needed");
-      updValues = new double[nUpdValues];
-      for(int j=0;j<nUpdValues ;j++)
-        updValues[j]=atof(arg[iarg+1+1+j]);
+
+      //get to update values
+      if (strstr(arg[iarg+2],"v_") == arg[iarg+2])
+      {
+        if (nUpdValues != 1 && nUpdValues != 3)
+            error->all(FLERR,"Set command for property/atom and variables does only work with scalar and 3-vector quantities");
+        varparse(arg[iarg+2],1);
+        if(nUpdValues == 3)
+        {
+            varparse(arg[iarg+3],2);
+            varparse(arg[iarg+4],3);
+        }
+        updValues = 0;
+      }
+      else
+      {
+        updValues = new double[nUpdValues];
+        for(int j=0;j<nUpdValues ;j++)
+          updValues[j]=atof(arg[iarg+1+1+j]);
+      }
+
       set(PROPERTYPERATOM);
-      delete []updValues;
+      if(updValues) delete []updValues;
       iarg += (2+nUpdValues);
     } else if (strcmp(arg[iarg],"sphkernel") == 0) { 
       if (iarg+2 > narg) error->all(FLERR, "Illegal set command");
@@ -729,22 +747,32 @@ void Set::set(int keyword)
         if(updFix->just_created)
             error->one(FLERR,"May not use the set command right after fix property/atom without a prior run. Add a 'run 0' between fix property/atom and set");
 
-          if (add == 0)
-          {
-            if (updFix->data_style) for (int m = 0; m < nUpdValues; m++)
-              updFix->array_atom[i][m] = updValues[m];
-            else updFix->vector_atom[i]=updValues[0];
-           }
-          else
-          {
+        if(add == 1)
+        {
               currentTimestep = update->ntimestep;
-              if (currentTimestep < until)
-              {
-                  if (updFix->data_style) for (int m = 0; m < nUpdValues; m++)
-                    updFix->array_atom[i][m] = updValues[m];
-                  else updFix->vector_atom[i]=updValues[0];
-               }
-          }
+              if (currentTimestep >= until)
+                continue;
+        }
+        if(varflag)
+        {
+            
+            if (updFix->data_style)
+            {
+                updFix->array_atom[i][0] = xvalue;
+                updFix->array_atom[i][1] = yvalue;
+                updFix->array_atom[i][2] = zvalue;
+            }
+            else updFix->vector_atom[i]=dvalue;
+        }
+        else
+        {
+            if (updFix->data_style)
+            {
+                  for (int m = 0; m < nUpdValues; m++)
+                     updFix->array_atom[i][m] = updValues[m];
+            }
+            else updFix->vector_atom[i]=updValues[0];
+        }
     }
 
     // set length of line particle

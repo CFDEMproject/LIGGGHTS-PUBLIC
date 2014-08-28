@@ -15,18 +15,18 @@
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID style model_keyword model_values wallstyle wallstyleargs general_keywords general_values  ... 
+<PRE>fix ID group-ID style model_type model_name wallstyle wallstyleargs general_keywords general_values model_keywords model_values  ... 
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
 <LI>style = <I>wall/gran</I> 
 
-<LI>zero or more model_keyword/value pairs may be appended. They must be appended in the following order 
+<LI>zero or more model_type/model_name pairs may be appended. They must be appended in the following order 
 
 <PRE>  <I>model</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>tangential</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>rolling_friction</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>cohesion</I> values = described <A HREF = "Section_gran_models.html">here</A>
+  <I>rolling_friction</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>surface</I> values = described <A HREF = "Section_gran_models.html">here</A> 
 </PRE>
 <LI>wallstyle = <I>mesh</I> or <I>primitive</I> 
@@ -50,17 +50,22 @@
 </PRE>
 <LI>zero or more general_keyword/value pairs may be appended 
 
-<LI>general_keyword =  <I>shear</I> or <I>store_force</I> 
+<LI>general_keyword =  <I>shear</I> or <I>store_force</I> or <I>store_force_contact</I> 
 
-<PRE>  <I>shear</I> values = dim vshear
+<PRE>  <I>shear</I> values = dim vshear 
     dim = <I>x</I> or <I>y</I> or <I>z</I>
     vshear = magnitude of shear velocity (velocity units)
   <I>temperature</I> value = T0
     T0 = Temperature of the wall (temperature units) 
   <I>contact_area</I> values = 'overlap' or 'constant <B>value</B>' or 'projection'
   <I>store_force</I> value = 'yes' or 'no'
-    yes, no = determines if the wall force exerted on the particles is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID) is the id of the fix wall/gran command.  
+    yes, no = determines if the wall force exerted on the particles is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID) is the id of the fix wall/gran command.
+  <I>store_force_contact</I> value = 'yes' or 'no'
+    yes, no = determines if the force for each particle-wall contact is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id contactforces_(ID), where (ID) is the id of the fix wall/gran command.  
 </PRE>
+<LI>following the general_keyword/value pairs, zero or more model_keyword/model_valuezero pairs may be appended in arbitrary order 
+
+  model_type/model_name pairs = described for each model separately <A HREF = "Section_gran_models.html">here</A> 
 
 </UL>
 <P><B>Examples:</B>

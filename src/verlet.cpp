@@ -135,6 +135,7 @@ void Verlet::setup()
 
   ev_set(update->ntimestep);
   force_clear();
+  
   modify->setup_pre_force(vflag);
 
   if (pair_compute_flag) force->pair->compute(eflag,vflag);

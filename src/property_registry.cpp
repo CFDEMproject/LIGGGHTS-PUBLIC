@@ -179,3 +179,22 @@ void PropertyRegistry::init()
   vectors.clear();
   matrices.clear();
 }
+
+void PropertyRegistry::print_all(FILE * out)
+{
+  for(std::map<string,ScalarProperty*>::iterator it = scalars.begin(); it != scalars.end(); ++it) {
+      fprintf(out, " %s = ", it->first.c_str());
+      it->second->print_value(out);
+      fprintf(out, "\n");
+  }
+  for(std::map<string,VectorProperty*>::iterator it = vectors.begin(); it != vectors.end(); ++it) {
+      fprintf(out, " %s = ", it->first.c_str());
+      it->second->print_value(out);
+      fprintf(out, "\n");
+  }
+  for(std::map<string,MatrixProperty*>::iterator it = matrices.begin(); it != matrices.end(); ++it) {
+      fprintf(out, " %s = ", it->first.c_str());
+      it->second->print_value(out);
+      fprintf(out, "\n");
+  }
+}

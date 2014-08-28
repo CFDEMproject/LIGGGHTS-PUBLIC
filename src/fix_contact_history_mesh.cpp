@@ -199,6 +199,13 @@ void FixContactHistoryMesh::allocate_pages()
 
 /* ---------------------------------------------------------------------- */
 
+void FixContactHistoryMesh::setup_pre_neighbor()
+{
+    
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixContactHistoryMesh::setup_pre_exchange()
 {
     pre_exchange();
@@ -438,7 +445,10 @@ void FixContactHistoryMesh::cleanUpContactJumps()
         {
             
             if(partner_[i][ipartner] < 0)
+            {
+                
                 error->one(FLERR,"internal error");
+            }
 
             iTri = mesh_->map(partner_[i][ipartner]);
             
@@ -528,8 +538,9 @@ int FixContactHistoryMesh::unpack_exchange(int nlocal, double *buf)
 
   npartner_[nlocal] = ubuf(buf[m++]).i;
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
-  partner_[nlocal] = ipage_->get(nneighs);
-  contacthistory_[nlocal] = dpage_->get(dnum_*nneighs);
+  int nalloc = MathExtraLiggghts::max(nneighs,npartner_[nlocal]);
+  partner_[nlocal] = ipage_->get(nalloc);
+  contacthistory_[nlocal] = dpage_->get(dnum_*nalloc);
 
   if (!partner_[nlocal] || !contacthistory_[nlocal])
         error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
@@ -545,6 +556,7 @@ int FixContactHistoryMesh::unpack_exchange(int nlocal, double *buf)
 
   for (int n = npartner_[nlocal]; n < nneighs; n++) {
     partner_[nlocal][n] = -1;
+    
     for (int d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = 0.;
     }
@@ -585,6 +597,7 @@ void FixContactHistoryMesh::unpack_restart(int nlocal, int nth)
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
     partner_[nlocal][n] = ubuf(extra[nlocal][m++]).i;
+    
     for (d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = extra[nlocal][m++];
       

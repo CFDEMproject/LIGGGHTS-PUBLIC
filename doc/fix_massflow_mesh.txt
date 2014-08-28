@@ -30,7 +30,7 @@ keywords = {count} or {point_at_outlet} or {append} or {file} or {screen} or {de
     use this in connection with {point_at_outlet} to flip direction particle counting 
   {file} value = filename 
   {append} value = filename 
-   filename = name of the file to print radius, position and velocity values of the particles
+   filename = name of the file to print diameter, position and velocity values of the particles
   {screen} value = {yes} or {no} 
   {delete_atoms} value = {yes} or {no}  
     yes = to remove the particles that pass through the mesh surface :pre

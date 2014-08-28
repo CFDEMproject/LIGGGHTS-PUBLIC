@@ -384,7 +384,7 @@ void FixWallGran::post_create()
    // contact history for primitive wall
    if(meshwall_ == 0 && dnum_ > 0)
    {
-          char *hist_name = new char[strlen(style)+1+10];
+          char *hist_name = new char[strlen(id)+1+10];
           strcpy(hist_name,"history_");
           strcat(hist_name,id);
           char **fixarg = new char*[8+dnum_];
@@ -862,7 +862,7 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
   {
       double contactPoint[3];
       vectorAdd3D(x_[cdata.i],cdata.delta,contactPoint);
-      cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint);
+      cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint,v_wall);
   }
 
   if(impl)
@@ -900,18 +900,15 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
 
 int FixWallGran::is_moving()
 {
-    int i, flag;
-    flag = 0;
-
-    if (is_mesh_wall())
+    if(is_mesh_wall())
     {
-        for(i = 0; i < n_FixMesh_; i++)
+        for(int i = 0; i < n_FixMesh_; i++) {
             if(FixMesh_list_[i]->mesh()->isMoving())
-               flag = 1;
+               return 1;
+        }
+        return 0;
     }
-    else flag = shear_;
-
-    return flag;
+    return shear_;
 }
 
 /* ---------------------------------------------------------------------- */

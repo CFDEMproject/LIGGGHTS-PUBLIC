@@ -73,6 +73,7 @@ class FixMeshSurfaceStressServo : public FixMeshSurfaceStress {
       void set_v_node_rotate();
       double getMaxRad();
       int modify_param(int, char **);
+      void resetIntegrator() {sum_err_ = 0;}
 
       // properties of mesh
 

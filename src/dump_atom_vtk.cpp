@@ -33,6 +33,10 @@
 #include "memory.h"
 #include "comm.h"
 #include <sstream>
+#include <vtkVersion.h>
+#ifndef VTK_MAJOR_VERSION
+#include <vtkConfigure.h>
+#endif
 #include<vtkCellArray.h>
 #include<vtkDoubleArray.h>
 #include<vtkIntArray.h>
@@ -305,7 +309,11 @@ void DumpATOMVTK::vtkExportData::writeSER() {
 
   vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
   writer->SetDataModeToAscii();
+#if VTK_MAJOR_VERSION < 6
   writer->SetInput(spheresUg);
+#else
+  writer->SetInputData(spheresUg);
+#endif
   writer->SetFileName(_fileName);
   writer->Write();
 }

@@ -11,14 +11,16 @@ pair_style gran command :h3
 
 [Syntax:]
 
-pair_style model keyword value :pre
+pair_style model_type model_name model_keyword model_value :pre
 
-zero or more model_keyword/value pairs may be appended. They must be appended in the following order :l
+zero or more model_type/model_name pairs may be appended. They must be appended in the following order (!) :l
   {model} values = described "here"_Section_gran_models.html
   {tangential} values = described "here"_Section_gran_models.html
-  {rolling_friction} values = described "here"_Section_gran_models.html
   {cohesion} values = described "here"_Section_gran_models.html
+  {rolling_friction} values = described "here"_Section_gran_models.html
   {surface} values = described "here"_Section_gran_models.html :pre
+following the model_type/model_name pairs, zero or more model_keyword/model_valuezero pairs may be appended in arbitrary order :l
+  model_type/model_name pairs = described for each model separately "here"_Section_gran_models.html  :pre
 :ule
 
 [Examples:]
@@ -64,6 +66,9 @@ doc pages "here"_Section_gran_models.html
 Also, other models may add additional forces or torques on the particles, such as
 cohesive or rolling friction forces. These are also described on separate 
 doc pages "here"_Section_gran_models.html
+
+IMPORTANT NOTE: The order of model keywords is important, you have to stick 
+to the order as outlined in the "Syntax" section of this doc page.
 
 [General comments:]
 

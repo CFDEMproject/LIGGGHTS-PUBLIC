@@ -32,6 +32,8 @@
 namespace LIGGGHTS {
 namespace ContactModels {
 
+// data available in noCollision() and collision()
+
 struct ContactData {
   double radi;
   double radj;
@@ -52,6 +54,8 @@ struct ContactData {
 
   ContactData() : area_ratio(1.0) {}
 };
+
+// data available in collision() only
 
 struct CollisionData: ContactData {
   double r;
@@ -85,7 +89,7 @@ struct CollisionData: ContactData {
   double mi;
   double mj;
   double meff;
-  
+
   int computeflag;
   int shearupdate;
   int itype;
@@ -98,7 +102,7 @@ struct ForceData {
   double delta_F[3];       // total force acting on particle
   double delta_torque[3];  // torque acting on a particle
 
-  ForceData() 
+  ForceData()
   {
     reset();
   }

@@ -36,8 +36,8 @@ namespace LIGGGHTS {
 
 namespace ContactModels
 {
-  template<typename Style>
-  class NormalModel<HERTZ, Style> : protected Pointers
+  template<>
+  class NormalModel<HERTZ> : protected Pointers
   {
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
@@ -94,6 +94,7 @@ namespace ContactModels
       const double sqrtFiveOverSix = 0.91287092917527685576161630466800355658790782499663875;
       double gamman=-2.*sqrtFiveOverSix*betaeff[itype][jtype]*sqrt(Sn*meff);
       double gammat=-2.*sqrtFiveOverSix*betaeff[itype][jtype]*sqrt(St*meff);
+      
       if (!tangential_damping) gammat = 0.0;
 
       if(!displayedSettings)

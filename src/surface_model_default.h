@@ -38,8 +38,8 @@ SURFACE_MODEL(SURFACE_DEFAULT,default,0)
 namespace LIGGGHTS {
 namespace ContactModels
 {
-  template<typename Style>
-  class SurfaceModel<SURFACE_DEFAULT, Style> : protected Pointers
+  template<>
+  class SurfaceModel<SURFACE_DEFAULT> : protected Pointers
   {
   public:
     static const int MASK = CM_COLLISION;

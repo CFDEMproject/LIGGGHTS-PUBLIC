@@ -38,8 +38,8 @@ TANGENTIAL_MODEL(TANGENTIAL_HISTORY,history,1)
 namespace LIGGGHTS {
 namespace ContactModels
 {
-  template<typename Style>
-  class TangentialModel<TANGENTIAL_HISTORY, Style> : protected Pointers
+  template<>
+  class TangentialModel<TANGENTIAL_HISTORY> : protected Pointers
   {
     double ** coeffFrict;
     int history_offset;

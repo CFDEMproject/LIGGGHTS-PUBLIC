@@ -67,6 +67,32 @@ int liggghts_get_maxtag_ms(void *ptr)
 
 /* ---------------------------------------------------------------------- */
 
+int liggghts_get_ntypes_ms(void *ptr)
+{
+  // currently no possibility to delete multisphere bodies
+  // so just return # of bodies
+
+  LAMMPS *lmp = (LAMMPS *) ptr;
+  FixMultisphere *fix_ms = static_cast<FixMultisphere*>(lmp->modify->find_fix_style_strict("multisphere",0));
+  if(!fix_ms) return 0;
+  return fix_ms->ntypes();
+}
+
+/* ---------------------------------------------------------------------- */
+
+double* liggghts_get_vclump_ms(void *ptr)
+{
+  // currently no possibility to delete multisphere bodies
+  // so just return # of bodies
+
+  LAMMPS *lmp = (LAMMPS *) ptr;
+  FixMultisphere *fix_ms = static_cast<FixMultisphere*>(lmp->modify->find_fix_style_strict("multisphere",0));
+  if(!fix_ms) return 0;
+  return fix_ms->vclump();
+}
+
+/* ---------------------------------------------------------------------- */
+
 void* locate_coupling_fix(void *ptr)
 {
     LAMMPS *lmp = (LAMMPS *) ptr;

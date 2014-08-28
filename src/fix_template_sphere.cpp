@@ -362,6 +362,7 @@ void FixTemplateSphere::randomize_ptilist(int n_random,int distribution_groupbit
 
 double FixTemplateSphere::min_rad()
 {
+    
     return pdf_min(pdf_radius);
 }
 

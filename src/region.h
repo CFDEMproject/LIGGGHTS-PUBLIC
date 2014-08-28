@@ -67,7 +67,7 @@ class Region : protected Pointers {
   // generates a random point within the region
   virtual void generate_random(double *,bool subdomain_flag);
 
-  // generate a point inside region OR within a minimum distance from surface
+  // generate a point inside region OR within cut distance from surface
   virtual void generate_random_expandby_cut(double *,double,bool subdomain_flag);
 
   // generate a point inside region AND further away from surface than cut

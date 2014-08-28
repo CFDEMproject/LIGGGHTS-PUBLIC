@@ -47,6 +47,8 @@ class FixMultisphere : public Fix {
 
   void* extract(const char*& a, int& b, int& c) {return NULL;}
 
+  void release(int,double*,double*) {}
+
   int calc_n_steps(int iatom,double *p_ref,double *normalvec,double *v_normal)
   { return 0; }
 
@@ -58,6 +60,9 @@ class FixMultisphere : public Fix {
 
   inline int tag_max_body()
   { return data().tag_max_body(); }
+
+  int ntypes() {return 0;}
+  double * vclump() {return 0;}
 
   class MultisphereParallel *multisphere_;
 

@@ -56,6 +56,8 @@ class FixPropertyAtom : public Fix {
   void copy_arrays(int, int,int);
   virtual void set_arrays(int);
 
+  void set_all(double value);
+
   void write_restart(FILE *);
   virtual void restart(char *);
 

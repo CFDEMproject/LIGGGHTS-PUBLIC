@@ -28,6 +28,7 @@ RegionStyle(mesh/tet,RegTetMesh)
 #ifndef LMP_REGION_TET_MESH_H
 #define LMP_REGION_TET_MESH_H
 
+#include "random_park.h"
 #include "region.h"
 
 namespace LAMMPS_NS {
@@ -44,9 +45,6 @@ class RegTetMesh : public Region {
   int surface_interior(double *, double);
   int surface_exterior(double *, double);
 
-  // volume calculation based on MC
-  virtual void volume_mc(int,double&,double&);
-
   void add_tet(double **n);
   int n_tet();
   double total_vol();
@@ -57,6 +55,7 @@ class RegTetMesh : public Region {
 
    int is_inside_tet(int iTet,double *pos);
 
+   // functions are actually not called at the moment
    virtual void generate_random(double *);
    virtual void generate_random_cut(double *,double);
 
@@ -67,8 +66,6 @@ class RegTetMesh : public Region {
 
    void mesh_randpos(double *pos);
    int  tet_rand_tri();
-   void tet_randpos(int iTet,double *pos);
-   void bary_to_cart(int iTet,double *bary_coo,double *pos);
 
    char *filename;
    double scale_fact;
@@ -76,9 +73,12 @@ class RegTetMesh : public Region {
 
    int nTet,nTetMax;
    double ***node;
+   double **center;
    double total_volume;
    double *volume;
    double *acc_volume;
+
+   #include "region_mesh_tet_I.h"
 };
 
 }

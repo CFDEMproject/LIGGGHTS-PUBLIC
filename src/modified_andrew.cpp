@@ -203,15 +203,15 @@ double ModifiedAndrew::cross(Point O, Point A, Point B)
 Point ModifiedAndrew::mean_point(vector<Point> P){
   Point mean;
 
-  double x_accum, y_accum;
+  double x_accum = 0.0, y_accum = 0.0;
 
   for (size_t i = 1; i < P.size(); i++){
     x_accum += P[i].x;
     y_accum += P[i].y;
   }
 
-  mean.x = x_accum/P.size();
-  mean.y = y_accum/P.size();
+  mean.x = x_accum/(static_cast<double>(P.size())-1.);
+  mean.y = y_accum/(static_cast<double>(P.size())-1.);
 
   return mean;
 }

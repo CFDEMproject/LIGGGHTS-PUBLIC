@@ -55,6 +55,7 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   once_(false),
   mass_(0.),
   nparticles_(0),
+  ignore_ms_(false),
   screenflag_(false),
   fp_(0),
   mass_last_(0.),
@@ -163,6 +164,14 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
             else error->all(FLERR,"Illegal delete command");
             iarg += 2;
             hasargs = true;
+        } else if (strcmp(arg[iarg],"ignore_ms") == 0) {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"Illegal keyword entry");
+            if (strcmp(arg[iarg+1],"yes") == 0) ignore_ms_ = true;
+            else if (strcmp(arg[iarg+1],"no") == 0) ignore_ms_ = false;
+            else error->fix_error(FLERR,this,"unknown keyword");
+            iarg += 2;
+            hasargs = true;
         } else
             error->fix_error(FLERR,this,"unknown keyword");
     }
@@ -251,7 +260,7 @@ void FixMassflowMesh::init()
     if (atom->rmass_flag == 0)
         error->fix_error(FLERR,this,"requires atoms have mass");
 
-    if(modify->n_fixes_style("multisphere"))
+    if(modify->n_fixes_style("multisphere") && !ignore_ms_)
         error->fix_error(FLERR,this,"does not support multi-sphere");
 
     if(delete_atoms_ && 1 != atom->map_style)
@@ -302,6 +311,10 @@ void FixMassflowMesh::post_integrate()
     double deltan;
     int *tag = atom->tag;
 
+    class FixPropertyAtom* fix_color=static_cast<FixPropertyAtom*>(modify->find_fix_property("color","property/atom","scalar",0,0,style,false));
+    bool fixColFound = false; 
+    if (fix_color) fixColFound=true;
+    
     TriMesh *mesh = fix_mesh_->triMesh();
     int nTriAll = mesh->sizeLocal() + mesh->sizeGhost();
 
@@ -382,10 +395,21 @@ void FixMassflowMesh::post_integrate()
                                        v[iPart][0],v[iPart][1],v[iPart][2]);
                     if (fp_)
                     {
+                        if (fixColFound)
+                        {
+                        fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.0g \n ",
+                                   tag[iPart],2.*radius[iPart]/force->cg(),
+                                   x[iPart][0],x[iPart][1],x[iPart][2],
+                                   v[iPart][0],v[iPart][1],v[iPart][2],
+                                   fix_color->vector_atom[iPart]);
+                        }
+                        else
+                    {
                         fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g \n ",
                                    tag[iPart],2.*radius[iPart]/force->cg(),
                                    x[iPart][0],x[iPart][1],x[iPart][2],
                                    v[iPart][0],v[iPart][1],v[iPart][2]);
+                        }
                         fflush(fp_);
                     }
                 }

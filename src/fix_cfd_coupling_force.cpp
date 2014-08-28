@@ -69,7 +69,23 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_density'");
             iarg++;
             hasargs = true;
-        } else if(strcmp(arg[iarg],"transfer_type") == 0) {
+        } 
+        else if(strcmp(arg[iarg],"transfer_torque") == 0)
+        {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_torque'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_torque_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_torque_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_torque'");
+            iarg++;
+            hasargs = true;
+        }
+        else if(strcmp(arg[iarg],"transfer_type") == 0) 
+        {
             if(narg < iarg+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'transfer_type'");
             iarg++;
@@ -210,6 +226,7 @@ void FixCfdCouplingForce::init()
     fix_coupling_->add_push_property("radius","scalar-atom");
     if(use_type_) fix_coupling_->add_push_property("type","scalar-atom");
     if(use_dens_) fix_coupling_->add_push_property("density","scalar-atom");
+    if(use_torque_) fix_coupling_->add_push_property("omega","vector-atom");
     fix_coupling_->add_push_property("volumeweight","scalar-atom");
 
     if(use_property_) fix_coupling_->add_push_property(property_name,property_type);

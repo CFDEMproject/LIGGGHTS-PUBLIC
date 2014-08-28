@@ -58,6 +58,7 @@ thermo_modify	lost ignore norm no
 compute_modify	thermo_temp dynamic yes
 dump			dmp all custom 800 post/dump*.newModels id type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 
+
 #insert particles
 run				5000
 unfix			ins

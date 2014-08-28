@@ -15,15 +15,19 @@
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>pair_style model keyword value 
+<PRE>pair_style model_type model_name model_keyword model_value 
 </PRE>
-<LI>zero or more model_keyword/value pairs may be appended. They must be appended in the following order 
+<LI>zero or more model_type/model_name pairs may be appended. They must be appended in the following order (!) 
 
 <PRE>  <I>model</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>tangential</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>rolling_friction</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>cohesion</I> values = described <A HREF = "Section_gran_models.html">here</A>
+  <I>rolling_friction</I> values = described <A HREF = "Section_gran_models.html">here</A>
   <I>surface</I> values = described <A HREF = "Section_gran_models.html">here</A> 
+</PRE>
+<LI>following the model_type/model_name pairs, zero or more model_keyword/model_valuezero pairs may be appended in arbitrary order 
+
+<PRE>  model_type/model_name pairs = described for each model separately <A HREF = "Section_gran_models.html">here</A>  
 </PRE>
 
 </UL>
@@ -76,6 +80,9 @@ doc pages <A HREF = "Section_gran_models.html">here</A>
 <P>Also, other models may add additional forces or torques on the particles, such as
 cohesive or rolling friction forces. These are also described on separate 
 doc pages <A HREF = "Section_gran_models.html">here</A>
+</P>
+<P>IMPORTANT NOTE: The order of model keywords is important, you have to stick 
+to the order as outlined in the "Syntax" section of this doc page.
 </P>
 <P><B>General comments:</B>
 </P>

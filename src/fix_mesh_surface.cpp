@@ -321,7 +321,7 @@ void FixMeshSurface::createMeshforceContact()
     sprintf(propertyid,"contactforces_%s",id);
     fixarg[0]=(char *) fixid;
     fixarg[1]=(char *) "all";
-    fixarg[2]=(char *) "contactproperty/atom";
+    fixarg[2]=(char *) "contactproperty/atom/wall";
     fixarg[3]=(char *) propertyid;
     fixarg[4]=(char *) "6";
     fixarg[5]=(char *) "fx";
@@ -336,7 +336,7 @@ void FixMeshSurface::createMeshforceContact()
     fixarg[14]=(char *) "0";
     fixarg[15]=(char *) "tz";
     fixarg[16]=(char *) "0";
-    fixarg[17]=(char *) "primitive";
+    fixarg[17]=(char *) "mesh";
     fixarg[18]=(char *) this->id;
     modify->add_fix(19,fixarg);
     fix_meshforce_contact_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));

@@ -83,7 +83,7 @@ namespace ContactModels
 
   int64_t generate_gran_hashcode(int model, int tangential, int cohesion, int rolling, int surface);
 
-  template<int Model, typename Style>
+  template<int Model>
   class SurfaceModel {
   public:
     SurfaceModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
@@ -95,7 +95,7 @@ namespace ContactModels
     inline void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
   };
 
-  template<int Model, typename Style>
+  template<int Model>
   class NormalModel {
   public:
     NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
@@ -109,7 +109,7 @@ namespace ContactModels
     inline double stressStrainExponent();
   };
 
-  template<int Model, typename Style>
+  template<int Model>
   class TangentialModel {
   public:
     TangentialModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
@@ -121,7 +121,7 @@ namespace ContactModels
     inline void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
   };
 
-  template<int Model, typename Style>
+  template<int Model>
   class CohesionModel {
   public:
     CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
@@ -133,7 +133,7 @@ namespace ContactModels
     void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
   };
 
-  template<int Model, typename Style>
+  template<int Model>
   class RollingModel {
   public:
     RollingModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
@@ -148,19 +148,19 @@ namespace ContactModels
   template<typename Style>
   class ContactModel {
   private:
-    SurfaceModel<Style::SURFACE, Style> surfaceModel;
-    NormalModel<Style::MODEL, Style> normalModel;
-    CohesionModel<Style::COHESION, Style> cohesionModel;
-    TangentialModel<Style::TANGENTIAL, Style> tangentialModel;
-    RollingModel<Style::ROLLING, Style> rollingModel;
+    SurfaceModel<Style::SURFACE> surfaceModel;
+    NormalModel<Style::MODEL> normalModel;
+    CohesionModel<Style::COHESION> cohesionModel;
+    TangentialModel<Style::TANGENTIAL> tangentialModel;
+    RollingModel<Style::ROLLING> rollingModel;
 
   public:
     static const int64_t STYLE_HASHCODE = Style::HASHCODE;
-    static const int MASK = SurfaceModel<Style::SURFACE, Style>::MASK |
-                            NormalModel<Style::MODEL, Style>::MASK |
-                            CohesionModel<Style::COHESION, Style>::MASK |
-                            TangentialModel<Style::TANGENTIAL, Style>::MASK |
-                            RollingModel<Style::ROLLING, Style>::MASK;
+    static const int MASK = SurfaceModel<Style::SURFACE>::MASK |
+                            NormalModel<Style::MODEL>::MASK |
+                            CohesionModel<Style::COHESION>::MASK |
+                            TangentialModel<Style::TANGENTIAL>::MASK |
+                            RollingModel<Style::ROLLING>::MASK;
 
     static const int HANDLE_REGISTER_SETTINGS = MASK & CM_REGISTER_SETTINGS;
     static const int HANDLE_CONNECT_TO_PROPERTIES = MASK & CM_CONNECT_TO_PROPERTIES;
@@ -241,8 +241,8 @@ namespace ContactModels
     }
   };
 
-  template<typename Style>
-  class CohesionModel<COHESION_OFF, Style> : protected Pointers
+  template<>
+  class CohesionModel<COHESION_OFF> : protected Pointers
   {
   public:
     static const int MASK = 0;
@@ -256,8 +256,8 @@ namespace ContactModels
     void noCollision(ContactData&, ForceData&, ForceData&){}
   };
 
-  template<typename Style>
-  class RollingModel<ROLLING_OFF, Style> : protected Pointers
+  template<>
+  class RollingModel<ROLLING_OFF> : protected Pointers
   {
   public:
     static const int MASK = 0;

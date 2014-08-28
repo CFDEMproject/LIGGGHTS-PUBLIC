@@ -39,13 +39,13 @@ NORMAL_MODEL(HOOKE_HYSTERESIS,hooke/hysteresis,2)
 namespace LIGGGHTS {
 namespace ContactModels
 {
-  template<typename Style>
-  class NormalModel<HOOKE_HYSTERESIS, Style> : protected NormalModel<HOOKE, Style>
+  template<>
+  class NormalModel<HOOKE_HYSTERESIS> : protected NormalModel<HOOKE>
   {
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_COLLISION | CM_NO_COLLISION;
 
-    NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup) : NormalModel<HOOKE, Style>(lmp, hsetup),
+    NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup) : NormalModel<HOOKE>(lmp, hsetup),
         kn2k2Max(NULL),
         kn2kc(NULL),
         phiF(NULL)
@@ -55,11 +55,11 @@ namespace ContactModels
     }
 
     inline void registerSettings(Settings & settings){
-      NormalModel<HOOKE, Style>::registerSettings(settings);
+      NormalModel<HOOKE>::registerSettings(settings);
     }
 
     inline void connectToProperties(PropertyRegistry & registry) {
-      NormalModel<HOOKE, Style>::connectToProperties(registry);
+      NormalModel<HOOKE>::connectToProperties(registry);
 
       registry.registerProperty("kn2kcMax", &MODEL_PARAMS::createCoeffMaxElasticStiffness);
       registry.registerProperty("kn2kc", &MODEL_PARAMS::createCoeffAdhesionStiffness);
@@ -68,6 +68,10 @@ namespace ContactModels
       registry.connect("kn2kcMax", kn2k2Max,"model hooke/hysteresis");
       registry.connect("kn2kc", kn2kc,"model hooke/hysteresis");
       registry.connect("phiF", phiF,"model hooke/hysteresis");
+
+      // error checks on coarsegraining
+      if(force->cg_active())
+        error->cg(FLERR,"model hooke/hysteresis");
     }
 
     // effective exponent for stress-strain relationship
@@ -80,11 +84,11 @@ namespace ContactModels
     inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)
     {
       // use these values from HOOKE implementation
-      bool & viscous = NormalModel<HOOKE, Style>::viscous;
-      double ** & Yeff = NormalModel<HOOKE, Style>::Yeff;
-      double & charVel = NormalModel<HOOKE, Style>::charVel;
-      bool & tangential_damping = NormalModel<HOOKE, Style>::tangential_damping;
-      Force * & force = NormalModel<HOOKE, Style>::force;
+      bool & viscous = NormalModel<HOOKE>::viscous;
+      double ** & Yeff = NormalModel<HOOKE>::Yeff;
+      double & charVel = NormalModel<HOOKE>::charVel;
+      bool & tangential_damping = NormalModel<HOOKE>::tangential_damping;
+      Force * & force = NormalModel<HOOKE>::force;
 
       const int itype = cdata.itype;
       const int jtype = cdata.jtype;
@@ -96,15 +100,15 @@ namespace ContactModels
       double coeffRestLogChosen;
 
       if (viscous)  {
-        double ** & coeffMu = NormalModel<HOOKE, Style>::coeffMu;
-        double ** & coeffRestMax = NormalModel<HOOKE, Style>::coeffRestMax;
-        double ** & coeffStc = NormalModel<HOOKE, Style>::coeffStc;
+        double ** & coeffMu = NormalModel<HOOKE>::coeffMu;
+        double ** & coeffRestMax = NormalModel<HOOKE>::coeffRestMax;
+        double ** & coeffStc = NormalModel<HOOKE>::coeffStc;
         // Stokes Number from MW Schmeeckle (2001)
         const double stokes=cdata.meff*cdata.vn/(6.0*M_PI*coeffMu[itype][jtype]*reff*reff);
         // Empirical from Legendre (2006)
         coeffRestLogChosen=log(coeffRestMax[itype][jtype])+coeffStc[itype][jtype]/stokes;
       } else {
-        double ** & coeffRestLog = NormalModel<HOOKE, Style>::coeffRestLog;
+        double ** & coeffRestLog = NormalModel<HOOKE>::coeffRestLog;
         coeffRestLogChosen=coeffRestLog[itype][jtype];
       }
 

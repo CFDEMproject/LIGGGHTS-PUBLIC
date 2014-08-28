@@ -370,6 +370,11 @@
     if(!node_orig_)
         error->one(FLERR,"Internal error in MultiNodeMesh<NUM_NODES>::storeNodePosOrig");
 
+    int nall = this->sizeLocal()+this->sizeGhost();
+    int capacity = this->node_orig_->capacity();
+    if(capacity < nall)
+        this->node_orig_->addUninitialized(nall - capacity);
+
     for(int i = ilo; i < ihi; i++)
         for(int j = 0; j < NUM_NODES; j++)
         {

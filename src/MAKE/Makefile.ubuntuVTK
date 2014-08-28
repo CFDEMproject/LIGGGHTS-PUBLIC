@@ -67,7 +67,7 @@ JPG_LIB =
 
 VTK_INC = -I/usr/include/vtk-5.8
 VTK_PATH = 
-VTK_LIB = -lvtkCommon -lvtkHybrid -lvtkFiltering -lvtkRendering -lvtkIO -lvtkexoIIc -lvtkParallel -lvtkGraphics -lvtkverdict -lvtkImaging -lvtkftgl -lvtkDICOMParser -lvtkmetaio
+VTK_LIB = -lvtkCommon -lvtkFiltering -lvtkIO
 
 # ---------------------------------------------------------------------
 # build rules and dependencies

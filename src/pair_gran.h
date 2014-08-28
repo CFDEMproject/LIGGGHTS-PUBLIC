@@ -72,6 +72,7 @@ public:
 
   int  cplenable()
   { return cpl_enable; }
+
   void register_compute_pair_local(class ComputePairGranLocal *,int&);
   void unregister_compute_pair_local(class ComputePairGranLocal *ptr);
 

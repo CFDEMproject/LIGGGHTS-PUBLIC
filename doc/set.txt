@@ -87,7 +87,8 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     final timestep = the final timestep value until which the per-atom quantity is to be added
   {property/atom} value = varname var_value[0] var_value[1] ....
     varname = name of the variable to be set
-    var_value[0], var_value[1]... = values of the property to be set :pre
+    var_value[0], var_value[1]... = values of the property to be set.
+    value can be an atom-style variable (see below) :pre
 :ule
 
 [Examples:]

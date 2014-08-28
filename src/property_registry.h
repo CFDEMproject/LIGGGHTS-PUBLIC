@@ -66,6 +66,10 @@ public:
 
   T data;
   std::set<T*> listeners;
+
+  void print_value(FILE* out) {
+    fprintf(out, "%g", double(data));
+  }
 };
 
 typedef Property<double> ScalarProperty;
@@ -73,7 +77,11 @@ typedef Property<double> ScalarProperty;
 class VectorProperty : public Property<double*>
 {
 public:
-  VectorProperty(const int N){
+  int cols;
+
+  VectorProperty(const int N) :
+    cols(N)
+  {
     data = new double[N];
     for(int col = 0; col < N; col++) {
       data[col] = 0.0;
@@ -83,12 +91,27 @@ public:
   virtual ~VectorProperty(){
     delete [] data;
   }
+
+  void print_value(FILE* out) {
+    fprintf(out, "[");
+    for(int col = 1; col < cols; col++) {
+      fprintf(out, "%g", data[col]);
+      if((col+1) < cols) fprintf(out, " ");
+    }
+    fprintf(out, "]");
+  }
 };
 
 class MatrixProperty : public Property<double**>
 {
 public:
-  MatrixProperty(const int N, const int M){
+  int rows;
+  int cols;
+
+  MatrixProperty(const int N, const int M) :
+    rows(N),
+    cols(M)
+  {
     double * array = new double[N*M];
     data = new double*[N];
 
@@ -104,6 +127,18 @@ public:
   virtual ~MatrixProperty() {
     delete [] data[0];
     delete [] data;
+  }
+
+  void print_value(FILE* out) {
+    fprintf(out, "[");
+    for(int row = 1; row < rows; row++) {
+      for(int col = 1; col < cols; col++) {
+        fprintf(out, "%g", data[row][col]);
+        if((col+1) < cols) fprintf(out, " ");
+      }
+      if((row+1) < rows) fprintf(out, "; ");
+    }
+    fprintf(out, "]");
   }
 };
 
@@ -137,6 +172,8 @@ public:
   void connect(std::string varname, double & variable, const char *caller);
 
   void init();
+
+  void print_all(FILE* out);
 
 private:
   std::map<std::string, ScalarPropertyCreator> scalar_creators;

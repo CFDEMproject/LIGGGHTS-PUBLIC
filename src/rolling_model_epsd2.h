@@ -40,18 +40,17 @@ namespace ContactModels
 {
   using namespace LAMMPS_NS;
 
-  template<typename Style>
-  class RollingModel<ROLLING_EPSD2, Style> : protected Pointers
+  template<>
+  class RollingModel<ROLLING_EPSD2> : protected Pointers
   {
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_COLLISION | CM_NO_COLLISION;
 
-    RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup) : Pointers(lmp), coeffRollFrict(NULL), coeffRollVisc(NULL)
+    RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup) : Pointers(lmp), coeffRollFrict(NULL)
     {
       history_offset = hsetup->add_history_value("r_torquex_old", "1");
       hsetup->add_history_value("r_torquey_old", "1");
       hsetup->add_history_value("r_torquez_old", "1");
-      STATIC_ASSERT(Style::TANGENTIAL == TANGENTIAL_HISTORY);
       
     }
 
@@ -60,6 +59,10 @@ namespace ContactModels
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("coeffRollFrict", &MODEL_PARAMS::createCoeffRollFrict);
       registry.connect("coeffRollFrict", coeffRollFrict,"rolling_model epsd2");
+
+      // error checks on coarsegraining
+      if(force->cg_active())
+        error->cg(FLERR,"rolling model epsd2");
     }
 
     void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) 
@@ -117,7 +120,6 @@ namespace ContactModels
 
   private:
     double ** coeffRollFrict;
-    double ** coeffRollVisc;
     int history_offset;
 
     inline void calcRollTorque(double (&r_torque)[3],const CollisionData & cdata,double reff,double wr1,double wr2,double wr3) {

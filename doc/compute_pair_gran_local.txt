@@ -17,8 +17,9 @@ compute ID group-ID wall/gran/local keywords ... :pre
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 pair/gran/local or wall/gran/local = style name of this compute command :l
 zero or more keywords may be appended :l
-keyword = {pos} or {id} or {force} or {torque} or {history} or {contactArea} :l
+keyword = {pos} or {vel} or {id} or {force} or {torque} or {history} or {contactArea} :l
   {pos} = positions of particles in contact (6 values)
+  {vel} = velocities of particles in contact (6 values)
   {id} = IDs of particles in contact and a periodicity flag (3 values) or IDs of the mesh, the triangle and the particle (3 values)
   {force} = contact force (3 values)
   {torque} = torque divided by particle diameter (3 values)
@@ -59,7 +60,8 @@ dedicated fix mesh command. For how to output the trangle id,
 see "dump mesh/gran/VTK command"dump.html.
 
 The output {pos} is the particle positions (6 values) in distance
-"units"_units.html. For computing pairwise data, the output {id} will
+"units"_units.html. Keyword {vel} will do the same for velocities.
+For computing pairwise data, the output {id} will
 be the two particle IDs (using this option requires to use an atom
 map) and a flag that is 1 for interaction over a periodic boundary
 and 0 otherwise. For computing particle-wall data, the output {id}
@@ -111,5 +113,5 @@ For accessing particle-wall contact data, only mesh walls can be used.
 [Default:]
 
 By default, all of the outputs keywords (except the heat flux) are activated,
-i.e. when no keyword is used, positions, ids, forces, torques, history
+i.e. when no keyword is used, positions velocities, ids, forces, torques, history
 and contact area are output.

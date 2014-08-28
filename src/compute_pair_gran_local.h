@@ -47,7 +47,7 @@ class ComputePairGranLocal : public Compute {
   void reference_deleted();
   void add_pair(int i,int j,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist);
   void add_heat(int i,int j,double hf);
-  void add_wall_1(int iFMG,int iTri,int iP,double *contact_point);
+  void add_wall_1(int iFMG,int iTri,int iP,double *contact_point,double *v_wall);
   void add_wall_2(int i,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist,double rsq);
   void add_heat_wall(int i,double hf);
 
@@ -71,7 +71,7 @@ class ComputePairGranLocal : public Compute {
 
   int ipair;
 
-  int posflag,idflag,fflag,tflag,hflag,aflag,hfflag;
+  int posflag,velflag,idflag,fflag,tflag,hflag,aflag,hfflag;
 
   int dnum;
 

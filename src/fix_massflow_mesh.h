@@ -78,6 +78,8 @@ class FixMassflowMesh : public Fix {
   double mass_;
   int nparticles_;
 
+  bool ignore_ms_;
+
   // data write
   bool screenflag_;
   FILE *fp_;

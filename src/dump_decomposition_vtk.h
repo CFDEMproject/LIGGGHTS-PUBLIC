@@ -43,7 +43,6 @@ class DumpDecompositionVTK : public Dump {
   double *ydata, *ydata_all;
   double *zdata, *zdata_all;
 
-  char *columns;             // column labels
   int lasttimestep;
 
   int modify_param(int, char **);

@@ -215,7 +215,7 @@
   template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::delRestart(int n,bool scale,bool translate,bool rotate)
   {
-          // do only delete property if it is a forward comm property
+          // do only delete property if it is a restart property
           if(!decidePackUnpackOperation(OPERATION_RESTART, scale, translate, rotate))
             return;
 

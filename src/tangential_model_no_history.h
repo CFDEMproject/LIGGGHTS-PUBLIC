@@ -39,8 +39,8 @@ namespace ContactModels
 {
   using namespace std;
 
-  template<typename Style>
-  class TangentialModel<TANGENTIAL_NO_HISTORY, Style> : protected Pointers
+  template<>
+  class TangentialModel<TANGENTIAL_NO_HISTORY> : protected Pointers
   {
     double ** coeffFrict;
 
@@ -70,6 +70,7 @@ namespace ContactModels
       const double Ft_friction = xmu * fabs(cdata.Fn);
       const double Ft_damping = cdata.gammat*vrel;     
       double Ft;
+
       if (vrel != 0.0) Ft = min(Ft_friction, Ft_damping) / vrel;
       else Ft = 0.0;
 

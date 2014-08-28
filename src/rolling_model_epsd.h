@@ -40,8 +40,8 @@ namespace ContactModels
 {
   using namespace LAMMPS_NS;
 
-  template<typename Style>
-  class RollingModel<ROLLING_EPSD, Style> : protected Pointers
+  template<>
+  class RollingModel<ROLLING_EPSD> : protected Pointers
   {
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_COLLISION | CM_NO_COLLISION;
@@ -51,7 +51,6 @@ namespace ContactModels
       history_offset = hsetup->add_history_value("r_torquex_old", "1");
       hsetup->add_history_value("r_torquey_old", "1");
       hsetup->add_history_value("r_torquez_old", "1");
-      STATIC_ASSERT(Style::TANGENTIAL == TANGENTIAL_HISTORY);
       
     }
 
@@ -62,6 +61,10 @@ namespace ContactModels
       registry.registerProperty("coeffRollVisc", &MODEL_PARAMS::createCoeffRollVisc);
       registry.connect("coeffRollFrict", coeffRollFrict,"rolling_model epsd");
       registry.connect("coeffRollVisc", coeffRollVisc,"rolling_model epsd");
+
+      // error checks on coarsegraining
+      if(force->cg_active())
+        error->cg(FLERR,"rolling model epsd");
     }
 
     void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) 

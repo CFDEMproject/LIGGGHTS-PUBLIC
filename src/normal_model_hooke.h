@@ -38,8 +38,8 @@ NORMAL_MODEL(HOOKE,hooke,0)
 namespace LIGGGHTS {
 namespace ContactModels
 {
-  template<typename Style>
-  class NormalModel<HOOKE, Style> : protected Pointers
+  template<>
+  class NormalModel<HOOKE> : protected Pointers
   {
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
@@ -92,6 +92,10 @@ namespace ContactModels
 
         registry.connect("coeffRestLog", coeffRestLog,"model hooke viscous");
       }
+
+      // error checks on coarsegraining
+      if(force->cg_active())
+        error->cg(FLERR,"model hooke");
     }
 
     // effective exponent for stress-strain relationship

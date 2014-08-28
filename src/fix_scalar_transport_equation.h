@@ -39,6 +39,7 @@ class FixScalarTransportEquation : public Fix {
   void post_create();
   void pre_delete(bool unfixflag);
   void init();
+  int modify_param(int narg, char **arg);
   void updatePtrs();
   void initial_integrate_respa(int,int,int);
   void initial_integrate(int);
@@ -71,6 +72,9 @@ class FixScalarTransportEquation : public Fix {
   double *quantity;           
   double *flux;       
   double *source;     
+
+  // flag if integrate quantity or not
+  bool int_flag;
 
 };
 

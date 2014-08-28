@@ -30,8 +30,8 @@ keyword = {artVisc} or {tensCorr} :ul
 
 [Examples:]
 
-pair_style sph wendland 0.001 artVisc 1e-4 0 1e-8
-pair_style sph cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0.2 1e-2 :pre
+pair_style sph/artVisc/tensCorr wendland 0.001 artVisc 1e-4 0 1e-8
+pair_style sph/artVisc/tensCorr cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0.2 1e-2 :pre
 
 [LIGGGHTS vs. LAMMPS Info:]
 

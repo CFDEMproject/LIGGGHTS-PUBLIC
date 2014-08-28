@@ -99,7 +99,7 @@ void FixNeighlistMesh::post_create()
         fixarg[3]=fix_nneighs_name_;
         fixarg[4]="scalar"; // 1 vector per particle to be registered
         fixarg[5]="yes";    // restart - REQUIRED!
-        fixarg[6]="no";     // communicate ghost
+        fixarg[6]="yes";     // communicate ghost
         fixarg[7]="no";     // communicate rev
         fixarg[8]="0.";
         fix_nneighs_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);

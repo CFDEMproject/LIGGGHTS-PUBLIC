@@ -29,7 +29,7 @@ SHLIBFLAGS =	-shared
 # LAMMPS ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
 
-LMP_INC =	-DLAMMPS_GZIP
+LMP_INC =	-DLAMMPS_GZIP -DLIGGGHTS_DEBUG
 
 # MPI library, REQUIRED
 # see discussion in doc/Section_start.html#2_2 (step 5)

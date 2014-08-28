@@ -43,9 +43,11 @@ class FixContactHistory : public Fix {
  public:
   FixContactHistory(class LAMMPS *, int, char **);
   ~FixContactHistory();
+  virtual void post_create() {}
   virtual int setmask();
   virtual void init();
   virtual void setup_pre_exchange();
+  virtual void setup_pre_neighbor() {}
   virtual void pre_exchange();
   virtual void min_setup_pre_exchange();
   void min_pre_exchange();

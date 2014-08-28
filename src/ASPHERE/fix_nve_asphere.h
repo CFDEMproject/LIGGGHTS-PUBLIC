@@ -33,7 +33,9 @@ class FixNVEAsphere : public FixNVE {
 
  private:
   double dtq;
+  bool updateRotation_; //NP modified TUG
   class AtomVecEllipsoid *avec;
+  class FixPropertyAtom* fix_orientation_; //NP modified TUG
 };
 
 }

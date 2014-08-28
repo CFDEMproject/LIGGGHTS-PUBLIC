@@ -34,8 +34,8 @@ NORMAL_MODEL(HOOKE_STIFFNESS,hooke/stiffness,1)
 namespace LIGGGHTS {
 namespace ContactModels
 {
-  template<typename Style>
-  class NormalModel<HOOKE_STIFFNESS, Style> : protected Pointers
+  template<>
+  class NormalModel<HOOKE_STIFFNESS> : protected Pointers
   {
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
@@ -78,6 +78,10 @@ namespace ContactModels
         registry.connect("gamman", gamma_n,"model hooke/stiffness");
         registry.connect("gammat", gamma_t,"model hooke/stiffness");
       }
+
+      // error checks on coarsegraining
+      if(force->cg_active())
+        error->cg(FLERR,"model hooke/stiffness");
     }
 
     // effective exponent for stress-strain relationship

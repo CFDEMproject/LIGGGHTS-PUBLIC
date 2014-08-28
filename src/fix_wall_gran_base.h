@@ -61,6 +61,18 @@ public:
 
   virtual void init_granular() {
     cmodel.connectToProperties(force->registry);
+
+#ifdef LIGGGHTS_DEBUG
+    if(comm->me == 0) {
+      fprintf(screen, "==== WALL %s GLOBAL PROPERTIES ====\n", parent->id);
+      force->registry.print_all(screen);
+      fprintf(screen, "==== WALL %s GLOBAL PROPERTIES ====\n", parent->id);
+
+      fprintf(logfile, "==== WALL %s GLOBAL PROPERTIES ====\n", parent->id);
+      force->registry.print_all(logfile);
+      fprintf(logfile, "==== WALL %s GLOBAL PROPERTIES ====\n", parent->id);
+    }
+#endif
   }
 
   virtual void settings(int nargs, char ** args) {
@@ -68,8 +80,19 @@ public:
     cmodel.registerSettings(settings);
     bool success = settings.parseArguments(nargs, args);
 
+#ifdef LIGGGHTS_DEBUG
+    if(comm->me == 0) {
+      fprintf(screen, "==== WALL %s SETTINGS ====\n", parent->id);
+      settings.print_all(screen);
+      fprintf(screen, "==== WALL %s SETTINGS ====\n", parent->id);
+
+      fprintf(logfile, "==== WALL %s SETTINGS ====\n", parent->id);
+      settings.print_all(logfile);
+      fprintf(logfile, "==== WALL %s SETTINGS ====\n", parent->id);
+    }
+#endif
+
     if(!success) {
-      // TODO: Error handling
       error->fix_error(FLERR, parent, settings.error_message.c_str());
     }
   }

@@ -282,7 +282,7 @@ void ProcMap::custom_grid(char *cfile, int nprocs,
   MPI_Comm_rank(world,&me);
 
   if (me == 0) {
-    FILE *fp = fopen(cfile,"r");
+    fp = fopen(cfile,"r");
     if (fp == NULL) error->one(FLERR,"Cannot open custom file");
 
     // skip header = blank and comment lines

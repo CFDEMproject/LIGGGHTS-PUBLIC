@@ -362,6 +362,10 @@ void FixInsertStream::init()
 
     i_am_integrator = modify->i_am_first_of_style(this);
 
+    // error check on insertion face
+    if(face_style == FACE_NONE)
+        error->fix_error(FLERR,this,"must define an insertion face");
+
     if(ins_face->isMoving() || ins_face->isScaling())
         error->fix_error(FLERR,this,"cannot translate, rotate, scale mesh which is used for particle insertion");
 }
@@ -753,7 +757,13 @@ void FixInsertStream::end_of_step()
             {
                 
                 if(fix_multisphere && fix_multisphere->belongs_to(i) >= 0)
+                {
+                    
+                    v_toInsert = &release_data[i][8];
+                    omega_toInsert = &release_data[i][11];
+                    fix_multisphere->release(i,v_toInsert,omega_toInsert);
                     continue;
+                }
 
                 // integrate with constant vel and set v,omega
 

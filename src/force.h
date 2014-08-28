@@ -90,9 +90,9 @@ class Force : protected Pointers {
   ~Force();
   void init();
 
-  void create_pair(const char *, int & narg, char** & args, const char *suffix = NULL);
+  void create_pair(const char *, const char *suffix = NULL);
   void create_pair_from_restart(FILE* fp,const char *, const char *suffix = NULL);
-  class Pair *new_pair(const char *, int & narg, char** & args, const char *, int &);
+  class Pair *new_pair(const char *, const char *, int &);
   class Pair *new_pair_from_restart(FILE* fp, const char *, const char *, int &);
 
   class Pair *pair_match(const char *, int);

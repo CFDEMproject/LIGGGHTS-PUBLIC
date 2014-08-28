@@ -81,6 +81,18 @@ public:
     cmodel.registerSettings(settings);
     bool success = settings.parseArguments(nargs, args);
 
+#ifdef LIGGGHTS_DEBUG
+    if(comm->me == 0) {
+      fprintf(screen, "==== PAIR SETTINGS ====\n");
+      settings.print_all(screen);
+      fprintf(screen, "==== PAIR SETTINGS ====\n");
+
+      fprintf(logfile, "==== PAIR SETTINGS ====\n");
+      settings.print_all(logfile);
+      fprintf(logfile, "==== PAIR SETTINGS ====\n");
+    }
+#endif
+
     if(!success) {
       error->all(FLERR,settings.error_message.c_str());
     }
@@ -88,6 +100,18 @@ public:
 
   virtual void init_granular() {
     cmodel.connectToProperties(force->registry);
+
+#ifdef LIGGGHTS_DEBUG
+    if(comm->me == 0) {
+      fprintf(screen, "==== PAIR GLOBAL PROPERTIES ====\n");
+      force->registry.print_all(screen);
+      fprintf(screen, "==== PAIR GLOBAL PROPERTIES ====\n");
+
+      fprintf(logfile, "==== PAIR GLOBAL PROPERTIES ====\n");
+      force->registry.print_all(logfile);
+      fprintf(logfile, "==== PAIR GLOBAL PROPERTIES ====\n");
+    }
+#endif
   }
 
   virtual void write_restart_settings(FILE * fp)

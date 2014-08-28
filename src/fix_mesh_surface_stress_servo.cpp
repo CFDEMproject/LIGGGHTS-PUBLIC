@@ -678,6 +678,8 @@ int FixMeshSurfaceStressServo::modify_param(int narg, char **arg)
       sp_style_ = CONSTANT;
     }
 
+    resetIntegrator();
+
     return 2;
   } else if (strcmp(arg[0],"ctrlParam") == 0) {
     if (narg < 4) error->fix_error(FLERR,this,"not enough arguments for fix_modify 'ctrlParam'");
@@ -685,6 +687,8 @@ int FixMeshSurfaceStressServo::modify_param(int narg, char **arg)
     kp_ = force->numeric(FLERR,arg[1]);
     ki_ = force->numeric(FLERR,arg[2]);
     kd_ = force->numeric(FLERR,arg[3]);
+
+    resetIntegrator();
 
     return 4;
   }

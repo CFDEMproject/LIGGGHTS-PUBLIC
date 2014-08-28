@@ -205,7 +205,7 @@ namespace LAMMPS_NS
       private:
 
         char *var1str_;
-        int myvar1_,myvar2_,myvar3_;
+        int myvar1_;
         double axis_[3], point_[3], omega_, totalPhi_;
   };
 

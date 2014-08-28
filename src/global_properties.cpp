@@ -107,10 +107,14 @@ namespace MODEL_PARAMS
     return charVelScalar;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty* createCohesionEnergyDensity(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
     return createPerTypePairProperty(registry, COHESION_ENERGY_DENSITY, caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 
   VectorProperty * createYoungsModulus(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
@@ -139,6 +143,8 @@ namespace MODEL_PARAMS
     return vec;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   VectorProperty * createPoissonsRatio(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
     LAMMPS * lmp = registry.getLAMMPS();
@@ -163,6 +169,8 @@ namespace MODEL_PARAMS
 
     return vec;
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty * createYeff(PropertyRegistry & registry, const char * caller, bool)
   {
@@ -191,6 +199,8 @@ namespace MODEL_PARAMS
 
     return matrix;
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty * createGeff(PropertyRegistry & registry, const char * caller, bool)
   {
@@ -221,8 +231,10 @@ namespace MODEL_PARAMS
     return matrix;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty * createCoeffRest(PropertyRegistry & registry, const char * caller, bool sanity_checks)
-   {
+  {
      LAMMPS * lmp = registry.getLAMMPS();
      const int max_type = registry.max_type();
 
@@ -247,7 +259,9 @@ namespace MODEL_PARAMS
      }
 
      return matrix;
-   }
+  }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty * createCoeffRestLog(PropertyRegistry & registry, const char * caller, bool)
   {
@@ -270,6 +284,8 @@ namespace MODEL_PARAMS
     return matrix;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty * createBetaEff(PropertyRegistry & registry, const char * caller, bool)
   {
     const int max_type = registry.max_type();
@@ -291,20 +307,28 @@ namespace MODEL_PARAMS
     return matrix;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty* createCoeffFrict(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, COEFFICIENT_FRICTION, caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty* createCoeffRollFrict(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, COEFFICIENT_ROLL_FRICTION, caller);
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty* createCoeffRollVisc(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, COEFFICIENT_ROLL_VISCOUS_DAMPING, caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty * createCoeffMu(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
@@ -333,6 +357,8 @@ namespace MODEL_PARAMS
     return matrix;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty * createCoeffRestMax(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
    LAMMPS * lmp = registry.getLAMMPS();
@@ -359,6 +385,8 @@ namespace MODEL_PARAMS
 
    return matrix;
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty * createCoeffStc(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
@@ -387,25 +415,35 @@ namespace MODEL_PARAMS
    return matrix;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   ScalarProperty* createLiquidVolume(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, LIQUID_VOLUME, caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 
   ScalarProperty* createSurfaceTension(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, SURFACE_TENSION, caller);
   }
 
+  /* ---------------------------------------------------------------------- */
+
   ScalarProperty* createSwitchModel(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, SWITCH_MODEL, caller);
   }
 
+  /* ---------------------------------------------------------------------- */
+
   ScalarProperty* createHistoryIndex(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, HISTORY_INDEX, caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 
   VectorProperty * createContactAngle(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
@@ -422,15 +460,17 @@ namespace MODEL_PARAMS
       // error checks on v
       if(sanity_checks)
       {
-        if(vi < 0. || vi > 180)
+        if(vi < 0. || vi > 180.)
           lmp->error->all(FLERR,"0 <= contactAngle <= 180° required");
       }
 
-      vec->data[i] = vi;
+      vec->data[i] = vi * M_PI / 180.; // from grad to rad
     }
 
     return vec;
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty* createKn(PropertyRegistry & registry, const char * caller, bool)
   {
@@ -453,10 +493,14 @@ namespace MODEL_PARAMS
     return matrix;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty* createKt(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, "kt", caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty* createGamman(PropertyRegistry & registry, const char * caller, bool)
   {
@@ -479,10 +523,14 @@ namespace MODEL_PARAMS
     return matrix;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty* createGammat(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, "gammat", caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty* createGammanAbs(PropertyRegistry & registry, const char * caller, bool)
   {
@@ -505,23 +553,33 @@ namespace MODEL_PARAMS
     return matrix;
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty* createGammatAbs(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, "gammat_abs", caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty* createCoeffMaxElasticStiffness(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, COEFFICIENT_MAX_ELASTIC_STIFFNESS, caller);
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty* createCoeffAdhesionStiffness(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, COEFFICIENT_ADHESION_STIFFNESS, caller);
   }
 
+  /* ---------------------------------------------------------------------- */
+
   MatrixProperty* createCoeffPlasticityDepth(PropertyRegistry & registry, const char * caller, bool)
   {
     return createPerTypePairProperty(registry, COEFFICIENT_PLASTICITY_DEPTH, caller);
   }
+
+  /* ---------------------------------------------------------------------- */
 }

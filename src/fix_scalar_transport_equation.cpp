@@ -88,6 +88,8 @@ FixScalarTransportEquation::FixScalarTransportEquation(LAMMPS *lmp, int narg, ch
   fix_quantity = fix_flux = fix_source = NULL; fix_capacity = NULL;
   capacity = NULL;
 
+  int_flag = true;
+
   peratom_flag = 1;              
   size_peratom_cols = 0;         
   peratom_freq = 1;
@@ -234,6 +236,25 @@ void FixScalarTransportEquation::init()
 
 /* ---------------------------------------------------------------------- */
 
+int FixScalarTransportEquation::modify_param(int narg, char **arg)
+{
+  if (strcmp(arg[0],"integrate") == 0) {
+    if (narg < 2) error->fix_error(FLERR,this,"not enough arguments for fix_modify 'integrate'");
+
+    if (strcmp(arg[1],"start") == 0) {
+      int_flag = true;
+    } else if (strcmp(arg[1],"stop") == 0) {
+      int_flag = false;
+    } else
+      error->fix_error(FLERR,this,"wrong argument for fix_modify 'integrate'");
+    return 2;
+  }
+
+  return 0;
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixScalarTransportEquation::initial_integrate(int vflag)
 {
   
@@ -272,6 +293,10 @@ void FixScalarTransportEquation::final_integrate()
     int *type = atom->type;
     int *mask = atom->mask;
     double capacity;
+
+    // skip if integration turned off
+    if(!int_flag)
+        return;
 
     updatePtrs();
 

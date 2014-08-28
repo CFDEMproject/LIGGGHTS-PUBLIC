@@ -263,6 +263,7 @@ int FixInsertPack::calc_ninsert_this()
       MPI_Sum_Scalar(vol_region,world);
       ninsert_this = static_cast<int>((volumefraction_region*region_volume - vol_region) / fix_distribution->vol_expect() + random->uniform());
       insertion_ratio = vol_region / (volumefraction_region*region_volume);
+      
   }
   else if(ntotal_region > 0)
   {
@@ -279,7 +280,9 @@ int FixInsertPack::calc_ninsert_this()
   }
   else error->one(FLERR,"Internal error in FixInsertPack::calc_ninsert_this()");
 
-  // can be < 0 due to round-off etc
+  // can be < 0 due to overflow, round-off etc
+  if(ninsert_this < -200000)
+    error->fix_error(FLERR,this,"overflow in particle number calculation: inserting too many particles in one step");
   if(ninsert_this < 0) ninsert_this = 0;
 
   if(insertion_ratio < 0.) insertion_ratio = 0.;
@@ -358,6 +361,9 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             pti = fix_distribution->pti_list[ninserted_this_local];
             double rbound = pti->r_bound_ins;
 
+            if(print_stats_during_flag && (ninsert_this_local >= 10) && (0 == itotal % (ninsert_this_local/10)))
+                fprintf(screen,"insertion: proc %d at %d %%\n",comm->me,10*itotal/(ninsert_this_local/10));
+
             do
             {
                 
@@ -407,6 +413,9 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             
             pti = fix_distribution->pti_list[ninserted_this_local];
             double rbound = pti->r_bound_ins;
+
+            if(print_stats_during_flag && (ninsert_this_local >= 10) && (0 == ninserted_this_local % (ninsert_this_local/10)) )
+                fprintf(screen,"insertion: proc %d at %d %%\n",comm->me,10*ninserted_this_local/(ninsert_this_local/10));
 
             int nins = 0;
             while(nins == 0 && ntry < maxtry)

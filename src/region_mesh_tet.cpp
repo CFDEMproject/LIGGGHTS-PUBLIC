@@ -30,7 +30,6 @@
 #include "mpi_liggghts.h"
 #include "math.h"
 #include "math_extra_liggghts.h"
-#include "random_park.h"
 #include "input_mesh_tet.h"
 
 #define DELTA_TET 1000
@@ -67,6 +66,7 @@ RegTetMesh::RegTetMesh(LAMMPS *lmp, int narg, char **arg) :
   rot_angle[2] = atof(arg[13]);
 
   node = NULL;
+  center = NULL;
   volume = NULL;
   acc_volume = NULL;
   nTet = 0;
@@ -96,6 +96,7 @@ RegTetMesh::~RegTetMesh()
   delete [] contact;
 
   memory->destroy(node);
+  memory->destroy(center);
   memory->sfree(volume);
   memory->sfree(acc_volume);
 }
@@ -154,6 +155,7 @@ int RegTetMesh::surface_exterior(double *x, double cutoff)
 
 void RegTetMesh::generate_random(double *pos)
 {
+    // function actually not called at the moment
     if(!interior) error->all(FLERR,"Impossible to generate random points on tet mesh region with side = out");
     mesh_randpos(pos);
 }
@@ -162,19 +164,27 @@ void RegTetMesh::generate_random(double *pos)
 
 void RegTetMesh::generate_random_cut(double *pos,double cut)
 {
+    // function actually not called at the moment
     if(!interior) error->all(FLERR,"Impossible to generate random points on tet mesh region with side = out");
     error->all(FLERR,"This feature is not available for tet mesh regions");
-
 }
 
 /* ---------------------------------------------------------------------- */
 
 void RegTetMesh::add_tet(double **n)
 {
+    double ctr[3];
+
     if(nTet == nTetMax) grow_arrays();
 
+    vectorZeroize3D(ctr);
     for(int i=0;i<4;i++)
+    {
         vectorCopy3D(n[i],node[nTet][i]);
+        vectorAdd3D(ctr,node[nTet][i],ctr);
+    }
+    vectorScalarDiv3D(ctr,4.);
+    vectorCopy3D(ctr,center[nTet]);
 
     double vol = volume_of_tet(nTet);
     if(vol < 0.)
@@ -202,6 +212,7 @@ void RegTetMesh::grow_arrays()
 {
     nTetMax += DELTA_TET;
     node = (double***)(memory->grow(node,nTetMax, 4 , 3, "vtk_tet_node"));
+    center = (double**)(memory->grow(center,nTetMax, 3, "vtk_tet_center"));
     volume = (double*)(memory->srealloc(volume,nTetMax*sizeof(double),"vtk_tet_volume"));
     acc_volume = (double*)(memory->srealloc(acc_volume,nTetMax*sizeof(double),"vtk_tet_acc_volume"));
 }
@@ -310,57 +321,11 @@ inline void RegTetMesh::set_extent()
 
 /* ---------------------------------------------------------------------- */
 
-void RegTetMesh::volume_mc(int n_test,double &vol_global, double &vol_local)
-{
-    double pos[3],  vol_local_all;
-    int n_in_local = 0, n_in_global = 0, n_in_global_all;
-
-    if(total_volume == 0.) error->all(FLERR,"mesh/tet region has zero volume, cannot continue");
-
-    vol_global = total_volume;
-
-    for(int i = 0; i < n_test; i++)
-    {
-        pos[0] = extent_xlo + random->uniform() * (extent_xhi - extent_xlo);
-        pos[1] = extent_ylo + random->uniform() * (extent_yhi - extent_ylo);
-        pos[2] = extent_zlo + random->uniform() * (extent_zhi - extent_zlo);
-
-        if(!domain->is_in_domain(pos)) continue;
-
-        // point is in region
-        // assume every proc can evaluate this
-        
-        if(match(pos[0],pos[1],pos[2]))
-        {
-            n_in_global++;
-            if(domain->is_in_subdomain(pos))
-                n_in_local++;
-        }
-    }
-
-    MPI_Sum_Scalar(n_in_global,n_in_global_all,world);
-    if(n_in_global_all == 0)
-        error->all(FLERR,"Unable to calculate region volume - are you operating on a 2d region?");
-
-    // return calculated values
-    if(n_in_global == 0)
-        vol_local = 0.;
-    else
-        vol_local  = static_cast<double>(n_in_local )/static_cast<double>(n_in_global) * vol_global;
-
-    // sum of local volumes will not be equal to global volume because of
-    // different random generator states - correct this now
-    MPI_Sum_Scalar(vol_local,vol_local_all,world);
-    vol_local *= (vol_global/vol_local_all);
-
-}
-
-/* ---------------------------------------------------------------------- */
-
 inline void RegTetMesh::mesh_randpos(double *pos)
 {
     tet_randpos(tet_rand_tri(),pos);
-    if(pos[0] == 0. && pos[1] == 0. && pos[2] == 0.) error->all(FLERR,"illegal RegTetMesh::mesh_randpos");
+    if(pos[0] == 0. && pos[1] == 0. && pos[2] == 0.)
+        error->one(FLERR,"illegal RegTetMesh::mesh_randpos");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -374,47 +339,3 @@ inline int RegTetMesh::tet_rand_tri()
     return chosen;
 }
 
-/* ---------------------------------------------------------------------- */
-
-inline void RegTetMesh::tet_randpos(int iTet,double *pos)
-{
-
-    double bary_coo[4];
-
-    double s = random->uniform();
-    double t = random->uniform();
-    double u = random->uniform();
-
-    if(s+t > 1.)
-    {
-        s = 1.-s;
-        t = 1.-t;
-    }
-    if(t+u > 1.)
-    {
-        double tmp = u;
-        u = 1.-s-t;
-        t = 1.-tmp;
-    }
-    else if(s+t+u > 1.)
-    {
-        double tmp = u;
-        u = s+t+u-1.;
-        s = 1.-t-tmp;
-    }
-    bary_coo[0] = 1.-s-t-u;
-    bary_coo[1] = s;
-    bary_coo[2] = t;
-    bary_coo[3] = u;
-
-    bary_to_cart(iTet,bary_coo,pos);
-
-}
-
-/* ---------------------------------------------------------------------- */
-
-inline void RegTetMesh::bary_to_cart(int iTet,double *bary_coo,double *pos)
-{
-    for(int i=0;i<3;i++)
-       pos[i] = bary_coo[0] * node[iTet][0][i] + bary_coo[1] * node[iTet][1][i] + bary_coo[2] * node[iTet][2][i] + bary_coo[3] * node[iTet][3][i];
-}

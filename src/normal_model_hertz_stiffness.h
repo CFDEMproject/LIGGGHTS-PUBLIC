@@ -36,8 +36,8 @@ NORMAL_MODEL(HERTZ_STIFFNESS,hertz/stiffness,4)
 namespace LIGGGHTS {
 namespace ContactModels
 {
-  template<typename Style>
-  class NormalModel<HERTZ_STIFFNESS, Style> : protected Pointers
+  template<>
+  class NormalModel<HERTZ_STIFFNESS> : protected Pointers
   {
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
@@ -71,6 +71,10 @@ namespace ContactModels
       registry.connect("k_t", k_t,"model hertz/stiffness");
       registry.connect("gamma_n", gamma_n,"model hertz/stiffness");
       registry.connect("gamma_t", gamma_t,"model hertz/stiffness");
+
+      // error checks on coarsegraining
+      if(force->cg_active())
+        error->cg(FLERR,"model hertz/stiffness");
     }
 
     // effective exponent for stress-strain relationship
