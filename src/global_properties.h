@@ -24,6 +24,7 @@
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
+
 #ifndef GLOBAL_PROPERTIES_H_
 #define GLOBAL_PROPERTIES_H_
 

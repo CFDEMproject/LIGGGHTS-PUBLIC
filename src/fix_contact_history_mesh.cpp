@@ -291,6 +291,8 @@ void FixContactHistoryMesh::pre_force(int dummy)
         contacthistory_prev = contacthistory_[i];
 
         partner_[i] = ipage_next->get(nneighs_next);
+        if (!partner_[i]) 
+            error->one(FLERR,"mesh neighbor list overflow, boost neigh_modify one and/or page");
         vectorInitializeN(partner_[i],nneighs_next,-1);
         
         contacthistory_[i] = dpage_next->get(nneighs_next*dnum_);

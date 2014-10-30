@@ -28,9 +28,8 @@ The spring part of the tangential force (k_t) is a "history" effect
 that accounts for the tangential displacement ("tangential overlap") 
 between the particles for the duration of the time they are in contact.
 
-If this model is chose, then this "tangential overlap" spring force is
+If this model is chosen, then this "tangential overlap" spring force is
 actually calculated / taken into account.
-
 The coefficient of friction cof is the upper limit of the tangential force through 
 the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the tangential spring and normal 
 force components in the formulas above.

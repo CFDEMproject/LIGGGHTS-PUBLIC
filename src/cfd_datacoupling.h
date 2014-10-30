@@ -62,8 +62,8 @@ class CfdDatacoupling : protected Pointers {
   void grow_();
 
   // used to find properties
-  void* find_pull_property(const char *name, const char *type, int &len1, int &len2);
-  void* find_push_property(const char *name, const char *type, int &len1, int &len2);
+  virtual void* find_pull_property(const char *name, const char *type, int &len1, int &len2);
+  virtual void* find_push_property(const char *name, const char *type, int &len1, int &len2);
   void* find_property(int, const char*, const char*, int&, int&);
 
   // data members

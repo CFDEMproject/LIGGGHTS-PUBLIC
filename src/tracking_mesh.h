@@ -79,6 +79,9 @@ namespace LAMMPS_NS{
         inline bool verbose()
         { return verbose_; }
 
+        inline void check_element_property_consistency()
+        { customValues_.check_element_property_consistency(this->sizeLocal()+this->sizeGhost()); }
+
       protected:
 
         TrackingMesh(LAMMPS *lmp);

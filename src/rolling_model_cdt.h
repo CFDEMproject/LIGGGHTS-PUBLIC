@@ -106,7 +106,7 @@ namespace ContactModels
           const double enz = cdata.en[2];
 
           // calculate torque
-          const double reff=radi*radj/(radi+radj);
+          const double reff= cdata.is_wall ? radi : (radi*radj/(radi+radj));
           vectorScalarMult3D(wr_roll,rmu*cdata.kn*cdata.deltan*reff/wr_rollmag,r_torque);
 
           // remove normal (torsion) part of torque

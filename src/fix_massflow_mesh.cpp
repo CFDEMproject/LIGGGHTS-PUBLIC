@@ -32,6 +32,7 @@
 #include "error.h"
 #include "fix_mesh_surface.h"
 #include "fix_neighlist_mesh.h"
+#include "fix_multisphere.h"
 #include "fix_property_atom.h"
 #include "mpi_liggghts.h"
 #include "math_extra_liggghts.h"
@@ -55,7 +56,8 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   once_(false),
   mass_(0.),
   nparticles_(0),
-  ignore_ms_(false),
+  fix_property_(0),
+  property_sum_(0.),
   screenflag_(false),
   fp_(0),
   mass_last_(0.),
@@ -65,7 +67,10 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   reset_t_count_(true),
   delete_atoms_(false),
   mass_deleted_(0.),
-  nparticles_deleted_(0)
+  nparticles_deleted_(0),
+  fix_ms_(0),
+  ms_(0),
+  ms_counter_(0)
 {
     vectorZeroize3D(nvec_);
     vectorZeroize3D(pref_);
@@ -98,6 +103,12 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
             fix_mesh_ = static_cast<FixMeshSurface*>(modify->find_fix_id_style(arg[iarg++],"mesh/surface"));
             if(!fix_mesh_)
                 error->fix_error(FLERR,this,"fix mesh ID does not exist");
+            hasargs = true;
+        } else if(strcmp(arg[iarg],"sum_property") == 0) {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'sum_property'");
+            iarg++;
+            fix_property_ = static_cast<FixPropertyAtom*>(modify->find_fix_property(arg[iarg++],"property/atom","scalar",0,0,style));
             hasargs = true;
         } else if(strcmp(arg[iarg],"count") == 0) {
             if(narg < iarg+2)
@@ -164,14 +175,6 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
             else error->all(FLERR,"Illegal delete command");
             iarg += 2;
             hasargs = true;
-        } else if (strcmp(arg[iarg],"ignore_ms") == 0) {
-            if(narg < iarg+2)
-                error->fix_error(FLERR,this,"Illegal keyword entry");
-            if (strcmp(arg[iarg+1],"yes") == 0) ignore_ms_ = true;
-            else if (strcmp(arg[iarg+1],"no") == 0) ignore_ms_ = false;
-            else error->fix_error(FLERR,this,"unknown keyword");
-            iarg += 2;
-            hasargs = true;
         } else
             error->fix_error(FLERR,this,"unknown keyword");
     }
@@ -207,6 +210,8 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
 
     vector_flag = 1;
     size_vector = 6;
+    if(fix_property_)
+        size_vector = 7;
     global_freq = 1; 
 }
 
@@ -242,6 +247,21 @@ void FixMassflowMesh::post_create()
     // add neighbor list
 
     fix_neighlist_ = fix_mesh_->createOtherNeighList(igroup,id);
+
+    // need to find multisphere here to be able to add property
+
+    fix_ms_ = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
+    if(fix_ms_)
+    {
+        ms_ = &fix_ms_->data();
+        ms_counter_ = ms_->prop().addElementProperty< ScalarContainer<int> >("counter_ms","comm_exchange_borders","frame_invariant", "restart_yes");
+        ms_counter_->setDefaultValue(-1);
+
+        if(delete_atoms_)
+            error->fix_error(FLERR,this,"can not use 'delete_atoms' with fix multisphere");
+        if(!once_)
+            error->fix_error(FLERR,this,"must use 'count once' with fix multisphere");
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -260,11 +280,11 @@ void FixMassflowMesh::init()
     if (atom->rmass_flag == 0)
         error->fix_error(FLERR,this,"requires atoms have mass");
 
-    if(modify->n_fixes_style("multisphere") && !ignore_ms_)
-        error->fix_error(FLERR,this,"does not support multi-sphere");
-
     if(delete_atoms_ && 1 != atom->map_style)
         error->fix_error(FLERR,this,"requires an atom map of type 'array', via an 'atom_modify map array' command");
+
+    if(!fix_ms_ && static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0)))
+        error->fix_error(FLERR,this,"fix multisphere must come before fix massflow/mesh in input script");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -308,13 +328,14 @@ void FixMassflowMesh::post_integrate()
     double dot,delta[3];
     double mass_this = 0.;
     int nparticles_this = 0.;
+    double property_this = 0.;
     double deltan;
     int *tag = atom->tag;
 
     class FixPropertyAtom* fix_color=static_cast<FixPropertyAtom*>(modify->find_fix_property("color","property/atom","scalar",0,0,style,false));
-    bool fixColFound = false; 
+    bool fixColFound = false;
     if (fix_color) fixColFound=true;
-    
+
     TriMesh *mesh = fix_mesh_->triMesh();
     int nTriAll = mesh->sizeLocal() + mesh->sizeGhost();
 
@@ -343,9 +364,10 @@ void FixMassflowMesh::post_integrate()
             // skip ghost particles
             if(iPart >= nlocal) continue;
 
-            // in case of once_ == true, ignore
-            // everything which has been already counted
-            if(compDouble(counter[iPart],2.)) continue;
+            const int ibody = fix_ms_ ? ( (fix_ms_->belongs_to(iPart) > -1) ? (ms_->map(fix_ms_->belongs_to(iPart))) : -1 ) : -1;
+
+            // in case of once_ == true, ignore everything which has been already counted
+            if((ibody > -1) ?  ((*ms_counter_)(ibody) == 2) : (compDouble(counter[iPart],2.)) ) continue;
 
             if(havePointAtOutlet_)
             {
@@ -369,9 +391,12 @@ void FixMassflowMesh::post_integrate()
             }
 
             // first-time, just set 0 or 1 depending on what side of the mesh
-            if(compDouble(counter[iPart],-1.))
+            if((ibody > -1) ? ((*ms_counter_)(ibody) == -1) : (compDouble(counter[iPart],-1.)) )
             {
-                counter[iPart] = (dot <= 0.) ? 0. : 1.;
+                if(ibody > -1)
+                    (*ms_counter_)(ibody) = (dot <= 0.) ? 0. : 1.;
+                else
+                    counter[iPart] = (dot <= 0.) ? 0. : 1.;
                 
                 continue;
             }
@@ -379,10 +404,18 @@ void FixMassflowMesh::post_integrate()
             // particle is now on nvec_ side
             if(dot > 0.)
             {
-                if(compDouble(counter[iPart],0.)) //particle was not on nvec_ side before
+                //particle was not on nvec_ side before
+                if((ibody > -1) ? ((*ms_counter_)(ibody) == 0) : (compDouble(counter[iPart],0.)) ) // compDouble(counter[iPart],0.))
                 {
+                    
                     mass_this += rmass[iPart];
                     nparticles_this ++;
+                    if(fix_property_)
+                    {
+                        
+                        property_this += fix_property_->vector_atom[iPart];
+                    }
+
                     if(delete_atoms_)
                     {
                         atom_tags_delete_.push_back(atom->tag[iPart]);
@@ -393,19 +426,19 @@ void FixMassflowMesh::post_integrate()
                                        tag[iPart],2.*radius[iPart]/force->cg(),
                                        x[iPart][0],x[iPart][1],x[iPart][2],
                                        v[iPart][0],v[iPart][1],v[iPart][2]);
-                    if (fp_)
+                    if(fp_)
                     {
                         if (fixColFound)
                         {
-                        fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.0g \n ",
+                            fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.0g \n ",
                                    tag[iPart],2.*radius[iPart]/force->cg(),
                                    x[iPart][0],x[iPart][1],x[iPart][2],
                                    v[iPart][0],v[iPart][1],v[iPart][2],
                                    fix_color->vector_atom[iPart]);
                         }
                         else
-                    {
-                        fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g \n ",
+                        {
+                            fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g \n ",
                                    tag[iPart],2.*radius[iPart]/force->cg(),
                                    x[iPart][0],x[iPart][1],x[iPart][2],
                                    v[iPart][0],v[iPart][1],v[iPart][2]);
@@ -414,23 +447,30 @@ void FixMassflowMesh::post_integrate()
                     }
                 }
 
-                counter[iPart] = once_ ? 2. : 1.;
+                if(ibody > -1)
+                    (*ms_counter_)(ibody) = once_ ? 2. : 1.;
+                else
+                    counter[iPart] = once_ ? 2. : 1.;
                 
             }
             else // dot <= 0
             {
-                counter[iPart] = 0.;
+                if(ibody > -1)
+                    (*ms_counter_)(ibody) = 0;
+                else
+                    counter[iPart] = 0.;
                 
             }
-
         }
     }
 
     MPI_Sum_Scalar(mass_this,world);
     MPI_Sum_Scalar(nparticles_this,world);
+    if(fix_property_) MPI_Sum_Scalar(property_this,world);
 
     mass_ += mass_this;
     nparticles_ += nparticles_this;
+    property_sum_ += property_this;
 
 }
 
@@ -551,6 +591,8 @@ double FixMassflowMesh::compute_vector(int index)
         return mass_deleted_;
     if(index == 5)
         return static_cast<double>(nparticles_deleted_);
+    if(index == 6 && fix_property_)
+        return property_sum_;
 
     return 0.;
 }

@@ -48,6 +48,7 @@ class FixMeshSurfaceStressServo : public FixMeshSurfaceStress {
       FixMeshSurfaceStressServo(class LAMMPS *, int, char **);
       virtual ~FixMeshSurfaceStressServo();
 
+      virtual void post_create_pre_restart();
       virtual void post_create();
 
       void init();
@@ -85,7 +86,7 @@ class FixMeshSurfaceStressServo : public FixMeshSurfaceStress {
       // position and velocity for each node
 
       double*** nodes_;
-      MultiVectorContainer<double,3,3> &v_;
+      MultiVectorContainer<double,3,3> *v_;
 
       // servo settings and controller
 

@@ -323,7 +323,7 @@
           double **tmp;
           this->memory->template create<double>(tmp,NUM_NODES,3,"MultiNodeMesh:tmp");
 
-          if(node_orig_)
+          if(node_orig_ || 0 == nall)
             error->one(FLERR,"Illegal situation in MultiNodeMesh<NUM_NODES>::registerMove");
 
           node_orig_ = new MultiVectorContainer<double,NUM_NODES,3>("node_orig");

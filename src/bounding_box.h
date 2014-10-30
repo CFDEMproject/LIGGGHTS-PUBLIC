@@ -117,7 +117,7 @@ class BoundingBox
 
         if(zLo < sublo[2])
             zLo = sublo[2];
-        if(xHi > subhi[2])
+        if(zHi > subhi[2])
             zHi = subhi[2];
     }
 

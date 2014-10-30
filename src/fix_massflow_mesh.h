@@ -75,10 +75,13 @@ class FixMassflowMesh : public Fix {
   // counted only once
   bool once_;
 
+  // mass and particles which was counted
   double mass_;
   int nparticles_;
 
-  bool ignore_ms_;
+  // additional property to sum
+  class FixPropertyAtom *fix_property_;
+  double property_sum_;
 
   // data write
   bool screenflag_;
@@ -95,6 +98,10 @@ class FixMassflowMesh : public Fix {
   vector<int> atom_tags_delete_;
   double mass_deleted_;
   double nparticles_deleted_;
+
+  class FixMultisphere* fix_ms_;
+  class MultisphereParallel *ms_;
+  class ScalarContainer<int> *ms_counter_;
 
 }; //end class
 

@@ -176,7 +176,10 @@ FixMesh::~FixMesh()
 
 void FixMesh::post_create()
 {
-
+    // check if all element property container have same length
+    // could potentially be whacked by adding element properties
+    // at the wrong place in code
+    mesh_->check_element_property_consistency();
 }
 
 /* ---------------------------------------------------------------------- */

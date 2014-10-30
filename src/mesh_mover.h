@@ -49,6 +49,7 @@ namespace LAMMPS_NS
         virtual ~MeshMover()
         {}
 
+        virtual void post_create() = 0;
         virtual void pre_delete() = 0;
         virtual void setup() {};
 
@@ -105,6 +106,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
 
@@ -122,6 +124,7 @@ namespace LAMMPS_NS
         virtual ~MeshMoverLinearVariable();
 
         void pre_delete();
+        void post_create();
         void setup();
 
         void initial_integrate(double dTAbs,double dTSetup,double dt);
@@ -153,6 +156,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
 
@@ -174,6 +178,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
 
@@ -193,6 +198,7 @@ namespace LAMMPS_NS
         virtual ~MeshMoverRotateVariable();
 
         void pre_delete();
+        void post_create();
         void setup();
 
         void initial_integrate(double dTAbs,double dTSetup,double dt);
@@ -224,6 +230,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
 
@@ -245,6 +252,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
         double axis_[3], ord, ampl[10], phi[10], p_[3], omega_;
@@ -264,6 +272,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
         double axis_[3], ord, omega_, ampl[10], phi[10];

@@ -36,7 +36,8 @@
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(const char *_id)
   : ContainerBase(_id),
     numElem_(0),
-    maxElem_(GROW)
+    maxElem_(GROW),
+    defaultValue_(0)
   {
           create<T>(arr_,GROW,NUM_VEC,LEN_VEC);
   }
@@ -45,7 +46,8 @@
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(const char *_id, const char *_comm, const char *_ref, const char *_restart, int _scalePower)
   : ContainerBase(_id, _comm, _ref, _restart, _scalePower),
     numElem_(0),
-    maxElem_(GROW)
+    maxElem_(GROW),
+    defaultValue_(0)
   {
           create<T>(arr_,GROW,NUM_VEC,LEN_VEC);
   }
@@ -54,7 +56,8 @@
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(GeneralContainer<T,NUM_VEC,LEN_VEC> const &orig)
   : ContainerBase(orig),
     numElem_(orig.numElem_),
-    maxElem_(orig.numElem_)
+    maxElem_(orig.numElem_),
+    defaultValue_(orig.defaultValue_)
   {
           create<T>(arr_,maxElem_,NUM_VEC,LEN_VEC);
           for(int i=0;i<maxElem_;i++)
@@ -155,6 +158,7 @@
   {
           numElem_--;
           if(numElem_ == n) return;
+          
           for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
                           arr_[n][i][j] = arr_[numElem_][i][j];
@@ -209,7 +213,7 @@
   }
 
   /* ----------------------------------------------------------------------
-   delete an element
+   delete an element if restart
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
@@ -224,6 +228,20 @@
           for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
                           arr_[n][i][j] = arr_[numElem_][i][j];
+  }
+
+  /* ----------------------------------------------------------------------
+   delete all elements if restart
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::delRestart(bool scale,bool translate,bool rotate)
+  {
+          // do only delete property if it is a restart property
+          if(!decidePackUnpackOperation(OPERATION_RESTART, scale, translate, rotate))
+            return;
+
+          numElem_ = 0;
   }
 
   /* ----------------------------------------------------------------------
@@ -279,6 +297,15 @@
   }
 
   /* ---------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::setToDefault(int n)
+  {
+    
+          for(int i = 0; i < NUM_VEC; i++)
+                          for(int j = 0; j < LEN_VEC; j++)
+                                  arr_[n][i][j] = defaultValue_;
+  }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::set(int n, T** elem)

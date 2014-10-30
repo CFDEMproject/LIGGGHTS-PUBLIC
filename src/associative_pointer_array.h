@@ -61,12 +61,15 @@ class AssociativePointerArray
 
         int size();
 
+        bool sameLength(int _len);
+
         inline void copyElement(int from, int to);
         inline void addUninitializedElement();
         inline void addZeroElement();
         inline void deleteElement(int n);
         inline void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int n,bool scale,bool translate,bool rotate);
+        inline void deleteRestartGlobal(bool scale,bool translate,bool rotate);
 
         inline void clearReverse(bool scale,bool translate,bool rotate);
 

@@ -61,6 +61,20 @@ using namespace LAMMPS_NS;
   }
 
   /* ----------------------------------------------------------------------
+   check if all containers have same length
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::check_element_property_consistency(int _len)
+  {
+    if (!elementProperties_.sameLength(_len))
+    {
+         error->one(FLERR,"all element properties must have the same length.\n"
+                          "For meshes, all elem properties with restart must be added in post_create_pre_restart().\n"
+                          "For meshes, all elem properties without restart must be added after the constructor()\n");
+    }
+  }
+
+  /* ----------------------------------------------------------------------
    remove property
   ------------------------------------------------------------------------- */
 

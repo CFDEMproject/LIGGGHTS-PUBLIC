@@ -214,6 +214,7 @@ void FixSphDensityContinuity::pre_force_eval(int vflag)
 
       r = sqrt(rsq);
       if (r == 0.) {
+        fprintf(screen,"Particle %i and %i are at same position (%f, %f, %f)\n",i,j,xtmp,ytmp,ztmp);
         error->one(FLERR,"Zero distance between SPH particles!");
       }
       rinv = 1./r;

@@ -68,14 +68,16 @@ class FixScalarTransportEquation : public Fix {
   double *capacity;
   char *capacity_name;
 
-  double quantity_0;              
-  double *quantity;           
+  double quantity_0;  
+  double *quantity;   
   double *flux;       
   double *source;     
 
   // flag if integrate quantity or not
   bool int_flag;
 
+  int  nevery_; //integrate only this many time steps (to avoid round-off issues)
+  bool performedIntegrationLastStep_;
 };
 
 }

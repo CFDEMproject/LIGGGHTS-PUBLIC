@@ -573,7 +573,20 @@ void FixInsert::pre_exchange()
   else if(ninsert_this < 0)
   {
       
-      error->one(FLERR,"Particle insertion: Internal error");
+      error->fix_error(FLERR,this,"Particle insertion: Internal error");
+  }
+
+  double min_subbox_extent;
+  int min_dim;
+  domain->min_subbox_extent(min_subbox_extent,min_dim);
+
+  if(min_subbox_extent < 2.2 *max_r_bound())
+  {
+      char msg[200];
+      sprintf(msg,"Particle insertion on proc %d: sub-domain too small to insert particles: \nMax. bounding "
+                  "sphere diameter is %f sub-domain extent in %s direction is only %f ",
+                  comm->me,2.*max_r_bound(),0==min_dim?"x":(1==min_dim?"y":"z"),min_subbox_extent);
+      error->warning(FLERR,msg);
   }
 
   // warn if max # insertions exceeded by random processes

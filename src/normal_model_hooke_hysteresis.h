@@ -95,7 +95,7 @@ namespace ContactModels
       const double deltan = cdata.deltan;
       double ri = cdata.radi;
       double rj = cdata.radj;
-      double reff=ri*rj/(ri+rj);
+      double reff=cdata.is_wall ? cdata.radi : (ri*rj/(ri+rj));
       double meff=cdata.meff;
       double coeffRestLogChosen;
 

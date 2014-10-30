@@ -2,6 +2,7 @@
 #define LMP_FIX_DUMMY_H
 
 #include "fix_rigid.h"
+#include "custom_value_tracker.h"
 
 namespace LAMMPS_NS {
 
@@ -21,6 +22,12 @@ class MultisphereParallel {
   inline double r_bound(int i)
   {
       return 0.;
+  }
+
+  inline class CustomValueTracker& prop()
+  {
+    LAMMPS *dptr = 0;
+    return *(new CustomValueTracker(dptr));
   }
 
   inline double mass(int i)

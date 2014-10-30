@@ -60,7 +60,9 @@
      // allocate memory and initialize
      
      if(ownerMesh_)
+     {
         elementProperties_.getPointerById<T>(_id)->addUninitialized(ownerMesh_->sizeLocal()+ownerMesh_->sizeGhost());
+     }
      if(_init_len > 0)
         elementProperties_.getPointerById<T>(_id)->addUninitialized(_init_len);
 
@@ -126,6 +128,11 @@
   inline ContainerBase* CustomValueTracker::getElementPropertyBase(const char *_id)
   {
      return elementProperties_.getBasePointerById(_id);
+  }
+
+  inline ContainerBase* CustomValueTracker::getElementPropertyBase(int i)
+  {
+     return elementProperties_.getBasePointerByIndex(i);
   }
 
   inline int CustomValueTracker::getElementPropertyIndex(const char *_id)
@@ -234,6 +241,16 @@
   void CustomValueTracker::deleteRestartElement(int i,bool scale,bool translate,bool rotate)
   {
       elementProperties_.deleteRestartElement(i,scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
+   delete global restart properties
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::deleteRestartGlobal(bool scale,bool translate,bool rotate)
+  {
+      globalProperties_.deleteRestartGlobal(scale,translate,rotate);
+      globalProperties_orig_.deleteRestartGlobal(scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------

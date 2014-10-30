@@ -135,6 +135,24 @@ void *lammps_extract_global(void *ptr, char *name)
   if (strcmp(name,"boxyhi") == 0) return (void *) &lmp->domain->boxhi[1];
   if (strcmp(name,"boxzlo") == 0) return (void *) &lmp->domain->boxlo[2];
   if (strcmp(name,"boxzhi") == 0) return (void *) &lmp->domain->boxhi[2];
+  if (strcmp(name,"subxlo") == 0) return (void *) &lmp->domain->sublo[0];
+  if (strcmp(name,"subxhi") == 0) return (void *) &lmp->domain->subhi[0];
+  if (strcmp(name,"subylo") == 0) return (void *) &lmp->domain->sublo[1];
+  if (strcmp(name,"subyhi") == 0) return (void *) &lmp->domain->subhi[1];
+  if (strcmp(name,"subzlo") == 0) return (void *) &lmp->domain->sublo[2];
+  if (strcmp(name,"subzhi") == 0) return (void *) &lmp->domain->subhi[2];
+  if (strcmp(name,"procx") == 0)  return (void *) &lmp->comm->procgrid[0];
+  if (strcmp(name,"procy") == 0)  return (void *) &lmp->comm->procgrid[1];
+  if (strcmp(name,"procz") == 0) return (void *) &lmp->comm->procgrid[2];
+  if (strcmp(name,"procneighxleft") == 0) return (void *) &lmp->comm->procneigh[0][0];
+  if (strcmp(name,"procneighxright") == 0) return (void *) &lmp->comm->procneigh[0][1];
+  if (strcmp(name,"procneighyleft") == 0) return (void *) &lmp->comm->procneigh[1][0];
+  if (strcmp(name,"procneighyright") == 0) return (void *) &lmp->comm->procneigh[1][1];
+  if (strcmp(name,"procneighzleft") == 0) return (void *) &lmp->comm->procneigh[2][0];
+  if (strcmp(name,"procneighzright") == 0) return (void *) &lmp->comm->procneigh[2][1];
+  if (strcmp(name,"mylocx") == 0) return (void *) &lmp->comm->myloc[0];
+  if (strcmp(name,"mylocy") == 0) return (void *) &lmp->comm->myloc[1];
+  if (strcmp(name,"mylocz") == 0) return (void *) &lmp->comm->myloc[2];
   if (strcmp(name,"natoms") == 0) return (void *) &lmp->atom->natoms;
   if (strcmp(name,"nlocal") == 0) return (void *) &lmp->atom->nlocal;
   return NULL;
@@ -378,7 +396,7 @@ int lammps_get_natoms(void *ptr)
    data must be pre-allocated by caller to correct length
 ------------------------------------------------------------------------- */
 
-void lammps_gather_atoms(void *ptr, char *name, 
+void lammps_gather_atoms(void *ptr, char *name,
                          int type, int count, void *data)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;

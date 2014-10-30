@@ -98,6 +98,8 @@ namespace LAMMPS_NS
 
         virtual void setVerbose() = 0;
 
+        virtual void check_element_property_consistency() = 0;
+
         virtual int nBelowAngle() = 0;
         virtual double angleLimit() = 0;
         virtual int nTooManyNeighs() = 0;

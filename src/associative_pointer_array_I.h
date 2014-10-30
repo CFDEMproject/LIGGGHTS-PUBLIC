@@ -85,6 +85,19 @@
   }
 
   /* ----------------------------------------------------------------------
+   check if all have the same length
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  bool AssociativePointerArray<T>::sameLength(int _len)
+  {
+    for(int i = 0; i < numElem_; i++)
+        if(content_[i]->size() != _len)
+            return false;
+    return true;
+  }
+
+  /* ----------------------------------------------------------------------
    get pointer to property
   ------------------------------------------------------------------------- */
 
@@ -234,6 +247,17 @@
   {
       for(int i=0;i<numElem_;i++)
         content_[i]->delRestart(n,scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
+   delete restart properties
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  void AssociativePointerArray<T>::deleteRestartGlobal(bool scale,bool translate,bool rotate)
+  {
+      for(int i=0;i<numElem_;i++)
+        content_[i]->delRestart(scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------

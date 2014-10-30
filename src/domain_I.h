@@ -134,6 +134,21 @@ inline double Domain::dist_subbox_borders(double* pos)
 }
 
 /* ----------------------------------------------------------------------
+   return smallest extent ob subbox
+------------------------------------------------------------------------- */
+
+inline void Domain::min_subbox_extent(double &min_extent,int &dim) 
+{
+    if(is_wedge)
+        error->one(FLERR,"missing implementation");
+
+    double delta[3];
+    vectorSubtract3D(subhi,sublo,delta);
+    
+    min_extent = vectorMin3D(delta,dim);
+}
+
+/* ----------------------------------------------------------------------
    domain check - not used very often, so not inlined
 ------------------------------------------------------------------------- */
 

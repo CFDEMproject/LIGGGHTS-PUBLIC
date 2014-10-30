@@ -41,6 +41,7 @@ enum
 
 class FixPropertyAtom : public Fix {
  friend class Set;
+ friend class FixPropertyAtomUpdateFix;
  public:
   FixPropertyAtom(class LAMMPS *, int, char **,bool parse = true);
   ~FixPropertyAtom();

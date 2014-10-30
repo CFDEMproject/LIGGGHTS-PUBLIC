@@ -57,13 +57,13 @@ enum{NONE,CONSTANT,EQUAL,FORCE,TORQUE};
 
 FixMeshSurfaceStressServo::FixMeshSurfaceStressServo(LAMMPS *lmp, int narg, char **arg) :
 FixMeshSurfaceStress(lmp, narg, arg),
-xcm_(      *mesh()->prop().addGlobalProperty< VectorContainer<double,3> > ("xcm","comm_none","frame_invariant","restart_yes",3)),
-vcm_(      *mesh()->prop().addGlobalProperty< VectorContainer<double,3> > ("vcm","comm_none","frame_invariant","restart_yes",1)),
-omegacm_(  *mesh()->prop().addGlobalProperty< VectorContainer<double,3> > ("torquecm","comm_none","frame_invariant","restart_yes",1)),
-xcm_orig_( *mesh()->prop().addGlobalProperty< VectorContainer<double,3> > ("xcm_orig","comm_none","frame_invariant","restart_yes",3)),
+xcm_(      *mesh()->prop().addGlobalProperty< VectorContainer<double,3> > ("xcm","comm_none","frame_general","restart_yes",3)),
+vcm_(      *mesh()->prop().addGlobalProperty< VectorContainer<double,3> > ("vcm","comm_none","frame_general","restart_yes",1)),
+omegacm_(  *mesh()->prop().addGlobalProperty< VectorContainer<double,3> > ("torquecm","comm_none","frame_general","restart_yes",1)),
+xcm_orig_( *mesh()->prop().addGlobalProperty< VectorContainer<double,3> > ("xcm_orig","comm_none","frame_general","restart_yes",3)),
 
 nodes_(    mesh()->nodePtr()),
-v_(        *mesh()->prop().addElementProperty< MultiVectorContainer<double,3,3> > ("v","comm_exchange_borders","frame_invariant","restart_no",1)),
+v_(0),
 
 totalPhi_( 0.),
 ctrl_op_( 0),
@@ -201,14 +201,6 @@ mod_andrew_(new ModifiedAndrew(lmp))
 
   // store original position
   xcm_orig_.add(xcm_(0));
-
-  if (ctrl_style_ == FORCE)
-    mesh()->registerMove(false,true,false);
-  else if(ctrl_style_ == TORQUE)
-    mesh()->registerMove(false,false,true);
-  else
-    error->fix_error(FLERR,this,"Bad registration of upcoming move.");
-
 }
 
 /* ---------------------------------------------------------------------- */
@@ -221,9 +213,31 @@ FixMeshSurfaceStressServo::~FixMeshSurfaceStressServo()
 
 /* ---------------------------------------------------------------------- */
 
+void FixMeshSurfaceStressServo::post_create_pre_restart()
+{
+    FixMeshSurfaceStress::post_create_pre_restart();
+
+    //Np -->register properties and set values for non-restart properties here
+
+    mesh()->prop().addElementProperty< MultiVectorContainer<double,3,3> > ("servoV","comm_exchange_borders","frame_invariant","restart_no");
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixMeshSurfaceStressServo::post_create()
 {
-  FixMeshSurfaceStress::post_create();
+   FixMeshSurfaceStress::post_create();
+
+   if (ctrl_style_ == FORCE)
+     mesh()->registerMove(false,true,false);
+   else if(ctrl_style_ == TORQUE)
+     mesh()->registerMove(false,false,true);
+   else
+    error->fix_error(FLERR,this,"Bad registration of upcoming move.");
+
+  //Np --> set values for no-restart properties here
+
+  mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("servoV")->setAll(0.);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -269,13 +283,20 @@ void FixMeshSurfaceStressServo::error_checks()
 
 void FixMeshSurfaceStressServo::init()
 {
+  
   FixMeshSurfaceStress::init();
+
+  set_p_ref(xcm_(0));
 
   // do some error checks
   error_checks();
 
   // get timestep
   reset_dt();
+
+  // update ptrs
+  nodes_ = mesh()->nodePtr();
+  v_ = mesh()->prop().getElementProperty<MultiVectorContainer<double,3,3> >("servoV");
 
   // check variables
   if (sp_str_) {
@@ -553,7 +574,7 @@ void FixMeshSurfaceStressServo::set_v_node()
 
   for(int i = 0; i < nall; i++)
     for(int j = 0; j < nnodes; j++)
-      v_.set(i,j,vcm_(0));
+      v_->set(i,j,vcm_(0));
 
 }
 
@@ -573,7 +594,7 @@ void FixMeshSurfaceStressServo::set_v_node_rotate()
       vectorCopy3D(nodes_[i][j],node);
       vectorSubtract3D(node,xcm_(0),rPA);
       vectorCross3D(omegacm_(0),rPA,vRot);
-      v_.set(i,j,vRot);
+      v_->set(i,j,vRot);
     }
   }
 }
@@ -626,11 +647,16 @@ double FixMeshSurfaceStressServo::getMaxRad()
       rPaMax = MAX(rPaMax,vectorMag3D(vRot));
     }
   }
-  return rPaMax;
+
+  // get max for all processors
+  double rPaMaxAll;
+  MPI_Allreduce(&rPaMax,&rPaMaxAll,1,MPI_DOUBLE,MPI_MAX,world);
+  
+  return rPaMaxAll;
 }
 
 /* ----------------------------------------------------------------------
-   return total force or torque component on body
+   return total force or torque component on body or xcm
 ------------------------------------------------------------------------- */
 
 double FixMeshSurfaceStressServo::compute_vector(int n)

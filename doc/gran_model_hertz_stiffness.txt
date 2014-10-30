@@ -11,7 +11,7 @@ gran model hertz/stiffness :h3
 
 [Syntax:]
 
-model hertz [other model_type/model_name pairs as described "here"_pair_gran.html] keyword values :pre
+model hertz \[other model_type/model_name pairs as described "here"_pair_gran.html \] keyword values :pre
 zero or more keyword/value pairs may be appended :l
   {limitForce} values = 'on' or 'off'
     on = ensures that the normal force is never attractive (an artefact that can occur at the end of a collision).

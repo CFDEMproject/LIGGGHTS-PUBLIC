@@ -36,6 +36,7 @@ class Neighbor : protected Pointers {
   friend class OneLevelGrid;
   
   friend class FixHeatGranRad;
+  friend class FixLiquidTrackingInstant;
 
  public:
   int style;                       // 0,1,2 = nsq, bin, multi

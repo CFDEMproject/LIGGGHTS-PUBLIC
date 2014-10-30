@@ -57,7 +57,7 @@ namespace LAMMPS_NS
         virtual void pre_force(int vflag);
         virtual void final_integrate();
 
-        double compute_vector(int n);
+        virtual double compute_vector(int n);
 
         virtual void add_particle_contribution(int ip, double *frc,
                             double *delta, int iTri, double *v_wall);
@@ -120,8 +120,10 @@ namespace LAMMPS_NS
       private:
 
         // inititalization fcts
-        void initStress();
-        void initWear();
+        void regStress();
+        void regWear();
+        void zeroizeStress();
+        void zeroizeWear();
 
         void calc_total_force();
         void add_gravity();

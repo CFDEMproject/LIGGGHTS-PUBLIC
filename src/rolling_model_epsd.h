@@ -94,7 +94,7 @@ namespace ContactModels
 
         const double radi = cdata.radi;
         const double radj = cdata.radj;
-        const double reff=radi*radj/(radi+radj);
+        const double reff = cdata.is_wall ? radi : (radi*radj/(radi+radj));
         const double * const * const omega = atom->omega;
 
         const double r_inertia_red_i = cdata.mi*radi*radi;

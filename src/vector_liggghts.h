@@ -137,6 +137,24 @@ inline void vectorAbs3D(double *v)
     if(v[2] < 0) v[2] = -v[2];
 }
 
+inline double vectorMin3D(double *v,int &dim)
+{
+    if(v[0] < v[1] && v[0] < v[2])
+    {
+        dim = 0;
+        return v[0];
+    }
+
+    if(v[1] < v[2])
+    {
+        dim = 1;
+        return v[1];
+    }
+
+    dim = 2;
+    return v[2];
+}
+
 inline double vectorMin3D(double *v)
 {
     if(v[0] < v[1] && v[0] < v[2])

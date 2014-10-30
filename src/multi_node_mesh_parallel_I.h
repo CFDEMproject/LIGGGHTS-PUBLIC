@@ -608,7 +608,7 @@
 
       if(sizeGlobal() != sizeGlobalOrig())
       {
-        ///*NL*/ if(this->screen) fprintf(this->screen,"orig %d now %d\n", sizeGlobalOrig(),sizeGlobal());
+        
         //this->error->all(FLERR,"Mesh elements have been lost");
         char errstr[500];
         sprintf(errstr,"Mesh (id %s): Mesh elements have been lost / left the domain. Please use "

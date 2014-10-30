@@ -48,6 +48,8 @@ namespace LAMMPS_NS
         FixMoveMesh(LAMMPS *lmp, int narg, char **arg);
         virtual ~FixMoveMesh();
 
+        void post_create();
+
         void setup(int vflag);
         void pre_delete(bool unfixflag);
         int setmask();

@@ -55,10 +55,12 @@ namespace LAMMPS_NS
           void del(int n);
           void delForward(int n,bool scale,bool translate,bool rotate);
           void delRestart(int n,bool scale,bool translate,bool rotate);
+          void delRestart(bool scale,bool translate,bool rotate);
           void clearReverse(bool scale,bool translate,bool rotate);
 
           void get(int n, T** elem);
 
+          void setToDefault(int n);
           void setAll(T def);
           void setAll(int to, T def);
           void set(int i, T** elem);
@@ -130,6 +132,9 @@ namespace LAMMPS_NS
           inline void clearContainer()
           { numElem_ = 0; }
 
+          inline void setDefaultValue(T val)
+          { defaultValue_ = val; useDefault_ = true; }
+
       protected:
 
           GeneralContainer(const char *_id);
@@ -143,6 +148,8 @@ namespace LAMMPS_NS
           int numElem_, maxElem_;
 
           T*** arr_;
+
+          T defaultValue_;
   };
 
   // *************************************

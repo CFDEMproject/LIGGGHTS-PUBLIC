@@ -90,6 +90,9 @@ FixScalarTransportEquation::FixScalarTransportEquation(LAMMPS *lmp, int narg, ch
 
   int_flag = true;
 
+  nevery_  = 1;
+  performedIntegrationLastStep_ = true; //ensure flux is reset at the very first time step
+
   peratom_flag = 1;              
   size_peratom_cols = 0;         
   peratom_freq = 1;
@@ -250,6 +253,14 @@ int FixScalarTransportEquation::modify_param(int narg, char **arg)
     return 2;
   }
 
+  if (strcmp(arg[0],"every") == 0) {
+    if (narg < 2) error->fix_error(FLERR,this,"not enough arguments for fix_modify 'every'");
+
+    nevery_ = force->inumeric(FLERR,arg[1]);
+//    printf("FixScalarTransportEquation: will perform update every %d time steps. \n", nevery_);
+
+    return 1;
+  }
   return 0;
 }
 
@@ -259,6 +270,10 @@ void FixScalarTransportEquation::initial_integrate(int vflag)
 {
   
   updatePtrs();
+
+  //Skip in case there was NO Integration the last time step (to keep flux in mem)
+  if(!performedIntegrationLastStep_)
+        return;
 
   //reset heat flux
   //sources are not reset
@@ -298,6 +313,13 @@ void FixScalarTransportEquation::final_integrate()
     if(!int_flag)
         return;
 
+    // skip if integration not wanted at this timestep
+    if (update->ntimestep % nevery_) 
+    {
+        performedIntegrationLastStep_ = false;
+        return;
+    }
+
     updatePtrs();
 
     fix_source->do_forward_comm();
@@ -308,7 +330,11 @@ void FixScalarTransportEquation::final_integrate()
         {
            if (mask[i] & groupbit){
               capacity = fix_capacity->compute_vector(type[i]-1);
-              if(fabs(capacity) > SMALL) quantity[i] += (flux[i] + source[i]) * dt / (rmass[i]*capacity);
+              if(fabs(capacity) > SMALL) quantity[i] += (
+                                                            flux[i] 
+                                                          + source[i]*double(nevery_) //multiply source to account for missing steps
+                                                        ) * dt  
+                                                      / (rmass[i]*capacity); 
            }
         }
     }
@@ -317,10 +343,14 @@ void FixScalarTransportEquation::final_integrate()
         for (int i = 0; i < nlocal; i++)
         {
            if (mask[i] & groupbit){
-              quantity[i] += (flux[i] + source[i]) * dt;
+              quantity[i] += (
+                                  flux[i] 
+                                + source[i]*double(nevery_) //multiply source to account for missing steps
+                             ) * dt ;
            }
         }
     }
+    performedIntegrationLastStep_ = true;
 }
 
 /* ---------------------------------------------------------------------- */

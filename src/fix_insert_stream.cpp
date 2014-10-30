@@ -273,7 +273,7 @@ void FixInsertStream::calc_insertion_properties()
     {
         // no duration allowed here (checked before)
 
-        if(extrude_length < 3.*max_r_bound())
+        if(extrude_length < 3.*max_r_bound() && (all_in_flag || check_ol_flag))
             error->fix_error(FLERR,this,"'extrude_length' is too small");
         // add TINY for resolving round-off
         insert_every = static_cast<int>((extrude_length+FIX_INSERT_STREAM_TINY)/(dt*vectorMag3D(v_normal)));

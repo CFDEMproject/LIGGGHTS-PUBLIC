@@ -50,6 +50,7 @@ namespace LAMMPS_NS
         T* getElementProperty(const char *_id);
 
         inline ContainerBase* getElementPropertyBase(const char *_id);
+        inline ContainerBase* getElementPropertyBase(int i);
 
         inline int getElementPropertyIndex(const char *_id);
 
@@ -57,6 +58,8 @@ namespace LAMMPS_NS
         void setElementProperty(const char *_id, U def);
 
         void removeElementProperty(const char *_id);
+
+        void check_element_property_consistency(int _len);
 
         // global (e.g. mesh) properties
 
@@ -80,6 +83,7 @@ namespace LAMMPS_NS
         inline void deleteElement(int i);
         inline void deleteForwardElement(int i,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int i,bool scale,bool translate,bool rotate);
+        inline void deleteRestartGlobal(bool scale,bool translate,bool rotate);
         void clearReverse(bool scale,bool translate,bool rotate);
 
         void storeOrig();

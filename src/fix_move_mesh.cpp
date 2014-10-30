@@ -79,6 +79,14 @@ FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
 
 /* ---------------------------------------------------------------------- */
 
+void FixMoveMesh:: post_create()
+{
+    
+    move_->post_create();
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixMoveMesh::pre_delete(bool unfixflag)
 {
     // check if another fix move operates on the same mesh
@@ -153,6 +161,14 @@ void FixMoveMesh::setup(int vflag)
     }
 
     move_->setup();
+
+    // do set-up in case velocity is dumped (called via set-up)
+    if(move_->isFirst())
+    {
+        MultiVectorContainer<double,3,3> *v;
+        v = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
+        v->setAll(0.);
+    }
 }
 
 /* ---------------------------------------------------------------------- */

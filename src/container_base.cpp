@@ -41,7 +41,8 @@ using namespace LAMMPS_NS;
     communicationType_(COMM_TYPE_MANUAL),
     refFrame_(REF_FRAME_UNDEFINED),
     restartType_(RESTART_TYPE_UNDEFINED),
-    scalePower_(-1)
+    scalePower_(-1),
+    useDefault_(false)
   {
   }
 
@@ -50,10 +51,14 @@ using namespace LAMMPS_NS;
     communicationType_(COMM_TYPE_MANUAL),
     refFrame_(REF_FRAME_UNDEFINED),
     restartType_(RESTART_TYPE_UNDEFINED),
-    scalePower_(-1)
+    scalePower_(-1),
+    useDefault_(false)
   {
-      id_ = new char[strlen(_id)+1];
-      strcpy(id_,_id);
+      if(id_)
+      {
+        id_ = new char[strlen(_id)+1];
+        strcpy(id_,_id);
+      }
   }
 
   ContainerBase::ContainerBase(const char *_id, const char* _comm, const char* _ref, const char *_restart,int _scalePower)
@@ -61,7 +66,8 @@ using namespace LAMMPS_NS;
     communicationType_(COMM_TYPE_MANUAL),
     refFrame_(REF_FRAME_UNDEFINED),
     restartType_(RESTART_TYPE_UNDEFINED),
-    scalePower_(-1)
+    scalePower_(-1),
+    useDefault_(false)
   {
           setProperties(_id, _comm, _ref,_restart,_scalePower);
   }
@@ -71,7 +77,8 @@ using namespace LAMMPS_NS;
      communicationType_(orig.communicationType_),
      refFrame_(orig.refFrame_),
      restartType_(orig.restartType_),
-     scalePower_(orig.scalePower_)
+     scalePower_(orig.scalePower_),
+     useDefault_(orig.useDefault_)
   {
 
   }

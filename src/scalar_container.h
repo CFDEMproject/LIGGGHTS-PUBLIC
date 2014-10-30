@@ -38,6 +38,7 @@ namespace LAMMPS_NS
   class ScalarContainer : public GeneralContainer <T, 1, 1>
   {
     public:
+          ScalarContainer();
           ScalarContainer(const char *_id);
           ScalarContainer(const char *_id, const char *_comm, const char *_ref, const char *_restart, int _scalePower = 1);
           ScalarContainer(ScalarContainer<T> const &orig);
@@ -53,11 +54,20 @@ namespace LAMMPS_NS
           T const& operator() (int n) const;
           T max();
           T max(int);
+          int pushToBuffer_plain(double *buf);
+          int pullFromBuffer_plain(double *buf);
   };
 
   /* ----------------------------------------------------------------------
    constructors
   ------------------------------------------------------------------------- */
+
+  template<typename T>
+  ScalarContainer<T>::ScalarContainer()
+  : GeneralContainer<T,1,1>(0)
+  {
+
+  }
 
   template<typename T>
   ScalarContainer<T>::ScalarContainer(const char *_id)
@@ -188,6 +198,32 @@ namespace LAMMPS_NS
             maxim = this->arr_[n][0][0];
 
       return maxim;
+  }
+
+  template<typename T>
+  int ScalarContainer<T>::pushToBuffer_plain(double *buf)
+  {
+      int len = this->size();
+
+      int m = 0;
+
+      for(int i = 0; i < len; i++)
+        buf[m++] = static_cast<double>(this->arr_[i][0][0]);
+
+      return len;
+  }
+
+  template<typename T>
+  int ScalarContainer<T>::pullFromBuffer_plain(double *buf)
+  {
+      int len = this->size();
+
+      int m = 0;
+
+      for(int i = 0; i < len; i++)
+        this->arr_[i][0][0] = static_cast<T>(buf[m++]);
+
+      return len;
   }
 } /* LAMMPS_NS */
 #endif /* SCALARCONTAINER_H_ */

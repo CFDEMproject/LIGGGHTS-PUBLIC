@@ -24,7 +24,7 @@
    Anton Gladky(TU Bergakademie Freiberg), gladky.anton@gmail.com
 ------------------------------------------------------------------------- */
 
-#ifdef LAMMPS_VTK
+#if defined(LAMMPS_VTK) // NP do not use #ifdef here (VS C++ bug)
 #ifdef DUMP_CLASS
 
 DumpStyle(atom/vtk,DumpATOMVTK)

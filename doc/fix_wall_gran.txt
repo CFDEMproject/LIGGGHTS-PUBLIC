@@ -51,8 +51,8 @@ general_keyword =  {shear} or {store_force} or {store_force_contact} :l
   {store_force_contact} value = 'yes' or 'no'
     yes, no = determines if the force for each particle-wall contact is stored in a "fix property/atom"_fix_property.html with id contactforces_(ID), where (ID) is the id of the fix wall/gran command.  :pre    
 
-following the general_keyword/value pairs, zero or more model_keyword/model_valuezero pairs may be appended in arbitrary order :l
-  model_type/model_name pairs = described for each model separately "here"_Section_gran_models.html 
+following the general_keyword/value pairs, zero or more model_keyword/model_value pairs may be appended in arbitrary order :l
+  model_keyword/model_value pairs = described for each model separately "here"_Section_gran_models.html 
 :ule
 
 [Examples:]

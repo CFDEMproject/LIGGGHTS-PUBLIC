@@ -205,6 +205,7 @@
           m += nrecv_this;
       }
 
+      this->prop().deleteRestartGlobal(dummy,dummy,dummy);
       popMeshPropsFromBuffer(&list[m],OPERATION_RESTART,dummy,dummy,dummy);
   }
 

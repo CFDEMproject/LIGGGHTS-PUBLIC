@@ -24,6 +24,7 @@
    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
    Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
+
 #ifdef TANGENTIAL_MODEL
 TANGENTIAL_MODEL(TANGENTIAL_HISTORY,history,1)
 #else
