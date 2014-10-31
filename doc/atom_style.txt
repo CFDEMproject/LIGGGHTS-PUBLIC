@@ -14,7 +14,7 @@ atom_style style args :pre
 
 style = {angle} or {atomic} or {body} or {bond} or {charge} or {dipole} or \
         {electron} or {ellipsoid} or {full} or {line} or {meso} or \
-	{molecular} or {peri} or {sphere} or {granular} or {tri} or {hybrid} or {sph} :ul
+	{molecular} or {peri} or {sphere} or {granular} or {bond/gran} or {tri} or {hybrid} or {sph} :ul
   args = none for any style except {body} and {hybrid}
   {body} args = bstyle bstyle-args
     bstyle = style of body particles
@@ -60,6 +60,7 @@ quantities.
 {atomic} | only the default values | coarse-grain liquids, solids, metals |
 {body} | mass, inertia moments, quaternion, angular momentum | arbitrary bodies |
 {bond} | bonds | bead-spring polymers |
+{bond/gran} | number of bonds and bond information | granular bond models |
 {charge} | charge | atomic system with charges |
 {dipole} | charge and dipole moment | system with dipolar particles |
 {electron} | charge and spin and eradius | electronic force field |
@@ -97,7 +98,23 @@ basis.
 For the {sphere} style, the particles are spheres and each stores a
 per-particle diameter and mass.  If the diameter > 0.0, the particle
 is a finite-size sphere.  If the diameter = 0.0, it is a point
-particle.
+particle. This is typically used for granular models. Instead of 
+{sphere}, keyword {granular} can be used.
+
+For the {bond/gran} style, the number of granular bonds per atom is
+stored, and the information associated to it: the type of each bond,
+the ID of the bonded partner atom and the so-called bond history.
+The bond history is similar to the contact history for granular 
+interaction, it stores the internal state of the bond. What exactly
+is stored in this internal state is defined by the granular 
+"bond style"_bond_gran.html used. There are 2 parameters: The number
+of bond types, and the maximum number of bonds that each atom can
+have. For each bond type, the parameters have to be specified via the
+"bond_coeff"_bond_coeff.html command (see example "here"_bond_gran.html )
+Note that {bond/gran} is an experimental code which is may not be 
+available in your release of LIGGGHTS. An example for the sytnax is given below:
+
+atom_style bond/gran n_bondtypes 1 bonds_per_atom 6 :pre
 
 For the {ellipsoid} style, the particles are ellipsoids and each
 stores a flag which indicates whether it is a finite-size ellipsoid or

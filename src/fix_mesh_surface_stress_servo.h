@@ -41,84 +41,84 @@ FixStyle(mesh/surface/stress/servo,FixMeshSurfaceStressServo)
 
 namespace LAMMPS_NS {
 
-class FixMeshSurfaceStressServo : public FixMeshSurfaceStress {
+  class FixMeshSurfaceStressServo : public FixMeshSurfaceStress {
 
-    public:
+  public:
 
-      FixMeshSurfaceStressServo(class LAMMPS *, int, char **);
-      virtual ~FixMeshSurfaceStressServo();
+    FixMeshSurfaceStressServo(class LAMMPS *, int, char **);
+    virtual ~FixMeshSurfaceStressServo();
 
-      virtual void post_create_pre_restart();
-      virtual void post_create();
+    virtual void post_create_pre_restart();
+    virtual void post_create();
 
-      void init();
-      int setmask();
+    void init();
+    int setmask();
 
-      virtual void setup_pre_force(int vflag);
-      void initial_integrate(int vflag);
-      void add_particle_contribution(int ip, double *frc,
-                            double *delta, int iTri, double *v_wall);
-      void final_integrate();
+    virtual void setup_pre_force(int vflag);
+    void initial_integrate(int vflag);
+    void add_particle_contribution(int ip, double *frc,
+                                   double *delta, int iTri, double *v_wall);
+    void final_integrate();
 
-      void reset_dt();
-      double compute_vector(int n);
+    void reset_dt();
+    double compute_vector(int n);
 
-    private:
+  private:
 
-      void init_defaults();
-      void error_checks();
+    void init_defaults();
+    void error_checks();
 
-      void limit_vel();
-      void update_mass();
-      void set_v_node();
-      void set_v_node_rotate();
-      double getMaxRad();
-      int modify_param(int, char **);
-      void resetIntegrator() {sum_err_ = 0;}
+    void limit_vel();
+    void update_mass();
+    void set_v_node();
+    void set_v_node_rotate();
+    double getMaxRad();
+    int modify_param(int, char **);
+    void resetIntegrator() {sum_err_ = 0;}
 
-      // properties of mesh
+    // properties of mesh
 
-      VectorContainer<double,3> &xcm_;
-      VectorContainer<double,3> &vcm_;
-      VectorContainer<double,3> &omegacm_;
-      VectorContainer<double,3> &xcm_orig_;
+    VectorContainer<double,3> &xcm_;
+    VectorContainer<double,3> &vcm_;
+    VectorContainer<double,3> &omegacm_;
+    VectorContainer<double,3> &xcm_orig_;
 
-      // position and velocity for each node
+    // position and velocity for each node
 
-      double*** nodes_;
-      MultiVectorContainer<double,3,3> *v_;
+    double*** nodes_;
+    MultiVectorContainer<double,3,3> *v_;
 
-      // servo settings and controller
+    // servo settings and controller
 
-      double axis_[3],totalPhi_;
-      double *ctrl_op_,*pv_vec_;
-      double vel_max_,vel_min_,ctrl_op_max_,ctrl_op_min_,ratio_;
-      double sp_mag_,sp_mag_inv_;
-      double pv_mag_,old_pv_mag_;
-      double err_, sum_err_;
-      double kp_,ki_,kd_;
+    double axis_[3],totalPhi_;
+    double *ctrl_op_,*pv_vec_;
+    double vel_max_,vel_min_,ctrl_op_max_,ctrl_op_min_,ratio_;
+    double sp_mag_,sp_mag_inv_;
+    double pv_mag_,old_pv_mag_;
+    double err_, sum_err_;
+    double kp_,ki_,kd_;
 
-      // variable set point
-      int sp_var_, sp_style_;
-      char *sp_str_;
+    // variable set point
+    int sp_var_, sp_style_;
+    char *sp_str_;
 
-      // flags
-      bool int_flag_;
-      bool mode_flag_;
-      int ctrl_style_;
+    // flags
+    bool int_flag_;
+    bool mode_flag_;
+    int ctrl_style_;
 
-      // timesteps
-      double dtf_,dtv_;
+    // timesteps
+    double dtf_,dtv_;
 
-      // for area calculation
-      class ModifiedAndrew *mod_andrew_;
+    // for area calculation
+    class ModifiedAndrew *mod_andrew_;
 
-      // signum function
-      template <typename T> int sgn(T val) {
-          return (T(0) < val) - (val < T(0));
-      }
+    // signum function
+    template <typename T> int sgn(T val) {
+      return (T(0) < val) - (val < T(0));
+    }
 
-}; //end class
+  }; //end class
 
 }
 

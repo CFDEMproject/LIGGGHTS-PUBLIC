@@ -122,32 +122,52 @@ namespace ContactModels
       kn /= force->nktv2p;
       kt /= force->nktv2p;
 
-      if(cdata.touch) *cdata.touch |= TOUCH_NORMAL_MODEL;
-      double * const shear = &cdata.contact_history[history_offset];
-      double deltaMax = shear[0]; // the 4th value of the history array is deltaMax
-      if (deltan > deltaMax) {
-        shear[0] = deltan;
-        deltaMax = deltan;
-      }
-
+      // coefficients
+      
       const double k2Max = kn * kn2k2Max[itype][jtype]; 
       const double kc = kn * kn2kc[itype][jtype]; 
+
+      // get the history value -- maximal overlap
+      if(cdata.touch) *cdata.touch |= TOUCH_NORMAL_MODEL;
+      double * const history = &cdata.contact_history[history_offset];
+      double deltaMax; // the 4th value of the history array is deltaMax
+      if (deltan > history[0]) {
+          history[0] = deltan;
+          deltaMax = deltan;
+      } else
+          deltaMax = history[0];
 
       // k2 dependent on the maximum overlap
       // this accounts for an increasing stiffness with deformation
       const double deltaMaxLim =(k2Max/(k2Max-kn))*phiF[itype][jtype]*2*reff;
-      double k2;
-      if (deltaMax >= deltaMaxLim) k2 = k2Max;
-      else k2 = kn+(k2Max-kn)*deltaMax/deltaMaxLim;
+      double k2, fHys;
+      if (deltaMax >= deltaMaxLim) // big overlap ... no kn at all
+      {
+          k2 = k2Max;
+          const double fTmp = k2*(deltan-deltaMaxLim)+kn*deltaMaxLim;//k2*(deltan-delta0);
+          if (fTmp >= -kc*deltan) { // un-/reloading part (k2)
+              fHys = fTmp;
+          } else { // cohesion part
+              fHys = -kc*deltan;
 
-      const double fTmp = k2*(deltan-deltaMax)+kn*deltaMax;//k2*(deltan-delta0);
-      double fHys;
-      if (fTmp >= kn*deltan) {
-        fHys = kn*deltan;
+              const double newDeltaMax = 0.5*(deltan+sqrt(deltan*deltan+4*((kn+kc)*deltan*deltaMaxLim/(k2Max-kn))));
+              history[0] = newDeltaMax;
+          }
       } else {
-        if (fTmp > -kc*deltan) {
-          fHys = fTmp;
-        } else fHys = -kc*deltan;
+          k2 = kn+(k2Max-kn)*deltaMax/deltaMaxLim;
+          const double fTmp = k2*(deltan-deltaMax)+kn*deltaMax;//k2*(deltan-delta0);
+          if (fTmp >= kn*deltan) { // loading part (kn)
+              fHys = kn*deltan;
+          } else { // un-/reloading part (k2)
+              if (fTmp > -kc*deltan) {
+                  fHys = fTmp;
+              } else { // cohesion part
+                  fHys = -kc*deltan;
+
+                  const double newDeltaMax = 0.5*(deltan+sqrt(deltan*deltan+4*((kn+kc)*deltan*deltaMaxLim/(k2Max-kn))));
+                  history[0] = newDeltaMax;
+              }
+          }
       }
 
       const double Fn_damping = -gamman*cdata.vn;
@@ -179,8 +199,8 @@ namespace ContactModels
     inline void noCollision(ContactData & cdata, ForceData&, ForceData&)
     {
       if(cdata.touch) *cdata.touch &= ~TOUCH_NORMAL_MODEL;
-      double * const shear = &cdata.contact_history[history_offset];
-      shear[0] = 0.0;
+      double * const history = &cdata.contact_history[history_offset];
+      history[0] = 0.0;
     }
 
     void beginPass(CollisionData&, ForceData&, ForceData&){}

@@ -1984,9 +1984,7 @@ void pair(FILE *fp, Data &data, char *style, int flag)
 	  }
 	}
       }
-  } else if ((strcmp(style,"gran/hooke") == 0) ||
-	   (strcmp(style,"gran/hooke/history") == 0) ||
-	   (strcmp(style,"gran/hertz/history") == 0)) {
+  } else if (strcmp(style,"gran") == 0)  {
 
     //double kn = read_double(fp);
     //double kt = read_double(fp);
@@ -3228,9 +3226,7 @@ void Data::write(FILE *fp, FILE *fp2, int write_coeffs, int write_vels)
 	(strcmp(pair_style,"eff/cut") != 0) &&
 	(strcmp(pair_style,"gauss") != 0) &&
 	(strcmp(pair_style,"gauss/cut") != 0) &&
-	(strcmp(pair_style,"gran/hertz/history") != 0) &&  //NP modified C.K.
-	(strcmp(pair_style,"gran/hooke/history") != 0) &&
-	(strcmp(pair_style,"gran/hooke") != 0) &&
+	(strcmp(pair_style,"gran") != 0) &&
 	(strcmp(pair_style,"lubricate2") != 0) &&
 	(strcmp(pair_style,"lubricateU") != 0) &&
 	(strcmp(pair_style,"meam") != 0) &&
