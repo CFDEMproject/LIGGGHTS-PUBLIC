@@ -50,7 +50,7 @@ MPI_LIB =	-lmpi
 
 FFT_INC =       -DFFT_FFTW -I/usr/local/Cellar/fftw/3.3.4/include
 FFT_PATH = 	-L/usr/local/Cellar/fftw/3.3.4/lib
-FFT_LIB =	-lfftw
+FFT_LIB =	-lfftw3
 
 # JPEG and/or PNG library, OPTIONAL
 # see discussion in doc/Section_start.html#2_2 (step 7)
