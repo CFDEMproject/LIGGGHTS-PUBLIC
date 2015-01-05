@@ -1,0 +1,107 @@
+#collision example
+variable nParticles equal 800
+variable vFluct equal 0.0
+variable rBig   equal 8e-3
+variable skin   equal 8e-4
+variable fOutput   equal 1000
+
+atom_style	granular
+atom_modify	map array
+boundary	f f f			#For style f, the position of the face is fixed. If an atom moves outside the face it may be lost.
+newton		off
+
+communicate	single vel yes
+
+units		si
+
+region		reg block 0.0 0.2 0.0 0.2 0.0 0.2 units box   #(reg=ID xlo xhi ylo yhi zlo zhi)
+create_box	1 reg
+
+neighbor	${skin} bin
+neigh_modify	delay 0
+
+#Material properties required for new pair styles
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.8
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.1
+#fix 		m5 all property/global characteristicVelocity scalar 2.
+
+#New pair style
+pair_style 	gran model hertz tangential history		 #Hertzian without cohesion
+pair_coeff	* *
+
+timestep	1e-5
+
+#Gravity & Walls
+fix         gravi all gravity 9.81 vector 0.0 -1.0 0.0 
+fix 		zwalls1 all wall/gran model hertz tangential history primitive type 1  zplane 0.0
+fix 		zwalls2 all wall/gran model hertz tangential history primitive type 1  zplane 0.2
+fix 		xwalls1 all wall/gran model hertz tangential history primitive type 1  xplane 0.0
+fix			xwalls2 all wall/gran model hertz tangential history primitive type 1  xplane 0.2
+fix			ywalls1 all wall/gran model hertz tangential history primitive type 1  yplane 0.0
+fix			ywalls2 all wall/gran model hertz tangential history primitive type 1  yplane 0.2
+
+#heat transfer
+fix 		ftco all property/global thermalConductivity peratomtype 0.
+fix 		ftca all property/global thermalCapacity peratomtype 10.
+fix         heattransfer all heat/gran initial_temperature 800. #(temperatur aller partikel müss geändert werden!) 
+
+#region of insertion	
+region 		PIR1 cylinder y 0.1 0.1 0.092 0.00   0.20 units box	
+								 # cylinder args = dim c1 c2 radius lo hi
+			 					 #  dim = x or y or z = axis of cylinder
+  								 #  c1,c2 = coords of cylinder axis in other 2 dimensions (distance units)
+   								 #  radius = cylinder radius (distance units)
+  								 #  radius can be a variable (see below)
+ 								 #  lo,hi = bounds of cylinder in dim (distance units)
+
+#particle distributions and insertion
+fix			pts1 all particletemplate/sphere 1001 atom_type 1 density constant 1000 &
+            radius gaussian number 0.008 2.5e-3
+fix			pts2 all particletemplate/sphere 1001 atom_type 1 density constant 1000 &
+            radius gaussian number 0.002 0.1e-3
+fix			pdd1 all particledistribution/discrete 1001  2 pts1 0.98 pts2 0.02
+
+fix			ins all insert/pack seed 1001 distributiontemplate pdd1 &
+            vel uniform 0 0 0 ${vFluct} ${vFluct} ${vFluct} &
+			insert_every once overlapcheck yes all_in yes particles_in_region ${nParticles} region PIR1
+
+#apply nve integration to all particles
+fix			integr all nve/sphere
+
+#compute_modify temp thermo yes 
+
+#output settings, include total thermal energy
+compute		rke all erotate/sphere
+thermo_style	custom step atoms ke c_rke f_heattransfer vol
+thermo		100
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the particles 
+run			1
+
+
+#create coupling fixes
+fix         coupling_pascal all couple/pascal reneighbor_at_least_every 1 couple_every 1
+#fix         heatAv      all property/atom heatAv scalar no yes no none #fix to receive average temperature
+fix         heatAv      all property/atom heatAv scalar no yes no none #fix to receive average temperature
+fix         TempMin     all property/atom TempMin scalar no yes no none #fix to receive average temperature
+#fix         heatChemMax all property/atom heatChemMax scalar no yes no none #fix to receive max reaction rate
+#fix         heatChemMin all property/atom heatChemMin scalar no yes no none #fix to receive max reaction rate
+
+variable nAtoms equal atoms
+variable totKE  equal ke
+variable step   equal step
+
+fix         myPrint all print 100 "${step} ${nAtoms} ${totKE}" file atomStatistics.dat
+dump		dmp all custom ${fOutput} post/dump*.collision id type x y z vx vy vz radius f_heatFlux[0]  f_TempMin[0] f_heatAv[0]  f_Temp[0]
+unfix		ins
+
+#set particle temperature for region PIR&PIR2
+#set         region PIR1 property/atom Temp 800.
+
+#run simulation
+#run 1000000
+run 80100

@@ -45,35 +45,61 @@ using namespace PASCAL_NS;
 using namespace FixConst;
 
 /* ----------------------------------------------------------------------
-   Constructor, calls PaScal's constructor
+   Constructor, calls ParScale's constructor
 ------------------------------------------------------------------------- */
-FixPaScalCouple::FixPaScalCouple(LAMMPS *lmp, int narg, char **arg) :
+FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
-  fix_shellTemperature_(0),
-  fix_shellHeatFlux_(0),
   dc_(0),
   verbose_(false),
-  couple_at_least_every_(0),
+  reneighbor_at_least_every_(0),
   couple_this_step_(false),
-  pascal_setup_(0),
+  pascal_setup_(false),
+  prePostRun_(false),
   pasc_(0),
   time_(0.)
 {
+
   iarg_ = 3;
+  dc_ = NULL; 
+  map_copy = NULL; 
 
   int me, nprocs;
   MPI_Comm_rank(world,&me);
   MPI_Comm_size(MPI_COMM_WORLD,&nprocs);
 
-  if (narg < 5)
+  if (narg < 7)
     error->fix_error(FLERR,this,"not enough arguments");
 
-  if (strcmp(arg[iarg_++],"couple_at_least_every"))
-    error->fix_error(FLERR,this,"expecting keyword 'couple_at_least_every'");
+  if (strcmp(arg[iarg_],"reneighbor_at_least_every"))
+    error->fix_error(FLERR,this,"expecting keyword 'reneighbor_at_least_every'");
 
-  couple_at_least_every_ = force->inumeric(FLERR,arg[iarg_++]);
-  if (couple_at_least_every_ <= 0)
-    error->fix_error(FLERR,this,"'couple_at_least_every' > 0 required");
+  iarg_++;
+  reneighbor_at_least_every_ = force->inumeric(FLERR,arg[iarg_]);
+  if (reneighbor_at_least_every_ < 0)
+    error->fix_error(FLERR,this,"'reneighbor_at_least_every' >= 0 required");
+
+  iarg_++;
+  if (strcmp(arg[iarg_],"couple_every"))
+    error->fix_error(FLERR,this,"expecting keyword 'couple_every'");
+
+  iarg_++;
+  couple_every_ = force->inumeric(FLERR,arg[iarg_]);
+  if (couple_every_ < 0)
+    error->fix_error(FLERR,this,"'couple_every' >= 0 required");
+
+
+  iarg_++;
+  if (narg > 7)
+  {
+    if (strcmp(arg[iarg_],"verbose")==0)
+        verbose_ = true;
+  }
+  if (narg > 8)
+  {
+    if (strcmp(arg[iarg_],"prePostRun")==0)
+        prePostRun_ = true;
+  }
+
 
   nevery = 1;
 
@@ -82,12 +108,11 @@ FixPaScalCouple::FixPaScalCouple(LAMMPS *lmp, int narg, char **arg) :
 
   // set next reneighbor
   force_reneighbor = 1;
-  next_reneighbor = update->ntimestep + couple_at_least_every_;
 
   // TODO: meed parsing here!
   // TODO: need to parse filename with pascal input
 
-  // create PaScal instance
+  // create ParScale instance
   int pascal;
   if (me < nprocs) pascal = 1;
   else pascal = MPI_UNDEFINED;
@@ -95,10 +120,10 @@ FixPaScalCouple::FixPaScalCouple(LAMMPS *lmp, int narg, char **arg) :
   MPI_Comm comm_pascal;
   MPI_Comm_split(MPI_COMM_WORLD,pascal,0,&comm_pascal);
 
-  // Open PaScal input script and create PaScal Object
+  // Open ParScale input script and create ParScale Object
   if(0 == me)
     fprintf(screen, "\n...creating PaScal object... \n");
-  if(pascal == 1) pasc_ = new PASCAL_NS::PaScal(0, NULL, comm_pascal,lmp);
+  if(pascal == 1) pasc_ = new PASCAL_NS::ParScale(0, NULL, comm_pascal,lmp);
   pascal_setup_ = true;
 
   char *runDirectory = new char[128];
@@ -135,21 +160,22 @@ FixPaScalCouple::FixPaScalCouple(LAMMPS *lmp, int narg, char **arg) :
   delete [] pascalFile;
   delete [] runDirectory;
 
-  fprintf(screen, "...PaScal object initialized! \n\n");
+  ts_create_ = update->ntimestep;
+  fprintf(screen, "...ParScale object initialized! \n\n");
 }
 
 /* ----------------------------------------------------------------------
-   free all memory for PaScal
+   free all memory for ParScale
 ------------------------------------------------------------------------- */
 
-FixPaScalCouple::~FixPaScalCouple()
+FixParScaleCouple::~FixParScaleCouple()
 {
   delete pasc_;
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixPaScalCouple::post_create()
+void FixParScaleCouple::post_create()
 {
   if(dc_)
         dc_->post_create();
@@ -157,51 +183,33 @@ void FixPaScalCouple::post_create()
     error->all(FLERR,"internal error");
 
 
-  if(verbose_) fprintf(screen, "PaScal::post_create()!\n");
+  if(verbose_) fprintf(screen, "ParScale::post_create()!\n");
   // register fixes for quantities to be saved to disk
   // see fix_property_atom.cpp for meaning of fixargs
-  if(!fix_shellTemperature_)
-  {
-        const char* fixarg[9];
-        fixarg[0]="shellT";
-        fixarg[1]="all";
-        fixarg[2]="property/atom";
-        fixarg[3]="shellT";
-        fixarg[4]="scalar";
-        fixarg[5]="no";
-        fixarg[6]="yes";
-        fixarg[7]="no";
-        fixarg[8]="0.";
-	    fix_shellTemperature_ =
-	                modify->add_fix_property_atom(9,
-	                                              const_cast<char**>(fixarg),
-	                                              style);
-  }
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixPaScalCouple::updatePtrs()
+void FixParScaleCouple::updatePtrs()
 {
     //TODO
 }
 
 /* ---------------------------------------------------------------------- */
 
-int FixPaScalCouple::setmask()
+int FixParScaleCouple::setmask()
 {
   int mask = 0;
-  mask |= PRE_EXCHANGE;
+//  mask |= PRE_EXCHANGE;
   mask |= END_OF_STEP;
   return mask;
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixPaScalCouple::init()
+void FixParScaleCouple::init()
 {
     // TODO: warn if something is wrong
-
     dc_->init();
 
     if(0 == atom->map_style)
@@ -212,19 +220,20 @@ void FixPaScalCouple::init()
 //    error->all(FLERR,"TODO: separate framework and model; put this in derived class");
 
     //  values to be transfered to OF
-
+    dc_->add_push_property("id","scalar-atom");
+    dc_->add_push_property("radius","scalar-atom");
     dc_->add_push_property("x","vector-atom");
     dc_->add_push_property("v","vector-atom");
-    dc_->add_push_property("radius","scalar-atom");
-    dc_->add_push_property("id","scalar-atom");
+
+
 }
 
 /* ----------------------------------------------------------------------
-   make some setup calls to PaScal if necessary
+   make some setup calls to ParScale if necessary
    set-up is
 ------------------------------------------------------------------------- */
 
-void FixPaScalCouple::setup(int vflag)
+void FixParScaleCouple::setup(int vflag)
 {
 
 }
@@ -234,15 +243,39 @@ void FixPaScalCouple::setup(int vflag)
    schedule next coupling
 ------------------------------------------------------------------------- */
 
-int* FixPaScalCouple::get_liggghts_map(int &length)
+int* FixParScaleCouple::get_liggghts_map(int &length)
 {
-
     int size_map = atom->get_map_size();
-    length       = size_map;
+    length       = size_map-1; //since LIGGGHTS' GLOBAL indexing starts with 1!
 
-    int *map_copy = NULL;
-    map_copy = memory->create<int>(map_copy, size_map,"map");
-    memcpy(map_copy,atom->get_map_array(),size_map);
+    memory->destroy(map_copy);
+    memory->create<int>(map_copy, length,"FixParScaleCouple:map");
+    memcpy(map_copy,&(atom->get_map_array()[1]),length*sizeof(int)); //offset by one in LIGGGHTS
+
+    if(verbose_)
+    {
+        printf("FixParScaleCouple::get_liggghts_map \n");
+        printf("atom->map_style: %d, size_map: %d, length of map_copy: %d \n", 
+                atom->map_style, size_map, length);
+
+        printf("original_map[-1]: %d. \n",atom->get_map_array()[0]);
+
+        for(int iGlobal=0; iGlobal < length; iGlobal++)
+        {
+            printf("original_map[%d]: %d, _ext_map[%d]: %d, particle r: %g\n",
+                    iGlobal, atom->get_map_array()[iGlobal+1], //offset by one in LIGGGHTS
+                    iGlobal, map_copy[iGlobal],
+                    atom->radius[map_copy[iGlobal]]);
+        }
+    }
+
+    //Check map
+    for(int iGlobal=0; iGlobal < length; iGlobal++)
+    {
+        if(map_copy[iGlobal]==-1)
+               error->fix_error(FLERR,this,"map not set for this particle. \n");
+    }
+
     return map_copy;
 }
 
@@ -251,32 +284,56 @@ int* FixPaScalCouple::get_liggghts_map(int &length)
    schedule next coupling
 ------------------------------------------------------------------------- */
 
-void FixPaScalCouple::pre_exchange()
-{
-    couple_this_step_ = true;
-
+//void FixParScaleCouple::pre_exchange()
+//{
+//    couple_this_step_ = true;
+/*
     if (next_reneighbor != update->ntimestep)
-        fprintf(screen,"'premature' LIGGGHTS-PaScal coupling because of high flow dynamics\n");
-
-    next_reneighbor = update->ntimestep + couple_at_least_every_;
-}
+        fprintf(screen,"'premature' LIGGGHTS-ParScale coupling because of high flow dynamics\n");
+*/
+//}
 
 /* ----------------------------------------------------------------------
-   call PaScal to catch up with LIGGGHTS
+   call ParScale to catch up with LIGGGHTS
 ------------------------------------------------------------------------- */
-void FixPaScalCouple::end_of_step()
+void FixParScaleCouple::end_of_step()
 {
+
+    // only do this if coupling desired
+    if(couple_every_ == 0) return;
+
+    int ts = update->ntimestep;
+
+    // set flag if couple the next time-step
+    // will not be active this ts, since in eos
+    if((ts+1) % couple_every_ || ts_create_ == ts+1)
+        couple_this_step_ = false;
+    else
+        couple_this_step_ = true;
+
+    // only execute if pushing or pulling is desired
+    // do not execute on step of creation
+    if(ts % couple_every_ || ts_create_ == ts) return;
+
+    if(screen && comm->me == 0)
+        fprintf(screen,"ParScale Coupling established at step %d\n",ts);
+    if(logfile && comm->me == 0)
+        fprintf(logfile,"ParScale Coupling established at step %d\n",ts);
+
     time_ += update->dt;
 
     if(!couple_this_step_)
         return;
 
-    // assemble command and run in PaScal
-    // init upon first use of PaScal, but not afterwards
+    // assemble command and run in ParScale
+    // init upon first use of ParScale, but not afterwards
 
     char commandstr[200];
-    sprintf(commandstr,"control run %f init %s",time_,pascal_setup_?"yes":"no");
-    fprintf(screen,"PaScal::runCommand()!\n");
+    sprintf(commandstr,"control run %f init %s",
+            time_,
+            pascal_setup_?"yes":"no"
+//            prePostRun_?"yes":"no"    //TODO: implement silent run in ParScale
+            );
     pasc_->runCommand(commandstr);
 
     // reset flags and time counter
@@ -300,12 +357,12 @@ void FixPaScalCouple::end_of_step()
 }
 
 //////////////////////////////////////////////////////////////
-void* LAMMPS_NS::FixPaScalCouple::find_pull_property(const char *name, const char *type, int &len1, int &len2)
+void* LAMMPS_NS::FixParScaleCouple::find_pull_property(const char *name, const char *type, int &len1, int &len2)
 { 
     return dc_->find_pull_property(name,type,len1,len2); 
 }
 
-void* LAMMPS_NS::FixPaScalCouple::find_push_property(const char *name, const char *type, int &len1, int &len2)
+void* LAMMPS_NS::FixParScaleCouple::find_push_property(const char *name, const char *type, int &len1, int &len2)
 { 
     return dc_->find_push_property(name,type,len1,len2); 
 }

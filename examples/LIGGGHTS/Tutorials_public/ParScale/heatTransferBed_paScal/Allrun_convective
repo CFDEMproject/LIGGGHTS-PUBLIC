@@ -1,0 +1,23 @@
+#!/bin/sh
+##################################################################################################################
+#Coupled test case: heat conduction in multiple spheres with collison
+#copyright: IPPT, Graz University of Technology
+#BC: convective flux to the enviroment, 300/400K
+
+cd ${0%/*} || exit 1    # run from this directory
+
+##########################################################
+#mpirun -np 1 PaScal < in.file_convective 
+liggghts < in.liggghts
+
+cd pascal/
+
+octave plotMe.m
+evince plot.eps
+
+
+
+
+
+
+
