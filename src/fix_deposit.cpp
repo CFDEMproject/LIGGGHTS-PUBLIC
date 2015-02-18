@@ -344,7 +344,11 @@ void FixDeposit::pre_exchange()
       atom->v[m][1] = vytmp;
       atom->v[m][2] = vztmp;
       for (j = 0; j < nfix; j++)
-        if (fix[j]->create_attribute) fix[j]->set_arrays(m);
+        if (fix[j]->create_attribute)
+        {
+            pre_set_arrays();
+            fix[j]->set_arrays(m);
+        }
     }
     MPI_Allreduce(&flag,&success,1,MPI_INT,MPI_MAX,world);
     break;
@@ -366,7 +370,7 @@ void FixDeposit::pre_exchange()
     if (atom->tag_enable) {
       if (idnext) {
         maxtag_all++;
-        if (atom->nlocal && atom->tag[atom->nlocal-1] == 0) 
+        if (atom->nlocal && atom->tag[atom->nlocal-1] == 0)
           atom->tag[atom->nlocal-1] = maxtag_all;
       } else atom->tag_extend();
       if (atom->map_style) {

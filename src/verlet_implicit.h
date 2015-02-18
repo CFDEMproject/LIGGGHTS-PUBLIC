@@ -1,8 +1,8 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS

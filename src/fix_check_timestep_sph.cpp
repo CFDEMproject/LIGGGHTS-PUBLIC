@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -180,7 +184,7 @@ void FixCheckTimestepSph::calc_courant_estims_eval()
   int *ilist,*jlist,*numneigh,**firstneigh;
   double vmag,courant_time_one;
   double cmean;
-  int j_maxmu;
+  int j_maxmu = 0;
 
   double **x = atom->x;
   double **v = atom->v;

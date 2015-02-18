@@ -95,7 +95,7 @@ clean:
 	@echo 'make clean-machine       delete object files for one machine'
 
 clean-all:
-	rm -rf Obj_*
+	rm -rf Obj_* *.a
 
 clean-%:
 	rm -rf Obj_$(@:clean-%=%)

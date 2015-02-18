@@ -45,11 +45,11 @@ FixNVEAsphere::FixNVEAsphere(LAMMPS *lmp, int narg, char **arg) :
   // process extra keywords
 
   int iarg = 3;
-  while (iarg < narg) {
+  while (iarg < narg) { //NP modified TUG
     if (strcmp(arg[iarg],"updateRotation") == 0) 
     {
       updateRotation_=true;
-      printf("nve/asphere will update the rotation rate and orientation vector ex!\n");
+      //printf("nve/asphere will update the rotation rate and orientation vector ex!\n");
       iarg += 1;
     } else error->all(FLERR,"Illegal fix nve/asphere command");
   }
@@ -93,6 +93,7 @@ void FixNVEAsphere::initial_integrate(int vflag)
   double dtfm;
   double inertia[3],omega[3];
   double g[3], msq, scale; //NP modified TUG
+  double exone[3],eyone[3],ezone[3];  //NP modified TUG
   double *shape,*quat;
 
   AtomVecEllipsoid::Bonus *bonus = avec->bonus;
@@ -143,6 +144,9 @@ void FixNVEAsphere::initial_integrate(int vflag)
       shape = bonus[ellipsoid[i]].shape;
       quat = bonus[ellipsoid[i]].quat;
 
+      if( (shape[0]<shape[1]) || (shape[0]<shape[2]) )
+        error->one(FLERR,"Shape is not correctly specified. shape[0] must be the largest value!");
+
       inertia[0] = INERTIA*rmass[i] * (shape[1]*shape[1]+shape[2]*shape[2]);
       inertia[1] = INERTIA*rmass[i] * (shape[0]*shape[0]+shape[2]*shape[2]);
       inertia[2] = INERTIA*rmass[i] * (shape[0]*shape[0]+shape[1]*shape[1]);
@@ -161,14 +165,22 @@ void FixNVEAsphere::initial_integrate(int vflag)
             omegaParticles[i][2]=omega[2];
             if(fix_orientation_)
             {
-               g[0] = orientation[i][0] + dtv * (omega[1]*orientation[i][2]-omega[2]*orientation[i][1]);
+/*               g[0] = orientation[i][0] + dtv * (omega[1]*orientation[i][2]-omega[2]*orientation[i][1]);
                g[1] = orientation[i][1] + dtv * (omega[2]*orientation[i][0]-omega[0]*orientation[i][2]);
                g[2] = orientation[i][2] + dtv * (omega[0]*orientation[i][1]-omega[1]*orientation[i][0]);
                msq = g[0]*g[0] + g[1]*g[1] + g[2]*g[2];
                scale = 1.0/sqrt(msq);
                orientation[i][0] = g[0]*scale;
                orientation[i][1] = g[1]*scale;
-               orientation[i][2] = g[2]*scale;
+               orientation[i][2] = g[2]*scale; */
+               
+               //Alternative calculation
+               MathExtra::q_to_exyz(quat,exone,eyone,ezone);   //NP modified TUG
+               orientation[i][0] = exone[0];
+               orientation[i][1] = exone[1];
+               orientation[i][2] = exone[2];
+//               printf("exone[0]: %g,exone[1]: %g,exone[2]: %g. \n",
+//                       exone[0],exone[1],exone[2]);
             }
       }
     }

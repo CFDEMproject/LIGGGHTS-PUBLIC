@@ -1,13 +1,17 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
    Modifications are Copyright 2009-2012 JKU Linz
                      Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
 
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
@@ -44,7 +48,7 @@
 #include "neigh_request.h"
 #include "memory.h"
 #include "error.h"
-#include "mech_param_gran.h"
+#include "properties.h"
 #include "fix_rigid.h"
 #include "fix_pour.h"
 #include "fix_particledistribution_discrete.h"
@@ -67,7 +71,7 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
   suffix = NULL;
   neighprev = 0;
 
-  mpg = new MechParamGran(lmp);
+  properties = new Properties(lmp);
 
   history = 0;
   dnum_pairgran = 0;
@@ -114,7 +118,7 @@ PairGran::~PairGran()
     delete [] maxrad_dynamic;
     delete [] maxrad_frozen;
   }
-  delete mpg;
+  delete properties;
 
   // tell cpl that pair gran is deleted
   if(cpl_) cpl_->reference_deleted();

@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -71,6 +75,7 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
   // allocate arrays
   memory->create(x_sphere,nspheres,3,"FixTemplateMultiplespheres:x_sphere");
   r_sphere = new double[nspheres];
+  atom_type_sphere = 0;
 
   // re-create pti with correct nspheres
   delete pti;
@@ -94,8 +99,12 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
   {
     hasargs = false;
 
-    if (strcmp(arg[iarg],"spheres") == 0)
+    if ((strcmp(arg[iarg],"spheres") == 0) || (strcmp(arg[iarg],"spheres_different_types") == 0))
     {
+      bool different_type = false;
+      if(strcmp(arg[iarg],"spheres_different_types") == 0)
+        different_type= true;
+
       hasargs = true;
       spheres_read = true;
       iarg++;
@@ -105,6 +114,9 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
           iarg++;
           if (narg < iarg+3) error->fix_error(FLERR,this,"not enough arguments");
 
+          if(different_type)
+            atom_type_sphere = new int[nspheres];
+
           char *clmp_filename = arg[iarg++];
 
           if (strcmp(arg[iarg++],"scale") != 0) error->fix_error(FLERR,this,"you have to specify a scale factor");
@@ -113,7 +125,7 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
 
           // allocate input class, try to open file, read data from file
           InputMultisphere *myclmp_input = new InputMultisphere(lmp,0,NULL);
-          myclmp_input->clmpfile(clmp_filename,x_sphere,r_sphere,nspheres);
+          myclmp_input->clmpfile(clmp_filename,x_sphere,r_sphere,atom_type_sphere,nspheres);
           delete myclmp_input;
 
           for(int i = 0; i < nspheres; i++)
@@ -136,6 +148,9 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
       else
       {
           if (narg < iarg + 4*nspheres) error->fix_error(FLERR,this,"not enough arguments");
+
+          if(different_type)
+            error->fix_error(FLERR,this,"have to use keyword 'file' with option 'spheres_different_type'");
 
           //read sphere r and coos, determine min and max
           for(int i = 0; i < nspheres; i++)
@@ -171,6 +186,7 @@ FixTemplateMultiplespheres::~FixTemplateMultiplespheres()
 {
     memory->destroy(x_sphere);
     delete []r_sphere;
+    if(atom_type_sphere) delete []atom_type_sphere;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -182,6 +198,24 @@ void FixTemplateMultiplespheres::post_create()
 
     calc_bounding_sphere();
     calc_center_of_mass();
+}
+
+/* ----------------------------------------------------------------------*/
+
+int FixTemplateMultiplespheres::maxtype()
+{
+    if(!atom_type_sphere)
+        return atom_type;
+    return vectorMax3D(atom_type_sphere);
+}
+
+/* ----------------------------------------------------------------------*/
+
+int FixTemplateMultiplespheres::mintype()
+{
+    if(!atom_type_sphere)
+        return atom_type;
+    return vectorMin3D(atom_type_sphere);
 }
 
 /* ----------------------------------------------------------------------
@@ -380,7 +414,13 @@ void FixTemplateMultiplespheres::randomize_single()
   pti->volume_ins = volume_expect;
   pti->mass_ins = mass_expect;
   pti->r_bound_ins = r_bound;
+  vectorCopy3D(x_bound,pti->x_bound_ins);
   pti->atom_type = atom_type;
+  if(atom_type_sphere)
+  {
+    vectorCopy3D(atom_type_sphere,pti->atom_type_vector);
+    pti->atom_type_vector_flag = true;
+  }
 
   for(int j = 0; j < nspheres; j++)
   {
@@ -418,7 +458,13 @@ void FixTemplateMultiplespheres::randomize_ptilist(int n_random,int distribution
           pti->volume_ins = volume_expect;
           pti->mass_ins = mass_expect;
           pti->r_bound_ins = r_bound;
+          vectorCopy3D(x_bound,pti->x_bound_ins);
           pti->atom_type = atom_type;
+          if(atom_type_sphere)
+          {
+            vectorCopy3D(atom_type_sphere,pti->atom_type_vector);
+            pti->atom_type_vector_flag = true;
+          }
 
           for(int j = 0; j < nspheres; j++)
           {

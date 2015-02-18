@@ -69,7 +69,7 @@ void PairLJGromacs::compute(int eflag, int vflag)
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
   double rsq,r2inv,r6inv,forcelj,factor_lj;
-  double r,t,fswitch,eswitch;
+  double r,t=0.0,fswitch,eswitch;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = 0.0;
@@ -418,7 +418,7 @@ double PairLJGromacs::single(int i, int j, int itype, int jtype,
                              double &fforce)
 {
   double r2inv,r6inv,forcelj,philj;
-  double r,t,fswitch,phiswitch;
+  double r,t=0.0,fswitch,phiswitch;
 
   r2inv = 1.0/rsq;
   r6inv = r2inv*r2inv*r2inv;

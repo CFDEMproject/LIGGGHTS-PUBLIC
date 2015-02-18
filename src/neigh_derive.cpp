@@ -315,8 +315,8 @@ void Neighbor::skip_from_granular(NeighList *list)
 
 void Neighbor::skip_from_respa(NeighList *list)
 {
-  int i,j,ii,jj,n,itype,jnum,joriginal,n_inner,n_middle;
-  int *neighptr,*jlist,*neighptr_inner,*neighptr_middle;
+  int i,j,ii,jj,n,itype,jnum,joriginal,n_inner,n_middle=0;
+  int *neighptr,*jlist,*neighptr_inner,*neighptr_middle=NULL;
 
   int *type = atom->type;
 
@@ -344,7 +344,7 @@ void Neighbor::skip_from_respa(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int *numneigh_middle_skip,**firstneigh_middle_skip;
   int respamiddle = list->respamiddle;
   if (respamiddle) {

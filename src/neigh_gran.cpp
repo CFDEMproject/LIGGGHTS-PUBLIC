@@ -1,13 +1,17 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
    Modifications are Copyright 2009-2012 JKU Linz
                      Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
 
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
@@ -41,20 +45,20 @@ using namespace LAMMPS_NS;
 
 void Neighbor::granular_nsq_no_newton(NeighList *list)
 {
-  int i,j,m,n,nn,bitmask,d; 
+  int i,j,m,n,nn=0,bitmask=0,d; 
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   double radi,radsum,cutsq;
-  int *neighptr,*touchptr;
-  double *shearptr;
+  int *neighptr,*touchptr = NULL;
+  double *shearptr = NULL;
 
   NeighList *listgranhistory;
-  int *npartner,**partner;
-  double **contacthistory; 
+  int *npartner = NULL,**partner = NULL;
+  double **contacthistory = NULL; 
   int **firsttouch;
   double **firstshear;
-  MyPage<int> *ipage_touch;
-  MyPage<double> *dpage_shear;
-  int dnum; 
+  MyPage<int> *ipage_touch = NULL;
+  MyPage<double> *dpage_shear = NULL;
+  int dnum = 0; 
 
   double **x = atom->x;
   double *radius = atom->radius;
@@ -180,7 +184,7 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
 
 void Neighbor::granular_nsq_newton(NeighList *list)
 {
-  int i,j,n,itag,jtag,bitmask;
+  int i,j,n,itag,jtag,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   double radi,radsum,cutsq;
   int *neighptr;
@@ -274,21 +278,21 @@ void Neighbor::granular_nsq_newton(NeighList *list)
 
 void Neighbor::granular_bin_no_newton_ghost(NeighList *list)
 {
-  int i,j,k,m,n,nn,ibin,d;
+  int i,j,k,m,n,nn=0,ibin,d;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int xbin,ybin,zbin,xbin2,ybin2,zbin2;
   double radi,radsum,cutsq;
-  int *neighptr,*touchptr;
-  double *shearptr;
+  int *neighptr,*touchptr = NULL;
+  double *shearptr = NULL;
 
   NeighList *listgranhistory;
-  int *npartner,**partner;
-  double **contacthistory;
-  int **firsttouch;
-  double **firstshear;
-  MyPage<int> *ipage_touch;
-  MyPage<double> *dpage_shear;
-  int dnum; 
+  int *npartner = NULL,**partner = NULL;
+  double **contacthistory = NULL;
+  int **firsttouch = NULL;
+  double **firstshear = NULL;
+  MyPage<int> *ipage_touch = NULL;
+  MyPage<double> *dpage_shear = NULL;
+  int dnum = 0; 
 
   // bin local & ghost atoms
 
@@ -456,20 +460,20 @@ void Neighbor::granular_bin_no_newton_ghost(NeighList *list)
 
 void Neighbor::granular_bin_no_newton(NeighList *list)
 {
-  int i,j,k,m,n,nn,ibin,d;
+  int i,j,k,m,n,nn=0,ibin,d;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   double radi,radsum,cutsq;
-  int *neighptr,*touchptr;
-  double *shearptr;
+  int *neighptr,*touchptr = NULL;
+  double *shearptr = NULL;
 
   NeighList *listgranhistory;
-  int *npartner,**partner;
-  double **contacthistory;
-  int **firsttouch;
-  double **firstshear;
-  MyPage<int> *ipage_touch;
-  MyPage<double> *dpage_shear;
-  int dnum; 
+  int *npartner = NULL,**partner = NULL;
+  double **contacthistory = NULL;
+  int **firsttouch = NULL;
+  double **firstshear = NULL;
+  MyPage<int> *ipage_touch = NULL;
+  MyPage<double> *dpage_shear = NULL;
+  int dnum = 0; 
 
   // bin local & ghost atoms
 

@@ -129,7 +129,7 @@ int ComputeBondLocal::compute_bonds(int flag)
   int newton_bond = force->newton_bond;
 
   Bond *bond = force->bond;
-  double eng,fbond;
+  double eng = 0.0,fbond;
 
   m = n = 0;
   for (atom1 = 0; atom1 < nlocal; atom1++) {

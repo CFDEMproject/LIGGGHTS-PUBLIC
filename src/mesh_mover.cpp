@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -170,6 +174,15 @@ void MeshMoverLinearVariable::setup()
 {
     
     vectorZeroize3D(dX_);
+
+    // check if variable still exists
+    myvar1_ = input->variable->find(var1str_);
+    myvar2_ = input->variable->find(var2str_);
+    myvar3_ = input->variable->find(var3str_);
+
+    if (myvar1_ < 0) error->all(FLERR,"Variable name 1 for fix move/mesh linear/variable does not exist");
+    if (myvar2_ < 0) error->all(FLERR,"Variable name 2 for fix move/mesh linear/variable does not exist");
+    if (myvar3_ < 0) error->all(FLERR,"Variable name 3 for fix move/mesh linear/variable does not exist");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -411,6 +424,11 @@ void MeshMoverRotateVariable::setup()
 {
     
     totalPhi_ = 0.;
+
+    // check if variable still exists
+    myvar1_ = input->variable->find(var1str_);
+    if (myvar1_ < 0)
+        error->all(FLERR,"Variable name 1 for fix move/mesh rotate dynamic does not exist");
 }
 
 /* ---------------------------------------------------------------------- */

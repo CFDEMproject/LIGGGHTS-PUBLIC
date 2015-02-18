@@ -63,7 +63,7 @@ void PairLJCutCoulCut::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
-  double rsq,r2inv,r6inv,forcecoul,forcelj,factor_coul,factor_lj;
+  double rsq,r2inv,r6inv=0.0,forcecoul,forcelj,factor_coul,factor_lj;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = ecoul = 0.0;
@@ -432,7 +432,7 @@ double PairLJCutCoulCut::single(int i, int j, int itype, int jtype,
                                 double factor_coul, double factor_lj,
                                 double &fforce)
 {
-  double r2inv,r6inv,forcecoul,forcelj,phicoul,philj;
+  double r2inv,r6inv=0.0,forcecoul,forcelj,phicoul,philj;
 
   r2inv = 1.0/rsq;
   if (rsq < cut_coulsq[itype][jtype])

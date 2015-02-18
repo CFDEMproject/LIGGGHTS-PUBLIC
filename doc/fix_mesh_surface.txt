@@ -15,7 +15,7 @@ fix mesh/surface/planar command :h3
 fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
 fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values :pre
 
-ID, is documented in "fix"_fix.html command, the group-ID is ignored for this command. :ulb,l
+ID, is documented in "fix"_fix.html command. :ulb,l
 mesh/surface or mesh/surface/planar = style name of this fix command  :l
 file = obligatory keyword :l
 filename = name of STL or VTK file containing the triangle mesh data :l
@@ -70,8 +70,8 @@ ASCII STL files or legacy ASCII VTK files. Style {mesh/surface} is a general sur
 consist of only 1 planar face. 
 
 Generall, you can apply scaling, offset and rotation to the imported mesh via keywords {scale}, 
-{move}, {rotate}. Operations are applied in the order as they are specified. The group-ID is 
-ignored for this command. For periodic boundaries, the mesh is mapped. 
+{move}, {rotate}. Operations are applied in the order as they are specified. The group-ID defines
+which particles will "see" the mesh, in case it is used as a granular wall.
 
 One fix represents one wall with a specific material, where the material is identified 
 via keyword {type}. If multiple meshes with different materials are desired, the respective 

@@ -209,7 +209,7 @@ void ReaderXYZ::read_atoms(int n, int nfield, double **fields)
 
 void ReaderXYZ::read_lines(int n)
 {
-  char *eof;
+  char *eof = NULL;
   for (int i = 0; i < n; i++) eof = fgets(line,MAXLINE,fp);
   if (eof == NULL) error->all(FLERR,"Unexpected end of dump file");
 }

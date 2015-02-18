@@ -1,22 +1,24 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+   Christoph Kloss, christoph.kloss@cfdem.com
+   Copyright 2009-2012 JKU Linz
+   Copyright 2012-     DCS Computing GmbH, Linz
 
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+   This software is distributed under the GNU General Public License.
 
    See the README file in the top-level directory.
 ------------------------------------------------------------------------- */
@@ -783,7 +785,7 @@ void FixWallGran::post_force_primitive(int vflag)
   cdata.is_wall = true;
 
   // contact properties
-  double delta[3],deltan,rdist[3];
+  double delta[3]={},deltan,rdist[3];
   double v_wall[] = {0.,0.,0.};
   double **c_history = 0;
 
@@ -851,7 +853,7 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
   cdata.shearupdate = shearupdate_;
   cdata.jtype = atom_type_wall_;
 
-  double force_old[3], f_pw[3];
+  double force_old[3]={}, f_pw[3];
 
   // if force should be stored - remember old force
   if(store_force_ || stress_flag_)
@@ -861,7 +863,7 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
   if(cwl_ && addflag_)
   {
       double contactPoint[3];
-      vectorAdd3D(x_[cdata.i],cdata.delta,contactPoint);
+      vectorSubtract3D(x_[cdata.i],cdata.delta,contactPoint);
       cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint,v_wall);
   }
 
@@ -1021,7 +1023,7 @@ void FixWallGran::init_heattransfer()
 void FixWallGran::addHeatFlux(TriMesh *mesh,int ip, double delta_n, double area_ratio)
 {
     //r is the distance between the sphere center and wall
-    double tcop, tcowall, hc, Acont, r;
+    double tcop, tcowall, hc, Acont=0.0, r;
     double reff_wall = atom->radius[ip];
     int itype = atom->type[ip];
     double ri = atom->radius[ip];

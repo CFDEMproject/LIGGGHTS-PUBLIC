@@ -242,7 +242,7 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
   // nrows = # of rows in output array
 
   if (mode == VECTOR) {
-    int length;
+    int length = 0;
 
     for (int i = 0; i < nvalues; i++) {
       if (which[i] == COMPUTE) {
@@ -384,7 +384,7 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
       array_flag = 1;
       size_array_rows = nrows;
       size_array_cols = nvalues;
-      int value;
+      int value = -1;
       for (int i = 0; i < nvalues; i++) {
         if (which[i] == COMPUTE) {
           Compute *compute = modify->compute[modify->find_compute(ids[i])];
@@ -523,7 +523,7 @@ void FixAveTime::end_of_step()
 void FixAveTime::invoke_scalar(bigint ntimestep)
 {
   int i,m;
-  double scalar;
+  double scalar = 0.0;
 
   // zero if first step
 

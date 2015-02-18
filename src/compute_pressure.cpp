@@ -171,7 +171,7 @@ double ComputePressure::compute_scalar()
 
   // invoke temperature it it hasn't been already
 
-  double t;
+  double t = 0.0;
   if (keflag) {
     if (temperature->invoked_scalar != update->ntimestep)
       t = temperature->compute_scalar();
@@ -212,7 +212,7 @@ void ComputePressure::compute_vector()
 
   // invoke temperature if it hasn't been already
 
-  double *ke_tensor;
+  double *ke_tensor = NULL;
   if (keflag) {
     if (temperature->invoked_vector != update->ntimestep)
       temperature->compute_vector();

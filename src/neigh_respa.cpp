@@ -30,9 +30,9 @@ using namespace LAMMPS_NS;
 
 void Neighbor::respa_nsq_no_newton(NeighList *list)
 {
-  int i,j,n,itype,jtype,n_inner,n_middle,bitmask;
+  int i,j,n,itype,jtype,n_inner,n_middle=0,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // loop over each atom, storing neighbors
 
@@ -65,7 +65,7 @@ void Neighbor::respa_nsq_no_newton(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;
@@ -173,9 +173,9 @@ void Neighbor::respa_nsq_no_newton(NeighList *list)
 
 void Neighbor::respa_nsq_newton(NeighList *list)
 {
-  int i,j,n,itype,jtype,itag,jtag,n_inner,n_middle,bitmask;
+  int i,j,n,itype,jtype,itag,jtag,n_inner,n_middle=0,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // loop over each atom, storing neighbors
 
@@ -208,7 +208,7 @@ void Neighbor::respa_nsq_newton(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;
@@ -334,9 +334,9 @@ void Neighbor::respa_nsq_newton(NeighList *list)
 
 void Neighbor::respa_bin_no_newton(NeighList *list)
 {
-  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle;
+  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // bin local & ghost atoms
 
@@ -371,7 +371,7 @@ void Neighbor::respa_bin_no_newton(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;
@@ -487,9 +487,9 @@ void Neighbor::respa_bin_no_newton(NeighList *list)
 
 void Neighbor::respa_bin_newton(NeighList *list)
 {
-  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle;
+  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // bin local & ghost atoms
 
@@ -523,8 +523,8 @@ void Neighbor::respa_bin_newton(NeighList *list)
   MyPage<int> *ipage_inner = listinner->ipage;
 
   NeighList *listmiddle;
-  int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  int *ilist_middle = NULL,*numneigh_middle = NULL,**firstneigh_middle = NULL;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;
@@ -681,9 +681,9 @@ void Neighbor::respa_bin_newton(NeighList *list)
 
 void Neighbor::respa_bin_newton_tri(NeighList *list)
 {
-  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle;
+  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // bin local & ghost atoms
 
@@ -718,7 +718,7 @@ void Neighbor::respa_bin_newton_tri(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;

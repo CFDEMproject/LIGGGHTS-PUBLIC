@@ -217,7 +217,7 @@ void ReadDump::setup_reader(int narg, char **arg)
 bigint ReadDump::seek(bigint nrequest, int exact)
 {
   int ifile,eofflag;
-  bigint ntimestep;
+  bigint ntimestep = 0;
 
   if (me == 0) {
 
@@ -258,8 +258,8 @@ bigint ReadDump::seek(bigint nrequest, int exact)
 
 bigint ReadDump::next(bigint ncurrent, bigint nlast, int nevery, int nskip)
 {
-  int ifile,eofflag;
-  bigint ntimestep;
+  int ifile,eofflag=0;
+  bigint ntimestep = 0;
 
   if (me == 0) {
 
@@ -710,7 +710,7 @@ int ReadDump::fields_and_keywords(int narg, char **arg)
 
 void ReadDump::process_atoms(int n)
 {
-  int i,m,ifield,itype,itag;;
+  int i,m,ifield,itype=0,itag;;
   int xbox,ybox,zbox;
 
   double **x = atom->x;
@@ -785,8 +785,8 @@ void ReadDump::process_atoms(int n)
 
       if (!wrapped) xbox = ybox = zbox = 0;
 
-      image[m] = ((tagint) (xbox + IMGMAX) & IMGMASK) | 
-        (((tagint) (ybox + IMGMAX) & IMGMASK) << IMGBITS) | 
+      image[m] = ((tagint) (xbox + IMGMAX) & IMGMASK) |
+        (((tagint) (ybox + IMGMAX) & IMGMASK) << IMGBITS) |
         (((tagint) (zbox + IMGMAX) & IMGMASK) << IMG2BITS);
     }
   }
@@ -874,21 +874,24 @@ void ReadDump::process_atoms(int n)
 
       // replace image flag in case changed by ix,iy,iz fields
 
-      image[m] = ((tagint) (xbox + IMGMAX) & IMGMASK) | 
-        (((tagint) (ybox + IMGMAX) & IMGMASK) << IMGBITS) | 
+      image[m] = ((tagint) (xbox + IMGMAX) & IMGMASK) |
+        (((tagint) (ybox + IMGMAX) & IMGMASK) << IMGBITS) |
         (((tagint) (zbox + IMGMAX) & IMGMASK) << IMG2BITS);
     }
   }
 
   // invoke set_arrays() for fixes that need initialization of new atoms
   // same as in CreateAtoms
-
+  
   nlocal = atom->nlocal;
   for (m = 0; m < modify->nfix; m++) {
     Fix *fix = modify->fix[m];
     if (fix->create_attribute)
+    {
+      fix->pre_set_arrays();
       for (i = nlocal_previous; i < nlocal; i++)
         fix->set_arrays(i);
+    }
   }
 }
 

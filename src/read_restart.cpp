@@ -453,9 +453,9 @@ void ReadRestart::file_search(char *infile, char *outfile)
 
 void ReadRestart::header()
 {
-  int px,py,pz;
-  int xperiodic,yperiodic,zperiodic;
-  int boundary[3][2];
+  int px=0,py=0,pz=0;
+  int xperiodic=0,yperiodic=0,zperiodic=0;
+  int boundary[3][2] = {};
 
   // read flags and values until flag = -1
 

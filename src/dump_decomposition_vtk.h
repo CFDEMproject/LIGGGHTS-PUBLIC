@@ -1,11 +1,15 @@
 /* ----------------------------------------------------------------------
-LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
 Transfer Simulations
 
 www.liggghts.com | www.cfdem.com
 Christoph Kloss, christoph.kloss@cfdem.com
 
-LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
 LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
 http://lammps.sandia.gov, Sandia National Laboratories
 Steve Plimpton, sjplimp@sandia.gov

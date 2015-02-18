@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -27,7 +31,7 @@
 #include "error.h"
 #include "fix_check_timestep_gran.h"
 #include "pair_gran.h"
-#include "mech_param_gran.h"
+#include "properties.h"
 #include "fix_property_global.h"
 #include "force.h"
 #include "comm.h"
@@ -98,8 +102,8 @@ void FixCheckTimestepGran::init()
   if (!pg)
     error->all(FLERR,"Fix check/timestep/gran can only be used together with: gran"); 
 
-  mpg = pg->mpg;
-  int max_type = mpg->max_type();
+  properties = pg->get_properties();
+  int max_type = properties->max_type();
 
   fwg = NULL;
   for (int i = 0; i < modify->n_fixes_style("wall/gran"); i++)
@@ -167,7 +171,7 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
-  int max_type = mpg->max_type();
+  int max_type = properties->max_type();
 
   //check rayleigh time and vmax of particles
   rayleigh_time = BIG;

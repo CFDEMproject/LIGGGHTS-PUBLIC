@@ -61,7 +61,7 @@ void PairTable::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype,itable;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double rsq,factor_lj,fraction,value,a,b;
+  double rsq,factor_lj,fraction=0.0,value,a=0.0,b=0.0;
   int *ilist,*jlist,*numneigh,**firstneigh;
   Table *tb;
 
@@ -920,7 +920,7 @@ double PairTable::single(int i, int j, int itype, int jtype, double rsq,
                          double &fforce)
 {
   int itable;
-  double fraction,value,a,b,phi;
+  double fraction=0.0,value,a=0.0,b=0.0,phi;
   int tlm1 = tablength - 1;
 
   Table *tb = &tables[tabindex[itype][jtype]];

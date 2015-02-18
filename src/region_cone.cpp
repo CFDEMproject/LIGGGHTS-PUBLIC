@@ -167,7 +167,7 @@ int RegCone::inside(double x, double y, double z)
 {
   double del1,del2,dist;
   double currentradius;
-  int inside;
+  int inside = 0;
 
   if (axis == 'x') {
     del1 = y - c1;
@@ -375,7 +375,7 @@ int RegCone::surface_interior(double *x, double cutoff)
 int RegCone::surface_exterior(double *x, double cutoff)
 {
   double del1,del2,r,currentradius,distsq;
-  double corner1[3],corner2[3],corner3[3],corner4[3],xp[3],nearest[3];
+  double corner1[3],corner2[3],corner3[3],corner4[3],xp[3],nearest[3]={};
 
   if (axis == 'x') {
     del1 = x[1] - c1;

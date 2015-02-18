@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -130,6 +134,13 @@ inline void vectorCopy3D(const int *from, int *to)
   to[2]=from[2];
 }
 
+inline void vectorCopy3D(const bool *from, bool *to)
+{
+  to[0]=from[0];
+  to[1]=from[1];
+  to[2]=from[2];
+}
+
 inline void vectorAbs3D(double *v)
 {
     if(v[0] < 0) v[0] = -v[0];
@@ -166,7 +177,29 @@ inline double vectorMin3D(double *v)
     return v[2];
 }
 
+inline int vectorMin3D(int *v)
+{
+    if(v[0] < v[1] && v[0] < v[2])
+    return v[0];
+
+    if(v[1] < v[2])
+    return v[1];
+
+    return v[2];
+}
+
 inline double vectorMax3D(double *v)
+{
+    if(v[0] > v[1] && v[0] > v[2])
+    return v[0];
+
+    if(v[1] > v[2])
+    return v[1];
+
+    return v[2];
+}
+
+inline int vectorMax3D(int *v)
 {
     if(v[0] > v[1] && v[0] > v[2])
     return v[0];
@@ -450,6 +483,18 @@ inline void bufToVector4D(double *vec,double *buf,int &m)
   vec[1] = buf[m++];
   vec[2] = buf[m++];
   vec[3] = buf[m++];
+}
+
+inline void vectorToBufN(double *vec,double *buf,int &m, int nvalues)
+{
+  for(int i = 0; i < nvalues; i++)
+    buf[m++] = vec[i];
+}
+
+inline void bufToVectorN(double *vec,double *buf,int &m, int nvalues)
+{
+  for(int i = 0; i < nvalues; i++)
+    vec[i] = buf[m++];
 }
 
 inline void printVec2D(FILE *out, const char *name, double *vec)

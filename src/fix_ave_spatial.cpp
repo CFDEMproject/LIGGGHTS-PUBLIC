@@ -384,7 +384,7 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
 
   // apply scaling factors
 
-  double scale;
+  double scale = 1.0;
   for (int idim = 0; idim < ndim; idim++) {
     if (dim[idim] == 0) scale = xscale;
     else if (dim[idim] == 1) scale = yscale;
@@ -1071,7 +1071,7 @@ void FixAveSpatial::setup_bins()
 void FixAveSpatial::atom2bin1d()
 {
   int i,ibin;
-  double *boxlo,*boxhi,*prd;
+  double *boxlo=NULL,*boxhi=NULL,*prd=NULL;
   double xremap;
   double lamda[3];
 
@@ -1142,7 +1142,7 @@ void FixAveSpatial::atom2bin1d()
 void FixAveSpatial::atom2bin2d()
 {
   int i,ibin,i1bin,i2bin;
-  double *boxlo,*boxhi,*prd;
+  double *boxlo=NULL,*boxhi=NULL,*prd=NULL;
   double xremap,yremap;
   double lamda[3];
 
@@ -1241,7 +1241,7 @@ void FixAveSpatial::atom2bin2d()
 void FixAveSpatial::atom2bin3d()
 {
   int i,ibin,i1bin,i2bin,i3bin;
-  double *boxlo,*boxhi,*prd;
+  double *boxlo=NULL,*boxhi=NULL,*prd=NULL;
   double xremap,yremap,zremap;
   double lamda[3];
 

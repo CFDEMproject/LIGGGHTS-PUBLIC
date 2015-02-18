@@ -109,7 +109,7 @@ int ComputeDihedralLocal::compute_dihedrals(int flag)
   double vb1x,vb1y,vb1z,vb2x,vb2y,vb2z,vb3x,vb3y,vb3z,vb2xm,vb2ym,vb2zm;
   double ax,ay,az,bx,by,bz,rasq,rbsq,rgsq,rg,ra2inv,rb2inv,rabinv;
   double s,c;
-  double *pbuf;
+  double *pbuf = NULL;
 
   double **x = atom->x;
   int *num_dihedral = atom->num_dihedral;

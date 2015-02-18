@@ -59,7 +59,7 @@ FixWall::FixWall(LAMMPS *lmp, int narg, char **arg) :
         (strcmp(arg[iarg],"zlo") == 0) || (strcmp(arg[iarg],"zhi") == 0)) {
       if (iarg+5 > narg) error->all(FLERR,"Illegal fix wall command");
 
-      int newwall;
+      int newwall = 0;
       if (strcmp(arg[iarg],"xlo") == 0) newwall = XLO;
       else if (strcmp(arg[iarg],"xhi") == 0) newwall = XHI;
       else if (strcmp(arg[iarg],"ylo") == 0) newwall = YLO;

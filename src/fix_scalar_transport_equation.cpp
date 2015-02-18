@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -38,7 +42,7 @@
 #include "fix_property_global.h"
 #include "fix_property_atom.h"
 #include "respa.h"
-#include "mech_param_gran.h"
+#include "properties.h"
 #include "pair_gran.h"
 #include "mpi_liggghts.h"
 
@@ -51,33 +55,44 @@ using namespace FixConst;
 
 FixScalarTransportEquation::FixScalarTransportEquation(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 {
+  
+  if(strcmp(arg[2],"transportequation/scalar"))
+    return;
+
   int iarg = 3;
 
-  if (narg < 15) error->all(FLERR,"Illegal fix transportequation/scalar command, not enough arguments");
+  if (narg < 15)
+    error->fix_error(FLERR,this,"not enough arguments");
 
-  if(strcmp(arg[iarg++],"equation_id")) error->all(FLERR,"Fix transportequation/scalar: expecting keyword 'equation_id'");
+  if(strcmp(arg[iarg++],"equation_id"))
+    error->fix_error(FLERR,this,"expecting keyword 'equation_id'");
   equation_id = new char[strlen(arg[iarg])+1];
   strcpy(equation_id,arg[iarg++]);
 
-  if(strcmp(arg[iarg++],"quantity")) error->all(FLERR,"Fix transportequation/scalar: expecting keyword 'quantity'");
+  if(strcmp(arg[iarg++],"quantity"))
+    error->fix_error(FLERR,this,"expecting keyword 'quantity'");
   quantity_name = new char[strlen(arg[iarg])+1];
   strcpy(quantity_name,arg[iarg++]);
 
-  if(strcmp(arg[iarg++],"default_value")) error->all(FLERR,"Fix transportequation/scalar: expecting keyword 'default_value'");
+  if(strcmp(arg[iarg++],"default_value"))
+    error->fix_error(FLERR,this,"expecting keyword 'default_value'");
   quantity_0 = atof(arg[iarg++]);
 
-  if(strcmp(arg[iarg++],"flux_quantity")) error->all(FLERR,"Fix transportequation/scalar: expecting keyword 'flux_quantity'");
+  if(strcmp(arg[iarg++],"flux_quantity"))
+    error->fix_error(FLERR,this,"expecting keyword 'flux_quantity'");
   flux_name = new char[strlen(arg[iarg])+1];
   strcpy(flux_name,arg[iarg++]);
 
-  if(strcmp(arg[iarg++],"source_quantity")) error->all(FLERR,"Fix transportequation/scalar: expecting keyword 'source_quantity'");
+  if(strcmp(arg[iarg++],"source_quantity"))
+    error->fix_error(FLERR,this,"expecting keyword 'source_quantity'");
   source_name = new char[strlen(arg[iarg])+1];
   strcpy(source_name,arg[iarg++]);
 
   capacity_name = NULL;
   capacity_flag = 0;
 
-  if(strcmp(arg[iarg++],"capacity_quantity")) error->all(FLERR,"Fix transportequation/scalar: expecting keyword 'capacity_quantity'");
+  if(strcmp(arg[iarg++],"capacity_quantity"))
+    error->fix_error(FLERR,this,"expecting keyword 'capacity_quantity'");
   if(strcmp(arg[iarg],"none"))
   {
       capacity_flag = 1;
@@ -118,9 +133,12 @@ FixScalarTransportEquation::~FixScalarTransportEquation()
 void FixScalarTransportEquation::pre_delete(bool unfixflag)
 {
     //unregister property/atom fixes
-    if (fix_quantity) modify->delete_fix(quantity_name);
-    if (fix_flux) modify->delete_fix(flux_name);
-    if (fix_source) modify->delete_fix(source_name);
+    if(unfixflag)
+    {
+        if (fix_quantity) modify->delete_fix(quantity_name);
+        if (fix_flux) modify->delete_fix(flux_name);
+        if (fix_source) modify->delete_fix(source_name);
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -220,10 +238,11 @@ void FixScalarTransportEquation::init()
 
   if(capacity_flag)
   {
-      if(!force->pair_match("gran", 0)) error->all(FLERR,"Please use a granular pair style for fix transportequation/scalar with capacityflag");
+      if(!force->pair_match("gran", 0))
+        error->fix_error(FLERR,this,"requires a granular pair style when used with capacityflag");
       PairGran* pair_gran = static_cast<PairGran*>(force->pair_match("gran", 0));
 
-      int max_type = pair_gran->mpg->max_type();
+      int max_type = pair_gran->get_properties()->max_type();
 
       if(capacity) delete []capacity;
       capacity = new double[max_type+1];
@@ -257,8 +276,7 @@ int FixScalarTransportEquation::modify_param(int narg, char **arg)
     if (narg < 2) error->fix_error(FLERR,this,"not enough arguments for fix_modify 'every'");
 
     nevery_ = force->inumeric(FLERR,arg[1]);
-//    printf("FixScalarTransportEquation: will perform update every %d time steps. \n", nevery_);
-
+    
     return 1;
   }
   return 0;
@@ -314,7 +332,7 @@ void FixScalarTransportEquation::final_integrate()
         return;
 
     // skip if integration not wanted at this timestep
-    if (update->ntimestep % nevery_) 
+    if (update->ntimestep % nevery_)
     {
         performedIntegrationLastStep_ = false;
         return;
@@ -331,10 +349,10 @@ void FixScalarTransportEquation::final_integrate()
            if (mask[i] & groupbit){
               capacity = fix_capacity->compute_vector(type[i]-1);
               if(fabs(capacity) > SMALL) quantity[i] += (
-                                                            flux[i] 
+                                                            flux[i]
                                                           + source[i]*double(nevery_) //multiply source to account for missing steps
-                                                        ) * dt  
-                                                      / (rmass[i]*capacity); 
+                                                        ) * dt
+                                                      / (rmass[i]*capacity);
            }
         }
     }
@@ -344,7 +362,7 @@ void FixScalarTransportEquation::final_integrate()
         {
            if (mask[i] & groupbit){
               quantity[i] += (
-                                  flux[i] 
+                                  flux[i]
                                 + source[i]*double(nevery_) //multiply source to account for missing steps
                              ) * dt ;
            }

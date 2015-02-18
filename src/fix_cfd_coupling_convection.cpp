@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -25,6 +29,7 @@
 #include "update.h"
 #include "respa.h"
 #include "error.h"
+#include "neighbor.h"
 #include "memory.h"
 #include "modify.h"
 #include "group.h"
@@ -128,12 +133,12 @@ void FixCfdCouplingConvection::init()
 {
     // make sure there is only one fix of this style
     if(modify->n_fixes_style(style) != 1)
-      error->all(FLERR,"More than one fix of style couple/cfd/dust/simple is not allowed");
+      error->fix_error(FLERR,this,"More than one fix of this style is not allowed");
 
     // find coupling fix
     fix_coupling = static_cast<FixCfdCoupling*>(modify->find_fix_style_strict("couple/cfd",0));
     if(!fix_coupling)
-      error->all(FLERR,"Fix couple/cfd/convection needs a fix of type couple/cfd");
+      error->fix_error(FLERR,this,"needs a fix of type couple/cfd");
 
     //values to send to OF
     fix_coupling->add_push_property("Temp","scalar-atom");
@@ -153,6 +158,11 @@ void FixCfdCouplingConvection::post_force(int)
 {
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
+
+  // communicate convective flux to ghosts, there might be new data
+  
+  if(0 == neighbor->ago)
+        fix_convectiveFlux->do_forward_comm();
 
   double *heatFlux = fix_heatFlux->vector_atom;
   double *convectiveFlux = fix_convectiveFlux->vector_atom;

@@ -1,4 +1,4 @@
-# Make.sh = update Makefile.lib, Makefile.shlib, Makefile.list 
+# Make.sh = update Makefile.lib, Makefile.shlib, Makefile.list
 #           or style_*.h files
 # Syntax: sh Make.sh style
 #         sh Make.sh Makefile.lib
@@ -15,7 +15,8 @@ style () {
   wai=`whoami`
   vers=`cat version_liggghts.txt`
   bra=`cat version_liggghts_branch.txt`
-  echo "#define LIGGGHTS_VERSION \"$bra $vers, compiled $builddate by $wai\"" > version_liggghts.h
+  githash=`git log -1 --format="%H"`
+  echo "#define LIGGGHTS_VERSION \"$bra $vers, compiled $builddate by $wai, git commit $githash\"" > version_liggghts.h
 
   list=`grep -sl $1 $2*.h`
   if (test -e style_$3.tmp) then
@@ -32,7 +33,7 @@ style () {
     rm -f style_$3.h
     touch style_$3.h
       rm -f Obj_*/$4.d
-      if (test $5) then 
+      if (test $5) then
         rm -f Obj_*/$5.d
       fi
       rm -f Obj_*/lammps.d
@@ -40,14 +41,14 @@ style () {
   elif (test ! -e style_$3.h) then
     mv style_$3.tmp style_$3.h
     rm -f Obj_*/$4.d
-    if (test $5) then 
+    if (test $5) then
       rm -f Obj_*/$5.d
     fi
     rm -f Obj_*/lammps.d
   elif (test "`diff --brief style_$3.h style_$3.tmp`" != "") then
     mv style_$3.tmp style_$3.h
     rm -f Obj_*/$4.d
-    if (test $5) then 
+    if (test $5) then
       rm -f Obj_*/$5.d
     fi
     rm -f Obj_*/lammps.d
@@ -61,7 +62,7 @@ style () {
 # col 1 = string to search for
 # col 2 = search in *.h files starting with this name
 # col 3 = prefix of style file
-# col 4 
+# col 4
 
 if (test $1 = "style") then
 
@@ -88,7 +89,7 @@ if (test $1 = "style") then
   style REGION_CLASS    region_     region     domain
   style CFD_DATACOUPLING_CLASS      cfd_datacoupling_  cfd_datacoupling  fix_cfd_coupling
   style CFD_REGIONMODEL_CLASS       cfd_regionmodel_  cfd_regionmodel  fix_cfd_coupling
-  style LB_CLASS        ""          lb  
+  style LB_CLASS        ""          lb
   style SPH_KERNEL_CLASS  sph_kernel_  sph_kernel  pair_sph-fix_sph
 elif (test $1 = "models") then
   sed_ex="sed -E" # BSD sed

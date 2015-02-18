@@ -71,8 +71,8 @@ void PairLJCutCoulDSF::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
-  double r,rsq,r2inv,r6inv,forcecoul,forcelj,factor_coul,factor_lj;
-  double prefactor,erfcc,erfcd,e_self,t;
+  double r=0.0,rsq,r2inv,r6inv=0.0,forcecoul=0.0,forcelj,factor_coul,factor_lj;
+  double prefactor=0.0,erfcc=0.0,erfcd,e_self,t;
   int *ilist,*jlist,*numneigh,**firstneigh;
   
   evdwl = ecoul = 0.0;
@@ -426,7 +426,7 @@ double PairLJCutCoulDSF::single(int i, int j, int itype, int jtype, double rsq,
                                 double factor_coul, double factor_lj,
                                 double &fforce)
 {
-  double r2inv,r6inv,r,erfcc,erfcd,prefactor;
+  double r2inv,r6inv=0.0,r=0.0,erfcc=0.0,erfcd,prefactor=0.0;
   double forcecoul,forcelj,phicoul,philj;
   
   r2inv = 1.0/rsq;

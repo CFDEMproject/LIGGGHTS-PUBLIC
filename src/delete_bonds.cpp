@@ -62,7 +62,7 @@ void DeleteBonds::command(int narg, char **arg)
 
   // set style and which = type value
 
-  int style;
+  int style = 0;
   if (strcmp(arg[1],"multi") == 0) style = MULTI;
   else if (strcmp(arg[1],"atom") == 0) style = ATOM;
   else if (strcmp(arg[1],"bond") == 0) style = BOND;
@@ -73,7 +73,7 @@ void DeleteBonds::command(int narg, char **arg)
   else error->all(FLERR,"Illegal delete_bonds command");
 
   int iarg = 2;
-  int which;
+  int which = 0;
   if (style != MULTI && style != STATS) {
     if (narg < 3) error->all(FLERR,"Illegal delete_bonds command");
     which = force->inumeric(FLERR,arg[2]);

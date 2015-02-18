@@ -283,7 +283,7 @@ void Pair::init_list(int which, NeighList *ptr)
 void Pair::init_tables(double cut_coul, double *cut_respa)
 {
   int masklo,maskhi;
-  double r,grij,expm2,derfc,egamma,fgamma,rsw;
+  double r,grij=0.0,expm2=0.0,derfc=0.0,egamma=0.0,fgamma=0.0,rsw;
   double qqrd2e = force->qqrd2e;
 
   if (force->kspace == NULL)
@@ -630,7 +630,7 @@ void Pair::free_disp_tables()
 
 double Pair::mix_energy(double eps1, double eps2, double sig1, double sig2)
 {
-  double value;
+  double value = 0.0;
   if (mix_flag == GEOMETRIC)
     value = sqrt(eps1*eps2);
   else if (mix_flag == ARITHMETIC)
@@ -647,7 +647,7 @@ double Pair::mix_energy(double eps1, double eps2, double sig1, double sig2)
 
 double Pair::mix_distance(double sig1, double sig2)
 {
-  double value;
+  double value = 0.0;
   if (mix_flag == GEOMETRIC)
     value = sqrt(sig1*sig2);
   else if (mix_flag == ARITHMETIC)
@@ -1462,7 +1462,7 @@ void Pair::write_file(int narg, char **arg)
 
   int n = force->inumeric(FLERR,arg[2]);
 
-  int style;
+  int style = 0;
   if (strcmp(arg[3],"r") == 0) style = RLINEAR;
   else if (strcmp(arg[3],"rsq") == 0) style = RSQ;
   else if (strcmp(arg[3],"bitmap") == 0) style = BMP;
@@ -1478,7 +1478,7 @@ void Pair::write_file(int narg, char **arg)
 
   int me;
   MPI_Comm_rank(world,&me);
-  FILE *fp;
+  FILE *fp = NULL;
   if (me == 0) {
     fp = fopen(arg[6],"a");
     if (fp == NULL) error->one(FLERR,"Cannot open pair_write file");
@@ -1515,7 +1515,7 @@ void Pair::write_file(int narg, char **arg)
     q[0] = force->numeric(FLERR,arg[8]);
     q[1] = force->numeric(FLERR,arg[9]);
   }
-  double *q_hold;
+  double *q_hold = NULL;
 
   if (atom->q) {
     q_hold = atom->q;

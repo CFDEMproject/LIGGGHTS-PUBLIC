@@ -1,13 +1,17 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
    Modifications are Copyright 2009-2012 JKU Linz
                      Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
 
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
@@ -286,6 +290,7 @@ void Modify::setup(int vflag)
      if (!fix[i]->recent_restart && fix[i]->just_created && fix[i]->create_attribute)
      {
          fix[i]->just_created = 0;
+         fix[i]->pre_set_arrays();
          for(int j = 0; j < nlocal; j++)
            if(mask[j] & fix[i]->groupbit) fix[i]->set_arrays(j);
      }
@@ -883,7 +888,7 @@ void Modify::delete_fix(const char *id, bool unfixflag)
   atom->update_callback(ifix);
 
   // move other Fixes and fmask down in list one slot
-
+  
   for (int i = ifix+1; i < nfix; i++) fix[i-1] = fix[i];
   for (int i = ifix+1; i < nfix; i++) fmask[i-1] = fmask[i];
   nfix--;

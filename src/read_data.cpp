@@ -1,13 +1,17 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
    Modifications are Copyright 2009-2012 JKU Linz
                      Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
 
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
@@ -685,6 +689,10 @@ void ReadData::atoms()
 
     atom->data_atoms(nchunk,buffer);
     nread += nchunk;
+
+    for (int j = 0; j < modify->nfix; j++)
+        if (modify->fix[j]->create_attribute)
+            modify->fix[j]->pre_set_arrays();
 
     int nlocal_new = atom->nlocal;
     for(int ii = nlocal_old; ii < nlocal_new; ii++)
@@ -1664,7 +1672,7 @@ void ReadData::parse_keyword(int first, int flag)
 
 void ReadData::skip_lines(int n)
 {
-  char *eof;
+  char *eof = NULL;
   for (int i = 0; i < n; i++) eof = fgets(line,MAXLINE,fp);
   if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
 }

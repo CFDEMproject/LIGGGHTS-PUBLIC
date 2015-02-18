@@ -523,7 +523,7 @@ int Irregular::create_data(int n, int *proclist)
   //   each proc begins with iproc > me, continues until iproc = me
   // reset list to store which send message each proc corresponds to
 
-  int num_self;
+  int num_self = 0;
 
   int iproc = me;
   int isend = 0;

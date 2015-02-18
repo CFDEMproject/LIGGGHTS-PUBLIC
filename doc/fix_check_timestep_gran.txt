@@ -39,7 +39,7 @@ dt_r = PI*r*sqrt(rho/G)/(0.1631*nu+0.8766),
 where rho is particle density, G is the shear modulus and nu is Poisson's 
 ratio. The latter quantity is expressed by
 
-dt_h = 2.87*(m_eff^2/(r_eff*Y_eff^2*v_max)^0.2.
+dt_h = 2.87*(m_eff^2/(r_eff*Y_eff^2*v_max))^0.2.
 
 The effective mass m_eff, the effective radius r_eff and the effective Young's 
 modulus Y_eff are as defined in "pair gran"_pair_gran.html. v_max is the 

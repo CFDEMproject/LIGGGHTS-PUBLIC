@@ -61,8 +61,8 @@ void PairCoulDSF::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,ecoul,fpair;
-  double r,rsq,r2inv,forcecoul,factor_coul;
-  double prefactor,erfcc,erfcd,e_self,t;
+  double r=0.0,rsq,r2inv,forcecoul=0.0,factor_coul;
+  double prefactor=0.0,erfcc=0.0,erfcd,e_self,t;
   int *ilist,*jlist,*numneigh,**firstneigh;
   
   ecoul = 0.0;

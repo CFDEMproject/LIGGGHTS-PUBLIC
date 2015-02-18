@@ -1,8 +1,8 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
@@ -592,7 +592,6 @@ int Atom::count_words(const char *line)
 
 void Atom::data_atoms(int n, char *buf)
 {
-  int m,xptr,iptr;
   tagint imagedata;
   double xdata[3],lamda[3];
   double *coord;
@@ -649,7 +648,8 @@ void Atom::data_atoms(int n, char *buf)
   // xptr = which word in line starts xyz coords
   // iptr = which word in line starts ix,iy,iz image flags
 
-  xptr = avec->xcol_data - 1;
+  int xptr = avec->xcol_data - 1;
+  int iptr = 0;
   int imageflag = 0;
   if (nwords > avec->size_data_atom) imageflag = 1;
   if (imageflag) iptr = nwords - 3;
@@ -666,7 +666,7 @@ void Atom::data_atoms(int n, char *buf)
     values[0] = strtok(buf," \t\n\r\f");
     if (values[0] == NULL)
       error->all(FLERR,"Incorrect atom format in data file");
-    for (m = 1; m < nwords; m++) {
+    for (int m = 1; m < nwords; m++) {
       values[m] = strtok(NULL," \t\n\r\f");
       if (values[m] == NULL)
         error->all(FLERR,"Incorrect atom format in data file");

@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -144,7 +148,7 @@ void FixCfdCouplingForceImplicit::init()
     // values to come from OF
     fix_coupling_->add_pull_property("Ksl","scalar-atom");
     fix_coupling_->add_pull_property("uf","vector-atom");
-    
+
     deltaT_ = 0.5 * update->dt * force->ftm2v;
 }
 
@@ -193,13 +197,13 @@ void FixCfdCouplingForceImplicit::end_of_step()
 {
 
   if(!useCN_) return; //return if CN not used
-  
+
   double **v = atom->v;
   double **f = atom->f;
   double *rmass = atom->rmass;
   double *mass = atom->mass;
   int *type = atom->type;
-  
+
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
   double *Ksl = fix_Ksl_->vector_atom;
@@ -224,28 +228,28 @@ void FixCfdCouplingForceImplicit::end_of_step()
             //calculate new velocity
             vN32[dirI] = (  v[i][dirI]
                           + KslMDeltaT
-                            *(   uf[i][dirI] 
+                            *(   uf[i][dirI]
                               - (1.0-CNalpha_)*v[i][dirI]
                              )
                          )
                          /
                          (1.0+KslMDeltaT*CNalpha_);
-                         
-            //calculate velocity difference and force             
-            deltaU    =  uf[i][dirI] 
-                           - ( 
+
+            //calculate velocity difference and force
+            deltaU    =  uf[i][dirI]
+                           - (
                                 (1.0-CNalpha_)*v[i][dirI]
                                +     CNalpha_ *vN32[dirI]
                              );
            frc[dirI] = Ksl[i] * deltaU;  //force required for the next time step
-           
+
            //update the particle velocity
            v[i][dirI] += KslMDeltaT/2.0 * deltaU;  //update velocity for a half step!
         }
-    
+
          // add force
         vectorAdd3D(f[i],frc,f[i]);
- 
+
         // add up forces for post-proc
         vectorAdd3D(dragforce_total,frc,dragforce_total);
      }

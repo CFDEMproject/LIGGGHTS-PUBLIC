@@ -346,7 +346,7 @@ int RegPrism::surface_exterior(double *x, double cutoff)
 void RegPrism::find_nearest(double *x, double &xp, double &yp, double &zp)
 {
   int i,j,k,iface;
-  double xproj[3],xline[3],nearest[3];
+  double xproj[3],xline[3],nearest[3]={};
   double dot;
 
   // generate successive xnear points, one nearest to x is (xp,yp,zp)

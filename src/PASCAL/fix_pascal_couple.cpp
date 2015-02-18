@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
 
    Copyright (C): 2014 DCS Computing GmbH (www.dcs-computing.com), Linz, Austria
                   2014 Graz University of Technology (ippt.tugraz.at), Graz, Austria
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -60,8 +64,8 @@ FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
 {
 
   iarg_ = 3;
-  dc_ = NULL; 
-  map_copy = NULL; 
+  dc_ = NULL;
+  map_copy = NULL;
 
   int me, nprocs;
   MPI_Comm_rank(world,&me);
@@ -255,7 +259,7 @@ int* FixParScaleCouple::get_liggghts_map(int &length)
     if(verbose_)
     {
         printf("FixParScaleCouple::get_liggghts_map \n");
-        printf("atom->map_style: %d, size_map: %d, length of map_copy: %d \n", 
+        printf("atom->map_style: %d, size_map: %d, length of map_copy: %d \n",
                 atom->map_style, size_map, length);
 
         printf("original_map[-1]: %d. \n",atom->get_map_array()[0]);
@@ -358,11 +362,11 @@ void FixParScaleCouple::end_of_step()
 
 //////////////////////////////////////////////////////////////
 void* LAMMPS_NS::FixParScaleCouple::find_pull_property(const char *name, const char *type, int &len1, int &len2)
-{ 
-    return dc_->find_pull_property(name,type,len1,len2); 
+{
+    return dc_->find_pull_property(name,type,len1,len2);
 }
 
 void* LAMMPS_NS::FixParScaleCouple::find_push_property(const char *name, const char *type, int &len1, int &len2)
-{ 
-    return dc_->find_push_property(name,type,len1,len2); 
+{
+    return dc_->find_push_property(name,type,len1,len2);
 }

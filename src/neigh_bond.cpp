@@ -1,13 +1,17 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
    Modifications are Copyright 2009-2012 JKU Linz
                      Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
 
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
@@ -145,7 +149,7 @@ void Neighbor::bond_check()
 {
   int i,j;
   double dx,dy,dz,dxstart,dystart,dzstart;
-  
+
   double **x = atom->x;
   int flag = 0;
 
@@ -267,7 +271,7 @@ void Neighbor::angle_check()
 {
   int i,j,k;
   double dx,dy,dz,dxstart,dystart,dzstart;
-  
+
   double **x = atom->x;
   int flag = 0;
 
@@ -415,7 +419,7 @@ void Neighbor::dihedral_check(int nlist, int **list)
 {
   int i,j,k,l;
   double dx,dy,dz,dxstart,dystart,dzstart;
-  
+
   double **x = atom->x;
   int flag = 0;
 
@@ -461,7 +465,7 @@ void Neighbor::dihedral_check(int nlist, int **list)
 
   int flag_all;
   MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_SUM,world);
-  if (flag_all) 
+  if (flag_all)
     error->all(FLERR,"Dihedral/improper extent > half of periodic box length");
 }
 

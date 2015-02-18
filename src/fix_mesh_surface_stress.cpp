@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -66,7 +70,7 @@ FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
     stress_flag_ = true;
 
     vector_flag = 1;
-    size_vector = 6;
+    size_vector = 9;
     global_freq = 1;
     extvector = 1;
 
@@ -255,7 +259,7 @@ void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
                                 double *delta,int iTri,double *v_wall)
 {
     double E,c[3],v_rel[3],v_rel_mag,cos_gamma,sin_gamma,sin_2gamma;
-    double contactPoint[3],surfNorm[3], tmp[3], tmp2[3];
+    double contactPoint[3]={},surfNorm[3], tmp[3], tmp2[3];
 
     // do not include if not in fix group
     if(!(atom->mask[ip] & groupbit)) return;
@@ -406,5 +410,6 @@ void FixMeshSurfaceStress::calc_total_force()
 double FixMeshSurfaceStress::compute_vector(int n)
 {
   if(n < 3) return f_total_[n];
-  else      return torque_total_[n-3];
+  else if(n < 6)     return torque_total_[n-3];
+  else return p_ref_(0)[n-6];
 }

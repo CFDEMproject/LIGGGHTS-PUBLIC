@@ -1,8 +1,8 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
@@ -65,7 +65,7 @@ void CreateAtoms::command(int narg, char **arg)
   if (itype <= 0 || itype > atom->ntypes)
     error->all(FLERR,"Invalid atom type in create_atoms command");
 
-  int iarg;
+  int iarg = 0;
   if (strcmp(arg[1],"box") == 0) {
     style = BOX;
     iarg = 2;
@@ -217,8 +217,11 @@ void CreateAtoms::command(int narg, char **arg)
   for (int m = 0; m < modify->nfix; m++) {
     Fix *fix = modify->fix[m];
     if (fix->create_attribute)
+    {
+      fix->pre_set_arrays();
       for (int i = nlocal_previous; i < nlocal; i++)
         fix->set_arrays(i);
+    }
   }
 
   // clean up
@@ -249,7 +252,7 @@ void CreateAtoms::command(int narg, char **arg)
   // change these to MAXTAGINT when allow tagint = bigint
 
   if (atom->natoms > MAXSMALLINT) {
-    if (comm->me == 0) 
+    if (comm->me == 0)
       error->warning(FLERR,"Total atom count exceeds ID limit, "
                      "atoms will not have individual IDs");
     atom->tag_enable = 0;
@@ -312,7 +315,11 @@ void CreateAtoms::add_single()
         atom->avec->create_atom(itype,xone);
         
           for (int j = 0; j < modify->nfix; j++)
-            if (modify->fix[j]->create_attribute) modify->fix[j]->set_arrays(atom->nlocal-1);
+            if (modify->fix[j]->create_attribute)
+            {
+                modify->fix[j]->pre_set_arrays();
+                modify->fix[j]->set_arrays(atom->nlocal-1);
+            }
    }
 }
 
@@ -324,7 +331,7 @@ void CreateAtoms::add_random()
 {
   double xlo,ylo,zlo,xhi,yhi,zhi,zmid;
   double lamda[3],*coord;
-  double *boxlo,*boxhi;
+  double *boxlo=NULL,*boxhi=NULL;
 
   // random number generator, same for all procs
 
@@ -396,7 +403,11 @@ void CreateAtoms::add_random()
         atom->avec->create_atom(itype,xone);
         
           for (int j = 0; j < modify->nfix; j++)
-            if (modify->fix[j]->create_attribute) modify->fix[j]->set_arrays(atom->nlocal-1);
+            if (modify->fix[j]->create_attribute)
+            {
+                modify->fix[j]->pre_set_arrays();
+                modify->fix[j]->set_arrays(atom->nlocal-1);
+            }
     }
   }
 
@@ -510,6 +521,10 @@ void CreateAtoms::add_lattice()
           atom->avec->create_atom(basistype[m],x);
           
           for (int k = 0; k < modify->nfix; k++)
-        if (modify->fix[k]->create_attribute) modify->fix[k]->set_arrays(atom->nlocal-1);
+            if (modify->fix[k]->create_attribute)
+            {
+                modify->fix[k]->pre_set_arrays();
+                modify->fix[k]->set_arrays(atom->nlocal-1);
+            }
         }
 }

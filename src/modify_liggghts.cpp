@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -61,10 +65,23 @@ FixPropertyAtom* Modify::add_fix_property_atom(int narg,char **arg,const char *c
    find a fix scalar transport equation
 ------------------------------------------------------------------------- */
 
-FixScalarTransportEquation* Modify::find_fix_scalar_transport_equation(const char *equation_id)
+FixScalarTransportEquation* Modify::find_fix_scalar_transport_equation_strict(const char *equation_id)
 {
+    
     for(int ifix = 0; ifix < nfix; ifix++)
       if(strcmp(fix[ifix]->style,"transportequation/scalar") == 0)
+      {
+          FixScalarTransportEquation *fix_ste = static_cast<FixScalarTransportEquation*>(fix[ifix]);
+          if(fix_ste->match_equation_id(equation_id)) return fix_ste;
+      }
+    return NULL;
+}
+
+FixScalarTransportEquation* Modify::find_fix_scalar_transport_equation(const char *equation_id)
+{
+    
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixScalarTransportEquation*>(fix[ifix]))
       {
           FixScalarTransportEquation *fix_ste = static_cast<FixScalarTransportEquation*>(fix[ifix]);
           if(fix_ste->match_equation_id(equation_id)) return fix_ste;

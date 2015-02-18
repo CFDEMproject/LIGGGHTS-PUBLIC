@@ -196,7 +196,7 @@ void Velocity::create(double t_desired, int seed)
 
   int m;
   double vx,vy,vz,factor;
-  RanPark *random;
+  RanPark *random = NULL;
 
   if (loop_flag == ALL) {
 
@@ -345,9 +345,9 @@ void Velocity::create(double t_desired, int seed)
 void Velocity::set(int narg, char **arg)
 {
   int xstyle,ystyle,zstyle,varflag;
-  double vx,vy,vz;
+  double vx=0.0,vy=0.0,vz=0.0;
   char *xstr,*ystr,*zstr;
-  int xvar,yvar,zvar;
+  int xvar=0,yvar=0,zvar=0;
 
   // parse 3 args
 
@@ -557,7 +557,7 @@ void Velocity::ramp(int narg, char **arg)
 
   // parse args
 
-  int v_dim;
+  int v_dim = 0;
   if (strcmp(arg[0],"vx") == 0) v_dim = 0;
   else if (strcmp(arg[0],"vy") == 0) v_dim = 1;
   else if (strcmp(arg[0],"vz") == 0) v_dim = 2;
@@ -578,7 +578,7 @@ void Velocity::ramp(int narg, char **arg)
     v_hi = zscale*force->numeric(FLERR,arg[2]);
   }
 
-  int coord_dim;
+  int coord_dim = 0;
   if (strcmp(arg[3],"x") == 0) coord_dim = 0;
   else if (strcmp(arg[3],"y") == 0) coord_dim = 1;
   else if (strcmp(arg[3],"z") == 0) coord_dim = 2;

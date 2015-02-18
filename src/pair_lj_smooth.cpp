@@ -67,8 +67,8 @@ void PairLJSmooth::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double rsq,r2inv,r6inv,forcelj,factor_lj;
-  double r,t,tsq,fskin;
+  double rsq,r2inv,r6inv=0.0,forcelj,factor_lj;
+  double r,t=0.0,tsq=0.0,fskin;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = 0.0;
@@ -429,7 +429,7 @@ double PairLJSmooth::single(int i, int j, int itype, int jtype, double rsq,
                             double factor_coul, double factor_lj,
                             double &fforce)
 {
-  double r2inv,r6inv,forcelj,philj,r,t,tsq,fskin;
+  double r2inv,r6inv=0.0,forcelj,philj,r,t=0.0,tsq=0.0,fskin;
 
   r2inv = 1.0/rsq;
   if (rsq < cut_inner_sq[itype][jtype]) {

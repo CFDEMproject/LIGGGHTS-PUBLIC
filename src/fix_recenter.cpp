@@ -139,7 +139,7 @@ void FixRecenter::initial_integrate(int vflag)
   // bounding box around domain works for both orthogonal and triclinic
 
   double xtarget,ytarget,ztarget;
-  double *bboxlo,*bboxhi;
+  double *bboxlo=NULL,*bboxhi=NULL;
 
   if (scaleflag == FRACTION) {
     if (domain->triclinic == 0) {

@@ -32,8 +32,8 @@ void PairLJCutCoulDebye::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
-  double rsq,r2inv,r6inv,forcecoul,forcelj,factor_coul,factor_lj;
-  double r,rinv,screening;
+  double rsq,r2inv,r6inv=0.0,forcecoul,forcelj,factor_coul,factor_lj;
+  double r,rinv=0.0,screening=0.0;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = ecoul = 0.0;
@@ -191,7 +191,7 @@ double PairLJCutCoulDebye::single(int i, int j, int itype, int jtype,
                                   double factor_coul, double factor_lj,
                                   double &fforce)
 {
-  double r2inv,r6inv,r,rinv,screening,forcecoul,forcelj,phicoul,philj;
+  double r2inv,r6inv=0.0,r,rinv=0.0,screening=0.0,forcecoul,forcelj,phicoul,philj;
 
   r2inv = 1.0/rsq;
   if (rsq < cut_coulsq[itype][jtype]) {

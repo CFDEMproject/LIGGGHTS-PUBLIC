@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -29,6 +33,7 @@ FixStyle(insert/stream,FixInsertStream)
 #define LMP_FIX_INSERT_STREAM_H
 
 #include "fix_insert.h"
+#include "vector_liggghts.h"
 
 namespace LAMMPS_NS {
 
@@ -55,8 +60,17 @@ class FixInsertStream : public FixInsert {
   class FixPropertyAtom * fix_prop_release()
   { return fix_release; }
 
+  class TriMesh* face()
+  { return ins_face; }
+
   virtual int release_step_index()
   { return 4; }
+
+  bool vel_is_normal_to_face()
+  { return vel_normal_to_face; }
+
+  void vel_normal(double *vn)
+  { return vectorCopy3D(v_normal,vn); }
 
  protected:
 
@@ -84,6 +98,7 @@ class FixInsertStream : public FixInsert {
 
   // stuff for insertion region
   double normalvec[3];     // points out of extruded volume
+  bool vel_normal_to_face;       // points out of extruded volume
   double extrude_length;
   double extrude_length_min, extrude_length_max;
   double p_ref[3];         // reference point on face

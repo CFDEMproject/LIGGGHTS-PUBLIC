@@ -1,13 +1,17 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
    Modifications are Copyright 2009-2012 JKU Linz
                      Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
 
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
@@ -35,9 +39,9 @@ namespace LAMMPS_NS {
 
 class FixRigid : public Fix {
  friend class FixTemplateMultisphere;
- friend class FixGravity; 
- friend class PairGran; 
- friend class FixWallGran; 
+ friend class FixGravity;
+ friend class PairGran;
+ friend class FixWallGran;
 
  public:
   FixRigid(class LAMMPS *, int, char **);
@@ -130,7 +134,7 @@ class FixRigid : public Fix {
   int pstat_flag;           // NPT settings
   double p_start[3],p_stop[3];
   double p_period[3],p_freq[3];
-  int p_flag[3];  
+  int p_flag[3];
   int pcouple,pstyle;
   int p_chain;
   int allremap;              // remap all atoms

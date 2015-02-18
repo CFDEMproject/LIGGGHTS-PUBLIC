@@ -69,11 +69,11 @@ class Atom : protected Pointers {
   int **special;                // IDs of 1-2,1-3,1-4 neighs of each atom
   int maxspecial;               // special[nlocal][maxspecial]
 
-  int *num_bond;
-  int **bond_type;
-  int **bond_atom;
+  int *num_bond;       
+  int **bond_type;     
+  int **bond_atom;     
   double ***bond_hist; 
-
+                       
   int *num_angle;
   int **angle_type;
   int **angle_atom1,**angle_atom2,**angle_atom3;

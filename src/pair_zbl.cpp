@@ -72,7 +72,7 @@ void PairZBL::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double rsq,r,t,fswitch,eswitch;
+  double rsq,r,t=0.0,fswitch,eswitch;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = 0.0;
@@ -315,7 +315,7 @@ double PairZBL::single(int i, int j, int itype, int jtype, double rsq,
                          double dummy1, double dummy2,
                          double &fforce)
 {
-  double phi,r,t,eswitch,fswitch;
+  double phi,r,t=0.0,eswitch,fswitch;
 
   r = sqrt(rsq);
   fforce = dzbldr(r, itype, jtype);

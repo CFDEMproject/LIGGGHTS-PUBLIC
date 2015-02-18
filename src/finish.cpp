@@ -42,7 +42,7 @@ Finish::Finish(LAMMPS *lmp) : Pointers(lmp) {}
 
 void Finish::end(int flag)
 {
-  int i,m,nneigh,nneighfull;
+  int i,m,nneigh=0,nneighfull=0;
   int histo[10];
   int loopflag,minflag,prdflag,tadflag,timeflag,fftflag,histoflag,neighflag;
   double time,tmp,ave,max,min;

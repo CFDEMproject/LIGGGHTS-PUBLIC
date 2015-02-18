@@ -68,9 +68,9 @@ void PairBornCoulWolf::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double qtmp,xtmp,ytmp,ztmp,delx,dely,delz,evdwl,ecoul,fpair;
-  double rsq,r2inv,r6inv,forcecoul,forceborn,factor_coul,factor_lj;
-  double prefactor;
-  double r,rexp;
+  double rsq,r2inv,r6inv=0.0,forcecoul,forceborn,factor_coul,factor_lj;
+  double prefactor = 0.0;
+  double r,rexp=0.0;
   int *ilist,*jlist,*numneigh,**firstneigh;
   double erfcc,erfcd,v_sh,dvdrr,e_self,e_shift,f_shift,qisq;
 
@@ -448,9 +448,9 @@ double PairBornCoulWolf::single(int i, int j, int itype, int jtype,
                                 double factor_coul, double factor_lj,
                                 double &fforce)
 {
-  double r2inv,r6inv,r,prefactor,rexp;
+  double r2inv,r6inv=0.0,r=0.0,prefactor=0.0,rexp=0.0;
   double forcecoul,forceborn,phicoul,phiborn;
-  double e_shift,f_shift,dvdrr,erfcc,erfcd;
+  double e_shift,f_shift,dvdrr,erfcc=0.0,erfcd;
 
   r2inv = 1.0/rsq;
   e_shift = erfc(alf*cut_coul) / cut_coul;

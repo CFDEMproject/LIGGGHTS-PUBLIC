@@ -128,7 +128,7 @@ void DumpCFG::write_header(bigint n)
   //   scale box dimension to sc lattice for C with sigma = 1.44 Angstroms
   // special handling for unwrapped coordinates
 
-  double scale;
+  double scale = 1.0;
   if (atom->peri_flag) {
     int nlocal = atom->nlocal;
     double vone = 0.0;
@@ -138,7 +138,6 @@ void DumpCFG::write_header(bigint n)
     if (atom->natoms) vave /= atom->natoms;
     if (vave > 0.0) scale = 1.44 / pow(vave,1.0/3.0);
   } else if (unwrapflag == 1) scale = UNWRAPEXPAND;
-  else scale = 1.0;
 
   char str[64];
   sprintf(str,"Number of particles = %s\n",BIGINT_FORMAT);

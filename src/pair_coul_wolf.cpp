@@ -294,9 +294,9 @@ double PairCoulWolf::single(int i, int j, int itype, int jtype, double rsq,
                             double factor_coul, double factor_lj,
                             double &fforce)
 {
-  double r,prefactor; 
+  double r=0.0,prefactor=0.0; 
   double forcecoul,phicoul; 
-  double e_shift,f_shift,dvdrr,erfcc,erfcd;
+  double e_shift,f_shift,dvdrr,erfcc=0.0,erfcd;
 
   e_shift = erfc(alf*cut_coul) / cut_coul;
   f_shift = -(e_shift+ 2.0*alf/MY_PIS * exp(-alf*alf*cut_coul*cut_coul)) /

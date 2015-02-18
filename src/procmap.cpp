@@ -275,7 +275,7 @@ void ProcMap::numa_grid(int nprocs, int *user_procgrid, int *procgrid,
 void ProcMap::custom_grid(char *cfile, int nprocs,
                           int *user_procgrid, int *procgrid)
 {
-  FILE *fp;
+  FILE *fp = NULL;
   char line[MAXLINE];
 
   int me;
@@ -654,7 +654,7 @@ void ProcMap::output(char *file, int *procgrid, int ***grid2proc)
   MPI_Comm_rank(world,&me);
   MPI_Comm_size(world,&nprocs);
 
-  FILE *fp;
+  FILE *fp = NULL;
   if (me == 0) {
     fp = fopen(file,"w");
     if (fp == NULL) error->one(FLERR,"Cannot open processors output file");
@@ -666,7 +666,7 @@ void ProcMap::output(char *file, int *procgrid, int ***grid2proc)
 
   // find me in the grid
 
-  int ime,jme,kme;
+  int ime=0,jme=0,kme=0;
   for (int i = 0; i < procgrid[0]; i++)
     for (int j = 0; j < procgrid[1]; j++)
       for (int k = 0; k < procgrid[2]; k++)
@@ -863,7 +863,7 @@ int ProcMap::best_factors(int npossible, int **factors, int *best,
     area[2] = sqrt(c[0]*c[0] + c[1]*c[1] + c[2]*c[2]) / (sy*sz);
   }
 
-  int index;
+  int index = 0;
   double surf;
   double bestsurf = 2.0 * (area[0]+area[1]+area[2]);
 

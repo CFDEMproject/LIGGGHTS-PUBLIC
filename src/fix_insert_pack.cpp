@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -62,7 +66,11 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
     if (strcmp(arg[iarg],"region") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       int iregion = domain->find_region(arg[iarg+1]);
-      if (iregion == -1) error->fix_error(FLERR,this,"region ID does not exist");
+      if (iregion == -1)
+        error->fix_error(FLERR,this,"region ID does not exist");
+      int n = strlen(arg[iarg+1]) + 1;
+      idregion = new char[n];
+      strcpy(idregion,arg[iarg+1]);
       ins_region = domain->regions[iregion];
       iarg += 2;
       hasargs = true;
@@ -77,7 +85,8 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
       if (iarg+2 > narg)
         error->fix_error(FLERR,this,"");
       ntotal_region = atoi(arg[iarg+1]);
-      if(ntotal_region <= 0) error->fix_error(FLERR,this,"'ntotal_region' > 0 required");
+      if(ntotal_region <= 0)
+        error->fix_error(FLERR,this,"'ntotal_region' > 0 required");
       iarg += 2;
       hasargs = true;
     } else if (strcmp(arg[iarg],"mass_in_region") == 0) {
@@ -90,7 +99,8 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
     } else if (strcmp(arg[iarg],"ntry_mc") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       ntry_mc = atoi(arg[iarg+1]);
-      if(ntry_mc < 1000) error->fix_error(FLERR,this,"ntry_mc must be > 1000");
+      if(ntry_mc < 1000)
+        error->fix_error(FLERR,this,"ntry_mc must be > 1000");
       iarg += 2;
       hasargs = true;
     } else if (strcmp(arg[iarg],"warn_region") == 0) {
@@ -99,7 +109,8 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
         warn_region = true;
       else if(strcmp(arg[iarg+1],"no") == 0)
         warn_region = false;
-      else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'warn_region'");
+      else
+        error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'warn_region'");
       iarg += 2;
       hasargs = true;
     } else if(strcmp(style,"insert/pack") == 0)
@@ -115,7 +126,7 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
 
 FixInsertPack::~FixInsertPack()
 {
-
+    if(idregion) delete []idregion;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -123,6 +134,7 @@ FixInsertPack::~FixInsertPack()
 void FixInsertPack::init_defaults()
 {
       ins_region = NULL;
+      idregion = 0;
       ntry_mc = 100000;
 
       volumefraction_region = 0.0;
@@ -134,6 +146,21 @@ void FixInsertPack::init_defaults()
       insertion_ratio = 0.;
 
       warn_region = true;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixInsertPack::init()
+{
+    FixInsert::init();
+
+    if (ins_region)
+    {
+        int iregion = domain->find_region(idregion);
+        if (iregion == -1)
+            error->fix_error(FLERR,this,"region ID does not exist");
+        ins_region = domain->regions[iregion];
+    }
 }
 
 /* ----------------------------------------------------------------------

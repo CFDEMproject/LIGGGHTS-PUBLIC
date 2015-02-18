@@ -147,7 +147,7 @@ void PairMIECut::compute(int eflag, int vflag)
 
 void PairMIECut::compute_inner()
 {
-  int i,j,ii,jj,inum,jnum,itype,jtype;
+  int i,j,ii,jj,inum,jnum,itype,jtype=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,fpair;
   double rsq,r2inv,rgamR,rgamA,forcemie,factor_mie,rsw;
   int *ilist,*jlist,*numneigh,**firstneigh;
@@ -221,7 +221,7 @@ void PairMIECut::compute_inner()
 
 void PairMIECut::compute_middle()
 {
-  int i,j,ii,jj,inum,jnum,itype,jtype;
+  int i,j,ii,jj,inum,jnum,itype,jtype=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,fpair;
   double rsq,r2inv,rgamR,rgamA,forcemie,factor_mie,rsw;
   int *ilist,*jlist,*numneigh,**firstneigh;
@@ -305,8 +305,8 @@ void PairMIECut::compute_middle()
 void PairMIECut::compute_outer(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
-  double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double rsq,r2inv,rgamR,rgamA,forcemie,factor_mie,rsw;
+  double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair=0.0;
+  double rsq,r2inv=0.0,rgamR,rgamA,forcemie,factor_mie,rsw;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = 0.0;

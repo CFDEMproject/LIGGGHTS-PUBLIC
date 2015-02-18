@@ -454,7 +454,7 @@ void Image::draw_sphere(double *x, double *surfaceColor, double diameter)
 void Image::draw_cube(double *x, double *surfaceColor, double diameter)
 {
   double xlocal[3],surface[3],normal[3];
-  double t,tdir[3];
+  double t=0.0,tdir[3];
   double depth;
 
   xlocal[0] = x[0] - xctr;

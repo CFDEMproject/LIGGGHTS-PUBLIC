@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
 
    Copyright (C): 2014 DCS Computing GmbH (www.dcs-computing.com), Linz, Austria
                   2014 Graz University of Technology (ippt.tugraz.at), Graz, Austria
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -59,7 +63,7 @@ class FixParScaleCouple : public Fix  {
   // data transfer is handled by this class
   class CfdDatacouplingSimple *dc_;
   int   *map_copy;
-  
+
   bool      verbose_;
   int       reneighbor_at_least_every_;
   int       couple_every_,ts_create_;
@@ -67,7 +71,7 @@ class FixParScaleCouple : public Fix  {
   bool      pascal_setup_;
   bool      prePostRun_;        //indicator for printing pre and post LIGGGHTS data when running
   double    time_;
-  int       iarg_;    
+  int       iarg_;
 
   // ParScale Object
   PASCAL_NS::ParScale *pasc_;

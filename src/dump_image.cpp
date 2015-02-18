@@ -647,8 +647,8 @@ void DumpImage::view_params()
 void DumpImage::create_image()
 {
   int i,j,m,itype,atom1,atom2;
-  double diameter,delx,dely,delz;
-  double *color,*color1,*color2;
+  double diameter=0.0,delx,dely,delz;
+  double *color=NULL,*color1=NULL,*color2=NULL;
   double xmid[3];
 
   // render my atoms

@@ -394,7 +394,7 @@ void FixTMD::readfile(char *file)
 
   char *buffer = new char[CHUNK*MAXLINE];
   char *next,*bufptr;
-  int i,m,nlines,tag,imageflag,ix,iy,iz;
+  int i,m,nlines,tag,imageflag=0,ix,iy,iz;
   double x,y,z,xprd,yprd,zprd;
 
   int firstline = 1;

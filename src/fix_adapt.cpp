@@ -1,13 +1,17 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
    Modifications are Copyright 2009-2012 JKU Linz
                      Copyright 2012-     DCS Computing GmbH, Linz
+
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
 
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
@@ -127,8 +131,8 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         rad_mass_vary_flag = 1;
         diamflag = 1;
       } else if (strcmp(arg[iarg+1],"charge") == 0) {
-        adapt[nadapt].aparam = CHARGE; 
-        chgflag = 1; 
+        adapt[nadapt].aparam = CHARGE;
+        chgflag = 1;
       } else error->all(FLERR,"Illegal fix adapt command");
       if (strstr(arg[iarg+2],"v_") == arg[iarg+2]) {
         int n = strlen(&arg[iarg+2][2]) + 1;
@@ -253,7 +257,7 @@ void FixAdapt::init()
       Pair *pair = force->pair_match(ad->pstyle,1);
       if (pair == NULL) error->all(FLERR,"Fix adapt pair style does not exist");
       void *ptr = pair->extract(ad->pparam,ad->pdim);
-      if (ptr == NULL) 
+      if (ptr == NULL)
         error->all(FLERR,"Fix adapt pair style param not supported");
 
       ad->pdim = 2;
@@ -339,7 +343,7 @@ void FixAdapt::change_settings()
   for (int m = 0; m < nadapt; m++) {
     Adapt *ad = &adapt[m];
 
-    double value;
+    double value = 0.0;
     if (input->variable->equalstyle(ad->ivar)) value = input->variable->compute_equal(ad->ivar);
     else if(input->variable->atomstyle(ad->ivar)) input->variable->compute_atom(ad->ivar, igroup, fppat->vector_atom, 1, 0);
     else error->all(FLERR,"Wrong variable style in fix adapt - must use a scalar property");
@@ -402,11 +406,11 @@ void FixAdapt::change_settings()
             }
         }
       } else if (ad->aparam == CHARGE) {
-        double *q = atom->q; 
+        double *q = atom->q;
         int *mask = atom->mask;
         int nlocal = atom->nlocal;
         for (i = 0; i < nlocal; i++)
-          if (mask[i] & groupbit) q[i] = value; 
+          if (mask[i] & groupbit) q[i] = value;
       }
     }
   }

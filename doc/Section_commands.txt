@@ -639,6 +639,7 @@ dump syles :h4
 
 Click on the style itself for a full description:
 
+"custom/vtk"_dump_custom_vtk.html,
 "image"_dump_image.html,
 "molfile"_dump_molfile.html,
 "movie"_dump_image.html :tb(c=4,ea=c)

@@ -28,7 +28,7 @@ using namespace LAMMPS_NS;
 
 void Neighbor::full_nsq(NeighList *list)
 {
-  int i,j,n,itype,jtype,which,bitmask;
+  int i,j,n,itype,jtype,which,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int *neighptr;
 

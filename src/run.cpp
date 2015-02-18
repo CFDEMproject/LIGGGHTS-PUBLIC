@@ -49,7 +49,7 @@ void Run::command(int narg, char **arg)
   int uptoflag = 0;
   int startflag = 0;
   int stopflag = 0;
-  bigint start,stop;
+  bigint start = 0, stop = 0;
   int preflag = 1;
   int postflag = 1;
   int nevery = 0;

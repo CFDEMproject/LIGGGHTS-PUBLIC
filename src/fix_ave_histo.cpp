@@ -246,7 +246,7 @@ FixAveHisto::FixAveHisto(LAMMPS *lmp, int narg, char **arg) :
   if (ave != RUNNING && overwrite)
     error->all(FLERR,"Illegal fix ave/histo command");
 
-  int kindflag;
+  int kindflag = 0;
   for (int i = 0; i < nvalues; i++) {
     if (which[i] == X || which[i] == V || which[i] == F) kindflag = PERATOM;
     else if (which[i] == COMPUTE) {

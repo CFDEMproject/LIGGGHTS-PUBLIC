@@ -1,8 +1,8 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    This file was modified with respect to the release in LAMMPS
@@ -227,7 +227,7 @@ void FixContactHistory::allocate_pages()
 
 /* ----------------------------------------------------------------------
    called by setup of run or minimize
-   called by write_restart as input script command
+   called by write_restart or write_data as input script command
    only invoke pre_exchange() if neigh list stores more current history info
      than npartner/partner arrays in this fix
    that will only be case if pair->compute() has been invoked since
@@ -311,6 +311,7 @@ void FixContactHistory::pre_exchange()
   
   for (ii = 0; ii < inum; ii++) {
     i = ilist[ii];
+    
     n = npartner_[i];
     partner_[i] = ipage_->get(n);
     contacthistory_[i] = dpage_->get(dnum_*n);
@@ -346,7 +347,9 @@ void FixContactHistory::pre_exchange()
         
         npartner_[i]++;
         if (j < nlocal_neigh) {
+          
           m = npartner_[j];
+
           partner_[j][m] = tag[i];
           for (int d = 0; d < dnum_; d++) {
             if(newtonflag_[d])

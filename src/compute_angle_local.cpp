@@ -110,7 +110,7 @@ int ComputeAngleLocal::compute_angles(int flag)
   int i,m,n,atom1,atom2,atom3;
   double delx1,dely1,delz1,delx2,dely2,delz2;
   double rsq1,rsq2,r1,r2,c;
-  double *tbuf,*ebuf;
+  double *tbuf = NULL,*ebuf = NULL;
 
   double **x = atom->x;
   int *num_angle = atom->num_angle;

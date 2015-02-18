@@ -54,7 +54,7 @@ FixMove::FixMove(LAMMPS *lmp, int narg, char **arg) :
 
   // parse args
 
-  int iarg;
+  int iarg = 0;
   xvarstr = yvarstr = zvarstr = NULL;
   vxvarstr = vyvarstr = vzvarstr = NULL;
 
@@ -377,7 +377,7 @@ void FixMove::initial_integrate(int vflag)
 {
   double dtfm;
   double xold[3],a[3],b[3],c[3],d[3],disp[3];
-  double ddotr,dx,dy,dz;
+  double ddotr,dx=0.0,dy=0.0,dz=0.0;
 
   double delta = (update->ntimestep - time_origin) * dt;
 

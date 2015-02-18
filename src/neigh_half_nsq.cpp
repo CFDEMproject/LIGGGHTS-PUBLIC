@@ -28,7 +28,7 @@ using namespace LAMMPS_NS;
 
 void Neighbor::half_nsq_no_newton(NeighList *list)
 {
-  int i,j,n,itype,jtype,which,bitmask;
+  int i,j,n,itype,jtype,which,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int *neighptr;
 
@@ -112,7 +112,7 @@ void Neighbor::half_nsq_no_newton(NeighList *list)
 
 void Neighbor::half_nsq_no_newton_ghost(NeighList *list)
 {
-  int i,j,n,itype,jtype,which,bitmask;
+  int i,j,n,itype,jtype,which,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int *neighptr;
 
@@ -215,7 +215,7 @@ void Neighbor::half_nsq_no_newton_ghost(NeighList *list)
 
 void Neighbor::half_nsq_newton(NeighList *list)
 {
-  int i,j,n,itype,jtype,itag,jtag,which,bitmask;
+  int i,j,n,itype,jtype,itag,jtag,which,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int *neighptr;
 

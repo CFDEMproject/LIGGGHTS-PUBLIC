@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -306,8 +310,8 @@ RegWedge::~RegWedge(){
  inside = 0 if x,y,z is ouside and not on surface
  -----------------------------------------------------------------------------*/
 int RegWedge::inside(double x, double y, double z){
-  double lohi, distsq, sp1, sp2;
-  double del[2];
+  double lohi=0.0, distsq, sp1, sp2;
+  double del[2]={};
 
   if (axis == 'x'){
     lohi = x;
@@ -368,8 +372,8 @@ int RegWedge::surface_interior(double *x, double cutoff){
                           // to be changed depending on which axis the wedge
                           // is aligned to
   double delta;           // ... distance from surface to particle
-  double lohi;            // ... coord of particle in dimension of axis
-  double del[2];          // ... vector from center to particle
+  double lohi = 0.0;      // ... coord of particle in dimension of axis
+  double del[2] = {};     // ... vector from center to particle
   double delxyz[2];       // ... vector from nearest point on surface to particle
   double rr;              // ... distance from point to center
 

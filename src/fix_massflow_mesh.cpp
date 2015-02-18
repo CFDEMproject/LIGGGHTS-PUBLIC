@@ -1,15 +1,19 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
+   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
    Transfer Simulations
 
-   LIGGGHTS is part of the CFDEMproject
+   LIGGGHTS® is part of CFDEM®project
    www.liggghts.com | www.cfdem.com
 
    Christoph Kloss, christoph.kloss@cfdem.com
    Copyright 2009-2012 JKU Linz
    Copyright 2012-     DCS Computing GmbH, Linz
 
-   LIGGGHTS is based on LAMMPS
+   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+   the producer of the LIGGGHTS® software and the CFDEM®coupling software
+   See http://www.cfdem.com/terms-trademark-policy for details.
+
+   LIGGGHTS® is based on LAMMPS
    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
    http://lammps.sandia.gov, Sandia National Laboratories
    Steve Plimpton, sjplimp@sandia.gov
@@ -48,6 +52,7 @@ using namespace FixConst;
 
 FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
+  fix_orientation_(0),
   fix_mesh_(0),
   fix_counter_(0),
   fix_neighlist_(0),
@@ -79,103 +84,103 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
 
     // parse args for this class
 
-    int iarg = 3;
+    iarg_ = 3;
 
     bool hasargs = true;
-    while(iarg < narg && hasargs)
+    while(iarg_ < narg && hasargs)
     {
         hasargs = false;
 
-        if(strcmp(arg[iarg],"vec_side") == 0) {
-            if(narg < iarg+4)
+        if(strcmp(arg[iarg_],"vec_side") == 0) {
+            if(narg < iarg_+4)
                 error->fix_error(FLERR,this,"not enough arguments for 'vec_side'");
-            iarg++;
-            sidevec_[0] = atof(arg[iarg++]);
-            sidevec_[1] = atof(arg[iarg++]);
-            sidevec_[2] = atof(arg[iarg++]);
+            iarg_++;
+            sidevec_[0] = atof(arg[iarg_++]);
+            sidevec_[1] = atof(arg[iarg_++]);
+            sidevec_[2] = atof(arg[iarg_++]);
             if(vectorMag3D(sidevec_) == 0.)
                 error->fix_error(FLERR,this,"vec_side > 0 required");
             hasargs = true;
-        } else if(strcmp(arg[iarg],"mesh") == 0) {
-            if(narg < iarg+2)
+        } else if(strcmp(arg[iarg_],"mesh") == 0) {
+            if(narg < iarg_+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'insert_stream'");
-            iarg++;
-            fix_mesh_ = static_cast<FixMeshSurface*>(modify->find_fix_id_style(arg[iarg++],"mesh/surface"));
+            iarg_++;
+            fix_mesh_ = static_cast<FixMeshSurface*>(modify->find_fix_id_style(arg[iarg_++],"mesh/surface"));
             if(!fix_mesh_)
                 error->fix_error(FLERR,this,"fix mesh ID does not exist");
             hasargs = true;
-        } else if(strcmp(arg[iarg],"sum_property") == 0) {
-            if(narg < iarg+2)
+        } else if(strcmp(arg[iarg_],"sum_property") == 0) {
+            if(narg < iarg_+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'sum_property'");
-            iarg++;
-            fix_property_ = static_cast<FixPropertyAtom*>(modify->find_fix_property(arg[iarg++],"property/atom","scalar",0,0,style));
+            iarg_++;
+            fix_property_ = static_cast<FixPropertyAtom*>(modify->find_fix_property(arg[iarg_++],"property/atom","scalar",0,0,style));
             hasargs = true;
-        } else if(strcmp(arg[iarg],"count") == 0) {
-            if(narg < iarg+2)
+        } else if(strcmp(arg[iarg_],"count") == 0) {
+            if(narg < iarg_+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'insert_stream'");
-            iarg++;
-            if(strcmp(arg[iarg],"once") == 0)
+            iarg_++;
+            if(strcmp(arg[iarg_],"once") == 0)
                 once_ = true;
-            else if(strcmp(arg[iarg],"multiple") == 0)
+            else if(strcmp(arg[iarg_],"multiple") == 0)
                 once_ = false;
             else
                 error->fix_error(FLERR,this,"expecting 'once' or 'multiple' after 'count'");
-            iarg++;
+            iarg_++;
             hasargs = true;
-        } else if(strcmp(arg[iarg],"point_at_outlet") == 0) {
-            if(narg < iarg+4)
+        } else if(strcmp(arg[iarg_],"point_at_outlet") == 0) {
+            if(narg < iarg_+4)
                 error->fix_error(FLERR,this,"not enough arguments for 'point_at_outlet'");
             havePointAtOutlet_ = true;
-            iarg++;
-            pointAtOutlet_[0] = atof(arg[iarg++]);
-            pointAtOutlet_[1] = atof(arg[iarg++]);
-            pointAtOutlet_[2] = atof(arg[iarg++]);
+            iarg_++;
+            pointAtOutlet_[0] = atof(arg[iarg_++]);
+            pointAtOutlet_[1] = atof(arg[iarg_++]);
+            pointAtOutlet_[2] = atof(arg[iarg_++]);
             hasargs = true;
-        } else if(strcmp(arg[iarg],"inside_out") == 0) {
+        } else if(strcmp(arg[iarg_],"inside_out") == 0) {
             insideOut_ = true;
-            iarg++;
+            iarg_++;
             if(!havePointAtOutlet_)
                 error->fix_error(FLERR,this,"the setting 'inside_out' has no meaning in case you do not use 'point_at_outlet'");
             hasargs = true;
-        } else if (strcmp(arg[iarg],"file") == 0 || strcmp(arg[iarg],"append") == 0)
+        } else if (strcmp(arg[iarg_],"file") == 0 || strcmp(arg[iarg_],"append") == 0)
           {
-            if(narg < iarg+2)
+            if(narg < iarg_+2)
                 error->fix_error(FLERR,this,"Illegal keyword entry");
 
-            char* filecurrent = new char[strlen(arg[iarg+1]) + 8];
+            char* filecurrent = new char[strlen(arg[iarg_+1]) + 8];
             if (1 < comm->nprocs) //open a separate file for each processor
-                 sprintf(filecurrent,"%s%s%d",arg[iarg+1],".",comm->me);
+                 sprintf(filecurrent,"%s%s%d",arg[iarg_+1],".",comm->me);
             else  //open one file for proc 0
-                 sprintf(filecurrent,"%s",arg[iarg+1]);
+                 sprintf(filecurrent,"%s",arg[iarg_+1]);
 
-            if (strcmp(arg[iarg],"file") == 0)
+            if (strcmp(arg[iarg_],"file") == 0)
                 fp_ = fopen(filecurrent,"w");
             else
                 fp_ = fopen(filecurrent,"a");
             if (fp_ == NULL) {
                char str[128];
-               sprintf(str,"Cannot open file %s",arg[iarg+1]);
+               sprintf(str,"Cannot open file %s",arg[iarg_+1]);
                 error->fix_error(FLERR,this,str);
             }
-            iarg += 2;
+            iarg_ += 2;
             hasargs = true;
-        } else if (strcmp(arg[iarg],"screen") == 0) {
-            if(narg < iarg+2)
+        } else if (strcmp(arg[iarg_],"screen") == 0) {
+            if(narg < iarg_+2)
                 error->fix_error(FLERR,this,"Illegal keyword entry");
-            if (strcmp(arg[iarg+1],"yes") == 0) screenflag_ = true;
-            else if (strcmp(arg[iarg+1],"no") == 0) screenflag_ = false;
+            if (strcmp(arg[iarg_+1],"yes") == 0) screenflag_ = true;
+            else if (strcmp(arg[iarg_+1],"no") == 0) screenflag_ = false;
             else error->all(FLERR,"Illegal fix print command");
-            iarg += 2;
+            iarg_ += 2;
             hasargs = true;
-        } else if (strcmp(arg[iarg],"delete_atoms") == 0) {
-            if(narg < iarg+2)
+        } else if (strcmp(arg[iarg_],"delete_atoms") == 0) {
+            if(narg < iarg_+2)
                 error->fix_error(FLERR,this,"Illegal keyword entry");
-            if (strcmp(arg[iarg+1],"yes") == 0) delete_atoms_ = true;
-            else if (strcmp(arg[iarg+1],"no") == 0) delete_atoms_ = false;
+            if (strcmp(arg[iarg_+1],"yes") == 0) delete_atoms_ = true;
+            else if (strcmp(arg[iarg_+1],"no") == 0) delete_atoms_ = false;
             else error->all(FLERR,"Illegal delete command");
-            iarg += 2;
+            iarg_ += 2;
             hasargs = true;
-        } else
+        } else if(strcmp("style","massflow/mesh") == 0)
             error->fix_error(FLERR,this,"unknown keyword");
     }
 
@@ -325,7 +330,7 @@ void FixMassflowMesh::post_integrate()
     double *radius = atom->radius;
     double *rmass = atom->rmass;
     double *counter = fix_counter_->vector_atom;
-    double dot,delta[3];
+    double dot,delta[3]={};
     double mass_this = 0.;
     int nparticles_this = 0.;
     double property_this = 0.;
@@ -335,6 +340,9 @@ void FixMassflowMesh::post_integrate()
     class FixPropertyAtom* fix_color=static_cast<FixPropertyAtom*>(modify->find_fix_property("color","property/atom","scalar",0,0,style,false));
     bool fixColFound = false;
     if (fix_color) fixColFound=true;
+
+    fix_orientation_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("ex",
+        "property/atom","vector",0,0,style,false));
 
     TriMesh *mesh = fix_mesh_->triMesh();
     int nTriAll = mesh->sizeLocal() + mesh->sizeGhost();
@@ -428,21 +436,21 @@ void FixMassflowMesh::post_integrate()
                                        v[iPart][0],v[iPart][1],v[iPart][2]);
                     if(fp_)
                     {
+                        fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g",
+                                   tag[iPart],2.*radius[iPart]/force->cg(),
+                                   x[iPart][0],x[iPart][1],x[iPart][2],
+                                v[iPart][0],v[iPart][1],v[iPart][2]);
                         if (fixColFound)
+                            fprintf(fp_,"    %4.0g ", fix_color->vector_atom[iPart]);
+
+                        if(fix_orientation_)
                         {
-                            fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.0g \n ",
-                                   tag[iPart],2.*radius[iPart]/force->cg(),
-                                   x[iPart][0],x[iPart][1],x[iPart][2],
-                                   v[iPart][0],v[iPart][1],v[iPart][2],
-                                   fix_color->vector_atom[iPart]);
+                            double **orientation = NULL;
+                            orientation = fix_orientation_->array_atom;
+                            fprintf(fp_,"    %4.4g %4.4g %4.4g ",
+                                    orientation[iPart][0], orientation[iPart][1], orientation[iPart][2]);
                         }
-                        else
-                        {
-                            fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g \n ",
-                                   tag[iPart],2.*radius[iPart]/force->cg(),
-                                   x[iPart][0],x[iPart][1],x[iPart][2],
-                                   v[iPart][0],v[iPart][1],v[iPart][2]);
-                        }
+                        fprintf(fp_,"\n");
                         fflush(fp_);
                     }
                 }

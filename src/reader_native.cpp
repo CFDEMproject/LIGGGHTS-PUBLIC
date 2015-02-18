@@ -324,7 +324,7 @@ int ReaderNative::find_label(const char *label, int n, char **labels)
 
 void ReaderNative::read_lines(int n)
 {
-  char *eof;
+  char *eof = NULL;
   for (int i = 0; i < n; i++) eof = fgets(line,MAXLINE,fp);
   if (eof == NULL) error->all(FLERR,"Unexpected end of dump file");
 }

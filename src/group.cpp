@@ -162,7 +162,7 @@ void Group::assign(int narg, char **arg)
 
     if (narg < 3) error->all(FLERR,"Illegal group command");
 
-    int category;
+    int category = 0;
     if (strcmp(arg[1],"type") == 0) category = TYPE;
     else if (strcmp(arg[1],"molecule") == 0) category = MOLECULE;
     else if (strcmp(arg[1],"id") == 0) category = ID;
@@ -174,7 +174,7 @@ void Group::assign(int narg, char **arg)
          strcmp(arg[2],"<=") == 0 || strcmp(arg[2],">=") == 0 ||
          strcmp(arg[2],"<>") == 0)) {
 
-      int condition,bound1,bound2;
+      int condition = 0;
       if (strcmp(arg[2],"<") == 0) condition = LT;
       else if (strcmp(arg[2],"<=") == 0) condition = LE;
       else if (strcmp(arg[2],">") == 0) condition = GT;
@@ -184,8 +184,8 @@ void Group::assign(int narg, char **arg)
       else if (strcmp(arg[2],"<>") == 0) condition = BETWEEN;
       else error->all(FLERR,"Illegal group command");
       
-      bound1 = force->inumeric(FLERR,arg[3]);
-      bound2 = -1;
+      int bound1 = force->inumeric(FLERR,arg[3]);
+      int bound2 = -1;
 
       if (condition == BETWEEN) {
         if (narg != 5) error->all(FLERR,"Illegal group command");

@@ -62,8 +62,8 @@ void PairLJCubic::compute(int eflag, int vflag)
 {
   int i,j,ii,jj,inum,jnum,itype,jtype;
   double xtmp,ytmp,ztmp,delx,dely,delz,evdwl,fpair;
-  double rsq,r2inv,r6inv,forcelj,factor_lj;
-  double r,t,rmin;
+  double rsq,r2inv,r6inv=0.0,forcelj,factor_lj;
+  double r,t=0.0,rmin;
   int *ilist,*jlist,*numneigh,**firstneigh;
 
   evdwl = 0.0;
@@ -332,8 +332,8 @@ double PairLJCubic::single(int i, int j, int itype, int jtype,
                              double factor_coul, double factor_lj,
                              double &fforce)
 {
-  double r2inv,r6inv,forcelj,philj;
-  double r,t;
+  double r2inv,r6inv=0.0,forcelj,philj;
+  double r,t=0.0;
   double rmin;
 
   r2inv = 1.0/rsq;
