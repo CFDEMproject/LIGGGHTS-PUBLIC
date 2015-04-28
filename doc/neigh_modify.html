@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -89,7 +89,7 @@ command), the <I>every</I> and <I>delay</I> parameters refer to the longest
 </P>
 <P>The <I>contact_distance_factor</I> setting can be used to increase the range
 of granular neighbor lists. When <I>contact_distance_factor</I> > 1.0,
-instead of the standard criterion ri+rj+skin < distance, LIGGGHTS is
+instead of the standard criterion ri+rj+skin < distance, LIGGGHTS(R)-PUBLIC is
 checking for <I>contact_distance_factor</I> *(ri+rj)+skin < distance to
 decided if a pair of granular particles goes into a neighbor list.
 </P>
@@ -149,17 +149,6 @@ times; they require one check for each time they have been specified.
 the <A HREF = "delete_bonds.html">delete_bonds</A> command for information on
 turning off bond interactions.
 </P>
-<P>IMPORTANT NOTE: Excluding pairwise interactions will not work
-correctly when also using a long-range solver via the
-<A HREF = "kspace_style.html">kspace_style</A> command.  LAMMPS will give a warning
-to this effect.  This is because the short-range pairwise interaction
-needs to subtract off a term from the total energy for pairs whose
-short-range interaction is excluded, to compensate for how the
-long-range solver treats the interaction.  This is done correctly for
-pairwise interactions that are excluded (or weighted) via the
-<A HREF = "special_bonds.html">special_bonds</A> command.  But it is not done for
-interactions that are excluded via these neigh_modify exclude options.
-</P>
 <P>The <I>page</I> and <I>one</I> options affect how memory is allocated for the
 neighbor lists.  For most simulations the default settings for these
 options are fine, but if a very large problem is being run or a very
@@ -168,13 +157,13 @@ of neighboring atoms are stored in "pages", which are allocated one
 after another as they fill up.  The size of each page is set by the
 <I>page</I> value.  A new page is allocated when the next atom's neighbors
 could potentially overflow the list.  This threshold is set by the
-<I>one</I> value which tells LAMMPS the maximum number of neighbor's one
+<I>one</I> value which tells LIGGGHTS(R)-PUBLIC the maximum number of neighbor's one
 atom can have.
 </P>
-<P>IMPORTANT NOTE: LAMMPS can crash without an error message if the
+<P>IMPORTANT NOTE: LIGGGHTS(R)-PUBLIC can crash without an error message if the
 number of neighbors for a single particle is larger than the <I>page</I>
 setting, which means it is much, much larger than the <I>one</I> setting.
-This is because LAMMPS doesn't error check these limits for every
+This is because LIGGGHTS(R)-PUBLIC doesn't error check these limits for every
 pairwise interaction (too costly), but only after all the particle's
 neighbors have been found.  This problem usually means something is
 very wrong with the way you've setup your problem (particle spacing,
@@ -184,7 +173,7 @@ settings accordingly.
 </P>
 <P>The <I>binsize</I> option allows you to specify what size of bins will be
 used in neighbor list construction to sort and find neighboring atoms.
-By default, for <A HREF = "neighbor.html">neighbor style bin</A>, LAMMPS uses bins
+By default, for <A HREF = "neighbor.html">neighbor style bin</A>, LIGGGHTS(R)-PUBLIC uses bins
 that are 1/2 the size of the maximum pair cutoff.  For <A HREF = "neighbor.html">neighbor style
 multi</A>, the bins are 1/2 the size of the minimum pair
 cutoff.  Typically these are good values values for minimizing the
@@ -192,7 +181,7 @@ time for neighbor list construction.  This setting overrides the
 default.  If you make it too big, there is little overhead due to
 looping over bins, but more atoms are checked.  If you make it too
 small, the optimal number of atoms is checked, but bin overhead goes
-up.  If you set the binsize to 0.0, LAMMPS will use the default
+up.  If you set the binsize to 0.0, LIGGGHTS(R)-PUBLIC will use the default
 binsize of 1/2 the cutoff.
 </P>
 <P><B>Restrictions:</B>

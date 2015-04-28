@@ -13,16 +13,11 @@ OBJ = 	$(SRC:.cpp=.o)
 
 # Package variables
 
-PACKAGE = asphere body class2 colloid dipole fld gpu granular kim \
-	  kspace manybody mc meam misc molecule opt peri poems reax replica \
-	  rigid shock srd voronoi xtc
+PACKAGE = asphere cohesionmodels molecule pascal poems rigid surfacemodels voronoi
 
-PACKUSER = user-atc user-awpmd user-cg-cmm user-colvars \
-	   user-cuda user-eff user-lb user-misc user-omp user-molfile \
-	   user-phonon user-reaxc user-sph
+PACKUSER = 
 
-PACKLIB = gpu kim meam poems reax voronoi \
-	  user-atc user-awpmd user-colvars user-cuda user-molfile
+PACKLIB = poems voronoi 
 
 PACKALL = $(PACKAGE) $(PACKUSER)
 

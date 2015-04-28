@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -85,11 +85,7 @@ Change the volume and/or shape of the simulation box during a dynamics
 run.  Orthogonal simulation boxes have 3 adjustable parameters
 (x,y,z).  Triclinic (non-orthogonal) simulation boxes have 6
 adjustable parameters (x,y,z,xy,xz,yz).  Any or all of them can be
-adjusted independently and simultaneously by this command.  This fix
-can be used to perform non-equilibrium MD (NEMD) simulations of a
-continuously strained system.  See the "fix
-nvt/sllod"_fix_nvt_sllod.html and "compute
-temp/deform"_compute_temp_deform.html commands for more details.
+adjusted independently and simultaneously by this command.
 
 For the {x}, {y}, {z} parameters, the associated dimension cannot be
 shrink-wrapped.  For the {xy}, {yz}, {xz} parameters, the associated
@@ -257,7 +253,7 @@ value < 0.0 to compress the box.
 The variable {name2} must also be an "equal-style
 variable"_variable.html and should calculate the rate of box length
 change, in units of distance/time, i.e. the time-derivative of the
-{name1} variable.  This quantity is used internally by LAMMPS to reset
+{name1} variable.  This quantity is used internally by LIGGGHTS(R)-PUBLIC to reset
 atom velocities when they cross periodic boundaries.  It is computed
 internally for the other styles, but you must provide it when using an
 arbitrary variable.
@@ -395,7 +391,7 @@ following the definition of fix deform.
 The variable {name2} must also be an "equal-style
 variable"_variable.html and should calculate the rate of tilt change,
 in units of distance/time, i.e. the time-derivative of the {name1}
-variable.  This quantity is used internally by LAMMPS to reset atom
+variable.  This quantity is used internally by LIGGGHTS(R)-PUBLIC to reset atom
 velocities when they cross periodic boundaries.  It is computed
 internally for the other styles, but you must provide it when using an
 arbitrary variable.
@@ -413,7 +409,7 @@ fix 2 all deform 1 xy variable v_displace v_rate remap v :pre
 :line
 
 All of the tilt styles change the xy, xz, yz tilt factors during a
-simulation.  In LAMMPS, tilt factors (xy,xz,yz) for triclinic boxes
+simulation.  In LIGGGHTS(R)-PUBLIC, tilt factors (xy,xz,yz) for triclinic boxes
 are normally bounded by half the distance of the parallel box length.
 See the discussion of the {flip} keyword below, to allow this bound to
 be exceeded, if desired.
@@ -479,7 +475,7 @@ atom positions and velocities to induce a velocity profile that
 matches the changing box size/shape.  Thus atom coordinates should NOT
 be remapped by fix deform, but velocities SHOULD be when atoms cross
 periodic boundaries, since that is consistent with maintaining the
-velocity profile already created by fix nvt/sllod.  LAMMPS will warn
+velocity profile already created by fix nvt/sllod.  LIGGGHTS(R)-PUBLIC will warn
 you if the {remap} setting is not consistent with fix nvt/sllod.
 
 IMPORTANT NOTE: For non-equilibrium MD (NEMD) simulations using "remap
@@ -522,9 +518,9 @@ above.  If the {flip} value is set to {yes}, the bound is enforced by
 flipping the box when it is exceeded.  If the {flip} value is set to
 {no}, the tilt will continue to change without flipping.  Note that if
 you apply large deformations, this means the box shape can tilt
-dramatically LAMMPS will run less efficiently, due to the large volume
+dramatically LIGGGHTS(R)-PUBLIC will run less efficiently, due to the large volume
 of communication needed to acquire ghost atoms around a processor's
-irregular-shaped sub-domain.  For extreme values of tilt, LAMMPS may
+irregular-shaped sub-domain.  For extreme values of tilt, LIGGGHTS(R)-PUBLIC may
 also lose atoms and generate an error.
 
 The {units} keyword determines the meaning of the distance units used
@@ -545,7 +541,7 @@ No information about this fix is written to "binary restart
 files"_restart.html.  None of the "fix_modify"_fix_modify.html options
 are relevant to this fix.  No global or per-atom quantities are stored
 by this fix for access by various "output
-commands"_Section_howto.html#howto_15.
+commands"_Section_howto.html#howto_8.
 
 This fix can perform deformation over multiple runs, using the {start}
 and {stop} keywords of the "run"_run.html command.  See the

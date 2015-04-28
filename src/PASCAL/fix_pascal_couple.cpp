@@ -53,6 +53,8 @@ using namespace FixConst;
 ------------------------------------------------------------------------- */
 FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
+  exchangeEventsLocalId(NULL),
+  exchangeEventsReceivingProcess(NULL),
   dc_(0),
   verbose_(false),
   reneighbor_at_least_every_(0),
@@ -88,8 +90,8 @@ FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
 
   iarg_++;
   couple_every_ = force->inumeric(FLERR,arg[iarg_]);
-  if (couple_every_ < 0)
-    error->fix_error(FLERR,this,"'couple_every' >= 0 required");
+  if (couple_every_ != 1)
+    error->fix_error(FLERR,this,"'couple_every' = 1 required");
 
 
   iarg_++;
@@ -104,7 +106,6 @@ FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
         prePostRun_ = true;
   }
 
-
   nevery = 1;
 
   //Create datacoupling
@@ -112,9 +113,6 @@ FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
 
   // set next reneighbor
   force_reneighbor = 1;
-
-  // TODO: meed parsing here!
-  // TODO: need to parse filename with pascal input
 
   // create ParScale instance
   int pascal;
@@ -126,7 +124,7 @@ FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
 
   // Open ParScale input script and create ParScale Object
   if(0 == me)
-    fprintf(screen, "\n...creating PaScal object... \n");
+    fprintf(screen, "\n...creating ParScale object... \n");
   if(pascal == 1) pasc_ = new PASCAL_NS::ParScale(0, NULL, comm_pascal,lmp);
   pascal_setup_ = true;
 
@@ -204,7 +202,7 @@ void FixParScaleCouple::updatePtrs()
 int FixParScaleCouple::setmask()
 {
   int mask = 0;
-//  mask |= PRE_EXCHANGE;
+  mask |= PRE_EXCHANGE;
   mask |= END_OF_STEP;
   return mask;
 }
@@ -226,9 +224,11 @@ void FixParScaleCouple::init()
     //  values to be transfered to OF
     dc_->add_push_property("id","scalar-atom");
     dc_->add_push_property("radius","scalar-atom");
-    dc_->add_push_property("x","vector-atom");
-    dc_->add_push_property("v","vector-atom");
 
+    //Set points and activate exchange event recording
+    comm->exchangeEvents            = true;
+    exchangeEventsLocalId           = &(comm->exchangeEventsLocalId);
+    exchangeEventsReceivingProcess  = &(comm->exchangeEventsReceivingProcess);
 
 }
 
@@ -243,8 +243,7 @@ void FixParScaleCouple::setup(int vflag)
 }
 
 /* ----------------------------------------------------------------------
-   detect neigh list build / exchange and trigger coupling
-   schedule next coupling
+   Get the Global-to-Local index mapping
 ------------------------------------------------------------------------- */
 
 int* FixParScaleCouple::get_liggghts_map(int &length)
@@ -254,31 +253,37 @@ int* FixParScaleCouple::get_liggghts_map(int &length)
 
     memory->destroy(map_copy);
     memory->create<int>(map_copy, length,"FixParScaleCouple:map");
-    memcpy(map_copy,&(atom->get_map_array()[1]),length*sizeof(int)); //offset by one in LIGGGHTS
+    memcpy(map_copy,&(atom->get_map_array()[1]),length*sizeof(int)); //offset by one in LIGGGHTS!
 
     if(verbose_)
     {
-        printf("FixParScaleCouple::get_liggghts_map \n");
+        printf("[%d/%d]:FixParScaleCouple::get_liggghts_map. nlocal: %d, nghost: %d \n",
+               comm->me, comm->nprocs, atom->nlocal, atom->nghost);
         printf("atom->map_style: %d, size_map: %d, length of map_copy: %d \n",
                 atom->map_style, size_map, length);
 
-        printf("original_map[-1]: %d. \n",atom->get_map_array()[0]);
+        printf("[%d/%d]:original_map[-1]: %d. \n",
+               comm->me, comm->nprocs,atom->get_map_array()[0]);
 
         for(int iGlobal=0; iGlobal < length; iGlobal++)
         {
-            printf("original_map[%d]: %d, _ext_map[%d]: %d, particle r: %g\n",
-                    iGlobal, atom->get_map_array()[iGlobal+1], //offset by one in LIGGGHTS
+            printf("[%d/%d]:original_map[%d]: %d, _ext_map[%d]: %d, particle r: %g\n",
+                    comm->me, comm->nprocs, iGlobal, atom->get_map_array()[iGlobal+1], //offset by one in LIGGGHTS
                     iGlobal, map_copy[iGlobal],
                     atom->radius[map_copy[iGlobal]]);
         }
     }
 
     //Check map
+    int validMapEntry = 0;
     for(int iGlobal=0; iGlobal < length; iGlobal++)
-    {
-        if(map_copy[iGlobal]==-1)
-               error->fix_error(FLERR,this,"map not set for this particle. \n");
-    }
+        if(map_copy[iGlobal]>-1)
+            validMapEntry += 1;
+
+    if(verbose_)
+        printf("[%d/%d]: CouplingModelLiggghts: validMapEntry %d, atom->nlocal: %d atom->nghost: %d \n",
+              comm->me, comm->nprocs, 
+              validMapEntry,atom->nlocal,atom->nghost);
 
     return map_copy;
 }
@@ -288,46 +293,32 @@ int* FixParScaleCouple::get_liggghts_map(int &length)
    schedule next coupling
 ------------------------------------------------------------------------- */
 
-//void FixParScaleCouple::pre_exchange()
-//{
-//    couple_this_step_ = true;
-/*
-    if (next_reneighbor != update->ntimestep)
-        fprintf(screen,"'premature' LIGGGHTS-ParScale coupling because of high flow dynamics\n");
-*/
-//}
+void FixParScaleCouple::pre_exchange()
+{
+
+
+
+}
 
 /* ----------------------------------------------------------------------
    call ParScale to catch up with LIGGGHTS
 ------------------------------------------------------------------------- */
 void FixParScaleCouple::end_of_step()
 {
-
-    // only do this if coupling desired
-    if(couple_every_ == 0) return;
-
     int ts = update->ntimestep;
-
-    // set flag if couple the next time-step
-    // will not be active this ts, since in eos
-    if((ts+1) % couple_every_ || ts_create_ == ts+1)
-        couple_this_step_ = false;
-    else
-        couple_this_step_ = true;
-
-    // only execute if pushing or pulling is desired
-    // do not execute on step of creation
-    if(ts % couple_every_ || ts_create_ == ts) return;
-
-    if(screen && comm->me == 0)
-        fprintf(screen,"ParScale Coupling established at step %d\n",ts);
-    if(logfile && comm->me == 0)
-        fprintf(logfile,"ParScale Coupling established at step %d\n",ts);
-
     time_ += update->dt;
 
-    if(!couple_this_step_)
-        return;
+    couple_this_step_ = false;
+    
+    // only execute if pushing or pulling is desired
+    // do not execute on step of creation
+    if( ts%couple_every_ ) return;
+    couple_this_step_ = true;
+    
+//    if(screen && comm->me == 0)
+//        fprintf(screen,"ParScale Coupling established at step %d\n",ts);
+    if(logfile && comm->me == 0)
+        fprintf(logfile,"ParScale Coupling established at step %d\n",ts);
 
     // assemble command and run in ParScale
     // init upon first use of ParScale, but not afterwards
@@ -342,7 +333,6 @@ void FixParScaleCouple::end_of_step()
 
     // reset flags and time counter
 
-    couple_this_step_ = false;
     pascal_setup_ = false;
     time_ = 0.;
 

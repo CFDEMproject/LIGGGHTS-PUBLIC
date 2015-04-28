@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -10,8 +10,6 @@
 <HR>
 
 <H3>fix addforce command 
-</H3>
-<H3>fix addforce/cuda command 
 </H3>
 <P><B>Syntax:</B>
 </P>
@@ -82,13 +80,13 @@ potential energy to formulate a self-consistent minimization problem
 </P>
 <P>The <I>energy</I> keyword is not allowed if the added force is a constant
 vector F = (fx,fy,fz), with all components defined as numeric
-constants and not as variables.  This is because LAMMPS can compute
+constants and not as variables.  This is because LIGGGHTS(R)-PUBLIC can compute
 the energy for each atom directly as E = -x dot F = -(x*fx + y*fy +
 z*fz), so that -Grad(E) = F.
 </P>
 <P>The <I>energy</I> keyword is optional if the added force is defined with
 one or more variables, and if you are performing dynamics via the
-<A HREF = "run.html">run</A> command.  If the keyword is not used, LAMMPS will set
+<A HREF = "run.html">run</A> command.  If the keyword is not used, LIGGGHTS(R)-PUBLIC will set
 the energy to 0.0, which is typically fine for dynamics.
 </P>
 <P>The <I>energy</I> keyword is required if the added force is defined with
@@ -109,25 +107,6 @@ converge properly.
 </P>
 <HR>
 
-<P>Styles with a <I>cuda</I> suffix are functionally the same as the
-corresponding style without the suffix.  They have been optimized to
-run faster, depending on your available hardware, as discussed in
-<A HREF = "Section_accelerate.html">Section_accelerate</A> of the manual.  The
-accelerated styles take the same arguments and should produce the same
-results, except for round-off and precision issues.
-</P>
-<P>These accelerated styles are part of the USER-CUDA package.  They are
-only enabled if LAMMPS was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LAMMPS</A> section for more info.
-</P>
-<P>You can specify the accelerated styles explicitly in your input script
-by including their suffix, or you can use the <A HREF = "Section_start.html#start_7">-suffix command-line
-switch</A> when you invoke LAMMPS, or you can
-use the <A HREF = "suffix.html">suffix</A> command in your input script.
-</P>
-<P>See <A HREF = "Section_accelerate.html">Section_accelerate</A> of the manual for
-more instructions on how to use the accelerated styles effectively.
-</P>
 <HR>
 
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
@@ -145,7 +124,7 @@ decrease in potential energy when atoms move in the direction of the
 added force.
 </P>
 <P>This fix computes a global scalar and a global 3-vector of forces,
-which can be accessed by various <A HREF = "Section_howto.html#howto_15">output
+which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  The scalar is the potential
 energy discussed above.  The vector is the total force on the group of
 atoms before the forces on individual atoms are changed by the fix.

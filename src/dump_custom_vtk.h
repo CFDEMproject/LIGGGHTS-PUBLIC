@@ -1,30 +1,47 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2014-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if no contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2014-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
-   Contributing author:
+   Contributing authors:
    Daniel Queteschiner, daniel.queteschiner@dcs-computing.com
+   Alexander Podlozhnyuk, alexander.podlozhnyuk@dcs-computing.com
 ------------------------------------------------------------------------- */
 
 #if defined(LAMMPS_VTK) 
@@ -126,6 +143,7 @@ class DumpCustomVTK : public Dump {
 
   int parse_fields(int, char **);
   void identify_vectors();
+  void identify_tensor();
   int add_compute(char *);
   int add_fix(char *);
   int add_variable(char *);
@@ -168,6 +186,7 @@ class DumpCustomVTK : public Dump {
   char *parallelfilecurrent;
   char *multiname_ex;
 
+  bool tensor_detected;
   void setFileCurrent();
   void buf2arrays(int, double *); // transfer data from buf array to vtk arrays
   void reset_vtk_data_containers();
@@ -237,6 +256,16 @@ class DumpCustomVTK : public Dump {
   void pack_eradius(int);
   void pack_ervel(int);
   void pack_erforce(int);
+  void pack_shapex(int); 
+  void pack_shapey(int);
+  void pack_shapez(int);
+  void pack_roundness1(int);
+  void pack_roundness2(int);
+  void pack_quat1(int);
+  void pack_quat2(int);
+  void pack_quat3(int);
+  void pack_quat4(int);
+  void pack_tensor(int n);
 };
 
 }

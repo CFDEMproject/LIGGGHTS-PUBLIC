@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -26,49 +25,49 @@ fix ts_check all check/timestep/gran 1000 0.1 0.1 :pre
 [Description:]
 
 Periodically calculate estimations of the Rayleigh- and Hertz time
-dt_r and dt_h for a granular system every 'nevery' time-steps. The user 
-can specify two quantities {fraction_r} and {fraction_h}. A warning 
-message is printed if the time-step size as specified via the 
-"timestep"_timestep.html command exceeds either of dt_r * fraction_r 
+dt_r and dt_h for a granular system every 'nevery' time-steps. The user
+can specify two quantities {fraction_r} and {fraction_h}. A warning
+message is printed if the time-step size as specified via the
+"timestep"_timestep.html command exceeds either of dt_r * fraction_r
 or dt_h * fraction_h.
 
 The former quantity is :
 
 dt_r = PI*r*sqrt(rho/G)/(0.1631*nu+0.8766),
 
-where rho is particle density, G is the shear modulus and nu is Poisson's 
+where rho is particle density, G is the shear modulus and nu is Poisson's
 ratio. The latter quantity is expressed by
 
 dt_h = 2.87*(m_eff^2/(r_eff*Y_eff^2*v_max))^0.2.
 
-The effective mass m_eff, the effective radius r_eff and the effective Young's 
-modulus Y_eff are as defined in "pair gran"_pair_gran.html. v_max is the 
-maximum relative velocity, taking mesh movement into account. Please note 
-that the Hertz criterion will also be used if you use a different granular 
+The effective mass m_eff, the effective radius r_eff and the effective Young's
+modulus Y_eff are as defined in "pair gran"_pair_gran.html. v_max is the
+maximum relative velocity, taking mesh movement into account. Please note
+that the Hertz criterion will also be used if you use a different granular
 pair style (e.g. Hooke).
 
-Additionally, this command checks the ratio of skin to the distance that 
-particles can travel relative to each other in one time-step. This value 
-should be >1, otherwise some interactions may be missed or overlap energy 
+Additionally, this command checks the ratio of skin to the distance that
+particles can travel relative to each other in one time-step. This value
+should be >1, otherwise some interactions may be missed or overlap energy
 may be generated artificially. This command will warn you if this is the case.
 
-These criteria are checked every 'nevery' time-steps. Rayleigh time dt_r is 
-calculated for each particle in the simulation, and the minimum value is 
-taken for further calculations. Hertz time dt_h is estimated by testing a 
-collision of each particle with itself using v_max as the assumed collision 
+These criteria are checked every 'nevery' time-steps. Rayleigh time dt_r is
+calculated for each particle in the simulation, and the minimum value is
+taken for further calculations. Hertz time dt_h is estimated by testing a
+collision of each particle with itself using v_max as the assumed collision
 velocity.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
 No information about this fix is written to "binary restart
 files"_restart.html.  None of the "fix_modify"_fix_modify.html options
-are relevant to this fix.  This fix computes a 3-vector, for access by 
-various "output commands"_Section_howto.html#4_15.  The vector consists 
-of the time-step size expressed as fraction of the Rayleigh and Hertz 
-time-step sizes and the ratio of skin to the distance particles can 
-travel relative to each other in one time-step, respectively. No 
-parameter of this fix can be used with the {start/stop} keywords of 
-the "run"_run.html command. This fix is not invoked during 
+are relevant to this fix.  This fix computes a 3-vector, for access by
+various "output commands"_Section_howto.html#4_15.  The vector consists
+of the time-step size expressed as fraction of the Rayleigh and Hertz
+time-step sizes and the ratio of skin to the distance particles can
+travel relative to each other in one time-step, respectively. No
+parameter of this fix can be used with the {start/stop} keywords of
+the "run"_run.html command. This fix is not invoked during
 "energy minimization"_minimize.html.
 
 [Restrictions:] none

@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -51,7 +51,7 @@ interactions, if defined.  Finally, there is a term for the {Nf}
 Currently, only the "fix shake"_fix_shake.html and "fix
 rigid"_fix_rigid.html commands contribute to this term.
 
-IMPORTANT NOTE: For granular systems, this formular neglects the 
+IMPORTANT NOTE: For granular systems, this formular neglects the
 contribution of average velocity in the kinetic energy contribution.
 This is corrected in the compute ave/euler command (currently no doc
 available).
@@ -110,7 +110,7 @@ thermo_style	custom step temp etotal press v_press :pre
 This compute calculates a per-atom array with 6 columns, which can be
 accessed by indices 1-6 by any command that uses per-atom values from
 a compute as input.  See "Section_howto
-15"_Section_howto.html#howto_15 for an overview of LAMMPS output
+15"_Section_howto.html#howto_8 for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 
 The per-atom array values will be in pressure*volume

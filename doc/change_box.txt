@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -75,8 +75,8 @@ The "create_box"_create_box.html, "read data"_read_data.html, and
 simulation box is orthogonal or triclinic and their doc pages explain
 the meaning of the xy,xz,yz tilt factors.
 
-See "Section_howto 12"_Section_howto.html#howto_12 of the doc pages
-for a geometric description of triclinic boxes, as defined by LAMMPS,
+See "Section_howto 12"_Section_howto.html#howto_7 of the doc pages
+for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.
 
@@ -127,7 +127,7 @@ final transformation this can be avoided by changing the order of the
 sequence, or breaking the transformation into two or more smaller
 transformations.  For more information on the allowed limits for box
 skew see the discussion on triclinic boxes on "this
-page"_Section_howto.html#howto_12.
+page"_Section_howto.html#howto_7.
 
 :line
 
@@ -159,7 +159,7 @@ change_box all x scale 1.1 y volume z volume :pre
 
 The {volume} style changes the associated dimension so that the
 overall box volume is unchanged relative to its value before the
-preceding keyword was invoked. 
+preceding keyword was invoked.
 
 If the following command is used, then the z box length will shrink by
 the same 1.1 factor the x box length was increased by:
@@ -203,7 +203,7 @@ For style {delta}, a plus or minus change in the tilt factor is
 specified.  The value can be in lattice or box distance units.  See
 the discussion of the units keyword below.
 
-All of these styles change the xy, xz, yz tilt factors.  In LAMMPS,
+All of these styles change the xy, xz, yz tilt factors.  In LIGGGHTS(R)-PUBLIC,
 tilt factors (xy,xz,yz) for triclinic boxes are required to be no more
 than half the distance of the parallel box length.  For example, if
 xlo = 2 and xhi = 12, then the x box length is 10 and the xy tilt
@@ -245,8 +245,8 @@ command.
 
 The {ortho} and {triclinic} keywords convert the simulation box to be
 orthogonal or triclinic (non-orthongonal).  See "this
-section"_Section_howto#howto_13 for a discussion of how non-orthongal
-boxes are represented in LAMMPS.
+section"_Section_howto#howto_12 for a discussion of how non-orthongal
+boxes are represented in LIGGGHTS(R)-PUBLIC.
 
 The simulation box is defined as either orthogonal or triclinic when
 it is created via the "create_box"_create_box.html,
@@ -256,9 +256,7 @@ commands.
 These keywords allow you to toggle the existing simulation box from
 orthogonal to triclinic and vice versa.  For example, an initial
 equilibration simulation can be run in an orthogonal box, the box can
-be toggled to triclinic, and then a "non-equilibrium MD (NEMD)
-simulation"_Section_howto.html#howto_13 can be run with deformation
-via the "fix deform"_fix_deform.html command.
+be toggled to triclinic.
 
 If the simulation box is currently triclinic and has non-zero tilt in
 xy, yz, or xz, then it cannot be converted to an orthogonal box.

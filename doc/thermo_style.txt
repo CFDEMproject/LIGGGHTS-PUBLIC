@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -19,9 +19,7 @@ args = list of arguments for a particular style :l
   {custom} args = list of attributes
     possible attributes = step, elapsed, elaplong, dt, time,
                           cpu, tpcpu, spcpu, cpuremain, part, cu
-                          atoms, temp, press, pe, ke, etotal, enthalpy,
-                          evdwl, ecoul, epair, ebond, eangle, edihed, eimp,
-                          emol, elong, etail,
+                          atoms, ke,
                           vol, lx, ly, lz, xlo, xhi, ylo, yhi, zlo, zhi,
 			  xy, xz, yz, xlat, ylat, zlat,
 			  pxx, pyy, pzz, pxy, pxz, pyz,
@@ -42,22 +40,6 @@ args = list of arguments for a particular style :l
       part = which partition (0 to Npartition-1) this is
       cu = timesteps per CPU second
       atoms = # of atoms
-      temp = temperature
-      press = pressure
-      pe = total potential energy
-      ke = kinetic energy
-      etotal = total energy (pe + ke)
-      enthalpy = enthalpy (etotal + press*vol)
-      evdwl = VanderWaal pairwise energy
-      ecoul = Coulombic pairwise energy
-      epair = pairwise energy (evdwl + ecoul + elong + etail)
-      ebond = bond energy
-      eangle = angle energy
-      edihed = dihedral energy
-      eimp = improper energy
-      emol = molecular energy (ebond + eangle + edihed + eimp)
-      elong = long-range kspace energy
-      etail = VanderWaal energy long-range tail correction
       vol = volume
       lx,ly,lz = box lengths in x,y,z
       xlo,xhi,ylo,yhi,zlo,zhi = box boundaries
@@ -66,7 +48,7 @@ args = list of arguments for a particular style :l
       pxx,pyy,pzz,pxy,pxz,pyz = 6 components of pressure tensor
       fmax = max component of force on any atom in any dimension
       fnorm = length of force vector for all atoms
-      cella,cellb,cellc = periodic cell lattice constants a,b,c 
+      cella,cellb,cellc = periodic cell lattice constants a,b,c
       cellalpha, cellbeta, cellgamma = periodic cell angles alpha,beta,gamma
       c_ID = global scalar value calculated by a compute with ID
       c_ID\[I\] = Ith component of global vector calculated by a compute with ID
@@ -79,9 +61,8 @@ args = list of arguments for a particular style :l
 
 [Examples:]
 
-thermo_style multi
-thermo_style custom step temp pe etotal press vol
-thermo_style custom step temp etotal c_myTemp v_abc :pre
+thermo_style one
+thermo_style custom step v_abc :pre
 
 [Description:]
 
@@ -89,12 +70,12 @@ Set the style and content for printing thermodynamic data to the
 screen and log file.
 
 Style {one} prints a one-line summary of thermodynamic info that is
-the equivalent of "thermo_style custom step temp epair emol etotal
-press".  The line contains only numeric values.
+the equivalent of "thermo_style custom step atoms ke cpu".
+The line contains only numeric values.
 
 Style {multi} prints a multiple-line listing of thermodynamic info
-that is the equivalent of "thermo_style custom etotal ke temp pe ebond
-eangle edihed eimp evdwl ecoul elong press".  The listing contains
+that is the equivalent of "thermo_style custom step atoms ke cpu".
+The listing contains
 numeric values and a string ID for each quantity.
 
 Style {custom} is the most general setting and allows you to specify
@@ -103,7 +84,7 @@ thermodynamic timestep.  Note that the keywords c_ID, f_ID, v_name are
 references to "computes"_compute.html, "fixes"_fix.html, and
 equal-style "variables"_variable.html" that have been defined
 elsewhere in the input script or can even be new styles which users
-have added to LAMMPS (see the "Section_modify"_Section_modify.html
+have added to LIGGGHTS(R)-PUBLIC (see the "Section_modify"_Section_modify.html
 section of the documentation).  Thus the {custom} style provides a
 flexible means of outputting essentially any desired quantity as a
 simulation proceeds.
@@ -128,77 +109,6 @@ thermodynamic settings are restored to their default values, including
 those previously set by a "thermo_modify"_thermo_modify.html command.
 Thus if your input script specifies a thermo_style command, you should
 use the thermo_modify command after it.
-
-:line
-
-Several of the thermodynamic quantities require a temperature to be
-computed: "temp", "press", "ke", "etotal", "enthalpy", "pxx", etc.  By
-default this is done by using a {temperature} compute which is created
-when LAMMPS starts up, as if this command had been issued:
-
-compute thermo_temp all temp :pre
-
-See the "compute temp"_compute_temp.html command for details.  Note
-that the ID of this compute is {thermo_temp} and the group is {all}.
-You can change the attributes of this temperature (e.g. its
-degrees-of-freedom) via the "compute_modify"_compute_modify.html
-command.  Alternatively, you can directly assign a new compute (that
-calculates temperature) which you have defined, to be used for
-calculating any thermodynamic quantity that requires a temperature.
-This is done via the "thermo_modify"_thermo_modify.html command.
-
-Several of the thermodynamic quantities require a pressure to be
-computed: "press", "enthalpy", "pxx", etc.  By default this is done by
-using a {pressure} compute which is created when LAMMPS starts up, as
-if this command had been issued:
-
-compute thermo_press all pressure thermo_temp :pre
-
-See the "compute pressure"_compute_pressure.html command for details.
-Note that the ID of this compute is {thermo_press} and the group is
-{all}.  You can change the attributes of this pressure via the
-"compute_modify"_compute_modify.html command.  Alternatively, you can
-directly assign a new compute (that calculates pressure) which you
-have defined, to be used for calculating any thermodynamic quantity
-that requires a pressure.  This is done via the
-"thermo_modify"_thermo_modify.html command.
-
-Several of the thermodynamic quantities require a potential energy to
-be computed: "pe", "etotal", "ebond", etc.  This is done by using a
-{pe} compute which is created when LAMMPS starts up, as if this
-command had been issued:
-
-compute thermo_pe all pe :pre
-
-See the "compute pe"_compute_pe.html command for details.  Note that
-the ID of this compute is {thermo_pe} and the group is {all}.  You can
-change the attributes of this potential energy via the
-"compute_modify"_compute_modify.html command.
-
-:line
-
-The kinetic energy of the system {ke} is inferred from the temperature
-of the system with 1/2 Kb T of energy for each degree of freedom.
-Thus, using different "compute commands"_compute.html for calculating
-temperature, via the "thermo_modify temp"_thermo_modify.html command,
-may yield different kinetic energies, since different computes that
-calculate temperature can subtract out different non-thermal
-components of velocity and/or include different degrees of freedom
-(translational, rotational, etc).
-
-The potential energy of the system {pe} will include contributions
-from fixes if the "fix_modify thermo"_fix_modify.html option is set
-for a fix that calculates such a contribution.  For example, the "fix
-wall/lj93"_fix_wall.html fix calculates the energy of atoms
-interacting with the wall.  See the doc pages for "individual fixes"
-to see which ones contribute.
-
-A long-range tail correction {etail} for the VanderWaal pairwise
-energy will be non-zero only if the "pair_modify
-tail"_pair_modify.html option is turned on.  The {etail} contribution
-is included in {evdwl}, {pe}, and {etotal}, and the corresponding tail
-correction to the pressure is included in {press} and {pxx}, {pyy},
-etc.
 
 :line
 
@@ -260,9 +170,9 @@ system, or the infinity-norm of the force vector for the system.  The
 The keywords {cella}, {cellb}, {cellc}, {cellalpha}, {cellbeta},
 {cellgamma}, correspond to the usual crystallographic quantities that
 define the periodic unit cell of a crystal.  See "this
-section"_Section_howto.html#howto_12 of the doc pages for a geometric
+section"_Section_howto.html#howto_7 of the doc pages for a geometric
 description of triclinic periodic cells, including a precise defintion
-of these quantities in terms of the internal LAMMPS cell dimensions
+of these quantities in terms of the internal LIGGGHTS(R)-PUBLIC cell dimensions
 {lx}, {ly}, {lz}, {yz}, {xz}, {xy}.
 
 :line
@@ -338,8 +248,7 @@ This command must come after the simulation box is defined by a
 [Related commands:]
 
 "thermo"_thermo.html, "thermo_modify"_thermo_modify.html,
-"fix_modify"_fix_modify.html, "compute temp"_compute_temp.html,
-"compute pressure"_compute_pressure.html
+"fix_modify"_fix_modify.html,
 
 [Default:]
 

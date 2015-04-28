@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -32,7 +32,7 @@ value = vx, vy, vz, fx, fy, fz, density/mass, density/number, c_ID, c_ID\[I\], f
   v_name = per-atom vector calculated by an atom-style variable with name :pre
 
 zero or more keyword/arg pairs may be appended :l
-keyword = {norm} or {units} or {file} or {ave} or {overwrite} or {title1} or {title2} or {title3} or {std} :l
+keyword = {norm} or {units} or {file} or {ave} or {overwrite} or {title1} or {title2} or {title3} or {write_ts} or {std} :l
   {units} arg = {box} or {lattice} or {reduced}
   {norm} arg = {all} or {sample}
   {region} arg = region-ID
@@ -49,7 +49,9 @@ keyword = {norm} or {units} or {file} or {ave} or {overwrite} or {title1} or {ti
   {title2} arg = string
     string = text to print as 2nd line of output file
   {title3} arg = string
-    string = text to print as 3rd line of output file 
+    string = text to print as 3rd line of output file
+  {write_ts} arg = yes or no
+    yes or no = do nor do not write time-step info and number of samples to file
   {std} arg = N1 N2 filename
 	N1 = lower limit of particle number per bin for sampling
 	N2 = upper limit of particle number per bin for sampling
@@ -70,7 +72,7 @@ Use one or more per-atom vectors as inputs every few timesteps, bin
 their values spatially into 1d, 2d, or 3d bins based on current atom
 coordinates, and average the bin values over longer timescales.  The
 resulting bin averages can be used by other "output
-commands"_Section_howto.html#howto_15 such as "thermo_style
+commands"_Section_howto.html#howto_8 such as "thermo_style
 custom"_thermo_style.html, and can also be written to a file.
 
 The group specified with the command means only atoms within the group
@@ -155,8 +157,8 @@ For orthogonal simulation boxes, the bins are also layers, pencils, or
 boxes aligned with the xyz coordinate axes.  For triclinic
 (non-orthogonal) simulation boxes, the bins are so that they are
 parallel to the tilted faces of the simulation box.  See "this
-section"_Section_howto.html#howto_12 of the manual for a discussion of
-the geometry of triclinic boxes in LAMMPS.  As described there, a
+section"_Section_howto.html#howto_7 of the manual for a discussion of
+the geometry of triclinic boxes in LIGGGHTS(R)-PUBLIC.  As described there, a
 tilted simulation box has edge vectors a,b,c.  In that nomenclature,
 bins in the x dimension have faces with normals in the "b" cross "c"
 direction.  Bins in y have faces normal to the "a" cross "c"
@@ -186,7 +188,7 @@ previously defined in the input script.  If no bracketed integer is
 appended, the per-atom vector calculated by the compute is used.  If a
 bracketed integer is appended, the Ith column of the per-atom array
 calculated by the compute is used.  Users can also write code for
-their own compute styles and "add them to LAMMPS"_Section_modify.html.
+their own compute styles and "add them to LIGGGHTS(R)-PUBLIC"_Section_modify.html.
 
 If a value begins with "f_", a fix ID must follow which has been
 previously defined in the input script.  If no bracketed integer is
@@ -195,7 +197,7 @@ bracketed integer is appended, the Ith column of the per-atom array
 calculated by the fix is used.  Note that some fixes only produce
 their values on certain timesteps, which must be compatible with
 {Nevery}, else an error results.  Users can also write code for their
-own fix styles and "add them to LAMMPS"_Section_modify.html.
+own fix styles and "add them to LIGGGHTS(R)-PUBLIC"_Section_modify.html.
 
 If a value begins with "v_", a variable name must follow which has
 been previously defined in the input script.  Variables of style
@@ -274,7 +276,8 @@ over less than M values if they are not available.
 The {file} keyword allows a filename to be specified.  Every {Nfreq}
 timesteps, a section of bin info will be written to a text file in the
 following format.  A line with the timestep and number of bin is
-written.  Then one line per bin is written, containing the bin ID
+written. Output of this line can be supressed with the {write_ts} keyword.
+ Then one line per bin is written, containing the bin ID
 (1-N), the coordinate of the center of the bin, the number of atoms
 in the bin, and one or more calculated values.  The number of values
 in each line corresponds to the number of values specified in the fix
@@ -290,8 +293,9 @@ output.  This option can only be used with the {ave running} setting.
 
 The {title1} and {title2} and {title3} keywords allow specification of
 the strings that will be printed as the first 3 lines of the output
-file, assuming the {file} keyword was used.  LAMMPS uses default
+file, assuming the {file} keyword was used.  LIGGGHTS(R)-PUBLIC uses default
 values for each of these, so they do not need to be specified.
+If either of them is specified as "", then the line is omitted
 
 By default, these header lines are as follows:
 
@@ -309,8 +313,8 @@ just Coord.
 
 :line
 
-If the {std} keyword is set, mean and standard deviation of the specified values (value1, value2, etc.) over samples of a defined size are calculated. The sample size has to be defined by a lower limit (N1) and an upper limit (N2>N1). 
-All bins containing a particle count between N1 and N2 (including N1 and N2) are used as samples. Every {Nfreq} timestep a line is written to a file specified after N1 and N2, including the following numbers: timestep, total number of atoms, total number of bins, maximum number of atoms per bin, number of empty bins, number of bins including less atoms than N1, number of bins including more atoms than N2, number of samples, average number of atoms per sample, followed by three quantities for each defined value: true average (over all atoms), average over the chosen samples, standard deviation over the chosen samples. 
+If the {std} keyword is set, mean and standard deviation of the specified values (value1, value2, etc.) over samples of a defined size are calculated. The sample size has to be defined by a lower limit (N1) and an upper limit (N2>N1).
+All bins containing a particle count between N1 and N2 (including N1 and N2) are used as samples. Every {Nfreq} timestep a line is written to a file specified after N1 and N2, including the following numbers: timestep, total number of atoms, total number of bins, maximum number of atoms per bin, number of empty bins, number of bins including less atoms than N1, number of bins including more atoms than N2, number of samples, average number of atoms per sample, followed by three quantities for each defined value: true average (over all atoms), average over the chosen samples, standard deviation over the chosen samples.
 For the calculation of the standard deviation the (known) true average is used instead of the samples average (the latter is only an estimate for the true average!).
 
 :line
@@ -322,7 +326,7 @@ files"_restart.html.  None of the "fix_modify"_fix_modify.html options
 are relevant to this fix.
 
 This fix computes a global array of values which can be accessed by
-various "output commands"_Section_howto.html#howto_15.  The values can
+various "output commands"_Section_howto.html#howto_8.  The values can
 only be accessed on timesteps that are multiples of {Nfreq} since that
 is when averaging is performed.  The global array has # of rows =
 Nbins and # of columns = Ndim+1+Nvalues, where Ndim = 1,2,3 for

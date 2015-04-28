@@ -1,33 +1,45 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #ifdef SURFACE_MODEL
 SURFACE_MODEL(SURFACE_DEFAULT,default,0)
 #else
@@ -46,7 +58,7 @@ namespace ContactModels
   class SurfaceModel<SURFACE_DEFAULT> : protected Pointers
   {
   public:
-    static const int MASK = CM_COLLISION;
+    static const int MASK = CM_SURFACES_INTERSECT;
 
     SurfaceModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp)
     {
@@ -56,16 +68,19 @@ namespace ContactModels
     inline void registerSettings(Settings&) {}
     inline void connectToProperties(PropertyRegistry&) {}
 
-    inline void collision(CollisionData & cdata, ForceData&, ForceData&)
+    inline bool checkSurfaceIntersect(SurfacesIntersectData &)
+    { return true; }
+
+    inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData&, ForceData&)
     {
-      const double enx = cdata.en[0];
-      const double eny = cdata.en[1];
-      const double enz = cdata.en[2];
+      const double enx = sidata.en[0];
+      const double eny = sidata.en[1];
+      const double enz = sidata.en[2];
 
       // relative translational velocity
-      const double vr1 = cdata.v_i[0] - cdata.v_j[0];
-      const double vr2 = cdata.v_i[1] - cdata.v_j[1];
-      const double vr3 = cdata.v_i[2] - cdata.v_j[2];
+      const double vr1 = sidata.v_i[0] - sidata.v_j[0];
+      const double vr2 = sidata.v_i[1] - sidata.v_j[1];
+      const double vr3 = sidata.v_i[2] - sidata.v_j[2];
 
       // normal component
       const double vn = vr1 * enx + vr2 * eny + vr3 * enz;
@@ -79,28 +94,28 @@ namespace ContactModels
       const double vt3 = vr3 - vn3;
 
       // relative rotational velocity
-      const double deltan = cdata.radsum - cdata.r;
-      const double dx = cdata.delta[0];
-      const double dy = cdata.delta[1];
-      const double dz = cdata.delta[2];
-      const double rinv = cdata.rinv;
+      const double deltan = sidata.radsum - sidata.r;
+      const double dx = sidata.delta[0];
+      const double dy = sidata.delta[1];
+      const double dz = sidata.delta[2];
+      const double rinv = sidata.rinv;
       double wr1, wr2, wr3;
 
-      if(cdata.is_wall) {
+      if(sidata.is_wall) {
         // in case of wall contact, r is the contact radius
-        const double cr = cdata.radi - 0.5*cdata.deltan;
-        wr1 = cr * cdata.omega_i[0] * rinv;
-        wr2 = cr * cdata.omega_i[1] * rinv;
-        wr3 = cr * cdata.omega_i[2] * rinv;
-        cdata.cri = cr;
+        const double cr = sidata.radi - 0.5*sidata.deltan;
+        wr1 = cr * sidata.omega_i[0] * rinv;
+        wr2 = cr * sidata.omega_i[1] * rinv;
+        wr3 = cr * sidata.omega_i[2] * rinv;
+        sidata.cri = cr;
       } else {
-        const double cri = cdata.radi - 0.5 * deltan;
-        const double crj = cdata.radj - 0.5 * deltan;
-        wr1 = (cri * cdata.omega_i[0] + crj * cdata.omega_j[0]) * rinv;
-        wr2 = (cri * cdata.omega_i[1] + crj * cdata.omega_j[1]) * rinv;
-        wr3 = (cri * cdata.omega_i[2] + crj * cdata.omega_j[2]) * rinv;
-        cdata.cri = cri;
-        cdata.crj = crj;
+        const double cri = sidata.radi - 0.5 * deltan;
+        const double crj = sidata.radj - 0.5 * deltan;
+        wr1 = (cri * sidata.omega_i[0] + crj * sidata.omega_j[0]) * rinv;
+        wr2 = (cri * sidata.omega_i[1] + crj * sidata.omega_j[1]) * rinv;
+        wr3 = (cri * sidata.omega_i[2] + crj * sidata.omega_j[2]) * rinv;
+        sidata.cri = cri;
+        sidata.crj = crj;
       }
 
       // relative velocities
@@ -108,19 +123,19 @@ namespace ContactModels
       const double vtr2 = vt2 - (dx * wr3 - dz * wr1);
       const double vtr3 = vt3 - (dy * wr1 - dx * wr2);
 
-      cdata.vn = vn;
-      cdata.deltan = deltan;
-      cdata.wr1 = wr1;
-      cdata.wr2 = wr2;
-      cdata.wr3 = wr3;
-      cdata.vtr1 = vtr1;
-      cdata.vtr2 = vtr2;
-      cdata.vtr3 = vtr3;
+      sidata.vn = vn;
+      sidata.deltan = deltan;
+      sidata.wr1 = wr1;
+      sidata.wr2 = wr2;
+      sidata.wr3 = wr3;
+      sidata.vtr1 = vtr1;
+      sidata.vtr2 = vtr2;
+      sidata.vtr3 = vtr3;
     }
 
-    inline void noCollision(ContactData&, ForceData&, ForceData&){}
-    void beginPass(CollisionData&, ForceData&, ForceData&){}
-    void endPass(CollisionData&, ForceData&, ForceData&){}
+    inline void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
   };
 }
 }

@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -27,10 +27,10 @@
   <I>stop</I> value = N2
     N2 = timestep at which last run will end
   <I>pre</I> value = <I>no</I> or <I>yes</I>
-  <I>post</I> value = <I>no</I> or <I>yes</I> 
+  <I>post</I> value = <I>no</I> or <I>yes</I>
   <I>every</I> values = M c1 c2 ...
     M = break the run into M-timestep segments and invoke one or more commands between each segment
-    c1,c2,...,cN = one or more LAMMPS commands, each enclosed in quotes
+    c1,c2,...,cN = one or more LIGGGHTS(R)-PUBLIC commands, each enclosed in quotes
     c1 = NULL means no command will be invoked 
 </PRE>
 
@@ -66,58 +66,44 @@ completes.
 </P>
 <P>The <I>start</I> or <I>stop</I> keywords can be used if multiple runs are being
 performed and you want a <A HREF = "fix.html">fix</A> command that changes some
-value over time (e.g. temperature) to make the change across the
+value over time to make the change across the
 entire set of runs and not just a single run.  See the doc page for
 individual fixes to see which ones can be used with the <I>start/stop</I>
 keywords.
 </P>
-<P>For example, consider this fix followed by 10 run commands:
-</P>
-<PRE>fix	     1 all nvt 200.0 300.0 1.0
-run	     1000 start 0 stop 10000
-run	     1000 start 0 stop 10000
-...
-run	     1000 start 0 stop 10000 
-</PRE>
-<P>The NVT fix ramps the target temperature from 200.0 to 300.0 during a
-run.  If the run commands did not have the start/stop keywords (just
-"run 1000"), then the temperature would ramp from 200.0 to 300.0
-during the 1000 steps of each run.  With the start/stop keywords, the
-ramping takes place over the 10000 steps of all runs together.
-</P>
 <P>The <I>pre</I> and <I>post</I> keywords can be used to streamline the setup,
 clean-up, and associated output to the screen that happens before and
 after a run.  This can be useful if you wish to do many short runs in
-succession (e.g. LAMMPS is being called as a library which is doing
-other computations between successive short LAMMPS runs).
+succession (e.g. LIGGGHTS(R)-PUBLIC is being called as a library which is doing
+other computations between successive short LIGGGHTS(R)-PUBLIC runs).
 </P>
-<P>By default (pre and post = yes), LAMMPS creates neighbor lists,
+<P>By default (pre and post = yes), LIGGGHTS(R)-PUBLIC creates neighbor lists,
 computes forces, and imposes fix constraints before every run.  And
 after every run it gathers and prints timings statistics.  If a run is
 just a continuation of a previous run (i.e. no settings are changed),
 the initial computation is not necessary; the old neighbor list is
 still valid as are the forces.  So if <I>pre</I> is specified as "no" then
 the initial setup is skipped, except for printing thermodynamic info.
-Note that if <I>pre</I> is set to "no" for the very 1st run LAMMPS
+Note that if <I>pre</I> is set to "no" for the very 1st run LIGGGHTS(R)-PUBLIC
 performs, then it is overridden, since the initial setup computations
 must be done.
 </P>
 <P>IMPORTANT NOTE: If your input script changes settings between 2 runs
 (e.g. adds a <A HREF = "fix.html">fix</A> or <A HREF = "dump.html">dump</A> or
 <A HREF = "compute.html">compute</A> or changes a <A HREF = "neigh_modify.html">neighbor</A> list
-parameter), then the initial setup must be performed.  LAMMPS does not
+parameter), then the initial setup must be performed.  LIGGGHTS(R)-PUBLIC does not
 check for this, but it would be an error to use the <I>pre no</I> option in
 this case.
 </P>
 <P>If <I>post</I> is specified as "no", the full timing summary is skipped;
 only a one-line summary timing is printed.
 </P>
-<P>The <I>every</I> keyword provides a means of breaking a LAMMPS run into a
-series of shorter runs.  Optionally, one or more LAMMPS commands (c1,
+<P>The <I>every</I> keyword provides a means of breaking a LIGGGHTS(R)-PUBLIC run into a
+series of shorter runs.  Optionally, one or more LIGGGHTS(R)-PUBLIC commands (c1,
 c2, ..., cN) will be executed in between the short runs.  If used, the
 <I>every</I> keyword must be the last keyword, since it has a variable
 number of arguments.  Each of the trailing arguments is a single
-LAMMPS command, and each command should be enclosed in quotes, so that
+LIGGGHTS(R)-PUBLIC command, and each command should be enclosed in quotes, so that
 the entire command will be treated as a single argument.  This will
 also prevent any variables in the command from being evaluated until
 it is executed multiple times during the run.  Note that if a command
@@ -129,13 +115,13 @@ as in the example above or below.
 and interleaving commands in your input script.  For example, a
 <A HREF = "print.html">print</A> command could be invoked or a <A HREF = "fix.html">fix</A> could
 be redefined, e.g. to reset a thermostat temperature.  Or this could
-be useful for invoking a command you have added to LAMMPS that wraps
+be useful for invoking a command you have added to LIGGGHTS(R)-PUBLIC that wraps
 some other code (e.g. as a library) to perform a computation
-periodically during a long LAMMPS run.  See <A HREF = "Section_modify.html">this
+periodically during a long LIGGGHTS(R)-PUBLIC run.  See <A HREF = "Section_modify.html">this
 section</A> of the documentation for info about how
-to add new commands to LAMMPS.  See <A HREF = "Section_howto.html#howto_10">this
+to add new commands to LIGGGHTS(R)-PUBLIC.  See <A HREF = "Section_howto.html#howto_10">this
 section</A> of the documentation for ideas
-about how to couple LAMMPS to other codes.
+about how to couple LIGGGHTS(R)-PUBLIC to other codes.
 </P>
 <P>With the <I>every</I> option, N total steps are simulated, in shorter runs
 of M steps each.  After each M-length run, the specified commands are
@@ -183,7 +169,7 @@ run 10000 every 100 "if '$t < 300.0' then 'jump SELF afterrun'"
 <P>Unfortunately this will not currently work.  The run command simply
 executes each command one at a time each time it pauses, then
 continues the run.  You can replace the jump command with a simple
-<A HREF = "quit.html">quit</A> command and cause LAMMPS to exit during the
+<A HREF = "quit.html">quit</A> command and cause LIGGGHTS(R)-PUBLIC to exit during the
 middle of a run when the condition is met.
 </P>
 <P><B>Restrictions:</B>
@@ -195,8 +181,7 @@ run a simulation for any number of steps (ok, up to 2^63 steps).
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "minimize.html">minimize</A>, <A HREF = "run_style.html">run_style</A>,
-<A HREF = "temper.html">temper</A>
+<P><A HREF = "run_style.html">run_style</A>,
 </P>
 <P><B>Default:</B>
 </P>

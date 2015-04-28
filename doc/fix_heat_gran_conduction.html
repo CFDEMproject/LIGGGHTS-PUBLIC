@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -40,9 +38,9 @@
 </P>
 <PRE>fix 3 hg heat/gran/conduction initial_temperature 273.15 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS info:</B>
+<P><B>LIGGGHTS(R)-PUBLIC vs. LIGGGHTS(R)-PUBLIC info:</B>
 </P>
-<P>This command is not available in LAMMPS.
+<P>This command is not available in LIGGGHTS(R)-PUBLIC.
 </P>
 <P><B>Description:</B>
 </P>
@@ -90,9 +88,9 @@ where rmin is the radius of the smaller of the two particles in contact.
 <P>Area correction:
 </P>
 <P>For <I>contact_area</I>  = overlap, an area correction can additionally
-be performed using keyword <I>area_correction</I> to account for the fact that 
-the Young's modulus might have been decreased in order to speed-up the 
-simulation, thus artificially increasing the overlap. In this case, you have 
+be performed using keyword <I>area_correction</I> to account for the fact that
+the Young's modulus might have been decreased in order to speed-up the
+simulation, thus artificially increasing the overlap. In this case, you have
 to specify the original Young's modulus of each material by means of a
 <A HREF = "fix_property.html">fix property/global</A> command:
 </P>
@@ -102,15 +100,15 @@ to specify the original Young's modulus of each material by means of a
 <P>This area correction is performed by scaling the contact area with
 (Y*/Y*,orig)^a, where Y* and Y*,orig are calculated as defined in
 <A HREF = "pair_gran.html">pair_style gran</A> .
-The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz 
+The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz
 interaction.
 </P>
 <P><B>Output info:</B>
 </P>
 <P>You can visualize the heat sources by accessing f_heatSource[0], and the
-heatFluxes by f_heatFlux[0] . With f_directionalHeatFlux[0], f_directionalHeatFlux[1]  
-and f_directionalHeatFlux[2] you can access the conductive heat fluxes in x,y,z directions. 
-The conductive heat fluxes are calculated per-contact and 
+heatFluxes by f_heatFlux[0] . With f_directionalHeatFlux[0], f_directionalHeatFlux[1]
+and f_directionalHeatFlux[2] you can access the conductive heat fluxes in x,y,z directions.
+The conductive heat fluxes are calculated per-contact and
 half the value is stored in each atom participating in the contact.
 With f_Temp[0] you can access the per-particle
 temperature. You can also access the total thermal energy of the fix group

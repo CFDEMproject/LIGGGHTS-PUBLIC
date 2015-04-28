@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -11,14 +10,21 @@ fix ave/euler command :h3
 
 [Syntax:]
 
-fix ID group-ID ave/euler nevery N cell_size_relative c :pre
+fix ID group-ID ave/euler nevery N cell_size_relative c parallel par keywords values :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 ave/euler = style name of this fix command :l
 nevery = obligatory keyword :l
 n = calculate average values every this many timesteps :l
 cell_size_relative = obligatory keyword :l
-c = cell size in multiples of max cutoff :l 
+c = cell size in multiples of max cutoff :l
+parallel = obligatory keyword :l
+par = "yes" or "no :l
+zero or more keyword/value pairs may be appended :l
+keyword = {basevolume_region} :l
+  {basevolume_region} values = reg-ID
+    region-ID = correct grid cell volume based on this region  :pre
+
 :ule
 
 [Examples:]
@@ -27,28 +33,45 @@ fix 1 all ave/euler nevery 100 cell_size_relative 4.5 :pre
 
 [Description:]
 
-Calculate cell-based averages of velocity, radius, volume fraction, 
+Calculate cell-based averages of velocity, radius, volume fraction,
 and pressure (-1/3 * trace of the stress tensor) every few timesteps,
 as specified by the {nevery} keyword. The size of the cells is calculated
 as multiple of the maximum cutoff, via the {cell_size_relative}.
 Note that at least a relative cell size of 3 is required.
 
 Note that velocity is favre (mass) averaged, whereas radius is arithmetically
-averaged. To calculate the stress, this command internally uses a 
-"compute stress/atom"_compute_stress_atom.html . It includes the convective 
-term correctly for granular particles with non-zero average velocity 
+averaged. To calculate the stress, this command internally uses a
+"compute stress/atom"_compute_stress_atom.html . It includes the convective
+term correctly for granular particles with non-zero average velocity
 (which is not included  in "compute stress/atom"_compute_stress_atom.html).
-However, it does not include bond, angle, diahedral or kspace contributions 
+However, it does not include bond, angle, diahedral or kspace contributions
 so that the stress tensor finally reads
 
 :c,image(Eqs/stress_tensor_granular.png)
 
-where vave is the (cell-based) average velocity. 
+where vave is the (cell-based) average velocity.
 The first term is a kinetic energy contribution for atom {I}.  The
 second term is a pairwise energy contribution where {n} loops over the
 {Np} neighbors of atom {I}, {r1} and {r2} are the positions of the 2
 atoms in the pairwise interaction, and {F1} and {F2} are the forces on
 the 2 atoms resulting from the pairwise interaction.
+
+The {parallel} option determines if every process allocates
+its own local grid for postprocessing (for {parallel} = yes),
+or each proc contributes to one single global grid (for {parallel} = no).
+This will be slower since it requires parallel communication,
+but will ensure that the grid cells do not move over time (e.g.
+in case of a moving boundary)
+
+The {basevolume_region} option allows to specify a region that
+represents the volume which can theoretically be filled with
+particles. This will then be used to correct the basis of the averaging
+volume for each cell in the grid. For example, if you use a cylindrical
+wall, it makes sense to use an identical cylindrical region for 
+the {basevolume_region} option, and the command will correctly
+calculate the volume fraction in the near-wall cells.
+the calculation of overlap between grid cells and the region
+is done using a Monte-Carlo approach.
 
 :line
 
@@ -58,10 +81,10 @@ No information about this fix is written to "binary restart
 files"_restart.html.  None of the "fix_modify"_fix_modify.html options
 are relevant to this fix.
 
-This fix computes the above-mentioned quantities for output via a 
+This fix computes the above-mentioned quantities for output via a
 "dump euler/vtk"_dump.html command.  The values can
 only be accessed on timesteps that are multiples of {nevery} since that
-is when calculations are performed. 
+is when calculations are performed.
 
 No parameter of this fix can be used with the {start/stop} keywords of
 the "run"_run.html command.  This fix is not invoked during "energy
@@ -77,7 +100,7 @@ incorrect.
 [Related commands:]
 
 "compute"_compute.html, "compute stress/atom"_compute_stress_atom.html,
-"fix ave/atom"_fix_ave_atom.html, "fix ave/histo"_fix_ave_histo.html, 
+"fix ave/atom"_fix_ave_atom.html, "fix ave/histo"_fix_ave_histo.html,
 "fix ave/time"_fix_ave_time.html, "fix ave/spatial"_fix_ave_spatial.html,
 
 [Default:] none

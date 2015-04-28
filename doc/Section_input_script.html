@@ -1,0 +1,304 @@
+<HTML>
+<CENTER><A HREF = "Section_start.html">Previous Section</A> - <A HREF = "lws">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> - <A HREF = "Section_commands.html">Next Section</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>3. Commands 
+</H3>
+<P>This section describes how a LIGGGHTS(R)-PUBLIC input script is formatted and the
+input script commands used to define a LIGGGHTS(R)-PUBLIC simulation.
+</P>
+3.1 <A HREF = "#inp_1">LIGGGHTS(R)-PUBLIC input script</A><BR>
+3.2 <A HREF = "#inp_2">Parsing rules</A><BR>
+3.3 <A HREF = "#inp_3">Input script structure</A><BR>
+3.4 <A HREF = "#inp_4">An example input script</A>  <BR>
+
+<HR>
+
+<HR>
+
+<A NAME = "inp_1"></A><H4>3.1 LIGGGHTS(R)-PUBLIC input script 
+</H4>
+<P>LIGGGHTS(R)-PUBLIC executes by reading commands from a input script (text file),
+one line at a time.  When the input script ends, LIGGGHTS(R)-PUBLIC exits.  Each
+command causes LIGGGHTS(R)-PUBLIC to take some action.  It may set an internal
+variable, read in a file, or run a simulation.  Most commands have
+default settings, which means you only need to use the command if you
+wish to change the default.
+</P>
+<P>In many cases, the ordering of commands in an input script is not
+important.  However the following rules apply:
+</P>
+<P>(1) LIGGGHTS(R)-PUBLIC does not read your entire input script and then perform a
+simulation with all the settings.  Rather, the input script is read
+one line at a time and each command takes effect when it is read.
+Thus this sequence of commands:
+</P>
+<PRE>timestep 0.5
+run      100
+run      100 
+</PRE>
+<P>does something different than this sequence:
+</P>
+<PRE>run      100
+timestep 0.5
+run      100 
+</PRE>
+<P>In the first case, the specified timestep (0.5 fmsec) is used for two
+simulations of 100 timesteps each.  In the 2nd case, the default
+timestep (1.0 fmsec) is used for the 1st 100 step simulation and a 0.5
+fmsec timestep is used for the 2nd one.
+</P>
+<P>(2) Some commands are only valid when they follow other commands.  For
+example you cannot set the temperature of a group of atoms until atoms
+have been defined and a group command is used to define which atoms
+belong to the group.
+</P>
+<P>(3) Sometimes command B will use values that can be set by command A.
+This means command A must precede command B in the input script if it
+is to have the desired effect.  For example, the
+<A HREF = "read_data.html">read_data</A> command initializes the system by setting
+up the simulation box and assigning atoms to processors.  If default
+values are not desired, the <A HREF = "processors.html">processors</A> and
+<A HREF = "boundary.html">boundary</A> commands need to be used before read_data to
+tell LIGGGHTS(R)-PUBLIC how to map processors to the simulation box.
+</P>
+<P>Many input script errors are detected by LIGGGHTS(R)-PUBLIC and an ERROR or
+WARNING message is printed.  <A HREF = "Section_errors.html">This section</A> gives
+more information on what errors mean.  The documentation for each
+command lists restrictions on how the command can be used.
+</P>
+<HR>
+
+<A NAME = "inp_2"></A><H4>3.2 Parsing rules 
+</H4>
+<P>Each non-blank line in the input script is treated as a command.
+LIGGGHTS(R)-PUBLIC commands are case sensitive.  Command names are lower-case, as
+are specified command arguments.  Upper case letters may be used in
+file names or user-chosen ID strings.
+</P>
+<P>Here is how each line in the input script is parsed by LIGGGHTS(R)-PUBLIC:
+</P>
+<P>(1) If the last printable character on the line is a "&" character
+(with no surrounding quotes), the command is assumed to continue on
+the next line.  The next line is concatenated to the previous line by
+removing the "&" character and newline.  This allows long commands to
+be continued across two or more lines.
+</P>
+<P>(2) All characters from the first "#" character onward are treated as
+comment and discarded.  See an exception in (6).  Note that a
+comment after a trailing "&" character will prevent the command from
+continuing on the next line.  Also note that for multi-line commands a
+single leading "#" will comment out the entire command.
+</P>
+<P>(3) The line is searched repeatedly for $ characters, which indicate
+variables that are replaced with a text string.  See an exception in
+(6).
+</P>
+<P>If the $ is followed by curly brackets, then the variable name is the
+text inside the curly brackets.  If no curly brackets follow the $,
+then the variable name is the single character immediately following
+the $.  Thus ${myTemp} and $x refer to variable names "myTemp" and
+"x".
+</P>
+<P>If the $ is followed by parenthesis, then the text inside the
+parenthesis is treated as an "immediate" variable and evaluated as an
+<A HREF = "variable.html">equal-style variable</A>.  This is a way to use numeric
+formulas in an input script without having to assign them to variable
+names.  For example, these 3 input script lines:
+</P>
+<PRE>variable X equal (xlo+xhi)/2+sqrt(v_area)
+region 1 block $X 2 INF INF EDGE EDGE
+variable X delete 
+</PRE>
+<P>can be replaced by
+</P>
+<PRE>region 1 block $((xlo+xhi)/2+sqrt(v_area)) 2 INF INF EDGE EDGE 
+</PRE>
+<P>so that you do not have to define (or discard) a temporary variable X.
+</P>
+<P>Note that neither the curly-bracket or immediate form of variables can
+contain nested $ characters for other variables to substitute for.
+Thus you cannot do this:
+</P>
+<PRE>variable        a equal 2
+variable        b2 equal 4
+print           "B2 = ${b$a}" 
+</PRE>
+<P>Nor can you specify this $($x-1.0) for an immediate variable, but
+you could use $(v_x-1.0), since the latter is valid syntax for an
+<A HREF = "variable.html">equal-style variable</A>.
+</P>
+<P>See the <A HREF = "variable.html">variable</A> command for more details of how
+strings are assigned to variables and evaluated, and how they can be
+used in input script commands.
+</P>
+<P>(4) The line is broken into "words" separated by whitespace (tabs,
+spaces).  Note that words can thus contain letters, digits,
+underscores, or punctuation characters.
+</P>
+<P>(5) The first word is the command name.  All successive words in the
+line are arguments.
+</P>
+<P>(6) If you want text with spaces to be treated as a single argument,
+it can be enclosed in either double or single quotes.  E.g.
+</P>
+<PRE>print "Volume = $v"
+print 'Volume = $v'
+if "$<I>steps</I> > 1000" then quit 
+</PRE>
+<P>The quotes are removed when the single argument is stored internally.
+See the <A HREF = "dump_modify.html">dump modify format</A> or <A HREF = "print.html">print</A> or
+<A HREF = "if.html">if</A> commands for examples.  A "#" or "$" character that is
+between quotes will not be treated as a comment indicator in (2) or
+substituted for as a variable in (3).
+</P>
+<P>IMPORTANT NOTE: If the argument is itself a command that requires a
+quoted argument (e.g. using a <A HREF = "print.html">print</A> command as part of an
+<A HREF = "if.html">if</A> or <A HREF = "run.html">run every</A> command), then the double and
+single quotes can be nested in the usual manner.  See the doc pages
+for those commands for examples.  Only one of level of nesting is
+allowed, but that should be sufficient for most use cases.
+</P>
+<HR>
+
+<H4><A NAME = "inp_3"></A>3.3 Input script structure 
+</H4>
+<P>This section describes the structure of a typical LIGGGHTS(R)-PUBLIC input script.
+The "examples" directory in the LIGGGHTS(R)-PUBLIC distribution contains many
+sample input scripts; the corresponding problems are discussed in
+<A HREF = "Section_example.html">Section_example</A>, and animated on the <A HREF = "lws">LIGGGHTS(R)-PUBLIC
+WWW Site</A>.
+</P>
+<P>A LIGGGHTS(R)-PUBLIC input script typically has 4 parts:
+</P>
+<OL><LI>Initialization
+<LI>Atom/particle definition and insertion
+<LI>Settings
+<LI>Run a simulation 
+</OL>
+<P>The last 2 parts can be repeated as many times as desired.  I.e. run a
+simulation, change some settings, run some more, etc.  Each of the 4
+parts is now described in more detail.  Remember that almost all the
+commands need only be used if a non-default value is desired.
+</P>
+<P>(1) Initialization
+</P>
+<P>Set parameters that need to be defined before atoms/particles are created or
+read-in from a file.
+</P>
+<P>The relevant commands are <A HREF = "units.html">units</A>,
+<A HREF = "dimension.html">dimension</A>, <A HREF = "newton.html">newton</A>,
+<A HREF = "processors.html">processors</A>, <A HREF = "boundary.html">boundary</A>,
+<A HREF = "atom_style.html">atom_style</A>, <A HREF = "atom_modify.html">atom_modify</A>.
+</P>
+<P>If force-field parameters appear in the files that will be read, these
+commands tell LIGGGHTS(R)-PUBLIC what kinds of force fields are being used:
+<A HREF = "pair_style.html">pair_style</A>, <A HREF = "bond_style.html">bond_style</A>,
+<A HREF = "fix_wall_gran.html">fix wall/gran</A> .
+</P>
+<P>Granular walls typically require meshes to be used. See
+<A HREF = "fix_mesh_surface.html">fix mesh/surface</A> for details.
+</P>
+<P>(2) Atom/particle definition and insertion
+</P>
+<P>There are 3 ways to define atoms in LIGGGHTS(R)-PUBLIC.  Read them in from a data
+or restart file via the <A HREF = "read_data.html">read_data</A> or
+<A HREF = "read_restart.html">read_restart</A> commands. Or create atoms on a lattice
+using these commands: <A HREF = "lattice.html">lattice</A>,
+<A HREF = "region.html">region</A>, <A HREF = "create_box.html">create_box</A>,
+<A HREF = "create_atoms.html">create_atoms</A>.
+</P>
+<P>However, the most common way to insert granular particles is
+to use one of the fix insert/* commands: <A HREF = "fix_insert_pack.html">fix insert/pack</A>,
+"fix insert/stream"stream.html, <A HREF = "fix_insert_rate/region.html">fix insert/rate/region</A>
+</P>
+<P>Before these insertion commands can be used, particle distributions
+(<A HREF = "fix_particledistribution_discrete.hmtl">fix particledistribution/discrete</A>)
+are built up using particle templates. For spherical particles, such
+particle templates are defined using <A HREF = "fix_particletemplate_sphere.html">fix particletemplate/sphere</A>.
+</P>
+<P>(3) Settings
+</P>
+<P>Once atoms are defined, a variety of settings can be specified:
+simulation parameters, output options, etc.
+</P>
+<P>Material parameters and force field coefficients are set by these commands
+<A HREF = "fix_property_global.hmtl">fix property/global</A>,
+or <A HREF = "pair_coeff.html">pair_coeff</A>, <A HREF = "bond_coeff.html">bond_coeff</A>.
+</P>
+<P>Various simulation parameters are set by these commands:
+<A HREF = "neighbor.html">neighbor</A>, <A HREF = "neigh_modify.html">neigh_modify</A>,
+<A HREF = "group.html">group</A>, <A HREF = "timestep.html">timestep</A>, <A HREF = "region.html">region</A>,
+<A HREF = "reset_timestep.html">reset_timestep</A>, <A HREF = "run_style.html">run_style</A>,
+</P>
+<P>Fixes impose a variety of boundary conditions, time integration, and
+diagnostic options.  The <A HREF = "fix.html">fix</A> command comes in many flavors.
+</P>
+<P>Various computations can be specified for execution during a
+simulation using the <A HREF = "compute.html">compute</A>,
+<A HREF = "compute_modify.html">compute_modify</A>, and <A HREF = "variable.html">variable</A>
+commands.
+</P>
+<P>Output options are set by the <A HREF = "thermo.html">thermo</A>, <A HREF = "dump.html">dump</A>,
+and <A HREF = "restart.html">restart</A> commands.
+</P>
+<P>(4) Run a simulation
+</P>
+<P>A simulation is run using the <A HREF = "run.html">run</A> command.
+</P>
+<HR>
+
+<A NAME = "cmd_4"></A><H4>3.4 An example input script 
+</H4>
+<P>This shows an example input script for a LIGGGHTS(R)-PUBLIC simulation.
+</P>
+<PRE>#Contact model example
+atom_style   granular
+atom_modify  map array
+boundary     m m m
+newton       off
+communicate	 single vel yes
+units        si
+region       reg block -0.05 0.05 -0.05 0.05 0. 0.15 units box
+create_box   1 reg
+neighbor     0.002 bin
+neigh_modify delay 0
+#Material properties required for pair style
+fix          m1 all property/global youngsModulus peratomtype 5.e6
+fix          m2 all property/global poissonsRatio peratomtype 0.45
+fix          m3 all property/global coefficientRestitution peratomtypepair 1 0.95
+fix          m4 all property/global coefficientFriction peratomtypepair 1 0.05
+pair_style   gran model hertz tangential history
+pair_coeff	 * *
+timestep     0.00001
+fix          gravi all gravity 9.81 vector 0.0 0.0 -1.0
+fix          zwalls1 all wall/gran model hertz tangential history primitive type 1 zplane 0.0
+fix          zwalls2 all wall/gran model hertz tangential history primitive type 1 zplane 0.15
+fix          cylwalls all wall/gran model hertz tangential history primitive type 1 zcylinder 0.05 0. 0.
+#region of insertion
+region       bc cylinder z 0. 0. 0.045 0.00 0.15 units box
+#particle distributions
+fix          pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0025
+fix          pdd1 all particledistribution/discrete 1.  1 pts1 1.0
+fix          ins all insert/pack seed 100001 distributiontemplate pdd1 vel constant 0. 0. -0.5 &
+             insert_every once overlapcheck yes all_in yes particles_in_region 1800 region bc
+#apply nve integration to all particles
+fix          integr all nve/sphere
+#output settings, include total thermal energy
+compute         rke all erotate/sphere
+thermo_style    custom step atoms ke c_rke vol
+thermo          1000
+thermo_modify   lost ignore norm no
+compute_modify  thermo_temp dynamic yes
+dump            dmp all custom 800 post/dump*.newModels id type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+#insert particles and run
+run             5000 
+</PRE>
+</HTML>

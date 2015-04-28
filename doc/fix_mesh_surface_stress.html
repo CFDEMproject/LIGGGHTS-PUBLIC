@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -38,22 +36,18 @@
 </P>
 <PRE>fix cad all mesh/surface/stress file mesh.stl type 1 wear finnie 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This command is not available in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P>This fix is identical to <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> except for the fact 
-that the pressure and shear force that the particles in the fix group exert on each 
-triangle of the mesh is evaluated (which costs a bit of performance). Also, the total 
-force and torque on the particle is calculated (see output info). The per-element forces 
+<P>This fix is identical to <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> except for the fact
+that the pressure and shear force that the particles in the fix group exert on each
+triangle of the mesh is evaluated (which costs a bit of performance). Also, the total
+force and torque on the particle is calculated (see output info). The per-element forces
 can be dumped into VTK format using <A HREF = "dump.html">dump mesh/vtk</A>.
 </P>
-<P>With the optional <I>stress</I> keyword, stress tracking can be turned off is desired. The 
+<P>With the optional <I>stress</I> keyword, stress tracking can be turned off is desired. The
 reference point for calculating the body torque can be controlled via the <I>referece_point</I>
-keyword. The optional <I>wear</I> keyword can activates a simple qualitative wear model 
-(<I>finnie</I>) - for details on the model, see the seperate /doc/finnie-wear.pdf. The 
+keyword. The optional <I>wear</I> keyword can activates a simple qualitative wear model
+(<I>finnie</I>) - for details on the model, see the seperate /doc/finnie-wear.pdf. The
 finnie constant k in Eqn. (4.23) has to be specified as follows:
 </P>
 <PRE>fix id all property/global k_finnie peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. . 
@@ -62,9 +56,9 @@ finnie constant k in Eqn. (4.23) has to be specified as follows:
 </PRE>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
-<P>This fix stores a global vector with 6 components for access by various 
-<A HREF = "Section_howto.html#4_15">output commands</A>. The first 3 components are equal to the 
-total force on the mesh, the last 3 components store the total torque on the body 
+<P>This fix stores a global vector with 6 components for access by various
+<A HREF = "Section_howto.html#4_15">output commands</A>. The first 3 components are equal to the
+total force on the mesh, the last 3 components store the total torque on the body
 exerted by the particles. Other info see <A HREF = "fix_mesh.html">fix mesh</A>.
 </P>
 <P><B>Related commands:</B>

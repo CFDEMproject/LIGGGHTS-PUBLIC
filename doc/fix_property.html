@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -58,34 +56,30 @@ fix id group property/global variablename style stylearg defaultvalue(s)...
 <P><B>Examples:</B>
 </P>
 <PRE>fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
-fix m5 all property/global characteristicVelocity scalar 2. 
+fix m5 all property/global characteristicVelocity scalar 2.
 fix uf all property/atom uf vector yes no no  0. 0. 0. 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This LIGGGHTS command is not available in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P><B>Fix property/atom</B> reserves per-atom properties to be accessed by the user or other fixes. 
-Style <I>scalar</I> reserves one value per atom, style <I>vector</I> multiple values per atoms, where 
-the number of <I>defaultvalues</I> (that are assigned to the atoms at creation) determines the 
-length of the vector. The group of atoms the fix is applied to is always "all", irrespective 
-of which group is used for the fix command . If you want to assign different values for 
+<P><B>Fix property/atom</B> reserves per-atom properties to be accessed by the user or other fixes.
+Style <I>scalar</I> reserves one value per atom, style <I>vector</I> multiple values per atoms, where
+the number of <I>defaultvalues</I> (that are assigned to the atoms at creation) determines the
+length of the vector. The group of atoms the fix is applied to is always "all", irrespective
+of which group is used for the fix command . If you want to assign different values for
 different groups, you can use the <A HREF = "set.html">set</A> command with keyword 'property/atom'.
-Keyword <I>restartvalues</I> determines whether information about the values stored by this fix 
+Keyword <I>restartvalues</I> determines whether information about the values stored by this fix
 is written to binary restart files.
-Keyword <I>communicate_ghost_value</I> determines whether information about the values stored by this fix 
-can be communicated to ghost particles (forward communication). The exact location during a time-step 
+Keyword <I>communicate_ghost_value</I> determines whether information about the values stored by this fix
+can be communicated to ghost particles (forward communication). The exact location during a time-step
 when this happens depends on the model that uses this fix.
-Keyword <I>communicate_reverse_ghost_value</I> determines whether information about the values stored by this fix 
-can be communicated from ghost particles to owned particles (reverse communication). The exact location 
+Keyword <I>communicate_reverse_ghost_value</I> determines whether information about the values stored by this fix
+can be communicated from ghost particles to owned particles (reverse communication). The exact location
 during a time-step when this happens depends on the model that uses this fix.
 </P>
-<P><B>Fix property/global</B> reserves global properties to be accessed by the user or other 
-fixes or pair styles. The number of defaultvalues determines the length of the vector / 
-the number of matrix components . For style <I>vector</I> or <I>atomtype</I>, the user provides 
-the number of vector components . For style <I>matrix</I> or <I>atomtypepair</I>, the user provides 
+<P><B>Fix property/global</B> reserves global properties to be accessed by the user or other
+fixes or pair styles. The number of defaultvalues determines the length of the vector /
+the number of matrix components . For style <I>vector</I> or <I>atomtype</I>, the user provides
+the number of vector components . For style <I>matrix</I> or <I>atomtypepair</I>, the user provides
 the number of matrix columns (<I>nCols</I>) .
 </P>
 <P>Example: <I>nCols</I>= 2 and <I>defaultvalues</I> = 1 2 3 4 5 6 would be mapped into a matrix like

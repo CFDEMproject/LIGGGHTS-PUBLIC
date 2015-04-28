@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -23,19 +22,13 @@ zero or more keyword/value pairs may be appended :l
     on = activates tangential damping
     off = no tangential damping :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This part of "pair gran"_pair_gran.html and 
-"fix wall/gran"_fix_wall_gran.html
-is not availabe in LAMMPS.
-
 [Description:]
 
-This granular model uses the following formula for the frictional force between two granular 
-particles, when the distance r between two particles of radii Ri and Rj is less than their 
+This granular model uses the following formula for the frictional force between two granular
+particles, when the distance r between two particles of radii Ri and Rj is less than their
 contact distance d = Ri + Rj. There is no force between the particles when r > d.
 
-For the case of {absolute_damping} = 'off' (which is default), the specified damping 
+For the case of {absolute_damping} = 'off' (which is default), the specified damping
 coefficient is multiplied by the effective mass. The forces are implemented as
 
 :c,image(Eqs/pair_gran_html_m566a9984.png)
@@ -44,13 +37,13 @@ For the case of {absolute_damping} = 'on', this multiplication is omitted and th
 
 :c,image(Eqs/pair_gran_html_m76cd8bd9.png)
 
-In the first term is the normal force between the two particles and the second term is the 
-tangential force. The normal force has 2 terms, a spring force and a damping force. The 
-tangential force also has 2 terms: a shear force and a damping force. The shear force is 
-a "history" effect that accounts for the tangential displacement ("tangential overlap") 
+In the first term is the normal force between the two particles and the second term is the
+tangential force. The normal force has 2 terms, a spring force and a damping force. The
+tangential force also has 2 terms: a shear force and a damping force. The shear force is
+a "history" effect that accounts for the tangential displacement ("tangential overlap")
 between the particles for the duration of the time they are in contact.
 This term is controlled by the "tangential model"_Section_gran_models.html in action
-Keyword {tangential_damping} can be used to eliminate the second part of the force in 
+Keyword {tangential_damping} can be used to eliminate the second part of the force in
 tangential direction. The way how the Coulomb friction limit acts is also controlled
 by the "tangential model"_Section_gran_models.html chosen by the user.
 
@@ -91,11 +84,11 @@ fix id all property/global gammat_abs peratomtypepair n_atomtypes value_11 value
 
 IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 
-The coefficient of friction cof is the upper limit of the tangential force through 
-the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the total tangential and normal 
-force components in the formulas above. Thus in the Hookean case, the tangential force 
-between 2 particles grows according to a tangential spring and dash-pot model until 
-Ft/Fn = cof and is then held at Ft = Fn*cof until the particles lose contact. 
+The coefficient of friction cof is the upper limit of the tangential force through
+the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the total tangential and normal
+force components in the formulas above. Thus in the Hookean case, the tangential force
+between 2 particles grows according to a tangential spring and dash-pot model until
+Ft/Fn = cof and is then held at Ft = Fn*cof until the particles lose contact.
 In the Hertzian case, a similar analogy holds, though the spring is no longer linear.
 
 [Force Limiting:]
@@ -110,7 +103,7 @@ If using CGS units, youngsModulus must be > 5e5
 When using the limitForce, the specified coefficient of restitution is only approximate. This might become problematic for low coefficients of resitution as showin in Schwager and Poschel.
 
 
-[Default:] 
+[Default:]
 
 {tangential_damping} = 'on'
 {limitForce} = 'off'
@@ -125,5 +118,5 @@ When using the limitForce, the specified coefficient of restitution is only appr
 
 [(Silbert)] Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
 
-[(Zhang)] Zhang and Makse, Phys Rev E, 72, p 011301 (2005). 
+[(Zhang)] Zhang and Makse, Phys Rev E, 72, p 011301 (2005).
 

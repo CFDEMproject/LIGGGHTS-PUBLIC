@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -31,7 +31,7 @@ group each timestep.  A limit is imposed on the maximum distance an
 atom can move in one timestep.  This is useful when starting a
 simulation with a configuration containing highly overlapped atoms.
 Normally this would generate huge forces which would blow atoms out of
-the simulation box, causing LAMMPS to stop with an error.
+the simulation box, causing LIGGGHTS(R)-PUBLIC to stop with an error.
 </P>
 <P>Using this fix can overcome that problem.  Forces on atoms must still
 be computable (which typically means 2 atoms must have a separation
@@ -46,7 +46,7 @@ missed on successive timesteps as atoms move.  See the
 for details.
 </P>
 <P>If limitstyle <I>absolute</I> is used, <I>xmax</I> is applied directly.
-If limitstyle <I>radius_ratio</I> is used, a maxmimum distance per step 
+If limitstyle <I>radius_ratio</I> is used, a maxmimum distance per step
 of <I>xmax</I>*radius is applied for each atom. This can be useful for
 the simulation of poly-disperse systems. Note that this option requires
 the atom radius to be stored by using an appropriate atom style.
@@ -73,7 +73,7 @@ files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
 are relevant to this fix.
 </P>
 <P>This fix computes a global scalar which can be accessed by various
-<A HREF = "Section_howto.html#howto_15">output commands</A>.  The scalar is the
+<A HREF = "Section_howto.html#howto_8">output commands</A>.  The scalar is the
 count of how many updates of atom's velocity/position were limited by
 the maximum distance criterion.  This should be roughly the number of
 atoms so affected, except that updates occur at both the beginning and

@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -17,24 +15,18 @@
 </P>
 <PRE>cohesion sjkr 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This part of <A HREF = "pair_gran.html">pair gran</A> and 
-<A HREF = "fix_wall_gran.html">fix wall/gran</A>
-is not availabe in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P>This model can be used as part of <A HREF = "pair_gran.html">pair gran</A> and 
+<P>This model can be used as part of <A HREF = "pair_gran.html">pair gran</A> and
 <A HREF = "fix_wall_gran.html">fix wall/gran</A>
 </P>
 <P>The simplified JKR - Johnson-Kendall-Roberts (SJKR) model adds an additional normal force
-contribution. If two particle are in contact, it adds an additional normal force tending 
-to maintain the contact, which writes 
+contribution. If two particle are in contact, it adds an additional normal force tending
+to maintain the contact, which writes
 </P>
-<P>F = k A, 
+<P>F = k A,
 </P>
-<P>where A is the particle contact area and k is the cohesion energy density in J/m3. 
+<P>where A is the particle contact area and k is the cohesion energy density in J/m3.
 For <I>sjkr</I>, the sphere-sphere contact area is calculated as (http://mathworld.wolfram.com/Sphere-SphereIntersection.html)
 </P>
 <P>A = Pi/4 * ((dist-Ri-Rj)*(dist+Ri-Rj)*(dist-Ri+Rj)*(dist+Ri+Rj) )/(dist*dist)
@@ -50,7 +42,7 @@ For <I>sjkr</I>, the sphere-sphere contact area is calculated as (http://mathwor
 </P>
 <P><B>Restrictions:</B>
 </P>
-<P>The cohesion model has been derived for the Hertzian Style, it may note be 
+<P>The cohesion model has been derived for the Hertzian Style, it may note be
 appropriate for the Hookean styles.
 </P>
 </HTML>

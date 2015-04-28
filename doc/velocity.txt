@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -13,15 +13,10 @@ velocity command :h3
 velocity group-ID style args keyword value ... :pre
 
 group-ID = ID of group of atoms whose velocity will be changed :ulb,l
-style = {create} or {set} or {scale} or {ramp} or {zero} :l
-  {create} args = temp seed
-    temp = temperature value (temperature units)
-    seed = random # seed (positive integer)
+style = {set} or {ramp} or {zero} :l
   {set} args = vx vy vz
     vx,vy,vz = velocity value or NULL (velocity units)
     any of vx,vy,vz van be a variable (see below)
-  {scale} arg = temp
-    temp = temperature value (temperature units)
   {ramp} args = vdim vlo vhi dim clo chi
     vdim = {vx} or {vy} or {vz}
     vlo,vhi = lower and upper velocity value (velocity units)
@@ -32,12 +27,11 @@ style = {create} or {set} or {scale} or {ramp} or {zero} :l
     {angular} = zero the angular momentum :pre
 
 zero or more keyword/value pairs may be appended :l
-keyword = {dist} or {sum} or {mom} or {rot} or {temp} or {loop} or {units} :l
+keyword = {dist} or {sum} or {mom} or {rot} or {loop} or {units} :l
   {dist} value = {uniform} or {gaussian}
   {sum} value = {no} or {yes}
-  {mom} value = {no} or {yes} 
-  {rot} value = {no} or {yes} 
-  {temp} value = temperature ID
+  {mom} value = {no} or {yes}
+  {rot} value = {no} or {yes}
   {loop} value = {all} or {local} or {geom}
   {rigid} value = fix-ID
     fix-ID = ID of rigid body fix
@@ -46,10 +40,7 @@ keyword = {dist} or {sum} or {mom} or {rot} or {temp} or {loop} or {units} :l
 
 [Examples:]
 
-velocity all create 300.0 4928459 rot yes dist gaussian
 velocity border set NULL 4.0 v_vz sum yes units box
-velocity flow scale 300.0
-velocity flow ramp vx 0.0 5.0 y 5 25 temp mytemp
 velocity all zero linear :pre
 
 [Description:]
@@ -58,9 +49,6 @@ Set or change the velocities of a group of atoms in one of several
 styles.  For each style, there are required arguments and optional
 keyword/value parameters.  Not all options are used by each style.
 Each option has a default as listed below.
-
-The {create} style generates an ensemble of velocities using a random
-number generator with the specified seed as the specified temperature.
 
 The {set} style sets the velocities of all atoms in the group to the
 specified values.  If any component is specified as NULL, then it is
@@ -79,11 +67,7 @@ variables but can also include per-atom values, such as atom
 coordinates.  Thus it is easy to specify a spatially-dependent
 velocity field.
 
-The {scale} style computes the current temperature of the group of
-atoms and then rescales the velocities to the specified temperature.
-
-The {ramp} style is similar to that used by the "compute
-temp/ramp"_compute_temp_ramp.html command.  Velocities ramped
+The {ramp} style makekes velocities ramped
 uniformly from vlo to vhi are applied to dimension vx, or vy, or vz.
 The value assigned to a particular atom depends on its relative
 coordinate value (in dim) from clo to chi.  For the example above, an
@@ -104,11 +88,6 @@ angular will set the angular momentum of each rigid body to zero.
 This is done by adjusting the velocities of the atoms in each rigid
 body.
 
-All temperatures specified in the velocity command are in temperature
-units; see the "units"_units.html command.  The units of velocities and
-coordinates depend on whether the {units} keyword is set to {box} or
-{lattice}, as discussed below.
-
 For all styles, no atoms are assigned z-component velocities if the
 simulation is 2d; see the "dimension"_dimension.html command.
 
@@ -117,11 +96,6 @@ simulation is 2d; see the "dimension"_dimension.html command.
 The keyword/value option pairs are used in the following ways by the
 various styles.
 
-The {dist} option is used by {create}.  The ensemble of generated
-velocities can be a {uniform} distribution from some minimum to
-maximum value, scaled to produce the requested temperature.  Or it can
-be a {gaussian} distribution with a mean of 0.0 and a sigma scaled to
-produce the requested temperature.
 
 The {sum} option is used by all styles, except {zero}.  The new
 velocities will be added to the existing ones if sum = yes, or will
@@ -130,22 +104,6 @@ replace them if sum = no.
 The {mom} and {rot} options are used by {create}.  If mom = yes, the
 linear momentum of the newly created ensemble of velocities is zeroed;
 if rot = yes, the angular momentum is zeroed.
-
-The {temp} option is used by {create} and {scale} to specify a
-"compute"_compute.html that calculates temperature in a desired way.
-If this option is not specified, {create} and {scale} calculate
-temperature using a compute that is defined as follows:
-
-compute velocity_temp group-ID temp :pre
-
-where group-ID is the same ID used in the velocity command. i.e. the
-group of atoms whose velocity is being altered.  This compute is
-deleted when the velocity command is finished.  See the "compute
-temp"_compute_temp.html command for details.  If the computed
-temperature should have degrees-of-freedom removed due to fix
-constraints (e.g. SHAKE or rigid-body constraints), then the
-appropriate fix command must be specified before the velocity command
-is issued.
 
 :line
 
@@ -189,7 +147,7 @@ fix"_fix_rigid.html variants which defines a set of rigid bodies.  The
 zeroing of linear or angular momentum is then performed for each rigid
 body defined by the fix, as described above.
 
-The {units} option is used by {set} and {ramp}.  If units = box, 
+The {units} option is used by {set} and {ramp}.  If units = box,
 the velocities and coordinates specified in the velocity command are
 in the standard units described by the "units"_units.html command
 (e.g. Angstroms/fmsec for real units).  If units = lattice, velocities
@@ -206,5 +164,5 @@ command must have been previously used to define the lattice spacing.
 [Default:]
 
 The option defaults are dist = uniform, sum = no, mom = yes, rot = no,
-temp = full style on group-ID, loop = all, and units = lattice.  The
+ style on group-ID, loop = all, and units = lattice.  The
 rigid option is not defined by default.

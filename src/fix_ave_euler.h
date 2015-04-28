@@ -1,30 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
 
-/* ----------------------------------------------------------------------
-   Contributing author for triclinic: Andreas Aigner (JKU)
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -59,10 +71,9 @@ class FixAveEuler : public Fix {
 
   double compute_array(int i, int j);
 
-  // inline access functions for cell based values
+  int ncells_pack();
 
-  inline int ncells()
-  { return ncells_; }
+  // inline access functions for cell based values
 
   inline double cell_center(int i, int j)
   { return center_[i][j]; }
@@ -84,13 +95,19 @@ class FixAveEuler : public Fix {
 
  private:
 
+  inline int ntry_per_cell()
+  { return 50; }
+
   void setup_bins();
   void bin_atoms();
   void calculate_eu();
+  void allreduce();
   inline int coord2bin(double *x); 
 
+  bool parallel_;
+
   int exec_every_;
-  bool box_change_;
+  bool box_change_size_, box_change_domain_;
   int triclinic_; 
 
   // desired cell size over max particle diameter
@@ -100,10 +117,10 @@ class FixAveEuler : public Fix {
   double cell_size_ideal_;
   double cell_size_ideal_lamda_[3];
 
-  // number of cells
+  // number of cells, either globally or locally on each proc
   int ncells_, ncells_dim_[3];
 
-  // extent of grid in xyz
+  // extent of grid in xyz, either globally or locally on each proc
   double lo_[3],hi_[3];
   double lo_lamda_[3],hi_lamda_[3]; 
 
@@ -124,6 +141,10 @@ class FixAveEuler : public Fix {
   int *cellhead_;    // ptr to 1st atom in each cell
   int *cellptr_;       // ptr to next atom in each bin
 
+  // region
+  char *idregion_;
+  class Region *region_;
+
   /* ---------  DATA  --------- */
 
   // cell center
@@ -135,8 +156,15 @@ class FixAveEuler : public Fix {
   // cell-based volume fraction
   double *vol_fr_;
 
+  // cell-based weight for each cell
+  
+  double *weight_;
+
   // cell-based average radius
   double *radius_;
+
+  // cell-based number of particles
+  int *ncount_;
 
   // cell-based mass
   double *mass_;
@@ -149,6 +177,8 @@ class FixAveEuler : public Fix {
 
   // stress computation
   class ComputeStressAtom *compute_stress_;
+
+  class RanPark *random_;
 };
 
 }

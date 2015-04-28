@@ -1,33 +1,44 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Richard Berger (JKU Linz)
-   Philippe Seil (JKU Linz)
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+    Philippe Seil (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "fix_neighlist_mesh.h"
@@ -43,6 +54,7 @@
 #include "update.h"
 #include <stdio.h>
 #include <algorithm>
+#include "atom_vec_ellipsoid.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -68,7 +80,8 @@ FixNeighlistMesh::FixNeighlistMesh(LAMMPS *lmp, int narg, char **arg)
   r(NULL),
   changingMesh(false),
   changingDomain(false),
-  last_bin_update(-1)
+  last_bin_update(-1),
+  avec(0)
 {
     if(!modify->find_fix_id(arg[3]) || !dynamic_cast<FixMeshSurface*>(modify->find_fix_id(arg[3])))
         error->fix_error(FLERR,this,"illegal caller");
@@ -112,6 +125,8 @@ void FixNeighlistMesh::post_create()
 
         fix_nneighs_->just_created = false;
     }
+    //check for aspherical
+    avec = (AtomVecEllipsoid *) atom->style_match("ellipsoid");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -280,8 +295,17 @@ void FixNeighlistMesh::handleTriangle(int iTri)
     int nlocal = atom->nlocal;
     double contactDistanceFactor = neighbor->contactDistanceFactor;
 
-    neighbors.clear();
+    int                     *ellipsoid  = atom->ellipsoid;
+    AtomVecEllipsoid::Bonus *bonus;
+    double *shape;
+    bool    haveNonSpherical = false;
+    if(ellipsoid)
+    {
+        haveNonSpherical = true;
+        bonus = avec->bonus;
+    }
 
+    neighbors.clear();
     nchecked = 0;
 
     // only do this if I own particles
@@ -309,7 +333,24 @@ void FixNeighlistMesh::handleTriangle(int iTri)
                 }
                 nchecked++;
 
-                if(mesh_->resolveTriSphereNeighbuild(iTri,r ? r[iAtom]*contactDistanceFactor : 0. ,x[iAtom],r ? skin : (distmax+skin) ))
+                if(0) {}
+                #ifdef TRI_LINE_ACTIVE_FLAG
+                else if(haveNonSpherical) //if non-spherical, check line interaction as well
+                {
+                    double *lineOrientation; //keep empty, not needed
+                    double length;
+                    double cylRadius;
+                    shape     = bonus[ellipsoid[iAtom]].shape;
+                    length    = 2.*MathExtraLiggghts::max(shape[0],shape[1],shape[2]);
+                    cylRadius =    MathExtraLiggghts::min(shape[0],shape[1],shape[2]);
+                    if( mesh_->resolveTriSegmentNeighbuild(iTri, lineOrientation ,x[iAtom], length*contactDistanceFactor, cylRadius, skin ) )
+                    {
+                      neighbors.push_back(iAtom);
+                      fix_nneighs_->set_vector_atom_int(iAtom, fix_nneighs_->get_vector_atom_int(iAtom)+1); // num_neigh++
+                    }
+                }
+                #endif
+                else if(mesh_->resolveTriSphereNeighbuild(iTri,r ? r[iAtom]*contactDistanceFactor : 0. ,x[iAtom],r ? skin : (distmax+skin) ))
                 {
                   
                   neighbors.push_back(iAtom);
@@ -339,7 +380,24 @@ void FixNeighlistMesh::handleTriangle(int iTri)
             }
             nchecked++;
 
-            if(mesh_->resolveTriSphereNeighbuild(iTri,r ? r[iAtom]*contactDistanceFactor : 0. ,x[iAtom],r ? skin : (distmax+skin) ))
+            if(0) {}
+            #ifdef TRI_LINE_ACTIVE_FLAG
+            else if(haveNonSpherical) //if non-spherical, check line interaction as well
+            {
+                    double *lineOrientation; //keep empty, not needed
+                    double length;
+                    double cylRadius;
+                    shape     = bonus[ellipsoid[iAtom]].shape;
+                    length    = 2.*MathExtraLiggghts::max(shape[0],shape[1],shape[2]);
+                    cylRadius =    MathExtraLiggghts::min(shape[0],shape[1],shape[2]);
+                    if( mesh_->resolveTriSegmentNeighbuild(iTri, lineOrientation ,x[iAtom], length*contactDistanceFactor, cylRadius, skin ) )
+                    {
+                      neighbors.push_back(iAtom);
+                      fix_nneighs_->set_vector_atom_int(iAtom, fix_nneighs_->get_vector_atom_int(iAtom)+1); // num_neigh++
+                    }
+            }
+            #endif
+			else if(mesh_->resolveTriSphereNeighbuild(iTri,r ? r[iAtom]*contactDistanceFactor : 0. ,x[iAtom],r ? skin : (distmax+skin) ))
             {
               
               neighbors.push_back(iAtom);

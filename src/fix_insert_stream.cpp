@@ -1,26 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -599,7 +615,7 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
             }
             while(ntry < maxtry && ((!domain->is_in_subdomain(pos)) || (domain->dist_subbox_borders(pos) < rad_to_insert)));
 
-            // could randomize vel, omega, quat here
+            // could randomize quat here
 
             if(quat_random_)
                     MathExtraLiggghts::random_unit_quat(random,quat_insert);
@@ -635,7 +651,7 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
                 }
                 while(ntry < maxtry && ((!domain->is_in_subdomain(pos)) || (domain->dist_subbox_borders(pos) < rad_to_insert)));
 
-                // could randomize vel, omega, quat here
+                // could randomize quat here
 
                 if(quat_random_)
                     MathExtraLiggghts::random_unit_quat(random,quat_insert);
@@ -702,14 +718,14 @@ void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
         // 6-8th value is integration velocity
         vectorCopy3D(v_normal,&release_data[i][5]);
 
-        // set inital conditions
-        // randomize vel, omega, quat here
+        // set initial conditions
+        // randomize vel, omega here
         double v_toInsert[3],omega_toInsert[3];
 
         vectorCopy3D(v_insert,v_toInsert);
         vectorCopy3D(omega_insert,omega_toInsert);
 
-        // could ramdonize vel, omega, quat here
+        // could randomize vel, omega here
         if(v_randomSetting==1)
         {
             v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);

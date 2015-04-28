@@ -1,26 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -40,6 +56,7 @@
 #include "force.h"
 #include "comm.h"
 #include "vector_liggghts.h"
+#include "mpi_liggghts.h"
 #include "fix_region_variable.h"
 
 using namespace LAMMPS_NS;
@@ -60,8 +77,10 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
 
   // random number generator, same for all procs
   if (narg < 4) error->fix_error(FLERR,this,"not enough arguments");
-  seed = atoi(arg[3]) + comm->me;
-  random = new RanPark(lmp,seed);
+  seed_insertion = atoi(arg[3]) + comm->me;
+  seed_mc = atoi(arg[3]);
+  random_insertion = new RanPark(lmp,seed_insertion);
+  random_mc = new RanPark(lmp,seed_mc);
 
   iarg = 4;
 
@@ -253,7 +272,8 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
 
 FixTemplateSphere::~FixTemplateSphere()
 {
-    delete random;
+    delete random_insertion;
+    delete random_mc;
 
     delete pdf_density;
     delete pdf_radius;
@@ -289,11 +309,11 @@ void FixTemplateSphere::randomize_single()
     pti->atom_type = atom_type;
 
     // randomize radius
-    double radius = rand(pdf_radius,random);
+    double radius = rand(pdf_radius,random_insertion);
     pti->radius_ins[0] = pti->r_bound_ins = radius;
 
     // randomize density
-    pti->density_ins = rand(pdf_density,random);
+    pti->density_ins = rand(pdf_density,random_insertion);
 
     // calculate volume and mass
     pti->volume_ins = radius * radius * radius * 4.*M_PI/3.;
@@ -341,12 +361,12 @@ void FixTemplateSphere::randomize_ptilist(int n_random,int distribution_groupbit
         pti_list[i]->atom_type = atom_type;
 
         // randomize radius
-        double radius = rand(pdf_radius,random);
+        double radius = rand(pdf_radius,random_insertion);
 
         pti_list[i]->radius_ins[0] = pti_list[i]->r_bound_ins = radius;
 
         // randomize density
-        pti_list[i]->density_ins = rand(pdf_density,random);
+        pti_list[i]->density_ins = rand(pdf_density,random_insertion);
 
         // calculate volume and mass
         pti_list[i]->volume_ins = radius * radius * radius * 4.*M_PI/3.;
@@ -433,14 +453,29 @@ int FixTemplateSphere::mintype()
 void FixTemplateSphere::write_restart(FILE *fp)
 {
   int n = 0;
-  double list[1];
-  list[n++] = static_cast<int>(random->state());
+  int nprocs = comm->nprocs;
+  double *list = new double[2+nprocs];
+
+  int *state_insertion_all_0 = 0;
+  int state_insertion_me = random_insertion->state();
+  int size_state_insertion_all_0 = MPI_Gather0_Vector<int>(&state_insertion_me,1,state_insertion_all_0,world);
 
   if (comm->me == 0) {
+    if(size_state_insertion_all_0 != nprocs)
+        error->one(FLERR,"internal error");
+
+    list[n++] = static_cast<double>(nprocs);
+    for(int iproc = 0; iproc < nprocs; iproc++)
+      list[n++] = static_cast<double>(state_insertion_all_0[iproc]);
+    list[n++] = static_cast<double>(random_mc->state());
+
     int size = n * sizeof(double);
     fwrite(&size,sizeof(int),1,fp);
     fwrite(list,sizeof(double),n,fp);
   }
+
+  delete []list;
+  if(state_insertion_all_0) delete []state_insertion_all_0;
 }
 
 /* ----------------------------------------------------------------------
@@ -449,10 +484,26 @@ void FixTemplateSphere::write_restart(FILE *fp)
 
 void FixTemplateSphere::restart(char *buf)
 {
-  int n = 0;
   double *list = (double *) buf;
 
-  seed = static_cast<int> (list[n++]) + comm->me;
+  int nprocs = comm->nprocs;
+  int me = comm->me;
+  int nprocs_old = static_cast<double>(list[0]);
 
-  random->reset(seed);
+  seed_mc = static_cast<int> (list[nprocs_old+1]);
+
+  if(nprocs <= nprocs_old)
+  {
+    seed_insertion = static_cast<int> (list[me+1]);
+  }
+  else
+  {
+    if(me < nprocs_old)
+      seed_insertion = static_cast<int> (list[me+1]);
+    else
+      seed_insertion = static_cast<int> (list[(me%nprocs_old)+1]);
+  }
+
+  random_insertion->reset(seed_insertion);
+  random_mc->reset(seed_mc);
 }

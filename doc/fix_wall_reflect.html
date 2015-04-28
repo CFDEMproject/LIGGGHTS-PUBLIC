@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -51,7 +51,7 @@ fix top all wall/reflect zhi v_pressdown
 <P><B>Description:</B>
 </P>
 <P>Bound the simulation with one or more walls which reflect particles
-in the specified group when they attempt to move thru them. 
+in the specified group when they attempt to move thru them.
 </P>
 <P>Reflection means that if an atom moves outside the wall on a timestep
 by a distance delta (e.g. due to <A HREF = "fix_nve.html">fix nve</A>), then it is
@@ -142,7 +142,7 @@ perturbation on the particles:
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart
 files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
 are relevant to this fix.  No global or per-atom quantities are stored
-by this fix for access by various <A HREF = "Section_howto.html#howto_15">output
+by this fix for access by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  No parameter of this fix can
 be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
 This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
@@ -155,7 +155,7 @@ This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>
 defined by a "fix rigid" command.  This is because the wall/reflect
 displaces atoms directly rather than exerts a force on them.  For
 rigid bodies, use a soft wall instead, such as <A HREF = "fix_wall.html">fix
-wall/lj93</A>.  LAMMPS will flag the use of a rigid
+wall/lj93</A>.  LIGGGHTS(R)-PUBLIC will flag the use of a rigid
 fix with fix wall/reflect with a warning, but will not generate an
 error.
 </P>

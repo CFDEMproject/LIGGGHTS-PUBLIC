@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -42,11 +42,8 @@
   <I>scaled</I> value = <I>yes</I> or <I>no</I> = coords in dump file are scaled/unscaled
   <I>wrapped</I> value = <I>yes</I> or <I>no</I> = coords in dump file are wrapped/unwrapped
   <I>format</I> values = format of dump file, must be last keyword if used
-    <I>native</I> = native LAMMPS dump file
-    <I>xyz</I> = XYZ file
-    <I>molfile</I> style path = VMD molfile plugin interface
-      style = <I>dcd</I> or <I>xyz</I> or others supported my mofile
-      path = optional path for location of molfile plugins 
+    <I>native</I> = native LIGGGHTS(R)-PUBLIC dump file
+    <I>xyz</I> = XYZ file 
 </PRE>
 
 </UL>
@@ -54,15 +51,9 @@
 </P>
 <PRE>read_dump dump.file 5000 x y z
 read_dump dump.xyz 5 x y z format xyz box no
-read_dump dump.xyz 10 x y z format molfile box no reader xyz "../plugins"
-read_dump dump.dcd 0 x y z format molfile box yes reader dcd
-read_dump dump.file 1000 x y z vx vy vz format molfile box yes reader lammpstrj /usr/local/lib/vmd/plugins/LINUXAMD64/plugins/molfile
 read_dump dump.file 5000 x y vx vy trim yes
-read_dump ../run7/dump.file.gz 10000 x y z box yes 
-read_dump dump.xyz 5 x y z box no format xyz
-read_dump dump.xyz 10 x y z box no format molfile xyz ../plugins
-read_dump dump.dcd 0 x y z format molfile dcd
-read_dump dump.file 1000 x y z vx vy vz format molfile lammpstrj /usr/local/lib/vmd/plugins/LINUXAMD64/plugins/molfile 
+read_dump ../run7/dump.file.gz 10000 x y z box yes
+read_dump dump.xyz 5 x y z box no format xyz  
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -102,25 +93,9 @@ files via the "%" option in the dump file name.  See the
 <P>The format of the dump file is selected through the <I>format</I> keyword.
 If specified, it must be the last keyword used, since all remaining
 arguments are passed on to the dump reader.  The <I>native</I> format is
-for native LAMMPS dump files, written with a "dump atom".html or <A HREF = "dump.html">dump
+for native LIGGGHTS(R)-PUBLIC dump files, written with a "dump atom".html or <A HREF = "dump.html">dump
 custom</A> command.  The <I>xyz</I> format is for generic XYZ
 formatted dump files,
-</P>
-<P>The <I>molfile</I> format supports reading data through using the <A HREF = "vmd">VMD</A>
-molfile plugin interface. This dump reader format is only available,
-if the USER-MOLFILE package has been installed when compiling
-LAMMPS.
-</P>
-<P>The <I>molfile</I> format takes one or two additional values.  The <I>style</I>
-value determines the file format to be used and can be any format that
-the molfile plugins support, such as DCD or XYZ.  Note that DCD dump
-files can be written by LAMMPS via the <A HREF = "dump.html">dump dcd</A> command.
-The <I>path</I> value specifies a list of directories which LAMMPS will
-search for the molfile plugins appropriate to the specified <I>style</I>.
-The syntax of the <I>path</I> value is like other search paths: it can
-contain multiple directories separated by a colon (or semi-colon on
-windows).  The <I>path</I> keyword is optional and defaults to ".",
-i.e. the current directory.
 </P>
 <P>Support for other dump format readers may be added in the future.
 </P>
@@ -130,9 +105,9 @@ i.e. the current directory.
 and box information.
 </P>
 <P>The dump file is scanned for a snapshot with a time stamp that matches
-the specified <I>Nstep</I>.  This means the LAMMPS timestep the dump file
+the specified <I>Nstep</I>.  This means the LIGGGHTS(R)-PUBLIC timestep the dump file
 snapshot was written on for the <I>native</I> format.  However, the <I>xyz</I>
-and <I>molfile</I> formats do not store the timestep.  For these formats,
+formats do not store the timestep.  For these formats,
 timesteps are numbered logically, in a sequential manner, starting
 from 0.  Thus to access the 10th snapshot in an <I>xyz</I> or <I>mofile</I>
 formatted dump file, use <I>Nstep</I> = 9.
@@ -148,13 +123,6 @@ otherwise ignored.  See the "boundary" command for more details.
 </P>
 <P>For the <I>xyz</I> format, no information about the box is available, so
 you must set the <I>box</I> flag to <I>no</I>.  See details below.
-</P>
-<P>For the <I>molfile</I> format, reading simulation box information is
-typically supported, but the location of the simulation box origin is
-lost and no explicit information about periodicity or
-orthogonal/triclinic box shape is available.  The USER-MOLFILE package
-makes a best effort to guess based on heuristics, but this may not
-always work perfectly.
 </P>
 <HR>
 
@@ -198,17 +166,7 @@ assigned consecutively to the atoms as they appear in the dump file,
 starting from 1.  Thus you should insure that order of atoms is
 consistent from snapshot to snapshot in the the XYZ dump file.  See
 the <A HREF = "dump_modify.html">dump_modify sort</A> command if the XYZ dump file
-was written by LAMMPS.
-</P>
-<P>For dump files in <I>molfile</I> format, the <I>x</I>, <I>y</I>, <I>z</I>, <I>vx</I>, <I>vy</I>, and
-<I>vz</I> fields can be specified.  However, not all molfile formats store
-velocities, or their respective plugins may not support reading of
-velocities.  The molfile dump files do not store atom IDs, so these
-are assigned consecutively to the atoms as they appear in the dump
-file, starting from 1.  Thus you should insure that order of atoms are
-consistent from snapshot to snapshot in the the molfile dump file.
-See the <A HREF = "dump_modify.html">dump_modify sort</A> command if the dump file
-was written by LAMMPS.
+was written by LIGGGHTS(R)-PUBLIC.
 </P>
 <HR>
 
@@ -293,11 +251,11 @@ subsequent simulations, One way this can happen is if you read image
 flag fields from the dump file but do not also use the dump file box
 parameters.
 </P>
-<P>LAMMPS knows how to compute unscaled and remapped coordinates for the
+<P>LIGGGHTS(R)-PUBLIC knows how to compute unscaled and remapped coordinates for the
 snapshot column labels discussed above, e.g. <I>x</I>, <I>xs</I>, <I>xu</I>, <I>xsu</I>.
 If another column label is assigned to the <I>x</I> or <I>y</I> or <I>z</I> field via
 the <I>label</I> keyword, e.g. for coordinates output by the <A HREF = "fix_ave_atom.html">fix
-ave/atom</A> command, then LAMMPS needs to know whether
+ave/atom</A> command, then LIGGGHTS(R)-PUBLIC needs to know whether
 the coordinate information in the dump file is scaled and/or wrapped.
 This can be set via the <I>scaled</I> and <I>wrapped</I> keywords.  Note that
 the value of the <I>scaled</I> and <I>wrapped</I> keywords is ignored for fields
@@ -315,17 +273,13 @@ needed to generate absolute, unscaled coordinates.
 
 <P><B>Restrictions:</B>
 </P>
-<P>To read gzipped dump files, you must compile LAMMPS with the
+<P>To read gzipped dump files, you must compile LIGGGHTS(R)-PUBLIC with the
 -DLAMMPS_GZIP option - see the <A HREF = "Section_start.html#start_2">Making
-LAMMPS</A> section of the documentation.
-</P>
-<P>The <I>molfile</I> dump file formats are part of the USER-MOLFILE package.
-They are only enabled if LAMMPS was built with that packages.  See the
-<A HREF = "Section_start.html#start_3">Making LAMMPS</A> section for more info.
+LIGGGHTS(R)-PUBLIC</A> section of the documentation.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "dump.html">dump</A>, <A HREF = "dump_molfile.html">dump molfile</A>,
+<P><A HREF = "dump.html">dump</A>,
 <A HREF = "read_data.html">read_data</A>, <A HREF = "read_restart.html">read_restart</A>,
 <A HREF = "rerun.html">rerun</A>
 </P>

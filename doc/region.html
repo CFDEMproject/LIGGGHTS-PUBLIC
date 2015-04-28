@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -61,7 +61,7 @@
            if dim == x then y-coord
            if dim == y then z-coord
            if dim == z then x-coord
-    c2 = second center-coordinate 
+    c2 = second center-coordinate
            if dim == x then z-coord
            if dim == y then x-coord
            if dim == z then y-coord
@@ -76,7 +76,7 @@
                if axis == y then starting from z-axis
                if axis == z then starting from x=axis
     angle = obligatory keyword
-    alpha = mathematically positive angle between the wedge's starting and ending face in degrees 
+    alpha = mathematically positive angle between the wedge's starting and ending face in degrees
   <I>union</I> args = N reg-ID1 reg-ID2 ...
     N = # of regions to follow, must be 2 or greater
     reg-ID1,reg-ID2, ... = IDs of regions to join together
@@ -134,7 +134,7 @@ defined with the <I>side in</I> keyword, but would not be part of the
 region if it were defined using the <I>side out</I> keyword.  See more
 details on the <I>side</I> keyword below.
 </P>
-<P>Normally, regions in LAMMPS are "static", meaning their geometric
+<P>Normally, regions in LIGGGHTS(R)-PUBLIC are "static", meaning their geometric
 extent does not change with time.  If the <I>move</I> or <I>rotate</I> keyword
 is used, as described below, the region becomes "dynamic", meaning
 it's location or orientation changes with time.  This may be useful,
@@ -161,13 +161,13 @@ factor in any pair of dimensions cannot be used if both the lo/hi
 values in either of those dimensions are INF.  E.g. if the xy tilt is
 non-zero, then xlo and xhi cannot both be INF, nor can ylo and yhi.
 </P>
-<P>IMPORTANT NOTE: Regions in LAMMPS do not get wrapped across periodic
+<P>IMPORTANT NOTE: Regions in LIGGGHTS(R)-PUBLIC do not get wrapped across periodic
 boundaries, as specified by the <A HREF = "boundary.html">boundary</A> command.  For
 example, a spherical region that is defined so that it overlaps a
 periodic boundary is not treated as 2 half-spheres, one on either side
 of the simulation box.
 </P>
-<P>IMPORTANT NOTE: Regions in LAMMPS are always 3d geometric objects,
+<P>IMPORTANT NOTE: Regions in LIGGGHTS(R)-PUBLIC are always 3d geometric objects,
 regardless of whether the <A HREF = "dimension.html">dimension</A> of a simulation
 is 2d or 3d.  Thus when using regions in a 2d simulation, you should
 be careful to define the region so that its intersection with the 2d
@@ -221,19 +221,19 @@ functions, and include <A HREF = "thermo_style.html">thermo_style</A> command
 keywords for the simulation box parameters and timestep and elapsed
 time.  Thus it is easy to specify a time-dependent radius.
 </P>
-<P>See <A HREF = "Section_howto.html#howto_12">Section_howto 12</A> of the doc pages
-for a geometric description of triclinic boxes, as defined by LAMMPS,
+<P>See <A HREF = "Section_howto.html#howto_7">Section_howto 12</A> of the doc pages
+for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.
 </P>
 <P>For style <I>mesh/tet</I>, a tetrahedral mesh can be read from an ASCII VTK file.
 You can apply offset, scaling and rotation to the imported mesh via dedicated keywords.
-If applying more then one of these operations, the offset is applied first 
-and then the geometry is scaled. Then the geometry is rotated around the 
+If applying more then one of these operations, the offset is applied first
+and then the geometry is scaled. Then the geometry is rotated around the
 x-axis first, then around the y-axis, then around the z-axis.
 </P>
 <P>IMPORTANT NOTE: Currently only ASCII VTK containing tetrahedra are
-supported. For periodic boundaries, the mesh is NOT mapped. Instead, a 
+supported. For periodic boundaries, the mesh is NOT mapped. Instead, a
 warning is generated if a vertex lies outside the simulation box.
 </P>
 <P>The <I>union</I> style creates a region consisting of the volume of all the

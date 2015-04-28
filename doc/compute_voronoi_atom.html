@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -30,7 +30,7 @@
   <I>radius</I> arg = v_r
     v_r = radius atom style variable for a poly-disperse voronoi tessellation
   <I>edge_histo</I> arg = maxedge
-    maxedge = maximum number of voronoi cell edges to be accounted in the histogram 
+    maxedge = maximum number of voronoi cell edges to be accounted in the histogram
   <I>edge_threshold</I> arg = minlength
     minlength = minimum length for an edge to be counted
   <I>face_threshold</I> arg = minarea
@@ -42,7 +42,7 @@
 </P>
 <PRE>compute 1 all voronoi/atom
 compute 2 precipitate voronoi/atom surface matrix
-compute 3b precipitate voronoi/atom radius v_r 
+compute 3b precipitate voronoi/atom radius v_r
 compute 4 solute voronoi/atom only_group 
 </PRE>
 <P><B>Description:</B>
@@ -109,7 +109,7 @@ the neighbor count and edge histogram outputs.
 
 <P>The Voronoi calculation is performed by the freely available <A HREF = "http://math.lbl.gov/voro++">Voro++
 package</A>, written by Chris Rycroft at UC Berkeley and LBL,
-which must be installed on your system when building LAMMPS for use
+which must be installed on your system when building LIGGGHTS(R)-PUBLIC for use
 with this compute.  See instructions on obtaining and installing the
 Voro++ software in the src/VORONOI/README file.
 </P>
@@ -127,10 +127,10 @@ processor is determined by the cutoff used for
 explicitly via the <A HREF = "communicate.html">communicate cutoff</A> command.
 </P>
 <P>IMPORTANT NOTE: The Voro++ package performs its calculation in 3d.
-This should still work for a 2d LAMMPS simulation, to effectively
+This should still work for a 2d LIGGGHTS(R)-PUBLIC simulation, to effectively
 compute Voronoi "areas", so long as the z-dimension of the box is
 roughly the same (or smaller) compared to the separation of the atoms.
-Typical values for the z box dimensions in a 2d LAMMPS model are -0.5
+Typical values for the z box dimensions in a 2d LIGGGHTS(R)-PUBLIC model are -0.5
 to 0.5, which satisfies the criterion for most <A HREF = "units.html">units</A>
 systems.  Note that you define the z extent of the simulation box for
 2d simulations when using the <A HREF = "create_box.html">create_box</A> or
@@ -141,8 +141,8 @@ systems.  Note that you define the z extent of the simulation box for
 <P>This compute calculates a per-atom array with 2 columns.  The first
 column is the Voronoi volume, the second is the neighbor count, as
 described above.  These values can be accessed by any command that
-uses per-atom values from a compute as input.  See <A HREF = "Section_howto.html#howto_15">Section_howto
-15</A> for an overview of LAMMPS output
+uses per-atom values from a compute as input.  See <A HREF = "Section_howto.html#howto_8">Section_howto
+15</A> for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 </P>
 <P>The Voronoi cell volume will be in distance <A HREF = "units.html">units</A> cubed.
@@ -150,8 +150,8 @@ options.
 <P><B>Restrictions:</B>
 </P>
 <P>This compute is part of the VORONOI package.  It is only enabled if
-LAMMPS was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LAMMPS</A> section for more info.
+LIGGGHTS(R)-PUBLIC was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
+LIGGGHTS(R)-PUBLIC</A> section for more info.
 </P>
 <P><B>Related commands:</B>
 </P>

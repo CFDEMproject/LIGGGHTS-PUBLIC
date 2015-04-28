@@ -1,20 +1,19 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
 :line
 
-LIGGGHTS 2.X vs. LIGGGHTS 1.5.3 - syntax changes :h1
+LIGGGHTS(R)-PUBLIC 2.X vs. LIGGGHTS(R)-PUBLIC 1.5.3 - syntax changes :h1
 
 Introduction: :h2
 
-This is a short outline of the most important changes in LIGGGHTS 2.X 
-compared to LIGGGHTS 1.5.3 regarding the syntax of major commands. The 
-motivation for these changes was to make the script language more readable and to 
-improve extendability (in the sense of object oriented programming) with respect 
+This is a short outline of the most important changes in LIGGGHTS(R)-PUBLIC 2.X
+compared to LIGGGHTS(R)-PUBLIC 1.5.3 regarding the syntax of major commands. The
+motivation for these changes was to make the script language more readable and to
+improve extendability (in the sense of object oriented programming) with respect
 to modelling approaches.
 
 Commands covered by this tutorial: :h2
@@ -37,17 +36,17 @@ Changes are indicated as follows
 OLD: old_syntax
 NEW: new_syntax  :pre
 
-where {old_syntax} refers to the syntax used in LIGGGHTS 1.5.3 and before,
-and {new_syntax} refers to the syntax used in LIGGGHTS 2.X
+where {old_syntax} refers to the syntax used in LIGGGHTS(R)-PUBLIC 1.5.3 and before,
+and {new_syntax} refers to the syntax used in LIGGGHTS(R)-PUBLIC 2.X
 
 :line
 
 [atom_style sphere (formerly atom_style granular):]
 
-OLD: atom_style granular 
+OLD: atom_style granular
 NEW: atom_style sphere  :pre
 
-NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS(R)-PUBLIC 2.0
 
 For details, see "atom_style sphere"_atom_style.html.
 
@@ -58,7 +57,7 @@ For details, see "atom_style sphere"_atom_style.html.
 OLD: dmpstl all stl 300 post/dump*.stl
 NEW: dmpstl all mesh/stl 300 post/dump*.stl  :pre
 
-NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS(R)-PUBLIC 2.0
 
 :line
 
@@ -67,7 +66,7 @@ NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.
 OLD: dmpstl all mesh/gran/VTK 300 post/dump*.stl id
 NEW: dmpstl all mesh/vtk 300 post/dump*.stl id  :pre
 
-NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS(R)-PUBLIC 2.0
 
 :line
 
@@ -83,20 +82,20 @@ NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction on :pr
 
 [fix mesh/surface (formerly fix mesh/gran):]
 
-OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. 
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 :pre 
+OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0.
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 :pre
 
 OLD: fix ID group-ID mesh/gran mesh.stl 1 0.001 0. 0. 0. -90. 0. 0.
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90. :pre 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90. :pre
 
-OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0. 
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 move 1. 2. 3 :pre 
+OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0.
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 move 1. 2. 3 :pre
 
 OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. conveyor 5. 0. 0.
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_vel 5. 0. 0. :pre 
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_vel 5. 0. 0. :pre
 
-OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5. 
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5. :pre 
+OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5.
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5. :pre
 
 For details, see "fix mesh/surface"_fix_mesh_surface.html.
 
@@ -105,7 +104,7 @@ For details, see "fix mesh/surface"_fix_mesh_surface.html.
 [fix mesh/surface/stress (formerly fix mesh/gran/stressanalysis):]
 
 OLD: fix ID group-ID mesh/gran/stressanalysis mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. finnie yes
-NEW: fix ID group-ID fix mesh/surface/stress file mesh.stl type 1 wear finnie :pre 
+NEW: fix ID group-ID fix mesh/surface/stress file mesh.stl type 1 wear finnie :pre
 
 For details, see "fix mesh/surface/stress"_fix_mesh_surface_stress.html.
 
@@ -123,9 +122,9 @@ OLD: fix ID group-ID move/mesh/gran linear 20. 20. 0. cad1 1
 NEW: fix ID group-ID move/mesh mesh cad1 linear 20. 20. 0. :pre
 
 NOTES: :ule
-The trailing "1" for the {old_syntax} was no longer used in LIGGGHTS 1.5.3 :l
-For compatibility reasons, the command name {fix move/mesh/gran} can be 
-used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax. :l
+The trailing "1" for the {old_syntax} was no longer used in LIGGGHTS(R)-PUBLIC 1.5.3 :l
+For compatibility reasons, the command name {fix move/mesh/gran} can be
+used in LIGGGHTS(R)-PUBLIC 2.0. However, the syntax has to follow the LIGGGHTS(R)-PUBLIC 2.0 syntax. :l
 
 For details, see "fix move/mesh"_fix_move_mesh.html.
 
@@ -152,13 +151,13 @@ NEW: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 
 
 NOTES: :ule
 Same applies for hooke/history, hooke, hooke/history/simple, hertz/history/simple :l
-{sjkr} stands for 'simplified JKR (Johnson-Kendall-Roberts)' model, and {cdt} for 
+{sjkr} stands for 'simplified JKR (Johnson-Kendall-Roberts)' model, and {cdt} for
 'constant directional torque' model :l
-styles {xplane}, {yplane}, {zplane} take only one arg now (the wall position), if 
+styles {xplane}, {yplane}, {zplane} take only one arg now (the wall position), if
 you want two walls you have to use two fix commands :l
-in addition to the existing style {zcylinder}, there is now {xcylinder} and 
-{ycylinder} as well :l 
-{xcylinder} {ycylinder} and {zcylinder} take 3 args: the cylinder radius, and 
+in addition to the existing style {zcylinder}, there is now {xcylinder} and
+{ycylinder} as well :l
+{xcylinder} {ycylinder} and {zcylinder} take 3 args: the cylinder radius, and
 the location of the axis in the other two dimensions :l
 
 For details, see "fix wall/gran"_fix_wall_gran.html.

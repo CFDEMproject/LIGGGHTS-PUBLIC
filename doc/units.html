@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -30,12 +30,12 @@ and data file, as well as quantities output to the screen, log file,
 and dump files.  Typically, this command is used at the very beginning
 of an input script.
 </P>
-<P>For all units except <I>lj</I>, LAMMPS uses physical constants from
+<P>For all units except <I>lj</I>, LIGGGHTS(R)-PUBLIC uses physical constants from
 www.physics.nist.gov.  For the definition of Kcal in real units,
-LAMMPS uses the thermochemical calorie = 4.184 J.
+LIGGGHTS(R)-PUBLIC uses the thermochemical calorie = 4.184 J.
 </P>
 <P>For style <I>lj</I>, all quantities are unitless.  Without loss of
-generality, LAMMPS sets the fundamental quantities mass, sigma,
+generality, LIGGGHTS(R)-PUBLIC sets the fundamental quantities mass, sigma,
 epsilon, and the Boltzmann constant = 1.  The masses, distances,
 energies you specify are multiples of these fundamental values.  The
 formulas relating the reduced or unitless quantity (with an asterisk)
@@ -55,7 +55,7 @@ results from a unitless LJ simulation into physical quantities.
 <LI>dynamic viscosity = reduced LJ viscosity, where eta* = eta sigma^3 / epsilon / tau
 <LI>charge = reduced LJ charge, where q* = q / (4 pi perm0 sigma epsilon)^1/2
 <LI>dipole = reduced LJ dipole, moment where *mu = mu / (4 pi perm0 sigma^3 epsilon)^1/2
-<LI>electric field = force/charge, where E* = E (4 pi perm0 sigma epsilon)^1/2 sigma / epsilon 
+<LI>electric field = force/charge, where E* = E (4 pi perm0 sigma epsilon)^1/2 sigma / epsilon
 <LI>density = mass/volume, where rho* = rho sigma^dim 
 </UL>
 <P>Note that for LJ units, the default mode of thermodyamic output via
@@ -68,8 +68,8 @@ by the number of atoms, i.e. energy/atom.  This can be changed via the
 <UL><LI>mass = grams/mole
 <LI>distance = Angstroms
 <LI>time = femtoseconds
-<LI>energy = Kcal/mole 
-<LI>velocity = Angstroms/femtosecond 
+<LI>energy = Kcal/mole
+<LI>velocity = Angstroms/femtosecond
 <LI>force = Kcal/mole-Angstrom
 <LI>torque = Kcal/mole
 <LI>temperature = Kelvin
@@ -77,7 +77,7 @@ by the number of atoms, i.e. energy/atom.  This can be changed via the
 <LI>dynamic viscosity = Poise
 <LI>charge = multiple of electron charge (+1.0 is a proton)
 <LI>dipole = charge*Angstroms
-<LI>electric field = volts/Angstrom 
+<LI>electric field = volts/Angstrom
 <LI>density = gram/cm^dim 
 </UL>
 <P>For style <I>metal</I>, these are the units:
@@ -86,7 +86,7 @@ by the number of atoms, i.e. energy/atom.  This can be changed via the
 <LI>distance = Angstroms
 <LI>time = picoseconds
 <LI>energy = eV
-<LI>velocity = Angstroms/picosecond 
+<LI>velocity = Angstroms/picosecond
 <LI>force = eV/Angstrom
 <LI>torque = eV
 <LI>temperature = Kelvin
@@ -111,7 +111,7 @@ by the number of atoms, i.e. energy/atom.  This can be changed via the
 <LI>dynamic viscosity = Pascal*second
 <LI>charge = Coulombs
 <LI>dipole = Coulombs*meters
-<LI>electric field = volts/meter 
+<LI>electric field = volts/meter
 <LI>density = kilograms/meter^dim 
 </UL>
 <P>For style <I>cgs</I>, these are the units:
@@ -128,7 +128,7 @@ by the number of atoms, i.e. energy/atom.  This can be changed via the
 <LI>dynamic viscosity = Poise
 <LI>charge = statcoulombs or esu
 <LI>dipole = statcoul-cm = 10^18 debye
-<LI>electric field = statvolt/cm or dyne/esu 
+<LI>electric field = statvolt/cm or dyne/esu
 <LI>density = grams/cm^dim 
 </UL>
 <P>For style <I>electron</I>, these are the units:
@@ -159,7 +159,7 @@ by the number of atoms, i.e. energy/atom.  This can be changed via the
 <LI>dynamic viscosity = picogram/(micrometer-microsecond)
 <LI>charge = picocoulombs
 <LI>dipole = picocoulomb-micrometer
-<LI>electric field = volt/micrometer 
+<LI>electric field = volt/micrometer
 <LI>density = picograms/micrometer^dim 
 </UL>
 <P>For style <I>nano</I>, these are the units:
@@ -176,7 +176,7 @@ by the number of atoms, i.e. energy/atom.  This can be changed via the
 <LI>dynamic viscosity = attogram/(nanometer-nanosecond)
 <LI>charge = multiple of electron charge (+1.0 is a proton)
 <LI>dipole = charge-nanometer
-<LI>electric field = volt/nanometer 
+<LI>electric field = volt/nanometer
 <LI>density = attograms/nanometer^dim 
 </UL>
 <P>The units command also sets the timestep size and neighbor skin
@@ -187,7 +187,7 @@ distance to default values for each style:
 <LI>For style <I>metal</I> these are dt = 0.001 psec and skin = 2.0 Angstroms.
 <LI>For style <I>si</I> these are dt = 1.0e-8 sec and skin = 0.001 meters.
 <LI>For style <I>cgs</I> these are dt = 1.0e-8 sec and skin = 0.1 cm.
-<LI>For style <I>electron</I> these are dt = 0.001 fmsec and skin = 2.0 Bohr. 
+<LI>For style <I>electron</I> these are dt = 0.001 fmsec and skin = 2.0 Bohr.
 <LI>For style <I>micro</I> these are dt = 2.0 microsec and skin = 0.1 micrometers.
 <LI>For style <I>nano</I> these are dt = 0.00045 nanosec and skin = 0.1 nanometers. 
 </UL>

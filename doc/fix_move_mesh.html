@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -50,30 +48,30 @@
     Px,Py,Pz = origin point of axis of rotation (distance units)
     ax,ay,az = axis of rotation vector (distance units)
     period = obligatory keyword
-    per = period of rotation (time units) 
+    per = period of rotation (time units)
   <I>rotate/variable</I> args = origin Px Py Pz axis ax ay az omega var_omega
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
     ax,ay,az = axis of rotation vector (distance units)
     omega = obligatory keyword
-    var_omega = variable specifying angular velocity (rad / time units) 
+    var_omega = variable specifying angular velocity (rad / time units)
   <I>viblin</I> args = axis ax ay az order n amplitude C1 ... Cn phase p1 ... pn period per
     axis = obligatory keyword
     ax,ay,az = components of moving direction vector (distance units)(origin 0 0 0)
-    order= obligatory keyword   
+    order= obligatory keyword
     n= order of trigonometric series n (from 1 to 10)
     amplitude = obligatory keyword
     C1, ..., Cn = amplitude (distance units)
     phase = obligatory keyword
     p1, ...,pn = phase of functionterm (rad) (number of terms is equivalent to order n)
     period = obligatory keyword
-    per = period of rotation (time units)     
+    per = period of rotation (time units)
   <I>vibrot</I> args = origin Px Py Pz axis ax ay az order n amplitude C1 ... Cn phase p1 ... pn period per
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
     axis = obligatory keyword
     ax,ay,az = axis of rotation vector
-    order= obligatory keyword   
+    order= obligatory keyword
     n= order of trigonometric series (from 1 to 10)
     amplitude = obligatory keyword
     C1, ..., Cn = amplitude (rad)
@@ -88,17 +86,13 @@
 </P>
 <PRE>fix move all move/mesh mesh cad1 wiggle amplitude -0.1 0. 0. period 0.02
 fix move all move/mesh mesh cad1 rotate origin 0. 0. 0. axis  0. 0. 1. period 0.05
-fix move all move/mesh mesh cad1 linear 5. 5. 0. 
+fix move all move/mesh mesh cad1 linear 5. 5. 0.
 fix move all move/mesh mesh cad1 viblin axis 0. 0. 1 order 5 amplitude 0.4 0.1 0.3 0.1 0.1 phase 1.3 2 0.4 0.1 0 period 0.02
 fix move all move/mesh mesh cad1 vibrot origin 0. 0. 0 axis 0. 0. 1 order 2 amplitude 0.4 0.1  phase 1.3 0 period 0.02 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This command is not available in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P>Perform updates of position and velocity for mesh elements which are 
+<P>Perform updates of position and velocity for mesh elements which are
 part of the <A HREF = "fix_mesh_surface.html">fix_mesh_surface</A> with ID <I>mesh-ID</I>
 using the specified settings or formulas. The fix group is ignored
 for this command.
@@ -115,7 +109,7 @@ notation as
 specified, <I>V</I> is the specified velocity vector with components
 (Vx,Vy,Vz), and <I>delta</I> is the time elapsed since the fix was
 specified.  This style also sets the velocity of each atom to V =
-(Vx,Vy,Vz). 
+(Vx,Vy,Vz).
 </P>
 <P>The <I>linear/variable</I> style does the same as the <I>linear</I> style,
 but uses three variables so that the velocity can be time-dependant.
@@ -137,52 +131,52 @@ velocity of each element to the time derivative of this expression.
 the rotation is also specified.  This style also sets the velocity of
 each element to (omega cross Rperp) where omega is its angular velocity
 around the rotation axis and Rperp is a perpendicular vector from the
-rotation axis to the atom. Note that the direction of rotation 
-around the rotation axis is consistent with the right-hand rule: 
-if your right-hand's thumb points along <I>R</I>, then your fingers 
+rotation axis to the atom. Note that the direction of rotation
+around the rotation axis is consistent with the right-hand rule:
+if your right-hand's thumb points along <I>R</I>, then your fingers
 wrap around the axis in the direction of rotation.
 </P>
 <P>The <I>rotate/variable</I> style does the same as the <I>rotate</I> style,
-but uses a variable for the angular velocity so that the angular 
+but uses a variable for the angular velocity so that the angular
 velocity can be time-dependant.
 IMPORTANT NOTE: style <I>rotate</I> takes the period of the rotation
 as input, <I>rotate/variable</I> takes angular velocity as input.
 </P>
 <P>The <I>riggle</I> style imposes an oscillatory rotation around a rotation
-axis <I>R</I> = (Rx,Ry,Rz) that goes thru a point <I>P</I> = (Px,Py,Pz). 
+axis <I>R</I> = (Rx,Ry,Rz) that goes thru a point <I>P</I> = (Px,Py,Pz).
 The <I>period</I> of the oscillation is specified as well as the <I>amplitude</I>
 in grad (°). This style also sets the velocity of
 each element accordingly.
 </P>
-<P>The <I>viblin</I> style moves meshes in an oscillatory fashion with an vibration 
-function of higher order, so that their position <I>X</I> = (x,y,z) as a function 
+<P>The <I>viblin</I> style moves meshes in an oscillatory fashion with an vibration
+function of higher order, so that their position <I>X</I> = (x,y,z) as a function
 of time is given in vector notation as
 </P>
 <CENTER><IMG SRC = "Eqs/viblin.jpg">
 </CENTER>
-<P>where <I>X0</I> = (x0,y0,z0) is their position at the time the fix is specified, 
-<I>n</I> represents the order of the trigonometric series, <I>Cn</I> is the specified 
+<P>where <I>X0</I> = (x0,y0,z0) is their position at the time the fix is specified,
+<I>n</I> represents the order of the trigonometric series, <I>Cn</I> is the specified
 amplitude along the direction given by <I>axis</I> = (ax,ay,az). The vector <I>D</I>
-is the unit vector of <I>axis</I>. The angular velocity omega is 2 PI / <I>period</I>, 
-and <I>delta</I> is the time elapsed since the fix was specified. This style 
+is the unit vector of <I>axis</I>. The angular velocity omega is 2 PI / <I>period</I>,
+and <I>delta</I> is the time elapsed since the fix was specified. This style
 also sets the velocity of each element to the time derivative of this expression.
 </P>
-<P>The <I>vibrot</I> style generates an oscillatory rotation around a rotation <I>axis</I> = 
-(ax,ay,az) that goes thru a point <I>origin</I> = (Px,Py,Pz). The <I>period</I> of the 
-oscillation is used to calculate omega, the amplitudes <I>Cn</I> and the phase phase 
-<I>n</I> are given in rad. The change of rotation angle per time <I>gamma(t)</I> is 
+<P>The <I>vibrot</I> style generates an oscillatory rotation around a rotation <I>axis</I> =
+(ax,ay,az) that goes thru a point <I>origin</I> = (Px,Py,Pz). The <I>period</I> of the
+oscillation is used to calculate omega, the amplitudes <I>Cn</I> and the phase phase
+<I>n</I> are given in rad. The change of rotation angle per time <I>gamma(t)</I> is
 described by trigonometric series of order <I>n</I>. The formula for this change is
 </P>
 <CENTER><IMG SRC = "Eqs/vibrot.jpg">
 </CENTER>
 <P>This style also sets the velocity of each element accordingly
 </P>
-<P>NOTE: If a dangerous tri neighbor list build is detected, this may be due to 
-the fact that the geometry is moved too close to a region where particle 
-insertion is taking place so that initial interpenetration happens when 
+<P>NOTE: If a dangerous tri neighbor list build is detected, this may be due to
+the fact that the geometry is moved too close to a region where particle
+insertion is taking place so that initial interpenetration happens when
 the particles are inserted.
 </P>
-<P>NOTE: When moving a mesh element, not only the node positions are moved 
+<P>NOTE: When moving a mesh element, not only the node positions are moved
 but also a couple of other vectors. So moving one mesh element is more
 costly as one particle.
 </P>
@@ -190,12 +184,12 @@ costly as one particle.
 </P>
 <P>It is possible to superpose multiple fix move/mesh commands. In this
 case, the reference frame for the second move command moves along as
-the mesh is moved by the first move command etc. E.g. for style <I>rotate</I>, 
+the mesh is moved by the first move command etc. E.g. for style <I>rotate</I>,
 the origin of the rotation axis would be in local reference frame.
 </P>
-<P>Example: A mesh should rotate around a central axis and additionally 
+<P>Example: A mesh should rotate around a central axis and additionally
 revolve around its center of mass. The first move command should be
-the rotation around the central axis, the second move command the 
+the rotation around the central axis, the second move command the
 revolution around the center of mass of the mesh.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
@@ -208,20 +202,20 @@ reads a restart file, so that the operation of the fix continues in an
 uninterrupted fashion.
 </P>
 <P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this
-fix.  
+fix.
 </P>
 <P>No parameter of this fix can be used with the <I>start/stop</I> keywords of
 the <A HREF = "run.html">run</A> command.  This fix is not invoked during <A HREF = "minimize.html">energy
 minimization</A>.
 </P>
-<P><B>Restrictions:</B> 
+<P><B>Restrictions:</B>
 </P>
-<P>If multiple fix move/mesh movements are superposed onto one mesh, 
+<P>If multiple fix move/mesh movements are superposed onto one mesh,
 they have to be deleted in reverse order of their creation
-Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary. 
+Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary.
 In this case, an error is generated. See <A HREF = "boundary.html">boundary</A> command for details.
 </P>
-<P><B>Related commands:</B> 
+<P><B>Related commands:</B>
 </P>
 <P><A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
 </P>

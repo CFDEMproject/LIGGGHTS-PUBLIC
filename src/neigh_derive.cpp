@@ -1,14 +1,46 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "neighbor.h"
@@ -228,8 +260,8 @@ void Neighbor::skip_from(NeighList *list)
 void Neighbor::skip_from_granular(NeighList *list)
 {
   int i,j,ii,jj,n,nn,itype,jnum,joriginal;
-  int *neighptr,*jlist,*touchptr,*touchptr_skip;
-  double *shearptr,*shearptr_skip;
+  int *neighptr,*jlist,*contact_flag_ptr,*contact_flag_ptr_skip;
+  double *contact_hist_ptr,*contact_hist_ptr_skip;
 
   int *type = atom->type;
 
@@ -242,23 +274,23 @@ void Neighbor::skip_from_granular(NeighList *list)
   int *ilist_skip = list->listskip->ilist;
   int *numneigh_skip = list->listskip->numneigh;
   int **firstneigh_skip = list->listskip->firstneigh;
-  int **firsttouch_skip = list->listskip->listgranhistory->firstneigh;
-  double **firstshear_skip = list->listskip->listgranhistory->firstdouble;
+  int **first_contact_flag_skip = list->listskip->listgranhistory->firstneigh;
+  double **first_contact_hist_skip = list->listskip->listgranhistory->firstdouble;
   int inum_skip = list->listskip->inum;
 
   int *iskip = list->iskip;
   int **ijskip = list->ijskip;
 
   NeighList *listgranhistory = list->listgranhistory;
-  int **firsttouch = listgranhistory->firstneigh;
-  double **firstshear = listgranhistory->firstdouble;
-  MyPage<int> *ipage_touch = listgranhistory->ipage;
-  MyPage<double> *dpage_shear = listgranhistory->dpage;
+  int **first_contact_flag = listgranhistory->firstneigh;
+  double **first_contact_hist = listgranhistory->firstdouble;
+  MyPage<int> *ipage_contact_flag = listgranhistory->ipage;
+  MyPage<double> *dpage_contact_hist = listgranhistory->dpage;
 
   int inum = 0;
   ipage->reset();
-  ipage_touch->reset();
-  dpage_shear->reset();
+  ipage_contact_flag->reset();
+  dpage_contact_hist->reset();
 
   // loop over atoms in other list
   // skip I atom entirely if iskip is set for type[I]
@@ -271,13 +303,13 @@ void Neighbor::skip_from_granular(NeighList *list)
 
     n = nn = 0;
     neighptr = ipage->vget();
-    touchptr = ipage_touch->vget();
-    shearptr = dpage_shear->vget();
+    contact_flag_ptr = ipage_contact_flag->vget();
+    contact_hist_ptr = dpage_contact_hist->vget();
 
     // loop over parent non-skip granular list and its history info
 
-    touchptr_skip = firsttouch_skip[i];
-    shearptr_skip = firstshear_skip[i];
+    contact_flag_ptr_skip = first_contact_flag_skip[i];
+    contact_hist_ptr_skip = first_contact_hist_skip[i];
     jlist = firstneigh_skip[i];
     jnum = numneigh_skip[i];
 
@@ -286,9 +318,9 @@ void Neighbor::skip_from_granular(NeighList *list)
       j = joriginal & NEIGHMASK;
       if (ijskip[itype][type[j]]) continue;
       neighptr[n] = joriginal;
-      touchptr[n++] = touchptr_skip[jj];
+      contact_flag_ptr[n++] = contact_flag_ptr_skip[jj];
       for(int d = 0; d < dnum; d++) 
-        shearptr[nn++] = shearptr_skip[dnum*jj+d];
+        contact_hist_ptr[nn++] = contact_hist_ptr_skip[dnum*jj+d];
     }
 
     ilist[inum++] = i;
@@ -298,10 +330,10 @@ void Neighbor::skip_from_granular(NeighList *list)
     if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
 
-    firsttouch[i] = touchptr;
-    firstshear[i] = shearptr;
-    ipage_touch->vgot(n);
-    dpage_shear->vgot(nn);
+    first_contact_flag[i] = contact_flag_ptr;
+    first_contact_hist[i] = contact_hist_ptr;
+    ipage_contact_flag->vgot(n);
+    dpage_contact_hist->vgot(nn);
   }
 
   list->inum = inum;

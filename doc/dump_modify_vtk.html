@@ -1,0 +1,253 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>dump_modify command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>dump_modify dump-ID keyword values ... 
+</PRE>
+<UL><LI>dump-ID = ID of dump to modify 
+
+<LI>one or more keyword/value pairs may be appended 
+
+<LI>these keywords apply to the dump custom/vtk style 
+
+<LI>keyword = <I>binary</I> or <I>element</I> or <I>every</I> or <I>fileper</I> or <I>first</I> or <I>label</I> or <I>nfile</I> or <I>pad</I> or <I>region</I> or <I>sort</I> or <I>thresh</I> 
+
+<PRE>  <I>binary</I> arg = <I>yes</I> or <I>no</I>
+  <I>element</I> args = E1 E2 ... EN, where N = # of atom types
+    E1,...,EN = element name, e.g. C or Fe or Ga
+  <I>every</I> arg = N
+    N = dump every this many timesteps
+    N can be a variable (see below)
+  <I>fileper</I> arg = Np
+    Np = write one file for every this many processors
+  <I>first</I> arg = <I>yes</I> or <I>no</I>
+  <I>label</I> arg = string
+    string = character string to use in header of legacy VTK file
+  <I>nfile</I> arg = Nf
+    Nf = write this many files, one from each of Nf processors
+  <I>pad</I> arg = Nchar = # of characters to convert timestep to
+  <I>region</I> arg = region-ID or "none"
+  <I>sort</I> arg = <I>off</I> or <I>id</I> or N or -N
+     off = no sorting of per-atom lines within a snapshot
+     id = sort per-atom lines by atom ID
+     N = sort per-atom lines in ascending order by the Nth column
+     -N = sort per-atom lines in descending order by the Nth column
+  <I>thresh</I> args = attribute operation value
+    attribute = same attributes (x,fy,etotal,sxx,etc) used by dump custom style
+    operation = "<" or "<=" or ">" or ">=" or "==" or "!="
+    value = numeric value to compare to
+    these 3 args can be replaced by the word "none" to turn off thresholding 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>dump_modify dmpvtp binary yes
+dump_modify e_data region mySphere thresh x < 0.0 thresh ervel >= 0.2
+dump_modify dmpvtk every 1000 nfile 20
+dump_modify dmpvtk every v_myVar 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Modify the parameters of a previously defined dump command.
+</P>
+<P>These keywords apply to the <A HREF = "dump_custom_vtk.html">dump custom/vtk</A> style.
+The description gives details.
+</P>
+<HR>
+
+<P>The <I>binary</I> keyword, if specified as <I>yes</I>, causes the output to be
+written in binary format. If specified as <I>no</I>, which is the default,
+the data is written in ASCII format to the output file.
+</P>
+<HR>
+
+<P>The <I>element</I> keyword associates element names (e.g. H, C, Fe) with
+LIGGGHTS(R)-PUBLIC atom types.  There are no restrictions to what
+label can be used as an element name.  Any whitespace separated text
+will be accepted.
+</P>
+<HR>
+
+<P>The <I>every</I> keyword changes the dump frequency originally specified by
+the <A HREF = "dump_custom_vtk.html">dump custom/vtk</A> command to a new value.
+The every keyword can be specified in one of two ways.
+It can be a numeric value in which case it must be > 0.
+Or it can be an <A HREF = "variable.html">equal-style variable</A>,
+which should be specified as v_name, where name is the variable name.
+</P>
+<P>In this case, the variable is evaluated at the beginning of a run to
+determine the next timestep at which a dump snapshot will be written
+out.  On that timestep the variable will be evaluated again to
+determine the next timestep, etc.  Thus the variable should return
+timestep values.  See the stagger() and logfreq() and stride() math
+functions for <A HREF = "variable.html">equal-style variables</A>, as examples of
+useful functions to use in this context.  Other similar math functions
+could easily be added as options for <A HREF = "variable.html">equal-style
+variables</A>.  Also see the next() function, which allows
+use of a file-style variable which reads successive values from a
+file, each time the variable is evaluated.  Used with the <I>every</I>
+keyword, if the file contains a list of ascending timesteps, you can
+output snapshots whenever you wish.
+</P>
+<P>Note that when using the variable option with the <I>every</I> keyword, you
+need to use the <I>first</I> option if you want an initial snapshot written
+to the dump file.
+</P>
+<P>For example, the following commands will
+write snapshots at timesteps 0,10,20,30,100,200,300,1000,2000,etc:
+</P>
+<PRE>variable	s equal logfreq(10,3,10)
+dump		1 all custom/vtk 100 tmp.dump*.vtk vx vy vz
+dump_modify	1 every v_s first yes 
+</PRE>
+<P>The following commands would write snapshots at the timesteps listed
+in file tmp.times:
+</P>
+<PRE>variable        f file tmp.times
+variable	s equal next(f)
+dump		1 all custom/vtk 100 tmp.dump*.vtk vx vy vz
+dump_modify	1 every v_s 
+</PRE>
+<P>IMPORTANT NOTE: When using a file-style variable with the <I>every</I>
+keyword, the file of timesteps must list a first timestep that is
+beyond the current timestep (e.g. it cannot be 0).  And it must list
+one or more timesteps beyond the length of the run you perform.  This
+is because the dump command will generate an error if the next
+timestep it reads from the file is not a value greater than the
+current timestep.  Thus if you wanted output on steps 0,15,100 of a
+100-timestep run, the file should contain the values 15,100,101 and
+you should also use the dump_modify first command.  Any final value >
+100 could be used in place of 101.
+</P>
+<HR>
+
+<P>The <I>first</I> keyword determines whether a dump snapshot is written on
+the very first timestep after the dump command is invoked.  This will
+always occur if the current timestep is a multiple of N, the frequency
+specified in the <A HREF = "dump_custom_vtk.html">dump custom/vtk</A> command,
+including timestep 0.  But if this is not the case, a dump snapshot
+will only be written if the setting of this keyword is <I>yes</I>.
+If it is <I>no</I>, which is the default, then it will not be written.
+</P>
+<HR>
+
+<P>The <I>fileper</I> keyword is documented below with the <I>nfile</I> keyword.
+</P>
+<HR>
+
+<P>When writing to legacy VTK files, the dump <I>custom/vtk</I> style will
+use the specified <I>label</I> as the header line.  By default this header line is:
+</P>
+<PRE>Generated by LIGGGHTS(R)-PUBLIC 
+</PRE>
+<HR>
+
+<P>The <I>nfile</I> or <I>fileper</I> keywords can be used in conjunction with the
+"%" wildcard character in the specified dump file name, if an XML file
+format was specified.  As explained on the <A HREF = "dump_custom_vtk.html">dump custom_vtk</A>
+command doc page, the "%" character causes the dump file to be written
+in pieces, one piece for each of P processors.  By default P = the
+number of processors the simulation is running on.  The <I>nfile</I> or
+<I>fileper</I> keyword can be used to set P to a smaller value, which can
+be more efficient when running on a large number of processors.
+</P>
+<P>The <I>nfile</I> keyword sets P to the specified Nf value.  For example, if
+Nf = 4, and the simulation is running on 100 processors, 4 files will
+be written, by processors 0,25,50,75.  Each will collect information
+from itself and the next 24 processors and write it to a dump file.
+</P>
+<P>For the <I>fileper</I> keyword, the specified value of Np means write one
+file for every Np processors.  For example, if Np = 4, every 4th
+processor (0,4,8,12,etc) will collect information from itself and the
+next 3 processors and write it to a dump file.
+</P>
+<HR>
+
+<P>The <I>pad</I> keyword only applies when the dump filename is specified
+with a wildcard "*" character which becomes the timestep.  If <I>pad</I> is
+0, which is the default, the timestep is converted into a string of
+unpadded length, e.g. 100 or 12000 or 2000000.  When <I>pad</I> is
+specified with <I>Nchar</I> > 0, the string is padded with leading zeroes
+so they are all the same length = <I>Nchar</I>.  For example, pad 7 would
+yield 0000100, 0012000, 2000000.  This can be useful so that
+post-processing programs can easily read the files in ascending
+timestep order.
+</P>
+<HR>
+
+<P>If the <I>region</I> keyword is specified, only atoms in the region
+will be written to the dump file.  Only one region can be applied as
+a filter (the last one specified).  See the <A HREF = "region.html">region</A>
+command for more details.  Note that a region can be defined as the
+"inside" or "outside" of a geometric shape, and it can be the "union"
+or "intersection" of a series of simpler regions.
+</P>
+<HR>
+
+<P>The <I>sort</I> keyword determines whether lines of per-atom output in a
+snapshot are sorted or not.  A sort value of <I>off</I> means they will
+typically be written in indeterminate order, either in serial or
+parallel.  This is the case even in serial if the <A HREF = "atom_modify.html">atom_modify
+sort</A> option is turned on, which it is by default, to
+improve performance.  A sort value of <I>id</I> means sort the output by
+atom ID.  A sort value of N or -N means sort the output by the value
+in the Nth column of per-atom info in either ascending or descending
+order.
+</P>
+<P>IMPORTANT NOTE: Unless it is required by the dump style, sorting dump
+file output requires extra overhead in terms of CPU and communication
+cost, as well as memory, versus unsorted output.
+</P>
+<HR>
+
+<P>Using the <I>thresh</I> keyword, multiple thresholds can be specified.
+Specifying "none" turns off all threshold criteria.  If thresholds are
+specified, only atoms whose attributes meet all the threshold criteria
+are written to the dump file.  The possible attributes that can be
+tested for are the same as those that can be specified in the
+<A HREF = "dump_custom_vtk.html">dump custom/vtk</A> command, with the exception
+of the <I>element</I> attribute, since it is not a numeric value.  Note
+that different attributes can be output by the dump custom/vtk command
+than are used as threshold criteria by the dump_modify command.
+E.g. you can output the coordinates and stress of atoms whose energy
+is above some threshold.
+</P>
+<HR>
+
+<HR>
+
+<P><B>Restrictions:</B> none
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "dump.html">dump</A>, <A HREF = "dump_custom_vtk.html">dump custom/vtk</A>, <A HREF = "dump_image.html">dump image</A>, <A HREF = "undump.html">undump</A>
+</P>
+<P><B>Default:</B>
+</P>
+<P>The option defaults are
+</P>
+<UL><LI>binary = no
+<LI>element = "C" for every atom type
+<LI>every = whatever it was set to via the <A HREF = "dump_custom_vtk.html">dump custom/vtk</A> command
+<LI>fileper = # of processors
+<LI>first = no
+<LI>label = "Generated by LIGGGHTS"
+<LI>nfile = 1
+<LI>pad = 0
+<LI>region = none
+<LI>sort = off
+<LI>thresh = none 
+</UL>
+</HTML>

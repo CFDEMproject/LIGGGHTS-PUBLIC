@@ -1,0 +1,132 @@
+"CFDEMproject WWW Site"_lws - "LIGGGHTS(R)-PUBLIC Commands"_ll :c
+
+:link(lws,http://www.cfdem.com)
+:link(lc,CFDEMcoupling_Manual.html#comm)
+:link(ll,Manual.html#comm)
+:link(msmpi,http://msdn.microsoft.com/en-us/library/bb524831%28v=vs.85%29.aspx)
+:link(github,http://github.com)
+:link(gitHelp,http://help.github.com/linux-set-up-git)
+:link(gitbash,http://git-scm.com)
+:link(vs,http://www.visualstudio.com)
+:link(python,https://www.python.org/downloads/windows/)
+:link(cygwin,https://www.cygwin.com/)
+:link(gitMan,githubAccess_non-public.html)
+
+:line
+Compile LIGGGHTS(R)-PUBLIC for Windows :h3
+:line
+
+Description: :h4
+
+This routine describes how to setup your system in order to compile LIGGGHTS(R)-PUBLIC for Windows.
+
+Prerequisites: :h4
+
+All mentioned programs are available for free.
+
+MPI: :h5
+
+LIGGGHTS(R)-PUBLIC is a highly parallelized simulation engine. If you want to run simulations in parallel you have to install MPI (Message Passing Interface standard). We suggest to use the implementation of Microsoft, which is available "here"_msmpi. You need the binaries and the header files (included in the SDK). Please follow the instructions of the installer.
+
+Git: :h5
+
+GIT is an open-source version control system. We provide LIGGGHTS(R)-PUBLIC via "github"_github. It is to your advantage to use any git program to keep your LIGGGHTS(R)-PUBLIC version up-to-date. We recommend to use "git-scm"_gitbash as it provides a minimum bash environment too.
+
+You can set up your GIT environment to use the SSH-Keys thus you don't have to enter your user and password multiple times. Check the GIT GUI documentation for more details.
+
+[Important: Git-scm will ask during installation how it should handle newlines; please use "Checkout as-is, commit Unix-style line endings".]
+
+Python or Cygwin: :h5
+
+A python script updates the VS-project, thus you have to install either "python"_python or "cygwin"_cygwin. In case of cygwin you can use another GIT program, because cygwin provides also a bash environment. The description of the procedure assumes that you have installed cygwin.
+
+Visual studio: :h5
+
+To compile LIGGGHTS(R)-PUBLIC you need a development environment. You can download Microsoft Visual Studio Express (current version: Express 2013 with Update 4 for Windows Desktop) for free from "www.visualstudio.com"_vs. Therefore, you have to create an Microsoft account.
+
+VTK support: :h5
+
+A detailed description how to compile LIGGGHTS(R)-PUBLIC with VTK support will follow here.
+
+Procedure: :h4
+
+Basically the following steps have to be performed:
+
+download/clone your repository from "github"_github :ulb,l
+update auto-generated header-files :l
+update your VS-project :l
+compile your LIGGGHTS(R)-PUBLIC version :l
+:ule
+
+Download/clone your LIGGGHTS(R)-PUBLIC version: :h5
+
+In this tutorial we use the suggested "git-scm"_gitbash. You can use either the {Git GUI} or the {Git Bash}. In case of a bash you can follow the instructions in the documentation "githubAccess_non-public"_gitMan. Otherwise copy the link to your repository, for instance {https://github.com/CFDEMproject/LIGGGHTS-COMPANY.git}, into the {Git GUI} and save the repository at your computer, e.g. {C:/repositories/LIGGGHTS-COMPANY}.
+
+In the directory {LIGGGHTS-COMPANY/src/WINDOWS} you find an README, which describes the following steps in detail.
+
+Update auto-generated header-files: :h5
+
+Start {cygwin} and change your current directory to the src-directory inside of your repository, for instance
+
+cd /cygdrive/c/repositories/LIGGGHTS-COMPANY/src :pre
+
+ Update the header files by
+
+sh Make.sh styles
+sh Make.sh models :pre
+
+You can check the files by
+
+ls style_* :pre
+
+which should output a list of style file headers.
+
+Update your VS-project: :h5
+
+In order to update the Visual Studio project in die WINDOWS directory run following commands (still in cygwin):
+
+cd WINDOWS
+python update_project.py LIGGGHTS.vcxproj :pre
+
+Compile your LIGGGHTS(R)-PUBLIC version: :h5
+
+Finally to compile your LIGGGHTS(R)-PUBLIC version open the file {LIGGGHTS_VS2013.sln} with Visual Studio.
+
+To compile with MPI:
+
+Switch to the correct setting for your system. {Debug} or {Release} and {32bit} or {64bit}. :olb,l
+Check if the MPI include and lib directories are correctly set in the project properties of LIGGGHTS(R)-PUBLIC - Open the {LIGGGHTS/Properties} and go to {Configuration Properties/VC++ Directories}. :l
+For instance, a common include path is {C:\Program Files x86\Microsoft SDKs\MPI\Include}. :b
+Build the LIGGGHTS(R)-PUBLIC project. :l
+:ole
+
+To compile without MPI:
+
+Build the STUBS project. :olb,l
+Build LIGGGHTS(R)-PUBLIC using Debug_STUBS or Release_STUBS configurations from the provided project. (use x64 for 64bit binary) :l
+:ole
+
+You have now generated the executable [LIGGGHTS.exe] in the sub-directory {LIGGGHTS-COMPANY\src\WINDOWS\Release}. You can add this directory to your PATH environment variable to shorten the call command.
+
+Run an example :h5
+
+You can start a LIGGGHTS(R)-PUBLIC simulation inside of {cygwin} or a {command prompt} (search for cmd.exe).
+Assuming you use your cygwin, change to one example in your repository.
+
+cd /cygdrive/c/repositories/LIGGGHTS-COMPANY/examples/LIGGGHTS/Tutorials_public/chute_wear :pre
+
+and start the simulation by
+
+/cygdrive/c/repositories/LIGGGHTS-COMPANY/src/WINDOWS/Release/LIGGGHTS.exe -in in.chute_wear :pre
+
+If you added the Release-folder to your PATH variable the command shortens to
+
+LIGGGHTS.exe -in in.chute_wear :pre
+
+:line
+
+Questions? :h4
+
+If any questions remain, contact us.
+
+

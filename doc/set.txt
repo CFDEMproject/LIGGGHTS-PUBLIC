@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -17,12 +16,11 @@ style = {atom} or {type} or {mol} or {group} or {region} :ulb,l
 ID = atom ID range or type range or mol ID range or group ID or region ID :l
 one or more keyword/value pairs may be appended :l
 keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
-          {charge} or {dipole} or {dipole/random} or {quat} or \
+          {charge} or {quat} or \
 	  {quat/random} or {diameter} or {shape} or \
 	  {length} or {tri} or {theta} or {angmom} or \
 	  {mass} or {density} or {volume} or {image} or
-	  {bond} or {angle} or {dihedral} or {improper} or
-	  {meso_e} or {meso_cv} or {meso_rho} or {property/atom} :l
+	  {bond} or {property/atom} :l
   {type} value = atom type
     value can be an atom-style variable (see below)
   {type/fraction} values = type fraction seed
@@ -35,12 +33,6 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     value can be an atom-style variable (see below)
   {charge} value = atomic charge (charge units)
     value can be an atom-style variable (see below)
-  {dipole} values = x y z
-    x,y,z = orientation of dipole moment vector
-    any of x,y,z can be an atom-style variable (see below)
-  {dipole/random} value = seed Dlen
-    seed = random # seed (positive integer) for dipole moment orientations
-    Dlen = magnitude of dipole moment (dipole units)
   {quat} values = a b c theta
     a,b,c = unit vector to rotate particle around via right-hand rule
     theta = rotation angle (degrees)
@@ -71,17 +63,7 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     value can be an atom-style variable (see below)
   {image} nx ny nz
     nx,ny,nz = which periodic image of the simulation box the atom is in
-  {bond} value = bond type for all bonds between selected atoms
-  {angle} value = angle type for all angles between selected atoms
-  {dihedral} value = dihedral type for all dihedrals between selected atoms
-  {improper} value = improper type for all impropers between selected atoms
-  {meso_e} value = energy of SPH particles (need units)
-    value can be an atom-style variable (see below)
-  {meso_cv} value = heat capacity of SPH particles (need units)
-    value can be an atom-style variable (see below)
-  {meso_rho} value = density of SPH particles (need units) 
-    value can be an atom-style variable (see below)
-  {add} value = yes no 
+  {add} value = yes no
     yes = add per-atom quantities to a region or a group
   {until} value = final timestep
     final timestep = the final timestep value until which the per-atom quantity is to be added
@@ -100,14 +82,8 @@ set region half charge 0.5
 set type 3 charge 0.5
 set type 1*3 charge 0.5
 set atom 100*200 x 0.5 y 1.0
-set atom 1492 type 3 
-set region reg add yes until 1000 property/atom liqOnParticle 5e-5 
+set atom 1492 type 3
 set property/atom Temp 273.15 :pre
-
-[LIGGGHTS vs. LAMMPS Info:]
-
-This command offers a new keyword property/atom to enable the 
-set command to assign values to properties defined by a "fix property/atom"_fix_property.html
 
 [Description:]
 
@@ -230,7 +206,7 @@ the right-hand rule) by an angle theta around a unit rotation vector
 (a,b,c), then the quaternion that represents its new orientation is
 given by (cos(theta/2), a*sin(theta/2), b*sin(theta/2),
 c*sin(theta/2)).  The theta and a,b,c values are the arguments to the
-{quat} keyword.  LAMMPS normalizes the quaternion in case (a,b,c) was
+{quat} keyword.  LIGGGHTS(R)-PUBLIC normalizes the quaternion in case (a,b,c) was
 not specified as a unit vector.  For 2d systems, the a,b,c values are
 ignored, since a rotation vector of (0,0,1) is the only valid choice.
 
@@ -327,7 +303,7 @@ Keyword {image} sets which image of the simulation box the atom is
 considered to be in.  An image of 0 means it is inside the box as
 defined.  A value of 2 means add 2 box lengths to get the true value.
 A value of -1 means subtract 1 box length to get the true value.
-LAMMPS updates these flags as atoms cross periodic boundaries during
+LIGGGHTS(R)-PUBLIC updates these flags as atoms cross periodic boundaries during
 the simulation.  The flags can be output with atom snapshots via the
 "dump"_dump.html command.  If a value of NULL is specified for any of
 nx,ny,nz, then the current image value for that dimension is
@@ -343,37 +319,30 @@ msd"_compute_msd.html command.  Care should be taken not to reset the
 image flags of two atoms in a bond to the same value if the bond
 straddles a periodic boundary (rather they should be different by +/-
 1).  This will not affect the dynamics of a simulation, but may mess
-up analysis of the trajectories if a LAMMPS diagnostic or your own
+up analysis of the trajectories if a LIGGGHTS(R)-PUBLIC diagnostic or your own
 analysis relies on the image flags to unwrap a molecule which
 straddles the periodic box.
 
-Keywords {bond}, {angle}, {dihedral}, and {improper}, set the bond
-type (angle type, etc) of all bonds (angles, etc) of selected atoms to
-the specified value from 1 to nbondtypes (nangletypes, etc).  All
-atoms in a particular bond (angle, etc) must be selected atoms in
-order for the change to be made.  The value of nbondtype (nangletypes,
-etc) was set by the {bond types} ({angle types}, etc) field in the
+Keywords {bond}  set the bond type  of all bonds of selected atoms to
+the specified value from 1 to nbondtypes. All atoms in a particular bond
+must be selected atoms in order for the change to be made.  The value of
+nbondtype  was set by the {bond types} field in the
 header of the data file read by the "read_data"_read_data.html
 command.  These keywords do not allow use of an atom-style variable.
 
-Keywords {meso_e}, {meso_cv}, and {meso_rho} set the energy, heat
-capacity, and density of smmothed particle hydrodynamics (SPH)
-particles.  See "this PDF guide"_USER/sph/SPH_LAMMPS_userguide.pdf to
-using SPH in LAMMPS.
-
-Keyword {property/atom} can update per-particle properties defined by 
-a "fix property/atom"_fix_property.html command. varname is the name of 
-the variable you want to set, it is followed by the values that should 
-be assigned to this variable. The number of values provided as 
-var_value[i] must correspond to the number of values needed for the 
-update, i.e. only var_value[0] if the defined property is a scalar, 
-and the appropriate number if the property is a vector. See 
-"fix property/atom"_fix_property.html for details on how to define 
+Keyword {property/atom} can update per-particle properties defined by
+a "fix property/atom"_fix_property.html command. varname is the name of
+the variable you want to set, it is followed by the values that should
+be assigned to this variable. The number of values provided as
+var_value[i] must correspond to the number of values needed for the
+update, i.e. only var_value[0] if the defined property is a scalar,
+and the appropriate number if the property is a vector. See
+"fix property/atom"_fix_property.html for details on how to define
 such a per-particle property.
 
 Keyword {add} and {until} are used to add a per-atom quantity (or property)
-in addition to the keyword {property/atom}. The {add} keyword is used to turn on 
-the addition of a quantity in a region or a group 
+in addition to the keyword {property/atom}. The {add} keyword is used to turn on
+the addition of a quantity in a region or a group
 until the timestep defined by the {until} keyword.
 
 [Restrictions:]

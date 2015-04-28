@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -35,24 +34,22 @@ keyword = {atom_type} or {density} or {volume_limit} or {radius} :l
 
 fix pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0015 :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This LIGGGHTS command is not available in LAMMPS.
-
 [Description:]
 
 Define a particle that is used as input for a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html command. You can choose the atom type, density and radius of the particles. For density and radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. Note that for radius, you can additionally choose between a number-based and mass-based uniform distribution, where the latter is used more frequently typically. 'gaussian' for radius only supports a number-based distribution.
 
 It is thus possible to define a uniform or gaussian distribution on top of the discrete distribution defined by "fix_particledistribution_discrete"_fix_particledistribution_discrete.html.
 
-IMPORTANT NOTE: As opposed to the number-based distributions used by "fix_pour"_fix_pour.html and "fix_pour_legacy"_fix_pour_legacy.html, this fix uses the more common distribution based on mass-% for the radius distribution (as does "fix_particledistribution_discrete"_fix_particledistribution_discrete.html).
+IMPORTANT NOTE: As opposed to the number-based distributions, this fix uses the more common
+distribution based on mass-% for the radius distribution (as does
+"fix_particledistribution_discrete"_fix_particledistribution_discrete.html).
 
-LIGGGHTS will throw an error if the particle volume is too small compared to machine precision. 
+LIGGGHTS(R)-PUBLIC will throw an error if the particle volume is too small compared to machine precision.
 If you are sure you know what you are doing you can override the default limit of 1e-12.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
-Information about the random state in this fix is written to "binary restart files"_restart.html so you can restart a simulation with the same particles being chosen for insertion. None of the "fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. This fix is not invoked during "energy minimization"_minimize.html. 
+Information about the random state in this fix is written to "binary restart files"_restart.html so you can restart a simulation with the same particles being chosen for insertion. None of the "fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. This fix is not invoked during "energy minimization"_minimize.html.
 
 [Restrictions:] none
 

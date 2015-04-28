@@ -1,0 +1,101 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">CFDEMproject WWW Site</A> - <A HREF = "CFDEMcoupling_Manual.html#comm">CFDEM Commands</A> 
+</CENTER>
+
+
+
+
+
+
+
+
+<HR>
+
+<H3>githubAccess_non-public 
+</H3>
+<HR>
+
+<P><B>Description:</B>
+</P>
+<P>This routine describes how to setup a github account and pull repositories of the CFDEMproject.
+</P>
+<P><B>Procedure:</B>
+</P>
+<P>Basically the following steps have to be performed:
+</P>
+<UL><LI>get access to non-public repositories 
+
+<LI>create an account at http://github.com 
+
+<LI>create your RSA key 
+
+<LI>add your RSA key to your github account 
+
+<LI><I>git clone</I> the desired repository 
+
+<LI>update your repositories by <I>git pull</I> 
+
+
+</UL>
+<P><B>Get acces to non-public repositories:</B>
+</P>
+<P>If you have a support contract / non-public repository access by DCS Computing GmbH, please follow the steps below to set up your user and RSA key. After that please send your username and company affiliation to DCS Computing GmbH to get your account activated. Afterwards you can clone also the non-public repositories.
+</P>
+<P><B>Create an account:</B>
+</P>
+<P>Please create a free account at <A HREF = "http://github.com">https://github.com</A>.
+</P>
+<PRE>example:
+user (username)
+user@mail.com
+pwd (pwd) 
+</PRE>
+<P>Please use your own username and mail adress here and for the following steps!
+</P>
+<P><B>Create your RSA key:</B>
+</P>
+<P>Please find the complete setup description <A HREF = "http://help.github.com/linux-set-up-git">here</A>, or use the short description below.
+</P>
+<P>Open a terminal and execute:
+</P>
+<PRE>cd ~/.ssh
+ssh-keygen -t rsa -C "user@mail.com"
+gedit id_rsa.pub& 
+</PRE>
+<P><B>Add your RSA key to your github account:</B>
+</P>
+<P>Login at <A HREF = "http://github.com">https://github.com</A> with you user, then
+</P>
+<UL><LI>click <I>Account Settings</I> 
+
+<LI>click <I>SSH Keys</I> 
+
+<LI>click <I>Add SSH key</I> 
+
+<LI>paste your key into the <I>Key</I> field 
+
+<LI>Hit <I>Add Key.</I> 
+
+
+</UL>
+<P>To check your settings, open a terminal and execute:
+</P>
+<PRE>ssh -T git@github.com 
+</PRE>
+<P><B><I>git clone</I> the desired repository:</B>
+</P>
+<P>To clone the non-public LIGGGHTS(R)-PUBLIC repository (in this example LIGGGHTS-COMPANY, where COMPANY is the name of your company), open a terminal and execute:
+</P>
+<PRE>git clone git@github.com:CFDEMproject/LIGGGHTS-COMPANY.git 
+</PRE>
+<P>Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively this command (you need to enter your password):
+</P>
+<PRE>git clone https://user@github.com/CFDEMproject/LIGGGHTS-COMPANY.git 
+</PRE>
+<P><B>Update your repositories by <I>git pull</I>:</B>
+</P>
+<P>To get the latest version, open a terminal, go to the location of your local installation and type:
+</P>
+<PRE>git pull 
+</PRE>
+</HTML>

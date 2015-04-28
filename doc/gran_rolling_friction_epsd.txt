@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -13,18 +12,12 @@ gran rolling_friction epsd :h3
 
 rolling_friction epsd :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This part of "pair gran"_pair_gran.html and 
-"fix wall/gran"_fix_wall_gran.html
-is not availabe in LAMMPS.
-
 [Description:]
 
-This model can be used as part of "pair gran"_pair_gran.html and 
+This model can be used as part of "pair gran"_pair_gran.html and
 "fix wall/gran"_fix_wall_gran.html
 
-The elastic-plastic spring-dashpot (EPSD) model (see Ai et al.) adds an additional 
+The elastic-plastic spring-dashpot (EPSD) model (see Ai et al.) adds an additional
 torque contribution, equal to
 
 :c,image(Eqs/pair_gran_hooke_eqEpsd1.gif)
@@ -33,22 +26,22 @@ where the torque due to the spring M_rk is calculated as
 
 :c,image(Eqs/pair_gran_hooke_eqEpsd2.gif)
 
-Here k_r denotes the rolling stiffness and dtheta_r is the incremental relative 
-rotation between the particles. The spring torque is limited by the full mobilisation 
-torque M_rm that is determined by the normal force F_n and the coefficient of rolling 
+Here k_r denotes the rolling stiffness and dtheta_r is the incremental relative
+rotation between the particles. The spring torque is limited by the full mobilisation
+torque M_rm that is determined by the normal force F_n and the coefficient of rolling
 friction (rmu) (compare the "CDT model"_gran_rolling_friction_cdt.html).
 
 The viscous damping torque M_rd is implemented as
 
 :c,image(Eqs/pair_gran_hooke_eqEpsd3.gif)
 
-where in the current implementation the damping is disabled in case of full mobilisation 
+where in the current implementation the damping is disabled in case of full mobilisation
 (f = 0). The damping coefficient C_r may be expressed as:
 
 :c,image(Eqs/pair_gran_hooke_eqEpsd4.gif)
 
-Here I_i/j is the moment of inertia and m_i/j is the mass of the particles i and j, 
-respectively. 
+Here I_i/j is the moment of inertia and m_i/j is the mass of the particles i and j,
+respectively.
 
 The coefficient of rolling friction (rmu) must be defined as
 

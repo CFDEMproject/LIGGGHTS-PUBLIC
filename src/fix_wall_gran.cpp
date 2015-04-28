@@ -1,33 +1,44 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
-   Richard Berger (JKU Linz)
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+    Philippe Seil (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include <math.h>
@@ -142,6 +153,8 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
     int64_t variant = Factory::instance().selectVariant("gran", nremaining, remaining_args);
     impl = Factory::instance().create("gran", variant, lmp, this);
+    if(!impl && 0 == strncmp(style,"wall/gran",9)) 
+        error->fix_error(FLERR,this,"unknown contact model");
 
     iarg_ = narg - nremaining;
 
@@ -417,8 +430,11 @@ void FixWallGran::pre_delete(bool unfixflag)
     if(unfixflag && fix_history_primitive_)
         modify->delete_fix(fix_history_primitive_->id);
 
-   if(unfixflag && store_force_contact_)
+    if(unfixflag && store_force_contact_)
         modify->delete_fix(fix_wallforce_contact_->id);
+
+    if(unfixflag && cwl_)
+       error->fix_error(FLERR,this,"need to uncompute the active compute wall/gran/local before unfixing the wall");
 
     if(unfixflag)
     {
@@ -658,8 +674,8 @@ void FixWallGran::post_force_mesh(int vflag)
     int nlocal = atom->nlocal;
     int nTriAll;
 
-    CollisionData cdata;
-    cdata.is_wall = true;
+    SurfacesIntersectData sidata;
+    sidata.is_wall = true;
 
     for(int iMesh = 0; iMesh < n_FixMesh_; iMesh++)
     {
@@ -711,17 +727,17 @@ void FixWallGran::post_force_mesh(int vflag)
             else
             {
               
-              if(fix_contact && ! fix_contact->handleContact(iPart,idTri,cdata.contact_history)) continue;
+              if(fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history)) continue;
 
               for(int i = 0; i < 3; i++)
                 v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
 
-              cdata.i = iPart;
-              cdata.deltan = -deltan;
-              cdata.delta[0] = -delta[0];
-              cdata.delta[1] = -delta[1];
-              cdata.delta[2] = -delta[2];
-              post_force_eval_contact(cdata, v_wall,iMesh,FixMesh_list_[iMesh],mesh,iTri);
+              sidata.i = iPart;
+              sidata.deltan = -deltan;
+              sidata.delta[0] = -delta[0];
+              sidata.delta[1] = -delta[1];
+              sidata.delta[2] = -delta[2];
+              post_force_eval_contact(sidata, v_wall,iMesh,FixMesh_list_[iMesh],mesh,iTri);
             }
 
           }
@@ -753,14 +769,14 @@ void FixWallGran::post_force_mesh(int vflag)
             else 
             {
               
-              if(fix_contact && ! fix_contact->handleContact(iPart,idTri,cdata.contact_history)) continue;
+              if(fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history)) continue;
               
-              cdata.i = iPart;
-              cdata.deltan = -deltan;
-              cdata.delta[0] = -delta[0];
-              cdata.delta[1] = -delta[1];
-              cdata.delta[2] = -delta[2];
-              post_force_eval_contact(cdata, v_wall,iMesh,FixMesh_list_[iMesh],mesh,iTri);
+              sidata.i = iPart;
+              sidata.deltan = -deltan;
+              sidata.delta[0] = -delta[0];
+              sidata.delta[1] = -delta[1];
+              sidata.delta[2] = -delta[2];
+              post_force_eval_contact(sidata, v_wall,iMesh,FixMesh_list_[iMesh],mesh,iTri);
             }
           }
         }
@@ -781,8 +797,8 @@ void FixWallGran::post_force_primitive(int vflag)
 {
   int *mask = atom->mask;
 
-  CollisionData cdata;
-  cdata.is_wall = true;
+  SurfacesIntersectData sidata;
+  sidata.is_wall = true;
 
   // contact properties
   double delta[3]={},deltan,rdist[3];
@@ -819,39 +835,40 @@ void FixWallGran::post_force_primitive(int vflag)
           vectorCross3D(shearAxisVec_,rdist,v_wall);
           
       }
-      cdata.i = iPart;
-      cdata.contact_history = c_history ? c_history[iPart] : NULL;
-      cdata.deltan = -deltan;
-      cdata.delta[0] = -delta[0];
-      cdata.delta[1] = -delta[1];
-      cdata.delta[2] = -delta[2];
-      post_force_eval_contact(cdata,v_wall);
+      sidata.i = iPart;
+      sidata.contact_history = c_history ? c_history[iPart] : NULL;
+      sidata.deltan = -deltan;
+      sidata.delta[0] = -delta[0];
+      sidata.delta[1] = -delta[1];
+      sidata.delta[2] = -delta[2];
+      post_force_eval_contact(sidata,v_wall);
     }
   }
 }
 
-void FixWallGran::compute_force(CollisionData &, double *)
+void FixWallGran::compute_force(SurfacesIntersectData &, double *)
 {
+    
 }
 
 /* ----------------------------------------------------------------------
    actually calculate force, called for both mesh and primitive
 ------------------------------------------------------------------------- */
 
-inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double * v_wall, int iMesh, FixMeshSurface *fix_mesh, TriMesh *mesh, int iTri)
+inline void FixWallGran::post_force_eval_contact(SurfacesIntersectData & sidata, double * v_wall, int iMesh, FixMeshSurface *fix_mesh, TriMesh *mesh, int iTri)
 {
-  const int iPart = cdata.i;
+  const int iPart = sidata.i;
 
   // deltan > 0 in compute_force
   // but negative in distance algorithm
-  cdata.r = (radius_ ? radius_[iPart] : r0_) - cdata.deltan; // sign of corrected, because negative value is passed
-  cdata.rsq = cdata.r*cdata.r;
-  cdata.meff = rmass_ ? rmass_[iPart] : atom->mass[atom->type[iPart]];
-  cdata.area_ratio = 1.;
+  sidata.r = (radius_ ? radius_[iPart] : r0_) - sidata.deltan; // sign of corrected, because negative value is passed
+  sidata.rsq = sidata.r*sidata.r;
+  sidata.meff = rmass_ ? rmass_[iPart] : atom->mass[atom->type[iPart]];
+  sidata.area_ratio = 1.;
 
-  cdata.computeflag = computeflag_;
-  cdata.shearupdate = shearupdate_;
-  cdata.jtype = atom_type_wall_;
+  sidata.computeflag = computeflag_;
+  sidata.shearupdate = shearupdate_;
+  sidata.jtype = atom_type_wall_;
 
   double force_old[3]={}, f_pw[3];
 
@@ -863,14 +880,14 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
   if(cwl_ && addflag_)
   {
       double contactPoint[3];
-      vectorSubtract3D(x_[cdata.i],cdata.delta,contactPoint);
+      vectorSubtract3D(x_[sidata.i],sidata.delta,contactPoint);
       cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint,v_wall);
   }
 
   if(impl)
-    impl->compute_force(this, cdata, v_wall);
+    impl->compute_force(this, sidata, v_wall,mesh,iTri);
   else
-    compute_force(cdata, v_wall); // LEGACY CODE (SPH)
+    compute_force(sidata, v_wall); // LEGACY CODE (SPH)
 
   // if force should be stored or evaluated
   if(store_force_ || stress_flag_)
@@ -883,9 +900,9 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
     if(stress_flag_ && fix_mesh->trackStress())
     {
         double delta[3];
-        delta[0] = -cdata.delta[0];
-        delta[1] = -cdata.delta[1];
-        delta[2] = -cdata.delta[2];
+        delta[0] = -sidata.delta[0];
+        delta[1] = -sidata.delta[1];
+        delta[2] = -sidata.delta[2];
         static_cast<FixMeshSurfaceStress*>(fix_mesh)->add_particle_contribution
         (
            iPart,f_pw,delta,iTri,v_wall
@@ -895,7 +912,7 @@ inline void FixWallGran::post_force_eval_contact(CollisionData & cdata, double *
 
   // add heat flux
   if(heattransfer_flag_)
-    addHeatFlux(mesh,iPart,cdata.deltan,1.);
+    addHeatFlux(mesh,iPart,sidata.deltan,1.);
 }
 
 /* ---------------------------------------------------------------------- */

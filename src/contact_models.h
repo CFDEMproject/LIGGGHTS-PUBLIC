@@ -1,33 +1,45 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #ifndef CONTACT_MODELS_H_
 #define CONTACT_MODELS_H_
 
@@ -51,15 +63,15 @@ namespace ContactModels
   static const int CM_CONNECT_TO_PROPERTIES = 1 << 1;
   static const int CM_BEGIN_PASS            = 1 << 2;
   static const int CM_END_PASS              = 1 << 3;
-  static const int CM_COLLISION             = 1 << 4;
-  static const int CM_NO_COLLISION          = 1 << 5;
+  static const int CM_SURFACES_INTERSECT        = 1 << 4;
+  static const int CM_SURFACES_CLOSE        = 1 << 5;
 
-  static const int TOUCH_NORMAL_MODEL      = 1 << 0;
-  static const int TOUCH_COHESION_MODEL    = 1 << 1;
-  static const int TOUCH_TANGENTIAL_MODEL  = 1 << 2;
-  static const int TOUCH_ROLLING_MODEL     = 1 << 3;
-  static const int TOUCH_SURFACE_MODEL     = 1 << 4;
-  static const int TOUCH_FIX               = 1 << 31;
+  static const int CONTACT_NORMAL_MODEL      = 1 << 0;
+  static const int CONTACT_COHESION_MODEL    = 1 << 1;
+  static const int CONTACT_TANGENTIAL_MODEL  = 1 << 2;
+  static const int CONTACT_ROLLING_MODEL     = 1 << 3;
+  static const int CONTACT_SURFACE_MODEL     = 1 << 4;
+  static const int CONTACT_FIX               = 1 << 31;
 
   template
   <
@@ -91,24 +103,25 @@ namespace ContactModels
   class SurfaceModel {
   public:
     SurfaceModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
-    inline void beginPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    inline void endPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
+    inline void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    inline void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void registerSettings(Settings & settings);
     inline void connectToProperties(PropertyRegistry & registry);
-    inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    inline void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
+    inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata);
+    inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    inline void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
   };
 
   template<int Model>
   class NormalModel {
   public:
     NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
-    inline void beginPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    inline void endPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
+    inline void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    inline void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void registerSettings(Settings & settings);
     inline void connectToProperties(PropertyRegistry & registry);
-    inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    inline void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
+    inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    inline void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
 
     inline double stressStrainExponent();
   };
@@ -117,36 +130,36 @@ namespace ContactModels
   class TangentialModel {
   public:
     TangentialModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
-    inline void beginPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    inline void endPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
+    inline void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    inline void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void registerSettings(Settings & settings);
     inline void connectToProperties(PropertyRegistry & registry);
-    inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    inline void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
+    inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    inline void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
   };
 
   template<int Model>
   class CohesionModel {
   public:
     CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
-    void beginPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    void endPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
+    void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     void registerSettings(Settings & settings);
     void connectToProperties(PropertyRegistry & registry);
-    void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
+    void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
   };
 
   template<int Model>
   class RollingModel {
   public:
     RollingModel(LAMMPS * lmp, IContactHistorySetup * hsetup);
-    void beginPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    void endPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
+    void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     void registerSettings(Settings & settings);
     void connectToProperties(PropertyRegistry & registry);
-    void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces);
-    void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces);
+    void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
+    void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
   };
 
   template<typename Style>
@@ -166,12 +179,12 @@ namespace ContactModels
                             TangentialModel<Style::TANGENTIAL>::MASK |
                             RollingModel<Style::ROLLING>::MASK;
 
-    static const int HANDLE_REGISTER_SETTINGS = MASK & CM_REGISTER_SETTINGS;
+    static const int HANDLE_REGISTER_SETTINGS     = MASK & CM_REGISTER_SETTINGS;
     static const int HANDLE_CONNECT_TO_PROPERTIES = MASK & CM_CONNECT_TO_PROPERTIES;
-    static const int HANDLE_BEGIN_PASS = MASK & CM_BEGIN_PASS;
-    static const int HANDLE_END_PASS = MASK & CM_END_PASS;
-    static const int HANDLE_COLLISION = MASK & CM_COLLISION;
-    static const int HANDLE_NO_COLLISION = MASK & CM_NO_COLLISION;
+    static const int HANDLE_BEGIN_PASS            = MASK & CM_BEGIN_PASS;
+    static const int HANDLE_END_PASS              = MASK & CM_END_PASS;
+    static const int HANDLE_SURFACES_INTERSECT    = MASK & CM_SURFACES_INTERSECT;
+    static const int HANDLE_SURFACES_CLOSE        = MASK & CM_SURFACES_CLOSE;
 
     ContactModel(LAMMPS * lmp, IContactHistorySetup * hsetup) :
       surfaceModel(lmp, hsetup),
@@ -203,22 +216,22 @@ namespace ContactModels
       rollingModel.connectToProperties(registry);
     }
 
-    inline void beginPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)
+    inline void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
-      surfaceModel.beginPass(cdata, i_forces, j_forces);
-      normalModel.beginPass(cdata, i_forces, j_forces);
-      cohesionModel.beginPass(cdata, i_forces, j_forces);
-      tangentialModel.beginPass(cdata, i_forces, j_forces);
-      rollingModel.beginPass(cdata, i_forces, j_forces);
+      surfaceModel.beginPass(sidata, i_forces, j_forces);
+      normalModel.beginPass(sidata, i_forces, j_forces);
+      cohesionModel.beginPass(sidata, i_forces, j_forces);
+      tangentialModel.beginPass(sidata, i_forces, j_forces);
+      rollingModel.beginPass(sidata, i_forces, j_forces);
     }
 
-    inline void endPass(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)
+    inline void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
-      rollingModel.endPass(cdata, i_forces, j_forces);
-      tangentialModel.endPass(cdata, i_forces, j_forces);
-      cohesionModel.endPass(cdata, i_forces, j_forces);
-      normalModel.endPass(cdata, i_forces, j_forces);
-      surfaceModel.endPass(cdata, i_forces, j_forces);
+      rollingModel.endPass(sidata, i_forces, j_forces);
+      tangentialModel.endPass(sidata, i_forces, j_forces);
+      cohesionModel.endPass(sidata, i_forces, j_forces);
+      normalModel.endPass(sidata, i_forces, j_forces);
+      surfaceModel.endPass(sidata, i_forces, j_forces);
     }
 
     inline double stressStrainExponent()
@@ -226,22 +239,27 @@ namespace ContactModels
       return normalModel.stressStrainExponent();
     }
 
-    inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)
+    inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata)
     {
-      surfaceModel.collision(cdata, i_forces, j_forces);
-      normalModel.collision(cdata, i_forces, j_forces);
-      cohesionModel.collision(cdata, i_forces, j_forces);
-      tangentialModel.collision(cdata, i_forces, j_forces);
-      rollingModel.collision(cdata, i_forces, j_forces);
+      return surfaceModel.checkSurfaceIntersect(sidata);
     }
 
-    inline void noCollision(ContactData & cdata, ForceData & i_forces, ForceData & j_forces)
+    inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
-      surfaceModel.noCollision(cdata, i_forces, j_forces);
-      normalModel.noCollision(cdata, i_forces, j_forces);
-      cohesionModel.noCollision(cdata, i_forces, j_forces);
-      tangentialModel.noCollision(cdata, i_forces, j_forces);
-      rollingModel.noCollision(cdata, i_forces, j_forces);
+      surfaceModel.surfacesIntersect(sidata, i_forces, j_forces);
+      normalModel.surfacesIntersect(sidata, i_forces, j_forces);
+      cohesionModel.surfacesIntersect(sidata, i_forces, j_forces);
+      tangentialModel.surfacesIntersect(sidata, i_forces, j_forces);
+      rollingModel.surfacesIntersect(sidata, i_forces, j_forces);
+    }
+
+    inline void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces)
+    {
+      surfaceModel.surfacesClose(scdata, i_forces, j_forces);
+      normalModel.surfacesClose(scdata, i_forces, j_forces);
+      cohesionModel.surfacesClose(scdata, i_forces, j_forces);
+      tangentialModel.surfacesClose(scdata, i_forces, j_forces);
+      rollingModel.surfacesClose(scdata, i_forces, j_forces);
     }
   };
 
@@ -252,12 +270,12 @@ namespace ContactModels
     static const int MASK = 0;
 
     CohesionModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp) {}
-    void beginPass(CollisionData&, ForceData&, ForceData&){}
-    void endPass(CollisionData&, ForceData&, ForceData&){}
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     void connectToProperties(PropertyRegistry&){}
     void registerSettings(Settings&){}
-    void collision(CollisionData&, ForceData&, ForceData&){}
-    void noCollision(ContactData&, ForceData&, ForceData&){}
+    void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
   };
 
   template<>
@@ -267,12 +285,12 @@ namespace ContactModels
     static const int MASK = 0;
 
     RollingModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp) {}
-    void beginPass(CollisionData&, ForceData&, ForceData&){}
-    void endPass(CollisionData&, ForceData&, ForceData&){}
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     void connectToProperties(PropertyRegistry&){}
     void registerSettings(Settings&){}
-    void collision(CollisionData&, ForceData&, ForceData&){}
-    void noCollision(ContactData&, ForceData&, ForceData&){}
+    void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
   };
 
   class Factory {

@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -86,7 +86,7 @@ self-consistent minimization problem (see below).
 </P>
 <P>The <I>energy</I> keyword is not allowed if the added field is a constant
 vector (ex,ey,ez), with all components defined as numeric constants
-and not as variables.  This is because LAMMPS can compute the energy
+and not as variables.  This is because LIGGGHTS(R)-PUBLIC can compute the energy
 for each charged particle directly as E = -x dot qE = -q (x*ex + y*ey
 + z*ez), so that -Grad(E) = F.  Similarly for point-dipole particles
 the energy can be computed as E = -mu dot E = -(mux*ex + muy*ey +
@@ -94,13 +94,13 @@ muz*ez).
 </P>
 <P>The <I>energy</I> keyword is optional if the added force is defined with
 one or more variables, and if you are performing dynamics via the
-<A HREF = "run.html">run</A> command.  If the keyword is not used, LAMMPS will set
+<A HREF = "run.html">run</A> command.  If the keyword is not used, LIGGGHTS(R)-PUBLIC will set
 the energy to 0.0, which is typically fine for dynamics.
 </P>
 <P>The <I>energy</I> keyword is required if the added force is defined with
 one or more variables, and you are performing energy minimization via
 the "minimize" command for charged particles.  It is not required for
-point-dipoles, but a warning is issued since the minimizer in LAMMPS
+point-dipoles, but a warning is issued since the minimizer in LIGGGHTS(R)-PUBLIC
 does not rotate dipoles, so you should not expect to be able to
 minimize the orientation of dipoles in an applied electric field.
 </P>
@@ -123,7 +123,7 @@ minimization will not converge properly.
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart
-files</A>.  
+files</A>.
 </P>
 <P>The <A HREF = "fix_modify.html">fix_modify</A> <I>energy</I> option is supported by this
 fix to add the potential "energy" inferred by the added force due to
@@ -135,7 +135,7 @@ I.e. there is a decrease in potential energy when atoms move in the
 direction of the added force due to the electric field.
 </P>
 <P>This fix computes a global scalar and a global 3-vector of forces,
-which can be accessed by various <A HREF = "Section_howto.html#howto_15">output
+which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  The scalar is the potential
 energy discussed above.  The vector is the total force added to the
 group of atoms.  The scalar and vector values calculated by this fix
@@ -155,11 +155,7 @@ with the added forces to be included in the total potential energy of
 the system (the quantity being minimized), you MUST enable the
 <A HREF = "fix_modify.html">fix_modify</A> <I>energy</I> option for this fix.
 </P>
-<P><B>Restrictions:</B>
-</P>
-<P>This fix is part of the MISC package.  It is only enabled if LAMMPS
-was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LAMMPS</A> section for more info.
+<P><B>Restrictions:</B> none
 </P>
 <P><B>Related commands:</B>
 </P>

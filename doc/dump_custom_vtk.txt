@@ -1,12 +1,11 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
 :line
-   
+
 dump custom/vtk command :h3
 
 [Syntax:]
@@ -21,13 +20,12 @@ file = name of file to write dump info to :l
 args = list of arguments for a particular style :l
   {custom/vtk} args = list of atom attributes
     possible attributes = id, mol, type, element, mass, density, rho, p
-			  x, y, z, xs, ys, zs, xu, yu, zu, 
+			  x, y, z, xs, ys, zs, xu, yu, zu,
 			  xsu, ysu, zsu, ix, iy, iz,
 			  vx, vy, vz, fx, fy, fz,
                           q, mux, muy, muz, mu,
                           radius, diameter, omegax, omegay, omegaz,
 			  angmomx, angmomy, angmomz, tqx, tqy, tqz,
-			  spin, eradius, ervel, erforce,
 			  c_ID, c_ID\[N\], f_ID, f_ID\[N\], v_name :pre
 
       id = atom ID
@@ -49,10 +47,6 @@ args = list of arguments for a particular style :l
       omegax,omegay,omegaz = angular velocity of spherical particle
       angmomx,angmomy,angmomz = angular momentum of aspherical particle
       tqx,tqy,tqz = torque on finite-size particles
-      spin = electron spin
-      eradius = electron radius
-      ervel = electron radial velocity
-      erforce = electron radial force
       c_ID = per-atom vector calculated by a compute with ID
       c_ID\[N\] = Nth column of per-atom array calculated by a compute with ID
       f_ID = per-atom vector calculated by a fix with ID
@@ -63,20 +57,7 @@ args = list of arguments for a particular style :l
 [Examples:]
 
 dump dmpvtk all custom/vtk 100 dump*.myforce.vtk id type vx fx
-dump dmpvtp flow custom/vtk 100 dump*.%.displace.vtp id type c_myD\[1\] c_myD\[2\] c_myD\[3\] v_ke
-dump e_data all custom/vtk 100 dump*.vtu id type spin eradius fx fy fz eforce :pre
-
-[LIGGGHTS vs. LAMMPS Info:]
-
-The new style {custom/vtk} is similar to the "custom"_dump.html style but
-uses the VTK library to write data to VTK simple legacy or XML format depending
-on the filename extension specified. This can be either {.vtk} for the legacy
-format or {.vtp} and {.vtu}, respectively, for the XML format; see the
-"VTK homepage"_http://www.vtk.org/VTK/img/file-formats.pdf for a detailed
-description of these formats.
-Since this naming convention conflicts with the way binary output is usually
-specified (see below), "dump_modify binary"_dump_modify_vtk.html allows to set
-the binary flag for this dump style explicitly.
+dump dmpvtp flow custom/vtk 100 dump*.%.displace.vtp id type c_myD\[1\] c_myD\[2\] c_myD\[3\] v_ke  :pre
 
 [Description:]
 
@@ -211,7 +192,7 @@ charge.
 
 There are several options for outputting atom coordinates.  The {x},
 {y}, {z} attributes are used to write atom coordinates "unscaled", in the
-appropriate distance "units"_units.html (Angstroms, sigma, etc).  
+appropriate distance "units"_units.html (Angstroms, sigma, etc).
 Additionaly, you can use {xs}, {ys}, {zs} if you want to also save the
 coordinates "scaled" to the box size, so that each value is 0.0 to 1.0.
 If the simulation box is triclinic (tilted), then all atom coords will
@@ -231,7 +212,7 @@ attributes.  For periodic dimensions, they specify which image of the
 simulation box the atom is considered to be in.  An image of 0 means
 it is inside the box as defined.  A value of 2 means add 2 box lengths
 to get the true value.  A value of -1 means subtract 1 box length to
-get the true value.  LAMMPS updates these flags as atoms cross
+get the true value.  LIGGGHTS(R)-PUBLIC updates these flags as atoms cross
 periodic boundaries during the simulation.
 
 The {mux}, {muy}, {muz} attributes are specific to dipolar systems
@@ -254,12 +235,6 @@ the {ellipsoid} atom style defines this quantity.
 The {tqx}, {tqy}, {tqz} attributes are for finite-size particles that
 can sustain a rotational torque due to interactions with other
 particles.
-
-The {spin}, {eradius}, {ervel}, and {erforce} attributes are for
-particles that represent nuclei and electrons modeled with the
-electronic force field (EFF).  See "atom_style
-electron"_atom_style.html and "pair_style eff"_pair_eff.html for more
-details.
 
 The {c_ID} and {c_ID\[N\]} attributes allow per-atom vectors or arrays
 calculated by a "compute"_compute.html to be output.  The ID in the
@@ -307,7 +282,7 @@ this is a very general means of creating quantities to output to a
 dump file.
 
 See "Section_modify"_Section_modify.html of the manual for information
-on how to add new compute and fix styles to LAMMPS to calculate
+on how to add new compute and fix styles to LIGGGHTS(R)-PUBLIC to calculate
 per-atom quantities which could then be output into dump files.
 
 :line
@@ -317,8 +292,8 @@ per-atom quantities which could then be output into dump files.
 The {custom/vtk} style does not support writing of gzipped dump files.
 
 To be able to use {custom/vtk}, you have to link to the VTK library,
-please adapt your Makefile accordingly. You must compile LAMMPS with the
--DLAMMPS_VTK option - see the "Making LAMMPS"_Section_start.html#start_2
+please adapt your Makefile accordingly. You must compile LIGGGHTS(R)-PUBLIC with the
+-DLAMMPS_VTK option - see the "Making LIGGGHTS(R)-PUBLIC"_Section_start.html#start_2
 section of the documentation.
 
 The {custom/vtk} dump style neither supports buffering nor custom format strings.

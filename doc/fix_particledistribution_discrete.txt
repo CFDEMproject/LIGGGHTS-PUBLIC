@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -27,10 +26,6 @@ zero or more {t_id}/{t_m} pairs are appended, number of pairs must match ntemp :
 fix pdd1 all particledistribution/discrete 6778  1 pts1 1.0
 fix pdd1 all particledistribution/discrete 1239  2 pts1 0.3 pts2 0.7  :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This command is not available in LAMMPS.
-
 [Description:]
 
 Define a discrete particle distribution that defines a discrete particle distribution to be inserted by the "fix_pour_dev"_fix_pour_dev.html command. It takes several templates of type "fix_particletemplate_sphere"_fix_particletemplate_sphere.html as inputs, which define the properties of the single particles that are part of the distribution.
@@ -41,7 +36,7 @@ IMPORTANT NOTE: As opposed to the number-based distributions used by "fix_pour"_
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
-Information about the random state in this fix is written to "binary restart files"_restart.html so you can restart a simulation with the same particles being chosen for insertion. None of the "fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. This fix is not invoked during "energy minimization"_minimize.html. 
+Information about the random state in this fix is written to "binary restart files"_restart.html so you can restart a simulation with the same particles being chosen for insertion. None of the "fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. This fix is not invoked during "energy minimization"_minimize.html.
 
 [Restrictions:] none
 

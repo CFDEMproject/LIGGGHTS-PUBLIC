@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -42,7 +42,7 @@ that if a bond, angle, dihedral, or improper interaction contains
 atoms on 2 or more processors, the interaction is computed by each
 processor.
 </P>
-<P>LAMMPS should produce the same answers for any newton flag settings,
+<P>LIGGGHTS(R)-PUBLIC should produce the same answers for any newton flag settings,
 except for round-off issues.
 </P>
 <P>With <A HREF = "run_style.html">run_style</A> <I>respa</I> and only bonded interactions
@@ -55,6 +55,9 @@ communication in the innermost loop.
 <P>The newton bond setting cannot be changed after the simulation box is
 defined by a <A HREF = "read_data.html">read_data</A> or
 <A HREF = "create_box.html">create_box</A> command.
+</P>
+<P>Some commands may not support newton "on". You will see an error
+message in this case when running the simulation.
 </P>
 <P><B>Related commands:</B>
 </P>

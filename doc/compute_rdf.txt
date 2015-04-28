@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -117,8 +117,8 @@ coordinate (center of the bin), Each successive set of 2 columns has
 the g(r) and coord(r) values for a specific set of {itypeN} versus
 {jtypeN} interactions, as described above.  These values can be used
 by any command that uses a global values from a compute as input.  See
-"Section_howto 15"_Section_howto.html#howto_15 for an overview of
-LAMMPS output options.
+"Section_howto 15"_Section_howto.html#howto_8 for an overview of
+LIGGGHTS(R)-PUBLIC output options.
 
 The array values calculated by this compute are all "intensive".
 
@@ -133,7 +133,7 @@ The RDF is not computed for distances longer than the force cutoff,
 since processors (in parallel) don't know about atom coordinates for
 atoms further away than that distance.  If you want an RDF for larger
 distances, you can use the "rerun"_rerun.html command to post-process
-a dump file. The definition of g(r) used by LAMMPS is only appropriate
+a dump file. The definition of g(r) used by LIGGGHTS(R)-PUBLIC is only appropriate
 for characterizing atoms that are uniformly distributed throughout the
 simulation cell. In such cases, the coordination number is still
 correct and meaningful.  As an example, if a large simulation cell

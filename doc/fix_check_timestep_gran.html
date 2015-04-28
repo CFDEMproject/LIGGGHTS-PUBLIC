@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -36,49 +34,49 @@
 <P><B>Description:</B>
 </P>
 <P>Periodically calculate estimations of the Rayleigh- and Hertz time
-dt_r and dt_h for a granular system every 'nevery' time-steps. The user 
-can specify two quantities <I>fraction_r</I> and <I>fraction_h</I>. A warning 
-message is printed if the time-step size as specified via the 
-<A HREF = "timestep.html">timestep</A> command exceeds either of dt_r * fraction_r 
+dt_r and dt_h for a granular system every 'nevery' time-steps. The user
+can specify two quantities <I>fraction_r</I> and <I>fraction_h</I>. A warning
+message is printed if the time-step size as specified via the
+<A HREF = "timestep.html">timestep</A> command exceeds either of dt_r * fraction_r
 or dt_h * fraction_h.
 </P>
 The former quantity is 
 
 <P>dt_r = PI*r*sqrt(rho/G)/(0.1631*nu+0.8766),
 </P>
-<P>where rho is particle density, G is the shear modulus and nu is Poisson's 
+<P>where rho is particle density, G is the shear modulus and nu is Poisson's
 ratio. The latter quantity is expressed by
 </P>
-<P>dt_h = 2.87*(m_eff^2/(r_eff*Y_eff^2*v_max)^0.2.
+<P>dt_h = 2.87*(m_eff^2/(r_eff*Y_eff^2*v_max))^0.2.
 </P>
-<P>The effective mass m_eff, the effective radius r_eff and the effective Young's 
-modulus Y_eff are as defined in <A HREF = "pair_gran.html">pair gran</A>. v_max is the 
-maximum relative velocity, taking mesh movement into account. Please note 
-that the Hertz criterion will also be used if you use a different granular 
+<P>The effective mass m_eff, the effective radius r_eff and the effective Young's
+modulus Y_eff are as defined in <A HREF = "pair_gran.html">pair gran</A>. v_max is the
+maximum relative velocity, taking mesh movement into account. Please note
+that the Hertz criterion will also be used if you use a different granular
 pair style (e.g. Hooke).
 </P>
-<P>Additionally, this command checks the ratio of skin to the distance that 
-particles can travel relative to each other in one time-step. This value 
-should be >1, otherwise some interactions may be missed or overlap energy 
+<P>Additionally, this command checks the ratio of skin to the distance that
+particles can travel relative to each other in one time-step. This value
+should be >1, otherwise some interactions may be missed or overlap energy
 may be generated artificially. This command will warn you if this is the case.
 </P>
-<P>These criteria are checked every 'nevery' time-steps. Rayleigh time dt_r is 
-calculated for each particle in the simulation, and the minimum value is 
-taken for further calculations. Hertz time dt_h is estimated by testing a 
-collision of each particle with itself using v_max as the assumed collision 
+<P>These criteria are checked every 'nevery' time-steps. Rayleigh time dt_r is
+calculated for each particle in the simulation, and the minimum value is
+taken for further calculations. Hertz time dt_h is estimated by testing a
+collision of each particle with itself using v_max as the assumed collision
 velocity.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart
 files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
-are relevant to this fix.  This fix computes a 3-vector, for access by 
-various <A HREF = "Section_howto.html#4_15">output commands</A>.  The vector consists 
-of the time-step size expressed as fraction of the Rayleigh and Hertz 
-time-step sizes and the ratio of skin to the distance particles can 
-travel relative to each other in one time-step, respectively. No 
-parameter of this fix can be used with the <I>start/stop</I> keywords of 
-the <A HREF = "run.html">run</A> command. This fix is not invoked during 
+are relevant to this fix.  This fix computes a 3-vector, for access by
+various <A HREF = "Section_howto.html#4_15">output commands</A>.  The vector consists
+of the time-step size expressed as fraction of the Rayleigh and Hertz
+time-step sizes and the ratio of skin to the distance particles can
+travel relative to each other in one time-step, respectively. No
+parameter of this fix can be used with the <I>start/stop</I> keywords of
+the <A HREF = "run.html">run</A> command. This fix is not invoked during
 <A HREF = "minimize.html">energy minimization</A>.
 </P>
 <P><B>Restrictions:</B> none

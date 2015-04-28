@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -24,15 +24,15 @@ compute ID group-ID wall/gran/local keywords ...
 
 <LI>zero or more keywords may be appended 
 
-<LI>keyword = <I>pos</I> or <I>vel</I> or <I>id</I> or <I>force</I> or <I>torque</I> or <I>history</I> or <I>contactArea</I> 
-
-<PRE>  <I>pos</I> = positions of particles in contact (6 values)
+<PRE>keyword = <I>pos</I> or <I>vel</I> or <I>id</I> or <I>force</I> or <I>torque</I> or <I>history</I> or <I>contactArea</I> or <I>delta</I>:l
+  <I>pos</I> = positions of particles in contact (6 values)
   <I>vel</I> = velocities of particles in contact (6 values)
   <I>id</I> = IDs of particles in contact and a periodicity flag (3 values) or IDs of the mesh, the triangle and the particle (3 values)
   <I>force</I> = contact force (3 values)
   <I>torque</I> = torque divided by particle diameter (3 values)
   <I>history</I> = contact history (# depends on pair style, e.g. 3 shear history values)
   <I>contactArea</I> = area of the contact (1 value)
+  <I>delta</I> = overlap of the contact (1 value)
   <I>heatFlux</I> = conductive heat flux of the contact (1 value) 
 </PRE>
 
@@ -80,10 +80,17 @@ particle radius, both in force <A HREF = "units.html">units</A>. Note that the t
 does NOT contain any rolling friction torque. The output <I>history</I>
 will depend on what this history represents, according to the granular
 pair style used. The output <I>contactArea</I> will output the contact area,
-in distance^2 <A HREF = "units.html">units</A>. The output <I>heatFlux</I> (available only
+in distance^2 <A HREF = "units.html">units</A>. The output <I>delta</I> will output the
+overlap (sum of radii - distance between particle centers) in distance
+<A HREF = "units.html">units</A> .The output <I>heatFlux</I> (available only
 if a <A HREF = "fix_heat_gran.html">fix heat/gran</A> is used to compute  heat
 fluxes) will output the per-contact conductive heat flux area, in
 energy/time <A HREF = "units.html">units</A>.
+</P>
+<P>The data associated to the different keywords is output in the
+following order: <I>pos</I>, <I>vel</I>, <I>id</I>, <I>force</I>, <I>torque</I>, <I>history</I>,
+<I>contactArea</I>, <I>heatFlux</I>. This is independant of the order in which
+the keywords are specified.
 </P>
 <P>Note that as atoms migrate from processor to processor, there will be
 no consistent ordering of the entries within the local vector or array
@@ -104,7 +111,7 @@ local vector is produced.  If two or more keywords are specified, a
 local array is produced where the number of columns = the number of
 keywords.  The vector or array can be accessed by any command that
 uses local values from a compute as input.  See <A HREF = "Section_howto.html#4_15">this
-section</A> for an overview of LAMMPS output
+section</A> for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 </P>
 <P>For information on the <A HREF = "units.html">units</A> of the output, see above.
@@ -121,7 +128,7 @@ For accessing particle-wall contact data, only mesh walls can be used.
 </P>
 <P><B>Default:</B>
 </P>
-<P>By default, all of the outputs keywords (except the heat flux) are activated,
+<P>By default, all of the outputs keywords (except the heat flux and delta) are activated,
 i.e. when no keyword is used, positions velocities, ids, forces, torques, history
 and contact area are output.
 </P>

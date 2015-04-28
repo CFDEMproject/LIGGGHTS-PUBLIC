@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -17,14 +17,14 @@
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command 
 
-<LI>coord/atom = style name of this compute command  
+<LI>coord/atom = style name of this compute command
 cutoff = distance within which to count coordination neighbors (distance units)
 zero or more keyword/value pairs may be appended to args 
 
 <LI>keyword = <I>mix</I> or <I>type1</I>, <I>type2</I>, ...  
 
 <PRE>  <I>mix</I> value = yes or no -ID
-    no = count all neighbors  
+    no = count all neighbors
     yes = count only neighbors that have same atom type  
 </PRE>
 <PRE>  <I>typeN</I> = atom type for Nth coordination count (see asterisk form below)  
@@ -78,7 +78,7 @@ mixture of different species.
 </P>
 <P>IMPORTANT NOTE: If you have a bonded system, then the settings of
 <A HREF = "special_bonds.html">special_bonds</A> command can remove pairwise
-interactions between atoms in the same bond, angle, or dihedral.  This
+interactions between atoms in the same bond.  This
 is the default setting for the <A HREF = "special_bonds.html">special_bonds</A>
 command, and means those pairwise interactions do not appear in the
 neighbor list.  Because this fix uses the neighbor list, it also means
@@ -96,8 +96,8 @@ or the <I>mix</I> keyword is used,
 this compute calculates a per-atom vector.  If multiple <I>typeN</I>
 keywords are specified, this compute calculates a per-atom array, with
 N columns.  These values can be accessed by any command that uses
-per-atom values from a compute as input.  See <A HREF = "Section_howto.html#howto_15">Section_howto
-15</A> for an overview of LAMMPS output
+per-atom values from a compute as input.  See <A HREF = "Section_howto.html#howto_8">Section_howto
+15</A> for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 </P>
 <P>The per-atom vector or array values will be a number >= 0.0, as

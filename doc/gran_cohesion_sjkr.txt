@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -13,24 +12,18 @@ gran cohesion sjkr :h3
 
 cohesion sjkr :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This part of "pair gran"_pair_gran.html and 
-"fix wall/gran"_fix_wall_gran.html
-is not availabe in LAMMPS.
-
 [Description:]
 
-This model can be used as part of "pair gran"_pair_gran.html and 
+This model can be used as part of "pair gran"_pair_gran.html and
 "fix wall/gran"_fix_wall_gran.html
 
 The simplified JKR - Johnson-Kendall-Roberts (SJKR) model adds an additional normal force
-contribution. If two particle are in contact, it adds an additional normal force tending 
-to maintain the contact, which writes 
+contribution. If two particle are in contact, it adds an additional normal force tending
+to maintain the contact, which writes
 
-F = k A, 
+F = k A,
 
-where A is the particle contact area and k is the cohesion energy density in J/m3. 
+where A is the particle contact area and k is the cohesion energy density in J/m3.
 For {sjkr}, the sphere-sphere contact area is calculated as (http://mathworld.wolfram.com/Sphere-SphereIntersection.html)
 
 A = Pi/4 * ((dist-Ri-Rj)*(dist+Ri-Rj)*(dist-Ri+Rj)*(dist+Ri+Rj) )/(dist*dist)
@@ -46,5 +39,5 @@ IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 
 [Restrictions:]
 
-The cohesion model has been derived for the Hertzian Style, it may note be 
+The cohesion model has been derived for the Hertzian Style, it may note be
 appropriate for the Hookean styles.

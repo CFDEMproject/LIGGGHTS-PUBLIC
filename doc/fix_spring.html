@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -105,18 +105,18 @@ way, as explained on the <A HREF = "fix_rigid.html">fix rigid</A> doc page.
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart
-files</A>. 
+files</A>.
 </P>
 <P>The <A HREF = "fix_modify.html">fix_modify</A> <I>energy</I> option is supported by this
 fix to add the energy stored in the spring to the system's potential
 energy as part of <A HREF = "thermo_style.html">thermodynamic output</A>.
 </P>
 <P>This fix computes a global scalar which can be accessed by various
-<A HREF = "Section_howto.html#howto_15">output commands</A>.  The scalar is the
+<A HREF = "Section_howto.html#howto_8">output commands</A>.  The scalar is the
 spring energy = 0.5 * K * r^2.
 </P>
 <P>This fix also computes global 4-vector which can be accessed by
-various <A HREF = "Section_howto.html#howto_15">output commands</A>.  The first 3
+various <A HREF = "Section_howto.html#howto_8">output commands</A>.  The first 3
 quantities in the vector are xyz components of the total force added
 to the group of atoms by the spring.  In the case of the <I>couple</I>
 style, it is the force on the fix group (group-ID) or the negative of
@@ -143,7 +143,7 @@ this fix.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "fix_drag.html">fix drag</A>, <A HREF = "fix_spring_self.html">fix spring/self</A>, 
+<P><A HREF = "fix_drag.html">fix drag</A>, <A HREF = "fix_spring_self.html">fix spring/self</A>,
 <A HREF = "fix_spring_rg.html">fix spring/rg</A>, <A HREF = "fix_smd.html">fix smd</A>
 </P>
 <P><B>Default:</B> none

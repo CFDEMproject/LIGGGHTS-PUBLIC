@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -55,11 +55,7 @@ specified criteria.  This can be used to model cross-linking of
 polymers, the formation of a percolation network, etc.  In this
 context, a bond means an interaction between a pair of atoms computed
 by the <A HREF = "bond_style.html">bond_style</A> command.  Once the bond is created
-it will be permanently in place.  This is different than a
-<A HREF = "pair_style.html">pairwise</A> bond-order potential such as Tersoff or
-AIREBO which infers bonds and many-body interactions based on the
-current geometry of a small cluster of atoms and effectively creates
-and destroys bonds from timestep to timestep as atoms move.
+it will be permanently in place.
 </P>
 <P>A check for possible new bonds is performed every <I>Nevery</I> timesteps.
 If two atoms I,J are within a distance <I>Rmin</I> of each other, if I is
@@ -107,14 +103,14 @@ and 1.0.  A uniform random number between 0.0 and 1.0 is generated and
 the eligible bond is only created if the random number < fraction.
 </P>
 <P>Any bond that is created is assigned a bond type of <I>bondtype</I>.  Data
-structures within LAMMPS that store bond topology are updated to
+structures within LIGGGHTS(R)-PUBLIC that store bond topology are updated to
 reflect the new bond.  This can also affect subsequent computation of
 pairwise interactions involving the atoms in the bond.  See the
 Restriction section below for additional information.
 </P>
-<P>IMPORTANT NOTE: To create a new bond, the internal LAMMPS data
+<P>IMPORTANT NOTE: To create a new bond, the internal LIGGGHTS(R)-PUBLIC data
 structures that store this information must have space for it.  When
-LAMMPS is initialized from a data file, the list of bonds is scanned
+LIGGGHTS(R)-PUBLIC is initialized from a data file, the list of bonds is scanned
 and the maximum number of bonds per atom is tallied.  If some atom
 will acquire more bonds than this limit as this fix operates, then the
 "extra bonds per atom" parameter in the data file header must be set
@@ -125,7 +121,7 @@ no bonds.  A data file with no atoms can be used if you wish to add
 unbonded atoms via the <A HREF = "create_atoms.html">create atoms</A> command,
 e.g. for a percolation simulation.
 </P>
-<P>IMPORTANT NOTE: LAMMPS also maintains a data structure that stores a
+<P>IMPORTANT NOTE: LIGGGHTS(R)-PUBLIC also maintains a data structure that stores a
 list of 1st, 2nd, and 3rd neighbors of each atom (in the bond topology
 of the system) for use in weighting pairwise interactions for bonded
 atoms.  Adding a bond adds a single entry to this list.  The "extra"
@@ -167,10 +163,10 @@ resulting from created bonds.
 </P>
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart
 files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
-are relevant to this fix. 
+are relevant to this fix.
 </P>
 <P>This fix computes two statistics which it stores in a global vector of
-length 2, which can be accessed by various <A HREF = "Section_howto.html#howto_15">output
+length 2, which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  The vector values calculated
 by this fix are "intensive".
 </P>
@@ -185,16 +181,16 @@ minimization</A>.
 </P>
 <P><B>Restrictions:</B>
 </P>
-<P>This fix is part of the MC package.  It is only enabled if LAMMPS was
+<P>This fix is part of the MC package.  It is only enabled if LIGGGHTS(R)-PUBLIC was
 built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LAMMPS</A> section for more info.
+LIGGGHTS(R)-PUBLIC</A> section for more info.
 </P>
 <P>Currently, there are 2 restrictions for using this fix.  We may relax
 these in the future if there are new models that would be enabled by
 it.
 </P>
 <P>When a bond is created, you might wish to induce new angle and
-dihedral interactions that include that bond.  However, LAMMPS does
+dihedral interactions that include that bond.  However, LIGGGHTS(R)-PUBLIC does
 not create these angles and dihedrals, even if your simulation defines
 an <A HREF = "angle_style.html">angle_style</A> or
 <A HREF = "dihedral_style.html">dihedral_style</A>.

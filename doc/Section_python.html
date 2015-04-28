@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "Section_modify.html">Previous Section</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> - <A HREF = "Section_errors.html">Next Section</A> 
+<CENTER><A HREF = "Section_modify.html">Previous Section</A> - <A HREF = "lws">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> - <A HREF = "Section_errors.html">Next Section</A> 
 </CENTER>
 
 
@@ -9,22 +9,22 @@
 
 <HR>
 
-<H3>11. Python interface to LAMMPS 
+<H3>9. Python interface to LIGGGHTS(R)-PUBLIC 
 </H3>
-<P>This section describes how to build and use LAMMPS via a Python
+<P>This section describes how to build and use LIGGGHTS(R)-PUBLIC via a Python
 interface.
 </P>
-<UL><LI>11.1 <A HREF = "#py_1">Building LAMMPS as a shared library</A>
-<LI>11.2 <A HREF = "#py_2">Installing the Python wrapper into Python</A>
-<LI>11.3 <A HREF = "#py_3">Extending Python with MPI to run in parallel</A>
-<LI>11.4 <A HREF = "#py_4">Testing the Python-LAMMPS interface</A>
-<LI>11.5 <A HREF = "#py_5">Using LAMMPS from Python</A>
-<LI>11.6 <A HREF = "#py_6">Example Python scripts that use LAMMPS</A> 
+<UL><LI>9.1 <A HREF = "#py_1">Building LIGGGHTS(R)-PUBLIC as a shared library</A>
+<LI>9.2 <A HREF = "#py_2">Installing the Python wrapper into Python</A>
+<LI>9.3 <A HREF = "#py_3">Extending Python with MPI to run in parallel</A>
+<LI>9.4 <A HREF = "#py_4">Testing the Python-LIGGGHTS(R)-PUBLIC interface</A>
+<LI>9.5 <A HREF = "#py_5">Using LIGGGHTS(R)-PUBLIC from Python</A>
+<LI>9.6 <A HREF = "#py_6">Example Python scripts that use LIGGGHTS(R)-PUBLIC</A> 
 </UL>
-<P>The LAMMPS distribution includes the file python/lammps.py which wraps
-the library interface to LAMMPS.  This file makes it is possible to
-run LAMMPS, invoke LAMMPS commands or give it an input script, extract
-LAMMPS results, an modify internal LAMMPS variables, either from a
+<P>The LIGGGHTS(R)-PUBLIC distribution includes the file python/lammps.py which wraps
+the library interface to LIGGGHTS(R)-PUBLIC.  This file makes it is possible to
+run LIGGGHTS(R)-PUBLIC, invoke LIGGGHTS(R)-PUBLIC commands or give it an input script, extract
+LIGGGHTS(R)-PUBLIC results, an modify internal LIGGGHTS(R)-PUBLIC variables, either from a
 Python script or interactively from a Python prompt.  You can do the
 former in serial or parallel.  Running Python interactively in
 parallel does not generally work, unless you have a package installed
@@ -32,13 +32,13 @@ that extends your Python to enable multiple instances of Python to
 read what you type.
 </P>
 <P><A HREF = "http://www.python.org">Python</A> is a powerful scripting and programming
-language which can be used to wrap software like LAMMPS and other
+language which can be used to wrap software like LIGGGHTS(R)-PUBLIC and other
 packages.  It can be used to glue multiple pieces of software
 together, e.g. to run a coupled or multiscale model.  See <A HREF = "Section_howto.html#howto_10">Section
 section</A> of the manual and the couple
-directory of the distribution for more ideas about coupling LAMMPS to
+directory of the distribution for more ideas about coupling LIGGGHTS(R)-PUBLIC to
 other codes.  See <A HREF = "Section_start.html#start_5">Section_start 4</A> about
-how to build LAMMPS as a library, and <A HREF = "Section_howto.html#howto_19">Section_howto
+how to build LIGGGHTS(R)-PUBLIC as a library, and <A HREF = "Section_howto.html#howto_10">Section_howto
 19</A> for a description of the library
 interface provided in src/library.cpp and src/library.h and how to
 extend it for your needs.  As described below, that interface is what
@@ -46,27 +46,27 @@ is exposed to Python.  It is designed to be easy to add functions to.
 This can easily extend the Python inteface as well.  See details
 below.
 </P>
-<P>By using the Python interface, LAMMPS can also be coupled with a GUI
+<P>By using the Python interface, LIGGGHTS(R)-PUBLIC can also be coupled with a GUI
 or other visualization tools that display graphs or animations in real
-time as LAMMPS runs.  Examples of such scripts are inlcluded in the
+time as LIGGGHTS(R)-PUBLIC runs.  Examples of such scripts are inlcluded in the
 python directory.
 </P>
 <P>Two advantages of using Python are how concise the language is, and
 that it can be run interactively, enabling rapid development and
 debugging of programs.  If you use it to mostly invoke costly
-operations within LAMMPS, such as running a simulation for a
+operations within LIGGGHTS(R)-PUBLIC, such as running a simulation for a
 reasonable number of timesteps, then the overhead cost of invoking
-LAMMPS thru Python will be negligible.
+LIGGGHTS(R)-PUBLIC thru Python will be negligible.
 </P>
-<P>Before using LAMMPS from a Python script, you need to do two things.
-You need to build LAMMPS as a dynamic shared library, so it can be
+<P>Before using LIGGGHTS(R)-PUBLIC from a Python script, you need to do two things.
+You need to build LIGGGHTS(R)-PUBLIC as a dynamic shared library, so it can be
 loaded by Python.  And you need to tell Python how to find the library
 and the Python wrapper file python/lammps.py.  Both these steps are
-discussed below.  If you wish to run LAMMPS in parallel from Python,
+discussed below.  If you wish to run LIGGGHTS(R)-PUBLIC in parallel from Python,
 you also need to extend your Python with MPI.  This is also discussed
 below.
 </P>
-<P>The Python wrapper for LAMMPS uses the amazing and magical (to me)
+<P>The Python wrapper for LIGGGHTS(R)-PUBLIC uses the amazing and magical (to me)
 "ctypes" package in Python, which auto-generates the interface code
 needed between Python and a set of C interface routines for a library.
 Ctypes is part of standard Python for versions 2.5 and later.  You can
@@ -77,9 +77,9 @@ check which version of Python you have installed, by simply typing
 
 <HR>
 
-<A NAME = "py_1"></A><H4>11.1 Building LAMMPS as a shared library 
+<A NAME = "py_1"></A><H4>9.1 Building LIGGGHTS(R)-PUBLIC as a shared library 
 </H4>
-<P>Instructions on how to build LAMMPS as a shared library are given in
+<P>Instructions on how to build LIGGGHTS(R)-PUBLIC as a shared library are given in
 <A HREF = "Section_start.html#start_5">Section_start 5</A>.  A shared library is one
 that is dynamically loadable, which is what Python requires.  On Linux
 this is a library file that ends in ".so", not ".a".
@@ -97,21 +97,21 @@ versions of the shared library, the soft link is always set to the
 most recently built version.
 </P>
 <P>If this fails, see <A HREF = "Section_start.html#start_5">Section_start 5</A> for
-more details, especially if your LAMMPS build uses auxiliary libraries
+more details, especially if your LIGGGHTS(R)-PUBLIC build uses auxiliary libraries
 like MPI or FFTW which may not be built as shared libraries on your
 system.
 </P>
 <HR>
 
-<A NAME = "py_2"></A><H4>11.2 Installing the Python wrapper into Python 
+<A NAME = "py_2"></A><H4>9.2 Installing the Python wrapper into Python 
 </H4>
-<P>For Python to invoke LAMMPS, there are 2 files it needs to know about:
+<P>For Python to invoke LIGGGHTS(R)-PUBLIC, there are 2 files it needs to know about:
 </P>
 <UL><LI>python/lammps.py
 <LI>src/liblammps.so 
 </UL>
-<P>Lammps.py is the Python wrapper on the LAMMPS library interface.
-Liblammps.so is the shared LAMMPS library that Python loads, as
+<P>Lammps.py is the Python wrapper on the LIGGGHTS(R)-PUBLIC library interface.
+Liblammps.so is the shared LIGGGHTS(R)-PUBLIC library that Python loads, as
 described above.
 </P>
 <P>You can insure Python can find these files in one of two ways:
@@ -127,14 +127,14 @@ this to your ~/.cshrc file, one line for each of the two files:
 setenv LD_LIBRARY_PATH $<I>LD_LIBRARY_PATH</I>:/home/sjplimp/lammps/src 
 </PRE>
 <P>If you use the python/install.py script, you need to invoke it every
-time you rebuild LAMMPS (as a shared library) or make changes to the
+time you rebuild LIGGGHTS(R)-PUBLIC (as a shared library) or make changes to the
 python/lammps.py file.
 </P>
 <P>You can invoke install.py from the python directory as
 </P>
 <PRE>% python install.py [libdir] [pydir] 
 </PRE>
-<P>The optional libdir is where to copy the LAMMPS shared library to; the
+<P>The optional libdir is where to copy the LIGGGHTS(R)-PUBLIC shared library to; the
 default is /usr/local/lib.  The optional pydir is where to copy the
 lammps.py file to; the default is the site-packages directory of the
 version of Python that is running the install script.
@@ -164,16 +164,16 @@ need to prefix this with "sudo".  In this mode you cannot control
 which Python is invoked by root.
 </P>
 <P>Note that if you want Python to be able to load different versions of
-the LAMMPS shared library (see <A HREF = "#py_5">this section</A> below), you will
+the LIGGGHTS(R)-PUBLIC shared library (see <A HREF = "#py_5">this section</A> below), you will
 need to manually copy files like liblammps_g++.so into the appropriate
 system directory.  This is not needed if you set the LD_LIBRARY_PATH
 environment variable as described above.
 </P>
 <HR>
 
-<A NAME = "py_3"></A><H4>11.3 Extending Python with MPI to run in parallel 
+<A NAME = "py_3"></A><H4>9.3 Extending Python with MPI to run in parallel 
 </H4>
-<P>If you wish to run LAMMPS in parallel from Python, you need to extend
+<P>If you wish to run LIGGGHTS(R)-PUBLIC in parallel from Python, you need to extend
 your Python with an interface to MPI.  This also allows you to
 make MPI calls directly from Python in your script, if you desire.
 </P>
@@ -198,13 +198,13 @@ believe) creates a new alternate executable (in place of "python"
 itself) as a result.
 </P>
 <P>In principle any of these Python/MPI packages should work to invoke
-LAMMPS in parallel and MPI calls themselves from a Python script which
+LIGGGHTS(R)-PUBLIC in parallel and MPI calls themselves from a Python script which
 is itself running in parallel.  However, when I downloaded and looked
 at a few of them, their documentation was incomplete and I had trouble
 with their installation.  It's not clear if some of the packages are
 still being actively developed and supported.
 </P>
-<P>The one I recommend, since I have successfully used it with LAMMPS, is
+<P>The one I recommend, since I have successfully used it with LIGGGHTS(R)-PUBLIC, is
 Pypar.  Pypar requires the ubiquitous <A HREF = "http://numpy.scipy.org">Numpy
 package</A> be installed in your Python.  After
 launching python, type
@@ -247,36 +247,36 @@ print "Proc %d out of %d procs" % (pypar.rank(),pypar.size())
 </PRE>
 <P>and see one line of output for each processor you run on.
 </P>
-<P>IMPORTANT NOTE: To use Pypar and LAMMPS in parallel from Python, you
+<P>IMPORTANT NOTE: To use Pypar and LIGGGHTS(R)-PUBLIC in parallel from Python, you
 must insure both are using the same version of MPI.  If you only have
 one MPI installed on your system, this is not an issue, but it can be
-if you have multiple MPIs.  Your LAMMPS build is explicit about which
+if you have multiple MPIs.  Your LIGGGHTS(R)-PUBLIC build is explicit about which
 MPI it is using, since you specify the details in your lo-level
 src/MAKE/Makefile.foo file.  Pypar uses the "mpicc" command to find
 information about the MPI it uses to build against.  And it tries to
 load "libmpi.so" from the LD_LIBRARY_PATH.  This may or may not find
-the MPI library that LAMMPS is using.  If you have problems running
-both Pypar and LAMMPS together, this is an issue you may need to
+the MPI library that LIGGGHTS(R)-PUBLIC is using.  If you have problems running
+both Pypar and LIGGGHTS(R)-PUBLIC together, this is an issue you may need to
 address, e.g. by moving other MPI installations so that Pypar finds
 the right one.
 </P>
 <HR>
 
-<A NAME = "py_4"></A><H4>11.4 Testing the Python-LAMMPS interface 
+<A NAME = "py_4"></A><H4>9.4 Testing the Python-LIGGGHTS(R)-PUBLIC interface 
 </H4>
-<P>To test if LAMMPS is callable from Python, launch Python interactively
+<P>To test if LIGGGHTS(R)-PUBLIC is callable from Python, launch Python interactively
 and type:
 </P>
 <PRE>>>> from lammps import lammps
 >>> lmp = lammps() 
 </PRE>
-<P>If you get no errors, you're ready to use LAMMPS from Python.  If the
+<P>If you get no errors, you're ready to use LIGGGHTS(R)-PUBLIC from Python.  If the
 2nd command fails, the most common error to see is
 </P>
-<PRE>OSError: Could not load LAMMPS dynamic library 
+<PRE>OSError: Could not load LIGGGHTS(R)-PUBLIC dynamic library 
 </PRE>
-<P>which means Python was unable to load the LAMMPS shared library.  This
-typically occurs if the system can't find the LAMMPS shared library or
+<P>which means Python was unable to load the LIGGGHTS(R)-PUBLIC shared library.  This
+typically occurs if the system can't find the LIGGGHTS(R)-PUBLIC shared library or
 one of the auxiliary shared libraries it depends on, or if something
 about the library is incompatible with your Python.  The error message
 should give you an indication of what went wrong.
@@ -292,9 +292,9 @@ first importing from the lammps.py file:
 library and about insuring Python can find the necessary two files
 it needs.
 </P>
-<H5><B>Test LAMMPS and Python in serial:</B> 
+<H5><B>Test LIGGGHTS(R)-PUBLIC and Python in serial:</B> 
 </H5>
-<P>To run a LAMMPS test in serial, type these lines into Python
+<P>To run a LIGGGHTS(R)-PUBLIC test in serial, type these lines into Python
 interactively from the bench directory:
 </P>
 <PRE>>>> from lammps import lammps
@@ -311,9 +311,9 @@ typed something like:
 </P>
 <PRE>lmp_g++ < in.lj 
 </PRE>
-<H5><B>Test LAMMPS and Python in parallel:</B> 
+<H5><B>Test LIGGGHTS(R)-PUBLIC and Python in parallel:</B> 
 </H5>
-<P>To run LAMMPS in parallel, assuming you have installed the
+<P>To run LIGGGHTS(R)-PUBLIC in parallel, assuming you have installed the
 <A HREF = "http://datamining.anu.edu.au/~ole/pypar">Pypar</A> package as discussed
 above, create a test.py file containing these lines:
 </P>
@@ -333,11 +333,11 @@ pypar.finalize()
 <PRE>% mpirun -np 4 lmp_g++ < in.lj 
 </PRE>
 <P>Note that if you leave out the 3 lines from test.py that specify Pypar
-commands you will instantiate and run LAMMPS independently on each of
+commands you will instantiate and run LIGGGHTS(R)-PUBLIC independently on each of
 the P processors specified in the mpirun command.  In this case you
-should get 4 sets of output, each showing that a LAMMPS run was made
+should get 4 sets of output, each showing that a LIGGGHTS(R)-PUBLIC run was made
 on a single processor, instead of one set of output showing that
-LAMMPS ran on 4 processors.  If the 1-processor outputs occur, it
+LIGGGHTS(R)-PUBLIC ran on 4 processors.  If the 1-processor outputs occur, it
 means that Pypar is not working correctly.
 </P>
 <P>Also note that once you import the PyPar module, Pypar initializes MPI
@@ -348,7 +348,7 @@ correctly.
 </P>
 <H5><B>Running Python scripts:</B> 
 </H5>
-<P>Note that any Python script (not just for LAMMPS) can be invoked in
+<P>Note that any Python script (not just for LIGGGHTS(R)-PUBLIC) can be invoked in
 one of several ways:
 </P>
 <PRE>% python foo.script
@@ -358,7 +358,7 @@ one of several ways:
 <P>The last command requires that the first line of the script be
 something like this:
 </P>
-<PRE>#!/usr/local/bin/python 
+<PRE>#!/usr/local/bin/python
 #!/usr/local/bin/python -i 
 </PRE>
 <P>where the path points to where you have Python installed, and that you
@@ -376,9 +376,9 @@ Python on a single processor, not in parallel.
 
 <HR>
 
-<A NAME = "py_5"></A><H4>11.5 Using LAMMPS from Python 
+<A NAME = "py_5"></A><H4>9.5 Using LIGGGHTS(R)-PUBLIC from Python 
 </H4>
-<P>The Python interface to LAMMPS consists of a Python "lammps" module,
+<P>The Python interface to LIGGGHTS(R)-PUBLIC consists of a Python "lammps" module,
 the source code for which is in python/lammps.py, which creates a
 "lammps" object, with a set of methods that can be invoked on that
 object.  The sample Python code below assumes you have first imported
@@ -388,18 +388,18 @@ the "lammps" module in your Python script, as follows:
 </PRE>
 <P>These are the methods defined by the lammps module.  If you look
 at the file src/library.cpp you will see that they correspond
-one-to-one with calls you can make to the LAMMPS library from a C++ or
+one-to-one with calls you can make to the LIGGGHTS(R)-PUBLIC library from a C++ or
 C or Fortran program.
 </P>
-<PRE>lmp = lammps()           # create a LAMMPS object using the default liblammps.so library
-lmp = lammps("g++")      # create a LAMMPS object using the liblammps_g++.so library
+<PRE>lmp = lammps()           # create a LIGGGHTS(R)-PUBLIC object using the default liblammps.so library
+lmp = lammps("g++")      # create a LIGGGHTS(R)-PUBLIC object using the liblammps_g++.so library
 lmp = lammps("",list)    # ditto, with command-line args, e.g. list = ["-echo","screen"]
 lmp = lammps("g++",list) 
 </PRE>
-<PRE>lmp.close()              # destroy a LAMMPS object 
+<PRE>lmp.close()              # destroy a LIGGGHTS(R)-PUBLIC object 
 </PRE>
 <PRE>lmp.file(file)           # run an entire input script, file = "in.lj"
-lmp.command(cmd)         # invoke a single LAMMPS command, cmd = "run 100" 
+lmp.command(cmd)         # invoke a single LIGGGHTS(R)-PUBLIC command, cmd = "run 100" 
 </PRE>
 <PRE>xlo = lmp.extract_global(name,type)  # extract a global quantity
                                      # name = "boxxlo", "nlocal", etc
@@ -440,16 +440,16 @@ lmp.scatter_atoms(name,type,count,data)   # scatter atom attribute of all atoms 
 </PRE>
 <HR>
 
-<P>IMPORTANT NOTE: Currently, the creation of a LAMMPS object from within
+<P>IMPORTANT NOTE: Currently, the creation of a LIGGGHTS(R)-PUBLIC object from within
 lammps.py does not take an MPI communicator as an argument.  There
-should be a way to do this, so that the LAMMPS instance runs on a
+should be a way to do this, so that the LIGGGHTS(R)-PUBLIC instance runs on a
 subset of processors if desired, but I don't know how to do it from
 Pypar.  So for now, it runs with MPI_COMM_WORLD, which is all the
 processors.  If someone figures out how to do this with one or more of
 the Python wrappers for MPI, like Pypar, please let us know and we
 will amend these doc pages.
 </P>
-<P>Note that you can create multiple LAMMPS objects in your Python
+<P>Note that you can create multiple LIGGGHTS(R)-PUBLIC objects in your Python
 script, and coordinate and run multiple simulations, e.g.
 </P>
 <PRE>from lammps import lammps
@@ -463,14 +463,14 @@ commands to be invoked.
 </P>
 <P>The extract_global(), extract_atom(), extract_compute(),
 extract_fix(), and extract_variable() methods return values or
-pointers to data structures internal to LAMMPS.
+pointers to data structures internal to LIGGGHTS(R)-PUBLIC.
 </P>
 <P>For extract_global() see the src/library.cpp file for the list of
 valid names.  New names could easily be added.  A double or integer is
 returned.  You need to specify the appropriate data type via the type
 argument.
 </P>
-<P>For extract_atom(), a pointer to internal LAMMPS atom-based data is
+<P>For extract_atom(), a pointer to internal LIGGGHTS(R)-PUBLIC atom-based data is
 returned, which you can use via normal Python subscripting.  See the
 extract() method in the src/atom.cpp file for a list of valid names.
 Again, new names could easily be added.  A pointer to a vector of
@@ -483,12 +483,12 @@ local data calulated by the compute or fix can be accessed.  What is
 returned depends on whether the compute or fix calculates a scalar or
 vector or array.  For a scalar, a single double value is returned.  If
 the compute or fix calculates a vector or array, a pointer to the
-internal LAMMPS data is returned, which you can use via normal Python
+internal LIGGGHTS(R)-PUBLIC data is returned, which you can use via normal Python
 subscripting.  The one exception is that for a fix that calculates a
 global vector or array, a single double value from the vector or array
 is returned, indexed by I (vector) or I and J (array).  I,J are
 zero-based indices.  The I,J arguments can be left out if not needed.
-See <A HREF = "Section_howto.html#howto_15">Section_howto 15</A> of the manual for a
+See <A HREF = "Section_howto.html#howto_8">Section_howto 15</A> of the manual for a
 discussion of global, per-atom, and local data, and of scalar, vector,
 and array data types.  See the doc pages for individual
 <A HREF = "compute.html">computes</A> and <A HREF = "fix.html">fixes</A> for a description of what
@@ -511,7 +511,7 @@ as specified by type, of length count*natoms, for the property of all
 the atoms in the simulation specified by name, ordered by count and
 then by atom ID.  The vector can be used via normal Python
 subscripting.  If atom IDs are not consecutively ordered within
-LAMMPS, a None is returned as indication of an error.
+LIGGGHTS(R)-PUBLIC, a None is returned as indication of an error.
 </P>
 <P>Note that the data structure gather_atoms("x") returns is different
 from the data structure returned by extract_atom("x") in four ways.
@@ -521,9 +521,9 @@ Gather_atoms() orders the atoms by atom ID while extract_atom() does
 not.  (3) Gathert_atoms() returns a list of all atoms in the
 simulation; extract_atoms() returns just the atoms local to each
 processor.  (4) Finally, the gather_atoms() data structure is a copy
-of the atom coords stored internally in LAMMPS, whereas extract_atom()
+of the atom coords stored internally in LIGGGHTS(R)-PUBLIC, whereas extract_atom()
 returns an array that effectively points directly to the internal
-data.  This means you can change values inside LAMMPS from Python by
+data.  This means you can change values inside LIGGGHTS(R)-PUBLIC from Python by
 assigning a new values to the extract_atom() array.  To do this with
 the gather_atoms() vector, you need to change values in the vector,
 then invoke the scatter_atoms() method.
@@ -532,7 +532,7 @@ then invoke the scatter_atoms() method.
 specified by type, of length count*natoms, for the property of all the
 atoms in the simulation specified by name, ordered by bount and then
 by atom ID.  It uses the vector of data to overwrite the corresponding
-properties for each atom inside LAMMPS.  This requires LAMMPS to have
+properties for each atom inside LIGGGHTS(R)-PUBLIC.  This requires LIGGGHTS(R)-PUBLIC to have
 its "map" option enabled; see the <A HREF = "atom_modify.html">atom_modify</A>
 command for details.  If it is not, or if atom IDs are not
 consecutively ordered, no coordinates are reset.
@@ -559,14 +559,14 @@ gather_atoms("x",1,3), since it is a ctypes vector of doubles.
 <HR>
 
 <P>As noted above, these Python class methods correspond one-to-one with
-the functions in the LAMMPS library interface in src/library.cpp and
+the functions in the LIGGGHTS(R)-PUBLIC library interface in src/library.cpp and
 library.h.  This means you can extend the Python wrapper via the
 following steps:
 </P>
 <UL><LI>Add a new interface function to src/library.cpp and
 src/library.h. 
 
-<LI>Rebuild LAMMPS as a shared library. 
+<LI>Rebuild LIGGGHTS(R)-PUBLIC as a shared library. 
 
 <LI>Add a wrapper method to python/lammps.py for this interface
 function. 
@@ -578,19 +578,19 @@ Python script.  Isn't ctypes amazing?
 
 <HR>
 
-<A NAME = "py_6"></A><H4>11.6 Example Python scripts that use LAMMPS 
+<A NAME = "py_6"></A><H4>9.6 Example Python scripts that use LIGGGHTS(R)-PUBLIC 
 </H4>
 <P>These are the Python scripts included as demos in the python/examples
-directory of the LAMMPS distribution, to illustrate the kinds of
-things that are possible when Python wraps LAMMPS.  If you create your
-own scripts, send them to us and we can include them in the LAMMPS
+directory of the LIGGGHTS(R)-PUBLIC distribution, to illustrate the kinds of
+things that are possible when Python wraps LIGGGHTS(R)-PUBLIC.  If you create your
+own scripts, send them to us and we can include them in the LIGGGHTS(R)-PUBLIC
 distribution.
 </P>
 <DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >trivial.py</TD><TD > read/run a LAMMPS input script thru Python</TD></TR>
-<TR><TD >demo.py</TD><TD > invoke various LAMMPS library interface routines</TD></TR>
+<TR><TD >trivial.py</TD><TD > read/run a LIGGGHTS(R)-PUBLIC input script thru Python</TD></TR>
+<TR><TD >demo.py</TD><TD > invoke various LIGGGHTS(R)-PUBLIC library interface routines</TD></TR>
 <TR><TD >simple.py</TD><TD > mimic operation of couple/simple/simple.cpp in Python</TD></TR>
-<TR><TD >gui.py</TD><TD > GUI go/stop/temperature-slider to control LAMMPS</TD></TR>
+<TR><TD >gui.py</TD><TD > GUI go/stop/temperature-slider to control LIGGGHTS(R)-PUBLIC</TD></TR>
 <TR><TD >plot.py</TD><TD > real-time temeperature plot with GnuPlot via Pizza.py</TD></TR>
 <TR><TD >viz_tool.py</TD><TD > real-time viz via some viz package</TD></TR>
 <TR><TD >vizplotgui_tool.py</TD><TD > combination of viz_tool.py and plot.py and gui.py 
@@ -600,7 +600,7 @@ distribution.
 
 <P>For the viz_tool.py and vizplotgui_tool.py commands, replace "tool"
 with "gl" or "atomeye" or "pymol" or "vmd", depending on what
-visualization package you have installed. 
+visualization package you have installed.
 </P>
 <P>Note that for GL, you need to be able to run the Pizza.py GL tool,
 which is included in the pizza sub-directory.  See the <A HREF = "http://www.sandia.gov/~sjplimp/pizza.html">Pizza.py doc
@@ -635,10 +635,6 @@ http://sourceforge.net/scm/?type=svn&group_id=4546
 
 
 <P>The latter link is to the open-source version.
-</P>
-<P>Note that for VMD, you need a fairly current version (1.8.7 works for
-me) and there are some lines in the pizza/vmd.py script for 4 PIZZA
-variables that have to match the VMD installation on your system.
 </P>
 <HR>
 

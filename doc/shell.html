@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -42,7 +42,6 @@ shell mkdir tmp1 tmp2 tmp3
 shell rmdir tmp1
 shell mv log.lammps hold/log.1
 shell rm TMP/file1 TMP/file2
-shell putenv LAMMPS_POTENTIALS=../../potentials
 shell my_setup file1 10 file2
 shell my_post_process 100 dump.out 
 </PRE>
@@ -56,15 +55,15 @@ the command in a shell.
 <P>This is means to invoke other commands from your input script.  For
 example, you can move files around in preparation for the next section
 of the input script.  Or you can run a program that pre-processes data
-for input into LAMMPS.  Or you can run a program that post-processes
-LAMMPS output data.
+for input into LIGGGHTS(R)-PUBLIC.  Or you can run a program that post-processes
+LIGGGHTS(R)-PUBLIC output data.
 </P>
 <P>With the exception of <I>cd</I>, all commands, including ones invoked via a
 system() call, are executed by only a single processor, so that
 files/directories are not being manipulated by multiple processors.
 </P>
 <P>The <I>cd</I> cmd executes the Unix "cd" command to change the working
-directory.  All subsequent LAMMPS commands that read/write files will
+directory.  All subsequent LIGGGHTS(R)-PUBLIC commands that read/write files will
 use the new directory.  All processors execute this command.
 </P>
 <P>The <I>mkdir</I> cmd executes the Unix "mkdir" command to create one or
@@ -83,7 +82,7 @@ removed.
 <P>The <I>putenv</I> cmd defines or updates an environment variable directly.
 Since this command does not pass through the shell, no shell variable
 expansion or globbing is performed, only the usual substitution for
-LAMMPS variables defined with the <A HREF = "variable.html">variable</A> command is
+LIGGGHTS(R)-PUBLIC variables defined with the <A HREF = "variable.html">variable</A> command is
 performed.  The resulting string is then used literally.
 </P>
 <P>Any other cmd is passed as-is to the shell along with its arguments as
@@ -103,7 +102,7 @@ with 3 arguments: file1 10 file2.
 </P>
 <P><B>Restrictions:</B>
 </P>
-<P>LAMMPS does not detect errors or print warnings when any of these
+<P>LIGGGHTS(R)-PUBLIC does not detect errors or print warnings when any of these
 commands execute.  E.g. if the specified directory does not exist,
 executing the <I>cd</I> command will silently do nothing.
 </P>

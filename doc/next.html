@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -29,10 +29,10 @@ next a t x myTemp
 variable from the list of values defined for that variable by the
 <A HREF = "variable.html">variable</A> command.  Thus when that variable is
 subsequently substituted for in an input script command, the new value
-is used. 
+is used.
 </P>
 <P>See the <A HREF = "variable.html">variable</A> command for info on how to define and
-use different kinds of variables in LAMMPS input scripts.  If a
+use different kinds of variables in LIGGGHTS(R)-PUBLIC input scripts.  If a
 variable name is a single lower-case character from "a" to "z", it can
 be used in an input script command as $a or $z.  If it is multiple
 letters, it can be used as ${myTemp}.
@@ -68,12 +68,12 @@ per-atom values is read from its file and assigned to the variable.
 When the next command is used with <I>universe</I>- or <I>uloop</I>-style
 variables, the next value is assigned to whichever processor partition
 executes the command first.  All processors in the partition are
-assigned the same value.  Running LAMMPS on multiple partitions of
+assigned the same value.  Running LIGGGHTS(R)-PUBLIC on multiple partitions of
 processors via the "-partition" command-line switch is described in
 <A HREF = "Section_start.html#start_7">this section</A> of the manual.  <I>Universe</I>-
 and <I>uloop</I>-style variables are incremented using the files
 "tmp.lammps.variable" and "tmp.lammps.variable.lock" which you will
-see in your directory during such a LAMMPS run.
+see in your directory during such a LIGGGHTS(R)-PUBLIC run.
 </P>
 <P>Here is an example of running a series of simulations using the next
 command with an <I>index</I>-style variable.  If this input script is named

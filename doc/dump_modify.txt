@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -49,7 +49,7 @@ keyword = {append} or {buffer} or {element} or {every} or {fileper} or {first} o
     these 3 args can be replaced by the word "none" to turn off thresholding
   {unwrap} arg = {yes} or {no} :pre
 these keywords apply only to the {image} and {movie} "styles"_dump_image.html :l
-keyword = {acolor} or {adiam} or {amap} or {bcolor} or {bdiam} or {backcolor} or {boxcolor} or {color} or {bitrate} or {framerate} :l 
+keyword = {acolor} or {adiam} or {amap} or {bcolor} or {bdiam} or {backcolor} or {boxcolor} or {color} or {bitrate} or {framerate} :l
   {acolor} args = type color
     type = atom type or range of types (see below)
     color = name of color or color1/color2/...
@@ -152,7 +152,7 @@ extra buffering.
 
 The {element} keyword applies only to the the dump {cfg}, {xyz}, and
 {image} styles.  It associates element names (e.g. H, C, Fe) with
-LAMMPS atom types.  See the list of element names at the bottom of
+LIGGGHTS(R)-PUBLIC atom types.  See the list of element names at the bottom of
 this page.
 
 In the case of dump {cfg}, this allows the "AtomEye"_atomeye
@@ -238,7 +238,7 @@ default, then it will not be written.
 The {flush} keyword determines whether a flush operation is invoked
 after a dump snapshot is written to the dump file.  A flush insures
 the output in that file is current (no buffering by the OS), even if
-LAMMPS halts before the simulation completes.  Flushes cannot be
+LIGGGHTS(R)-PUBLIC halts before the simulation completes.  Flushes cannot be
 performed with dump style {xtc}.
 
 The text-based dump styles have a default C-style format string which
@@ -682,7 +682,7 @@ framerate = 24 :ul
 
 :line
 
-These are the standard 109 element names that LAMMPS pre-defines for
+These are the standard 109 element names that LIGGGHTS(R)-PUBLIC pre-defines for
 use with the "dump image"_dump_image.html and dump_modify commands.
 
 1-10 = "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne"
@@ -699,7 +699,7 @@ use with the "dump image"_dump_image.html and dump_modify commands.
 
 :line
 
-These are the 140 colors that LAMMPS pre-defines for use with the
+These are the 140 colors that LIGGGHTS(R)-PUBLIC pre-defines for use with the
 "dump image"_dump_image.html and dump_modify commands.  Additional
 colors can be defined with the dump_modify color command.  The 3
 numbers listed for each name are the RGB (red/green/blue) values.

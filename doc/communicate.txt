@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -43,9 +43,9 @@ For many systems this is an efficient algorithm, but for systems with
 widely varying cutoffs for different type pairs, the {multi} style can
 be faster.  In this case, each atom type is assigned its own distance
 cutoff for communication purposes, and fewer atoms will be
-communicated.  However, for granular systems optimization is 
+communicated.  However, for granular systems optimization is
 automatically performed with the {single} style, so {multi} is not
-necessary/available for granular systems. 
+necessary/available for granular systems.
 See the "neighbor multi"_neighbor.html command for a
 neighbor list construction option that may also be beneficial for
 simulations of this kind.
@@ -74,7 +74,7 @@ boundary.
 
 The appropriate ghost cutoff depends on the "newton bond"_newton.html
 setting.  For newton bond {off}, the distance needs to be the furthest
-distance between any two atoms in the bond, angle, etc.  E.g. the
+distance between any two atoms in the bond.  E.g. the
 distance between 1-4 atoms in a dihedral.  For newton bond {on}, the
 distance between the central atom in the bond, angle, etc and any
 other atom is sufficient.  E.g. the distance between 2-4 atoms in a
@@ -94,7 +94,7 @@ find the needed atoms.
 
 IMPORTANT NOTE: In these scenarios, if you do not set the ghost cutoff
 long enough, and if there is only one processor in a periodic
-dimension (e.g. you are running in serial), then LAMMPS may "find" the
+dimension (e.g. you are running in serial), then LIGGGHTS(R)-PUBLIC may "find" the
 atom it is looking for (e.g. the partner atom in a bond), that is on
 the far side of the simulation box, across a periodic boundary.  This
 will typically lead to bad dynamics (i.e. the bond length is now the

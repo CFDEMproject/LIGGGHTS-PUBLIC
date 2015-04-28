@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -126,7 +126,7 @@ format is created, else a PPM (aka NETPBM) format file is created.
 The JPG and PNG files are binary; PPM has a text mode header followed
 by binary data. JPG images have lossy compression; PNG has lossless
 compression; and PPM files are uncompressed but can be compressed with
-gzip, if LAMMPS has been compiled with -DLAMMPS_GZIP and a ".gz" suffix
+gzip, if LIGGGHTS(R)-PUBLIC has been compiled with -DLAMMPS_GZIP and a ".gz" suffix
 is used.
 </P>
 <P>Similarly, the format of the resulting movie is chosen with the
@@ -136,9 +136,9 @@ Typical examples are: .avi, .mpg, .m4v, .mp4, .mkv, .flv, .mov, .gif
 Additional settings of the movie compression like bitrate and
 framerate can be set using the <A HREF = "dump_modify.html">dump_modify</A> command.
 </P>
-<P>To write out JPEG and PNG format files, you must build LAMMPS with
+<P>To write out JPEG and PNG format files, you must build LIGGGHTS(R)-PUBLIC with
 support for the corresponding JPEG or PNG library. To convert images
-into movies, LAMMPS has to be compiled with the -DLAMMPS_FFMPEG
+into movies, LIGGGHTS(R)-PUBLIC has to be compiled with the -DLAMMPS_FFMPEG
 flag. See <A HREF = "Section_start.html#start_2_4">this section</A> of the manual
 for instructions on how to do this.
 </P>
@@ -408,7 +408,7 @@ shading is performed.
 <P>A series of JPG, PNG, or PPM images can be converted into a movie file
 and then played as a movie using commonly available tools. Using dump
 style <I>movie</I> automates this step and avoids the intermediate step of
-writing (many) image snapshot file. But LAMMPS has to be compiled with
+writing (many) image snapshot file. But LIGGGHTS(R)-PUBLIC has to be compiled with
 -DLAMMPS_FFMPEG and an FFmpeg executable have to be installed.
 </P>
 <P>To manually convert JPG, PNG or PPM files into an animated GIF or MPEG
@@ -458,7 +458,7 @@ Load the animated GIF file
 movie. Both are available for multiple OSes and support a large
 variety of file formats and decoders. 
 
-<PRE>% mplayer foo.mpg 
+<PRE>% mplayer foo.mpg
 % ffplay bar.avi 
 </PRE>
 <LI>c) Use the <A HREF = "http://www.sandia.gov/~sjplimp/pizza.html">Pizza.py</A>
@@ -477,7 +477,7 @@ supported.
 <HR>
 
 <P>See <A HREF = "Section_modify.html">Section_modify</A> of the manual for information
-on how to add new compute and fix styles to LAMMPS to calculate
+on how to add new compute and fix styles to LIGGGHTS(R)-PUBLIC to calculate
 per-atom quantities which could then be output into dump files.
 </P>
 <HR>
@@ -485,17 +485,17 @@ per-atom quantities which could then be output into dump files.
 <P><B>Restrictions:</B>
 </P>
 <P>To write JPG images, you must use the -DLAMMPS_JPEG switch when
-building LAMMPS and link with a JPEG library. To write PNG images, you
-must use the -DLAMMPS_PNG switch when building LAMMPS and link with a
+building LIGGGHTS(R)-PUBLIC and link with a JPEG library. To write PNG images, you
+must use the -DLAMMPS_PNG switch when building LIGGGHTS(R)-PUBLIC and link with a
 PNG library.
 </P>
 <P>To write <I>movie</I> dumps, you must use the -DLAMMPS_FFMPEG switch when
-building LAMMPS and have the FFmpeg executable available on the
-machine where LAMMPS is being run.
+building LIGGGHTS(R)-PUBLIC and have the FFmpeg executable available on the
+machine where LIGGGHTS(R)-PUBLIC is being run.
 </P>
-<P>See the <A HREF = "Section_start.html#start_2_4">Making LAMMPS</A> section of the
+<P>See the <A HREF = "Section_start.html#start_2_4">Making LIGGGHTS(R)-PUBLIC</A> section of the
 documentation for details on how to configure and compile optional in
-LAMMPS.
+LIGGGHTS(R)-PUBLIC.
 </P>
 <P><B>Related commands:</B>
 </P>

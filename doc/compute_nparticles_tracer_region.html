@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -29,7 +29,7 @@
 
 <LI>zero or more keyword/value pairs may be appended to args 
 
-<LI>keyword = <I>periodic</I> or <I>check_mark_every</I> 
+<LI>keyword = <I>periodic</I> or <I>reset_marker</I> 
 
 <PRE>  <I>periodic</I> value = dim image
     dim = <I>x</I> or <I>y</I> or <I>z</I>
@@ -70,8 +70,8 @@ For example, using
 <PRE>periodic z +2 
 </PRE>
 <P>means that particles are only counted if they are in z-image #2.
-By default, all particles are counted/unmarked regardless in which 
-periodic image they are. 
+By default, all particles are counted/unmarked regardless in which
+periodic image they are.
 </P>
 <P>IMPORTANT NOTE: Currently, this command only supports one periodic
 boundary restriction via the <I>periodic</I> keyword. If keyword <I>periodic</I>
@@ -79,8 +79,8 @@ is used multiple times, the last setting will be applied.
 </P>
 <P><B>Output info:</B>
 </P>
-<P>This this compute calculates a global vector containing the following information 
-(the number in brackets corresponds to the vector id): 
+<P>This this compute calculates a global vector containing the following information
+(the number in brackets corresponds to the vector id):
 </P>
 <LI><B>(1)</B> total number of (marked + un-marked) particles in region 
 
@@ -90,19 +90,19 @@ is used multiple times, the last setting will be applied.
 
 <LI><B>(4)</B> mass of marked particles in region 
 
-<P>See <A HREF = "Section_howto.html#howto_15">this section</A> for an overview of LAMMPS output
+<P>See <A HREF = "Section_howto.html#howto_8">this section</A> for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 </P>
-<P><B>Restrictions:</B> 
+<P><B>Restrictions:</B>
 </P>
-<P>Currently, only one periodic restriction via the <I>periodic</I> keyword 
+<P>Currently, only one periodic restriction via the <I>periodic</I> keyword
 can be used.
 </P>
 <P><B>Related commands:</B>
 </P>
 <P><A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>
 </P>
-<P><B>Default:</B> 
+<P><B>Default:</B>
 <I>reset_marker</I> = yes, <I>periodic</I> is off per default
 </P>
 </HTML>

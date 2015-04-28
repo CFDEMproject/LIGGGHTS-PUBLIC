@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -28,7 +28,7 @@ group each timestep.  A limit is imposed on the maximum distance an
 atom can move in one timestep.  This is useful when starting a
 simulation with a configuration containing highly overlapped atoms.
 Normally this would generate huge forces which would blow atoms out of
-the simulation box, causing LAMMPS to stop with an error.
+the simulation box, causing LIGGGHTS(R)-PUBLIC to stop with an error.
 
 Using this fix can overcome that problem.  Forces on atoms must still
 be computable (which typically means 2 atoms must have a separation
@@ -43,7 +43,7 @@ missed on successive timesteps as atoms move.  See the
 for details.
 
 If limitstyle {absolute} is used, {xmax} is applied directly.
-If limitstyle {radius_ratio} is used, a maxmimum distance per step 
+If limitstyle {radius_ratio} is used, a maxmimum distance per step
 of {xmax}*radius is applied for each atom. This can be useful for
 the simulation of poly-disperse systems. Note that this option requires
 the atom radius to be stored by using an appropriate atom style.
@@ -70,7 +70,7 @@ files"_restart.html.  None of the "fix_modify"_fix_modify.html options
 are relevant to this fix.
 
 This fix computes a global scalar which can be accessed by various
-"output commands"_Section_howto.html#howto_15.  The scalar is the
+"output commands"_Section_howto.html#howto_8.  The scalar is the
 count of how many updates of atom's velocity/position were limited by
 the maximum distance criterion.  This should be roughly the number of
 atoms so affected, except that updates occur at both the beginning and

@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -27,7 +27,7 @@ jump SELF runloop
 <P><B>Description:</B>
 </P>
 <P>This command closes the current input script file, opens the file with
-the specified name, and begins reading LAMMPS commands from that file.
+the specified name, and begins reading LIGGGHTS(R)-PUBLIC commands from that file.
 Unlike the <A HREF = "include.html">include</A> command, the original file is not
 returned to, although by using multiple jump commands it is possible
 to chain from file to file or back to the original file.
@@ -73,7 +73,7 @@ jump in.lj loop
 </PRE>
 <P>If the jump <I>file</I> argument is a variable, the jump command can be
 used to cause different processor partitions to run different input
-scripts.  In this example, LAMMPS is run on 40 processors, with 4
+scripts.  In this example, LIGGGHTS(R)-PUBLIC is run on 40 processors, with 4
 partitions of 10 procs each.  An in.file containing the example
 variable and jump command will cause each partition to run a different
 simulation.
@@ -105,7 +105,7 @@ jump	    in.script loopa
 <P><B>Restrictions:</B>
 </P>
 <P>If you jump to a file and it does not contain the specified label,
-LAMMPS will come to the end of the file and exit.
+LIGGGHTS(R)-PUBLIC will come to the end of the file and exit.
 </P>
 <P><B>Related commands:</B>
 </P>

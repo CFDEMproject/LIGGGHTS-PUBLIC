@@ -1,4 +1,4 @@
-"LIGGGHTS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_lws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(lws,http://www.cfdem.com)
 :link(ld,Manual.html)
@@ -17,7 +17,7 @@ compute ID group-ID wall/gran/local keywords ... :pre
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 pair/gran/local or wall/gran/local = style name of this compute command :l
 zero or more keywords may be appended :l
-keyword = {pos} or {vel} or {id} or {force} or {torque} or {history} or {contactArea} :l
+keyword = {pos} or {vel} or {id} or {force} or {torque} or {history} or {contactArea} or {delta}:l
   {pos} = positions of particles in contact (6 values)
   {vel} = velocities of particles in contact (6 values)
   {id} = IDs of particles in contact and a periodicity flag (3 values) or IDs of the mesh, the triangle and the particle (3 values)
@@ -25,6 +25,7 @@ keyword = {pos} or {vel} or {id} or {force} or {torque} or {history} or {contact
   {torque} = torque divided by particle diameter (3 values)
   {history} = contact history (# depends on pair style, e.g. 3 shear history values)
   {contactArea} = area of the contact (1 value)
+  {delta} = overlap of the contact (1 value)
   {heatFlux} = conductive heat flux of the contact (1 value) :pre
 :ule
 
@@ -71,10 +72,17 @@ particle radius, both in force "units"_units.html. Note that the torque
 does NOT contain any rolling friction torque. The output {history}
 will depend on what this history represents, according to the granular
 pair style used. The output {contactArea} will output the contact area,
-in distance^2 "units"_units.html. The output {heatFlux} (available only
+in distance^2 "units"_units.html. The output {delta} will output the
+overlap (sum of radii - distance between particle centers) in distance
+"units"_units.html .The output {heatFlux} (available only
 if a "fix heat/gran"_fix_heat_gran.html is used to compute  heat
 fluxes) will output the per-contact conductive heat flux area, in
 energy/time "units"_units.html.
+
+The data associated to the different keywords is output in the
+following order: {pos}, {vel}, {id}, {force}, {torque}, {history},
+{contactArea}, {heatFlux}. This is independant of the order in which
+the keywords are specified.
 
 Note that as atoms migrate from processor to processor, there will be
 no consistent ordering of the entries within the local vector or array
@@ -95,7 +103,7 @@ local vector is produced.  If two or more keywords are specified, a
 local array is produced where the number of columns = the number of
 keywords.  The vector or array can be accessed by any command that
 uses local values from a compute as input.  See "this
-section"_Section_howto.html#4_15 for an overview of LAMMPS output
+section"_Section_howto.html#4_15 for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 
 For information on the "units"_units.html of the output, see above.
@@ -112,6 +120,6 @@ For accessing particle-wall contact data, only mesh walls can be used.
 
 [Default:]
 
-By default, all of the outputs keywords (except the heat flux) are activated,
+By default, all of the outputs keywords (except the heat flux and delta) are activated,
 i.e. when no keyword is used, positions velocities, ids, forces, torques, history
 and contact area are output.

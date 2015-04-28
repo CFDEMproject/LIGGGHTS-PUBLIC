@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -20,7 +19,7 @@ seed_value = random # seed (positive integer) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
-general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {vel constant} or {vel uniform} or {vel gaussian} or {orientation} or {omega} :l
+general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {vel constant} or {vel uniform} or {vel gaussian} or {orientation} or {omega} or {set_property} :l
   {verbose} = yes or no
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)
@@ -67,7 +66,10 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
     constant = obligatory word
     omegax = x-comonent of angular velocity (1/time units)
     omegay = y-comonent of angular velocity (1/time units)
-    omegaz = z-comonent of angular velocity (1/time units) :pre
+    omegaz = z-comonent of angular velocity (1/time units)
+  {set_property} values = property-ID val
+    property-ID = ID of a "fix property/atom"_fix_property.html holding a scalar value for each particle
+    val = value to initialize the property with upon insertion  :pre
 
 following the general keyword/value section, one or more rate_region keyword/value pairs can be appended for the fix insert/rate/region command :l
 rate_region keywords = {region} or {ntry_mc} :l
@@ -84,7 +86,7 @@ fix ins all insert/rate/region seed 1001 distributiontemplate pdd1 nparticles 10
 
 [General description:]
 
-Insert particles into a granular run every few timesteps 
+Insert particles into a granular run every few timesteps
 within a specified region at a specified rate.
 
 The {verbose} keyword controlls whether statistics about particle
@@ -92,51 +94,51 @@ insertion is output to the screen each time particles are inserted.
 
 This command must use the {region} keyword to define an insertion
 volume. The specified region must have been previously defined with a
-"region"_region.html command. Dynamic regions are not supported as 
-insertion region. Each timestep particles are inserted, they are 
-placed randomly inside the insertion volume. 
+"region"_region.html command. Dynamic regions are not supported as
+insertion region. Each timestep particles are inserted, they are
+placed randomly inside the insertion volume.
 
 To specify the number of particles to be inserted, you must use either
 the {nparticles} or the {mass} keyword (but not both). In the latter
 case, the number of particles to be inserted is calculated from the
-mass expectancy given by the particle distribution. 
+mass expectancy given by the particle distribution.
 
-Likewise, you can use the {particlerate} or the {massrate} keyword (but not both) 
-to control the insertion rate. 
+Likewise, you can use the {particlerate} or the {massrate} keyword (but not both)
+to control the insertion rate.
 
-The frequency of the particle insertion is controlled by the 
-keyword {insert_every}, which defines the number of time-steps 
+The frequency of the particle insertion is controlled by the
+keyword {insert_every}, which defines the number of time-steps
 between two insertions. The number of particles to be inserted
-at each insertion event is calculated from the insertion rate 
-and {insert_every}. The {start} keyword can be used to set 
+at each insertion event is calculated from the insertion rate
+and {insert_every}. The {start} keyword can be used to set
 the time-step at which the insertion should start.
 
-This command must use the distributiontemplate keyword to refer to a 
-"fix_particledistribution_discrete"_fix_particledistribution_discrete.html (defined by dist-fix-ID) that defines the properties of the 
+This command must use the distributiontemplate keyword to refer to a
+"fix_particledistribution_discrete"_fix_particledistribution_discrete.html (defined by dist-fix-ID) that defines the properties of the
 inserted particles.
 
-Inserted particles are assigned the atom type specified by the 
+Inserted particles are assigned the atom type specified by the
 particledistribution defined via the "fix_particledistribution_discrete"_fix_particledistribution_discrete.html and
 are assigned to 4 groups: the default group "all" and the group
-specified in the fix insert command, as well as the groups specified 
+specified in the fix insert command, as well as the groups specified
 in the "fix_particledistribution_discrete"_fix_particledistribution_discrete.html and "fix_particletemplate_sphere"_fix_particletemplate_sphere.html
 command (all of which can also be "all").
 
 The keyword {overlapcheck} controls if overlap is checked for at insertion,
-both within the inserted particle package and with other existig particles. 
-If this option is turned off, insertion will scale very well in parallel, 
+both within the inserted particle package and with other existig particles.
+If this option is turned off, insertion will scale very well in parallel,
 otherwise not. Be aware that in case of no overlap check, highly overlapping
 configurations will be produced, so you will have to relax these configurations.
 
-If overlapcheck if performed, the number of insertion attempts per 
-particle can be specified via the {maxattempt} keyword. Each timestep 
-particles are inserted, the command will make up to a total of M tries 
-to insert the new particles without overlaps, where 
-M = # of inserted particles * ma.  If unsuccessful at completing all 
+If overlapcheck if performed, the number of insertion attempts per
+particle can be specified via the {maxattempt} keyword. Each timestep
+particles are inserted, the command will make up to a total of M tries
+to insert the new particles without overlaps, where
+M = # of inserted particles * ma.  If unsuccessful at completing all
 insertions, a warning will be printed.
 
-The {all_in} flag determines if the particle is completely contained 
-in the insertion region ({all_in yes}) or only the particle center 
+The {all_in} flag determines if the particle is completely contained
+in the insertion region ({all_in yes}) or only the particle center
 ({all_in no}). Currently {all_in yes} is not yet supported for all
 types of insertion.
 
@@ -147,29 +149,33 @@ the number of particles to be inserted each step is matched exactly.
 For style {uncorrelated}, the number of particles to be inserted
 for each particle template will be rounded in an uncorrelated way,
 so the total number of inserted particles may vary for each insertion
-step. However, statistically both ways should produce the same 
-result. Style {uncorrelated} may be faster in parallel since it 
+step. However, statistically both ways should produce the same
+result. Style {uncorrelated} may be faster in parallel since it
 does not need global MPI operations.
 Please note that if the # of particles to be inserted is calculated
 e.g. from a particle mass to be inserted, the number of particles
 to be inserted each insertion step will vary by 1, irrespective of
 the {random_distribute} settings. This is because in this case the
 # of particles to insert in each step will be a floating point number,
-and applying a simple floor/ceil rounding operation would lead to a 
+and applying a simple floor/ceil rounding operation would lead to a
 statistical bias.
 
 The initial velocity and rotational velocity can be controlled via the
-{vel} and {omega} keywords. {vel constant} simply patches a constant 
-velocity to the inserted particles, {vel uniform} sets uniformly distributed 
-velocities with mean and amplitude. {vel gaussian} sets Gaussian 
+{vel} and {omega} keywords. {vel constant} simply patches a constant
+velocity to the inserted particles, {vel uniform} sets uniformly distributed
+velocities with mean and amplitude. {vel gaussian} sets Gaussian
 distributed particle velocities with mean and std. deviation.
+
+The {set_property} option can be used to initialize scalar per-particle
+properties such as temperatures, which are stored in a 
+a "fix property/atom"_fix_property.html.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
 Information about this fix is written to "binary restart
-files"_restart.html.  This means you can restart a simulation simulation
+files"_restart.html.  This means you can restart a simulation
 while inserting particles, when the restart file was written during the
-insertion operation. 
+insertion operation.
 
 None of the "fix_modify"_fix_modify.html options are relevant to this
 fix.  A global vector is stored by this fix for access by various "output
@@ -183,8 +189,11 @@ This fix is not invoked during "energy minimization"_minimize.html.
 
 The {overlapcheck} = 'yes' option performs an inherently serial operation
 and will thus not scale well in parallel. For this reason, if you
-want to generate large systems, you are advised to turn {overlapcheck} 
+want to generate large systems, you are advised to turn {overlapcheck}
 off and let the packing relax afterwards to generate a valid packing.
+
+Option {all_in} = 'yes' will not work if the "region"_region.html used
+is a tet mesh region.
 
 Keywords {duration} and {extrude_length} can not be used together.
 
@@ -194,9 +203,8 @@ Dynamic regions are not supported as insertion region.
 
 [Related commands:]
 
-"fix_insert_stream"_fix_insert_stream.html, "fix_insert_pack"_fix_insert_pack.html,
-"fix_deposit"_fix_deposit.html, "fix_gravity"_fix_gravity.html,
-"region"_region.html, "fix_pour_dev"_fix_pour_dev.html, "fix_pour"_fix_pour.html
+"fix_insert_stream"_fix_insert_stream.html, "fix_insert_pack"_fix_insert_pack.html, 
+"fix_gravity"_fix_gravity.html, "region"_region.html
 
 [Default:]
 

@@ -1,33 +1,45 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #ifdef NORMAL_MODEL
 NORMAL_MODEL(HOOKE_HYSTERESIS,hooke/hysteresis,2)
 #else
@@ -47,7 +59,7 @@ namespace ContactModels
   class NormalModel<HOOKE_HYSTERESIS> : protected NormalModel<HOOKE>
   {
   public:
-    static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_COLLISION | CM_NO_COLLISION;
+    static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
 
     NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup) : NormalModel<HOOKE>(lmp, hsetup),
         kn2k2Max(NULL),
@@ -85,7 +97,7 @@ namespace ContactModels
       return 1.;
     }
 
-    inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)
+    inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
       // use these values from HOOKE implementation
       bool & viscous = NormalModel<HOOKE>::viscous;
@@ -94,13 +106,13 @@ namespace ContactModels
       bool & tangential_damping = NormalModel<HOOKE>::tangential_damping;
       Force * & force = NormalModel<HOOKE>::force;
 
-      const int itype = cdata.itype;
-      const int jtype = cdata.jtype;
-      const double deltan = cdata.deltan;
-      double ri = cdata.radi;
-      double rj = cdata.radj;
-      double reff=cdata.is_wall ? cdata.radi : (ri*rj/(ri+rj));
-      double meff=cdata.meff;
+      const int itype = sidata.itype;
+      const int jtype = sidata.jtype;
+      const double deltan = sidata.deltan;
+      double ri = sidata.radi;
+      double rj = sidata.radj;
+      double reff=sidata.is_wall ? sidata.radi : (ri*rj/(ri+rj));
+      double meff=sidata.meff;
       double coeffRestLogChosen;
 
       if (viscous)  {
@@ -108,7 +120,7 @@ namespace ContactModels
         double ** & coeffRestMax = NormalModel<HOOKE>::coeffRestMax;
         double ** & coeffStc = NormalModel<HOOKE>::coeffStc;
         // Stokes Number from MW Schmeeckle (2001)
-        const double stokes=cdata.meff*cdata.vn/(6.0*M_PI*coeffMu[itype][jtype]*reff*reff);
+        const double stokes=sidata.meff*sidata.vn/(6.0*M_PI*coeffMu[itype][jtype]*reff*reff);
         // Empirical from Legendre (2006)
         coeffRestLogChosen=log(coeffRestMax[itype][jtype])+coeffStc[itype][jtype]/stokes;
       } else {
@@ -132,14 +144,12 @@ namespace ContactModels
       const double kc = kn * kn2kc[itype][jtype]; 
 
       // get the history value -- maximal overlap
-      if(cdata.touch) *cdata.touch |= TOUCH_NORMAL_MODEL;
-      double * const history = &cdata.contact_history[history_offset];
-      double deltaMax; // the 4th value of the history array is deltaMax
+      if(sidata.contact_flags) *sidata.contact_flags |= CONTACT_NORMAL_MODEL;
+      double * const history = &sidata.contact_history[history_offset];
       if (deltan > history[0]) {
           history[0] = deltan;
-          deltaMax = deltan;
-      } else
-          deltaMax = history[0];
+      }
+      const double deltaMax = history[0]; // the 1st value of the history array is deltaMax
 
       // k2 dependent on the maximum overlap
       // this accounts for an increasing stiffness with deformation
@@ -174,25 +184,25 @@ namespace ContactModels
           }
       }
 
-      const double Fn_damping = -gamman*cdata.vn;
+      const double Fn_damping = -gamman*sidata.vn;
       const double Fn = fHys + Fn_damping;
 
-      cdata.Fn = Fn;
-      cdata.kn = kn;
-      cdata.kt = kt;
-      cdata.gamman = gamman;
-      cdata.gammat = gammat;
+      sidata.Fn = Fn;
+      sidata.kn = kn;
+      sidata.kt = kt;
+      sidata.gamman = gamman;
+      sidata.gammat = gammat;
 
       // apply normal force
-      if(cdata.is_wall) {
-        const double Fn_ = Fn * cdata.area_ratio;
-        i_forces.delta_F[0] = Fn_ * cdata.en[0];
-        i_forces.delta_F[1] = Fn_ * cdata.en[1];
-        i_forces.delta_F[2] = Fn_ * cdata.en[2];
+      if(sidata.is_wall) {
+        const double Fn_ = Fn * sidata.area_ratio;
+        i_forces.delta_F[0] = Fn_ * sidata.en[0];
+        i_forces.delta_F[1] = Fn_ * sidata.en[1];
+        i_forces.delta_F[2] = Fn_ * sidata.en[2];
       } else {
-        i_forces.delta_F[0] = cdata.Fn * cdata.en[0];
-        i_forces.delta_F[1] = cdata.Fn * cdata.en[1];
-        i_forces.delta_F[2] = cdata.Fn * cdata.en[2];
+        i_forces.delta_F[0] = sidata.Fn * sidata.en[0];
+        i_forces.delta_F[1] = sidata.Fn * sidata.en[1];
+        i_forces.delta_F[2] = sidata.Fn * sidata.en[2];
 
         j_forces.delta_F[0] = -i_forces.delta_F[0];
         j_forces.delta_F[1] = -i_forces.delta_F[1];
@@ -200,15 +210,15 @@ namespace ContactModels
       }
     }
 
-    inline void noCollision(ContactData & cdata, ForceData&, ForceData&)
+    inline void surfacesClose(SurfacesCloseData & scdata, ForceData&, ForceData&)
     {
-      if(cdata.touch) *cdata.touch &= ~TOUCH_NORMAL_MODEL;
-      double * const history = &cdata.contact_history[history_offset];
+      if(scdata.contact_flags) *scdata.contact_flags &= ~CONTACT_NORMAL_MODEL;
+      double * const history = &scdata.contact_history[history_offset];
       history[0] = 0.0;
     }
 
-    void beginPass(CollisionData&, ForceData&, ForceData&){}
-    void endPass(CollisionData&, ForceData&, ForceData&){}
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
 
   protected:
     double **kn2k2Max;

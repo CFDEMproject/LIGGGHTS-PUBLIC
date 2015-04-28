@@ -1,27 +1,43 @@
 
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -73,14 +89,13 @@ class FixParticledistributionDiscrete : public Fix {
   void random_init_list(int);
   int randomize_list(int,int,int);     
 
-  void finalize_insertion();
-
   class ParticleToInsert *pti;
-
   class ParticleToInsert **pti_list;
   int n_pti, n_pti_max;
-  void pre_insert();
+
+  void pre_insert(int n,class FixPropertyAtom *fp = 0,double val = 0.);
   int insert(int n);
+  void finalize_insertion();
 
   inline int n_particletemplates()
   { return ntemplates; }
@@ -98,12 +113,12 @@ class FixParticledistributionDiscrete : public Fix {
   int iarg;
 
   // particle templates
-  int ntemplates;
-  double *distweight;
-  double *cumweight;
-  int *parttogen;
-  int *distorder;
-  class FixTemplateSphere **templates;
+  int ntemplates;       
+  double *distweight;   
+  double *cumweight;    
+  int *parttogen;       
+  int *distorder;       
+  class FixTemplateSphere **templates; 
 
   // mass and volume expectancy of this discrete distribution
   double volexpect;
@@ -113,10 +128,10 @@ class FixParticledistributionDiscrete : public Fix {
   int maxtype;
   int mintype;
 
-  // maximum number of spheres a template has
+  // maximum number of spheres of all templates
   int maxnspheres;
 
-  // maximum radius and bounding sphere radius
+  // maximum radius and bounding sphere radius of all templates
   double minrad,maxrad,maxrbound;
 };
 

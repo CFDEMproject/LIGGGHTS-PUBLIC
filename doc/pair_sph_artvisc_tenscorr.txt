@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -33,13 +32,11 @@ keyword = {artVisc} or {tensCorr} :ul
 pair_style sph/artVisc/tensCorr wendland 0.001 artVisc 1e-4 0 1e-8
 pair_style sph/artVisc/tensCorr cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0.2 1e-2 :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
 
-This command is not available in LAMMPS.
 
 [Description:]
 
-The {sph/artVisc/tensCorr} style uses the smoothed particle hydrodynamics (SPH) method according to Monaghan "(1992)"_#Monaghan1992. The acting force is calculated from the acceleration as stated in the equation: 
+The {sph/artVisc/tensCorr} style uses the smoothed particle hydrodynamics (SPH) method according to Monaghan "(1992)"_#Monaghan1992. The acting force is calculated from the acceleration as stated in the equation:
 
 :c,image(Eqs/pair_sph_artvisc_tenscorr_eq1.jpg)
 
@@ -49,7 +46,7 @@ For kernelstyle cubicspline a piecewise defined, 3-order kernel is used:
 
 :c,image(Eqs/pair_sph_artvisc_tenscorr_eq2.jpg)
 
-The wendland kernel (Wendland,1995) is defined as 
+The wendland kernel (Wendland,1995) is defined as
 
 :c,image(Eqs/pair_sph_artvisc_tenscorr_eq3.jpg)
 
@@ -57,13 +54,13 @@ The smoothing length h is the most important parameter for SPH-calculations. It 
 
 :c,image(Eqs/pair_sph_artvisc_tenscorr_eq4.jpg)
 
-The atom style {sph/var} uses the input argument h as initial smoothing length for all particles. In case the atom style {sph} (per-type smoothing length) is used an additional per-type property {sl} must be defined, e.g., 
+The atom style {sph/var} uses the input argument h as initial smoothing length for all particles. In case the atom style {sph} (per-type smoothing length) is used an additional per-type property {sl} must be defined, e.g.,
 
 fix           m2 all property/global sl peratomtype 0.0012 :pre
 
 For further details on the basics of the SPH-method we recommend the papers from Monaghan "(1992)"_#Monaghan1992, "(1994)"_#Monaghan1994, etc.
 
-Optionally, this pairstyle can take into account the artificial viscosity proposed my Monaghan (1985), if the artVisc keyword is appended. In this case, &#928;<sub>ab</sub> is added to the bracket term in the above acceleration equation, where &#928;<sub>ab</sub> is given by 
+Optionally, this pairstyle can take into account the artificial viscosity proposed my Monaghan (1985), if the artVisc keyword is appended. In this case, &#928;<sub>ab</sub> is added to the bracket term in the above acceleration equation, where &#928;<sub>ab</sub> is given by
 
 :c,image(Eqs/pair_sph_artvisc_tenscorr_eq5.jpg)
 
@@ -72,12 +69,12 @@ and
 :c,image(Eqs/pair_sph_artvisc_tenscorr_eq6.jpg)
 
 This expression produces a shear and bulk viscosity. The quadratic term enables simulation of high Mach number shocks. The parameter &#951;<sup>2</sup> prevents singularities. A good choice is normally &#951;<sup>2</sup>=0.01h<sup>2</sup>. :b
-The choice of &#945; and &#946; should not be critical, although there are some aspects which you should take into account: 
+The choice of &#945; and &#946; should not be critical, although there are some aspects which you should take into account:
 
   "In the present case, with negligible changes in the density \[weakly compressible SPH\], the viscosity is almost entirely shear viscosity with a viscosity coefficient approximately &#945;hc." "(Monaghan, 1994)"_#Monaghan1994 :p
 
 Bar-parameters like c<sub>ab</sub> and &#961;<sub>ab</sub> are mean values of particle a and b.
-NOTE: &#961;<sub>ab</sub> is calculated, and for the calculation of c<sub>ab</sub> the per-type property {speedOfSound} has to be defined, e.g., 
+NOTE: &#961;<sub>ab</sub> is calculated, and for the calculation of c<sub>ab</sub> the per-type property {speedOfSound} has to be defined, e.g.,
 
 fix 		      m1 all property/global speedOfSound peratomtype 20. :pre
 
@@ -132,5 +129,5 @@ These pair styles can only be used via the {pair} keyword of the
 [(Monaghan, 1994)] J. J. Monaghan, Journal of Computational Physics, 110, p. 399-406 (1994).
 
 :link(Monaghan2000)
-[(Monaghan, 2000)] J. J. Monaghan, Journal of Computational Physics, 159, p. 290-311 (2000). 
+[(Monaghan, 2000)] J. J. Monaghan, Journal of Computational Physics, 159, p. 290-311 (2000).
 

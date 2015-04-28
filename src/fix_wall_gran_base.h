@@ -1,32 +1,43 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_FIX_WALL_GRAN_BASE_H
@@ -36,6 +47,7 @@
 #include "fix_contact_property_atom_wall.h"
 #include "contact_interface.h"
 #include "compute_pair_gran_local.h"
+#include "tri_mesh.h"
 #include "settings.h"
 #include "string.h"
 #include "force.h"
@@ -109,9 +121,9 @@ public:
     }
   }
 
-  virtual void compute_force(FixWallGran * wg, CollisionData & cdata, double *vwall)
+  virtual void compute_force(FixWallGran * wg, SurfacesIntersectData & sidata, double *vwall, class TriMesh *mesh = 0,int iTri = 0)
   {
-    const int ip = cdata.i;
+    const int ip = sidata.i;
 
     double *f = atom->f[ip];
     double *torque = atom->torque[ip];
@@ -124,45 +136,45 @@ public:
     if(wg->fix_rigid() && wg->body(ip) >= 0)
       mass = wg->masstotal(wg->body(ip));
 
-    const double r = cdata.r;
+    const double r = sidata.r;
     const double rinv = 1.0/r;
 
-    const double enx = cdata.delta[0] * rinv;
-    const double eny = cdata.delta[1] * rinv;
-    const double enz = cdata.delta[2] * rinv;
+    const double enx = sidata.delta[0] * rinv;
+    const double eny = sidata.delta[1] * rinv;
+    const double enz = sidata.delta[2] * rinv;
 
     // copy collision data to struct (compiler can figure out a better way to
     // interleave these stores with the double calculations above.
     ForceData i_forces;
     ForceData j_forces;
-    cdata.v_i = v;
-    cdata.v_j = vwall;
-    cdata.omega_i = omega;
-    cdata.en[0] = enx;
-    cdata.en[1] = eny;
-    cdata.en[2] = enz;
-    cdata.i = ip;
-    cdata.radi = radius;
-    cdata.touch = NULL;
-    cdata.itype = type[ip];
+    sidata.v_i = v;
+    sidata.v_j = vwall;
+    sidata.omega_i = omega;
+    sidata.en[0] = enx;
+    sidata.en[1] = eny;
+    sidata.en[2] = enz;
+    sidata.i = ip;
+    sidata.radi = radius;
+    sidata.contact_flags = NULL;
+    sidata.itype = type[ip];
 
-    cdata.r = r;
-    cdata.rinv = rinv;
-    cdata.radsum = radius;
-    cdata.mi = mass;
+    sidata.r = r;
+    sidata.rinv = rinv;
+    sidata.radsum = radius;
+    sidata.mi = mass;
 
-    cmodel.collision(cdata, i_forces, j_forces);
+    cmodel.surfacesIntersect(sidata, i_forces, j_forces);
 
-    if(cdata.computeflag) {
+    if(sidata.computeflag) {
       force_update(f, torque, i_forces);
     }
 
     if (wg->store_force_contact()) {
-      wg->add_contactforce_wall(ip,i_forces);
+      wg->add_contactforce_wall(ip,i_forces,mesh?mesh->id(iTri):0);
     }
 
     if(wg->compute_pair_gran_local() && wg->addflag()) {
-      wg->cwl_add_wall_2(cdata, i_forces);
+      wg->cwl_add_wall_2(sidata, i_forces);
     }
   }
 };

@@ -1,28 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
@@ -36,7 +60,6 @@
 #include "atom_vec.h"
 #include "atom_vec_ellipsoid.h"
 #include "atom_vec_line.h"
-#include "atom_vec_tri.h"
 #include "comm.h"
 #include "update.h"
 #include "modify.h"
@@ -85,10 +108,6 @@ ReadData::ReadData(LAMMPS *lmp) : Pointers(lmp)
   avec_ellipsoid = (AtomVecEllipsoid *) atom->style_match("ellipsoid");
   nlines = 0;
   avec_line = (AtomVecLine *) atom->style_match("line");
-  ntris = 0;
-  avec_tri = (AtomVecTri *) atom->style_match("tri");
-  nbodies = 0;
-  avec_body = (AtomVecBody *) atom->style_match("body");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -270,17 +289,6 @@ void ReadData::command(int narg, char **arg)
         error->all(FLERR,"Invalid data file section: Lines");
       if (atomflag == 0) error->all(FLERR,"Must read Atoms before Lines");
       bonus(nlines,(AtomVec *) avec_line,"lines");
-    } else if (strcmp(keyword,"Triangles") == 0) {
-      if (!avec_tri)
-        error->all(FLERR,"Invalid data file section: Triangles");
-      if (atomflag == 0) error->all(FLERR,"Must read Atoms before Triangles");
-      bonus(ntris,(AtomVec *) avec_tri,"triangles");
-    } else if (strcmp(keyword,"Bodies") == 0) {
-      if (!avec_body)
-        error->all(FLERR,"Invalid data file section: Bodies");
-      if (atomflag == 0) error->all(FLERR,"Must read Atoms before Bodies");
-      bodies();
-
     } else if (strcmp(keyword,"Bonds") == 0) {
       if (atom->avec->bonds_allow == 0)
         error->all(FLERR,"Invalid data file section: Bonds");
@@ -517,16 +525,7 @@ void ReadData::header(int flag, int add)
           if (!avec_line && me == 0)
             error->one(FLERR,"No lines allowed with this atom style");
           sscanf(line,BIGINT_FORMAT,&nlines);
-        } else if (strstr(line,"triangles")) {
-          if (!avec_tri && me == 0)
-            error->one(FLERR,"No triangles allowed with this atom style");
-          sscanf(line,BIGINT_FORMAT,&ntris);
-        } else if (strstr(line,"bodies")) {
-          if (!avec_body && me == 0)
-            error->one(FLERR,"No bodies allowed with this atom style");
-          sscanf(line,BIGINT_FORMAT,&nbodies);
         }
-
         else if (strstr(line,"bonds")) sscanf(line,BIGINT_FORMAT,&atom->nbonds);
         else if (strstr(line,"angles")) sscanf(line,BIGINT_FORMAT,&atom->nangles);
         else if (strstr(line,"dihedrals")) sscanf(line,BIGINT_FORMAT,
@@ -855,83 +854,6 @@ void ReadData::bonus(bigint nbonus, AtomVec *ptr, const char *type)
     if (me == 0) {
     if (screen) fprintf(screen,"  " BIGINT_FORMAT " %s\n",natoms,type);
     if (logfile) fprintf(logfile,"  " BIGINT_FORMAT " %s\n",natoms,type);
-  }
-}
-
-/* ----------------------------------------------------------------------
-   read all body data
-   variable amount of info per body, described by ninteger and ndouble
-   to find atoms, must build atom map if not a molecular system
-------------------------------------------------------------------------- */
-
-void ReadData::bodies()
-{
-  int i,m,nchunk,nmax,ninteger,ndouble,tmp,onebody;
-      char *eof;
-  int mapflag = 0;
-  if (atom->map_style == 0) {
-    mapflag = 1;
-    atom->map_style = 1;
-    atom->map_init();
-    atom->map_set();
-  }
-
-  // nmax = max # of bodies to read in this chunk
-  // nchunk = actual # read
-
-  bigint nread = 0;
-  bigint natoms = nbodies;
-
-  while (nread < natoms) {
-    if (natoms-nread > CHUNK) nmax = CHUNK;
-    else nmax = natoms-nread;
-
-    if (me == 0) {
-      nchunk = 0;
-      nlines = 0;
-      m = 0;
-      while (nchunk < nmax && nlines <= CHUNK-MAXBODY) {
-        eof = fgets(&buffer[m],MAXLINE,fp);
-        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-        sscanf(&buffer[m],"%d %d %d",&tmp,&ninteger,&ndouble);
-        m += strlen(&buffer[m]);
-
-        onebody = 0;
-        if (ninteger) onebody += (ninteger-1)/10 + 1;
-        if (ndouble) onebody += (ndouble-1)/10 + 1;
-        if (onebody+1 > MAXBODY)
-          error->one(FLERR,
-                     "Too many lines in one body in data file - boost MAXBODY");
-
-        for (i = 0; i < onebody; i++) {
-        eof = fgets(&buffer[m],MAXLINE,fp);
-        if (eof == NULL) error->one(FLERR,"Unexpected end of data file");
-        m += strlen(&buffer[m]);
-      }
-        nchunk++;
-        nlines += onebody+1;
-      }
-
-      if (buffer[m-1] != '\n') strcpy(&buffer[m++],"\n");
-      m++;
-    }
-
-    MPI_Bcast(&nchunk,1,MPI_INT,0,world);
-    MPI_Bcast(&m,1,MPI_INT,0,world);
-    MPI_Bcast(buffer,m,MPI_CHAR,0,world);
-
-    atom->data_bodies(nchunk,buffer,avec_body);
-    nread += nchunk;
-  }
-
-  if (mapflag) {
-    atom->map_delete();
-    atom->map_style = 0;
-  }
-
-  if (me == 0) {
-    if (screen) fprintf(screen,"  " BIGINT_FORMAT " bodies\n",natoms);
-    if (logfile) fprintf(logfile,"  " BIGINT_FORMAT " bodies\n",natoms);
   }
 }
 
@@ -1320,15 +1242,6 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
       if (!avec_line) error->one(FLERR,"Invalid data file section: Lines");
       line_flag = 1;
       skip_lines(nlines);
-    } else if (strcmp(keyword,"Triangles") == 0) {
-      if (!avec_tri) error->one(FLERR,"Invalid data file section: Triangles");
-      tri_flag = 1;
-      skip_lines(ntris);
-    } else if (strcmp(keyword,"Bodies") == 0) {
-      if (!avec_body) error->one(FLERR,"Invalid data file section: Bodies");
-      body_flag = 1;
-      skip_lines(nbodies);
-
     } else if (strcmp(keyword,"Pair Coeffs") == 0) {
       if (force->pair == NULL)
         error->one(FLERR,"Must define pair_style before Pair Coeffs");
@@ -1560,10 +1473,6 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
   if (nellipsoids && !ellipsoid_flag)
     error->one(FLERR,"Needed bonus data not in data file");
   if (nlines && !line_flag)
-    error->one(FLERR,"Needed bonus data not in data file");
-  if (ntris && !tri_flag)
-    error->one(FLERR,"Needed bonus data not in data file");
-  if (nbodies && !body_flag)
     error->one(FLERR,"Needed bonus data not in data file");
 }
 

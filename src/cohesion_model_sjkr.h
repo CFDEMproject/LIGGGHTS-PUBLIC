@@ -1,38 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #ifdef COHESION_MODEL
 COHESION_MODEL(COHESION_SJKR,sjkr,1)
 #else
+
 #ifndef COHESION_MODEL_SJKR_H_
 #define COHESION_MODEL_SJKR_H_
+
 #include "contact_models.h"
 #include "math.h"
 
@@ -44,7 +58,7 @@ namespace ContactModels {
   template<>
   class CohesionModel<COHESION_SJKR> : protected Pointers {
   public:
-    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
+    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
     CohesionModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp), cohEnergyDens(NULL)
     {
@@ -62,33 +76,33 @@ namespace ContactModels {
         error->cg(FLERR,"cohesion model sjkr");
     }
 
-    void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)
+    void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
       //r is the distance between the sphere's centers
-      const double r = cdata.r;
-      const double ri = cdata.radi;
-      const double rj = cdata.radj;
+      const double r = sidata.r;
+      const double ri = sidata.radi;
+      const double rj = sidata.radj;
 
       double Acont;
-      if(cdata.is_wall)
-        Acont = (ri*ri-r*r)*M_PI*cdata.area_ratio; //contact area sphere-wall
+      if(sidata.is_wall)
+        Acont = (ri*ri-r*r)*M_PI*sidata.area_ratio; //contact area sphere-wall
       else
         Acont = - M_PI/4 * ( (r-ri-rj)*(r+ri-rj)*(r-ri+rj)*(r+ri+rj) )/(r*r); //contact area of the two spheres
-      const double Fn_coh = -cohEnergyDens[cdata.itype][cdata.jtype]*Acont;
-      cdata.Fn += Fn_coh;
+      const double Fn_coh = -cohEnergyDens[sidata.itype][sidata.jtype]*Acont;
+      sidata.Fn += Fn_coh;
 
-      if(cdata.touch) *cdata.touch |= TOUCH_COHESION_MODEL;
+      if(sidata.contact_flags) *sidata.contact_flags |= CONTACT_COHESION_MODEL;
 
       // apply normal force
-      if(cdata.is_wall) {
-        const double Fn_ = Fn_coh * cdata.area_ratio;
-        i_forces.delta_F[0] += Fn_ * cdata.en[0];
-        i_forces.delta_F[1] += Fn_ * cdata.en[1];
-        i_forces.delta_F[2] += Fn_ * cdata.en[2];
+      if(sidata.is_wall) {
+        const double Fn_ = Fn_coh * sidata.area_ratio;
+        i_forces.delta_F[0] += Fn_ * sidata.en[0];
+        i_forces.delta_F[1] += Fn_ * sidata.en[1];
+        i_forces.delta_F[2] += Fn_ * sidata.en[2];
       } else {
-        const double fx = Fn_coh * cdata.en[0];
-        const double fy = Fn_coh * cdata.en[1];
-        const double fz = Fn_coh * cdata.en[2];
+        const double fx = Fn_coh * sidata.en[0];
+        const double fy = Fn_coh * sidata.en[1];
+        const double fz = Fn_coh * sidata.en[2];
 
         i_forces.delta_F[0] += fx;
         i_forces.delta_F[1] += fy;
@@ -100,11 +114,13 @@ namespace ContactModels {
       }
     }
 
-    void beginPass(CollisionData&, ForceData&, ForceData&){}
-    void endPass(CollisionData&, ForceData&, ForceData&){}
-    void noCollision(ContactData& cdata, ForceData&, ForceData&)
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+
+    void surfacesClose(SurfacesCloseData& scdata, ForceData&, ForceData&)
     {
-        if(cdata.touch) *cdata.touch &= ~TOUCH_COHESION_MODEL;
+        if(scdata.contact_flags) *scdata.contact_flags &= ~CONTACT_COHESION_MODEL;
+
     }
 
   private:

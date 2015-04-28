@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -45,32 +43,28 @@
 </P>
 <PRE>fix tracer all property/atom/tracer region_mark mark mark_step 10000 marker_style dirac check_mark_every 10 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This LIGGGHTS command is not available in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P>Fix property/atom/tracer marks particles using either a Dirac delta 
-impulse (default) or a Heaviside impulse, as specified by the 
+<P>Fix property/atom/tracer marks particles using either a Dirac delta
+impulse (default) or a Heaviside impulse, as specified by the
 <I>marker_style</I> keyword. Particles are marked if they are inside the region
-specified by the <I>region_mark</I> keyword. Using the Dirac impulse means that all the 
-particles which are in the region at the time-step specified by the 
-<I>mark_step</I> keyword are marked. Using the Heaviside impulse means that all 
+specified by the <I>region_mark</I> keyword. Using the Dirac impulse means that all the
+particles which are in the region at the time-step specified by the
+<I>mark_step</I> keyword are marked. Using the Heaviside impulse means that all
 the particles which pass by the specified region after the specified time-step
 are marked.
 </P>
-<P>Keyword <I>check_mark_every</I> can be used to control how often the region 
-is checked. Typically, this is useful when the <I>heaviside</I> option is 
+<P>Keyword <I>check_mark_every</I> can be used to control how often the region
+is checked. Typically, this is useful when the <I>heaviside</I> option is
 used, because you may not want to check each particle each time-step.
 However, be careful not to choose this value too large, in this case
 you could skip particles passing through the region.
 </P>
-<P>It is useful to combine this command with a 
-<A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A> 
+<P>It is useful to combine this command with a
+<A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A>
 command to compute residence time distributions.
 </P>
-<P>IMPORTANT NOTE: Using <A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A> 
+<P>IMPORTANT NOTE: Using <A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A>
 can change the tracer value (keyword <B>reset_marker</B>.)
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
@@ -78,20 +72,20 @@ can change the tracer value (keyword <B>reset_marker</B>.)
 <P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> .
 </P>
 <P>This fix computes a per-atom vector (the marker) which can be accessed by
-various <A HREF = "Section_howto.html#howto_15">output commands</A>. . 
+various <A HREF = "Section_howto.html#howto_8">output commands</A>. .
 This fix also computes a global scalar indicating how many particles were
 marked since the last time the global scalar was computed. This scalar
-can also be accessed by various <A HREF = "Section_howto.html#howto_15">output commands</A>. . 
+can also be accessed by various <A HREF = "Section_howto.html#howto_8">output commands</A>. .
 </P>
-<P><B>Restrictions:</B> 
+<P><B>Restrictions:</B>
 </P>
 <P>Currently, this feature does not support multi-sphere particles.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A> 
+<P><A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A>
 </P>
-<P><B>Default:</B> 
+<P><B>Default:</B>
 </P>
 <P><I>marker_style</I> = dirac, check_mark_every = 10
 </P>

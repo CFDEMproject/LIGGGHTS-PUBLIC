@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -13,18 +12,12 @@ gran rolling_friction cdt :h3
 
 rolling_friction cdt :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This part of "pair gran"_pair_gran.html and 
-"fix wall/gran"_fix_wall_gran.html
-is not availabe in LAMMPS.
-
 [Description:]
 
-This model can be used as part of "pair gran"_pair_gran.html and 
+This model can be used as part of "pair gran"_pair_gran.html and
 "fix wall/gran"_fix_wall_gran.html
 
-The constant directional torque (CDT) model adds an additional torque 
+The constant directional torque (CDT) model adds an additional torque
 contribution, equal to
 
 torque_rf = rmu*k_n*delta_n*w_r_shear/mag(w_r_shear)*(R*).

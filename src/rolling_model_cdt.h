@@ -1,33 +1,45 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #ifdef ROLLING_MODEL
 ROLLING_MODEL(ROLLING_CDT,cdt,1)
 #else
@@ -46,7 +58,7 @@ namespace ContactModels
   template<>
   class RollingModel<ROLLING_CDT> : protected Pointers {
   public:
-    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
+    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
     RollingModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp), coeffRollFrict(NULL)
     {
@@ -65,29 +77,29 @@ namespace ContactModels
         error->cg(FLERR,"rolling model cdt");
     }
 
-    void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) 
+    void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces) 
     {
-      const double rmu= coeffRollFrict[cdata.itype][cdata.jtype];
+      const double rmu = coeffRollFrict[sidata.itype][sidata.jtype];
 
       double r_torque[3], wr_roll[3];
       vectorZeroize3D(r_torque);
 
-      if(cdata.is_wall){
-        const double wr1 = cdata.wr1;
-        const double wr2 = cdata.wr2;
-        const double wr3 = cdata.wr3;
+      if(sidata.is_wall){
+        const double wr1 = sidata.wr1;
+        const double wr2 = sidata.wr2;
+        const double wr3 = sidata.wr3;
         const double wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
         if (wrmag > 0.)
         {
-          const double radius = cdata.radi;
-          const double kn = cdata.kn;
-          const double enx = cdata.en[0];
-          const double eny = cdata.en[1];
-          const double enz = cdata.en[2];
+          const double radius = sidata.radi;
+          const double kn = sidata.kn;
+          const double enx = sidata.en[0];
+          const double eny = sidata.en[1];
+          const double enz = sidata.en[2];
 
-          r_torque[0] = rmu*kn*(radius-cdata.r)*wr1/wrmag*cdata.cri;
-          r_torque[1] = rmu*kn*(radius-cdata.r)*wr2/wrmag*cdata.cri;
-          r_torque[2] = rmu*kn*(radius-cdata.r)*wr3/wrmag*cdata.cri;
+          r_torque[0] = rmu*kn*(radius-sidata.r)*wr1/wrmag*sidata.cri;
+          r_torque[1] = rmu*kn*(radius-sidata.r)*wr2/wrmag*sidata.cri;
+          r_torque[2] = rmu*kn*(radius-sidata.r)*wr3/wrmag*sidata.cri;
 
           // remove normal (torsion) part of torque
           double rtorque_dot_delta = r_torque[0]*enx+ r_torque[1]*eny + r_torque[2]*enz;
@@ -98,20 +110,20 @@ namespace ContactModels
           vectorSubtract3D(r_torque,r_torque_n,r_torque);
         }
       } else {
-        vectorSubtract3D(atom->omega[cdata.i],atom->omega[cdata.j],wr_roll);
+        vectorSubtract3D(atom->omega[sidata.i],atom->omega[sidata.j],wr_roll);
         const double wr_rollmag = vectorMag3D(wr_roll);
 
         if(wr_rollmag > 0.)
         {
-          const double radi = cdata.radi;
-          const double radj = cdata.radj;
-          const double enx = cdata.en[0];
-          const double eny = cdata.en[1];
-          const double enz = cdata.en[2];
+          const double radi = sidata.radi;
+          const double radj = sidata.radj;
+          const double enx = sidata.en[0];
+          const double eny = sidata.en[1];
+          const double enz = sidata.en[2];
 
           // calculate torque
-          const double reff= cdata.is_wall ? radi : (radi*radj/(radi+radj));
-          vectorScalarMult3D(wr_roll,rmu*cdata.kn*cdata.deltan*reff/wr_rollmag,r_torque);
+          const double reff= sidata.is_wall ? radi : (radi*radj/(radi+radj));
+          vectorScalarMult3D(wr_roll,rmu*sidata.kn*sidata.deltan*reff/wr_rollmag,r_torque);
 
           // remove normal (torsion) part of torque
           const double rtorque_dot_delta = r_torque[0]*enx + r_torque[1]*eny + r_torque[2]*enz;
@@ -132,9 +144,9 @@ namespace ContactModels
       j_forces.delta_torque[2] += r_torque[2];
     }
 
-    void beginPass(CollisionData&, ForceData&, ForceData&){}
-    void endPass(CollisionData&, ForceData&, ForceData&){}
-    void noCollision(ContactData&, ForceData&, ForceData&){}
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
 
   private:
     double ** coeffRollFrict;

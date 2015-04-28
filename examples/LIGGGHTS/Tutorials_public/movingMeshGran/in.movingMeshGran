@@ -42,10 +42,15 @@ fix boxwalls_z2 all wall/gran model hooke tangential history primitive type 1 zp
 fix		cad1 all mesh/surface file meshes/bucket.stl type 1  move -50. -250. 0. &
 		scale 0.002  rotate axis 0. 1. 0. angle 90.  rotate axis 0. 0. 1. angle 90.
 
-#particle insertion
-region		bc block -0.9 0.9 -0.4 0.4 -0.02 -0.0 units box
-group		nve_group region reg
-fix			ins nve_group pour/legacy 1500 1 1 vol 0.7 1000 diam 0.08 0.08 dens 2500 2500 vel 0. 0. 0. 0. -0.8 region bc
+#region of insertion
+region		bc block -0.9 0.9 -0.4 0.4 -0.5 -0.0 units box
+
+#particle distributions
+fix			pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.04
+fix			pdd1 all particledistribution/discrete 1.  1 pts1 1.0
+
+fix			ins all insert/pack seed 100001 distributiontemplate pdd1 vel constant 0. 0. -0.8 &
+				insert_every 2000 overlapcheck yes all_in yes particles_in_region 1500 region bc
 
 #thermo settings
 compute		1 all erotate/sphere

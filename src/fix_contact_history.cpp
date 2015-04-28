@@ -1,24 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "mpi.h"
@@ -247,7 +275,7 @@ void FixContactHistory::setup_pre_exchange()
       
       pre_exchange();
   }
-  *computeflag_ = 0;
+  // computeflag is re-set in pre_exchange()
 }
 
 /* ----------------------------------------------------------------------
@@ -259,8 +287,11 @@ void FixContactHistory::pre_exchange()
 {
   int i,j,ii,jj,m,n,inum,jnum;
   int *ilist,*jlist,*numneigh,**firstneigh;
-  int *touch,**firsttouch;
+  int *contact_flag,**first_contact_flag;
   double *hist,*allhist,**firsthist;
+
+  // re-set computeflag: most current info is now in atom arrays
+  *computeflag_ = 0;
 
   // nlocal may include atoms added since last neigh build
 
@@ -284,7 +315,7 @@ void FixContactHistory::pre_exchange()
   ilist = list->ilist;
   numneigh = list->numneigh;
   firstneigh = list->firstneigh;
-  firsttouch = list->listgranhistory->firstneigh;
+  first_contact_flag = list->listgranhistory->firstneigh;
   firsthist = list->listgranhistory->firstdouble;
 
   int nlocal_neigh = 0;
@@ -295,10 +326,10 @@ void FixContactHistory::pre_exchange()
     jlist = firstneigh[i];
     jnum = numneigh[i];
     
-    touch = firsttouch[i];
+    contact_flag = first_contact_flag[i];
 
     for (jj = 0; jj < jnum; jj++) {
-      if (touch[jj]) {
+      if (contact_flag[jj]) {
         npartner_[i]++;
         j = jlist[jj];
         j &= NEIGHMASK;
@@ -331,10 +362,10 @@ void FixContactHistory::pre_exchange()
     jlist = firstneigh[i];
     allhist = firsthist[i];
     jnum = numneigh[i];
-    touch = firsttouch[i];
+    contact_flag = first_contact_flag[i];
 
     for (jj = 0; jj < jnum; jj++) {
-      if (touch[jj]) {
+      if (contact_flag[jj]) {
         hist = &allhist[dnum_*jj];
         j = jlist[jj];
         j &= NEIGHMASK;
@@ -376,8 +407,9 @@ void FixContactHistory::pre_exchange()
 
 void FixContactHistory::min_setup_pre_exchange()
 {
-  if (*computeflag_) pre_exchange();
-  *computeflag_ = 0;
+  if (*computeflag_)
+    pre_exchange();
+  // computeflag is re-set in pre_exchange()
 }
 
 /* ---------------------------------------------------------------------- */

@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -21,7 +21,6 @@ keyword = {fix} :l
     section-string = section names with this string will be passed to fix :pre
 :ule
 
-
 [Examples:]
 
 read_data data.lj
@@ -30,7 +29,7 @@ read_data data.protein fix mycmap crossterm CMAP :pre
 
 [Description:]
 
-Read in a data file containing information LAMMPS needs to run a
+Read in a data file containing information LIGGGHTS(R)-PUBLIC needs to run a
 simulation.  The file can be ASCII text or a gzipped text file
 (detected by a .gz suffix).  This is one of 3 ways to specify initial
 atom coordinates; see the "read_restart"_read_restart.html and
@@ -88,19 +87,11 @@ is different than the default.
 
 {atoms} = # of atoms in system
 {bonds} = # of bonds in system
-{angles} = # of angles in system
-{dihedrals} = # of dihedrals in system
-{impropers} = # of impropers in system
 {atom types} = # of atom types in system
 {bond types} = # of bond types in system
-{angle types} = # of angle types in system
-{dihedral types} = # of dihedral types in system
-{improper types} = # of improper types in system
 {extra bond per atom} = leave space for this many new bonds per atom
 {ellipsoids} = # of ellipsoids in system
 {lines} = # of line segments in system
-{triangles} = # of triangles in system
-{bodies} = # of bodies in system
 {xlo xhi} = simulation box boundaries in x dimension
 {ylo yhi} = simulation box boundaries in y dimension
 {zlo zhi} = simulation box boundaries in z dimension
@@ -110,9 +101,9 @@ The initial simulation box size is determined by the lo/hi settings.
 In any dimension, the system may be periodic or non-periodic; see the
 "boundary"_boundary.html command.
 
-If the {xy xz yz} line does not appear, LAMMPS will set up an
+If the {xy xz yz} line does not appear, LIGGGHTS(R)-PUBLIC will set up an
 axis-aligned (orthogonal) simulation box.  If the line does appear,
-LAMMPS creates a non-orthogonal simulation domain shaped as a
+LIGGGHTS(R)-PUBLIC creates a non-orthogonal simulation domain shaped as a
 parallelepiped with triclinic symmetry.  The parallelepiped has its
 "origin" at (xlo,ylo,zlo) and is defined by 3 edge vectors starting
 from the origin given by A = (xhi-xlo,0,0); B = (xy,yhi-ylo,0); C =
@@ -130,8 +121,8 @@ limitation, since if the maximum tilt factor is 5 (as in this
 example), then configurations with tilt = ..., -15, -5, 5, 15, 25,
 ... are all geometrically equivalent.
 
-See "Section_howto 12"_Section_howto.html#howto_12 of the doc pages
-for a geometric description of triclinic boxes, as defined by LAMMPS,
+See "Section_howto 12"_Section_howto.html#howto_7 of the doc pages
+for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.
 
@@ -160,44 +151,32 @@ that are "greater than or equal to" the lo value and "less than or
 equal to" the hi value.  If the non-periodic dimension is of style
 "fixed" (see the "boundary"_boundary.html command), then the atom
 coords must be strictly "less than" the hi value, due to the way
-LAMMPS assign atoms to processors.  Note that you should not make the
+LIGGGHTS(R)-PUBLIC assign atoms to processors.  Note that you should not make the
 lo/hi values radically smaller/larger than the extent of the atoms.
 For example, if your atoms extend from 0 to 50, you should not specify
-the box bounds as -10000 and 10000.  This is because LAMMPS uses the
+the box bounds as -10000 and 10000.  This is because LIGGGHTS(R)-PUBLIC uses the
 specified box size to layout the 3d grid of processors.  A huge
 (mostly empty) box will be sub-optimal for performance when using
 "fixed" boundary conditions (see the "boundary"_boundary.html
 command).  When using "shrink-wrap" boundary conditions (see the
 "boundary"_boundary.html command), a huge (mostly empty) box may cause
-a parallel simulation to lose atoms the first time that LAMMPS
+a parallel simulation to lose atoms the first time that LIGGGHTS(R)-PUBLIC
 shrink-wraps the box around the atoms.
 
 The "extra bond per atom" setting should be used if new bonds will be
 added to the system when a simulation runs, e.g. by using the "fix
 bond/create"_fix_bond_create.html command.  This will pre-allocate
-space in LAMMPS data structures for storing the new bonds.
-
-The "ellipsoids" and "lines" and "triangles" and "bodies" settings are
-only used with "atom_style ellipsoid or line or tri or
-body"_atom_style.html and specify how many of the atoms are
-finite-size ellipsoids or lines or triangles or bodies; the remainder
-are point particles.  See the discussion of ellipsoidflag and the
-{Ellipsoids} section below.  See the discussion of lineflag and the
-{Lines} section below.  See the discussion of triangleflag and the
-{Triangles} section below.  See the discussion of bodyflag and the
-{Bodies} section below.
+space in LIGGGHTS(R)-PUBLIC data structures for storing the new bonds.
 
 :line
 
 These are the section keywords for the body of the file.
 
-{Atoms, Velocities, Masses, Ellipsoids, Lines, Triangles, Bodies} = atom-property sections 
-{Bonds, Angles, Dihedrals, Impropers} = molecular topology sections 
-{Pair Coeffs, PairIJ Coeffs, Bond Coeffs, Angle Coeffs, Dihedral Coeffs, \
-   Improper Coeffs} = force field sections
+{Atoms, Velocities, Masses, Ellipsoids, Lines} = atom-property sections
+{Bonds} = molecular topology sections
+{Pair Coeffs, PairIJ Coeffs, Bond Coeffs} = force field sections
 {BondBond Coeffs, BondAngle Coeffs, MiddleBondTorsion Coeffs, \
-   EndBondTorsion Coeffs, AngleTorsion Coeffs, AngleAngleTorsion Coeffs, \
-   BondBond13 Coeffs, AngleAngle Coeffs} = class 2 force field sections :ul
+   EndBondTorsion Coeffs} = class 2 force field sections :ul
 
 Each section is listed below in alphabetic order.  The format of each
 section is described including the number of lines it must contain and
@@ -211,73 +190,6 @@ Atoms section:
 
 :line
 
-{Angle Coeffs} section:
-
-one line per angle type :ulb,l
-line syntax: ID coeffs :l
-  ID = angle type (1-N)
-  coeffs = list of coeffs :pre
-example: :l
-  6 70 108.5 0 0 :pre
-:ule
-
-The number and meaning of the coefficients are specific to the defined
-angle style.  See the "angle_style"_angle_style.html and
-"angle_coeff"_angle_coeff.html commands for details.  Coefficients can
-also be set via the "angle_coeff"_angle_coeff.html command in the
-input script.
-
-:line
-
-{AngleAngle Coeffs} section:
-
-one line per improper type :ulb,l
-line syntax: ID coeffs :l
-  ID = improper type (1-N)
-  coeffs = list of coeffs (see "improper_coeff"_improper_coeff.html) :pre
-:ule
-
-:line
-
-{AngleAngleTorsion Coeffs} section:
-
-one line per dihedral type :ulb,l
-line syntax: ID coeffs :l
-  ID = dihedral type (1-N)
-  coeffs = list of coeffs (see "dihedral_coeff"_dihedral_coeff.html) :pre
-:ule
-
-:line
-
-{Angles} section:
-
-one line per angle :ulb,l
-line syntax: ID type atom1 atom2 atom3 :l
-  ID = number of angle (1-Nangles)
-  type = angle type (1-Nangletype)
-  atom1,atom2,atom3 = IDs of 1st,2nd,3rd atoms in angle :pre
-example: :b
-  2 2 17 29 430 :pre
-:ule
-
-The 3 atoms are ordered linearly within the angle.  Thus the central
-atom (around which the angle is computed) is the atom2 in the list.
-E.g. H,O,H for a water molecule.  The {Angles} section must appear
-after the {Atoms} section.  All values in this section must be
-integers (1, not 1.0).
-
-:line
-
-{AngleTorsion Coeffs} section:
-
-one line per dihedral type :ulb,l
-line syntax: ID coeffs :l
-  ID = dihedral type (1-N)
-  coeffs = list of coeffs (see "dihedral_coeff"_dihedral_coeff.html) :pre
-:ule
-
-:line
-
 {Atoms} section:
 
 one line per atom
@@ -285,28 +197,16 @@ line syntax: depends on atom style :ul
 
 An {Atoms} section must appear in the data file if natoms > 0 in the
 header section.  The atoms can be listed in any order.  These are the
-line formats for each "atom style"_atom_style.html in LAMMPS.  As
+line formats for each "atom style"_atom_style.html in LIGGGHTS(R)-PUBLIC.  As
 discussed below, each line can optionally have 3 flags (nx,ny,nz)
 appended to it, which indicate which image of a periodic simulation
 box the atom is in.  These may be important to include for some kinds
 of analysis.
 
-angle: atom-ID molecule-ID atom-type x y z
-atomic: atom-ID atom-type x y z
-body: atom-ID atom-type bodyflag mass x y z
 bond: atom-ID molecule-ID atom-type x y z
-charge: atom-ID atom-type q x y z
-dipole: atom-ID atom-type q x y z mux muy muz
-electron: atom-ID atom-type q spin eradius x y z
 ellipsoid: atom-ID atom-type ellipsoidflag density x y z
-full: atom-ID molecule-ID atom-type q x y z
 line: atom-ID molecule-ID atom-type lineflag density x y z
-meso: atom-ID atom-type rho e cv x y z
 molecular: atom-ID molecule-ID atom-type x y z
-peri: atom-ID atom-type volume density x y z
-sphere: atom-ID atom-type diameter density x y z
-tri: atom-ID molecule-ID atom-type triangleflag density x y z
-wavepacket: atom-ID atom-type charge spin eradius etag cs_re cs_im x y z
 hybrid: atom-ID atom-type x y z sub-style1 sub-style2 ...  :tb(s=:)
 
 The keywords have these meanings:
@@ -319,19 +219,10 @@ diameter = diameter of spherical atom (distance units)
 ellipsoidflag = 1 for ellipsoidal particles, 0 for point particles
 lineflag = 1 for line segment particles, 0 for point particles
 triangleflag = 1 for triangular particles, 0 for point particles
-bodyflag = 1 for body particles, 0 for point particles
 density = density of particle (mass/distance^3 or mass/distance^2 or mass/distance units, depending on dimensionality of particle)
 mass = mass of particle (mass units)
 volume = volume of particle (distance^3 units)
-x,y,z = coordinates of atom
-mux,muy,muz = components of dipole moment of atom (dipole units)
-rho = density (need units) for SPH particles
-e = energy (need units) for SPH particles
-cv = heat capacity (need units) for SPH particles
-spin = electron spin (+1/-1), 0 = nuclei, 2 = fixed-core, 3 = pseudo-cores (i.e. ECP)
-eradius = electron radius (or fixed-core radius)
-etag = integer ID of electron that each wavepacket belongs to
-cs_re,cs_im = real/imaginary parts of wavepacket coefficients :ul
+x,y,z = coordinates of atom  :ul
 
 The units for these quantities depend on the unit style; see the
 "units"_units.html command for details.
@@ -357,12 +248,12 @@ keep track of molecule assignments.
 The diameter specifies the size of a finite-size spherical particle.
 It can be set to 0.0, which means that atom is a point particle.
 
-The ellipsoidflag, lineflag, triangleflag, and bodyflag determine
+The ellipsoidflag, lineflag, triangleflag determine
 whether the particle is a finite-size ellipsoid or line or triangle or
 body of finite size, or whether the particle is a point particle.
 Additional attributes must be defined for each ellipsoid, line,
 triangle, or body in the corresponding {Ellipsoids}, {Lines},
-{Triangles}, or {Bodies} section.
+{Triangles} section.
 
 Some pair styles and fixes and computes that operate on finite-size
 particles allow for a mixture of finite-size and point particles.  See
@@ -404,11 +295,11 @@ integer values: nx,ny,nz.  For periodic dimensions, they specify which
 image of the simulation box the atom is considered to be in.  An image
 of 0 means it is inside the box as defined.  A value of 2 means add 2
 box lengths to get the true value.  A value of -1 means subtract 1 box
-length to get the true value.  LAMMPS updates these flags as atoms
+length to get the true value.  LIGGGHTS(R)-PUBLIC updates these flags as atoms
 cross periodic boundaries during the simulation.  The flags can be
 output with atom snapshots via the "dump"_dump.html command.
 
-If nx,ny,nz values are not set in the data file, LAMMPS initializes
+If nx,ny,nz values are not set in the data file, LIGGGHTS(R)-PUBLIC initializes
 them to 0.  If image information is needed for later analysis and they
 are not all initially 0, it's important to set them correctly in the
 data file.  Also, if you plan to use the "replicate"_replicate.html
@@ -422,50 +313,6 @@ Atom velocities and other atom quantities not defined above are set to
 a {Velocities} section in the data file or by a
 "velocity"_velocity.html or "set"_set.html command in the input
 script.
-
-:line
-
-{Bodies} section:
-
-one or more lines per body :ulb,l
-first line syntax: atom-ID ninteger ndouble :l
-  ninteger = # of integer quantities for this particle
-  ndouble = # of floating-point quantities for this particle :pre
-0 or more integer lines: one line for every 10 integer quantities :l
-0 or more double lines: one line for every 10 double quantities :l
-example: :l
-  12 3 6
-  2 3 2
-  1.0 2.0 3.0 1.0 2.0 4.0 :pre
-example: :l
-  12 0 14
-  1.0 2.0 3.0 1.0 2.0 4.0 1.0 2.0 3.0 1.0
-  2.0 4.0 4.0 2.0 :pre
-:ule
-
-The {Bodies} section must appear if "atom_style body"_atom_style.html
-is used and any atoms listed in the {Atoms} section have a bodyflag =
-1.  The number of bodies should be specified in the header section via
-the "bodies" keyword.
-
-Each body can have a variable number of integer and/or floating-point
-values.  The number and meaning of the values is defined by the body
-style, as described in the "body"_body.html doc page.  The body style
-is given as an argument to the "atom_style body"_atom_style.html
-command.
-
-The ninteger and ndouble values determine how many integer and
-floating-point values are specified for this particle.  Ninteger and
-ndouble can be as large as needed and can be different for every body.
-Integer values are then listed on subsequent lines, 10 values per
-line.  Floating-point values follow on subsequent lines, again 10 per
-line.  If the number of lines is not evenly divisible by 10, the last
-line in that group contains the remaining values, e.g. 4 values out of
-14 in the last example above, for floating-point values.  If there are
-no values of a particular type, no lines appear for that type,
-e.g. there are no integer lines in the last example above.
-
-The {Bodies} section must appear after the {Atoms} section.
 
 :line
 
@@ -484,16 +331,6 @@ bond style.  See the "bond_style"_bond_style.html and
 "bond_coeff"_bond_coeff.html commands for details.  Coefficients can
 also be set via the "bond_coeff"_bond_coeff.html command in the input
 script.
-
-:line
-
-{BondAngle Coeffs} section:
-
-one line per angle type :ulb,l
-line syntax: ID coeffs :l
-  ID = angle type (1-N)
-  coeffs = list of coeffs (see class 2 section of "angle_coeff"_angle_coeff.html) :pre
-:ule
 
 :line
 
@@ -533,41 +370,6 @@ in this section must be integers (1, not 1.0).
 
 :line
 
-{Dihedral Coeffs} section:
-
-one line per dihedral type :ulb,l
-line syntax: ID coeffs :l
-  ID = dihedral type (1-N)
-  coeffs = list of coeffs :pre
-example: :l
-  3 0.6 1 0 1 :pre
-:ule
-
-The number and meaning of the coefficients are specific to the defined
-dihedral style.  See the "dihedral_style"_dihedral_style.html and
-"dihedral_coeff"_dihedral_coeff.html commands for details.
-Coefficients can also be set via the
-"dihedral_coeff"_dihedral_coeff.html command in the input script.
-
-:line
-
-{Dihedrals} section:
-
-one line per dihedral :ulb,l
-line syntax: ID type atom1 atom2 atom3 atom4 :l
-  ID = number of dihedral (1-Ndihedrals)
-  type = dihedral type (1-Ndihedraltype)
-  atom1,atom2,atom3,atom4 = IDs of 1st,2nd,3rd,4th atoms in dihedral :pre
-example: :l
-  12 4 17 29 30 21 :pre
-:ule
-
-The 4 atoms are ordered linearly within the dihedral.  The {Dihedrals}
-section must appear after the {Atoms} section.  All values in this
-section must be integers (1, not 1.0).
-
-:line
-
 {Ellipsoids} section:
 
 one line per ellipsoid :ulb,l
@@ -598,7 +400,7 @@ right-hand rule) by an angle theta around a unit vector (a,b,c), then
 the quaternion that represents its new orientation is given by
 (cos(theta/2), a*sin(theta/2), b*sin(theta/2), c*sin(theta/2)).  These
 4 components are quatw, quati, quatj, and quatk as specified above.
-LAMMPS normalizes each atom's quaternion in case (a,b,c) is not
+LIGGGHTS(R)-PUBLIC normalizes each atom's quaternion in case (a,b,c) is not
 specified as a unit vector.
 
 The {Ellipsoids} section must appear after the {Atoms} section.
@@ -612,45 +414,6 @@ line syntax: ID coeffs :l
   ID = dihedral type (1-N)
   coeffs = list of coeffs (see class 2 section of "dihedral_coeff"_dihedral_coeff.html) :pre
 :ule
-
-:line
-
-{Improper Coeffs} section:
-
-one line per improper type :ulb,l
-line syntax: ID coeffs :l
-  ID = improper type (1-N)
-  coeffs = list of coeffs :pre
-example: :l
-  2 20 0.0548311 :pre
-:ule
-
-The number and meaning of the coefficients are specific to the defined
-improper style.  See the "improper_style"_improper_style.html and
-"improper_coeff"_improper_coeff.html commands for details.
-Coefficients can also be set via the
-"improper_coeff"_improper_coeff.html command in the input script.
-
-:line
-
-{Impropers} section:
-
-one line per improper :ulb,l
-line syntax: ID type atom1 atom2 atom3 atom4 :l
-  ID = number of improper (1-Nimpropers)
-  type = improper type (1-Nimpropertype)
-  atom1,atom2,atom3,atom4 = IDs of 1st,2nd,3rd,4th atoms in improper :pre
-example: :l
-  12 3 17 29 13 100 :pre
-:ule
-
-The ordering of the 4 atoms determines the definition of the improper
-angle used in the formula for each "improper
-style"_improper_style.html.  See the doc pages for individual styles
-for details.
-
-The {Impropers} section must appear after the {Atoms} section.  All
-values in this section must be integers (1, not 1.0).
 
 :line
 
@@ -832,9 +595,9 @@ Translational velocities can also be set by the
 
 [Restrictions:]
 
-To read gzipped data files, you must compile LAMMPS with the
+To read gzipped data files, you must compile LIGGGHTS(R)-PUBLIC with the
 -DLAMMPS_GZIP option - see the "Making
-LAMMPS"_Section_start.html#start_2 section of the documentation.
+LIGGGHTS(R)-PUBLIC"_Section_start.html#start_2 section of the documentation.
 
 [Related commands:]
 

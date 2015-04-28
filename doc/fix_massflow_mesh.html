@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -35,16 +33,18 @@
 
 <PRE>  <I>count</I> value = <I>once</I> or <I>multiple</I>
     once = count particles only once
-    multiple = allow particles to be counted multiple times 
+    multiple = allow particles to be counted multiple times
   <I>point_at_outlet</I>  pointX pointY pointZ
-    pointX pointY pointZ = coordinates of point on the outlet side of the surface 
-  <I>inside_out</I>  
-    use this in connection with <I>point_at_outlet</I> to flip direction particle counting 
-  <I>file</I> value = filename 
-  <I>append</I> value = filename 
+    pointX pointY pointZ = coordinates of point on the outlet side of the surface
+  <I>inside_out</I>
+    use this in connection with <I>point_at_outlet</I> to flip direction particle counting
+  <I>file</I> value = filename
+  <I>append</I> value = filename
    filename = name of the file to print diameter, position and velocity values of the particles
-  <I>screen</I> value = <I>yes</I> or <I>no</I> 
-  <I>delete_atoms</I> value = <I>yes</I> or <I>no</I>  
+  <I>screen</I> value = <I>yes</I> or <I>no</I>
+  <I>writeTime</I>
+    include this keyword to write the time to the out files
+  <I>delete_atoms</I> value = <I>yes</I> or <I>no</I>
     yes = to remove the particles that pass through the mesh surface 
 </PRE>
 
@@ -55,10 +55,6 @@
 </PRE>
 <PRE>fix mass all massflow/mesh mesh inface count once point_at_outlet 0. 0. 0. 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This LIGGGHTS command is not available in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
 <P>Fix massflow/mesh tracks how many particles penetrate through a mesh surface,
@@ -67,22 +63,22 @@ It counts the total number of particles and the associated mass. Only particles
 part of <I>group</I> are eligible for counting.
 </P>
 <P>Particles are counted if they cross from the inner side of the mesh to the outer
-side of the mesh. The outer side can be defined by using the keyword <I>vec_side</I>, 
+side of the mesh. The outer side can be defined by using the keyword <I>vec_side</I>,
 by specifying a point at the outlet side of the mesh (keyword <I>point_at_outlet</I>). Note
-that the vector defined by <I>vec_side</I> does not necessarily have to be 
-perpendicular to the mesh face. 
+that the vector defined by <I>vec_side</I> does not necessarily have to be
+perpendicular to the mesh face.
 </P>
 <P>The following restrictions apply in case <I>vec_side</I> is specified: (i) the
-<A HREF = "fix_mesh_surface.html">fix mesh/surface</A> has to be planar, and (ii) the vector 
-defined by <I>vec_side</I> may not lie inside the mesh plane. 
+<A HREF = "fix_mesh_surface.html">fix mesh/surface</A> has to be planar, and (ii) the vector
+defined by <I>vec_side</I> may not lie inside the mesh plane.
 </P>
-<P>The following restriction applies in case <I>point_at_outlet</I> is used: the <I>count</I> 
+<P>The following restriction applies in case <I>point_at_outlet</I> is used: the <I>count</I>
 value has to be set to once.
 </P>
 <P>The keyword <I>point_at_outlet</I> is especially useful in case a cylindrically-shaped
 surface is used. The <I>point_at_outlet</I> value should be on the cylinder axis in
 this case. If you like to track particles moving away from the cylinder axis,
-specify the <I>point_at_outlet</I> on the axis, and use the keyword 
+specify the <I>point_at_outlet</I> on the axis, and use the keyword
 <I>inside_out</I> to flip the direction.
 </P>
 <P>When <I>count</I> = once, then each particle is only counted once, for <I>count</I> = multiple
@@ -90,13 +86,13 @@ a particle contributes to number and mass count each time it crosses the mesh fa
 This can happen e.g. in the case of periodic boundary conditions or in re-circulating
 flow conditions.
 </P>
-<P>The diameter, position and velocity of the particles can be written into a file using the <I>file</I> keyword, 
-by specifying a filename. 
+<P>The diameter, position and velocity of the particles can be written into a file using the <I>file</I> keyword,
+by specifying a filename.
 </P>
 <P>If the <I>screen</I> keyword is used, output by this fix to the screen and
-logfile can be turned on or off as desired.  
+logfile can be turned on or off as desired.
 </P>
-<P>If the <I>delete_atoms</I> keyword is used then the particles passing through the mesh 
+<P>If the <I>delete_atoms</I> keyword is used then the particles passing through the mesh
 surface are deleted at the next re-neighboring step.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
@@ -104,28 +100,28 @@ surface are deleted at the next re-neighboring step.
 <P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> .
 </P>
 <P>This fix computes a per-atom vector (the marker) which can be accessed by
-various <A HREF = "Section_howto.html#howto_15">output commands</A>. The per-atom vector 
+various <A HREF = "Section_howto.html#howto_8">output commands</A>. The per-atom vector
 (i.e., the marker) can be accessed by dumps by using "f_massflow_ID", .
-This fix also computes a global vector of length 6. This vector can be 
-accessed via "f_ID", where ID is the fix id. The first vector component 
-is equal to the total mass which has crossed the mesh surface, the second vector 
-component indicates the particle count. The third vector component 
-is equal to the total mass which has crossed the mesh surface since the last output 
-divived by the time since the last output (i.e., the mass flow rate), the fourth vector 
+This fix also computes a global vector of length 6. This vector can be
+accessed via "f_ID", where ID is the fix id. The first vector component
+is equal to the total mass which has crossed the mesh surface, the second vector
+component indicates the particle count. The third vector component
+is equal to the total mass which has crossed the mesh surface since the last output
+divived by the time since the last output (i.e., the mass flow rate), the fourth vector
 component indicates the particle count since the last output divived by the time
 since the last output (i.e., the number rate of particles). The fifth and sixth vector
 components are the deleted mass and the number of deleted particles. This vector
-can also be accessed by various <A HREF = "Section_howto.html#howto_15">output commands</A>.
+can also be accessed by various <A HREF = "Section_howto.html#howto_8">output commands</A>.
 </P>
-<P><B>Restrictions:</B> 
+<P><B>Restrictions:</B>
 </P>
 <P>Currently, this feature does not support multi-sphere particles.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A> 
+<P><A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A>
 </P>
-<P><B>Default:</B> 
+<P><B>Default:</B>
 </P>
 <P><I>count</I> = multiple, <I>inside_out</I>  =false, <I>delete_atoms</I> = false
 </P>

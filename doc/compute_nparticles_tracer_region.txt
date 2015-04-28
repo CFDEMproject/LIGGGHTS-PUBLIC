@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -19,7 +19,7 @@ region-ID = ID of region atoms must be in to be counted :l
 tracer = obligatory keyword :l
 tracer-ID = ID of a fix of type "fix property/atom/tracer"_fix_property_atom_tracer.html  :l
 zero or more keyword/value pairs may be appended to args :l
-keyword = {periodic} or {check_mark_every} :l
+keyword = {periodic} or {reset_marker} :l
   {periodic} value = dim image
     dim = {x} or {y} or {z}
     image = image that a particle has to be in to be counted (any integer number or {all})
@@ -59,8 +59,8 @@ For example, using
 periodic z +2 :pre
 
 means that particles are only counted if they are in z-image #2.
-By default, all particles are counted/unmarked regardless in which 
-periodic image they are. 
+By default, all particles are counted/unmarked regardless in which
+periodic image they are.
 
 IMPORTANT NOTE: Currently, this command only supports one periodic
 boundary restriction via the {periodic} keyword. If keyword {periodic}
@@ -68,25 +68,25 @@ is used multiple times, the last setting will be applied.
 
 [Output info:]
 
-This this compute calculates a global vector containing the following information 
-(the number in brackets corresponds to the vector id): 
+This this compute calculates a global vector containing the following information
+(the number in brackets corresponds to the vector id):
 
 [(1)] total number of (marked + un-marked) particles in region :l
 [(2)] number of marked particles in region :l
 [(3)] total mass of (marked + un-marked) particles in region :l
 [(4)] mass of marked particles in region :l
 
-See "this section"_Section_howto.html#howto_15 for an overview of LAMMPS output
+See "this section"_Section_howto.html#howto_8 for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 
-[Restrictions:] 
+[Restrictions:]
 
-Currently, only one periodic restriction via the {periodic} keyword 
+Currently, only one periodic restriction via the {periodic} keyword
 can be used.
 
 [Related commands:]
 
 "fix property/atom/tracer"_fix_property_atom_tracer.html
 
-[Default:] 
+[Default:]
 {reset_marker} = yes, {periodic} is off per default

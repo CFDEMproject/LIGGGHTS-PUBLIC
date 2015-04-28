@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -17,14 +17,13 @@
 </PRE>
 <UL><LI>style = <I>yes</I> or <I>no</I>
 <LI>N = partition number (see asterisk form below)
-<LI>command = any LAMMPS command 
+<LI>command = any LIGGGHTS(R)-PUBLIC command 
 </UL>
 <P><B>Examples:</B>
 </P>
 <PRE>partition yes 1 processors 4 10 6
 partition no 5 print "Active partition"
-partition yes *5 fix all nve
-partition yes 6* fix all nvt temp 1.0 1.0 0.1 
+partition yes *5 fix all nve  
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -42,7 +41,7 @@ such a variable is used in a <A HREF = "jump.html">jump</A> command.
 </P>
 <P>The "partition" command is another mechanism for having as input
 script operate differently on different partitions.  It is basically a
-prefix on any LAMMPS command.  The commmand will only be invoked on
+prefix on any LIGGGHTS(R)-PUBLIC command.  The commmand will only be invoked on
 the partition(s) specified by the <I>style</I> and <I>N</I> arguments.
 </P>
 <P>If the <I>style</I> is <I>yes</I>, the command will be invoked on any partition
@@ -63,15 +62,9 @@ from 1 to n (inclusive).  A trailing asterisk means all partitions
 from n to Np (inclusive).  A middle asterisk means all partitions from
 m to n (inclusive).
 </P>
-<P>This command can be useful for the "run_style verlet/split" command
-which imposed requirements on how the <A HREF = "processors.html">processors</A>
-command lays out a 3d grid of processors in each of 2 partitions.
-</P>
 <P><B>Restrictions:</B> none
 </P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "run_style.html">run_style verlet/split</A>
+<P><B>Related commands:</B> none
 </P>
 <P><B>Default:</B> none
 </P>

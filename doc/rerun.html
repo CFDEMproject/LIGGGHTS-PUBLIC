@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -46,14 +46,14 @@ rerun ../run7/dump.file.gz skip 2 dump x y z box yes
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>Perform a psuedo simulation run where atom information is read one
+<P>Perform a pseudo simulation run where atom information is read one
 snapshot at a time from a dump file(s), and energies and forces are
-computed on the shapshot to produce thermodynamic or other output.
+computed on the snapshot to produce thermodynamic or other output.
 </P>
 <P>This can be useful in the following kinds of scenarios, after an
 initial simulation produced the dump file:
 </P>
-<UL><LI>Compute the energy and forces of snaphots using a different potential.
+<UL><LI>Compute the energy and forces of snapshot using a different potential.
 
 
 <LI>Calculate one or more diagnostic quantities on the snapshots that
@@ -122,7 +122,7 @@ and (b) you want the reference point for elapsed time (from start to
 stop) to be different than the <I>first</I> and <I>last</I> settings.  See the
 doc page for individual fixes to see which ones can be used with the
 <I>start/stop</I> keywords.  Note that if you define neither of the
-<I>start</I>/<I>stop</I> or <I>first</I>/<I>last</I> keywords, then LAMMPS treats the
+<I>start</I>/<I>stop</I> or <I>first</I>/<I>last</I> keywords, then LIGGGHTS(R)-PUBLIC treats the
 pseudo run as going from 0 to a huge value (effectively infinity).
 This means that any quantity that a fix scales as a fraction of
 elapsed time in the run, will essentially remain at its intiial value.
@@ -133,23 +133,18 @@ command.  The first argument following the <I>dump</I> keyword should be
 the <I>field1</I> argument of the <A HREF = "read_dump.html">read_dump</A> command.  See
 the <A HREF = "read_dump.html">read_dump</A> doc page for details on the various
 options it allows for extracting information from the dump file
-snapshots, and for using that information to alter the LAMMPS
+snapshots, and for using that information to alter the LIGGGHTS(R)-PUBLIC
 simulation.
 </P>
 <HR>
 
-<P>In general, a LAMMPS input script that uses a rerun command can
+<P>In general, a LIGGGHTS(R)-PUBLIC input script that uses a rerun command can
 include and perform all the usual operations of an input script that
 uses the <A HREF = "run.html">run</A> command.  There are a few exceptions and
 points to consider, as discussed here.
 </P>
-<P>Fixes that perform time integration, such as <A HREF = "fix_nve.html">fix nve</A> or
-<A HREF = "fix_nh.html">fix npt</A> are not invoked, since no time integration is
-performed.  Fixes that perturb or constrain the forces on atoms will
-be invoked, just as they would during a normal run.  Examples are <A HREF = "fix_indent.html">fix
-indent</A> and <A HREF = "fix_langevin.html">fix langevin</A>.  So you
-should think carefully as to whether that makes sense for the manner
-in which you are reprocessing the dump snapshots.
+<P>Fixes that perform time integration, such as <A HREF = "fix_nve.html">fix nve</A>
+are not invoked, since no time integration is performed.
 </P>
 <P>If you only want the rerun script to perform analyses that do not
 involve pair interactions, such as use compute msd to calculated
@@ -174,9 +169,9 @@ used, they are invoked on timesteps that are a function of their
 <A HREF = "fix_ave_time.html">fix ave/time</A> doc page for details.  You must
 insure those settings are consistent with the snapshot timestamps that
 are read from the dump file(s).  If an averaging fix is not invoked on
-a timestep it expects to be, LAMMPS will flag an error.
+a timestep it expects to be, LIGGGHTS(R)-PUBLIC will flag an error.
 </P>
-<P>The various forms of LAMMPS output, as defined by the
+<P>The various forms of LIGGGHTS(R)-PUBLIC output, as defined by the
 <A HREF = "thermo_style.html">thermo_style</A>, <A HREF = "thermo.html">thermo</A>,
 <A HREF = "dump.html">dump</A>, and <A HREF = "restart.html">restart</A> commands occur on
 specific timesteps.  If successvive dump snapshots skip those
@@ -189,9 +184,9 @@ every 1000 steps, then you will only see thermodynamic output every
 
 <P><B>Restrictions:</B>
 </P>
-<P>To read gzipped dump files, you must compile LAMMPS with the
+<P>To read gzipped dump files, you must compile LIGGGHTS(R)-PUBLIC with the
 -DLAMMPS_GZIP option - see the <A HREF = "Section_start.html#start_2">Making
-LAMMPS</A> section of the documentation.
+LIGGGHTS(R)-PUBLIC</A> section of the documentation.
 </P>
 <P><B>Related commands:</B>
 </P>

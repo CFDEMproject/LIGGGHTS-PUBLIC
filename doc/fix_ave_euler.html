@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -15,7 +13,7 @@
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID ave/euler nevery N cell_size_relative c 
+<PRE>fix ID group-ID ave/euler nevery N cell_size_relative c parallel par keywords values 
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
@@ -29,6 +27,17 @@
 
 <LI>c = cell size in multiples of max cutoff 
 
+<LI>parallel = obligatory keyword 
+
+<LI>par = "yes" or "no 
+
+<LI>zero or more keyword/value pairs may be appended 
+
+<LI>keyword = <I>basevolume_region</I> 
+
+<PRE>  <I>basevolume_region</I> values = reg-ID
+    region-ID = correct grid cell volume based on this region  
+</PRE>
 
 </UL>
 <P><B>Examples:</B>
@@ -37,28 +46,45 @@
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>Calculate cell-based averages of velocity, radius, volume fraction, 
+<P>Calculate cell-based averages of velocity, radius, volume fraction,
 and pressure (-1/3 * trace of the stress tensor) every few timesteps,
 as specified by the <I>nevery</I> keyword. The size of the cells is calculated
 as multiple of the maximum cutoff, via the <I>cell_size_relative</I>.
 Note that at least a relative cell size of 3 is required.
 </P>
 <P>Note that velocity is favre (mass) averaged, whereas radius is arithmetically
-averaged. To calculate the stress, this command internally uses a 
-<A HREF = "compute_stress_atom.html">compute stress/atom</A> . It includes the convective 
-term correctly for granular particles with non-zero average velocity 
+averaged. To calculate the stress, this command internally uses a
+<A HREF = "compute_stress_atom.html">compute stress/atom</A> . It includes the convective
+term correctly for granular particles with non-zero average velocity
 (which is not included  in <A HREF = "compute_stress_atom.html">compute stress/atom</A>).
-However, it does not include bond, angle, diahedral or kspace contributions 
+However, it does not include bond, angle, diahedral or kspace contributions
 so that the stress tensor finally reads
 </P>
 <CENTER><IMG SRC = "Eqs/stress_tensor_granular.png">
 </CENTER>
-<P>where vave is the (cell-based) average velocity. 
+<P>where vave is the (cell-based) average velocity.
 The first term is a kinetic energy contribution for atom <I>I</I>.  The
 second term is a pairwise energy contribution where <I>n</I> loops over the
 <I>Np</I> neighbors of atom <I>I</I>, <I>r1</I> and <I>r2</I> are the positions of the 2
 atoms in the pairwise interaction, and <I>F1</I> and <I>F2</I> are the forces on
 the 2 atoms resulting from the pairwise interaction.
+</P>
+<P>The <I>parallel</I> option determines if every process allocates
+its own local grid for postprocessing (for <I>parallel</I> = yes),
+or each proc contributes to one single global grid (for <I>parallel</I> = no).
+This will be slower since it requires parallel communication,
+but will ensure that the grid cells do not move over time (e.g.
+in case of a moving boundary)
+</P>
+<P>The <I>basevolume_region</I> option allows to specify a region that
+represents the volume which can theoretically be filled with
+particles. This will then be used to correct the basis of the averaging
+volume for each cell in the grid. For example, if you use a cylindrical
+wall, it makes sense to use an identical cylindrical region for 
+the <I>basevolume_region</I> option, and the command will correctly
+calculate the volume fraction in the near-wall cells.
+the calculation of overlap between grid cells and the region
+is done using a Monte-Carlo approach.
 </P>
 <HR>
 
@@ -68,10 +94,10 @@ the 2 atoms resulting from the pairwise interaction.
 files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
 are relevant to this fix.
 </P>
-<P>This fix computes the above-mentioned quantities for output via a 
+<P>This fix computes the above-mentioned quantities for output via a
 <A HREF = "dump.html">dump euler/vtk</A> command.  The values can
 only be accessed on timesteps that are multiples of <I>nevery</I> since that
-is when calculations are performed. 
+is when calculations are performed.
 </P>
 <P>No parameter of this fix can be used with the <I>start/stop</I> keywords of
 the <A HREF = "run.html">run</A> command.  This fix is not invoked during <A HREF = "minimize.html">energy
@@ -87,7 +113,7 @@ incorrect.
 <P><B>Related commands:</B>
 </P>
 <P><A HREF = "compute.html">compute</A>, <A HREF = "compute_stress_atom.html">compute stress/atom</A>,
-<A HREF = "fix_ave_atom.html">fix ave/atom</A>, <A HREF = "fix_ave_histo.html">fix ave/histo</A>, 
+<A HREF = "fix_ave_atom.html">fix ave/atom</A>, <A HREF = "fix_ave_histo.html">fix ave/histo</A>,
 <A HREF = "fix_ave_time.html">fix ave/time</A>, <A HREF = "fix_ave_spatial.html">fix ave/spatial</A>,
 </P>
 <P><B>Default:</B> none

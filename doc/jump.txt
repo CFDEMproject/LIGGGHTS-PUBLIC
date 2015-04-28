@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -24,7 +24,7 @@ jump SELF runloop :pre
 [Description:]
 
 This command closes the current input script file, opens the file with
-the specified name, and begins reading LAMMPS commands from that file.
+the specified name, and begins reading LIGGGHTS(R)-PUBLIC commands from that file.
 Unlike the "include"_include.html command, the original file is not
 returned to, although by using multiple jump commands it is possible
 to chain from file to file or back to the original file.
@@ -69,7 +69,7 @@ jump in.lj loop :pre
 
 If the jump {file} argument is a variable, the jump command can be
 used to cause different processor partitions to run different input
-scripts.  In this example, LAMMPS is run on 40 processors, with 4
+scripts.  In this example, LIGGGHTS(R)-PUBLIC is run on 40 processors, with 4
 partitions of 10 procs each.  An in.file containing the example
 variable and jump command will cause each partition to run a different
 simulation.
@@ -100,7 +100,7 @@ jump	    in.script loopa :pre
 [Restrictions:]
 
 If you jump to a file and it does not contain the specified label,
-LAMMPS will come to the end of the file and exit.
+LIGGGHTS(R)-PUBLIC will come to the end of the file and exit.
 
 [Related commands:]
 

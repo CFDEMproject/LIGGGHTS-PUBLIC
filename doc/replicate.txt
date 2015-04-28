@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -45,28 +45,6 @@ A 2d simulation cannot be replicated in the z dimension.
 If a simulation is non-periodic in a dimension, care should be used
 when replicating it in that dimension, as it may put atoms nearly on
 top of each other.
-
-IMPORTANT NOTE: You cannot use the replicate command on a system which
-has a molecule that spans the box and is bonded to itself across a
-periodic boundary, so that the molecule is efffectively a loop.  A
-simple example would be a linear polymer chain that spans the
-simulation box and bonds back to itself across the periodic boundary.
-More realistic examples would be a CNT (meant to be an infinitely long
-CNT) or a graphene sheet or a bulk periodic crystal where there are
-explicit bonds specified between near neighbors.  (Note that this only
-applies to systems that have permanent bonds as specified in the data
-file.  A CNT that is just atoms modeled with the "AIREBO
-potential"_pair_airebo.html has no such permanent bonds, so it can be
-replicated.)  The reason replication does not work with those systems
-is that the image flag settings described above cannot be made
-consistent.  I.e. it is not possible to define images flags so that
-when every pair of bonded atoms is unwrapped (using the image flags),
-they will be close to each other.  The only way the replicate command
-could work in this scenario is for it to break a bond, insert more
-atoms, and re-connect the loop for the larger simulation box.  But it
-is not clever enough to do this.  So you will have to construct a
-larger version of your molecule as a pre-processing step and input a
-new data file to LAMMPS.
 
 If the current simulation was read in from a restart file (before a
 run is performed), there can have been no fix information stored in

@@ -1,14 +1,46 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
@@ -41,7 +73,7 @@ ComputeVoronoi::ComputeVoronoi(LAMMPS *lmp, int narg, char **arg) :
   Compute(lmp, narg, arg)
 {
   int sgroup;
-  
+
   size_peratom_cols = 2;
   peratom_flag = 1;
 
@@ -56,14 +88,14 @@ ComputeVoronoi::ComputeVoronoi(LAMMPS *lmp, int narg, char **arg) :
     if (strcmp(arg[iarg], "only_group") == 0) {
       onlyGroup = true;
       iarg++;
-    } 
+    }
     else if (strcmp(arg[iarg], "radius") == 0) {
       if (iarg + 2 > narg || strstr(arg[iarg+1],"v_") != arg[iarg+1] ) error->all(FLERR,"Missing atom style variable for radical voronoi tesselation radius.");
       int n = strlen(&arg[iarg+1][2]) + 1;
       radstr = new char[n];
       strcpy(radstr,&arg[iarg+1][2]);
       iarg += 2;
-    } 
+    }
     else if (strcmp(arg[iarg], "surface") == 0) {
       if (iarg + 2 > narg) error->all(FLERR,"Missing group name after keyword 'surface'.");
       // group all is a special case where we just skip group testing
@@ -72,7 +104,7 @@ ComputeVoronoi::ComputeVoronoi(LAMMPS *lmp, int narg, char **arg) :
       } else {
         sgroup = group->find(arg[iarg+1]);
         if (sgroup == -1) error->all(FLERR,"Could not find compute/voronoi surface group ID");
-        sgroupbit = group->bitmask[sgroup]; 
+        sgroupbit = group->bitmask[sgroup];
         surface = VOROSURF_GROUP;
       }
       size_peratom_cols = 3;
@@ -89,8 +121,8 @@ ComputeVoronoi::ComputeVoronoi(LAMMPS *lmp, int narg, char **arg) :
       if (iarg + 2 > narg) error->all(FLERR,"Missing minimum edge length after keyword 'edge_threshold'.");
       ethresh = atof(arg[iarg+1]);
       iarg += 2;
-    } 
-    else 
+    }
+    else
       error->all(FLERR,"Illegal compute voronoi/atom command");
   }
 
@@ -153,7 +185,7 @@ void ComputeVoronoi::compute_peratom()
   // in the onlyGroup mode we are not setting values for all atoms later in the voro loop
   // initialize everything to zero here
   if (onlyGroup) {
-    if (surface == VOROSURF_NONE) 
+    if (surface == VOROSURF_NONE)
       for (i = 0; i < nlocal; i++) voro[i][0] = voro[i][1] = 0.0;
     else
       for (i = 0; i < nlocal; i++) voro[i][0] = voro[i][1] = voro[i][2] = 0.0;
@@ -164,7 +196,7 @@ void ComputeVoronoi::compute_peratom()
   double *cut = comm->cutghost;
   double sublo_bound[3], subhi_bound[3], cut_bound[3];
   double **x = atom->x;
-   
+
   // setup bounds for voro++ domain for orthogonal and triclinic simulation boxes
   if( domain->triclinic ) {
     // triclinic box: embed parallelepiped into orthogonal voro++ domain
@@ -204,7 +236,7 @@ void ComputeVoronoi::compute_peratom()
   for( i=0; i<3; ++i ) {
     n[i] = round( n[i]*pow( double(nall)/(V*8.0), 0.333333 ) );
     n[i] = n[i]==0 ? 1 : n[i];
-  } 
+  }
 
   // clear edge statistics
   for (i = 0; i < maxedge; ++i) edge[i]=0;
@@ -237,7 +269,7 @@ void ComputeVoronoi::compute_peratom()
     container_poly con(sublo_bound[0]-cut_bound[0]-e,subhi_bound[0]+cut_bound[0]+e,
                        sublo_bound[1]-cut_bound[1]-e,subhi_bound[1]+cut_bound[1]+e,
                        sublo_bound[2]-cut_bound[2]-e,subhi_bound[2]+cut_bound[2]+e,
-                       int(n[0]),int(n[1]),int(n[2]),false,false,false,8); 
+                       int(n[0]),int(n[1]),int(n[2]),false,false,false,8);
 
     // pass coordinates for local and ghost atoms to voro++
     for (i = 0; i < nall; i++)
@@ -255,7 +287,7 @@ void ComputeVoronoi::compute_peratom()
     container con(sublo_bound[0]-cut_bound[0]-e,subhi_bound[0]+cut_bound[0]+e,
                   sublo_bound[1]-cut_bound[1]-e,subhi_bound[1]+cut_bound[1]+e,
                   sublo_bound[2]-cut_bound[2]-e,subhi_bound[2]+cut_bound[2]+e,
-                  int(n[0]),int(n[1]),int(n[2]),false,false,false,8); 
+                  int(n[0]),int(n[1]),int(n[2]),false,false,false,8);
 
     // pass coordinates for local and ghost atoms to voro++
     for (i = 0; i < nall; i++)
@@ -274,7 +306,7 @@ void ComputeVoronoi::compute_peratom()
 /* ----------------------------------------------------------------------
    memory usage of local atom-based array
 ------------------------------------------------------------------------- */
-void ComputeVoronoi::processCell(voronoicell_neighbor &c, int i) 
+void ComputeVoronoi::processCell(voronoicell_neighbor &c, int i)
 {
   int j,k, *mask = atom->mask;
   std::vector<int> neigh, norder, vlist;
@@ -295,7 +327,7 @@ void ComputeVoronoi::processCell(voronoicell_neighbor &c, int i)
       c.face_areas(narea);
       have_narea = true;
       voro[i][1] = 0.0;
-      for (j=0; j<narea.size(); ++j)  
+      for (j=0; j<narea.size(); ++j)
         if (narea[j] > fthresh) voro[i][1] += 1.0;
     } else {
       // unthresholded face count
@@ -309,22 +341,22 @@ void ComputeVoronoi::processCell(voronoicell_neighbor &c, int i)
       if (!have_narea) c.face_areas(narea);
       voro[i][2] = 0.0;
       // loop over all faces (neighbors) and check if they are in the surface group
-      for (j=0; j<voro[i][1]; ++j)  
+      for (j=0; j<voro[i][1]; ++j)
         if (mask[neigh[j]] & sgroupbit) voro[i][2] += narea[j];
     }
 
     // histogram of number of face edges
     if (maxedge>0) {
       if (ethresh > 0) {
-        // count only edges above length threshold 
+        // count only edges above length threshold
         c.vertices(vcell);
         c.face_vertices(vlist); // for each face: vertex count followed list of vertex indices (n_1,v1_1,v2_1,v3_1,..,vn_1,n_2,v2_1,...)
         double dx, dy, dz, r2, t2 = ethresh*ethresh;
-        for( j=0; j<vlist.size(); j+=vlist[j]+1 ) { 
+        for( j=0; j<vlist.size(); j+=vlist[j]+1 ) {
           int a, b, nedge = 0;
           // vlist[j] contains number of vertex indices for the current face
-          for( k=0; k<vlist[j]; ++k ) { 
-            a = vlist[j+1+k];              // first vertex in edge 
+          for( k=0; k<vlist[j]; ++k ) {
+            a = vlist[j+1+k];              // first vertex in edge
             b = vlist[j+1+(k+1)%vlist[j]]; // second vertex in edge (possible wrap around to first vertex in list)
             dx = vcell[a*3]   - vcell[b*3];
             dy = vcell[a*3+1] - vcell[b*3+1];
@@ -334,7 +366,7 @@ void ComputeVoronoi::processCell(voronoicell_neighbor &c, int i)
           }
           // counted edges above threshold, now put into the correct bin
           if (nedge>0) {
-            if (nedge<=maxedge) 
+            if (nedge<=maxedge)
               edge[nedge-1]++;
             else
               edge[maxedge]++;
@@ -345,7 +377,7 @@ void ComputeVoronoi::processCell(voronoicell_neighbor &c, int i)
         c.face_orders(norder);
         for (j=0; j<voro[i][1]; ++j)
           if (norder[j]>0) {
-            if (norder[j]<=maxedge) 
+            if (norder[j]<=maxedge)
               edge[norder[j]-1]++;
             else
               edge[maxedge]++;

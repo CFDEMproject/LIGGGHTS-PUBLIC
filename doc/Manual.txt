@@ -1,16 +1,15 @@
 <HEAD>
-<TITLE>LIGGGHTS Users Manual</TITLE>
-<META NAME="docnumber" CONTENT="Large-scale Atomic/Molecular Massively Parallel Simulator">
-<META NAME="author" CONTENT="http://lammps.sandia.gov - Sandia National Laboratories">
-<META NAME="copyright" CONTENT="Copyright 2009 - 2012 JKU Linz, Copyright 2012 - DCS Computing GmbH, Copyright (2003) Sandia Corporation.  This software and manual is distributed under the GNU General Public License.">
+<TITLE>LIGGGHTS(R)-PUBLIC Users Manual</TITLE>
+<META NAME="docnumber" CONTENT="LIGGGHTS(R)-PUBLIC DEM simulation engine">
+<META NAME="author" CONTENT="http://www.cfdem.com - DCS Computing GmbH">
+<META NAME="copyright" CONTENT="Copyright 2012 - DCS Computing GmbH, Copyright 2009 - 2012 JKU Linz, Copyright (2003) Sandia Corporation and others.  This software and manual is distributed under the GNU General Public License.">
 </HEAD>
 
 <BODY>
 
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -18,189 +17,136 @@
 
 <H1></H1>
 :line
-LIGGGHTS Documentation, Version 3.X :c,h3
+LIGGGHTS(R)-PUBLIC Documentation, Version 3.X :c,h3
 :line
-:c,image(Portfolio_LIGGGHTS.png)
+:c,image(LIGGGHTS_logo.png)
 :line
 
+LIGGGHTS(R)-PUBLIC DEM simulation engine :h3
 
-LIGGGHTS stands for LAMMPS Improved for General Granular and Granular 
-Heat Transfer Simulations. It is part of the "CFDEMproject"_liws, www.cfdem.com
+released by DCS Computing Gmbh, Linz, Austria, "www.dcs-computing.com"_dcs , office@dcs-computing.com :h3
 
-The core developers of LIGGGHTS are Christoph Kloss (DCS Computing GmbH, Linz and JKU Linz)
-and Richard Berger (JKU Linz), with major contributions from Philippe Seil, Andreas Aigner 
-and Stefan Amberger (all JKU Linz) and Christoph Goniva (DCS Computing GmbH, Linz and JKU Linz)
+:link(dcs,http://www.dcs-computing.com)
 
-"CFDEMproject"_liws has more information about the code and its uses. 
-For questions about the code, please use the forums at "CFDEMproject"_liws.
+:line
 
-LIGGGHTS is based on LAMMPS (see below), and so is its manual. So if the manual says
-'LAMMPS', you could read 'LIGGGHTS' instead. However, we want to make clear which 
-parts of the code and framework stem from the LAMMPS base.
+LIGGGHTS(R)-PUBLIC is open-source, distributed under the terms of the GNU Public
+License, version 2 or later. LIGGGHTS(R)-PUBLIC is part of CFDEM(R)project: "www.liggghts.com"_lig | "www.cfdem.com"_cfd :h4
 
-LIGGGHTS Version info: :h4
+:link(lig,http://www.liggghts.com)
+:link(cfd,http://www.cfdem.com)
 
-All LIGGGHTS versions are based on a specific version of LAMMPS, as printed in 
-the file src/version.h LIGGGHTS version are identidied by a version number (e.g. '3.0'),
-a branch name (e.g. 'LIGGGHTS-PUBLIC' for the public release of LIGGGHTS),
-compilation info (date / time stamp and user name), and a LAMMPS version 
-number (which is the LAMMPS version that the LIGGGHTS release is based on).
-For info on the LAMMPS version, see below.
+Core developer and main author:
+Christoph Kloss, christoph.kloss@dcs-computing.com
 
-LAMMPS Version info: :h4
+LIGGGHTS(R)-PUBLIC is an Open Source Discrete Element Method Particle
+Simulation Software, distributed by DCS Computing GmbH, Linz, Austria.
+LIGGGHTS (R) and CFDEM(R) are registered trade marks of DCS Computing GmbH,
+the producer of the LIGGGHTS (R) software and the CFDEM(R)coupling software
+See http://www.cfdem.com/terms-trademark-policy for details. :h4
 
+LIGGGHTS (R) Version info: :h4
+
+All LIGGGHTS (R) versions are based on a specific version of LIGGGHTS (R), as printed in
+the file src/version.h LIGGGHTS (R) versions are identidied by a version number (e.g. '3.0'),
+a branch name (which is 'LIGGGHTS(R)-PUBLIC' for your release of LIGGGHTS),
+compilation info (date / time stamp and user name), and a LAMMPS version
+number (which is the LAMMPS version that the LIGGGHTS(R)-PUBLIC release is based on).
 The LAMMPS "version" is the date when it was released, such as 1 May
-2010. LAMMPS is updated continuously.  Whenever we fix a bug or add a
-feature, we release it immediately, and post a notice on "this page of
-the WWW site"_bug.  Each dated copy of LAMMPS contains all the
-features and bug-fixes up to and including that version date. The
-version date is printed to the screen and logfile every time you run
-LAMMPS. It is also in the file src/version.h and in the LAMMPS
-directory name created when you unpack a tarball, and at the top of
-the first page of the manual (this page).
+2010.
 
-If you browse the HTML doc pages on the LAMMPS WWW site, they always
-describe the most current version of LAMMPS. :ulb,l
+If you browse the HTML doc pages on the LIGGGHTS(R)-PUBLIC WWW site, they always
+describe the most current version of LIGGGHTS(R)-PUBLIC. If you browse the HTML doc
+pages included in your tarball, they describe the version you have.
 
-If you browse the HTML doc pages included in your tarball, they
-describe the version you have. :l
-
-The "PDF file"_Manual.pdf on the WWW site or in the tarball is updated
-about once per month.  This is because it is large, and we don't want
-it to be part of every patch. :l
-
-There is also a "Developer.pdf"_Developer.pdf file in the doc
-directory, which describes the internal structure and algorithms of
-LAMMPS.  :ule,l
-
-LAMMPS stands for Large-scale Atomic/Molecular Massively Parallel
-Simulator.
+LIGGGHTS (R) and its ancestor LAMMPS: :h4
 
 LAMMPS is a classical molecular dynamics simulation code designed to
 run efficiently on parallel computers.  It was developed at Sandia
 National Laboratories, a US Department of Energy facility, with
 funding from the DOE.  It is an open-source code, distributed freely
 under the terms of the GNU Public License (GPL).
-
-The primary developers of LAMMPS are "Steve Plimpton"_sjp, Aidan
-Thompson, and Paul Crozier who can be contacted at
-sjplimp,athomps,pscrozi at sandia.gov.  The "LAMMPS WWW Site"_lws at
-http://lammps.sandia.gov has more information about the code and its
-uses.
-
-:link(bug,http://lammps.sandia.gov/bug.html)
-:link(sjp,http://www.sandia.gov/~sjplimp)
+The primary developers of LAMMPS are Steve Plimpton, Aidan
+Thompson, and Paul Crozier.  The LAMMPS WWW Site at
+http://lammps.sandia.gov has more information about LAMMPS.
 
 :line
 
-The LAMMPS documentation is organized into the following sections.  If
+The LIGGGHTS(R)-PUBLIC documentation is organized into the following sections.  If
 you find errors or omissions in this manual or have suggestions for
 useful information to add, please send an email to the developers so
-we can improve the LAMMPS documentation.
+we can improve the LIGGGHTS(R)-PUBLIC documentation.
 
-Once you are familiar with LAMMPS, you may want to bookmark "this
-page"_Section_commands.html#comm at Section_commands.html#comm since
-it gives quick access to documentation for all LAMMPS commands.
-
-"PDF file"_Manual.pdf of the entire manual, generated by
-"htmldoc"_http://www.easysw.com/htmldoc
+Once you are familiar with LIGGGHTS(R)-PUBLIC, you may want to bookmark "this
+page"_Section_commands.html#comm since
+it gives quick access to documentation for all LIGGGHTS(R)-PUBLIC commands.
 
 "Introduction"_Section_intro.html :olb,l
-  1.1 "What is LAMMPS"_intro_1 :ulb,b
-  1.2 "LAMMPS features"_intro_2 :b
-  1.3 "LAMMPS non-features"_intro_3 :b
-  1.4 "Open source distribution"_intro_4 :b
-  1.5 "Acknowledgments and citations"_intro_5 :ule,b
+  1.1 "What is LIGGGHTS(R)-PUBLIC"_intro_1 :ulb,b
+  1.2 "LIGGGHTS(R)-PUBLIC features"_intro_2 :b
+  1.3 "Open source distribution"_intro_3 :b
+  1.4 "Acknowledgments and citations"_intro_4 :ule,b
 "Getting started"_Section_start.html :l
-  2.1 "What's in the LAMMPS distribution"_start_1 :ulb,b
-  2.2 "Making LAMMPS"_start_2 :b
-  2.3 "Making LAMMPS with optional packages"_start_3 :b
-  2.4 "Building LAMMPS via the Make.py script"_start_4 :b
-  2.5 "Building LAMMPS as a library"_start_5 :b
-  2.6 "Running LAMMPS"_start_6 :b
+  2.1 "What's in the LIGGGHTS(R)-PUBLIC distribution"_start_1 :ulb,b
+  2.2 "Making LIGGGHTS(R)-PUBLIC"_start_2 :b
+  2.3 "Making LIGGGHTS(R)-PUBLIC with optional packages"_start_3 :b
+  2.4 "Building LIGGGHTS(R)-PUBLIC via the Make.py script"_start_4 :b
+  2.5 "Building LIGGGHTS(R)-PUBLIC as a library"_start_5 :b
+  2.6 "Running LIGGGHTS(R)-PUBLIC"_start_6 :b
   2.7 "Command-line options"_start_7 :b
-  2.8 "Screen output"_start_8 :b
-  2.9 "Tips for users of previous versions"_start_9 :ule,b
+  2.8 "Screen output"_start_8  :ule,b
+"Input script"_Section_commands.html :l
+  3.1 "LIGGGHTS(R)-PUBLIC input script"_inp_1 :ulb,b
+  3.2 "Parsing rules"_inp_2 :b
+  3.3 "Input script structure"_inp_3 :ule,b
 "Commands"_Section_commands.html :l
-  3.1 "LAMMPS input script"_cmd_1 :ulb,b
-  3.2 "Parsing rules"_cmd_2 :b
-  3.3 "Input script structure"_cmd_3 :b
-  3.4 "Commands listed by category"_cmd_4 :b
-  3.5 "Commands listed alphabetically"_cmd_5 :ule,b
+  4.1 "List of available commands "_cmd_1 :ule,b
+"Contact models"_Section_commands.html :l
+  5.1 "List of available contact models"_con_1 :ule,b
 "Packages"_Section_packages.html :l
-  4.1 "Standard packages"_pkg_1 :ulb,b
-  4.2 "User packages"_pkg_2 :ule,b
-"Accelerating LAMMPS performance"_Section_accelerate.html :l
-  5.1 "Measuring performance"_acc_1 :ulb,b
-  5.2 "General strategies"_acc_2 :b
-  5.3 "Packages with optimized styles"_acc_3 :b
-  5.4 "OPT package"_acc_4 :b
-  5.5 "USER-OMP package"_acc_5 :b
-  5.6 "GPU package"_acc_6 :b
-  5.7 "USER-CUDA package"_acc_7 :b
-  5.8 "Comparison of GPU and USER-CUDA packages"_acc_8 :ule,b
+  6.1 "Standard packages"_pkg_1 :ulb,b
+  6.2 "User packages"_pkg_2 :ule,b
 "How-to discussions"_Section_howto.html :l
-  6.1 "Restarting a simulation"_howto_1 :ulb,b
-  6.2 "2d simulations"_howto_2 :b
-  6.3 "CHARMM and AMBER force fields"_howto_3 :b
-  6.4 "Running multiple simulations from one input script"_howto_4 :b
-  6.5 "Multi-replica simulations"_howto_5 :b
-  6.6 "Granular models"_howto_6 :b
-  6.7 "TIP3P water model"_howto_7 :b
-  6.8 "TIP4P water model"_howto_8 :b
-  6.9 "SPC water model"_howto_9 :b
-  6.10 "Coupling LAMMPS to other codes"_howto_10 :b
-  6.11 "Visualizing LAMMPS snapshots"_howto_11 :b
-  6.12 "Triclinic (non-orthogonal) simulation boxes"_howto_12 :b
-  6.13 "NEMD simulations"_howto_13 :b
-  6.14 "Finite-size spherical and aspherical particles"_howto_14 :b
-  6.15 "Output from LAMMPS (thermo, dumps, computes, fixes, variables)"_howto_15 :b
-  6.16 "Thermostatting, barostatting, and compute temperature"_howto_16 :b
-  6.17 "Walls"_howto_17 :b
-  6.18 "Elastic constants"_howto_18 :b
-  6.19 "Library interface to LAMMPS"_howto_19 :b
-  6.20 "Calculating thermal conductivity"_howto_20 :b
-  6.21 "Calculating viscosity"_howto_21 :ule,b
-"Example problems"_Section_example.html :l
-"Performance & scalability"_Section_perf.html :l
-"Additional tools"_Section_tools.html :l
-"Modifying & extending LAMMPS"_Section_modify.html :l
-  10.1 "Atom styles"_mod_1 :ulb,b
-  10.2 "Bond, angle, dihedral, improper potentials"_mod_2 :b
-  10.3 "Compute styles"_mod_3 :b
-  10.4 "Dump styles"_mod_4 :b
-  10.5 "Dump custom output options"_mod_5 :b
-  10.6 "Fix styles"_mod_6 :b
-  10.7 "Input script commands"_mod_7 :b
-  10.8 "Kspace computations"_mod_8 :b
-  10.9 "Minimization styles"_mod_9 :b
-  10.10 "Pairwise potentials"_mod_10 :b
-  10.11 "Region styles"_mod_11 :b
-  10.12 "Body styles"_mod_12 :b
-  10.13 "Thermodynamic output options"_mod_13 :b
-  10.14 "Variable options"_mod_14 :b
-  10.15 "Submitting new features for inclusion in LAMMPS"_mod_15 :ule,b
+  7.1 "Restarting a simulation"_howto_1 :ulb,b
+  7.2 "2d simulations"_howto_2 :b
+  7.3 "Running multiple simulations from one input script"_howto_3 :b
+  7.4 "Granular models"_howto_4 :b
+  7.5 "Coupling LIGGGHTS(R)-PUBLIC to other codes"_howto_5 :b
+  7.6 "Visualizing LIGGGHTS(R)-PUBLIC snapshots"_howto_6 :b
+  7.7 "Triclinic (non-orthogonal) simulation boxes"_howto_7 :b
+  7.8 "Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)"_howto_8 :b
+  7.9 "Walls"_howto_9 :b
+  7.10 "Library interface to LIGGGHTS(R)-PUBLIC"_#howto_10 :ule,b
+"Modifying & extending LIGGGHTS(R)-PUBLIC"_Section_modify.html :l
+  8.1 "Atom styles"_mod_1 :ulb,b
+  8.2 "Compute styles"_mod_2 :b
+  8.4 "Dump styles"_mod_3 :b
+  8.5 "Dump custom output options"_mod_4 :b
+  8.6 "Fix styles"_mod_5 :b
+  8.6 "Input script commands"_mod_6 :b
+  8.7 "Pairwise potentials"_mod_7 :b
+  8.8 "Region styles"_mod_8 :b
+  8.9 "Thermodynamic output options"_mod_9 :b
+  8.10 "Variable options"_mod_10 :b
+  8.11 "Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC"_mod_11 :ule,b
 "Python interface"_Section_python.html :l
-  11.1 "Building LAMMPS as a shared library"_py_1 :ulb,b
-  11.2 "Installing the Python wrapper into Python"_py_2 :b
-  11.3 "Extending Python with MPI to run in parallel"_py_3 :b
-  11.4 "Testing the Python-LAMMPS interface"_py_4 :b
-  11.5 "Using LAMMPS from Python"_py_5 :b
-  11.6 "Example Python scripts that use LAMMPS"_py_6 :ule,b
+  9.1 "Building LIGGGHTS(R)-PUBLIC as a shared library"_py_1 :ulb,b
+  9.2 "Installing the Python wrapper into Python"_py_2 :b
+  9.3 "Extending Python with MPI to run in parallel"_py_3 :b
+  9.4 "Testing the Python-LIGGGHTS(R)-PUBLIC interface"_py_4 :b
+  9.5 "Using LIGGGHTS(R)-PUBLIC from Python"_py_5 :b
+  9.6 "Example Python scripts that use LIGGGHTS(R)-PUBLIC"_py_6 :ule,b
 "Errors"_Section_errors.html :l
-  12.1 "Common problems"_err_1 :ulb,b
-  12.2 "Reporting bugs"_err_2 :b
-  12.3 "Error & warning messages"_err_3 :ule,b
-"Future and history"_Section_history.html :l
-  13.1 "Coming attractions"_hist_1 :ulb,b
-  13.2 "Past versions"_hist_2 :ule,b
+  10.1 "Common problems"_err_1 :ulb,b
+  10.2 "Reporting bugs"_err_2 :b
+  10.3 "Error & warning messages"_err_3 :ule,b
+
 :ole
 
 :link(intro_1,Section_intro.html#intro_1)
 :link(intro_2,Section_intro.html#intro_2)
 :link(intro_3,Section_intro.html#intro_3)
 :link(intro_4,Section_intro.html#intro_4)
-:link(intro_5,Section_intro.html#intro_5)
 
 :link(start_1,Section_start.html#start_1)
 :link(start_2,Section_start.html#start_2)
@@ -210,25 +156,17 @@ it gives quick access to documentation for all LAMMPS commands.
 :link(start_6,Section_start.html#start_6)
 :link(start_7,Section_start.html#start_7)
 :link(start_8,Section_start.html#start_8)
-:link(start_9,Section_start.html#start_9)
+
+:link(inp_1,Section_input_script.html#inp_1)
+:link(inp_2,Section_input_script.html#inp_2)
+:link(inp_3,Section_input_script.html#inp_3)
 
 :link(cmd_1,Section_commands.html#cmd_1)
-:link(cmd_2,Section_commands.html#cmd_2)
-:link(cmd_3,Section_commands.html#cmd_3)
-:link(cmd_4,Section_commands.html#cmd_4)
-:link(cmd_5,Section_commands.html#cmd_5)
+
+:link(con_1,Section_gran_models.html)
 
 :link(pkg_1,Section_packages.html#pkg_1)
 :link(pkg_2,Section_packages.html#pkg_2)
-
-:link(acc_1,Section_accelerate.html#acc_1)
-:link(acc_2,Section_accelerate.html#acc_2)
-:link(acc_3,Section_accelerate.html#acc_3)
-:link(acc_4,Section_accelerate.html#acc_4)
-:link(acc_5,Section_accelerate.html#acc_5)
-:link(acc_6,Section_accelerate.html#acc_6)
-:link(acc_7,Section_accelerate.html#acc_7)
-:link(acc_8,Section_accelerate.html#acc_8)
 
 :link(howto_1,Section_howto.html#howto_1)
 :link(howto_2,Section_howto.html#howto_2)
@@ -240,17 +178,6 @@ it gives quick access to documentation for all LAMMPS commands.
 :link(howto_8,Section_howto.html#howto_8)
 :link(howto_9,Section_howto.html#howto_9)
 :link(howto_10,Section_howto.html#howto_10)
-:link(howto_11,Section_howto.html#howto_11)
-:link(howto_12,Section_howto.html#howto_12)
-:link(howto_13,Section_howto.html#howto_13)
-:link(howto_14,Section_howto.html#howto_14)
-:link(howto_15,Section_howto.html#howto_15)
-:link(howto_16,Section_howto.html#howto_16)
-:link(howto_17,Section_howto.html#howto_17)
-:link(howto_18,Section_howto.html#howto_18)
-:link(howto_19,Section_howto.html#howto_19)
-:link(howto_20,Section_howto.html#howto_20)
-:link(howto_21,Section_howto.html#howto_21)
 
 :link(mod_1,Section_modify.html#mod_1)
 :link(mod_2,Section_modify.html#mod_2)
@@ -263,10 +190,6 @@ it gives quick access to documentation for all LAMMPS commands.
 :link(mod_9,Section_modify.html#mod_9)
 :link(mod_10,Section_modify.html#mod_10)
 :link(mod_11,Section_modify.html#mod_11)
-:link(mod_12,Section_modify.html#mod_12)
-:link(mod_13,Section_modify.html#mod_13)
-:link(mod_14,Section_modify.html#mod_14)
-:link(mod_15,Section_modify.html#mod_15)
 
 :link(py_1,Section_python.html#py_1)
 :link(py_2,Section_python.html#py_2)
@@ -278,8 +201,5 @@ it gives quick access to documentation for all LAMMPS commands.
 :link(err_1,Section_errors.html#err_1)
 :link(err_2,Section_errors.html#err_2)
 :link(err_3,Section_errors.html#err_3)
-
-:link(hist_1,Section_history.html#hist_1)
-:link(hist_2,Section_history.html#hist_2)
 
 </BODY>

@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -28,22 +27,18 @@ stress_keyword = {stress} or {wear} :l
 
 fix cad all mesh/surface/stress file mesh.stl type 1 wear finnie :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This command is not available in LAMMPS.
-
 [Description:]
 
-This fix is identical to "fix mesh/surface"_fix_mesh_surface.html except for the fact 
-that the pressure and shear force that the particles in the fix group exert on each 
-triangle of the mesh is evaluated (which costs a bit of performance). Also, the total 
-force and torque on the particle is calculated (see output info). The per-element forces 
+This fix is identical to "fix mesh/surface"_fix_mesh_surface.html except for the fact
+that the pressure and shear force that the particles in the fix group exert on each
+triangle of the mesh is evaluated (which costs a bit of performance). Also, the total
+force and torque on the particle is calculated (see output info). The per-element forces
 can be dumped into VTK format using "dump mesh/vtk"_dump.html.
 
-With the optional {stress} keyword, stress tracking can be turned off is desired. The 
+With the optional {stress} keyword, stress tracking can be turned off is desired. The
 reference point for calculating the body torque can be controlled via the {referece_point}
-keyword. The optional {wear} keyword can activates a simple qualitative wear model 
-({finnie}) - for details on the model, see the seperate /doc/finnie-wear.pdf. The 
+keyword. The optional {wear} keyword can activates a simple qualitative wear model
+({finnie}) - for details on the model, see the seperate /doc/finnie-wear.pdf. The
 finnie constant k in Eqn. (4.23) has to be specified as follows:
 
 fix id all property/global k_finnie peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. . :pre
@@ -52,9 +47,9 @@ fix id all property/global k_finnie peratomtypepair n_atomtypes value_11 value_1
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
-This fix stores a global vector with 6 components for access by various 
-"output commands"_Section_howto.html#4_15. The first 3 components are equal to the 
-total force on the mesh, the last 3 components store the total torque on the body 
+This fix stores a global vector with 6 components for access by various
+"output commands"_Section_howto.html#4_15. The first 3 components are equal to the
+total force on the mesh, the last 3 components store the total torque on the body
 exerted by the particles. Other info see "fix mesh"_fix_mesh.html.
 
 [Related commands:]

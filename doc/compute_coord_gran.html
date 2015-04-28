@@ -1,0 +1,60 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>compute coord/gran command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>compute ID group-ID coord/gran 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command
+<LI>coord/atom = style name of this compute command 
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>compute 1 all coord/gran 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Define a computation that calculates the coordination number for each
+atom in a group. The value of the coordination number will be 0.0
+for atoms not in the specified compute group.
+</P>
+<P>The coordination number is defined as the number of neighbor atoms
+within the granular cutoff distance from the central atom. The cutoff
+distance for granular systems is the sum of the radii of the two particles.
+</P>
+<P>The neighbor list needed to compute this quantity is constructed each
+time the calculation is performed (i.e. each time a snapshot of atoms
+is dumped). Thus it can be inefficient to compute/dump this quantity
+too frequently or to have multiple compute/dump commands, each of a
+coord/gran style.
+</P>
+<P><B>Output info:</B>
+</P>
+<P>This compute calculates a per-atom vector, which can be accessed by
+any command that uses per-atom values from a compute as input.  See
+<A HREF = "Section_howto.html#4_15">this section</A> for an overview of LIGGGHTS(R)-PUBLIC
+output options.
+</P>
+<P>The per-atom vector values will be a number >= 0.0, as explained
+above.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>This command cannot be applied to multi-sphere simulations, as the
+output will not be the per-body coordination number.
+</P>
+<P><B>Related commands:</B> none
+</P>
+<P><B>Default:</B> none
+</P>
+</HTML>

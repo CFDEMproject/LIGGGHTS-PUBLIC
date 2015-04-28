@@ -22,7 +22,7 @@ update your repositories by {git pull} :l
 
 [{git clone} the desired repository:]
 
-To clone the public LIGGGHTS repository, open a terminal and execute:
+To clone the public LIGGGHTS(R)-PUBLIC repository, open a terminal and execute:
 
 git clone git@github.com:CFDEMproject/LIGGGHTS-PUBLIC.git :pre
 

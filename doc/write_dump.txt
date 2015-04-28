@@ -1,11 +1,11 @@
- "LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+ "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
 :line
-   
+
 write_dump command :h3
 
 [Syntax:]
@@ -25,7 +25,7 @@ write_dump all atom dump.atom
 write_dump subgroup atom dump.run.bin
 write_dump all custom dump.myforce.* id type x y vx fx
 write_dump flow custom dump.%.myforce id type c_myF\[3\] v_ke modify sort id
-write_dump all xyz system.xyz modify sort id elements O H 
+write_dump all xyz system.xyz modify sort id elements O H
 write_dump all image snap*.jpg type type size 960 960 modify backcolor white
 write_dump all image snap*.jpg element element &
    bond atom 0.3 shiny 0.1 ssao yes 6345 0.2 size 1600 1600  &
@@ -48,7 +48,7 @@ added.  The latter is so that the full range of
 snapshot, just as they can be for multiple snapshots.  The {modify}
 keyword separates the arguments that would normally be passed to the
 {dump} command from those that would be given the {dump_modify}.  Both
-support optional arguments and thus LAMMPS needs to be able to cleanly
+support optional arguments and thus LIGGGHTS(R)-PUBLIC needs to be able to cleanly
 separate the two sets of args.
 
 Note that if the specified filename uses wildcard characters "*" or
@@ -72,7 +72,7 @@ minimization"_minimize.html, the simulation has to be ready to run
 before this command can be used.  Similarly, if the dump requires
 information from a compute, fix, or variable, the information needs to
 have been calculated for the current timestep (e.g. by a prior run),
-else LAMMPS will generate an error message.
+else LIGGGHTS(R)-PUBLIC will generate an error message.
 
 For example, it is not possible to dump per-atom energy with this
 command before a run has been performed, since no energies and forces

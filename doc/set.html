@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -23,9 +21,8 @@
 
 <LI>one or more keyword/value pairs may be appended 
 
-<LI>keyword = <I>type</I> or <I>type/fraction</I> or <I>mol</I> or <I>x</I> or <I>y</I> or <I>z</I> or           <I>charge</I> or <I>dipole</I> or <I>dipole/random</I> or <I>quat</I> or 	  <I>quat/random</I> or <I>diameter</I> or <I>shape</I> or 	  <I>length</I> or <I>tri</I> or <I>theta</I> or <I>angmom</I> or 	  <I>mass</I> or <I>density</I> or <I>volume</I> or <I>image</I> or
-	  <I>bond</I> or <I>angle</I> or <I>dihedral</I> or <I>improper</I> or
-	  <I>meso_e</I> or <I>meso_cv</I> or <I>meso_rho</I> or <I>property/atom</I> 
+<LI>keyword = <I>type</I> or <I>type/fraction</I> or <I>mol</I> or <I>x</I> or <I>y</I> or <I>z</I> or           <I>charge</I> or <I>quat</I> or 	  <I>quat/random</I> or <I>diameter</I> or <I>shape</I> or 	  <I>length</I> or <I>tri</I> or <I>theta</I> or <I>angmom</I> or 	  <I>mass</I> or <I>density</I> or <I>volume</I> or <I>image</I> or
+	  <I>bond</I> or <I>property/atom</I> 
 
 <PRE>  <I>type</I> value = atom type
     value can be an atom-style variable (see below)
@@ -39,12 +36,6 @@
     value can be an atom-style variable (see below)
   <I>charge</I> value = atomic charge (charge units)
     value can be an atom-style variable (see below)
-  <I>dipole</I> values = x y z
-    x,y,z = orientation of dipole moment vector
-    any of x,y,z can be an atom-style variable (see below)
-  <I>dipole/random</I> value = seed Dlen
-    seed = random # seed (positive integer) for dipole moment orientations
-    Dlen = magnitude of dipole moment (dipole units)
   <I>quat</I> values = a b c theta
     a,b,c = unit vector to rotate particle around via right-hand rule
     theta = rotation angle (degrees)
@@ -75,17 +66,7 @@
     value can be an atom-style variable (see below)
   <I>image</I> nx ny nz
     nx,ny,nz = which periodic image of the simulation box the atom is in
-  <I>bond</I> value = bond type for all bonds between selected atoms
-  <I>angle</I> value = angle type for all angles between selected atoms
-  <I>dihedral</I> value = dihedral type for all dihedrals between selected atoms
-  <I>improper</I> value = improper type for all impropers between selected atoms
-  <I>meso_e</I> value = energy of SPH particles (need units)
-    value can be an atom-style variable (see below)
-  <I>meso_cv</I> value = heat capacity of SPH particles (need units)
-    value can be an atom-style variable (see below)
-  <I>meso_rho</I> value = density of SPH particles (need units) 
-    value can be an atom-style variable (see below)
-  <I>add</I> value = yes no 
+  <I>add</I> value = yes no
     yes = add per-atom quantities to a region or a group
   <I>until</I> value = final timestep
     final timestep = the final timestep value until which the per-atom quantity is to be added
@@ -105,15 +86,9 @@ set region half charge 0.5
 set type 3 charge 0.5
 set type 1*3 charge 0.5
 set atom 100*200 x 0.5 y 1.0
-set atom 1492 type 3 
-set region reg add yes until 1000 property/atom liqOnParticle 5e-5 
+set atom 1492 type 3
 set property/atom Temp 273.15 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This command offers a new keyword property/atom to enable the 
-set command to assign values to properties defined by a <A HREF = "fix_property.html">fix property/atom</A>
-</P>
 <P><B>Description:</B>
 </P>
 <P>Set one or more properties of one or more atoms.  Since atom
@@ -235,7 +210,7 @@ the right-hand rule) by an angle theta around a unit rotation vector
 (a,b,c), then the quaternion that represents its new orientation is
 given by (cos(theta/2), a*sin(theta/2), b*sin(theta/2),
 c*sin(theta/2)).  The theta and a,b,c values are the arguments to the
-<I>quat</I> keyword.  LAMMPS normalizes the quaternion in case (a,b,c) was
+<I>quat</I> keyword.  LIGGGHTS(R)-PUBLIC normalizes the quaternion in case (a,b,c) was
 not specified as a unit vector.  For 2d systems, the a,b,c values are
 ignored, since a rotation vector of (0,0,1) is the only valid choice.
 </P>
@@ -332,7 +307,7 @@ adjust the particle mass.
 considered to be in.  An image of 0 means it is inside the box as
 defined.  A value of 2 means add 2 box lengths to get the true value.
 A value of -1 means subtract 1 box length to get the true value.
-LAMMPS updates these flags as atoms cross periodic boundaries during
+LIGGGHTS(R)-PUBLIC updates these flags as atoms cross periodic boundaries during
 the simulation.  The flags can be output with atom snapshots via the
 <A HREF = "dump.html">dump</A> command.  If a value of NULL is specified for any of
 nx,ny,nz, then the current image value for that dimension is
@@ -348,37 +323,30 @@ msd</A> command.  Care should be taken not to reset the
 image flags of two atoms in a bond to the same value if the bond
 straddles a periodic boundary (rather they should be different by +/-
 1).  This will not affect the dynamics of a simulation, but may mess
-up analysis of the trajectories if a LAMMPS diagnostic or your own
+up analysis of the trajectories if a LIGGGHTS(R)-PUBLIC diagnostic or your own
 analysis relies on the image flags to unwrap a molecule which
 straddles the periodic box.
 </P>
-<P>Keywords <I>bond</I>, <I>angle</I>, <I>dihedral</I>, and <I>improper</I>, set the bond
-type (angle type, etc) of all bonds (angles, etc) of selected atoms to
-the specified value from 1 to nbondtypes (nangletypes, etc).  All
-atoms in a particular bond (angle, etc) must be selected atoms in
-order for the change to be made.  The value of nbondtype (nangletypes,
-etc) was set by the <I>bond types</I> (<I>angle types</I>, etc) field in the
+<P>Keywords <I>bond</I>  set the bond type  of all bonds of selected atoms to
+the specified value from 1 to nbondtypes. All atoms in a particular bond
+must be selected atoms in order for the change to be made.  The value of
+nbondtype  was set by the <I>bond types</I> field in the
 header of the data file read by the <A HREF = "read_data.html">read_data</A>
 command.  These keywords do not allow use of an atom-style variable.
 </P>
-<P>Keywords <I>meso_e</I>, <I>meso_cv</I>, and <I>meso_rho</I> set the energy, heat
-capacity, and density of smmothed particle hydrodynamics (SPH)
-particles.  See <A HREF = "USER/sph/SPH_LAMMPS_userguide.pdf">this PDF guide</A> to
-using SPH in LAMMPS.
-</P>
-<P>Keyword <I>property/atom</I> can update per-particle properties defined by 
-a <A HREF = "fix_property.html">fix property/atom</A> command. varname is the name of 
-the variable you want to set, it is followed by the values that should 
-be assigned to this variable. The number of values provided as 
-var_value<B>i</B> must correspond to the number of values needed for the 
-update, i.e. only var_value<B>0</B> if the defined property is a scalar, 
-and the appropriate number if the property is a vector. See 
-<A HREF = "fix_property.html">fix property/atom</A> for details on how to define 
+<P>Keyword <I>property/atom</I> can update per-particle properties defined by
+a <A HREF = "fix_property.html">fix property/atom</A> command. varname is the name of
+the variable you want to set, it is followed by the values that should
+be assigned to this variable. The number of values provided as
+var_value<B>i</B> must correspond to the number of values needed for the
+update, i.e. only var_value<B>0</B> if the defined property is a scalar,
+and the appropriate number if the property is a vector. See
+<A HREF = "fix_property.html">fix property/atom</A> for details on how to define
 such a per-particle property.
 </P>
 <P>Keyword <I>add</I> and <I>until</I> are used to add a per-atom quantity (or property)
-in addition to the keyword <I>property/atom</I>. The <I>add</I> keyword is used to turn on 
-the addition of a quantity in a region or a group 
+in addition to the keyword <I>property/atom</I>. The <I>add</I> keyword is used to turn on
+the addition of a quantity in a region or a group
 until the timestep defined by the <I>until</I> keyword.
 </P>
 <P><B>Restrictions:</B>

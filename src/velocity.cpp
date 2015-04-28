@@ -1,14 +1,52 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
@@ -28,7 +66,6 @@
 #include "modify.h"
 #include "fix.h"
 #include "compute.h"
-#include "compute_temp.h"
 #include "random_park.h"
 #include "group.h"
 #include "comm.h"
@@ -37,7 +74,7 @@
 
 using namespace LAMMPS_NS;
 
-enum{CREATE,SET,SCALE,RAMP,ZERO};
+enum{SET,RAMP,ZERO};
 enum{ALL,LOCAL,GEOM};
 enum{NONE,CONSTANT,EQUAL,ATOM};
 
@@ -71,16 +108,13 @@ void Velocity::command(int narg, char **arg)
 
   // identify style
 
-  if (strcmp(arg[1],"create") == 0) style = CREATE;
-  else if (strcmp(arg[1],"set") == 0) style = SET;
-  else if (strcmp(arg[1],"scale") == 0) style = SCALE;
+  if (strcmp(arg[1],"set") == 0) style = SET;
   else if (strcmp(arg[1],"ramp") == 0) style = RAMP;
   else if (strcmp(arg[1],"zero") == 0) style = ZERO;
   else error->all(FLERR,"Illegal velocity command");
 
   // set defaults
 
-  temperature = NULL;
   dist_flag = 0;
   sum_flag = 0;
   momentum_flag = 1;
@@ -92,22 +126,14 @@ void Velocity::command(int narg, char **arg)
   // read options from end of input line
   // change defaults as options specify
 
-  if (style == CREATE) options(narg-4,&arg[4]);
-  else if (style == SET) options(narg-5,&arg[5]);
-  else if (style == SCALE) options(narg-3,&arg[3]);
+  if (style == SET) options(narg-5,&arg[5]);
   else if (style == RAMP) options(narg-8,&arg[8]);
   else if (style == ZERO) options(narg-3,&arg[3]);
 
   // initialize velocities based on style
   // create() invoked differently, so can be called externally
 
-  if (style == CREATE) {
-    double t_desired = force->numeric(FLERR,arg[2]);
-    int seed = force->inumeric(FLERR,arg[3]);
-    create(t_desired,seed);
-  }
-  else if (style == SET) set(narg-2,&arg[2]);
-  else if (style == SCALE) scale(narg-2,&arg[2]);
+  if (style == SET) set(narg-2,&arg[2]);
   else if (style == RAMP) ramp(narg-2,&arg[2]);
   else if (style == ZERO) zero(narg-2,&arg[2]);
 }
@@ -122,222 +148,12 @@ void Velocity::init_external(const char *extgroup)
   if (igroup == -1) error->all(FLERR,"Could not find velocity group ID");
   groupbit = group->bitmask[igroup];
 
-  temperature = NULL;
   dist_flag = 0;
   sum_flag = 0;
   momentum_flag = 1;
   rotation_flag = 0;
   loop_flag = ALL;
   scale_flag = 1;
-}
-
-/* ---------------------------------------------------------------------- */
-
-void Velocity::create(double t_desired, int seed)
-{
-  int i;
-
-  if (seed <= 0) error->all(FLERR,"Illegal velocity create command");
-
-  // if temperature = NULL, create a new ComputeTemp with the velocity group
-
-  int tflag = 0;
-  if (temperature == NULL) {
-    char **arg = new char*[3];
-    arg[0] = (char *) "velocity_temp";
-    arg[1] = group->names[igroup];
-    arg[2] = (char *) "temp";
-    temperature = new ComputeTemp(lmp,3,arg);
-    tflag = 1;
-    delete [] arg;
-  }
-
-  // initialize temperature computation
-  // warn if groups don't match
-
-  if (igroup != temperature->igroup && comm->me == 0)
-    error->warning(FLERR,"Mismatch between velocity and compute groups");
-  temperature->init();
-  temperature->setup();
-
-  // store a copy of current velocities
-
-  double **v = atom->v;
-  int nlocal = atom->nlocal;
-  double **vhold;
-  memory->create(vhold,nlocal,3,"velocity:vnew");
-
-  for (i = 0; i < nlocal; i++) {
-    vhold[i][0] = v[i][0];
-    vhold[i][1] = v[i][1];
-    vhold[i][2] = v[i][2];
-  }
-
-  // create new velocities, in uniform or gaussian distribution
-  // loop option determines looping style, ALL is default
-  //   ALL = loop over all natoms, only set those I own via atom->map
-  //    cannot do this if atom IDs do not span 1-Natoms (some were deleted)
-  //    will produce same V, independent of P, if atoms were read-in
-  //    will NOT produce same V, independent of P, if used create_atoms
-  //   LOCAL = only loop over my atoms, adjust RNG to be proc-specific
-  //    will never produce same V, independent of P
-  //   GEOM = only loop over my atoms
-  //    choose RNG for each atom based on its xyz coord (geometry)
-  //      via random->reset()
-  //    will always produce same V, independent of P
-  // adjust by factor for atom mass
-  // for 2d, set Vz to 0.0
-
-  double *rmass = atom->rmass;
-  double *mass = atom->mass;
-  int *type = atom->type;
-  int *mask = atom->mask;
-  int dimension = domain->dimension;
-
-  int m;
-  double vx,vy,vz,factor;
-  RanPark *random = NULL;
-
-  if (loop_flag == ALL) {
-
-    // create an atom map if one doesn't exist already
-
-    int mapflag = 0;
-    if (atom->map_style == 0) {
-      mapflag = 1;
-      atom->map_style = 1;
-      atom->nghost = 0;
-      atom->map_init();
-      atom->map_set();
-    }
-
-    // error check
-
-    if (atom->natoms > MAXSMALLINT)
-      error->all(FLERR,"Too big a problem to use velocity create loop all");
-    if (atom->tag_enable == 0)
-      error->all(FLERR,
-                 "Cannot use velocity create loop all unless atoms have IDs");
-    if (atom->tag_consecutive() == 0)
-      error->all(FLERR,
-                 "Atom IDs must be consecutive for velocity create loop all");
-
-    // loop over all atoms in system
-    // generate RNGs for all atoms, only assign to ones I own
-    // use either per-type mass or per-atom rmass
-
-    random = new RanPark(lmp,seed);
-    int natoms = static_cast<int> (atom->natoms);
-
-    for (i = 1; i <= natoms; i++) {
-      if (dist_flag == 0) {
-        vx = random->uniform();
-        vy = random->uniform();
-        vz = random->uniform();
-      } else {
-        vx = random->gaussian();
-        vy = random->gaussian();
-        vz = random->gaussian();
-      }
-      m = atom->map(i);
-      if (m >= 0 && m < nlocal) {
-        if (mask[m] & groupbit) {
-          if (rmass) factor = 1.0/sqrt(rmass[m]);
-          else factor = 1.0/sqrt(mass[type[m]]);
-          v[m][0] = vx * factor;
-          v[m][1] = vy * factor;
-          if (dimension == 3) v[m][2] = vz * factor;
-          else v[m][2] = 0.0;
-        }
-      }
-    }
-
-    // delete temporary atom map
-
-    if (mapflag) {
-      atom->map_delete();
-      atom->map_style = 0;
-    }
-
-  } else if (loop_flag == LOCAL) {
-    random = new RanPark(lmp,seed + comm->me);
-    for (i = 0; i < WARMUP; i++) random->uniform();
-
-    for (i = 0; i < nlocal; i++) {
-      if (mask[i] & groupbit) {
-        if (dist_flag == 0) {
-          vx = random->uniform();
-          vy = random->uniform();
-          vz = random->uniform();
-        } else {
-          vx = random->gaussian();
-          vy = random->gaussian();
-          vz = random->gaussian();
-        }
-        if (rmass) factor = 1.0/sqrt(rmass[i]);
-        else factor = 1.0/sqrt(mass[type[i]]);
-        v[i][0] = vx * factor;
-        v[i][1] = vy * factor;
-        if (dimension == 3) v[i][2] = vz * factor;
-        else v[i][2] = 0.0;
-      }
-    }
-
-  } else if (loop_flag == GEOM) {
-    random = new RanPark(lmp,1);
-    double **x = atom->x;
-
-    for (i = 0; i < nlocal; i++) {
-      if (mask[i] & groupbit) {
-        random->reset(seed,x[i]);
-        if (dist_flag == 0) {
-          vx = random->uniform();
-          vy = random->uniform();
-          vz = random->uniform();
-        } else {
-          vx = random->gaussian();
-          vy = random->gaussian();
-          vz = random->gaussian();
-        }
-
-        if (rmass) factor = 1.0/sqrt(rmass[i]);
-        else factor = 1.0/sqrt(mass[type[i]]);
-        v[i][0] = vx * factor;
-        v[i][1] = vy * factor;
-        if (dimension == 3) v[i][2] = vz * factor;
-        else v[i][2] = 0.0;
-      }
-    }
-  }
-
-  // apply momentum and rotation zeroing
-
-  if (momentum_flag) zero_momentum();
-  if (rotation_flag) zero_rotation();
-
-  // scale temp to desired value
-
-  double t = temperature->compute_scalar();
-  rescale(t,t_desired);
-
-  // if sum_flag set, add back in previous velocities
-
-  if (sum_flag) {
-    for (i = 0; i < nlocal; i++) {
-      if (mask[i] & groupbit) {
-        v[i][0] += vhold[i][0];
-        v[i][1] += vhold[i][1];
-        v[i][2] += vhold[i][2];
-      }
-    }
-  }
-
-  // free local memory
-  // if temperature was created, delete it
-
-  memory->destroy(vhold);
-  delete random;
-  if (tflag) delete temperature;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -502,45 +318,6 @@ void Velocity::set(int narg, char **arg)
 }
 
 /* ----------------------------------------------------------------------
-   rescale velocities of a group after computing its temperature
-------------------------------------------------------------------------- */
-
-void Velocity::scale(int narg, char **arg)
-{
-  double t_desired = force->numeric(FLERR,arg[0]);
-
-  // if temperature = NULL, create a new ComputeTemp with the velocity group
-
-  int tflag = 0;
-  if (temperature == NULL) {
-    char **arg = new char*[3];
-    arg[0] = (char *) "velocity_temp";
-    arg[1] = group->names[igroup];
-    arg[2] = (char *) "temp";
-    temperature = new ComputeTemp(lmp,3,arg);
-    tflag = 1;
-    delete [] arg;
-  }
-
-  // initialize temperature computation
-  // warn if groups don't match
-
-  if (igroup != temperature->igroup && comm->me == 0)
-    error->warning(FLERR,"Mismatch between velocity and compute groups");
-  temperature->init();
-  temperature->setup();
-
-  // scale temp to desired value
-
-  double t = temperature->compute_scalar();
-  rescale(t,t_desired);
-
-  // if temperature was created, delete it
-
-  if (tflag) delete temperature;
-}
-
-/* ----------------------------------------------------------------------
    apply a ramped set of velocities
 ------------------------------------------------------------------------- */
 
@@ -655,28 +432,6 @@ void Velocity::zero(int narg, char **arg)
 }
 
 /* ----------------------------------------------------------------------
-   rescale velocities of group atoms to t_new from t_old
-------------------------------------------------------------------------- */
-
-void Velocity::rescale(double t_old, double t_new)
-{
-  if (t_old == 0.0) error->all(FLERR,"Attempting to rescale a 0.0 temperature");
-
-  double factor = sqrt(t_new/t_old);
-
-  double **v = atom->v;
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
-
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit) {
-      v[i][0] *= factor;
-      v[i][1] *= factor;
-      v[i][2] *= factor;
-    }
-}
-
-/* ----------------------------------------------------------------------
    zero the linear momentum of a group of atoms by adjusting v by -Vcm
 ------------------------------------------------------------------------- */
 
@@ -787,18 +542,6 @@ void Velocity::options(int narg, char **arg)
       if (strcmp(arg[iarg+1],"no") == 0) rotation_flag = 0;
       else if (strcmp(arg[iarg+1],"yes") == 0) rotation_flag = 1;
       else error->all(FLERR,"Illegal velocity command");
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"temp") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal velocity command");
-      int icompute;
-      for (icompute = 0; icompute < modify->ncompute; icompute++)
-        if (strcmp(arg[iarg+1],modify->compute[icompute]->id) == 0) break;
-      if (icompute == modify->ncompute)
-        error->all(FLERR,"Could not find velocity temperature ID");
-      temperature = modify->compute[icompute];
-      if (temperature->tempflag == 0)
-        error->all(FLERR,
-                   "Velocity temperature ID does not compute temperature");
       iarg += 2;
     } else if (strcmp(arg[iarg],"loop") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal velocity command");

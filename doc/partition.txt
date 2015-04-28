@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -14,14 +14,13 @@ partition style N command ... :pre
 
 style = {yes} or {no}
 N = partition number (see asterisk form below)
-command = any LAMMPS command :ul
+command = any LIGGGHTS(R)-PUBLIC command :ul
 
 [Examples:]
 
 partition yes 1 processors 4 10 6
 partition no 5 print "Active partition"
-partition yes *5 fix all nve
-partition yes 6* fix all nvt temp 1.0 1.0 0.1 :pre
+partition yes *5 fix all nve  :pre
 
 [Description:]
 
@@ -39,7 +38,7 @@ such a variable is used in a "jump"_jump.html command.
 
 The "partition" command is another mechanism for having as input
 script operate differently on different partitions.  It is basically a
-prefix on any LAMMPS command.  The commmand will only be invoked on
+prefix on any LIGGGHTS(R)-PUBLIC command.  The commmand will only be invoked on
 the partition(s) specified by the {style} and {N} arguments.
 
 If the {style} is {yes}, the command will be invoked on any partition
@@ -60,14 +59,8 @@ from 1 to n (inclusive).  A trailing asterisk means all partitions
 from n to Np (inclusive).  A middle asterisk means all partitions from
 m to n (inclusive).
 
-This command can be useful for the "run_style verlet/split" command
-which imposed requirements on how the "processors"_processors.html
-command lays out a 3d grid of processors in each of 2 partitions.
-
 [Restrictions:] none
 
-[Related commands:]
-
-"run_style verlet/split"_run_style.html
+[Related commands:] none
 
 [Default:] none

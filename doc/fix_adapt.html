@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -23,15 +23,13 @@
 
 <LI>one or more attribute/arg pairs may be appended 
 
-<LI>attribute = <I>pair</I> or <I>kspace</I> or <I>atom</I> 
+<LI>attribute = <I>pair</I> or <I>atom</I> 
 
 <PRE>  <I>pair</I> args = pstyle pparam I J v_name
-    pstyle = pair style name, e.g. lj/cut
+    pstyle = pair style name, e.g. soft
     pparam = parameter to adapt over time
     I,J = type pair(s) to set parameter for
     v_name = variable with name that calculates value of pparam
-  <I>kspace</I> arg = v_name
-    v_name = variable with name that calculates scale factor on K-space terms
   <I>atom</I> args = aparam v_name
     aparam = parameter to adapt over time
     v_name = variable with name that calculates value of aparam 
@@ -53,7 +51,6 @@
 </P>
 <PRE>fix 1 all adapt 1 pair soft a 1 1 v_prefactor
 fix 1 all adapt 1 pair soft a 2* 3 v_prefactor
-fix 1 all adapt 1 pair lj/cut epsilon * * v_scale1 coul/cut scale 3 3 v_scale2 scale yes reset yes
 fix 1 all adapt 10 atom diameter v_size 
 </PRE>
 <P><B>Description:</B>
@@ -110,15 +107,6 @@ can be varied by this fix.  See the doc pages for individual pair
 styles and their energy formulas for the meaning of these parameters:
 </P>
 <DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD ><A HREF = "pair_born.html">born</A></TD><TD > a,b,c</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_buck.html">buck</A></TD><TD > a,c</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_coul.html">coul/cut</A></TD><TD > scale</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_coul.html">coul/debye</A></TD><TD > scale</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_coul.html">coul/long</A></TD><TD > scale</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_lj.html">lj/cut</A></TD><TD > epsilon,sigma</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_lj_expand.html">lj/expand</A></TD><TD > epsilon,sigma,delta</TD><TD > type pairs</TD></TR>
-<TR><TD ><A HREF = "pair_lubricate.html">lubricate</A></TD><TD > mu</TD><TD > global</TD></TR>
-<TR><TD ><A HREF = "pair_gauss.html">gauss</A></TD><TD > a</TD><TD > type pairs</TD></TR>
 <TR><TD ><A HREF = "pair_soft.html">soft</A></TD><TD > a</TD><TD > type pairs 
 </TD></TR></TABLE></DIV>
 
@@ -131,17 +119,6 @@ viscosity setting "mu" for <A HREF = "pair_lubricate.html">pair_style lubricate<
 Other parameters apply to atom type pairs within the pair style,
 e.g. the prefactor "a" for <A HREF = "pair_soft.html">pair_style soft</A>.
 </P>
-<P>Note that for many of the potentials, the parameter that can be varied
-is effectively a prefactor on the entire energy expression for the
-potential, e.g. the lj/cut epsilon.  The parameters listed as "scale"
-are exactly that, since the energy expression for the
-<A HREF = "pair_coul.html">coul/cut</A> potential (for example) has no labeled
-prefactor in its formula.  To apply an effective prefactor to some
-potentials, multiple parameters need to be altered.  For example, the
-<A HREF = "pair_buck.html">Buckingham potential</A> needs both the A and C terms
-altered together.  To scale the Buckingham potential, you should thus
-list the pair style twice, once for A and once for C.
-</P>
 <P>If a type pair parameter is specified, the <I>I</I> and <I>J</I> settings should
 be specified to indicate which type pairs to apply it to.  If a global
 parameter is specified, the <I>I</I> and <I>J</I> settings still need to be
@@ -149,7 +126,7 @@ specified, but are ignored.
 </P>
 <P>Similar to the <A HREF = "pair_coeff.html">pair_coeff command</A>, I and J can be
 specified in one of two ways.  Explicit numeric values can be used for
-each, as in the 1st example above.  I <= J is required.  LAMMPS sets
+each, as in the 1st example above.  I <= J is required.  LIGGGHTS(R)-PUBLIC sets
 the coefficients for the symmetric J,I interaction to the same values.
 </P>
 <P>A wild-card asterisk can be used in place of or in conjunction with
@@ -190,16 +167,6 @@ fix 1 all adapt 1 pair soft a * * v_prefactor
 </PRE>
 <HR>
 
-<P>The <I>kspace</I> keyword used the specified variable as a scale factor on
-the energy, forces, virial calculated by whatever K-Space solver is
-defined by the <A HREF = "kspace_style.html">kspace_style</A> command.  If the
-variable has a value of 1.0, then the solver is unaltered.
-</P>
-<P>The <I>kspace</I> keyword works this way whether the <I>scale</I> keyword
-is set to <I>no</I> or <I>yes</I>.
-</P>
-<HR>
-
 <P>The <I>atom</I> keyword enables various atom properties to be changed.  The
 <I>aparam</I> argument is the name of the parameter to change.  This is the
 current list of atom parameters that can be varied by this fix:
@@ -235,7 +202,7 @@ fix 1 center adapt 10 atom diameter v_size
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart
 files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
 are relevant to this fix.  No global or per-atom quantities are stored
-by this fix for access by various <A HREF = "Section_howto.html#howto_15">output
+by this fix for access by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  No parameter of this fix can
 be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
 This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.

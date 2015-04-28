@@ -1,32 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
 
-/* ----------------------------------------------------------------------
-   Contributing authors for original version: Leo Silbert (SNL), Gary Grest (SNL)
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -40,7 +60,6 @@
 #include "update.h"
 #include "modify.h"
 #include "fix.h"
-#include "fix_pour.h"
 #include "fix_contact_history.h"
 #include "comm.h"
 #include "neighbor.h"
@@ -50,9 +69,7 @@
 #include "error.h"
 #include "properties.h"
 #include "fix_rigid.h"
-#include "fix_pour.h"
 #include "fix_particledistribution_discrete.h"
-#include "fix_pour.h"
 #include "fix_property_global.h"
 #include "fix_property_atom.h"
 #include "fix_contact_property_atom.h"
@@ -70,8 +87,6 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
 
   suffix = NULL;
   neighprev = 0;
-
-  properties = new Properties(lmp);
 
   history = 0;
   dnum_pairgran = 0;
@@ -118,7 +133,6 @@ PairGran::~PairGran()
     delete [] maxrad_dynamic;
     delete [] maxrad_frozen;
   }
-  delete properties;
 
   // tell cpl that pair gran is deleted
   if(cpl_) cpl_->reference_deleted();
@@ -211,7 +225,7 @@ void PairGran::init_style()
   if(strcmp(update->unit_style,"metal") ==0 || strcmp(update->unit_style,"real") == 0)
     error->all(FLERR,"Cannot use a non-consistent unit system with pair gran. Please use si,cgs or lj.");
 
-  if (!atom->sphere_flag)
+  if (!atom->sphere_flag and !atom->superquadric_flag)
     error->all(FLERR,"Pair granular requires atom style sphere");
   if (comm->ghost_velocity == 0)
     error->all(FLERR,"Pair granular requires ghost atoms store velocity");
@@ -445,10 +459,14 @@ void PairGran::init_style()
   for (i = 1; i <= atom->ntypes; i++)
   onerad_dynamic[i] = onerad_frozen[i] = 0.0;
 
-  // include future Fix pour particles as dynamic
+  // include future particles as dynamic
 
   for (i = 0; i < modify->nfix; i++)
   {
+    
+    if(modify->fix[i]->ignore_maxrad_neigh)
+        continue;
+
     for(int j=1;j<=atom->ntypes;j++)
     {
         int pour_type = 0;
@@ -536,6 +554,7 @@ double PairGran::init_one(int i, int j)
   double cutoff = maxrad_dynamic[i]+maxrad_dynamic[j];
   cutoff = MAX(cutoff,maxrad_frozen[i]+maxrad_dynamic[j]);
   cutoff = MAX(cutoff,maxrad_dynamic[i]+maxrad_frozen[j]);
+
   return cutoff * neighbor->contactDistanceFactor;
 }
 

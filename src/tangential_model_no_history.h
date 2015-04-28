@@ -1,33 +1,45 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #ifdef TANGENTIAL_MODEL
 TANGENTIAL_MODEL(TANGENTIAL_NO_HISTORY,no_history,0)
 #else
@@ -49,7 +61,7 @@ namespace ContactModels
     double ** coeffFrict;
 
   public:
-    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
+    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
     TangentialModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp), coeffFrict(NULL)
     {
@@ -63,16 +75,16 @@ namespace ContactModels
       registry.connect("coeffFrict", coeffFrict,"tangential_model history");
     }
 
-    inline void collision(const CollisionData & cdata, ForceData & i_forces, ForceData & j_forces) {
-      const double xmu = coeffFrict[cdata.itype][cdata.jtype];
-      const double enx = cdata.en[0];
-      const double eny = cdata.en[1];
-      const double enz = cdata.en[2];
-      const double vrel = sqrt(cdata.vtr1*cdata.vtr1 + cdata.vtr2*cdata.vtr2 + cdata.vtr3*cdata.vtr3);
+    inline void surfacesIntersect(const SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces) {
+      const double xmu = coeffFrict[sidata.itype][sidata.jtype];
+      const double enx = sidata.en[0];
+      const double eny = sidata.en[1];
+      const double enz = sidata.en[2];
+      const double vrel = sqrt(sidata.vtr1*sidata.vtr1 + sidata.vtr2*sidata.vtr2 + sidata.vtr3*sidata.vtr3);
 
       // force normalization
-      const double Ft_friction = xmu * fabs(cdata.Fn);
-      const double Ft_damping = cdata.gammat*vrel;     
+      const double Ft_friction = xmu * fabs(sidata.Fn);
+      const double Ft_damping = sidata.gammat*vrel;     
       double Ft;
 
       if (vrel != 0.0) Ft = min(Ft_friction, Ft_damping) / vrel;
@@ -80,9 +92,9 @@ namespace ContactModels
 
       // tangential force due to tangential velocity damping
 
-      const double Ft1 = -Ft*cdata.vtr1;
-      const double Ft2 = -Ft*cdata.vtr2;
-      const double Ft3 = -Ft*cdata.vtr3;
+      const double Ft1 = -Ft*sidata.vtr1;
+      const double Ft2 = -Ft*sidata.vtr2;
+      const double Ft3 = -Ft*sidata.vtr3;
 
       // forces & torques
 
@@ -91,34 +103,34 @@ namespace ContactModels
       const double tor3 = (enx*Ft2 - eny*Ft1);
 
       // return resulting forces
-      if(cdata.is_wall) {
-        const double area_ratio = cdata.area_ratio;
+      if(sidata.is_wall) {
+        const double area_ratio = sidata.area_ratio;
         i_forces.delta_F[0] += Ft1 * area_ratio;
         i_forces.delta_F[1] += Ft2 * area_ratio;
         i_forces.delta_F[2] += Ft3 * area_ratio;
-        i_forces.delta_torque[0] = -cdata.cri * tor1 * area_ratio;
-        i_forces.delta_torque[1] = -cdata.cri * tor2 * area_ratio;
-        i_forces.delta_torque[2] = -cdata.cri * tor3 * area_ratio;
+        i_forces.delta_torque[0] = -sidata.cri * tor1 * area_ratio;
+        i_forces.delta_torque[1] = -sidata.cri * tor2 * area_ratio;
+        i_forces.delta_torque[2] = -sidata.cri * tor3 * area_ratio;
       } else {
         i_forces.delta_F[0] += Ft1;
         i_forces.delta_F[1] += Ft2;
         i_forces.delta_F[2] += Ft3;
-        i_forces.delta_torque[0] = -cdata.cri * tor1;
-        i_forces.delta_torque[1] = -cdata.cri * tor2;
-        i_forces.delta_torque[2] = -cdata.cri * tor3;
+        i_forces.delta_torque[0] = -sidata.cri * tor1;
+        i_forces.delta_torque[1] = -sidata.cri * tor2;
+        i_forces.delta_torque[2] = -sidata.cri * tor3;
 
         j_forces.delta_F[0] -= Ft1;
         j_forces.delta_F[1] -= Ft2;
         j_forces.delta_F[2] -= Ft3;
-        j_forces.delta_torque[0] = -cdata.crj * tor1;
-        j_forces.delta_torque[1] = -cdata.crj * tor2;
-        j_forces.delta_torque[2] = -cdata.crj * tor3;
+        j_forces.delta_torque[0] = -sidata.crj * tor1;
+        j_forces.delta_torque[1] = -sidata.crj * tor2;
+        j_forces.delta_torque[2] = -sidata.crj * tor3;
       }
     }
 
-    inline void beginPass(CollisionData&, ForceData&, ForceData&){}
-    inline void endPass(CollisionData&, ForceData&, ForceData&){}
-    inline void noCollision(ContactData&, ForceData&, ForceData&){}
+    inline void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    inline void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    inline void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
   };
 }
 }

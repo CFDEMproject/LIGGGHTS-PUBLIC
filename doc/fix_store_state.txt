@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -63,7 +63,7 @@ Define a fix that stores attributes for each atom in the group at the
 time the fix is defined.  If {N} is 0, then the values are never
 updated, so this is a way of archiving an atom attribute at a given
 time for future use in a calculation or output.  See the discussion of
-"output commands"_Section_howto.html#howto_15 that take fixes as
+"output commands"_Section_howto.html#howto_8 that take fixes as
 inputs.  And see for example, the "compute
 reduce"_compute_reduce.html, "fix ave/atom"_fix_ave_atom.html, "fix
 ave/histo"_fix_ave_histo.html, "fix ave/spatial"_fix_ave_spatial.html,
@@ -108,7 +108,7 @@ If a single input is specified, this fix produces a per-atom vector.
 If multiple inputs are specified, a per-atom array is produced where
 the number of columns for each atom is the number of inputs.  These
 can be accessed by various "output
-commands"_Section_howto.html#howto_15.  The per-atom values be
+commands"_Section_howto.html#howto_8.  The per-atom values be
 accessed on any timestep.
 
 No parameter of this fix can be used with the {start/stop} keywords of

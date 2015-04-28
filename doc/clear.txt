@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -21,8 +21,8 @@ clear
 [Description:]
 
 This command deletes all atoms, restores all settings to their default
-values, and frees all memory allocated by LAMMPS.  Once a clear
-command has been executed, it is as if LAMMPS were starting over, with
+values, and frees all memory allocated by LIGGGHTS(R)-PUBLIC.  Once a clear
+command has been executed, it is as if LIGGGHTS(R)-PUBLIC were starting over, with
 only the exceptions noted below.  This command enables multiple jobs
 to be run sequentially from one input script.
 

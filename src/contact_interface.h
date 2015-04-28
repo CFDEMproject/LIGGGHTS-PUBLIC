@@ -1,44 +1,58 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+    Alexander Podlozhnyuk (DCS Computing GmbH, Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #ifndef CONTACT_INTERFACE_H_
 #define CONTACT_INTERFACE_H_
 
 #include <string>
+#include "superquadric.h"
 
 namespace LIGGGHTS {
 namespace ContactModels {
 
 // data available in noCollision() and collision()
 
-struct ContactData {
+struct SurfacesCloseData {
   double radi;
   double radj;
   double radsum;
@@ -47,8 +61,8 @@ struct ContactData {
 
   double area_ratio;
 
-  int * touch;
-  double * contact_history;
+  int *contact_flags;
+  double *contact_history;
 
   int i;
   int j;
@@ -56,12 +70,32 @@ struct ContactData {
   bool is_wall;
   bool has_force_update;
 
-  ContactData() : area_ratio(1.0) {}
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  double *quat_i; //quaternion of i-th particle
+  double *quat_j; //quaternion of j-th particle
+  double *shape_i; //shape parameters of i-th particle (a,b,c)
+  double *shape_j; //shape parameters of j-th particle (a,b,c)
+  double *roundness_i; //roundness parameters of i-th particle (eps1, eps2)
+  double *roundness_j; //roundness parameters of j-th particle (eps1, eps2)
+  double *pos_i;
+  double *pos_j;
+  SurfacesCloseData() : area_ratio(1.0),
+                        quat_i(NULL),
+                        quat_j(NULL),
+                        shape_i(NULL),
+                        shape_j(NULL),
+                        roundness_i(NULL),
+                        roundness_j(NULL),
+                        pos_i(NULL),
+                        pos_j(NULL){}
+#else
+  SurfacesCloseData() : area_ratio(1.0) {}
+#endif
 };
 
 // data available in collision() only
 
-struct CollisionData: ContactData {
+struct SurfacesIntersectData : SurfacesCloseData {
   double r;
   double rinv;
   double en[3];
@@ -99,7 +133,7 @@ struct CollisionData: ContactData {
   int itype;
   int jtype;
 
-  CollisionData() : Fn(0.0), Ft(0.0) {}
+  SurfacesIntersectData() : Fn(0.0), Ft(0.0) {}
 };
 
 struct ForceData {

@@ -34,6 +34,8 @@ FixStyle(couple/pascal,FixParScaleCouple)
 #define LMP_FIX_PASCAL_COUPLE_H
 
 #include "fix.h"
+#include <vector>
+
 namespace PASCAL_NS { class ParScale; }
 
 namespace LAMMPS_NS {
@@ -49,7 +51,7 @@ class FixParScaleCouple : public Fix  {
   void      init();
   void      setup(int);
 
-//  void      pre_exchange();
+  void      pre_exchange();
   void      end_of_step();
 
   int*      get_liggghts_map(int &length);
@@ -57,6 +59,10 @@ class FixParScaleCouple : public Fix  {
   void*     find_pull_property(const char *name, const char *type, int &len1, int &len2);
 
   void*     find_push_property(const char *name, const char *type, int &len1, int &len2);
+
+  //reference to exchange events recorder
+  std::vector<int>   * exchangeEventsLocalId;
+  std::vector<int>   * exchangeEventsReceivingProcess;
 
  private:
 

@@ -1,28 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -34,7 +58,6 @@
 #include "atom.h"
 #include "atom_vec_ellipsoid.h"
 #include "atom_vec_line.h"
-#include "atom_vec_tri.h"
 #include "domain.h"
 #include "update.h"
 #include "respa.h"
@@ -109,7 +132,7 @@ FixRigid::FixRigid(LAMMPS *lmp, int narg, char **arg) :
   // set nbody and body[i] for each atom
 
   if (narg < 4) error->all(FLERR,"Illegal fix rigid command");
-  int iarg;
+  int iarg = 0;
 
   mol2body = NULL;
   body2mol = NULL;
@@ -299,7 +322,7 @@ FixRigid::FixRigid(LAMMPS *lmp, int narg, char **arg) :
       int mlo,mhi;
       force->bounds(arg[iarg+1],nbody,mlo,mhi);
 
-      double xflag,yflag,zflag;
+      double xflag=0.0,yflag=0.0,zflag=0.0;
       if (strcmp(arg[iarg+2],"off") == 0) xflag = 0.0;
       else if (strcmp(arg[iarg+2],"on") == 0) xflag = 1.0;
       else error->all(FLERR,"Illegal fix rigid command");
@@ -330,7 +353,7 @@ FixRigid::FixRigid(LAMMPS *lmp, int narg, char **arg) :
       int mlo,mhi;
       force->bounds(arg[iarg+1],nbody,mlo,mhi);
 
-      double xflag,yflag,zflag;
+      double xflag=0.0,yflag=0.0,zflag=0.0;
       if (strcmp(arg[iarg+2],"off") == 0) xflag = 0.0;
       else if (strcmp(arg[iarg+2],"on") == 0) xflag = 1.0;
       else error->all(FLERR,"Illegal fix rigid command");
@@ -628,7 +651,6 @@ void FixRigid::init()
 
   avec_ellipsoid = (AtomVecEllipsoid *) atom->style_match("ellipsoid");
   avec_line = (AtomVecLine *) atom->style_match("line");
-  avec_tri = (AtomVecTri *) atom->style_match("tri");
 
   // warn if more than one rigid fix
 
@@ -702,6 +724,7 @@ void FixRigid::setup(int vflag)
     sum[ibody][0] += f[i][0];
     sum[ibody][1] += f[i][1];
     sum[ibody][2] += f[i][2];
+
   }
 
   MPI_Allreduce(sum[0],all[0],6*nbody,MPI_DOUBLE,MPI_SUM,world);
@@ -987,7 +1010,7 @@ void FixRigid::final_integrate()
 void FixRigid::no_squish_rotate(int k, double *p, double *q,
                                 double *inertia, double dt) const
 {
-  double phi,c_phi,s_phi,kp[4],kq[4];
+  double phi,c_phi,s_phi,kp[4]={},kq[4]={};
 
   // apply permuation operator on p and q, get kp and kq
 
@@ -1235,7 +1258,7 @@ void FixRigid::set_xv()
   int ibody;
   int xbox,ybox,zbox;
   double x0,x1,x2,v0,v1,v2,fc0,fc1,fc2,massone;
-  double xy,xz,yz;
+  double xy=0.0,xz=0.0,yz=0.0;
   double ione[3],exone[3],eyone[3],ezone[3],vr[6],p[3][3];
 
   tagint *image = atom->image;
@@ -1341,12 +1364,10 @@ void FixRigid::set_xv()
     double theta_body,theta;
     double *shape,*quatatom,*inertiaatom;
 
-    AtomVecEllipsoid::Bonus *ebonus;
+    AtomVecEllipsoid::Bonus *ebonus = NULL;
     if (avec_ellipsoid) ebonus = avec_ellipsoid->bonus;
-    AtomVecLine::Bonus *lbonus;
+    AtomVecLine::Bonus *lbonus = NULL;
     if (avec_line) lbonus = avec_line->bonus;
-    AtomVecTri::Bonus *tbonus;
-    if (avec_tri) tbonus = avec_tri->bonus;
     double **omega_one = atom->omega;
     double **angmom_one = atom->angmom;
     double **mu = atom->mu;
@@ -1373,7 +1394,7 @@ void FixRigid::set_xv()
         MathExtra::q_to_exyz(quatatom,exone,eyone,ezone);
         MathExtra::omega_to_angmom(omega[ibody],exone,eyone,ezone,ione,
                                    angmom_one[i]);
-      } else if (eflags[i] & LINE) {
+      }else if (eflags[i] & LINE) {
         if (quat[ibody][3] >= 0.0) theta_body = 2.0*acos(quat[ibody][0]);
         else theta_body = -2.0*acos(quat[ibody][0]);
         theta = orient[i][0] + theta_body;
@@ -1383,14 +1404,6 @@ void FixRigid::set_xv()
         omega_one[i][0] = omega[ibody][0];
         omega_one[i][1] = omega[ibody][1];
         omega_one[i][2] = omega[ibody][2];
-      } else if (eflags[i] & TRIANGLE) {
-        inertiaatom = tbonus[tri[i]].inertia;
-        quatatom = tbonus[tri[i]].quat;
-        MathExtra::quatquat(quat[ibody],orient[i],quatatom);
-        MathExtra::qnormalize(quatatom);
-        MathExtra::q_to_exyz(quatatom,exone,eyone,ezone);
-        MathExtra::omega_to_angmom(omega[ibody],exone,eyone,ezone,
-                                   inertiaatom,angmom_one[i]);
       }
       if (eflags[i] & DIPOLE) {
         MathExtra::quat_to_mat(quat[ibody],p);
@@ -1411,7 +1424,7 @@ void FixRigid::set_v()
 {
   int xbox,ybox,zbox;
   double x0,x1,x2,v0,v1,v2,fc0,fc1,fc2,massone;
-  double xy,xz,yz;
+  double xy=0.0,xz=0.0,yz=0.0;
   double ione[3],exone[3],eyone[3],ezone[3],delta[3],vr[6];
 
   double **x = atom->x;
@@ -1499,14 +1512,11 @@ void FixRigid::set_v()
   if (extended) {
     double *shape,*quatatom,*inertiaatom;
 
-    AtomVecEllipsoid::Bonus *ebonus;
+    AtomVecEllipsoid::Bonus *ebonus = NULL;
     if (avec_ellipsoid) ebonus = avec_ellipsoid->bonus;
-    AtomVecTri::Bonus *tbonus;
-    if (avec_tri) tbonus = avec_tri->bonus;
     double **omega_one = atom->omega;
     double **angmom_one = atom->angmom;
     int *ellipsoid = atom->ellipsoid;
-    int *tri = atom->tri;
 
     for (int i = 0; i < nlocal; i++) {
       if (body[i] < 0) continue;
@@ -1529,12 +1539,6 @@ void FixRigid::set_v()
         omega_one[i][0] = omega[ibody][0];
         omega_one[i][1] = omega[ibody][1];
         omega_one[i][2] = omega[ibody][2];
-      } else if (eflags[i] & TRIANGLE) {
-        inertiaatom = tbonus[tri[i]].inertia;
-        quatatom = tbonus[tri[i]].quat;
-        MathExtra::q_to_exyz(quatatom,exone,eyone,ezone);
-        MathExtra::omega_to_angmom(omega[ibody],exone,eyone,ezone,
-                                   inertiaatom,angmom_one[i]);
       }
     }
   }
@@ -1556,12 +1560,10 @@ void FixRigid::setup_bodies_static()
 
   extended = orientflag = dorientflag = 0;
 
-  AtomVecEllipsoid::Bonus *ebonus;
+  AtomVecEllipsoid::Bonus *ebonus = NULL;
   if (avec_ellipsoid) ebonus = avec_ellipsoid->bonus;
-  AtomVecLine::Bonus *lbonus;
+  AtomVecLine::Bonus *lbonus = NULL;
   if (avec_line) lbonus = avec_line->bonus;
-  AtomVecTri::Bonus *tbonus;
-  if (avec_tri) tbonus = avec_tri->bonus;
   double **mu = atom->mu;
   double *radius = atom->radius;
   double *rmass = atom->rmass;
@@ -1580,7 +1582,6 @@ void FixRigid::setup_bodies_static()
       if (radius && radius[i] > 0.0) flag = 1;
       if (ellipsoid && ellipsoid[i] >= 0) flag = 1;
       if (line && line[i] >= 0) flag = 1;
-      if (tri && tri[i] >= 0) flag = 1;
       if (mu && mu[i][3] > 0.0) flag = 1;
     }
 
@@ -1595,7 +1596,6 @@ void FixRigid::setup_bodies_static()
   if (extended) {
     if (atom->ellipsoid_flag) orientflag = 4;
     if (atom->line_flag) orientflag = 1;
-    if (atom->tri_flag) orientflag = 4;
     if (atom->mu_flag) dorientflag = 1;
     grow_arrays(atom->nmax);
 
@@ -1613,13 +1613,9 @@ void FixRigid::setup_bodies_static()
         eflags[i] |= ELLIPSOID;
         eflags[i] |= ANGMOM;
         eflags[i] |= TORQUE;
-      } else if (line && line[i] >= 0) {
+	  } else if (line && line[i] >= 0) {
         eflags[i] |= LINE;
         eflags[i] |= OMEGA;
-        eflags[i] |= TORQUE;
-      } else if (tri && tri[i] >= 0) {
-        eflags[i] |= TRIANGLE;
-        eflags[i] |= ANGMOM;
         eflags[i] |= TORQUE;
       } else eflags[i] |= POINT;
 
@@ -1692,7 +1688,7 @@ void FixRigid::setup_bodies_static()
   // overwrite masstotal and center-of-mass with file values
   // inbody[i] = 0/1 if Ith rigid body is initialized by file
 
-  int *inbody;
+  int *inbody = NULL;
   if (infile) {
     memory->create(inbody,nbody,"rigid:inbody");
     for (ibody = 0; ibody < nbody; ibody++) inbody[ibody] = 0;
@@ -1777,20 +1773,10 @@ void FixRigid::setup_bodies_static()
         sum[ibody][3] += ivec[3];
         sum[ibody][4] += ivec[4];
         sum[ibody][5] += ivec[5];
-      } else if (eflags[i] & LINE) {
+	   } else if (eflags[i] & LINE) {
         length = lbonus[line[i]].length;
         theta = lbonus[line[i]].theta;
         MathExtra::inertia_line(length,theta,massone,ivec);
-        sum[ibody][0] += ivec[0];
-        sum[ibody][1] += ivec[1];
-        sum[ibody][2] += ivec[2];
-        sum[ibody][3] += ivec[3];
-        sum[ibody][4] += ivec[4];
-        sum[ibody][5] += ivec[5];
-      } else if (eflags[i] & TRIANGLE) {
-        inertiaatom = tbonus[tri[i]].inertia;
-        quatatom = tbonus[tri[i]].quat;
-        MathExtra::inertia_triangle(inertiaatom,quatatom,massone,ivec);
         sum[ibody][0] += ivec[0];
         sum[ibody][1] += ivec[1];
         sum[ibody][2] += ivec[2];
@@ -1909,11 +1895,6 @@ void FixRigid::setup_bodies_static()
         while (orient[i][0] <= MINUSPI) orient[i][0] += TWOPI;
         while (orient[i][0] > MY_PI) orient[i][0] -= TWOPI;
         if (orientflag == 4) orient[i][1] = orient[i][2] = orient[i][3] = 0.0;
-      } else if (eflags[i] & TRIANGLE) {
-        quatatom = tbonus[tri[i]].quat;
-        MathExtra::qconjugate(quat[ibody],qc);
-        MathExtra::quatquat(qc,quatatom,orient[i]);
-        MathExtra::qnormalize(orient[i]);
       } else if (orientflag == 4) {
         orient[i][0] = orient[i][1] = orient[i][2] = orient[i][3] = 0.0;
       } else if (orientflag == 1)
@@ -1981,15 +1962,6 @@ void FixRigid::setup_bodies_static()
       } else if (eflags[i] & LINE) {
         length = lbonus[line[i]].length;
         MathExtra::inertia_line(length,orient[i][0],massone,ivec);
-        sum[ibody][0] += ivec[0];
-        sum[ibody][1] += ivec[1];
-        sum[ibody][2] += ivec[2];
-        sum[ibody][3] += ivec[3];
-        sum[ibody][4] += ivec[4];
-        sum[ibody][5] += ivec[5];
-      } else if (eflags[i] & TRIANGLE) {
-        inertiaatom = tbonus[tri[i]].inertia;
-        MathExtra::inertia_triangle(inertiaatom,orient[i],massone,ivec);
         sum[ibody][0] += ivec[0];
         sum[ibody][1] += ivec[1];
         sum[ibody][2] += ivec[2];
@@ -2093,7 +2065,7 @@ void FixRigid::setup_bodies_dynamic()
   // extended particles add their rotation to angmom of body
 
   if (extended) {
-    AtomVecLine::Bonus *lbonus;
+    AtomVecLine::Bonus *lbonus = NULL;
     if (avec_line) lbonus = avec_line->bonus;
     double **omega_one = atom->omega;
     double **angmom_one = atom->angmom;
@@ -2150,7 +2122,7 @@ void FixRigid::readfile(int which, double *vec, double **array, int *inbody)
 {
   int j,nchunk,id,eofflag;
   int nlines;
-  FILE *fp;
+  FILE *fp = NULL;
   char *eof,*start,*next,*buf;
   char line[MAXLINE];
 

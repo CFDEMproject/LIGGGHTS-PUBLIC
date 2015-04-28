@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -11,14 +9,14 @@
 
 <HR>
 
-<H1>LIGGGHTS 2.X vs. LIGGGHTS 1.5.3 - syntax changes 
+<H1>LIGGGHTS(R)-PUBLIC 2.X vs. LIGGGHTS(R)-PUBLIC 1.5.3 - syntax changes 
 </H1>
 <H2>Introduction: 
 </H2>
-<P>This is a short outline of the most important changes in LIGGGHTS 2.X 
-compared to LIGGGHTS 1.5.3 regarding the syntax of major commands. The 
-motivation for these changes was to make the script language more readable and to 
-improve extendability (in the sense of object oriented programming) with respect 
+<P>This is a short outline of the most important changes in LIGGGHTS(R)-PUBLIC 2.X
+compared to LIGGGHTS(R)-PUBLIC 1.5.3 regarding the syntax of major commands. The
+motivation for these changes was to make the script language more readable and to
+improve extendability (in the sense of object oriented programming) with respect
 to modelling approaches.
 </P>
 <H2>Commands covered by this tutorial: 
@@ -50,17 +48,17 @@ to modelling approaches.
 <PRE>OLD: old_syntax
 NEW: new_syntax  
 </PRE>
-<P>where <I>old_syntax</I> refers to the syntax used in LIGGGHTS 1.5.3 and before,
-and <I>new_syntax</I> refers to the syntax used in LIGGGHTS 2.X
+<P>where <I>old_syntax</I> refers to the syntax used in LIGGGHTS(R)-PUBLIC 1.5.3 and before,
+and <I>new_syntax</I> refers to the syntax used in LIGGGHTS(R)-PUBLIC 2.X
 </P>
 <HR>
 
 <P><B>atom_style sphere (formerly atom_style granular):</B>
 </P>
-<PRE>OLD: atom_style granular 
+<PRE>OLD: atom_style granular
 NEW: atom_style sphere  
 </PRE>
-<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS(R)-PUBLIC 2.0
 </P>
 <P>For details, see <A HREF = "atom_style.html">atom_style sphere</A>.
 </P>
@@ -71,7 +69,7 @@ NEW: atom_style sphere
 <PRE>OLD: dmpstl all stl 300 post/dump*.stl
 NEW: dmpstl all mesh/stl 300 post/dump*.stl  
 </PRE>
-<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS(R)-PUBLIC 2.0
 </P>
 <HR>
 
@@ -80,7 +78,7 @@ NEW: dmpstl all mesh/stl 300 post/dump*.stl
 <PRE>OLD: dmpstl all mesh/gran/VTK 300 post/dump*.stl id
 NEW: dmpstl all mesh/vtk 300 post/dump*.stl id  
 </PRE>
-<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS 2.0
+<P>NOTE: For compatibility reasons, the old syntax can still be used in LIGGGHTS(R)-PUBLIC 2.0
 </P>
 <HR>
 
@@ -96,19 +94,19 @@ NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction on
 
 <P><B>fix mesh/surface (formerly fix mesh/gran):</B>
 </P>
-<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. 
+<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0.
 NEW: fix ID group-ID mesh/surface file mesh.stl type 1 
 </PRE>
 <PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 0.001 0. 0. 0. -90. 0. 0.
 NEW: fix ID group-ID mesh/surface file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90. 
 </PRE>
-<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0. 
+<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0.
 NEW: fix ID group-ID mesh/surface file mesh.stl type 1 move 1. 2. 3 
 </PRE>
 <PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. conveyor 5. 0. 0.
 NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_vel 5. 0. 0. 
 </PRE>
-<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5. 
+<PRE>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5.
 NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5. 
 </PRE>
 <P>For details, see <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>.
@@ -137,10 +135,10 @@ NEW: fix ID group-ID move/mesh mesh cad1 linear 20. 20. 0.
 </PRE>
 NOTES: 
 </UL>
-<LI>The trailing "1" for the <I>old_syntax</I> was no longer used in LIGGGHTS 1.5.3 
+<LI>The trailing "1" for the <I>old_syntax</I> was no longer used in LIGGGHTS(R)-PUBLIC 1.5.3 
 
-<LI>For compatibility reasons, the command name <I>fix move/mesh/gran</I> can be 
-used in LIGGGHTS 2.0. However, the syntax has to follow the LIGGGHTS 2.0 syntax. 
+<LI>For compatibility reasons, the command name <I>fix move/mesh/gran</I> can be
+used in LIGGGHTS(R)-PUBLIC 2.0. However, the syntax has to follow the LIGGGHTS(R)-PUBLIC 2.0 syntax. 
 
 <P>For details, see <A HREF = "fix_move_mesh.html">fix move/mesh</A>.
 </P>
@@ -169,16 +167,16 @@ NOTES:
 </UL>
 <LI>Same applies for hooke/history, hooke, hooke/history/simple, hertz/history/simple 
 
-<LI><I>sjkr</I> stands for 'simplified JKR (Johnson-Kendall-Roberts)' model, and <I>cdt</I> for 
+<LI><I>sjkr</I> stands for 'simplified JKR (Johnson-Kendall-Roberts)' model, and <I>cdt</I> for
 'constant directional torque' model 
 
-<LI>styles <I>xplane</I>, <I>yplane</I>, <I>zplane</I> take only one arg now (the wall position), if 
+<LI>styles <I>xplane</I>, <I>yplane</I>, <I>zplane</I> take only one arg now (the wall position), if
 you want two walls you have to use two fix commands 
 
-<LI>in addition to the existing style <I>zcylinder</I>, there is now <I>xcylinder</I> and 
+<LI>in addition to the existing style <I>zcylinder</I>, there is now <I>xcylinder</I> and
 <I>ycylinder</I> as well 
 
-<LI><I>xcylinder</I> <I>ycylinder</I> and <I>zcylinder</I> take 3 args: the cylinder radius, and 
+<LI><I>xcylinder</I> <I>ycylinder</I> and <I>zcylinder</I> take 3 args: the cylinder radius, and
 the location of the axis in the other two dimensions 
 
 <P>For details, see <A HREF = "fix_wall_gran.html">fix wall/gran</A>.

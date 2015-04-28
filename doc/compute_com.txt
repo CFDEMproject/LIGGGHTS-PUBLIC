@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -50,7 +50,7 @@ file"_dump.html containing coordinates of the atoms in the bodies.
 This compute calculates a global vector of length 3, which can be
 accessed by indices 1-3 by any command that uses global vector values
 from a compute as input.  See "this
-section"_Section_howto.html#howto_15 for an overview of LAMMPS output
+section"_Section_howto.html#howto_8 for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 
 The vector values are "intensive".  The vector values will be in

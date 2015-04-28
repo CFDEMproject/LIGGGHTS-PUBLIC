@@ -1,43 +1,59 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
 
-/* ----------------------------------------------------------------------
-   Contributing author for triclinic: Andreas Aigner (JKU)
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "stdlib.h"
 #include "string.h"
 #include "math.h"
+#include "mpi_liggghts.h"
 #include "fix_ave_euler.h"
 #include "compute_stress_atom.h"
+#include "math_extra_liggghts.h"
 #include "atom.h"
 #include "force.h"
 #include "domain.h"
 #include "modify.h"
 #include "neighbor.h"
+#include "region.h"
 #include "update.h"
+#include "random_park.h"
 #include "memory.h"
 #include "error.h"
 
@@ -52,8 +68,10 @@ using namespace FixConst;
 
 FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
+  parallel_(true),
   exec_every_(1),
-  box_change_(false),
+  box_change_size_(false),
+  box_change_domain_(false),
   cell_size_ideal_rel_(3.),
   cell_size_ideal_(0.),
   ncells_(0),
@@ -61,13 +79,18 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   ncellptr_max_(0),
   cellhead_(NULL),
   cellptr_(NULL),
+  idregion_(NULL),
+  region_(NULL),
   center_(NULL),
   v_av_(NULL),
   vol_fr_(NULL),
+  weight_(NULL),
   radius_(NULL),
+  ncount_(NULL),
   mass_(NULL),
   stress_(NULL),
-  compute_stress_(NULL)
+  compute_stress_(NULL),
+  random_(0)
 {
   // this fix produces a global array
 
@@ -76,6 +99,9 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   size_array_cols = 3 + 1 + 3;
 
   triclinic_ = domain->triclinic;  
+
+  // random number generator, seed is hardcoded
+  random_ = new RanPark(lmp,15485863);
 
   // parse args
   if (narg < 6) error->all(FLERR,"Illegal fix ave/pic command");
@@ -94,6 +120,36 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   if(cell_size_ideal_rel_ < 3.)
     error->fix_error(FLERR,this,"'cell_size_relative' > 3 required");
 
+  if(strcmp(arg[iarg++],"parallel"))
+    error->fix_error(FLERR,this,"expecting keyword 'parallel'");
+  if(strcmp(arg[iarg],"yes") == 0)
+    parallel_ = true;
+  else if(strcmp(arg[iarg],"no") == 0)
+    parallel_ = false;
+  else
+    error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'parallel'");
+  iarg++;
+
+  while(iarg < narg)
+  {
+     if (strcmp(arg[iarg],"basevolume_region") == 0) {
+       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
+       int iregion = domain->find_region(arg[iarg+1]);
+       if (iregion == -1)
+         error->fix_error(FLERR,this,"region ID does not exist");
+       int n = strlen(arg[iarg+1]) + 1;
+       idregion_ = new char[n];
+       strcpy(idregion_,arg[iarg+1]);
+       region_ = domain->regions[iregion];
+       iarg += 2;
+     } else {
+       char *errmsg = new char[strlen(arg[iarg])+50];
+       sprintf(errmsg,"unknown keyword or wrong keyword order: %s", arg[iarg]);
+       error->fix_error(FLERR,this,errmsg);
+       delete []errmsg;
+     }
+  }
+
   // add nfirst to all computes that store invocation times
   // since don't know a priori which are invoked via variables by this fix
   // once in end_of_step() can set timestep for ones actually invoked
@@ -108,10 +164,13 @@ FixAveEuler::~FixAveEuler()
 {
   memory->destroy(cellhead_);
   memory->destroy(cellptr_);
+  if(idregion_) delete []idregion_;
   memory->destroy(center_);
   memory->destroy(v_av_);
   memory->destroy(vol_fr_);
+  memory->destroy(weight_);
   memory->destroy(radius_);
+  memory->destroy(ncount_);
   memory->destroy(mass_);
   memory->destroy(stress_);
 }
@@ -120,7 +179,7 @@ FixAveEuler::~FixAveEuler()
 
 void FixAveEuler::post_create()
 {
-  //  register per particle properties
+  //  stress computation, just for pairwise contribution
   if(!compute_stress_)
   {
         const char* arg[4];
@@ -153,9 +212,25 @@ void FixAveEuler::init()
     error->fix_error(FLERR,this,"requires atom attribute mass");
 
   // check if box constant
-  box_change_ = false;
-  if(domain->box_change)
-    box_change_ = true;
+  box_change_size_ = false;
+  if(domain->box_change_size)
+    box_change_size_ = true;
+  box_change_domain_ = false;
+  if(domain->box_change_domain)
+    box_change_domain_ = true;
+
+  if (region_)
+  {
+    int iregion = domain->find_region(idregion_);
+    if (iregion == -1)
+     error->fix_error(FLERR,this,"regions used my this command must not be deleted");
+    region_ = domain->regions[iregion];
+  }
+
+  // error checks
+
+  if (!parallel_ && 1 == domain->triclinic)
+    error->fix_error(FLERR,this,"triclinic boxes only support 'parallel=yes'");
 }
 
 /* ----------------------------------------------------------------------
@@ -187,14 +262,13 @@ void FixAveEuler::setup_bins()
     
     for(int dim = 0; dim < 3; dim++)
     {
-        // get bounds
+      // get bounds
       if (triclinic_ == 0) {
-        lo_[dim] = domain->sublo[dim];
-        hi_[dim] = domain->subhi[dim];
+        lo_[dim] = parallel_ ? domain->sublo[dim] : domain->boxlo[dim];
+        hi_[dim] = parallel_ ? domain->subhi[dim] : domain->boxhi[dim];
       } else {
         lo_lamda_[dim] = domain->sublo_lamda[dim];
         hi_lamda_[dim] = domain->subhi_lamda[dim];
-
         cell_size_ideal_lamda_[dim] = cell_size_ideal_/domain->h[dim];
       }
     }
@@ -203,48 +277,40 @@ void FixAveEuler::setup_bins()
       domain->lamda2x(hi_lamda_,hi_);
     }
 
-    for(int dim = 0; dim < 3; dim++) {
-      // round down (makes cell size larger)
-      // at least one cell
+    // round down (makes cell size larger)
+    // at least one cell
+    for(int dim = 0; dim < 3; dim++)
+    {
       if (triclinic_) {
-      ncells_dim_[dim] = static_cast<int>((hi_lamda_[dim]-lo_lamda_[dim])/cell_size_ideal_lamda_[dim]);
-      if (ncells_dim_[dim] < 1) {
-        ncells_dim_[dim] = 1;
-        error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
-      }
-        cell_size_lamda_[dim] = (hi_lamda_[dim]-lo_lamda_[dim])/static_cast<double>(ncells_dim_[dim]);
-
-        cell_size_[dim] = cell_size_lamda_[dim]*domain->h[dim];
+          ncells_dim_[dim] = static_cast<int>((hi_lamda_[dim]-lo_lamda_[dim])/cell_size_ideal_lamda_[dim]);
+          if (ncells_dim_[dim] < 1) {
+            ncells_dim_[dim] = 1;
+            error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
+          }
+          cell_size_lamda_[dim] = (hi_lamda_[dim]-lo_lamda_[dim])/static_cast<double>(ncells_dim_[dim]);
+          cell_size_[dim] = cell_size_lamda_[dim]*domain->h[dim];
       } else {
-        ncells_dim_[dim] = static_cast<int>((hi_[dim]-lo_[dim])/cell_size_ideal_);
-      if (ncells_dim_[dim] < 1) {
-        ncells_dim_[dim] = 1;
-        
-        error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
-      }
-        cell_size_[dim] = (hi_[dim]-lo_[dim])/static_cast<double>(ncells_dim_[dim]);
+          ncells_dim_[dim] = static_cast<int>((hi_[dim]-lo_[dim])/cell_size_ideal_);
+          if (ncells_dim_[dim] < 1) {
+            ncells_dim_[dim] = 1;
+            
+            error->warning(FLERR,"Number of cells for fix_ave_euler was less than 1");
+          }
+          cell_size_[dim] = (hi_[dim]-lo_[dim])/static_cast<double>(ncells_dim_[dim]);
       }
     }
 
     for(int dim = 0; dim < 3; dim++)
     {
         cell_size_inv_[dim] = 1./cell_size_[dim];
-      if (triclinic_) cell_size_lamda_inv_[dim] = 1./cell_size_lamda_[dim];
+        if (triclinic_) cell_size_lamda_inv_[dim] = 1./cell_size_lamda_[dim];
 
-        // add 2 extra cells for ghosts
-        // do not need to match subbox expaned by cutneighmax
-        // cell size will always be larger than cutneighmax
-        //ncells_dim_[dim] += 2;
-
-        // do not change cell_size_ but adapt lo_/hi_
-        //lo_[dim] -= cell_size_[dim];
-        //hi_[dim] += cell_size_[dim];
     }
 
     ncells_ = ncells_dim_[0]*ncells_dim_[1]*ncells_dim_[2];
     
     cell_volume_ = cell_size_[0]*cell_size_[1]*cell_size_[2];
-
+    
     // (re) allocate spatial bin arrays
     if (ncells_ > ncells_max_)
     {
@@ -253,7 +319,9 @@ void FixAveEuler::setup_bins()
         memory->grow(center_,ncells_max_,3,"ave/euler:center_");
         memory->grow(v_av_,  ncells_max_,3,"ave/euler:v_av_");
         memory->grow(vol_fr_,ncells_max_,  "ave/euler:vol_fr_");
+        memory->grow(weight_,ncells_max_,  "ave/euler:vol_fr_");
         memory->grow(radius_,ncells_max_,  "ave/euler:radius_");
+        memory->grow(ncount_,ncells_max_,    "ave/euler:ncount_");
         memory->grow(mass_,ncells_max_,    "ave/euler:mass_");
         memory->grow(stress_,ncells_max_,7,"ave/euler:stress_");
     }
@@ -274,12 +342,52 @@ void FixAveEuler::setup_bins()
                   domain->lamda2x(center_[ibin],center_[ibin]);
 
                 } else {
-                center_[ibin][0] = lo_[0] + (static_cast<double>(ix)+0.5) * cell_size_[0];
-                center_[ibin][1] = lo_[1] + (static_cast<double>(iy)+0.5) * cell_size_[1];
-                center_[ibin][2] = lo_[2] + (static_cast<double>(iz)+0.5) * cell_size_[2];
+                    center_[ibin][0] = lo_[0] + (static_cast<double>(ix)+0.5) * cell_size_[0];
+                    center_[ibin][1] = lo_[1] + (static_cast<double>(iy)+0.5) * cell_size_[1];
+                    center_[ibin][2] = lo_[2] + (static_cast<double>(iz)+0.5) * cell_size_[2];
                 }
             }
         }
+    }
+
+    // calculate weight_[icell]
+    if(!region_)
+    {
+        for(int icell = 0; icell < ncells_max_; icell++)
+            weight_[icell] = 1.;
+    }
+
+    // MC calculation if region_ exists
+    if(region_)
+    {
+        double x_try[3];
+        int ibin;
+        int ntry = ncells_ * ntry_per_cell(); // number of MC tries
+        double contribution = 1./static_cast<double>(ntry_per_cell());  // contrib of each try
+
+        for(int icell = 0; icell < ncells_max_; icell++)
+            weight_[icell] = 0.;
+
+        for(int itry = 0; itry < ntry; itry++)
+        {
+            x_try[0] = lo_[0]+(hi_[0]-lo_[0])*random_->uniform();
+            x_try[1] = lo_[1]+(hi_[1]-lo_[1])*random_->uniform();
+            x_try[2] = lo_[2]+(hi_[2]-lo_[2])*random_->uniform();
+            if(region_->match(x_try[0],x_try[1],x_try[2]))
+            {
+                ibin = coord2bin(x_try);
+                // only do this for points in my subbox
+                if(ibin >= 0)
+                    weight_[ibin] += contribution;
+            }
+        }
+
+        // allreduce weights
+        MPI_Sum_Vector(weight_,ncells_,world);
+
+        // limit weight to 1
+        for(int icell = 0; icell < ncells_max_; icell++)
+            if(weight_[icell] > 1.) weight_[icell] = 1.;
     }
 
     // print to screen and log
@@ -299,15 +407,35 @@ void FixAveEuler::setup_bins()
 void FixAveEuler::end_of_step()
 {
     
-    // have to adapt grid if box changes
-    if(box_change_)
+    // have to adapt grid if box size changes
+    if(box_change_size_ || (parallel_ && box_change_domain_))
+    {
+        if(region_)
+            error->warning(FLERR,"Fix ave/euler using 'basevolume_region'"
+                                "and changing simulation or load-balancing is huge over-head");
         setup_bins();
+    }
 
     // bin atoms
     bin_atoms();
 
     // calculate Eulerian grid properties
+    // performs allreduce if necessary
     calculate_eu();
+}
+/* ---------------------------------------------------------------------- */
+
+int FixAveEuler::ncells_pack()
+{
+    // in parallel mode, each proc will pack
+    if (parallel_)
+        return ncells_;
+
+    // in serial mode, only proc 0 will pack
+    if(0 == comm->me)
+        return ncells_;
+    else
+        return 0;
 }
 
 /* ----------------------------------------------------------------------
@@ -334,7 +462,8 @@ void FixAveEuler::bin_atoms()
   }
 
   // bin in reverse order so linked list will be in forward order
-  // also puts ghost atoms at end of list
+  // also use ghost atoms
+  // skip if any atom is out of (sub) box
 
   for (i = nall-1; i >= 0; i--)
   {
@@ -342,8 +471,9 @@ void FixAveEuler::bin_atoms()
 
       ibin = coord2bin(x[i]);
 
-      // ghosts outside grid may return values ibin < 0 || ibin >= ncells_
-      // lets ignore them
+      // particles outside grid may return values ibin < 0 || ibin >= ncells_
+      // these are ignores
+      
       if (ibin < 0 || ibin >= ncells_) {
         
         continue;
@@ -372,8 +502,13 @@ inline int FixAveEuler::coord2bin(double *x)
     }
   } else {
     for (i=0;i<3;i++) {
+
+      // skip particles outside my subdomain
+      
+      if(x[i] <= domain->sublo[i] || x[i] >= domain->subhi[i])
+        return -1;
       float_iCell[i] = (x[i]-lo_[i])*cell_size_inv_[i];
-      iCell[i] = static_cast<int> (float_iCell[i] >= 0 ? float_iCell[i] : float_iCell[i]-1);
+      iCell[i] = static_cast<int> (float_iCell[i]);
     }
   }
 
@@ -413,16 +548,21 @@ void FixAveEuler::calculate_eu()
 
     // loop all binned particles
     // each particle can contribute to the cell that it has been binned
-    // to plus its 26 neighs
+    // optionally plus its 26 neighs
 
     for(int icell = 0; icell < ncells_; icell++)
     {
-        ncount = 0;
+        ncount_[icell] = 0;
         vectorZeroize3D(v_av_[icell]);
         vol_fr_[icell] = 0.;
         radius_[icell] = 0.;
         mass_[icell] = 0.;
         vectorZeroizeN(stress_[icell],7);
+
+        // skip if no particles in cell
+        
+        if(-1 == cellhead_[icell])
+            continue;
 
         // add contributions of particle - v and volume fraction
         // v is favre-averaged (mass-averaged)
@@ -435,13 +575,39 @@ void FixAveEuler::calculate_eu()
             vol_fr_[icell] += radius[iatom]*radius[iatom]*radius[iatom];
             radius_[icell] += radius[iatom];
             mass_[icell] += rmass[iatom];
-            ncount++;
+            ncount_[icell]++;
         }
 
-        if(ncount) vectorScalarDiv3D(v_av_[icell],static_cast<double>(ncount)*mass_[icell]);
-        if(ncount) radius_[icell]/=static_cast<double>(ncount);
-        vol_fr_[icell] *= prefactor_vol_fr;
+    }
 
+    // allreduce contributions so far if not parallel
+    if(!parallel_ && ncells_ > 0)
+    {
+        MPI_Sum_Vector(&(v_av_[0][0]),3*ncells_,world);
+        MPI_Sum_Vector(vol_fr_,ncells_,world);
+        MPI_Sum_Vector(radius_,ncells_,world);
+        MPI_Sum_Vector(mass_,ncells_,world);
+        MPI_Sum_Vector(ncount_,ncells_,world);
+    }
+
+    // perform further calculations
+
+    double eps_ntry = 1./static_cast<double>(ntry_per_cell());
+    for(int icell = 0; icell < ncells_; icell++)
+    {
+        // calculate average vel and radius
+        if(ncount_[icell]) vectorScalarDiv3D(v_av_[icell],static_cast<double>(ncount_[icell])*mass_[icell]);
+        if(ncount_[icell]) radius_[icell]/=static_cast<double>(ncount_[icell]);
+
+        // calculate volume fraction
+        //safety check, add an epsilon to weight if any particle ended up in that cell
+        if(vol_fr_[icell] > 0. && MathExtraLiggghts::compDouble(weight_[icell],0.,1e-6))
+           weight_[icell] = eps_ntry;
+        if(weight_[icell] < eps_ntry )
+            vol_fr_[icell] = 0.;
+        else
+            vol_fr_[icell] *= prefactor_vol_fr/weight_[icell];
+        
         // add contribution of particle - stress
         // need v before can calculate stress
         // stress is molecular diffusion + contact forces
@@ -454,9 +620,22 @@ void FixAveEuler::calculate_eu()
             stress_[icell][4] += -rmass[iatom]*(v[iatom][0]-v_av_[icell][0])*(v[iatom][1]-v_av_[icell][1]) + stress_atom[iatom][3];
             stress_[icell][5] += -rmass[iatom]*(v[iatom][0]-v_av_[icell][0])*(v[iatom][2]-v_av_[icell][2]) + stress_atom[iatom][4];
             stress_[icell][6] += -rmass[iatom]*(v[iatom][1]-v_av_[icell][1])*(v[iatom][2]-v_av_[icell][2]) + stress_atom[iatom][5]; 
-            stress_[icell][0] = -0.333333333333333*(stress_[icell][1]+stress_[icell][2]+stress_[icell][3]);
         }
-        vectorScalarMultN(7,stress_[icell],prefactor_stress);
+        stress_[icell][0] = -0.333333333333333*(stress_[icell][1]+stress_[icell][2]+stress_[icell][3]);
+        if(weight_[icell] < eps_ntry)
+            vectorZeroizeN(stress_[icell],7);
+        else
+            vectorScalarMultN(7,stress_[icell],prefactor_stress/weight_[icell]);
+    }
+
+    // allreduce stress if not parallel
+    if(!parallel_ && ncells_ > 0)
+    {
+        MPI_Sum_Vector(&(stress_[0][0]),7*ncells_,world);
+
+        // recalc pressure based on allreduced stress
+        for(int icell = 0; icell < ncells_; icell++)
+            stress_[icell][0] = -0.333333333333333*(stress_[icell][1]+stress_[icell][2]+stress_[icell][3]);
     }
 
     // wrap with clear/add

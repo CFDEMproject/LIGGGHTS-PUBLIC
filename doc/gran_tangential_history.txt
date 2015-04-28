@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -13,23 +12,17 @@ gran tangential history :h3
 
 tangential history :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This part of "pair gran"_pair_gran.html and 
-"fix wall/gran"_fix_wall_gran.html
-is not availabe in LAMMPS.
-
 [Description:]
 
 This granular model is based on the general description of granular
 force interaction as described in "pair gran"_pair_gran.html.
 
-The spring part of the tangential force (k_t) is a "history" effect 
-that accounts for the tangential displacement ("tangential overlap") 
+The spring part of the tangential force (k_t) is a "history" effect
+that accounts for the tangential displacement ("tangential overlap")
 between the particles for the duration of the time they are in contact.
 
 If this model is chosen, then this "tangential overlap" spring force is
 actually calculated / taken into account.
-The coefficient of friction cof is the upper limit of the tangential force through 
-the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the tangential spring and normal 
+The coefficient of friction cof is the upper limit of the tangential force through
+the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the tangential spring and normal
 force components in the formulas above.

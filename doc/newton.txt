@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -39,7 +39,7 @@ that if a bond, angle, dihedral, or improper interaction contains
 atoms on 2 or more processors, the interaction is computed by each
 processor.
 
-LAMMPS should produce the same answers for any newton flag settings,
+LIGGGHTS(R)-PUBLIC should produce the same answers for any newton flag settings,
 except for round-off issues.
 
 With "run_style"_run_style.html {respa} and only bonded interactions
@@ -52,6 +52,9 @@ communication in the innermost loop.
 The newton bond setting cannot be changed after the simulation box is
 defined by a "read_data"_read_data.html or
 "create_box"_create_box.html command.
+
+Some commands may not support newton "on". You will see an error
+message in this case when running the simulation.
 
 [Related commands:]
 

@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -95,11 +95,7 @@ fix 1 all deform 10 y delta -0.5 0.5 xz vel 1.0
 run.  Orthogonal simulation boxes have 3 adjustable parameters
 (x,y,z).  Triclinic (non-orthogonal) simulation boxes have 6
 adjustable parameters (x,y,z,xy,xz,yz).  Any or all of them can be
-adjusted independently and simultaneously by this command.  This fix
-can be used to perform non-equilibrium MD (NEMD) simulations of a
-continuously strained system.  See the <A HREF = "fix_nvt_sllod.html">fix
-nvt/sllod</A> and <A HREF = "compute_temp_deform.html">compute
-temp/deform</A> commands for more details.
+adjusted independently and simultaneously by this command.
 </P>
 <P>For the <I>x</I>, <I>y</I>, <I>z</I> parameters, the associated dimension cannot be
 shrink-wrapped.  For the <I>xy</I>, <I>yz</I>, <I>xz</I> parameters, the associated
@@ -267,7 +263,7 @@ value < 0.0 to compress the box.
 <P>The variable <I>name2</I> must also be an <A HREF = "variable.html">equal-style
 variable</A> and should calculate the rate of box length
 change, in units of distance/time, i.e. the time-derivative of the
-<I>name1</I> variable.  This quantity is used internally by LAMMPS to reset
+<I>name1</I> variable.  This quantity is used internally by LIGGGHTS(R)-PUBLIC to reset
 atom velocities when they cross periodic boundaries.  It is computed
 internally for the other styles, but you must provide it when using an
 arbitrary variable.
@@ -405,7 +401,7 @@ following the definition of fix deform.
 <P>The variable <I>name2</I> must also be an <A HREF = "variable.html">equal-style
 variable</A> and should calculate the rate of tilt change,
 in units of distance/time, i.e. the time-derivative of the <I>name1</I>
-variable.  This quantity is used internally by LAMMPS to reset atom
+variable.  This quantity is used internally by LIGGGHTS(R)-PUBLIC to reset atom
 velocities when they cross periodic boundaries.  It is computed
 internally for the other styles, but you must provide it when using an
 arbitrary variable.
@@ -423,7 +419,7 @@ fix 2 all deform 1 xy variable v_displace v_rate remap v
 <HR>
 
 <P>All of the tilt styles change the xy, xz, yz tilt factors during a
-simulation.  In LAMMPS, tilt factors (xy,xz,yz) for triclinic boxes
+simulation.  In LIGGGHTS(R)-PUBLIC, tilt factors (xy,xz,yz) for triclinic boxes
 are normally bounded by half the distance of the parallel box length.
 See the discussion of the <I>flip</I> keyword below, to allow this bound to
 be exceeded, if desired.
@@ -489,7 +485,7 @@ atom positions and velocities to induce a velocity profile that
 matches the changing box size/shape.  Thus atom coordinates should NOT
 be remapped by fix deform, but velocities SHOULD be when atoms cross
 periodic boundaries, since that is consistent with maintaining the
-velocity profile already created by fix nvt/sllod.  LAMMPS will warn
+velocity profile already created by fix nvt/sllod.  LIGGGHTS(R)-PUBLIC will warn
 you if the <I>remap</I> setting is not consistent with fix nvt/sllod.
 </P>
 <P>IMPORTANT NOTE: For non-equilibrium MD (NEMD) simulations using "remap
@@ -532,9 +528,9 @@ above.  If the <I>flip</I> value is set to <I>yes</I>, the bound is enforced by
 flipping the box when it is exceeded.  If the <I>flip</I> value is set to
 <I>no</I>, the tilt will continue to change without flipping.  Note that if
 you apply large deformations, this means the box shape can tilt
-dramatically LAMMPS will run less efficiently, due to the large volume
+dramatically LIGGGHTS(R)-PUBLIC will run less efficiently, due to the large volume
 of communication needed to acquire ghost atoms around a processor's
-irregular-shaped sub-domain.  For extreme values of tilt, LAMMPS may
+irregular-shaped sub-domain.  For extreme values of tilt, LIGGGHTS(R)-PUBLIC may
 also lose atoms and generate an error.
 </P>
 <P>The <I>units</I> keyword determines the meaning of the distance units used
@@ -554,7 +550,7 @@ command if you want to include lattice spacings in a variable formula.
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart
 files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
 are relevant to this fix.  No global or per-atom quantities are stored
-by this fix for access by various <A HREF = "Section_howto.html#howto_15">output
+by this fix for access by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.
 </P>
 <P>This fix can perform deformation over multiple runs, using the <I>start</I>

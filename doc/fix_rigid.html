@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -27,7 +27,7 @@
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
-<LI>style = <I>rigid</I> or <I>rigid/nve</I> or <I>rigid/nvt</I> or <I>rigid/npt</I> or <I>rigid/nph</I> or <I>rigid/small</I> 
+<LI>style = <I>rigid</I> 
 
 <LI>bodystyle = <I>single</I> or <I>molecule</I> or <I>group</I> 
 
@@ -39,7 +39,7 @@
 </PRE>
 <LI>zero or more keyword/value pairs may be appended 
 
-<LI>keyword = <I>langevin</I> or <I>temp</I> or <I>iso</I> or <I>aniso</I> or <I>x</I> or <I>y</I> or <I>z</I> or <I>couple</I> or <I>tparam</I> or <I>pchain</I> or <I>dilate</I> or <I>force</I> or <I>torque</I> or <I>infile</I> 
+<LI>keyword =  or <I>temp</I> or <I>iso</I> or <I>aniso</I> or <I>x</I> or <I>y</I> or <I>z</I> or <I>couple</I> or <I>tparam</I> or <I>pchain</I> or <I>dilate</I> or <I>force</I> or <I>torque</I> or <I>infile</I> 
 
 <PRE>  <I>langevin</I> values = Tstart Tstop Tperiod seed
     Tstart,Tstop = desired temperature at start/stop of run (temperature units)
@@ -77,15 +77,7 @@
 <P><B>Examples:</B>
 </P>
 <PRE>fix 1 clump rigid single
-fix 1 clump rigid/small molecule
-fix 1 clump rigid single force 1 off off on langevin 1.0 1.0 1.0 428984
-fix 1 polychains rigid/nvt molecule temp 1.0 1.0 5.0
-fix 1 polychains rigid molecule force 1*5 off off off force 6*10 off off on
-fix 1 polychains rigid/small molecule langevin 1.0 1.0 1.0 428984
 fix 2 fluid rigid group 3 clump1 clump2 clump3 torque * off off off 
-fix 1 rods rigid/npt molecule temp 300.0 300.0 100.0 iso 0.5 0.5 10.0
-fix 1 particles rigid/npt molecule temp 1.0 1.0 5.0 x 0.5 0.5 1.0 z 0.5 0.5 1.0 couple xz
-fix 1 water rigid/nph molecule iso 0.5 0.5 1.0 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -111,12 +103,7 @@ molecules of 2, 3, or 4 atoms, e.g. water molecules.  That fix treats
 the constituent atoms as point masses.
 </P>
 <P>These fixes also update the positions and velocities of the atoms in
-each rigid body via time integration, in the NVE, NVT, NPT, or NPH
-ensemble, as described below.  
-</P>
-<P>There are two main variants of this fix, fix rigid and fix
-rigid/small.  The NVE/NVT/NPT/NHT versions belong to one of the two
-variants, as their style names indicate.  
+each rigid body via time integration, in the NVE ensemble.
 </P>
 <P>IMPORTANT NOTE: Not all of the bodystyle options and keyword/value
 options are available for both the <I>rigid</I> and <I>rigid/small</I> variants.
@@ -131,22 +118,6 @@ contributions from each processor to the force and torque on all the
 bodies.  This operation will not scale well in parallel if large
 numbers of rigid bodies are simulated.
 </P>
-<P>The <I>rigid/small</I> variant is typically best for a system with a large
-number of small rigid bodies.  Each body is assigned to the atom
-closest to the geometrical center of the body.  The fix operates using
-local lists of rigid bodies owned by each processor and information is
-exchanged and summed via local communication between neighboring
-processors when ghost atom info is accumlated.
-</P>
-<P>IMPORTANT NOTE: To use <I>rigid/small</I> the ghost atom cutoff must be
-large enough to span the distance between the atom that owns the body
-and every other atom in the body.  This distance value is printed out
-when the rigid bodies are defined.  If the
-<A HREF = "pair_style.html">pair_style</A> cutoff plus neighbor skin does not span
-this distance, then you should use the <A HREF = "communicate.html">communicate
-cutoff</A> command with a setting epsilon larger than
-the distance.
-</P>
 <P>Which of the two variants is faster for a particular problem is hard
 to predict.  The best way to decide is to perform a short test run.
 Both variants should give identical numerical answers for short runs.
@@ -154,12 +125,12 @@ Long runs should give statistically similar results, but round-off
 differences will accumulate to produce divergent trajectories.
 </P>
 <P>IMPORTANT NOTE: You should not update the atoms in rigid bodies via
-other time-integration fixes (e.g. <A HREF = "fix_nve.html">fix nve</A>, <A HREF = "fix_nvt.html">fix
-nvt</A>, <A HREF = "fix_npt.html">fix npt</A>), or you will be integrating
+other time-integration fixes (e.g. <A HREF = "fix_nve.html">fix nve</A>), or you will
+be integrating
 their motion more than once each timestep.  When performing a hybrid
 simulation with some atoms in rigid bodies, and some not, a separate
-time integration fix like <A HREF = "fix_nve.html">fix nve</A> or <A HREF = "fix_nh.html">fix
-nvt</A> should be used for the non-rigid particles.
+time integration fix like <A HREF = "fix_nve.html">fix nve</A> should be used for the
+non-rigid particles.
 </P>
 <P>IMPORTANT NOTE: These fixes are overkill if you simply want to hold a
 collection of atoms stationary or have them move with a constant
@@ -247,13 +218,13 @@ to the motion.  The <A HREF = "neigh_modify.html">neigh_modify exclude</A> and
 </P>
 <P>For computational efficiency, you should typically define one fix
 rigid or fix rigid/small command which includes all the desired rigid
-bodies.  LAMMPS will allow multiple rigid fixes to be defined, but it
+bodies.  LIGGGHTS(R)-PUBLIC will allow multiple rigid fixes to be defined, but it
 is more expensive.
 </P>
 <HR>
 
 <P>The constituent particles within a rigid body can be point particles
-(the default in LAMMPS) or finite-size particles, such as spheres or
+(the default in LIGGGHTS(R)-PUBLIC) or finite-size particles, such as spheres or
 ellipsoids or line segments or triangles.  See the <A HREF = "atom_style.html">atom_style sphere
 and ellipsoid and line and tri</A> commands for more
 details on these kinds of particles.  Finite-size particles contribute
@@ -273,178 +244,19 @@ body.
 </P>
 <HR>
 
-<P>The <I>rigid</I> and <I>rigid/small</I> and <I>rigid/nve</I> styles perform constant
-NVE time integration.  The only difference is that the <I>rigid</I> and
-<I>rigid/small</I> styles use an integration technique based on Richardson
-iterations.  The <I>rigid/nve</I> style uses the methods described in the
-paper by <A HREF = "#Miller">Miller</A>, which are thought to provide better energy
-conservation than an iterative approach.
+<P>The <I>rigid</I> style performs constant
+NVE time integration based on Richardson
+iterations.
 </P>
-<P>The <I>rigid/nvt</I> style performs constant NVT integration using a
-Nose/Hoover thermostat with chains as described originally in
-<A HREF = "#Hoover">(Hoover)</A> and <A HREF = "#Martyna">(Martyna)</A>, which thermostats both
-the translational and rotational degrees of freedom of the rigid
-bodies.  The rigid-body algorithm used by <I>rigid/nvt</I> is described in
-the paper by <A HREF = "#Kamberaj">Kamberaj</A>.
-</P>
-<P>The <I>rigid/npt</I> and <I>rigid/nph</I> styles perform constant NPT or NPH
-integration using a Nose/Hoover barostat with chains.  For the NPT
-case, the same Nose/Hoover thermostat is also used as with
-<I>rigid/nvt</I>.
-</P>
-<P>The barostat parameters are specified using one or more of the <I>iso</I>,
-<I>aniso</I>, <I>x</I>, <I>y</I>, <I>z</I> and <I>couple</I> keywords.  These keywords give you
-the ability to specify 3 diagonal components of the external stress
-tensor, and to couple these components together so that the dimensions
-they represent are varied together during a constant-pressure
-simulation.  The effects of these keywords are similar to those
-defined in <A HREF = "fix_nh.html">fix npt/nph</A>
-</P>
-<P>NOTE: Currently the <I>rigid/npt</I> and <I>rigid/nph</I> styles do not support
-triclinic (non-orthongonal) boxes.
-</P>
-<P>The target pressures for each of the 6 components of the stress tensor
-can be specified independently via the <I>x</I>, <I>y</I>, <I>z</I> keywords, which
-correspond to the 3 simulation box dimensions.  For each component,
-the external pressure or tensor component at each timestep is a ramped
-value during the run from <I>Pstart</I> to <I>Pstop</I>. If a target pressure is
-specified for a component, then the corresponding box dimension will
-change during a simulation.  For example, if the <I>y</I> keyword is used,
-the y-box length will change.  A box dimension will not change if that
-component is not specified, although you have the option to change
-that dimension via the <A HREF = "fix_deform.html">fix deform</A> command.
-</P>
-<P>For all barostat keywords, the <I>Pdamp</I> parameter operates like the
-<I>Tdamp</I> parameter, determining the time scale on which pressure is
-relaxed.  For example, a value of 10.0 means to relax the pressure in
-a timespan of (roughly) 10 time units (e.g. tau or fmsec or psec - see
-the <A HREF = "units.html">units</A> command).
-</P>
-<P>Regardless of what atoms are in the fix group (the only atoms which
-are time integrated), a global pressure or stress tensor is computed
-for all atoms.  Similarly, when the size of the simulation box is
-changed, all atoms are re-scaled to new positions, unless the keyword
-<I>dilate</I> is specified with a <I>dilate-group-ID</I> for a group that
-represents a subset of the atoms.  This can be useful, for example, to
-leave the coordinates of atoms in a solid substrate unchanged and
-controlling the pressure of a surrounding fluid.  Another example is a
-system consisting of rigid bodies and point particles where the
-barostat is only coupled with the rigid bodies.  This option should be
-used with care, since it can be unphysical to dilate some atoms and
-not others, because it can introduce large, instantaneous
-displacements between a pair of atoms (one dilated, one not) that are
-far from the dilation origin.
-</P>
-<P>The <I>couple</I> keyword allows two or three of the diagonal components of
-the pressure tensor to be "coupled" together.  The value specified
-with the keyword determines which are coupled.  For example, <I>xz</I>
-means the <I>Pxx</I> and <I>Pzz</I> components of the stress tensor are coupled.
-<I>Xyz</I> means all 3 diagonal components are coupled.  Coupling means two
-things: the instantaneous stress will be computed as an average of the
-corresponding diagonal components, and the coupled box dimensions will
-be changed together in lockstep, meaning coupled dimensions will be
-dilated or contracted by the same percentage every timestep.  The
-<I>Pstart</I>, <I>Pstop</I>, <I>Pdamp</I> parameters for any coupled dimensions must
-be identical.  <I>Couple xyz</I> can be used for a 2d simulation; the <I>z</I>
-dimension is simply ignored.
-</P>
-<P>The <I>iso</I> and <I>aniso</I> keywords are simply shortcuts that are
-equivalent to specifying several other keywords together.
-</P>
-<P>The keyword <I>iso</I> means couple all 3 diagonal components together when
-pressure is computed (hydrostatic pressure), and dilate/contract the
-dimensions together.  Using "iso Pstart Pstop Pdamp" is the same as
-specifying these 4 keywords:
-</P>
-<PRE>x Pstart Pstop Pdamp
-y Pstart Pstop Pdamp
-z Pstart Pstop Pdamp
-couple xyz 
-</PRE>
-<P>The keyword <I>aniso</I> means <I>x</I>, <I>y</I>, and <I>z</I> dimensions are controlled
-independently using the <I>Pxx</I>, <I>Pyy</I>, and <I>Pzz</I> components of the
-stress tensor as the driving forces, and the specified scalar external
-pressure.  Using "aniso Pstart Pstop Pdamp" is the same as specifying
-these 4 keywords:
-</P>
-<PRE>x Pstart Pstop Pdamp
-y Pstart Pstop Pdamp
-z Pstart Pstop Pdamp
-couple none 
-</PRE>
 <HR>
 
-<P>The keyword/value option pairs are used in the following ways.
-</P>
-<P>The <I>langevin</I> and <I>temp</I> and <I>tparam</I> keywords perform thermostatting
-of the rigid bodies, altering both their translational and rotational
-degrees of freedom.  What is meant by "temperature" of a collection of
-rigid bodies and how it can be monitored via the fix output is
-discussed below.
-</P>
-<P>The <I>langevin</I> keyword applies a Langevin thermostat to the constant
-NVE time integration performed by either the <I>rigid</I> or <I>rigid/small</I>
-or <I>rigid/nve</I> styles.  It cannot be used with the <I>rigid/nvt</I> style.
-The desired temperature at each timestep is a ramped value during the
-run from <I>Tstart</I> to <I>Tstop</I>.  The <I>Tdamp</I> parameter is specified in
-time units and determines how rapidly the temperature is relaxed.  For
-example, a value of 100.0 means to relax the temperature in a timespan
-of (roughly) 100 time units (tau or fmsec or psec - see the
-<A HREF = "units.html">units</A> command).  The random # <I>seed</I> must be a positive
-integer.
-</P>
-<P>The way that Langevin thermostatting operates is explained on the <A HREF = "fix_langevin.html">fix
-langevin</A> doc page.  If you wish to simply viscously
-damp the rotational motion without thermostatting, you can set
-<I>Tstart</I> and <I>Tstop</I> to 0.0, which means only the viscous drag term in
-the Langevin thermostat will be applied.  See the discussion on the
-<A HREF = "doc/fix_viscous.html">fix viscous</A> doc page for details.
-</P>
-<P>IMPORTANT NOTE: When the <I>langevin</I> keyword is used with fix rigid
-versus fix rigid/small, different dynamics will result for parallel
-runs.  This is because of the way random numbers are used in the two
-cases.  The dynamics for the two cases should be statistically
-similar, but will not be identical, even for a single timestep.
-</P>
-<P>The <I>temp</I> and <I>tparam</I> keywords apply a Nose/Hoover thermostat to the
-NVT time integration performed by the <I>rigid/nvt</I> style.  They cannot
-be used with the <I>rigid</I> or <I>rigid/small</I> or <I>rigid/nve</I> styles.  The
-desired temperature at each timestep is a ramped value during the run
-from <I>Tstart</I> to <I>Tstop</I>.  The <I>Tdamp</I> parameter is specified in time
-units and determines how rapidly the temperature is relaxed.  For
-example, a value of 100.0 means to relax the temperature in a timespan
-of (roughly) 100 time units (tau or fmsec or psec - see the
-<A HREF = "units.html">units</A> command).
-</P>
-<P>Nose/Hoover chains are used in conjunction with this thermostat.  The
-<I>tparam</I> keyword can optionally be used to change the chain settings
-used.  <I>Tchain</I> is the number of thermostats in the Nose Hoover chain.
-This value, along with <I>Tdamp</I> can be varied to dampen undesirable
-oscillations in temperature that can occur in a simulation.  As a rule
-of thumb, increasing the chain length should lead to smaller
-oscillations. The keyword <I>pchain</I> specifies the number of
-thermostats in the chain thermostatting the barostat degrees of
-freedom. 
-</P>
-<P>IMPORTANT NOTE: There are alternate ways to thermostat a system of
-rigid bodies.  You can use <A HREF = "fix_langevin.html">fix langevin</A> to treat
-the individual particles in the rigid bodies as effectively immersed
-in an implicit solvent, e.g. a Brownian dynamics model.  For hybrid
-systems with both rigid bodies and solvent particles, you can
-thermostat only the solvent particles that surround one or more rigid
-bodies by appropriate choice of groups in the compute and fix commands
-for temperature and thermostatting.  The solvent interactions with the
-rigid bodies should then effectively thermostat the rigid body
-temperature as well without use of the Langevin or Nose/Hoover options
-associated with the fix rigid commands.
-</P>
 <P>The <I>infile</I> keyword allows a file of rigid body attributes to be read
-in from a file, rather then having LAMMPS compute them.  There are 3
+in from a file, rather then having LIGGGHTS(R)-PUBLIC compute them.  There are 3
 such attributes: the total mass of the rigid body, its center-of-mass
 position, and its 6 moments of inertia.  For rigid bodies consisting
-of point particles or non-overlapping finite-size particles, LAMMPS
+of point particles or non-overlapping finite-size particles, LIGGGHTS(R)-PUBLIC
 can compute these values accurately.  However, for rigid bodies
-consisting of finite-size particles which overlap each other, LAMMPS
+consisting of finite-size particles which overlap each other, LIGGGHTS(R)-PUBLIC
 will ignore the overlaps when computing these 3 attributes.  The
 amount of error this induces depends on the amount of overlap.  To
 avoid this issue, the values can be pre-computed (e.g. using Monte
@@ -473,12 +285,12 @@ atoms in a specific rigid body as the rigid body ID.
 self-explanatory.  The center-of-mass should be consistent with what
 is calculated for the position of the rigid body with all its atoms
 unwrapped by their respective image flags.  If this produces a
-center-of-mass that is outside the simulation box, LAMMPS wraps it
+center-of-mass that is outside the simulation box, LIGGGHTS(R)-PUBLIC wraps it
 back into the box.  The 6 moments of inertia (ixx,iyy,izz,ixy,ixz,iyz)
 should be the values consistent with the current orientation of the
 rigid body around its center of mass.  The values are with respect to
 the simulation box XYZ axes, not with respect to the prinicpal axes of
-the rigid body itself.  LAMMPS performs the latter calculation
+the rigid body itself.  LIGGGHTS(R)-PUBLIC performs the latter calculation
 internally.
 </P>
 <P>IMPORTANT NOTE: If you use the <I>infile</I> keyword and write restart
@@ -495,25 +307,6 @@ the original file only listed a subset of the rigid bodies.
 </P>
 <HR>
 
-<P>If you use a <A HREF = "compute.html">temperature compute</A> with a group that
-includes particles in rigid bodies, the degrees-of-freedom removed by
-each rigid body are accounted for in the temperature (and pressure)
-computation, but only if the temperature group includes all the
-particles in a particular rigid body.
-</P>
-<P>A 3d rigid body has 6 degrees of freedom (3 translational, 3
-rotational), except for a collection of point particles lying on a
-straight line, which has only 5, e.g a dimer.  A 2d rigid body has 3
-degrees of freedom (2 translational, 1 rotational).
-</P>
-<P>IMPORTANT NOTE: You may wish to explicitly subtract additional
-degrees-of-freedom if you use the <I>force</I> and <I>torque</I> keywords to
-eliminate certain motions of one or more rigid bodies.  LAMMPS does
-not do this automatically.
-</P>
-<P>The rigid body contribution to the pressure of the system (virial) is
-also accounted for by this fix.
-</P>
 <P>IMPORTANT NOTE: The periodic image flags of atoms in rigid bodies are
 altered so that the rigid body can be reconstructed correctly when it
 straddles periodic boundaries.  The atom image flags are not
@@ -553,92 +346,9 @@ and output as described below.
 </P>
 <HR>
 
-<P>If your simlulation is a hybrid model with a mixture of rigid bodies
-and non-rigid particles (e.g. solvent) there are several ways these
-rigid fixes can be used in tandem with <A HREF = "fix_nve.html">fix nve</A>, <A HREF = "fix_nh.html">fix
-nvt</A>, <A HREF = "fix_nh.html">fix npt</A>, and <A HREF = "fix_nh.html">fix nph</A>.
-</P>
-<P>If you wish to perform NVE dynamics (no thermostatting or
-barostatting), use fix rigid or fix rigid/nve to integrate the rigid
-bodies, and <A HREF = "fix_nve.html">fix nve</A> to integrate the non-rigid
-particles.
-</P>
-<P>If you wish to perform NVT dynamics (thermostatting, but no
-barostatting), you can use fix rigid/nvt for the rigid bodies, and any
-thermostatting fix for the non-rigid particles (<A HREF = "fix_nh.html">fix nvt</A>,
-<A HREF = "fix_langevin.html">fix langevin</A>, <A HREF = "fix_temp_berendsen.html">fix
-temp/berendsen</A>).  You can also use fix rigid
-or fix rigid/nve for the rigid bodies and thermostat them using <A HREF = "fix_langevin.html">fix
-langevin</A> on the group that contains all the
-particles in the rigid bodies.  The net force added by <A HREF = "fix_langevin.html">fix
-langevin</A> to each rigid body effectively thermostats
-its translational center-of-mass motion.  Not sure how well it does at
-thermostatting its rotational motion.
-</P>
-<P>If you with to perform NPT or NPH dynamics (barostatting), you cannot
-use both <A HREF = "fix_nh.html">fix npt</A> and fix rigid/npt (or the nph
-variants).  This is because there can only be one fix which monitors
-the global pressure and changes the simulation box dimensions.  So you
-have 3 choices:
-</P>
-<UL><LI>Use fix rigid/npt for the rigid bodies.  Use the <I>dilate</I> all option
-so that it will dilate the positions of the non-rigid particles as
-well.  Use <A HREF = "fix_nh.html">fix nvt</A> (or any other thermostat) for the
-non-rigid particles. 
-
-<LI>Use <A HREF = "fix_nh.html">fix npt</A> for the group of non-rigid particles.  Use
-the <I>dilate</I> all option so that it will dilate the center-of-mass
-positions of the rigid bodies as well.  Use fix rigid/nvt for the
-rigid bodies. 
-
-<LI>Use <A HREF = "fix_press_berendsen.html">fix press/berendsen</A> to compute the
-pressure and change the box dimensions.  Use fix rigid/nvt for the
-rigid bodies.  Use <A HREF = "fix_nh.thml">fix nvt</A> (or any other thermostat) for
-the non-rigid particles. 
-</UL>
-<P>In all case, the rigid bodies and non-rigid particles both contribute
-to the global pressure and the box is scaled the same by any of the
-barostatting fixes.
-</P>
-<P>You could even use the 2nd and 3rd options for a non-hybrid simulation
-consisting of only rigid bodies, assuming you give <A HREF = "fix_nh.html">fix
-npt</A> an empty group, though it's an odd thing to do.  The
-barostatting fixes (<A HREF = "fix_nh.html">fix npt</A> and <A HREF = "fix_press_berendsen.html">fix
-press/berensen</A>) will monitor the pressure
-and change the box dimensions, but not time integrate any particles.
-The integration of the rigid bodies will be performed by fix
-rigid/nvt.
-</P>
-<HR>
-
-<P>Styles with a <I>cuda</I>, <I>gpu</I>, <I>omp</I>, or <I>opt</I> suffix are functionally
-the same as the corresponding style without the suffix.  They have
-been optimized to run faster, depending on your available hardware, as
-discussed in <A HREF = "Section_accelerate.html">Section_accelerate</A> of the
-manual.  The accelerated styles take the same arguments and should
-produce the same results, except for round-off and precision issues.
-</P>
-<P>These accelerated styles are part of the USER-CUDA, GPU, USER-OMP and OPT
-packages, respectively.  They are only enabled if LAMMPS was built with
-those packages.  See the <A HREF = "Section_start.html#start_3">Making LAMMPS</A>
-section for more info.
-</P>
-<P>You can specify the accelerated styles explicitly in your input script
-by including their suffix, or you can use the <A HREF = "Section_start.html#start_7">-suffix command-line
-switch</A> when you invoke LAMMPS, or you can
-use the <A HREF = "suffix.html">suffix</A> command in your input script.
-</P>
-<P>See <A HREF = "Section_accelerate.html">Section_accelerate</A> of the manual for
-more instructions on how to use the accelerated styles effectively.
-</P>
-<HR>
-
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
-<P>No information about the <I>rigid</I> and <I>rigid/small</I> and <I>rigid/nve</I>
-fixes are written to <A HREF = "restart.html">binary restart files</A>.  For style
-<I>rigid/nvt</I> the state of the Nose/Hoover thermostat is written to
-<A HREF = "restart.html">binary restart files</A>.  See the
+<P>No information is written to <A HREF = "restart.html">binary restart files</A>.
 <A HREF = "read_restart.html">read_restart</A> command for info on how to re-specify
 a fix in an input script that reads a restart file, so that the
 operation of the fix continues in an uninterrupted fashion.
@@ -648,13 +358,13 @@ rigid/nvt fix to add the energy change induced by the thermostatting
 to the system's potential energy as part of <A HREF = "thermo_style.html">thermodynamic
 output</A>.
 </P>
-<P>The <A HREF = "fix_modify.html">fix_modify</A> <I>temp</I> and <I>press</I> options are 
+<P>The <A HREF = "fix_modify.html">fix_modify</A> <I>temp</I> and <I>press</I> options are
 supported by the rigid/npt and rigid/nph fixes to change the computes used
 to calculate the instantaneous pressure tensor. Note that the rigid/nvt fix
 does not use any external compute to compute instantaneous temperature.
 </P>
-<P>The <I>rigid</I> and <I>rigid/small</I> and <I>rigid/nve</I> fixes compute a global
-scalar which can be accessed by various <A HREF = "Section_howto.html#howto_15">output
+<P>The  fixes compute a global
+scalar which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  The scalar value calculated by
 these fixes is "intensive".  The scalar is the current temperature of
 the collection of rigid bodies.  This is averaged over all rigid
@@ -667,14 +377,8 @@ of freedom constrained by the <I>force</I> and <I>torque</I> keywords are
 removed from this calculation, but only for the <I>rigid</I> and
 <I>rigid/nve</I> fixes.
 </P>
-<P>The <I>rigid/nvt</I>, <I>rigid/npt</I>, and <I>rigid/nph</I> fixes compute a global
-scalar which can be accessed by various <A HREF = "Section_howto.html#howto_15">output
-commands</A>.  The scalar value calculated by
-these fixes is "extensive".  The scalar is the cumulative energy
-change due to the thermostatting and barostatting the fix performs.
-</P>
-<P>All of the <I>rigid</I> fixes except <I>rigid/small</I> compute a global array
-of values which can be accessed by various <A HREF = "Section_howto.html#howto_15">output
+<P>This fix computes a global array
+of values which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  The number of rows in the
 array is equal to the number of rigid bodies.  The number of columns
 is 15.  Thus for each rigid body, 15 values are stored: the xyz coords
@@ -705,8 +409,8 @@ of the <A HREF = "run.html">run</A> command.  These fixes are not invoked during
 <P><B>Restrictions:</B>
 </P>
 <P>These fixes are all part of the RIGID package.  It is only enabled if
-LAMMPS was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LAMMPS</A> section for more info.
+LIGGGHTS(R)-PUBLIC was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
+LIGGGHTS(R)-PUBLIC</A> section for more info.
 </P>
 <P><B>Related commands:</B>
 </P>
@@ -736,7 +440,7 @@ Martyna, Tuckerman, Tobias, Klein, Mol Phys, 87, 1117.
 </P>
 <A NAME = "Miller"></A>
 
-<P><B>(Miller)</B> Miller, Eleftheriou, Pattnaik, Ndirango, and Newns, 
+<P><B>(Miller)</B> Miller, Eleftheriou, Pattnaik, Ndirango, and Newns,
 J Chem Phys, 116, 8649 (2002).
 </P>
 <A NAME = "Zhang"></A>

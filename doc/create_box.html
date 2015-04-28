@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -31,11 +31,11 @@ geometric domain.
 <P>The argument N is the number of atom types that will be used in the
 simulation.
 </P>
-<P>If the region is not of style <I>prism</I>, then LAMMPS encloses the region
+<P>If the region is not of style <I>prism</I>, then LIGGGHTS(R)-PUBLIC encloses the region
 (block, sphere, etc) with an axis-aligned orthogonal bounding box
 which becomes the simulation domain.
 </P>
-<P>If the region is of style <I>prism</I>, LAMMPS creates a non-orthogonal
+<P>If the region is of style <I>prism</I>, LIGGGHTS(R)-PUBLIC creates a non-orthogonal
 simulation domain shaped as a parallelepiped with triclinic symmetry.
 As defined by the <A HREF = "region.html">region prism</A> command, the
 parallelepiped has its "origin" at (xlo,ylo,zlo) and is defined by 3
@@ -55,8 +55,8 @@ since if the maximum tilt factor is 5 (as in this example), then
 configurations with tilt = ..., -15, -5, 5, 15, 25, ... are all
 geometrically equivalent.
 </P>
-<P>See <A HREF = "Section_howto.html#howto_12">Section_howto 12</A> of the doc pages
-for a geometric description of triclinic boxes, as defined by LAMMPS,
+<P>See <A HREF = "Section_howto.html#howto_7">Section_howto 12</A> of the doc pages
+for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.
 </P>
@@ -76,13 +76,13 @@ you should not make the lo/hi box dimensions (as defined in your
 of the atoms you eventually plan to create, e.g. via the
 <A HREF = "create_atoms.html">create_atoms</A> command.  For example, if your atoms
 extend from 0 to 50, you should not specify the box bounds as -10000
-and 10000. This is because LAMMPS uses the specified box size to
+and 10000. This is because LIGGGHTS(R)-PUBLIC uses the specified box size to
 layout the 3d grid of processors.  A huge (mostly empty) box will be
 sub-optimal for performance when using "fixed" boundary conditions
 (see the <A HREF = "boundary.html">boundary</A> command).  When using "shrink-wrap"
 boundary conditions (see the <A HREF = "boundary.html">boundary</A> command), a huge
 (mostly empty) box may cause a parallel simulation to lose atoms the
-first time that LAMMPS shrink-wraps the box around the atoms.
+first time that LIGGGHTS(R)-PUBLIC shrink-wraps the box around the atoms.
 </P>
 <P><B>Restrictions:</B>
 </P>

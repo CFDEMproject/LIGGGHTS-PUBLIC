@@ -1,28 +1,26 @@
-"Previous Section"_Section_python.html - "LAMMPS WWW Site"_lws -
-"LAMMPS Documentation"_ld - "LAMMPS Commands"_lc - "Next
-Section"_Section_history.html :c
+"Previous Section"_Section_python.html - "LIGGGHTS(R)-PUBLIC WWW Site"_lws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Manual.html :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
 :line
 
-12. Errors :h3
+10. Errors :h3
 
-This section describes the errors you can encounter when using LAMMPS,
+This section describes the errors you can encounter when using LIGGGHTS(R)-PUBLIC,
 either conceptually, or as printed out by the program.
 
-12.1 "Common problems"_#err_1
-12.2 "Reporting bugs"_#err_2
-12.3 "Error & warning messages"_#err_3 :all(b)
+10.1 "Common problems"_#err_1
+10.2 "Reporting bugs"_#err_2
+10.3 "Error & warning messages"_#err_3 :all(b)
 
 :line
 :line
 
-12.1 Common problems :link(err_1),h4
+10.1 Common problems :link(err_1),h4
 
-If two LAMMPS runs do not produce the same answer on different
+If two LIGGGHTS(R)-PUBLIC runs do not produce the same answer on different
 machines or different numbers of processors, this is typically not a
 bug.  In theory you should get identical answers on any number of
 processors and on any machine.  In practice, numerical round-off can
@@ -50,39 +48,39 @@ will produce different effects when run on different numbers of
 processors.  A commonly-used example is the "fix
 langevin"_fix_langevin.html command for thermostatting.
 
-A LAMMPS simulation typically has two stages, setup and run.  Most
-LAMMPS errors are detected at setup time; others like a bond
+A LIGGGHTS(R)-PUBLIC simulation typically has two stages, setup and run.  Most
+LIGGGHTS(R)-PUBLIC errors are detected at setup time; others like a bond
 stretching too far may not occur until the middle of a run.
 
-LAMMPS tries to flag errors and print informative error messages so
-you can fix the problem.  Of course, LAMMPS cannot figure out your
+LIGGGHTS(R)-PUBLIC tries to flag errors and print informative error messages so
+you can fix the problem.  Of course, LIGGGHTS(R)-PUBLIC cannot figure out your
 physics or numerical mistakes, like choosing too big a timestep,
 specifying erroneous force field coefficients, or putting 2 atoms on
-top of each other!  If you run into errors that LAMMPS doesn't catch
+top of each other!  If you run into errors that LIGGGHTS(R)-PUBLIC doesn't catch
 that you think it should flag, please send an email to the
 "developers"_http://lammps.sandia.gov/authors.html.
 
 If you get an error message about an invalid command in your input
 script, you can determine what command is causing the problem by
 looking in the log.lammps file or using the "echo command"_echo.html
-to see it on the screen.  For a given command, LAMMPS expects certain
-arguments in a specified order.  If you mess this up, LAMMPS will
+to see it on the screen.  For a given command, LIGGGHTS(R)-PUBLIC expects certain
+arguments in a specified order.  If you mess this up, LIGGGHTS(R)-PUBLIC will
 often flag the error, but it may read a bogus argument and assign a
 value that is valid, but not what you wanted.  E.g. trying to read the
 string "abc" as an integer value and assigning the associated variable
 a value of 0.
 
-Generally, LAMMPS will print a message to the screen and logfile and
+Generally, LIGGGHTS(R)-PUBLIC will print a message to the screen and logfile and
 exit gracefully when it encounters a fatal error.  Sometimes it will
 print a WARNING to the screen and logfile and continue on; you can
 decide if the WARNING is important or not.  A WARNING message that is
 generated in the middle of a run is only printed to the screen, not to
-the logfile, to avoid cluttering up thermodynamic output.  If LAMMPS
+the logfile, to avoid cluttering up thermodynamic output.  If LIGGGHTS(R)-PUBLIC
 crashes or hangs without spitting out an error message first then it
 could be a bug (see "this section"_#err_2) or one of the following
 cases:
 
-LAMMPS runs in the available memory a processor allows to be
+LIGGGHTS(R)-PUBLIC runs in the available memory a processor allows to be
 allocated.  Most reasonable MD runs are compute limited, not memory
 limited, so this shouldn't be a bottleneck on most platforms.  Almost
 all large memory allocations in the code are done via C-style malloc's
@@ -90,19 +88,19 @@ which will generate an error message if you run out of memory.
 Smaller chunks of memory are allocated via C++ "new" statements.  If
 you are unlucky you could run out of memory just when one of these
 small requests is made, in which case the code will crash or hang (in
-parallel), since LAMMPS doesn't trap on those errors.
+parallel), since LIGGGHTS(R)-PUBLIC doesn't trap on those errors.
 
-Illegal arithmetic can cause LAMMPS to run slow or crash.  This is
+Illegal arithmetic can cause LIGGGHTS(R)-PUBLIC to run slow or crash.  This is
 typically due to invalid physics and numerics that your simulation is
 computing.  If you see wild thermodynamic values or NaN values in your
-LAMMPS output, something is wrong with your simulation.  If you
+LIGGGHTS(R)-PUBLIC output, something is wrong with your simulation.  If you
 suspect this is happening, it is a good idea to print out
 thermodynamic info frequently (e.g. every timestep) via the
 "thermo"_thermo.html so you can monitor what is happening.
 Visualizing the atom movement is also a good idea to insure your model
 is behaving as you expect.
 
-In parallel, one way LAMMPS can hang is due to how different MPI
+In parallel, one way LIGGGHTS(R)-PUBLIC can hang is due to how different MPI
 implementations handle buffering of messages.  If the code hangs
 without an error message, it may be that you need to specify an MPI
 setting or two (usually via an environment variable) to enable
@@ -110,13 +108,13 @@ buffering or boost the sizes of messages that can be buffered.
 
 :line
 
-12.2 Reporting bugs :link(err_2),h4
+10.2 Reporting bugs :link(err_2),h4
 
-If you are confident that you have found a bug in LAMMPS, follow these
+If you are confident that you have found a bug in LIGGGHTS(R)-PUBLIC, follow these
 steps.
 
 Check the "New features and bug
-fixes"_http://lammps.sandia.gov/bug.html section of the "LAMMPS WWW
+fixes"_http://lammps.sandia.gov/bug.html section of the "LIGGGHTS(R)-PUBLIC WWW
 site"_lws to see if the bug has already been reported or fixed or the
 "Unfixed bug"_http://lammps.sandia.gov/unbug.html to see if a fix is
 pending.
@@ -140,12 +138,12 @@ As a last resort, you can send an email directly to the
 
 :line
 
-12.3 Error & warning messages :h4,link(err_3)
+10.3 Error & warning messages :h4,link(err_3)
 
 These are two alphabetic lists of the "ERROR"_#error and
-"WARNING"_#warn messages LAMMPS prints out and the reason why.  If the
+"WARNING"_#warn messages LIGGGHTS(R)-PUBLIC prints out and the reason why.  If the
 explanation here is not sufficient, the documentation for the
-offending command may help.  
+offending command may help.
 Error and warning messages also list the source file and line number
 where the error was generated.  For example, this message
 
@@ -223,7 +221,7 @@ pair_coeff command before running a simulation. :dd
 {All read_dump x,y,z fields must be specified for scaled, triclinic coords} :dt
 
 For triclinic boxes and scaled coordinates you must specify all 3 of
-the x,y,z fields, else LAMMPS cannot reconstruct the unscaled
+the x,y,z fields, else LIGGGHTS(R)-PUBLIC cannot reconstruct the unscaled
 coordinates. :dd
 
 {All universe/uloop variables must have same # of values} :dt
@@ -377,7 +375,7 @@ multibody joint).  The bodies you have defined exceed this limit. :dd
 
 {Atom sort did not operate correctly} :dt
 
-This is an internal LAMMPS error.  Please report it to the
+This is an internal LIGGGHTS(R)-PUBLIC error.  Please report it to the
 developers. :dd
 
 {Atom sorting has bin size = 0.0} :dt
@@ -428,11 +426,11 @@ Self-explanatory. :dd
 
 {Attempt to pop empty stack in fix box/relax} :dt
 
-Internal LAMMPS error.  Please report it to the developers. :dd
+Internal LIGGGHTS(R)-PUBLIC error.  Please report it to the developers. :dd
 
 {Attempt to push beyond stack limit in fix box/relax} :dt
 
-Internal LAMMPS error.  Please report it to the developers. :dd
+Internal LIGGGHTS(R)-PUBLIC error.  Please report it to the developers. :dd
 
 {Attempting to rescale a 0.0 temperature} :dt
 
@@ -467,7 +465,7 @@ f_. :dd
 {Bad grid of processors} :dt
 
 The 3d grid of processors defined by the processors command does not
-match the number of processors LAMMPS is being run on. :dd
+match the number of processors LIGGGHTS(R)-PUBLIC is being run on. :dd
 
 {Bad kspace_modify slab parameter} :dt
 
@@ -528,7 +526,7 @@ Size of bigint is less than size of tagint. :dd
 
 {Bigint setting in lmptype.h is not compatible} :dt
 
-Bigint stored in restart file is not consistent with LAMMPS version
+Bigint stored in restart file is not consistent with LIGGGHTS(R)-PUBLIC version
 you are running. :dd
 
 {Bitmapped lookup tables require int/float be same size} :dt
@@ -702,11 +700,11 @@ Self-explanatory.  See doc page discussion of command-line switches. :dd
 
 {Can only use NEB with 1-processor replicas} :dt
 
-This is current restriction for NEB as implemented in LAMMPS. :dd
+This is current restriction for NEB as implemented in LIGGGHTS(R)-PUBLIC. :dd
 
 {Can only use TAD with 1-processor replicas for NEB} :dt
 
-This is current restriction for NEB as implemented in LAMMPS. :dd
+This is current restriction for NEB as implemented in LIGGGHTS(R)-PUBLIC. :dd
 
 {Cannot (yet) do analytic differentiation with pppm/gpu} :dt
 
@@ -811,7 +809,7 @@ Self-explanatory. :dd
 
 {Cannot compute initial g_ewald_disp} :dt
 
-LAMMPS failed to compute an initial guess for the PPPM_disp g_ewald_6
+LIGGGHTS(R)-PUBLIC failed to compute an initial guess for the PPPM_disp g_ewald_6
 factor that partitions the computation between real space and k-space
 for Disptersion interactions. :dd
 
@@ -827,7 +825,7 @@ command. :dd
 
 {Cannot create/grow a vector/array of pointers for %s} :dt
 
-LAMMPS code is making an illegal call to the templated memory
+LIGGGHTS(R)-PUBLIC code is making an illegal call to the templated memory
 allocaters, to create a vector or array of pointers. :dd
 
 {Cannot create_atoms after reading restart file with per-atom info} :dt
@@ -882,7 +880,7 @@ enable the atom_modify first command. :dd
 
 {Cannot dump JPG file} :dt
 
-LAMMPS was not built with the -DLAMMPS_JPEG switch in the Makefile. :dd
+LIGGGHTS(R)-PUBLIC was not built with the -DLAMMPS_JPEG switch in the Makefile. :dd
 
 {Cannot dump sort on atom IDs with no atom IDs defined} :dt
 
@@ -1043,7 +1041,7 @@ the path and name are correct. :dd
 
 {Cannot open gzipped file} :dt
 
-LAMMPS is attempting to open a gzipped version of the specified file
+LIGGGHTS(R)-PUBLIC is attempting to open a gzipped version of the specified file
 but was unsuccessful.  Check that the path and name are correct. :dd
 
 {Cannot open input script %s} :dt
@@ -1052,17 +1050,17 @@ Self-explanatory. :dd
 
 {Cannot open log.lammps} :dt
 
-The default LAMMPS log file cannot be opened.  Check that the
+The default LIGGGHTS(R)-PUBLIC log file cannot be opened.  Check that the
 directory you are running in allows for files to be created. :dd
 
 {Cannot open logfile} :dt
 
-The LAMMPS log file named in a command-line argument cannot be opened.
+The LIGGGHTS(R)-PUBLIC log file named in a command-line argument cannot be opened.
 Check that the path and name are correct. :dd
 
 {Cannot open logfile %s} :dt
 
-The LAMMPS log file specified in the input script cannot be opened.
+The LIGGGHTS(R)-PUBLIC log file specified in the input script cannot be opened.
 Check that the path and name are correct. :dd
 
 {Cannot open pair_write file} :dt
@@ -1199,7 +1197,7 @@ Self-explanatory. :dd
 {Cannot use -cuda on without USER-CUDA installed} :dt
 
 The USER-CUDA package must be installed via "make yes-user-cuda"
-before LAMMPS is built. :dd
+before LIGGGHTS(R)-PUBLIC is built. :dd
 
 {Cannot use -reorder after -partition} :dt
 
@@ -1233,7 +1231,7 @@ Self-explanatory. :dd
 
 {Cannot use NEB with atom_modify sort enabled} :dt
 
-This is current restriction for NEB implemented in LAMMPS. :dd
+This is current restriction for NEB implemented in LIGGGHTS(R)-PUBLIC. :dd
 
 {Cannot use PPPM with 2d simulation} :dt
 
@@ -1276,12 +1274,12 @@ This is a current restriction of NEB. :dd
 
 {Cannot use a damped dynamics min style with fix box/relax} :dt
 
-This is a current restriction in LAMMPS.  Use another minimizer
+This is a current restriction in LIGGGHTS(R)-PUBLIC.  Use another minimizer
 style. :dd
 
 {Cannot use a damped dynamics min style with per-atom DOF} :dt
 
-This is a current restriction in LAMMPS.  Use another minimizer
+This is a current restriction in LIGGGHTS(R)-PUBLIC.  Use another minimizer
 style. :dd
 
 {Cannot use append/atoms in periodic dimension} :dt
@@ -1506,7 +1504,7 @@ Self-explanatory. :dd
 {Cannot use force/neigh with triclinic box} :dt
 
 This is a current limitation of the GPU implementation
-in LAMMPS. :dd
+in LIGGGHTS(R)-PUBLIC. :dd
 
 {Cannot use kspace solver on system with no charge} :dt
 
@@ -1514,7 +1512,7 @@ No atoms in system have a non-zero charge. :dd
 
 {Cannot use kspace solver with selected options on system with no charge} :dt
 
-No atoms in system have a non-zero charge. Change charges or change 
+No atoms in system have a non-zero charge. Change charges or change
 options of the kspace solver/pair style. :dd
 
 {Cannot use lines with fix srd unless overlap is set} :dt
@@ -1540,7 +1538,7 @@ Self-explanatory. :dd
 {Cannot use neigh_modify exclude with GPU neighbor builds} :dt
 
 This is a current limitation of the GPU implementation
-in LAMMPS. :dd
+in LIGGGHTS(R)-PUBLIC. :dd
 
 {Cannot use neighbor bins - box size << cutoff} :dt
 
@@ -1740,7 +1738,7 @@ This is because triangles are connected to each other. :dd
 
 {Cannot use variable energy with constant force in fix addforce} :dt
 
-This is because for constant force, LAMMPS can compute the change
+This is because for constant force, LIGGGHTS(R)-PUBLIC can compute the change
 in energy directly. :dd
 
 {Cannot use variable every setting for dump dcd} :dt
@@ -1939,7 +1937,7 @@ The atom style does not support dihedrals. :dd
 
 {Compute does not allow an extra compute or fix to be reset} :dt
 
-This is an internal LAMMPS error.  Please report it to the
+This is an internal LIGGGHTS(R)-PUBLIC error.  Please report it to the
 developers. :dd
 
 {Compute erotate/asphere requires atom style ellipsoid or line or tri} :dt
@@ -1960,7 +1958,7 @@ Self-explanatory. :dd
 
 {Compute event/displace has invalid fix event assigned} :dt
 
-This is an internal LAMMPS error.  Please report it to the
+This is an internal LIGGGHTS(R)-PUBLIC error.  Please report it to the
 developers. :dd
 
 {Compute group/group group ID does not exist} :dt
@@ -2991,12 +2989,12 @@ The quantity being read is a floating point or non-numeric value. :dd
 
 {Failed to allocate %ld bytes for array %s} :dt
 
-Your LAMMPS simulation has run out of memory.  You need to run a
+Your LIGGGHTS(R)-PUBLIC simulation has run out of memory.  You need to run a
 smaller simulation or on more processors. :dd
 
 {Failed to reallocate %ld bytes for array %s} :dt
 
-Your LAMMPS simulation has run out of memory.  You need to run a
+Your LIGGGHTS(R)-PUBLIC simulation has run out of memory.  You need to run a
 smaller simulation or on more processors. :dd
 
 {Fewer SRD bins than processors in some dimension} :dt
@@ -3472,7 +3470,7 @@ create_box command. :dd
 {Fix deform cannot use yz variable with xy} :dt
 
 The yz setting cannot be a variable if xy deformation is also
-specified.  This is because LAMMPS cannot determine if the yz setting
+specified.  This is because LIGGGHTS(R)-PUBLIC cannot determine if the yz setting
 will induce a box flip which would be invalid if xy is also changing. :dd
 
 {Fix deform is changing yz too much with xy} :dt
@@ -3553,8 +3551,8 @@ belonging to a molecule could be deleted. :dd
 
 {Fix gcmc could not find any atoms in the user-supplied template molecule} :dt
 
-When using the molecule option with fix gcmc, the user must supply a 
-template molecule in the usual LAMMPS data file with its molecule id
+When using the molecule option with fix gcmc, the user must supply a
+template molecule in the usual LIGGGHTS(R)-PUBLIC data file with its molecule id
 specified in the fix gcmc command as the "type" of the exchanged gas. :dd
 
 {Fix gcmc incompatible with given pair_style} :dt
@@ -3575,7 +3573,7 @@ is on. :dd
 {Fix gcmc ran out of available molecule IDs} :dt
 
 This is a code limitation where more than MAXSMALLINT (usually around
-two billion) molecules have been created. The code needs to be 
+two billion) molecules have been created. The code needs to be
 modified to either allow molecule ID recycling or use bigger ints for
 molecule IDs. A work-around is to run shorter simulations. :dd
 
@@ -4140,7 +4138,7 @@ page for details. :dd
 
 Self-explanatory.  Check the input script syntax and compare to the
 documentation for the command.  You can use -echo screen as a
-command-line option when running LAMMPS to see the offending line. :dd
+command-line option when running LIGGGHTS(R)-PUBLIC to see the offending line. :dd
 
 {Illegal COMB parameter} :dt
 
@@ -4159,7 +4157,7 @@ invalid. :dd
 
 {Illegal fix gcmc gas mass <= 0} :dt
 
-The computed mass of the designated gas molecule or atom type was less 
+The computed mass of the designated gas molecule or atom type was less
 than or equal to zero. :dd
 
 {Illegal fix wall/piston velocity} :dt
@@ -4450,7 +4448,7 @@ Self-explanatory. :dd
 
 {Invalid REAX atom type} :dt
 
-There is a mis-match between LAMMPS atom types and the elements
+There is a mis-match between LIGGGHTS(R)-PUBLIC atom types and the elements
 listed in the ReaxFF force field file. :dd
 
 {Invalid angle style} :dt
@@ -4619,7 +4617,7 @@ See the dump_modify doc page. :dd
 {Invalid command-line argument} :dt
 
 One or more command-line arguments is invalid.  Check the syntax of
-the command you are using to launch LAMMPS. :dd
+the command you are using to launch LIGGGHTS(R)-PUBLIC. :dd
 
 {Invalid compute ID in variable formula} :dt
 
@@ -5247,7 +5245,7 @@ The atom style defined does not have these attributes. :dd
 The atom style defined does not have these attributes.
 Change the atom style or switch of the coulomb solver. :dd
 
-{LAMMPS unit_style lj not supported by KIM models} :dt
+{LIGGGHTS(R)-PUBLIC unit_style lj not supported by KIM models} :dt
 
 Self-explanatory. Check the input script or data file. :dd
 
@@ -5324,7 +5322,7 @@ requested accuracy. :dd
 
 {MSM order must be 4, 6, 8, or 10} :dt
 
-This is a limitation of the MSM implementation in LAMMPS:
+This is a limitation of the MSM implementation in LIGGGHTS(R)-PUBLIC:
 the MSM order can only be 4, 6, 8, or 10. :dd
 
 {Mass command before simulation box is defined} :dt
@@ -5627,7 +5625,7 @@ multiple of the every setting. :dd
 
 {Neighbor include group not allowed with ghost neighbors} :dt
 
-This is a current restriction within LAMMPS. :dd
+This is a current restriction within LIGGGHTS(R)-PUBLIC. :dd
 
 {Neighbor list overflow, boost neigh_modify one} :dt
 
@@ -5643,7 +5641,7 @@ neighbors allowed for one atom. :dd
 
 {Neighbor multi not yet enabled for ghost neighbors} :dt
 
-This is a current restriction within LAMMPS. :dd
+This is a current restriction within LIGGGHTS(R)-PUBLIC. :dd
 
 {Neighbor multi not yet enabled for granular} :dt
 
@@ -5678,7 +5676,7 @@ Self-explanatory. :dd
 
 {No OpenMP support compiled in} :dt
 
-An OpenMP flag is set, but LAMMPS was not built with
+An OpenMP flag is set, but LIGGGHTS(R)-PUBLIC was not built with
 OpenMP support. :dd
 
 {No angle style is defined for compute angle/local} :dt
@@ -5828,7 +5826,7 @@ Self-explanatory. :dd
 
 {Out of range atoms - cannot compute MSM} :dt
 
-One or more atoms are attempting to map their charge to a MSM grid point 
+One or more atoms are attempting to map their charge to a MSM grid point
 that is not owned by a processor.  This is likely for one of two
 reasons, both of them bad.  First, it may mean that an atom near the
 boundary of a processor's sub-domain has moved more than 1/2 the
@@ -5904,7 +5902,7 @@ kspace_modify minorder command. :dd
 
 {PPPM order cannot be < 2 or > than %d} :dt
 
-This is a limitation of the PPPM implementation in LAMMPS. :dd
+This is a limitation of the PPPM implementation in LIGGGHTS(R)-PUBLIC. :dd
 
 {PPPMDisp Coulomb grid is too large} :dt
 
@@ -5920,7 +5918,7 @@ decrease the requested accuracy. :dd
 
 {PPPMDisp coulomb order cannot be greater than %d} :dt
 
-This is a limitation of the PPPM implementation in LAMMPS. :dd
+This is a limitation of the PPPM implementation in LIGGGHTS(R)-PUBLIC. :dd
 
 {PRD command before simulation box is defined} :dt
 
@@ -5943,7 +5941,7 @@ create_box command. :dd
 {Package cuda command without USER-CUDA installed} :dt
 
 The USER-CUDA package must be installed via "make yes-user-cuda"
-before LAMMPS is built. :dd
+before LIGGGHTS(R)-PUBLIC is built. :dd
 
 {Pair body requires atom style body} :dt
 
@@ -6637,7 +6635,7 @@ Self-explanatory. :dd
 {Processor partitions are inconsistent} :dt
 
 The total number of processors in all partitions must match the number
-of processors LAMMPS is running on. :dd
+of processors LIGGGHTS(R)-PUBLIC is running on. :dd
 
 {Processors command after simulation box is defined} :dt
 
@@ -6682,7 +6680,7 @@ Self-explanatory. :dd
 
 {Read_dump triclinic status does not match simulation} :dt
 
-Both the dump snapshot and the current LAMMPS simulation must
+Both the dump snapshot and the current LIGGGHTS(R)-PUBLIC simulation must
 be using either an orthogonal or triclinic box. :dd
 
 {Read_dump x,y,z fields do not have consistent scaling} :dt
@@ -6692,12 +6690,12 @@ Self-explanatory. :dd
 {Reax_defs.h setting for NATDEF is too small} :dt
 
 Edit the setting in the ReaxFF library and re-compile the
-library and re-build LAMMPS. :dd
+library and re-build LIGGGHTS(R)-PUBLIC. :dd
 
 {Reax_defs.h setting for NNEIGHMAXDEF is too small} :dt
 
 Edit the setting in the ReaxFF library and re-compile the
-library and re-build LAMMPS. :dd
+library and re-build LIGGGHTS(R)-PUBLIC. :dd
 
 {Receiving partition in processors part command is already a receiver} :dt
 
@@ -6990,13 +6988,13 @@ It has to be the size of an integer. :dd
 
 {Smallint setting in lmptype.h is not compatible} :dt
 
-Smallint stored in restart file is not consistent with LAMMPS version
+Smallint stored in restart file is not consistent with LIGGGHTS(R)-PUBLIC version
 you are running. :dd
 
 {Specified processors != physical processors} :dt
 
 The 3d grid of processors defined by the processors command does not
-match the number of processors LAMMPS is being run on. :dd
+match the number of processors LIGGGHTS(R)-PUBLIC is being run on. :dd
 
 {Specified target stress must be uniaxial or hydrostatic} :dt
 
@@ -7049,7 +7047,7 @@ Tagint must be as large or larger than smallint. :dd
 
 {Tagint setting in lmptype.h is not compatible} :dt
 
-Smallint stored in restart file is not consistent with LAMMPS version
+Smallint stored in restart file is not consistent with LIGGGHTS(R)-PUBLIC version
 you are running. :dd
 
 {Target temperature for fix nvt/npt/nph cannot be 0.0} :dt
@@ -7410,7 +7408,7 @@ a value of N generates a 2^N size table. :dd
 
 A granular simulation has too many neighbors touching one atom.  The
 MAXTOUCH parameter in fix_shear_history.cpp must be set larger and
-LAMMPS must be re-built. :dd
+LIGGGHTS(R)-PUBLIC must be re-built. :dd
 
 {Too much per-proc info for dump} :dt
 
@@ -7468,7 +7466,7 @@ Self-explanatory. :dd
 
 {Unexpected end of data file} :dt
 
-LAMMPS hit the end of the data file while attempting to read a
+LIGGGHTS(R)-PUBLIC hit the end of the data file while attempting to read a
 section.  Something is wrong with the format of the data file. :dd
 
 {Unexpected end of dump file} :dt
@@ -7491,7 +7489,7 @@ number of processor partitions. :dd
 
 {Unknown command: %s} :dt
 
-The command is not known to LAMMPS.  Check the input script. :dd
+The command is not known to LIGGGHTS(R)-PUBLIC.  Check the input script. :dd
 
 {Unknown error in GPU library} :dt
 
@@ -7499,7 +7497,7 @@ Self-explanatory. :dd
 
 {Unknown identifier in data file: %s} :dt
 
-A section of the data file cannot be read by LAMMPS. :dd
+A section of the data file cannot be read by LIGGGHTS(R)-PUBLIC. :dd
 
 {Unknown table style in angle style table} :dt
 
@@ -8018,12 +8016,12 @@ Self-explanatory. :dd
 
 {Water H epsilon must be 0.0 for pair style lj/cut/tip4p/long} :dt
 
-This is because LAMMPS does not compute the Lennard-Jones interactions
+This is because LIGGGHTS(R)-PUBLIC does not compute the Lennard-Jones interactions
 with these particles for efficiency reasons. :dd
 
 {Water H epsilon must be 0.0 for pair style lj/long/tip4p/long} :dt
 
-This is because LAMMPS does not compute the Lennard-Jones interactions
+This is because LIGGGHTS(R)-PUBLIC does not compute the Lennard-Jones interactions
 with these particles for efficiency reasons. :dd
 
 {World variable count doesn't match # of partitions} :dt
@@ -8067,10 +8065,10 @@ want. :dd
 
 {Bond/angle/dihedral extent > half of periodic box length} :dt
 
-This is a restriction because LAMMPS can be confused about which image
+This is a restriction because LIGGGHTS(R)-PUBLIC can be confused about which image
 of an atom in the bonded interaction is the correct one to use.
 "Extent" in this context means the maximum end-to-end length of the
-bond/angle/dihedral.  LAMMPS computes this by taking the maximum bond
+bond/angle/dihedral.  LIGGGHTS(R)-PUBLIC computes this by taking the maximum bond
 length, multiplying by the number of bonds in the interaction (e.g. 3
 for a dihedral) and adding a small amount of stretch. :dd
 
@@ -8085,7 +8083,7 @@ restriction. :dd
 
 {Building an occasional neighobr list when atoms may have moved too far} :dt
 
-This can cause LAMMPS to crash when the neighbor list is built.
+This can cause LIGGGHTS(R)-PUBLIC to crash when the neighbor list is built.
 The solution is to check for building the regular neighbor lists
 more frequently. :dd
 
@@ -8172,7 +8170,7 @@ fix recenter should come last. :dd
 
 {Fix shake with rRESPA computes invalid pressures} :dt
 
-This is a known bug in LAMMPS that has not yet been fixed.  If you use
+This is a known bug in LIGGGHTS(R)-PUBLIC that has not yet been fixed.  If you use
 SHAKE with rRESPA and perform a constant volume simulation (e.g. using
 fix npt) this only affects the output pressure, not the dynamics of
 the simulation.  If you use SHAKE with rRESPA and perform a constant
@@ -8248,7 +8246,7 @@ This is usually due to the initial data file not having correct image
 flags for the 2 atoms in a bond that straddles a periodic boundary.
 They should be different by 1 in that case.  This is a warning because
 inconsistent image flags will not cause problems for dynamics or most
-LAMMPS simulations.  However they can cause problems when such atoms
+LIGGGHTS(R)-PUBLIC simulations.  However they can cause problems when such atoms
 are used with the fix rigid or replicate commands. :dd
 
 {KIM Model does not provide `energy'; Potential energy will be zero} :dt
@@ -8492,33 +8490,33 @@ dimension to be replicated; this may cause unwanted behavior. :dd
 
 A PRD simulation requires that neigh_modify settings be delay = 0,
 every = 1, check = yes.  Since these settings were not in place,
-LAMMPS changed them and will restore them to their original values
+LIGGGHTS(R)-PUBLIC changed them and will restore them to their original values
 after the PRD simulation. :dd
 
 {Resetting reneighboring criteria during TAD} :dt
 
 A TAD simulation requires that neigh_modify settings be delay = 0,
 every = 1, check = yes.  Since these settings were not in place,
-LAMMPS changed them and will restore them to their original values
+LIGGGHTS(R)-PUBLIC changed them and will restore them to their original values
 after the PRD simulation. :dd
 
 {Resetting reneighboring criteria during minimization} :dt
 
 Minimization requires that neigh_modify settings be delay = 0, every =
-1, check = yes.  Since these settings were not in place, LAMMPS
+1, check = yes.  Since these settings were not in place, LIGGGHTS(R)-PUBLIC
 changed them and will restore them to their original values after the
 minimization. :dd
 
 {Restart file used different # of processors} :dt
 
-The restart file was written out by a LAMMPS simulation running on a
+The restart file was written out by a LIGGGHTS(R)-PUBLIC simulation running on a
 different number of processors.  Due to round-off, the trajectories of
 your restarted simulation may diverge a little more quickly than if
 you ran on the same # of processors. :dd
 
 {Restart file used different 3d processor grid} :dt
 
-The restart file was written out by a LAMMPS simulation running on a
+The restart file was written out by a LIGGGHTS(R)-PUBLIC simulation running on a
 different 3d grid of processors.  Due to round-off, the trajectories
 of your restarted simulation may diverge a little more quickly than if
 you ran on the same # of processors. :dd
@@ -8535,7 +8533,7 @@ The restart file value will override the setting in the input script. :dd
 
 The input script value will override the setting in the restart file. :dd
 
-{Restart file version does not match LAMMPS version} :dt
+{Restart file version does not match LIGGGHTS(R)-PUBLIC version} :dt
 
 This may cause problems when reading the restart file. :dd
 
@@ -8570,12 +8568,12 @@ warning. :dd
 {Shake determinant < 0.0} :dt
 
 The determinant of the quadratic equation being solved for a single
-cluster specified by the fix shake command is numerically suspect.  LAMMPS
+cluster specified by the fix shake command is numerically suspect.  LIGGGHTS(R)-PUBLIC
 will set it to 0.0 and continue. :dd
 
 {Should not allow rigid bodies to bounce off relecting walls} :dt
 
-LAMMPS allows this, but their dynamics are not computed correctly. :dd
+LIGGGHTS(R)-PUBLIC allows this, but their dynamics are not computed correctly. :dd
 
 {System is not charge neutral, net charge = %g} :dt
 
@@ -8634,7 +8632,7 @@ The displacement in a skewed direction is normally required to be less
 than half the box length in that dimension.  E.g. the xy tilt must be
 between -half and +half of the x box length.  You have relaxed the
 constraint using the box tilt command, but the warning means that a
-LAMMPS simulation may be inefficient as a result. :dd
+LIGGGHTS(R)-PUBLIC simulation may be inefficient as a result. :dd
 
 {Use special bonds = 0,1,1 with bond style fene} :dt
 

@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -29,19 +27,13 @@
     on = activates tangential damping
     off = no tangential damping 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This part of <A HREF = "pair_gran.html">pair gran</A> and 
-<A HREF = "fix_wall_gran.html">fix wall/gran</A>
-is not availabe in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P>This granular model uses the following formula for the frictional force between two granular 
-particles, when the distance r between two particles of radii Ri and Rj is less than their 
+<P>This granular model uses the following formula for the frictional force between two granular
+particles, when the distance r between two particles of radii Ri and Rj is less than their
 contact distance d = Ri + Rj. There is no force between the particles when r > d.
 </P>
-<P>For the case of <I>absolute_damping</I> = 'off' (which is default), the specified damping 
+<P>For the case of <I>absolute_damping</I> = 'off' (which is default), the specified damping
 coefficient is multiplied by the effective mass. The forces are implemented as
 </P>
 <CENTER><IMG SRC = "Eqs/pair_gran_html_m566a9984.png">
@@ -50,13 +42,13 @@ coefficient is multiplied by the effective mass. The forces are implemented as
 </P>
 <CENTER><IMG SRC = "Eqs/pair_gran_html_m76cd8bd9.png">
 </CENTER>
-<P>In the first term is the normal force between the two particles and the second term is the 
-tangential force. The normal force has 2 terms, a spring force and a damping force. The 
-tangential force also has 2 terms: a shear force and a damping force. The shear force is 
-a "history" effect that accounts for the tangential displacement ("tangential overlap") 
+<P>In the first term is the normal force between the two particles and the second term is the
+tangential force. The normal force has 2 terms, a spring force and a damping force. The
+tangential force also has 2 terms: a shear force and a damping force. The shear force is
+a "history" effect that accounts for the tangential displacement ("tangential overlap")
 between the particles for the duration of the time they are in contact.
 This term is controlled by the <A HREF = "Section_gran_models.html">tangential model</A> in action
-Keyword <I>tangential_damping</I> can be used to eliminate the second part of the force in 
+Keyword <I>tangential_damping</I> can be used to eliminate the second part of the force in
 tangential direction. The way how the Coulomb friction limit acts is also controlled
 by the <A HREF = "Section_gran_models.html">tangential model</A> chosen by the user.
 </P>
@@ -108,11 +100,11 @@ fix id all property/global gammat_abs peratomtypepair n_atomtypes value_11 value
 </PRE>
 <P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 </P>
-<P>The coefficient of friction cof is the upper limit of the tangential force through 
-the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the total tangential and normal 
-force components in the formulas above. Thus in the Hookean case, the tangential force 
-between 2 particles grows according to a tangential spring and dash-pot model until 
-Ft/Fn = cof and is then held at Ft = Fn*cof until the particles lose contact. 
+<P>The coefficient of friction cof is the upper limit of the tangential force through
+the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the total tangential and normal
+force components in the formulas above. Thus in the Hookean case, the tangential force
+between 2 particles grows according to a tangential spring and dash-pot model until
+Ft/Fn = cof and is then held at Ft = Fn*cof until the particles lose contact.
 In the Hertzian case, a similar analogy holds, though the spring is no longer linear.
 </P>
 <P><B>Force Limiting:</B>
@@ -125,7 +117,7 @@ In the Hertzian case, a similar analogy holds, though the spring is no longer li
 If using CGS units, youngsModulus must be > 5e5
 When using the limitForce, the specified coefficient of restitution is only approximate. This might become problematic for low coefficients of resitution as showin in Schwager and Poschel.
 </P>
-<P><B>Default:</B> 
+<P><B>Default:</B>
 </P>
 <P><I>tangential_damping</I> = 'on'
 <I>limitForce</I> = 'off'
@@ -140,6 +132,6 @@ When using the limitForce, the specified coefficient of restitution is only appr
 </P>
 <P><B>(Silbert)</B> Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).
 </P>
-<P><B>(Zhang)</B> Zhang and Makse, Phys Rev E, 72, p 011301 (2005). 
+<P><B>(Zhang)</B> Zhang and Makse, Phys Rev E, 72, p 011301 (2005).
 </P>
 </HTML>

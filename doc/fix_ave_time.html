@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -73,7 +73,7 @@ fix 1 all ave/time 1 100 1000 f_indent f_indent[1] file temp.indent off 1
 </P>
 <P>Use one or more global values as inputs every few timesteps, and
 average them over longer timescales.  The resulting averages can be
-used by other <A HREF = "Section_howto.html#howto_15">output commands</A> such as
+used by other <A HREF = "Section_howto.html#howto_8">output commands</A> such as
 <A HREF = "thermo_style.html">thermo_style custom</A>, and can also be written to a
 file.  Note that if no time averaging is done, this command can be
 used as a convenient way to simply output one or more global values to
@@ -161,7 +161,7 @@ output</A> or other fixes such as <A HREF = "fix_nh.html">fix
 nvt</A> or <A HREF = "fix_temp_rescale.html">fix temp/rescale</A>.  See
 the doc pages for these commands which give the IDs of these computes.
 Users can also write code for their own compute styles and <A HREF = "Section_modify.html">add them
-to LAMMPS</A>.
+to LIGGGHTS(R)-PUBLIC</A>.
 </P>
 <P>If a value begins with "f_", a fix ID must follow which has been
 previously defined in the input script.  If <I>mode</I> = scalar, then if
@@ -177,7 +177,7 @@ Ith column of the global array calculated by the fix is used.
 <P>Note that some fixes only produce their values on certain timesteps,
 which must be compatible with <I>Nevery</I>, else an error will result.
 Users can also write code for their own fix styles and <A HREF = "Section_modify.html">add them to
-LAMMPS</A>.
+LIGGGHTS(R)-PUBLIC</A>.
 </P>
 <P>If a value begins with "v_", a variable name must follow which has
 been previously defined in the input script.  Variables can only be
@@ -255,7 +255,7 @@ output.  This option can only be used with the <I>ave running</I> setting.
 </P>
 <P>The <I>title1</I> and <I>title2</I> and <I>title3</I> keywords allow specification of
 the strings that will be printed as the first 2 or 3 lines of the
-output file, assuming the <I>file</I> keyword was used.  LAMMPS uses
+output file, assuming the <I>file</I> keyword was used.  LIGGGHTS(R)-PUBLIC uses
 default values for each of these, so they do not need to be specified.
 </P>
 <P>By default, these header lines are as follows for <I>mode</I> = scalar:
@@ -288,7 +288,7 @@ files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
 are relevant to this fix.
 </P>
 <P>This fix produces a global scalar or global vector or global array
-which can be accessed by various <A HREF = "Section_howto.html#howto_15">output
+which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  The values can only be
 accessed on timesteps that are multiples of <I>Nfreq</I> since that is when
 averaging is performed.

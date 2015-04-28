@@ -1,32 +1,43 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Philippe Seil (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "string.h"
@@ -58,7 +69,6 @@ enum
 DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg),
   nMesh_(0),
   meshList_(0),
-  writeBinarySTL_(0),
   iregion_(-1)
 {
   if (narg < 5)
@@ -67,14 +77,14 @@ DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   //INFO: CURRENTLY ONLY PROC 0 writes
 
   format_default = NULL;
-  writeBinarySTL_ = 0;
+  binary = 0;
   dump_what_ =  NLOCAL;
 
   int iarg = 5;
 
   while(iarg < narg){
     if(strncmp(arg[iarg],"binary",6) == 0){
-      writeBinarySTL_ = 1;
+      binary = 1;
       iarg++;
     } else if(strcmp(arg[iarg],"region") == 0){
       if (narg < iarg+2)
@@ -179,14 +189,14 @@ int DumpMeshSTL::modify_param(int narg, char **arg)
 
 void DumpMeshSTL::write_header(bigint ndump)
 {
-  if(writeBinarySTL_) write_header_binary(ndump);
+  if(binary) write_header_binary(ndump);
   else write_header_ascii(ndump);
 }
 
 void DumpMeshSTL::write_header_binary(bigint ndump)
 {
   // ndump = # of dump lines this proc will contribute to dump
-  if(comm->me != 0) return;
+  if(!multiproc && comm->me != 0) return;
   char *header;
   header = new char[81];
 
@@ -311,7 +321,7 @@ void DumpMeshSTL::write_data(int n, double *mybuf)
   
   if(!multiproc && comm->me != 0) return;
 
-  if(writeBinarySTL_) write_data_binary(n,mybuf);
+  if(binary) write_data_binary(n,mybuf);
   else write_data_ascii(n,mybuf);
 }
 

@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -17,11 +17,11 @@
 </PRE>
 <UL><LI>boolean = a Boolean expression evaluated as TRUE or FALSE (see below)
 <LI>then = required word
-<LI>t1,t2,...,tN = one or more LAMMPS commands to execute if condition is met, each enclosed in quotes
+<LI>t1,t2,...,tN = one or more LIGGGHTS(R)-PUBLIC commands to execute if condition is met, each enclosed in quotes
 <LI>elif = optional word, can appear multiple times
-<LI>f1,f2,...,fN = one or more LAMMPS commands to execute if elif condition is met, each enclosed in quotes (optional arguments)
+<LI>f1,f2,...,fN = one or more LIGGGHTS(R)-PUBLIC commands to execute if elif condition is met, each enclosed in quotes (optional arguments)
 <LI>else = optional argument
-<LI>e1,e2,...,eN = one or more LAMMPS commands to execute if no condition is met, each enclosed in quotes (optional arguments) 
+<LI>e1,e2,...,eN = one or more LIGGGHTS(R)-PUBLIC commands to execute if no condition is met, each enclosed in quotes (optional arguments) 
 </UL>
 <P><B>Examples:</B>
 </P>
@@ -58,7 +58,7 @@ Boolean expression is FALSE, then no commands are executed.
 </P>
 <P>The syntax for Boolean expressions is described below.
 </P>
-<P>Each command (t1, f1, e1, etc) can be any valid LAMMPS input script
+<P>Each command (t1, f1, e1, etc) can be any valid LIGGGHTS(R)-PUBLIC input script
 command, except an <A HREF = "include.html">include</A> command, which is not
 allowed.  If the command is more than one word, it must enclosed in
 quotes, so it will be treated as a single argument, as in the examples
@@ -77,13 +77,13 @@ can be spread across many lines, though it is still a single command:
 <PRE>if "$a < $b" then &
   "print 'Minimum value = $a'" &
   "run 1000" &
-else &      
+else &
   'print "Minimum value = $b"' &
   "minimize 0.001 0.001 1000 10000" 
 </PRE>
 <P>Note that if one of the commands to execute is <A HREF = "quit.html">quit</A> (of an
-invalid LAMMPS command such as "blah"), as in the first example above,
-then executing the command will cause LAMMPS to halt.
+invalid LIGGGHTS(R)-PUBLIC command such as "blah"), as in the first example above,
+then executing the command will cause LIGGGHTS(R)-PUBLIC to halt.
 </P>
 <P>Note that by jumping to a label in the same input script, the if
 command can be used to break out of a loop.  See the <A HREF = "variable.html">variable

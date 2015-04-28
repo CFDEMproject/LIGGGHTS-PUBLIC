@@ -43,7 +43,7 @@ if (test $1 = 1) then
     sed -i -e 's/[^ \t]*boost[^ \t]* //' ../Makefile.package
     # add new paths
     sed -i -e 's|^PKG_INC =[ \t]*|&-I$(PASCAL_SRC_DIR) |' ../Makefile.package
-    sed -i -e 's|^PKG_PATH =[ \t]*|&-L$(PASCAL_SRC_DIR) -L$(PASCAL_INST_DIR)/lib64 -L$(PASCAL_INST_DIR)/lib -L$(PASCAL_QT5_DIR)/lib -L$(PASCAL_HDF5_DIR)/lib -L$(PASCAL_THIRDPARTY_DIR)/chemkinReader/src |' ../Makefile.package
+    sed -i -e 's|^PKG_PATH =[ \t]*|&-L$(PASCAL_SRC_DIR) -L$(PASCAL_INST_DIR)/lib64 -L$(PASCAL_INST_DIR)/lib -L$(PASCAL_QT5_DIR)/lib -L$(PASCAL_HDF5_DIR)/lib -L$(PASCAL_HDF5_DIR)/lib64 -L$(PASCAL_THIRDPARTY_DIR)/chemkinReader/src |' ../Makefile.package
     sed -i -e 's|^PKG_LIB =[ \t]*|&-lpasc_fedora_fpic -lsundials_cvode -lsundials_nvecserial -lQt5Core -lhdf5 -lhdf5_hl -lhdf5_cpp -lchemkinreader -lboost_regex |' ../Makefile.package
   fi
 

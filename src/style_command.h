@@ -10,6 +10,7 @@
 #include "read_restart.h"
 #include "replicate.h"
 #include "rerun.h"
+#include "rotate.h"
 #include "run.h"
 #include "set.h"
 #include "velocity.h"

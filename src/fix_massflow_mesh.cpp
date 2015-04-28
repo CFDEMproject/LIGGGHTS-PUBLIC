@@ -1,26 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -52,27 +68,28 @@ using namespace FixConst;
 
 FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
+  delete_atoms_(false),
+  mass_deleted_(0.),
+  nparticles_deleted_(0),
+  once_(false),
   fix_orientation_(0),
   fix_mesh_(0),
   fix_counter_(0),
   fix_neighlist_(0),
   havePointAtOutlet_(false),
   insideOut_(false),
-  once_(false),
   mass_(0.),
   nparticles_(0),
   fix_property_(0),
   property_sum_(0.),
   screenflag_(false),
   fp_(0),
+  writeTime_(false),
   mass_last_(0.),
   nparticles_last_(0.),
   t_count_(0.),
   delta_t_(0.),
   reset_t_count_(true),
-  delete_atoms_(false),
-  mass_deleted_(0.),
-  nparticles_deleted_(0),
   fix_ms_(0),
   ms_(0),
   ms_counter_(0)
@@ -125,6 +142,10 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
                 once_ = false;
             else
                 error->fix_error(FLERR,this,"expecting 'once' or 'multiple' after 'count'");
+            iarg_++;
+            hasargs = true;
+        } else if( strcmp(arg[iarg_],"writeTime") == 0) {
+            writeTime_ = true;
             iarg_++;
             hasargs = true;
         } else if(strcmp(arg[iarg_],"point_at_outlet") == 0) {
@@ -187,6 +208,20 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
     if(fp_ && 1 < comm->nprocs && 0 == comm->me)
       fprintf(screen,"**FixMassflowMesh: > 1 process - "
                      " will write to multiple files\n");
+    if(fp_)
+    {
+        //write header
+        fprintf(fp_,"# ID");
+
+        if(writeTime_)
+          fprintf(fp_," time ");
+
+        fprintf(fp_," diameter x y z u v w");
+
+        fprintf(fp_,"  (ex ey ez, color)\n");
+
+        fflush(fp_);
+    }
 
     // error checks on necessary args
 
@@ -426,6 +461,8 @@ void FixMassflowMesh::post_integrate()
 
                     if(delete_atoms_)
                     {
+                        //reset counter to avoid problems with other fixes & mark to be deleted
+                        counter[iPart] = -1.0;
                         atom_tags_delete_.push_back(atom->tag[iPart]);
                     }
 
@@ -436,12 +473,15 @@ void FixMassflowMesh::post_integrate()
                                        v[iPart][0],v[iPart][1],v[iPart][2]);
                     if(fp_)
                     {
-                        fprintf(fp_," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g",
-                                   tag[iPart],2.*radius[iPart]/force->cg(),
+                        fprintf(fp_,"%d", tag[iPart]);
+
+                        if(writeTime_)
+                            fprintf(fp_,"  %4.4g ", update->dt*update->ntimestep);
+
+                        fprintf(fp_," %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g",
+                                2.*radius[iPart]/force->cg(),
                                    x[iPart][0],x[iPart][1],x[iPart][2],
                                 v[iPart][0],v[iPart][1],v[iPart][2]);
-                        if (fixColFound)
-                            fprintf(fp_,"    %4.0g ", fix_color->vector_atom[iPart]);
 
                         if(fix_orientation_)
                         {
@@ -450,6 +490,8 @@ void FixMassflowMesh::post_integrate()
                             fprintf(fp_,"    %4.4g %4.4g %4.4g ",
                                     orientation[iPart][0], orientation[iPart][1], orientation[iPart][2]);
                         }
+                        if (fixColFound)
+                            fprintf(fp_,"    %4.0g ", fix_color->vector_atom[iPart]);
                         fprintf(fp_,"\n");
                         fflush(fp_);
                     }
@@ -457,7 +499,7 @@ void FixMassflowMesh::post_integrate()
 
                 if(ibody > -1)
                     (*ms_counter_)(ibody) = once_ ? 2. : 1.;
-                else
+                else if(!delete_atoms_) //only set if not marked for deletion
                     counter[iPart] = once_ ? 2. : 1.;
                 
             }

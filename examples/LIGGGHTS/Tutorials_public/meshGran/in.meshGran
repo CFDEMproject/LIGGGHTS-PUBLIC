@@ -36,9 +36,6 @@ fix		cad all mesh/surface file meshes/mesh.stl type 1 scale 0.001 move 0. 0. 0. 
 #use the imported mesh as granular wall
 fix granwalls all wall/gran model hooke tangential history mesh n_meshes 1 meshes cad
 
-#insertion region (for deprecated pour/legacy)
-#region		bc block 0.21 0.25 -0.045 -0.005 -0.015 -0.00 units box
-
 #definition of insertion face
 fix		inface all mesh/surface file meshes/insertion_face.stl type 1
 

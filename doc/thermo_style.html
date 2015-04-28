@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -24,9 +24,7 @@
   <I>custom</I> args = list of attributes
     possible attributes = step, elapsed, elaplong, dt, time,
                           cpu, tpcpu, spcpu, cpuremain, part, cu
-                          atoms, temp, press, pe, ke, etotal, enthalpy,
-                          evdwl, ecoul, epair, ebond, eangle, edihed, eimp,
-                          emol, elong, etail,
+                          atoms, ke,
                           vol, lx, ly, lz, xlo, xhi, ylo, yhi, zlo, zhi,
 			  xy, xz, yz, xlat, ylat, zlat,
 			  pxx, pyy, pzz, pxy, pxz, pyz,
@@ -47,22 +45,6 @@
       part = which partition (0 to Npartition-1) this is
       cu = timesteps per CPU second
       atoms = # of atoms
-      temp = temperature
-      press = pressure
-      pe = total potential energy
-      ke = kinetic energy
-      etotal = total energy (pe + ke)
-      enthalpy = enthalpy (etotal + press*vol)
-      evdwl = VanderWaal pairwise energy
-      ecoul = Coulombic pairwise energy
-      epair = pairwise energy (evdwl + ecoul + elong + etail)
-      ebond = bond energy
-      eangle = angle energy
-      edihed = dihedral energy
-      eimp = improper energy
-      emol = molecular energy (ebond + eangle + edihed + eimp)
-      elong = long-range kspace energy
-      etail = VanderWaal energy long-range tail correction
       vol = volume
       lx,ly,lz = box lengths in x,y,z
       xlo,xhi,ylo,yhi,zlo,zhi = box boundaries
@@ -71,7 +53,7 @@
       pxx,pyy,pzz,pxy,pxz,pyz = 6 components of pressure tensor
       fmax = max component of force on any atom in any dimension
       fnorm = length of force vector for all atoms
-      cella,cellb,cellc = periodic cell lattice constants a,b,c 
+      cella,cellb,cellc = periodic cell lattice constants a,b,c
       cellalpha, cellbeta, cellgamma = periodic cell angles alpha,beta,gamma
       c_ID = global scalar value calculated by a compute with ID
       c_ID[I] = Ith component of global vector calculated by a compute with ID
@@ -85,9 +67,8 @@
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>thermo_style multi
-thermo_style custom step temp pe etotal press vol
-thermo_style custom step temp etotal c_myTemp v_abc 
+<PRE>thermo_style one
+thermo_style custom step v_abc 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -95,12 +76,12 @@ thermo_style custom step temp etotal c_myTemp v_abc
 screen and log file.
 </P>
 <P>Style <I>one</I> prints a one-line summary of thermodynamic info that is
-the equivalent of "thermo_style custom step temp epair emol etotal
-press".  The line contains only numeric values.
+the equivalent of "thermo_style custom step atoms ke cpu".
+The line contains only numeric values.
 </P>
 <P>Style <I>multi</I> prints a multiple-line listing of thermodynamic info
-that is the equivalent of "thermo_style custom etotal ke temp pe ebond
-eangle edihed eimp evdwl ecoul elong press".  The listing contains
+that is the equivalent of "thermo_style custom step atoms ke cpu".
+The listing contains
 numeric values and a string ID for each quantity.
 </P>
 <P>Style <I>custom</I> is the most general setting and allows you to specify
@@ -109,7 +90,7 @@ thermodynamic timestep.  Note that the keywords c_ID, f_ID, v_name are
 references to <A HREF = "compute.html">computes</A>, <A HREF = "fix.html">fixes</A>, and
 equal-style <A HREF = "variable.html"">variables</A> that have been defined
 elsewhere in the input script or can even be new styles which users
-have added to LAMMPS (see the <A HREF = "Section_modify.html">Section_modify</A>
+have added to LIGGGHTS(R)-PUBLIC (see the <A HREF = "Section_modify.html">Section_modify</A>
 section of the documentation).  Thus the <I>custom</I> style provides a
 flexible means of outputting essentially any desired quantity as a
 simulation proceeds.
@@ -134,77 +115,6 @@ thermodynamic settings are restored to their default values, including
 those previously set by a <A HREF = "thermo_modify.html">thermo_modify</A> command.
 Thus if your input script specifies a thermo_style command, you should
 use the thermo_modify command after it.
-</P>
-<HR>
-
-<P>Several of the thermodynamic quantities require a temperature to be
-computed: "temp", "press", "ke", "etotal", "enthalpy", "pxx", etc.  By
-default this is done by using a <I>temperature</I> compute which is created
-when LAMMPS starts up, as if this command had been issued:
-</P>
-<PRE>compute thermo_temp all temp 
-</PRE>
-<P>See the <A HREF = "compute_temp.html">compute temp</A> command for details.  Note
-that the ID of this compute is <I>thermo_temp</I> and the group is <I>all</I>.
-You can change the attributes of this temperature (e.g. its
-degrees-of-freedom) via the <A HREF = "compute_modify.html">compute_modify</A>
-command.  Alternatively, you can directly assign a new compute (that
-calculates temperature) which you have defined, to be used for
-calculating any thermodynamic quantity that requires a temperature.
-This is done via the <A HREF = "thermo_modify.html">thermo_modify</A> command.
-</P>
-<P>Several of the thermodynamic quantities require a pressure to be
-computed: "press", "enthalpy", "pxx", etc.  By default this is done by
-using a <I>pressure</I> compute which is created when LAMMPS starts up, as
-if this command had been issued:
-</P>
-<PRE>compute thermo_press all pressure thermo_temp 
-</PRE>
-<P>See the <A HREF = "compute_pressure.html">compute pressure</A> command for details.
-Note that the ID of this compute is <I>thermo_press</I> and the group is
-<I>all</I>.  You can change the attributes of this pressure via the
-<A HREF = "compute_modify.html">compute_modify</A> command.  Alternatively, you can
-directly assign a new compute (that calculates pressure) which you
-have defined, to be used for calculating any thermodynamic quantity
-that requires a pressure.  This is done via the
-<A HREF = "thermo_modify.html">thermo_modify</A> command.
-</P>
-<P>Several of the thermodynamic quantities require a potential energy to
-be computed: "pe", "etotal", "ebond", etc.  This is done by using a
-<I>pe</I> compute which is created when LAMMPS starts up, as if this
-command had been issued:
-</P>
-<PRE>compute thermo_pe all pe 
-</PRE>
-<P>See the <A HREF = "compute_pe.html">compute pe</A> command for details.  Note that
-the ID of this compute is <I>thermo_pe</I> and the group is <I>all</I>.  You can
-change the attributes of this potential energy via the
-<A HREF = "compute_modify.html">compute_modify</A> command.
-</P>
-<HR>
-
-<P>The kinetic energy of the system <I>ke</I> is inferred from the temperature
-of the system with 1/2 Kb T of energy for each degree of freedom.
-Thus, using different <A HREF = "compute.html">compute commands</A> for calculating
-temperature, via the <A HREF = "thermo_modify.html">thermo_modify temp</A> command,
-may yield different kinetic energies, since different computes that
-calculate temperature can subtract out different non-thermal
-components of velocity and/or include different degrees of freedom
-(translational, rotational, etc).
-</P>
-<P>The potential energy of the system <I>pe</I> will include contributions
-from fixes if the <A HREF = "fix_modify.html">fix_modify thermo</A> option is set
-for a fix that calculates such a contribution.  For example, the <A HREF = "fix_wall.html">fix
-wall/lj93</A> fix calculates the energy of atoms
-interacting with the wall.  See the doc pages for "individual fixes"
-to see which ones contribute.
-</P>
-<P>A long-range tail correction <I>etail</I> for the VanderWaal pairwise
-energy will be non-zero only if the <A HREF = "pair_modify.html">pair_modify
-tail</A> option is turned on.  The <I>etail</I> contribution
-is included in <I>evdwl</I>, <I>pe</I>, and <I>etotal</I>, and the corresponding tail
-correction to the pressure is included in <I>press</I> and <I>pxx</I>, <I>pyy</I>,
-etc.
 </P>
 <HR>
 
@@ -265,10 +175,10 @@ system, or the infinity-norm of the force vector for the system.  The
 </P>
 <P>The keywords <I>cella</I>, <I>cellb</I>, <I>cellc</I>, <I>cellalpha</I>, <I>cellbeta</I>,
 <I>cellgamma</I>, correspond to the usual crystallographic quantities that
-define the periodic unit cell of a crystal.  See <A HREF = "Section_howto.html#howto_12">this
+define the periodic unit cell of a crystal.  See <A HREF = "Section_howto.html#howto_7">this
 section</A> of the doc pages for a geometric
 description of triclinic periodic cells, including a precise defintion
-of these quantities in terms of the internal LAMMPS cell dimensions
+of these quantities in terms of the internal LIGGGHTS(R)-PUBLIC cell dimensions
 <I>lx</I>, <I>ly</I>, <I>lz</I>, <I>yz</I>, <I>xz</I>, <I>xy</I>.
 </P>
 <HR>
@@ -344,8 +254,7 @@ variable formula if this is not the case.
 <P><B>Related commands:</B>
 </P>
 <P><A HREF = "thermo.html">thermo</A>, <A HREF = "thermo_modify.html">thermo_modify</A>,
-<A HREF = "fix_modify.html">fix_modify</A>, <A HREF = "compute_temp.html">compute temp</A>,
-<A HREF = "compute_pressure.html">compute pressure</A>
+<A HREF = "fix_modify.html">fix_modify</A>,
 </P>
 <P><B>Default:</B>
 </P>

@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -26,10 +26,10 @@ This command is used with variables defined by the
 variable from the list of values defined for that variable by the
 "variable"_variable.html command.  Thus when that variable is
 subsequently substituted for in an input script command, the new value
-is used. 
+is used.
 
 See the "variable"_variable.html command for info on how to define and
-use different kinds of variables in LAMMPS input scripts.  If a
+use different kinds of variables in LIGGGHTS(R)-PUBLIC input scripts.  If a
 variable name is a single lower-case character from "a" to "z", it can
 be used in an input script command as $a or $z.  If it is multiple
 letters, it can be used as $\{myTemp\}.
@@ -65,12 +65,12 @@ per-atom values is read from its file and assigned to the variable.
 When the next command is used with {universe}- or {uloop}-style
 variables, the next value is assigned to whichever processor partition
 executes the command first.  All processors in the partition are
-assigned the same value.  Running LAMMPS on multiple partitions of
+assigned the same value.  Running LIGGGHTS(R)-PUBLIC on multiple partitions of
 processors via the "-partition" command-line switch is described in
 "this section"_Section_start.html#start_7 of the manual.  {Universe}-
 and {uloop}-style variables are incremented using the files
 "tmp.lammps.variable" and "tmp.lammps.variable.lock" which you will
-see in your directory during such a LAMMPS run.
+see in your directory during such a LIGGGHTS(R)-PUBLIC run.
 
 Here is an example of running a series of simulations using the next
 command with an {index}-style variable.  If this input script is named

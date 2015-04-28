@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -50,7 +50,7 @@ and <I>rotate</I>.  If such a region is used with this fix, then the of
 region surface will move over time in the corresponding manner.
 </P>
 <P>IMPORTANT NOTE: As discussed on the <A HREF = "region.html">region</A> command doc
-page, regions in LAMMPS do not get wrapped across periodic boundaries.
+page, regions in LIGGGHTS(R)-PUBLIC do not get wrapped across periodic boundaries.
 It is up to you to insure that periodic or non-periodic boundaries are
 specified appropriately via the <A HREF = "boundary.html">boundary</A> command when
 using a region as a wall that bounds particle motion.  This also means
@@ -70,7 +70,7 @@ by particles in the interior of a cube.  Wall/particle forces around
 these features are computed correctly.  Convex points/edges are like
 the corners of a cube as seen by particles exterior to the cube,
 i.e. the points jut into the volume where particles are present.
-LAMMPS does NOT compute the location of these convex points directly,
+LIGGGHTS(R)-PUBLIC does NOT compute the location of these convex points directly,
 and hence wall/particle forces in the cutoff volume around these
 points suffer from inaccuracies.  The basic problem is that the
 outward normal of the surface is not continuous at these points.  This
@@ -139,7 +139,7 @@ spring is at the <I>cutoff</I>.  This is a repulsive-only spring since the
 interaction is truncated at the <I>cutoff</I>
 </P>
 <P>IMPORTANT NOTE: For all of the styles, you must insure that r is
-always > 0 for all particles in the group, or LAMMPS will generate an
+always > 0 for all particles in the group, or LIGGGHTS(R)-PUBLIC will generate an
 error.  This means you cannot start your simulation with particles on
 the region surface (r = 0) or with particles on the wrong side of the
 region surface (r < 0).  For the <I>wall/lj93</I> and <I>wall/lj126</I> styles,
@@ -163,7 +163,7 @@ system's potential energy as part of <A HREF = "thermo_style.html">thermodynamic
 output</A>.
 </P>
 <P>This fix computes a global scalar energy and a global 3-length vector
-of forces, which can be accessed by various <A HREF = "Section_howto.html#howto_15">output
+of forces, which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
 commands</A>.  The scalar energy is the sum
 of energy interactions for all particles interacting with the wall
 represented by the region surface.  The 3 vector quantities are the

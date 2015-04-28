@@ -1,26 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_VECTOR_LIGGGHTS_H
@@ -51,7 +67,7 @@ inline void vectorConstruct3D(int *v,int x, int y, int z)
 
 inline void vectorNormalize3D(double *v)
 {
-    double norm = sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    double norm = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
     double invnorm = (norm == 0.) ? 0. : 1./norm;
     v[0] *= invnorm;
     v[1] *= invnorm;
@@ -60,7 +76,7 @@ inline void vectorNormalize3D(double *v)
 
 inline double vectorMag3D(const double *v)
 {
-  return (  sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])  );
+  return (  ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2])  );
 }
 
 inline double vectorMag3DSquared(const double *v)
@@ -70,14 +86,14 @@ inline double vectorMag3DSquared(const double *v)
 
 inline double vectorMag4D(const double *v)
 {
-  return (  sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]+v[3]*v[3])  );
+  return (  ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]+v[3]*v[3])  );
 }
 
 inline double pointDistance(const double *point1, const double *point2)
 {
   return
   (
-     sqrt
+     ::sqrt
      (
           (point1[0]-point2[0]) * (point1[0]-point2[0]) +
           (point1[1]-point2[1]) * (point1[1]-point2[1]) +
@@ -121,6 +137,12 @@ inline void vectorFlip3D(double *v)
   v[2]=-v[2];
 }
 
+inline void vectorCopyN(const int *from, int *to, int N)
+{
+    for(int i = 0; i < N; i++)
+       to[i] = from[i];
+}
+
 inline void vectorCopyN(const double *from, double *to, int N)
 {
     for(int i = 0; i < N; i++)
@@ -139,6 +161,12 @@ inline void vectorCopy3D(const bool *from, bool *to)
   to[0]=from[0];
   to[1]=from[1];
   to[2]=from[2];
+}
+
+inline void vectorRoundN(double *vec, int N)
+{
+    for(int i = 0; i < N; i++)
+       vec[i] = static_cast<double>(round(vec[i]));
 }
 
 inline void vectorAbs3D(double *v)
@@ -210,6 +238,22 @@ inline int vectorMax3D(int *v)
     return v[2];
 }
 
+inline int vectorMaxN(int *v, int n)
+{
+    int max = v[0];
+    for (int i=1;i<n;i++)
+        max = max > v[i] ? max : v[i];
+    return max;
+}
+
+inline int vectorMinN(int *v, int n)
+{
+    int min = v[0];
+    for (int i=1;i<n;i++)
+        min = min < v[i] ? min : v[i];
+    return min;
+}
+
 inline void vectorComponentMin3D(double *v1,double *v2,double *min)
 {
     if(v1[0] > v2[0])
@@ -267,7 +311,7 @@ inline void vectorScalarMult3D(double *v, double s)
   v[2]=s*v[2];
 }
 
-inline void vectorScalarMult3D(double *v, double s, double *result)
+inline void vectorScalarMult3D(const double *v, double s, double *result)
 {
   result[0]=s*v[0];
   result[1]=s*v[1];
@@ -280,6 +324,13 @@ inline void vectorScalarDiv3D(double *v, double s)
   v[0]=sinv*v[0];
   v[1]=sinv*v[1];
   v[2]=sinv*v[2];
+}
+
+inline void vectorComponentDiv3D(const double *nom, const double *denom,double *result)
+{
+  result[0]=nom[0]/denom[0];
+  result[1]=nom[1]/denom[1];
+  result[2]=nom[2]/denom[2];
 }
 
 inline void vectorScalarAdd3D(double *v, double s)

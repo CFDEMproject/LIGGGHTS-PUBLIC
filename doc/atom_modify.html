@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -35,11 +35,11 @@ atom_modify first colloid
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>Modify properties of the atom style selected within LAMMPS.
+<P>Modify properties of the atom style selected within LIGGGHTS(R)-PUBLIC.
 </P>
 <P>The <I>map</I> keyword determines how atom ID lookup is done for molecular
 problems.  Lookups are performed by bond (angle, etc) routines in
-LAMMPS to find the local atom index associated with a global atom ID.
+LIGGGHTS(R)-PUBLIC to find the local atom index associated with a global atom ID.
 When the <I>array</I> value is used, each processor stores a lookup table
 of length N, where N is the total # of atoms in the system.  This is
 the fastest method for most simulations, but a processor can run out
@@ -52,7 +52,7 @@ processors running the simulation.
 <P>The <I>first</I> keyword allows a <A HREF = "group.html">group</A> to be specified whose
 atoms will be maintained as the first atoms in each processor's list
 of owned atoms.  This in only useful when the specified group is a
-small fraction of all the atoms, and there are other operations LAMMPS
+small fraction of all the atoms, and there are other operations LIGGGHTS(R)-PUBLIC
 is performing that will be sped-up significantly by being able to loop
 over the smaller set of atoms.  Otherwise the reordering required by
 this option will be a net slow-down.  The <A HREF = "neigh_modify.html">neigh_modify
@@ -66,13 +66,13 @@ turns off the <I>first</I> option.
 </P>
 <P>It is OK to use the <I>first</I> keyword with a group that has not yet been
 defined, e.g. to use the atom_modify first command at the beginning of
-your input script.  LAMMPS does not use the group until a simullation
+your input script.  LIGGGHTS(R)-PUBLIC does not use the group until a simullation
 is run.
 </P>
 <P>The <I>sort</I> keyword turns on a spatial sorting or reordering of atoms
 within each processor's sub-domain every <I>Nfreq</I> timesteps.  If
 <I>Nfreq</I> is set to 0, then sorting is turned off.  Sorting can improve
-cache performance and thus speed-up a LAMMPS simulation, as discussed
+cache performance and thus speed-up a LIGGGHTS(R)-PUBLIC simulation, as discussed
 in a paper by <A HREF = "#Meloni">(Meloni)</A>.  Its efficacy depends on the problem
 size (atoms/processor), how quickly the system becomes disordered, and
 various other factors.  As a general rule, sorting is typically more
@@ -93,7 +93,7 @@ the processor's 1d list of atoms.
 <P>The goal of this procedure is for atoms to put atoms close to each
 other in the processor's one-dimensional list of atoms that are also
 near to each other spatially.  This can improve cache performance when
-pairwise intereractions and neighbor lists are computed.  Note that if
+pairwise interactions and neighbor lists are computed.  Note that if
 bins are too small, there will be few atoms/bin.  Likewise if bins are
 too large, there will be many atoms/bin.  In both cases, the goal of
 cache locality will be undermined.
@@ -101,10 +101,9 @@ cache locality will be undermined.
 <P>IMPORTANT NOTE: Running a simulation with sorting on versus off should
 not change the simulation results in a statistical sense.  However, a
 different ordering will induce round-off differences, which will lead
-to diverging trajectories over time when comparing two simluations.
-Various commands, particularly those which use random numbers
-(e.g. <A HREF = "velocity.html">velocity create</A>, and <A HREF = "fix_langevin.html">fix
-langevin</A>), may generate (statistically identical)
+to diverging trajectories over time when comparing two simulations.
+Various commands, particularly those which use random numbers,
+may generate (statistically identical)
 results which depend on the order in which atoms are processed.  The
 order of atoms in a <A HREF = "dump.html">dump</A> file will also typically change
 if sorting is enabled.
@@ -123,7 +122,7 @@ used with a group-ID that is not "all".
 </P>
 <P><B>Default:</B>
 </P>
-<P>By default, atomic (non-molecular) problems do not allocate maps.  For
+<P>By default, non-molecular problems do not allocate maps.  For
 molecular problems, the option default is map = array.  By default, a
 "first" group is not defined.  By default, sorting is enabled with a
 frequency of 1000 and a binsize of 0.0, which means the neighbor

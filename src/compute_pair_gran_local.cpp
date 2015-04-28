@@ -1,26 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -62,12 +78,12 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
   // store everything by default expect heat flux
   posflag = velflag = idflag = fflag = tflag = hflag = aflag = 1;
 
-  // do not store heat flux by default
-  hfflag = 0;
+  // do not store heat flux and delta by default
+  hfflag = dflag = 0;
 
   // if further args, store only the properties that are listed
   if(narg > 3)
-     posflag = velflag = idflag = fflag = tflag = hflag = aflag = 0;
+     posflag = velflag = idflag = fflag = tflag = hflag = aflag = dflag  = 0;
 
   for (int iarg = 3; iarg < narg; iarg++)
   {
@@ -79,7 +95,9 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
     else if (strcmp(arg[iarg],"torque") == 0) tflag = 1;
     else if (strcmp(arg[iarg],"history") == 0) hflag = 1;
     else if (strcmp(arg[iarg],"contactArea") == 0) aflag = 1;
+    else if (strcmp(arg[iarg],"delta") == 0) dflag = 1;
     else if (strcmp(arg[iarg],"heatFlux") == 0) hfflag = 1;
+    else if (strcmp(arg[iarg],"delta") == 0) hfflag = 1;
     else error->compute_error(FLERR,this,"Invalid keyword");
   }
 
@@ -103,11 +121,6 @@ ComputePairGranLocal::~ComputePairGranLocal()
   memory->destroy(array);
 
   if(reference_exists == 0) return;
-
-  if(wall == 0) pairgran->unregister_compute_pair_local(this);
-  else fixwall->unregister_compute_wall_local(this);
-
-  if(fixheat) fixheat->unregister_compute_pair_local(this);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -120,6 +133,19 @@ void ComputePairGranLocal::post_create()
   // initialize once as dump parses in constructor for length of per-atom data
   
   init_cpgl(false);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void ComputePairGranLocal::pre_delete(bool uncomputeflag)
+{
+    if(uncomputeflag)
+    {
+      if(wall == 0) pairgran->unregister_compute_pair_local(this);
+      else fixwall->unregister_compute_wall_local(this);
+
+      if(fixheat) fixheat->unregister_compute_pair_local(this);
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -225,7 +251,7 @@ void ComputePairGranLocal::init_cpgl(bool requestflag)
   if(hflag && dnum == 0) error->all(FLERR,"Compute pair/gran/local or wall/gran/local can not calculate history values since pair or wall style does not compute them");
   // standard values: pos1,pos2,id1,id2,extra id for mesh wall,force,torque,contact area
 
-  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + tflag*3 + hflag*dnum + aflag + hfflag;
+  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + tflag*3 + hflag*dnum + aflag + dflag + hfflag;
   size_local_cols = nvalues;
 
 }
@@ -430,6 +456,14 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
         array[ipair][n++] = contactArea;
         
     }
+    if(dflag)
+    {
+        radi = atom->radius[i];
+        radj = atom->radius[j];
+        vectorSubtract3D(atom->x[i],atom->x[j],del);
+        array[ipair][n++] = radi+radj-vectorMag3D(del);
+        
+    }
 
     ipair++;
 }
@@ -552,6 +586,11 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
         contactArea = (atom->radius[i]*atom->radius[i]-rsq)*M_PI;
         array[ipair][n++] = contactArea;
         
+    }
+    if(dflag)
+    {
+        array[ipair][n++] = atom->radius[i]-sqrt(rsq);
+
     }
 
     // wall_1 and wall_2 are always called

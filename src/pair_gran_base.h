@@ -1,38 +1,57 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Richard Berger (JKU Linz)
+    Alexander Podlozhnyuk (DCS Computing GmbH, Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef PAIR_GRAN_BASE_H_
 #define PAIR_GRAN_BASE_H_
 
 #include "contact_interface.h"
+#include "superquadric.h"
+#include "math_extra_liggghts.h"
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+#include "math_extra_liggghts_superquadric.h"
+#endif
 #include "pair_gran.h"
 #include "neighbor.h"
 #include "neigh_list.h"
@@ -50,7 +69,7 @@ using namespace LAMMPS_NS;
 
 template<typename ContactModel>
 class Granular : private Pointers, public IGranularPairStyle {
-  CollisionData * aligned_cdata;
+  SurfacesIntersectData * aligned_sidata;
   ForceData * aligned_i_forces;
   ForceData * aligned_j_forces;
   ContactModel cmodel;
@@ -65,14 +84,14 @@ class Granular : private Pointers, public IGranularPairStyle {
 
 public:
   Granular(class LAMMPS * lmp, PairGran* parent) : Pointers(lmp),
-    aligned_cdata(aligned_malloc<CollisionData>(32)),
+    aligned_sidata(aligned_malloc<SurfacesIntersectData>(32)),
     aligned_i_forces(aligned_malloc<ForceData>(32)),
     aligned_j_forces(aligned_malloc<ForceData>(32)),
     cmodel(lmp, parent) {
   }
 
   virtual ~Granular() {
-    aligned_free(aligned_cdata);
+    aligned_free(aligned_sidata);
     aligned_free(aligned_i_forces);
     aligned_free(aligned_j_forces);
   }
@@ -160,6 +179,12 @@ public:
     int *type = atom->type;
     int *mask = atom->mask;
     int nlocal = atom->nlocal;
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    int superquadric_flag = atom->superquadric_flag;
+    double **quat = atom->quaternion;
+    double **shape = atom->shape;
+    double **roundness = atom->roundness;
+#endif // SUPERQUADRIC_ACTIVE_FLAG
     const int newton_pair = force->newton_pair;
 
     int inum = pg->list->inum;
@@ -167,27 +192,27 @@ public:
     int * numneigh = pg->list->numneigh;
 
     int ** firstneigh = pg->list->firstneigh;
-    int ** firsttouch = pg->listgranhistory ? pg->listgranhistory->firstneigh : NULL;
-    double ** firstshear = pg->listgranhistory ? pg->listgranhistory->firstdouble : NULL;
+    int ** first_contact_flag = pg->listgranhistory ? pg->listgranhistory->firstneigh : NULL;
+    double ** first_contact_hist = pg->listgranhistory ? pg->listgranhistory->firstdouble : NULL;
 
     const int dnum = pg->dnum();
     const bool store_contact_forces = pg->storeContactForces();
     const int freeze_group_bit = pg->freeze_group_bit();
 
     // clear data, just to be safe
-    memset(aligned_cdata, 0, sizeof(CollisionData));
+    memset(aligned_sidata, 0, sizeof(SurfacesIntersectData));
     memset(aligned_i_forces, 0, sizeof(ForceData));
     memset(aligned_j_forces, 0, sizeof(ForceData));
-    aligned_cdata->area_ratio = 1.0;
+    aligned_sidata->area_ratio = 1.0;
 
-    CollisionData & cdata = *aligned_cdata;
+    SurfacesIntersectData & sidata = *aligned_sidata;
     ForceData & i_forces = *aligned_i_forces;
     ForceData & j_forces = *aligned_j_forces;
-    cdata.is_wall = false;
-    cdata.computeflag = pg->computeflag();
-    cdata.shearupdate = pg->shearupdate();
+    sidata.is_wall = false;
+    sidata.computeflag = pg->computeflag();
+    sidata.shearupdate = pg->shearupdate();
 
-    cmodel.beginPass(cdata, i_forces, j_forces);
+    cmodel.beginPass(sidata, i_forces, j_forces);
 
     // loop over neighbors of my atoms
 
@@ -197,13 +222,13 @@ public:
       const double ytmp = x[i][1];
       const double ztmp = x[i][2];
       const double radi = radius[i];
-      int * const touch = firsttouch ? firsttouch[i] : NULL;
-      double * const allshear = firstshear ? firstshear[i] : NULL;
+      int * const contact_flags = first_contact_flag ? first_contact_flag[i] : NULL;
+      double * const all_contact_hist = first_contact_hist ? first_contact_hist[i] : NULL;
       int * const jlist = firstneigh[i];
       const int jnum = numneigh[i];
 
-      cdata.i = i;
-      cdata.radi = radi;
+      sidata.i = i;
+      sidata.radi = radi;
 
       for (int jj = 0; jj < jnum; jj++) {
         const int j = jlist[jj] & NEIGHMASK;
@@ -215,20 +240,34 @@ public:
         const double radj = radius[j];
         const double radsum = radi + radj;
 
-        cdata.j = j;
-        cdata.delta[0] = delx;
-        cdata.delta[1] = dely;
-        cdata.delta[2] = delz;
-        cdata.rsq = rsq;
-        cdata.radj = radj;
-        cdata.radsum = radsum;
-        cdata.touch = touch ? &touch[jj] : NULL;
-        cdata.contact_history = allshear ? &allshear[dnum*jj] : NULL;
+        sidata.j = j;
+        sidata.delta[0] = delx;
+        sidata.delta[1] = dely;
+        sidata.delta[2] = delz;
+        sidata.rsq = rsq;
+        sidata.radj = radj;
+        sidata.radsum = radsum;
+        sidata.contact_flags = contact_flags ? &contact_flags[jj] : NULL;
+        sidata.contact_history = all_contact_hist ? &all_contact_hist[dnum*jj] : NULL;
 
         i_forces.reset();
         j_forces.reset();
-
-        if (rsq < radsum * radsum) {
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(superquadric_flag) {
+          sidata.quat_i = quat[i];
+          sidata.quat_j = quat[j];
+          sidata.shape_i = shape[i];
+          sidata.shape_j = shape[j];
+          sidata.roundness_i = roundness[i];
+          sidata.roundness_j = roundness[j];
+          sidata.pos_i = x[i];
+          sidata.pos_j = x[j];
+        }
+#endif
+        // rsq < radsum * radsum is broad phase check with bounding spheres
+        // cmodel.checkSurfaceIntersect() is narrow phase check
+        
+        if (rsq < radsum * radsum && cmodel.checkSurfaceIntersect(sidata)) {
           const double r = sqrt(rsq);
           const double rinv = 1.0 / r;
 
@@ -265,33 +304,33 @@ public:
 
           // copy collision data to struct (compiler can figure out a better way to
           // interleave these stores with the double calculations above.
-          cdata.itype = itype;
-          cdata.jtype = jtype;
-          cdata.r = r;
-          cdata.rinv = rinv;
-          cdata.meff = meff;
-          cdata.mi = mi;
-          cdata.mj = mj;
-          cdata.en[0]   = enx;
-          cdata.en[1]   = eny;
-          cdata.en[2]   = enz;
-          cdata.v_i     = v[i];
-          cdata.v_j     = v[j];
-          cdata.omega_i = omega[i];
-          cdata.omega_j = omega[j];
+          sidata.itype = itype;
+          sidata.jtype = jtype;
+          sidata.r = r;
+          sidata.rinv = rinv;
+          sidata.meff = meff;
+          sidata.mi = mi;
+          sidata.mj = mj;
+          sidata.en[0]   = enx;
+          sidata.en[1]   = eny;
+          sidata.en[2]   = enz;
+          sidata.v_i     = v[i];
+          sidata.v_j     = v[j];
+          sidata.omega_i = omega[i];
+          sidata.omega_j = omega[j];
 
-          cmodel.collision(cdata, i_forces, j_forces);
+          cmodel.surfacesIntersect(sidata, i_forces, j_forces);
 
-          // if there is a collision, there will always be a force
-          cdata.has_force_update = true;
+          // if there is a surface touch, there will always be a force
+          sidata.has_force_update = true;
         } else {
           // apply force update only if selected contact models have requested it
-          cdata.has_force_update = false;
-          cmodel.noCollision(cdata, i_forces, j_forces);
+          sidata.has_force_update = false;
+          cmodel.surfacesClose(sidata, i_forces, j_forces);
         }
 
-        if(cdata.has_force_update) {
-          if (cdata.computeflag) {
+        if(sidata.has_force_update) {
+          if (sidata.computeflag) {
             force_update(f[i], torque[i], i_forces);
 
             if(newton_pair || j < nlocal) {
@@ -300,10 +339,10 @@ public:
           }
 
           if (pg->cpl() && addflag)
-            pg->cpl_add_pair(cdata, i_forces);
+            pg->cpl_add_pair(sidata, i_forces);
 
           if (pg->evflag)
-            pg->ev_tally_xyz(i, j, nlocal, newton_pair, 0.0, 0.0,i_forces.delta_F[0],i_forces.delta_F[1],i_forces.delta_F[2],cdata.delta[0],cdata.delta[1],cdata.delta[2]);
+            pg->ev_tally_xyz(i, j, nlocal, newton_pair, 0.0, 0.0,i_forces.delta_F[0],i_forces.delta_F[1],i_forces.delta_F[2],sidata.delta[0],sidata.delta[1],sidata.delta[2]);
 
           if (store_contact_forces)
           {
@@ -326,7 +365,7 @@ public:
       }
     }
 
-    cmodel.endPass(cdata, i_forces, j_forces);
+    cmodel.endPass(sidata, i_forces, j_forces);
 
     if(store_contact_forces)
         pg->fix_contact_forces()->do_forward_comm();

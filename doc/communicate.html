@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -50,9 +50,9 @@ all atom type pairs.
 widely varying cutoffs for different type pairs, the <I>multi</I> style can
 be faster.  In this case, each atom type is assigned its own distance
 cutoff for communication purposes, and fewer atoms will be
-communicated.  However, for granular systems optimization is 
+communicated.  However, for granular systems optimization is
 automatically performed with the <I>single</I> style, so <I>multi</I> is not
-necessary/available for granular systems. 
+necessary/available for granular systems.
 See the <A HREF = "neighbor.html">neighbor multi</A> command for a
 neighbor list construction option that may also be beneficial for
 simulations of this kind.
@@ -81,7 +81,7 @@ boundary.
 </P>
 <P>The appropriate ghost cutoff depends on the <A HREF = "newton.html">newton bond</A>
 setting.  For newton bond <I>off</I>, the distance needs to be the furthest
-distance between any two atoms in the bond, angle, etc.  E.g. the
+distance between any two atoms in the bond.  E.g. the
 distance between 1-4 atoms in a dihedral.  For newton bond <I>on</I>, the
 distance between the central atom in the bond, angle, etc and any
 other atom is sufficient.  E.g. the distance between 2-4 atoms in a
@@ -101,7 +101,7 @@ find the needed atoms.
 </P>
 <P>IMPORTANT NOTE: In these scenarios, if you do not set the ghost cutoff
 long enough, and if there is only one processor in a periodic
-dimension (e.g. you are running in serial), then LAMMPS may "find" the
+dimension (e.g. you are running in serial), then LIGGGHTS(R)-PUBLIC may "find" the
 atom it is looking for (e.g. the partner atom in a bond), that is on
 the far side of the simulation box, across a periodic boundary.  This
 will typically lead to bad dynamics (i.e. the bond length is now the

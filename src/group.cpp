@@ -1,14 +1,46 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "mpi.h"
@@ -168,7 +200,7 @@ void Group::assign(int narg, char **arg)
     else if (strcmp(arg[1],"id") == 0) category = ID;
 
     // args = logical condition
-    
+
     if (narg > 3 &&
         (strcmp(arg[2],"<") == 0 || strcmp(arg[2],">") == 0 ||
          strcmp(arg[2],"<=") == 0 || strcmp(arg[2],">=") == 0 ||
@@ -183,7 +215,7 @@ void Group::assign(int narg, char **arg)
       else if (strcmp(arg[2],"!=") == 0) condition = NEQ;
       else if (strcmp(arg[2],"<>") == 0) condition = BETWEEN;
       else error->all(FLERR,"Illegal group command");
-      
+
       int bound1 = force->inumeric(FLERR,arg[3]);
       int bound2 = -1;
 
@@ -215,9 +247,9 @@ void Group::assign(int narg, char **arg)
       for (i = 0; i < nlocal; i++)
         if (attribute[i] >= bound1 && attribute[i] <= bound2) mask[i] |= bit;
       }
-      
+
     // args = list of values
-      
+
     } else {
       int *attribute;
       if (category == TYPE) attribute = atom->type;
@@ -229,7 +261,7 @@ void Group::assign(int narg, char **arg)
 
       for (int iarg = 2; iarg < narg; iarg++) {
         if (strchr(arg[iarg],':')) {
-          start = atoi(strtok(arg[iarg],":")); 
+          start = atoi(strtok(arg[iarg],":"));
           stop = atoi(strtok(NULL,":"));
           ptr = strtok(NULL,":");
           if (ptr) delta = atoi(ptr);
@@ -240,7 +272,7 @@ void Group::assign(int narg, char **arg)
         }
 
         // add to group if attribute matches value or sequence
-      
+
         for (i = 0; i < nlocal; i++)
           if (attribute[i] >= start && attribute[i] <= stop &&
               (attribute[i]-start) % delta == 0) mask[i] |= bit;
@@ -257,7 +289,7 @@ void Group::assign(int narg, char **arg)
       error->all(FLERR,"Variable for group is invalid style");
 
     double *aflag;
-    
+
     // aflag = evaluation of per-atom variable
 
     memory->create(aflag,nlocal,"group:aflag");

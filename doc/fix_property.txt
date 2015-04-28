@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -41,34 +40,30 @@ fix property/atom:
 [Examples:]
 
 fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
-fix m5 all property/global characteristicVelocity scalar 2. 
+fix m5 all property/global characteristicVelocity scalar 2.
 fix uf all property/atom uf vector yes no no  0. 0. 0. :pre
-
-[LIGGGHTS vs. LAMMPS Info:]
-
-This LIGGGHTS command is not available in LAMMPS.
 
 [Description:]
 
-[Fix property/atom] reserves per-atom properties to be accessed by the user or other fixes. 
-Style {scalar} reserves one value per atom, style {vector} multiple values per atoms, where 
-the number of {defaultvalues} (that are assigned to the atoms at creation) determines the 
-length of the vector. The group of atoms the fix is applied to is always "all", irrespective 
-of which group is used for the fix command . If you want to assign different values for 
+[Fix property/atom] reserves per-atom properties to be accessed by the user or other fixes.
+Style {scalar} reserves one value per atom, style {vector} multiple values per atoms, where
+the number of {defaultvalues} (that are assigned to the atoms at creation) determines the
+length of the vector. The group of atoms the fix is applied to is always "all", irrespective
+of which group is used for the fix command . If you want to assign different values for
 different groups, you can use the "set"_set.html command with keyword 'property/atom'.
-Keyword {restartvalues} determines whether information about the values stored by this fix 
+Keyword {restartvalues} determines whether information about the values stored by this fix
 is written to binary restart files.
-Keyword {communicate_ghost_value} determines whether information about the values stored by this fix 
-can be communicated to ghost particles (forward communication). The exact location during a time-step 
+Keyword {communicate_ghost_value} determines whether information about the values stored by this fix
+can be communicated to ghost particles (forward communication). The exact location during a time-step
 when this happens depends on the model that uses this fix.
-Keyword {communicate_reverse_ghost_value} determines whether information about the values stored by this fix 
-can be communicated from ghost particles to owned particles (reverse communication). The exact location 
+Keyword {communicate_reverse_ghost_value} determines whether information about the values stored by this fix
+can be communicated from ghost particles to owned particles (reverse communication). The exact location
 during a time-step when this happens depends on the model that uses this fix.
 
-[Fix property/global] reserves global properties to be accessed by the user or other 
-fixes or pair styles. The number of defaultvalues determines the length of the vector / 
-the number of matrix components . For style {vector} or {atomtype}, the user provides 
-the number of vector components . For style {matrix} or {atomtypepair}, the user provides 
+[Fix property/global] reserves global properties to be accessed by the user or other
+fixes or pair styles. The number of defaultvalues determines the length of the vector /
+the number of matrix components . For style {vector} or {atomtype}, the user provides
+the number of vector components . For style {matrix} or {atomtypepair}, the user provides
 the number of matrix columns ({nCols}) .
 
 Example: {nCols}= 2 and {defaultvalues} = 1 2 3 4 5 6 would be mapped into a matrix like

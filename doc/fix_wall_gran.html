@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -52,11 +50,11 @@
 
 <LI>general_keyword =  <I>shear</I> or <I>store_force</I> or <I>store_force_contact</I> 
 
-<PRE>  <I>shear</I> values = dim vshear 
+<PRE>  <I>shear</I> values = dim vshear
     dim = <I>x</I> or <I>y</I> or <I>z</I>
     vshear = magnitude of shear velocity (velocity units)
   <I>temperature</I> value = T0
-    T0 = Temperature of the wall (temperature units) 
+    T0 = Temperature of the wall (temperature units)
   <I>contact_area</I> values = 'overlap' or 'constant <B>value</B>' or 'projection'
   <I>store_force</I> value = 'yes' or 'no'
     yes, no = determines if the wall force exerted on the particles is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID) is the id of the fix wall/gran command.
@@ -65,7 +63,7 @@
 </PRE>
 <LI>following the general_keyword/value pairs, zero or more model_keyword/model_value pairs may be appended in arbitrary order 
 
-  model_keyword/model_value pairs = described for each model separately <A HREF = "Section_gran_models.html">here</A> 
+  model_keyword/model_value pairs = described for each model separately <A HREF = "Section_gran_models.html">here</A>
 
 </UL>
 <P><B>Examples:</B>
@@ -73,13 +71,6 @@
 <PRE>fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15
 fix meshwalls all wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2  
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This command has been improved in accordance with the overhauled
-<A HREF = "pair_gran.html">pair gran</A> styles. Furthermore, it offers the new
-<I>wallstyle mesh</I>, which enables fix wall/gran to handle complex
-wall geometries imported from CAD.
-</P>
 <P><B>Description:</B>
 </P>
 <P>Bound the simulation domain of a granular system with a frictional wall.
@@ -94,28 +85,28 @@ an error is created. As with <A HREF = "pair_gran.html">pair_style granular</A>,
 to define the mechanical properties for each material you are used in the
 simulation with fix property commands. See <A HREF = "pair_gran.html">pair_style gran</A>
 for more details and <A HREF = "Section_gran_models.html">the model doc page</A> for
-details. 
+details.
 </P>
-<P>For wallstyle <I>mesh</I>, fix_id1, fix_id2 etc. must be IDs of valid fixes of 
-type <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>, defining the granular mesh 
-to be used for the wall. Triangle-particle neighbor lists are built to efficiently 
-track particle-triangle contacts. Particle-tri neighbor list build is triggered 
+<P>For wallstyle <I>mesh</I>, fix_id1, fix_id2 etc. must be IDs of valid fixes of
+type <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>, defining the granular mesh
+to be used for the wall. Triangle-particle neighbor lists are built to efficiently
+track particle-triangle contacts. Particle-tri neighbor list build is triggered
 if any particle moves more than half the skin distance or (in case of moving mesh) if the mesh
 itself moves more than half the skin distance since the last build. A warning
 is generated if a dangerous particle-tri neigh list build is detected
 (e.g. if particles are inserted too close to a wall, see section 'Restrictions').
 For style <I>mesh</I>, the atom_type (material type) is inherited from the atom style provided
-in the <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command. 
+in the <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command.
 </P>
 <P>For <I>wallstyle primitive</I>, the atom_type (material type) has to be provided via
-keyword <I>type</I>. Primitve walls can be <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>cylindrical</I>. 
+keyword <I>type</I>. Primitve walls can be <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>cylindrical</I>.
 The 3 planar options specify a single wall in a dimension.
 Wall positions are given by values for lo and hi. For an <I>xcylinder</I>, <I>ycylinder</I> or
 <I>zcylinder</I>, the radius and the cylinder axis in the other two dims is specified.
 </P>
 <HR>
 
-<P>Optionally, primitive walls can be moving, if the shear keyword is appended. 
+<P>Optionally, primitive walls can be moving, if the shear keyword is appended.
 </P>
 <P>For the <I>shear</I> keyword, the wall moves continuously in the specified dimension
 with velocity vshear. The dimension must be tangential to walls with a planar
@@ -178,7 +169,7 @@ defined in the <A HREF = "neighbor.html">neighbor command</A>. Otherwise, newly 
 particles interpenetrate the walls before a triangle neighbor list is built
 the first time.
 </P>
-<P>The keyword shear can NOT be used for style <I>mesh</I>. 
+<P>The keyword shear can NOT be used for style <I>mesh</I>.
 For moving granular wall with style mesh, use "fix move/mesh"fix_move_mesh.html.
 </P>
 <P>Any dimension (xyz) that has a planar granular wall must be non-periodic.
@@ -188,7 +179,7 @@ For moving granular wall with style mesh, use "fix move/mesh"fix_move_mesh.html.
 <P><A HREF = "fix_mesh_surface.html">fix mesh/surface</A>, <A HREF = "fix_move_mesh.html">fix_move_mesh</A>, <A HREF = "pair_gran.html">pair_style granular</A>
 Models for use with this command are described <A HREF = "Section_gran_models.html">here</A>
 </P>
-<P><B>Default:</B> 
+<P><B>Default:</B>
 </P>
 <P><I>model</I> = 'hertz'
 <I>tangential</I> = 'history'

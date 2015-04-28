@@ -51,8 +51,6 @@ fix		pdd1 all particledistribution/discrete 1.  1 pts1 1.0
 fix		ins all insert/pack seed 100001 distributiontemplate pdd1 vel constant 0. 0. -0.3 &
 		insert_every once overlapcheck yes all_in yes volumefraction_region 0.25 region bc
 
-#fix		ins nve_group pour/legacy 500 1 1 vol 0.7 1000 diam 0.008 0.008 dens 8000 8000 vel 0. 0. 0. 0. -0.3 region bc
-
 #apply nve integration to all particles
 fix		integr all nve/sphere
 

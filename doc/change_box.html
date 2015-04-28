@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -83,8 +83,8 @@ The <A HREF = "create_box.html">create_box</A>, <A HREF = "read_data.html">read 
 simulation box is orthogonal or triclinic and their doc pages explain
 the meaning of the xy,xz,yz tilt factors.
 </P>
-<P>See <A HREF = "Section_howto.html#howto_12">Section_howto 12</A> of the doc pages
-for a geometric description of triclinic boxes, as defined by LAMMPS,
+<P>See <A HREF = "Section_howto.html#howto_7">Section_howto 12</A> of the doc pages
+for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.
 </P>
@@ -134,7 +134,7 @@ each transformation in the sequence.  If skew is exceeded before the
 final transformation this can be avoided by changing the order of the
 sequence, or breaking the transformation into two or more smaller
 transformations.  For more information on the allowed limits for box
-skew see the discussion on triclinic boxes on <A HREF = "Section_howto.html#howto_12">this
+skew see the discussion on triclinic boxes on <A HREF = "Section_howto.html#howto_7">this
 page</A>.
 </P>
 <HR>
@@ -167,7 +167,7 @@ preceding "key".  I.e. this sequence of keywords is allowed:
 </PRE>
 <P>The <I>volume</I> style changes the associated dimension so that the
 overall box volume is unchanged relative to its value before the
-preceding keyword was invoked. 
+preceding keyword was invoked.
 </P>
 <P>If the following command is used, then the z box length will shrink by
 the same 1.1 factor the x box length was increased by:
@@ -211,7 +211,7 @@ units keyword below.
 specified.  The value can be in lattice or box distance units.  See
 the discussion of the units keyword below.
 </P>
-<P>All of these styles change the xy, xz, yz tilt factors.  In LAMMPS,
+<P>All of these styles change the xy, xz, yz tilt factors.  In LIGGGHTS(R)-PUBLIC,
 tilt factors (xy,xz,yz) for triclinic boxes are required to be no more
 than half the distance of the parallel box length.  For example, if
 xlo = 2 and xhi = 12, then the x box length is 10 and the xy tilt
@@ -252,9 +252,9 @@ command.
 <HR>
 
 <P>The <I>ortho</I> and <I>triclinic</I> keywords convert the simulation box to be
-orthogonal or triclinic (non-orthongonal).  See <A HREF = "Section_howto#howto_13">this
+orthogonal or triclinic (non-orthongonal).  See <A HREF = "Section_howto#howto_12">this
 section</A> for a discussion of how non-orthongal
-boxes are represented in LAMMPS.
+boxes are represented in LIGGGHTS(R)-PUBLIC.
 </P>
 <P>The simulation box is defined as either orthogonal or triclinic when
 it is created via the <A HREF = "create_box.html">create_box</A>,
@@ -264,9 +264,7 @@ commands.
 <P>These keywords allow you to toggle the existing simulation box from
 orthogonal to triclinic and vice versa.  For example, an initial
 equilibration simulation can be run in an orthogonal box, the box can
-be toggled to triclinic, and then a <A HREF = "Section_howto.html#howto_13">non-equilibrium MD (NEMD)
-simulation</A> can be run with deformation
-via the <A HREF = "fix_deform.html">fix deform</A> command.
+be toggled to triclinic.
 </P>
 <P>If the simulation box is currently triclinic and has non-zero tilt in
 xy, yz, or xz, then it cannot be converted to an orthogonal box.

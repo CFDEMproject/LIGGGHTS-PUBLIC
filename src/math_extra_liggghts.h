@@ -1,26 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_MATH_EXTRA_LIGGGHTS_H
@@ -93,6 +109,7 @@ namespace MathExtraLiggghts {
   inline void random_unit_quat(LAMMPS_NS::RanPark *random,double *quat);
 
   inline bool is_int(char *str);
+  inline void generateComplementBasis(double *uVec, double *vVec, double *direction);
 };
 
 /* ----------------------------------------------------------------------
@@ -145,6 +162,10 @@ inline double MathExtraLiggghts::halley_cbrt1d(double d)
         double a = cbrt_5d(d);
         return cbrta_halleyd(a, d);
 }
+
+/* ----------------------------------------------------------------------
+   min max stuff
+------------------------------------------------------------------------- */
 
   int MathExtraLiggghts::min(int a,int b) { if (a<b) return a; return b;}
   int MathExtraLiggghts::max(int a,int b) { if (a>b) return a; return b;}
@@ -458,7 +479,7 @@ inline void MathExtraLiggghts::angmom_from_omega(double *w,
 
 inline void MathExtraLiggghts::quat_normalize(double *q)
 {
-  double norm = 1.0 / sqrt(q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3]);
+  double norm = 1.0 / ::sqrt(q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3]);
   q[0] *= norm;
   q[1] *= norm;
   q[2] *= norm;
@@ -545,13 +566,13 @@ void MathExtraLiggghts::random_unit_quat(LAMMPS_NS::RanPark *random,double *quat
     double u2 = random->uniform();
     double u3 = random->uniform();
 
-    double h1 = sqrt(1.-u1);
-    double h2 = sqrt(u1);
+    double h1 = ::sqrt(1.-u1);
+    double h2 = ::sqrt(u1);
 
-    quat[0] = h1 * sin(2.*M_PI*u2);
-    quat[1] = h1 * cos(2.*M_PI*u2);
-    quat[2] = h2 * sin(2.*M_PI*u3);
-    quat[3] = h2 * cos(2.*M_PI*u3);
+    quat[0] = h1 * ::sin(2.*M_PI*u2);
+    quat[1] = h1 * ::cos(2.*M_PI*u2);
+    quat[2] = h2 * ::sin(2.*M_PI*u3);
+    quat[3] = h2 * ::cos(2.*M_PI*u3);
 }
 
 /* ----------------------------------------------------------------------
@@ -566,6 +587,47 @@ bool MathExtraLiggghts::is_int(char *str)
         return false;
 
     return true;
+}
+
+/* ----------------------------------------------------------------------
+   generate complement basis
+------------------------------------------------------------------------- */
+void MathExtraLiggghts::generateComplementBasis(double *uVec, double *vVec, double *direction)
+{
+
+    double invLength;
+
+    if ( abs(direction[0]) >= abs(direction[1]) )
+    {
+        // direction.x or direction.z is the largest magnitude component, swap them
+        invLength = 1.0/sqrt ( direction[0]*direction[0]
+                              +direction[2]*direction[2]
+                             );
+        uVec[0] = -direction[2]*invLength;
+        uVec[1] =  0.0;
+        uVec[2] =  direction[0]*invLength;
+
+        vVec[0] =  direction[1]*uVec[2];
+        vVec[1] =  direction[2]*uVec[0]
+                -  direction[0]*uVec[2];
+        vVec[2] = -direction[1]*uVec[0];
+    }
+    else
+    {
+        // direction.y or direction.z is the largest magnitude component, swap them
+        invLength = 1.0/sqrt ( direction[1]*direction[1]
+                              +direction[2]*direction[2]
+                             );
+
+        uVec[0] =  0.0;
+        uVec[1] =  direction[2]*invLength;
+        uVec[2] = -direction[1]*invLength;
+
+        vVec[0] =  direction[1]*uVec[2]
+                -  direction[2]*uVec[1];
+        vVec[1] = -direction[0]*uVec[2];
+        vVec[2] =  direction[0]*uVec[1];
+    }
 }
 
 #endif

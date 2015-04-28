@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -31,9 +29,8 @@
 
 <LI>one or more general keyword/value pairs can be appended 
 
-<LI>general_keywords = <I>verbose</I> or <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or<I>vel constant</I> or <I>vel uniform</I> or <I>vel gaussian</I> or <I>orientation</I> or <I>omega</I> 
-
-<PRE>  <I>verbose</I> = yes or no
+<PRE>general_keywords = <I>verbose</I> or <I>maxattampt</I> or <I>nparticles</I> or <I>mass</I> or <I>particlerate</I> or <I>massrate</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or<I>vel constant</I> or <I>vel uniform</I> or <I>vel gaussian</I> or <I>orientation</I> or <I>omega</I> or <I>set_property</I>:l
+  <I>verbose</I> = yes or no
   <I>maxattempt</I> value = ma
     ma = max # of insertion attempts per atom (positive integer)
   <I>nparticles</I> values = np or INF
@@ -50,6 +47,7 @@
     ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
   <I>start</I> value = ts
     ts = time-step at which insertion should start (positive integer larger than current time-step)
+  <I>overlapcheck</I> value = yes or no
   <I>all_in</I> value = yes or no
   <I>random_distribute</I> value = exact or uncorrelated
   <I>vel constant</I> values = vx vy vz
@@ -77,7 +75,10 @@
     constant = obligatory word
     omegax = x-comonent of angular velocity (1/time units)
     omegay = y-comonent of angular velocity (1/time units)
-    omegaz = z-comonent of angular velocity (1/time units) 
+    omegaz = z-comonent of angular velocity (1/time units)
+  <I>set_property</I> values = property-ID val
+    property-ID = ID of a <A HREF = "fix_property.html">fix property/atom</A> holding a scalar value for each particle
+    val = value to initialize the property with upon insertion  
 </PRE>
 <LI>following the general keyword/value section, one or more stream keyword/value pairs can be appended for the fix insert/stream command 
 
@@ -178,6 +179,12 @@ in the <A HREF = "fix_particledistribution_discrete.html">fix_particledistributi
 and <A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A>
 command (all of which can also be "all").
 </P>
+<P>The keyword <I>overlapcheck</I> controls if overlap is checked for at insertion,
+both within the inserted particle package and with other existig particles.
+If this option is turned off, insertion will scale very well in parallel,
+otherwise not. Be aware that in case of no overlap check, highly overlapping
+configurations will be produced, so you will have to relax these configurations.
+</P>
 <P>If overlapcheck if performed, the number of insertion attempts per
 particle can be specified via the <I>maxattempt</I> keyword. Each timestep
 particles are inserted, the command will make up to a total of M tries
@@ -187,12 +194,12 @@ insertions, a warning will be printed.
 </P>
 <P>The <I>all_in</I> flag determines if the particle is completely contained
 in the insertion region (<I>all_in = yes</I>) or only the particle center
-(<I>all_in = no</I>).Using <I>all_in</I> = yes requires you to use an insertion 
+(<I>all_in = no</I>).Using <I>all_in</I> = yes requires you to use an insertion
 face of style <A HREF = "fix_mesh_surface.html">fix mesh/surface/planar</A>
 </P>
-<P>NOTE: You also have to use <A HREF = "fix_mesh_surface.html">fix mesh/surface/planar</A> 
-if there is a <A HREF = "run.html">run</A> command between the definition of the 
-insertion face and the fix insert/stream command. Otherwise, a 
+<P>NOTE: You also have to use <A HREF = "fix_mesh_surface.html">fix mesh/surface/planar</A>
+if there is a <A HREF = "run.html">run</A> command between the definition of the
+insertion face and the fix insert/stream command. Otherwise, a
 <A HREF = "fix_mesh_surface.html">fix mesh/surface/planar</A> will do.
 </P>
 <P>Keyword <I>random_distribute</I> controls how the number of particles to
@@ -202,30 +209,34 @@ the number of particles to be inserted each step is matched exactly.
 For style <I>uncorrelated</I>, the number of particles to be inserted
 for each particle template will be rounded in an uncorrelated way,
 so the total number of inserted particles may vary for each insertion
-step. However, statistically both ways should produce the same 
-result. Style <I>uncorrelated</I> may be faster in parallel since it 
+step. However, statistically both ways should produce the same
+result. Style <I>uncorrelated</I> may be faster in parallel since it
 does not need global MPI operations.
 Please note that if the # of particles to be inserted is calculated
 e.g. from a particle mass to be inserted, the number of particles
 to be inserted each insertion step will vary by 1, irrespective of
 the <I>random_distribute</I> settings. This is because in this case the
 # of particles to insert in each step will be a floating point number,
-and applying a simple floor/ceil rounding operation would lead to a 
+and applying a simple floor/ceil rounding operation would lead to a
 statistical bias.
 </P>
-<P>If keyword <I>parallel</I> is set to 'yes', LIGGGHTS tries to pre-calculate 
+<P>If keyword <I>parallel</I> is set to 'yes', LIGGGHTS(R)-PUBLIC tries to pre-calculate
 more accurately the overlap of process subdomains and extrusion volume.
 For cases where the insertion volume is highly divided between different
-processes, this can lead to a speed-up of insertion as random number generation 
-is more efficient. For cases where the extrusion volume is divided 
+processes, this can lead to a speed-up of insertion as random number generation
+is more efficient. For cases where the extrusion volume is divided
 among few processes this will impose a small computation overhead.
 </P>
 <P>The initial velocity and rotational velocity can be controlled via the
-<I>vel</I> and <I>omega</I> keywords. <I>vel constant</I> simply patches a constant 
-velocity to the inserted particles, <I>vel uniform</I> sets uniformly distributed 
-velocities with mean and amplitude. <I>vel gaussian</I> sets Gaussian 
+<I>vel</I> and <I>omega</I> keywords. <I>vel constant</I> simply patches a constant
+velocity to the inserted particles, <I>vel uniform</I> sets uniformly distributed
+velocities with mean and amplitude. <I>vel gaussian</I> sets Gaussian
 distributed particle velocities with mean and std. deviation.
 The insertion velocity must be non-zero.
+</P>
+<P>The <I>set_property</I> option can be used to initialize scalar per-particle
+properties such as temperatures, which are stored in a 
+a <A HREF = "fix_property.html">fix property/atom</A>.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
@@ -249,8 +260,8 @@ The insertion face cannot move.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "fix_insert_pack.html">fix_insert_pack</A>, <A HREF = "fix_insert_rate_region.html">fix_insert_rate_region</A>,
-<A HREF = "fix_deposit.html">fix_deposit</A>, <A HREF = "fix_pour_dev.html">fix_pour_dev</A>, <A HREF = "fix_pour.html">fix_pour</A>
+<P><A HREF = "fix_insert_pack.html">fix_insert_pack</A>, 
+<A HREF = "fix_insert_rate_region.html">fix_insert_rate_region</A>,
 </P>
 <P><B>Default:</B>
 </P>

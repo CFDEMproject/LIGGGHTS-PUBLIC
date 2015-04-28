@@ -1,35 +1,53 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2014-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if no contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2014-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
-   Contributing author:
+   Contributing authors:
    Daniel Queteschiner, daniel.queteschiner@dcs-computing.com
+   Alexander Podlozhnyuk, alexander.podlozhnyuk@dcs-computing.com
 ------------------------------------------------------------------------- */
 
 #ifdef LAMMPS_VTK
 
 #include "math.h"
+#include "math_extra.h"
 #include "stdlib.h"
 #include "string.h"
 #include "dump_custom_vtk.h"
@@ -90,9 +108,13 @@ enum{X,Y,Z, // required for vtk, must come first
      TQX,TQY,TQZ,SPIN,ERADIUS,ERVEL,ERFORCE,
      DENSITY, RHO, P, 
      VARIABLE,COMPUTE,FIX,
+     SHAPEX, SHAPEY, SHAPEZ,
+     QUAT1, QUAT2, QUAT3, QUAT4,
+     EXTRA1, EXTRA2, TENSOR,
+     ROUNDNESS1, ROUNDNESS2, 
      ATTRIBUTES}; // must come last
 enum{LT,LE,GT,GE,EQ,NEQ};
-enum{INT,DOUBLE,STRING};    // same as in DumpCFG
+enum{INT,DOUBLE,STRING,TENSOR_DOUBLE};    // same as in DumpCFG
 enum{VTK,VTP,VTU,PVTP,PVTU}; // file formats
 
 #define INVOKED_PERATOM 8
@@ -144,11 +166,14 @@ DumpCustomVTK::DumpCustomVTK(LAMMPS *lmp, int narg, char **arg) :
   // ioptional = start of additional optional args
   // only dump image style processes optional args
 
+  tensor_detected = false;
   ioptional = parse_fields(narg,arg);
 
   if (ioptional < narg)
     error->all(FLERR,"Invalid attribute in dump custom/vtk command");
   size_one = pack_choice.size();
+  if(tensor_detected)
+    size_one += 8;
   current_pack_choice_key = -1;
 
   if (filewriter) reset_vtk_data_containers();
@@ -829,6 +854,36 @@ int DumpCustomVTK::count()
         i = ATTRIBUTES + nfield + ithresh;
         ptr = vbuf[field2index[i]];
         nstride = 1;
+      } else if (thresh_array[ithresh] == SHAPEX) {
+        if (!atom->superquadric_flag)
+          error->all(FLERR,
+            "Threshold for an atom property that isn't allocated");
+          ptr = &atom->shape[0][0];
+          nstride = 3;
+      } else if (thresh_array[ithresh] == SHAPEY) {
+        if (!atom->superquadric_flag)
+          error->all(FLERR,
+            "Threshold for an atom property that isn't allocated");
+          ptr = &atom->shape[0][1];
+          nstride = 3;
+      } else if (thresh_array[ithresh] == SHAPEZ) {
+        if (!atom->superquadric_flag)
+          error->all(FLERR,
+            "Threshold for an atom property that isn't allocated");
+          ptr = &atom->shape[0][2];
+          nstride = 3;
+      } else if (thresh_array[ithresh] == ROUNDNESS1) {
+        if (!atom->superquadric_flag)
+          error->all(FLERR,
+            "Threshold for an atom property that isn't allocated");
+          ptr = &atom->roundness[0][0];
+          nstride = 2;
+      } else if (thresh_array[ithresh] == ROUNDNESS2) {
+        if (!atom->superquadric_flag)
+          error->all(FLERR,
+            "Threshold for an atom property that isn't allocated");
+          ptr = &atom->roundness[0][1];
+          nstride = 2;
       }
 
       // unselect atoms that don't meet threshold criterion
@@ -981,6 +1036,8 @@ void DumpCustomVTK::pack(int *ids)
   for (std::map<int,FnPtrPack>::iterator it=pack_choice.begin(); it!=pack_choice.end(); ++it, ++n) {
       current_pack_choice_key = it->first; // work-around for pack_compute, pack_fix, pack_variable
       (this->*(it->second))(n);
+      if(current_pack_choice_key == TENSOR)
+        n += 8;
   }
 
   if (ids) {
@@ -1164,6 +1221,14 @@ void DumpCustomVTK::buf2arrays(int n, double *mybuf)
             }
         }
         j+=3;
+      } else if (it->second->GetNumberOfComponents() == 9) {
+          if(vtype[it->first] == TENSOR_DOUBLE) {
+            vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
+            pda->InsertNextTupleValue(&mybuf[iatom*size_one+j]);
+          } else {
+              error->all(FLERR,"Tensors of only double values are implemented!");
+          }
+          j+=9;
       } else {
         switch (vtype[it->first]) {
           case INT:
@@ -1545,6 +1610,9 @@ void DumpCustomVTK::reset_vtk_data_containers()
       case DOUBLE:
         myarrays[it->first] = vtkSmartPointer<vtkDoubleArray>::New();
         break;
+      case TENSOR_DOUBLE:
+        myarrays[it->first] = vtkSmartPointer<vtkDoubleArray>::New();
+        break;
       case STRING:
         myarrays[it->first] = vtkSmartPointer<vtkStringArray>::New();
         break;
@@ -1554,6 +1622,9 @@ void DumpCustomVTK::reset_vtk_data_containers()
       myarrays[it->first]->SetNumberOfComponents(3);
       myarrays[it->first]->SetName(name[it->first].c_str());
       ++it; ++it;
+    } else if(vtype[it->first] == TENSOR_DOUBLE) {
+      myarrays[it->first]->SetNumberOfComponents(9);
+      myarrays[it->first]->SetName(name[it->first].c_str());
     } else {
       myarrays[it->first]->SetName(name[it->first].c_str());
     }
@@ -1835,6 +1906,60 @@ int DumpCustomVTK::parse_fields(int narg, char **arg)
     // compute value = c_ID
     // if no trailing [], then arg is set to 0, else arg is int between []
 
+    } else if (strcmp(arg[iarg],"shapex") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[SHAPEX] = &DumpCustomVTK::pack_shapex;
+      vtype[SHAPEX] = DOUBLE;
+      name[SHAPEX] = arg[iarg];
+    } else if (strcmp(arg[iarg],"shapey") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[SHAPEY] = &DumpCustomVTK::pack_shapey;
+      vtype[SHAPEY] = DOUBLE;
+      name[SHAPEY] = arg[iarg];
+    } else if (strcmp(arg[iarg],"shapez") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[SHAPEZ] = &DumpCustomVTK::pack_shapez;
+      vtype[SHAPEZ] = DOUBLE;
+      name[SHAPEZ] = arg[iarg];
+    } else if (strcmp(arg[iarg],"roundness1") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[ROUNDNESS1] = &DumpCustomVTK::pack_roundness1;
+      vtype[ROUNDNESS1] = DOUBLE;
+      name[ROUNDNESS1] = arg[iarg];
+    } else if (strcmp(arg[iarg],"roundness2") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[ROUNDNESS2] = &DumpCustomVTK::pack_roundness2;
+      vtype[ROUNDNESS2] = DOUBLE;
+      name[ROUNDNESS2] = arg[iarg];
+    } else if (strcmp(arg[iarg],"quat1") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[QUAT1] = &DumpCustomVTK::pack_quat1;
+      vtype[QUAT1] = DOUBLE;
+      name[QUAT1] = arg[iarg];
+    } else if (strcmp(arg[iarg],"quat2") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[QUAT2] = &DumpCustomVTK::pack_quat2;
+      vtype[QUAT2] = DOUBLE;
+      name[QUAT2] = arg[iarg];
+    } else if (strcmp(arg[iarg],"quat3") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[QUAT3] = &DumpCustomVTK::pack_quat3;
+      vtype[QUAT3] = DOUBLE;
+      name[QUAT3] = arg[iarg];
+    } else if (strcmp(arg[iarg],"quat4") == 0) {
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Dumping an atom quantity that isn't allocated");
+      pack_choice[QUAT4] = &DumpCustomVTK::pack_quat4;
+      vtype[QUAT4] = DOUBLE;
+      name[QUAT4] = arg[iarg];
     } else if (strncmp(arg[iarg],"c_",2) == 0) {
       pack_choice[ATTRIBUTES+i] = &DumpCustomVTK::pack_compute;
       vtype[ATTRIBUTES+i] = DOUBLE;
@@ -1929,6 +2054,7 @@ int DumpCustomVTK::parse_fields(int narg, char **arg)
   }
 
   identify_vectors();
+  identify_tensor();
 
   return narg;
 }
@@ -1979,6 +2105,35 @@ void DumpCustomVTK::identify_vectors()
   }
 }
 
+void DumpCustomVTK::identify_tensor()
+{
+  if(pack_choice.count(QUAT1) > 0 &&
+     pack_choice.count(QUAT2) > 0 &&
+     pack_choice.count(QUAT3) > 0 &&
+     pack_choice.count(QUAT4) > 0) {
+
+       pack_choice.erase(QUAT1);
+       pack_choice.erase(QUAT2);
+       pack_choice.erase(QUAT3);
+       pack_choice.erase(QUAT4);
+
+       vtype.erase(QUAT1);
+       vtype.erase(QUAT2);
+       vtype.erase(QUAT3);
+       vtype.erase(QUAT4);
+
+       name.erase(QUAT1);
+       name.erase(QUAT2);
+       name.erase(QUAT3);
+       name.erase(QUAT4);
+
+       name[TENSOR] = "TENSOR";
+       vtype[TENSOR] = TENSOR_DOUBLE;
+       pack_choice[TENSOR] = &DumpCustomVTK::pack_tensor;
+
+       tensor_detected = true;
+  }
+}
 /* ----------------------------------------------------------------------
    add Compute to list of Compute objects used by dump
    return index of where this Compute is in list
@@ -2222,6 +2377,15 @@ int DumpCustomVTK::modify_param(int narg, char **arg)
     else if (strcmp(arg[1],"eradius") == 0) thresh_array[nthresh] = ERADIUS;
     else if (strcmp(arg[1],"ervel") == 0) thresh_array[nthresh] = ERVEL;
     else if (strcmp(arg[1],"erforce") == 0) thresh_array[nthresh] = ERFORCE;
+    else if (strcmp(arg[1],"shapex") == 0) thresh_array[nthresh] = SHAPEX;
+    else if (strcmp(arg[1],"shapey") == 0) thresh_array[nthresh] = SHAPEY;
+    else if (strcmp(arg[1],"shapez") == 0) thresh_array[nthresh] = SHAPEZ;
+    else if (strcmp(arg[1],"roundness1") == 0) thresh_array[nthresh] = ROUNDNESS1;
+    else if (strcmp(arg[1],"roundness2") == 0) thresh_array[nthresh] = ROUNDNESS2;
+    else if (strcmp(arg[1],"quat1") == 0) thresh_array[nthresh] = QUAT1;
+    else if (strcmp(arg[1],"quat2") == 0) thresh_array[nthresh] = QUAT2;
+    else if (strcmp(arg[1],"quat3") == 0) thresh_array[nthresh] = QUAT3;
+    else if (strcmp(arg[1],"quat4") == 0) thresh_array[nthresh] = QUAT4;
 
     // compute value = c_ID
     // if no trailing [], then arg is set to 0, else arg is between []
@@ -3203,6 +3367,126 @@ void DumpCustomVTK::pack_erforce(int n)
 
   for (int i = 0; i < nchoose; i++) {
     buf[n] = erforce[clist[i]];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_shapex(int n)
+{
+  double **shape = atom->shape;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = shape[clist[i]][0];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_shapey(int n)
+{
+  double **shape = atom->shape;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = shape[clist[i]][1];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_shapez(int n)
+{
+  double **shape = atom->shape;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = shape[clist[i]][2];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_roundness1(int n)
+{
+  double **roundness = atom->roundness;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = roundness[clist[i]][0];
+    n += size_one;
+  }
+}
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_roundness2(int n)
+{
+  double **roundness = atom->roundness;
+
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = roundness[clist[i]][1];
+    n += size_one;
+  }
+}
+//dump rotation matrix
+void DumpCustomVTK::pack_tensor(int n)
+{
+  double **quaternion = atom->quaternion;
+  for (int i = 0; i < nchoose; i++) {
+    double mat[3][3];
+    MathExtra::quat_to_mat(quaternion[i], mat);
+    buf[n]  =  mat[0][0];
+    buf[n+1] = mat[0][1];
+    buf[n+2] = mat[0][2];
+    buf[n+3] = mat[1][0];
+    buf[n+4] = mat[1][1];
+    buf[n+5] = mat[1][2];
+    buf[n+6] = mat[2][0];
+    buf[n+7] = mat[2][1];
+    buf[n+8] = mat[2][2];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_quat1(int n)
+{
+  double **quaternion = atom->quaternion;
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = quaternion[clist[i]][0];
+    n += size_one;
+  }
+}
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_quat2(int n)
+{
+  double **quaternion = atom->quaternion;
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = quaternion[clist[i]][1];
+    n += size_one;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_quat3(int n)
+{
+  double **quaternion = atom->quaternion;
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = quaternion[clist[i]][2];
+    n += size_one;
+  }
+}
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_quat4(int n)
+{
+  double **quaternion = atom->quaternion;
+  for (int i = 0; i < nchoose; i++) {
+    buf[n] = quaternion[clist[i]][3];
     n += size_one;
   }
 }

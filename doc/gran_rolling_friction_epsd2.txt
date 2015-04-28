@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -13,18 +12,12 @@ gran rolling_friction epsd2 :h3
 
 rolling_friction epsd2 :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This part of "pair gran"_pair_gran.html and 
-"fix wall/gran"_fix_wall_gran.html
-is not availabe in LAMMPS.
-
 [Description:]
 
-This model can be used as part of "pair gran"_pair_gran.html and 
+This model can be used as part of "pair gran"_pair_gran.html and
 "fix wall/gran"_fix_wall_gran.html
 
-The alternative elastic-plastic spring-dashpot (EPSD2) model (see Iwashita and Oda) adds an additional 
+The alternative elastic-plastic spring-dashpot (EPSD2) model (see Iwashita and Oda) adds an additional
 torque contribution. It is similar to the "EPSD model"_gran_rolling_friction_epsd.html, but in contrast
  to the original model the rolling stiffness k_r is defined as
 

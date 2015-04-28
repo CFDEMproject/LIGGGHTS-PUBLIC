@@ -1,5 +1,5 @@
 <HTML>
-<CENTER> <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER> <A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -15,8 +15,6 @@
 </H3>
 <H3><A HREF = "dump_image.html">dump movie</A> command 
 </H3>
-<H3><A HREF = "dump_molfile.html">dump molfile</A> command 
-</H3>
 <P><B>Syntax:</B>
 </P>
 <PRE>dump ID group-ID style N file args 
@@ -25,7 +23,7 @@
 
 <LI>group-ID = ID of the group of atoms to be dumped 
 
-<LI>style = <I>atom</I> or <I>atom/vtk</I> or <I>cfg</I> or <I>dcd</I> or <I>xtc</I> or <I>xyz</I> or <I>image</I> or <I>molfile</I> or <I>local</I> or <I>custom</I> or <I>mesh/stl</I> or <I>mesh/vtk</I> or <I>mesh/vtk</I> or <I>decomposition/vtk</I> or <I>euler/vtk</I> 
+<LI>style = <I>atom</I> or <I>atom/vtk</I> or <I>xyz</I> or <I>image</I> or <I>local</I> or <I>custom</I> or <I>mesh/stl</I> or <I>mesh/vtk</I> or <I>mesh/vtk</I> or <I>decomposition/vtk</I> or <I>euler/vtk</I> 
 
 <LI>N = dump every this many timesteps 
 
@@ -35,20 +33,15 @@
 
 <PRE>  <I>atom</I> args = none
   <I>atom/vtk</I> args = none
-  <I>cfg</I> args = same as <I>custom</I> args, see below
-  <I>dcd</I> args = none
-  <I>xtc</I> args = none
   <I>xyz</I> args = none 
 </PRE>
 <PRE>  <I>image</I> args = discussed on <A HREF = "dump_image.html">dump image</A> doc page 
-</PRE>
-<PRE>  <I>molfile</I> args = discussed on <A HREF = "dump_molfile.html">dump molfile</A> doc page 
 </PRE>
 <PRE>  <I>mesh/stl</I> args = 'local' or 'ghost' or 'all' or 'region' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
       <I>region</I> values = ID for region threshold
   <I>mesh/vtk</I> args =  zero or more keyword/ value pairs and one or more dump-identifiers
       keywords = <I>output</I>
-      <I>output</I> values = face or interpolate 
+      <I>output</I> values = face or interpolate
       dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs' or any ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
   <I>euler/vtk</I> args = none
   <I>decomposition/vtk</I> args = none 
@@ -63,13 +56,12 @@
 </PRE>
 <PRE>  <I>custom</I> args = list of atom attributes
     possible attributes = id, mol, type, element, mass,
-			  x, y, z, xs, ys, zs, xu, yu, zu, 
+			  x, y, z, xs, ys, zs, xu, yu, zu,
 			  xsu, ysu, zsu, ix, iy, iz,
 			  vx, vy, vz, fx, fy, fz,
                           q, mux, muy, muz, mu,
                           radius, diameter, omegax, omegay, omegaz,
 			  angmomx, angmomy, angmomz, tqx, tqy, tqz,
-			  spin, eradius, ervel, erforce,
 			  c_ID, c_ID[N], f_ID, f_ID[N], v_name 
 </PRE>
 <PRE>      id = atom ID
@@ -91,10 +83,6 @@
       omegax,omegay,omegaz = angular velocity of spherical particle
       angmomx,angmomy,angmomz = angular momentum of aspherical particle
       tqx,tqy,tqz = torque on finite-size particles
-      spin = electron spin
-      eradius = electron radius
-      ervel = electron radial velocity
-      erforce = electron radial force
       c_ID = per-atom vector calculated by a compute with ID
       c_ID[N] = Nth column of per-atom array calculated by a compute with ID
       f_ID = per-atom vector calculated by a fix with ID
@@ -108,23 +96,8 @@
 <PRE>dump myDump all atom 100 dump.atom
 dump 2 subgroup atom 50 dump.run.bin
 dump 4a all custom 100 dump.myforce.* id type x y vx fx
-dump 4b flow custom 100 dump.%.myforce id type c_myF[3] v_ke
-dump 2 inner cfg 10 dump.snap.*.cfg mass type xs ys zs vx vy vz
-dump snap all cfg 100 dump.config.*.cfg mass type xs ys zs id type c_Stress<B>2</B>
-dump 1 all xtc 1000 file.xtc
-dump e_data all custom 100 dump.eff id type x y z spin eradius fx fy fz eforce 
+dump 4b flow custom 100 dump.%.myforce id type c_myF[3] v_ke 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>Two new styles (<I>mesh/stl</I> and <I>mesh/vtk</I>) are available for dumping 
-granular mesh geometry into STL files or VTK files. The former is used 
-for dumping only the geometry, while the latter command is used to dump 
-the mesh IDs, stress etc- calculated on a granular mesh using the 
-<A HREF = "fix_mesh_surface_stress.html">fix mesh/surface/stress</A>  command.
-Furthermore, style <I>decomposition/vtk</I> can be used to dump the current
-parallel domain decomposition to a VTK file.
-Style <I>euler/vtk</I> can be used to dump cell-based averages to a VTK file.
-</P>
 <P><B>Description:</B>
 </P>
 <P>Dump a snapshot of atom quantities to one or more files every N
@@ -159,8 +132,8 @@ simulation, due to spatial sorting.  It is also true when running in
 parallel, because data for a single snapshot is collected from
 multiple processors, each of which owns a subset of the atoms.
 </P>
-<P>For the <I>atom</I>, <I>custom</I>, <I>cfg</I>, and <I>local</I> styles, sorting is off by
-default.  For the <I>dcd</I>, <I>xtc</I>, <I>xyz</I>, and <I>molfile</I> styles, sorting by
+<P>For the <I>atom</I>, <I>custom</I>, and <I>local</I> styles, sorting is off by
+default.  For the <I>xyz</I> style, sorting by
 atom ID is on by default. See the <A HREF = "dump_modify.html">dump_modify</A> doc
 page for details.
 </P>
@@ -172,10 +145,7 @@ file and in what format.  Settings made via the
 individual values and the file itself.
 </P>
 <P>The <I>atom</I>, <I>local</I>, and <I>custom</I> styles create files in a simple text
-format that is self-explanatory when viewing a dump file.  Many of the
-LAMMPS <A HREF = "Section_tools.html">post-processing tools</A>, including
-<A HREF = "http://www.sandia.gov/~sjplimp/pizza.html">Pizza.py</A>, work with this
-format, as does the <A HREF = "rerun.html">rerun</A> command.
+format that is self-explanatory when viewing a dump file.
 </P>
 <P>For post-processing purposes the <I>atom</I>, <I>local</I>, and <I>custom</I> text
 files are self-describing in the following sense.
@@ -201,7 +171,7 @@ bounding box which encloses the triclinic simulation box is output,
 along with the 3 tilt factors (xy, xz, yz) of the triclinic box,
 formatted as follows:
 </P>
-<PRE>ITEM: BOX BOUNDS xy xz yz xx yy zz 
+<PRE>ITEM: BOX BOUNDS xy xz yz xx yy zz
 xlo_bound xhi_bound xy
 ylo_bound yhi_bound xz
 zlo_bound zhi_bound yz 
@@ -212,9 +182,9 @@ This bounding box is convenient for many visualization programs.  The
 meaning of the 6 character flags for "xx yy zz" is the same as above.
 </P>
 <P>Note that the first two numbers on each line are now xlo_bound instead
-of xlo, etc, since they repesent a bounding box.  See <A HREF = "Section_howto.html#howto_12">this
+of xlo, etc, since they repesent a bounding box.  See <A HREF = "Section_howto.html#howto_7">this
 section</A> of the doc pages for a geometric
-description of triclinic boxes, as defined by LAMMPS, simple formulas
+description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC, simple formulas
 for how the 6 bounding box extents (xlo_bound,xhi_bound,etc) are
 calculated from the triclinic parameters, and how to transform those
 parameters to and from other commonly used triclinic representations.
@@ -232,8 +202,8 @@ boundaries.  The format can be changed to unscaled coords via the
 <A HREF = "dump_modify.html">dump_modify</A> settings.  Image flags can also be
 added for each atom via dump_modify.
 </P>
-<P>For style <I>atom/vtk</I>, atom coordinates, velocity, rotational 
-velocity, force, atom ID, atom radius and atom type are written to 
+<P>For style <I>atom/vtk</I>, atom coordinates, velocity, rotational
+velocity, force, atom ID, atom radius and atom type are written to
 VTK files. Note that you have to link against VTK libraries to use
 this functionality.
 </P>
@@ -255,61 +225,9 @@ more entities per atom, e.g. a list of bond distances.  An explanation
 of the possible dump local attributes is given below.  Note that by
 using input from the <A HREF = "compute_property_local.html">compute
 property/local</A> command with dump local,
-it is possible to generate information on bonds, angles, etc that can
+it is possible to generate information on bonds that can
 be cut and pasted directly into a data file read by the
 <A HREF = "read_data.html">read_data</A> command.
-</P>
-<P>Style <I>cfg</I> has the same command syntax as style <I>custom</I> and writes
-extended CFG format files, as used by the
-<A HREF = "http://mt.seas.upenn.edu/Archive/Graphics/A">AtomEye</A> visualization
-package.  Since the extended CFG format uses a single snapshot of the
-system per file, a wildcard "*" must be included in the filename, as
-discussed below.  The list of atom attributes for style <I>cfg</I> must
-begin with either "mass type xs ys zs" or "mass type xsu ysu zsu"
-since these quantities are needed to write the CFG files in the
-appropriate format (though the "mass" and "type" fields do not appear
-explicitly in the file).  Any remaining attributes will be stored as
-"auxiliary properties" in the CFG files.  Note that you will typically
-want to use the <A HREF = "dump_modify.html">dump_modify element</A> command with
-CFG-formatted files, to associate element names with atom types, so
-that AtomEye can render atoms appropriately. When unwrapped
-coordinates <I>xsu</I>, <I>ysu</I>, and <I>zsu</I> are requested, the nominal AtomEye
-periodic cell dimensions are expanded by a large factor UNWRAPEXPAND =
-10.0, which ensures atoms that are displayed correctly for up to
-UNWRAPEXPAND/2 periodic boundary crossings in any direction.  Beyond
-this, AtomEye will rewrap the unwrapped coordinates.  The expansion
-causes the atoms to be drawn farther away from the viewer, but it is
-easy to zoom the atoms closer, and the interatomic distances are
-unaffected.
-</P>
-<P>The <I>dcd</I> style writes DCD files, a standard atomic trajectory format
-used by the CHARMM, NAMD, and XPlor molecular dynamics packages.  DCD
-files are binary and thus may not be portable to different machines.
-The number of atoms per snapshot cannot change with the <I>dcd</I> style.
-The <I>unwrap</I> option of the <A HREF = "dump_modify.html">dump_modify</A> command
-allows DCD coordinates to be written "unwrapped" by the image flags
-for each atom.  Unwrapped means that if the atom has passed through
-a periodic boundary one or more times, the value is printed for what
-the coordinate would be if it had not been wrapped back into the
-periodic box.  Note that these coordinates may thus be far outside
-the box size stored with the snapshot.
-</P>
-<P>The <I>xtc</I> style writes XTC files, a compressed trajectory format used
-by the GROMACS molecular dynamics package, and described
-<A HREF = "http://manual.gromacs.org/current/online/xtc.html">here</A>.
-The precision used in XTC files can be adjusted via the
-<A HREF = "dump_modify.html">dump_modify</A> command.  The default value of 1000
-means that coordinates are stored to 1/1000 nanometer accuracy.  XTC
-files are portable binary files written in the NFS XDR data format, 
-so that any machine which supports XDR should be able to read them. 
-The number of atoms per snapshot cannot change with the <I>xtc</I> style.
-The <I>unwrap</I> option of the <A HREF = "dump_modify.html">dump_modify</A> command allows
-XTC coordinates to be written "unwrapped" by the image flags for each
-atom.  Unwrapped means that if the atom has passed thru a periodic
-boundary one or more times, the value is printed for what the
-coordinate would be if it had not been wrapped back into the periodic
-box.  Note that these coordinates may thus be far outside the box size
-stored with the snapshot.
 </P>
 <P>The <I>xyz</I> style writes XYZ files, which is a simple text-based
 coordinate format that many codes can read. Specifically it has
@@ -321,74 +239,67 @@ from using the (numerical) atom type to an element name (or some
 other label). This will help many visualization programs to guess
 bonds and colors.
 </P>
-<P>Note that <I>atom</I>, <I>custom</I>, <I>dcd</I>, <I>xtc</I>, and <I>xyz</I> style dump files
-can be read directly by <A HREF = "http://www.ks.uiuc.edu/Research/vmd">VMD</A>, a
-popular molecular viewing program.  See <A HREF = "Section_tools.html#vmd">Section
-tools</A> of the manual and the
-tools/lmp2vmd/README.txt file for more information about support in
-VMD for reading and visualizing LAMMPS dump files.
-</P>
-<P>The <I>mesh/stl</I> style dumps active STL geometries defined via 
-<A HREF = "fix_mesh.html">fix mesh</A> commands into the specified file. 
-If you do not supply the optional list of mesh IDs, all meshes are dumped, 
+<P>The <I>mesh/stl</I> style dumps active STL geometries defined via
+<A HREF = "fix_mesh.html">fix mesh</A> commands into the specified file.
+If you do not supply the optional list of mesh IDs, all meshes are dumped,
 irrespective of whether they are used in a <A HREF = "fix_wall_gran.html">fix wall/gran</A>
-command or not. By specifying a list of mesh IDs you can explicitly 
-choose which meshes to dump. The group-ID is ignored, because the command 
-is not applied to particles, but to mesh geometries. 
+command or not. By specifying a list of mesh IDs you can explicitly
+choose which meshes to dump. The group-ID is ignored, because the command
+is not applied to particles, but to mesh geometries.
 With keywords 'local', 'owned' or 'ghost' you can decide which parts
 of the parallel meshes you want to dump (default is 'local'). If the
 multiprocessor option is not used (no '%' in filename), data is gathered
 from all processors, so using the default will output the whole mesh
 data across all processors.
 </P>
-<P>Examples: 
+<P>Examples:
 </P>
-<PRE>dump stl1 all mesh/stl 300 post/dump*.stl 
+<PRE>dump stl1 all mesh/stl 300 post/dump*.stl
 dump stl2 all mesh/stl 300 post/dump_proc%_local*.stl local
 dump stl3 all mesh/stl 300 post/dump_proc%_ghost*.stl ghost
 dump stl4 all mesh/stl 300 post/dump_proc_all_ghost*.stl ghost 
 </PRE>
-<P>The first command will write one file per time-step containing the complete 
+<P>The first command will write one file per time-step containing the complete
 mesh. The second command will output one file per time-step per processor
-containing the local (owned) mesh elements of each processor. 
+containing the local (owned) mesh elements of each processor.
 The third command will output one file per time-step per processor
-containing the ghost (corona) mesh elements of each processor. 
-The third command will output one file per time-step containing the 
-ghost (corona) mesh elements of all processors. 
+containing the ghost (corona) mesh elements of each processor.
+The third command will output one file per time-step containing the
+ghost (corona) mesh elements of all processors.
 </P>
 <P>With the <I>region</I> keyword, just those mesh element where the element center
 (arithmetic average of all nodes) is in the specified region, will be
 dumped.
 </P>
 <P>This dump is especially useful if a
-<A HREF = "fix_move_mesh.html">fix move/mesh</A> is registered. If the position 
-of the mesh is changed over time and you want to dump one file for each dump 
-timestep for post-processing together with the particle data, you should use 
-a filename like 'mydumpfile*.stl'. Note: This series of files can then be 
-post-processed together with the particle dump file converted to VTK in 
+<A HREF = "fix_move_mesh.html">fix move/mesh</A> is registered. If the position
+of the mesh is changed over time and you want to dump one file for each dump
+timestep for post-processing together with the particle data, you should use
+a filename like 'mydumpfile*.stl'. Note: This series of files can then be
+post-processed together with the particle dump file converted to VTK in
 Paraview , www.paraview.org
 </P>
 <P>By providing any ID (or a list of IDs) of <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
 commands, you can specify which meshes to dump. If no meshes are specified,
 all meshes used in the simulation are dumped.
 </P>
-<P>The <I>mesh/vtk</I> style can be used to dump active mesh geometries 
-defined via <A HREF = "fix_mesh.html">fix mesh</A> commands to a series of VTK files. 
-Different keywords can be used to dump the per-triangle stress (force 
-magnitude / element area), id, velocity, wear, stress components 
+<P>The <I>mesh/vtk</I> style can be used to dump active mesh geometries
+defined via <A HREF = "fix_mesh.html">fix mesh</A> commands to a series of VTK files.
+Different keywords can be used to dump the per-triangle stress (force
+magnitude / element area), id, velocity, wear, stress components
 (fx / element area, fy / element area, fz / element area), area (area
 of each element) or the process which owns the element
-(visulatisation of the parallel decomposition) into the specified file using a 
-VTK file format. The list of mesh IDs is optional. As with the stl style, 
-all active meshes are dumped if you do not supply the optional list of 
-mesh IDs. By specifying list of mesh IDs you can explicitly choose 
-which meshes to dump. The group-ID is ignored. Again, a series of files 
+(visulatisation of the parallel decomposition) into the specified file using a
+VTK file format. The list of mesh IDs is optional. As with the stl style,
+all active meshes are dumped if you do not supply the optional list of
+mesh IDs. By specifying list of mesh IDs you can explicitly choose
+which meshes to dump. The group-ID is ignored. Again, a series of files
 can be post-processed in Paraview , www.paraview.org
-Most keywords as used for the <I>mesh/vtk</I> style are self-explanatory. 
+Most keywords as used for the <I>mesh/vtk</I> style are self-explanatory.
 Keyword <I>output</I> controlls if the data is written in a per-face manner
 or as interpolated values to VTK. Keywords <I>aedges</I> and <I>acorners</I> dump
-the number of active edges/corners per face. Keyword <I>nneighs</I> dumps the 
-number of face neighbors LIGGGHTS has recognized for each face.
+the number of active edges/corners per face. Keyword <I>nneighs</I> dumps the
+number of face neighbors LIGGGHTS(R)-PUBLIC has recognized for each face.
 </P>
 <P>By providing any ID (or a list of IDs) of <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>
 commands, you can specify which meshes to dump. If no meshes are specified,
@@ -410,8 +321,8 @@ if the current timestep is not a multiple of N.  This behavior can be
 changed via the <A HREF = "dump_modify.html">dump_modify first</A> command, which
 can also be useful if the dump command is invoked after a minimization
 ended on an arbitrary timestep.  N can be changed between runs by
-using the <A HREF = "dump_modify.html">dump_modify every</A> command (not allowed
-for <I>dcd</I> style).  The <A HREF = "dump_modify.html">dump_modify every</A> command
+using the <A HREF = "dump_modify.html">dump_modify every</A> command.
+The <A HREF = "dump_modify.html">dump_modify every</A> command
 also allows a variable to be used to determine the sequence of
 timesteps on which dump files are written.  In this mode a dump on the
 first timestep of a run will also not be written unless the
@@ -420,15 +331,13 @@ first timestep of a run will also not be written unless the
 <P>The specified filename determines how the dump file(s) is written.
 The default is to write one large text file, which is opened when the
 dump command is invoked and closed when an <A HREF = "undump.html">undump</A>
-command is used or when LAMMPS exits.  For the <I>dcd</I> and <I>xtc</I> styles,
-this is a single large binary file.
+command is used or when LIGGGHTS(R)-PUBLIC exits.
 </P>
 <P>Dump filenames can contain two wildcard characters.  If a "*"
 character appears in the filename, then one file per snapshot is
 written and the "*" character is replaced with the timestep value.
 For example, tmp.dump.* becomes tmp.dump.0, tmp.dump.10000,
-tmp.dump.20000, etc.  This option is not available for the <I>dcd</I> and
-<I>xtc</I> styles.  Note that the <A HREF = "dump_modify.html">dump_modify pad</A>
+tmp.dump.20000, etc.  Note that the <A HREF = "dump_modify.html">dump_modify pad</A>
 command can be used to insure all timestep numbers are the same length
 (e.g. 00010), which can make it easier to read a series of dump files
 in order with some post-processing tools.
@@ -439,7 +348,7 @@ with the processor ID from 0 to P-1.  For example, tmp.dump.% becomes
 tmp.dump.0, tmp.dump.1, ... tmp.dump.P-1, etc.  This creates smaller
 files and can be a fast mode of output on parallel machines that
 support parallel I/O for output. This option is not available for the
-<I>dcd</I>, <I>xtc</I>, and <I>xyz</I> styles.
+ <I>xyz</I> style.
 </P>
 <P>By default, P = the number of processors meaning one file per
 processor, but P can be set to a smaller value via the <I>nfile</I> or
@@ -453,18 +362,13 @@ large number of small dump files!
 <P>If the filename ends with ".bin", the dump file (or files, if "*" or
 "%" is also used) is written in binary format.  A binary dump file
 will be about the same size as a text version, but will typically
-write out much faster.  Of course, when post-processing, you will need
-to convert it back to text format (see the <A HREF = "Section_tools.html#binary">binary2txt
-tool</A>) or write your own code to read the
-binary file.  The format of the binary file can be understood by
-looking at the tools/binary2txt.cpp file.  This option is only
+write out much faster.  This option is only
 available for the <I>atom</I> and <I>custom</I> styles.
 </P>
 <P>If the filename ends with ".gz", the dump file (or files, if "*" or "%"
 is also used) is written in gzipped format.  A gzipped dump file will
 be about 3x smaller than the text version, but will also take longer
-to write.  This option is not available for the <I>dcd</I> and <I>xtc</I>
-styles.
+to write.
 </P>
 <HR>
 
@@ -486,7 +390,7 @@ attribute should be replaced by the actual ID of the compute that has
 been defined previously in the input script.  See the
 <A HREF = "compute.html">compute</A> command for details.  There are computes for
 calculating local information such as indices, types, and energies for
-bonds and angles.
+bonds.
 </P>
 <P>Note that computes which calculate global or per-atom quantities, as
 opposed to local quantities, cannot be output in a dump local command.
@@ -512,14 +416,14 @@ array calculated by the fix.
 <P>Here is an example of how to dump bond info for a system,
 including the distance and energy of each bond:
 </P>
-<PRE>compute 1 all property/local batom1 batom2 btype 
+<PRE>compute 1 all property/local batom1 batom2 btype
 compute 2 all bond/local dist eng
 dump 1 all local 1000 tmp.dump index c_1[1] c_1[2] c_1[3] c_2[1] c_2[2] 
 </PRE>
 <HR>
 
 <P>This section explains the atom attributes that can be specified as
-part of the <I>custom</I> and <I>cfg</I> styles.
+part of the <I>custom</I> and style.
 </P>
 <P>The <I>id</I>, <I>mol</I>, <I>type</I>, <I>element</I>, <I>mass</I>, <I>vx</I>, <I>vy</I>, <I>vz</I>, <I>fx</I>, <I>fy</I>,
 <I>fz</I>, <I>q</I> attributes are self-explanatory.
@@ -555,7 +459,7 @@ attributes.  For periodic dimensions, they specify which image of the
 simulation box the atom is considered to be in.  An image of 0 means
 it is inside the box as defined.  A value of 2 means add 2 box lengths
 to get the true value.  A value of -1 means subtract 1 box length to
-get the true value.  LAMMPS updates these flags as atoms cross
+get the true value.  LIGGGHTS(R)-PUBLIC updates these flags as atoms cross
 periodic boundaries during the simulation.
 </P>
 <P>The <I>mux</I>, <I>muy</I>, <I>muz</I> attributes are specific to dipolar systems
@@ -578,12 +482,6 @@ the <I>ellipsoid</I> atom style defines this quantity.
 <P>The <I>tqx</I>, <I>tqy</I>, <I>tqz</I> attributes are for finite-size particles that
 can sustain a rotational torque due to interactions with other
 particles.
-</P>
-<P>The <I>spin</I>, <I>eradius</I>, <I>ervel</I>, and <I>erforce</I> attributes are for
-particles that represent nuclei and electrons modeled with the
-electronic force field (EFF).  See <A HREF = "atom_style.html">atom_style
-electron</A> and <A HREF = "pair_eff.html">pair_style eff</A> for more
-details.
 </P>
 <P>The <I>c_ID</I> and <I>c_ID[N]</I> attributes allow per-atom vectors or arrays
 calculated by a <A HREF = "compute.html">compute</A> to be output.  The ID in the
@@ -631,36 +529,19 @@ this is a very general means of creating quantities to output to a
 dump file.
 </P>
 <P>See <A HREF = "Section_modify.html">Section_modify</A> of the manual for information
-on how to add new compute and fix styles to LAMMPS to calculate
+on how to add new compute and fix styles to LIGGGHTS(R)-PUBLIC to calculate
 per-atom quantities which could then be output into dump files.
 </P>
 <HR>
 
 <P><B>Restrictions:</B>
 </P>
-<P>To write gzipped dump files, you must compile LAMMPS with the
+<P>To write gzipped dump files, you must compile LIGGGHTS(R)-PUBLIC with the
 -DLAMMPS_GZIP option - see the <A HREF = "Section_start.html#start_2">Making
 LAMMPS</A> section of the documentation.
 </P>
 <P>To be able to use <I>atom/vtk</I>, you have to link to VTK libraries,
 please adapt your Makefile accordingly.
-</P>
-<P>The <I>xtc</I> style is part of the XTC package.  It is only enabled if
-LAMMPS was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LAMMPS</A> section for more info.  This is
-because some machines may not support the low-level XDR data format
-that XTC files are written with, which will result in a compile-time
-error when a low-level include file is not found.  Putting this style
-in a package makes it easy to exclude from a LAMMPS build for those
-machines.  However, the XTC package also includes two compatibility
-header files and associated functions, which should be a suitable
-substitute on machines that do not have the appropriate native header
-files.  This option can be invoked at build time by adding
--DLAMMPS_XDR to the CCFLAGS variable in the appropriate low-level
-Makefile, e.g. src/MAKE/Makefile.foo.  This compatibility mode has
-been tested successfully on Cray XT3/XT4/XT5 and IBM BlueGene/L
-machines and should also work on IBM BG/P, and Windows XP/Vista/7
-machines.
 </P>
 <P><B>Related commands:</B>
 </P>

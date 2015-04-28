@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -41,9 +41,9 @@ constrained rigid-body motion of articulated (jointed) multibody
 systems "(Anderson)"_#Anderson.  POEMS was written and is distributed
 by Prof Kurt Anderson, his graduate student Rudranarayan Mukherjee,
 and other members of his group at Rensselaer Polytechnic Institute
-(RPI).  Rudranarayan developed the LAMMPS/POEMS interface.  For
+(RPI).  Rudranarayan developed the LIGGGHTS(R)-PUBLIC/POEMS interface.  For
 copyright information on POEMS and other details, please refer to the
-documents in the poems directory distributed with LAMMPS.
+documents in the poems directory distributed with LIGGGHTS(R)-PUBLIC.
 
 :link(poems,http://www.rpi.edu/~anderk5/lab)
 
@@ -94,7 +94,7 @@ the motion.  The "neigh_modify exclude" and "delete_bonds" commands
 can be used to do this if each rigid body is a group.
 
 For computational efficiency, you should only define one fix poems
-which includes all the desired rigid bodies.  LAMMPS will allow
+which includes all the desired rigid bodies.  LIGGGHTS(R)-PUBLIC will allow
 multiple poems fixes to be defined, but it is more expensive.
 
 The degrees-of-freedom removed by coupled rigid bodies are accounted
@@ -109,16 +109,16 @@ No information about this fix is written to "binary restart
 files"_restart.html.  None of the "fix_modify"_fix_modify.html options
 are relevant to this fix.  No global or per-atom quantities are stored
 by this fix for access by various "output
-commands"_Section_howto.html#howto_15.  No parameter of this fix can
+commands"_Section_howto.html#howto_8.  No parameter of this fix can
 be used with the {start/stop} keywords of the "run"_run.html command.
 This fix is not invoked during "energy minimization"_minimize.html.
 
 [Restrictions:]
 
-This fix is part of the POEMS package.  It is only enabled if LAMMPS
+This fix is part of the POEMS package.  It is only enabled if LIGGGHTS(R)-PUBLIC
 was built with that package, which also requires the POEMS library be
-built and linked with LAMMPS.  See the "Making
-LAMMPS"_Section_start.html#start_3 section for more info.
+built and linked with LIGGGHTS(R)-PUBLIC.  See the "Making
+LIGGGHTS(R)-PUBLIC"_Section_start.html#start_3 section for more info.
 
 [Related commands:]
 

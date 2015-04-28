@@ -1,0 +1,83 @@
+"CFDEMproject WWW Site"_lws - "CFDEM Commands"_lc :c
+
+:link(lws,http://www.cfdem.com)
+:link(lc,CFDEMcoupling_Manual.html#comm)
+:link(github,http://github.com)
+:link(gitHelp,http://help.github.com/linux-set-up-git)
+
+:line
+githubAccess_non-public :h3
+:line
+
+[Description:]
+
+This routine describes how to setup a github account and pull repositories of the CFDEMproject.
+
+[Procedure:]
+
+Basically the following steps have to be performed:
+
+get access to non-public repositories :ulb,l
+create an account at http://github.com :l
+create your RSA key :l
+add your RSA key to your github account :l
+{git clone} the desired repository :l
+update your repositories by {git pull} :l
+:ule
+
+[Get acces to non-public repositories:]
+
+If you have a support contract / non-public repository access by DCS Computing GmbH, please follow the steps below to set up your user and RSA key. After that please send your username and company affiliation to DCS Computing GmbH to get your account activated. Afterwards you can clone also the non-public repositories.
+
+[Create an account:]
+
+Please create a free account at "https://github.com"_github.
+
+example:
+user (username)
+user@mail.com
+pwd (pwd) :pre
+
+Please use your own username and mail adress here and for the following steps!
+
+[Create your RSA key:]
+
+Please find the complete setup description "here"_gitHelp, or use the short description below.
+
+Open a terminal and execute:
+
+cd ~/.ssh
+ssh-keygen -t rsa -C "user@mail.com"
+gedit id_rsa.pub& :pre
+
+[Add your RSA key to your github account:]
+
+Login at "https://github.com"_github with you user, then
+
+click {Account Settings} :ulb,l
+click {SSH Keys} :l
+click {Add SSH key} :l
+paste your key into the {Key} field :l
+Hit {Add Key.} :l
+:ule
+
+To check your settings, open a terminal and execute:
+
+ssh -T git@github.com :pre
+
+[{git clone} the desired repository:]
+
+To clone the non-public LIGGGHTS(R)-PUBLIC repository (in this example LIGGGHTS-COMPANY, where COMPANY is the name of your company), open a terminal and execute:
+
+git clone git@github.com:CFDEMproject/LIGGGHTS-COMPANY.git :pre
+
+Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively this command (you need to enter your password):
+
+git clone https://user@github.com/CFDEMproject/LIGGGHTS-COMPANY.git :pre
+
+
+[Update your repositories by {git pull}:]
+
+To get the latest version, open a terminal, go to the location of your local installation and type:
+
+git pull :pre

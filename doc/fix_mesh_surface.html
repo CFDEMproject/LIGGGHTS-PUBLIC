@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -20,7 +18,7 @@
 <PRE>fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
 fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values 
 </PRE>
-<UL><LI>ID, is documented in <A HREF = "fix.html">fix</A> command, the group-ID is ignored for this command. 
+<UL><LI>ID, is documented in <A HREF = "fix.html">fix</A> command. 
 
 <LI>mesh/surface or mesh/surface/planar = style name of this fix command  
 
@@ -45,10 +43,10 @@ zero or more mesh_keywords/mesh_value pairs may be appended
   <I>move</I> values = mx my mz
     mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
   <I>rotate</I> values = axis ax ay az angle ang
-    axis = obligatory keyword 
-    ax, ay, az = axis vector for rotation (length units) 
-    angle = obligatory keyword 
-    ang = angle to rotate the geometry around the specified axis (in degrees) 
+    axis = obligatory keyword
+    ax, ay, az = axis vector for rotation (length units)
+    angle = obligatory keyword
+    ang = angle to rotate the geometry around the specified axis (in degrees)
   <I>temperature</I> value = T0
     T0 = Temperature of the wall (temperature units) 
 </PRE>
@@ -62,7 +60,7 @@ zero or more mesh_keywords/mesh_value pairs may be appended
     origin = mandatory keyword
     ox oy oz = origin of rotation (length units)
     axis = mandatory keyword
-    ax ay az = axis vector for rotation (length units) 
+    ax ay az = axis vector for rotation (length units)
     omega = mandatory keyword
     om = rotaional velocity around specifyied axis (rad/time units)
   <I>curvature value</I> = c
@@ -74,56 +72,52 @@ zero or more mesh_keywords/mesh_value pairs may be appended
 </P>
 <PRE>fix cad all mesh/surface file mesh.stl type 1 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This command is not available in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P>This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from 
+<P>This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from
 ASCII STL files or legacy ASCII VTK files. Style <I>mesh/surface</I> is a general surface mesh, and
-<I>mesh/surface/planar</I> represents a planar mesh. <I>mesh/surface/planar</I> requires the mesh to 
-consist of only 1 planar face. 
+<I>mesh/surface/planar</I> represents a planar mesh. <I>mesh/surface/planar</I> requires the mesh to
+consist of only 1 planar face.
 </P>
-<P>Generall, you can apply scaling, offset and rotation to the imported mesh via keywords <I>scale</I>, 
-<I>move</I>, <I>rotate</I>. Operations are applied in the order as they are specified. The group-ID is 
-ignored for this command. For periodic boundaries, the mesh is mapped. 
+<P>Generall, you can apply scaling, offset and rotation to the imported mesh via keywords <I>scale</I>,
+<I>move</I>, <I>rotate</I>. Operations are applied in the order as they are specified. The group-ID defines
+which particles will "see" the mesh, in case it is used as a granular wall.
 </P>
-<P>One fix represents one wall with a specific material, where the material is identified 
-via keyword <I>type</I>. If multiple meshes with different materials are desired, the respective 
+<P>One fix represents one wall with a specific material, where the material is identified
+via keyword <I>type</I>. If multiple meshes with different materials are desired, the respective
 meshes must be imported with different fix mesh/surface commands.
 </P>
-<P>With the <I>temperature</I> keyword, you can define a constant temperature for a mesh in 
-conjunction with heat conduction via <A HREF = "fix_heat_gran.html">fix heat/gran</A>. Note that the 
-actual calculation of the heat transfer happens only if you use the mesh in conjunction 
+<P>With the <I>temperature</I> keyword, you can define a constant temperature for a mesh in
+conjunction with heat conduction via <A HREF = "fix_heat_gran.html">fix heat/gran</A>. Note that the
+actual calculation of the heat transfer happens only if you use the mesh in conjunction
 with a granular wall, see <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
 </P>
-<P>With the optional <I>surface_vel</I> keyword, you can specify the imported mesh as conveyor belt. 
-The velocity direction for each mesh face is given by the projection of the conveyor 
-belt velocity parallel to the mesh face, the velocity magnitude for each mesh face is 
-equal to the conveyor belt velocity. This ensures the model makes sense also in case 
+<P>With the optional <I>surface_vel</I> keyword, you can specify the imported mesh as conveyor belt.
+The velocity direction for each mesh face is given by the projection of the conveyor
+belt velocity parallel to the mesh face, the velocity magnitude for each mesh face is
+equal to the conveyor belt velocity. This ensures the model makes sense also in case
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 <I>surface_ang_vel</I> mimics rotational motion of the mesh (e.g. for modeling a shear cell)
 </P>
 <P>The <I>precision</I> keyword specifies how far away mesh nodes can be at maximum to
 be recognized as identical.
 </P>
-<P>If LIGGGHTS stalls because of duplicate elements, you can try setting 
-<I>heal</I> to auto_remove_duplicates. LIGGGHTS will then try to heal the geometry
+<P>If LIGGGHTS(R)-PUBLIC stalls because of duplicate elements, you can try setting
+<I>heal</I> to auto_remove_duplicates. LIGGGHTS(R)-PUBLIC will then try to heal the geometry
 by removing duplicate elements.
 </P>
-<P>IMPORTANT NOTE: You should check the changes to the geometry, e.g. by using a 
+<P>IMPORTANT NOTE: You should check the changes to the geometry, e.g. by using a
 <A HREF = "dump.html">dump mesh/stl</A> command.
 </P>
-<P>The <I>curvature</I> keyword lets you specify up to which angle between two triangles the 
-triangles should be treated as belonging to the same surface (e.g. useful for bends). 
-This angle is used to decide if (a) contact history is copied from one triangle to 
-the other as the contact point proceeds and (b) if edge and corner interaction is 
+<P>The <I>curvature</I> keyword lets you specify up to which angle between two triangles the
+triangles should be treated as belonging to the same surface (e.g. useful for bends).
+This angle is used to decide if (a) contact history is copied from one triangle to
+the other as the contact point proceeds and (b) if edge and corner interaction is
 calculated.
 </P>
 <P><B>Quality checks / error and warning messages:</B>
 </P>
-<P>LIGGGHTS checks a couple of quality criteria upon loading a mesh. LIGGGHTS tries
+<P>LIGGGHTS(R)-PUBLIC checks a couple of quality criteria upon loading a mesh. LIGGGHTS(R)-PUBLIC tries
 to give you as much information about the issue as possible.
 </P>
 <P>Warning messages:
@@ -134,7 +128,7 @@ to give you as much information about the issue as possible.
 
 <LI>All nodes should be within the simlation box 
 
-<P>If any of the obove rules is not fulfilled, a warning is generated. Keyword 
+<P>If any of the obove rules is not fulfilled, a warning is generated. Keyword
 <I>verbose</I> controls if details about the warning are written to the screen.
 </P>
 <P>Error messages:
@@ -147,28 +141,28 @@ to give you as much information about the issue as possible.
 
 <LI>Mesh elements must not leave the simulation domain 
 
-<P>If any of the obove rules is not fulfilled, an error is generated and 
-LIGGGHTS halts. Error messages are always <I>verbose</I>. 
-If LIGGGHTS halts due to the last error, you might think about (a) 
-changing the mesh import parameters (<I>scale</I>, <I>move</I>, <I>rotate</I>), (b) 
-changing the mesh dynamics if a <A HREF = "fix_move_mesh.html">fix move/mesh</A> is 
+<P>If any of the obove rules is not fulfilled, an error is generated and
+LIGGGHTS(R)-PUBLIC halts. Error messages are always <I>verbose</I>.
+If LIGGGHTS(R)-PUBLIC halts due to the last error, you might think about (a)
+changing the mesh import parameters (<I>scale</I>, <I>move</I>, <I>rotate</I>), (b)
+changing the mesh dynamics if a <A HREF = "fix_move_mesh.html">fix move/mesh</A> is
 applied or using <A HREF = "boundary.html">boundary m m m</A>
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
-<P>This fix writes the STL data to binary <A HREF = "restart.html">restart files</A> to be able to 
-correctly resume the simulation in case the mesh is moved. None of the 
-<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global 
-scalar or vector or per-atom quantities are stored by this fix for access by 
-various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this fix 
-can be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command. 
+<P>This fix writes the STL data to binary <A HREF = "restart.html">restart files</A> to be able to
+correctly resume the simulation in case the mesh is moved. None of the
+<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global
+scalar or vector or per-atom quantities are stored by this fix for access by
+various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this fix
+can be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
 This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
 </P>
 <P><B>Restrictions:</B>
 </P>
-<P>To date, only ASCII STL and VTK files can be read (binary is not supported). 
-In the current implementation, each processor allocates memory for the whole 
-geometry, which may lead to memory issues for very large geometries . 
+<P>To date, only ASCII STL and VTK files can be read (binary is not supported).
+In the current implementation, each processor allocates memory for the whole
+geometry, which may lead to memory issues for very large geometries .
 It is not supported to use both the moving mesh and the conveyor belt feature.
 </P>
 <P><B>Related commands:</B>

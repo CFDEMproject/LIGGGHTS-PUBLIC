@@ -1,26 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "fix_heat_gran_conduction.h"
@@ -144,7 +160,7 @@ void FixHeatGranCond::init()
 
   const double *Y, *nu, *Y_orig;
   double expo, Yeff_ij, Yeff_orig_ij, ratio;
-  int max_type = pair_gran->get_properties()->max_type();
+  int max_type = atom->get_properties()->max_type();
 
   if (conductivity_) delete []conductivity_;
   conductivity_ = new double[max_type];
@@ -196,8 +212,7 @@ void FixHeatGranCond::init()
   updatePtrs();
 
   // error checks on coarsegraining
-  if(force->cg_active())
-    error->cg(FLERR,this->style);
+  
 }
 
 /* ---------------------------------------------------------------------- */
@@ -253,7 +268,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
   double xtmp,ytmp,ztmp,delx,dely,delz;
   double radi,radj,radsum,rsq,r,tcoi,tcoj;
   int *ilist,*jlist,*numneigh,**firstneigh;
-  int *touch,**firsttouch;
+  int *contact_flag,**first_contact_flag;
 
   int newton_pair = force->newton_pair;
 
@@ -266,7 +281,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
   ilist = pair_gran->list->ilist;
   numneigh = pair_gran->list->numneigh;
   firstneigh = pair_gran->list->firstneigh;
-  if(HISTFLAG) firsttouch = pair_gran->listgranhistory->firstneigh;
+  if(HISTFLAG) first_contact_flag = pair_gran->listgranhistory->firstneigh;
 
   double *radius = atom->radius;
   double **x = atom->x;
@@ -285,7 +300,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
     radi = radius[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
-    if(HISTFLAG) touch = firsttouch[i];
+    if(HISTFLAG) contact_flag = first_contact_flag[i];
 
     for (jj = 0; jj < jnum; jj++) {
       j = jlist[jj];
@@ -303,7 +318,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
         radsum = radi + radj;
       }
 
-      if ((HISTFLAG && touch[jj]) || (!HISTFLAG && (rsq < radsum*radsum))) {  //contact
+      if ((HISTFLAG && contact_flag[jj]) || (!HISTFLAG && (rsq < radsum*radsum))) {  //contact
         
         if(HISTFLAG)
         {
@@ -328,7 +343,8 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
               r = radsum - delta_n;
             }
 
-            contactArea = - M_PI/4 * ( (r-radi-radj)*(r+radi-radj)*(r-radi+radj)*(r+radi+radj) )/(r*r); //contact area of the two spheres
+            //contact area of the two spheres
+            contactArea = - M_PI/4 * ( (r-radi-radj)*(r+radi-radj)*(r-radi+radj)*(r+radi+radj) )/(r*r);
         }
         else if (CONTACTAREA == CONDUCTION_CONTACT_AREA_CONSTANT)
             contactArea = fixed_contact_area_;

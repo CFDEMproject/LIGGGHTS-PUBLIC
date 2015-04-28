@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -40,8 +40,8 @@ style = {delete} or {index} or {loop} or {world} or {universe} or {uloop} or {st
   {equal} or {atom} args = one formula containing numbers, thermo keywords, math operations, group functions, atom values and vectors, compute/fix/variable references
     numbers = 0.0, 100, -5.4, 2.8e-4, etc
     constants = PI
-    thermo keywords = vol, ke, press, etc from "thermo_style"_thermo_style.html
-    math operators = (), -x, x+y, x-y, x*y, x/y, x^y, 
+    thermo keywords = vol, ke, etc from "thermo_style"_thermo_style.html
+    math operators = (), -x, x+y, x-y, x*y, x/y, x^y,
                      x==y, x!=y, x<y, x<=y, x>y, x>=y, x&&y, x||y, !x
     math functions = sqrt(x), exp(x), ln(x), log(x), abs(x),
                      sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(y,x),
@@ -55,7 +55,7 @@ style = {delete} or {index} or {loop} or {world} or {universe} or {uloop} or {st
     region functions = count(group,region), mass(group,region), charge(group,region),
 		      xcm(group,dim,region), vcm(group,dim,region), fcm(group,dim,region),
 		      bound(group,xmin,region), gyration(group,region), ke(group,reigon),
-		      angmom(group,dim,region), torque(group,dim,region), 
+		      angmom(group,dim,region), torque(group,dim,region),
 		      inertia(group,dimdim,region), omega(group,dim,region)
     special functions = sum(x), min(x), max(x), ave(x), trap(x), gmask(x), rmask(x), grmask(x,y), next(x)
     atom value = id\[i\], mass\[i\], type\[i\], x\[i\], y\[i\], z\[i\], vx\[i\], vy\[i\], vz\[i\], fx\[i\], fy\[i\], fz\[i\]
@@ -205,7 +205,7 @@ N1 <= N2 and N2 >= 0 is required.
 For the {world} style, one or more strings are specified.  There must
 be one string for each processor partition or "world".  See "this
 section"_Section_start.html#start_7 of the manual for information on
-running LAMMPS with multiple partitions via the "-partition"
+running LIGGGHTS(R)-PUBLIC with multiple partitions via the "-partition"
 command-line switch.  This variable command assigns one string to each
 world.  All processors in the world are assigned the same string.  The
 next command cannot be used with {equal} style variables, since there
@@ -218,7 +218,7 @@ different partitions.
 For the {universe} style, one or more strings are specified.  There
 must be at least as many strings as there are processor partitions or
 "worlds".  See "this page"_Section_start.html#start_7 for information
-on running LAMMPS with multiple partitions via the "-partition"
+on running LIGGGHTS(R)-PUBLIC with multiple partitions via the "-partition"
 command-line switch.  This variable command initially assigns one
 string to each world.  When a "next"_next.html command is encountered
 using this variable, the first processor partition to encounter it, is
@@ -228,7 +228,7 @@ variable strings are consumed.  Thus, this command can be used to run
 one after the other on whatever partition becomes available, until
 they are all finished.  {Universe} style variables are incremented
 using the files "tmp.lammps.variable" and "tmp.lammps.variable.lock"
-which you will see in your directory during such a LAMMPS run.
+which you will see in your directory during such a LIGGGHTS(R)-PUBLIC run.
 
 The {uloop} style is identical to the {universe} style except that the
 strings are the integers from 1 to N.  This allows generation of long
@@ -245,7 +245,7 @@ For the {getenv} style, a single string is assigned to the variable
 which should be the name of an environment variable.  When the
 variable is evaluated, it returns the value of the environment
 variable, or an empty string if it not defined.  This style of
-variable can be used to adapt the behavior of LAMMPS input scripts via
+variable can be used to adapt the behavior of LIGGGHTS(R)-PUBLIC input scripts via
 environment variable settings, or to retrieve information that has
 been previously stored with the "shell putenv"_shell.html command.
 Note that because environment variable settings are stored by the
@@ -451,7 +451,7 @@ yields a per-atom vector with each element being the sqrt() of the
 product of one atom's y and z coordinates.
 
 Most of the math functions perform obvious operations.  The ln() is
-the natural log; log() is the base 10 log. 
+the natural log; log() is the base 10 log.
 
 The random(x,y,z) function takes 3 arguments: x = lo, y = hi, and z =
 seed.  It generates a uniform random number between lo and hi.  The
@@ -752,7 +752,7 @@ Variable References :h4
 Variable references access quantities stored or calculated by other
 variables, which will cause those variables to be evaluated.  The name
 in the reference should be replaced by the name of a variable defined
-elsewhere in the input script. 
+elsewhere in the input script.
 
 As discussed on this doc page, equal-style variables generate a global
 scalar numeric value; atom-style and atomfile-style variables generate
@@ -839,7 +839,7 @@ is evaluated later.
 
 [Variable Accuracy:]
 
-Obviously, LAMMPS attempts to evaluate variables containing formulas
+Obviously, LIGGGHTS(R)-PUBLIC attempts to evaluate variables containing formulas
 ({equal} and {atom} style variables) accurately whenever the
 evaluation is performed.  Depending on what is included in the
 formula, this may require invoking a "compute"_compute.html, either
@@ -850,7 +850,7 @@ the pressure or energy of the system, then these quantities need to be
 tallied during the evaluation of the interatomic potentials (pair,
 bond, etc) on timesteps that the variable will need the values.
 
-LAMMPS keeps track of all of this during a "run"_run.html or "energy
+LIGGGHTS(R)-PUBLIC keeps track of all of this during a "run"_run.html or "energy
 minimization"_minimize.html.  An error will be generated if you
 attempt to evaluate a variable on timesteps when it cannot produce
 accurate values.  For example, if a "thermo_style
@@ -862,7 +862,7 @@ averaging frequency used in the fix command, then an error will occur.
 An input script can also request variables be evaluated before or
 after or in between runs, e.g. by including them in a
 "print"_print.html command.  In this case, if a compute is needed to
-evaluate a variable (either directly or indirectly), LAMMPS will not
+evaluate a variable (either directly or indirectly), LIGGGHTS(R)-PUBLIC will not
 invoke the compute, but it will use a value previously calculated by
 the compute, and can do this only if it is current.  Fixes will always
 provide a quantity needed by a variable, but the quantity may or may
@@ -873,9 +873,9 @@ references to a compute or fix, and these values were calculated on
 the last timestep of a preceeding run, then they will be accessed and
 used by the variable and the result will be accurate.
 
-(2) LAMMPS may not be able to evaluate the variable and will generate
+(2) LIGGGHTS(R)-PUBLIC may not be able to evaluate the variable and will generate
 an error message stating so.  For example, if the variable requires a
-quantity from a "compute"_compute.html that is not current, LAMMPS
+quantity from a "compute"_compute.html that is not current, LIGGGHTS(R)-PUBLIC
 will generate an error.  This means, for example, that such a variable
 cannot be evaluated before the first run has occurred.  Likewise, in
 between runs, such a variable cannot be accessed unless it was
@@ -923,7 +923,7 @@ until a run is performed.  Thus if a variable attempts to print this
 value before the first run, zeroes will be output.  Again, performing
 a 0-timestep run before printing the variable has the desired effect.
 
-(3) The variable may be evaluated incorrectly and LAMMPS may have no
+(3) The variable may be evaluated incorrectly and LIGGGHTS(R)-PUBLIC may have no
 way to detect this has occurred.  Consider the following sequence of
 commands:
 
@@ -940,7 +940,7 @@ evaluated on the final timestep and stored by the "compute
 pe"_compute_pe.html compute (this is done by the
 "thermo_style"_thermo_style.html command).  Then a pair coefficient is
 changed, altering the potential energy of the system.  When the
-potential energy is printed via the "e" variable, LAMMPS will use the
+potential energy is printed via the "e" variable, LIGGGHTS(R)-PUBLIC will use the
 potential energy value stored by the "compute pe"_compute_pe.html
 compute, thinking it is current.  There are many other commands which
 could alter the state of the system between runs, causing a variable

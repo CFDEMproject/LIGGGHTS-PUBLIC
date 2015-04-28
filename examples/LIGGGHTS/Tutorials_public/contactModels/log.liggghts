@@ -1,0 +1,151 @@
+LIGGGHTS (Version LIGGGHTS-MASTER 3.1.0plusplus, compiled 2015-04-28-20:40:56 by kloss, git commit be5a4c6a3108e59a72889f96e842ba155da2c52f based on LAMMPS 23 Nov 2013)
+#Contact model example
+
+atom_style	granular
+atom_modify	map array
+boundary	m m m
+newton		off
+
+communicate	single vel yes
+
+units		si
+
+region		reg block -0.05 0.05 -0.05 0.05 0. 0.15 units box
+create_box	1 reg
+Created orthogonal box = (-0.05 -0.05 0) to (0.05 0.05 0.15)
+  1 by 2 by 2 MPI processor grid
+
+neighbor		0.002 bin
+neigh_modify	delay 0
+
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 5.e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.45
+fix 		m3 all property/global coefficientRestitution peratomtypepair 1 0.95
+fix 		m4 all property/global coefficientFriction peratomtypepair 1 0.05
+#fix 		m5 all property/global characteristicVelocity scalar 2.
+
+
+#New pair style
+pair_style gran model hertz tangential history
+==== PAIR SETTINGS ====
+ limitForce = off
+ tangential_damping = on
+==== PAIR SETTINGS ====
+pair_coeff	* *
+
+timestep	0.00001
+
+fix			gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+fix zwalls1 all wall/gran model hertz tangential history primitive type 1 zplane 0.0
+==== WALL zwalls1 SETTINGS ====
+ limitForce = off
+ tangential_damping = on
+==== WALL zwalls1 SETTINGS ====
+fix zwalls2 all wall/gran model hertz tangential history primitive type 1 zplane 0.15
+==== WALL zwalls2 SETTINGS ====
+ limitForce = off
+ tangential_damping = on
+==== WALL zwalls2 SETTINGS ====
+fix cylwalls all wall/gran model hertz tangential history primitive type 1 zcylinder 0.05 0. 0.
+==== WALL cylwalls SETTINGS ====
+ limitForce = off
+ tangential_damping = on
+==== WALL cylwalls SETTINGS ====
+
+#region of insertion
+region		bc cylinder z 0. 0. 0.045 0.00 0.15 units box
+
+#particle distributions
+fix			pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0025
+fix			pdd1 all particledistribution/discrete 1.  1 pts1 1.0
+
+fix			ins all insert/pack seed 100001 distributiontemplate pdd1 vel constant 0. 0. -0.5 				insert_every once overlapcheck yes all_in yes particles_in_region 1800 region bc
+
+#apply nve integration to all particles
+fix			integr all nve/sphere
+
+#output settings, include total thermal energy
+compute		rke all erotate/sphere
+thermo_style	custom step atoms ke c_rke vol
+thermo			1000
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+dump			dmp all custom 800 post/dump*.newModels id type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+
+
+#insert particles
+run				5000
+==== PAIR GLOBAL PROPERTIES ====
+ poissonsRatio = [0.45]
+ youngsModulus = [5e+06]
+ Geff = [556174]
+ Yeff = [3.1348e+06]
+ betaeff = [-0.016325]
+ coeffFrict = [0.05]
+ coefficientRestitution = [0.95]
+ coefficientRestitutionLog = [-0.0512933]
+==== PAIR GLOBAL PROPERTIES ====
+==== WALL zwalls1 GLOBAL PROPERTIES ====
+ poissonsRatio = [0.45]
+ youngsModulus = [5e+06]
+ Geff = [556174]
+ Yeff = [3.1348e+06]
+ betaeff = [-0.016325]
+ coeffFrict = [0.05]
+ coefficientRestitution = [0.95]
+ coefficientRestitutionLog = [-0.0512933]
+==== WALL zwalls1 GLOBAL PROPERTIES ====
+==== WALL zwalls2 GLOBAL PROPERTIES ====
+ poissonsRatio = [0.45]
+ youngsModulus = [5e+06]
+ Geff = [556174]
+ Yeff = [3.1348e+06]
+ betaeff = [-0.016325]
+ coeffFrict = [0.05]
+ coefficientRestitution = [0.95]
+ coefficientRestitutionLog = [-0.0512933]
+==== WALL zwalls2 GLOBAL PROPERTIES ====
+==== WALL cylwalls GLOBAL PROPERTIES ====
+ poissonsRatio = [0.45]
+ youngsModulus = [5e+06]
+ Geff = [556174]
+ Yeff = [3.1348e+06]
+ betaeff = [-0.016325]
+ coeffFrict = [0.05]
+ coefficientRestitution = [0.95]
+ coefficientRestitutionLog = [-0.0512933]
+==== WALL cylwalls GLOBAL PROPERTIES ====
+INFO: Particle insertion ins: inserting every 0 steps
+Memory usage per processor = 4.30524 Mbytes
+Step Atoms KinEng rke Volume 
+       0        0           -0            0       0.0015 
+INFO: Particle insertion ins: inserted 1800 particle templates (mass 0.294524) at step 1
+ - a total of 1800 particle templates (mass 0.294524) inserted so far.
+    1000     1800  0.051459031 2.353218e-05       0.0015 
+    2000     1800   0.06626026 0.00011386771       0.0015 
+    3000     1800  0.080855611 0.00028486092       0.0015 
+    4000     1800  0.094449859 0.00045248407       0.0015 
+    5000     1800   0.10535526 0.00068949168       0.0015 
+Loop time of 20.6827 on 4 procs for 5000 steps with 1800 atoms
+
+Pair  time (%) = 4.87049 (23.5486)
+Neigh time (%) = 0.477992 (2.31106)
+Comm  time (%) = 2.91499 (14.0938)
+Outpt time (%) = 1.96508 (9.50106)
+Other time (%) = 10.4542 (50.5455)
+
+Nlocal:    450 ave 677 max 224 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+Nghost:    130.75 ave 175 max 92 min
+Histogram: 2 0 0 0 0 0 0 0 1 1
+Neighs:    837.25 ave 1427 max 251 min
+Histogram: 2 0 0 0 0 0 0 0 0 2
+
+Total # of neighbors = 3349
+Ave neighs/atom = 1.86056
+Neighbor list builds = 47
+Dangerous builds = 0

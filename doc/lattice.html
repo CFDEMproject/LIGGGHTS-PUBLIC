@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -51,13 +51,13 @@ lattice none 2.0
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>Define a lattice for use by other commands.  In LAMMPS, a lattice is
+<P>Define a lattice for use by other commands.  In LIGGGHTS(R)-PUBLIC, a lattice is
 simply a set of points in space, determined by a unit cell with basis
 atoms, that is replicated infinitely in all dimensions.  The arguments
 of the lattice command can be used to define a wide variety of
 crystallographic lattices.
 </P>
-<P>A lattice is used by LAMMPS in two ways.  First, the
+<P>A lattice is used by LIGGGHTS(R)-PUBLIC in two ways.  First, the
 <A HREF = "create_atoms.html">create_atoms</A> command creates atoms on the lattice
 points inside the simulation box.  Note that the
 <A HREF = "create_atoms.html">create_atoms</A> command allows different atom types
@@ -78,7 +78,7 @@ used for either 2d or 3d problems.
 cell, and a set of transformation parameters (scale, origin, orient)
 that map the unit cell into the simulation box.  The vectors a1,a2,a3
 are the edge vectors of the unit cell.  This is the nomenclature for
-"primitive" vectors in solid-state crystallography, but in LAMMPS the
+"primitive" vectors in solid-state crystallography, but in LIGGGHTS(R)-PUBLIC the
 unit cell they determine does not have to be a "primitive cell" of
 minimum volume.
 </P>
@@ -145,7 +145,7 @@ spacing of 3.52 Angstroms.  In <I>cgs</I> units, the spacing would be 3.52
 cm.
 </P>
 <P>For unit style <I>lj</I>, the scale argument is the Lennard-Jones reduced
-density, typically written as rho*.  LAMMPS converts this value into
+density, typically written as rho*.  LIGGGHTS(R)-PUBLIC converts this value into
 the multiplicative factor via the formula "factor^dim = rho/rho*",
 where rho = N/V with V = the volume of the lattice unit cell and N =
 the number of basis atoms in the unit cell (described below), and dim
@@ -177,7 +177,7 @@ simulation box.
 </P>
 <HR>
 
-<P>Several LAMMPS commands have the option to use distance units that are
+<P>Several LIGGGHTS(R)-PUBLIC commands have the option to use distance units that are
 inferred from "lattice spacing" in the x,y,z box directions.  E.g. the
 <A HREF = "region.html">region</A> command can create a block of size 10x20x20,
 where 10 means 10 lattice spacings in the x direction.
@@ -187,12 +187,12 @@ be non-zero (use 1.0 for dz in a 2d simulation).  The specified values
 are multiplied by the multiplicative factor described above that is
 associated with the scale factor.  Thus a spacing of 1.0 means one
 unit cell independent of the scale factor.  This option can be useful
-if the spacings LAMMPS computes are inconvenient to use in subsequent
+if the spacings LIGGGHTS(R)-PUBLIC computes are inconvenient to use in subsequent
 commands, which can be the case for non-orthogonal or rotated
 lattices.
 </P>
 <P>If the <I>spacing</I> option is not specified, the lattice spacings are
-computed by LAMMPS in the following way.  A unit cell of the lattice
+computed by LIGGGHTS(R)-PUBLIC in the following way.  A unit cell of the lattice
 is mapped into the simulation box (scaled, shifted, rotated), so that
 it now has (perhaps) a modified size and orientation.  The lattice
 spacing in X is defined as the difference between the min/max extent
@@ -218,7 +218,7 @@ lattice spacing, and then fill it with atoms via the
 create a periodic system.  I.e. atoms may overlap incorrectly at the
 faces of the simulation box.
 </P>
-<P>Regardless of these issues, the values of the lattice spacings LAMMPS
+<P>Regardless of these issues, the values of the lattice spacings LIGGGHTS(R)-PUBLIC
 calculates are printed out, so their effect in commands that use the
 spacings should be decipherable.
 </P>

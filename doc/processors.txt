@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -40,7 +40,7 @@ keyword = {grid} or {map} or {part} or {file} :l
 
 [Examples:]
 
-processors * * 5 
+processors * * 5
 processors 2 4 4
 processors * * 8 map xyz
 processors * * * grid numa
@@ -59,21 +59,21 @@ logical 3d grid.  The arguments to this command control each of these
 2 steps.
 
 The Px, Py, Pz parameters affect the factorization.  Any of the 3
-parameters can be specified with an asterisk "*", which means LAMMPS
+parameters can be specified with an asterisk "*", which means LIGGGHTS(R)-PUBLIC
 will choose the number of processors in that dimension of the grid.
 It will do this based on the size and shape of the global simulation
 box so as to minimize the surface-to-volume ratio of each processor's
 sub-domain.
 
-Since LAMMPS does not load-balance by changing the grid of 3d
+Since LIGGGHTS(R)-PUBLIC does not load-balance by changing the grid of 3d
 processors on-the-fly, choosing explicit values for Px or Py or Pz can
-be used to override the LAMMPS default if it is known to be
+be used to override the LIGGGHTS(R)-PUBLIC default if it is known to be
 sub-optimal for a particular problem.  E.g. a problem where the extent
 of atoms will change dramatically in a particular dimension over the
 course of the simulation.
 
 The product of Px, Py, Pz must equal P, the total # of processors
-LAMMPS is running on.  For a "2d simulation"_dimension.html, Pz must
+LIGGGHTS(R)-PUBLIC is running on.  For a "2d simulation"_dimension.html, Pz must
 equal 1.
 
 Note that if you run on a prime number of processors P, then a grid
@@ -114,14 +114,14 @@ both the factorization and mapping steps.
 
 The {Cx}, {Cy}, {Cz} settings are similar to the {Px}, {Py}, {Pz}
 settings, only their product should equal {Nc}.  Any of the 3
-parameters can be specified with an asterisk "*", which means LAMMPS
+parameters can be specified with an asterisk "*", which means LIGGGHTS(R)-PUBLIC
 will choose the number of cores in that dimension of the node's
 sub-grid.  As with Px,Py,Pz, it will do this based on the size and
 shape of the global simulation box so as to minimize the
 surface-to-volume ratio of each processor's sub-domain.
 
 IMPORTANT NOTE: For the {twolevel} style to work correctly, it
-assumes the MPI ranks of processors LAMMPS is running on are ordered
+assumes the MPI ranks of processors LIGGGHTS(R)-PUBLIC is running on are ordered
 by core and then by node.  E.g. if you are running on 2 quad-core
 nodes, for a total of 8 processors, then it assumes processors 0,1,2,3
 are on node 1, and processors 4,5,6,7 are on node 2.  This is the
@@ -176,7 +176,7 @@ any order, but no processor ID should appear more than once.
 
 The {map} keyword affects how the P processor IDs (from 0 to P-1) are
 mapped to the 3d grid of processors.  It is only used by the
-{onelevel} and {twolevel} grid settings.  
+{onelevel} and {twolevel} grid settings.
 
 The {cart} style uses the family of MPI Cartesian functions to perform
 the mapping, namely MPI_Cart_create(), MPI_Cart_get(),
@@ -255,7 +255,7 @@ IMPORTANT NOTE: If you use the "partition"_partition.html command to
 invoke different "processsors" commands on different partitions, and
 you also use the {part} keyword, then you must insure that both the
 sending and receiving partitions invoke the "processors" command that
-connects the 2 partitions via the {part} keyword.  LAMMPS cannot
+connects the 2 partitions via the {part} keyword.  LIGGGHTS(R)-PUBLIC cannot
 easily check for this, but your simulation will likely hang in its
 setup phase if this error has been made.
 
@@ -279,13 +279,13 @@ world-ID universe-ID original-ID: I J K: name
 
 The IDs are the processor's rank in this simulation (the world), the
 universe (of multiple simulations), and the original MPI communicator
-used to instantiate LAMMPS, respectively.  The world and universe IDs
+used to instantiate LIGGGHTS(R)-PUBLIC, respectively.  The world and universe IDs
 will only be different if you are running on more than one partition;
 see the "-partition command-line switch"_Section_start.html#start_7.
 The universe and original IDs will only be different if you used the
 "-reorder command-line switch"_Section_start.html#start_7 to reorder
 the processors differently than their rank in the original
-communicator LAMMPS was instantiated with.
+communicator LIGGGHTS(R)-PUBLIC was instantiated with.
 
 I,J,K are the indices of the processor in the 3d logical grid, each
 from 1 to Nd, where Nd is the number of processors in that dimension

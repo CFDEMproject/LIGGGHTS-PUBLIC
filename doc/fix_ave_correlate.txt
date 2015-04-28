@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -66,7 +66,7 @@ calculate time correlations bewteen them at varying time intervals,
 and average the correlation data over longer timescales.  The
 resulting correlation values can be time integrated by
 "variables"_variable.html or used by other "output
-commands"_Section_howto.html#howto_15 such as "thermo_style
+commands"_Section_howto.html#howto_8 such as "thermo_style
 custom"_thermo_style.html, and can also be written to a file.
 
 The group specified with this command is ignored.  However, note that
@@ -147,7 +147,7 @@ output"_thermo_style.html or other fixes such as "fix nvt"_fix_nh.html
 or "fix temp/rescale"_fix_temp_rescale.html.  See the doc pages for
 these commands which give the IDs of these computes.  Users can also
 write code for their own compute styles and "add them to
-LAMMPS"_Section_modify.html.
+LIGGGHTS(R)-PUBLIC"_Section_modify.html.
 
 If a value begins with "f_", a fix ID must follow which has been
 previously defined in the input script.  If no bracketed term is
@@ -158,7 +158,7 @@ calculated by the fix is used.
 Note that some fixes only produce their values on certain timesteps,
 which must be compatible with {Nevery}, else an error will result.
 Users can also write code for their own fix styles and "add them to
-LAMMPS"_Section_modify.html.
+LIGGGHTS(R)-PUBLIC"_Section_modify.html.
 
 If a value begins with "v_", a variable name must follow which has
 been previously defined in the input script.  Only equal-style
@@ -239,7 +239,7 @@ output.  This option can only be used with the {ave running} setting.
 
 The {title1} and {title2} and {title3} keywords allow specification of
 the strings that will be printed as the first 3 lines of the output
-file, assuming the {file} keyword was used.  LAMMPS uses default
+file, assuming the {file} keyword was used.  LIGGGHTS(R)-PUBLIC uses default
 values for each of these, so they do not need to be specified.
 
 By default, these header lines are as follows:
@@ -279,7 +279,7 @@ files"_restart.html.  None of the "fix_modify"_fix_modify.html options
 are relevant to this fix.
 
 This fix computes a global array of values which can be accessed by
-various "output commands"_Section_howto.html#howto_15.  The values can
+various "output commands"_Section_howto.html#howto_8.  The values can
 only be accessed on timesteps that are multiples of {Nfreq} since that
 is when averaging is performed.  The global array has # of rows =
 {Nrepeat} and # of columns = Npair+2.  The first column has the time

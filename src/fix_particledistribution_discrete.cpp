@@ -1,26 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -330,6 +346,7 @@ void FixParticledistributionDiscrete::random_init_list(int ntotal)
         n_pti_max = n_pti_max_requested;
         if(pti_list) delete []pti_list;
         pti_list = new ParticleToInsert*[n_pti_max];
+        
     }
 
 }
@@ -341,7 +358,7 @@ void FixParticledistributionDiscrete::random_init_list(int ntotal)
 
    for exact_number = 1, truncate distribution so to exactly meet
                                requested # particles
-   for exact_number = 0, use random gen to fulfil distribution
+   for exact_number = 0, use random gen to fulfill distribution
 ------------------------------------------------------------------------- */
 
 int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupbit,int exact_number)
@@ -422,7 +439,8 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
         n_pti += parttogen[chosendist];
     }
 
-    if(n_pti != ninsert) error->all(FLERR,"Internal error in FixParticledistributionDiscrete::randomize_list");
+    if(n_pti != ninsert)
+		error->one(FLERR,"Internal error in FixParticledistributionDiscrete::randomize_list");
 
     ninserted = ninsert;
     return ninsert;
@@ -432,7 +450,7 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
    preparations before insertion
 ------------------------------------------------------------------------- */
 
-void FixParticledistributionDiscrete::pre_insert()
+void FixParticledistributionDiscrete::pre_insert(int n,class FixPropertyAtom *fp,double val)
 {
     // allow fixes to e.g. update some pointers before set_arrays is called
     // set_arrays called in ParticleToInsert::insert()
@@ -442,7 +460,19 @@ void FixParticledistributionDiscrete::pre_insert()
 
     for (int j = 0; j < nfix; j++)
         if (fix[j]->create_attribute) fix[j]->pre_set_arrays();
+
+    // set fix property as desired by fix insert
+    // loop to n, not n_pti
+    if(fp)
+    {
+        for(int i = 0; i < n; i++)
+        {
+            pti_list[i]->fix_property = fp;
+            pti_list[i]->fix_property_value = val;
+        }
+    }
 }
+
 /* ----------------------------------------------------------------------
    set particle properties - only pti needs to know which properties to set
    loop to n, not n_pti, since not all particles may have been inserted

@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -37,9 +37,9 @@ fix 1 all external pf/array 10
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>This fix allows external programs that are running LAMMPS through its
+<P>This fix allows external programs that are running LIGGGHTS(R)-PUBLIC through its
 <A HREF = "Section_howto.html#howto_19">library interface</A> to modify certain
-LAMMPS properties on specific timesteps, similar to the way other
+LIGGGHTS(R)-PUBLIC properties on specific timesteps, similar to the way other
 fixes do.  The external driver can be a <A HREF = "Section_howto.html#howto_19">C/C++ or Fortran
 program</A> or a <A HREF = "Section_python.html">Python
 script</A>.
@@ -62,7 +62,7 @@ be used multiple times to update atom forces.
 <P>The arguments are as follows:
 </P>
 <UL><LI>ptr = pointer provided by and simply passed back to external driver
-<LI>timestep = current LAMMPS timestep
+<LI>timestep = current LIGGGHTS(R)-PUBLIC timestep
 <LI>nlocal = # of atoms on this processor
 <LI>ids = list of atom IDs on this processor
 <LI>x = coordinates of atoms on this processor
@@ -75,7 +75,7 @@ typically as a 64-bit integer.
 </P>
 <P>The fix has a set_callback() method which the external driver can call
 to pass a pointer to its foo() function.  See the
-couple/lammps_quest/lmpqst.cpp file in the LAMMPS distribution for an
+couple/lammps_quest/lmpqst.cpp file in the LIGGGHTS(R)-PUBLIC distribution for an
 example of how this is done.  This sample application performs
 classical MD using quantum forces computed by a density functional
 code <A HREF = "http://dft.sandia.gov/Quest">Quest</A>.
@@ -101,8 +101,8 @@ fx, fy, fz components of force.
 <P>It is up to the external program to set the values in this array to
 the desired quantities, as often as desired.  For example, the driver
 program might perform an MD run in stages of 1000 timesteps each.  In
-between calls to the LAMMPS <A HREF = "run.html">run</A> command, it could retrieve
-atom coordinates from LAMMPS, compute forces, set values in fexternal,
+between calls to the LIGGGHTS(R)-PUBLIC <A HREF = "run.html">run</A> command, it could retrieve
+atom coordinates from LIGGGHTS(R)-PUBLIC, compute forces, set values in fexternal,
 etc.
 </P>
 <HR>
@@ -127,7 +127,7 @@ insure this energy setting is used appropriately in a minimization.
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
 <P>No information about this fix is written to <A HREF = "restart.html">binary restart
-files</A>.  
+files</A>.
 </P>
 <P>The <A HREF = "fix_modify.html">fix_modify</A> <I>energy</I> option is supported by this
 fix to add the potential "energy" set by the external driver to the
@@ -139,7 +139,7 @@ decrease in potential energy when atoms move in the direction of the
 added force.
 </P>
 <P>This fix computes a global scalar which can be accessed by various
-<A HREF = "Section_howto.html#howto_15">output commands</A>.  The scalar is the
+<A HREF = "Section_howto.html#howto_8">output commands</A>.  The scalar is the
 potential energy discussed above.  The scalar stored by this fix
 is "extensive".
 </P>
@@ -147,7 +147,7 @@ is "extensive".
 the <A HREF = "run.html">run</A> command.
 </P>
 <P>The forces due to this fix are imposed during an energy minimization,
-invoked by the <A HREF = "minimize.html">minimize</A> command. 
+invoked by the <A HREF = "minimize.html">minimize</A> command.
 </P>
 <P>IMPORTANT NOTE: If you want the fictitious potential energy associated
 with the added forces to be included in the total potential energy of

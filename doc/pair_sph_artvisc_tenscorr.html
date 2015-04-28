@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -40,13 +38,9 @@
 <PRE>pair_style sph/artVisc/tensCorr wendland 0.001 artVisc 1e-4 0 1e-8
 pair_style sph/artVisc/tensCorr cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0.2 1e-2 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This command is not available in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P>The <I>sph/artVisc/tensCorr</I> style uses the smoothed particle hydrodynamics (SPH) method according to Monaghan <A HREF = "#Monaghan1992">(1992)</A>. The acting force is calculated from the acceleration as stated in the equation: 
+<P>The <I>sph/artVisc/tensCorr</I> style uses the smoothed particle hydrodynamics (SPH) method according to Monaghan <A HREF = "#Monaghan1992">(1992)</A>. The acting force is calculated from the acceleration as stated in the equation:
 </P>
 <CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq1.jpg">
 </CENTER>
@@ -56,7 +50,7 @@ pair_style sph/artVisc/tensCorr cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0
 </P>
 <CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq2.jpg">
 </CENTER>
-<P>The wendland kernel (Wendland,1995) is defined as 
+<P>The wendland kernel (Wendland,1995) is defined as
 </P>
 <CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq3.jpg">
 </CENTER>
@@ -64,13 +58,13 @@ pair_style sph/artVisc/tensCorr cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0
 </P>
 <CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq4.jpg">
 </CENTER>
-<P>The atom style <I>sph/var</I> uses the input argument h as initial smoothing length for all particles. In case the atom style <I>sph</I> (per-type smoothing length) is used an additional per-type property <I>sl</I> must be defined, e.g., 
+<P>The atom style <I>sph/var</I> uses the input argument h as initial smoothing length for all particles. In case the atom style <I>sph</I> (per-type smoothing length) is used an additional per-type property <I>sl</I> must be defined, e.g.,
 </P>
 <PRE>fix           m2 all property/global sl peratomtype 0.0012 
 </PRE>
 <P>For further details on the basics of the SPH-method we recommend the papers from Monaghan <A HREF = "#Monaghan1992">(1992)</A>, <A HREF = "#Monaghan1994">(1994)</A>, etc.
 </P>
-<P>Optionally, this pairstyle can take into account the artificial viscosity proposed my Monaghan (1985), if the artVisc keyword is appended. In this case, &#928;<sub>ab</sub> is added to the bracket term in the above acceleration equation, where &#928;<sub>ab</sub> is given by 
+<P>Optionally, this pairstyle can take into account the artificial viscosity proposed my Monaghan (1985), if the artVisc keyword is appended. In this case, &#928;<sub>ab</sub> is added to the bracket term in the above acceleration equation, where &#928;<sub>ab</sub> is given by
 </P>
 <CENTER><IMG SRC = "Eqs/pair_sph_artvisc_tenscorr_eq5.jpg">
 </CENTER>
@@ -80,12 +74,12 @@ pair_style sph/artVisc/tensCorr cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0
 </CENTER>
 This expression produces a shear and bulk viscosity. The quadratic term enables simulation of high Mach number shocks. The parameter &#951;<sup>2</sup> prevents singularities. A good choice is normally &#951;<sup>2</sup>=0.01h<sup>2</sup>. 
 <BR>
-<P>The choice of &#945; and &#946; should not be critical, although there are some aspects which you should take into account: 
+<P>The choice of &#945; and &#946; should not be critical, although there are some aspects which you should take into account:
 </P>
 <P>  "In the present case, with negligible changes in the density [weakly compressible SPH], the viscosity is almost entirely shear viscosity with a viscosity coefficient approximately &#945;hc." <A HREF = "#Monaghan1994">(Monaghan, 1994)</A> 
 </P>
 <P>Bar-parameters like c<sub>ab</sub> and &#961;<sub>ab</sub> are mean values of particle a and b.
-NOTE: &#961;<sub>ab</sub> is calculated, and for the calculation of c<sub>ab</sub> the per-type property <I>speedOfSound</I> has to be defined, e.g., 
+NOTE: &#961;<sub>ab</sub> is calculated, and for the calculation of c<sub>ab</sub> the per-type property <I>speedOfSound</I> has to be defined, e.g.,
 </P>
 <PRE>fix 		      m1 all property/global speedOfSound peratomtype 20. 
 </PRE>
@@ -144,6 +138,6 @@ specified in an input script that reads a restart file.
 </P>
 <A NAME = "Monaghan2000"></A>
 
-<P><B>(Monaghan, 2000)</B> J. J. Monaghan, Journal of Computational Physics, 159, p. 290-311 (2000). 
+<P><B>(Monaghan, 2000)</B> J. J. Monaghan, Journal of Computational Physics, 159, p. 290-311 (2000).
 </P>
 </HTML>

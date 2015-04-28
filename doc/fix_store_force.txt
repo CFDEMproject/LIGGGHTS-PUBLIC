@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -26,12 +26,10 @@ timestep when the fix is invoked, as described below.  This is useful
 for storing forces before constraints or other boundary conditions are
 computed which modify the forces, so that unmodified forces can be
 "written to a dump file"_dump.html or accessed by other "output
-commands"_Section_howto.html#howto_15 that use per-atom quantities.
+commands"_Section_howto.html#howto_8 that use per-atom quantities.
 
 This fix is invoked at the point in the velocity-Verlet timestepping
-immediately after "pair"_pair_style.html, "bond"_bond_style.html,
-"angle"_angle_style.html, "dihedral"_dihedral_style.html,
-"improper"_improper_style.html, and "long-range"_kspace_style.html
+immediately after "pair"_pair_style.html, "bond"_bond_style.html
 forces have been calculated.  It is the point in the timestep when
 various fixes that compute constraint forces are calculated and
 potentially modify the force on each atom.  Examples of such fixes are
@@ -55,7 +53,7 @@ files"_restart.html.  None of the "fix_modify"_fix_modify.html options
 are relevant to this fix.
 
 This fix produces a per-atom array which can be accessed by various
-"output commands"_Section_howto.html#howto_15.  The number of columns
+"output commands"_Section_howto.html#howto_8.  The number of columns
 for each atom is 3, and the columns store the x,y,z forces on each
 atom.  The per-atom values be accessed on any timestep.
 

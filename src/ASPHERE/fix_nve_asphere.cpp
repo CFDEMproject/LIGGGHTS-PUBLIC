@@ -1,14 +1,46 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
@@ -38,7 +70,8 @@ using namespace FixConst;
 FixNVEAsphere::FixNVEAsphere(LAMMPS *lmp, int narg, char **arg) :
   FixNVE(lmp, narg, arg),
   updateRotation_(false), //NP modified TUG
-  fix_orientation_(0) //NP modified TUG
+  fix_orientation_(NULL), //NP modified TUG
+  fix_shape_(NULL)
 { //NP modified TUG
   if (narg < 3) error->all(FLERR,"Illegal fix nve/asphere command");
 
@@ -46,14 +79,59 @@ FixNVEAsphere::FixNVEAsphere(LAMMPS *lmp, int narg, char **arg) :
 
   int iarg = 3;
   while (iarg < narg) { //NP modified TUG
-    if (strcmp(arg[iarg],"updateRotation") == 0) 
+    if (strcmp(arg[iarg],"updateRotation") == 0)
     {
       updateRotation_=true;
       //printf("nve/asphere will update the rotation rate and orientation vector ex!\n");
       iarg += 1;
     } else error->all(FLERR,"Illegal fix nve/asphere command");
   }
+}
 
+/* ---------------------------------------------------------------------- */
+void FixNVEAsphere::post_create()
+{
+
+
+   if(updateRotation_) //NP modified TUG
+   {
+     const char *fixarg[11];
+
+     if(fix_orientation_ == NULL)
+     {
+        //register orientation as property/atom
+        fixarg[0]="ex";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="ex";
+        fixarg[4]="vector";
+        fixarg[5]="no";
+        fixarg[6]="yes";
+        fixarg[7]="no";
+        fixarg[8]="0";
+        fixarg[9]="0";
+        fixarg[10]="0";
+        modify->add_fix(11,const_cast<char**>(fixarg));
+        fix_orientation_=static_cast<FixPropertyAtom*>(modify->find_fix_property("ex","property/atom","vector",0,0,style));
+     }
+     if(fix_shape_ == NULL)
+     {
+        //register orientation as property/atom
+        fixarg[0]="shape";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="shape";
+        fixarg[4]="vector";
+        fixarg[5]="no";
+        fixarg[6]="yes";
+        fixarg[7]="no";
+        fixarg[8]="0";
+        fixarg[9]="0";
+        fixarg[10]="0";
+        modify->add_fix(11,const_cast<char**>(fixarg));
+        fix_shape_     = static_cast<FixPropertyAtom*>(modify->find_fix_property("shape","property/atom","vector",0,0,style));
+     }
+   }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -64,12 +142,6 @@ void FixNVEAsphere::init()
   if (!avec)
     error->all(FLERR,"Compute nve/asphere requires atom style ellipsoid");
 
-   if(updateRotation_) //NP modified TUG
-   {
-     fix_orientation_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("ex","property/atom","vector",0,0,style));
-     if(fix_orientation_)
-          printf("FOUND fix_orientation_!!\n");
-   }
 
   // check that all particles are finite-size ellipsoids
   // no point particles allowed, spherical is OK
@@ -92,7 +164,6 @@ void FixNVEAsphere::initial_integrate(int vflag)
 {
   double dtfm;
   double inertia[3],omega[3];
-  double g[3], msq, scale; //NP modified TUG
   double exone[3],eyone[3],ezone[3];  //NP modified TUG
   double *shape,*quat;
 
@@ -108,15 +179,18 @@ void FixNVEAsphere::initial_integrate(int vflag)
   int nlocal = atom->nlocal;
   if (igroup == atom->firstgroup) nlocal = atom->nfirst;
 
-  //save rotation rate to array if necessary 
+  //save rotation rate to array if necessary
   //NP modified TUG
   double **omegaParticles = NULL;
   double **orientation = NULL;
+  double **shapeFix       = NULL;
   if(updateRotation_)
   {
       omegaParticles = atom->omega;
       if(fix_orientation_)
           orientation = fix_orientation_->array_atom;
+      if(fix_shape_)
+          shapeFix    = fix_shape_->array_atom;
   }
 
   // set timestep here since dt may have changed or come via rRESPA
@@ -173,7 +247,7 @@ void FixNVEAsphere::initial_integrate(int vflag)
                orientation[i][0] = g[0]*scale;
                orientation[i][1] = g[1]*scale;
                orientation[i][2] = g[2]*scale; */
-               
+
                //Alternative calculation
                MathExtra::q_to_exyz(quat,exone,eyone,ezone);   //NP modified TUG
                orientation[i][0] = exone[0];
@@ -182,6 +256,12 @@ void FixNVEAsphere::initial_integrate(int vflag)
 //               printf("exone[0]: %g,exone[1]: %g,exone[2]: %g. \n",
 //                       exone[0],exone[1],exone[2]);
             }
+            if(fix_shape_) //NP modified TUG
+            {
+                shapeFix[i][0] = shape[0];
+                shapeFix[i][1] = shape[1];
+                shapeFix[i][2] = shape[2];
+      		}
       }
     }
 }

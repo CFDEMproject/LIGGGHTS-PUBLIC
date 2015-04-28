@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -23,7 +21,7 @@
 
 <LI>file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keyword surface_values stress_keywords stress_values are documented in <A HREF = "fix_mesh_surface_stress.html">fix mesh/surface/stress</A>. 
 
-<LI>zero or more servo_keyword/value pairs may be appended 
+<LI>zero or more servo_keyword/value pairs may be appended
 servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV</I> (obligatory) or <I>vel_max</I> (obligatory) or <I>kp</I> or <I>ki</I> or <I>kd</I> 
 
 <PRE><I>com</I> values = x, y, z
@@ -33,19 +31,19 @@ servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV
     torque = use torque as controll process value, i.e. control torque
 <I>axis</I> args = x y z
     x y z = vector direction to apply the controlled mesh motion
-    x or y or z can be a variable (see below) 
+    x or y or z can be a variable (see below)
 <I>target_val</I> values = val
     val = target value for the controller (force units or torque units, depending on <I>ctrlPV</I>)
 <I>vel_max</I> values = v
     v = maximum velocity magnitude for servo wall (velocity units)
 <I>kp</I> values = k
-    k = proportional constant for PID controller 
+    k = proportional constant for PID controller
 <I>ki</I> values = k
     k = integral constant for PID controller
 <I>kd</I> values = k
     k = differential constant for PID controller
 <I>mode</I> values = auto
-    auto = use alternative controller algorithm 
+    auto = use alternative controller algorithm
 <I>ratio</I> values = dr
     dr = constant for the alternative controller approach (<I>mode</I> = auto) 
 </PRE>
@@ -56,19 +54,15 @@ servo keywords = <I>com</I> (obligatory) or <I>dim</I> (obligatory) or <I>ctrlPV
 <PRE>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
 fix servo all mesh/surface/stress/servo file stirrer.stl type 1 com 0. 0. 0. ctrlPV torque axis 0. 0. 1. target_val 10 vel_max 1. ratio 0.01 mode auto 
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This command is not available in LAMMPS.
-</P>
 <P><B>Description:</B>
 </P>
-<P>This fix implements the functionality of <A HREF = "fix_mesh_surface_stress.html">fix mesh/surface/stress</A> but 
-it additionally assumes the mesh being a servo wall that compacts a particle packing until either a 
+<P>This fix implements the functionality of <A HREF = "fix_mesh_surface_stress.html">fix mesh/surface/stress</A> but
+it additionally assumes the mesh being a servo wall that compacts a particle packing until either a
 total force (for <I>ctrlPV</I> = force)  or a total torque (for <I>ctrlPV</I> = torque) is acting on the mesh.
-The target value is defined via keyword <I>target_val</I>. The servo can act in any dimension 
+The target value is defined via keyword <I>target_val</I>. The servo can act in any dimension
 (as specified by the <I>axis</I> keyword). Only the direction of the axis is important; it's
 length is ignored.
-A negative value for <I>target_val</I> leads to a wall motion towards negative <I>axis</I>-direction and vice versa. The user has to specify 
+A negative value for <I>target_val</I> leads to a wall motion towards negative <I>axis</I>-direction and vice versa. The user has to specify
 the center of mass (keyword <I>com</I>) and the maximum velocity allowed for the servo wall by keyword <I>vel_max</I>.
 Note that <I>vel_max</I> < <A HREF = "neighbor.html">skin</A> /(2* <A HREF = "timestep.html">timestep</A> ) is required.
 </P>
@@ -77,19 +71,19 @@ Note that <I>vel_max</I> < <A HREF = "neighbor.html">skin</A> /(2* <A HREF = "ti
 </P>
 <P>output = kp * error + ki * errorsum + kd * errorchange
 </P>
-<P>where 'error' is the current deviation of the controll process value to the target value, 
+<P>where 'error' is the current deviation of the controll process value to the target value,
 'errorsum' is the time integration (sum) of the error values and 'errorchange' its derivative. The controller
-also includes an "anti-wind-up scheme" which prohibits accumulation of erroneous controller output caused 
+also includes an "anti-wind-up scheme" which prohibits accumulation of erroneous controller output caused
 by the integral part due to unavoidable long-lasting deviations.
 </P>
 <P>By using the keyword <I>mode</I> = auto an alternative controller approach is applied. It is a pure proportional controller with gain scheduling. In the absence of neighbour particles the servo wall may move with maximum velocity (defined by <I>vel_max</I>). Otherwise, the maximum wall velocity is defined by <I>ratio</I> * min(radius) / dt. Approaching <I>target_val</I> the maximum velocity decreases to 0.1 * <I>ratio</I> * min(radius) / dt.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
-<P>This fix stores a global vector with 9 components for access by various <A HREF = "Section_howto.html#4_15">output commands</A>. 
-The first 3 components are equal to the total force on the mesh, the next 3 components store the total torque 
+<P>This fix stores a global vector with 9 components for access by various <A HREF = "Section_howto.html#4_15">output commands</A>.
+The first 3 components are equal to the total force on the mesh, the next 3 components store the total torque
 on the mesh. The last 3 components output the wall position.
-Furthermore, this fix writes the state of the servo wall to binary restart files so 
+Furthermore, this fix writes the state of the servo wall to binary restart files so
 that a simulation can continue correctly.
 This fix supports <A HREF = "fix_modify.html">fix_modify</A> with option <I>integrate</I> = 'start' or 'stop'
 to start or stop the servo wall integration inbetween two runs.
@@ -102,7 +96,7 @@ to change the controller params inbetween two runs.
 </P>
 <P>When using this fix, along with scaling or rotate the body, all the servo_keyword/value pairs have to represent
 the state after scaling/rotation.
-Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary. 
+Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary.
 In this case, an error is generated. See <A HREF = "boundary.html">boundary</A> command for details.
 This fix can not be used in conjunction with another fix that manipulates mesh geometry,
 such as a <A HREF = "fix_move_mesh.html">fix move/mesh</A>
@@ -111,7 +105,7 @@ such as a <A HREF = "fix_move_mesh.html">fix move/mesh</A>
 </P>
 <P><A HREF = "fix_mesh_surface_stress.html">fix mesh/surface/stress</A>, <A HREF = "fix_wall_gran.html">fix wall/gran</A>
 </P>
-<P><B>Default:</B> 
+<P><B>Default:</B>
 </P>
 <P>kp = 1e-2, ki = 0, kd = 0
 </P>

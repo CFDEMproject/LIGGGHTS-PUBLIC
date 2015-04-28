@@ -1,8 +1,6 @@
 <HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
-
-
 
 
 
@@ -33,20 +31,14 @@
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>pair_style gran model hooke tangential history 
+<PRE>pair_style gran model hooke tangential history
 pair_style gran model hertz tangential history rolling_friction cdt
 pair_style gran model hertz tangential no_history cohesion sjkr  
 </PRE>
-<P><B>LIGGGHTS vs. LAMMPS Info:</B>
-</P>
-<P>This LIGGGHTS command offers the following improvements vs. LAMMPS: The stiffness and 
-damping coefficients k_n, k_t, gamma_n, gamma_t can now be derived from the material 
-properties. Also, a new model for macroscopic cohesion is introduced.
-</P>
 <P><B>General description:</B>
 </P>
-<P>The <I>gran</I> styles use the following formula for the frictional force between two granular 
-particles, when the distance r between two particles of radii Ri and Rj is less than their 
+<P>The <I>gran</I> styles use the following formula for the frictional force between two granular
+particles, when the distance r between two particles of radii Ri and Rj is less than their
 contact distance d = Ri + Rj. Typically, there is no force between the particles when r > d.
 </P>
 <CENTER><IMG SRC = "Eqs/pair_gran_html_60b8ced2.png">
@@ -67,58 +59,58 @@ contact distance d = Ri + Rj. Typically, there is no force between the particles
 
 
 </UL>
-<P>In the first term is the normal force between the two particles and the second term is the 
-tangential force. The normal force has 2 terms, a contact force and a damping force. The 
-tangential force also has 2 terms: a shear force and a damping force. The shear force is 
-a "history" effect that accounts for the tangential displacement ("tangential overlap") 
-between the particles for the duration of the time they are in contact. 
+<P>In the first term is the normal force between the two particles and the second term is the
+tangential force. The normal force has 2 terms, a contact force and a damping force. The
+tangential force also has 2 terms: a shear force and a damping force. The shear force is
+a "history" effect that accounts for the tangential displacement ("tangential overlap")
+between the particles for the duration of the time they are in contact.
 </P>
 <P>The concrete implementation for k_n, k_t, gamma_n, gamma_t and the shear history
-depend on the concrete models as chosen by the user. They are described on separate 
+depend on the concrete models as chosen by the user. They are described on separate
 doc pages <A HREF = "Section_gran_models.html">here</A>
 </P>
 <P>Also, other models may add additional forces or torques on the particles, such as
-cohesive or rolling friction forces. These are also described on separate 
+cohesive or rolling friction forces. These are also described on separate
 doc pages <A HREF = "Section_gran_models.html">here</A>
 </P>
-<P>IMPORTANT NOTE: The order of model keywords is important, you have to stick 
+<P>IMPORTANT NOTE: The order of model keywords is important, you have to stick
 to the order as outlined in the "Syntax" section of this doc page.
 </P>
 <P><B>General comments:</B>
 </P>
-<P>For granular styles there are no additional coefficients to set for each pair of atom types 
-via the <A HREF = "pair_coeff.html">pair_coeff</A> command. All settings are global and are made via the 
-pair_style command. However you must still use the <A HREF = "pair_coeff.html">pair_coeff</A> for all pairs 
+<P>For granular styles there are no additional coefficients to set for each pair of atom types
+via the <A HREF = "pair_coeff.html">pair_coeff</A> command. All settings are global and are made via the
+pair_style command. However you must still use the <A HREF = "pair_coeff.html">pair_coeff</A> for all pairs
 of granular atom types. For example the command
 </P>
 <PRE>pair_coeff * * 
 </PRE>
-<P>should be used if all atoms in the simulation interact via a granular potential 
-(i.e. one of the pair styles above is used). If a granular potential is used as a sub-style 
-of <A HREF = "pair_hybrid.html">pair_style hybrid</A>, then specific atom types can be used in the pair_coeff 
-command to determine which atoms interact via a granular potential. 
+<P>should be used if all atoms in the simulation interact via a granular potential
+(i.e. one of the pair styles above is used). If a granular potential is used as a sub-style
+of <A HREF = "pair_hybrid.html">pair_style hybrid</A>, then specific atom types can be used in the pair_coeff
+command to determine which atoms interact via a granular potential.
 </P>
 <P><B>Mixing, shift, table, tail correction, restart, rRESPA info:</B>
 </P>
-<P>The <A HREF = "pair_modify.html">pair_modify</A> mix, shift, table, and tail options are not 
+<P>The <A HREF = "pair_modify.html">pair_modify</A> mix, shift, table, and tail options are not
 relevant for granular pair styles.
 </P>
-<P>These pair styles write their information to <A HREF = "restart.html">binary restart files</A>, 
+<P>These pair styles write their information to <A HREF = "restart.html">binary restart files</A>,
 so a pair_style command does not need to be specified in an input script that reads a restart file.
 </P>
-<P>IMPORTANT NOTE: The material properties are not written to restart files! Thus, if you 
+<P>IMPORTANT NOTE: The material properties are not written to restart files! Thus, if you
 restart a simulation, you have to re-define them (by using the fixes mentioned above).
 </P>
-<P>These pair styles can only be used via the pair keyword of the <A HREF = "run_style.html">run_style respa</A> 
-command. They do not support the inner, middle, outer keywords. 
+<P>These pair styles can only be used via the pair keyword of the <A HREF = "run_style.html">run_style respa</A>
+command. They do not support the inner, middle, outer keywords.
 </P>
 <P><B>Restrictions:</B>
 </P>
-<P>These pair styles require that atoms store torque and angular velocity (omega) as 
-defined by the <A HREF = "atom_style.html">atom_style</A>. They also require a per-particle radius is 
+<P>These pair styles require that atoms store torque and angular velocity (omega) as
+defined by the <A HREF = "atom_style.html">atom_style</A>. They also require a per-particle radius is
 stored. The <I>sphere</I> or <I>granular</I> atom style does all of this.
 </P>
-<P>This pair style requires you to use the <A HREF = "communicate.html">communicate vel yes</A> option so that 
+<P>This pair style requires you to use the <A HREF = "communicate.html">communicate vel yes</A> option so that
 velocites are stored by ghost atoms.
 </P>
 <P>Only unit system that are self-consistent (si, cgs, lj) can be used with this pair style.
@@ -128,7 +120,7 @@ velocites are stored by ghost atoms.
 <P><A HREF = "pair_coeff.html">pair_coeff</A>
 Models for use with this command are described <A HREF = "Section_gran_models.html">here</A>
 </P>
-<P><B>Default:</B> 
+<P><B>Default:</B>
 </P>
 <P><I>model</I> = 'hertz'
 <I>tangential</I> = 'history'

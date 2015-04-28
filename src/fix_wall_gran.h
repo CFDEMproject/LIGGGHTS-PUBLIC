@@ -1,26 +1,43 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LIGGGHTS® is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   This software is distributed under the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Philippe Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -128,29 +145,29 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
     return fix_rigid_;
   }
 
-  void add_contactforce_wall(int ip, const LCM::ForceData & i_forces)
+  void add_contactforce_wall(int ip, const LCM::ForceData & i_forces,int idTri)
   {
     // add to fix wallforce contact
-    // always add 0 as ID
+    // adds 0 as ID for primitive wall
     double forces_torques_i[6];
 
-    if(!fix_wallforce_contact_->has_partner(ip,0))
+    if(!fix_wallforce_contact_->has_partner(ip,idTri))
     {
       vectorCopy3D(i_forces.delta_F,&(forces_torques_i[0]));
       vectorCopy3D(i_forces.delta_torque,&(forces_torques_i[3]));
-      fix_wallforce_contact_->add_partner(ip,0,forces_torques_i);
+      fix_wallforce_contact_->add_partner(ip,idTri,forces_torques_i);
     }
   }
 
-  void cwl_add_wall_2(const LCM::CollisionData & cdata, const LCM::ForceData & i_forces)
+  void cwl_add_wall_2(const LCM::SurfacesIntersectData & sidata, const LCM::ForceData & i_forces)
   {
     const double fx = i_forces.delta_F[0];
     const double fy = i_forces.delta_F[1];
     const double fz = i_forces.delta_F[2];
-    const double tor1 = i_forces.delta_torque[0]*cdata.area_ratio;
-    const double tor2 = i_forces.delta_torque[1]*cdata.area_ratio;
-    const double tor3 = i_forces.delta_torque[2]*cdata.area_ratio;
-    cwl_->add_wall_2(cdata.i,fx,fy,fz,tor1,tor2,tor3,cdata.contact_history,cdata.rsq);
+    const double tor1 = i_forces.delta_torque[0]*sidata.area_ratio;
+    const double tor2 = i_forces.delta_torque[1]*sidata.area_ratio;
+    const double tor3 = i_forces.delta_torque[2]*sidata.area_ratio;
+    cwl_->add_wall_2(sidata.i,fx,fy,fz,tor1,tor2,tor3,sidata.contact_history,sidata.rsq);
   }
 
  protected:
@@ -187,7 +204,7 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   // virtual functions that allow implementation of the
   // actual physics in the derived classes
-  virtual void compute_force(LCM::CollisionData & cdata, double *vwall);
+  virtual void compute_force(LCM::SurfacesIntersectData & sidata, double *vwall);
   void addHeatFlux(class TriMesh *mesh,int i,double rsq,double area_ratio);
 
   // sets flag that neigh list shall be built
@@ -255,7 +272,7 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   virtual void post_force_wall(int vflag);
 
-  inline void post_force_eval_contact(LCM::CollisionData & cdata, double * v_wall, int iMesh = -1, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
+  inline void post_force_eval_contact(LCM::SurfacesIntersectData & sidata, double * v_wall, int iMesh = -1, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
 };
 
 }

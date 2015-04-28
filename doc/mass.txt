@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -64,7 +64,7 @@ If you define a "hybrid atom style"_atom_style.html which includes one
 (or more) sub-styles which require per-type mass and one (or more)
 sub-styles which require per-atom mass, then you must define both.
 However, in this case the per-type mass will be ignored; only the
-per-atom mass will be used by LAMMPS.
+per-atom mass will be used by LIGGGHTS(R)-PUBLIC.
 
 [Restrictions:]
 

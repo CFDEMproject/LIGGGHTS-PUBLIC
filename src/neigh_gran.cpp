@@ -1,28 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS® - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS® is part of CFDEM®project
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
-   the producer of the LIGGGHTS® software and the CFDEM®coupling software
-   See http://www.cfdem.com/terms-trademark-policy for details.
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-   See the README file in the top-level directory.
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "neighbor.h"
@@ -48,16 +72,16 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
   int i,j,m,n,nn=0,bitmask=0,d; 
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   double radi,radsum,cutsq;
-  int *neighptr,*touchptr = NULL;
-  double *shearptr = NULL;
+  int *neighptr,*contact_flag_ptr = NULL;
+  double *contact_hist_ptr = NULL;
 
   NeighList *listgranhistory;
   int *npartner = NULL,**partner = NULL;
   double **contacthistory = NULL; 
-  int **firsttouch;
-  double **firstshear;
-  MyPage<int> *ipage_touch = NULL;
-  MyPage<double> *dpage_shear = NULL;
+  int **first_contact_flag;
+  double **first_contact_hist;
+  MyPage<int> *ipage_contact_flag = NULL;
+  MyPage<double> *dpage_contact_hist = NULL;
   int dnum = 0; 
 
   double **x = atom->x;
@@ -84,18 +108,18 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
     partner = fix_history->partner_; 
     contacthistory = fix_history->contacthistory_; 
     listgranhistory = list->listgranhistory;
-    firsttouch = listgranhistory->firstneigh;
-    firstshear = listgranhistory->firstdouble;
-    ipage_touch = listgranhistory->ipage;
-    dpage_shear = listgranhistory->dpage;
+    first_contact_flag = listgranhistory->firstneigh;
+    first_contact_hist = listgranhistory->firstdouble;
+    ipage_contact_flag = listgranhistory->ipage;
+    dpage_contact_hist = listgranhistory->dpage;
     dnum = listgranhistory->dnum; 
   }
 
   int inum = 0;
   ipage->reset();
   if (fix_history) {
-    ipage_touch->reset();
-    dpage_shear->reset();
+    ipage_contact_flag->reset();
+    dpage_contact_hist->reset();
   }
 
   for (i = 0; i < nlocal; i++) {
@@ -103,8 +127,8 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
     neighptr = ipage->vget();
     if (fix_history) {
       nn = 0;
-      touchptr = ipage_touch->vget();
-      shearptr = dpage_shear->vget();
+      contact_flag_ptr  = ipage_contact_flag->vget();
+      contact_hist_ptr = dpage_contact_hist->vget();
     }
 
     xtmp = x[i][0];
@@ -134,20 +158,20 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
             for (m = 0; m < npartner[i]; m++)
               if (partner[i][m] == tag[j]) break;
             if (m < npartner[i]) {
-              touchptr[n] = 1;
+              contact_flag_ptr[n] = 1;
               for (d = 0; d < dnum; d++) {  
-                shearptr[nn++] = contacthistory[i][m*dnum+d];
+                contact_hist_ptr[nn++] = contacthistory[i][m*dnum+d];
               }
             } else {
-              touchptr[n] = 0;
+              contact_flag_ptr[n] = 0;
               for (d = 0; d < dnum; d++) {  
-                shearptr[nn++] = 0.0;
+                contact_hist_ptr[nn++] = 0.0;
               }
             }
           } else {
-            touchptr[n] = 0;
+            contact_flag_ptr[n] = 0;
             for (d = 0; d < dnum; d++) {  
-              shearptr[nn++] = 0.0;
+              contact_hist_ptr[nn++] = 0.0;
             }
           }
         }
@@ -163,10 +187,10 @@ void Neighbor::granular_nsq_no_newton(NeighList *list)
     if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
     if (fix_history) {
-      firsttouch[i] = touchptr;
-      firstshear[i] = shearptr;
-      ipage_touch->vgot(n);
-      dpage_shear->vgot(nn);
+      first_contact_flag[i] = contact_flag_ptr;
+      first_contact_hist[i] = contact_hist_ptr;
+      ipage_contact_flag->vgot(n);
+      dpage_contact_hist->vgot(nn);
     }
   }
 
@@ -282,16 +306,16 @@ void Neighbor::granular_bin_no_newton_ghost(NeighList *list)
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   int xbin,ybin,zbin,xbin2,ybin2,zbin2;
   double radi,radsum,cutsq;
-  int *neighptr,*touchptr = NULL;
-  double *shearptr = NULL;
+  int *neighptr,*contact_flag_ptr = NULL;
+  double *contact_hist_ptr = NULL;
 
   NeighList *listgranhistory;
   int *npartner = NULL,**partner = NULL;
   double **contacthistory = NULL;
-  int **firsttouch = NULL;
-  double **firstshear = NULL;
-  MyPage<int> *ipage_touch = NULL;
-  MyPage<double> *dpage_shear = NULL;
+  int **first_contact_flag = NULL;
+  double **first_contact_hist = NULL;
+  MyPage<int> *ipage_contact_flag = NULL;
+  MyPage<double> *dpage_contact_hist = NULL;
   int dnum = 0; 
 
   // bin local & ghost atoms
@@ -323,18 +347,18 @@ void Neighbor::granular_bin_no_newton_ghost(NeighList *list)
     partner = fix_history->partner_; 
     contacthistory = fix_history->contacthistory_; 
     listgranhistory = list->listgranhistory;
-    firsttouch = listgranhistory->firstneigh;
-    firstshear = listgranhistory->firstdouble;
-    ipage_touch = listgranhistory->ipage;
-    dpage_shear = listgranhistory->dpage;
+    first_contact_flag = listgranhistory->firstneigh;
+    first_contact_hist = listgranhistory->firstdouble;
+    ipage_contact_flag = listgranhistory->ipage;
+    dpage_contact_hist = listgranhistory->dpage;
     dnum = listgranhistory->dnum; 
   }
 
   int inum = 0;
   ipage->reset();
         if (fix_history) {
-    ipage_touch->reset();
-    dpage_shear->reset();
+    ipage_contact_flag->reset();
+    dpage_contact_hist->reset();
     }
 
   for (i = 0; i < nall; i++) {
@@ -342,8 +366,8 @@ void Neighbor::granular_bin_no_newton_ghost(NeighList *list)
     neighptr = ipage->vget();
     if (fix_history) {
       nn = 0;
-      touchptr = ipage_touch->vget();
-      shearptr = dpage_shear->vget();
+      contact_flag_ptr = ipage_contact_flag->vget();
+      contact_hist_ptr = dpage_contact_hist->vget();
     }
 
     xtmp = x[i][0];
@@ -381,20 +405,20 @@ void Neighbor::granular_bin_no_newton_ghost(NeighList *list)
                 for (m = 0; m < npartner[i]; m++)
                   if (partner[i][m] == tag[j]) break;
                 if (m < npartner[i]) {
-                  touchptr[n] = 1;
+                  contact_flag_ptr[n] = 1;
                   for (d = 0; d < dnum; d++) { 
-                    shearptr[nn++] = contacthistory[i][m*dnum+d];
+                    contact_hist_ptr[nn++] = contacthistory[i][m*dnum+d];
                   }
                 } else {
-                   touchptr[n] = 0;
+                   contact_flag_ptr[n] = 0;
                    for (d = 0; d < dnum; d++) { 
-                     shearptr[nn++] = 0.0;
+                     contact_hist_ptr[nn++] = 0.0;
                    }
                 }
               } else {
-                touchptr[n] = 0;
+                contact_flag_ptr[n] = 0;
                 for (d = 0; d < dnum; d++) { 
-                    shearptr[nn++] = 0.0;
+                    contact_hist_ptr[nn++] = 0.0;
                 }
               }
             }
@@ -436,13 +460,13 @@ void Neighbor::granular_bin_no_newton_ghost(NeighList *list)
     if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
     if (fix_history && i < nlocal) {
-      firsttouch[i] = touchptr;
-      firstshear[i] = shearptr;
-      ipage_touch->vgot(n);
-      dpage_shear->vgot(nn);
+      first_contact_flag[i] = contact_flag_ptr;
+      first_contact_hist[i] = contact_hist_ptr;
+      ipage_contact_flag->vgot(n);
+      dpage_contact_hist->vgot(nn);
     } else {
-      firsttouch[i] = 0;
-      firstshear[i] = 0;
+      first_contact_flag[i] = 0;
+      first_contact_hist[i] = 0;
     }
   }
 
@@ -463,16 +487,16 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
   int i,j,k,m,n,nn=0,ibin,d;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
   double radi,radsum,cutsq;
-  int *neighptr,*touchptr = NULL;
-  double *shearptr = NULL;
+  int *neighptr,*contact_flag_ptr = NULL;
+  double *contact_hist_ptr = NULL;
 
   NeighList *listgranhistory;
   int *npartner = NULL,**partner = NULL;
   double **contacthistory = NULL;
-  int **firsttouch = NULL;
-  double **firstshear = NULL;
-  MyPage<int> *ipage_touch = NULL;
-  MyPage<double> *dpage_shear = NULL;
+  int **first_contact_flag = NULL;
+  double **first_contact_hist = NULL;
+  MyPage<int> *ipage_contact_flag = NULL;
+  MyPage<double> *dpage_contact_hist = NULL;
   int dnum = 0; 
 
   // bin local & ghost atoms
@@ -503,18 +527,18 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
     partner = fix_history->partner_; 
     contacthistory = fix_history->contacthistory_; 
     listgranhistory = list->listgranhistory;
-    firsttouch = listgranhistory->firstneigh;
-    firstshear = listgranhistory->firstdouble;
-    ipage_touch = listgranhistory->ipage;
-    dpage_shear = listgranhistory->dpage;
+    first_contact_flag = listgranhistory->firstneigh;
+    first_contact_hist = listgranhistory->firstdouble;
+    ipage_contact_flag = listgranhistory->ipage;
+    dpage_contact_hist = listgranhistory->dpage;
     dnum = listgranhistory->dnum; 
   }
 
   int inum = 0;
   ipage->reset();
         if (fix_history) {
-    ipage_touch->reset();
-    dpage_shear->reset();
+    ipage_contact_flag->reset();
+    dpage_contact_hist->reset();
     }
 
   for (i = 0; i < nlocal; i++) {
@@ -522,8 +546,8 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
     neighptr = ipage->vget();
     if (fix_history) {
       nn = 0;
-      touchptr = ipage_touch->vget();
-      shearptr = dpage_shear->vget();
+      contact_flag_ptr = ipage_contact_flag->vget();
+      contact_hist_ptr = dpage_contact_hist->vget();
     }
 
     xtmp = x[i][0];
@@ -553,25 +577,32 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
           neighptr[n] = j;
           
           if (fix_history) {
+            
             if (rsq < radsum*radsum)
-                {
+            {
               for (m = 0; m < npartner[i]; m++)
                 if (partner[i][m] == tag[j]) break;
               if (m < npartner[i]) {
-                touchptr[n] = 1;
+                contact_flag_ptr[n] = 1;
+                
                 for (d = 0; d < dnum; d++) { 
-                  shearptr[nn++] = contacthistory[i][m*dnum+d];
+                  contact_hist_ptr[nn++] = contacthistory[i][m*dnum+d];
                 }
               } else {
-                 touchptr[n] = 0;
+                 
+                 contact_flag_ptr[n] = 0;
                  for (d = 0; d < dnum; d++) { 
-                   shearptr[nn++] = 0.0;
+                   contact_hist_ptr[nn++] = 0.0;
                  }
               }
-            } else {
-              touchptr[n] = 0;
+            }
+            
+            else
+            {
+              
+              contact_flag_ptr[n] = 0;
               for (d = 0; d < dnum; d++) { 
-                shearptr[nn++] = 0.0;
+                contact_hist_ptr[nn++] = 0.0;
               }
             }
           }
@@ -588,10 +619,10 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
     if (ipage->status())
       error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
     if (fix_history) {
-      firsttouch[i] = touchptr;
-      firstshear[i] = shearptr;
-      ipage_touch->vgot(n);
-      dpage_shear->vgot(nn);
+      first_contact_flag[i] = contact_flag_ptr;
+      first_contact_hist[i] = contact_hist_ptr;
+      ipage_contact_flag->vgot(n);
+      dpage_contact_hist->vgot(nn);
     }
   }
 

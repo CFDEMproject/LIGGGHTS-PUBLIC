@@ -1,5 +1,5 @@
 <HTML>
-<CENTER><A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LAMMPS Documentation</A> - <A HREF = "Section_commands.html#comm">LAMMPS Commands</A> 
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
 </CENTER>
 
 
@@ -39,12 +39,11 @@ those produced by the original run had it continued on.
 which case the trajectories in the 2 runs will slowly diverge.  These
 include running on a different number of processors or changing
 certain settings such as those set by the <A HREF = "newton.html">newton</A> or
-<A HREF = "processors.html">processors</A> commands.  LAMMPS will issue a warning in
+<A HREF = "processors.html">processors</A> commands.  LIGGGHTS(R)-PUBLIC will issue a warning in
 these cases.
 </P>
 <P>Certain fixes will not restart exactly, though they should provide
-statistically similar results.  These include <A HREF = "fix_shake.html">fix
-shake</A> and <A HREF = "fix_langevin.html">fix langevin</A>.
+statistically similar results.
 </P>
 <P>Certain pair styles will not restart exactly, though they should
 provide statistically similar results.  This is because the forces
@@ -52,11 +51,10 @@ they compute depend on atom velocities, which are used at half-step
 values every timestep when forces are computed.  When a run restarts,
 forces are initially evaluated with a full-step velocity, which is
 different than if the run had continued.  These pair styles include
-<A HREF = "pair_gran.html">granular pair styles</A>, <A HREF = "pair_dpd.html">pair dpd</A>, and
-<A HREF = "pair_lubricate.html">pair lubricate</A>.
+<A HREF = "pair_gran.html">granular pair styles</A>.
 </P>
 <P>If a restarted run is immediately different than the run which
-produced the restart file, it could be a LAMMPS bug, so consider
+produced the restart file, it could be a LIGGGHTS(R)-PUBLIC bug, so consider
 <A HREF = "Section_errors.html#err_2">reporting it</A> if you think the behavior is
 wrong.
 </P>
@@ -76,20 +74,20 @@ you want your script to continue a run from where it left off.  See
 the <A HREF = "run.html">run</A> command and its "upto" option for how to specify
 the run command so it doesn't need to be changed either.
 </P>
-<P>If a "%" character appears in the restart filename, LAMMPS expects a
+<P>If a "%" character appears in the restart filename, LIGGGHTS(R)-PUBLIC expects a
 set of multiple files to exist.  The <A HREF = "restart.html">restart</A> and
 <A HREF = "write_restart.html">write_restart</A> commands explain how such sets are
 created.  Read_restart will first read a filename where "%" is
-replaced by "base".  This file tells LAMMPS how many processors
+replaced by "base".  This file tells LIGGGHTS(R)-PUBLIC how many processors
 created the set and how many files are in it.  Read_restart then reads
 the additional files.  For example, if the restart file was specified
 as save.% when it was written, then read_restart reads the files
 save.base, save.0, save.1, ... save.P-1, where P is the number of
 processors that created the restart file.  The processors in the
-current LAMMPS simulation share the work of reading these files; each
+current LIGGGHTS(R)-PUBLIC simulation share the work of reading these files; each
 reads a roughly equal subset of the files.  The number of processors
 which created the set can be different the number of processors in the
-current LAMMPS simulation.  This can be a fast mode of input on
+current LIGGGHTS(R)-PUBLIC simulation.  This can be a fast mode of input on
 parallel machines that support parallel I/O.
 </P>
 <HR>
@@ -114,11 +112,6 @@ such as the shift and tail settings, are stored in the restart file
 with the pair style.  The one exception is the <A HREF = "pair_modify.html">pair_modify
 compute</A> setting is not stored.
 </P>
-<P>Information about <A HREF = "kspace_style.html">kspace_style</A> settings are not
-stored in the restart file.  Hence if you wish to use an Ewald or PPPM
-solver, these commands must be re-issued after the restart file is
-read.
-</P>
 <P>The list of <A HREF = "fix.html">fixes</A> used for a simulation is not stored in
 the restart file.  This means the new input script should specify all
 fixes it will use.  Note that some fixes store an internal "state"
@@ -126,18 +119,12 @@ which is written to the restart file.  This allows the fix to continue
 on with its calculations in a restarted simulation.  To re-enable such
 a fix, the fix command in the new input script must use the same
 fix-ID and group-ID as was used in the input script that wrote the
-restart file.  If a match is found, LAMMPS prints a message indicating
+restart file.  If a match is found, LIGGGHTS(R)-PUBLIC prints a message indicating
 that the fix is being re-enabled.  If no match is found before the
 first run or minimization is performed by the new script, the "state"
 information for the saved fix is discarded.  See the doc pages for
 individual fixes for info on which ones can be restarted in this
 manner.
-</P>
-<P>Bond interactions (angle, etc) that have been turned off by the <A HREF = "fix_shake.html">fix
-shake</A> or <A HREF = "delete_bonds.html">delete_bonds</A> command will
-be written to a restart file as if they are turned on.  This means
-they will need to be turned off again in a new run after the restart
-file is read.
 </P>
 <P>Bonds that are broken (e.g. by a bond-breaking potential) are written
 to the restart file as broken bonds with a type of 0.  Thus these

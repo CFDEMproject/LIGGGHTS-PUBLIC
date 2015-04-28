@@ -33,8 +33,8 @@
 
 # data structures:
 
-# packstd list = ["COLLOID", "GPU", ...]
-# packuser list = ["USER-SPH", "USER-EWALDN", ...]
+# packstd list = ["ASPHERE", "PASCAL", ...]
+# packuser list = ["USER-SPH", "USER-EWALDN", ...], currently not existing
 # cfiles,hfiles dicts of LAMMPS *.cpp,*.h files =
 #   {"fix_nve.cpp": "", "angle_diplole.cpp": "USER-MISC", ...}
 # cdep,hdep dicts of files with list of LAMMPS *.h files they include = 
