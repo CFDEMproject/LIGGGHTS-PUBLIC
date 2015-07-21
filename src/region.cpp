@@ -88,6 +88,8 @@ Region::Region(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   lastshape = lastdynamic = -1;
 
   random = NULL; 
+
+  volume_limit_ = 1.e-10;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -297,17 +299,16 @@ void Region::inverse_transform(double &x, double &y, double &z)
    rotate x,y,z by angle via right-hand rule around point and runit normal
    sign of angle determines whether rotating forward/backward in time
    return updated x,y,z
-   P = point = vector = point of rotation
-   R = vector = axis of rotation
-   w = omega of rotation (from period)
-   X0 = x,y,z = initial coord of atom
+   R = vector axis of rotation
+   P = point = point to rotate around
    R0 = runit = unit vector for R
-   C = (X0 dot R0) R0 = projection of atom coord onto R
+   X0 = x,y,z = initial coord of atom
    D = X0 - P = vector from P to X0
-   A = D - C = vector from R line to X0
-   B = R0 cross A = vector perp to A in plane of rotation
+   C = (D dot R0) R0 = projection of D onto R, i.e. Dparallel
+   A = D - C = vector from R line to X0, i.e. Dperp
+   B = R0 cross A = vector perp to A in plane of rotation, same len as A
    A,B define plane of circular rotation around R line
-   x,y,z = P + C + A cos(w*dt) + B sin(w*dt)
+   new x,y,z = P + C + A cos(angle) + B sin(angle)
 ------------------------------------------------------------------------- */
 
 void Region::rotate(double &x, double &y, double &z, double angle)
@@ -316,13 +317,13 @@ void Region::rotate(double &x, double &y, double &z, double angle)
 
   double sine = sin(angle);
   double cosine = cos(angle);
-  double x0dotr = x*runit[0] + y*runit[1] + z*runit[2];
-  c[0] = x0dotr * runit[0];
-  c[1] = x0dotr * runit[1];
-  c[2] = x0dotr * runit[2];
   d[0] = x - point[0];
   d[1] = y - point[1];
   d[2] = z - point[2];
+  double x0dotr = d[0]*runit[0] + d[1]*runit[1] + d[2]*runit[2];
+  c[0] = x0dotr * runit[0];
+  c[1] = x0dotr * runit[1];
+  c[2] = x0dotr * runit[2];
   a[0] = d[0] - c[0];
   a[1] = d[1] - c[1];
   a[2] = d[2] - c[2];
@@ -335,6 +336,7 @@ void Region::rotate(double &x, double &y, double &z, double angle)
   x = point[0] + c[0] + disp[0];
   y = point[1] + c[1] + disp[1];
   z = point[2] + c[2] + disp[2];
+
 }
 
 /* ----------------------------------------------------------------------
@@ -348,7 +350,7 @@ void Region::options(int narg, char **arg)
   // option defaults
 
   interior = 1;
-  scaleflag = 1;
+  scaleflag = 0; 
   moveflag = rotateflag = 0;
 
   seed = 3012211;
@@ -414,6 +416,11 @@ void Region::options(int narg, char **arg)
       if (iarg+2 > narg)
         error->all(FLERR,"Illegal region command");
       seed = force->numeric(FLERR,arg[iarg+1]);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"volume_limit") == 0) {
+      if (iarg+2 > narg)
+        error->all(FLERR,"Illegal region command");
+      volume_limit_ = force->numeric(FLERR,arg[iarg+1]);
       iarg += 2;
     }
      else error->all(FLERR,"Illegal region command");
@@ -639,7 +646,7 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
     MPI_Sum_Scalar(n_in_global,n_in_global_all,world);
     if(n_in_global_all == 0)
         error->all(FLERR,"Unable to calculate region volume. Possible sources of error: \n"
-                         "   (a) region volume is too small or out of domain\n"
+                         "   (a) region volume is too small or out of domain (you may want to increase the 'volume_limit' in the input script)\n"
                          "   (b) particles for insertion are too large when using all_in yes\n"
                          "   (c) region is 2d, but should be 3d");
 
@@ -651,9 +658,9 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
 
     MPI_Sum_Scalar(vol_local,vol_local_all,world);
 
-    if(vol_local_all < 1e-10)
+    if(vol_local_all < volume_limit_)
         error->all(FLERR,"Unable to calculate region volume. Possible sources of error: \n"
-                         "   (a) region volume is too small or out of domain\n"
+                         "   (a) region volume is too small or out of domain (you may want to increase the 'volume_limit' in the input script)\n"
                          "   (b) particles for insertion are too large when using all_in yes\n"
                          "   (c) region is 2d, but should be 3d\n");
 

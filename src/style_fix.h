@@ -9,6 +9,7 @@
 #include "fix_ave_time.h"
 #include "fix_box_relax.h"
 #include "fix_cfd_coupling_convection.h"
+#include "fix_cfd_coupling_convection_species.h"
 #include "fix_cfd_coupling_force.h"
 #include "fix_cfd_coupling_force_implicit.h"
 #include "fix_cfd_coupling.h"

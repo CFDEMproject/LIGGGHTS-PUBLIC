@@ -355,5 +355,5 @@ parameters must be 0.0.
 
 [Default:]
 
-The option defaults are side = in, units = lattice, and no move or
+The option defaults are side = in, units = box, and no move or
 rotation.

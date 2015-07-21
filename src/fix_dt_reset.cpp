@@ -98,7 +98,7 @@ FixDtReset::FixDtReset(LAMMPS *lmp, int narg, char **arg) :
     error->all(FLERR,"Illegal fix dt/reset command");
   if (xmax <= 0.0) error->all(FLERR,"Illegal fix dt/reset command");
 
-  int scaleflag = 1;
+  int scaleflag = 0; 
 
   int iarg = 7;
   while (iarg < narg) {

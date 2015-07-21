@@ -153,6 +153,7 @@ void PropertyRegistry::connect(string varname, double ** & variable, const char 
       matrices[varname] = (*matrix_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
+      error->message(FLERR, "unknown matrix property");
     }
   }
   matrices[varname]->connect(variable);
@@ -165,6 +166,7 @@ void PropertyRegistry::connect(string varname, double * & variable, const char *
       vectors[varname] = (*vector_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
+      error->message(FLERR, "unknown vector property");
     }
   }
   vectors[varname]->connect(variable);
@@ -177,6 +179,7 @@ void PropertyRegistry::connect(string varname, double & variable, const char *ca
       scalars[varname] = (*scalar_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
+      error->message(FLERR, "unknown scalar property");
     }
   }
   scalars[varname]->connect(variable);

@@ -91,6 +91,7 @@ Factory::Factory() {
   #include "style_normal_model.h"
   #undef NORMAL_MODEL
 
+  addTangentialModel("off", TANGENTIAL_OFF);
   #define TANGENTIAL_MODEL(identifier,str,constant) \
   addTangentialModel(#str, identifier);
   #include "style_tangential_model.h"
@@ -144,7 +145,7 @@ int64_t Factory::select_model(int & narg, char ** & args)
 
   // default configuration
   int model = -1;
-  int tangential = TANGENTIAL_NO_HISTORY;
+  int tangential = TANGENTIAL_OFF;
   int cohesion = COHESION_OFF;
   int rolling = ROLLING_OFF;
   int surface = SURFACE_DEFAULT;

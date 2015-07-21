@@ -460,6 +460,10 @@ void Comm::setup()
 
   for(int ifix = 0; ifix < nfix; ifix++)
   {
+      
+      if(!fix[ifix]->use_rad_for_cut_neigh_and_ghost())
+        continue;
+
       double cut_fix = fix[ifix]->extend_cut_ghost();
       cut = MAX(cut,cut_fix + neighbor->skin);
       

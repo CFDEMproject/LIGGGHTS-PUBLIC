@@ -314,7 +314,6 @@ void FixMesh::initialSetup()
     if(!mesh_->allNodesInsideSimulationBox() && 0 == comm->me)
        error->warning(FLERR,"Not all nodes of fix mesh inside simulation box, "
                             "elements will be deleted or wrapped around periodic boundary conditions");
-
     if(comm->me == 0)
        fprintf(screen,"Import and parallelization of mesh %s containing %d triangle(s) successful\n",
                id,mesh_->sizeGlobal());

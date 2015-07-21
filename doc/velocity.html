@@ -22,6 +22,9 @@
 <PRE>  <I>set</I> args = vx vy vz
     vx,vy,vz = velocity value or NULL (velocity units)
     any of vx,vy,vz van be a variable (see below)
+  <I>setAngular</I> args = angularmx angularmy angularmz
+    angularmx,angularmy,angularmz = angular momentum value or NULL (angular mometum units)
+    any of angularmx,angularmy,angularmz van be a variable (see below)
   <I>ramp</I> args = vdim vlo vhi dim clo chi
     vdim = <I>vx</I> or <I>vy</I> or <I>vz</I>
     vlo,vhi = lower and upper velocity value (velocity units)
@@ -65,6 +68,9 @@ an equal-style or atom-style <A HREF = "variable.html">variable</A>.  If the val
 is a variable, it should be specified as v_name, where name is the
 variable name.  In this case, the variable will be evaluated, and its
 value used to determine the velocity component.
+</P>
+<P>The <I>setAngular</I> is simular to <I>set</I>, however, sets the angular 
+momentum.
 </P>
 <P>Equal-style variables can specify formulas with various mathematical
 functions, and include <A HREF = "thermo_style.html">thermo_style</A> command
@@ -154,7 +160,7 @@ fix</A> variants which defines a set of rigid bodies.  The
 zeroing of linear or angular momentum is then performed for each rigid
 body defined by the fix, as described above.
 </P>
-<P>The <I>units</I> option is used by <I>set</I> and <I>ramp</I>.  If units = box,
+<P>The <I>units</I> option is used by <I>set</I>, <I>setAngular</I> and <I>ramp</I>.  If units = box,
 the velocities and coordinates specified in the velocity command are
 in the standard units described by the <A HREF = "units.html">units</A> command
 (e.g. Angstroms/fmsec for real units).  If units = lattice, velocities
@@ -171,7 +177,7 @@ command must have been previously used to define the lattice spacing.
 <P><B>Default:</B>
 </P>
 <P>The option defaults are dist = uniform, sum = no, mom = yes, rot = no,
- style on group-ID, loop = all, and units = lattice.  The
+ style on group-ID, loop = all, and units = box.  The
 rigid option is not defined by default.
 </P>
 </HTML>

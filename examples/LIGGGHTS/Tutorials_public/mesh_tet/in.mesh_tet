@@ -42,7 +42,6 @@ lattice		sc $d
 create_atoms	1 region mesh
 set		group all density 500 diameter $d
 
-
 #apply nve integration to all particles that are inserted as single particles
 fix		integr nve_group nve/sphere
 

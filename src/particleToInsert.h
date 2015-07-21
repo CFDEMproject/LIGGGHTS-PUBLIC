@@ -65,6 +65,8 @@ namespace LAMMPS_NS {
         double mass_ins;
         double r_bound_ins;
 
+        int distorder;
+
         // per-sphere radius, position
         // if atom_type_vector exists, each sphere has different type
         double *radius_ins;

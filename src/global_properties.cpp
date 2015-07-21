@@ -75,6 +75,7 @@ namespace MODEL_PARAMS
   static const char * COEFFICIENT_PLASTICITY_DEPTH = "coefficientPlasticityDepth";
   static const char * ROUGHNESS_ABSOLUTE = "roughnessAbsolute";
   static const char * ROUGHNESS_RELATIVE = "roughnessRelative";
+  static const char * ROLLING_STIFFNESS = "rollingStiffness";
 
   /* -----------------------------------------------------------------------
    * Utility functions
@@ -431,6 +432,23 @@ namespace MODEL_PARAMS
    }
 
    return matrix;
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  ScalarProperty* createRollingStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+    ScalarProperty* rollingStiffness = createScalarProperty(registry, ROLLING_STIFFNESS, caller);
+    double rollStiffness = rollingStiffness->data;
+
+    if(sanity_checks)
+    {
+      if(strcmp(lmp->update->unit_style,"si") == 0  && rollStiffness < 1.0 )
+        lmp->error->all(FLERR,"rollingStiffness >= 1 required for SI units");
+    }
+
+    return rollingStiffness;
   }
 
   /* ---------------------------------------------------------------------- */

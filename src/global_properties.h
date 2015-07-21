@@ -76,6 +76,7 @@ namespace MODEL_PARAMS
   MatrixProperty* createCoeffMu(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffRestMax(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffStc(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  ScalarProperty* createRollingStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks);
 
   ScalarProperty* createLiquidVolume(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createSurfaceTension(PropertyRegistry & registry, const char * caller, bool sanity_checks);

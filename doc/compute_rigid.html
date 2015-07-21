@@ -33,7 +33,7 @@
   <I>density</I> = body density (1 value)
   <I>atomtype</I> = atom type (material type) of the rigid body (1 value)
   <I>clumptype</I> = multi-sphere type as defined in <A HREF = "fix_particletemplate_multisphere.html">fix paticleteplate/multisphere</A> (1 value)
-  <I>id</I> = body id (1 value)
+  <I>id_multisphere</I> = body id (1 value)
   <I>masstotal</I> = body mass (1 value)
   <I>inertia</I> = body intertia (based on center of mass, around ex_space, ey_space, ez_space) (3 values)
   <I>ex_space</I>, <I>ey_space</I>, <I>ez_space</I> = eigensystem of the body (based on center of mass) (3 values each)  
@@ -73,8 +73,7 @@ For accessing particle-wall contact data, only mesh walls can be used.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "dump.html">dump local</A>, <A HREF = "compute_property_local.html">compute property/local</A>,
-<A HREF = "compute/pair/local.html">compute pair/local</A>
+<P><A HREF = "dump.html">dump local</A>, <A HREF = "compute_property_local.html">compute property/local</A>
 </P>
 <P><B>Default:</B> none
 </P>

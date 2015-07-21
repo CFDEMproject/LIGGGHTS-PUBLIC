@@ -1,0 +1,70 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+gran rolling_friction epsd3 :h3
+
+[Syntax:]
+
+rolling_friction epsd3 :pre
+
+[Description:]
+
+This model can be used as part of "pair gran"_pair_gran.html and
+"fix wall/gran"_fix_wall_gran.html
+
+The elastic-plastic spring-dashpot (EPSD) model (see Ai et al.) adds an additional
+torque contribution, equal to
+
+:c,image(Eqs/pair_gran_hooke_eqEpsd1.gif)
+
+where the torque due to the spring M_rk is calculated as
+
+:c,image(Eqs/pair_gran_hooke_eqEpsd2.gif)
+
+Here k_r denotes the rolling stiffness and dtheta_r is the incremental relative
+rotation between the particles. The spring torque is limited by the full mobilisation
+torque M_rm that is determined by the normal force F_n and the coefficient of rolling
+friction (rmu) (compare the "CDT model"_gran_rolling_friction_cdt.html).
+
+The rolling stiffness k_r is computed using the "coeffRollingStiffness" prefactor, 
+that needs to be defined by the user (see below). k_r is computed from 
+k_r = coeffRollingStiffness*k_n*rmu*rmu*reff*reff.
+
+The viscous damping torque M_rd is implemented as
+
+:c,image(Eqs/pair_gran_hooke_eqEpsd3.gif)
+
+where in the current implementation the damping is disabled in case of full mobilisation
+(f = 0). The damping coefficient C_r may be expressed as:
+
+:c,image(Eqs/pair_gran_hooke_eqEpsd4.gif)
+
+Here I_i/j is the moment of inertia and m_i/j is the mass of the particles i and j,
+respectively.
+
+The coefficient of rolling friction (rmu) must be defined as
+
+fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
+
+This coefficient rmu is equal to the rmu as defined in the "CDT model"_gran_rolling_friction_cdt.html.
+In addition to rmu, eta_r is the required material property that must be defined as
+
+fix id all property/global coefficientRollingViscousDamping peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) :pre
+
+The "coeffRollingStiffness" prefactor needs to be defined by the user as
+
+fix     id all property/global coeffRollingStiffness scalar value :pre
+
+Please see Ai et al., 2011 for discussion.
+
+
+IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
+
+[(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).

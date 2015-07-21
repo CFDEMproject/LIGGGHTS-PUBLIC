@@ -267,7 +267,7 @@ void FixCheckTimestepSph::calc_courant_estims_eval()
       }
     } //neighbor loop
 
-    cmean = 0.5*(cs->values[type[i]-1]+cs->values[type[j_maxmu]-1]);
+    cmean = 0.5*(cs->get_values()[type[i]-1]+cs->get_values()[type[j_maxmu]-1]);
     courant_time_one = sli / (cmean + mumax);
     courant_time = MIN(courant_time,courant_time_one);
 

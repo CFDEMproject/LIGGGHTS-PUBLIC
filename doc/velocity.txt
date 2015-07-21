@@ -17,6 +17,9 @@ style = {set} or {ramp} or {zero} :l
   {set} args = vx vy vz
     vx,vy,vz = velocity value or NULL (velocity units)
     any of vx,vy,vz van be a variable (see below)
+  {setAngular} args = angularmx angularmy angularmz
+    angularmx,angularmy,angularmz = angular momentum value or NULL (angular mometum units)
+    any of angularmx,angularmy,angularmz van be a variable (see below)
   {ramp} args = vdim vlo vhi dim clo chi
     vdim = {vx} or {vy} or {vz}
     vlo,vhi = lower and upper velocity value (velocity units)
@@ -57,6 +60,9 @@ an equal-style or atom-style "variable"_variable.html.  If the value
 is a variable, it should be specified as v_name, where name is the
 variable name.  In this case, the variable will be evaluated, and its
 value used to determine the velocity component.
+
+The {setAngular} is simular to {set}, however, sets the angular 
+momentum.
 
 Equal-style variables can specify formulas with various mathematical
 functions, and include "thermo_style"_thermo_style.html command
@@ -147,7 +153,7 @@ fix"_fix_rigid.html variants which defines a set of rigid bodies.  The
 zeroing of linear or angular momentum is then performed for each rigid
 body defined by the fix, as described above.
 
-The {units} option is used by {set} and {ramp}.  If units = box,
+The {units} option is used by {set}, {setAngular} and {ramp}.  If units = box,
 the velocities and coordinates specified in the velocity command are
 in the standard units described by the "units"_units.html command
 (e.g. Angstroms/fmsec for real units).  If units = lattice, velocities
@@ -164,5 +170,5 @@ command must have been previously used to define the lattice spacing.
 [Default:]
 
 The option defaults are dist = uniform, sum = no, mom = yes, rot = no,
- style on group-ID, loop = all, and units = lattice.  The
+ style on group-ID, loop = all, and units = box.  The
 rigid option is not defined by default.

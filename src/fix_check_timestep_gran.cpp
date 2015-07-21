@@ -201,8 +201,8 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
   {
     if (mask[i] & groupbit)
     {
-        double shear_mod = Y->values[type[i]-1]/(2.*(nu->values[type[i]-1]+1.));
-        rayleigh_time_i = M_PI*r[i]*sqrt(density[i]/shear_mod)/(0.1631*nu->values[type[i]-1]+0.8766);
+        double shear_mod = Y->get_values()[type[i]-1]/(2.*(nu->get_values()[type[i]-1]+1.));
+        rayleigh_time_i = M_PI*r[i]*sqrt(density[i]/shear_mod)/(0.1631*nu->get_values()[type[i]-1]+0.8766);
         if(rayleigh_time_i < rayleigh_time) rayleigh_time = rayleigh_time_i;
 
         vmag = sqrt(v[i][0]*v[i][0]+v[i][1]*v[i][1]+v[i][2]*v[i][2]);

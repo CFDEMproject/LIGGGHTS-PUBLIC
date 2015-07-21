@@ -63,6 +63,7 @@
 #include "output.h"
 #include "thermo.h"
 #include "random_mars.h"
+#include "fix_multisphere.h"
 #include "math_const.h"
 #include "atom_masks.h"
 #include "memory.h"
@@ -2829,6 +2830,11 @@ int Variable::group_function(char *word, char *contents, Tree **tree,
                              Tree **treestack, int &ntreestack,
                              double *argstack, int &nargstack)
 {
+
+  int n_ms = modify->n_fixes_style("multisphere");
+  if(n_ms > 0 && !static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0))->allow_group_and_set())
+    error->all(FLERR,"Variable command 'group' may not be used together with fix multisphere");
+
   // word not a match to any group function
 
   if (strcmp(word,"count") && strcmp(word,"mass") &&
@@ -3073,6 +3079,10 @@ int Variable::region_function(char *id)
   int iregion = domain->find_region(id);
   if (iregion == -1)
     error->all(FLERR,"Region ID in variable formula does not exist");
+
+  int n_ms = modify->n_fixes_style("multisphere");
+  if(n_ms > 0 && !static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0))->allow_group_and_set())
+    error->all(FLERR,"Variable command 'region' may not be used together with fix multisphere");
 
   // init region in case sub-regions have been deleted
 

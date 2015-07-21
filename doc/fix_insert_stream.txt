@@ -18,7 +18,7 @@ seed_value = random # seed (positive integer) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
-general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or{vel constant} or {vel uniform} or {vel gaussian} or {orientation} or {omega} or {set_property}:l
+general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or{vel constant} or {vel uniform} or {vel gaussian} or {orientation} or {omega} or {set_property} :l
   {verbose} = yes or no
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)

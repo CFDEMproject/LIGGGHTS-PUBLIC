@@ -143,6 +143,24 @@ public:
     const double eny = sidata.delta[1] * rinv;
     const double enz = sidata.delta[2] * rinv;
 
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    error->one(FLERR,"Sascha, please check the changes. I think there was a bug for case of spheres");
+    /*
+    const double deltan_inv = 1.0 / vectorMag3D(sidata.delta);
+    const double enx = sidata.delta[0] * deltan_inv;
+    const double eny = sidata.delta[1] * deltan_inv;
+    const double enz = sidata.delta[2] * deltan_inv;
+    */
+    if(atom->superquadric_flag) {
+      Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
+      sidata.radi = particle.calc_curvature_radius(sidata.contact_point);
+      //sidata.radi = pow(3.0 * atom->volume[ip] / 4.0 / M_PI, 1.0/3.0);
+    } else
+      sidata.radi = radius;
+#else
+    sidata.radi = radius;
+#endif
+
     // copy collision data to struct (compiler can figure out a better way to
     // interleave these stores with the double calculations above.
     ForceData i_forces;
@@ -154,7 +172,6 @@ public:
     sidata.en[1] = eny;
     sidata.en[2] = enz;
     sidata.i = ip;
-    sidata.radi = radius;
     sidata.contact_flags = NULL;
     sidata.itype = type[ip];
 

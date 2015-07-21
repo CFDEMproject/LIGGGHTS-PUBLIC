@@ -44,7 +44,7 @@ args = list of arguments for a particular style :l
       f_ID\[N\] = Nth column of local array calculated by a fix with ID :pre
 
   {custom} args = list of atom attributes
-    possible attributes = id, mol, type, element, mass,
+    possible attributes = id, mol, id_multisphere , type, element, mass,
 			  x, y, z, xs, ys, zs, xu, yu, zu,
 			  xsu, ysu, zsu, ix, iy, iz,
 			  vx, vy, vz, fx, fy, fz,
@@ -55,6 +55,7 @@ args = list of arguments for a particular style :l
 
       id = atom ID
       mol = molecule ID
+      id_multisphere = ID of multisphere body
       type = atom type
       element = name of atom element, as defined by "dump_modify"_dump_modify.html command
       mass = atom mass
@@ -417,7 +418,9 @@ The {id}, {mol}, {type}, {element}, {mass}, {vx}, {vy}, {vz}, {fx}, {fy},
 {fz}, {q} attributes are self-explanatory.
 
 {Id} is the atom ID.  {Mol} is the molecule ID, included in the data
-file for molecular systems.  {Type} is the atom type.  {Element} is
+file for molecular systems. {id_multisphere} is the ID of the multisphere
+body that the particle belongs to (if your version supports multisphere). 
+{Type} is the atom type.  {Element} is
 typically the chemical name of an element, which you must assign to
 each type via the "dump_modify element"_dump_modify.html command.
 More generally, it can be any string you wish to associated with an

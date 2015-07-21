@@ -72,9 +72,11 @@
 #include "memory.h"
 #include "error.h"
 
+#include "fix_multisphere.h"
+
 using namespace LAMMPS_NS;
 
-enum{SET,RAMP,ZERO};
+enum{SET,RAMP,ZERO, SETANGULAR};
 enum{ALL,LOCAL,GEOM};
 enum{NONE,CONSTANT,EQUAL,ATOM};
 
@@ -111,6 +113,7 @@ void Velocity::command(int narg, char **arg)
   if (strcmp(arg[1],"set") == 0) style = SET;
   else if (strcmp(arg[1],"ramp") == 0) style = RAMP;
   else if (strcmp(arg[1],"zero") == 0) style = ZERO;
+  else if (strcmp(arg[1],"setAngular")==0) style = SETANGULAR;
   else error->all(FLERR,"Illegal velocity command");
 
   // set defaults
@@ -120,8 +123,11 @@ void Velocity::command(int narg, char **arg)
   momentum_flag = 1;
   rotation_flag = 0;
   loop_flag = ALL;
-  scale_flag = 1;
+  scale_flag = 0; 
   rfix = -1;
+
+  // multispheres
+  fix_ms_ =  static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
 
   // read options from end of input line
   // change defaults as options specify
@@ -129,6 +135,7 @@ void Velocity::command(int narg, char **arg)
   if (style == SET) options(narg-5,&arg[5]);
   else if (style == RAMP) options(narg-8,&arg[8]);
   else if (style == ZERO) options(narg-3,&arg[3]);
+  else if (style == SETANGULAR) options(narg-5,&arg[5]);
 
   // initialize velocities based on style
   // create() invoked differently, so can be called externally
@@ -136,6 +143,7 @@ void Velocity::command(int narg, char **arg)
   if (style == SET) set(narg-2,&arg[2]);
   else if (style == RAMP) ramp(narg-2,&arg[2]);
   else if (style == ZERO) zero(narg-2,&arg[2]);
+  else if (style == SETANGULAR) setAngular(narg-2,&arg[2]);
 }
 
 /* ----------------------------------------------------------------------
@@ -153,7 +161,167 @@ void Velocity::init_external(const char *extgroup)
   momentum_flag = 1;
   rotation_flag = 0;
   loop_flag = ALL;
-  scale_flag = 1;
+  scale_flag = 0; 
+}
+
+/* ---------------------------------------------------------------------- */
+void Velocity::setAngular(int narg, char **arg)
+{
+  int xstyle,ystyle,zstyle,varflag;
+  double vx=0.0,vy=0.0,vz=0.0;
+  char *xstr,*ystr,*zstr;
+  int xvar=0,yvar=0,zvar=0;
+
+  // parse 3 args
+
+  xstyle = ystyle = zstyle = CONSTANT;
+  xstr = ystr = zstr = NULL;
+
+  if (strstr(arg[0],"v_") == arg[0]) {
+    int n = strlen(&arg[0][2]) + 1;
+    xstr = new char[n];
+    strcpy(xstr,&arg[0][2]);
+  } else if (strcmp(arg[0],"NULL") == 0) xstyle = NONE;
+  else vx = force->numeric(FLERR,arg[0]);
+
+  if (strstr(arg[1],"v_") == arg[1]) {
+    int n = strlen(&arg[1][2]) + 1;
+    ystr = new char[n];
+    strcpy(ystr,&arg[1][2]);
+  } else if (strcmp(arg[1],"NULL") == 0) ystyle = NONE;
+  else vy = force->numeric(FLERR,arg[1]);
+
+  if (strstr(arg[2],"v_") == arg[2]) {
+    int n = strlen(&arg[2][2]) + 1;
+    zstr = new char[n];
+    strcpy(zstr,&arg[2][2]);
+  } else if (strcmp(arg[2],"NULL") == 0) zstyle = NONE;
+  else vz = force->numeric(FLERR,arg[2]);
+
+  // set and apply scale factors
+
+  xscale = yscale = zscale = 1.0;
+
+  if (xstyle && !xstr) {
+    if (scale_flag) xscale = domain->lattice->xlattice;
+    vx *= xscale;
+  }
+  if (ystyle && !ystr) {
+    if (scale_flag) yscale = domain->lattice->ylattice;
+    vy *= yscale;
+  }
+  if (zstyle && !zstr) {
+    if (scale_flag) zscale = domain->lattice->zlattice;
+    vz *= zscale;
+  }
+
+  // check variables
+
+  if (xstr) {
+    xvar = input->variable->find(xstr);
+    if (xvar < 0)
+      error->all(FLERR,"Variable name for velocity set does not exist");
+    if (input->variable->equalstyle(xvar)) xstyle = EQUAL;
+    else if (input->variable->atomstyle(xvar)) xstyle = ATOM;
+    else error->all(FLERR,"Variable for velocity set is invalid style");
+  }
+  if (ystr) {
+    yvar = input->variable->find(ystr);
+    if (yvar < 0)
+      error->all(FLERR,"Variable name for velocity set does not exist");
+    if (input->variable->equalstyle(yvar)) ystyle = EQUAL;
+    else if (input->variable->atomstyle(yvar)) ystyle = ATOM;
+    else error->all(FLERR,"Variable for velocity set is invalid style");
+  }
+  if (zstr) {
+    zvar = input->variable->find(zstr);
+    if (zvar < 0)
+      error->all(FLERR,"Variable name for velocity set does not exist");
+    if (input->variable->equalstyle(zvar)) zstyle = EQUAL;
+    else if (input->variable->atomstyle(zvar)) zstyle = ATOM;
+    else error->all(FLERR,"Variable for velocity set is invalid style");
+  }
+
+  if (xstyle == ATOM || ystyle == ATOM || zstyle == ATOM)
+    varflag = ATOM;
+  else if (xstyle == EQUAL || ystyle == EQUAL || zstyle == EQUAL)
+    varflag = EQUAL;
+  else varflag = CONSTANT;
+
+  // error check for 2d models
+
+  if (domain->dimension == 2) {
+    if (zstyle == CONSTANT && vz != 0.0)
+      error->all(FLERR,"Cannot set non-zero z velocity for 2d simulation");
+    if (zstyle == EQUAL || zstyle == ATOM)
+      error->all(FLERR,"Cannot set variable z velocity for 2d simulation");
+  }
+
+  // allocate vfield array if necessary
+
+  double **vfield = NULL;
+  if (varflag == ATOM) memory->create(vfield,atom->nlocal,3,"velocity:vfield");
+
+  // set velocities via constants
+
+  double **angmom  = atom->angmom;
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+
+  if (varflag == CONSTANT) {
+    for (int i = 0; i < nlocal; i++) {
+      if (mask[i] & groupbit) {
+        if (sum_flag == 0) {
+          if (xstyle) angmom[i][0] = vx;
+          if (ystyle) angmom[i][1] = vy;
+          if (zstyle) angmom[i][2] = vz;
+        } else {
+          if (xstyle) angmom[i][0] += vx;
+          if (ystyle) angmom[i][1] += vy;
+          if (zstyle) angmom[i][2] += vz;
+        }
+      }
+    }
+
+  // set velocities via variables
+
+  } else {
+    if (xstyle == EQUAL) vx = input->variable->compute_equal(xvar);
+    else if (xstyle == ATOM && vfield)
+      input->variable->compute_atom(xvar,igroup,&vfield[0][0],3,0);
+    if (ystyle == EQUAL) vy = input->variable->compute_equal(yvar);
+    else if (ystyle == ATOM && vfield)
+      input->variable->compute_atom(yvar,igroup,&vfield[0][1],3,0);
+    if (zstyle == EQUAL) vz = input->variable->compute_equal(zvar);
+    else if (zstyle == ATOM && vfield)
+      input->variable->compute_atom(zvar,igroup,&vfield[0][2],3,0);
+
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit) {
+        if (sum_flag == 0) {
+          if (xstyle == ATOM) angmom[i][0] = vfield[i][0];
+          else if (xstyle) angmom[i][0] = vx;
+          if (ystyle == ATOM) angmom[i][1] = vfield[i][1];
+          else if (ystyle) angmom[i][1] = vy;
+          if (zstyle == ATOM) angmom[i][2] = vfield[i][2];
+          else if (zstyle) angmom[i][2] = vz;
+        } else {
+          if (xstyle == ATOM) angmom[i][0] += vfield[i][0];
+          else if (xstyle) angmom[i][0] += vx;
+          if (ystyle == ATOM) angmom[i][1] += vfield[i][1];
+          else if (ystyle) angmom[i][1] += vy;
+          if (zstyle == ATOM) angmom[i][2] += vfield[i][2];
+          else if (zstyle) angmom[i][2] += vz;
+        }
+      }
+  }
+
+  // clean up
+
+  delete [] xstr;
+  delete [] ystr;
+  delete [] zstr;
+  memory->destroy(vfield);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -454,11 +622,17 @@ void Velocity::zero_momentum()
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
+  double zerovec[3] = {0., 0., 0.};
+
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
       v[i][0] -= vcm[0];
       v[i][1] -= vcm[1];
       v[i][2] -= vcm[2];
+
+      if (fix_ms_)
+        fix_ms_->set_v_body_from_atom_index(i,zerovec);
+
     }
 }
 
@@ -497,6 +671,8 @@ void Velocity::zero_rotation()
   double dx,dy,dz;
   double unwrap[3];
 
+  double zerovec[3] = {0., 0., 0.};
+
   for (i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
       domain->unmap(x[i],image[i],unwrap);
@@ -506,6 +682,10 @@ void Velocity::zero_rotation()
       v[i][0] -= omega[1]*dz - omega[2]*dy;
       v[i][1] -= omega[2]*dx - omega[0]*dz;
       v[i][2] -= omega[0]*dy - omega[1]*dx;
+
+      if (fix_ms_)
+        fix_ms_->set_omega_body_from_atom_index(i,zerovec);
+
     }
 }
 

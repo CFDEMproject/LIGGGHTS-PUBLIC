@@ -129,7 +129,7 @@ void CreateAtoms::command(int narg, char **arg)
 
   // process optional keywords
 
-  int scaleflag = 1;
+  int scaleflag = 0; 
   remapflag = 0;
 
   nbasis = domain->lattice->nbasis;

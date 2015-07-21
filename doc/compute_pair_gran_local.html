@@ -29,6 +29,8 @@ compute ID group-ID wall/gran/local keywords ...
   <I>vel</I> = velocities of particles in contact (6 values)
   <I>id</I> = IDs of particles in contact and a periodicity flag (3 values) or IDs of the mesh, the triangle and the particle (3 values)
   <I>force</I> = contact force (3 values)
+  <I>force_normal</I> = normal component of contact force (3 values)
+  <I>force_tangential</I> = tangential component of contact force (3 values)
   <I>torque</I> = torque divided by particle diameter (3 values)
   <I>history</I> = contact history (# depends on pair style, e.g. 3 shear history values)
   <I>contactArea</I> = area of the contact (1 value)
@@ -75,7 +77,9 @@ be the two particle IDs (using this option requires to use an atom
 map) and a flag that is 1 for interaction over a periodic boundary
 and 0 otherwise. For computing particle-wall data, the output <I>id</I>
 will be the mesh id, the triangle id and the particle id. The output
-<I>force</I> and <I>torque</I> are the contact force and the torque divided by the
+<I>force</I>, <I>force_normal</I>, <I>force_tangential</I> and <I>torque</I> are the total
+contact force, the normal and tangential components of the contact
+force, and the torque divided by the
 particle radius, both in force <A HREF = "units.html">units</A>. Note that the torque
 does NOT contain any rolling friction torque. The output <I>history</I>
 will depend on what this history represents, according to the granular
@@ -87,10 +91,11 @@ if a <A HREF = "fix_heat_gran.html">fix heat/gran</A> is used to compute  heat
 fluxes) will output the per-contact conductive heat flux area, in
 energy/time <A HREF = "units.html">units</A>.
 </P>
-<P>The data associated to the different keywords is output in the
-following order: <I>pos</I>, <I>vel</I>, <I>id</I>, <I>force</I>, <I>torque</I>, <I>history</I>,
-<I>contactArea</I>, <I>heatFlux</I>. This is independant of the order in which
-the keywords are specified.
+<P>IMPORTANT NOTE:
+The data associated to the different keywords is output in the
+following order: <I>pos</I>, <I>vel</I>, <I>id</I>, <I>force</I>, <I>force_normal</I>,
+<I>force_tangential</I>, <I>torque</I>, <I>history</I>, <I>contactArea</I>, <I>heatFlux</I>. 
+This is independant of the order in which the keywords are specified.
 </P>
 <P>Note that as atoms migrate from processor to processor, there will be
 no consistent ordering of the entries within the local vector or array
@@ -123,12 +128,12 @@ For accessing particle-wall contact data, only mesh walls can be used.
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "dump.html">dump local</A>, <A HREF = "compute_property_local.html">compute property/local</A>,
-<A HREF = "compute/pair/local.html">compute pair/local</A>
+<P><A HREF = "dump.html">dump local</A>, <A HREF = "compute_property_local.html">compute property/local</A>
 </P>
 <P><B>Default:</B>
 </P>
-<P>By default, all of the outputs keywords (except the heat flux and delta) are activated,
+<P>By default, all of the outputs keywords (except force_normal, force_tangential,
+ heat flux and delta) are activated,
 i.e. when no keyword is used, positions velocities, ids, forces, torques, history
 and contact area are output.
 </P>

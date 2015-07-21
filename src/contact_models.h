@@ -37,7 +37,7 @@
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2013-2014 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef CONTACT_MODELS_H_
@@ -59,12 +59,12 @@ namespace LIGGGHTS {
 
 namespace ContactModels
 {
-  static const int CM_REGISTER_SETTINGS     = 1 << 0;
-  static const int CM_CONNECT_TO_PROPERTIES = 1 << 1;
-  static const int CM_BEGIN_PASS            = 1 << 2;
-  static const int CM_END_PASS              = 1 << 3;
-  static const int CM_SURFACES_INTERSECT        = 1 << 4;
-  static const int CM_SURFACES_CLOSE        = 1 << 5;
+  static const int CM_REGISTER_SETTINGS      = 1 << 0;
+  static const int CM_CONNECT_TO_PROPERTIES  = 1 << 1;
+  static const int CM_BEGIN_PASS             = 1 << 2;
+  static const int CM_END_PASS               = 1 << 3;
+  static const int CM_SURFACES_INTERSECT     = 1 << 4;
+  static const int CM_SURFACES_CLOSE         = 1 << 5;
 
   static const int CONTACT_NORMAL_MODEL      = 1 << 0;
   static const int CONTACT_COHESION_MODEL    = 1 << 1;
@@ -76,7 +76,7 @@ namespace ContactModels
   template
   <
     int M,
-    int T = TANGENTIAL_NO_HISTORY,
+    int T = TANGENTIAL_OFF,
     int C = COHESION_OFF,
     int R = ROLLING_OFF,
     int S = SURFACE_DEFAULT
@@ -261,6 +261,21 @@ namespace ContactModels
       tangentialModel.surfacesClose(scdata, i_forces, j_forces);
       rollingModel.surfacesClose(scdata, i_forces, j_forces);
     }
+  };
+
+  template<>
+  class TangentialModel<TANGENTIAL_OFF> : protected Pointers
+  {
+  public:
+    static const int MASK = 0;
+
+    TangentialModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp) {}
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void connectToProperties(PropertyRegistry&){}
+    void registerSettings(Settings&){}
+    void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
   };
 
   template<>

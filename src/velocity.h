@@ -74,10 +74,12 @@ class Velocity : protected Pointers {
   int style;
   int dist_flag,sum_flag,momentum_flag,rotation_flag,loop_flag,scale_flag,rfix;
   double xscale,yscale,zscale;
+  class FixMultisphere *fix_ms_; 
 
   void set(int, char **);
   void ramp(int, char **);
   void zero(int, char **);
+  void setAngular(int, char **);
 
   void zero_momentum();
   void zero_rotation();

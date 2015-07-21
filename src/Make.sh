@@ -127,6 +127,7 @@ elif (test $1 = "models") then
     rm -f $filteredfile
   fi
 
+  tangential_models="TANGENTIAL_OFF $tangential_models"
   cohesion_models="COHESION_OFF $cohesion_models"
   rolling_models="ROLLING_OFF $rolling_models"
 

@@ -59,7 +59,7 @@
 #include "style_atom.h"
 #include "atom_vec.h"
 #include "atom_vec_ellipsoid.h"
-#include "superquadric.h"
+#include "superquadric_flag.h"
 #include "comm.h"
 #include "neighbor.h"
 #include "force.h"
@@ -129,10 +129,10 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   cv = NULL;
   vest = NULL;
 //Superquadric bonus-----------------------------------
-  shape = NULL;
-  inertia = NULL;
-  roundness = NULL; //half axes and roundness parameters
-  volume = NULL; //components Ix, Iy, Iz
+  shape = NULL; //half axes and roundness parameters
+  inertia = NULL; //components Ix, Iy, Iz
+  roundness = NULL;
+  volume = NULL;
   quaternion = NULL; //quaternion of current orientation and angular moment
 //------------------------------------------------------
 
@@ -294,6 +294,14 @@ Atom::~Atom()
   memory->destroy(improper_atom2);
   memory->destroy(improper_atom3);
   memory->destroy(improper_atom4);
+
+//Superquadric bonus-----------------------------------
+  memory->destroy(shape); //half axes and roundness parameters
+  memory->destroy(inertia); //components Ix, Iy, Iz
+  memory->destroy(roundness);
+  memory->destroy(volume);
+  memory->destroy(quaternion); //quaternion of current orientation
+//------------------------------------------------------
 
   // delete custom atom arrays
 

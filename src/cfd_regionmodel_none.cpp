@@ -132,7 +132,7 @@ void CfdRegionmodelNone::special_settings()
 /* ---------------------------------------------------------------------- */
 
 void CfdRegionmodelNone::rm_update()
-{
+{/*
    nout = nlocal_last;
    int nlocal = atom->nlocal;
 
@@ -147,5 +147,5 @@ void CfdRegionmodelNone::rm_update()
    for(int i = 0; i < nlocal; i++)
       inregion[i] = 1.;
 
-   nlocal_last = nlocal;
+   nlocal_last = nlocal;*/
 }

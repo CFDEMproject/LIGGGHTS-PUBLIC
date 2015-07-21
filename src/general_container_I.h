@@ -159,7 +159,12 @@
         numElem_ += n;
         if(numElem_ >= maxElem_)
         {
+            T init_val = static_cast<T>(0);
             grow(arr_,numElem_+GROW,NUM_VEC,LEN_VEC);
+            for(int i = numElem_; i < numElem_+GROW; i++)
+                for(int j=0;j<NUM_VEC;j++)
+                    for(int k=0;k<LEN_VEC;k++)
+                          arr_[i][j][k] = init_val;
             maxElem_ = numElem_ + GROW;
         }
   }
@@ -171,9 +176,9 @@
   template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::del(int n)
   {
+          
           numElem_--;
           if(numElem_ == n) return;
-          
           for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
                           arr_[n][i][j] = arr_[numElem_][i][j];

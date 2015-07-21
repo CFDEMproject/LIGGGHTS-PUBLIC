@@ -1,4 +1,4 @@
-# openmpi = Ubuntu 12.04, mpic++, OpenMPI-1.6
+# openmpi = Ubuntu 14.04, mpic++, OpenMPI-1.6
 
 SHELL = /bin/sh
 
@@ -8,14 +8,18 @@ SHELL = /bin/sh
 
 CC =		mpic++
 CCFLAGS =	-O2  \
-		 -funroll-loops -fstrict-aliasing -Wall -Wno-unused-result
+		-funroll-loops -fstrict-aliasing -Wall -Wno-unused-result
+SHFLAGS =       
 DEPFLAGS =	-M
+
 LINK =		mpic++
 LINKFLAGS =	-O2
 LIB =           -lstdc++
+SIZE =		size
+
 ARCHIVE =	ar
 ARFLAGS =	-rcsv
-SIZE =		size
+SHLIBFLAGS =	-shared
 
 # ---------------------------------------------------------------------
 # LAMMPS-specific settings
@@ -91,15 +95,19 @@ $(EXE):	$(OBJ)
 	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
 	$(SIZE) $(EXE)
 
-# Library target
+# Library targets
 
 lib:	$(OBJ)
 	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
 
+shlib:	$(OBJ)
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
+        $(OBJ) $(EXTRA_LIB) $(LIB)
+
 # Compilation rules
 
 %.o:%.cpp
-	$(CC) $(CCFLAGS) $(EXTRA_INC) -c $<
+	$(CC) $(CCFLAGS) $(SHFLAGS) $(EXTRA_INC) -c $<
 
 %.d:%.cpp
 	$(CC) $(CCFLAGS) $(EXTRA_INC) $(DEPFLAGS) $< > $@

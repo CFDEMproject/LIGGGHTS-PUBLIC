@@ -47,7 +47,7 @@
 #define PAIR_GRAN_BASE_H_
 
 #include "contact_interface.h"
-#include "superquadric.h"
+#include "superquadric_flag.h"
 #include "math_extra_liggghts.h"
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
 #include "math_extra_liggghts_superquadric.h"
@@ -229,6 +229,14 @@ public:
 
       sidata.i = i;
       sidata.radi = radi;
+      #ifdef SUPERQUADRIC_ACTIVE_FLAG
+          sidata.pos_i = x[i];
+          if(superquadric_flag) {
+            sidata.quat_i = quat[i];
+            sidata.shape_i = shape[i];
+            sidata.roundness_i = roundness[i];
+          }
+      #endif
 
       for (int jj = 0; jj < jnum; jj++) {
         const int j = jlist[jj] & NEIGHMASK;
@@ -249,25 +257,26 @@ public:
         sidata.radsum = radsum;
         sidata.contact_flags = contact_flags ? &contact_flags[jj] : NULL;
         sidata.contact_history = all_contact_hist ? &all_contact_hist[dnum*jj] : NULL;
+        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+            sidata.pos_j = x[j];
+            if(superquadric_flag) {
+              sidata.quat_j = quat[j];
+              sidata.shape_j = shape[j];
+              sidata.roundness_j = roundness[j];
+            }
+        #endif
 
         i_forces.reset();
         j_forces.reset();
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-        if(superquadric_flag) {
-          sidata.quat_i = quat[i];
-          sidata.quat_j = quat[j];
-          sidata.shape_i = shape[i];
-          sidata.shape_j = shape[j];
-          sidata.roundness_i = roundness[i];
-          sidata.roundness_j = roundness[j];
-          sidata.pos_i = x[i];
-          sidata.pos_j = x[j];
-        }
-#endif
+
         // rsq < radsum * radsum is broad phase check with bounding spheres
         // cmodel.checkSurfaceIntersect() is narrow phase check
         
         if (rsq < radsum * radsum && cmodel.checkSurfaceIntersect(sidata)) {
+          if(atom->volume) {
+            sidata.radi = pow(3.0*atom->volume[i]/4.0/M_PI, 1.0/3.0);
+            sidata.radj = pow(3.0*atom->volume[j]/4.0/M_PI, 1.0/3.0);
+          }
           const double r = sqrt(rsq);
           const double rinv = 1.0 / r;
 

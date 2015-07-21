@@ -124,8 +124,7 @@ class Fix : protected Pointers {
   double **vatom;                // accumulated per-atom virial
 
   int recent_restart;            
-  bool ignore_maxrad_neigh;      
-                                 
+
   int restart_reset;             // 1 if restart just re-initialized fix
   unsigned int datamask;
   unsigned int datamask_ext;
@@ -240,6 +239,7 @@ class Fix : protected Pointers {
   virtual unsigned int data_mask() {return datamask;}
   virtual unsigned int data_mask_ext() {return datamask_ext;}
 
+  virtual bool use_rad_for_cut_neigh_and_ghost() {return true;} 
   virtual double min_rad(int) {return 0.0;} 
   virtual double max_rad(int) {return 0.0;} 
   virtual int min_type() {return 0;} 

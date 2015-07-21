@@ -992,7 +992,7 @@ void FixDeform::options(int narg, char **arg)
   if (narg < 0) error->all(FLERR,"Illegal fix deform command");
 
   remapflag = X_REMAP;
-  scaleflag = 1;
+  scaleflag = 0; 
   flipflag = 1;
 
   int iarg = 0;

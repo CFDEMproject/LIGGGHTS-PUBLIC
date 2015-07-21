@@ -61,6 +61,7 @@ static const int identifier = constant;
 #undef NORMAL_MODEL
 
   // tangential models
+  static const int TANGENTIAL_OFF = 0;
 #define TANGENTIAL_MODEL(identifier,str,constant) \
   static const int identifier = constant;
 #include "style_tangential_model.h"

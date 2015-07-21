@@ -68,11 +68,29 @@ namespace ContactModels
     inline void registerSettings(Settings&) {}
     inline void connectToProperties(PropertyRegistry&) {}
 
-    inline bool checkSurfaceIntersect(SurfacesIntersectData &)
-    { return true; }
+    inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata)
+    {
+      #ifdef SUPERQUADRIC_ACTIVE_FLAG
+          sidata.is_non_spherical = false;
+          sidata.delta[0] = sidata.pos_i[0] - sidata.pos_j[0];
+          sidata.delta[1] = sidata.pos_i[1] - sidata.pos_j[1];
+          sidata.delta[2] = sidata.pos_i[2] - sidata.pos_j[2];
+
+          const double rinv = 1.0/vectorMag3D(sidata.delta);
+          // unit normal vector
+          sidata.en[0] = sidata.delta[0] * rinv;
+          sidata.en[1] = sidata.delta[1] * rinv;
+          sidata.en[2] = sidata.delta[2] * rinv;
+      #endif
+      return true;
+    }
 
     inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData&, ForceData&)
     {
+      #ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(sidata.is_non_spherical)
+        error->one(FLERR,"Using default surface model for non-spherical particles!");
+      #endif
       const double enx = sidata.en[0];
       const double eny = sidata.en[1];
       const double enz = sidata.en[2];

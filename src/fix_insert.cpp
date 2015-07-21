@@ -110,7 +110,7 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
     if(strcmp(arg[iarg],"distributiontemplate") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       int ifix = modify->find_fix(arg[iarg+1]);
-      if(ifix < 0 || strcmp(modify->fix[ifix]->style,"particledistribution/discrete"))
+      if(ifix < 0 || strncmp(modify->fix[ifix]->style,"particledistribution/discrete",29))
         error->fix_error(FLERR,this,"Fix insert requires you to define a valid ID for a fix of type particledistribution/discrete");
       fix_distribution = static_cast<FixParticledistributionDiscrete*>(modify->fix[ifix]);
       iarg += 2;

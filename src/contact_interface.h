@@ -45,7 +45,7 @@
 #define CONTACT_INTERFACE_H_
 
 #include <string>
-#include "superquadric.h"
+#include "superquadric_flag.h"
 
 namespace LIGGGHTS {
 namespace ContactModels {
@@ -77,8 +77,10 @@ struct SurfacesCloseData {
   double *shape_j; //shape parameters of j-th particle (a,b,c)
   double *roundness_i; //roundness parameters of i-th particle (eps1, eps2)
   double *roundness_j; //roundness parameters of j-th particle (eps1, eps2)
+  double contact_point[3];
   double *pos_i;
   double *pos_j;
+  bool is_non_spherical;
   SurfacesCloseData() : area_ratio(1.0),
                         quat_i(NULL),
                         quat_j(NULL),
@@ -87,7 +89,8 @@ struct SurfacesCloseData {
                         roundness_i(NULL),
                         roundness_j(NULL),
                         pos_i(NULL),
-                        pos_j(NULL){}
+                        pos_j(NULL),
+                        is_non_spherical(false){}
 #else
   SurfacesCloseData() : area_ratio(1.0) {}
 #endif

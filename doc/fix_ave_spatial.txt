@@ -361,5 +361,5 @@ ave/histo"_fix_ave_histo.html, "fix ave/time"_fix_ave_time.html,
 
 [Default:]
 
-The option defaults are units = lattice, norm = all, no file output,
+The option defaults are units = box, norm = all, no file output,
 and ave = one, title 1,2,3 = strings as described above.

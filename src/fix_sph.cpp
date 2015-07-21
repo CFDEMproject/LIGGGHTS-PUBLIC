@@ -162,7 +162,7 @@ void FixSph::post_integrate_respa(int ilevel, int iloop)
 void FixSph::updatePtrs()
 {
   if (fppaSl) sl = fppaSl->vector_atom;
-  if (fppaSlType) sl = fppaSlType->values; //TODO: per get-function?
+  if (fppaSlType) sl = fppaSlType->values;
 }
 
 /* ----------------------------------------------------------------------

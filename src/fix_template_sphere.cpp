@@ -99,6 +99,8 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
   reg = NULL;
   reg_var = NULL;
 
+  relative = false;
+
   //parse further args
   bool hasargs = true;
   while (iarg < narg && hasargs)
@@ -106,33 +108,52 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
     hasargs = false;
     if (strcmp(arg[iarg],"atom_type") == 0)
     {
-      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments");
+      if (iarg+2 > narg)
+        error->fix_error(FLERR,this,"not enough arguments");
       atom_type=atoi(arg[iarg+1]);
-      if (atom_type < 1) error->fix_error(FLERR,this,"invalid atom type (must be >=1)");
+      if (atom_type < 1)
+        error->fix_error(FLERR,this,"invalid atom type (must be >=1)");
       hasargs = true;
       iarg += 2;
     }
     else if (strcmp(arg[iarg],"region") == 0)
     {
-      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments");
+      if (iarg+2 > narg)
+        error->fix_error(FLERR,this,"not enough arguments");
       int ireg = domain->find_region(arg[iarg+1]);
       if (ireg < 0) error->fix_error(FLERR,this,"illegal region");
       reg = domain->regions[ireg];
       hasargs = true;
       iarg += 2;
     }
+    else if (strcmp(arg[iarg],"relative") == 0)
+    {
+      if (iarg+2 > narg)
+        error->fix_error(FLERR,this,"not enough arguments for 'relative'");
+      if(0 == strcmp(arg[iarg+1],"yes"))
+        relative = true;
+      else if(0 == strcmp(arg[iarg+1],"no"))
+        relative = false;
+      else
+        error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'relative'");
+      hasargs = true;
+      iarg += 2;
+    }
     else if (strcmp(arg[iarg],"region_variable") == 0)
     {
-      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments");
+      if (iarg+2 > narg)
+        error->fix_error(FLERR,this,"not enough arguments");
       int ifix = modify->find_fix(arg[iarg+1]);
-      if (ifix < 0) error->fix_error(FLERR,this,"illegal region/variable fix");
+      if (ifix < 0)
+        error->fix_error(FLERR,this,"illegal region/variable fix");
       reg_var = static_cast<FixRegionVariable*>(modify->fix[ifix]);
       hasargs = true;
       iarg += 2;
     }
     else if (strcmp(arg[iarg],"volume_limit") == 0)
     {
-      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments for 'volume_limit'");
+      if (iarg+2 > narg)
+        error->fix_error(FLERR,this,"not enough arguments for 'volume_limit'");
       vol_limit = atof(arg[iarg+1]);
       if(vol_limit <= 0)
         error->fix_error(FLERR,this,"volume_limit > 0 required");
@@ -353,7 +374,7 @@ void FixTemplateSphere::delete_ptilist()
 
 /* ----------------------------------------------------------------------*/
 
-void FixTemplateSphere::randomize_ptilist(int n_random,int distribution_groupbit)
+void FixTemplateSphere::randomize_ptilist(int n_random,int distribution_groupbit,int distorder)
 {
     for(int i = 0; i < n_random; i++)
     {
@@ -378,6 +399,8 @@ void FixTemplateSphere::randomize_ptilist(int n_random,int distribution_groupbit
         vectorZeroize3D(pti_list[i]->omega_ins);
 
         pti_list[i]->groupbit = groupbit | distribution_groupbit; 
+
+        pti_list[i]->distorder = distorder;
     }
     
 }

@@ -148,6 +148,9 @@ public:
   }
 
   void print_value(FILE* out) {
+    if (!out)  // out == NULL
+      return;
+
     fprintf(out, "[");
     for(int row = 1; row < rows; row++) {
       for(int col = 1; col < cols; col++) {

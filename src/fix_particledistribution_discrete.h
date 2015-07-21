@@ -43,6 +43,8 @@
 #ifdef FIX_CLASS
 
 FixStyle(particledistribution/discrete,FixParticledistributionDiscrete)
+FixStyle(particledistribution/discrete/numberbased,FixParticledistributionDiscrete)
+FixStyle(particledistribution/discrete/massbased,FixParticledistributionDiscrete)
 
 #else
 
@@ -102,6 +104,9 @@ class FixParticledistributionDiscrete : public Fix {
   inline class FixTemplateSphere** particletemplates()
   { return templates; }
 
+  inline int dist_order(int i)
+  { return (i >= ntemplates) ? (-1) : (distorder[i]); }
+
  protected:
 
   int ninserted;
@@ -111,6 +116,8 @@ class FixParticledistributionDiscrete : public Fix {
   int seed;
 
   int iarg;
+
+  bool mass_based;
 
   // particle templates
   int ntemplates;       

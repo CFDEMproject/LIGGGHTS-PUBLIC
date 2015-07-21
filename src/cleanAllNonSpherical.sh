@@ -14,6 +14,7 @@ cd $currDir
 #make clean-all
 cp fix_poems.* POEMS
 cp fix_*asphere.* ASPHERE
+cp fix_*Asphere.* ASPHERE
 cp pair_gayberne* ASPHERE
 cp *pascal* PASCAL
 

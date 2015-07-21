@@ -963,6 +963,7 @@ int AtomVecSphere::pack_restart(int i, double *buf)
       m += modify->fix[atom->extra_restart[iextra]]->pack_restart(i,&buf[m]);
 
   buf[0] = m;
+
   return m;
 }
 
@@ -1007,6 +1008,7 @@ int AtomVecSphere::unpack_restart(double *buf)
   }
 
   atom->nlocal++;
+
   return m;
 }
 

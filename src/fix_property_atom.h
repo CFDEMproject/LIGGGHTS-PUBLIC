@@ -94,7 +94,7 @@ class FixPropertyAtom : public Fix {
   void unpack_comm(int, int, double *);
   int pack_reverse_comm(int, int, double *);
   void unpack_reverse_comm(int, int *, double *);
-  double compute_vector(int n);
+  virtual double compute_vector(int n);
 
   virtual void mark_tracers(int ilo, int ihi) { UNUSED(ilo); UNUSED(ihi); }
 
@@ -103,7 +103,7 @@ class FixPropertyAtom : public Fix {
 
  private:
   char *variablename;   // name of the variable (used for identification by other fixes)
-  int data_style;            // 0 if a scalar is registered, 1 if vector
+  int data_style;       // 0 if a scalar is registered, 1 if vector
   int commGhost;        // 1 if communicated to ghost particles (via pack_comm/unpack_comm), 0 if not
   int commGhostRev;     // 1 if rev communicated from ghost particles (via pack_comm_rev/unpack_comm_rev), 0 if not
   int nvalues;

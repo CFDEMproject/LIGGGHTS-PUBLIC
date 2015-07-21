@@ -419,7 +419,7 @@ void ChangeBox::options(int narg, char **arg)
 {
   if (narg < 0) error->all(FLERR,"Illegal change_box command");
 
-  scaleflag = 1;
+  scaleflag = 0; 
 
   int iarg = 0;
   while (iarg < narg) {

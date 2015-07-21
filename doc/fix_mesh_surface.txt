@@ -23,7 +23,7 @@ premesh_keyword = {type} or {precision} or {heal} or {verbose} :l
   {type} value = atom type (material type) of the wall imported from the STL file
   {precision} value = length mesh nodes this far away at maximum will be recognized as identical (length units)
   {heal} value = auto_remove_duplicates or no
-  {verbose} value = yes or no
+  {verbose} value = yes or no :pre
 zero or more mesh_keywords/mesh_value pairs may be appended :l
 mesh_keyword = {scale} or {move} or {rotate} or {temperature} :l
   {scale} value = factor

@@ -1655,7 +1655,7 @@ int DumpCustomVTK::parse_fields(int narg, char **arg)
       pack_choice[ID] = &DumpCustomVTK::pack_id;
       vtype[ID] = INT;
       name[ID] = arg[iarg];
-    } else if (strcmp(arg[iarg],"mol") == 0) {
+    } else if (strcmp(arg[iarg],"mol") == 0 || strcmp(arg[iarg],"id_multisphere") == 0) {
       if (!atom->molecule_flag)
         error->all(FLERR,"Dumping an atom property that isn't allocated");
       pack_choice[MOL] = &DumpCustomVTK::pack_molecule;
@@ -2295,7 +2295,7 @@ int DumpCustomVTK::modify_param(int narg, char **arg)
     // customize by adding to if statement
 
     if (strcmp(arg[1],"id") == 0) thresh_array[nthresh] = ID;
-    else if (strcmp(arg[1],"mol") == 0) thresh_array[nthresh] = MOL;
+    else if (strcmp(arg[1],"mol") == 0 || strcmp(arg[1],"id_multisphere") == 0) thresh_array[nthresh] = MOL;
     else if (strcmp(arg[1],"type") == 0) thresh_array[nthresh] = TYPE;
     else if (strcmp(arg[1],"mass") == 0) thresh_array[nthresh] = MASS;
 

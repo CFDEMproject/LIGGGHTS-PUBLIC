@@ -68,6 +68,13 @@ class FixTemplateSphere : public Fix {
   // access to protected properties
   virtual double volexpect();           
   virtual double massexpect();          
+
+  bool use_rad_for_cut_neigh_and_ghost()
+  { return !relative; }
+
+  bool is_relative()
+  { return relative; }
+
   virtual double min_rad();
   virtual double max_rad();
   virtual double max_r_bound();
@@ -76,14 +83,14 @@ class FixTemplateSphere : public Fix {
   virtual int mintype();
   class Region *region();
 
-  // single particle generation, used by fix pour/dev
+  // single particle generation, used by fix insert/* commands
   virtual void randomize_single();    
   class ParticleToInsert *pti;
 
   // many particle generation, used by fix insert commands
   virtual void init_ptilist(int);
   virtual void delete_ptilist();
-  virtual void randomize_ptilist(int,int);
+  virtual void randomize_ptilist(int,int,int distorder);
   int n_pti_max;
   class ParticleToInsert **pti_list;
 
@@ -110,6 +117,8 @@ class FixTemplateSphere : public Fix {
   double volume_expect;
   double mass_expect;
   double vol_limit;
+
+  bool relative;
 };
 
 }

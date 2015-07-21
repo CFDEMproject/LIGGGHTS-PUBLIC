@@ -152,7 +152,9 @@ error.
 
 "fix wall/lj93"_fix_wall.html command
 
-[Default:] none
+[Default:] 
+
+units = box
 
 :line
 

@@ -76,9 +76,9 @@ class FixCfdCouplingForce : public Fix  {
   class FixPropertyAtom* fix_hdtorque_; // hdtorque = hydrodynamic torque
   class FixPropertyAtom* fix_volumeweight_;
 
- private:
   bool use_force_, use_torque_, use_dens_, use_type_;
 
+ private:
   bool use_property_;
   char property_name[200];
   char property_type[200];

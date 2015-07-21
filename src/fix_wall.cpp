@@ -78,7 +78,7 @@ FixWall::FixWall(LAMMPS *lmp, int narg, char **arg) :
   // parse args
 
   nwall = 0;
-  int scaleflag = 1;
+  int scaleflag = 0; 
   fldflag = 0;
   int pbcflag = 0;
 

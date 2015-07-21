@@ -195,7 +195,7 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
   // optional args
 
   normflag = ALL;
-  scaleflag = LATTICE;
+  scaleflag = BOX; 
   regionflag = 0;
   idregion = NULL;
   fp = NULL;

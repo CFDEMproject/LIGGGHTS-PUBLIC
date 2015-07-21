@@ -10,7 +10,7 @@ gran model hooke :h3
 
 [Syntax:]
 
-model hertz \[other model_type/model_name pairs as described "here"_pair_gran.html \] keyword values :pre
+model hooke \[other model_type/model_name pairs as described "here"_pair_gran.html \] keyword values :pre
 zero or more keyword/value pairs may be appended :l
   {tangential_damping} values = 'on' or 'off'
     on = activates tangential damping
@@ -129,7 +129,7 @@ When using the limitForce, the specified coefficient of restitution is only appr
 :link(Legendre)
 [(Legendre)] Legendre, Daniel and Guiraud. Phys. Fluids 17, 097105 (2005).
 
-[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525–541 (2004).
+[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525–541 (2004).
 
 [(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
 

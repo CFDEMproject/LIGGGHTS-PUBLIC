@@ -127,6 +127,7 @@ Neighbor::Neighbor(LAMMPS *lmp) : Pointers(lmp)
   build_once = 0;
   cluster_check = 0;
 
+  cutneighmax = 0;
   cutneighsq = NULL;
   cutneighghostsq = NULL;
   cuttype = NULL;

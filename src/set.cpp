@@ -52,6 +52,7 @@
 #include "mpi.h"
 #include "math.h"
 #include "math_extra.h"
+#include "superquadric_flag.h"
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
 #include "math_extra_liggghts_superquadric.h"
 #include "atom_vec_superquadric.h"
@@ -74,6 +75,7 @@
 #include "variable.h"
 #include "random_park.h"
 #include "math_extra.h"
+#include "fix_multisphere.h"
 #include "math_const.h"
 #include "memory.h"
 #include "error.h"
@@ -104,6 +106,10 @@ void Set::command(int narg, char **arg)
   if (atom->natoms == 0)
     error->all(FLERR,"Set command with no atoms existing");
   if (narg < 3) error->all(FLERR,"Illegal set command");
+
+  int n_ms = modify->n_fixes_style("multisphere");
+  if(n_ms > 0 && !static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0))->allow_group_and_set())
+    error->all(FLERR,"Set command may not be used together with fix multisphere");
 
   // style and ID info
 
@@ -735,12 +741,30 @@ void Set::set(int keyword)
     else if (keyword == X) atom->x[i][0] = dvalue;
     else if (keyword == Y) atom->x[i][1] = dvalue;
     else if (keyword == Z) atom->x[i][2] = dvalue;
-      else if (keyword == VX) atom->v[i][0] = dvalue; 
-      else if (keyword == VY) atom->v[i][1] = dvalue;
-      else if (keyword == VZ) atom->v[i][2] = dvalue;
-      else if (keyword == OMEGAX) atom->omega[i][0] = dvalue;  
-      else if (keyword == OMEGAY) atom->omega[i][1] = dvalue;  
-      else if (keyword == OMEGAZ) atom->omega[i][2] = dvalue;  
+    else if (keyword == VX) atom->v[i][0] = dvalue; 
+    else if (keyword == VY) atom->v[i][1] = dvalue;
+    else if (keyword == VZ) atom->v[i][2] = dvalue;
+    #ifdef SUPERQUADRIC_ACTIVE_FLAG
+    else if (keyword == OMEGAX && atom->superquadric_flag) {
+        atom->omega[i][0] = dvalue;
+        MathExtraLiggghtsSuperquadric::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
+    }
+    #endif
+    else if (keyword == OMEGAX) atom->omega[i][0] = dvalue;  
+    #ifdef SUPERQUADRIC_ACTIVE_FLAG
+    else if (keyword == OMEGAY && atom->superquadric_flag) {
+        atom->omega[i][1] = dvalue;
+        MathExtraLiggghtsSuperquadric::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
+    }
+    #endif
+    else if (keyword == OMEGAY) atom->omega[i][1] = dvalue;  
+    #ifdef SUPERQUADRIC_ACTIVE_FLAG
+    else if (keyword == OMEGAZ && atom->superquadric_flag) {
+        atom->omega[i][2] = dvalue;
+        MathExtraLiggghtsSuperquadric::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
+    }
+    #endif
+    else if (keyword == OMEGAZ) atom->omega[i][2] = dvalue;  
     else if (keyword == CHARGE) atom->q[i] = dvalue;
     else if (keyword == MASS) {
               if (dvalue <= 0.0) error->one(FLERR,"Invalid mass in set command");
@@ -763,6 +787,10 @@ void Set::set(int keyword)
         }
     }
     else if (keyword == VOLUME) {
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if (avec_superquadric)
+        error->one(FLERR,"Cannot set volume for this type of atom");
+#endif
       if (dvalue <= 0.0) error->one(FLERR,"Invalid volume in set command");
       atom->vfrac[i] = dvalue;
     }
@@ -798,11 +826,8 @@ void Set::set(int keyword)
     }
    //set roundness parameters for superquadric *
     else if (keyword == ROUNDNESS) {
-      if (xvalue <= 0.0 || yvalue <= 0.0)
-        error->one(FLERR,"Invalid roundness (<=0) in set command");
-      if (xvalue > 1.0 || yvalue > 1.0) {
-        error->one(FLERR,"Invalid shape in set command (>1)");
-      }
+      if (xvalue < 2.0 || yvalue < 2.0)
+        error->one(FLERR,"Invalid roundness (<2) in set command");
       if(0) {}
       #ifdef SUPERQUADRIC_ACTIVE_FLAG
       else if(avec_superquadric) {
@@ -913,7 +938,7 @@ void Set::set(int keyword)
                       mu[i][2]*mu[i][2]);
     }
 
-    // set quaternion orientation of ellipsoid or tri particle
+    // set quaternion orientation of ellipsoid or tri particle or superquadric
 
     else if (keyword == QUAT || keyword == QUAT_DIRECT ) {
       double *quat = NULL;

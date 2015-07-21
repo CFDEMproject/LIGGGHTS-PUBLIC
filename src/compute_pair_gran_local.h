@@ -92,7 +92,7 @@ class ComputePairGranLocal : public Compute {
 
   int ipair;
 
-  int posflag,velflag,idflag,fflag,tflag,hflag,aflag,dflag,hfflag;
+  int posflag,velflag,idflag,fflag,fnflag,ftflag,tflag,hflag,aflag,dflag,hfflag;
 
   int dnum;
 

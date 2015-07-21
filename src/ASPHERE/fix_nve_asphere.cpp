@@ -63,7 +63,7 @@
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
-#define INERTIA 0.2          // moment of inertia prefactor for ellipsoid
+#define INERTIA_SPHEROID 0.2          // moment of inertia prefactor for ellipsoid
 
 /* ---------------------------------------------------------------------- */
 
@@ -105,10 +105,10 @@ void FixNVEAsphere::post_create()
         fixarg[2]="property/atom";
         fixarg[3]="ex";
         fixarg[4]="vector";
-        fixarg[5]="no";
-        fixarg[6]="yes";
-        fixarg[7]="no";
-        fixarg[8]="0";
+        fixarg[5]="yes";    // restart
+        fixarg[6]="yes";    // communicate ghost forward
+        fixarg[7]="no";     // communicate ghost reverse
+        fixarg[8]="1";
         fixarg[9]="0";
         fixarg[10]="0";
         modify->add_fix(11,const_cast<char**>(fixarg));
@@ -122,9 +122,9 @@ void FixNVEAsphere::post_create()
         fixarg[2]="property/atom";
         fixarg[3]="shape";
         fixarg[4]="vector";
-        fixarg[5]="no";
-        fixarg[6]="yes";
-        fixarg[7]="no";
+        fixarg[5]="no";     // restart
+        fixarg[6]="yes";    // communicate ghost forward
+        fixarg[7]="no";     // communicate ghost reverse
         fixarg[8]="0";
         fixarg[9]="0";
         fixarg[10]="0";
@@ -156,6 +156,8 @@ void FixNVEAsphere::init()
         error->one(FLERR,"Fix nve/asphere requires extended particles");
 
   FixNVE::init();
+  fix_orientation_->do_forward_comm();
+  fix_shape_->do_forward_comm();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -221,9 +223,10 @@ void FixNVEAsphere::initial_integrate(int vflag)
       if( (shape[0]<shape[1]) || (shape[0]<shape[2]) )
         error->one(FLERR,"Shape is not correctly specified. shape[0] must be the largest value!");
 
-      inertia[0] = INERTIA*rmass[i] * (shape[1]*shape[1]+shape[2]*shape[2]);
-      inertia[1] = INERTIA*rmass[i] * (shape[0]*shape[0]+shape[2]*shape[2]);
-      inertia[2] = INERTIA*rmass[i] * (shape[0]*shape[0]+shape[1]*shape[1]);
+      //Moment of inertia in the Principal coordinate system (denoted as 'prime'), see http://mathworld.wolfram.com/Spheroid.html
+      inertia[0] = INERTIA_SPHEROID*rmass[i] * (shape[1]*shape[1]+shape[2]*shape[2]);
+      inertia[1] = INERTIA_SPHEROID*rmass[i] * (shape[0]*shape[0]+shape[2]*shape[2]);
+      inertia[2] = INERTIA_SPHEROID*rmass[i] * (shape[0]*shape[0]+shape[1]*shape[1]);
 
       // compute omega at 1/2 step from angmom at 1/2 step and current q
       // update quaternion a full step via Richardson iteration
@@ -264,6 +267,8 @@ void FixNVEAsphere::initial_integrate(int vflag)
       		}
       }
     }
+    fix_orientation_->do_forward_comm();
+    fix_shape_->do_forward_comm();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -313,9 +318,9 @@ void FixNVEAsphere::final_integrate()
             shape = bonus[ellipsoid[i]].shape;
             quat = bonus[ellipsoid[i]].quat;
 
-            inertia[0] = INERTIA*rmass[i] * (shape[1]*shape[1]+shape[2]*shape[2]);
-            inertia[1] = INERTIA*rmass[i] * (shape[0]*shape[0]+shape[2]*shape[2]);
-            inertia[2] = INERTIA*rmass[i] * (shape[0]*shape[0]+shape[1]*shape[1]);
+            inertia[0] = INERTIA_SPHEROID*rmass[i] * (shape[1]*shape[1]+shape[2]*shape[2]);
+            inertia[1] = INERTIA_SPHEROID*rmass[i] * (shape[0]*shape[0]+shape[2]*shape[2]);
+            inertia[2] = INERTIA_SPHEROID*rmass[i] * (shape[0]*shape[0]+shape[1]*shape[1]);
             MathExtra::mq_to_omega(angmom[i],quat,inertia,omega);
 
             omegaParticles[i][0]=omega[0];

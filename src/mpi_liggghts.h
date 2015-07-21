@@ -53,7 +53,7 @@ namespace LAMMPS_NS
 {
 
 /* ----------------------------------------------------------------------
-   Helper function to be able to templetize wrappers
+   Helper function to be able to templatize wrappers
 ------------------------------------------------------------------------- */
 
 template<typename T>
@@ -210,7 +210,7 @@ inline int MPI_Gather0_Vector(T *vector, int size ,T *&vector_0,MPI_Comm comm)
 
 /* ----------------------------------------------------------------------
    Allgather vector data from all processors
-   returns allocated and populated array vector_all to caller
+   returns allocated and populated array vector_all and its length to caller
 ------------------------------------------------------------------------- */
 
 template<typename T>

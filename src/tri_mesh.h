@@ -47,8 +47,12 @@
 #include "atom.h"
 #include "math_extra_liggghts.h"
 #include "tri_line.h"
+#include "superquadric_flag.h"
 #ifdef TRI_LINE_ACTIVE_FLAG
 #include "math_extra_dist_lineTriangle.h"
+#endif
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+#include "math_extra_liggghts_superquadric.h"
 #endif
 #include <fstream>
 
@@ -67,6 +71,13 @@ namespace LAMMPS_NS
         double resolveTriSphereContact(int iPart, int nTri, double rSphere, double *cSphere, double *delta);
         double resolveTriSphereContactBary(int iPart, int nTri, double rSphere, double *cSphere,
                                            double *contactPoint,double *bary);
+
+        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        double resolveTriSuperquadricContact(int nTri, double rSphere, double *cSphere, double *delta, double *contactPoint, Superquadric particle);
+        double resolveTriSuperquadricContactBary(int nTri, double rSphere, double *cSphere, double *delta, double *contactPoint, Superquadric particle, double *bary);
+        bool sphereTriangleIntersection(int nTri, double *cSphere, double rad);
+        bool superquadricTriangleIntersection(int nTri, double *point_of_lowest_potential, Superquadric particle);
+        #endif
 
         bool resolveTriSphereNeighbuild(int nTri, double rSphere, double *cSphere, double treshold);
 
@@ -102,11 +113,14 @@ namespace LAMMPS_NS
                                     double *p, double *delta, double *bary);
         double resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary);
         double resolveFaceContactBary(int iTri, double *p, double *node0ToSphereCenter, double *delta);
-
   };
 
   // *************************************
   #include "tri_mesh_I.h"
+  #ifdef SUPERQUADRIC_ACTIVE_FLAG
+  #include "tri_mesh_I_superquadric.h"
+  #endif
+
   #ifdef TRI_LINE_ACTIVE_FLAG
   #include "tri_mesh_I_line.h"
   #endif

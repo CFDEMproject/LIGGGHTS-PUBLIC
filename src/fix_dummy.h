@@ -71,6 +71,15 @@ class FixMultisphere : public Fix {
   int ntypes() {return 0;}
   double * vclump() {return 0;}
 
+  bool allow_group_and_set()
+  { return false; }
+
+  inline void set_v_body_from_atom_index(int iatom,double *vel)
+  {}
+
+  inline void set_omega_body_from_atom_index(int iatom,double *omega)
+  {}
+
   class MultisphereParallel *multisphere_;
 
 };

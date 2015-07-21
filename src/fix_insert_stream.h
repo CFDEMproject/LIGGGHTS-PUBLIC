@@ -103,7 +103,7 @@ class FixInsertStream : public FixInsert {
                 double &mass_inserted_this);
 
   double insertion_fraction();
-  void calc_ins_fraction();
+  virtual void calc_ins_fraction();
   virtual void finalize_insertion(int);
 
   virtual void reset_releasedata(bigint newstep,bigint oldstep);

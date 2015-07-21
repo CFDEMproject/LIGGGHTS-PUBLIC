@@ -100,13 +100,18 @@ Fix::Fix(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   rad_mass_vary_flag = 0; 
   just_created = 1; 
   recent_restart = 0; 
-  ignore_maxrad_neigh = false; 
+  vflag_global = vflag_atom = 0; 
 
   scalar_flag = vector_flag = array_flag = 0;
   peratom_flag = local_flag = 0;
 
   comm_forward = comm_reverse = comm_border = 0;
   restart_reset = 0;
+
+  vector_atom = 0;
+  array_atom = 0;
+  vector_local = 0;
+  array_local = 0;
 
   // reasonable defaults
   // however, each fix that uses these values should explicitly set them

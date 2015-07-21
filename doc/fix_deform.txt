@@ -563,4 +563,4 @@ xy) that is shrink-wrapped via the "boundary"_boundary.html comamnd.
 
 [Default:]
 
-The option defaults are remap = x, flip = yes, and units = lattice.
+The option defaults are remap = x, flip = yes, and units = box.

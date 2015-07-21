@@ -78,8 +78,8 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
   // store everything by default expect heat flux
   posflag = velflag = idflag = fflag = tflag = hflag = aflag = 1;
 
-  // do not store heat flux and delta by default
-  hfflag = dflag = 0;
+  // do not store fn, ft, heat flux, delta by default
+  fnflag = ftflag = hfflag = dflag = 0;
 
   // if further args, store only the properties that are listed
   if(narg > 3)
@@ -92,6 +92,8 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
     else if (strcmp(arg[iarg],"vel") == 0) velflag = 1;
     else if (strcmp(arg[iarg],"id") == 0) idflag = 1;
     else if (strcmp(arg[iarg],"force") == 0) fflag = 1;
+    else if (strcmp(arg[iarg],"force_normal") == 0) fnflag = 1;
+    else if (strcmp(arg[iarg],"force_tangential") == 0) ftflag = 1;
     else if (strcmp(arg[iarg],"torque") == 0) tflag = 1;
     else if (strcmp(arg[iarg],"history") == 0) hflag = 1;
     else if (strcmp(arg[iarg],"contactArea") == 0) aflag = 1;
@@ -251,7 +253,7 @@ void ComputePairGranLocal::init_cpgl(bool requestflag)
   if(hflag && dnum == 0) error->all(FLERR,"Compute pair/gran/local or wall/gran/local can not calculate history values since pair or wall style does not compute them");
   // standard values: pos1,pos2,id1,id2,extra id for mesh wall,force,torque,contact area
 
-  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + tflag*3 + hflag*dnum + aflag + dflag + hfflag;
+  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + fnflag*3 + ftflag*3 + tflag*3 + hflag*dnum + aflag + dflag + hfflag;
   size_local_cols = nvalues;
 
 }
@@ -434,6 +436,35 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
         array[ipair][n++] = fy;
         array[ipair][n++] = fz;
     }
+    if(fnflag)
+    {
+        double fc[3],fn[3],normal[3];
+
+        vectorConstruct3D(fc,fx,fy,fz);
+        vectorSubtract3D(atom->x[j],atom->x[i],normal);
+        vectorNormalize3D(normal);
+        double fnmag = vectorDot3D(fc,normal);
+        vectorScalarMult3D(normal,fnmag,fn);
+
+        array[ipair][n++] = fn[0];
+        array[ipair][n++] = fn[1];
+        array[ipair][n++] = fn[2];
+    }
+    if(ftflag)
+    {
+        double fc[3],fn[3],ft[3],normal[3];
+
+        vectorConstruct3D(fc,fx,fy,fz);
+        vectorSubtract3D(atom->x[j],atom->x[i],normal);
+        vectorNormalize3D(normal);
+        double fnmag = vectorDot3D(fc,normal);
+        vectorScalarMult3D(normal,fnmag,fn);
+        vectorSubtract3D(fc,fn,ft);
+
+        array[ipair][n++] = ft[0];
+        array[ipair][n++] = ft[1];
+        array[ipair][n++] = ft[2];
+    }
     if(tflag)
     {
         array[ipair][n++] = tor1;
@@ -532,6 +563,25 @@ void ComputePairGranLocal::add_wall_1(int iFMG,int idTri,int iP,double *contact_
         
     }
 
+    if(fflag)
+    {
+        n += 3;
+    }
+
+    if(fnflag)
+    {
+        array[ipair][n++] = contact_point[0];
+        array[ipair][n++] = contact_point[1];
+        array[ipair][n++] = contact_point[2];
+    }
+
+    if(ftflag)
+    {
+        array[ipair][n++] = contact_point[0];
+        array[ipair][n++] = contact_point[1];
+        array[ipair][n++] = contact_point[2];
+    }
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -569,6 +619,43 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
         array[ipair][n++] = fx;
         array[ipair][n++] = fy;
         array[ipair][n++] = fz;
+    }
+    if(fnflag)
+    {
+        double contact_point[3], fc[3],fn[3], normal[3];
+
+        contact_point[0] = array[ipair][n++];
+        contact_point[1] = array[ipair][n++];
+        contact_point[2] = array[ipair][n++];
+
+        vectorConstruct3D(fc,fx,fy,fz);
+        vectorSubtract3D(contact_point,atom->x[i],normal);
+        vectorNormalize3D(normal);
+        double fnmag = vectorDot3D(fc,normal);
+        vectorScalarMult3D(normal,fnmag,fn);
+
+        array[ipair][n-3] = fn[0];
+        array[ipair][n-2] = fn[1];
+        array[ipair][n-1] = fn[2];
+    }
+    if(ftflag)
+    {
+        double contact_point[3], fc[3],fn[3],ft[3], normal[3];
+
+        contact_point[0] = array[ipair][n++];
+        contact_point[1] = array[ipair][n++];
+        contact_point[2] = array[ipair][n++];
+
+        vectorConstruct3D(fc,fx,fy,fz);
+        vectorSubtract3D(contact_point,atom->x[i],normal);
+        vectorNormalize3D(normal);
+        double fnmag = vectorDot3D(fc,normal);
+        vectorScalarMult3D(normal,fnmag,fn);
+        vectorSubtract3D(fc,fn,ft);
+
+        array[ipair][n-3] = ft[0];
+        array[ipair][n-2] = ft[1];
+        array[ipair][n-1] = ft[2];
     }
     if(tflag)
     {

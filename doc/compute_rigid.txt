@@ -26,7 +26,7 @@ property_name = {xcm} or {vcm} or {fcm} or {torque} or {quat} or {angmom} or {om
   {density} = body density (1 value)
   {atomtype} = atom type (material type) of the rigid body (1 value)
   {clumptype} = multi-sphere type as defined in "fix paticleteplate/multisphere"_fix_particletemplate_multisphere.html (1 value)
-  {id} = body id (1 value)
+  {id_multisphere} = body id (1 value)
   {masstotal} = body mass (1 value)
   {inertia} = body intertia (based on center of mass, around ex_space, ey_space, ez_space) (3 values)
   {ex_space}, {ey_space}, {ez_space} = eigensystem of the body (based on center of mass) (3 values each)  :pre
@@ -65,7 +65,6 @@ For accessing particle-wall contact data, only mesh walls can be used.
 
 [Related commands:]
 
-"dump local"_dump.html, "compute property/local"_compute_property_local.html,
-"compute pair/local"_compute/pair/local.html
+"dump local"_dump.html, "compute property/local"_compute_property_local.html
 
 [Default:] none

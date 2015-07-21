@@ -19,7 +19,7 @@ N = dump every this many timesteps :l
 file = name of file to write dump info to :l
 args = list of arguments for a particular style :l
   {custom/vtk} args = list of atom attributes
-    possible attributes = id, mol, type, element, mass, density, rho, p
+    possible attributes = id, mol, id_multisphere, type, element, mass, density, rho, p
 			  x, y, z, xs, ys, zs, xu, yu, zu,
 			  xsu, ysu, zsu, ix, iy, iz,
 			  vx, vy, vz, fx, fy, fz,
@@ -30,6 +30,7 @@ args = list of arguments for a particular style :l
 
       id = atom ID
       mol = molecule ID
+      id_multisphere = ID of multisphere body
       type = atom type
       element = name of atom element, as defined by "dump_modify"_dump_modify_vtk.html command
       mass = atom mass
@@ -178,11 +179,13 @@ write out much faster.
 This section explains the atom attributes that can be specified as
 part of the {custom/vtk} style.
 
-The {id}, {mol}, {type}, {element}, {mass}, {vx}, {vy}, {vz}, {fx}, {fy},
+The {id}, {mol}, {id_multisphere}, {type}, {element}, {mass}, {vx}, {vy}, {vz}, {fx}, {fy},
 {fz}, {q} attributes are self-explanatory.
 
 {id} is the atom ID.  {mol} is the molecule ID, included in the data
-file for molecular systems.  {type} is the atom type.  {element} is
+file for molecular systems. {id_multisphere} is the ID of the multisphere
+body that the particle belongs to (if your version supports multisphere). 
+{type} is the atom type.  {element} is
 typically the chemical name of an element, which you must assign to
 each type via the "dump_modify element"_dump_modify_vtk.html command.
 More generally, it can be any string you wish to associate with an

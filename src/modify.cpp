@@ -782,6 +782,8 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
     
     fix[ifix]->pre_delete(true);
     delete fix[ifix];
+    
+    atom->update_callback(ifix);
     fix[ifix] = NULL;
   } else {
     newflag = 1;
@@ -849,8 +851,10 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
   // if yes, loop over atoms so they can extract info from atom->extra array
 
   for (int i = 0; i < nfix_restart_peratom; i++)
+  {
     if (strcmp(id_restart_peratom[i],fix[ifix]->id) == 0 &&
-        strcmp(style_restart_peratom[i],fix[ifix]->style) == 0) {
+        strcmp(style_restart_peratom[i],fix[ifix]->style) == 0)
+    {
       for (int j = 0; j < atom->nlocal; j++)
         fix[ifix]->unpack_restart(j,index_restart_peratom[i]);
       fix[ifix]->recent_restart = 1; 
@@ -860,11 +864,12 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
                      "from restart file info\n");
         if (screen) fprintf(screen,str,fix[ifix]->id,fix[ifix]->style);
         if (logfile) fprintf(logfile,str,fix[ifix]->id,fix[ifix]->style);
+
       }
     }
+  }
 
   fix[ifix]->post_create(); 
-
 }
 
 /* ----------------------------------------------------------------------
@@ -1102,6 +1107,7 @@ void Modify::write_restart(FILE *fp)
   for (int i = 0; i < nfix; i++)
     if (fix[i]->restart_global) {
       if (me == 0) {
+        
         n = strlen(fix[i]->id) + 1;
         fwrite(&n,sizeof(int),1,fp);
         fwrite(fix[i]->id,sizeof(char),n,fp);
@@ -1122,6 +1128,7 @@ void Modify::write_restart(FILE *fp)
     if (fix[i]->restart_peratom) {
       int maxsize_restart = fix[i]->maxsize_restart();
       if (me == 0) {
+        
         n = strlen(fix[i]->id) + 1;
         fwrite(&n,sizeof(int),1,fp);
         fwrite(fix[i]->id,sizeof(char),n,fp);
@@ -1217,6 +1224,7 @@ int Modify::read_restart(FILE *fp)
     maxsize += n;
 
     index_restart_peratom[i] = i;
+
   }
 
   return maxsize;

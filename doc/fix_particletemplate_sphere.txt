@@ -15,9 +15,8 @@ fix ID group-ID particletemplate/sphere seed keyword values ...  :pre
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 particletemplate/sphere = style name of this fix command  :l
 seed = random number generator seed (integer value) :l
-n_spheres = number of spheres in the template :l
 zero or more keyword/value pairs can be appended :l
-keyword = {atom_type} or {density} or {volume_limit} or {radius} :l
+keyword = {atom_type} or {density} or {volume_limit} or {radius} or {relative} :l
 {atom_type} value = atom type assigned to this particle template
 {density} values = random_style param1 (param2)
   random_style = 'constant' or 'uniform' or 'gaussian'
@@ -27,7 +26,10 @@ keyword = {atom_type} or {density} or {volume_limit} or {radius} :l
 {radius} values = random_style param1 (param2)
   random_style = 'constant' or 'uniform number' or 'uniform mass' or 'gaussian number'
   param1 = radius for 'constant', low value of radius for 'uniform', mu value for 'gaussian'
-  param2 = omitted for 'constant', high value of radius for 'uniform', sigma value for 'gaussian' :pre
+  param2 = omitted for 'constant', high value of radius for 'uniform', sigma value for 'gaussian'
+{relative} value = yes or no
+  no = set a flag for other commands that radius given here is abosulute (in length units)
+  yes = set a flag for other commands that radius given here is relative (in % of a reference radius) :pre
 :ule
 
 [Examples:]
@@ -36,9 +38,21 @@ fix pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius 
 
 [Description:]
 
-Define a particle that is used as input for a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html command. You can choose the atom type, density and radius of the particles. For density and radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. Note that for radius, you can additionally choose between a number-based and mass-based uniform distribution, where the latter is used more frequently typically. 'gaussian' for radius only supports a number-based distribution.
+Define a particle that is used as input for a 
+"fix_particledistribution_discrete"_fix_particledistribution_discrete.html command. 
+You can choose the atom type, density and radius of the particles. For density and 
+radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. 
+Note that for radius, you can additionally choose between a number-based and mass-based 
+uniform distribution, where the latter is used more frequently typically. 'gaussian' for 
+radius only supports a number-based distribution.
 
-It is thus possible to define a uniform or gaussian distribution on top of the discrete distribution defined by "fix_particledistribution_discrete"_fix_particledistribution_discrete.html.
+Keyword {relative} lets the user set a flag to let other commands know if the radii specified
+by this command are absolute (length units) or relative (in % of a reference radius). 
+IMPORTANT NOTE: This setting should not be changed away from the default value (no) unless
+explicity required by another command! 
+
+It is thus possible to define a uniform or gaussian distribution on top of the discrete 
+distribution defined by "fix_particledistribution_discrete"_fix_particledistribution_discrete.html.
 
 IMPORTANT NOTE: As opposed to the number-based distributions, this fix uses the more common
 distribution based on mass-% for the radius distribution (as does
@@ -49,7 +63,12 @@ If you are sure you know what you are doing you can override the default limit o
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
-Information about the random state in this fix is written to "binary restart files"_restart.html so you can restart a simulation with the same particles being chosen for insertion. None of the "fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. This fix is not invoked during "energy minimization"_minimize.html.
+Information about the random state in this fix is written to "binary restart files"_restart.html 
+so you can restart a simulation with the same particles being chosen for insertion. None of the 
+"fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or 
+per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. 
+No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. 
+This fix is not invoked during "energy minimization"_minimize.html.
 
 [Restrictions:] none
 
@@ -57,4 +76,6 @@ Information about the random state in this fix is written to "binary restart fil
 
 "fix_particletemplate_sphere"_fix_particletemplate_sphere.html
 
-[Default:] radius = 1.0, density = 1.0, atom_type = 1, volume_limit = 1e-12
+[Default:] 
+
+radius = 1.0, density = 1.0, atom_type = 1, volume_limit = 1e-12, relative = no

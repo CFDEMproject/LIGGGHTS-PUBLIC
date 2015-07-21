@@ -218,6 +218,18 @@ void FixContactHistory::init()
           error->fix_error(FLERR,this,"Please use a granular pair style for fix contacthistory");
       pair_gran_ = static_cast<PairGran*>(force->pair_match("gran", 0));
 
+      if(dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
+      {
+        pair_gran_ = static_cast<PairGran*>(force->pair_match("bubble", 0));
+
+        if(! pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
+            pair_gran_ = static_cast<PairGran*>(force->pair_match("gran_bubble", 0));
+
+        if(!pair_gran_ || (dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair()))
+            
+            error->fix_error(FLERR,this,"internal error");
+      }
+
       int dim;
       computeflag_ = (int *) pair_gran_->extract("computeflag",dim);
   }

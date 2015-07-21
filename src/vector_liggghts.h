@@ -254,7 +254,51 @@ inline int vectorMinN(int *v, int n)
     return min;
 }
 
-inline void vectorComponentMin3D(double *v1,double *v2,double *min)
+inline void vectorComponentAbs3D(double *v)
+{
+    if(v[0] < 0.)
+        v[0] = -v[0];
+    if(v[1] < 0.)
+        v[1] = -v[1];
+    if(v[2] < 0.)
+        v[2] = -v[2];
+}
+
+inline double vectorComponentAbsSum3D(double const*v)
+{
+    double sum = 0.;
+    if(v[0] < 0.)
+        sum -= v[0];
+    else
+        sum += v[0];
+    if(v[1] < 0.)
+        sum -= v[1];
+    else
+        sum += v[1];
+    if(v[2] < 0.)
+        sum -= v[2];
+    else
+        sum += v[2];
+    return sum;
+}
+
+inline void vectorComponentAbs3D(double const*v,double *result)
+{
+    if(v[0] < 0.)
+        result[0] = -v[0];
+    else
+        result[0] = v[0];
+    if(v[1] < 0.)
+        result[1] = -v[1];
+    else
+        result[1] = v[1];
+    if(v[2] < 0.)
+        result[2] = -v[2];
+    else
+        result[2] = v[2];
+}
+
+inline void vectorComponentMin3D(double const*v1,double const*v2,double *min)
 {
     if(v1[0] > v2[0])
         min[0] = v2[0];
@@ -272,7 +316,7 @@ inline void vectorComponentMin3D(double *v1,double *v2,double *min)
         min[2] = v1[2];
 }
 
-inline void vectorComponentMax3D(double *v1,double *v2,double *max)
+inline void vectorComponentMax3D(double const*v1,double const*v2,double *max)
 {
     if(v1[0] > v2[0])
         max[0] = v1[0];
@@ -471,6 +515,18 @@ inline void vectorInitializeN(int *v,int n,int init)
      v[i]=init;
 }
 
+inline void vectorInitializeN(double *v,int n,double init)
+{
+  for(int i = 0; i < n; i++)
+     v[i]=init;
+}
+
+inline void vectorInitializeN(bool *v,int n,bool init)
+{
+  for(int i = 0; i < n; i++)
+     v[i]=init;
+}
+
 inline double vectorSumN(double *v,int n)
 {
   double sum = 0.;
@@ -506,21 +562,21 @@ inline void normalize_bary(double *v)
   v[2]/=mag;
 }
 
-inline void vectorToBuf3D(double *vec,double *buf,int &m)
+inline void vectorToBuf3D(double const*vec,double *buf,int &m)
 {
   buf[m++] = vec[0];
   buf[m++] = vec[1];
   buf[m++] = vec[2];
 }
 
-inline void bufToVector3D(double *vec,double *buf,int &m)
+inline void bufToVector3D(double *vec,double const*buf,int &m)
 {
   vec[0] = buf[m++];
   vec[1] = buf[m++];
   vec[2] = buf[m++];
 }
 
-inline void vectorToBuf4D(double *vec,double *buf,int &m)
+inline void vectorToBuf4D(double const*vec,double *buf,int &m)
 {
   buf[m++] = vec[0];
   buf[m++] = vec[1];
@@ -528,7 +584,7 @@ inline void vectorToBuf4D(double *vec,double *buf,int &m)
   buf[m++] = vec[3];
 }
 
-inline void bufToVector4D(double *vec,double *buf,int &m)
+inline void bufToVector4D(double *vec,double const*buf,int &m)
 {
   vec[0] = buf[m++];
   vec[1] = buf[m++];
@@ -536,13 +592,13 @@ inline void bufToVector4D(double *vec,double *buf,int &m)
   vec[3] = buf[m++];
 }
 
-inline void vectorToBufN(double *vec,double *buf,int &m, int nvalues)
+inline void vectorToBufN(double const*vec,double *buf,int &m, int nvalues)
 {
   for(int i = 0; i < nvalues; i++)
     buf[m++] = vec[i];
 }
 
-inline void bufToVectorN(double *vec,double *buf,int &m, int nvalues)
+inline void bufToVectorN(double *vec,double const*buf,int &m, int nvalues)
 {
   for(int i = 0; i < nvalues; i++)
     vec[i] = buf[m++];

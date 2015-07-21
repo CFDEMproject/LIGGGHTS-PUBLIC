@@ -312,4 +312,4 @@ change_box command is issued, so long as an "undump"_undump.html or
 
 [Default:]
 
-The option default is units = lattice.
+The option default is units = box.

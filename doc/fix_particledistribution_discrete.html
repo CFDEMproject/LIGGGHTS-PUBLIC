@@ -11,22 +11,26 @@
 
 <H3>fix particledistribution/discrete command 
 </H3>
+<H3>fix particledistribution/discrete/massbased command 
+</H3>
+<H3>fix particledistribution/discrete/numberbased command 
+</H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID particledistribution/discrete seed ntemp t_id t_m ...  
+<PRE>fix ID group-ID particledistribution/discrete seed ntemp t_id t_weight ...  
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
-<LI>particledistribution/discrete = style name of this fix command  
+<LI>particledistribution/discrete or particledistribution/discrete/massbased or particledistribution/discrete/numberbased = style name of this fix command  
 
 <LI>seed = random number generator seed (integer value) 
 
 <LI>ntemp = number of particle templates to be used in this command 
 
-<LI>zero or more <I>t_id</I>/<I>t_m</I> pairs are appended, number of pairs must match ntemp 
+<LI>zero or more <I>t_id</I>/<I>t_weight</I> pairs are appended, number of pairs must match ntemp 
 
-<PRE><I>t_id</I> = id of a fix of type particletemplate/sphere
-<I>t_m</I> = mass % for this template in the distribution 
+<PRE>  <I>t_id</I> = ID of a fix of type particletemplate/sphere
+  <I>t_weight</I> = mass % or number % for this template in the distribution 
 </PRE>
 
 </UL>
@@ -37,21 +41,43 @@ fix pdd1 all particledistribution/discrete 1239  2 pts1 0.3 pts2 0.7
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>Define a discrete particle distribution that defines a discrete particle distribution to be inserted by the <A HREF = "fix_pour_dev.html">fix_pour_dev</A> command. It takes several templates of type <A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A> as inputs, which define the properties of the single particles that are part of the distribution.
+<P>Define a discrete particle distribution that defines a discrete particle distribution 
+to be inserted by a <A HREF = "fix_insert_stream.html">fix insert/stream</A>, 
+<A HREF = "fix_insert_pack.html">fix insert/pack</A>, <A HREF = "fix_insert_rate_region.html">fix insert/rate/region</A>
+or a related command. It takes several templates of type 
+<A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A> as input, which define 
+the properties of the single particles (such as radius, density that are part of the 
+distribution. The pairs of IDs and weights for the templates (<I>t_id</I> / <I>t_weight</I>)
+define the distribution. Please note that the number of pairs must match <I>ntemp</I>, but
+can be arbitrtarily large, so that any type of particle size distribution can be
+discretized.
 </P>
-<P>At insertion, particles are chosen according to the mass-% distribution as defined by each pair (t_id, t_m). Note that the sum of all weights t_m must be equal to 1.0, if this is not the case the user is warned at the distribution is normalized. Note that large particles are inserted first, so that a higher volume fraction can be achieved. If not all desired insertions could be performed, it is likely that the distribution is not accurately reproduced.
-</P>
-<P>IMPORTANT NOTE: As opposed to the number-based distributions used by <A HREF = "fix_pour.html">fix_pour</A> and <A HREF = "fix_pour_legacy.html">fix_pour_legacy</A>, this fix uses the more common distribution based on mass-% as input (as does <A HREF = "">fix_particletemplate_sphere</A>).
+<P>For style <I>particledistribution/discrete</I> or <I>particledistribution/discrete/massbased</I>
+the weight of each template within the distribution is interpreted as
+mass-%, for style <I>particledistribution/discrete/numberbased</I> the weight is interpreted
+as number-%. Note that the sum of all weights must be equal to 1.0, 
+if this is not the case the user is warned and the distribution is normalized automatically.
+Note  that large particles are inserted first, so that a higher volume fraction can be 
+achieved. If not all desired insertions could be performed, it is likely that the 
+distribution is not accurately reproduced.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
-<P>Information about the random state in this fix is written to <A HREF = "restart.html">binary restart files</A> so you can restart a simulation with the same particles being chosen for insertion. None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this fix can be used with the <I>start</I>/<I>stop</I> keywords of the <A HREF = "run.html">run</A> command. This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+<P>Information about the random state in this fix is written to 
+<A HREF = "restart.html">binary restart files</A> so you can restart a simulation with the same 
+particles being chosen for insertion. None of the <A HREF = "fix_modify.html">fix_modify</A> options 
+are relevant to this fix. No global scalar or vector or per-atom quantities are stored 
+by this fix for access by various <A HREF = "Section_howto.html#4_15">output commands</A>. 
+No parameter of this fix can be used with the <I>start</I>/<I>stop</I> keywords of the 
+<A HREF = "run.html">run</A> command. This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
 </P>
 <P><B>Restrictions:</B> none
 </P>
 <P><B>Related commands:</B>
 </P>
-<P><A HREF = "fix_pour_dev.html">fix_pour_dev</A>
+<P><A HREF = "fix_insert_stream.html">fix insert/stream</A>, 
+<A HREF = "fix_insert_pack.html">fix insert/pack</A>, 
+<A HREF = "fix_insert_rate_region.html">fix insert/rate/region</A>
 </P>
 <P><B>Default:</B> none
 </P>

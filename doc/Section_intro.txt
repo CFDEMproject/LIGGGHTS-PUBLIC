@@ -195,10 +195,10 @@ and attributions back to you. :l
 
 LIGGGHTS(R)-PUBLIC development has been funded by a variety of sources:
 
+  A variety of industrial partners in bi-laterial projects
   Christian Doppler Forschungsgesellschaft, www.cdg.at
   The EU FP7 programmes NanoSim and T-MAPPP
-  The Austrial funding agency FFG, www.ffg.at
-  A variety of industrial partners in bi-laterial projects :ul
+  The Austrial funding agency FFG, www.ffg.at  :ul
 
 As LIGGGHTS(R)-PUBLIC is based on LAMMPS, we also acknowledge the funding
 that helped creating LAMMPS.  LAMMPS development has been funded by the "US Department of

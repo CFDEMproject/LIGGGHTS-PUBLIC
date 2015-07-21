@@ -179,4 +179,4 @@ command.
 
 The default for the {basis} keyword is that all created atoms are
 assigned the argument {type} as their atom type.  The default for
-{remap} = no and for {units} = lattice.
+{remap} = no and for {units} = box.

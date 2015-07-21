@@ -55,7 +55,7 @@
       f_ID[N] = Nth column of local array calculated by a fix with ID 
 </PRE>
 <PRE>  <I>custom</I> args = list of atom attributes
-    possible attributes = id, mol, type, element, mass,
+    possible attributes = id, mol, id_multisphere , type, element, mass,
 			  x, y, z, xs, ys, zs, xu, yu, zu,
 			  xsu, ysu, zsu, ix, iy, iz,
 			  vx, vy, vz, fx, fy, fz,
@@ -66,6 +66,7 @@
 </PRE>
 <PRE>      id = atom ID
       mol = molecule ID
+      id_multisphere = ID of multisphere body
       type = atom type
       element = name of atom element, as defined by <A HREF = "dump_modify.html">dump_modify</A> command
       mass = atom mass
@@ -429,7 +430,9 @@ part of the <I>custom</I> and style.
 <I>fz</I>, <I>q</I> attributes are self-explanatory.
 </P>
 <P><I>Id</I> is the atom ID.  <I>Mol</I> is the molecule ID, included in the data
-file for molecular systems.  <I>Type</I> is the atom type.  <I>Element</I> is
+file for molecular systems. <I>id_multisphere</I> is the ID of the multisphere
+body that the particle belongs to (if your version supports multisphere). 
+<I>Type</I> is the atom type.  <I>Element</I> is
 typically the chemical name of an element, which you must assign to
 each type via the <A HREF = "dump_modify.html">dump_modify element</A> command.
 More generally, it can be any string you wish to associated with an

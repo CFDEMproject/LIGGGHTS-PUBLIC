@@ -131,6 +131,7 @@ class Region : protected Pointers {
   class RanPark *random;
   
  private:
+  double volume_limit_;             //volume below which error will be thrown
   int dynamic;                      // 1 if region position/orientation changes over time
   int moveflag,rotateflag;          // 1 if position/orientation changes
   double point[3],axis[3],runit[3];

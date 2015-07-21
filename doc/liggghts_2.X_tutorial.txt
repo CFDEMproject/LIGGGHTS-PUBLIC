@@ -76,7 +76,7 @@ OLD: fix ID group-ID heat/gran 273.15
 NEW: fix ID group-ID heat/gran initial_temperature 273.15 :pre
 
 OLD: fix ID group-ID heat/gran 273.15 + activate area correction via fix property/global
-NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction on :pre
+NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction yes :pre
 
 :line
 

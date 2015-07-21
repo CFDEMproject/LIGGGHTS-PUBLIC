@@ -253,8 +253,9 @@ void FixMeshSurface::createWallNeighList(int igrp)
 
 void FixMeshSurface::deleteWallNeighList()
 {
+    
     if(fix_mesh_neighlist_) {
-      modify->delete_fix(fix_mesh_neighlist_->id);
+      modify->delete_fix(fix_mesh_neighlist_->id,true);
       fix_mesh_neighlist_ = NULL;
     }
 }
@@ -326,8 +327,9 @@ void FixMeshSurface::createContactHistory(int dnum)
 void FixMeshSurface::deleteContactHistory()
 {
     // contact tracker and neighlist are created via fix wall/gran
+    
     if(fix_contact_history_mesh_) {
-      modify->delete_fix(fix_contact_history_mesh_->id);
+      modify->delete_fix(fix_contact_history_mesh_->id,true);
       fix_contact_history_mesh_ = NULL;
     }
 }
@@ -371,8 +373,9 @@ void FixMeshSurface::createMeshforceContact()
 void FixMeshSurface::deleteMeshforceContact()
 {
     // contact tracker and neighlist are created via fix wall/gran
+    
     if(fix_meshforce_contact_) {
-      modify->delete_fix(fix_meshforce_contact_->id);
+      modify->delete_fix(fix_meshforce_contact_->id,true);
       fix_meshforce_contact_ = NULL;
     }
 }

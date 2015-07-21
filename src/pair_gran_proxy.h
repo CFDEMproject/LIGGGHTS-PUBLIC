@@ -41,7 +41,13 @@
 ------------------------------------------------------------------------- */
 
 #ifdef PAIR_CLASS
+
 PairStyle(gran,PairGranProxy)
+
+PairStyle(bubble,PairGranProxy)
+
+PairStyle(gran_bubble,PairGranProxy)
+
 #else
 
 #ifndef PAIR_GRAN_PROXY_H

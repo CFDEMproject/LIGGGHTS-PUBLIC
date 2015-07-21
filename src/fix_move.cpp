@@ -188,7 +188,7 @@ FixMove::FixMove(LAMMPS *lmp, int narg, char **arg) :
 
   // optional args
 
-  int scaleflag = 1;
+  int scaleflag = 0; 
 
   while (iarg < narg) {
     if (strcmp(arg[iarg],"units") == 0) {

@@ -220,4 +220,4 @@ minimization"_minimize.html.
 
 [Default:] none
 
-The option default is units = lattice.
+The option default is units = box.

@@ -213,6 +213,8 @@ of each style or click on the style itself for a full description:
 "nve/noforce"_fix_nve_noforce.html,
 "nve/sphere"_fix_nve_sphere.html,
 "particledistribution/discrete"_fix_particledistribution_discrete.html,
+"particledistribution/discrete/massbased"_fix_particledistribution_discrete.html,
+"particledistribution/discrete/numberbased"_fix_particledistribution_discrete.html,
 "particletemplate/sphere"_fix_particletemplate_sphere.html,
 "planeforce"_fix_planeforce.html,
 "print"_fix_print.html,

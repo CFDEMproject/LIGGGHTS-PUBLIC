@@ -596,7 +596,7 @@ void FixAveEuler::calculate_eu()
     for(int icell = 0; icell < ncells_; icell++)
     {
         // calculate average vel and radius
-        if(ncount_[icell]) vectorScalarDiv3D(v_av_[icell],static_cast<double>(ncount_[icell])*mass_[icell]);
+        if(ncount_[icell]) vectorScalarDiv3D(v_av_[icell],mass_[icell]);
         if(ncount_[icell]) radius_[icell]/=static_cast<double>(ncount_[icell]);
 
         // calculate volume fraction

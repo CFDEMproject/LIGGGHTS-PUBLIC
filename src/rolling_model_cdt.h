@@ -97,9 +97,14 @@ namespace ContactModels
           const double eny = sidata.en[1];
           const double enz = sidata.en[2];
 
-          r_torque[0] = rmu*kn*(radius-sidata.r)*wr1/wrmag*sidata.cri;
-          r_torque[1] = rmu*kn*(radius-sidata.r)*wr2/wrmag*sidata.cri;
-          r_torque[2] = rmu*kn*(radius-sidata.r)*wr3/wrmag*sidata.cri;
+          double Fn = kn*(radius-sidata.r);
+          #ifdef SUPERQUADRIC_ACTIVE_FLAG
+                if(atom->superquadric_flag)
+                  Fn = sidata.deltan*kn;
+          #endif
+          r_torque[0] = rmu*Fn*wr1/wrmag*sidata.cri;
+          r_torque[1] = rmu*Fn*wr2/wrmag*sidata.cri;
+          r_torque[2] = rmu*Fn*wr3/wrmag*sidata.cri;
 
           // remove normal (torsion) part of torque
           double rtorque_dot_delta = r_torque[0]*enx+ r_torque[1]*eny + r_torque[2]*enz;

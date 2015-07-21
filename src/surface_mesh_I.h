@@ -379,11 +379,8 @@ template<int NUM_NODES, int NUM_NEIGH_MAX>
 void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
 {
     
-    // iterate over all surfaces, over ghosts as well
-    
     int nall = this->sizeLocal()+this->sizeGhost();
 
-    // inititalize neigh topology - reset to default, ~n
     bool t[NUM_NODES], f[NUM_NODES];
     int neighs[NUM_NEIGH_MAX];
 

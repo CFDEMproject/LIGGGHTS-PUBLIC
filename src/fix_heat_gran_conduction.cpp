@@ -96,7 +96,7 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) :
             error->fix_error(FLERR,this,"'contact_area constant' value must be > 0");
         iarg_++;
       }
-      else error->fix_error(FLERR,this,"expecting 'yes' otr 'no' after 'area_correction'");
+      else error->fix_error(FLERR,this,"expecting 'overlap', 'projection' or 'constant' after 'contact_area'");
       iarg_ += 2;
       hasargs = true;
     } else if(strcmp(arg[iarg_],"area_correction") == 0) {
@@ -105,7 +105,7 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) :
         area_correction_flag_ = 1;
       else if(strcmp(arg[iarg_+1],"no") == 0)
         area_correction_flag_ = 0;
-      else error->fix_error(FLERR,this,"expecting 'overlap', 'projection' or 'constant' after 'contact_area'");
+      else error->fix_error(FLERR,this,"expecting 'yes' otr 'no' after 'area_correction'");
       iarg_ += 2;
       hasargs = true;
     } else if(strcmp(style,"heat/gran/conduction") == 0)

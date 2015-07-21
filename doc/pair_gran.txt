@@ -111,7 +111,7 @@ Models for use with this command are described "here"_Section_gran_models.html
 [Default:]
 
 {model} = 'hertz'
-{tangential} = 'history'
+{tangential} = 'off'
 {rolling_friction} = 'off'
 {cohesion} = 'off'
 {surface} = 'default'

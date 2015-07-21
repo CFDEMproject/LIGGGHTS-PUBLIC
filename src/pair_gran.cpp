@@ -275,6 +275,10 @@ void PairGran::init_style()
     if (!fix_history)
     {
         
+        fix_history = static_cast<FixContactHistory*>(modify->find_fix_style_strict("contacthistory",0));
+        if(fix_history)
+            error->all(FLERR,"Can not use more than one pair style that uses contact history");
+
         char **fixarg = new char*[4+2*dnum_all];
         fixarg[3] = new char[3];
 
@@ -464,7 +468,7 @@ void PairGran::init_style()
   for (i = 0; i < modify->nfix; i++)
   {
     
-    if(modify->fix[i]->ignore_maxrad_neigh)
+    if(!modify->fix[i]->use_rad_for_cut_neigh_and_ghost())
         continue;
 
     for(int j=1;j<=atom->ntypes;j++)

@@ -57,6 +57,8 @@ ParticleToInsert::ParticleToInsert(LAMMPS* lmp,int ns) : Pointers(lmp)
 {
         groupbit = 0;
 
+        distorder = -1;
+
         nspheres = ns;
 
         memory->create(x_ins,nspheres,3,"x_ins");

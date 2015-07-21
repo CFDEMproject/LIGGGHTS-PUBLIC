@@ -70,15 +70,20 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
 {
   restart_global = 1;
 
+  mass_based = true;
+
+  if(strstr(arg[2],"numberbased"))
+    mass_based = false;
+
   // random number generator, same for all procs
 
   if (narg < 7)
-    error->all(FLERR,"Illegal fix particledistribution/discrete command, not enough arguments");
+    error->fix_error(FLERR,this,"not enough arguments");
   seed = atoi(arg[3]) + comm->me;
   random = new RanPark(lmp,seed);
   ntemplates = atoi(arg[4]);
   if(ntemplates < 1)
-    error->all(FLERR,"Illegal fix particledistribution/discrete command, illegal number of templates");
+    error->fix_error(FLERR,this,"illegal number of templates");
 
   templates = new FixTemplateSphere*[ntemplates];
   distweight = new double[ntemplates];
@@ -91,24 +96,24 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   int itemp=0;
 
   if(narg != iarg+2*ntemplates)
-    error->all(FLERR,"Illegal fix particledistribution/discrete command, # of templates does not match # of arguments");
+    error->fix_error(FLERR,this,"# of templates does not match # of arguments");
 
   // parse further args
   do {
     if(itemp == ntemplates) break;
     if(narg < iarg+1)
-        error->all(FLERR,"Illegal fix particledistribution/discrete command, not enough arguments");
+        error->fix_error(FLERR,this,"not enough arguments");
     int ifix = modify->find_fix(arg[iarg]);
 
     if(ifix < 0)
-        error->all(FLERR,"Illegal fix particledistribution/discrete command, invalid ID for fix particletemplate provided");
+        error->fix_error(FLERR,this,"invalid ID for fix particletemplate provided");
 
     if(strncmp(modify->fix[ifix]->style,"particletemplate/",16))
-        error->all(FLERR,"Illegal fix particledistribution/discrete command, fix is not of type particletemplate");
+        error->fix_error(FLERR,this,"fix is not of type particletemplate");
 
     templates[itemp] = static_cast<FixTemplateSphere*>(modify->fix[ifix]);
     distweight[itemp] = atof(arg[iarg+1]);
-    if (distweight[itemp] < 0) error->all(FLERR,"Illegal fix particledistribution/discrete command, invalid weight");
+    if (distweight[itemp] < 0) error->fix_error(FLERR,this,"invalid weight");
     itemp++;
     iarg += 2;
   } while (iarg < narg);
@@ -117,7 +122,7 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   for(int i = 0; i < ntemplates; i++)
       for(int j = 0; j < i; j++)
         if(templates[i] == templates[j])
-            error->all(FLERR,"Illegal fix particledistribution/discrete command, cannot use the same template twice");
+            error->fix_error(FLERR,this,"cannot use the same template twice");
 
   // normalize distribution
   double weightsum = 0;
@@ -130,7 +135,7 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   for(int i = 0; i < ntemplates; i++)
     distweight[i]/=weightsum;
 
-  if(comm->me == 0 && screen)
+  if(mass_based && comm->me == 0 && screen)
   {
       fprintf(screen,"Fix particledistribution/discrete (id %s): distribution based on mass%%:\n",this->id);
       for(int i = 0; i < ntemplates; i++)
@@ -138,15 +143,19 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   }
 
   // convert distribution from mass% to number%
-  for(int i=0;i<ntemplates; i++)
-    distweight[i]=distweight[i]/templates[i]->massexpect();
+  // do not do if already number-based
+  if(mass_based)
+  {
+      for(int i=0;i<ntemplates; i++)
+        distweight[i]=distweight[i]/templates[i]->massexpect();
 
-  weightsum=0;
-  for(int i=0;i<ntemplates; i++)
-    weightsum+=distweight[i];
+      weightsum=0;
+      for(int i=0;i<ntemplates; i++)
+        weightsum+=distweight[i];
 
-  for(int i=0;i<ntemplates; i++)
-    distweight[i]/=weightsum;
+      for(int i=0;i<ntemplates; i++)
+        distweight[i]/=weightsum;
+  }
 
   if(comm->me == 0 && screen)
   {
@@ -423,7 +432,7 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
     for(int i = 0; i < ntemplates; i++)
     {
         ninsert += parttogen[i];
-        templates[i]->randomize_ptilist(parttogen[i],groupbit | insert_groupbit);
+        templates[i]->randomize_ptilist(parttogen[i],groupbit | insert_groupbit,distorder[i]);
     }
 
     // wire lists, make sure in correct order (large to small particles)
@@ -539,6 +548,10 @@ double FixParticledistributionDiscrete::max_rad(int type)
     double maxrad_type = 0.;
     for(int i = 0; i < ntemplates;i++)
     {
+      
+      if(!templates[i]->use_rad_for_cut_neigh_and_ghost())
+        continue;
+
       if(
           (type >= templates[i]->mintype() && type <= templates[i]->maxtype()) &&
           (templates[i]->max_rad() > maxrad_type)

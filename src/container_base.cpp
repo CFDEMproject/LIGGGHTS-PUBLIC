@@ -69,7 +69,7 @@ using namespace LAMMPS_NS;
     scalePower_(-1),
     useDefault_(false)
   {
-      if(id_)
+      if(_id)
       {
         id_ = new char[strlen(_id)+1];
         strcpy(id_,_id);

@@ -187,6 +187,10 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   int nlocal_;
   double **x_, **f_, *radius_, *rmass_, **wallforce_, r0_;
 
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  double **quat_, **shape_, **roundness_;
+#endif
+
   void set_r0(double _r0)
   { r0_ = _r0; }
 
@@ -252,6 +256,9 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   // flag if mesh wall
   int meshwall_;
+
+  // flag to actiate potential energy calculation
+  bool track_energy_;
 
   // flag for stressanalysis
   // true if any of the meshes tracks stresses

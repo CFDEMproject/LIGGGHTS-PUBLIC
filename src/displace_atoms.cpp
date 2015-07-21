@@ -99,7 +99,7 @@ void DisplaceAtoms::command(int narg, char **arg)
 
   // set option defaults
 
-  scaleflag = 1;
+  scaleflag = 0; 
 
   // read options from end of input line
 

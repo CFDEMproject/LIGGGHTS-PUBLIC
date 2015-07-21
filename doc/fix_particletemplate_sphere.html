@@ -21,11 +21,9 @@
 
 <LI>seed = random number generator seed (integer value) 
 
-<LI>n_spheres = number of spheres in the template 
-
 <LI>zero or more keyword/value pairs can be appended 
 
-<LI>keyword = <I>atom_type</I> or <I>density</I> or <I>volume_limit</I> or <I>radius</I> 
+<LI>keyword = <I>atom_type</I> or <I>density</I> or <I>volume_limit</I> or <I>radius</I> or <I>relative</I> 
 
 <PRE><I>atom_type</I> value = atom type assigned to this particle template
 <I>density</I> values = random_style param1 (param2)
@@ -36,7 +34,10 @@
 <I>radius</I> values = random_style param1 (param2)
   random_style = 'constant' or 'uniform number' or 'uniform mass' or 'gaussian number'
   param1 = radius for 'constant', low value of radius for 'uniform', mu value for 'gaussian'
-  param2 = omitted for 'constant', high value of radius for 'uniform', sigma value for 'gaussian' 
+  param2 = omitted for 'constant', high value of radius for 'uniform', sigma value for 'gaussian'
+<I>relative</I> value = yes or no
+  no = set a flag for other commands that radius given here is abosulute (in length units)
+  yes = set a flag for other commands that radius given here is relative (in % of a reference radius) 
 </PRE>
 
 </UL>
@@ -46,9 +47,21 @@
 </PRE>
 <P><B>Description:</B>
 </P>
-<P>Define a particle that is used as input for a <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> command. You can choose the atom type, density and radius of the particles. For density and radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. Note that for radius, you can additionally choose between a number-based and mass-based uniform distribution, where the latter is used more frequently typically. 'gaussian' for radius only supports a number-based distribution.
+<P>Define a particle that is used as input for a 
+<A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> command. 
+You can choose the atom type, density and radius of the particles. For density and 
+radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. 
+Note that for radius, you can additionally choose between a number-based and mass-based 
+uniform distribution, where the latter is used more frequently typically. 'gaussian' for 
+radius only supports a number-based distribution.
 </P>
-<P>It is thus possible to define a uniform or gaussian distribution on top of the discrete distribution defined by <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>.
+<P>Keyword <I>relative</I> lets the user set a flag to let other commands know if the radii specified
+by this command are absolute (length units) or relative (in % of a reference radius). 
+IMPORTANT NOTE: This setting should not be changed away from the default value (no) unless
+explicity required by another command! 
+</P>
+<P>It is thus possible to define a uniform or gaussian distribution on top of the discrete 
+distribution defined by <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>.
 </P>
 <P>IMPORTANT NOTE: As opposed to the number-based distributions, this fix uses the more common
 distribution based on mass-% for the radius distribution (as does
@@ -59,7 +72,12 @@ If you are sure you know what you are doing you can override the default limit o
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
-<P>Information about the random state in this fix is written to <A HREF = "restart.html">binary restart files</A> so you can restart a simulation with the same particles being chosen for insertion. None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this fix can be used with the <I>start</I>/<I>stop</I> keywords of the <A HREF = "run.html">run</A> command. This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+<P>Information about the random state in this fix is written to <A HREF = "restart.html">binary restart files</A> 
+so you can restart a simulation with the same particles being chosen for insertion. None of the 
+<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global scalar or vector or 
+per-atom quantities are stored by this fix for access by various <A HREF = "Section_howto.html#4_15">output commands</A>. 
+No parameter of this fix can be used with the <I>start</I>/<I>stop</I> keywords of the <A HREF = "run.html">run</A> command. 
+This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
 </P>
 <P><B>Restrictions:</B> none
 </P>
@@ -67,6 +85,8 @@ If you are sure you know what you are doing you can override the default limit o
 </P>
 <P><A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A>
 </P>
-<P><B>Default:</B> radius = 1.0, density = 1.0, atom_type = 1, volume_limit = 1e-12
+<P><B>Default:</B> 
+</P>
+<P>radius = 1.0, density = 1.0, atom_type = 1, volume_limit = 1e-12, relative = no
 </P>
 </HTML>

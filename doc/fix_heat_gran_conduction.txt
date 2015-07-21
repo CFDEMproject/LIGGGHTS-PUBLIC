@@ -33,7 +33,8 @@ This command is not available in LIGGGHTS(R)-PUBLIC.
 
 [Description:]
 
-Calculates heat conduction between particles in contact and temperature update according to
+Calculates heat conduction between particles in contact and temperature 
+update (see "(Chaudhuri)"_#Chaudhuri) according to
 
 :c,image(Eqs/heat_gran.png)
 
@@ -126,5 +127,12 @@ none
 "compute temp"_compute_temp.html, "compute
 temp/region"_compute_temp_region.html
 
-[Default:] {contact_area} = overlap, {area_correction} = {off}
+[Default:] 
+
+{contact_area} = overlap, {area_correction} = no
+
+[Literature:] 
+
+:link(Chaudhuri)
+[(Chaudhuri)] Chaudhuri et al, Chemical Engineering Science, 61, p 6348 (2006).
 

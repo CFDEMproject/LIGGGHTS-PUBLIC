@@ -146,9 +146,13 @@ void FixHeatGran::updatePtrs(){
 
 void FixHeatGran::init()
 {
+  
+  int n_ms = modify->n_fixes_style("multisphere");
+  if(n_ms > 0)
+    error->fix_error(FLERR,this,"may not be used together with fix multisphere");
 
   if (!atom->radius_flag || !atom->rmass_flag)
-    error->all(FLERR,"Please use a granular atom style for fix heat/gran");
+    error->fix_error(FLERR,this,"must use a granular atom style ");
 
     // check if a fix of this style already exists
   if(modify->n_fixes_style(style) > 1)

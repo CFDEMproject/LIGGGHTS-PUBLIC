@@ -7,18 +7,20 @@
 :line
 
 fix particledistribution/discrete command :h3
+fix particledistribution/discrete/massbased command :h3
+fix particledistribution/discrete/numberbased command :h3
 
 [Syntax:]
 
-fix ID group-ID particledistribution/discrete seed ntemp t_id t_m ...  :pre
+fix ID group-ID particledistribution/discrete seed ntemp t_id t_weight ...  :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
-particledistribution/discrete = style name of this fix command  :l
+particledistribution/discrete or particledistribution/discrete/massbased or particledistribution/discrete/numberbased = style name of this fix command  :l
 seed = random number generator seed (integer value) :l
 ntemp = number of particle templates to be used in this command :l
-zero or more {t_id}/{t_m} pairs are appended, number of pairs must match ntemp :l
-{t_id} = id of a fix of type particletemplate/sphere
-{t_m} = mass % for this template in the distribution :pre
+zero or more {t_id}/{t_weight} pairs are appended, number of pairs must match ntemp :l
+  {t_id} = ID of a fix of type particletemplate/sphere
+  {t_weight} = mass % or number % for this template in the distribution :pre
 :ule
 
 [Examples:]
@@ -28,20 +30,42 @@ fix pdd1 all particledistribution/discrete 1239  2 pts1 0.3 pts2 0.7  :pre
 
 [Description:]
 
-Define a discrete particle distribution that defines a discrete particle distribution to be inserted by the "fix_pour_dev"_fix_pour_dev.html command. It takes several templates of type "fix_particletemplate_sphere"_fix_particletemplate_sphere.html as inputs, which define the properties of the single particles that are part of the distribution.
+Define a discrete particle distribution that defines a discrete particle distribution 
+to be inserted by a "fix insert/stream"_fix_insert_stream.html, 
+"fix insert/pack"_fix_insert_pack.html, "fix insert/rate/region"_fix_insert_rate_region.html
+or a related command. It takes several templates of type 
+"fix_particletemplate_sphere"_fix_particletemplate_sphere.html as input, which define 
+the properties of the single particles (such as radius, density that are part of the 
+distribution. The pairs of IDs and weights for the templates ({t_id} / {t_weight})
+define the distribution. Please note that the number of pairs must match {ntemp}, but
+can be arbitrtarily large, so that any type of particle size distribution can be
+discretized.
 
-At insertion, particles are chosen according to the mass-% distribution as defined by each pair (t_id, t_m). Note that the sum of all weights t_m must be equal to 1.0, if this is not the case the user is warned at the distribution is normalized. Note that large particles are inserted first, so that a higher volume fraction can be achieved. If not all desired insertions could be performed, it is likely that the distribution is not accurately reproduced.
-
-IMPORTANT NOTE: As opposed to the number-based distributions used by "fix_pour"_fix_pour.html and "fix_pour_legacy"_fix_pour_legacy.html, this fix uses the more common distribution based on mass-% as input (as does "fix_particletemplate_sphere"_).
+For style {particledistribution/discrete} or {particledistribution/discrete/massbased}
+the weight of each template within the distribution is interpreted as
+mass-%, for style {particledistribution/discrete/numberbased} the weight is interpreted
+as number-%. Note that the sum of all weights must be equal to 1.0, 
+if this is not the case the user is warned and the distribution is normalized automatically.
+Note  that large particles are inserted first, so that a higher volume fraction can be 
+achieved. If not all desired insertions could be performed, it is likely that the 
+distribution is not accurately reproduced.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
-Information about the random state in this fix is written to "binary restart files"_restart.html so you can restart a simulation with the same particles being chosen for insertion. None of the "fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. This fix is not invoked during "energy minimization"_minimize.html.
+Information about the random state in this fix is written to 
+"binary restart files"_restart.html so you can restart a simulation with the same 
+particles being chosen for insertion. None of the "fix_modify"_fix_modify.html options 
+are relevant to this fix. No global scalar or vector or per-atom quantities are stored 
+by this fix for access by various "output commands"_Section_howto.html#4_15. 
+No parameter of this fix can be used with the {start}/{stop} keywords of the 
+"run"_run.html command. This fix is not invoked during "energy minimization"_minimize.html.
 
 [Restrictions:] none
 
 [Related commands:]
 
-"fix_pour_dev"_fix_pour_dev.html
+"fix insert/stream"_fix_insert_stream.html, 
+"fix insert/pack"_fix_insert_pack.html, 
+"fix insert/rate/region"_fix_insert_rate_region.html
 
 [Default:] none
