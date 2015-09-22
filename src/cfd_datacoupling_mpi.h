@@ -137,7 +137,7 @@ void CfdDatacouplingMPI::pull_mpi(const char *name,const char *type,void *&from)
     else if(strcmp(type,"scalar-multisphere") == 0)
     {
         T *to_t = (T*) to;
-        MultisphereParallel *ms_data = properties_->ms_data();
+        Multisphere *ms_data = properties_->ms_data();
         if(!ms_data)
             error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix multisphere");
         for (int i = 0; i < len1; i++)
@@ -147,7 +147,7 @@ void CfdDatacouplingMPI::pull_mpi(const char *name,const char *type,void *&from)
     else if(strcmp(type,"vector-multisphere") == 0)
     {
         T **to_t = (T**) to;
-        MultisphereParallel *ms_data = properties_->ms_data();
+        Multisphere *ms_data = properties_->ms_data();
         if(!ms_data)
             error->one(FLERR,"Transferring a multisphere property from/to LIGGGHTS requires a fix multisphere");
         for (int i = 0; i < len1; i++)
@@ -176,7 +176,7 @@ void CfdDatacouplingMPI::push_mpi(const char *name,const char *type,void *&to)
     int nlocal = atom->nlocal;
     int nbodies = 0;
 
-    MultisphereParallel *ms_data = properties_->ms_data();
+    Multisphere *ms_data = properties_->ms_data();
     if(ms_data) nbodies = ms_data->n_body();
 
     // get reference where to write the data

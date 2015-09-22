@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -53,6 +54,7 @@ using namespace std;
 
 namespace MODEL_PARAMS
 {
+  static const char * COHESION_DISTANCE_SETTINGS = "cohesionDistanceSettings";
   static const char * COHESION_ENERGY_DENSITY = "cohesionEnergyDensity";
   static const char * CHARACTERISTIC_VELOCITY = "characteristicVelocity";
   static const char * YOUNGS_MODULUS = "youngsModulus";
@@ -87,6 +89,18 @@ namespace MODEL_PARAMS
     FixPropertyGlobal * property = registry.getGlobalProperty(name,"property/global","scalar",0,0,caller);
     scalar->data = property->compute_scalar();
     return scalar;
+  }
+
+  VectorProperty* createPerTypeProperty(PropertyRegistry & registry, const char* name, const char * caller)
+  {
+    const int max_type = registry.max_type();
+
+    VectorProperty * vector = new VectorProperty(max_type+1);
+    FixPropertyGlobal * property = registry.getGlobalProperty(name,"property/global","vector",max_type,0,caller);
+    for(int i = 1; i < max_type+1; i++)
+        vector->data[i] = property->compute_vector(i-1);
+
+    return vector;
   }
 
   MatrixProperty* createPerTypePairProperty(PropertyRegistry & registry, const char * name, const char * caller)
@@ -131,6 +145,32 @@ namespace MODEL_PARAMS
   MatrixProperty* createCohesionEnergyDensity(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
     return createPerTypePairProperty(registry, COHESION_ENERGY_DENSITY, caller);
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  VectorProperty * createCohesionDistanceSettings(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+    int        numSettings = 4;        //use 4 settings, starting index = 0
+    VectorProperty *   vec = new VectorProperty(numSettings); 
+    FixPropertyGlobal * ca = registry.getGlobalProperty(COHESION_DISTANCE_SETTINGS,"property/global","vector",numSettings,0,caller);
+
+    for(int i=0; i <numSettings; i++)
+    {
+      const double aSetting = ca->compute_vector(i);
+
+      // error checks on v
+      if(sanity_checks)
+      {
+        if(aSetting < 0.0)
+          lmp->error->all(FLERR,"distance settings for cohesion model must be all positive");
+      }
+
+      vec->data[i] = aSetting;
+    }
+
+    return vec;
   }
 
   /* ---------------------------------------------------------------------- */

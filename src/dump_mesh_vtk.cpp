@@ -250,6 +250,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
       {
           
           meshList_[iMesh] = static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
+         static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->dumpAdd();
       }
 
       if (nMesh_ == 0)

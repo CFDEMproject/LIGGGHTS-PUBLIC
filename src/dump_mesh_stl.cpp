@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -50,6 +51,7 @@
 #include "error.h"
 #include "fix.h"
 #include "fix_mesh_surface.h"
+#include "region_mesh_tet.h"
 #include "region.h"
 #include "modify.h"
 #include "comm.h"
@@ -104,18 +106,36 @@ DumpMeshSTL::DumpMeshSTL(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
       iarg++;
     } else {
 
-      // assume it's a mesh
       TriMesh **meshListNew = new TriMesh*[nMesh_+1];
       for(int i = 0; i < nMesh_; i++)
         meshListNew[i] = meshList_[i];
       delete[] meshList_;
       meshList_ = meshListNew;
 
-      int ifix = modify->find_fix(arg[iarg++]);
-      if(ifix == -1)
-          error->all(FLERR,"Illegal dump mesh/stl command, unknown keyword or mesh");
-      FixMeshSurface *fms = static_cast<FixMeshSurface*>(modify->fix[ifix]);
-      meshList_[nMesh_] = fms->triMesh();
+      // assume it's a mesh
+      int ifix = modify->find_fix(arg[iarg]);
+      if(ifix >= 0)
+      {
+          FixMeshSurface *fms = static_cast<FixMeshSurface*>(modify->fix[ifix]);
+          meshList_[nMesh_] = fms->triMesh();
+          fms->dumpAdd();
+      }
+      // assume it's a surface of a tet mesh
+      else
+      {
+         int ireg = domain->find_region(arg[iarg]);
+
+         if(ireg < 0)
+            error->all(FLERR,"Illegal dump mesh/stl command, unknown keyword or mesh");
+
+         // only mesh/tet style valid
+         if(strcmp(domain->regions[ireg]->style,"mesh/tet"))
+            error->all(FLERR,"Illegal dump mesh/stl command, region found, but not of style 'mesh/tet'");
+
+         // region is of right style
+         meshList_[nMesh_] = static_cast<RegTetMesh*>(domain->regions[ireg])->get_tri_mesh();
+      }
+      iarg++;
       nMesh_++;
     }
   }
@@ -144,7 +164,12 @@ DumpMeshSTL::~DumpMeshSTL()
 {
   for (int iMesh = 0; iMesh < nMesh_; iMesh++)
   {
-      static_cast<FixMeshSurface*>(modify->find_fix_id(meshList_[iMesh]->mesh_id()))->dumpRemove();
+      if(meshList_[iMesh]->mesh_id())
+      {
+          Fix *f = modify->find_fix_id(meshList_[iMesh]->mesh_id());
+          if(f)
+            static_cast<FixMeshSurface*>(f)->dumpRemove();
+      }
   }
 
   delete[] meshList_;

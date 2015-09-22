@@ -19,11 +19,11 @@
 
 // the following functions ared defined to get rid of
 // 'ambiguous call to overloaded function' error in VSS for mismathched type arguments
-#if !defined(__MINGW32__)
-inline double pow(int i, int j){
-  return pow((double)i,j);
-}
-#endif
+//#if !defined(__MINGW32__)
+//inline double pow(int i, int j){
+//  return pow((double)i,j);
+//}
+//#endif
 inline double sqrt(int i){
   return sqrt((double) i);
 }
@@ -33,7 +33,7 @@ inline double fabs(int i){
 }
 
 inline double round(double d)
-{  
+{
   return floor(d + 0.5);
 }
 

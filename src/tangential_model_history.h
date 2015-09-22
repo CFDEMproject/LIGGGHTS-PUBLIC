@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -63,8 +64,11 @@ namespace ContactModels
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
 
-    TangentialModel(LAMMPS * lmp, IContactHistorySetup * hsetup) : Pointers(lmp),
-      coeffFrict(NULL)
+    TangentialModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *c) : Pointers(lmp),
+      coeffFrict(NULL),
+      heating(false),
+      heating_track(false),
+      cmb(c)
     {
       history_offset = hsetup->add_history_value("shearx", "1");
       hsetup->add_history_value("sheary", "1");
@@ -72,7 +76,12 @@ namespace ContactModels
 
     }
 
-    inline void registerSettings(Settings&){}
+    inline void registerSettings(Settings& settings)
+    {
+        settings.registerOnOff("heating_tangential_history",heating,false);
+        settings.registerOnOff("heating_tracking",heating_track,false);
+        //TODO error->one(FLERR,"TODO here also check if right surface model used");
+    }
 
     inline void connectToProperties(PropertyRegistry & registry)
     {
@@ -122,9 +131,17 @@ namespace ContactModels
       if (Ft_shear > Ft_friction) {
         if (shrmag != 0.0) {
           const double ratio = Ft_friction / Ft_shear;
+          
+          if(heating)
+          {
+            sidata.P_diss += (vectorMag3DSquared(shear)*kt - ratio*ratio*vectorMag3DSquared(shear)*kt) / (update->dt); 
+            if(heating_track && sidata.is_wall) cmb->tally_pw((vectorMag3DSquared(shear)*kt - ratio*ratio*vectorMag3DSquared(shear)*kt) / (update->dt),sidata.i,sidata.jtype,2);
+            if(heating_track && !sidata.is_wall) cmb->tally_pp((vectorMag3DSquared(shear)*kt - ratio*ratio*vectorMag3DSquared(shear)*kt) / (update->dt),sidata.i,sidata.j,2);
+          }
           Ft1 *= ratio;
           Ft2 *= ratio;
           Ft3 *= ratio;
+          
           shear[0] = -Ft1/kt;
           shear[1] = -Ft2/kt;
           shear[2] = -Ft3/kt;
@@ -137,6 +154,12 @@ namespace ContactModels
         Ft1 -= (gammat*sidata.vtr1);
         Ft2 -= (gammat*sidata.vtr2);
         Ft3 -= (gammat*sidata.vtr3);
+        if(heating)
+        {
+            sidata.P_diss += gammat*(sidata.vtr1*sidata.vtr1+sidata.vtr2*sidata.vtr2+sidata.vtr3*sidata.vtr3); 
+            if(heating_track && sidata.is_wall) cmb->tally_pw(gammat*(sidata.vtr1*sidata.vtr1+sidata.vtr2*sidata.vtr2+sidata.vtr3*sidata.vtr3),sidata.i,sidata.jtype,1);
+            if(heating_track && !sidata.is_wall) cmb->tally_pp(gammat*(sidata.vtr1*sidata.vtr1+sidata.vtr2*sidata.vtr2+sidata.vtr3*sidata.vtr3),sidata.i,sidata.j,1);
+        }
       }
 
       // forces & torques
@@ -223,6 +246,11 @@ namespace ContactModels
 
     inline void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     inline void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+
+   protected:
+    bool heating;
+    bool heating_track;
+    class ContactModelBase *cmb;
   };
 }
 }

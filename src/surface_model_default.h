@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -60,27 +61,20 @@ namespace ContactModels
   public:
     static const int MASK = CM_SURFACES_INTERSECT;
 
-    SurfaceModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp)
+    SurfaceModel(LAMMPS * lmp, IContactHistorySetup*, class ContactModelBase *) :
+        Pointers(lmp)
     {
       
     }
 
     inline void registerSettings(Settings&) {}
+    inline void postSettings() {}
     inline void connectToProperties(PropertyRegistry&) {}
 
     inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata)
     {
       #ifdef SUPERQUADRIC_ACTIVE_FLAG
           sidata.is_non_spherical = false;
-          sidata.delta[0] = sidata.pos_i[0] - sidata.pos_j[0];
-          sidata.delta[1] = sidata.pos_i[1] - sidata.pos_j[1];
-          sidata.delta[2] = sidata.pos_i[2] - sidata.pos_j[2];
-
-          const double rinv = 1.0/vectorMag3D(sidata.delta);
-          // unit normal vector
-          sidata.en[0] = sidata.delta[0] * rinv;
-          sidata.en[1] = sidata.delta[1] * rinv;
-          sidata.en[2] = sidata.delta[2] * rinv;
       #endif
       return true;
     }
@@ -149,11 +143,15 @@ namespace ContactModels
       sidata.vtr1 = vtr1;
       sidata.vtr2 = vtr2;
       sidata.vtr3 = vtr3;
+      sidata.P_diss = 0.;
     }
 
+    inline void endSurfacesIntersect(SurfacesIntersectData&,TriMesh *) {}
     inline void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
     void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    inline void tally_pp(double,int,int,int) {}
+    inline void tally_pw(double,int,int,int) {}
   };
 }
 }

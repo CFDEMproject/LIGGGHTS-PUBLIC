@@ -13,7 +13,7 @@ fix insert/pack command :h3
 fix ID group-ID insert/pack seed seed_value distributiontemplate dist-ID general_keywords general_values pack_keywords pack_values ... :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
-insert/pack = style names of this fix command :l
+insert/pack = style name of this fix command :l
 seed = obligatory keyword :l
 seed_value = random # seed (positive integer) :l
 distributiontemplate = obligatory keyword :l
@@ -65,7 +65,7 @@ following the general keyword/value section, one or more pack keyword/value pair
 pack_keywords = {region} or {volumefraction_region} or {particles_in_region} or {mass_in_region} or {ntry_mc} :l
 pack_keywords = where exactly one out of {volumefraction_region} or {particles_in_region} or {mass_in_region} has to be defined:l
   {region} value = region-ID
-    region-ID = ID of the "region"_region.html where the particles will be generated (positive integer)
+    region-ID = ID of the "region"_region.html where the particles will be generated 
   {volumefraction_region} values = vol
     vol =  desired volume fraction for the region (positive float, 0 < vol < 1)
   {particles_in_region} values = np

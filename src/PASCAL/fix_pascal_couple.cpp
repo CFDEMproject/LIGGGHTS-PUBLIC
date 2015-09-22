@@ -324,7 +324,7 @@ void FixParScaleCouple::end_of_step()
     // init upon first use of ParScale, but not afterwards
 
     char commandstr[200];
-    sprintf(commandstr,"control run %f init %s",
+    sprintf(commandstr,"control run %g init %s",
             time_,
             pascal_setup_?"yes":"no"
 //            prePostRun_?"yes":"no"    //TODO: implement silent run in ParScale

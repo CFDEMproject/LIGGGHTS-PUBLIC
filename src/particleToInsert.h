@@ -32,11 +32,12 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_PARTICLE_TO_INSERT_H
@@ -44,6 +45,7 @@
 
 #include "memory.h"
 #include "pointers.h"
+#include "region_neighbor_list.h"
 
 using namespace LAMMPS_NS;
 
@@ -88,8 +90,11 @@ namespace LAMMPS_NS {
         double fix_property_value;
 
         virtual int insert();
-        virtual int check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, double **xnear, int &nnear);
-        virtual int check_near_set_x_v_omega_ms(double *x,double *v, double *omega, double *quat, double **xnear, int &nnear);
+        virtual int check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList & neighList);
+        virtual int check_near_set_x_v_omega_ms(double *x,double *v, double *omega, double *quat, RegionNeighborList & neighList);
+        //virtual int check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, double **xnear, int &nnear);
+        //virtual int check_near_set_x_v_omega_ms(double *x,double *v, double *omega, double *quat, double **xnear, int &nnear);
+
         virtual int set_x_v_omega(double *,double *,double *,double *);
 
         virtual void scale_pti(double r_scale);

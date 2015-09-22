@@ -32,11 +32,11 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
+    Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -61,6 +61,10 @@
 #include "mpi_liggghts.h"
 #include "vector_liggghts.h"
 
+#include "probability_distribution.h"
+#include "region_neighbor_list.h"
+#include "superquadric_flag.h"
+
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
@@ -72,7 +76,8 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
-  Fix(lmp, narg, arg)
+  Fix(lmp, narg, arg),
+  neighList(*new RegionNeighborList(lmp))
 {
   if (narg < 7) error->fix_error(FLERR,this,"not enough arguments");
 
@@ -98,8 +103,6 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
 
   // set defaults
   init_defaults();
-
-  xnear = NULL;
 
   // parse args
   
@@ -203,7 +206,7 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
           iarg += 5;
       } else if (strcmp(arg[iarg+1],"uniform") == 0) {
           if (iarg+8 > narg) error->fix_error(FLERR,this,"not enough keyword for 'uniform'");
-          v_randomSetting = 1; //switch 1...distribute with equal prop.
+          v_randomSetting = RANDOM_UNIFORM;
           v_insert[0] = atof(arg[iarg+2]);
           v_insert[1] = atof(arg[iarg+3]);
           v_insert[2] = atof(arg[iarg+4]);
@@ -213,7 +216,7 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
           iarg += 8;
       } else if (strcmp(arg[iarg+1],"gaussian") == 0) {
           if (iarg+8 > narg) error->fix_error(FLERR,this,"not enough keyword for 'gaussian'");
-          v_randomSetting = 2; //switch 2...distribute with gaussian distrib.
+          v_randomSetting = RANDOM_GAUSSIAN;
           v_insert[0] = atof(arg[iarg+2]);
           v_insert[1] = atof(arg[iarg+3]);
           v_insert[2] = atof(arg[iarg+4]);
@@ -308,6 +311,7 @@ FixInsert::~FixInsert()
   delete random;
   delete [] recvcounts;
   delete [] displs;
+  delete &neighList;
   if(property_name) delete []property_name;
 }
 
@@ -371,7 +375,7 @@ void FixInsert::init_defaults()
 
   exact_number = 1;
 
-  v_randomSetting = 0;
+  v_randomSetting = RANDOM_CONSTANT;
   vectorZeroize3D(v_insert);
   vectorZeroize3D(v_insertFluct);
   vectorZeroize3D(omega_insert);
@@ -454,12 +458,12 @@ void FixInsert::print_stats_during(int ninsert_this, double mass_inserted_this)
   if (me == 0 && print_stats_during_flag)
   {
     if (screen)
-      fprintf(screen ,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step "BIGINT_FORMAT"\n"
+      fprintf(screen ,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step " BIGINT_FORMAT "\n"
                       " - a total of %d particle templates (mass %f) inserted so far.\n",
               id,ninsert_this,mass_inserted_this,step,ninserted,massinserted);
 
     if (logfile)
-      fprintf(logfile,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step "BIGINT_FORMAT"\n"
+      fprintf(logfile,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step " BIGINT_FORMAT "\n"
                       " - a total of %d particle templates (mass %f) inserted so far.\n",
               id,ninsert_this,mass_inserted_this,step,ninserted,massinserted);
   }
@@ -576,7 +580,9 @@ void FixInsert::pre_exchange()
   most_recent_ins_step = update->ntimestep;
 
   // things to be done before inserting new particles
-  pre_insert();
+  
+  if(!pre_insert())
+    return;
 
   // number of particles to insert this timestep
   ninsert_this = calc_ninsert_this();
@@ -650,10 +656,10 @@ void FixInsert::pre_exchange()
   // fill xnear array with particles to check overlap against
   
   // add particles in insertion volume to xnear list
-  nspheres_near = 0;
-  xnear = NULL;
+  neighList.reset();
+
   if(check_ol_flag)
-      nspheres_near = load_xnear(ninsert_this_local);
+    load_xnear(ninsert_this_local);
 
   // insertion counters in this step
   int ninserted_this = 0, ninserted_spheres_this = 0;
@@ -711,9 +717,6 @@ void FixInsert::pre_exchange()
 
   if(ninserted_this < ninsert_this && comm->me == 0)
       error->warning(FLERR,"Particle insertion: Less insertions than requested");
-
-  // free local memory
-  if(xnear) memory->destroy(xnear);
 
   // next timestep to insert
   if (insert_every && (!ninsert_exists || ninserted < ninsert)) next_reneighbor += insert_every;
@@ -825,42 +828,78 @@ int FixInsert::count_nnear()
 }
 
 /* ----------------------------------------------------------------------
-   fill xnear with nearby particles
+   fill neighbor list with nearby particles
 ------------------------------------------------------------------------- */
 
 int FixInsert::load_xnear(int ninsert_this_local)
 {
-  // count nearby spheres
-  // setup for allgatherv
-  int nspheres_near_local = count_nnear();
-
-  // data size per particle: x and radius
-  //int n = 4*nspheres_near;
-
-  // xnear is for my atoms + atoms to be inserted
-  
-  memory->create(xnear,nspheres_near_local + ninsert_this_local*fix_distribution->max_nspheres(), 4, "FixInsert::xnear");
-
-  // load up xnear array with local and ghosts
+  // load up neighbor list with local and ghosts
 
   double **x = atom->x;
   double *radius = atom->radius;
-  int nall = atom->nlocal + atom->nghost;
+  const int nall = atom->nlocal + atom->nghost;
 
-  int ncount = 0;
-  for (int i = 0; i < nall; i++)
-  {
-    if (is_nearby(i))
+  BoundingBox bb = getBoundingBox();
+  neighList.reset();
+
+  if(neighList.setBoundingBox(bb, maxrad)) {
+    for (int i = 0; i < nall; ++i)
     {
-      xnear[ncount][0] = x[i][0];
-      xnear[ncount][1] = x[i][1];
-      xnear[ncount][2] = x[i][2];
-      xnear[ncount][3] = radius[i];
-      ncount++;
+      if (is_nearby(i))
+      {
+        neighList.insert(x[i], radius[i]);
+      }
     }
   }
 
-  return nspheres_near_local;
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    error->one(FLERR,"Sascha, please re-work this section; there were changes in the overlap detection algorithm"
+    //Sascha, your previous code is here:
+
+    /*#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      double **shape = atom->shape;
+      double **quat = atom->quaternion;
+      if(atom->superquadric_flag)
+        memory->create(xnear,nspheres_near_local + ninsert_this_local*fix_distribution->max_nspheres(), 11, "FixInsert::xnear");
+      else
+        memory->create(xnear,nspheres_near_local + ninsert_this_local*fix_distribution->max_nspheres(), 4, "FixInsert::xnear");
+    #else*/
+
+    //in the xnear loop, the code was:
+    /*
+    #ifdef SUPERQUADRIC_ACTIVE_FLAG
+          if(atom->superquadric_flag) {
+            xnear[ncount][4] = quat[i][0];
+            xnear[ncount][5] = quat[i][1];
+            xnear[ncount][6] = quat[i][2];
+            xnear[ncount][7] = quat[i][3];
+            xnear[ncount][8] = shape[i][0];
+            xnear[ncount][9] = shape[i][1];
+            xnear[ncount][10] = shape[i][2];
+          }
+    #endif*/
+#endif
+
+  return neighList.count();
+}
+
+/* ----------------------------------------------------------------------
+   generate random velocity based on random setting
+------------------------------------------------------------------------- */
+
+void FixInsert::generate_random_velocity(double * velocity) {
+  switch(v_randomSetting) {
+    case RANDOM_UNIFORM:
+      velocity[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
+      velocity[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
+      velocity[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
+      break;
+
+    case RANDOM_GAUSSIAN:
+      velocity[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
+      velocity[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
+      velocity[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
+  }
 }
 
 /* ----------------------------------------------------------------------

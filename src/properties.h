@@ -55,13 +55,13 @@ class Properties: protected Pointers
 
   int max_type();
   void* find_property(const char *name, const char *type, int &len1, int &len2);
-  inline class MultisphereParallel *ms_data() { return ms_data_;}
+  inline class Multisphere *ms_data() { return ms_data_;}
 
  private:
 
   // multisphere
   class FixMultisphere *ms_;
-  class MultisphereParallel *ms_data_;
+  class Multisphere *ms_data_;
 
   int mintype,maxtype;
 }; //end class

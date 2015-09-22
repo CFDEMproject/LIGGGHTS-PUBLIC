@@ -519,6 +519,7 @@ void Region::generate_random(double *pos,bool subdomain_flag)
 // i.e. generate random point in region "shrunk" by cut
 void Region::generate_random_shrinkby_cut(double *pos,double cut,bool subdomain_flag)
 {
+    
     double lo[3],hi[3],diff[3];
     rand_bounds(subdomain_flag,lo,hi);
     vectorSubtract3D(hi,lo,diff);

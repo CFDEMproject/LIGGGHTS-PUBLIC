@@ -25,7 +25,7 @@ premesh_keyword = {type} or {precision} or {heal} or {verbose} :l
   {heal} value = auto_remove_duplicates or no
   {verbose} value = yes or no :pre
 zero or more mesh_keywords/mesh_value pairs may be appended :l
-mesh_keyword = {scale} or {move} or {rotate} or {temperature} :l
+mesh_keyword = {scale} or {move} or {rotate} or {element_exclusion_list} {temperature} or {mass_temperature} :l
   {scale} value = factor
     factor = factor to scale the mesh in x-, y-, and z-direction (double value)
   {move} values = mx my mz
@@ -34,11 +34,15 @@ mesh_keyword = {scale} or {move} or {rotate} or {temperature} :l
     axis = obligatory keyword
     ax, ay, az = axis vector for rotation (length units)
     angle = obligatory keyword
-    ang = angle to rotate the geometry around the specified axis (in degrees)
+  {element_exclusion_list} values = mode element_exlusion_file
+    mode = read or write
+    element_exlusion_file = name of file containing the elements to be excluded
   {temperature} value = T0
-    T0 = Temperature of the wall (temperature units) :pre
+    T0 = Temperature of the wall (temperature units)
+  {mass_temperature} value = mt0
+    mt0 = mass (mass units) assumed for temperature update in the frame of "surface sphere/heatable"_gran_surface_sphere_heatable.html :pre
 zero or more surface_keywords/surface_value pairs may be appended :l
-surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} :l
+surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} or {curvature_tolerant} :l
   {surface_vel} values = vx vy vz
     vx vy vz = conveyor belt surface velocity  (velocity units)
   {surface_ang_vel} values = origin ox oy oz axis ax ay az omega om
@@ -48,8 +52,10 @@ surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} :l
     ax ay az = axis vector for rotation (length units)
     omega = mandatory keyword
     om = rotaional velocity around specifyied axis (rad/time units)
-  {curvature value} = c
-    c = maximum angle between mesh faces belonging to the same surface (in degree) :pre
+  {curvature} value = c
+    c = maximum angle between mesh faces belonging to the same surface (in degree) 
+  {curvature_tolerant} value = ct
+    ct = yes or no :pre
 
 :ule
 
@@ -84,22 +90,6 @@ equal to the conveyor belt velocity. This ensures the model makes sense also in 
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 {surface_ang_vel} mimics rotational motion of the mesh (e.g. for modeling a shear cell)
 
-The {precision} keyword specifies how far away mesh nodes can be at maximum to
-be recognized as identical.
-
-If LIGGGHTS(R)-PUBLIC stalls because of duplicate elements, you can try setting
-{heal} to auto_remove_duplicates. LIGGGHTS(R)-PUBLIC will then try to heal the geometry
-by removing duplicate elements.
-
-IMPORTANT NOTE: You should check the changes to the geometry, e.g. by using a
-"dump mesh/stl"_dump.html command.
-
-The {curvature} keyword lets you specify up to which angle between two triangles the
-triangles should be treated as belonging to the same surface (e.g. useful for bends).
-This angle is used to decide if (a) contact history is copied from one triangle to
-the other as the contact point proceeds and (b) if edge and corner interaction is
-calculated.
-
 [Quality checks / error and warning messages:]
 
 LIGGGHTS(R)-PUBLIC checks a couple of quality criteria upon loading a mesh. LIGGGHTS(R)-PUBLIC tries
@@ -107,8 +97,7 @@ to give you as much information about the issue as possible.
 
 Warning messages:
 
-There should be no angle < 0.5° in any element :l
-The number of neighbor elements should be <= 5 for any element :l
+There should be no angle < 0.5 degrees in any element :l
 All nodes should be within the simlation box :l
 
 If any of the obove rules is not fulfilled, a warning is generated. Keyword
@@ -117,6 +106,7 @@ If any of the obove rules is not fulfilled, a warning is generated. Keyword
 Error messages:
 
 The {curvature} must not be larger than any angle in any mesh element :l
+The number of neighbor elements must be <= 5 for any element :l
 Mesh elements must not be duplicate :l
 Coplanar mesh elements that share an edge must not overlap :l
 Mesh elements must not leave the simulation domain :l
@@ -127,6 +117,43 @@ If LIGGGHTS(R)-PUBLIC halts due to the last error, you might think about (a)
 changing the mesh import parameters ({scale}, {move}, {rotate}), (b)
 changing the mesh dynamics if a "fix move/mesh"_fix_move_mesh.html is
 applied or using "boundary m m m"_boundary.html
+
+There are a couple of features that help you read / repair a mesh which 
+can not be read correctly in the first place:
+
+{precision} :l
+{curvature} :l
+{heal} :l
+{element_exclusion_list} :l
+{curvature_tolerant} :l
+
+The {precision} keyword specifies how far away mesh nodes can be at maximum to
+be recognized as identical. This is important for building the topology of the mesh
+and identify elements as neighbors. Normally, this should only be changed if the mesh file
+you are working with is suffering from precsion / round-off issues.
+
+The {curvature} keyword lets you specify up to which angle between two triangles the
+triangles should be treated as belonging to the same surface (e.g. useful for bends).
+This angle is used to decide if (a) contact history is copied from one triangle to
+the other as the contact point proceeds and (b) if edge and corner interaction is
+calculated.
+
+If LIGGGHTS(R)-PUBLIC stalls because of duplicate elements, you can try setting
+{heal} to auto_remove_duplicates. LIGGGHTS(R)-PUBLIC will then try to heal the geometry
+by removing duplicate elements.
+
+With the optional {element_exclusion_list} keyword is used in mode 'write', LIGGGHTS(R)-PUBLIC 
+will write a list of elements which have more than the allowed 5 face neighbors per surface
+element to a file. The 'read' mode can then use this file and will skip the elements in
+the list. However, you can also manually write such a file to exclude elements you 
+do not want to have included
+
+IMPORTANT NOTE: If you use the 'heal' or 'element_exclusion_list' keywords, you should 
+check the changes to the geometry, e.g. by using a "dump mesh/stl"_dump.html command.
+
+The {curvature_toleran} keyword can simply turn off the check that
+the {curvature} must not be larger than any angle in any mesh element.
+This is typically not recommended, but can be used as a last resort measure.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 

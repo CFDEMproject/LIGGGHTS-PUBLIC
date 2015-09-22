@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -48,6 +49,7 @@
 #include "fix_mesh.h"
 #include <stdio.h>
 #include <string.h>
+#include <algorithm>
 #include "error.h"
 #include "force.h"
 #include "bounding_box.h"
@@ -55,6 +57,7 @@
 #include "fix_contact_history.h"
 #include "fix_neighlist_mesh.h"
 #include "tri_mesh_deform.h"
+#include "fix_property_global.h"
 #include "tri_mesh_planar.h"
 #include "modify.h"
 #include "comm.h"
@@ -68,13 +71,19 @@ using namespace FixConst;
 FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 : Fix(lmp, narg, arg),
   atom_type_mesh_(-1),
+  mass_temperature_(0.),
   mesh_(NULL),
   setupFlag_(false),
   pOpFlag_(false),
   manipulated_(false),
   verbose_(false),
   autoRemoveDuplicates_(false),
-  precision_(0.)
+  precision_(0.),
+  element_exclusion_list_(0),
+  read_exclusion_list_(false),
+  exclusion_list_(0),
+  size_exclusion_list_(0),
+  fix_capacity_(0)
 {
     if(narg < 5)
       error->fix_error(FLERR,this,"not enough arguments - at least keyword 'file' and a filename are required.");
@@ -130,8 +139,38 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
             if(precision_ < 0. || precision_ > 0.001)
               error->fix_error(FLERR,this,"0 < precision < 0.001 required");
             hasargs = true;
+        } else if (strcmp(arg[iarg_],"element_exclusion_list") == 0) {
+            if (narg < iarg_+3) error->fix_error(FLERR,this,"not enough arguments");
+            iarg_++;
+            if(0 == strcmp("read",arg[iarg_]))
+                read_exclusion_list_ = true;
+            else if(0 == strcmp("write",arg[iarg_]))
+                read_exclusion_list_ = false;
+            else error->fix_error(FLERR,this,"expecing 'read' or 'write' after 'element_exclusion_list'");
+            iarg_++;
+
+            // case write
+            if (!read_exclusion_list_ && 0 == comm->me)
+            {
+                element_exclusion_list_ = fopen(arg[iarg_++],"w");
+                if(!element_exclusion_list_)
+                    error->one(FLERR,"Fix mesh: can not open file for 'element_exclusion_list' for writing");
+            }
+            // case read
+            else if(read_exclusion_list_ && 0 == comm->me)
+            {
+                element_exclusion_list_ = fopen(arg[iarg_++],"r");
+                if(!element_exclusion_list_)
+                    error->one(FLERR,"Fix mesh: can not open file for 'element_exclusion_list' for reading");
+            }
+            if(0 < comm->me)
+                iarg_++;
+            hasargs = true;
         }
     }
+
+    // create/handle exclusion list
+    handle_exclusion_list();
 
     // construct a mesh - can be surface or volume mesh
     // just create object and return if reading data from restart file
@@ -180,7 +219,59 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
           mesh_->prop().setGlobalProperty< ScalarContainer<double> >("heatFluxTotal",0.);
           
           hasargs = true;
+      } else if (strcmp(arg[iarg_],"mass_temperature") == 0) {
+          iarg_++;
+          mass_temperature_ = atof(arg[iarg_++]);
+          if(mass_temperature_ <= 0.)
+            error->fix_error(FLERR,this,"mass_temperature > 0 expected");
+          hasargs = true;
       }
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMesh::handle_exclusion_list()
+{
+    // case read exclusion list
+    if(read_exclusion_list_)
+    {
+        // read from exclusion list, only on proc 0
+        if(element_exclusion_list_)
+        {
+            char read_string[200];
+
+            while(fgets(read_string,200,element_exclusion_list_ ) != 0)
+            {
+                // remove trailing newline
+                char *pos;
+                if ((pos=strchr(read_string,'\n')) != NULL)
+                    *pos = '\0';
+                
+                int line = force->inumeric(FLERR,read_string);
+                memory->grow(exclusion_list_, size_exclusion_list_+1, "exclusion_list");
+                exclusion_list_[size_exclusion_list_++] = line;
+            }
+        }
+        // send size_exclusion_list_ to all procs
+        MPI_Max_Scalar(size_exclusion_list_,world);
+        if(0 < comm->me)
+        {
+            memory->grow(exclusion_list_, size_exclusion_list_, "exclusion_list");
+            vectorZeroizeN(exclusion_list_,size_exclusion_list_);
+        }
+        MPI_Max_Vector(exclusion_list_,size_exclusion_list_,world);
+        
+        // sort
+        if(size_exclusion_list_ > 0)
+        {
+            std::vector<int> sorted;
+            for(int i = 0; i < size_exclusion_list_;i++)
+                sorted.push_back(exclusion_list_[i]);
+            sort(sorted.begin(),sorted.end());
+            for(int i = 0; i < size_exclusion_list_;i++)
+                exclusion_list_[i] = sorted[i];
+        }
     }
 }
 
@@ -189,6 +280,11 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 FixMesh::~FixMesh()
 {
     delete mesh_;
+    if (element_exclusion_list_ && 0 == comm->me)
+        fclose(element_exclusion_list_);
+
+    if(exclusion_list_)
+        memory->sfree(exclusion_list_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -199,6 +295,10 @@ void FixMesh::post_create()
     // could potentially be whacked by adding element properties
     // at the wrong place in code
     mesh_->check_element_property_consistency();
+
+    // case write exlusion list
+    if(!read_exclusion_list_ && element_exclusion_list_)
+        mesh_->setElementExclusionList(element_exclusion_list_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -225,7 +325,7 @@ void FixMesh::create_mesh(char *mesh_fname)
         // can be from STL file or VTK file
         InputMeshTri *mesh_input = new InputMeshTri(lmp,0,NULL);
         
-        mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_);
+        mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_,size_exclusion_list_,exclusion_list_);
         
         delete mesh_input;
     }
@@ -258,12 +358,26 @@ void FixMesh::pre_delete(bool unfixflag)
 {
     // error if moving mesh is operating on a mesh to be deleted
     
+    // also error if dump is operating on mesh
     if(unfixflag)
     {
         if(mesh_->isMoving() && modify->n_fixes_style("move/mesh") > 0)
             error->fix_error(FLERR,this,
                     "illegal unfix command, may not unfix a moving mesh while a fix move is applied."
                     "Unfix the fix move/mesh first");
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMesh::init()
+{
+    if(mass_temperature_ > 0.)
+    {
+        int max_type = atom->get_properties()->max_type();
+        fix_capacity_ =
+            static_cast<FixPropertyGlobal*>(modify->find_fix_property("thermalCapacity","property/global","peratomtype",max_type,0,style));
+        
     }
 }
 
@@ -367,6 +481,20 @@ void FixMesh::final_integrate()
 {
     
     mesh_->reverseComm();
+
+    if(mass_temperature_ > 0. && mesh_->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))
+    {
+        double Temp_wall = (*mesh_->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))(0);
+        double flux = (*mesh_->prop().getGlobalProperty< ScalarContainer<double> >("heatFlux"))(0);
+        MPI_Sum_Scalar(flux,world);
+        double dt = update->dt;
+
+        double capacity = fix_capacity_->compute_vector(atom_type_mesh_-1);
+        Temp_wall += flux *  dt / (mass_temperature_*capacity);
+
+        mesh_->prop().setGlobalProperty< ScalarContainer<double> >("Temp",Temp_wall);
+        mesh_->prop().setGlobalProperty< ScalarContainer<double> >("heatFlux",0.);
+    }
 }
 
 /* ---------------------------------------------------------------------- */

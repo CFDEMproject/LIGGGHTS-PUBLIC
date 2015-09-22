@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -60,7 +61,8 @@ namespace ContactModels
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
-    RollingModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp), coeffRollFrict(NULL)
+    RollingModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) :
+        Pointers(lmp), coeffRollFrict(NULL)
     {
       
     }
@@ -84,6 +86,15 @@ namespace ContactModels
       double r_torque[3], wr_roll[3];
       vectorZeroize3D(r_torque);
 
+      const double radi = sidata.radi;
+      const double radj = sidata.radj;
+      double reff=sidata.is_wall ? sidata.radi : (radi*radj/(radi+radj));
+
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(sidata.is_non_spherical)
+        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+#endif
+
       if(sidata.is_wall){
         const double wr1 = sidata.wr1;
         const double wr2 = sidata.wr2;
@@ -91,20 +102,15 @@ namespace ContactModels
         const double wrmag = sqrt(wr1*wr1+wr2*wr2+wr3*wr3);
         if (wrmag > 0.)
         {
-          const double radius = sidata.radi;
           const double kn = sidata.kn;
           const double enx = sidata.en[0];
           const double eny = sidata.en[1];
           const double enz = sidata.en[2];
 
-          double Fn = kn*(radius-sidata.r);
-          #ifdef SUPERQUADRIC_ACTIVE_FLAG
-                if(atom->superquadric_flag)
-                  Fn = sidata.deltan*kn;
-          #endif
-          r_torque[0] = rmu*Fn*wr1/wrmag*sidata.cri;
-          r_torque[1] = rmu*Fn*wr2/wrmag*sidata.cri;
-          r_torque[2] = rmu*Fn*wr3/wrmag*sidata.cri;
+          const double Fn = sidata.deltan*kn;
+          r_torque[0] = rmu*Fn*wr1/wrmag*reff; 
+          r_torque[1] = rmu*Fn*wr2/wrmag*reff;
+          r_torque[2] = rmu*Fn*wr3/wrmag*reff;
 
           // remove normal (torsion) part of torque
           double rtorque_dot_delta = r_torque[0]*enx+ r_torque[1]*eny + r_torque[2]*enz;
@@ -115,19 +121,17 @@ namespace ContactModels
           vectorSubtract3D(r_torque,r_torque_n,r_torque);
         }
       } else {
+
         vectorSubtract3D(atom->omega[sidata.i],atom->omega[sidata.j],wr_roll);
         const double wr_rollmag = vectorMag3D(wr_roll);
 
         if(wr_rollmag > 0.)
         {
-          const double radi = sidata.radi;
-          const double radj = sidata.radj;
           const double enx = sidata.en[0];
           const double eny = sidata.en[1];
           const double enz = sidata.en[2];
 
           // calculate torque
-          const double reff= sidata.is_wall ? radi : (radi*radj/(radi+radj));
           vectorScalarMult3D(wr_roll,rmu*sidata.kn*sidata.deltan*reff/wr_rollmag,r_torque);
 
           // remove normal (torsion) part of torque

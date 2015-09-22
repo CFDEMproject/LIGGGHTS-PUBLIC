@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
     Alexander Podlozhnyuk (DCS Computing GmbH, Linz)
 
@@ -80,7 +81,11 @@ struct SurfacesCloseData {
   double contact_point[3];
   double *pos_i;
   double *pos_j;
+  double *inertia_i;
+  double *inertia_j;
   bool is_non_spherical;
+  double koefi;
+  double koefj;
   SurfacesCloseData() : area_ratio(1.0),
                         quat_i(NULL),
                         quat_j(NULL),
@@ -90,7 +95,11 @@ struct SurfacesCloseData {
                         roundness_j(NULL),
                         pos_i(NULL),
                         pos_j(NULL),
-                        is_non_spherical(false){}
+                        inertia_i(NULL),
+                        inertia_j(NULL),
+                        is_non_spherical(false),
+                        koefi(0.0),
+                        koefj(0.0) {}
 #else
   SurfacesCloseData() : area_ratio(1.0) {}
 #endif
@@ -130,6 +139,8 @@ struct SurfacesIntersectData : SurfacesCloseData {
   double mi;
   double mj;
   double meff;
+
+  mutable double P_diss; 
 
   int computeflag;
   int shearupdate;

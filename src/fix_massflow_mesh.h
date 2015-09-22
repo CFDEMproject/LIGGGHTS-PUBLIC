@@ -127,7 +127,7 @@ class FixMassflowMesh : public Fix {
   bool reset_t_count_;
 
   class FixMultisphere* fix_ms_;
-  class MultisphereParallel *ms_;
+  class Multisphere *ms_;
   class ScalarContainer<int> *ms_counter_;
 
 }; //end class

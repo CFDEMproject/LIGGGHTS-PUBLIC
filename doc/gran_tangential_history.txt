@@ -10,7 +10,11 @@ gran tangential history :h3
 
 [Syntax:]
 
-tangential history :pre
+tangential history \[other model_type/model_name pairs as described "here"_pair_gran.html \] keyword values :pre
+zero or more keyword/value pairs may be appended to the end (after all models are specified) :l
+  {heating_tangential_history} values = 'on' or 'off'
+    on = model contributes to surface heating in the frame of "surface sphere/heatable"_gran_surface_sphere_heatable.html
+    off = model does not contributes to surface heating :pre
 
 [Description:]
 
@@ -26,3 +30,12 @@ actually calculated / taken into account.
 The coefficient of friction cof is the upper limit of the tangential force through
 the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the tangential spring and normal
 force components in the formulas above.
+
+This model contributes to surface heating in the frame of 
+"surface sphere/heatable"_gran_surface_sphere_heatable.html if the 
+appropriate flag is activated
+
+
+[Default:]
+
+{heating_tangential_history} = 'off'

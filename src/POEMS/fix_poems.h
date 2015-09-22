@@ -41,6 +41,9 @@
     DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
     certain rights in this software.  This software is distributed under
     the GNU General Public License.
+
+    POEMS and the POEMS fix has been re-worked by Stefan Radl and 
+    Mingqiu WU (TU Graz) to be integrated with LIGGGHTS-TUG's fibre modules
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -86,7 +89,7 @@ class FixPOEMS : public Fix  {
 
  protected:
   class FixPropertyAtom* fix_xcm;
-  class FixPropertyAtom* fix_orientationEx;
+  class FixPropertyAtom* fix_orientation;
 
  private:
   bool mydebug;

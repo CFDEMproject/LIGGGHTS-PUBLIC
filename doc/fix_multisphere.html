@@ -1,0 +1,98 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix multisphere command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group-ID multisphere 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<P>fix ms all multisphere
+</P>
+<P><B>Description:</B>
+</P>
+<P>Treat one or more sets of atoms as independent rigid bodies.  This
+means that each timestep the total force and torque on each rigid body
+is computed as the sum of the forces and torques on its constituent
+particles and the coordinates, velocities, and orientations of the
+atoms in each body are updated so that the body moves and rotates as a
+single entity. The integration that is performed by this command is
+euqivalent to <A HREF = "fix_rigid.html">fix_rigid</A>. However, the following
+implementation details are different:
+</P>
+<P>(1) Body data held by this fix is distributed across all processes, yielding
+better parallel scalabilty.
+</P>
+<P>(2) Bodies (particle clumps) can be added/inserted via
+<A HREF = "fix_insert_stream.html">fix_insert_stream</A>,
+<A HREF = "fix_insert_rate_region.html">fix_insert_rate_region</A> or
+<A HREF = "fix_insert_pack.html">fix_insert_pack</A> and are automatically added
+to this fix.
+</P>
+<P>(3) A body is removed from the simulation domain if any of it's particles
+is removed from the simulation according to the <A HREF = "boundary.html">boundary</A>
+settings or by any command that deleted particles (e.g.
+<A HREF = "delete_atoms.html">delete_atoms</A>).
+</P>
+<P>(4) By using this fix, gravity (<A HREF = "fix_gravity.html">fix_gravity</A>)
+will be handled correctly for for overlapping particle clumps.
+</P>
+<P>(5) This fix internally performs a <A HREF = "neigh_modify.html">neigh_modify</A> exclude
+command so that particles belonging to the same rigid body are excluded
+from the neighborlist build.
+</P>
+<P>IMPORTANT NOTE: You should not update the atoms in rigid bodies via
+other time-integration fixes (e.g. nve, nvt, npt), or you will be
+integrating their motion more than once each timestep.
+</P>
+<HR>
+
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>No information about this fix is written to <A HREF = "restart.html">binary restart
+files</A>.  This means you can currently not restart a simulation
+using multisphere particles.
+</P>
+<P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this
+fix.  No global scalar or vector or per-atom quantities are stored by
+this fix for access by various <A HREF = "Section_howto.html#4_15">output
+commands</A>.  No parameter of this fix can be
+used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
+This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>Only one fix multisphere at a time is allowed.
+Heat transfer simulations are not possible when using this fix
+(e.g. <A HREF = "fix_heat_gran_conduction.html">fix heat/gran/conduction</A>)
+</P>
+<P>IMPORTANT NOTE: All fixes or computes gathering statistical output
+(such as e.g. <A HREF = "compute_com.html">compute com</A> or <A HREF = "fix_ave_time.html">fix ave/time</A>
+operate on a per-sphere rather than on a per-body basis.
+</P>
+<P>Currently, using fix multisphere requires <A HREF = "newton.html">newton</A> = off and
+<A HREF = "dimension.html">dimension</A> = 3.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_rigid.html">fix_rigid</A>
+<A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A>
+<A HREF = "neigh_modify.html">neigh_modify</A>
+</P>
+<P><B>Default:</B> none
+</P>
+</HTML>

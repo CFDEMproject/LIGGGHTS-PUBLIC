@@ -131,18 +131,24 @@ elif (test $1 = "models") then
   cohesion_models="COHESION_OFF $cohesion_models"
   rolling_models="ROLLING_OFF $rolling_models"
 
-  # build all model combinations
-  for surf in $surface_models; do
-    for norm in $normal_models; do
-      for tang in $tangential_models; do
-        for coh in $cohesion_models; do
-          for roll in $rolling_models; do
-            echo "GRAN_MODEL($norm, $tang, $coh, $roll, $surf)" >> $tmpfile
+  #whitelist exists, take this one
+  if (test -e style_contact_model.whitelist) then
+    cat style_contact_model.whitelist > $filteredfile
+  #whitelist does not exist, build it
+  else
+    # build all model combinations
+    for surf in $surface_models; do
+      for norm in $normal_models; do
+        for tang in $tangential_models; do
+          for coh in $cohesion_models; do
+            for roll in $rolling_models; do
+              echo "GRAN_MODEL($norm, $tang, $coh, $roll, $surf)" >> $tmpfile
+            done
           done
         done
       done
     done
-  done
+  fi
 
   if (test -e style_contact_model.blacklist) then
     grep -v -f style_contact_model.blacklist $tmpfile > $filteredfile

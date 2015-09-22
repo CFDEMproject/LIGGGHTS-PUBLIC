@@ -32,11 +32,12 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -48,6 +49,7 @@ FixStyle(insert/stream,FixInsertStream)
 #ifndef LMP_FIX_INSERT_STREAM_H
 #define LMP_FIX_INSERT_STREAM_H
 
+#include "bounding_box.h"
 #include "fix_insert.h"
 #include "vector_liggghts.h"
 
@@ -67,7 +69,7 @@ class FixInsertStream : public FixInsert {
   virtual void setup_pre_exchange();
   virtual void end_of_step();
 
-  void init_defaults();
+  virtual void init_defaults();
 
   virtual void reset_timestep(bigint newstep,bigint oldstep);
 
@@ -92,9 +94,10 @@ class FixInsertStream : public FixInsert {
 
   virtual void calc_insertion_properties();
 
-  void pre_insert();
+  bool pre_insert();
 
   int is_nearby(int);
+  virtual BoundingBox getBoundingBox();
   inline void generate_random(double *pos, double rad);
   inline void generate_random_global(double *pos);
 

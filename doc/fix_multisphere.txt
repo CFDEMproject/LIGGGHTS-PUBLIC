@@ -1,0 +1,95 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix multisphere command :h3
+
+[Syntax:]
+
+fix ID group-ID multisphere :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+
+:ule
+
+[Examples:]
+
+fix ms all multisphere
+
+[Description:]
+
+Treat one or more sets of atoms as independent rigid bodies.  This
+means that each timestep the total force and torque on each rigid body
+is computed as the sum of the forces and torques on its constituent
+particles and the coordinates, velocities, and orientations of the
+atoms in each body are updated so that the body moves and rotates as a
+single entity. The integration that is performed by this command is
+euqivalent to "fix_rigid"_fix_rigid.html. However, the following
+implementation details are different:
+
+(1) Body data held by this fix is distributed across all processes, yielding
+better parallel scalabilty.
+
+(2) Bodies (particle clumps) can be added/inserted via
+"fix_insert_stream"_fix_insert_stream.html,
+"fix_insert_rate_region"_fix_insert_rate_region.html or
+"fix_insert_pack"_fix_insert_pack.html and are automatically added
+to this fix.
+
+(3) A body is removed from the simulation domain if any of it's particles
+is removed from the simulation according to the "boundary"_boundary.html
+settings or by any command that deleted particles (e.g.
+"delete_atoms"_delete_atoms.html).
+
+(4) By using this fix, gravity ("fix_gravity"_fix_gravity.html)
+will be handled correctly for for overlapping particle clumps.
+
+(5) This fix internally performs a "neigh_modify"_neigh_modify.html exclude
+command so that particles belonging to the same rigid body are excluded
+from the neighborlist build.
+
+IMPORTANT NOTE: You should not update the atoms in rigid bodies via
+other time-integration fixes (e.g. nve, nvt, npt), or you will be
+integrating their motion more than once each timestep.
+
+:line
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+No information about this fix is written to "binary restart
+files"_restart.html.  This means you can currently not restart a simulation
+using multisphere particles.
+
+None of the "fix_modify"_fix_modify.html options are relevant to this
+fix.  No global scalar or vector or per-atom quantities are stored by
+this fix for access by various "output
+commands"_Section_howto.html#4_15.  No parameter of this fix can be
+used with the {start/stop} keywords of the "run"_run.html command.
+This fix is not invoked during "energy minimization"_minimize.html.
+
+[Restrictions:]
+
+Only one fix multisphere at a time is allowed.
+Heat transfer simulations are not possible when using this fix
+(e.g. "fix heat/gran/conduction"_fix_heat_gran_conduction.html)
+
+IMPORTANT NOTE: All fixes or computes gathering statistical output
+(such as e.g. "compute com"_compute_com.html or "fix ave/time"_fix_ave_time.html
+operate on a per-sphere rather than on a per-body basis.
+
+Currently, using fix multisphere requires "newton"_newton.html = off and
+"dimension"_dimension.html = 3.
+
+[Related commands:]
+
+"fix_rigid"_fix_rigid.html
+"fix_particletemplate_sphere"_fix_particletemplate_sphere.html
+"neigh_modify"_neigh_modify.html
+
+
+[Default:] none
+

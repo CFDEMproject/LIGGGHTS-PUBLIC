@@ -65,26 +65,35 @@ class RegTetMesh : public Region {
   int surface_interior(double *, double);
   int surface_exterior(double *, double);
 
+  void generate_random(double *pos,bool subdomain_flag);
+  void generate_random_shrinkby_cut(double *pos,double cut,bool subdomain_flag);
+
+  // volume calculation based on MC
+  void volume_mc(int n_test,bool cutflag,double cut,double &vol_global,double &vol_local);
+
   void add_tet(double **n);
   int n_tet();
   double total_vol();
   double tet_vol(int i);
   double tet_acc_vol(int i);
 
+  class TriMesh *get_tri_mesh()
+  { return &tri_mesh; }
+
  protected:
 
    int is_inside_tet(int iTet,double *pos);
-
-   // functions are actually not called at the moment
-   virtual void generate_random(double *);
-   virtual void generate_random_cut(double *,double);
+   bool nodesAreEqual(double *nodeToCheck1,double *nodeToCheck2,double precision);
 
    void grow_arrays();
-   void set_extent();
+   void set_extent_region();
+   void set_extent_mesh();
+   void build_neighs();
+   void build_surface();
    double volume_of_tet(double* v0, double* v1, double* v2, double* v3);
    double volume_of_tet(int iTet);
 
-   void mesh_randpos(double *pos);
+   int mesh_randpos(double *pos);
    int  tet_rand_tri();
 
    char *filename;
@@ -94,9 +103,28 @@ class RegTetMesh : public Region {
    int nTet,nTetMax;
    double ***node;
    double **center;
+   double *rbound, rbound_max;
+
+   int *n_face_neighs;
+   int **face_neighs; 
+
+   int **n_face_neighs_node;
+
+   int *n_node_neighs;
+   int **node_neighs; 
+
+   int *n_surfaces;
+   int **surfaces;
+
    double total_volume;
    double *volume;
    double *acc_volume;
+
+   class BoundingBox &bounding_box_mesh;
+
+   class RegionNeighborList &neighList;
+
+   class TriMesh &tri_mesh;
 
    #include "region_mesh_tet_I.h"
 };

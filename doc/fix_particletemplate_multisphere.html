@@ -1,0 +1,148 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix particletemplate/multisphere command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group-ID particletemplate/multisphere seed nspheres nspheresvalue keyword values ntry ntryvalue spheres values_spheres type mt opt_keyword opt_values 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>particletemplate/multisphere = style name of this fix command 
+
+<LI>seed = random number generator seed (integer value) 
+
+<LI>nspheres = obligatory keyword 
+
+<LI>nspheresvalue = number of spheres in the template (integer value) 
+
+<LI>zero or more keyword/value pairs can be appended 
+
+<LI>keyword, values are documented in <A HREF = "fix_particletemplate_sphere.html">fix particletemplate/sphere</A> command 
+
+<LI>ntry = obligatory keyword 
+
+<LI>ntryvalue: number of tries for Monte Carlo approach 
+
+<LI>spheres = obligatory keyword 
+
+<LI>values_spheres = one out of the following options 
+
+<PRE>    option 1 = <I>file</I> <I>filename</I>
+    option 2 = <I>file</I> <I>filename</I> <I>scale</I> <I>scalefactor</I>
+    option 3 = <I>x1 y1 z1 r1 x2 y2 r2...</I> where x/y/z are sphere positions and r are the radii 
+</PRE>
+<LI>type = obligatory keyword 
+
+<LI>mt = multisphere type of the template 
+
+<LI>opt_keyword = <I>mass</I> or <I>inertia_tensor</I> or <I>use_volume</I> or <I>use_density</I> or <I>fflag</I> or <I>tflag</I> 
+
+<PRE><I>mass</I> value = mass assigned to this particle template
+<I>inertia_tensor</I> values = Ixx Ixy Ixz Iyy Iyz Izz
+  Ixx Ixy Ixz Iyy Iyz Izz = 6 independant components of the inertia tensor
+<I>use_volume</I> = particle density calculated from mass and volume (only if keyword 'mass' is used')
+<I>use_density</I> = particle volume calculated from mass and density (only if keyword 'mass' is used')
+<I>fflag</I> values = fflagx fflagy fflagz
+  fflagx = on or off
+  fflagy = on or off
+  fflagz = on or off
+<I>tflag</I> values = tflagx tflagy tflagz
+  tflagx = on or off
+  tflagy = on or off
+  tflagz = on or off  
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix pts1 all particletemplate/multisphere 1 nspheres 3 atom_type 1 density constant 2500 ntry 1000000 spheres 0. 0. 0. 0.005   0.005 0. 0. 0.005   0.01 0. 0. 0.005
+fix pts2 all particletemplate/multisphere 1 nspheres 30 atom_type 1 density constant 2500 ntry 1000000 spheres file spherefile.txt 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Define a multisphere particle template that is used as input for a
+<A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>
+command. The particle parameters (positions, radii) are either defined
+manually as arguments to this command or via a text file, via the keyword
+<I>file</I>. The format of this text file is
+</P>
+<PRE>x1 y1 z1 r1
+x2 y2 z2 r2
+... 
+</PRE>
+<P>and the number of lines in this file has to be equal to n_spheres as
+defined in this command. Comments can be made in this file via the '#'
+character. Optionally, when a file is used for defining the multi-sphere
+template, keyword <I>scale</I> can be used to define a <I>scalefactor</I> to scale
+up or down the particle positions and radii.
+</P>
+<P>After the spheres are read, a Monte Carlo procedure is used to assess
+everything that is needed for the motion integration: mass, center of mass,
+and the inertia tensor including its eigensystem.
+</P>
+<P>As an alternative, the body's mass and inertia tensor can be specified
+directly via keywords <I>mass</I> and <I>inertia_tensor</I>. Note that you can
+use these keywords only together, i.e. defining only <I>mass</I> but not
+<I>inertia_tensor</I> will throw an error. Also note that only 2 out of the
+3 variables density, mass and volume are independant. Thus, you are
+offered two options when <I>mass</I> and <I>inertia_tensor</I> are used:
+(a) if keyword <I>use_volume</I> is specified, LIGGGHTS(R)-PUBLIC will use the
+specified <I>mass</I> and volume_mc (the volume of the particle template
+calculated by the Monte Carlo procedure), and calculate the density from
+these two variables.
+(b) if keyword <I>use_density</I> is used, LIGGGHTS(R)-PUBLIC will use the specified
+<I>mass</I> and the specified <I>density</I> (see doc of
+<A HREF = "fix_particletemplate_sphere.html">fix particletemplate/sphere</A> command),
+and the volume of the clump is then calculated from these two variables.
+Note you have to use either <I>use_volume</I> or <I>use_density</I> in case
+<I>mass</I> and <I>inertia_tensor</I> are used.
+</P>
+<P>The multisphere type or shape type as defined via the <I>type</I> keyword must
+be unique integer given to each fix particletemplate/multisphere
+command by the user (starting with 1), the list of all multisphere types
+in the simulation must be consecutive. At the moment, the multisphere type
+is not used, but will be used to implement orientation-dependant drag
+for CFD-DEM simulations in the future.
+</P>
+<P>The additional keywords <I>fflag</I> and <I>tflag</I> can be used to deactivate
+selected translational and rotational degrees of freedom of the bodies.
+For example <I>fflag</I> = on on off and <I>tflag</I> = off on on would mean that
+bodies will not move translationally in z-direction and will not rotate
+around the x-axis.
+</P>
+<P>IMPORTANT NOTE: As opposed to the number-based distributions, this fix uses the more common
+distribution based on mass-% for the radius distribution (as does
+<A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>).
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>Information about the random state in this fix is written to
+<A HREF = "restart.html">binary restart files</A> so you can restart a simulation with
+the same particles being chosen for insertion. None of the
+<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global
+scalar or vector or per-atom quantities are stored by this fix for access
+by various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this
+fix can be used with the <I>start</I>/<I>stop</I> keywords of the <A HREF = "run.html">run</A>
+command. This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
+</P>
+<P><B>Restrictions:</B> none
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A>
+</P>
+<P><B>Default:</B>
+</P>
+<P>radius = 1.0, density = 1.0, atom_type = 1, fflag = tflag = on on on
+</P>
+</HTML>

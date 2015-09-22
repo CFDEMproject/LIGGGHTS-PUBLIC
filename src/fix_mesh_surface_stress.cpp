@@ -207,6 +207,8 @@ void FixMeshSurfaceStress::zeroizeWear()
 
 void FixMeshSurfaceStress::init()
 {
+    FixMesh::init();
+
     if(stress_flag_)
     {
         f_ = mesh()->prop().getElementProperty<VectorContainer<double,3> >("f");

@@ -220,7 +220,7 @@ void ReadData::command(int narg, char **arg)
         char *file = new char[strlen(arg[0]) + 16];
         char *ptr = strchr(arg[0],'*');
         *ptr = '\0';
-        sprintf(file,"%s"BIGINT_FORMAT"%s",arg[0],update->ntimestep,ptr+1);
+        sprintf(file,"%s" BIGINT_FORMAT "%s",arg[0],update->ntimestep,ptr+1);
         *ptr = '*';
         open(file);
         delete [] file;

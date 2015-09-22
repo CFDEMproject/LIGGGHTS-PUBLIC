@@ -101,7 +101,7 @@ it gives quick access to documentation for all LIGGGHTS(R)-PUBLIC commands.
   3.3 "Input script structure"_inp_3 :ule,b
 "Commands"_Section_commands.html :l
   4.1 "List of available commands "_cmd_1 :ule,b
-"Contact models"_Section_commands.html :l
+"Contact models"_Section_gran_models.html :l
   5.1 "List of available contact models"_con_1 :ule,b
 "Packages"_Section_packages.html :l
   6.1 "Standard packages"_pkg_1 :ulb,b

@@ -74,7 +74,7 @@ namespace LAMMPS_NS
         virtual void post_create();
         virtual void pre_delete(bool unfixflag);
 
-        virtual void init() {}
+        virtual void init() {FixMesh::init();}
         virtual void setup(int vflag) {}
 
         virtual int setmask();
@@ -153,6 +153,7 @@ namespace LAMMPS_NS
 
         // mesh curvature
         double curvature_;
+        bool curvature_tolerant_;
   };
 
 } /* namespace LAMMPS_NS */

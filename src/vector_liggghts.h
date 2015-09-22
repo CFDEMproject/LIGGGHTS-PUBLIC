@@ -534,6 +534,13 @@ inline double vectorSumN(double *v,int n)
      sum+=v[i];
   return sum;
 }
+inline int vectorSumN(int *v,int n)
+{
+  int sum = 0.;
+  for(int i = 0; i < n; i++)
+     sum+=v[i];
+  return sum;
+}
 
 inline void quatUnitize4D(double *q)
 {

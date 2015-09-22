@@ -32,11 +32,12 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -363,6 +364,19 @@ inline int FixInsertPack::is_nearby(int i)
     return 0;
 }
 
+/* ---------------------------------------------------------------------- */
+
+BoundingBox FixInsertPack::getBoundingBox() {
+  BoundingBox bb(ins_region->extent_xlo, ins_region->extent_xhi,
+                 ins_region->extent_ylo, ins_region->extent_yhi,
+                 ins_region->extent_zlo, ins_region->extent_zhi);
+
+  double extend = 2*maxrad /*cut*/ + this->extend_cut_ghost(); 
+  bb.shrinkToSubbox(domain->sublo, domain->subhi);
+  bb.extendByDelta(extend);
+  return bb;
+}
+
 /* ----------------------------------------------------------------------
    calc # of maximum tries
    propertional to total desired # of particles to insert on this
@@ -421,18 +435,7 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             // randomize vel, omega, quat here
             vectorCopy3D(v_insert,v_toInsert);
             // could ramdonize vel, omega, quat here
-            if(v_randomSetting==1)
-            {
-                v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
-                v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
-                v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
-            }
-            if(v_randomSetting==2)
-            {
-                v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
-                v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
-                v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
-            }
+            generate_random_velocity(v_toInsert);
 
             if(quat_random_)
                 MathExtraLiggghts::random_unit_quat(random,quat_insert);
@@ -476,23 +479,12 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
                 vectorCopy3D(v_insert,v_toInsert);
 
                 // could ramdonize vel, omega, quat here
-                if(v_randomSetting==1)
-                {
-                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
-                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
-                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
-                }
-                else if(v_randomSetting==2)
-                {
-                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
-                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
-                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
-                }
+                generate_random_velocity(v_toInsert);
 
                 if(quat_random_)
                     MathExtraLiggghts::random_unit_quat(random,quat_insert);
 
-                nins = pti->check_near_set_x_v_omega(pos,v_toInsert,omega_insert,quat_insert,xnear,nspheres_near);
+                nins = pti->check_near_set_x_v_omega(pos,v_toInsert,omega_insert,quat_insert,neighList);
 
             }
 

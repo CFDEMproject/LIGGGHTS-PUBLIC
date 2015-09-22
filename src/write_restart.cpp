@@ -130,13 +130,13 @@ void WriteRestart::command(int narg, char **arg)
   } else strcpy(file,arg[0]);
 
   int iregion;
-  if(narg == 4 && strcmp(arg[2],"region"))
+  if(narg == 3 && strcmp(arg[1],"region"))
     error->all(FLERR,"Write_restart expects keyword 'region'");
-  if(narg == 4)
+  if(narg == 3)
   {
-      iregion = domain->find_region(arg[3]);
-      if (iregion == -1) error->all(FLERR,"Write_restart region ID does not exist");
-      else region = domain->regions[iregion];
+    iregion = domain->find_region(arg[2]);
+    if (iregion == -1) error->all(FLERR,"Write_restart region ID does not exist");
+    else region = domain->regions[iregion];
   }
   else region = NULL;
 

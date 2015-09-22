@@ -81,6 +81,10 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
   // do not store fn, ft, heat flux, delta by default
   fnflag = ftflag = hfflag = dflag = 0;
 
+  //no extra distance for building the list of pairs
+  verbose =false;
+  extraSurfDistance = 0.0;
+
   // if further args, store only the properties that are listed
   if(narg > 3)
      posflag = velflag = idflag = fflag = tflag = hflag = aflag = dflag  = 0;
@@ -100,7 +104,10 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
     else if (strcmp(arg[iarg],"delta") == 0) dflag = 1;
     else if (strcmp(arg[iarg],"heatFlux") == 0) hfflag = 1;
     else if (strcmp(arg[iarg],"delta") == 0) hfflag = 1;
-    else error->compute_error(FLERR,this,"Invalid keyword");
+    else if (strcmp(arg[iarg],"verbose") == 0) verbose = true;
+    else if (strcmp(arg[iarg],"extraSurfDistance") == 0) {extraSurfDistance = atof(arg[iarg+1]); iarg++;}
+    else if(0 == strcmp(style,"wall/gran/local") || 0 == strcmp(style,"pair/gran/local"))
+        error->compute_error(FLERR,this,"illegal/unrecognized keyword");
   }
 
   // default: pair data
@@ -283,11 +290,13 @@ void ComputePairGranLocal::compute_local()
 
   // count local entries and compute pair info
 
-  if(wall == 0) ncount = count_pairs();        // # pairs is ensured to be the same for pair and heat
-  else          ncount = count_wallcontacts(); // # wall contacts ensured to be same for wall/gran and heat
+  int nCountWithOverlap(0);
+  if(wall == 0) ncount = count_pairs(nCountWithOverlap);    // # pairs is ensured to be the same for pair and heat
+  else          ncount = count_wallcontacts(nCountWithOverlap);              // # wall contacts ensured to be same for wall/gran and heat
 
+  //only consider rows with overlap (but allocate memory for all)
   if (ncount > nmax) reallocate(ncount);
-  size_local_rows = ncount;
+  size_local_rows = nCountWithOverlap;
 
   // get pair data
   if(wall == 0)
@@ -316,7 +325,7 @@ void ComputePairGranLocal::compute_local()
    count pairs on this proc
 ------------------------------------------------------------------------- */
 
-int ComputePairGranLocal::count_pairs()
+int ComputePairGranLocal::count_pairs(int & nCountWithOverlap)
 {
   int i,j,m,n,ii,jj,inum,jnum;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
@@ -339,7 +348,7 @@ int ComputePairGranLocal::count_pairs()
   // loop over neighbors of my atoms
   // skip if I or J are not in group
 
-  m = n = 0;
+  m = n = nCountWithOverlap = 0;
   for (ii = 0; ii < inum; ii++) {
     i = ilist[ii];
     if (!(mask[i] & groupbit)) continue;
@@ -362,10 +371,14 @@ int ComputePairGranLocal::count_pairs()
       dely = ytmp - x[j][1];
       delz = ztmp - x[j][2];
       rsq = delx*delx + dely*dely + delz*delz;
-      if (rsq >= (radius[i]+radius[j])*(radius[i]+radius[j])) continue;
+      if (rsq <  (radius[i]+radius[j])*(radius[i]+radius[j])) nCountWithOverlap++;
+      if (rsq >= (radius[i]+radius[j]+extraSurfDistance)*(radius[i]+radius[j]+extraSurfDistance)) continue;
       m++;
     }
   }
+  if(verbose)
+      printf("ComputePairGranLocal::count_pairs: detected %d pairs (extraSurfDistance: %g), and %d pairs with contact. \n",
+             m, extraSurfDistance, nCountWithOverlap);
   return m;
 }
 
@@ -373,10 +386,12 @@ int ComputePairGranLocal::count_pairs()
    count wall contacts on this proc
 ------------------------------------------------------------------------- */
 
-int ComputePairGranLocal::count_wallcontacts()
+int ComputePairGranLocal::count_wallcontacts(int & nCountWithOverlap)
 {
     // account for fix group
-    return fixwall->n_contacts_local(groupbit);
+    // no distinction between ncount and nCountWithOverlap
+    nCountWithOverlap = fixwall->n_contacts_local(groupbit);
+    return nCountWithOverlap;
 }
 
 /* ----------------------------------------------------------------------

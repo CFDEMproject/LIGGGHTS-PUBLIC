@@ -1,0 +1,60 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>compute erotate/multisphere command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>compute ID group-ID erotate/multisphere 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command
+<LI>erotate/multisphere = style name of this compute command 
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>compute 1 all erotate/multisphere 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Define a computation that calculates the rotational kinetic energy of
+a collection of multisphere bodies.
+</P>
+<P>The rotational energy of each multisphere body is computed as 1/2 I Wbody^2,
+where I is the inertia tensor for the multisphere body, and Wbody is its
+angular velocity vector.  Both I and Wbody are in the frame of
+reference of the multisphere body, i.e. I is diagonalized.
+</P>
+<P>This compute automatically connects to the <A HREF = "fix_multisphere.html">fix multisphere</A>
+commands which defines the multisphere bodies.  The group specified in the
+compute command is ignored.  The rotational energy of all the multisphere
+bodies defined by the fix multisphere command in included in the
+calculation.
+</P>
+<P><B>Output info:</B>
+</P>
+<P>This compute calculates a global scalar (the summed rotational energy
+of all the multisphere bodies).  This value can be used by any command that
+uses a global scalar value from a compute as input.  See
+<A HREF = "Section_howto.html#howto_8">Section_howto 15</A> for an overview of
+LIGGGHTS(R)-PUBLIC output options.
+</P>
+<P>The scalar value calculated by this compute is "extensive".  The
+scalar value will be in energy <A HREF = "units.html">units</A>.
+</P>
+<P><B>Restrictions:</B> none
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "compute_erotate_ke_multisphere.html">compute ke/multisphere</A>
+</P>
+<P><B>Default:</B> none
+</P>
+</HTML>

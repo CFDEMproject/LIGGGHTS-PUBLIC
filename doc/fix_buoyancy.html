@@ -1,0 +1,95 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix buoyancy command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group-ID buoyancy keyword value ... 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>buoyancy = style name of this fix command 
+
+<LI>zero or more keyword/value pairs may be appended to args; the <I>dim</I> keyword must be used  
+
+<LI>keyword = <I>density</I> or <I>dim</I> or <I>level</I> or <I>region</I> 
+
+<PRE>  <I>density</I> value = density-value
+    density-value = fluid density in mass/length^3 units
+  <I>dim</I> value = x or y or z
+    x, y, z = define the water level as x=const, y=const, z=const plane
+  <I>level</I> value = lev
+    lev = water level in length units, along the axis defined by dim
+  <I>region</I> value = region-ID
+    region-ID = ID of region atoms must be in to have added buoyancy force  
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix bu all buoyancy level 0.06 dim z density 1000 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Add a buoyancy force for each atom in the group. The water level is
+assumed to be a x=const, y=const or z=const plane, where the axis
+is defined via the <I>dim</I> keyword and const is defined via the <I>level</I>
+keyword. E.g. <I>dim</I> = x and <I>level</I> = 0.1 would define the water level
+as x = 0.1.
+</P>
+<P>The buoyancy force is equivalent to the weight of the displaced fluid.
+Thus, if the particle is fully submerged, the buoyancy force is equal
+to particle volume * fluid density. If the particle is not submerged,
+the buoyancy force is 0. If the particle is partially submerged, the
+fix will calculate the force based on the submerged particle volume.
+The fluid density is defined by keyword <I>density</I>.
+</P>
+<P>As buoyancy is triggered by static pressure difference in a fluid usually
+caused by gravity, this fix requires to use a <A HREF = "fix_gravity.html">fix gravity</A>.
+The gravity vector has to be specified in the same axis as in this fix
+(via the <I>dim</I> keyword).
+</P>
+<P>If the <I>region</I> keyword is used, the atom must also be in the
+specified geometric <A HREF = "region.html">region</A> in order to have buoyancy force
+added to it.
+</P>
+<HR>
+
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>No information about this fix is written to <A HREF = "restart.html">binary restart
+files</A>. No <A HREF = "fix_modify.html">fix_modify</A> option applies
+to this fix. This fix computes a a global 3-vector of the total
+buoyancy force, which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
+commands</A>.
+No parameter of this fix can be used with the <I>start/stop</I> keywords of
+the <A HREF = "run.html">run</A> command.
+</P>
+<P>The forces due to this fix are imposed during an energy minimization,
+invoked by the <A HREF = "minimize.html">minimize</A> command.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>This fix requires to use a <A HREF = "fix_gravity.html">fix gravity</A>. The gravity
+vector has to be specified in the same axis as in this fix (via the
+<I>dim</I> keyword).
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_setforce.html">fix setforce</A>, <A HREF = "fix_aveforce.html">fix aveforce</A>,
+<A HREF = "fix_addforce.html">fix addforce</A>
+</P>
+<P><B>Default:</B>
+</P>
+<P><I>level</I> = 0, <I>density</I> = 0
+</P>
+</HTML>

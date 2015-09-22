@@ -1,0 +1,24 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+gran surface sphere :h3
+
+[Syntax:]
+
+surface sphere :pre
+
+[Description:]
+
+This is the default surface model for a particle, it 
+prepresents a smooth (non-rough) sphere.
+It is the default surface model for all LIGGGHTS(R)-PUBLIC
+simulations. In case of a multi-sphere simulation,
+this surface model is applied to all spheres within
+one rigid body.
+
+[Restrictions:] none

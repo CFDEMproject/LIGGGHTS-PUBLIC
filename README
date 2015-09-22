@@ -27,24 +27,22 @@ See http://www.cfdem.com/terms-trademark-policy for details.
 
 ----------------------------------------------------------------------
 Copyright 2012-     DCS Computing GmbH, Linz
-Copyright 2009-2012 JKU Linz
+Copyright 2009-2015 JKU Linz
 Some parts of LIGGGHTS® are based on LAMMPS and Copyright on these
-parts is held by Sandia Corporation. Info on LAMMPS below
+parts is held by Sandia Corporation and other parties. Info on LAMMPS below
 Some parts of LIGGGHTS® are contributied by other parties, which are
 holding the Copyright. This is listed in each file of the distribution.
 ----------------------------------------------------------------------
 
 The LIGGGHTS® distribution includes the following files and directories:
 
-README			   this file
-LICENSE			   the GNU General Public License (GPL)
-couple			   code coupling examples using LAMMPS as a library
-doc			   documentation
-examples		   simple test problems
-lib			   libraries LIGGGHTS can be linked with
-python			   Python wrapper on LAMMPS as a library
-src			   source files
-tools			   pre- and post-processing tools
+README          this file
+LICENSE         the GNU General Public License (GPL)
+doc             documentation
+examples        simple example simulation setups
+lib             libraries LIGGGHTS® can be linked with
+python          Python wrapper on LIGGGHTS® as a library
+src             source files
 
 Point your browser at any of these files to get started:
 
@@ -69,6 +67,11 @@ National Laboratories, a US Department of Energy facility, with
 funding from the DOE.  It is an open-source code, distributed freely
 under the terms of the GNU Public License (GPL).
 
-The primary author of the code is Steve Plimpton, who can be emailed
+The primary author of LAMMPS is Steve Plimpton, who can be emailed
 at sjplimp@sandia.gov.  The LAMMPS WWW Site at lammps.sandia.gov has
 more information about the code and its uses.
+
+----------------------------------------------------------------------
+
+Core developer and main author of LIGGGHTS®:
+Christoph Kloss, christoph.kloss@dcs-computing.com

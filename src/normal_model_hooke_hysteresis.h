@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -61,7 +62,8 @@ namespace ContactModels
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
 
-    NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup) : NormalModel<HOOKE>(lmp, hsetup),
+    NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *c) :
+        NormalModel<HOOKE>(lmp, hsetup,c),
         kn2k2Max(NULL),
         kn2kc(NULL),
         phiF(NULL)
@@ -112,6 +114,10 @@ namespace ContactModels
       double ri = sidata.radi;
       double rj = sidata.radj;
       double reff=sidata.is_wall ? sidata.radi : (ri*rj/(ri+rj));
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(sidata.is_non_spherical)
+        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+#endif
       double meff=sidata.meff;
       double coeffRestLogChosen;
 

@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -54,6 +55,10 @@
 #include <stdlib.h>
 #include "contact_models.h"
 #include "granular_wall.h"
+
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  #include "math_const.h"
+#endif
 
 namespace LIGGGHTS {
 using namespace ContactModels;
@@ -95,6 +100,7 @@ public:
     Settings settings(lmp);
     cmodel.registerSettings(settings);
     bool success = settings.parseArguments(nargs, args);
+    cmodel.postSettings();
 
 #ifdef LIGGGHTS_DEBUG
     if(comm->me == 0) {
@@ -139,10 +145,6 @@ public:
     const double r = sidata.r;
     const double rinv = 1.0/r;
 
-    const double enx = sidata.delta[0] * rinv;
-    const double eny = sidata.delta[1] * rinv;
-    const double enz = sidata.delta[2] * rinv;
-
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
     error->one(FLERR,"Sascha, please check the changes. I think there was a bug for case of spheres");
     /*
@@ -152,12 +154,21 @@ public:
     const double enz = sidata.delta[2] * deltan_inv;
     */
     if(atom->superquadric_flag) {
+    const double delta_inv = 1.0 / vectorMag3D(sidata.delta);
+
+      double enx = sidata.delta[0] * delta_inv;
+      double eny = sidata.delta[1] * delta_inv;
+      double enz = sidata.delta[2] * delta_inv;
+      sidata.radi = radius;
       Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
       sidata.radi = particle.calc_curvature_radius(sidata.contact_point);
       //sidata.radi = pow(3.0 * atom->volume[ip] / 4.0 / M_PI, 1.0/3.0);
     } else
       sidata.radi = radius;
-#else
+#else // sphere case
+    const double enx = sidata.delta[0] * rinv;
+    const double eny = sidata.delta[1] * rinv;
+    const double enz = sidata.delta[2] * rinv;
     sidata.radi = radius;
 #endif
 
@@ -172,6 +183,7 @@ public:
     sidata.en[1] = eny;
     sidata.en[2] = enz;
     sidata.i = ip;
+    sidata.j = mesh?iTri : -1;
     sidata.contact_flags = NULL;
     sidata.itype = type[ip];
 
@@ -181,6 +193,8 @@ public:
     sidata.mi = mass;
 
     cmodel.surfacesIntersect(sidata, i_forces, j_forces);
+
+    cmodel.endSurfacesIntersect(sidata,mesh);
 
     if(sidata.computeflag) {
       force_update(f, torque, i_forces);

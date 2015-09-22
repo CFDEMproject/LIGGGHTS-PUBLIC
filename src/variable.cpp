@@ -3485,6 +3485,7 @@ int Variable::is_atom_vector(char *word)
   if ((strcmp(word,"tqy") == 0) && atom->torque_flag) return 1;
   if ((strcmp(word,"tqz") == 0) && atom->torque_flag) return 1; 
   if ((strcmp(word,"r") == 0) && atom->radius_flag) return 1;
+  if ((strcmp(word,"density") == 0) && atom->density_flag) return 1;
   return 0;
 }
 
@@ -3541,6 +3542,10 @@ void Variable::atom_vector(char *word, Tree **tree,
   else if ((strcmp(word,"tqx") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][0];
   else if ((strcmp(word,"tqy") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][1];
   else if ((strcmp(word,"tqz") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][2]; 
+  else if ((strcmp(word,"density") == 0) && atom->density_flag) {
+    newtree->nstride = 1;
+    newtree->array = atom->density;
+  }
   else if ((strcmp(word,"r") == 0) && atom->radius_flag) {
     newtree->nstride = 1;
     newtree->array = atom->radius;

@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -59,12 +60,15 @@ namespace ContactModels
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
-    NormalModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp),
+    NormalModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *c) : Pointers(lmp),
       Yeff(NULL),
       Geff(NULL),
       betaeff(NULL),
       limitForce(false),
-      displayedSettings(false)
+      displayedSettings(false),
+      heating(false),
+      heating_track(false),
+      cmb(c)
     {
       
     }
@@ -73,6 +77,9 @@ namespace ContactModels
     {
       settings.registerOnOff("tangential_damping", tangential_damping, true);
       settings.registerOnOff("limitForce", limitForce);
+      settings.registerOnOff("heating_normal_hertz",heating,false);
+      settings.registerOnOff("heating_tracking",heating_track,false);
+      //TODO error->one(FLERR,"TODO here also check if right surface model used");
     }
 
     void connectToProperties(PropertyRegistry & registry) {
@@ -99,6 +106,10 @@ namespace ContactModels
       double ri = sidata.radi;
       double rj = sidata.radj;
       double reff=sidata.is_wall ? sidata.radi : (ri*rj/(ri+rj));
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(sidata.is_non_spherical)
+        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+#endif
       double meff=sidata.meff;
 
       double sqrtval = sqrt(reff*sidata.deltan);
@@ -128,7 +139,7 @@ namespace ContactModels
       kt /= force->nktv2p;
 
       const double Fn_damping = -gamman*sidata.vn;
-      const double Fn_contact = kn*(sidata.radsum-sidata.r);
+      const double Fn_contact = kn*sidata.deltan;
       double Fn = Fn_damping + Fn_contact;
 
       //limit force to avoid the artefact of negative repulsion force
@@ -152,6 +163,14 @@ namespace ContactModels
             vectorCross3D(xci, Fn_i, torque_i);
           }
       #endif
+
+      if(heating)
+      {
+        sidata.P_diss += fabs(Fn_damping*sidata.vn); //fprintf(screen,"  contrib %f\n",fabs(Fn_damping*sidata.vn));}
+        if(heating_track && sidata.is_wall) cmb->tally_pw(fabs(Fn_damping*sidata.vn),sidata.i,jtype,0);
+        if(heating_track && !sidata.is_wall) cmb->tally_pp(fabs(Fn_damping*sidata.vn),sidata.i,sidata.j,0);
+      }
+
       // apply normal force
       if(sidata.is_wall) {
         const double Fn_ = Fn * sidata.area_ratio;
@@ -206,6 +225,9 @@ namespace ContactModels
     bool tangential_damping;
     bool limitForce;
     bool displayedSettings;
+    bool heating;
+    bool heating_track;
+    class ContactModelBase *cmb;
   };
 
 }

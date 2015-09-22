@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
     Philippe Seil (JKU Linz)
 
@@ -158,10 +159,10 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
     int64_t variant = Factory::instance().selectVariant("gran", nremaining, remaining_args);
     impl = Factory::instance().create("gran", variant, lmp, this);
-   
-    if(!impl && 0 == strncmp(style,"wall/gran",9)) 
+
+    if(!impl && 0 == strncmp(style,"wall/gran",9))
     {
-        printf("ERROR: Detected problem with model '%s' (and possible subsequent arguments). \n", arg[4]);
+        printf("ERROR: Detected problem with model '%s' (and possibly subsequent arguments). \n", arg[4]);
         printf("ERROR: The user must ensure that the contact model for this fix exists in the list of variants. \n");
         printf("ERROR: For the list of variants see the 'style_tangential_model.h' and 'style_normal_model.h' file in the src directory of your LIGGGHTS installation. \n");
         error->fix_error(FLERR,this,"unknown contact model");
@@ -445,7 +446,7 @@ void FixWallGran::pre_delete(bool unfixflag)
     if(unfixflag && fix_history_primitive_)
         modify->delete_fix(fix_history_primitive_->id);
 
-    if(unfixflag && store_force_contact_)
+    if(unfixflag && store_force_contact_ && 0 == meshwall_)
         modify->delete_fix(fix_wallforce_contact_->id);
 
     if(unfixflag && cwl_)
@@ -458,6 +459,9 @@ void FixWallGran::pre_delete(bool unfixflag)
            
            FixMesh_list_[i]->deleteWallNeighList();
            FixMesh_list_[i]->deleteContactHistory();
+
+           if(store_force_contact_)
+             FixMesh_list_[i]->deleteMeshforceContact();
        }
     }
 }
@@ -525,7 +529,7 @@ void FixWallGran::init()
           init_granular();
         }
 
-        // disallow more than one wall of non-rimitive style
+        // disallow more than one wall of non-primitive style
         
         if(is_mesh_wall())
         {
@@ -580,9 +584,11 @@ void FixWallGran::pre_force(int vflag)
     radius_ = atom->radius;
     cutneighmax_ = neighbor->cutneighmax;
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-    quat_ = atom->quaternion;
-    shape_ = atom->shape;
-    roundness_ = atom->roundness;
+    if(atom->superquadric_flag) {
+        quat_ = atom->quaternion;
+        shape_ = atom->shape;
+        roundness_ = atom->roundness;
+    }
 #endif
 
     // build neighlist for primitive walls
@@ -636,9 +642,11 @@ void FixWallGran::post_force_wall(int vflag)
   rmass_ = atom->rmass;
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  quat_ = atom->quaternion;
-  shape_ = atom->shape;
-  roundness_ = atom->roundness;
+  if(atom->superquadric_flag) {
+    quat_ = atom->quaternion;
+    shape_ = atom->shape;
+    roundness_ = atom->roundness;
+  }
 #endif
 
   if(fix_rigid_)
@@ -751,8 +759,8 @@ void FixWallGran::post_force_mesh(int vflag)
                   sidata.shape_i = shape_[iPart];
                   sidata.roundness_i = roundness_[iPart];
                   Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
-                  if(mesh->sphereTriangleIntersection(iTri, sidata.pos_i, radius_[iPart])) //check for Bounding Sphere-triangle intersection
-                    deltan = mesh->resolveTriSuperquadricContactBary(iTri, radius_ ? radius_[iPart]:r0_, sidata.pos_i, delta, sidata.contact_point, particle, bary);
+                  if(mesh->sphereTriangleIntersection(iTri, radius_[iPart], sidata.pos_i)) //check for Bounding Sphere-triangle intersection
+                    deltan = mesh->resolveTriSuperquadricContact(iTri, delta, sidata.contact_point, particle, bary);
                   else
                     deltan = LARGE_TRIMESH;
                   sidata.is_non_spherical = true; //by default it is false
@@ -809,8 +817,8 @@ void FixWallGran::post_force_mesh(int vflag)
                   sidata.shape_i = shape_[iPart];
                   sidata.roundness_i = roundness_[iPart];
                   Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
-                  if(mesh->sphereTriangleIntersection(iTri, sidata.pos_i, radius_[iPart])) //check for Bounding Sphere-triangle intersection
-                    deltan = mesh->resolveTriSuperquadricContact(iTri, radius_ ? radius_[iPart]:r0_, sidata.pos_i, delta, sidata.contact_point, particle);
+                  if(mesh->sphereTriangleIntersection(iTri, radius_[iPart], sidata.pos_i)) //check for Bounding Sphere-triangle intersection
+                    deltan = mesh->resolveTriSuperquadricContact(iTri, delta, sidata.contact_point, particle);
                   else
                     deltan = LARGE_TRIMESH;
                   sidata.is_non_spherical = true; //by default it is false
@@ -901,7 +909,6 @@ void FixWallGran::post_force_primitive(int vflag)
             Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
             particle_wall_intersection = particle.plane_intersection(delta, sphere_contact_point, closestPoint, point_of_lowest_potential);
             deltan = -MathExtraLiggghtsSuperquadric::point_wall_projection(delta, sphere_contact_point, closestPoint, closestPointProjection);
-            vectorSubtract3D(closestPoint, closestPointProjection, delta);
             vectorCopy3D(closestPoint, sidata.contact_point);
             sidata.is_non_spherical = true; //by default it is false
           }
@@ -1127,7 +1134,9 @@ void FixWallGran::addHeatFlux(TriMesh *mesh,int ip, double delta_n, double area_
     double ri = atom->radius[ip];
 
     if(mesh)
+    {
         Temp_wall = (*mesh->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))(0);
+    }
 
     double *Temp_p = fppa_T->vector_atom;
     double *heatflux = fppa_hf->vector_atom;

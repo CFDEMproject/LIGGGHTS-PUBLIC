@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -67,6 +68,8 @@ namespace LAMMPS_NS
         void setMeshID(const char *_mesh_id);
 
         void setPrecision(double _precision);
+
+        void setElementExclusionList(FILE *_file);
 
         void autoRemoveDuplicates();
 
@@ -215,10 +218,15 @@ namespace LAMMPS_NS
         inline double precision()
         { return precision_; }
 
+        inline FILE* elementExclusionList()
+        { return element_exclusion_list_; }
+
       private:
 
         // mesh precision
         double precision_;
+
+        FILE *element_exclusion_list_;
 
         // state if elements should be automatically removed if duplicate
         bool autoRemoveDuplicates_;

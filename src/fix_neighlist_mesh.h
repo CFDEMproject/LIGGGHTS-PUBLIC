@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
     Philippe Seil (JKU Linz)
 
@@ -157,6 +158,8 @@ class FixNeighlistMesh : public Fix
     void generate_bin_list(size_t nall);
 
     class AtomVecEllipsoid *avec;
+
+    bool otherList_;
 };
 
 } /* namespace LAMMPS_NS */

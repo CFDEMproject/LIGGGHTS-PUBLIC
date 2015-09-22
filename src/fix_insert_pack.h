@@ -32,11 +32,12 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -75,6 +76,7 @@ class FixInsertPack : public FixInsert {
 
   int is_nearby(int);
   int is_nearby_body(int);
+  virtual BoundingBox getBoundingBox();
 
   // region to be used for insertion
   class Region *ins_region;

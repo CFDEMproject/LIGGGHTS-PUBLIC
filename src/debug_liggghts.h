@@ -60,19 +60,8 @@ inline void __trace__()
 
 inline void __debug__(LAMMPS* lmp)
 {
+    //printf("DEBUG");
     
-    for(int i = 0; i < lmp->modify->nfix; i++)
-    {
-        if(strcmp(lmp->modify->fix[i]->id,"delflag") == 0)
-        {
-            FixPropertyAtom *fppa = static_cast<FixPropertyAtom*>(lmp->modify->fix[i]);
-
-            fprintf(lmp->screen,"fppa exists: %s\n",fppa?"yes":"no");
-            if(fppa)
-                fprintf(lmp->screen,"sum of delflag : %f\n",vectorSumN(fppa->vector_atom,lmp->atom->nlocal));
-        }
-    }
-
 }
 
 }

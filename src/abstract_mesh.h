@@ -58,6 +58,8 @@ namespace LAMMPS_NS
 
         virtual void setPrecision(double _precision) = 0;
 
+        virtual void setElementExclusionList(FILE *_file) = 0;
+
         virtual void autoRemoveDuplicates() = 0;
 
         // scale mesh

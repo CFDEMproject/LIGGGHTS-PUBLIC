@@ -204,6 +204,7 @@ void FixPropertyAtomTracer::end_of_step()
         return;
 
     int nlocal = atom->nlocal;
+    int *mask = atom->mask;
     double **x = atom->x;
     double *marker = this->vector_atom;
     Region *region = domain->regions[iregion_];
@@ -212,6 +213,9 @@ void FixPropertyAtomTracer::end_of_step()
 
     for(int i = 0; i < nlocal; i++)
     {
+        if (!mask[i] & groupbit)
+            continue;
+
         if (!MathExtraLiggghts::compDouble(marker[i],1.0,1e-5) && region->match(x[i][0],x[i][1],x[i][2]))
         {
             marker[i] = 1.0;

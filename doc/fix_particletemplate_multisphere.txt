@@ -1,0 +1,129 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix particletemplate/multisphere command :h3
+
+[Syntax:]
+
+fix ID group-ID particletemplate/multisphere seed nspheres nspheresvalue keyword values ntry ntryvalue spheres values_spheres type mt opt_keyword opt_values :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+particletemplate/multisphere = style name of this fix command :l
+seed = random number generator seed (integer value) :l
+nspheres = obligatory keyword :l
+nspheresvalue = number of spheres in the template (integer value) :l
+zero or more keyword/value pairs can be appended :l
+keyword, values are documented in "fix particletemplate/sphere"_fix_particletemplate_sphere.html command :l
+ntry = obligatory keyword :l
+ntryvalue: number of tries for Monte Carlo approach :l
+spheres = obligatory keyword :l
+values_spheres = one out of the following options :l
+    option 1 = {file} {filename}
+    option 2 = {file} {filename} {scale} {scalefactor}
+    option 3 = {x1 y1 z1 r1 x2 y2 r2...} where x/y/z are sphere positions and r are the radii :pre
+type = obligatory keyword :l
+mt = multisphere type of the template :l
+opt_keyword = {mass} or {inertia_tensor} or {use_volume} or {use_density} or {fflag} or {tflag} :l
+{mass} value = mass assigned to this particle template
+{inertia_tensor} values = Ixx Ixy Ixz Iyy Iyz Izz
+  Ixx Ixy Ixz Iyy Iyz Izz = 6 independant components of the inertia tensor
+{use_volume} = particle density calculated from mass and volume (only if keyword 'mass' is used')
+{use_density} = particle volume calculated from mass and density (only if keyword 'mass' is used')
+{fflag} values = fflagx fflagy fflagz
+  fflagx = on or off
+  fflagy = on or off
+  fflagz = on or off
+{tflag} values = tflagx tflagy tflagz
+  tflagx = on or off
+  tflagy = on or off
+  tflagz = on or off  :pre
+:ule
+
+[Examples:]
+
+fix pts1 all particletemplate/multisphere 1 nspheres 3 atom_type 1 density constant 2500 ntry 1000000 spheres 0. 0. 0. 0.005   0.005 0. 0. 0.005   0.01 0. 0. 0.005
+fix pts2 all particletemplate/multisphere 1 nspheres 30 atom_type 1 density constant 2500 ntry 1000000 spheres file spherefile.txt :pre
+
+
+
+[Description:]
+
+Define a multisphere particle template that is used as input for a
+"fix_particledistribution_discrete"_fix_particledistribution_discrete.html
+command. The particle parameters (positions, radii) are either defined
+manually as arguments to this command or via a text file, via the keyword
+{file}. The format of this text file is
+
+x1 y1 z1 r1
+x2 y2 z2 r2
+... :pre
+
+and the number of lines in this file has to be equal to n_spheres as
+defined in this command. Comments can be made in this file via the '#'
+character. Optionally, when a file is used for defining the multi-sphere
+template, keyword {scale} can be used to define a {scalefactor} to scale
+up or down the particle positions and radii.
+
+After the spheres are read, a Monte Carlo procedure is used to assess
+everything that is needed for the motion integration: mass, center of mass,
+and the inertia tensor including its eigensystem.
+
+As an alternative, the body's mass and inertia tensor can be specified
+directly via keywords {mass} and {inertia_tensor}. Note that you can
+use these keywords only together, i.e. defining only {mass} but not
+{inertia_tensor} will throw an error. Also note that only 2 out of the
+3 variables density, mass and volume are independant. Thus, you are
+offered two options when {mass} and {inertia_tensor} are used:
+(a) if keyword {use_volume} is specified, LIGGGHTS(R)-PUBLIC will use the
+specified {mass} and volume_mc (the volume of the particle template
+calculated by the Monte Carlo procedure), and calculate the density from
+these two variables.
+(b) if keyword {use_density} is used, LIGGGHTS(R)-PUBLIC will use the specified
+{mass} and the specified {density} (see doc of
+"fix particletemplate/sphere"_fix_particletemplate_sphere.html command),
+and the volume of the clump is then calculated from these two variables.
+Note you have to use either {use_volume} or {use_density} in case
+{mass} and {inertia_tensor} are used.
+
+The multisphere type or shape type as defined via the {type} keyword must
+be unique integer given to each fix particletemplate/multisphere
+command by the user (starting with 1), the list of all multisphere types
+in the simulation must be consecutive. At the moment, the multisphere type
+is not used, but will be used to implement orientation-dependant drag
+for CFD-DEM simulations in the future.
+
+The additional keywords {fflag} and {tflag} can be used to deactivate
+selected translational and rotational degrees of freedom of the bodies.
+For example {fflag} = on on off and {tflag} = off on on would mean that
+bodies will not move translationally in z-direction and will not rotate
+around the x-axis.
+
+IMPORTANT NOTE: As opposed to the number-based distributions, this fix uses the more common
+distribution based on mass-% for the radius distribution (as does
+"fix_particledistribution_discrete"_fix_particledistribution_discrete.html).
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+Information about the random state in this fix is written to
+"binary restart files"_restart.html so you can restart a simulation with
+the same particles being chosen for insertion. None of the
+"fix_modify"_fix_modify.html options are relevant to this fix. No global
+scalar or vector or per-atom quantities are stored by this fix for access
+by various "output commands"_Section_howto.html#4_15. No parameter of this
+fix can be used with the {start}/{stop} keywords of the "run"_run.html
+command. This fix is not invoked during "energy minimization"_minimize.html.
+
+[Restrictions:] none
+
+[Related commands:]
+
+"fix_particletemplate_sphere"_fix_particletemplate_sphere.html
+
+[Default:]
+
+radius = 1.0, density = 1.0, atom_type = 1, fflag = tflag = on on on

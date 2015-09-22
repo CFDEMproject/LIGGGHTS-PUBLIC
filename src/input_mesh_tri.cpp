@@ -58,7 +58,10 @@
 using namespace LAMMPS_NS;
 
 InputMeshTri::InputMeshTri(LAMMPS *lmp, int argc, char **argv) : Input(lmp, argc, argv),
-verbose_(false)
+verbose_(false),
+i_exclusion_list_(0),
+size_exclusion_list_(0),
+exclusion_list_(0)
 {}
 
 InputMeshTri::~InputMeshTri()
@@ -68,9 +71,12 @@ InputMeshTri::~InputMeshTri()
    process all input from filename
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool verbose)
+void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool verbose,const int size_exclusion_list, int *exclusion_list)
 {
   verbose_ = verbose;
+  size_exclusion_list_ = size_exclusion_list;
+  exclusion_list_ = exclusion_list;
+  
   if(strlen(filename) < 5)
     error->all(FLERR,"Illegal command, file name too short for input of triangular mesh");
   const char *ext = &(filename[strlen(filename)-3]);
@@ -272,6 +278,12 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
   for(int i = 0; i < ncells; i++)
   {
       if(cells[i][0] == -1) continue;
+      if(size_exclusion_list_ > 0 && lines[i] == exclusion_list_[i_exclusion_list_])
+      {
+         if(i_exclusion_list_ < size_exclusion_list_-1)
+            i_exclusion_list_++;
+         continue;
+      }
       addTriangle(mesh,points[cells[i][0]],points[cells[i][1]],points[cells[i][2]],lines[i]);
   }
 
@@ -398,7 +410,17 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
       //printVec3D(screen,"vertex",vertices[0]);
       //printVec3D(screen,"vertex",vertices[1]);
       //printVec3D(screen,"vertex",vertices[2]);
-      addTriangle(mesh,vertices[0],vertices[1],vertices[2],nLinesTri);
+
+      // nLinesTri is the line
+      
+      if(size_exclusion_list_ > 0 && nLinesTri == exclusion_list_[i_exclusion_list_])
+      {
+         
+         if(i_exclusion_list_ < size_exclusion_list_-1)
+            i_exclusion_list_++;
+      }
+      else
+          addTriangle(mesh,vertices[0],vertices[1],vertices[2],nLinesTri);
 
        if (me == 0) {
          //fprintf(screen,"  End of facet detected in in solid body.\n");

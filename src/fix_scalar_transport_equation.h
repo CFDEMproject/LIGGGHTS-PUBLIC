@@ -72,6 +72,9 @@ class FixScalarTransportEquation : public Fix {
 
   double *get_capacity();
 
+  inline int n_every()
+  { return nevery_; }
+
  protected:
 
   int nlevels_respa;

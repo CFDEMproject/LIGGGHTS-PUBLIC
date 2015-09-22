@@ -32,11 +32,11 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
+    Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -47,6 +47,8 @@
 #define LMP_FIX_INSERT_H
 
 #include "fix.h"
+#include "bounding_box.h"
+#include "region_neighbor_list.h"
 
 namespace LAMMPS_NS {
 
@@ -142,8 +144,7 @@ class FixInsert : public Fix {
   int maxattempt;
 
   // positions generated, and for overlap check
-  int nspheres_near;
-  double **xnear;
+  RegionNeighborList &neighList;
 
   // velocity and ang vel distribution
   // currently constant for omega - could also be a distribution
@@ -172,7 +173,7 @@ class FixInsert : public Fix {
   bool warn_boxentent;
 
   class FixMultisphere *fix_multisphere;
-  class MultisphereParallel *multisphere;
+  class Multisphere *multisphere;
 
   /*---FUNCTION MEMBERS---*/
 
@@ -183,16 +184,20 @@ class FixInsert : public Fix {
   virtual void sanity_check();
   virtual void calc_insertion_properties() = 0;
 
-  virtual void pre_insert() {};
+  virtual bool pre_insert() { return true; }
   virtual int calc_ninsert_this();
   virtual int load_xnear(int);
   virtual int count_nnear();
   virtual int is_nearby(int) = 0;
+  virtual BoundingBox getBoundingBox() = 0;
 
   virtual void x_v_omega(int,int&,int&,double&) = 0;
   virtual double insertion_fraction() = 0;
 
   virtual void finalize_insertion(int){};
+
+ protected:
+  void generate_random_velocity(double * velocity);
 
  private:
 

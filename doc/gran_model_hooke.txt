@@ -11,7 +11,7 @@ gran model hooke :h3
 [Syntax:]
 
 model hooke \[other model_type/model_name pairs as described "here"_pair_gran.html \] keyword values :pre
-zero or more keyword/value pairs may be appended :l
+zero or more keyword/value pairs may be appended to the end (after all models are specified) :l
   {tangential_damping} values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping
@@ -23,7 +23,10 @@ zero or more keyword/value pairs may be appended :l
     off = standard implementation that might lead to attractive forces.
   {viscous} = 'on' or 'off'
     on = restitution coefficient varies with a local Stokes number of the particle. Requires additional global properties to be specified
-    off = no modification to the restitution coefficient  :pre
+    off = no modification to the restitution coefficient
+  {heating_normal_hooke} values = 'on' or 'off'
+    on = model contributes to surface heating in the frame of "surface sphere/heatable"_gran_surface_sphere_heatable.html
+    off = model does not contributes to surface heating :pre
 
 [Description:]
 
@@ -112,6 +115,10 @@ between 2 particles grows according to a tangential spring and dash-pot model un
 Ft/Fn = cof and is then held at Ft = Fn*cof until the particles lose contact.
 In the Hertzian case, a similar analogy holds, though the spring is no longer linear.
 
+This model contributes to surface heating in the frame of 
+"surface sphere/heatable"_gran_surface_sphere_heatable.html if the 
+appropriate flag is activated
+
 [Restrictions:]
 
 If using SI units, youngsModulus must be > 5e6
@@ -125,6 +132,7 @@ When using the limitForce, the specified coefficient of restitution is only appr
 {tangential_damping} = 'on'
 {ktToKnUser} = 'off'
 {limitForce} = 'off'
+{heating_normal_hooke} = 'off'
 
 :link(Legendre)
 [(Legendre)] Legendre, Daniel and Guiraud. Phys. Fluids 17, 097105 (2005).

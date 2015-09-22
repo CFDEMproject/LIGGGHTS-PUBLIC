@@ -1,0 +1,148 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>gran cohesion easo/capillary/viscous 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>cohesion easo/capillary/viscous 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>This model can be used as part of <A HREF = "pair_gran.html">pair gran</A>
+It adds a liquid bridge force, caused by a surface liquid film on the particles,
+to a pair of particles, which consists
+of a capilary and a viscous part. Furthermore, it solves for the
+transfer of surface liquid from one particle to the other as the bridge breaks up.
+The model uses a parameter, <I>maxSeparationDistanceRatio</I>, to apply a cut-off
+to the liquid bridge force, i.e. <I>radius</I>*<I>maxSeparationDistanceRatio</I> is
+the effective contact radius of the particles.
+</P>
+<HR>
+
+<P>Bridge formation and break-up, surface liquid transfer:
+</P>
+<P><I>Vbond</I>, the volume of surface liquid involved in the bridge, is given by
+</P>
+<PRE>Vbond = 0.05*(surfaceLiquidVolI+surfaceLiquidVolJ) 
+</PRE>
+where <I>surfaceLiquidVolI/J</I> is the surface liquid volume attached to particle i/j.
+This model assumes that bridge formation occurs upon contact and
+the rupture distance is given as follows by <A HREF = "#Lian">(Lian)</A> 
+
+<PRE>dist0 = (1+contactAngleEff/2)*Vbond^(1/3) 
+</PRE>
+<P>When the bridge breaks, it is assumed that the surface liquid volume
+distributes evenly to the two particles.
+</P>
+<HR>
+
+<P>Capilary force:
+</P>
+<P>The capilary force is given by <A HREF = "#Soulie">(Soulie)</A> as:
+</P>
+<PRE>Fcapilary = - pi*surfaceTension*sqrt(radi*radj)*(exp(A*dist/R2+B)+C) 
+</PRE>
+<P>where
+</P>
+<PRE>volBondScaled = volBond/R2^3
+A = -1.1*volBondScaled^(-0.53)
+B = (-0.148*log(volBondScaled)-0.96)*contactAngleEff*contactAngleEff - 0.0082*log(volBondScaled) + 0.48
+C = 0.0018*log(volBondScaled)+0.078;
+contactAngleEff = 0.5*(contactAngleI+contactAngleJ) 
+</PRE>
+<P><I>dist</I> is the distance between the particles' surfaces, <I>surfaceTension</I> is the surface tension
+of the fluid, <I>contactAngleI/J</I> are the contact angles for particle i/j and the fluid. <I>R2</I> is the
+radius of the larger of the two particles in contact.
+</P>
+<HR>
+
+<P>Viscous force:
+</P>
+the normal and tangential parts of the viscous force are calculated as given by <A HREF = "#Nase">(Nase)</A> 
+
+<PRE>rEff = radi*radj/(radi+radj)
+stokesPreFactor = 6*pi*fluidViscosity*rEff
+FviscN = stokesPreFactor*vn*rEff/dist
+FviscT = stokesPreFactor*vt*(8/15*log(rEff/dist)+0.9588) 
+</PRE>
+<P>where <I>vn</I> and <I>vt</I> are the normal and tangential relative velocities of the
+particles at the contact point, <I>fluidViscosity</I> is the viscosity of the fluid
+and <I>ri</I> and <I>rj</I> are the particle radii. An additional parameter,
+<I>minSeparationDistanceRatio</I>, is used to prevent the value of the viscous force from
+becoming too large, i.e. <I>radius</I>*<I>minSeparationDistanceRatio</I> is assumed to be
+the minimum separation distance.
+</P>
+<HR>
+
+<P>Computation of liquid transport and effect of liquid content on other particle properties:
+</P>
+<P>Per default, this model automatically instatiates a scalar transport equation that solved for
+the surface liquid content of each particles, expressed in volume % of solid volume
+(4/3 pi * radius ^3). The surface liquid volume is assumed to be small, i.e. it is assumed
+to have no effect on the particle mass, diameter and density.
+</P>
+<P>The user can override the default behavior by explicity specifing a fix that solves
+for the surface liquid transport between particles. Such fixes are
+<A HREF = "fix_liquidtransport_porous.html">fix liquidtransport/porous</A> or
+<A HREF = "fix_liquidtransport_sponge.html">fix liquidtransport/sponge</A>
+</P>
+<HR>
+
+<P>Intialization:
+</P>
+<PRE>If you are using the this model model, you must define the following properties:
+fix id all property/global minSeparationDistanceRatio scalar value
+    (value=value for the minimum separation distance, recommended as 1.01)
+fix id all property/global maxSeparationDistanceRatio scalar value
+    (value=value for the maximum separation distance, recommended as 1.1)
+fix id all property/global surfaceLiquidContentInitial scalar value
+    (value=value for the initial surface liquid volume in % of the solid volume)
+fix id all property/global surfaceTension scalar value
+    (value=value for the surface tension of liquid (SI units N/m))
+fix id all property/global fluidViscosity scalar value
+    (value=value for the fluidViscosity (SI units Pas))
+fix id all property/global contactAngle peratomtype value_1 value_2 ...
+    (value_i=value for contact angle of atom type i and fluid) 
+</PRE>
+<P><B>Output:</B>
+</P>
+<P>This gran model stores a couple of per-particle properties, for access
+by various <A HREF = "Section_howto.html#4_15">output commands</A>.
+</P>
+<P>You can access the property surfaceLiquidContent by f_surfaceLiquidContent[0]
+(units % of solid particle volume), liquidFlux (units % of solid particle volume/time)
+by accessing f_liquidFlux[0] and liquidSource (units % of solid particle volume/time)
+by accessing f_liquidSource[0]. The latter can be used to manually set a
+surface liquid source via the <A HREF = "set.html">set</A> command.
+</P>
+<P>Currently, there is a restriction that these properties can only be accessed
+after a <A HREF = "run.html">run 0</A> command.
+</P>
+<P><B>References:</B>
+</P>
+<A NAME = "Lian"></A>
+
+<P><B>(Lian)</B> Lian, Thornton, Adams, Journal of Colloid and Interface Science, p134, 161 (1993).
+</P>
+<A NAME = "Nase"></A>
+
+<P><B>(Nase)</B> S. T. Nase, W. L. Vargas, A. A. Abatan, and J. J. Mc-carthy, Powder Technol 116, 214 (2001).
+</P>
+<A NAME = "Shi"></A>
+
+<P><B>(Shi)</B> Shi, McCarthy, PowderTechnology, p64, 184 (2008)
+</P>
+<A NAME = "Soulie"></A>
+
+<P><B>(Soulie)</B> Soulie, Cherblanc, Youssoufi, Saix, Intl. J Numerical and Analytical Methods in Geomechanics, p213, 30 (2006)
+</P>
+</HTML>

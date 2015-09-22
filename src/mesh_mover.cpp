@@ -33,14 +33,15 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
     Niels Dallinger (TU Chemnitz, viblin and vibrot)
     Christian Richter (OVGU Magdeburg, linear variable and rotate/variable)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
-    Copyright 2013      TU Chemnitz
+    Copyright 2013-2015 TU Chemnitz
     Copyroght 2013      OVGU Magdeburg
 ------------------------------------------------------------------------- */
 
@@ -567,9 +568,9 @@ void MeshMoverRiggle::initial_integrate(double dTAbs,double dTSetup,double dt)
 MeshMoverVibLin::MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh,
                                  FixMoveMesh *_fix_move_mesh,
                                  double axisX, double axisY, double axisZ,
-                                 int order, double amplitude[10], double phase[10],
-                                 double T)
-  : MeshMover(lmp,_mesh,_fix_move_mesh), omega_(2.*M_PI/T)
+                                 int order, double amplitude[30], double phase[30],
+                                 double period[30])
+  : MeshMover(lmp,_mesh,_fix_move_mesh)
 {
     axis_[0] = axisX;
     axis_[1] = axisY;
@@ -581,6 +582,7 @@ MeshMoverVibLin::MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh,
     for (int j=0;j<order; j++) {
        phi[j] = phase[j];
        ampl[j] = amplitude[j];
+	   omega[j] = (1/period[j])*2.*M_PI;
      }
 }
 
@@ -612,8 +614,8 @@ void MeshMoverVibLin::initial_integrate(double dTAbs,double dTSetup,double dt)
 
     for (int j=0;j<ord; j++)
     {
-        arg = arg+ampl[j]*(cos(omega_*(j+1)*dTAbs+phi[j]) - cos(omega_*(j+1)*(dTAbs-dTSetup)+phi[j]));
-        vA= vA-ampl[j]*(j+1)*omega_*sin(omega_*(j+1)*dTAbs+phi[j]);
+        arg = arg+ampl[j]*(cos(omega[j]*dTAbs+phi[j]) - cos(omega[j]*(dTAbs-dTSetup)+phi[j]));
+        vA= vA-ampl[j]*omega[j]*sin(omega[j]*dTAbs+phi[j]);
     }
 
     // calculate velocity, same for all nodes
@@ -640,9 +642,9 @@ MeshMoverVibRot::MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh,
                                  FixMoveMesh *_fix_move_mesh,
                                  double px, double py, double pz,
                                  double axisX, double axisY, double axisZ,
-                                 int order, double amplitude[10], double phase[10],
-                                 double T)
-  : MeshMover(lmp,_mesh,_fix_move_mesh), omega_(2.*M_PI/T)
+                                 int order, double amplitude[30], double phase[30],
+                                 double period[30])
+  : MeshMover(lmp,_mesh,_fix_move_mesh)
 {
     axis_[0] = axisX;
     axis_[1] = axisY;
@@ -659,6 +661,7 @@ MeshMoverVibRot::MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh,
     for (int j=0;j<order; j++) {
        phi[j] = phase[j];
        ampl[j] = amplitude[j];
+	   omega[j] = (1/period[j])*2.*M_PI;
      }
 }
 
@@ -688,8 +691,8 @@ void MeshMoverVibRot::initial_integrate(double dTAbs,double dTSetup,double dt)
 
     for (int j=0;j<ord; j++)
     {
-        arg = arg+ampl[j]* ( cos(omega_*(j+1)*dTAbs+phi[j]) - cos(omega_*(j+1)*(dTAbs-dTSetup)+phi[j]) );
-        vR = vR-ampl[j]*(j+1)*omega_*sin(omega_*(j+1)*dTAbs+phi[j]);
+        arg = arg+ampl[j]* ( cos(omega[j]*dTAbs+phi[j]) - cos(omega[j]*(dTAbs-dTSetup)+phi[j]) );
+        vR = vR-ampl[j]*omega[j]*sin(omega[j]*dTAbs+phi[j]);
     }
 
     int size = mesh_->size();

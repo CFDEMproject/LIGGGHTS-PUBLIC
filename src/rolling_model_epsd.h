@@ -34,7 +34,8 @@
     Contributing author and copyright for this file:
 
     Andreas Aigner (JKU Linz)
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -63,7 +64,8 @@ namespace ContactModels
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
 
-    RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup) : Pointers(lmp), coeffRollFrict(NULL), coeffRollVisc(NULL)
+    RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *) :
+        Pointers(lmp), coeffRollFrict(NULL), coeffRollVisc(NULL)
     {
       history_offset = hsetup->add_history_value("r_torquex_old", "1");
       hsetup->add_history_value("r_torquey_old", "1");
@@ -91,37 +93,119 @@ namespace ContactModels
 
       if(sidata.contact_flags) *sidata.contact_flags |= CONTACT_ROLLING_MODEL;
 
+      double radi = sidata.radi;
+      double radj = sidata.radj;
+      double reff=sidata.is_wall ? sidata.radi : (radi*radj/(radi+radj));
+
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(sidata.is_non_spherical)
+        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+#endif
       if(sidata.is_wall) {
         const double wr1 = sidata.wr1;
         const double wr2 = sidata.wr2;
         const double wr3 = sidata.wr3;
-        const double radius = sidata.radi;
 
-        double r_inertia;
-        if (domain->dimension == 2) r_inertia = 1.5*sidata.mi*radius*radius;
-        else  r_inertia = 1.4*sidata.mi*radius*radius;
+        double r_inertia = 0.0; //pre-initialize to prevent compiler "warning"
 
-        calcRollTorque(r_torque,sidata,radius,wr1,wr2,wr3,r_inertia);
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(sidata.is_non_spherical) {
+          const double rii = pointDistance(sidata.contact_point, sidata.pos_i);
+          const double omega_mag = sqrt(wr1*wr1 + wr2*wr2 + wr3*wr3);
+          if(omega_mag != 0.0) {
+            double er[3];
+            er[0] = wr1 / omega_mag;
+            er[1] = wr2 / omega_mag;
+            er[2] = wr3 / omega_mag;
+            const double Ix = sidata.inertia_i[0];
+            const double Iy = sidata.inertia_i[1];
+            const double Iz = sidata.inertia_i[2];
+            double inertia_tensor[3][3];
+            double inertia_tensor_local[3][3] = { {Ix, 0.0, 0.0},
+                                                  {0.0, Iy, 0.0},
+                                                  {0.0, 0.0, Iz} };
+            MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local, sidata.quat_i, inertia_tensor);
+            double temp[3];
+            MathExtra::matvec(inertia_tensor, er, temp);
+            double Ii = MathExtra::dot3(temp, er);
+            r_inertia = Ii + sidata.mi*rii*rii;
+          }
+        } else {
+          if (domain->dimension == 2) r_inertia = 1.5*sidata.mi*reff*reff;
+          else  r_inertia = 1.4*sidata.mi*reff*reff;
+        }
+#else
+
+        if (domain->dimension == 2) r_inertia = 1.5*sidata.mi*reff*reff;
+        else  r_inertia = 1.4*sidata.mi*reff*reff;
+#endif
+
+        calcRollTorque(r_torque,sidata,reff,wr1,wr2,wr3,r_inertia);
 
       } else {
+
         double  wr_roll[3];
 
         const int i = sidata.i;
         const int j = sidata.j;
 
-        const double radi = sidata.radi;
-        const double radj = sidata.radj;
-        const double reff = sidata.is_wall ? radi : (radi*radj/(radi+radj));
         const double * const * const omega = atom->omega;
-
-        const double r_inertia_red_i = sidata.mi*radi*radi;
-        const double r_inertia_red_j = sidata.mj*radj*radj;
-        double r_inertia;
-        if (domain->dimension == 2) r_inertia = 1.5 * r_inertia_red_i * r_inertia_red_j/(r_inertia_red_i + r_inertia_red_j);
-        else  r_inertia = 1.4 * r_inertia_red_i * r_inertia_red_j/(r_inertia_red_i + r_inertia_red_j);
 
         // relative rotational velocity
         vectorSubtract3D(omega[i],omega[j],wr_roll);
+        double r_inertia = 0.0; //pre-initialize to prevent compiler "warning"
+        double r_inertia_red_i, r_inertia_red_j;
+
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(sidata.is_non_spherical) {
+          const double rii = pointDistance(sidata.contact_point, sidata.pos_i);
+          const double rjj = pointDistance(sidata.contact_point, sidata.pos_j);
+          const double omega_mag = vectorMag3D(wr_roll);
+          if(omega_mag != 0.0) {
+            double er[3];
+            er[0] = wr_roll[0] / omega_mag;
+            er[1] = wr_roll[1] / omega_mag;
+            er[2] = wr_roll[2] / omega_mag;
+            const double Ix_i = sidata.inertia_i[0];
+            const double Iy_i = sidata.inertia_i[1];
+            const double Iz_i = sidata.inertia_i[2];
+
+            const double Ix_j = sidata.inertia_j[0];
+            const double Iy_j = sidata.inertia_j[1];
+            const double Iz_j = sidata.inertia_j[2];
+
+            double inertia_tensor_i[3][3];
+            double inertia_tensor_local_i[3][3] = { {Ix_i, 0.0, 0.0},
+                                                    {0.0, Iy_i, 0.0},
+                                                    {0.0, 0.0, Iz_i} };
+            double inertia_tensor_j[3][3];
+            double inertia_tensor_local_j[3][3] = { {Ix_j, 0.0, 0.0},
+                                                    {0.0, Iy_j, 0.0},
+                                                    {0.0, 0.0, Iz_j} };
+            MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local_i, sidata.quat_i, inertia_tensor_i);
+            MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local_j, sidata.quat_j, inertia_tensor_j);
+            double temp[3];
+            MathExtra::matvec(inertia_tensor_i, er, temp);
+            double Ii = MathExtra::dot3(temp, er);
+            MathExtra::matvec(inertia_tensor_j, er, temp);
+            double Ij = MathExtra::dot3(temp, er);
+            r_inertia_red_i = Ii + sidata.mi*rii*rii; //
+            r_inertia_red_j = Ij + sidata.mj*rjj*rjj;
+            r_inertia = r_inertia_red_i*r_inertia_red_j / (r_inertia_red_i + r_inertia_red_j);
+          }
+
+        } else {
+          r_inertia_red_i = sidata.mi*radi*radi;
+          r_inertia_red_j= sidata.mj*radj*radj;
+        if (domain->dimension == 2) r_inertia = 1.5 * r_inertia_red_i * r_inertia_red_j/(r_inertia_red_i + r_inertia_red_j);
+        else  r_inertia = 1.4 * r_inertia_red_i * r_inertia_red_j/(r_inertia_red_i + r_inertia_red_j);
+        }
+#else
+        r_inertia_red_i = sidata.mi*radi*radi;
+        r_inertia_red_j= sidata.mj*radj*radj;
+        if (domain->dimension == 2) r_inertia = 1.5 * r_inertia_red_i * r_inertia_red_j/(r_inertia_red_i + r_inertia_red_j);
+        else  r_inertia = 1.4 * r_inertia_red_i * r_inertia_red_j/(r_inertia_red_i + r_inertia_red_j);
+#endif
 
         calcRollTorque(r_torque,sidata,reff,wr_roll[0],wr_roll[1],wr_roll[2],r_inertia);
       }

@@ -55,7 +55,10 @@ options.
 The scalar value calculated by this compute is "extensive".  The
 scalar value will be in energy "units"_units.html.
 
-[Restrictions:] none
+[Restrictions:] 
+
+This compute does not include the potential
+energy due to the overlap of granular particles.
 
 [Related commands:]
 

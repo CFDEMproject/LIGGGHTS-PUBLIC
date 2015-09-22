@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -56,7 +57,7 @@ namespace ContactModels
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
-    NormalModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp),
+    NormalModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) : Pointers(lmp),
       k_n(NULL),
       k_t(NULL),
       gamma_n(NULL),
@@ -144,8 +145,8 @@ namespace ContactModels
       kt /= force->nktv2p;
 
       const double Fn_damping = -gamman*sidata.vn;    
-      const double Fn_contact = kn*(sidata.radsum-sidata.r);
-      double Fn                       = Fn_damping + Fn_contact;
+      const double Fn_contact = kn*sidata.deltan;
+      double Fn = Fn_damping + Fn_contact;
 
       //limit force to avoid the artefact of negative repulsion force
       if(limitForce && (Fn<0.0) )

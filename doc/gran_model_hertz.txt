@@ -11,13 +11,16 @@ gran model hertz :h3
 [Syntax:]
 
 model hertz \[other model_type/model_name pairs as described "here"_pair_gran.html \] keyword values :pre
-zero or more keyword/value pairs may be appended :l
+zero or more keyword/value pairs may be appended to the end (after all models are specified) :l
   {limitForce} values = 'on' or 'off'
     on = ensures that the normal force is never attractive (an artefact that can occur at the end of a collision).
     off = standard implementation that might lead to attractive forces.
   {tangential_damping} values = 'on' or 'off'
     on = activates tangential damping
-    off = no tangential damping :pre
+    off = no tangential damping 
+  {heating_normal_hertz} values = 'on' or 'off'
+    on = model contributes to surface heating in the frame of "surface sphere/heatable"_gran_surface_sphere_heatable.html
+    off = model does not contributes to surface heating :pre
 
 [Description:]
 
@@ -71,9 +74,14 @@ fix id all property/global coefficientFriction peratomtypepair n_atomtypes value
 
 IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 
+This model contributes to surface heating in the frame of 
+"surface sphere/heatable"_gran_surface_sphere_heatable.html if the 
+appropriate flag is activated
+
 [Force Limiting:]
 
 Note, that not using limitForce might lead to attractive forces between particles and walls, especially in case the coefficient of restitution is small. Be sure you include this key word for the pair style and the wall model if you like to avoid this.
+
 [Restrictions:]
 
 If using SI units, youngsModulus must be > 5e6
@@ -84,6 +92,7 @@ When using the limitForce, the specified coefficient of restitution is only appr
 
 {tangential_damping} = 'on'
 {limitForce} = 'off'
+{heating_normal_hertz} = 'off'
 
 [(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525–541 (2004).
 

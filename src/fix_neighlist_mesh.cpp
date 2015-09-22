@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
     Philippe Seil (JKU Linz)
 
@@ -81,13 +82,24 @@ FixNeighlistMesh::FixNeighlistMesh(LAMMPS *lmp, int narg, char **arg)
   changingMesh(false),
   changingDomain(false),
   last_bin_update(-1),
-  avec(0)
+  avec(0),
+  otherList_(false)
 {
     if(!modify->find_fix_id(arg[3]) || !dynamic_cast<FixMeshSurface*>(modify->find_fix_id(arg[3])))
         error->fix_error(FLERR,this,"illegal caller");
 
     caller_ = static_cast<FixMeshSurface*>(modify->find_fix_id(arg[3]));
     mesh_ = caller_->triMesh();
+
+    if(5 == narg)
+    {
+        if(0 == strcmp(arg[4],"other_yes"))
+            otherList_ = true;
+        else if(0 == strcmp(arg[4],"other_no"))
+            otherList_ = false;
+        else error->fix_error(FLERR,this,"illegal");
+        
+    }
 
     groupbit_wall_mesh = groupbit;
 }
@@ -109,8 +121,13 @@ void FixNeighlistMesh::post_create()
     {
         const char* fixarg[9];
         delete [] fix_nneighs_name_;
-        fix_nneighs_name_ = new char[strlen(mesh_->mesh_id())+1+14];
-        sprintf(fix_nneighs_name_,"n_neighs_mesh_%s",mesh_->mesh_id());
+        fix_nneighs_name_ = new char[strlen(mesh_->mesh_id())+strlen(id)+1+20];
+
+        if(otherList_)
+            sprintf(fix_nneighs_name_,"n_neighs_mesh_%s_fix_%s",mesh_->mesh_id(),id);
+        
+        else
+            sprintf(fix_nneighs_name_,"n_neighs_mesh_%s",mesh_->mesh_id());
 
         fixarg[0]=fix_nneighs_name_;
         fixarg[1]="all";

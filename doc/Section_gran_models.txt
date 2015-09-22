@@ -17,8 +17,10 @@ cohesion commands :h4
 
 Click on the style itself for a full description:
 
+"easo/capillary/viscous"_gran_cohesion_easo_capillary_viscous.html,
 "sjkr"_gran_cohesion_sjkr.html,
-"sjkr2"_gran_cohesion_sjkr2.html :tb(c=4,ea=c)
+"sjkr2"_gran_cohesion_sjkr2.html,
+"washino/capillary/viscous"_gran_cohesion_washino_capillary_viscous.html :tb(c=4,ea=c)
 
 model commands :h4
 
@@ -37,6 +39,12 @@ Click on the style itself for a full description:
 "epsd"_gran_rolling_friction_epsd.html,
 "epsd2"_gran_rolling_friction_epsd2.html,
 "epsd3"_gran_rolling_friction_epsd3.html :tb(c=4,ea=c)
+
+surface commands :h4
+
+Click on the style itself for a full description:
+
+"sphere"_gran_surface_sphere.html :tb(c=4,ea=c)
 
 tangential commands :h4
 

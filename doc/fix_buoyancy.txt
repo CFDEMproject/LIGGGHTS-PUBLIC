@@ -1,0 +1,85 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix buoyancy command :h3
+
+[Syntax:]
+
+fix ID group-ID buoyancy keyword value ... :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+buoyancy = style name of this fix command :l
+zero or more keyword/value pairs may be appended to args; the {dim} keyword must be used  :l
+keyword = {density} or {dim} or {level} or {region} :l
+  {density} value = density-value
+    density-value = fluid density in mass/length^3 units
+  {dim} value = x or y or z
+    x, y, z = define the water level as x=const, y=const, z=const plane
+  {level} value = lev
+    lev = water level in length units, along the axis defined by dim
+  {region} value = region-ID
+    region-ID = ID of region atoms must be in to have added buoyancy force  :pre
+:ule
+
+[Examples:]
+
+fix bu all buoyancy level 0.06 dim z density 1000 :pre
+
+[Description:]
+
+Add a buoyancy force for each atom in the group. The water level is
+assumed to be a x=const, y=const or z=const plane, where the axis
+is defined via the {dim} keyword and const is defined via the {level}
+keyword. E.g. {dim} = x and {level} = 0.1 would define the water level
+as x = 0.1.
+
+The buoyancy force is equivalent to the weight of the displaced fluid.
+Thus, if the particle is fully submerged, the buoyancy force is equal
+to particle volume * fluid density. If the particle is not submerged,
+the buoyancy force is 0. If the particle is partially submerged, the
+fix will calculate the force based on the submerged particle volume.
+The fluid density is defined by keyword {density}.
+
+As buoyancy is triggered by static pressure difference in a fluid usually
+caused by gravity, this fix requires to use a "fix gravity"_fix_gravity.html.
+The gravity vector has to be specified in the same axis as in this fix
+(via the {dim} keyword).
+
+If the {region} keyword is used, the atom must also be in the
+specified geometric "region"_region.html in order to have buoyancy force
+added to it.
+
+:line
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+No information about this fix is written to "binary restart
+files"_restart.html. No "fix_modify"_fix_modify.html option applies
+to this fix. This fix computes a a global 3-vector of the total
+buoyancy force, which can be accessed by various "output
+commands"_Section_howto.html#howto_8.
+No parameter of this fix can be used with the {start/stop} keywords of
+the "run"_run.html command.
+
+The forces due to this fix are imposed during an energy minimization,
+invoked by the "minimize"_minimize.html command.
+
+[Restrictions:]
+
+This fix requires to use a "fix gravity"_fix_gravity.html. The gravity
+vector has to be specified in the same axis as in this fix (via the
+{dim} keyword).
+
+[Related commands:]
+
+"fix setforce"_fix_setforce.html, "fix aveforce"_fix_aveforce.html,
+"fix addforce"_fix_addforce.html
+
+[Default:]
+
+{level} = 0, {density} = 0

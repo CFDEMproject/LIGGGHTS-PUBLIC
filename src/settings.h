@@ -35,7 +35,7 @@
 
     Richard Berger (JKU Linz)
 
-    Copyright 2009-2012 JKU Linz
+    Copyright 2012-2014 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef SETTINGS_H_

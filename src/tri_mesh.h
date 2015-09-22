@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -48,12 +49,16 @@
 #include "math_extra_liggghts.h"
 #include "tri_line.h"
 #include "superquadric_flag.h"
+
 #ifdef TRI_LINE_ACTIVE_FLAG
 #include "math_extra_dist_lineTriangle.h"
 #endif
+
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
 #include "math_extra_liggghts_superquadric.h"
+using namespace MathExtraLiggghtsSuperquadric;
 #endif
+
 #include <fstream>
 
 namespace LAMMPS_NS
@@ -73,10 +78,17 @@ namespace LAMMPS_NS
                                            double *contactPoint,double *bary);
 
         #ifdef SUPERQUADRIC_ACTIVE_FLAG
-        double resolveTriSuperquadricContact(int nTri, double rSphere, double *cSphere, double *delta, double *contactPoint, Superquadric particle);
-        double resolveTriSuperquadricContactBary(int nTri, double rSphere, double *cSphere, double *delta, double *contactPoint, Superquadric particle, double *bary);
-        bool sphereTriangleIntersection(int nTri, double *cSphere, double rad);
-        bool superquadricTriangleIntersection(int nTri, double *point_of_lowest_potential, Superquadric particle);
+
+        double resolveTriSuperquadricContact(int nTri, double *normal, double *contactPoint, Superquadric particle);
+        double resolveTriSuperquadricContact(int nTri, double *normal, double *contactPoint, Superquadric particle, double *bary);
+
+        bool sphereTriangleIntersection(int nTri, double rSphere, double *cSphere);
+        int superquadricTriangleIntersection(int nTri, double *point_of_lowest_potential, Superquadric particle);
+        double resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary, bool triActive);
+        double resolveCornerContactBary(int iTri, int iNode, bool obtuse,
+                                                              double *p, double *delta, double *bary, bool treatActive);
+        double pointToTriangleDistance(int iTri, double *Csphere, double *delta, bool treatActiveFlag, double *bary);
+
         #endif
 
         bool resolveTriSphereNeighbuild(int nTri, double rSphere, double *cSphere, double treshold);

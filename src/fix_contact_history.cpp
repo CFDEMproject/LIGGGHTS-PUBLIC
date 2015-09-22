@@ -226,8 +226,7 @@ void FixContactHistory::init()
             pair_gran_ = static_cast<PairGran*>(force->pair_match("gran_bubble", 0));
 
         if(!pair_gran_ || (dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair()))
-            
-            error->fix_error(FLERR,this,"internal error");
+            pair_gran_ = static_cast<PairGran*>(force->pair_match("gran", 0)); //at last, it must be a granular one! This is the case, e.g., in case extra history is used for liquid tracking
       }
 
       int dim;

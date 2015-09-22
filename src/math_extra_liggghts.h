@@ -75,6 +75,8 @@ namespace MathExtraLiggghts {
   inline double min(double a,double b,double c,double d);
   inline double min(double *input, int n,int &which);
   inline double max(double *input, int n,int &which);
+  inline double min(int *input, int n,int &which);
+  inline double max(int *input, int n,int &which);
   inline double abs(double a);
 
   inline void matrix_invert_4x4_special(double matrix[4][4]);
@@ -210,6 +212,37 @@ inline double MathExtraLiggghts::halley_cbrt1d(double d)
       return min;
   }
   double MathExtraLiggghts::max(double *input, int n,int &which)
+  {
+      double max = input[0];
+      which = 0;
+
+      for(int i = 1; i < n; i++)
+      {
+          if(input[i] > max)
+          {
+              which = i;
+              max = input[i];
+          }
+      }
+      return max;
+  }
+
+  double MathExtraLiggghts::min(int *input, int n,int &which)
+  {
+      double min = input[0];
+      which = 0;
+
+      for(int i = 1; i < n; i++)
+      {
+          if(input[i] < min)
+          {
+              which = i;
+              min = input[i];
+          }
+      }
+      return min;
+  }
+  double MathExtraLiggghts::max(int *input, int n,int &which)
   {
       double max = input[0];
       which = 0;

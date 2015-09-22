@@ -35,7 +35,8 @@
     (if not contributing author is listed, this file has been contributed
     by the core developer)
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -77,7 +78,8 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
   velFlag_(false),
   angVelFlag_(false),
   n_dump_active_(0),
-  curvature_(0.)
+  curvature_(0.),
+  curvature_tolerant_(false)
 {
     // check if type has been read
     if(atom_type_mesh_ == -1)
@@ -119,12 +121,25 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
           omegaSurf_ = force->numeric(FLERR,arg[iarg_++]);
           hasargs = true;
       } else if (strcmp(arg[iarg_],"curvature") == 0) {
-          if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
+          if (narg < iarg_+2)
+            error->fix_error(FLERR,this,"not enough arguments for 'curvature'");
           iarg_++;
           curvature_ = force->numeric(FLERR,arg[iarg_++]);
           if(curvature_ <= 0. || curvature_ > 60)
             error->fix_error(FLERR,this,"0° < curvature < 60° required");
           curvature_ = cos(curvature_*M_PI/180.);
+          hasargs = true;
+      } else if (strcmp(arg[iarg_],"curvature_tolerant") == 0) {
+          if (narg < iarg_+2)
+            error->fix_error(FLERR,this,"not enough arguments for 'curvature_tolerant'");
+          iarg_++;
+          if(0 == strcmp(arg[iarg_],"yes"))
+            curvature_tolerant_= true;
+          else if(0 == strcmp(arg[iarg_],"no"))
+            curvature_tolerant_= false;
+          else
+            error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'curvature_tolerant'");
+          iarg_++;
           hasargs = true;
       } else if(strcmp(style,"mesh/surface") == 0) {
           char *errmsg = new char[strlen(arg[iarg_])+50];
@@ -151,6 +166,9 @@ void FixMeshSurface::post_create()
     if(curvature_ > 0.)
         triMesh()->setCurvature(curvature_);
 
+    if(curvature_tolerant_)
+        triMesh()->setCurvatureTolerant(curvature_tolerant_);
+
     if(velFlag_ && angVelFlag_)
         error->fix_error(FLERR,this,"cannot use 'surface_vel' and 'surface_ang_vel' together");
 
@@ -167,6 +185,9 @@ void FixMeshSurface::pre_delete(bool unfixflag)
 {
     if(unfixflag && n_dump_active_ > 0)
         error->fix_error(FLERR,this,"can not unfix while dump command is active on mesh");
+
+    if(unfixflag && fix_contact_history_mesh_)
+        error->fix_error(FLERR,this,"can not unfix while fix wall/gran command is active on mesh; need to unfix fix wall/gran first, then mesh");
 
     FixMesh::pre_delete(unfixflag);
 
@@ -261,7 +282,7 @@ void FixMeshSurface::deleteWallNeighList()
 }
 
 /* ----------------------------------------------------------------------
-   called from fix messflow/mesh out of post_create()
+   called from fix massflow/mesh out of post_create()
 ------------------------------------------------------------------------- */
 
 class FixNeighlistMesh* FixMeshSurface::createOtherNeighList(int igrp,const char *nId)
@@ -271,12 +292,16 @@ class FixNeighlistMesh* FixMeshSurface::createOtherNeighList(int igrp,const char
     char *neighlist_name = new char[strlen(id)+1+20+strlen(nId)+1];
     sprintf(neighlist_name,"neighlist_%s_%s",nId,id);
 
-    char **fixarg = new char*[4];
+    if(modify->find_fix_id(neighlist_name))
+        error->fix_error(FLERR,this,"must not use the same mesh for fix massflow/mesh with same group");
+
+    char **fixarg = new char*[5];
     fixarg[0]= neighlist_name;
     fixarg[1]= (char *) "all";
     fixarg[2]= (char *) "neighlist/mesh";
     fixarg[3]= id;
-    modify->add_fix(4,fixarg);
+    fixarg[4]= (char *) "other_yes";
+    modify->add_fix(5,fixarg);
 
     neighlist =
         static_cast<FixNeighlistMesh*>(modify->find_fix_id(neighlist_name));

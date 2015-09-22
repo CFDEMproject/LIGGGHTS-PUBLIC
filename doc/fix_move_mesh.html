@@ -59,26 +59,26 @@
     axis = obligatory keyword
     ax,ay,az = components of moving direction vector (distance units)(origin 0 0 0)
     order= obligatory keyword
-    n= order of trigonometric series n (from 1 to 10)
+    n= order of trigonometric series n (from 1 to 30)
     amplitude = obligatory keyword
     C1, ..., Cn = amplitude (distance units)
     phase = obligatory keyword
     p1, ...,pn = phase of functionterm (rad) (number of terms is equivalent to order n)
     period = obligatory keyword
-    per = period of rotation (time units)
+    per_1, ..., per_n = period of rotation (time units)
   <I>vibrot</I> args = origin Px Py Pz axis ax ay az order n amplitude C1 ... Cn phase p1 ... pn period per
     origin = obligatory keyword
     Px,Py,Pz = origin point of axis of rotation (distance units)
     axis = obligatory keyword
     ax,ay,az = axis of rotation vector
     order= obligatory keyword
-    n= order of trigonometric series (from 1 to 10)
+    n= order of trigonometric series (from 1 to 30)
     amplitude = obligatory keyword
     C1, ..., Cn = amplitude (rad)
     phase = obligatory keyword
     p1, ...,pn = phase of functionterm (rad) (number of terms is equivalent to order n)
     period = obligatory keyword
-    per = period of rotation (time units) 
+    per_1, ..., per_n = period of rotation (time units) 
 </PRE>
 
 </UL>
@@ -87,8 +87,8 @@
 <PRE>fix move all move/mesh mesh cad1 wiggle amplitude -0.1 0. 0. period 0.02
 fix move all move/mesh mesh cad1 rotate origin 0. 0. 0. axis  0. 0. 1. period 0.05
 fix move all move/mesh mesh cad1 linear 5. 5. 0.
-fix move all move/mesh mesh cad1 viblin axis 0. 0. 1 order 5 amplitude 0.4 0.1 0.3 0.1 0.1 phase 1.3 2 0.4 0.1 0 period 0.02
-fix move all move/mesh mesh cad1 vibrot origin 0. 0. 0 axis 0. 0. 1 order 2 amplitude 0.4 0.1  phase 1.3 0 period 0.02 
+fix move all move/mesh mesh cad1 viblin axis 0. 0. 1 order 5 amplitude 0.4 0.1 0.3 0.1 0.1 phase 1.3 2 0.4 0.1 0 period 0.02 0.07 0.035 0.023 0.0175
+fix move all move/mesh mesh cad1 vibrot origin 0. 0. 0 axis 0. 0. 1 order 2 amplitude 0.4 0.1  phase 1.3 0 period 0.02 0.04 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -157,7 +157,7 @@ of time is given in vector notation as
 <P>where <I>X0</I> = (x0,y0,z0) is their position at the time the fix is specified,
 <I>n</I> represents the order of the trigonometric series, <I>Cn</I> is the specified
 amplitude along the direction given by <I>axis</I> = (ax,ay,az). The vector <I>D</I>
-is the unit vector of <I>axis</I>. The angular velocity omega is 2 PI / <I>period</I>,
+is the unit vector of <I>axis</I>. The angular velocity <I>omega n</I> is 2 PI / <I>period n</I>,
 and <I>delta</I> is the time elapsed since the fix was specified. This style
 also sets the velocity of each element to the time derivative of this expression.
 </P>

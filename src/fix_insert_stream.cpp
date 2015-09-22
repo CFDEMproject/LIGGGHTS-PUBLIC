@@ -32,13 +32,13 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
-
 #include "math.h"
 #include "stdlib.h"
 #include "string.h"
@@ -124,7 +124,8 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
       if(ntry_mc < 1000) error->fix_error(FLERR,this,"ntry_mc must be > 1000");
       iarg += 2;
       hasargs = true;
-    } else error->fix_error(FLERR,this,"unknown keyword or wrong keyword order");
+    } else if (0 == strcmp(style,"insert/stream")) 
+      error->fix_error(FLERR,this,"unknown keyword or wrong keyword order");
   }
 
   fix_release = NULL;
@@ -384,7 +385,7 @@ void FixInsertStream::init()
     
     FixInsert::init();
 
-    if(fix_multisphere && v_randomSetting != 0)
+    if(fix_multisphere && v_randomSetting != RANDOM_CONSTANT)
         error->fix_error(FLERR,this,"Currently only fix insert/stream with multisphere particles only supports constant velocity");
 
     fix_release = static_cast<FixPropertyAtom*>(modify->find_fix_property("release_fix_insert_stream","property/atom","vector",5,0,style));
@@ -492,11 +493,12 @@ void FixInsertStream::calc_ins_fraction()
 
 /* ---------------------------------------------------------------------- */
 
-void FixInsertStream::pre_insert()
+bool FixInsertStream::pre_insert()
 {
     if((!domain->is_in_domain(ins_vol_xmin) || !domain->is_in_domain(ins_vol_xmax)) && comm->me == 0)
       error->warning(FLERR,"Fix insert/stream: Extruded insertion face extends outside domain, may not insert all particles correctly");
 
+    return true;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -525,6 +527,22 @@ inline int FixInsertStream::is_nearby(int i)
     //TODO also should check if projected point is NEAR surface
 
     return ins_face->isOnSurface(pos_projected);
+}
+
+/* ---------------------------------------------------------------------- */
+
+BoundingBox FixInsertStream::getBoundingBox() {
+  BoundingBox bb = ins_face->getGlobalBoundingBox();
+
+  const double cut = 3*maxrad;
+  const double delta = -(extrude_length + 2*cut);
+  bb.extrude(delta, normalvec);
+  bb.shrinkToSubbox(domain->sublo, domain->subhi);
+
+  const double extend = 3*maxrad /*cut*/ + this->extend_cut_ghost(); 
+  bb.extendByDelta(extend);
+
+  return bb;
 }
 
 /* ----------------------------------------------------------------------
@@ -659,7 +677,7 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
                 if(ntry < maxtry)
                 {
                     
-                    nins = pti->check_near_set_x_v_omega(pos,v_normal,omega_tmp,quat_insert,xnear,nspheres_near);
+                    nins = pti->check_near_set_x_v_omega(pos,v_normal,omega_tmp,quat_insert,neighList);
                 }
             }
 
@@ -691,7 +709,7 @@ void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
 
     double **release_data = fix_release->array_atom;
 
-    MultisphereParallel *multisphere = NULL;
+    Multisphere *multisphere = NULL;
     if(fix_multisphere) multisphere = &fix_multisphere->data();
 
     for(int i = ilo; i < ihi; i++)
@@ -726,18 +744,7 @@ void FixInsertStream::finalize_insertion(int ninserted_spheres_this_local)
         vectorCopy3D(omega_insert,omega_toInsert);
 
         // could randomize vel, omega here
-        if(v_randomSetting==1)
-        {
-            v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
-            v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
-            v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
-        }
-        else if(v_randomSetting==2)
-        {
-            v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
-            v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
-            v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
-        }
+        generate_random_velocity(v_toInsert);
 
         // 9-11th value is velocity, 12-14 is omega
         vectorCopy3D(v_toInsert,&release_data[i][8]);

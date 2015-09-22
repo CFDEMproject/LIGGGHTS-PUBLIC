@@ -11,7 +11,7 @@ gran model hooke/stiffness :h3
 [Syntax:]
 
 model hooke/stiffness \[other model_type/model_name pairs as described "here"_pair_gran.html \] keyword values :pre
-zero or more keyword/value pairs may be appended :l
+zero or more keyword/value pairs may be appended to the end (after all models are specified) :l
   {absolute_damping} values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping

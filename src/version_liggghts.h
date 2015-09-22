@@ -1,1 +1,1 @@
-#define LIGGGHTS_VERSION "LIGGGHTS-PUBLIC 3.2.1, compiled 2015-08-27-16:38:18 by kloss, git commit 25fc3965f1d84555226c93e0fc3e93ad83a7cbc7"
+#define LIGGGHTS_VERSION "LIGGGHTS-PUBLIC 3.3.0, compiled 2015-09-22-19:24:30 by kloss, git commit f1f4118076fd92a2ac5275cf56e1862988d61434"

@@ -33,11 +33,13 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
+    Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_BOUNDING_BOX
@@ -98,6 +100,9 @@ class BoundingBox
       zLo = -limit[4];
       zHi =  limit[5];
     }
+
+    void extrude(double length, const double * vec);
+
     void getBoxBounds(double *lo,double *hi)
     {
         lo[0] = xLo;
@@ -107,6 +112,14 @@ class BoundingBox
         hi[1] = yHi;
         hi[2] = zHi;
     }
+
+    void getExtent(double extent[3]) const {
+      extent[0] = xHi - xLo;
+      extent[1] = yHi - yLo;
+      extent[2] = zHi - zLo;
+    }
+
+    void extendByDelta(double delta);
 
     void getBoxBoundsExtendedByDelta(double *lo,double *hi,double delta)
     {
@@ -143,11 +156,17 @@ class BoundingBox
     {
        // check bbox
        // test for >= and < as in Domain class
-        if (p[0] >= xLo && p[0] < xHi &&
+       return (p[0] >= xLo && p[0] < xHi &&
             p[1] >= yLo && p[1] < yHi &&
-            p[2] >= zLo && p[2] < zHi)
-            return true;
-        return false;
+           p[2] >= zLo && p[2] < zHi);
+    }
+
+    bool isDirty() const {
+        return dirty;
+    }
+
+    void setDirty(bool value) {
+        dirty = value;
     }
 
   private:
@@ -155,6 +174,7 @@ class BoundingBox
     double xLo, xHi, yLo, yHi, zLo, zHi;
 
     bool initGiven;
+    bool dirty;
 };
 
 } /* LAMMPS_NS */

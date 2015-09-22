@@ -15,7 +15,7 @@
 </P>
 <PRE>model hertz [other model_type/model_name pairs as described <A HREF = "pair_gran.html">here</A> ] keyword values 
 </PRE>
-<LI>zero or more keyword/value pairs may be appended 
+<LI>zero or more keyword/value pairs may be appended to the end (after all models are specified) 
 
 <PRE>  <I>limitForce</I> values = 'on' or 'off'
     on = ensures that the normal force is never attractive (an artefact that can occur at the end of a collision).
@@ -23,6 +23,9 @@
   <I>tangential_damping</I> values = 'on' or 'off'
     on = activates tangential damping
     off = no tangential damping 
+  <I>heating_normal_hertz</I> values = 'on' or 'off'
+    on = model contributes to surface heating in the frame of <A HREF = "gran_surface_sphere_heatable.html">surface sphere/heatable</A>
+    off = model does not contributes to surface heating 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -87,10 +90,15 @@ fix id all property/global coefficientFriction peratomtypepair n_atomtypes value
 </PRE>
 <P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 </P>
+<P>This model contributes to surface heating in the frame of 
+<A HREF = "gran_surface_sphere_heatable.html">surface sphere/heatable</A> if the 
+appropriate flag is activated
+</P>
 <P><B>Force Limiting:</B>
 </P>
 <P>Note, that not using limitForce might lead to attractive forces between particles and walls, especially in case the coefficient of restitution is small. Be sure you include this key word for the pair style and the wall model if you like to avoid this.
-<B>Restrictions:</B>
+</P>
+<P><B>Restrictions:</B>
 </P>
 <P>If using SI units, youngsModulus must be > 5e6
 If using CGS units, youngsModulus must be > 5e5
@@ -100,6 +108,7 @@ When using the limitForce, the specified coefficient of restitution is only appr
 </P>
 <P><I>tangential_damping</I> = 'on'
 <I>limitForce</I> = 'off'
+<I>heating_normal_hertz</I> = 'off'
 </P>
 <P><B>(Di Renzo)</B> Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525–541 (2004).
 </P>

@@ -154,7 +154,7 @@ void FixNVESphere::initial_integrate(int vflag)
       x[i][0] += dtv * v[i][0];
       x[i][1] += dtv * v[i][1];
       x[i][2] += dtv * v[i][2];
-
+      
       dtirotate = dtfrotate / (radius[i]*radius[i]*rmass[i]);
       omega[i][0] += dtirotate * torque[i][0];
       omega[i][1] += dtirotate * torque[i][1];

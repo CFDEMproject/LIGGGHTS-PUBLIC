@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -61,7 +62,7 @@ namespace LAMMPS_NS
         virtual void post_create();
         virtual void pre_delete(bool unfixflag);
 
-        virtual void init() {}
+        virtual void init();
         virtual void setup(int vflag) {}
 
         virtual int setmask();
@@ -105,7 +106,11 @@ namespace LAMMPS_NS
 
         int atom_type_mesh_;
 
+        double mass_temperature_;
+
       private:
+
+        void handle_exclusion_list();
 
         void initialSetup();
 
@@ -126,6 +131,14 @@ namespace LAMMPS_NS
 
         // mesh precision
         double precision_;
+
+        // mesh correction
+        FILE *element_exclusion_list_;
+        bool read_exclusion_list_;
+        int *exclusion_list_;
+        int size_exclusion_list_;
+
+        class FixPropertyGlobal *fix_capacity_;
   };
 
 } /* namespace LAMMPS_NS */

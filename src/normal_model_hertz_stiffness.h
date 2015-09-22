@@ -33,7 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -58,7 +59,7 @@ namespace ContactModels
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
-    NormalModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp),
+    NormalModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) : Pointers(lmp),
       k_n(NULL),
       k_t(NULL),
       gamma_n(NULL),
@@ -106,6 +107,10 @@ namespace ContactModels
       const int jtype = sidata.jtype;
       double meff = sidata.meff;
       double reff = sidata.is_wall ? sidata.radi : (sidata.radi*sidata.radj/(sidata.radi+sidata.radj));
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(sidata.is_non_spherical)
+        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+#endif
 
       const double polyhertz = sqrt(reff*sidata.deltan);
       double kn = polyhertz*k_n[itype][jtype];
@@ -129,7 +134,7 @@ namespace ContactModels
       kt /= force->nktv2p;
 
       const double Fn_damping = -gamman*sidata.vn;
-      const double Fn_contact = kn*(sidata.radsum-sidata.r);
+      const double Fn_contact = kn*sidata.deltan;
       double Fn               = Fn_damping + Fn_contact;
 
       //limit force to avoid the artefact of negative repulsion force

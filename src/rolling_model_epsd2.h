@@ -34,7 +34,8 @@
     Contributing author and copyright for this file:
 
     Andreas Aigner (JKU Linz)
-    Christoph Kloss (DCS Computing GmbH, Linz, JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
@@ -67,7 +68,8 @@ namespace ContactModels
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
 
-    RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup) : Pointers(lmp), coeffRollFrict(NULL)
+    RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *) :
+        Pointers(lmp), coeffRollFrict(NULL)
     {
       history_offset = hsetup->add_history_value("r_torquex_old", "1");
       hsetup->add_history_value("r_torquey_old", "1");
@@ -93,13 +95,21 @@ namespace ContactModels
 
       if(sidata.contact_flags) *sidata.contact_flags |= CONTACT_ROLLING_MODEL;
 
+      const double radi = sidata.radi;
+      const double radj = sidata.radj;
+      double reff=sidata.is_wall ? sidata.radi : (radi*radj/(radi+radj));
+
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(sidata.is_non_spherical)
+        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+#endif
+
       if(sidata.is_wall) {
         const double wr1 = sidata.wr1;
         const double wr2 = sidata.wr2;
         const double wr3 = sidata.wr3;
-        const double radius = sidata.radi;
 
-        calcRollTorque(r_torque,sidata,radius,wr1,wr2,wr3);
+        calcRollTorque(r_torque,sidata,reff,wr1,wr2,wr3);
 
       } else {
         double wr_roll[3];
@@ -107,9 +117,6 @@ namespace ContactModels
         const int i = sidata.i;
         const int j = sidata.j;
 
-        const double radi = sidata.radi;
-        const double radj = sidata.radj;
-        const double reff = sidata.is_wall ? radi : (radi*radj/(radi+radj));
         const double * const * const omega = atom->omega;
 
         // relative rotational velocity
