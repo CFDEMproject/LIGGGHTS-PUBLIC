@@ -291,8 +291,8 @@ void ComputePairGranLocal::compute_local()
   // count local entries and compute pair info
 
   int nCountWithOverlap(0);
-  if(wall == 0) ncount = count_pairs(nCountWithOverlap);    // # pairs is ensured to be the same for pair and heat
-  else          ncount = count_wallcontacts(nCountWithOverlap);              // # wall contacts ensured to be same for wall/gran and heat
+  if(wall == 0) ncount = count_pairs(nCountWithOverlap);            // # pairs is ensured to be the same for pair and heat
+  else          ncount = count_wallcontacts(nCountWithOverlap);     // # wall contacts ensured to be same for wall/gran and heat
 
   //only consider rows with overlap (but allocate memory for all)
   if (ncount > nmax) reallocate(ncount);
@@ -389,7 +389,7 @@ int ComputePairGranLocal::count_pairs(int & nCountWithOverlap)
 int ComputePairGranLocal::count_wallcontacts(int & nCountWithOverlap)
 {
     // account for fix group
-    // no distinction between ncount and nCountWithOverlap
+    // no distinction between ncount and nCountWithOverlap for now
     nCountWithOverlap = fixwall->n_contacts_local(groupbit);
     return nCountWithOverlap;
 }
@@ -408,8 +408,10 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
     if (!(atom->mask[j] & groupbit)) return;
 
     nlocal = atom->nlocal;
-
     if (newton_pair == 0 && j >= nlocal && atom->tag[i] <= atom->tag[j]) return;
+
+    if(!decide_add(hist))
+        return;
 
     xi = atom->x[i];
     xj = atom->x[j];
@@ -512,6 +514,13 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
     }
 
     ipair++;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void ComputePairGranLocal::pair_finalize()
+{
+    ncount_added_via_pair = ipair;
 }
 
 /* ---------------------------------------------------------------------- */

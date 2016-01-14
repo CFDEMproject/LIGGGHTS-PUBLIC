@@ -103,7 +103,8 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
   // initialize npartner to 0 so neighbor list creation is OK the 1st time
 
   int nlocal = atom->nlocal;
-  std::fill_n(npartner_, nlocal, 0);
+  
+  std::fill_n(npartner_, atom->nmax, 0);
 
   //=====================
   // parse args

@@ -129,6 +129,7 @@ class FixContactHistory : public Fix {
   MyPage<double> *dpage_;        // pages of shear history with partners
 
   virtual void allocate_pages();
+
 };
 
 }

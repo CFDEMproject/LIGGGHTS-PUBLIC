@@ -1,4 +1,4 @@
-# openmpi = Ubuntu 14.04, mpic++, OpenMPI-1.6
+# ubuntuVTK_debug = Ubuntu 15.04, mpic++, OpenMPI-1.6
 
 SHELL = /bin/sh
 

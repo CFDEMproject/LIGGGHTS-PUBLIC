@@ -54,6 +54,8 @@ class Properties: protected Pointers
   ~Properties();
 
   int max_type();
+  double min_radius();
+  double max_radius();
   void* find_property(const char *name, const char *type, int &len1, int &len2);
   inline class Multisphere *ms_data() { return ms_data_;}
 

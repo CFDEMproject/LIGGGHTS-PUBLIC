@@ -5,6 +5,7 @@ rm log.*
 rm *.dat
 rm post/*.*
 rm log
+rm codeInfo.*
 
 rm -r pascal/0.0*
 rm    pascal/log.*

@@ -497,6 +497,7 @@ bool Multisphere::check_lost_atoms(int *body, double *atom_delflag, double *body
 /* ----------------------------------------------------------------------
    restart - not available in PUBLIC
 ------------------------------------------------------------------------- */
+
 void Multisphere::writeRestart(FILE *)
 {
     error->one(FLERR,"Multisphere write_restart is not available in your version. See www.cfdem.com for details");
@@ -504,7 +505,7 @@ void Multisphere::writeRestart(FILE *)
 
 void Multisphere::restart(double *)
 {
- error->one(FLERR,"Multisphere restart is not available in your version. See www.cfdem.com for details");
+    error->one(FLERR,"Multisphere restart is not available in your version. See www.cfdem.com for details");
 }
 
 /* ----------------------------------------------------------------------

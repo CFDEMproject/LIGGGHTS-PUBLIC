@@ -317,6 +317,56 @@
       return true;
   }
 
+  /* ----------------------------------------------------------------------
+   average from other container
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcAveFromContainer(double weighting_factor)
+  {
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      int len = size();
+      for(int n = 0; n < len; n++)
+          for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                          arr_[n][i][j] = (1.-weighting_factor)*arr_[n][i][j]+weighting_factor*gcont->arr_[n][i][j];
+                          
+                  }
+
+      return true;
+  }
+
+  /* ----------------------------------------------------------------------
+   variance from other container
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcVarFromContainer(double weighting_factor)
+  {
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      int len = size();
+      for(int n = 0; n < len; n++)
+          for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                          // TODO HERE this is ave
+                          arr_[n][i][j] = (1.-weighting_factor)*arr_[n][i][j]+weighting_factor*gcont->arr_[n][i][j];
+                          //arr_[n][i][j] = (1.-weighting_factor)*arr_[n][i][j]+weighting_factor*gcont->arr_[n][i][j];
+                          
+                  }
+
+      return true;
+  }
+
   /* ---------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
@@ -476,7 +526,7 @@
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  int GeneralContainer<T,NUM_VEC,LEN_VEC>::bufSize(int operation,bool scale,bool translate,bool rotate)
+  int GeneralContainer<T,NUM_VEC,LEN_VEC>::bufSize(int operation,bool scale,bool translate,bool rotate) const
   {
       if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;

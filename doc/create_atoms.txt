@@ -24,14 +24,16 @@ style = {box} or {region} or {single} or {random} :l
     seed = random # seed (positive integer)
     region-ID = create atoms within this region, use NULL for entire simulation box :pre
 zero or more keyword/value pairs may be appended :l
-keyword = {basis} or {remap} or {units} :l
+keyword = {basis} or {remap} or {units} or {all_in} :l
   {basis} values = M itype
     M = which basis atom
     itype = atom type (1-N) to assign to this basis atom
   {remap} value = {yes} or {no}
   {units} value = {lattice} or {box}
     {lattice} = the geometry is defined in lattice units
-    {box} = the geometry is defined in simulation box units :pre
+    {box} = the geometry is defined in simulation box units
+  {all_in} value = all_in_dist
+    all_in_dist = distance from region boundary for insertion :pre
 :ule
 
 [Examples:]
@@ -69,7 +71,10 @@ a periodic simulation box (in some dimension), LIGGGHTS(R)-PUBLIC does not
 implement the same logic as with the {box} style, to insure exactly
 one atom at the boundary.  if this is what you desire, you should
 either use the {box} style, or tweak the region size to get precisely
-the atoms you want.
+the atoms you want. With the optional {all_in} keyword, it can additionally
+be specified that the particles should be inserted a certain distance
+(as specified by {all_in_dist}) away from the region boundaries.
+{all_in} is only implemented for {region} insertion
 
 For the {single} style, a single atom is added to the system at the
 specified coordinates.  This can be useful for debugging purposes or

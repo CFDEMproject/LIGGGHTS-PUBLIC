@@ -213,7 +213,7 @@ void FixPropertyAtomTracer::end_of_step()
 
     for(int i = 0; i < nlocal; i++)
     {
-        if (!mask[i] & groupbit)
+        if (!(mask[i] & groupbit))
             continue;
 
         if (!MathExtraLiggghts::compDouble(marker[i],1.0,1e-5) && region->match(x[i][0],x[i][1],x[i][2]))

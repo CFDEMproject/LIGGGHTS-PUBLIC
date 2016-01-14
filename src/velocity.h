@@ -83,6 +83,7 @@ class Velocity : protected Pointers {
 
   void zero_momentum();
   void zero_rotation();
+  void zero_rotation_individual();
 };
 
 }

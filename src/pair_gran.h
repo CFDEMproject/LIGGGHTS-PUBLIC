@@ -103,6 +103,11 @@ public:
     cpl_->add_pair(sidata.i, sidata.j, fx,fy,fz,tor1,tor2,tor3,sidata.contact_history);
   }
 
+  inline void cpl_pair_finalize()
+  {
+    cpl_->pair_finalize();
+  }
+
   /* PUBLIC ACCESS FUNCTIONS */
 
   int is_history()

@@ -274,7 +274,7 @@ void Input::file(const char *filename)
       error->one(FLERR,"Invalid use of library file() function");
     infile = fopen(filename,"r");
     if (infile == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open input script %s",filename);
       error->one(FLERR,str);
     }
@@ -832,10 +832,12 @@ void Input::include()
       maxfile++;
       infiles = (FILE **)
         memory->srealloc(infiles,maxfile*sizeof(FILE *),"input:infiles");
+      if(!infiles)
+        error->one(FLERR,"overflow in including input scripts");
     }
     infile = fopen(arg[0],"r");
     if (infile == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open input script %s",arg[0]);
       error->one(FLERR,str);
     }
@@ -860,7 +862,7 @@ void Input::jump()
       if (infile != stdin) fclose(infile);
       infile = fopen(arg[0],"r");
       if (infile == NULL) {
-        char str[128];
+        char str[512];
         sprintf(str,"Cannot open input script %s",arg[0]);
         error->one(FLERR,str);
       }
@@ -904,7 +906,7 @@ void Input::log()
       if (appendflag) logfile = fopen(arg[0],"a");
       else logfile = fopen(arg[0],"w");
       if (logfile == NULL) {
-        char str[128];
+        char str[512];
         sprintf(str,"Cannot open logfile %s",arg[0]);
         error->one(FLERR,str);
       }
@@ -932,7 +934,7 @@ void Input::thermo_log()
       if (appendflag) thermofile = fopen(arg[0],"a");
       else thermofile = fopen(arg[0],"w");
       if (thermofile == NULL) {
-        char str[128];
+        char str[512];
         sprintf(str,"Cannot open thermo log file %s",arg[0]);
         error->one(FLERR,str);
       }
@@ -1009,7 +1011,7 @@ void Input::print()
         if (strcmp(arg[iarg],"file") == 0) fp = fopen(arg[iarg+1],"w");
         else fp = fopen(arg[iarg+1],"a");
         if (fp == NULL) {
-          char str[128];
+          char str[512];
           sprintf(str,"Cannot open print file %s",arg[iarg+1]);
           error->one(FLERR,str);
         }

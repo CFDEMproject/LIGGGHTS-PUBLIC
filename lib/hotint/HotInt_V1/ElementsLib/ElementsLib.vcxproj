@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2C91F893-6331-4A35-8731-3BEB887DFE57}</ProjectGuid>
+    <RootNamespace>ElementsLib</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\ElementsLib;..\ElementsLib\beams;..\ElementsLib\constraints;..\ElementsLib\modal_reduction;..\ElementsLib\rigid;..\ElementsLib\shells;..\ElementsLib\solidFE;..\ServiceObjectsLib; ..\UtilityLib; ..\mbs_interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\ElementsLib;..\ElementsLib\beams;..\ElementsLib\constraints;..\ElementsLib\modal_reduction;..\ElementsLib\rigid;..\ElementsLib\shells;..\ElementsLib\solidFE;..\ServiceObjectsLib; ..\UtilityLib; ..\mbs_interface;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="beams\ANCFAxMovBeam2D.cpp" />
+    <ClCompile Include="beams\ANCFBeam2D.cpp" />
+    <ClCompile Include="beams\ANCFBeam3D.cpp" />
+    <ClCompile Include="beams\ANCFBeam3DTorsion.cpp" />
+    <ClCompile Include="beams\ANCFBeamBE2D.cpp" />
+    <ClCompile Include="beams\ANCFBeamShear2D.cpp" />
+    <ClCompile Include="beams\ANCFBeamShear3D.cpp" />
+    <ClCompile Include="beams\ANCFBeamShearFE2D.cpp" />
+    <ClCompile Include="beams\ANCFCable2D.cpp" />
+    <ClCompile Include="beams\ANCFCable3D.cpp" />
+    <ClCompile Include="shells\ANCFPlate3D.cpp" />
+    <ClCompile Include="shells\ANCFSimpleThinPlate3D.cpp" />
+    <ClCompile Include="shells\ANCFThinPlate3D.cpp" />
+    <ClCompile Include="constraints\AverageConstraint.cpp" />
+    <ClCompile Include="modal_reduction\BaseCMSElement.cpp" />
+    <ClCompile Include="beams\Beam2DaFFRF.cpp" />
+    <ClCompile Include="beams\Beam2DFFRF.cpp" />
+    <ClCompile Include="beams\Beam3D.cpp" />
+    <ClCompile Include="beams\BeamShear2D.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="modal_reduction\CMSElement.cpp" />
+    <ClCompile Include="modal_reduction\CMSElement2D.cpp" />
+    <ClCompile Include="constraints\constraint.cpp" />
+    <ClCompile Include="constraints\contact2D.cpp" />
+    <ClCompile Include="constraints\contact3D.cpp" />
+    <ClCompile Include="constraints\control.cpp" />
+    <ClCompile Include="element.cpp" />
+    <ClCompile Include="ElementEDCauto.cpp" />
+    <ClCompile Include="solidFE\FE2DTriQuad.cpp" />
+    <ClCompile Include="solidFE\FE3DHexTet.cpp" />
+    <ClCompile Include="solidFE\FiniteElement2D.cpp" />
+    <ClCompile Include="solidFE\FiniteElement3D.cpp" />
+    <ClCompile Include="solidFE\FiniteElement3DFFRF.cpp" />
+    <ClCompile Include="solidFE\FiniteElementGeneric.cpp" />
+    <ClCompile Include="beams\FiniteElementGenericBeam2D.cpp" />
+    <ClCompile Include="modal_reduction\GCMSElement.cpp" />
+    <ClCompile Include="modal_reduction\GCMSRotorElement.cpp" />
+    <ClCompile Include="IntegrationRule.cpp" />
+    <ClCompile Include="constraints\KinematicPairs.cpp" />
+    <ClCompile Include="deprecated_elements\KinematicPairsDeprecated.cpp" />
+    <ClCompile Include="rigid\mass1D.cpp" />
+    <ClCompile Include="PlaneSymmetricTensorComponents.cpp" />
+    <ClCompile Include="shells\Plate2D.cpp" />
+    <ClCompile Include="modal_reduction\referenceframe2D.cpp" />
+    <ClCompile Include="modal_reduction\referenceframe3D.cpp" />
+    <ClCompile Include="rigid\rigid2D.cpp" />
+    <ClCompile Include="rigid\rigid3D.cpp" />
+    <ClCompile Include="rigid\Rigid3DKardan.cpp" />
+    <ClCompile Include="constraints\RigidBodyJoints.cpp" />
+    <ClCompile Include="constraints\SDA_constraints.cpp" />
+    <ClCompile Include="constraints\SpecialConstraints.cpp" />
+    <ClCompile Include="beams\Truss3D.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="beams\ANCFAxMovBeam2D.h" />
+    <ClInclude Include="beams\ANCFBeam2D.h" />
+    <ClInclude Include="beams\ANCFBeam3D.h" />
+    <ClInclude Include="beams\ANCFBeam3DTorsion.h" />
+    <ClInclude Include="beams\ANCFBeamBE2D.h" />
+    <ClInclude Include="beams\ANCFBeamShear2D.h" />
+    <ClInclude Include="beams\ANCFBeamShear3D.h" />
+    <ClInclude Include="beams\ANCFBeamShear3DGetddeidxidDiffVar.h" />
+    <ClInclude Include="beams\ANCFBeamShear3DGetdeidDiffVar.h" />
+    <ClInclude Include="beams\ANCFBeamShear3DGetdeidxi.h" />
+    <ClInclude Include="beams\ANCFBeamShear3DGetei.h" />
+    <ClInclude Include="beams\ANCFBeamShearFE2D.h" />
+    <ClInclude Include="beams\ANCFCable2D.h" />
+    <ClInclude Include="beams\ANCFCable3D.h" />
+    <ClInclude Include="shells\ANCFPlate3D.h" />
+    <ClInclude Include="shells\ANCFSimpleThinPlate3D.h" />
+    <ClInclude Include="shells\ANCFThinPlate3D.h" />
+    <ClInclude Include="constraints\AverageConstraint.h" />
+    <ClInclude Include="modal_reduction\BaseCMSElement.h" />
+    <ClInclude Include="beams\Beam2DaFFRF.h" />
+    <ClInclude Include="beams\Beam2DFFRF.h" />
+    <ClInclude Include="beams\Beam3D.h" />
+    <ClInclude Include="beams\BeamBEdRotdrT.h" />
+    <CustomBuildStep Include="beams\BeamShear2D.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="beams\BeamSheardRotvdr_new.h" />
+    <ClInclude Include="beams\BEBeamdRotdr.h" />
+    <ClInclude Include="beams\BEBeamGetDKappa1.h" />
+    <ClInclude Include="beams\BEBeamGetDKappa2.h" />
+    <ClInclude Include="beams\BEBeamGetDKappa3.h" />
+    <ClInclude Include="beams\BEBeamGetKappa1.h" />
+    <ClInclude Include="beams\BEBeamGetKappa2.h" />
+    <ClInclude Include="beams\BEBeamGetKappa3.h" />
+    <ClInclude Include="beams\BEBeamVectorOfTwistAndCurvature.h" />
+    <ClInclude Include="body2D.h" />
+    <ClInclude Include="body3D.h" />
+    <ClInclude Include="modal_reduction\CMSElement.h" />
+    <ClInclude Include="modal_reduction\CMSElement2D.h" />
+    <ClInclude Include="constraints\constraint.h" />
+    <ClInclude Include="constraints\contact2D.h" />
+    <ClInclude Include="constraints\contact3D.h" />
+    <ClInclude Include="constraints\contact_globalvariables.h" />
+    <ClInclude Include="constraints\control.h" />
+    <ClInclude Include="solidFE\FE2DTriQuad.h" />
+    <ClInclude Include="solidFE\FE3DHexTet.h" />
+    <ClInclude Include="solidFE\FiniteElement2D - PG.h" />
+    <ClInclude Include="solidFE\FiniteElement2D.h" />
+    <ClInclude Include="solidFE\FiniteElement3D.h" />
+    <ClInclude Include="solidFE\FiniteElement3DFFRF.h" />
+    <ClInclude Include="solidFE\FiniteElementGeneric.h" />
+    <CustomBuildStep Include="beams\FiniteElementGenericBeam2D.h" />
+    <ClInclude Include="modal_reduction\GCMSElement.h" />
+    <CustomBuildStep Include="modal_reduction\GCMSRotorElement.h" />
+    <ClInclude Include="IntegrationRule.h" />
+    <ClInclude Include="constraints\KinematicPairs.h" />
+    <ClInclude Include="deprecated_elements\KinematicPairsDeprecated.h" />
+    <ClInclude Include="rigid\mass1D.h" />
+    <ClInclude Include="PlaneSymmetricTensorComponents.h" />
+    <ClInclude Include="shells\Plate2D.h" />
+    <ClInclude Include="modal_reduction\referenceframe2D.h" />
+    <ClInclude Include="modal_reduction\referenceframe3D.h" />
+    <ClInclude Include="rigid\rigid2D.h" />
+    <ClInclude Include="rigid\rigid3D.h" />
+    <ClInclude Include="rigid\Rigid3DKardan.h" />
+    <ClInclude Include="constraints\RigidBodyJoints.h" />
+    <ClInclude Include="constraints\SDA_constraints.h" />
+    <ClInclude Include="constraints\SpecialConstraints.h" />
+    <ClInclude Include="beams\Truss3D.h" />
+    <ClInclude Include="XGProvider.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -88,7 +88,7 @@ void Neighbor::bond_all()
     for (m = 0; m < num_bond[i]; m++) {
       atom1 = atom->map(bond_atom[i][m]);
       if (atom1 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Bond atoms %d %d missing on proc %d at step " BIGINT_FORMAT,
                 tag[i],bond_atom[i][m],me,update->ntimestep);
@@ -141,7 +141,7 @@ void Neighbor::bond_partial()
       if (bond_type[i][m] <= 0) continue;
       atom1 = atom->map(bond_atom[i][m]);
       if (atom1 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Bond atoms %d %d missing on proc %d at step " BIGINT_FORMAT,
                 tag[i],bond_atom[i][m],me,update->ntimestep);
@@ -214,7 +214,7 @@ void Neighbor::angle_all()
       atom2 = atom->map(angle_atom2[i][m]);
       atom3 = atom->map(angle_atom3[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Angle atoms %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -263,7 +263,7 @@ void Neighbor::angle_partial()
       atom2 = atom->map(angle_atom2[i][m]);
       atom3 = atom->map(angle_atom3[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Angle atoms %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -352,7 +352,7 @@ void Neighbor::dihedral_all()
       atom3 = atom->map(dihedral_atom3[i][m]);
       atom4 = atom->map(dihedral_atom4[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1 || atom4 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Dihedral atoms %d %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -407,7 +407,7 @@ void Neighbor::dihedral_partial()
       atom3 = atom->map(dihedral_atom3[i][m]);
       atom4 = atom->map(dihedral_atom4[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1 || atom4 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Dihedral atoms %d %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -517,7 +517,7 @@ void Neighbor::improper_all()
       atom3 = atom->map(improper_atom3[i][m]);
       atom4 = atom->map(improper_atom4[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1 || atom4 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Improper atoms %d %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -572,7 +572,7 @@ void Neighbor::improper_partial()
       atom3 = atom->map(improper_atom3[i][m]);
       atom4 = atom->map(improper_atom4[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1 || atom4 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Improper atoms %d %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,

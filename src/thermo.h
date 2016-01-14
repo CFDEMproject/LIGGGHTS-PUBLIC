@@ -105,6 +105,7 @@ class Thermo : protected Pointers {
   bigint last_step;
 
   bigint natoms;
+  bigint last_natoms;   
 
                          // data used by routines that compute single values
   int ivalue;            // integer value to print

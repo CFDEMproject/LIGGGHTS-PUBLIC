@@ -57,12 +57,15 @@ SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::SurfaceMesh(LAMMPS *lmp)
 :   TrackingMesh<NUM_NODES>(lmp),
     curvature_(1.-EPSILON_CURVATURE),
     curvature_tolerant_(false),
-    minAngle_(cos(MIN_ANGLE_MESH*M_PI/180.)),
+    
+    minAngle_softLimit_(cos(0.5*M_PI/180.)),
+    
+    minAngle_hardLimit_(0.999995),
 
     // TODO should keep areaMeshSubdomain up-to-date more often for insertion faces
     areaMesh_     (*this->prop().template addGlobalProperty   < ScalarContainer<double> >                 ("areaMesh",     "comm_none","frame_trans_rot_invariant","restart_no",2)),
 
-    nBelowAngle_(0),
+    nBelowAngle_softLimit_(0),
     nTooManyNeighs_(0),
     nOverlapping_(0),
 
@@ -77,8 +80,8 @@ SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::SurfaceMesh(LAMMPS *lmp)
     neighFaces_   (*this->prop().template addElementProperty< VectorContainer<int,NUM_NEIGH_MAX> >        ("neighFaces",   "comm_exchange_borders","frame_invariant","restart_no")),
     hasNonCoplanarSharedNode_(*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >("hasNonCoplanarSharedNode","comm_exchange_borders","frame_invariant", "restart_no")),
     edgeActive_   (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("edgeActive",   "comm_exchange_borders","frame_invariant","restart_no")),
-    cornerActive_ (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("cornerActive", "comm_exchange_borders","frame_invariant","restart_no"))
-
+    cornerActive_ (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("cornerActive", "comm_exchange_borders","frame_invariant","restart_no")),
+    neighList_(*new RegionNeighborList(lmp))
 {
     
     areaMesh_.add(0.);
@@ -89,7 +92,9 @@ SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::SurfaceMesh(LAMMPS *lmp)
 
 template<int NUM_NODES, int NUM_NEIGH_MAX>
 SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::~SurfaceMesh()
-{}
+{
+    delete &neighList_;
+}
 
 /* ----------------------------------------------------------------------
    set mesh curvature, used for mesh topology
@@ -300,21 +305,34 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::calcSurfPropertiesOfNewElement()
 
     obtuseAngleIndex_.set(n,NO_OBTUSE_ANGLE);
 
-    bool hasSmallAngle = false;
+    bool hasSmallAngleSoftLimit = false;
+    bool hasSmallAngleHardLimit = false;
 
     for(int i=0;i<NUM_NODES;i++){
       double dot;
       calcObtuseAngleIndex(n,i,dot);
-      if(-dot > minAngle_)
-        hasSmallAngle = true;
+      if(-dot > minAngle_softLimit_)
+        hasSmallAngleSoftLimit = true;
+      if(-dot > minAngle_hardLimit_)
+        hasSmallAngleHardLimit = true;
     }
 
-    if(hasSmallAngle)
+    if(hasSmallAngleSoftLimit)
     {
         if(TrackingMesh<NUM_NODES>::verbose() && 0 == this->comm->me)
-            fprintf(this->screen,"Mesh %s: elements %d (line %d) has high aspect ratio (angle < %f °) \n",
-                    this->mesh_id_,n,TrackingMesh<NUM_NODES>::lineNo(n),this->angleLimit());
-        nBelowAngle_++;
+            fprintf(this->screen,"Mesh %s: element %d (line %d) has high aspect ratio (soft limit: smallest angle must be > %f °) \n",
+                    this->mesh_id_,n,TrackingMesh<NUM_NODES>::lineNo(n),this->angleSoftLimit());
+        nBelowAngle_softLimit_++;
+    }
+
+    if(hasSmallAngleHardLimit && MultiNodeMesh<NUM_NODES>::elementExclusionList())
+    {
+        
+        if(0 == this->comm->me)
+        {
+            
+            fprintf(MultiNodeMesh<NUM_NODES>::elementExclusionList(),"%d\n",TrackingMesh<NUM_NODES>::lineNo(n));
+        }
     }
 
     // calc area_ from previously obtained values and add to container
@@ -413,18 +431,43 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
         hasNonCoplanarSharedNode_.set(i,f);
     }
 
-    // build neigh topology and edge activity, ~n*n/2
-    for(int i = 0; i < nall; i++)
-    {
-      for(int j = i+1; j < nall; j++)
-      {
-        
-        int iEdge(0), jEdge(0);
+    // build neigh topology and edge activity
+    
+    BoundingBox bb(this->domain->boxlo[0], this->domain->boxhi[0],
+                   this->domain->boxlo[1], this->domain->boxhi[1],
+                   this->domain->boxlo[2], this->domain->boxhi[2]);
 
-        if(shareEdge(i,j,iEdge,jEdge))
-          handleSharedEdge(i,iEdge,j,jEdge, areCoplanar(TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::id(j)));
-      }
+    neighList_.clear();
+    
+    if(nall > 0 &&  neighList_.setBoundingBox(bb, this->rBound_.max() /*max bounding radius*/, true))
+    {
+        std::vector<int> overlaps;
+
+        for (int i = 0; i < nall; ++i)
+        {
+
+            overlaps.clear();
+            neighList_.hasOverlapWith(this->center_(i), this->rBound_(i),overlaps);
+
+            for(size_t iOverlap = 0; iOverlap < overlaps.size(); iOverlap++)
+            {
+                int j = overlaps[iOverlap];
+                if(j < 0 || j >= nall)
+                    this->error->one(FLERR,"Mesh error: internal error");
+
+                int iEdge(0), jEdge(0);
+
+                if(shareEdge(i,j,iEdge,jEdge))
+                  handleSharedEdge(i,iEdge,j,jEdge, areCoplanar(TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::id(j)));
+            }
+
+            neighList_.insert(this->center_(i), this->rBound_(i),i);
+        }
     }
+    else if(nall > 0)
+        this->error->one(FLERR,"Mesh error: bounding box for neigh topology not set sucessfully");
+
+    fflush(MultiNodeMesh<NUM_NODES>::elementExclusionList());
 
     int *idListVisited = new int[nall];
     int *idListHasNode = new int[nall];
@@ -456,31 +499,55 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
 template<int NUM_NODES, int NUM_NEIGH_MAX>
 void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
 {
+    
     // iterate over surfaces
     
     int nlocal = this->sizeLocal();
     int nall = this->sizeLocal()+this->sizeGhost();
     int me = this->comm->me;
 
-    // check duplicate elements, n^2/2 operation
+    // check duplicate elements, O(n) operation
     
-    for(int i = 0; i < nlocal; i++)
+    BoundingBox bb(this->domain->boxlo[0], this->domain->boxhi[0],
+                   this->domain->boxlo[1], this->domain->boxhi[1],
+                   this->domain->boxlo[2], this->domain->boxhi[2]);
+
+    neighList_.clear();
+
+    if(nall > 0 &&  neighList_.setBoundingBox(bb, this->rBound_.max() /*max bounding radius*/, true))
     {
-        for(int j = i+1; j < nall; j++)
+        std::vector<int> overlaps;
+
+        for (int i = 0; i < nall; ++i)
         {
-            if(this->nSharedNodes(i,j) == NUM_NODES)
+
+            overlaps.clear();
+            neighList_.hasOverlapWith(this->center_(i), this->rBound_(i),overlaps);
+
+            for(size_t iOverlap = 0; iOverlap < overlaps.size(); iOverlap++)
             {
-                fprintf(this->screen,"ERROR: Mesh %s: elements %d and %d (lines %d and %d) are duplicate\n",
-                        this->mesh_id_,TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::id(j),
-                        TrackingMesh<NUM_NODES>::lineNo(i),TrackingMesh<NUM_NODES>::lineNo(j));
-                if(!this->removeDuplicates())
-                    this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. You can try re-running with 'heal auto_remove_duplicates'");
-                else
-                    this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. The mesh probably reached the precision you defined. "
-                                           "You can try re-running with a lower value for 'precision'");
+                int j = overlaps[iOverlap];
+                if(j < 0 || j >= nall)
+                    this->error->one(FLERR,"Mesh error: internal error");
+
+                if(this->nSharedNodes(i,j) == NUM_NODES)
+                {
+                    fprintf(this->screen,"ERROR: Mesh %s: elements %d and %d (lines %d and %d) are duplicate\n",
+                            this->mesh_id_,TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::id(j),
+                            TrackingMesh<NUM_NODES>::lineNo(i),TrackingMesh<NUM_NODES>::lineNo(j));
+                    if(!this->removeDuplicates())
+                        this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. You can try re-running with 'heal auto_remove_duplicates'");
+                    else
+                        this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. The mesh probably reached the precision you defined. "
+                                               "You can try re-running with a lower value for 'precision'");
+                }
             }
+
+            neighList_.insert(this->center_(i), this->rBound_(i),i);
         }
     }
+    else if(nall > 0)
+        this->error->one(FLERR,"Mesh error: bounding box for neigh topology not set sucessfully");
 
     for(int i = 0; i < nlocal; i++)
     {
@@ -490,7 +557,8 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
         calcObtuseAngleIndex(i,iNode,dot);
         if(-dot > curvature_)
         {
-            fprintf(this->screen,"%s: Mesh %s: The minumum angle of mesh element %d (line %d) is lower than the specified curvature. "
+            if(TrackingMesh<NUM_NODES>::verbose() || !curvature_tolerant_)
+                fprintf(this->screen,"%s: Mesh %s: The minumum angle of mesh element %d (line %d) is lower than the specified curvature. "
                                   "Increase mesh quality or decrease curvature (currently %f°)\n",
                                   curvature_tolerant_?"WARNING:":"ERROR",this->mesh_id_,TrackingMesh<NUM_NODES>::id(i),
                                   TrackingMesh<NUM_NODES>::lineNo(i),acos(curvature_)*180./M_PI);
@@ -500,11 +568,39 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
       }
     }
 
-    if(this->nBelowAngle() > 0 && 0 == me)
+    if(this->nBelowAngleSoftLimit() > 0 && 0 == me)
     {
-        fprintf(this->screen,"Mesh %s: %d elements have high aspect ratio (angle < %f °)\n",
-                this->mesh_id_,this->nBelowAngle(),this->angleLimit());
+        fprintf(this->screen,"Mesh %s: %d elements have high aspect ratio (soft limit: smallest angle > %f ° required)\n",
+                this->mesh_id_,this->nBelowAngleSoftLimit(),this->angleSoftLimit());
         this->error->warning(FLERR,"Fix mesh: Mesh contains highly skewed element, moving mesh (if used) will not parallelize well");
+    }
+
+    int nBelowAngle_hardLimit = 0;
+    for(int i = 0; i < nlocal; i++)
+    {
+      for(int iNode = 0; iNode < NUM_NODES; iNode++)
+      {
+        double dot;
+        calcObtuseAngleIndex(i,iNode,dot);
+        
+        if(-dot > minAngle_hardLimit_)
+        {
+             if(TrackingMesh<NUM_NODES>::verbose())
+                fprintf(this->screen,"Mesh %s: element %d (line %d) has a really unreasonably high aspect ratio (hard limit: smallest angle must be > %f °) \n",
+                        this->mesh_id_,TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::lineNo(i),this->angleHardLimit());
+             nBelowAngle_hardLimit++;
+
+        }
+      }
+    }
+
+    MPI_Sum_Scalar(nBelowAngle_hardLimit,this->world);
+    if(nBelowAngle_hardLimit > 0 && 0 == me)
+    {
+        fprintf(this->screen,"Mesh %s: %d mesh elements have a really unreasonably high aspect ratio (hard limit: smallest angle must be > %f °)  \n",
+                this->mesh_id_,nBelowAngle_hardLimit,this->angleHardLimit());
+        this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. You will need to fix or remove these element. Remedies:\n"
+                                " - You can use the 'element_exclusion_list' feature to remove elements with too many neighbors and elements with angles below the hard limit\n");
     }
 
     if(this->nTooManyNeighs() > 0 && 0 == me)
@@ -512,8 +608,9 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
         
         fprintf(this->screen,"Mesh %s: %d mesh elements have more than %d neighbors \n",
                 this->mesh_id_,this->nTooManyNeighs(),NUM_NEIGH_MAX);
-        this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. Possibly corrupt elements with too many neighbors.\n"
-                                "If you know what you're doing, you can try to change the definition of SurfaceMeshBase in tri_mesh.h and recompile");
+        this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. Possibly corrupt elements with too many neighbors. Remedies:\n"
+                               " - You can use the 'element_exclusion_list' feature to remove elements with too many neighbors and elements with angles below the hard limit\n"
+                               " -  If you know what you're doing, you can alternatively also try to change the definition of SurfaceMeshBase in tri_mesh.h and recompile");
     }
 
     if(nOverlapping() > 0)
@@ -780,10 +877,14 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::handleSharedEdge(int iSrf, int iEdge,
                 ii = jSrf;
 
             nTooManyNeighs_++;
-            fprintf(this->screen,"Mesh %s: element id %d (line %d) has %d neighs, but only %d expected\n",
-                    this->mesh_id_,TrackingMesh<NUM_NODES>::id(ii),TrackingMesh<NUM_NODES>::lineNo(ii),nNeighs_(ii)+1,NUM_NEIGH_MAX);
+            if(TrackingMesh<NUM_NODES>::verbose())
+                fprintf(this->screen,"Mesh %s: element id %d (line %d) has %d neighs, but only %d expected\n",
+                        this->mesh_id_,TrackingMesh<NUM_NODES>::id(ii),TrackingMesh<NUM_NODES>::lineNo(ii),nNeighs_(ii)+1,NUM_NEIGH_MAX);
             if(MultiNodeMesh<NUM_NODES>::elementExclusionList())
+            {
+                
                 fprintf(MultiNodeMesh<NUM_NODES>::elementExclusionList(),"%d\n",TrackingMesh<NUM_NODES>::lineNo(ii));
+            }
             
         }
 

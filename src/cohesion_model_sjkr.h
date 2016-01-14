@@ -61,6 +61,8 @@ namespace ContactModels {
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
+    int bond_history_offset() {return -1;}
+
     CohesionModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) :
         Pointers(lmp), cohEnergyDens(NULL)
     {

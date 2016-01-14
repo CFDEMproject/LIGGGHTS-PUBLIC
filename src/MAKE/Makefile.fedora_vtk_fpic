@@ -68,7 +68,7 @@ JPG_LIB =
 # INC = path for VTK header files
 # PATH = path for VTK library
 # LIB = name of VTK library
- 
+
 VTK_INC = -I/usr/include/vtk
 VTK_PATH = -L/usr/lib64/vtk 
 VTK_LIB = -lvtkCommonCore -lvtkIOCore -lvtkIOXML -lvtkIOLegacy -lvtkCommonDataModel

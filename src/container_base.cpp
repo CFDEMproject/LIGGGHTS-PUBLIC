@@ -58,7 +58,8 @@ using namespace LAMMPS_NS;
     refFrame_(REF_FRAME_UNDEFINED),
     restartType_(RESTART_TYPE_UNDEFINED),
     scalePower_(-1),
-    useDefault_(false)
+    useDefault_(false),
+    container_statistics_raw_data_(0)
   {
   }
 
@@ -68,7 +69,8 @@ using namespace LAMMPS_NS;
     refFrame_(REF_FRAME_UNDEFINED),
     restartType_(RESTART_TYPE_UNDEFINED),
     scalePower_(-1),
-    useDefault_(false)
+    useDefault_(false),
+    container_statistics_raw_data_(0)
   {
       if(_id)
       {
@@ -83,7 +85,8 @@ using namespace LAMMPS_NS;
     refFrame_(REF_FRAME_UNDEFINED),
     restartType_(RESTART_TYPE_UNDEFINED),
     scalePower_(-1),
-    useDefault_(false)
+    useDefault_(false),
+    container_statistics_raw_data_(0)
   {
           setProperties(_id, _comm, _ref,_restart,_scalePower);
   }
@@ -94,7 +97,8 @@ using namespace LAMMPS_NS;
      refFrame_(orig.refFrame_),
      restartType_(orig.restartType_),
      scalePower_(orig.scalePower_),
-     useDefault_(orig.useDefault_)
+     useDefault_(orig.useDefault_),
+    container_statistics_raw_data_(orig.container_statistics_raw_data_)
   {
 
   }
@@ -144,4 +148,26 @@ using namespace LAMMPS_NS;
             return false;
 
       return true;
+  }
+
+  /* ----------------------------------------------------------------------
+   set container containing raw data for statistics calc
+  ------------------------------------------------------------------------- */
+
+  void ContainerBase::setContainerStatistics(class ContainerBase *_cb_stat)
+  {
+      container_statistics_raw_data_ = _cb_stat;
+  }
+
+  /* ----------------------------------------------------------------------
+   calc statistics - can be ave or variance
+  ------------------------------------------------------------------------- */
+
+  bool ContainerBase::calcStatistics(double weighting_factor)
+  {
+      if(strstr(id_,"average"))
+        return calcAveFromContainer(weighting_factor);
+      if(strstr(id_,"variance"))
+        return calcVarFromContainer(weighting_factor);
+      return false;
   }

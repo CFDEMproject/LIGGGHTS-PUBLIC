@@ -329,12 +329,12 @@ void Comm::exchangeEventsCorrector()
     }
 
     //Fill in the process ids
-    uint checkCounter=0;
+    unsigned int checkCounter=0;
     for(int iter =  exchangeReceiveDisplacement[me];  //loop global list to get correct iter
             iter < (exchangeReceiveDisplacement[me]+exchangeReceiveCounts[me]);
             iter++
        )
-       for(uint j=0; j<exchangeEventsReceivingProcess.size(); j++)
+       for(unsigned int j=0; j<exchangeEventsReceivingProcess.size(); j++)
          if(exchangeEventsReceivingProcess[j]==-1) //have invalid receiving process id
          {
             exchangeEventsReceivingProcess[j]=exchangeGlobalProblems[iter];

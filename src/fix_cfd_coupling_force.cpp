@@ -64,11 +64,15 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
     fix_dragforce_(0),
     fix_hdtorque_(0),
     fix_volumeweight_(0),
+    fix_dispersionTime_(0),
+    fix_dispersionVel_(0),
     use_force_(true),
     use_torque_(true),
     use_dens_(false),
     use_type_(false),
-    use_property_(false)
+    use_stochastic_(false),
+    use_property_(false),
+    use_superquadric_(false)
 {
     int iarg = 3;
 
@@ -117,6 +121,20 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_type'");
             iarg++;
             hasargs = true;
+        }
+        else if(strcmp(arg[iarg],"transfer_stochastic") == 0)
+        {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_stochastic'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_stochastic_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_stochastic_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_stochastic'");
+            iarg++;
+            hasargs = true;
         } else if(strcmp(arg[iarg],"transfer_property") == 0) {
             if(narg < iarg+5)
                 error->fix_error(FLERR,this,"not enough arguments for 'transfer_type'");
@@ -128,6 +146,22 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
             if(strcmp(arg[iarg++],"type"))
                 error->fix_error(FLERR,this,"expecting 'type' after property name");
             sprintf(property_type,"%s",arg[iarg++]);
+            iarg++;
+            hasargs = true;
+        } else if(strcmp(arg[iarg],"transfer_superquadric") == 0) {
+            if(narg < iarg+2)
+              error->fix_error(FLERR,this,"not enough arguments for 'transfer_superquadric'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0) {
+              use_superquadric_ = true;
+              use_torque_ = true;
+              use_force_ = true;
+            }
+            else if(strcmp(arg[iarg],"no") == 0) {
+              use_superquadric_ = false;
+            }
+            else
+              error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_superquadric'");
             iarg++;
             hasargs = true;
         } else if (strcmp(this->style,"couple/cfd/force") == 0) {
@@ -206,6 +240,37 @@ void FixCfdCouplingForce::post_create()
         fixarg[8]="1.";
         fix_volumeweight_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
     }
+    if(!fix_dispersionTime_ && use_stochastic_)
+    {
+        const char* fixarg[9];
+        fixarg[0]="dispersionTime";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="dispersionTime";
+        fixarg[4]="scalar"; // 1 vector per particle to be registered
+        fixarg[5]="yes";    // restart
+        fixarg[6]="no";     // communicate ghost
+        fixarg[7]="no";     // communicate rev
+        fixarg[8]="1e12";
+        fix_dispersionTime_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+    }
+
+    if(!fix_dispersionVel_ && use_stochastic_)
+    {
+        const char* fixarg[11];
+        fixarg[0]="dispersionVel";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="dispersionVel";
+        fixarg[4]="vector"; // vector per particle to be registered
+        fixarg[5]="yes";    // restart
+        fixarg[6]="no";     // communicate ghost
+        fixarg[7]="no";     // communicate rev
+        fixarg[8]="0";
+        fixarg[9]="0";        
+        fixarg[10]="0";
+        fix_dispersionVel_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -244,6 +309,13 @@ void FixCfdCouplingForce::init()
     fix_coupling_->add_push_property("x","vector-atom");
     fix_coupling_->add_push_property("v","vector-atom");
     fix_coupling_->add_push_property("radius","scalar-atom");
+    if(use_superquadric_) {
+      fix_coupling_->add_push_property("volume","scalar-atom");
+      fix_coupling_->add_push_property("area","scalar-atom");
+      fix_coupling_->add_push_property("shape","vector-atom");
+      fix_coupling_->add_push_property("roundness","vector2D-atom");
+      fix_coupling_->add_push_property("quaternion","quaternion-atom");
+    }
     if(use_type_) fix_coupling_->add_push_property("type","scalar-atom");
     if(use_dens_) fix_coupling_->add_push_property("density","scalar-atom");
     if(use_torque_) fix_coupling_->add_push_property("omega","vector-atom");
@@ -255,7 +327,26 @@ void FixCfdCouplingForce::init()
     if(use_force_) fix_coupling_->add_pull_property("dragforce","vector-atom");
     if(use_torque_) fix_coupling_->add_pull_property("hdtorque","vector-atom");
 
+    if(use_stochastic_)
+    {
+	 fix_coupling_->add_pull_property("dispersionTime","scalar-atom");
+         fix_coupling_->add_pull_property("dispersionVel","vector-atom");
+    }
+
     vectorZeroize3D(dragforce_total);
+
+    if (strcmp(update->integrate_style,"respa") == 0)
+       error->fix_error(FLERR,this,"'run_style respa' not supported.");
+
+}
+
+/* ---------------------------------------------------------------------- */
+void FixCfdCouplingForce::setup(int vflag)
+{
+    if (strstr(update->integrate_style,"verlet"))
+        post_force(vflag);
+    else 
+        error->fix_error(FLERR,this,"only 'run_style verlet' supported.");
 }
 
 /* ---------------------------------------------------------------------- */

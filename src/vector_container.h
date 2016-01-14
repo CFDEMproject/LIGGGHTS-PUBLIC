@@ -223,7 +223,7 @@ namespace LAMMPS_NS
 
       for(int i = 0; i < len; i++)
         for(int j = 0; j < LEN_VEC; j++)
-            buf[m++] = static_cast<double>(this->arr_[i][j][0]);
+            buf[m++] = static_cast<double>(this->arr_[i][0][j]);
 
       return len*LEN_VEC;
   }
@@ -237,7 +237,7 @@ namespace LAMMPS_NS
 
       for(int i = 0; i < len; i++)
         for(int j = 0; j < LEN_VEC; j++)
-            this->arr_[i][j][0] = static_cast<T>(buf[m++]);
+            this->arr_[i][0][j] = static_cast<T>(buf[m++]);
 
       return len*LEN_VEC;
   }

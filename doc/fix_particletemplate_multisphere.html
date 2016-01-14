@@ -13,7 +13,7 @@
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID particletemplate/multisphere seed nspheres nspheresvalue keyword values ntry ntryvalue spheres values_spheres type mt opt_keyword opt_values 
+<PRE>fix ID group-ID particletemplate/multisphere seed keyword values nspheres nspheresvalue  ntry ntryvalue spheres values_spheres type mt opt_keyword opt_values 
 </PRE>
 <UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
@@ -21,13 +21,13 @@
 
 <LI>seed = random number generator seed (integer value) 
 
-<LI>nspheres = obligatory keyword 
-
-<LI>nspheresvalue = number of spheres in the template (integer value) 
-
 <LI>zero or more keyword/value pairs can be appended 
 
 <LI>keyword, values are documented in <A HREF = "fix_particletemplate_sphere.html">fix particletemplate/sphere</A> command 
+
+<LI>nspheres = obligatory keyword 
+
+<LI>nspheresvalue = number of spheres in the template (integer value) 
 
 <LI>ntry = obligatory keyword 
 
@@ -65,8 +65,8 @@
 </UL>
 <P><B>Examples:</B>
 </P>
-<PRE>fix pts1 all particletemplate/multisphere 1 nspheres 3 atom_type 1 density constant 2500 ntry 1000000 spheres 0. 0. 0. 0.005   0.005 0. 0. 0.005   0.01 0. 0. 0.005
-fix pts2 all particletemplate/multisphere 1 nspheres 30 atom_type 1 density constant 2500 ntry 1000000 spheres file spherefile.txt 
+<PRE>fix pts1 all particletemplate/multisphere 1 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres file data/stone1.multisphere scale 0.001 type 1
+fix pts2 all particletemplate/multisphere 1 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres 0. 0. 0. 0.005   0.005 0. 0. 0.005   0.01 0. 0. 0.005 scale 0.001 type 1  
 </PRE>
 <P><B>Description:</B>
 </P>

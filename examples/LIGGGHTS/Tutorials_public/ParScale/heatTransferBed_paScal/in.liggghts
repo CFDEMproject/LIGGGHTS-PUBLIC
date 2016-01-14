@@ -45,7 +45,7 @@ fix			ywalls2 all wall/gran model hertz tangential history primitive type 1  ypl
 #heat transfer
 fix 		ftco all property/global thermalConductivity peratomtype 0.
 fix 		ftca all property/global thermalCapacity peratomtype 10.
-fix         heattransfer all heat/gran initial_temperature 800. #(temperatur aller partikel müss geändert werden!) 
+fix         heattransfer all heat/gran initial_temperature 800. #irrelevant in case ParScale is used
 
 #region of insertion	
 region 		PIR1 cylinder y 0.1 0.1 0.092 0.00   0.20 units box	
@@ -66,42 +66,49 @@ fix			pdd1 all particledistribution/discrete 1001  2 pts1 0.98 pts2 0.02
 fix			ins all insert/pack seed 1001 distributiontemplate pdd1 &
             vel uniform 0 0 0 ${vFluct} ${vFluct} ${vFluct} &
 			insert_every once overlapcheck yes all_in yes particles_in_region ${nParticles} region PIR1
+run			1 #insert the particles 
 
 #apply nve integration to all particles
 fix			integr all nve/sphere
 
-#compute_modify temp thermo yes 
-
-#output settings, include total thermal energy
-compute		rke all erotate/sphere
-thermo_style	custom step atoms ke c_rke f_heattransfer vol
-thermo		100
-thermo_modify	lost ignore norm no
-compute_modify	thermo_temp dynamic yes
-
-#insert the particles 
-run			1
-
 
 #create coupling fixes
 fix         coupling_pascal all couple/pascal reneighbor_at_least_every 1 couple_every 1
-#fix         heatAv      all property/atom heatAv scalar no yes no none #fix to receive average temperature
-fix         heatAv      all property/atom heatAv scalar no yes no none #fix to receive average temperature
-fix         TempMin     all property/atom TempMin scalar no yes no none #fix to receive average temperature
-#fix         heatChemMax all property/atom heatChemMax scalar no yes no none #fix to receive max reaction rate
-#fix         heatChemMin all property/atom heatChemMin scalar no yes no none #fix to receive max reaction rate
+fix         heatTransCoeff  all property/atom heatTransCoeff scalar no yes no none
+fix         heatFluid       all property/atom heatFluid scalar no yes no none
+fix         heatAv          all property/atom heatAv scalar no yes no none #fix to receive average temperature
+fix         TempMin         all property/atom TempMin scalar no yes no none #fix to receive average temperature
+run 0
+
+#Set environmental properties
+region	halfbedX block 0.10 INF INF INF INF INF units box #half bed in x-Direction
+set     group   all      property/atom  heatTransCoeff 800.0
+
+
+#output settings, include total thermal energy
+compute		    rke all erotate/sphere
+thermo_style	custom step atoms ke c_rke f_heattransfer
+thermo		100
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
 
 variable nAtoms equal atoms
 variable totKE  equal ke
 variable step   equal step
 
 fix         myPrint all print 100 "${step} ${nAtoms} ${totKE}" file atomStatistics.dat
-dump		dmp all custom ${fOutput} post/dump*.collision id type x y z vx vy vz radius f_heatFlux[0]  f_TempMin[0] f_heatAv[0]  f_Temp[0]
+dump		dmp all custom ${fOutput} post/dump*.liggghts id type x y z vx vy vz radius f_heatFlux[0]  f_TempMin[0] f_heatAv[0]  f_Temp[0]
 unfix		ins
 
-#set particle temperature for region PIR&PIR2
-#set         region PIR1 property/atom Temp 800.
 
-#run simulation
-#run 1000000
-run 80100
+#run simulation (8000 loops with 10 time steps each)
+variable a loop 8000
+label       loopStart
+    set     group   all      property/atom  heatFluid      400  #must be smaller than BIGNEGNUMBER in ParScale
+    set     region  halfbedX property/atom  heatFluid      500  #must be smaller than BIGNEGNUMBER in ParScale  
+
+    run     10  post no 
+    next    a
+
+jump SELF loopStart
+

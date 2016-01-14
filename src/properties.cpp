@@ -51,6 +51,9 @@
 #include "fix_property_atom.h"
 #include "fix_property_global.h"
 
+#define BIG 1e20
+#define SMALL 1e-6
+
 using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
@@ -114,6 +117,104 @@ int Properties::max_type()
     error->all(FLERR,"Please increase the number of atom types in the 'create_box' command to match the number of atom types you use in the simulation");
 
   return maxtype;
+}
+
+/* ----------------------------------------------------------------------
+   get minimum of radii used in the simulation
+------------------------------------------------------------------------- */
+
+double Properties::min_radius()
+{
+  const double maxtype = max_type();
+  double minRadius = BIG;
+
+  // check local particles
+  for (int i=0;i<atom->nlocal;i++)
+  {
+    const double irad = atom->radius[i];
+    // minimum
+    if (irad < minRadius)
+      minRadius = irad;
+  }
+
+  // check all fixes
+  // such as fix insert, fix change/type, fix wall, fix pour
+  for(int i=0;i<modify->nfix;i++)
+  {
+      // checks
+      Fix *fix = modify->fix[i];
+
+      if(!fix->use_rad_for_cut_neigh_and_ghost())
+          continue;
+
+      // loop over all types since min_rad(int) and max_rad(int) need a type
+      for (int j=1;j<maxtype+1;j++)
+      {
+        const double f_minrad = fix->min_rad(j);
+        if(f_minrad > SMALL &&  f_minrad < minRadius)
+          minRadius = f_minrad;
+      }
+  }
+
+  //Get min/max from other procs
+  double minRadius_all;
+  MPI_Allreduce(&minRadius,&minRadius_all, 1, MPI_DOUBLE, MPI_MIN, world);
+  minRadius = minRadius_all;
+
+  //error check
+  if(minRadius <= SMALL)
+    error->all(FLERR,"Atom radius must be bigger than zero for granular simulations");
+
+  return  minRadius;
+}
+
+/* ----------------------------------------------------------------------
+   get maximum of radii used in the simulation
+------------------------------------------------------------------------- */
+
+double Properties::max_radius()
+{
+  const double maxtype = max_type();
+  double maxRadius = -1.0;
+
+  // check local particles
+  for (int i=0;i<atom->nlocal;i++)
+  {
+    const double irad = atom->radius[i];
+    // maximum
+    if (irad > maxRadius)
+      maxRadius = irad;
+  }
+
+  // check all fixes
+  // such as fix insert, fix change/type, fix wall, fix pour
+  for(int i=0;i<modify->nfix;i++)
+  {
+      // checks
+      Fix *fix = modify->fix[i];
+
+      if(!fix->use_rad_for_cut_neigh_and_ghost())
+          continue;
+
+      // loop over all types since min_rad(int) and max_rad(int) need a type
+      for (int j=1;j<maxtype+1;j++)
+      {
+        const double f_maxrad = fix->max_rad(j);
+        if(f_maxrad > SMALL &&  f_maxrad > maxRadius)
+          maxRadius = f_maxrad;
+      }
+  }
+
+  //Get min/max from other procs
+  double maxRadius_all;
+  MPI_Allreduce(&maxRadius,&maxRadius_all, 1, MPI_DOUBLE, MPI_MAX, world);
+  maxRadius = maxRadius_all;
+
+  //error check
+  if(maxRadius <= SMALL)
+    error->all(FLERR,"Atom radius must be bigger than zero for granular simulations");
+
+  return  maxRadius;
 }
 
 /* ----------------------------------------------------------------------

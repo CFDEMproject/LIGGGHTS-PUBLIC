@@ -132,7 +132,7 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   shape = NULL; //half axes and roundness parameters
   inertia = NULL; //components Ix, Iy, Iz
   roundness = NULL;
-  volume = NULL;
+  volume = NULL; area = NULL;
   quaternion = NULL; //quaternion of current orientation and angular moment
 //------------------------------------------------------
 
@@ -300,6 +300,7 @@ Atom::~Atom()
   memory->destroy(inertia); //components Ix, Iy, Iz
   memory->destroy(roundness);
   memory->destroy(volume);
+  memory->destroy(area);
   memory->destroy(quaternion); //quaternion of current orientation
 //------------------------------------------------------
 
@@ -1173,7 +1174,7 @@ void Atom::check_mass()
 {
   if (mass == NULL) return;
   for (int itype = 1; itype <= ntypes; itype++)
-    if (mass_setflag[itype] == 0) error->all(FLERR,"All masses are not set");
+    if (mass_setflag[itype] == 0 && !rmass_flag) error->all(FLERR,"All masses are not set"); 
 }
 
 /* ----------------------------------------------------------------------
@@ -1664,6 +1665,11 @@ void *Atom::extract(const char *name,int &len)
   if (strcmp(name,"density") == 0) return (void *) density; 
   if (strcmp(name,"rho") == 0) return (void *) rho;  
   if (strcmp(name,"pressure") == 0) return (void *) p;  
+  if (strcmp(name,"volume") == 0) return (void *) volume;
+  if (strcmp(name,"area") == 0) return (void *) area;
+
+  len = 2;
+  if (strcmp(name,"roundness") == 0) return (void *) roundness; 
 
   len = 3; 
   if (strcmp(name,"x") == 0) return (void *) x;

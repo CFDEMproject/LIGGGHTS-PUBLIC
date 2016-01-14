@@ -62,6 +62,7 @@ PairGranProxy::~PairGranProxy()
 void PairGranProxy::settings(int nargs, char ** args)
 {
   delete impl;
+
   int64_t variant = Factory::instance().selectVariant("gran", nargs, args);
   impl = Factory::instance().create("gran", variant, lmp, this);
 
@@ -113,6 +114,11 @@ void PairGranProxy::compute_force(int eflag, int vflag, int addflag)
 double PairGranProxy::stressStrainExponent()
 {
   return impl->stressStrainExponent();
+}
+
+int PairGranProxy::bond_history_offset()
+{
+  return impl->bond_history_offset();
 }
 
 int64_t PairGranProxy::hashcode() {

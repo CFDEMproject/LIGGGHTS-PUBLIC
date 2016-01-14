@@ -208,7 +208,7 @@ void CfdDatacouplingMPI::push_mpi(const char *name,const char *type,void *&to)
             allred[id-1] = from_t[i];
         }
     }
-    else if(strcmp(type,"vector-atom") == 0)
+    else if(strcmp(type,"vector-atom") == 0 || strcmp(type,"vector2D-atom") == 0 || strcmp(type,"quaternion-atom") == 0)
     {
         T **from_t = (T**) from;
         for (int i = 0; i < nlocal; i++)

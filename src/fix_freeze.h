@@ -66,6 +66,8 @@ class FixFreeze : public Fix {
   void post_force_respa(int, int, int);
   double compute_vector(int);
 
+ protected:
+  class FixPropertyAtom* fix_Ksl_;
  private:
   int force_flag;
   double foriginal[3],foriginal_all[3];

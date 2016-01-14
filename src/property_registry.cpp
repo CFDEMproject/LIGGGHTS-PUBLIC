@@ -71,6 +71,16 @@ int PropertyRegistry::max_type()
   return properties.max_type();
 }
 
+double PropertyRegistry::min_radius()
+{
+  return properties.min_radius();
+}
+
+double PropertyRegistry::max_radius()
+{
+  return properties.max_radius();
+}
+
 LAMMPS * PropertyRegistry::getLAMMPS()
 {
   return lmp;

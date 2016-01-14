@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
     FixHeatGranCond(class LAMMPS *, int, char **);
     ~FixHeatGranCond();
     virtual void post_create();
-    void pre_delete(bool);
+    virtual void pre_delete(bool);
 
     int setmask();
     void init();

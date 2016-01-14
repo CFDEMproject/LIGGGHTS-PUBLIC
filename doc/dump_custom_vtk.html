@@ -61,7 +61,10 @@
       c_ID[N] = Nth column of per-atom array calculated by a compute with ID
       f_ID = per-atom vector calculated by a fix with ID
       f_ID[N] = Nth column of per-atom array calculated by a fix with ID
-      v_name = per-atom vector calculated by an atom-style variable with name 
+      v_name = per-atom vector calculated by an atom-style variable with name
+      shapex, shapey, shapez = semi-axes for superquadric particles
+      roundness1, roundness2 = roundness/blockiness parameters for superquadric particles
+      quat1, quat2, quat3, quat4 = quaternion components for superquadric paricles 
 </PRE>
 
 </UL>
@@ -235,7 +238,8 @@ magnitude of the atom's dipole moment.
 </P>
 <P>The <I>radius</I> and <I>diameter</I> attributes are specific to spherical
 particles that have a finite size, such as those defined with an atom
-style of <I>sphere</I>.
+style of <I>sphere</I>. 
+For <I>superquadric</I> particles these attributes give bounding sphere radius.
 </P>
 <P>The <I>omegax</I>, <I>omegay</I>, and <I>omegaz</I> attributes are specific to
 finite-size spherical particles that have an angular velocity.  Only
@@ -293,6 +297,10 @@ attributes, per-atom atom attributes, thermodynamic keywords, or
 invoke other computes, fixes, or variables when they are evaluated, so
 this is a very general means of creating quantities to output to a
 dump file.
+</P>
+<P>The <I>shapex, shapey, shapez, roundness1, roundness2, quat1, quat2, quat3, quat4</I> 
+attributes are available only for <I>superquadric</I> particles and hence require this 
+<A HREF = "atom_style.html">atom_style</A>
 </P>
 <P>See <A HREF = "Section_modify.html">Section_modify</A> of the manual for information
 on how to add new compute and fix styles to LIGGGHTS(R)-PUBLIC to calculate

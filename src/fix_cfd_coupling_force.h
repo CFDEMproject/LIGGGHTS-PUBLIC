@@ -62,6 +62,7 @@ class FixCfdCouplingForce : public Fix  {
 
   int setmask();
   virtual void init();
+  virtual void setup(int);
   virtual void post_force(int);
   double compute_vector(int n);
 
@@ -76,7 +77,11 @@ class FixCfdCouplingForce : public Fix  {
   class FixPropertyAtom* fix_hdtorque_; // hdtorque = hydrodynamic torque
   class FixPropertyAtom* fix_volumeweight_;
 
+  class FixPropertyAtom* fix_dispersionTime_;
+  class FixPropertyAtom* fix_dispersionVel_;
   bool use_force_, use_torque_, use_dens_, use_type_;
+  bool use_stochastic_;
+  bool use_superquadric_;
 
  private:
   bool use_property_;

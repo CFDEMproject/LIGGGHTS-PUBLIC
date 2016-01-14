@@ -66,6 +66,8 @@ class FixCfdCouplingConvectionSpecies : public Fix {
  protected:
   class FixCfdCoupling*  fix_coupling;
   class FixPropertyAtom* fix_speciesConcentration;
+  class FixPropertyAtom* fix_speciesFluid;
+  class FixPropertyAtom* fix_speciesTransCoeff;
   class FixPropertyAtom* fix_convectiveFlux;
   class FixPropertyAtom* fix_totalFlux;
 
@@ -76,6 +78,8 @@ class FixCfdCouplingConvectionSpecies : public Fix {
   char   capacityName_[128];
   char   steName_[128];
   char   totalFluxName_[128];
+  char   speciesFluidName_[128];
+  char   speciesTransCoeffName_[128];
 };
 
 }

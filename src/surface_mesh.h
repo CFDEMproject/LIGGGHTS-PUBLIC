@@ -51,13 +51,13 @@
 #include "vector_liggghts.h"
 #include "random_park.h"
 #include "memory_ns.h"
+#include "region_neighbor_list.h"
 #include "mpi_liggghts.h"
 #include "comm.h"
 #include <cmath>
 #include "math_extra_liggghts.h"
 
 #define EPSILON_CURVATURE 0.00001
-#define MIN_ANGLE_MESH 0.5 // in degress
 
 using namespace LAMMPS_MEMORY_NS;
 
@@ -195,8 +195,9 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline bool*    hasNonCoplanarSharedNode(int i) {return (hasNonCoplanarSharedNode_)(i);}
         inline int& obtuseAngleIndex(int i) {return obtuseAngleIndex_(i); }
 
-        inline int nBelowAngle()            {return nBelowAngle_;}
-        inline double angleLimit()          {return acos(minAngle_)*180./M_PI;}
+        inline int nBelowAngleSoftLimit()   {return nBelowAngle_softLimit_;}
+        inline double angleSoftLimit()      {return acos(minAngle_softLimit_)*180./M_PI;}
+        inline double angleHardLimit()      {return acos(minAngle_hardLimit_)*180./M_PI;}
         inline int nTooManyNeighs()         {return nTooManyNeighs_;}
         inline int nOverlapping()           {return nOverlapping_;}
 
@@ -209,10 +210,11 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         // mesh properties
         double curvature_;
         bool curvature_tolerant_;
-        double minAngle_; 
+        double minAngle_softLimit_;         
+        double minAngle_hardLimit_;         
         ScalarContainer<double>& areaMesh_; 
 
-        int nBelowAngle_;
+        int nBelowAngle_softLimit_;
         int nTooManyNeighs_;
         int nOverlapping_;
 
@@ -236,6 +238,10 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         VectorContainer<bool,NUM_NODES>& hasNonCoplanarSharedNode_;
         VectorContainer<bool,NUM_NODES>& edgeActive_;
         VectorContainer<bool,NUM_NODES>& cornerActive_;
+
+        // for overlap check on element insertion
+        
+        RegionNeighborList &neighList_;
 };
 
 // *************************************

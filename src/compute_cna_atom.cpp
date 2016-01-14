@@ -219,7 +219,7 @@ void ComputeCNAAtom::compute_peratom()
   int nerrorall;
   MPI_Allreduce(&nerror,&nerrorall,1,MPI_INT,MPI_SUM,world);
   if (nerrorall && comm->me == 0) {
-    char str[128];
+    char str[512];
     sprintf(str,"Too many neighbors in CNA for %d atoms",nerrorall);
     error->warning(FLERR,str,0);
   }
@@ -380,7 +380,7 @@ void ComputeCNAAtom::compute_peratom()
 
   MPI_Allreduce(&nerror,&nerrorall,1,MPI_INT,MPI_SUM,world);
   if (nerrorall && comm->me == 0) {
-    char str[128];
+    char str[512];
     sprintf(str,"Too many common neighbors in CNA %d times",nerrorall);
     error->warning(FLERR,str);
   }

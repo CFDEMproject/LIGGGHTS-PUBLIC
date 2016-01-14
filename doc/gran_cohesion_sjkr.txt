@@ -40,4 +40,6 @@ IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 [Restrictions:]
 
 The cohesion model has been derived for the Hertzian Style, it may note be
-appropriate for the Hookean styles.
+appropriate for the Hookean styles. 
+
+It is not available for "atom_style"_atom_style.html superquadric

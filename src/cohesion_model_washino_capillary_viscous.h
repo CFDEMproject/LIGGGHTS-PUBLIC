@@ -77,6 +77,12 @@ namespace MODEL_PARAMS
       ScalarProperty* fluidViscosityScalar = MODEL_PARAMS::createScalarProperty(registry, "fluidViscosity", caller);
       return fluidViscosityScalar;
     }
+
+    inline static VectorProperty* createMaxLiquidContent(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+    {
+        return createPerTypeProperty(registry, "maxLiquidContent", caller, sanity_checks, 0.0, 1.0);
+    }
+
 }
 
 namespace LIGGGHTS {
@@ -89,16 +95,22 @@ namespace ContactModels {
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
 
-    CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *) :
+    int bond_history_offset() {return -1;}
+
+    CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *cmb) :
       Pointers(lmp), surfaceLiquidContentInitial(0.0), surfaceTension(0.0), contactAngle(0),
        minSeparationDistanceRatio(0.0), maxSeparationDistanceRatio(0.0), fluidViscosity(0.),
-       history_offset(0),fix_surfaceliquidcontent(0),fix_liquidflux(0), fix_ste(0)
+       history_offset(0),fix_surfaceliquidcontent(0),fix_liquidflux(0), fix_ste(0), limit_lqc_flag_(false)
     {
       history_offset = hsetup->add_history_value("contflag", "0");
       
+      if(cmb->is_wall())
+        error->all(FLERR,"Using cohesion model washino/capillary/viscous for walls is not supported");
     }
 
-    void registerSettings(Settings&) {}
+    void registerSettings(Settings & settings) {
+        settings.registerOnOff("limitLiquidContent", limit_lqc_flag_, false);
+    }
 
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("surfaceLiquidContentInitial", &MODEL_PARAMS::createliquidContentInitialWashino);
@@ -118,6 +130,12 @@ namespace ContactModels {
       registry.connect("maxSeparationDistanceRatio", maxSeparationDistanceRatio,"cohesion_model washino/capillary/viscous");
 
       ln1overMinSeparationDistanceRatio = log(1./minSeparationDistanceRatio);
+
+      // if limit_lqc_flag_ need additional material property
+      if (limit_lqc_flag_) {
+          registry.registerProperty("maxLiquidContent", &MODEL_PARAMS::createMaxLiquidContent);
+          registry.connect("maxLiquidContent", maxLiquidContent, "cohesion_model washino/capillary/viscous");
+      }
 
       fix_ste = modify->find_fix_scalar_transport_equation("liquidtransfer");
       if(!fix_ste)
@@ -185,6 +203,13 @@ namespace ContactModels {
       double * const contflag = &sidata.contact_history[history_offset];
       // store for noCollision
       contflag[0] = 1.0;
+
+      // limit maximum liquid content
+      if (limit_lqc_flag_)
+      {
+          limitLiquidContent(i,itype);
+          if (!sidata.is_wall) limitLiquidContent(j,jtype);
+      }
 
       const double volLi1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radi*radi*radi*surfaceLiquidContent[i];
       const double volLj1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radj*radj*radj*surfaceLiquidContent[j];
@@ -270,6 +295,13 @@ namespace ContactModels {
       const double r = sqrt(scdata.rsq);
       const double dist =  r - (radi + radj);
       double const *surfaceLiquidContent = fix_surfaceliquidcontent->vector_atom;
+
+      // limit maximum liquid content
+      if (limit_lqc_flag_)
+      {
+          limitLiquidContent(i,itype);
+          if (!scdata.is_wall) limitLiquidContent(j,jtype);
+      }
 
       const double volLi1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radi*radi*radi*surfaceLiquidContent[i];
       const double volLj1000 = /* 4/3 * 1000*/  1333.333333*M_PI*radj*radj*radj*surfaceLiquidContent[j];
@@ -430,15 +462,28 @@ namespace ContactModels {
       // no else here, case (i) was already caught before
     }
 
+  private: // private functions
+    inline void limitLiquidContent(const int idx, const int itype)
+    {
+        double *surfaceLiquidContent = fix_surfaceliquidcontent->vector_atom;
+
+        if (surfaceLiquidContent[idx] > maxLiquidContent[itype]) {
+            
+            surfaceLiquidContent[idx] = maxLiquidContent[itype];
+        }
+    }
+
   private:
 
     double surfaceLiquidContentInitial, surfaceTension, *contactAngle;
     double minSeparationDistanceRatio, maxSeparationDistanceRatio, fluidViscosity;
-    double ln1overMinSeparationDistanceRatio;
+    double ln1overMinSeparationDistanceRatio, *maxLiquidContent;
     int history_offset;
     FixPropertyAtom *fix_surfaceliquidcontent;
     FixPropertyAtom *fix_liquidflux;
     FixScalarTransportEquation *fix_ste;
+
+    bool limit_lqc_flag_;
   };
 }
 }

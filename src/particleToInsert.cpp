@@ -250,7 +250,7 @@ int ParticleToInsert::check_near_set_x_v_omega_ms(double *x,double *v, double *o
     // x is position where insertion should take place
     // v and omega are the velocity and omega for the newly inserted particles
     double rel[3],xins_j_try[3];
-    double del[3], rsq, radsum;
+    //double del[3], rsq, radsum;
 
     // check insertion position, take quat into account
     // relative position of spheres to each other already stored at this point

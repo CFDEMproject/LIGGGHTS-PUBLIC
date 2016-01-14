@@ -1,0 +1,4 @@
+// Microsoft Visual C++ generated Help ID include file.
+// Used by WCDriver3D.rc
+//
+#define HIDC_LABEL_LINEPROP             0x8096048c    // IDD_DIALOG_PLOTTOOL [English (United States)]

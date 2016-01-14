@@ -71,7 +71,7 @@ void *Memory::smalloc(bigint nbytes, const char *name)
   void *ptr = malloc(nbytes);
 #endif
   if (ptr == NULL) {
-    char str[128];
+    char str[512];
     sprintf(str,"Failed to allocate " BIGINT_FORMAT " bytes for array %s",
             nbytes,name);
     error->one(FLERR,str);
@@ -92,7 +92,7 @@ void *Memory::srealloc(void *ptr, bigint nbytes, const char *name)
 
   ptr = realloc(ptr,nbytes);
   if (ptr == NULL) {
-    char str[128];
+    char str[512];
     if(strcmp(name,"neigh:binhead") == 0)
         sprintf(str,"Failed to reallocate " BIGINT_FORMAT " bytes for array %s.\n"
             "This may be due to bad dynamics overly increasing system size",nbytes,name);
@@ -120,7 +120,7 @@ void Memory::sfree(void *ptr)
 
 void Memory::fail(const char *name)
 {
-  char str[128];
+  char str[512];
   sprintf(str,"Cannot create/grow a vector/array of pointers for %s",name);
   error->one(FLERR,str);
 }

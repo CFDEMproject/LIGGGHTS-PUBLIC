@@ -64,6 +64,7 @@ namespace LAMMPS_NS {
         int atom_type;
         double density_ins;
         double volume_ins;
+        double area_ins;
         double mass_ins;
         double r_bound_ins;
 

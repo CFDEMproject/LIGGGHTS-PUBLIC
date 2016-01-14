@@ -124,9 +124,11 @@ Thermo::Thermo(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   modified = 0;
   normuserflag = 0;
   lineflag = ONELINE;
-  lostflag = ERROR;
+  lostflag = IGNORE;
   lostbefore = 0;
   flushflag = 0;
+
+  last_natoms = 0; 
 
   // set style and corresponding lineflag
   // custom style builds its own line of keywords
@@ -300,6 +302,8 @@ void Thermo::init()
   // set ptrs to keyword-specific Compute objects
 
   if (index_temp >= 0) temperature = computes[index_temp];
+
+  last_natoms = 0; 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -400,6 +404,7 @@ void Thermo::compute(int flag)
 
 bigint Thermo::lost_check()
 {
+  
   // ntotal = current # of atoms
 
   bigint ntotal;
@@ -407,7 +412,14 @@ bigint Thermo::lost_check()
   MPI_Allreduce(&nblocal,&ntotal,1,MPI_LMP_BIGINT,MPI_SUM,world);
   if (ntotal < 0 || ntotal > MAXBIGINT)
     error->all(FLERR,"Too many total atoms");
-  if (ntotal == atom->natoms) return ntotal;
+
+  bool lost = false;
+  if(ntotal < last_natoms)
+    lost = true;
+  last_natoms = ntotal; 
+
+  if (!lost) 
+    return ntotal;
 
   // if not checking or already warned, just return
   // reset total atom count

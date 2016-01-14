@@ -78,6 +78,9 @@ The per-atom vector values will be in energy "units"_units.html.
 
 [Restrictions:]
 
+This compute does not include the potential
+energy due to the overlap of granular particles.
+
 [Related commands:]
 
 "compute pe"_compute_pe.html, "compute

@@ -170,8 +170,22 @@ namespace ContactModels
 
   class ContactModelBase {
    public:
+
+    bool is_wall()
+    { return is_wall_; }
+
     virtual void tally_pp(double val,int i, int j, int index) = 0;
     virtual void tally_pw(double val,int i, int j, int index) = 0;
+
+    virtual int bond_history_offset() = 0;
+    
+    ContactModelBase(bool _is_wall) :
+      is_wall_(_is_wall)
+    {}
+
+   private:
+
+    bool is_wall_;
   };
 
   template<typename Style>
@@ -185,6 +199,7 @@ namespace ContactModels
     RollingModel<Style::ROLLING> rollingModel;
 
   public:
+
     static const int64_t STYLE_HASHCODE = Style::HASHCODE;
     static const int MASK = SurfaceModel<Style::SURFACE>::MASK |
                             NormalModel<Style::MODEL>::MASK |
@@ -199,7 +214,8 @@ namespace ContactModels
     static const int HANDLE_SURFACES_INTERSECT    = MASK & CM_SURFACES_INTERSECT;
     static const int HANDLE_SURFACES_CLOSE        = MASK & CM_SURFACES_CLOSE;
 
-    ContactModel(LAMMPS * lmp, IContactHistorySetup * hsetup) :
+    ContactModel(LAMMPS * lmp, IContactHistorySetup * hsetup, bool _is_wall) :
+      ContactModelBase(_is_wall),
       surfaceModel(lmp, hsetup,this),
       normalModel(lmp, hsetup, this),
       cohesionModel(lmp, hsetup,this),
@@ -250,6 +266,11 @@ namespace ContactModels
       cohesionModel.endPass(sidata, i_forces, j_forces);
       normalModel.endPass(sidata, i_forces, j_forces);
       surfaceModel.endPass(sidata, i_forces, j_forces);
+    }
+
+    inline int bond_history_offset()
+    {
+      return cohesionModel.bond_history_offset();
     }
 
     inline double stressStrainExponent()
@@ -324,6 +345,8 @@ namespace ContactModels
     void registerSettings(Settings&){}
     void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
     void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
+
+    int bond_history_offset() {return -1;}
   };
 
   template<>

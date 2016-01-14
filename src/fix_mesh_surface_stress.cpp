@@ -340,7 +340,7 @@ void FixMeshSurfaceStress::add_particle_contribution(int ip,double *frc,
         }
         E *= 2.*k_finnie_[atomTypeWall()-1][atom->type[ip]-1] * v_rel_mag * vectorMag3D(frc);
         
-        wear_step(iTri) += E / triMesh()->areaElem(iTri);
+        wear_step(iTri) += E*update->dt / triMesh()->areaElem(iTri);
     }
 }
 

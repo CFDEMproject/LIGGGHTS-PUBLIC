@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioProject Keyword="MFCProj" Name="WCDriver" ProjectGUID="{2BB95320-CB27-4070-9A20-6C99D74360CD}" ProjectType="Visual C++" RootNamespace="WCDriver" TargetFrameworkVersion="131072" Version="9,00">
+	
+   <Platforms>
+		
+      <Platform Name="Win32"/>
+		
+	
+   </Platforms>
+	
+   <ToolFiles>
+	
+   </ToolFiles>
+	
+   <Configurations>
+		
+      <Configuration ATLMinimizesCRunTimeLibraryUsage="false" CharacterSet="2" ConfigurationType="1" InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops" IntermediateDirectory=".\Debug" Name="Debug|Win32" OutputDirectory=".\Debug" UseOfMFC="2">
+			
+         <Tool CommandLine="" Name="VCPreBuildEventTool"/>
+			
+         <Tool Name="VCCustomBuildTool"/>
+			
+         <Tool Name="VCXMLDataGeneratorTool"/>
+			
+         <Tool Name="VCWebServiceProxyGeneratorTool"/>
+			
+         <Tool MkTypLibCompatible="true" Name="VCMIDLTool" PreprocessorDefinitions="_DEBUG" SuppressStartupBanner="true" TargetEnvironment="1" TypeLibraryName=".\Debug/WCDriver3D.tlb"/>
+			
+         <Tool AdditionalIncludeDirectories="&#34;..\UtilityLib&#34;; &#34;..\mbs_interface&#34;" AssemblerListingLocation=".\Debug/" BasicRuntimeChecks="3" DebugInformationFormat="4" Name="VCCLCompilerTool" ObjectFile=".\Debug/" Optimization="0" PrecompiledHeaderFile=".\Debug/WCDriver3D.pch" PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;WINVER=0x0500" ProgramDataBaseFileName=".\Debug/" RuntimeLibrary="3" SuppressStartupBanner="true" WarningLevel="3"/>
+			
+         <Tool Name="VCManagedResourceCompilerTool"/>
+			
+         <Tool Culture="1049" Name="VCResourceCompilerTool" PreprocessorDefinitions="_AFXDLL;_DEBUG"/>
+			
+         <Tool Name="VCPreLinkEventTool"/>
+			
+         <Tool AdditionalDependencies="opengl32.lib glu32.lib" AdditionalLibraryDirectories="" AdditionalOptions="/MACHINE:I386" DataExecutionPrevention="0" GenerateDebugInformation="true" GenerateMapFile="true" LinkIncremental="2" MapExports="true" Name="VCLinkerTool" OutputFile=".\Debug/hotint.exe" ProgramDatabaseFile=".\Debug/WCDriver3D.pdb" RandomizedBaseAddress="1" SubSystem="2" SuppressStartupBanner="true"/>
+			
+         <Tool Name="VCALinkTool"/>
+			
+         <Tool Name="VCManifestTool"/>
+			
+         <Tool Name="VCXDCMakeTool"/>
+			
+         <Tool Name="VCBscMakeTool"/>
+			
+         <Tool Name="VCFxCopTool"/>
+			
+         <Tool Name="VCAppVerifierTool"/>
+			
+         <Tool CommandLine="copy &#34;$(TargetPath)&#34; &#34;..\hotint$(PlatformName)\$(ConfigurationName)\$(TargetFileName)&#34;" Name="VCPostBuildEventTool"/>
+		
+      </Configuration>
+		
+      <Configuration ATLMinimizesCRunTimeLibraryUsage="false" CharacterSet="2" ConfigurationType="1" InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops" IntermediateDirectory=".\Release" Name="Release|Win32" OutputDirectory=".\Release" UseOfMFC="2">
+			
+         <Tool CommandLine="" Name="VCPreBuildEventTool"/>
+			
+         <Tool Name="VCCustomBuildTool"/>
+			
+         <Tool Name="VCXMLDataGeneratorTool"/>
+			
+         <Tool Name="VCWebServiceProxyGeneratorTool"/>
+			
+         <Tool MkTypLibCompatible="true" Name="VCMIDLTool" PreprocessorDefinitions="NDEBUG" SuppressStartupBanner="true" TargetEnvironment="1" TypeLibraryName=".\Release/WCDriver3D.tlb"/>
+			
+         <Tool AdditionalIncludeDirectories="&#34;..\UtilityLib&#34;; &#34;..\mbs_interface&#34;" AssemblerListingLocation=".\Release/" EnableFunctionLevelLinking="true" FavorSizeOrSpeed="1" InlineFunctionExpansion="0" Name="VCCLCompilerTool" ObjectFile=".\Release/" Optimization="2" PrecompiledHeaderFile=".\Release/WCDriver3D.pch" PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;WINVER=0x0500" ProgramDataBaseFileName=".\Release/" RuntimeLibrary="2" StringPooling="true" SuppressStartupBanner="true"/>
+			
+         <Tool Name="VCManagedResourceCompilerTool"/>
+			
+         <Tool Culture="1033" Name="VCResourceCompilerTool" PreprocessorDefinitions="_AFXDLL;NDEBUG"/>
+			
+         <Tool Name="VCPreLinkEventTool"/>
+			
+         <Tool AdditionalDependencies="opengl32.lib glu32.lib" AdditionalLibraryDirectories="" AdditionalOptions="/MACHINE:I386" DataExecutionPrevention="0" DelayLoadDLLs="" LinkIncremental="1" Name="VCLinkerTool" OutputFile=".\Release/hotint.exe" ProgramDatabaseFile=".\Release/WCDriver3D.pdb" RandomizedBaseAddress="1" SubSystem="2" SuppressStartupBanner="true"/>
+			
+         <Tool Name="VCALinkTool"/>
+			
+         <Tool Name="VCManifestTool"/>
+			
+         <Tool Name="VCXDCMakeTool"/>
+			
+         <Tool Name="VCBscMakeTool"/>
+			
+         <Tool Name="VCFxCopTool"/>
+			
+         <Tool Name="VCAppVerifierTool"/>
+			
+         <Tool CommandLine="copy &#34;$(TargetPath)&#34; &#34;..\hotint$(PlatformName)\$(ConfigurationName)\$(TargetFileName)&#34;" Name="VCPostBuildEventTool"/>
+		
+      </Configuration>
+		
+		
+		
+		
+	
+   </Configurations>
+	
+   <References>
+	
+   </References>
+	
+   <Files>
+		
+      <Filter Filter="cpp" Name="Source Files">
+			
+         <File RelativePath="CListDlg.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\ComputeEigenmodes.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\ComputeEigenmodes.h">
+			
+         </File>
+			
+         <File RelativePath="CustomEditDialog.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\DataStorage.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\DialogDataManager.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\DialogFramesRecording.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\DialogProgressBar.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\DialogReadText.cpp">
+			
+         </File>
+			
+         <File RelativePath="DialogSaveSpecial.cpp">
+			
+         </File>
+			
+         <File RelativePath="DialogViewingOptions.cpp">
+			
+         </File>
+			
+         <File RelativePath="DlgBodyJointOpt.cpp">
+			
+         </File>
+			
+         <File RelativePath="DlgOneEditCtrl.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\DrawWindow2D.cpp">
+			
+         </File>
+			
+         <File RelativePath="extgl.cpp">
+			
+         </File>
+			
+         <File RelativePath="FEDrawingOptions.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\GLDrawWnd.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\MyBaseView.cpp">
+			
+         </File>
+			
+         <File RelativePath="OpenGLDlg.cpp">
+			
+         </File>
+			
+         <File RelativePath="OutputDialog.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\PlotToolDlg.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\PlotToolDlg_aux.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\RenderContext.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\savewindowbitmap.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\StdAfx.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\TreeViewCustomEditDialog.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\WCDriver3D.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\WCDriver3DDlg.cpp">
+			
+         </File>
+		
+      </Filter>
+		
+      <Filter Filter="h" Name="Header Files">
+			
+         <File RelativePath="CListDlg.h">
+			
+         </File>
+			
+         <File RelativePath="CustomEditDialog.h">
+			
+         </File>
+			
+         <File RelativePath=".\DataStorage.h">
+			
+         </File>
+			
+         <File RelativePath=".\DialogDataManager.h">
+			
+         </File>
+			
+         <File RelativePath=".\DialogFramesRecording.h">
+			
+         </File>
+			
+         <File RelativePath=".\DialogProgressBar.h">
+			
+         </File>
+			
+         <File RelativePath=".\DialogReadText.h">
+			
+         </File>
+			
+         <File RelativePath="DialogViewingOptions.h">
+			
+         </File>
+			
+         <File RelativePath="DlgBodyJointOpt.h">
+			
+         </File>
+			
+         <File RelativePath="DlgOneEditCtrl.h">
+			
+         </File>
+			
+         <File RelativePath=".\DrawWindow2D.h">
+			
+         </File>
+			
+         <File RelativePath="FEDrawingOptions.h">
+			
+         </File>
+			
+         <File RelativePath=".\GLDrawWnd.h">
+			
+         </File>
+			
+         <File RelativePath=".\MyBaseView.h">
+			
+         </File>
+			
+         <File RelativePath="OpenGLDlg.h">
+			
+         </File>
+			
+         <File RelativePath="OutputDialog.h">
+			
+         </File>
+			
+         <File RelativePath=".\PlotToolDlg.h">
+			
+         </File>
+			
+         <File RelativePath=".\PlotToolDlg_aux.h">
+			
+         </File>
+			
+         <File RelativePath=".\RenderContext.h">
+			
+         </File>
+			
+         <File RelativePath=".\Resource.h">
+			
+         </File>
+			
+         <File RelativePath=".\resource.hm">
+			
+         </File>
+			
+         <File RelativePath=".\savewindowbitmap.h">
+			
+         </File>
+			
+         <File RelativePath=".\StdAfx.h">
+			
+         </File>
+			
+         <File RelativePath="..\MBSKernelLib\tarray.h">
+			
+         </File>
+			
+         <File RelativePath=".\TreeViewCustomEditDialog.h">
+			
+         </File>
+			
+         <File RelativePath=".\WCDriver3D.h">
+			
+         </File>
+			
+         <File RelativePath=".\WCDriver3DDlg.h">
+			
+         </File>
+		
+      </Filter>
+		
+      <Filter Filter="rc" Name="Resource Files">
+			
+         <File RelativePath="WCDriver3D.rc">
+			
+         </File>
+		
+      </Filter>
+		
+      <File RelativePath=".\toolbar1.bmp">
+		
+      </File>
+		
+      <File RelativePath=".\res\WCDriver3D.ico">
+		
+      </File>
+	
+   </Files>
+	
+   <Globals>
+		
+      <Global Name="RESOURCE_FILE" Value="WCDriver3D.rc"/>
+	
+   </Globals>
+
+</VisualStudioProject>

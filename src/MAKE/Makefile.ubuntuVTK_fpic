@@ -1,4 +1,4 @@
-# openmpi = Ubuntu 12.04, mpic++, OpenMPI-1.6
+# ubuntuVTK_fpic = Ubuntu 15.04, mpic++, OpenMPI-1.6
 
 SHELL = /bin/sh
 
@@ -14,9 +14,10 @@ DEPFLAGS =	-M
 LINK =		mpic++
 LINKFLAGS =	-O2
 LIB =           -lstdc++
+SIZE =		size
+
 ARCHIVE =	ar
 ARFLAGS =	-rcsv
-SIZE =		size
 SHLIBFLAGS =	-shared
 
 # ---------------------------------------------------------------------
@@ -94,7 +95,7 @@ $(EXE):	$(OBJ)
 	$(LINK) $(LINKFLAGS) $(EXTRA_PATH) $(OBJ) $(EXTRA_LIB) $(LIB) -o $(EXE)
 	$(SIZE) $(EXE)
 
-# Library target
+# Library targets
 
 lib:	$(OBJ)
 	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)

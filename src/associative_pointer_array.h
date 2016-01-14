@@ -71,23 +71,26 @@ class AssociativePointerArray
         template <typename U>
         U* getPointerByIndex(int i);
 
-        T* getBasePointerByIndex(int i);
+        T* getBasePointerByIndex(int i) const;
 
         void grow(int to);
 
-        int size();
+        int size() const;
 
         bool sameLength(int _len);
 
         inline void copyElement(int from, int to);
         inline void addUninitializedElement();
         inline void addZeroElement();
+        inline void deleteAllElements();
         inline void deleteElement(int n);
         inline void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int n,bool scale,bool translate,bool rotate);
         inline void deleteRestartGlobal(bool scale,bool translate,bool rotate);
 
         inline void clearReverse(bool scale,bool translate,bool rotate);
+
+        inline bool calcStatistics(double weighting_factor);
 
         inline void storeOrig(class AssociativePointerArray &orig);
         inline void storeOrig(const char *_id,class AssociativePointerArray &orig);
@@ -99,7 +102,7 @@ class AssociativePointerArray
         void moveElement(int i,double *delta);
         void scale(double factor);
 
-        inline int bufSize(int operation,bool scale,bool translate,bool rotate);
+        inline int bufSize(int operation,bool scale,bool translate,bool rotate) const;
         inline int pushToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 

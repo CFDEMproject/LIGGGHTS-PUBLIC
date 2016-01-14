@@ -44,6 +44,7 @@
 #include "math.h"
 #include "mpi_liggghts.h"
 #include "fix_ave_euler.h"
+#include "fix_multisphere.h"
 #include "compute_stress_atom.h"
 #include "math_extra_liggghts.h"
 #include "atom.h"
@@ -207,6 +208,11 @@ void FixAveEuler::init()
     error->fix_error(FLERR,this,"requires atom attribute radius");
   if(!atom->rmass_flag)
     error->fix_error(FLERR,this,"requires atom attribute mass");
+
+  // does not work with MS
+  FixMultisphere* fix_ms = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
+  if(fix_ms)
+      error->fix_error(FLERR,this,"does not work with multisphere");
 
   // check if box constant
   box_change_size_ = false;
@@ -518,7 +524,7 @@ inline int FixAveEuler::coord2bin(double *x)
 
 void FixAveEuler::calculate_eu()
 {
-    int ncount;
+    //int ncount;
     double **v = atom->v;
     double *radius = atom->radius;
     double *rmass = atom->rmass;

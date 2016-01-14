@@ -89,13 +89,17 @@ namespace ContactModels {
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
 
-    CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *) :
+    int bond_history_offset() {return -1; }
+
+    CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *cmb) :
       Pointers(lmp), surfaceLiquidContentInitial(0.0), surfaceTension(0.0), contactAngle(0),
        minSeparationDistanceRatio(0.0), maxSeparationDistanceRatio(0.0), fluidViscosity(0.),
        history_offset(0),fix_surfaceliquidcontent(0),fix_liquidflux(0), fix_ste(0)
     {
       history_offset = hsetup->add_history_value("contflag", "0");
       
+      if(cmb->is_wall())
+        error->all(FLERR,"Using cohesion model easo/capillary/viscous for walls is not supported");
     }
 
     void registerSettings(Settings&) {}

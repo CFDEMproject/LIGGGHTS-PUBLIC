@@ -25,6 +25,8 @@
 #include "eulerparameters.h"
 #include "matrices.h"
 #include <iomanip>
+#include <unistd.h>     //for using the function sleep
+#include <stdio.h> 
 
 
 SphericalJoint::SphericalJoint(){
@@ -125,9 +127,9 @@ void SphericalJoint::ForwardKinematics(){
   FastNegMult(body2->n_C_k,(body2->GetPoint(1))->position,result2);  
   FastAdd(result1,result2,body2->r);  
   
-  qdot_to_u(q, u, qdot);  
-  
-
+  qdot_to_u(q, u, qdot);   
+  //sleep(5000);
+  //printf ("what is this: %g %g \n", body1->n_C_k(1,1),body1->n_C_k(2,1));
   //-----------------------------------  
   // angular velocities  
   
@@ -160,7 +162,7 @@ void SphericalJoint::ForwardKinematics(){
   tempke= T(body2->omega_k)*result1;  
   ke = 0.5*ke + 0.5*tempke(1,1);
   body2->KE=ke;
-
+  //cout<<"Check in inertia "<< body2->inertia <<"Check in omega_k "<< body2->omega_k <<"Check in result1_angular_m "<< result1 <<endl;
   //-----------------------------------  
   // compute state explicit angular acceleration  // Has to be in body basis    
   FastTMult(pk_C_k,body1->alpha_t,result2);  

@@ -21,7 +21,7 @@
 
 POEMSObject::POEMSObject(){
   name = 0;
-  ChangeName("unnamed");
+  ChangeName((char *)"unnamed");
   ID = -1;
 }
 

@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="MBS_Interface">
+      <UniqueIdentifier>{d8710d26-40bc-4ea8-b880-ff3a64ff6813}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MBSElementsAndModels.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="MBSModelsLibrary.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="MBSObjectFactory.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="models_include.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="serviceFunctions.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MBSModelsLibrary.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="MBSObjectFactory.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\element.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\ElementsAndModelsLibraryInterface.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\FEMeshInterface.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\finite_element_definitions.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\GeomElements.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\graphicsConstants.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\material.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\mbs_interface.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\MBSload.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\node.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\NumSolverInterface.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\options_class_auto.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\preprocessor_includes.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\renderContext.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\sensorProcessors.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\sensors.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\solversettings_auto.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\stepsettings.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\timeintlog.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MBS_Interface\useroutputinterface.h">
+      <Filter>MBS_Interface</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>

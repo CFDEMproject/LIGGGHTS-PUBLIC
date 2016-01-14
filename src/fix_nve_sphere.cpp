@@ -71,7 +71,10 @@ enum{NONE,DIPOLE};
 /* ---------------------------------------------------------------------- */
 
 FixNVESphere::FixNVESphere(LAMMPS *lmp, int narg, char **arg) :
-  FixNVE(lmp, narg, arg)
+  FixNVE(lmp, narg, arg),
+  useAM_(false),
+  CAddRhoFluid_(0.0),
+  onePlusCAddRhoFluid_(1.0)
 {
   if (narg < 3) error->all(FLERR,"Illegal fix nve/sphere command");
 
@@ -86,6 +89,17 @@ FixNVESphere::FixNVESphere(LAMMPS *lmp, int narg, char **arg) :
     if (strcmp(arg[iarg],"update") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal fix nve/sphere command");
       if (strcmp(arg[iarg+1],"dipole") == 0) extra = DIPOLE;
+      else if (strcmp(arg[iarg+1],"CAddRhoFluid") == 0)
+      {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'CAddRhoFluid'");
+            iarg+=2;
+            useAM_ = true;
+            CAddRhoFluid_        = atof(arg[iarg]);
+            onePlusCAddRhoFluid_ = 1.0 + CAddRhoFluid_;
+            fprintf(screen,"cfd_coupling_force_implicit will consider added mass with CAddRhoFluid = %f\n",
+                    CAddRhoFluid_);
+      }
       else error->all(FLERR,"Illegal fix nve/sphere command");
       iarg += 2;
     } else error->all(FLERR,"Illegal fix nve/sphere command");
@@ -142,19 +156,24 @@ void FixNVESphere::initial_integrate(int vflag)
   if (domain->dimension == 2) dtfrotate = dtf / 0.5; // for discs the formula is I=0.5*Mass*Radius^2
   else dtfrotate  = dtf / INERTIA;
 
-  // update v,x,omega for all particles
+  // update 1/2 step for v and omega, and full step for  x for all particles
   // d_omega/dt = torque / inertia
 
   for (int i = 0; i < nlocal; i++) {
     if (mask[i] & groupbit) {
-      dtfm = dtf / rmass[i];
+
+      // velocity update for 1/2 step
+      dtfm = dtf / (rmass[i]*onePlusCAddRhoFluid_);
       v[i][0] += dtfm * f[i][0];
       v[i][1] += dtfm * f[i][1];
       v[i][2] += dtfm * f[i][2];
+
+      // position update
       x[i][0] += dtv * v[i][0];
       x[i][1] += dtv * v[i][1];
       x[i][2] += dtv * v[i][2];
       
+      // rotation update
       dtirotate = dtfrotate / (radius[i]*radius[i]*rmass[i]);
       omega[i][0] += dtirotate * torque[i][0];
       omega[i][1] += dtirotate * torque[i][1];
@@ -205,16 +224,19 @@ void FixNVESphere::final_integrate()
   if (domain->dimension == 2) dtfrotate = dtf / 0.5; // for discs the formula is I=0.5*Mass*Radius^2
   else dtfrotate  = dtf / INERTIA;
 
-  // update v,omega for all particles
+  // update 1/2 step for v,omega for all particles
   // d_omega/dt = torque / inertia
 
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
-      dtfm = dtf / rmass[i];
+
+      // velocity update for 1/2 step
+      dtfm = dtf / (rmass[i]*onePlusCAddRhoFluid_);
       v[i][0] += dtfm * f[i][0];
       v[i][1] += dtfm * f[i][1];
       v[i][2] += dtfm * f[i][2];
 
+      // rotation update
       dtirotate = dtfrotate / (radius[i]*radius[i]*rmass[i]);
       omega[i][0] += dtirotate * torque[i][0];
       omega[i][1] += dtirotate * torque[i][1];

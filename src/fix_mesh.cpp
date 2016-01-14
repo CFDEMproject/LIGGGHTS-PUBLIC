@@ -149,6 +149,9 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
             else error->fix_error(FLERR,this,"expecing 'read' or 'write' after 'element_exclusion_list'");
             iarg_++;
 
+            if(1 < comm->nprocs && !read_exclusion_list_)
+                error->fix_error(FLERR,this,"'write' mode for 'element_exclusion_list' only works in serial");
+
             // case write
             if (!read_exclusion_list_ && 0 == comm->me)
             {
@@ -296,9 +299,6 @@ void FixMesh::post_create()
     // at the wrong place in code
     mesh_->check_element_property_consistency();
 
-    // case write exlusion list
-    if(!read_exclusion_list_ && element_exclusion_list_)
-        mesh_->setElementExclusionList(element_exclusion_list_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -324,7 +324,11 @@ void FixMesh::create_mesh(char *mesh_fname)
         // read file
         // can be from STL file or VTK file
         InputMeshTri *mesh_input = new InputMeshTri(lmp,0,NULL);
-        
+
+        // case write exlusion list
+        if(!read_exclusion_list_ && element_exclusion_list_)
+            mesh_->setElementExclusionList(element_exclusion_list_);
+
         mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_,size_exclusion_list_,exclusion_list_);
         
         delete mesh_input;
@@ -350,6 +354,10 @@ void FixMesh::create_mesh_restart()
     if(verbose_) mesh_->setVerbose();
     if(autoRemoveDuplicates_) mesh_->autoRemoveDuplicates();
     if(precision_ > 0.) mesh_->setPrecision(precision_);
+
+    // case write exlusion list
+    if(!read_exclusion_list_ && element_exclusion_list_)
+        mesh_->setElementExclusionList(element_exclusion_list_);
 }
 
 /* ---------------------------------------------------------------------- */

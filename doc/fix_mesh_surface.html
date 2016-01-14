@@ -28,16 +28,19 @@ fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_value
 
 <LI>zero or more premesh_keywords/premesh_value pairs may be appended 
 
-<LI>premesh_keyword = <I>type</I> or <I>precision</I> or <I>heal</I> or <I>verbose</I> 
+<LI>premesh_keyword = <I>type</I> or <I>precision</I> or <I>heal</I> or <I>element_exclusion_list</I> or <I>verbose</I> 
 
 <PRE>  <I>type</I> value = atom type (material type) of the wall imported from the STL file
   <I>precision</I> value = length mesh nodes this far away at maximum will be recognized as identical (length units)
   <I>heal</I> value = auto_remove_duplicates or no
+  <I>element_exclusion_list</I> values = mode element_exlusion_file
+    mode = read or write
+    element_exlusion_file = name of file containing the elements to be excluded
   <I>verbose</I> value = yes or no 
 </PRE>
 <LI>zero or more mesh_keywords/mesh_value pairs may be appended 
 
-<LI>mesh_keyword = <I>scale</I> or <I>move</I> or <I>rotate</I> or <I>element_exclusion_list</I> <I>temperature</I> or <I>mass_temperature</I> 
+<LI>mesh_keyword = <I>scale</I> or <I>move</I> or <I>rotate</I> or <I>temperature</I> or <I>mass_temperature</I> 
 
 <PRE>  <I>scale</I> value = factor
     factor = factor to scale the mesh in x-, y-, and z-direction (double value)
@@ -47,9 +50,6 @@ fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_value
     axis = obligatory keyword
     ax, ay, az = axis vector for rotation (length units)
     angle = obligatory keyword
-  <I>element_exclusion_list</I> values = mode element_exlusion_file
-    mode = read or write
-    element_exlusion_file = name of file containing the elements to be excluded
   <I>temperature</I> value = T0
     T0 = Temperature of the wall (temperature units)
   <I>mass_temperature</I> value = mt0
@@ -113,7 +113,7 @@ to give you as much information about the issue as possible.
 </P>
 <P>Warning messages:
 </P>
-<LI>There should be no angle < 0.5 degrees in any element 
+<LI>There should be no angle < 0.5 degrees in any element (soft limit for angles) 
 
 <LI>All nodes should be within the simlation box 
 
@@ -124,13 +124,15 @@ to give you as much information about the issue as possible.
 </P>
 <LI>The <I>curvature</I> must not be larger than any angle in any mesh element 
 
+<LI>There must be no element with an angle <  0.181185 degrees in any element (hard limit for angles) 
+
 <LI>The number of neighbor elements must be <= 5 for any element 
 
 <LI>Mesh elements must not be duplicate 
 
 <LI>Coplanar mesh elements that share an edge must not overlap 
 
-<LI>Mesh elements must not leave the simulation domain 
+<LI>Mesh elements must not leave the simulation domain (based on the center of the element) 
 
 <P>If any of the obove rules is not fulfilled, an error is generated and
 LIGGGHTS(R)-PUBLIC halts. Error messages are always <I>verbose</I>.
@@ -169,9 +171,13 @@ by removing duplicate elements.
 </P>
 <P>With the optional <I>element_exclusion_list</I> keyword is used in mode 'write', LIGGGHTS(R)-PUBLIC 
 will write a list of elements which have more than the allowed 5 face neighbors per surface
-element to a file. The 'read' mode can then use this file and will skip the elements in
-the list. However, you can also manually write such a file to exclude elements you 
-do not want to have included
+element to a file, as well as those elements which have an angle below 0.181185 degrees. 
+The 'read' mode can then use this file and will skip the elements in the list. However, you can 
+also manually write such a file to exclude elements you do not want to have included
+</P>
+<P>IMPORTANT NOTE: The <I>element_exclusion_list write</I> model works in serial only. However,
+this is not a real restriction, since you can generate the exclusion lists in serial,
+but then read them to import the mesh into a parallel simulation
 </P>
 <P>IMPORTANT NOTE: If you use the 'heal' or 'element_exclusion_list' keywords, you should 
 check the changes to the geometry, e.g. by using a <A HREF = "dump.html">dump mesh/stl</A> command.

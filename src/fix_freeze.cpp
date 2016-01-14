@@ -45,6 +45,7 @@
 
 #include "string.h"
 #include "fix_freeze.h"
+#include "fix_property_atom.h"
 #include "atom.h"
 #include "update.h"
 #include "modify.h"
@@ -72,6 +73,7 @@ FixFreeze::FixFreeze(LAMMPS *lmp, int narg, char **arg) :
 
   force_flag = 0;
   foriginal[0] = foriginal[1] = foriginal[2] = 0.0;
+  fix_Ksl_ = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -95,6 +97,7 @@ void FixFreeze::init()
   for (int i = 0; i < modify->nfix; i++)
     if (strcmp(modify->fix[i]->style,"freeze") == 0) count++;
   if (count > 1) error->all(FLERR,"More than one fix freeze");
+  fix_Ksl_ =static_cast<FixPropertyAtom*>(modify->find_fix_property("Ksl","property/atom","scalar",0,0,style,false));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -127,7 +130,8 @@ void FixFreeze::post_force(int vflag)
   force_flag = 0;
 
   for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit) {
+    if (mask[i] & groupbit) 
+    {
       foriginal[0] += f[i][0];
       foriginal[1] += f[i][1];
       foriginal[2] += f[i][2];
@@ -138,6 +142,14 @@ void FixFreeze::post_force(int vflag)
       torque[i][1] = 0.0;
       torque[i][2] = 0.0;
     }
+  if(fix_Ksl_)
+  {
+    //printf("FixFreeze: will also reset Ksl!\n");
+    double *Ksl = fix_Ksl_->vector_atom;
+    for (int i = 0; i < nlocal; i++)
+    if (mask[i] & groupbit) 
+        Ksl[i] = 0;
+  }
 }
 
 /* ---------------------------------------------------------------------- */

@@ -39,6 +39,8 @@ public:
   void ComputeLocalTransform();
   void ForwardKinematics();
   void BackwardKinematics();
+   
+  //virtual void ForwardKinematics()=0;
 };
 
 #endif

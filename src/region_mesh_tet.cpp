@@ -345,7 +345,7 @@ void RegTetMesh::add_tet(double **n)
 
 void RegTetMesh::build_neighs()
 {
-    neighList.reset();
+    neighList.clear();
 
     for(int i = 0; i < nTet; i++)
     {
@@ -381,9 +381,13 @@ void RegTetMesh::build_neighs()
         std::vector<int> overlaps;
         neighList.hasOverlapWith(center[i], rbound[i],overlaps);
 
-        for(int icontainer = 0; icontainer < overlaps.size(); icontainer++)
+        for(size_t icontainer = 0; icontainer < overlaps.size(); icontainer++)
         {
             int iOverlap = overlaps[icontainer];
+
+            if(iOverlap < 0 || iOverlap >= nTet)
+               this->error->one(FLERR,"Mesh error: internal error");
+
             int nNodesEqual = 0;
             std::vector<int> iNodesInvolved, iOverlapNodesInvolved;
 
@@ -443,7 +447,7 @@ void RegTetMesh::build_neighs()
                 error->one(FLERR,"internal error");
         }
 
-        neighList.insert(center[i], rbound[i]);
+        neighList.insert(center[i], rbound[i],i);
     }
 
     for(int i = 0; i < nTet; i++)
@@ -470,7 +474,7 @@ void RegTetMesh::build_surface()
         if(3 == n_face_neighs_node[i][0] && 3 == n_face_neighs_node[i][1] &&
            3 == n_face_neighs_node[i][2] && 3 == n_face_neighs_node[i][3])
         {
-            if(!4 == n_face_neighs[i])
+            if(! (4 == n_face_neighs[i]))
                 error->one(FLERR,"assertion failed");
            continue;
         }
@@ -479,7 +483,7 @@ void RegTetMesh::build_surface()
         if(3 == n_face_neighs_node[i][0] || 3 == n_face_neighs_node[i][1] ||
            3 == n_face_neighs_node[i][2] || 3 == n_face_neighs_node[i][3])
         {
-            if(!3 == n_face_neighs[i])
+            if(!(3 == n_face_neighs[i]))
                 error->one(FLERR,"assertion failed");
             
             int which;
@@ -497,7 +501,7 @@ void RegTetMesh::build_surface()
         // 0 neighs
         else if(0 == MathExtraLiggghts::max(n_face_neighs_node[i],4,dummy))
         {
-            if(! 0 == n_face_neighs[i])
+            if(!(0 == n_face_neighs[i]))
                 error->one(FLERR,"assertion failed");
 
             // add 0 1 2 ,  1 2 3,  2 3 0,  3 0 1
@@ -520,7 +524,7 @@ void RegTetMesh::build_surface()
                  (6 == vectorSumN(n_face_neighs_node[i],4))
                 )
         {
-            if(!2 == n_face_neighs[i])
+            if(! (2 == n_face_neighs[i]))
                 error->one(FLERR,"assertion failed");
 
             int which_hi_1;
@@ -568,7 +572,7 @@ void RegTetMesh::build_surface()
         // 1 neighs
         else if(0 == MathExtraLiggghts::min(n_face_neighs_node[i],4,dummy))
         {
-            if(!1 == n_face_neighs[i])
+            if(! (1 == n_face_neighs[i]))
                 error->one(FLERR,"assertion failed");
 
             int which_lo = dummy;

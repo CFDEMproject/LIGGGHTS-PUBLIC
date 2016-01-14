@@ -79,10 +79,16 @@ namespace LAMMPS_NS
           void setToDefault(int n);
           void setAll(T def);
           void setAll(int to, T def);
+          void setAllToZero()
+          { setAll(static_cast<T>(0)); }
+
           void set(int i, T** elem);
           void set(int i, int j, T* elem);
 
           bool setFromContainer(ContainerBase *cont);
+
+          bool calcAveFromContainer(double weighting_factor);
+          bool calcVarFromContainer(double weighting_factor);
 
           T max_scalar();
           T min_scalar();
@@ -103,10 +109,10 @@ namespace LAMMPS_NS
           // push / pop all elements
           
           inline int bufSize(int operation = OPERATION_UNDEFINED,
-                            bool scale=false,bool translate=false, bool rotate=false);
-          inline int pushToBuffer(double *buf, int operation,
+                            bool scale=false,bool translate=false, bool rotate=false) const;
+          inline int pushToBuffer(double *buf, int operation = OPERATION_UNDEFINED,
                            bool scale=false,bool translate=false, bool rotate=false);
-          inline int popFromBuffer(double *buf, int operation,
+          inline int popFromBuffer(double *buf, int operation = OPERATION_UNDEFINED,
                            bool scale=false,bool translate=false, bool rotate=false);
 
           // push / pop a list elements
@@ -133,16 +139,16 @@ namespace LAMMPS_NS
 
           void addUninitialized(int n);
 
-          inline int size()
+          inline int size() const
           { return numElem_; }
 
-          inline int nVec()
+          inline int nVec() const
           { return NUM_VEC; }
 
-          inline int lenVec()
+          inline int lenVec() const
           { return LEN_VEC; }
 
-          inline int capacity()
+          inline int capacity() const
           { return maxElem_; }
 
           inline void clearContainer()

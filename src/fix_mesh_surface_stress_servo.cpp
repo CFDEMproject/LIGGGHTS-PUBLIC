@@ -729,6 +729,16 @@ int FixMeshSurfaceStressServo::modify_param(int narg, char **arg)
     resetIntegrator();
 
     return 4;
+  } else if (strcmp(arg[0],"ratio") == 0) {
+    if (narg < 2)
+      error->fix_error(FLERR,this,"not enough arguments for fix_modify 'ratio'");
+
+    if (!mode_flag_)
+      error->warning(FLERR,"Modifying 'ratio' makes sense only when mode='auto'");
+
+    ratio_ = force->numeric(FLERR,arg[1]);
+
+    return 2;
   }
 
   return 0;

@@ -177,6 +177,8 @@ public:
   PropertyRegistry(LAMMPS* lmp);
   ~PropertyRegistry();
   int max_type();
+  double min_radius();
+  double max_radius();
   LAMMPS * getLAMMPS();
 
   FixPropertyGlobal* getGlobalProperty(const char *varname, const char *style, const char *svmstyle, int len1, int len2, const char *caller);
@@ -185,9 +187,9 @@ public:
   VectorProperty * getVectorProperty(std::string varname,const char *caller);
   MatrixProperty * getMatrixProperty(std::string varname,const char *caller);
 
-  void registerProperty(std::string varname, ScalarPropertyCreator creator, bool sanity_checks = false);
-  void registerProperty(std::string varname, VectorPropertyCreator creator, bool sanity_checks = false);
-  void registerProperty(std::string varname, MatrixPropertyCreator creator, bool sanity_checks = false);
+  void registerProperty(std::string varname, ScalarPropertyCreator creator, bool sanity_checks = true);
+  void registerProperty(std::string varname, VectorPropertyCreator creator, bool sanity_checks = true);
+  void registerProperty(std::string varname, MatrixPropertyCreator creator, bool sanity_checks = true);
 
   void connect(std::string varname, double ** & variable, const char *caller);
   void connect(std::string varname, double * & variable, const char *caller);

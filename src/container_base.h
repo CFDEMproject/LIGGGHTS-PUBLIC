@@ -68,6 +68,11 @@ namespace LAMMPS_NS
           void setProperties(const char *_id, const char* _comm, const char* _ref, const char *_restart,int _scalePower = 1);
           bool propertiesSetCorrectly();
 
+          void setContainerStatistics(class ContainerBase *_cb_stat);
+
+          inline const char* id()
+          {return id_; }
+
           inline void id(char *_id);
           inline bool matches_id(const char *_id);
 
@@ -76,10 +81,12 @@ namespace LAMMPS_NS
 
           virtual void addZero() = 0;
           virtual void addUninitialized(int n) = 0;
-          virtual int size() = 0;
-          virtual int nVec() = 0;
-          virtual int lenVec() = 0;
+          virtual int size() const = 0;
+          virtual int nVec() const = 0;
+          virtual int lenVec() const = 0;
           virtual void* begin_slow_dirty() = 0;
+
+          virtual void clearContainer() = 0;
 
           virtual void copy(int from,int to) = 0;
           virtual void del(int n) = 0;
@@ -90,12 +97,19 @@ namespace LAMMPS_NS
 
           virtual bool setFromContainer(ContainerBase *cont) = 0;
 
+          bool isStatisticsContainer()
+          { return (0!=container_statistics_raw_data_); }
+          bool calcStatistics(double weighting_factor);
+          virtual bool calcAveFromContainer(double weighting_factor) = 0;
+          virtual bool calcVarFromContainer(double weighting_factor) = 0;
+
           virtual void scale(double factor) = 0;
           virtual void move(double *dx) = 0;
           virtual void moveElement(int i,double *dx) = 0;
           virtual void rotate(double *dQ) = 0;
 
           virtual void setToDefault(int n) = 0;
+          virtual void setAllToZero() = 0;
 
           inline bool useDefault()
           { return useDefault_ ; }
@@ -103,7 +117,7 @@ namespace LAMMPS_NS
           // buffer functions for parallelization
 
           virtual int bufSize(int operation = OPERATION_UNDEFINED,
-                            bool scale=false,bool translate=false, bool rotate=false) = 0;
+                            bool scale=false,bool translate=false, bool rotate=false) const = 0;
           virtual int popFromBuffer(double *buf,int operation,
                             bool scale=false,bool translate=false, bool rotate=false) = 0;
           virtual int pushToBuffer(double *buf,int operation,
@@ -132,13 +146,13 @@ namespace LAMMPS_NS
           ContainerBase(const char *_id, const char* _comm, const char* _ref, const char *_restart,int _scalePower);
           ContainerBase(ContainerBase const &orig);
 
-          inline bool isScaleInvariant();
-          inline bool isTranslationInvariant();
-          inline bool isRotationInvariant();
+          inline bool isScaleInvariant() const;
+          inline bool isTranslationInvariant() const;
+          inline bool isRotationInvariant() const;
 
-          inline bool decidePackUnpackOperation(int operation,bool scale,bool translate, bool rotate);
+          inline bool decidePackUnpackOperation(int operation,bool scale,bool translate, bool rotate) const;
 
-          inline bool decideCommOperation(int operation);
+          inline bool decideCommOperation(int operation) const;
 
           inline bool decideCreateNewElements(int operation);
 
@@ -149,6 +163,8 @@ namespace LAMMPS_NS
           int scalePower_;
 
           bool useDefault_;
+
+          class ContainerBase *container_statistics_raw_data_;
 
      private:
 

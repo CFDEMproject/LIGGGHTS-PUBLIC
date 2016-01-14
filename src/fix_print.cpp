@@ -90,7 +90,7 @@ FixPrint::FixPrint(LAMMPS *lmp, int narg, char **arg) :
         if (strcmp(arg[iarg],"file") == 0) fp = fopen(arg[iarg+1],"w");
         else fp = fopen(arg[iarg+1],"a");
         if (fp == NULL) {
-          char str[128];
+          char str[512];
           sprintf(str,"Cannot open fix print file %s",arg[iarg+1]);
           error->one(FLERR,str);
         }

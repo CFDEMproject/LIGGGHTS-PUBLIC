@@ -46,6 +46,8 @@
 
 #include "property_registry.h"
 
+#define BIG 1.0e20
+
 namespace MODEL_PARAMS
 {
 
@@ -54,10 +56,13 @@ namespace MODEL_PARAMS
    * ----------------------------------------------------------------------- */
 
   ScalarProperty* createScalarProperty(PropertyRegistry & registry, const char* name, const char * caller);
+  ScalarProperty* createScalarProperty(PropertyRegistry & registry, const char* name, const char * caller, bool sanity_checks, const double lo = -BIG, const double hi = BIG);
 
   VectorProperty* createPerTypeProperty(PropertyRegistry & registry, const char* name, const char * caller);
+  VectorProperty* createPerTypeProperty(PropertyRegistry & registry, const char* name, const char * caller, bool sanity_checks, const double lo = -BIG, const double hi = BIG);
 
   MatrixProperty* createPerTypePairProperty(PropertyRegistry & registry, const char * name, const char * caller);
+  MatrixProperty* createPerTypePairProperty(PropertyRegistry & registry, const char * name, const char * caller, bool sanity_checks, const double lo = -BIG, const double hi = BIG);
 
   /* -----------------------------------------------------------------------
    * Property Creators

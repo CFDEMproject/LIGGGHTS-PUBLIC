@@ -23,3 +23,4 @@ make no-POEMS
 make no-DIPOLE
 make no-ASPHERE
 make no-PASCAL
+rm make.log

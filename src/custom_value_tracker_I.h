@@ -51,7 +51,8 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  T* CustomValueTracker::addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower, int _init_len)
+  T* CustomValueTracker::addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart,
+                                            int _scalePower, int _init_len,const char *_statistics)
   {
      // error if property exists already
      if(elementProperties_.getPointerById<T>(_id))
@@ -62,8 +63,12 @@
          delete []errmsg;
      }
 
+     std::vector<std::string> id_list;
+     std::string id_string(_id);
+
      // add property
      elementProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
+     id_list.push_back(id_string);
 
      // check if properties were set correctly
      // error here since ContainerBase not derived from Pointers
@@ -75,16 +80,35 @@
          delete []errmsg;
      }
 
+     // add to statistics if applicable
+     if(_statistics)
+     {
+        if(strstr(_statistics,"average"))
+        {
+            elementProperties_.add<T>(id_string.append("_average").c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(elementProperties_.getPointerById<T>(_id));
+            id_list.push_back(id_string.append("_average"));
+        }
+        if(strstr(_statistics,"variance"))
+        {
+            elementProperties_.add<T>(id_string.append("_variance").c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(elementProperties_.getPointerById<T>(_id));
+            id_list.push_back(id_string.append("_variance"));
+        }
+     }
+
      // allocate memory and initialize
      
-     if(ownerMesh_)
+     for(size_t inew = 0; inew < id_list.size(); inew++)
      {
-        elementProperties_.getPointerById<T>(_id)->addUninitialized(ownerMesh_->sizeLocal()+ownerMesh_->sizeGhost());
-     }
-     if(_init_len > 0)
-        elementProperties_.getPointerById<T>(_id)->addUninitialized(_init_len);
+         if(ownerMesh_)
+         {
+            elementProperties_.getPointerById<T>(id_list[inew].c_str())->addUninitialized(ownerMesh_->sizeLocal()+ownerMesh_->sizeGhost());
+         }
 
-     elementProperties_.getPointerById<T>(_id)->setAll(0);
+         if(_init_len > 0)
+            elementProperties_.getPointerById<T>(id_list[inew].c_str())->addUninitialized(_init_len);
+
+         elementProperties_.getPointerById<T>(id_list[inew].c_str())->setAll(0);
+     }
 
      // return pointer
      return elementProperties_.getPointerById<T>(_id);
@@ -141,6 +165,12 @@
   T* CustomValueTracker::getElementProperty(const char *_id)
   {
      return elementProperties_.getPointerById<T>(_id);
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getElementProperty(int _i)
+  {
+     return elementProperties_.getPointerByIndex<T>(_i);
   }
 
   inline ContainerBase* CustomValueTracker::getElementPropertyBase(const char *_id)
@@ -235,6 +265,15 @@
   }
 
   /* ----------------------------------------------------------------------
+   delete all elements
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::deleteAllElements()
+  {
+      elementProperties_.deleteAllElements();
+  }
+
+  /* ----------------------------------------------------------------------
    delete element i
   ------------------------------------------------------------------------- */
 
@@ -278,6 +317,25 @@
   void CustomValueTracker::moveElement(int i, double *delta)
   {
       elementProperties_.moveElement(i,delta);
+  }
+
+  /* ----------------------------------------------------------------------
+   push / pop for all lements
+  ------------------------------------------------------------------------- */
+
+  int CustomValueTracker::allElemBufSize(int operation,bool scale,bool translate,bool rotate) const
+  {
+    return elementProperties_.bufSize(operation,scale,translate,rotate);
+  }
+
+  int CustomValueTracker::pushAllElemToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    return elementProperties_.pushToBuffer(buf,operation,scale,translate,rotate);
+  }
+
+  int CustomValueTracker::popAllElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    return elementProperties_.popFromBuffer(buf, operation,scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------

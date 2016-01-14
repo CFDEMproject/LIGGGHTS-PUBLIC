@@ -24,7 +24,8 @@ of a capilary and a viscous part. Furthermore, it solves for the
 transfer of surface liquid from one particle to the other as the bridge breaks up.
 The model uses a parameter, <I>maxSeparationDistanceRatio</I>, to apply a cut-off
 to the liquid bridge force, i.e. <I>radius</I>*<I>maxSeparationDistanceRatio</I> is
-the effective contact radius of the particles.
+the effective contact radius of the particles. The model follows a composition 
+of models suggested by <A HREF = "#Easo">(Easo)</A>
 </P>
 <HR>
 
@@ -113,6 +114,11 @@ fix id all property/global fluidViscosity scalar value
 fix id all property/global contactAngle peratomtype value_1 value_2 ...
     (value_i=value for contact angle of atom type i and fluid) 
 </PRE>
+<P><B>Restrictions:</B>
+</P>
+<P>This model can ONLY be used as part of <A HREF = "pair_gran.html">pair gran</A>, not as part
+of a <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
+</P>
 <P><B>Output:</B>
 </P>
 <P>This gran model stores a couple of per-particle properties, for access
@@ -127,7 +133,15 @@ surface liquid source via the <A HREF = "set.html">set</A> command.
 <P>Currently, there is a restriction that these properties can only be accessed
 after a <A HREF = "run.html">run 0</A> command.
 </P>
+<P><B>Restrictions:</B>
+</P>
+<P>The cohesion model is not available for <A HREF = "atom_style.html">atom_style</A> superquadric
+</P>
 <P><B>References:</B>
+</P>
+<A NAME = "Easo"></A>
+
+<P><B>(Easo)</B> Easo, Wassgreen, Comparison of Liquid Bridge Volume Models in DEM Simulations, AIChE Annual Conference (2013).
 </P>
 <A NAME = "Lian"></A>
 

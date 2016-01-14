@@ -107,6 +107,12 @@ class FixMultisphere : public Fix
       void pre_neighbor();
       void set_arrays(int);
 
+      int size_restart(int nlocal);
+      int maxsize_restart();
+
+      void write_restart(FILE *fp);
+      void restart(char *buf);
+
       // *************************************
       #include "fix_multisphere_comm_I.h"
       // *************************************

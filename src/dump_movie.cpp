@@ -94,7 +94,7 @@ void DumpMovie::openfile()
 #endif
 
     if (fp == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Failed to open FFmpeg pipeline to file %s",filename);
       error->one(FLERR,str);
     }

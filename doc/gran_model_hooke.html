@@ -105,7 +105,9 @@ fix id all property/global coefficientFriction peratomtypepair n_atomtypes value
 </P>
 <P><B>Force Limiting:</B>
 </P>
-<P>Note, that not using limitForce might lead to attractive forces between particles and walls, especially in case the coefficient of restitution is small. Be sure you include this key word for the pair style and the wall model if you like to avoid this.
+<P>Note, that not using limitForce might lead to attractive forces between particles and walls, 
+especially in case the coefficient of restitution is small. Be sure you include this key word 
+for the pair style and the wall model if you like to avoid this.
 </P>
 <P><B>Viscous model:</B>
 </P>
@@ -124,13 +126,6 @@ fix id all property/global MaximumRestitution peratomtypepair n_atomtypes value_
 </PRE>
 <P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 </P>
-<P>The coefficient of friction cof is the upper limit of the tangential force through
-the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the total tangential and normal
-force components in the formulas above. Thus in the Hookean case, the tangential force
-between 2 particles grows according to a tangential spring and dash-pot model until
-Ft/Fn = cof and is then held at Ft = Fn*cof until the particles lose contact.
-In the Hertzian case, a similar analogy holds, though the spring is no longer linear.
-</P>
 <P>This model contributes to surface heating in the frame of 
 <A HREF = "gran_surface_sphere_heatable.html">surface sphere/heatable</A> if the 
 appropriate flag is activated
@@ -140,7 +135,8 @@ appropriate flag is activated
 <P>If using SI units, youngsModulus must be > 5e6
 If using CGS units, youngsModulus must be > 5e5
 When using <I>viscous</I>, FluidViscosity has to be  > 0
-When using the limitForce, the specified coefficient of restitution is only approximate. This might become problematic for low coefficients of resitution as showin in Schwager and Poschel.
+When using the limitForce, the specified coefficient of restitution is only approximate. This might 
+become problematic for low coefficients of resitution as showin in Schwager and Poschel.
 </P>
 <P><B>Default:</B>
 </P>

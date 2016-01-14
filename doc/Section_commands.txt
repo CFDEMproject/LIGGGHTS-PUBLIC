@@ -222,6 +222,7 @@ of each style or click on the style itself for a full description:
 "particletemplate/multisphere"_fix_particletemplate_multisphere.html,
 "particletemplate/sphere"_fix_particletemplate_sphere.html,
 "planeforce"_fix_planeforce.html,
+"poems"_fix_poems.html,
 "print"_fix_print.html,
 "property/atom"_fix_property.html,
 "property/atom/tracer"_fix_property_atom_tracer.html,

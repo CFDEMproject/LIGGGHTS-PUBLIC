@@ -26,6 +26,7 @@ style = {bond} or {charge} or \
 
 atom_style bond
 atom_style sphere
+atom_style superquadric (not available yet in the PUBLIC version)
 atom_style hybrid sphere bond  :pre
 
 [Description:]
@@ -61,6 +62,7 @@ quantities.
 {sph}  | q(pressure), density | SPH particles |
 {molecular} | bonds, angles, dihedrals, impropers | uncharged molecules |
 {sphere or granular} | diameter, mass, angular velocity | granular models |
+{superquadric} | semi-axes, roundness/blockiness parameters, mass, angular velocity, quaternion | granular models |
 {tri} | corner points, angular momentum | rigid bodies  AWPMD :tb(c=3,s=|)
 
 IMPORTANT NOTE: It is possible to add some attributes, such as a
@@ -135,6 +137,9 @@ styles; see "this section"_Section_modify.html.
 
 This command cannot be used after the simulation box is defined by a
 "read_data"_read_data.html or "create_box"_create_box.html command.
+
+The {superquadric} style is in preparation and not yet available in 
+the PUBLIC version
 
 The {bond}, {molecular} styles are part of the
 MOLECULAR package.  The {line} and {tri} styles are part of the

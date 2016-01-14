@@ -146,7 +146,7 @@
   }
 
   template<typename T>
-  T* AssociativePointerArray<T>::getBasePointerByIndex(int i)
+  T* AssociativePointerArray<T>::getBasePointerByIndex(int i) const
   {
     if(i >= size() || i < 0) return 0;
     else return content_[i];
@@ -195,7 +195,7 @@
   }
 
   template<typename T>
-  int AssociativePointerArray<T>::size()
+  int AssociativePointerArray<T>::size() const
   {
     return numElem_;
   }
@@ -231,6 +231,17 @@
   {
       for(int i=0;i<numElem_;i++)
         content_[i]->addZero();
+  }
+
+  /* ----------------------------------------------------------------------
+   delete element n
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  void AssociativePointerArray<T>::deleteAllElements()
+  {
+      for(int i=0;i<numElem_;i++)
+        content_[i]->clearContainer();
   }
 
   /* ----------------------------------------------------------------------
@@ -286,6 +297,23 @@
   {
       for(int i=0;i<numElem_;i++)
         content_[i]->clearReverse(scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
+   clear reverse properties, i.e. reset all of them to 0
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  bool AssociativePointerArray<T>::calcStatistics(double weighting_factor)
+  {
+      int ret = true;
+
+      for(int i=0;i<numElem_;i++)
+        if(content_[i]->isStatisticsContainer())
+            ret = ret && content_[i]->calcStatistics(weighting_factor);
+
+      // return false if any returns false
+      return ret;
   }
 
   /* ----------------------------------------------------------------------
@@ -389,7 +417,7 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  int AssociativePointerArray<T>::bufSize(int operation,bool scale,bool translate,bool rotate)
+  int AssociativePointerArray<T>::bufSize(int operation,bool scale,bool translate,bool rotate) const
   {
     int buf_size = 0;
     for(int i=0;i<numElem_;i++)

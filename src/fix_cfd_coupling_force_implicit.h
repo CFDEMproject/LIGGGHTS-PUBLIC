@@ -53,6 +53,7 @@ FixStyle(couple/cfd/force/implicit,FixCfdCouplingForceImplicit)
 namespace LAMMPS_NS {
 
 class FixCfdCouplingForceImplicit : public FixCfdCouplingForce  {
+  friend class FixNVESuperquadric;
  public:
   FixCfdCouplingForceImplicit(class LAMMPS *, int, char **);
   ~FixCfdCouplingForceImplicit();
@@ -66,10 +67,19 @@ class FixCfdCouplingForceImplicit : public FixCfdCouplingForce  {
 
  protected:
   double deltaT_;
+
   bool   useCN_;
   double CNalpha_;
+
+  bool   useAM_;
+  double CAddRhoFluid_;   //Added mass coefficient times relative fluid density (C_add*rhoFluid/rhoP)
+  double onePlusCAddRhoFluid_;
+
   class FixPropertyAtom* fix_Ksl_;
   class FixPropertyAtom* fix_uf_;
+  class FixPropertyAtom* fix_KslRotation_;
+  class FixPropertyAtom* fix_ex_;
+  class FixPropertyAtom* fix_KslExtra_;
 };
 
 }

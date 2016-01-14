@@ -252,7 +252,9 @@ Fix* FixPropertyAtom::check_fix(const char *varname,const char *svmstyle,int len
         // check variable style
         if(
             (strcmp(svmstyle,"scalar") == 0 && data_style != FIXPROPERTY_ATOM_SCALAR) ||
-            (strcmp(svmstyle,"vector") == 0 && data_style != FIXPROPERTY_ATOM_VECTOR)
+            (strcmp(svmstyle,"vector") == 0 && data_style != FIXPROPERTY_ATOM_VECTOR) ||
+            (strcmp(svmstyle,"vector2D") == 0 && data_style != FIXPROPERTY_ATOM_VECTOR2D) ||
+            (strcmp(svmstyle,"quaternion") == 0 && data_style != FIXPROPERTY_ATOM_QUATERNION)
         )
         {
             if(errflag)

@@ -31,6 +31,7 @@
 #include "compute_rdf.h"
 #include "compute_reduce.h"
 #include "compute_reduce_region.h"
+#include "compute_rigid.h"
 #include "compute_slice.h"
 #include "compute_stress_atom.h"
 #include "compute_surface.h"

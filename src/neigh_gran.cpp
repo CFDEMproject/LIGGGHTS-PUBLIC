@@ -536,10 +536,10 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
 
   int inum = 0;
   ipage->reset();
-        if (fix_history) {
+  if (fix_history) {
     ipage_contact_flag->reset();
     dpage_contact_hist->reset();
-    }
+  }
 
   for (i = 0; i < nlocal; i++) {
     n = 0;
@@ -548,6 +548,9 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
       nn = 0;
       contact_flag_ptr = ipage_contact_flag->vget();
       contact_hist_ptr = dpage_contact_hist->vget();
+
+      if(!contact_flag_ptr || !contact_hist_ptr)
+        error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
     }
 
     xtmp = x[i][0];
@@ -580,8 +583,10 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
             
             if (rsq < radsum*radsum)
             {
+
               for (m = 0; m < npartner[i]; m++)
                 if (partner[i][m] == tag[j]) break;
+
               if (m < npartner[i]) {
                 contact_flag_ptr[n] = 1;
                 

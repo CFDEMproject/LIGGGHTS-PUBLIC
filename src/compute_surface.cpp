@@ -135,8 +135,8 @@ ComputeSurface::ComputeSurface(LAMMPS *lmp, int narg, char **arg) :
       }
     }
 
-    if (!point_up_set)
-        error->compute_error(FLERR,this,"requires 'point_up' be defined");
+    if (use_com_ && !point_up_set)
+        error->compute_error(FLERR,this,"for 'use_com = yes' requires 'point_up' be defined");
     if (!use_com_ && !n_vec_up_set)
         error->compute_error(FLERR,this,"requires either 'use_com = yes' or 'n_vec_up' be defined");
     if (use_com_ && n_vec_up_set)

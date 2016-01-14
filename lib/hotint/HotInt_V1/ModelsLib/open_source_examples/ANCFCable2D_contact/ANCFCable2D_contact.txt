@@ -1,0 +1,75 @@
+%================================================%
+%      Option settings and model parameters      %
+%================================================%
+
+
+GeneralOptions
+{
+  Application
+  {  
+    start_computation_automatically=0
+    reload_last_model=0
+  } 
+}
+
+storefact = 200  
+
+LoggingOptions.Solver.general_information = 0
+
+ViewingOptions.Misc.redraw_frequency = 4			%2...100s, 3...20s, 4...2s
+
+PostProcOptions.Connectors.show_constraints = 0
+
+SolverOptions
+{		
+  end_time = 1.25
+  Timeint
+  {
+    max_step_size = 1e-5
+    min_step_size = max_step_size
+    tableau_name =  "LobattoIIIA"
+    max_stages = 2
+    do_implicit_integration = 1    
+  }
+  Solution
+  {
+    write_solution_every_x_step = storefact
+    store_data_every =  SolverOptions.Timeint.max_step_size*storefact
+    store_data_to_files = 1
+  }
+  Linalg
+  {
+    use_sparse_solver = 0  				%1|(0) ... Sparse Jacobian and sparse solver is (not)activated
+  }
+  Newton
+  {
+    max_modified_newton_steps = 20		%max. modified Newton steps
+    relative_accuracy = 1e-7
+    absolute_accuracy = 1e-7			%should be much smaller than typical forces
+    use_modified_newton = 1
+  }
+}
+
+Geometry
+{
+  length = 0.01
+  width = length/10
+  nx = 15
+  ny = 3
+  n_fibers = 1
+  
+  rho = 2000
+  Em = 1.5e4
+  nu = 0.45
+  
+  box_x = 3*length
+  box_y = box_x
+  nres_x = 50
+  nres_y = nres_x
+  
+  contact_stiffness = 1.7e4
+  restitution_coeff = 0.9
+  friction_coeff = 0.25
+  
+  mutual_contact = 1
+}

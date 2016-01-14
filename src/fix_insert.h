@@ -136,6 +136,9 @@ class FixInsert : public Fix {
 
   // flag if overlap is checked upon insertion (via all-to-all comm)
   int check_ol_flag;
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  int check_obb_flag;
+#endif
 
   // if flag is 1, particles are generated to be in the region as a whole
   // if flag is 0, particles centers are in region

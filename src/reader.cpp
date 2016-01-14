@@ -87,7 +87,7 @@ void Reader::open_file(const char *file)
   }
 
   if (fp == NULL) {
-    char str[128];
+    char str[512];
     sprintf(str,"Cannot open file %s",file);
     error->one(FLERR,str);
   }

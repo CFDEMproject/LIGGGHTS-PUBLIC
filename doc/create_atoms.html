@@ -31,7 +31,7 @@
 </PRE>
 <LI>zero or more keyword/value pairs may be appended 
 
-<LI>keyword = <I>basis</I> or <I>remap</I> or <I>units</I> 
+<LI>keyword = <I>basis</I> or <I>remap</I> or <I>units</I> or <I>all_in</I> 
 
 <PRE>  <I>basis</I> values = M itype
     M = which basis atom
@@ -39,7 +39,9 @@
   <I>remap</I> value = <I>yes</I> or <I>no</I>
   <I>units</I> value = <I>lattice</I> or <I>box</I>
     <I>lattice</I> = the geometry is defined in lattice units
-    <I>box</I> = the geometry is defined in simulation box units 
+    <I>box</I> = the geometry is defined in simulation box units
+  <I>all_in</I> value = all_in_dist
+    all_in_dist = distance from region boundary for insertion 
 </PRE>
 
 </UL>
@@ -78,7 +80,10 @@ a periodic simulation box (in some dimension), LIGGGHTS(R)-PUBLIC does not
 implement the same logic as with the <I>box</I> style, to insure exactly
 one atom at the boundary.  if this is what you desire, you should
 either use the <I>box</I> style, or tweak the region size to get precisely
-the atoms you want.
+the atoms you want. With the optional <I>all_in</I> keyword, it can additionally
+be specified that the particles should be inserted a certain distance
+(as specified by <I>all_in_dist</I>) away from the region boundaries.
+<I>all_in</I> is only implemented for <I>region</I> insertion
 </P>
 <P>For the <I>single</I> style, a single atom is added to the system at the
 specified coordinates.  This can be useful for debugging purposes or

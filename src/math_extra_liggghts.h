@@ -112,6 +112,12 @@ namespace MathExtraLiggghts {
 
   inline bool is_int(char *str);
   inline void generateComplementBasis(double *uVec, double *vVec, double *direction);
+
+  // template signum function, added by A.A.
+  template <typename T>
+  int sgn(T val) {
+      return (T(0) < val) - (val < T(0));
+  }
 };
 
 /* ----------------------------------------------------------------------

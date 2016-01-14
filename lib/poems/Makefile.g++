@@ -31,9 +31,9 @@ INC_BODY =      bodies.h body.h rigidbody.h particle.h inertialframe.h
 
 
 SRC_JOINT =     joint.cpp revolutejoint.cpp prismaticjoint.cpp sphericaljoint.cpp \
-    freebodyjoint.cpp body23joint.cpp mixedjoint.cpp
+    freebodyjoint.cpp body23joint.cpp mixedjoint.cpp sphericalFlexiblejoint.cpp
 INC_JOINT =     joints.h joint.h revolutejoint.h prismaticjoint.h sphericaljoint.h \
-    freebodyjoint.h body23joint.h mixedjoint.h
+    freebodyjoint.h body23joint.h mixedjoint.h sphericalFlexiblejoint.h
 
 SRC_POINT =     point.cpp fixedpoint.cpp
 INC_POINT =     points.h point.h fixedpoint.h

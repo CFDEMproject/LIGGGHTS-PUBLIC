@@ -73,7 +73,9 @@ public:
   virtual void read_restart_settings(FILE * fp);
   virtual void compute_force(int eflag, int vflag, int addflag);
 
+  virtual int bond_history_offset();
   virtual double stressStrainExponent();
+
   virtual int64_t hashcode();
 };
 }

@@ -218,7 +218,7 @@ void WriteRestart::write(char *file)
     } else hfile = file;
     fp = fopen(hfile,"wb");
     if (fp == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open restart file %s",hfile);
       error->one(FLERR,str);
     }
@@ -357,7 +357,7 @@ void WriteRestart::write(char *file)
     *ptr = '%';
     fp = fopen(perproc,"wb");
     if (fp == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open restart file %s",perproc);
       error->one(FLERR,str);
     }

@@ -177,7 +177,7 @@ void InputMultisphere::clmpfile(const char *filename, double **xclmp,double *rcl
     nonlammps_file = fopen(filename,"r");
     if (nonlammps_file == NULL)
     {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open clump file %s",filename);
       error->one(FLERR,str);
     }

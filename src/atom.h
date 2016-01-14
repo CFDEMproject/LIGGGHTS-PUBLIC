@@ -99,7 +99,7 @@ class Atom : protected Pointers {
 
 //Superquadric bonus-----------------------------------
   double **shape, **roundness; //half axes and roundness parameters
-  double **inertia, *volume; //components Ix, Iy, Iz
+  double **inertia, *volume, *area; //components Ix, Iy, Iz
   double **quaternion; //quaternion of current orientation
 //------------------------------------------------------
 

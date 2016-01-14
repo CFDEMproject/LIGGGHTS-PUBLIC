@@ -403,7 +403,7 @@ void ReadData::command(int narg, char **arg)
       impropercoeffs(1);
 
     } else {
-      char str[128];
+      char str[512];
       sprintf(str,"Unknown identifier in data file: %s",keyword);
       error->all(FLERR,str);
     }
@@ -637,7 +637,7 @@ void ReadData::header(int flag, int add)
   for (n = 0; n < NSECTIONS; n++)
     if (strcmp(keyword,section_keywords[n]) == 0) break;
   if (n == NSECTIONS && me == 0) {
-    char str[128];
+    char str[512];
     sprintf(str,"Unknown identifier in data file: %s",keyword);
     error->one(FLERR,str);
   }
@@ -1447,7 +1447,7 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
         fprintf(logfile,"  %d = max impropers/atom\n",improper_per_atom);
 
     } else {
-      char str[128];
+      char str[512];
       sprintf(str,"Unknown identifier in data file: %s",keyword);
       error->one(FLERR,str);
     }
@@ -1512,7 +1512,7 @@ void ReadData::open(char *file)
   }
 
   if (fp == NULL) {
-    char str[128];
+    char str[512];
     sprintf(str,"Cannot open file %s",file);
     error->one(FLERR,str);
   }

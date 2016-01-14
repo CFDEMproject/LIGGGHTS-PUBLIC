@@ -72,6 +72,10 @@ class FixNVESphere : public FixNVE {
 
  protected:
   int extra;
+
+  bool   useAM_;
+  double CAddRhoFluid_;   //Added mass coefficient times relative fluid density (C_add*rhoFluid/rhoP)
+  double onePlusCAddRhoFluid_;
 };
 
 }

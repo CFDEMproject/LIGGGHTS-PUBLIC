@@ -122,9 +122,7 @@ namespace LAMMPS_NS
 
         virtual void check_element_property_consistency() = 0;
 
-        virtual int nBelowAngle() = 0;
-        virtual double angleLimit() = 0;
-        virtual int nTooManyNeighs() = 0;
+        /*none*/
 
         // size includes owned and ghost elements
         inline int size()

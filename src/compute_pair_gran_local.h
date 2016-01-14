@@ -72,10 +72,17 @@ class ComputePairGranLocal : public Compute {
   virtual void add_wall_2(int i,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist,double rsq);
   virtual void add_heat_wall(int i,double hf);
 
+  virtual void pair_finalize();
+  virtual bool decide_add(double *hist)
+  { return true; }
+
  protected:
 
-  int nvalues;
-  int ncount;
+  int nvalues;      // number of double values per entry
+  int ncount;       // count - from all who are touching up to all in neigh list, depending on extraSurfDistance
+  int ncount_added_via_pair; // count actually added via call from pair_gran
+                             // might be lower than ncount because is based on hasForceUpdate occurrences
+
   int newton_pair;
 
   // if 0, pair data is extracted

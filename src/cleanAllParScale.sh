@@ -11,3 +11,6 @@ cp *pascal* PASCAL
 cp Makefile.package.empty Makefile.package
 
 make no-PASCAL
+
+rm lmp_*
+rm *.a

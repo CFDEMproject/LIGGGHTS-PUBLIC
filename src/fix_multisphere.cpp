@@ -536,7 +536,7 @@ void FixMultisphere::final_integrate()
 {
   double dtfm;
   int timestep = update->ntimestep;
-  double **xcm = multisphere_.vcm_.begin();
+  //double **xcm = multisphere_.xcm_.begin();
   double **vcm = multisphere_.vcm_.begin();
   double **fcm = multisphere_.fcm_.begin();
   double **torquecm = multisphere_.torquecm_.begin();
@@ -1063,5 +1063,36 @@ void * FixMultisphere::extract(char *name, int &len1, int &len2)
 double** FixMultisphere::get_dump_ref(int &nb, int &nprop, char* prop)
 {
     error->one(FLERR,"TODO");
-  return NULL;
+    return NULL;
 }
+
+/* ----------------------------------------------------------------------
+   size and maxsize of any atom's restart data
+------------------------------------------------------------------------- */
+
+int FixMultisphere::size_restart(int nlocal)
+{
+    return 4+1;
+}
+
+int FixMultisphere::maxsize_restart()
+{
+    return 4+1;
+}
+
+/* ----------------------------------------------------------------------
+   restart global
+------------------------------------------------------------------------- */
+
+void FixMultisphere::write_restart(FILE *fp)
+{
+    multisphere_.writeRestart(fp);
+}
+
+void FixMultisphere::restart(char *buf)
+{
+    double *list = (double *) buf;
+
+    multisphere_.restart(list);
+}
+

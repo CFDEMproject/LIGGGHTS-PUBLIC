@@ -596,6 +596,11 @@ void Velocity::zero(int narg, char **arg)
       } else error->all(FLERR,"Velocity rigid used with non-rigid fix-ID");
     }
 
+  } else if (strcmp(arg[0],"angularIndividual") == 0) {
+    if (rfix < 0) 
+        zero_rotation_individual();
+    else
+        error->all(FLERR,"angularIndividual not used correctly");
   } else error->all(FLERR,"Illegal velocity command");
 }
 
@@ -633,6 +638,25 @@ void Velocity::zero_momentum()
       if (fix_ms_)
         fix_ms_->set_v_body_from_atom_index(i,zerovec);
 
+    }
+}
+
+/* ----------------------------------------------------------------------
+   zero the angular velocity of individual atoms
+------------------------------------------------------------------------- */
+void Velocity::zero_rotation_individual()
+{
+
+  double **omega = atom->omega;
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+
+  for (int i = 0; i < nlocal; i++)
+    if (mask[i] & groupbit) {
+
+      omega[i][0] = 0;
+      omega[i][1] = 0;
+      omega[i][2] = 0;
     }
 }
 

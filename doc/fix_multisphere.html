@@ -80,6 +80,9 @@ This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>
 Heat transfer simulations are not possible when using this fix
 (e.g. <A HREF = "fix_heat_gran_conduction.html">fix heat/gran/conduction</A>)
 </P>
+<P>The PUBLIC version does not support (i) parallel computation, (ii)
+restart of multisphere simulations
+</P>
 <P>IMPORTANT NOTE: All fixes or computes gathering statistical output
 (such as e.g. <A HREF = "compute_com.html">compute com</A> or <A HREF = "fix_ave_time.html">fix ave/time</A>
 operate on a per-sphere rather than on a per-body basis.

@@ -42,10 +42,13 @@
     any of a,b,c,theta can be an atom-style variable (see below)
   <I>quat/random</I> value = seed
     seed = random # seed (positive integer) for quaternion orientations
+  <I>quat_direct</I> values = q1 q2 q3 q4
+    q1,q2,q3,q4 = components of the unit quaternion, alternative to <I>quat</I> a b c theta
+    any of q1,q2,q3,q4 can be an atom-style variable (see below)
   <I>diameter</I> value = diameter of spherical particle (distance units)
     value can be an atom-style variable (see below)
   <I>shape</I> value = Sx Sy Sz
-    Sx,Sy,Sz = 3 diameters of ellipsoid (distance units)
+    Sx,Sy,Sz = 3 diameters of ellipsoid or semi-axes of superquadric (distance units)
   <I>length</I> value = len
     len = length of line segment (distance units)
     len can be an atom-style variable (see below)
@@ -73,7 +76,9 @@
   <I>property/atom</I> value = varname var_value<B>0</B> var_value<B>1</B> ....
     varname = name of the variable to be set
     var_value<B>0</B>, var_value<B>1</B>... = values of the property to be set.
-    value can be an atom-style variable (see below) 
+    value can be an atom-style variable (see below)
+  <I>roundness</I> values = n1 n2
+    n1, n2 = superquadric roundness/blockiness parameters, more or equal 2 
 </PRE>
 
 </UL>
@@ -87,7 +92,8 @@ set type 3 charge 0.5
 set type 1*3 charge 0.5
 set atom 100*200 x 0.5 y 1.0
 set atom 1492 type 3
-set property/atom Temp 273.15 
+set property/atom Temp 273.15
+set atom 3 type 2 shape 0.001 0.001 0.001 roundness 10.0 10.0 density 2500 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -199,7 +205,8 @@ atom-style variable.
 <P>Keyword <I>quat</I> uses the specified values to create a quaternion
 (4-vector) that represents the orientation of the selected atoms.  The
 particles must be ellipsoids as defined by the <A HREF = "atom_style.html">atom_style
-ellipsoid</A> command or triangles as defined by the
+ellipsoid</A> command, triangles as defined by the
+<A HREF = "atom_style.html">atom_style tri</A> command or superquadric as defined by the
 <A HREF = "atom_style.html">atom_style tri</A> command.  Note that particles defined
 by <A HREF = "atom_style.html">atom_style ellipsoid</A> have 3 shape parameters.
 The 3 values must be non-zero for each particle set by this command.
@@ -216,14 +223,19 @@ ignored, since a rotation vector of (0,0,1) is the only valid choice.
 </P>
 <P>Keyword <I>quat/random</I> randomizes the orientation of the quaternion of
 the selected atoms.  The particles must be ellipsoids as defined by
-the <A HREF = "atom_style.html">atom_style ellipsoid</A> command or triangles as
-defined by the <A HREF = "atom_style.html">atom_style tri</A> command.  Random
+the <A HREF = "atom_style.html">atom_style ellipsoid</A> command, triangles as
+defined by the <A HREF = "atom_style.html">atom_style tri</A> command or superquadric as
+defined by the <A HREF = "atom_style.html">atom_style superquadric</A> command.  Random
 numbers are used in such a way that the orientation of a particular
 atom is the same, regardless of how many processors are being used.
 For 2d systems, only orientations in the xy plane are generated.  As
-with keyword <I>quat</I>, for ellipsoidal particles, the 3 shape values
+with keyword <I>quat</I>, for ellipsoidal and superquadric particles, the 3 shape values
 must be non-zero for each particle set by this command.  This keyword
 does not allow use of an atom-style variable.
+</P>
+<P>Keyword <I>quat_direct</I> simply creates a quaternion from it's values instead of 
+calculting these from a unit rotation vector and rotation angle. These keyword 
+is an alternative to the keyword <I>quat</I>.
 </P>
 <P>Keyword <I>diameter</I> sets the size of the selected atoms.  The particles
 must be finite-size spheres as defined by the <A HREF = "atom_style.html">atom_style
@@ -234,9 +246,11 @@ defined with a density, e.g. via the <A HREF = "read_data.html">read_data</A>
 command.
 </P>
 <P>Keyword <I>shape</I> sets the size and shape of the selected atoms.  The
-particles must be ellipsoids as defined by the <A HREF = "atom_style.html">atom_style
-ellipsoid</A> command.  The <I>Sx</I>, <I>Sy</I>, <I>Sz</I> settings are
-the 3 diameters of the ellipsoid in each direction.  All 3 can be set
+particles must be ellipsoids or superquadric as defined by the <A HREF = "atom_style.html">atom_style
+ellipsoid</A> or <A HREF = "atom_style.html">atom_style
+superquadric</A> command.  The <I>Sx</I>, <I>Sy</I>, <I>Sz</I> settings 
+are the 3 diameters of the ellipsoid or the 3 semi-axes lenghts of the 
+superquadric in each direction.  All 3 can be set
 to the same value, which means the ellipsoid is effectively a sphere.
 They can also all be set to 0.0 which means the particle will be
 treated as a point particle.  Note that this command does not adjust
@@ -271,9 +285,10 @@ orientation angle of the line segments with respect to the x axis.
 </P>
 <P>Keyword <I>angmom</I> sets the angular momentum of selected atoms.  The
 particles must be ellipsoids as defined by the <A HREF = "atom_style.html">atom_style
-ellipsoid</A> command or triangles as defined by the
-<A HREF = "atom_style.html">atom_style tri</A> command.  The angular momentum vector
-of the particles is set to the 3 specified components.
+ellipsoid</A> command, triangles as defined by the
+<A HREF = "atom_style.html">atom_style tri</A> command or superquadrics as defined 
+by the <A HREF = "atom_style.html">atom_style superquadric</A> command. The angular 
+momentum vector of the particles is set to the 3 specified components.
 </P>
 <P>Keyword <I>mass</I> sets the mass of all selected particles.  The particles
 must have a per-atom mass attribute, as defined by the
@@ -349,6 +364,8 @@ in addition to the keyword <I>property/atom</I>. The <I>add</I> keyword is used 
 the addition of a quantity in a region or a group
 until the timestep defined by the <I>until</I> keyword.
 </P>
+<P>Keywords <I>shape</I> and <I>roundness</I> define superquadric shape of a particle.
+</P>
 <P><B>Restrictions:</B>
 </P>
 <P>You cannot set an atom attribute (e.g. <I>mol</I> or <I>q</I> or <I>volume</I>) if
@@ -365,6 +382,8 @@ unpredictable results if there are bonds (angles, etc) that straddle
 periodic boundaries.  This is because the region may only extend up to
 the boundary and partner atoms in the bond (angle, etc) may have
 coordinates outside the simulation box if they are ghost atoms.
+</P>
+<P>Keywords <I>quat_direct</I> and <I>roundness</I> require <A HREF = "atom_style.html">atom_style</A> <I>superquadric</I>
 </P>
 <P><B>Related commands:</B>
 </P>

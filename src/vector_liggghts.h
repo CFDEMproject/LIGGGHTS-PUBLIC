@@ -67,8 +67,8 @@ inline void vectorConstruct3D(int *v,int x, int y, int z)
 
 inline void vectorNormalize3D(double *v)
 {
-    double norm = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
-    double invnorm = (norm == 0.) ? 0. : 1./norm;
+    const double norm = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    const double invnorm = (norm == 0.) ? 0. : 1./norm;
     v[0] *= invnorm;
     v[1] *= invnorm;
     v[2] *= invnorm;
@@ -348,6 +348,12 @@ inline void vectorScalarMultN(int n,double *v, double s)
         v[i] = s*v[i];
 }
 
+inline void vectorScalarMultN(int n,int *v, double s)
+{
+    for(int i = 0; i < n; i++)
+        v[i] = static_cast<int>(static_cast<double>(s)*v[i]);
+}
+
 inline void vectorScalarMult3D(double *v, double s)
 {
   v[0]=s*v[0];
@@ -364,7 +370,7 @@ inline void vectorScalarMult3D(const double *v, double s, double *result)
 
 inline void vectorScalarDiv3D(double *v, double s)
 {
-  double sinv = 1./s;
+  const double sinv = 1./s;
   v[0]=sinv*v[0];
   v[1]=sinv*v[1];
   v[2]=sinv*v[2];
@@ -407,7 +413,7 @@ inline void vectorNegate3D(double *v)
 
 inline void vectorScalarDiv3D(double *v, double s, double *result)
 {
-  double sinv = 1./s;
+  const double sinv = 1./s;
   result[0]=sinv*v[0];
   result[1]=sinv*v[1];
   result[2]=sinv*v[2];
@@ -563,7 +569,7 @@ inline bool isUnitQuat4D(double *q)
 
 inline void normalize_bary(double *v)
 {
-  double mag = v[0]+v[1]+v[2];
+  const double mag = v[0]+v[1]+v[2];
   v[0]/=mag;
   v[1]/=mag;
   v[2]/=mag;

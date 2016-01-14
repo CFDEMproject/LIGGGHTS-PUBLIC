@@ -57,6 +57,7 @@ following the general_keyword/value pairs, zero or more model_keyword/model_valu
 [Examples:]
 
 fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15
+fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15 surface superquadric
 fix meshwalls all wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2  :pre
 
 [Description:]
@@ -124,6 +125,8 @@ store the wall force exerted on the particles in a
 "fix property/atom"_fix_property.html with id force_(ID), where (ID)
 is the id of the fix wall/gran command.
 
+{store_force_contact} does the same for contact forces between particle and wall.
+
 The effect of keyword {rolling_friction}, {cohesion}, {tangential_damping},
 {viscous} and {absolute_damping} is explanted in "pair gran"_pair_gran.html
 
@@ -144,6 +147,9 @@ No parameter of this fix can be used with the start/stop keywords of the
 There can be only one fix wall/gran command with style {mesh}. Note that
 this is not really a restriction because you can include multiple fixes
 of type "fix mesh/surface"_fix_mesh_surface.html in the fix wall/gran command.
+
+{store_force_contact} is available in selected versions only; it is not available
+in the PUBLIC version.
 
 When using style style {mesh}, you have to use the style {bin} for
 the "neighbor command"_neighbor.html.

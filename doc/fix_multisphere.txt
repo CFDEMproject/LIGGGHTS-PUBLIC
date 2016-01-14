@@ -77,6 +77,9 @@ Only one fix multisphere at a time is allowed.
 Heat transfer simulations are not possible when using this fix
 (e.g. "fix heat/gran/conduction"_fix_heat_gran_conduction.html)
 
+The PUBLIC version does not support (i) parallel computation, (ii)
+restart of multisphere simulations
+
 IMPORTANT NOTE: All fixes or computes gathering statistical output
 (such as e.g. "compute com"_compute_com.html or "fix ave/time"_fix_ave_time.html
 operate on a per-sphere rather than on a per-body basis.

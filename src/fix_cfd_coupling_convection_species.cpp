@@ -63,6 +63,7 @@ FixCfdCouplingConvectionSpecies::FixCfdCouplingConvectionSpecies(LAMMPS *lmp, in
 {
     fix_coupling = NULL;
     fix_speciesConcentration = fix_convectiveFlux = fix_totalFlux = NULL;
+    fix_speciesFluid = fix_speciesTransCoeff = NULL;
 
     int iarg = 3;
 
@@ -74,6 +75,8 @@ FixCfdCouplingConvectionSpecies::FixCfdCouplingConvectionSpecies(LAMMPS *lmp, in
         sprintf(capacityName_,      "%sCapacity",speciesName_);
         sprintf(steName_,           "%sSTE",speciesName_);
         sprintf(totalFluxName_,     "%sTotalFlux",speciesName_);
+        sprintf(speciesFluidName_,      "%sFluid",speciesName_);
+        sprintf(speciesTransCoeffName_, "%sTransCoeff",speciesName_);
 
     if(strcmp(arg[iarg++],"species0") != 0) error->all(FLERR,"Fix couple/cfd/speciesConvection: Expecting keyword 'species0'");
         species0 = atof(arg[iarg++]);
@@ -140,6 +143,36 @@ void FixCfdCouplingConvectionSpecies::post_create()
   }
 
   //  add species transfer model if not yet active
+  if(!fix_speciesFluid)
+  {
+        const char* fixarg[9];
+        fixarg[0]=speciesFluidName_;
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]=speciesFluidName_;
+        fixarg[4]="scalar";
+        fixarg[5]="no";
+        fixarg[6]="yes";
+        fixarg[7]="no";
+        fixarg[8]="0.";
+        fix_speciesFluid = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+  }
+
+  //  register transfer coefficient
+  if(!fix_speciesTransCoeff)
+  {
+        const char* fixarg[9];
+        fixarg[0]=speciesTransCoeffName_;
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]=speciesTransCoeffName_;
+        fixarg[4]="scalar";
+        fixarg[5]="no";
+        fixarg[6]="yes";
+        fixarg[7]="no";
+        fixarg[8]="0.";
+        fix_speciesTransCoeff = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+  }
   FixScalarTransportEquation *fix_ste = modify->find_fix_scalar_transport_equation("speciesTransfer");
   if(!fix_ste)
   {
@@ -170,8 +203,8 @@ void FixCfdCouplingConvectionSpecies::post_create()
 void FixCfdCouplingConvectionSpecies::init()
 {
     // make sure there is only one fix of this style
-    if(modify->n_fixes_style(style) != 1)
-      error->fix_error(FLERR,this,"More than one fix of this style is not allowed");
+    //if(modify->n_fixes_style(style) != 1)
+    //  error->fix_error(FLERR,this,"More than one fix of this style is not allowed");
 
     // find coupling fix
     fix_coupling = static_cast<FixCfdCoupling*>(modify->find_fix_style_strict("couple/cfd",0));
@@ -185,9 +218,14 @@ void FixCfdCouplingConvectionSpecies::init()
     fix_coupling->add_pull_property(convectiveFluxName_,"scalar-atom");
     fix_coupling->add_pull_property(sourceName_,"scalar-atom");
 
+    fix_coupling->add_pull_property(speciesFluidName_,"scalar-atom");
+    fix_coupling->add_pull_property(speciesTransCoeffName_,"scalar-atom");
+
     fix_speciesConcentration  = static_cast<FixPropertyAtom*>(modify->find_fix_property(speciesName_,"property/atom","scalar",0,0,style));
     fix_convectiveFlux        = static_cast<FixPropertyAtom*>(modify->find_fix_property(convectiveFluxName_,"property/atom","scalar",0,0,style));
     fix_totalFlux             = static_cast<FixPropertyAtom*>(modify->find_fix_property(totalFluxName_,"property/atom","scalar",0,0,style));
+    fix_speciesFluid          = static_cast<FixPropertyAtom*>(modify->find_fix_property(speciesFluidName_,"property/atom","scalar",0,0,style));
+    fix_speciesTransCoeff     = static_cast<FixPropertyAtom*>(modify->find_fix_property(speciesTransCoeffName_,"property/atom","scalar",0,0,style));
 
     if(!fix_speciesConcentration || !fix_convectiveFlux)
       error->fix_error(FLERR,this,"could not find concentration and flux fix");

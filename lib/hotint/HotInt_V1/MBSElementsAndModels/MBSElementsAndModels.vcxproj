@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5CD0698D-06D3-4665-A6C0-7517E5D7AD28}</ProjectGuid>
+    <RootNamespace>MBSElementsAndModels</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\ElementsLib; ..\ElementsLib\beams;..\ElementsLib\shells;..\ElementsLib\rigid;..\ElementsLib\solidFE;..\ElementsLib\constraints;..\ElementsLib\modal_reduction;..\UtilityLib; ..\mbs_interface; ..\ServiceObjectsLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MBSELEMENTSANDMODELS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>blas_win32_MT.lib;lapack_win32_MT.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\WCDriver3D\extern_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(TargetPath)" "..\hotint$(Platform)\$(Configuration)\$(TargetFileName)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\ElementsLib; ..\ElementsLib\beams;..\ElementsLib\shells;..\ElementsLib\rigid;..\ElementsLib\solidFE;..\ElementsLib\constraints;..\ElementsLib\modal_reduction;..\UtilityLib; ..\mbs_interface; ..\ServiceObjectsLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MBSELEMENTSANDMODELS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>blas_win32_MT.lib;lapack_win32_MT.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\WCDriver3D\extern_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy "$(TargetPath)" "..\hotint$(Platform)\$(Configuration)\$(TargetFileName)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="MBSElementsAndModels.cpp" />
+    <ClCompile Include="MBSModelsLibrary.cpp" />
+    <ClCompile Include="MBSObjectFactory.cpp" />
+    <ClCompile Include="models_include.cpp" />
+    <ClCompile Include="serviceFunctions.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MBSModelsLibrary.h" />
+    <ClInclude Include="MBSObjectFactory.h" />
+    <ClInclude Include="..\MBS_Interface\element.h" />
+    <ClInclude Include="..\MBS_Interface\ElementsAndModelsLibraryInterface.h" />
+    <ClInclude Include="..\MBS_Interface\FEMeshInterface.h" />
+    <ClInclude Include="..\MBS_Interface\finite_element_definitions.h" />
+    <ClInclude Include="..\MBS_Interface\GeomElements.h" />
+    <ClInclude Include="..\MBS_Interface\graphicsConstants.h" />
+    <ClInclude Include="..\MBS_Interface\material.h" />
+    <ClInclude Include="..\MBS_Interface\mbs_interface.h" />
+    <ClInclude Include="..\MBS_Interface\MBSload.h" />
+    <ClInclude Include="..\MBS_Interface\node.h" />
+    <ClInclude Include="..\MBS_Interface\NumSolverInterface.h" />
+    <ClInclude Include="..\MBS_Interface\options_class_auto.h" />
+    <ClInclude Include="..\MBS_Interface\preprocessor_includes.h" />
+    <ClInclude Include="..\MBS_Interface\renderContext.h" />
+    <ClInclude Include="..\MBS_Interface\sensorProcessors.h" />
+    <ClInclude Include="..\MBS_Interface\sensors.h" />
+    <ClInclude Include="..\MBS_Interface\solversettings_auto.h" />
+    <ClInclude Include="..\MBS_Interface\stepsettings.h" />
+    <ClInclude Include="..\MBS_Interface\timeintlog.h" />
+    <ClInclude Include="..\MBS_Interface\useroutputinterface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ElementsLib\ElementsLib.vcxproj">
+      <Project>{2c91f893-6331-4a35-8731-3beb887dfe57}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\FEMesh\FEMesh.vcxproj">
+      <Project>{39fd9470-061b-46b5-bbf6-9e4bc1e6cbaa}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Parser\Parser.vcxproj">
+      <Project>{3d7dda90-1ae6-4a32-b7fb-2b9ec2b28845}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\ServiceObjectsLib\ServiceObjectsLib.vcxproj">
+      <Project>{e081404a-7faa-42a5-aa7c-1335eb0ab578}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\SuperLU\SuperLU.vcxproj">
+      <Project>{e0cc2b22-58a4-4aad-8ce7-20ce16b258e0}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\UtilityLib\UtilityLib.vcxproj">
+      <Project>{baeebb47-21e3-4506-a6f1-a9531d9dd12d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

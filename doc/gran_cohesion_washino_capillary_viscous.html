@@ -26,6 +26,9 @@ The model uses a parameter, <I>maxSeparationDistanceRatio</I>, to apply a cut-of
 to the liquid bridge force, i.e. <I>radius</I>*<I>maxSeparationDistanceRatio</I> is
 the effective contact radius of the particles.
 </P>
+<P>The model parameter <I>maxLiquidContent</I> allows to limit the maximum per particle 
+liquid content.
+</P>
 <HR>
 
 <P>Bridge formation and break-up, surface liquid transfer:
@@ -109,6 +112,8 @@ fix id all property/global surfaceTension scalar value
 fix id all property/global fluidViscosity scalar value
     (value=value for the fluidViscosity (SI units Pas))
 fix id all property/global contactAngle peratomtype value_1 value_2 ...
+    (value_i=value for contact angle of atom type i and fluid)
+fix id all property/global maxLiquidContent peratomtype value_1 value_2 ...
     (value_i=value for contact angle of atom type i and fluid) 
 </PRE>
 <P><B>Output:</B>
@@ -124,6 +129,13 @@ surface liquid source via the <A HREF = "set.html">set</A> command.
 </P>
 <P>Currently, there is a restriction that these properties can only be accessed
 after a <A HREF = "run.html">run 0</A> command.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>This model can ONLY be used as part of <A HREF = "pair_gran.html">pair gran</A>, not as part
+of a <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
+</P>
+<P>The cohesion model is not available for <A HREF = "atom_style.html">atom_style</A> superquadric
 </P>
 <P><B>References:</B>
 </P>

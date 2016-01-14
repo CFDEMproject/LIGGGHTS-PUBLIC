@@ -143,7 +143,7 @@ void ReadRestart::command(int narg, char **arg)
     } else hfile = file;
     fp = fopen(hfile,"rb");
     if (fp == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open restart file %s",hfile);
       error->one(FLERR,str);
     }
@@ -259,7 +259,7 @@ void ReadRestart::command(int narg, char **arg)
       *ptr = '%';
       fp = fopen(perproc,"rb");
       if (fp == NULL) {
-        char str[128];
+        char str[512];
         sprintf(str,"Cannot open restart file %s",perproc);
         error->one(FLERR,str);
       }

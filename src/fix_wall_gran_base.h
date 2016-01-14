@@ -72,7 +72,7 @@ class Granular : private Pointers, public IGranularWall {
 public:
   Granular(LAMMPS * lmp, FixWallGran * parent) :
     Pointers(lmp),
-    cmodel(lmp, parent),
+    cmodel(lmp, parent,true /*is_wall*/),
     parent(parent)
   {
   }
@@ -146,25 +146,22 @@ public:
     const double rinv = 1.0/r;
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-    error->one(FLERR,"Sascha, please check the changes. I think there was a bug for case of spheres");
-    /*
-    const double deltan_inv = 1.0 / vectorMag3D(sidata.delta);
-    const double enx = sidata.delta[0] * deltan_inv;
-    const double eny = sidata.delta[1] * deltan_inv;
-    const double enz = sidata.delta[2] * deltan_inv;
-    */
+    double enx, eny, enz;
     if(atom->superquadric_flag) {
     const double delta_inv = 1.0 / vectorMag3D(sidata.delta);
-
-      double enx = sidata.delta[0] * delta_inv;
-      double eny = sidata.delta[1] * delta_inv;
-      double enz = sidata.delta[2] * delta_inv;
-      sidata.radi = radius;
+      enx = sidata.delta[0] * delta_inv;
+      eny = sidata.delta[1] * delta_inv;
+      enz = sidata.delta[2] * delta_inv;
+      sidata.radi = cbrt(0.75 * atom->volume[ip] / M_PI);
       Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
-      sidata.radi = particle.calc_curvature_radius(sidata.contact_point);
-      //sidata.radi = pow(3.0 * atom->volume[ip] / 4.0 / M_PI, 1.0/3.0);
-    } else
+      sidata.koefi = particle.calc_curvature_coefficient(sidata.contact_point);
+      sidata.inertia_i = atom->inertia[ip];
+    } else { // sphere case
+      enx = sidata.delta[0] * rinv;
+      eny = sidata.delta[1] * rinv;
+      enz = sidata.delta[2] * rinv;
       sidata.radi = radius;
+    }
 #else // sphere case
     const double enx = sidata.delta[0] * rinv;
     const double eny = sidata.delta[1] * rinv;

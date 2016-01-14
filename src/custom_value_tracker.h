@@ -49,6 +49,8 @@
 #include "associative_pointer_array.h"
 #include "container.h"
 #include "abstract_mesh.h"
+#include <string>
+#include <vector>
 
 namespace LAMMPS_NS
 {
@@ -62,10 +64,14 @@ namespace LAMMPS_NS
         // per-element properties
 
         template<typename T>
-        T* addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower = 1, int _init_len = 0);
+        T* addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart,
+                              int _scalePower = 1, int _init_len = 0, const char *_statistics = 0);
 
         template<typename T>
         T* getElementProperty(const char *_id);
+
+        template<typename T>
+        T* getElementProperty(int _i);
 
         inline ContainerBase* getElementPropertyBase(const char *_id);
         inline ContainerBase* getElementPropertyBase(int i);
@@ -77,6 +83,7 @@ namespace LAMMPS_NS
 
         void removeElementProperty(const char *_id);
 
+        int nElementProperties();
         void check_element_property_consistency(int _len);
 
         // global (e.g. mesh) properties
@@ -98,6 +105,7 @@ namespace LAMMPS_NS
         inline void copyElement(int from, int to);
         inline void addUninitializedElement();
         inline void addZeroElement();
+        inline void deleteAllElements();
         inline void deleteElement(int i);
         inline void deleteForwardElement(int i,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int i,bool scale,bool translate,bool rotate);
@@ -106,6 +114,8 @@ namespace LAMMPS_NS
 
         void storeOrig();
         void resetToOrig();
+
+        bool calcStatistics(double weighting_factor);
 
         inline void storeGlobalPropOrig(const char *_id);
         inline void resetGlobalPropToOrig(const char *_id);
@@ -119,6 +129,10 @@ namespace LAMMPS_NS
 
         // buffer operations
 
+        inline int allElemBufSize(int operation,bool scale,bool translate,bool rotate) const;
+        inline int pushAllElemToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int popAllElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
+
         inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
         inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
@@ -126,7 +140,7 @@ namespace LAMMPS_NS
         inline int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
-        inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int pushElemToBuffer(int i, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int globalPropsBufSize(int operation,bool scale,bool translate,bool rotate);

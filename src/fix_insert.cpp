@@ -106,6 +106,10 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
 
   // parse args
   
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  check_obb_flag = 1;
+#endif
+  
   bool hasargs = true;
   while(iarg < narg && hasargs)
   {
@@ -263,6 +267,17 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       hasargs = true;
     }
     
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    else if (strcmp(arg[iarg],"check_obb") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"");
+      if(strcmp(arg[iarg+1],"yes")==0) check_obb_flag = 1;
+      else if(strcmp(arg[iarg+1],"no")==0) check_obb_flag = 0;
+      else error->fix_error(FLERR,this,"");
+      if(check_ol_flag==0) check_obb_flag = 0;
+      iarg += 2;
+      hasargs = true;
+    }
+#endif
     else if(strcmp(style,"insert") == 0) error->fix_error(FLERR,this,"unknown keyword");
   }
 
@@ -656,7 +671,7 @@ void FixInsert::pre_exchange()
   // fill xnear array with particles to check overlap against
   
   // add particles in insertion volume to xnear list
-  neighList.reset();
+  neighList.clear();
 
   if(check_ol_flag)
     load_xnear(ninsert_this_local);
@@ -840,14 +855,25 @@ int FixInsert::load_xnear(int ninsert_this_local)
   const int nall = atom->nlocal + atom->nghost;
 
   BoundingBox bb = getBoundingBox();
-  neighList.reset();
+  neighList.clear();
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  neighList.set_obb_flag(check_obb_flag);
+#endif
 
-  if(neighList.setBoundingBox(bb, maxrad)) {
+  if(neighList.setBoundingBox(bb, maxrad))
+  {
     for (int i = 0; i < nall; ++i)
     {
       if (is_nearby(i))
       {
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(atom->superquadric_flag and check_obb_flag)
+          neighList.insert_superquadric(x[i], radius[i], atom->quaternion[i], atom->shape[i]);
+        else
+          neighList.insert(x[i], radius[i]);
+#else
         neighList.insert(x[i], radius[i]);
+#endif
       }
     }
   }

@@ -84,7 +84,12 @@ particle radius, both in force <A HREF = "units.html">units</A>. Note that the t
 does NOT contain any rolling friction torque. The output <I>history</I>
 will depend on what this history represents, according to the granular
 pair style used. The output <I>contactArea</I> will output the contact area,
-in distance^2 <A HREF = "units.html">units</A>. The output <I>delta</I> will output the
+in distance^2 <A HREF = "units.html">units</A>. Note that <I>contactArea</I> is based on
+an analytic geometric calculation of sphere-sphere or sphere-plane intersection
+rather than a calculation based on mechanics. This is to ensure that
+<I>contactArea</I> works with all types of contact models. 
+</P>
+<P>The output <I>delta</I> will output the
 overlap (sum of radii - distance between particle centers) in distance
 <A HREF = "units.html">units</A> .The output <I>heatFlux</I> (available only
 if a <A HREF = "fix_heat_gran.html">fix heat/gran</A> is used to compute  heat

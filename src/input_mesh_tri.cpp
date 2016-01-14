@@ -95,7 +95,7 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
   {
     nonlammps_file = fopen(filename,"r");
     if (nonlammps_file == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open mesh file %s",filename);
       error->one(FLERR,str);
     }

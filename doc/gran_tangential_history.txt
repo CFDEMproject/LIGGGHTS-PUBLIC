@@ -24,12 +24,22 @@ force interaction as described in "pair gran"_pair_gran.html.
 The spring part of the tangential force (k_t) is a "history" effect
 that accounts for the tangential displacement ("tangential overlap")
 between the particles for the duration of the time they are in contact.
+It is calculated by adding up the releative tangential velocity at the
+contact point times the time-step size. 
 
 If this model is chosen, then this "tangential overlap" spring force is
 actually calculated / taken into account.
+
 The coefficient of friction cof is the upper limit of the tangential force through
-the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the tangential spring and normal
-force components in the formulas above.
+the Coulomb criterion Ft_spring = cof*Fn, where Ft_spring and Fn are the tangential 
+spring and total normal force components. Thus in the Hookean case, the tangential force
+between 2 particles grows according to a tangential spring and dash-pot model until
+Ft_spring/Fn = cof and is then held at Ft_spring = Fn*cof until the particles lose contact.
+In the Hertzian case and other non-linear cases, a similar analogy holds, though the 
+spring is no longer linear.
+
+The damping contribution is only added in time-steps where there is no slip,
+i.e. the Coulomb criterion is not met.
 
 This model contributes to surface heating in the frame of 
 "surface sphere/heatable"_gran_surface_sphere_heatable.html if the 

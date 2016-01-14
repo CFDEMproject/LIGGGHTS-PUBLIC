@@ -331,6 +331,9 @@ void FixInsertStream::calc_insertion_properties()
     // ninsert - if ninsert not defined directly, calculate it
     if(ninsert == 0 && ninsert_exists)
     {
+        if(massinsert/fix_distribution->mass_expect() > 2.e9)
+           error->fix_error(FLERR,this,"you are attempting to insert more than 2e9 particles. Reduce the mass to be inserted or increase the particle diameter");
+
         if(massinsert > 0.) ninsert = static_cast<int>((massinsert+FIX_INSERT_STREAM_TINY) / fix_distribution->mass_expect());
         else error->fix_error(FLERR,this,"must define either 'nparticles' or 'mass'");
     }

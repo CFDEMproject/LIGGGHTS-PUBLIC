@@ -91,6 +91,28 @@ namespace MODEL_PARAMS
     return scalar;
   }
 
+  ScalarProperty* createScalarProperty(PropertyRegistry & registry, const char* name, const char * caller, bool sanity_checks, const double lo, const double hi)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+
+    ScalarProperty * scalar = new ScalarProperty();
+    FixPropertyGlobal * property = registry.getGlobalProperty(name,"property/global","scalar",0,0,caller);
+
+    const double value = property->compute_scalar();
+    if (sanity_checks)
+    {
+      if (value < lo || value > hi)
+      {
+        char buf[200];
+        sprintf(buf,"%s requires values between %g and %g \n",name,lo,hi);
+        lmp->error->all(FLERR,buf);
+      }
+    }
+
+    scalar->data = value;
+    return scalar;
+  }
+
   VectorProperty* createPerTypeProperty(PropertyRegistry & registry, const char* name, const char * caller)
   {
     const int max_type = registry.max_type();
@@ -99,6 +121,31 @@ namespace MODEL_PARAMS
     FixPropertyGlobal * property = registry.getGlobalProperty(name,"property/global","vector",max_type,0,caller);
     for(int i = 1; i < max_type+1; i++)
         vector->data[i] = property->compute_vector(i-1);
+
+    return vector;
+  }
+
+  VectorProperty* createPerTypeProperty(PropertyRegistry & registry, const char* name, const char * caller, bool sanity_checks, const double lo, const double hi)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+    const int max_type = registry.max_type();
+
+    VectorProperty * vector = new VectorProperty(max_type+1);
+    FixPropertyGlobal * property = registry.getGlobalProperty(name,"property/global","vector",max_type,0,caller);
+    for(int i = 1; i < max_type+1; i++)
+    {
+      const double value = property->compute_vector(i-1);
+      if (sanity_checks)
+      {
+        if (value < lo || value > hi)
+        {
+          char buf[200];
+          sprintf(buf,"%s requires values between %g and %g \n",name,lo,hi);
+          lmp->error->all(FLERR,buf);
+        }
+      }
+      vector->data[i] = value;
+    }
 
     return vector;
   }
@@ -115,6 +162,35 @@ namespace MODEL_PARAMS
       for(int j = 1; j < max_type+1; j++)
       {
          matrix->data[i][j] = property->compute_array(i-1,j-1);
+      }
+    }
+
+    return matrix;
+  }
+
+  MatrixProperty* createPerTypePairProperty(PropertyRegistry & registry, const char * name, const char * caller, bool sanity_checks, const double lo, const double hi)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+    const int max_type = registry.max_type();
+
+    MatrixProperty * matrix = new MatrixProperty(max_type+1, max_type+1);
+    FixPropertyGlobal *   property = registry.getGlobalProperty(name,"property/global","peratomtypepair",max_type,max_type,caller);
+
+    for(int i = 1; i < max_type+1; i++)
+    {
+      for(int j = 1; j < max_type+1; j++)
+      {
+        const double value = property->compute_array(i-1,j-1);
+        if (sanity_checks)
+        {
+          if (value < lo || value > hi)
+          {
+            char buf[200];
+            sprintf(buf,"%s requires values between %g and %g \n",name,lo,hi);
+            lmp->error->all(FLERR,buf);
+          }
+        }
+        matrix->data[i][j] = value;
       }
     }
 

@@ -3913,7 +3913,7 @@ VarReader::VarReader(LAMMPS *lmp, char *name, char *file, int flag) :
   if (me == 0) {
     fp = fopen(file,"r");
     if (fp == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open file variable file %s",file);
       error->one(FLERR,str);
     }

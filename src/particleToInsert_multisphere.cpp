@@ -108,7 +108,7 @@ int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, d
 
     // check every sphere against all others in xnear
     // if no overlap add to xnear
-    double del[3],disp_glob[3], rsq, radsum;
+    double disp_glob[3]; //del[3], rsq, radsum;
     double ex_space_try[3], ey_space_try[3], ez_space_try[3];
 
     // rotate if needed

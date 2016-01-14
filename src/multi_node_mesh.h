@@ -207,6 +207,8 @@ namespace LAMMPS_NS
         // mesh ID - same as fix mesh ID
         char *mesh_id_;
 
+        // for overlap check on element insertion
+        
         inline void reset_stepLastReset()
         { stepLastReset_ = -1; }
 

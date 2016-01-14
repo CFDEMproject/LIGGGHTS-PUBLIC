@@ -65,6 +65,7 @@ class FixPOEMS : public Fix  {
   ~FixPOEMS();
   virtual void post_create();
   int setmask();
+  int model_switch_value();
   void init();
   void setup(int);
   void initial_integrate(int);
@@ -99,39 +100,39 @@ class FixPOEMS : public Fix  {
   int nlevels_respa;
   double total_ke;
 
-  // atom assignment to rigid bodies
-  // double count joint atoms as being in multiple bodies
+  // atom assignment to rigid segments
+  // double count joint atoms as being in multiple segments
 
-  int *natom2body;         // # of bodies each atom is part of
-  int **atom2body;         // list of bodies each atom is part of
-  double **displace;       // atom displace in body coords for 1st body it's in
+  int *natom2segment;         // # of segments each atom is part of
+  int **atom2segment;         // list of segments each atom is part of
+  double **displace;       // atom displace in segment coords for 1st segment it's in
 
-  // rigid body properties
-  // only nrigid double counts joint atoms as being in multiple bodies
-  // other quantities only count a joint atom as being in 1st body
-
-  int nbody;                // # of rigid bodies
-  int *nrigid;              // # of atoms in each rigid body
-  double *masstotal;        // total mass of each rigid body
-  double **xcm;             // coords of center-of-mass of each rigid body
-  double **vcm;             // velocity of center-of-mass of each
-  double **fcm;             // force on center-of-mass of each
-  double **inertia;         // 3 inertia components of each (xx,yy,zz,xy,yz,xz)
+  // rigid segment properties
+  // only nrigid double counts joint atoms as being in multiple segments
+  // other quantities only count a joint atom as being in 1st segment
+  int nsystem;               // # of systems 
+  int nsegment;                // # of rigid segments
+  int *nrigid;              // # of atoms in each rigid segment
+  double *masstotal;        // total mass of each rigid segment
+  double **xcm;             // coords of center-of-mass of each rigid segment
+  double **vcm;             // velocity of center-of-mass of each rigid segment
+  double **fcm;             // force on center-of-mass of each rigid segment
+  double **inertia;         // 3 inertia components of each rigid segment (xx,yy,zz,xy,yz,xz)
   double **ex_space,**ey_space,**ez_space;
-                            // orientation of each body in space coords
-  double **angmom;          // angular momentum of each in space coords
-  double **omega;           // angular velocity of each in space coords
-  double **torque;          // torque on each rigid body in space coords
+                            // orientation of each rigid segments' principal axes in space coords
+  double **angmom;          // angular momentum of each rigid segment in space coords
+  double **omega;           // angular velocity of each rigid segment in space coords
+  double **torque;          // torque on each rigid segment in space coords
   double **sum,**all;       // work vectors
 
-  // joint attributes between pairs of rigid bodies
+  // joint attributes between pairs of rigid segments
 
-  int ncluster;             // # of independent clusters of coupled bodies
+  int ncluster;             // # of independent clusters of coupled segments
   int njoint;               // # of interbody joints
-  int **jointbody;          // indices of 2 rigid bodies in each joint (1-N)
+  int **jointsegment;          // indices of 2 rigid segments in each joint (1-N)
   double **xjoint;          // coords of each joint point, NOT updated!
-  int nfree;                // # of isolated unconnected bodies
-  int *freelist;            // indices of isolated bodies (1-N)
+  int nfree;                // # of isolated unconnected segments
+  int *freelist;            // indices of isolated segments (1-N)
 
   // POEMS object
 
@@ -140,6 +141,7 @@ class FixPOEMS : public Fix  {
   // internal class functions
 
   void readfile(char *);
+  int model_switch_flag;
   int readline(FILE *, char **, int *);
   void jointbuild();
   void sortlist(int, int **);
@@ -173,19 +175,19 @@ E: Must use a molecular atom style with fix poems molecule
 
 Self-explanatory.
 
-E: No rigid bodies defined
+E: No rigid segments defined
 
-The fix specification did not end up defining any rigid bodies.
+The fix specification did not end up defining any rigid segments.
 
-E: Atom in too many rigid bodies - boost MAXBODY
+E: Atom in too many rigid segments - boost MAXSEGMENT
 
-Fix poems has a parameter MAXBODY (in fix_poems.cpp) which determines
-the maximum number of rigid bodies a single atom can belong to (i.e. a
-multibody joint).  The bodies you have defined exceed this limit.
+Fix poems has a parameter MAXSEGMENT (in fix_poems.cpp) which determines
+the maximum number of rigid segments a single atom can belong to (i.e. a
+multibody joint).  The segments you have defined exceed this limit.
 
-E: One or zero atoms in rigid body
+E: One or zero atoms in rigid segment
 
-Any rigid body defined by the fix rigid command must contain 2 or more
+Any rigid segment defined by the fix rigid command must contain 2 or more
 atoms.
 
 W: More than one fix poems
@@ -197,13 +199,13 @@ E: POEMS fix must come before NPT/NPH fix
 NPT/NPH fix must be defined in input script after all poems fixes,
 else the fix contribution to the pressure virial is incorrect.
 
-E: Insufficient Jacobi rotations for POEMS body
+E: Insufficient Jacobi rotations for POEMS segment
 
-Eigensolve for rigid body was not sufficiently accurate.
+Eigensolve for rigid segment was not sufficiently accurate.
 
-E: Rigid body has degenerate moment of inertia
+E: Rigid segment has degenerate moment of inertia
 
-Fix poems will only work with bodies (collections of atoms) that have
+Fix poems will only work with segments (collections of atoms) that have
 non-zero principal moments of inertia.  This means they must be 3 or
 more non-collinear atoms, even with joint atoms removed.
 
@@ -217,20 +219,20 @@ E: Cannot open fix poems file %s
 The specified file cannot be opened.  Check that the path and name are
 correct.
 
-W: No joints between rigid bodies, use fix rigid instead
+W: No joints between rigid segments, use fix rigid instead
 
-The bodies defined by fix poems are not connected by joints.  POEMS
-will integrate the body motion, but it would be more efficient to use
+The segments defined by fix poems are not connected by joints.  POEMS
+will integrate the segment motion, but it would be more efficient to use
 fix rigid.
 
 E: Cyclic loop in joint connections
 
-Fix poems cannot (yet) work with coupled bodies whose joints connect
-the bodies in a ring (or cycle).
+Fix poems cannot (yet) work with coupled segments whose joints connect
+the segments in a ring (or cycle).
 
 E: Tree structure in joint connections
 
-Fix poems cannot (yet) work with coupled bodies whose joints connect
-the bodies in a tree structure.
+Fix poems cannot (yet) work with coupled segments whose joints connect
+the segments in a tree structure.
 
 */

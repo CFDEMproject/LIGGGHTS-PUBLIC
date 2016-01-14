@@ -86,6 +86,9 @@ void CreateAtoms::command(int narg, char **arg)
     error->all(FLERR,"Cannot create_atoms after "
                "reading restart file with per-atom info");
 
+  all_in = false; 
+  all_in_dist = 0.; 
+
   // parse arguments
 
   if (narg < 2) error->all(FLERR,"Illegal create_atoms command");
@@ -152,6 +155,13 @@ void CreateAtoms::command(int narg, char **arg)
       else if (strcmp(arg[iarg+1],"no") == 0) remapflag = 0;
       else error->all(FLERR,"Illegal create_atoms command");
       iarg += 2;
+    } else if (strcmp(arg[iarg],"all_in") == 0) { 
+      if (iarg+2 > narg) error->all(FLERR,"Illegal create_atoms command");
+      all_in_dist = force->numeric(FLERR,arg[iarg+1]);
+      if(all_in_dist <= 0.)
+            error->all(FLERR,"Illegal create_atoms command, 'all_in' > 0 required");
+      all_in = true;
+      iarg += 2;
     } else if (strcmp(arg[iarg],"units") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal create_atoms command");
       if (strcmp(arg[iarg+1],"box") == 0) scaleflag = 0;
@@ -167,6 +177,9 @@ void CreateAtoms::command(int narg, char **arg)
     if (nrandom < 0) error->all(FLERR,"Illegal create_atoms command");
     if (seed <= 0) error->all(FLERR,"Illegal create_atoms command");
   }
+
+  if(all_in && ! (REGION==style))
+    error->all(FLERR,"Illegal create_atoms command, 'all_in' can only be used together with region");
 
   // demand non-none lattice be defined for BOX and REGION
   // else setup scaling for SINGLE and RANDOM
@@ -408,9 +421,15 @@ void CreateAtoms::add_random()
       if (domain->dimension == 2) xone[2] = zmid;
 
       valid = 1;
-      if (nregion >= 0 &&
-          domain->regions[nregion]->match(xone[0],xone[1],xone[2]) == 0)
-        valid = 0;
+      if (nregion >= 0) 
+      {
+        if(!all_in && domain->regions[nregion]->match(xone[0],xone[1],xone[2]) == 0)
+            valid = 0;
+
+        else if(all_in && domain->regions[nregion]->match_shrinkby_cut(xone,all_in_dist) == 0)
+            valid = 0;
+      }
+
       if (triclinic) {
         domain->x2lamda(xone,lamda);
         coord = lamda;
@@ -530,8 +549,11 @@ void CreateAtoms::add_lattice()
 
           // if a region was specified, test if atom is in it
 
-          if (style == REGION)
-            if (!domain->regions[nregion]->match(x[0],x[1],x[2])) continue;
+          if (style == REGION) 
+          {
+            if (!all_in && !domain->regions[nregion]->match(x[0],x[1],x[2])) continue;
+            if (all_in && !domain->regions[nregion]->match_shrinkby_cut(x,all_in_dist)) continue;
+          }
 
           // test if atom is in my subbox
 

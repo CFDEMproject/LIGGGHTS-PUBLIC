@@ -240,7 +240,7 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
       if (me == 0) {
         fp = fopen(arg[iarg+1],"w");
         if (fp == NULL) {
-          char str[128];
+          char str[512];
           sprintf(str,"Cannot open fix ave/spatial file %s",arg[iarg+1]);
           error->one(FLERR,str);
         }
@@ -299,7 +299,7 @@ FixAveSpatial::FixAveSpatial(LAMMPS *lmp, int narg, char **arg) :
       if (me == 0) {
         fp2 = fopen(arg[iarg+3],"w");
         if (fp2 == NULL) {
-          char str[128];
+          char str[512];
           sprintf(str,"Cannot open fix ave/spatial file %s",arg[iarg+3]);
           error->one(FLERR,str);
         }

@@ -91,7 +91,7 @@ public:
     aligned_sidata(aligned_malloc<SurfacesIntersectData>(32)),
     aligned_i_forces(aligned_malloc<ForceData>(32)),
     aligned_j_forces(aligned_malloc<ForceData>(32)),
-    cmodel(lmp, parent) {
+    cmodel(lmp, parent,false /*is_wall*/) {
   }
 
   virtual ~Granular() {
@@ -159,6 +159,11 @@ public:
       if(hashcode != ContactModel::STYLE_HASHCODE)
         error->all(FLERR,"wrong pair style loaded!");
     }
+  }
+
+  int bond_history_offset()
+  {
+    return cmodel.bond_history_offset();
   }
 
   double stressStrainExponent()
@@ -241,7 +246,7 @@ public:
             sidata.quat_i = quat[i];
             sidata.shape_i = shape[i];
             sidata.roundness_i = roundness[i];
-            sidata.radi = pow(0.75 * atom->volume[i] / M_PI, MathConst::THIRD);
+            sidata.radi = cbrt(0.75 * atom->volume[i] / M_PI);
             sidata.inertia_i = inertia[i];
           }
       #endif
@@ -271,7 +276,7 @@ public:
               sidata.quat_j = quat[j];
               sidata.shape_j = shape[j];
               sidata.roundness_j = roundness[j];
-              sidata.radj = pow(0.75 * atom->volume[j] / M_PI, MathConst::THIRD);
+              sidata.radj = cbrt(0.75 * atom->volume[j] / M_PI);
               sidata.inertia_j = inertia[j];
             }
         #endif
@@ -282,6 +287,19 @@ public:
         // rsq < radsum * radsum is broad phase check with bounding spheres
         // cmodel.checkSurfaceIntersect() is narrow phase check
         
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+        sidata.v_i     = v[i];
+        sidata.v_j     = v[j];
+        if (rmass) {
+          sidata.mi = rmass[i];
+          sidata.mj = rmass[j];
+        } else {
+          sidata.mi = mass[type[i]];
+          sidata.mj = mass[type[j]];
+        }
+        sidata.omega_i = omega[i];
+        sidata.omega_j = omega[j];
+#endif
         if (rsq < radsum * radsum && cmodel.checkSurfaceIntersect(sidata)) {
           const double r = sqrt(rsq);
           const double rinv = 1.0 / r;
@@ -386,6 +404,9 @@ public:
     }
 
     cmodel.endPass(sidata, i_forces, j_forces);
+
+    if (pg->cpl() && addflag)
+        pg->cpl_pair_finalize();
 
     if(store_contact_forces)
         pg->fix_contact_forces()->do_forward_comm();

@@ -69,6 +69,8 @@ class CreateAtoms : protected Pointers {
 
  private:
   int itype,style,nregion,nbasis,nrandom,seed;
+  bool all_in; 
+  double all_in_dist; 
   int *basistype;
   double xone[3];
   int remapflag;

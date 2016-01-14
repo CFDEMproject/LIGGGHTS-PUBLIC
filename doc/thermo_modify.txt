@@ -54,6 +54,11 @@ an error and continue with a warning.  A warning will only be issued
 once, the first time an atom is lost.  This can be a useful debugging
 option.
 
+IMPORTANT NOTE: For compuatational efficiency, this {lost} check is just
+a simple check if the total number of atoms in the system decreases.
+So for simulations where particles are continuously inserted, "lost"
+atoms might not be detected.
+
 The {norm} keyword determines whether various thermodynamic output
 values are normalized by the number of atoms or not, depending on
 whether it is set to {yes} or {no}.  Different unit styles have
@@ -111,7 +116,7 @@ appropriate for an 8-byte signed integer, e.g. one with "%ld".
 
 [Default:]
 
-The option defaults are lost = error, norm = yes for unit style of
+The option defaults are lost = ignore, norm = yes for unit style of
 {lj}, norm = no for unit style of {real} and {metal}, flush = no.
 
 The defaults for the line and format options depend on the thermo

@@ -43,6 +43,7 @@
 #include "eulerparameters.h"
 #include "matrices.h"
 #include "norm.h"
+#include "sphericalFlexiblejoint.h"
 
 
      class Body;
@@ -83,7 +84,7 @@
        
        void ClearJointIDs();              
 
-       void Create_System_LAMMPS(int numbodies, double *mass,double **inertia, double ** xcm, double ** xjoint,double **vh1,double **omega,double **ex_space, double **ey_space, double **ez_space, int b, int * mapping, int count);
+       void Create_System_LAMMPS(int numbodies, double *mass,double **inertia, double ** xcm, double ** xjoint,double **vh1,double **omega,double **ex_space, double **ey_space, double **ez_space, int b, int * mapping, int count, int flag);
        
        void Create_DegenerateSystem(int& nfree, int*freelist, double *&masstotal, double **&inertia, double **&xcm, double **&vcm, double **&omega, double **&ex_space, double **&ey_space, double **&ez_space);
 
