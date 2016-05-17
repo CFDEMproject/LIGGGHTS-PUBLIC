@@ -1,6 +1,6 @@
 particle_mesh nGridPoints 10
 
-particle_data number_particles 800 #must be number of particles + 1!
+particle_data number_particles 800
 #coupling json myCoupling
 coupling liggghts
 

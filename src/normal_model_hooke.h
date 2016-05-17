@@ -94,6 +94,8 @@ namespace ContactModels
       settings.registerOnOff("heating_tracking",heating_track,false);
     }
 
+    inline void postSettings() {}
+
     inline void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("Yeff", &MODEL_PARAMS::createYeff);
       registry.registerProperty("Geff", &MODEL_PARAMS::createGeff);

@@ -58,6 +58,8 @@
 namespace LAMMPS_NS {
 
 class Comm : protected Pointers {
+ friend class Info;
+
  public:
   int me,nprocs;                    // proc info
   int procgrid[3];                  // procs assigned in each dim of 3d grid

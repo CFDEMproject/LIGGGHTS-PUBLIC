@@ -53,6 +53,8 @@
 #include "vector_liggghts.h"
 #include "fix_cfd_coupling_convection_species.h"
 #include "fix_property_atom.h"
+#include "fix_property_global.h"
+#include "properties.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -176,6 +178,17 @@ void FixCfdCouplingConvectionSpecies::post_create()
   FixScalarTransportEquation *fix_ste = modify->find_fix_scalar_transport_equation("speciesTransfer");
   if(!fix_ste)
   {
+        int max_type = atom->get_properties()->max_type();
+        Fix* capacityQty = modify->find_fix_property(capacityName_,"property/global","peratomtype",max_type,0,style,false);
+
+        if(capacityQty==NULL)
+        {
+            sprintf(capacityName_, "none");
+            if(comm->me==0)
+                  printf("WARNING: FixCfdCouplingConvectionSpecies cannot locate capacity quantity. Thus, will assume you are not using capacity in scalar transport equation is '%s'.", capacityName_);
+
+        }
+
         const char *newarg[15];
         newarg[0] = steName_;
         newarg[1] = group->names[igroup];

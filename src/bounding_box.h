@@ -113,6 +113,9 @@ class BoundingBox
         hi[2] = zHi;
     }
 
+    double getVolume()
+    { return (zHi-zLo)*(yHi-yLo)*(xHi-xLo); }
+
     void getExtent(double extent[3]) const {
       extent[0] = xHi - xLo;
       extent[1] = yHi - yLo;

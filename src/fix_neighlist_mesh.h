@@ -53,6 +53,7 @@ FixStyle(neighlist/mesh,FixNeighlistMesh)
 
 #include "fix.h"
 #include "container.h"
+#include "atom_vec_ellipsoid.h"
 #include <vector>
 #include <algorithm>
 
@@ -160,6 +161,8 @@ class FixNeighlistMesh : public Fix
     class AtomVecEllipsoid *avec;
 
     bool otherList_;
+private:
+    void checkBin(AtomVecEllipsoid::Bonus *bonus, std::vector<int>& neighbors, int& nchecked, double contactDistanceFactor, int *mask, int nlocal, int iBin, int iTri, bool haveNonSpherical, int *ellipsoid, double *shape);
 };
 
 } /* namespace LAMMPS_NS */

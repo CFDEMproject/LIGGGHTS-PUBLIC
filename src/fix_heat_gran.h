@@ -44,7 +44,7 @@
 
 #include "fix.h"
 
-#define SMALL 1e-8
+static const double SMALL_FIX_HEAT_GRAN = 1.e-6;
 
 namespace LAMMPS_NS {
 

@@ -6,7 +6,7 @@
 
 :line
 
-gran rolling_friction cdt :h3
+gran rolling_friction cdt command :h3
 
 [Syntax:]
 

@@ -61,10 +61,8 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixBuoyancy::FixBuoyancy(LAMMPS *lmp, int narg, char **arg) :
-  Fix(lmp, narg, arg),
+  FixBaseLiggghts(lmp, narg, arg),
   density_(0.),
-  iregion_(-1),
-  id_region_(0),
   dim_(-1),
   direction_(1.),
   fluid_level_(0.),
@@ -72,6 +70,8 @@ FixBuoyancy::FixBuoyancy(LAMMPS *lmp, int narg, char **arg) :
   force_flag_(false)
 {
   vectorZeroize3D(buyoancy_force_total_);
+
+  do_support_respa();
 
   if (narg < 3) error->fix_error(FLERR,this,"not enough arguments");
 
@@ -109,12 +109,7 @@ FixBuoyancy::FixBuoyancy(LAMMPS *lmp, int narg, char **arg) :
       iarg += 2;
     } else if (strcmp(arg[iarg],"region") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments for 'region'");
-      iregion_ = domain->find_region(arg[iarg+1]);
-      if (iregion_ == -1)
-        error->fix_error(FLERR,this,"region ID does not exist");
-      int n = strlen(arg[iarg+1]) + 1;
-      id_region_ = new char[n];
-      strcpy(id_region_,arg[iarg+1]);
+      process_region(arg[iarg+1]);
       iarg += 2;
     } else error->fix_error(FLERR,this," expecting 'density' or 'region'");
   }
@@ -131,7 +126,6 @@ FixBuoyancy::FixBuoyancy(LAMMPS *lmp, int narg, char **arg) :
 
 FixBuoyancy::~FixBuoyancy()
 {
-  if(id_region_) delete []id_region_;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -149,21 +143,10 @@ int FixBuoyancy::setmask()
 
 void FixBuoyancy::init()
 {
-  if(!atom->radius_flag)
-    error->fix_error(FLERR,this,"requires per-atom radius");
+  FixBaseLiggghts::init();
+
   if(!atom->density_flag)
     error->fix_error(FLERR,this,"requires per-atom density");
-
-  if (strstr(update->integrate_style,"respa"))
-    nlevels_respa = ((Respa *) update->integrate)->nlevels;
-
-  // set index and check validity of region
-
-  if (iregion_ >= 0) {
-    iregion_ = domain->find_region(id_region_);
-    if (iregion_ == -1)
-      error->fix_error(FLERR,this,"region ID does not exist");
-  }
 
   if(1 != modify->n_fixes_style_strict("gravity"))
       error->fix_error(FLERR,this,"need exactly one fix gravity");
@@ -199,13 +182,7 @@ void FixBuoyancy::test_direction()
 
 void FixBuoyancy::setup(int vflag)
 {
-  if (strstr(update->integrate_style,"verlet"))
-    post_force(vflag);
-  else {
-    ((Respa *) update->integrate)->copy_flevel_f(nlevels_respa-1);
-    post_force_respa(vflag,nlevels_respa-1,0);
-    ((Respa *) update->integrate)->copy_f_flevel(nlevels_respa-1);
-  }
+  FixBaseLiggghts::setup(vflag);
 
   // error checks on coarsegraining
   if(force->cg_active())
@@ -251,8 +228,7 @@ void FixBuoyancy::post_force(int vflag)
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
 
-      if (iregion_ >= 0 &&
-            !domain->regions[iregion_]->match(x[i][0],x[i][1],x[i][2]))
+      if (region_ && !region_->match(x[i][0],x[i][1],x[i][2]))
           continue;
 
       double h = (x[i][dim_] - fluid_level_)*direction_;

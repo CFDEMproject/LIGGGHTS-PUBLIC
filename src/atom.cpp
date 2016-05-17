@@ -1685,6 +1685,10 @@ void *Atom::extract(const char *name,int &len)
   if (strcmp(name,"rmass") == 0) return (void *) rmass;
   if (strcmp(name,"vfrac") == 0) return (void *) vfrac;
   if (strcmp(name,"s0") == 0) return (void *) s0;
+  if (strcmp(name,"shape") == 0) return (void *) shape;
+
+  len = 4;
+  if (strcmp(name,"quaternion") == 0) return (void *) quaternion;
 
   len = -1; 
   return NULL;

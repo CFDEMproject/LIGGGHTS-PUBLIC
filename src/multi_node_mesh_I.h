@@ -61,6 +61,7 @@
     random_(new RanPark(lmp,179424799)), // big prime #
     mesh_id_(0),
     precision_(EPSILON_PRECISION),
+    min_feature_length_(-1.),
     element_exclusion_list_(0),
     autoRemoveDuplicates_(false),
     nMove_(0),
@@ -103,6 +104,12 @@
   }
 
   template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::setMinFeatureLength(double _min_feature_length)
+  {
+      min_feature_length_ = _min_feature_length;
+  }
+
+  template<int NUM_NODES>
   void MultiNodeMesh<NUM_NODES>::setElementExclusionList(FILE *_file)
   {
       element_exclusion_list_ = _file;
@@ -124,6 +131,10 @@
   {
     
     double avg[3];
+
+    if(nodesAreEqual(nodeToAdd[0],nodeToAdd[1]) || nodesAreEqual(nodeToAdd[1],nodeToAdd[2]) ||
+       nodesAreEqual(nodeToAdd[0],nodeToAdd[2]) )
+       return false;
 
     // add node
     node_.add(nodeToAdd);

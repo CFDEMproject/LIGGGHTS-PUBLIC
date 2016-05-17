@@ -81,7 +81,7 @@ class FixPropertyAtom : public Fix {
   void pre_set_arrays();
   virtual void set_arrays(int);
 
-  void set_all(double value);
+  void set_all(double value,bool ghost = false);
 
   void write_restart(FILE *);
   virtual void restart(char *);
@@ -109,6 +109,7 @@ class FixPropertyAtom : public Fix {
   int commGhost;        // 1 if communicated to ghost particles (via pack_comm/unpack_comm), 0 if not
   int commGhostRev;     // 1 if rev communicated from ghost particles (via pack_comm_rev/unpack_comm_rev), 0 if not
   int nvalues;
+  int nmaxGrown_;
   double *defaultvalues; // default values at particle creation
 
   // in case of initialization from property - name of property

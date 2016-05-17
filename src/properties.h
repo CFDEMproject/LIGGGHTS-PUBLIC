@@ -59,13 +59,23 @@ class Properties: protected Pointers
   void* find_property(const char *name, const char *type, int &len1, int &len2);
   inline class Multisphere *ms_data() { return ms_data_;}
 
+  bool allow_soft_particles()
+  { return allow_soft_particles_; }
+
+  void do_allow_soft_particles()
+  { allow_soft_particles_ = true; }
+  void do_not_allow_soft_particles()
+  { allow_soft_particles_ = false; }
+
  private:
 
   // multisphere
   class FixMultisphere *ms_;
   class Multisphere *ms_data_;
 
-  int mintype,maxtype;
+  int mintype_,maxtype_;
+
+  bool allow_soft_particles_;
 }; //end class
 
 }

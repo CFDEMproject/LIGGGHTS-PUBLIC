@@ -91,8 +91,8 @@ namespace LAMMPS_NS {
         double fix_property_value;
 
         virtual int insert();
-        virtual int check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList & neighList);
-        virtual int check_near_set_x_v_omega_ms(double *x,double *v, double *omega, double *quat, RegionNeighborList & neighList);
+        virtual int check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList<interpolate_no> & neighList);
+        virtual int check_near_set_x_v_omega_ms(double *x,double *v, double *omega, double *quat, RegionNeighborList<interpolate_no> & neighList);
         //virtual int check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, double **xnear, int &nnear);
         //virtual int check_near_set_x_v_omega_ms(double *x,double *v, double *omega, double *quat, double **xnear, int &nnear);
 

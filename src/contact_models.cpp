@@ -74,10 +74,10 @@ namespace ContactModels {
 int64_t generate_gran_hashcode(int model, int tangential, int cohesion, int rolling, int surface)
 {
    return (((int64_t)model)) |
-       (((int64_t)tangential) << 4) |
-       (((int64_t)cohesion) << 8) |
-       (((int64_t)rolling) << 12) |
-       (((int64_t)surface) << 16);
+       (((int64_t)tangential) << 6) |
+       (((int64_t)cohesion) << 12) |
+       (((int64_t)rolling) << 18) |
+       (((int64_t)surface) << 24);
  }
 
 Factory::Factory() {

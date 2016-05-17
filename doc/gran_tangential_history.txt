@@ -6,7 +6,7 @@
 
 :line
 
-gran tangential history :h3
+gran tangential history command :h3
 
 [Syntax:]
 
@@ -43,7 +43,7 @@ i.e. the Coulomb criterion is not met.
 
 This model contributes to surface heating in the frame of 
 "surface sphere/heatable"_gran_surface_sphere_heatable.html if the 
-appropriate flag is activated
+appropriate flag is activated (only available in the PREMIUM version).
 
 
 [Default:]

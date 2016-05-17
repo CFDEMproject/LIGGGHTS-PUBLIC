@@ -83,6 +83,11 @@ namespace MODEL_PARAMS
         return createPerTypeProperty(registry, "maxLiquidContent", caller, sanity_checks, 0.0, 1.0);
     }
 
+    inline static ScalarProperty* createLbVolumeFraction(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+    {
+        return createScalarProperty(registry, "lbVolumeFraction", caller, sanity_checks, 0.0, 1.0);
+    }
+
 }
 
 namespace LIGGGHTS {
@@ -100,7 +105,9 @@ namespace ContactModels {
     CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *cmb) :
       Pointers(lmp), surfaceLiquidContentInitial(0.0), surfaceTension(0.0), contactAngle(0),
        minSeparationDistanceRatio(0.0), maxSeparationDistanceRatio(0.0), fluidViscosity(0.),
-       history_offset(0),fix_surfaceliquidcontent(0),fix_liquidflux(0), fix_ste(0), limit_lqc_flag_(false)
+       ln1overMinSeparationDistanceRatio(0.0), maxLiquidContent(0), volumeFraction(0.05),
+       history_offset(0),fix_surfaceliquidcontent(0),fix_liquidflux(0), fix_ste(0), limit_lqc_flag_(false),
+       mod_lb_vol_flag_(false)
     {
       history_offset = hsetup->add_history_value("contflag", "0");
       
@@ -108,13 +115,15 @@ namespace ContactModels {
         error->all(FLERR,"Using cohesion model washino/capillary/viscous for walls is not supported");
     }
 
-    void registerSettings(Settings & settings) {
+    void registerSettings(Settings & settings)
+    {
         settings.registerOnOff("limitLiquidContent", limit_lqc_flag_, false);
+        settings.registerOnOff("modifyLbVolume", mod_lb_vol_flag_, false);
+        settings.registerOnOff("tangential_reduce",tangentialReduce_,false);
     }
 
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("surfaceLiquidContentInitial", &MODEL_PARAMS::createliquidContentInitialWashino);
-
       registry.registerProperty("surfaceTension", &MODEL_PARAMS::createSurfaceTension);
       registry.registerProperty("fluidViscosity", &MODEL_PARAMS::createFluidViscosityWashino);
       registry.registerProperty("contactAngle", &MODEL_PARAMS::createContactAngle);
@@ -135,6 +144,12 @@ namespace ContactModels {
       if (limit_lqc_flag_) {
           registry.registerProperty("maxLiquidContent", &MODEL_PARAMS::createMaxLiquidContent);
           registry.connect("maxLiquidContent", maxLiquidContent, "cohesion_model washino/capillary/viscous");
+      }
+
+      // if mod_lb_vol_flag_ need additional property
+      if (mod_lb_vol_flag_) {
+          registry.registerProperty("lbVolumeFraction", &MODEL_PARAMS::createLbVolumeFraction);
+          registry.connect("lbVolumeFraction", volumeFraction, "cohesion_model washino/capillary/viscous");
       }
 
       fix_ste = modify->find_fix_scalar_transport_equation("liquidtransfer");
@@ -188,6 +203,9 @@ namespace ContactModels {
 
     void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
+      if(sidata.is_wall)
+        return;
+
       const int i = sidata.j;
       const int j = sidata.j;
       const int itype = sidata.itype;
@@ -213,7 +231,7 @@ namespace ContactModels {
 
       const double volLi1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radi*radi*radi*surfaceLiquidContent[i];
       const double volLj1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radj*radj*radj*surfaceLiquidContent[j];
-      const double volBond1000 = (volLi1000+volLj1000)*0.05;
+      const double volBond1000 = (volLi1000+volLj1000)*volumeFraction;
 
       // skip if bond volume too small
       if(volBond1000 < 1e-14) return;
@@ -243,7 +261,7 @@ namespace ContactModels {
       const double tor3 = sidata.en[0] * Ft2 - sidata.en[1] * Ft1;
 
       // add to fn, Ft
-      sidata.Fn += Fcapilary+FviscN;
+      if(tangentialReduce_) sidata.Fn += Fcapilary+FviscN; 
       //sidata.Ft += ...
 
       // apply normal and tangential force
@@ -281,6 +299,9 @@ namespace ContactModels {
     void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces)
     {
 	  
+	  if(scdata.is_wall)
+        return;
+
       double * const contflag = &scdata.contact_history[history_offset];
 
       // 3 cases: (i) no bridge present, (ii) bridge active, (iii) bridge breaks this step
@@ -305,7 +326,7 @@ namespace ContactModels {
 
       const double volLi1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radi*radi*radi*surfaceLiquidContent[i];
       const double volLj1000 = /* 4/3 * 1000*/  1333.333333*M_PI*radj*radj*radj*surfaceLiquidContent[j];
-      const double volBond1000 = (volLi1000+volLj1000)*0.05;
+      const double volBond1000 = (volLi1000+volLj1000)*volumeFraction;
 
       const double rEff = radi*radj / (radi+radj);
       const double contactAngleEff = 0.5 * contactAngle[itype] * contactAngle[jtype];
@@ -402,7 +423,7 @@ namespace ContactModels {
           const double tor3 = enx * Ft2 - eny * Ft1;
 
           // add to fn, Ft
-          //scdata.Fn += Fcapilary+FviscN;
+          //if(tangentialReduce_) scdata.Fn += Fcapilary+FviscN;
           //scdata.Ft += ...
 
           // apply normal and tangential force
@@ -453,10 +474,10 @@ namespace ContactModels {
           const double invdt = 1./update->dt;
 
           // liquid flux is in vol% per time
-          liquidFlux[i] += invdt*(0.5 * volBond1000 - 0.05*volLi1000) / (1333.333333*M_PI*radi*radi*radi) ;
+          liquidFlux[i] += invdt*(0.5 * volBond1000 - volumeFraction*volLi1000) / (1333.333333*M_PI*radi*radi*radi) ;
 
           if (force->newton_pair || j < atom->nlocal)
-            liquidFlux[j] += invdt*(0.5 * volBond1000 - 0.05*volLj1000) / (1333.333333*M_PI*radj*radj*radj) ;
+            liquidFlux[j] += invdt*(0.5 * volBond1000 - volumeFraction*volLj1000) / (1333.333333*M_PI*radj*radj*radj) ;
           
       }
       // no else here, case (i) was already caught before
@@ -478,12 +499,16 @@ namespace ContactModels {
     double surfaceLiquidContentInitial, surfaceTension, *contactAngle;
     double minSeparationDistanceRatio, maxSeparationDistanceRatio, fluidViscosity;
     double ln1overMinSeparationDistanceRatio, *maxLiquidContent;
+    double volumeFraction;
     int history_offset;
     FixPropertyAtom *fix_surfaceliquidcontent;
     FixPropertyAtom *fix_liquidflux;
     FixScalarTransportEquation *fix_ste;
 
     bool limit_lqc_flag_;
+    bool mod_lb_vol_flag_;
+
+    bool tangentialReduce_;
   };
 }
 }

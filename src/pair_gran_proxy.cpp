@@ -46,6 +46,7 @@
 
 #include "pair_gran_proxy.h"
 #include "granular_pair_style.h"
+#include "contact_models.h"
 
 using namespace LAMMPS_NS;
 using namespace LIGGGHTS::PairStyles;
@@ -70,7 +71,13 @@ void PairGranProxy::settings(int nargs, char ** args)
     impl->settings(nargs, args);
   } else {
     
-    error->one(FLERR, "unknown contact model");
+    error->all(FLERR, "unknown contact model or model not in whitelist. Possible root causes:\n"
+                       "  (1) it's a typo. Check the documentation of the contact model you are using.\n"
+                       "  (2) the contact model is not available in your installation. Check if a documentation for this.\n"
+                       "      contact model is available at all in your version.\n"
+                       "  (3) the model is part of a package which was not installed. Check the documentation for details. \n"
+                       "  (4) the model is available, but was not in the whitelist during compilation. Check if a file \n"
+                       "      src/style_contact_model.whitelist exists. If yes, modify it and re-compile.\n");
   }
 }
 
@@ -88,7 +95,7 @@ void PairGranProxy::read_restart_settings(FILE * fp)
 {
   int me = comm->me;
 
-  int64_t selected = -1;
+  int64_t selected = -1, used = -1;
   if(me == 0){
     // read model hashcode, but reset file pointer afterwards.
     // this way read_restart_settings can still read the hashcode (sanity check)
@@ -99,8 +106,24 @@ void PairGranProxy::read_restart_settings(FILE * fp)
 
   impl = Factory::instance().create("gran", selected, lmp, this);
 
+  // convert if not found
+  if(!impl) {
+      const int M = (15) & selected;
+      const int T = (15) & selected >> 4;
+      const int C = (15) & selected >> 8;
+      const int R = (15) & selected >> 12;
+      const int S = (15) & selected >> 16;
+      error->warning(FLERR, "LIGGGHTS tries to use old-style hashcode to find the contact model. Update your restart file.");
+      if(screen) {
+          fprintf(screen,"         original hashcode = %zd \n",selected);
+          fprintf(screen,"         M = %d, T = %d, C = %d, R = %d, S = %d \n",M,T,C,R,S);
+      }
+      used = ::LIGGGHTS::ContactModels::generate_gran_hashcode(M,T,C,R,S);
+      impl = Factory::instance().create("gran", used, lmp, this);
+  }
+
   if(impl) {
-    impl->read_restart_settings(fp);
+    impl->read_restart_settings(fp, used);
   } else {
     error->one(FLERR, "unknown contact model");
   }

@@ -1,4 +1,4 @@
-"Previous Section"_Section_python.html - "LIGGGHTS(R)-PUBLIC WWW Site"_lws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Manual.html :c
+"Previous Section"_Section_python.html - "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Manual.html :c
 
 :link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
@@ -114,27 +114,30 @@ If you are confident that you have found a bug in LIGGGHTS(R)-PUBLIC, follow the
 steps.
 
 Check the "New features and bug
-fixes"_http://lammps.sandia.gov/bug.html section of the "LIGGGHTS(R)-PUBLIC WWW
-site"_lws to see if the bug has already been reported or fixed or the
-"Unfixed bug"_http://lammps.sandia.gov/unbug.html to see if a fix is
-pending.
+fixes"_http://www.cfdem.com/liggghtsr-version-historyhttp://www.cfdem.com/liggghtsr-version-historyhttp://www.cfdem.com/liggghtsr-version-history section of the "LIGGGHTS(R)-PUBLIC WWW
+site"_liws to see if the bug has already been reported or fixed or the
+"Unfixed bug"_http://www.cfdem.com/forums/bug-reports-cfdemrcoupling-liggghtsr-and-parscale
+to see if a fix is pending.
 
-Check the "mailing list"_http://lammps.sandia.gov/mail.html
+Check the "forums"_http://www.cfdem.com/forum
 to see if it has been discussed before.
 
-If not, send an email to the mailing list describing the problem with
+If not, please post a bug report describing the problem with
 any ideas you have as to what is causing it or where in the code the
 problem might be.  The developers will ask for more info if needed,
 such as an input script or data files.
 
 The most useful thing you can do to help us fix the bug is to isolate
-the problem.  Run it on the smallest number of atoms and fewest number
+the problem.  Run it on the smallest number of particles and fewest number
 of processors and with the simplest input script that reproduces the
 bug and try to identify what command or combination of commands is
 causing the problem.
 
-As a last resort, you can send an email directly to the
-"developers"_http://lammps.sandia.gov/authors.html.
+Respectively the LAMMPS bug sections
+"bug"_http://lammps.sandia.gov/bug.html,
+"unfixed bug"_http://lammps.sandia.gov/unbug.html
+and the "mailing list"_http://lammps.sandia.gov/mail.html
+ can be checked.
 
 :line
 

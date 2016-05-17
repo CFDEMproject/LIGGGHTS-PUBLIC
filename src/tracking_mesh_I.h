@@ -84,9 +84,8 @@
     
     if(MultiNodeMeshParallel<NUM_NODES>::addElement(nodeToAdd))
     {
-        // tracking mesh add memory
-        
-        customValues_.grow(this->sizeLocal());
+        // tracking mesh add one element, grow memory if necessary
+        customValues_.addZeroElement();
 
         // set ID for element
         // ID starts from 0

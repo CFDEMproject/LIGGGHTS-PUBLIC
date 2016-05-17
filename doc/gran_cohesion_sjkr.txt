@@ -6,11 +6,16 @@
 
 :line
 
-gran cohesion sjkr :h3
+gran cohesion sjkr command :h3
 
 [Syntax:]
 
 cohesion sjkr :pre
+
+zero or more keyword/value pairs may be appended to the end (after all models are specified) :l
+  {tangential_reduce} values = 'on' or 'off'
+    on = tangential model does not see normal force computed by this model
+    off = tangential model does see normal force computed by this model :pre
 
 [Description:]
 
@@ -37,9 +42,21 @@ fix id all property/global cohesionEnergyDensity peratomtypepair n_atomtypes val
 
 IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 
+The optional keyword {tangential_reduce} defines if the tangential force model should
+"see" the additional normal force excerted by this model. If it is 'off' (which is default)
+then the tangential force model will be able to transmit a larger amount of tangential force
+If {tangential_reduce} = 'on' then the tangential model will not take the normal force
+from this model into account, typically leading to a lower value of tangential force
+(via the Coulomb friction limit)
+
 [Restrictions:]
 
 The cohesion model has been derived for the Hertzian Style, it may note be
 appropriate for the Hookean styles. 
 
 It is not available for "atom_style"_atom_style.html superquadric
+
+
+[Default:]
+
+{tangential_reduce} = 'off'

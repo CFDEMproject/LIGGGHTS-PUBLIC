@@ -84,6 +84,7 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
   while(iarg < narg && hasargs)
   {
     hasargs = false;
+    
     if (strcmp(arg[iarg],"insertion_face") == 0)
     {
       
@@ -786,7 +787,8 @@ void FixInsertStream::end_of_step()
     {
         if (mask[i] & groupbit)
         {
-            if(release_data[i][3] == 0.) continue;
+            if(MathExtraLiggghts::compDouble(release_data[i][3],0.,1.e-13))
+                continue;
 
             i_step = static_cast<int>(release_data[i][3]+FIX_INSERT_STREAM_TINY);
             r_step = static_cast<int>(release_data[i][4]+FIX_INSERT_STREAM_TINY);

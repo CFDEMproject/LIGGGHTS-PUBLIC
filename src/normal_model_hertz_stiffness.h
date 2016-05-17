@@ -77,6 +77,8 @@ namespace ContactModels
       settings.registerOnOff("limitForce", limitForce);
     }
 
+    inline void postSettings() {}
+
     void connectToProperties(PropertyRegistry & registry)
     {
       registry.registerProperty("k_n", &MODEL_PARAMS::createKn);

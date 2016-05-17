@@ -1,13 +1,14 @@
-"CFDEMproject WWW Site"_lws - "CFDEM Commands"_lc :c
+"CFDEMproject WWW Site"_liws - "CFDEM Commands"_lc :c
 
-:link(lws,http://www.cfdem.com)
+:link(liws,http://www.cfdem.com)
 :link(lc,CFDEMcoupling_Manual.html#comm)
-:link(github,http://github.com)
-:link(gitHelp,http://help.github.com/linux-set-up-git)
 
 :line
 githubAccess_public :h3
 :line
+
+:link(github,http://github.com)
+:link(gitHelp,http://help.github.com/linux-set-up-git)
 
 [Description:]
 

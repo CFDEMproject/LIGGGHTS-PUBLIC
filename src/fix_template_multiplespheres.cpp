@@ -49,6 +49,7 @@ a Fortran version of the MC integrator
 #include "stdlib.h"
 #include "string.h"
 #include "fix_template_multiplespheres.h"
+#include "fix_property_atom.h"
 #include "math_extra.h"
 #include "math_extra_liggghts.h"
 #include "vector_liggghts.h"
@@ -58,6 +59,7 @@ a Fortran version of the MC integrator
 #include "modify.h"
 #include "comm.h"
 #include "force.h"
+#include "update.h"
 #include "output.h"
 #include "memory.h"
 #include "error.h"
@@ -97,6 +99,9 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
   delete pti;
   pti = new ParticleToInsert(lmp,nspheres);
 
+  bonded = false;
+  fix_bond_random_id = 0;
+
   for (int i = 0; i < 3; i++) {
       x_min[i] = LARGE;
       x_max[i] = -LARGE;
@@ -130,7 +135,7 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
       if (strcmp(arg[iarg],"file") == 0)
       {
           iarg++;
-          if (narg < iarg+3) error->fix_error(FLERR,this,"not enough arguments");
+          if (narg < iarg+3) error->fix_error(FLERR,this,"not enough arguments for 'file'");
 
           if(different_type)
             atom_type_sphere = new int[nspheres];
@@ -185,6 +190,18 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
           }
       }
     }
+    else if(strcmp(arg[iarg],"bonded") == 0)
+    {
+        if (narg < iarg+2)
+            error->fix_error(FLERR,this,"not enough arguments for 'bonded'");
+        if(0 == strcmp(arg[iarg+1],"yes"))
+            bonded = true;
+        else if(0 == strcmp(arg[iarg+1],"no"))
+            bonded = false;
+        else
+            error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'bonded'");
+        iarg+=2;
+    }
     else if(strcmp(style,"particletemplate/multiplespheres") == 0)
         error->fix_error(FLERR,this,"unknown keyword");
   }
@@ -223,6 +240,29 @@ void FixTemplateMultiplespheres::post_create()
 
     if(0 == strcmp(style,"particletemplate/multiplespheres"))
         print_info();
+
+    if(bonded && !fix_bond_random_id)
+    {
+
+        fix_bond_random_id = static_cast<FixPropertyAtom*>(modify->find_fix_property("bond_random_id","property/atom","scalar",0,0,this->style,false));
+
+        if(!fix_bond_random_id)
+        {
+            const char *fixarg[] = {
+                  "bond_random_id", // fix id
+                  "all",       // fix group
+                  "property/atom", // fix style: property/atom
+                  "bond_random_id",     // property name
+                  "scalar", // 1 vector per particle
+                  "yes",    // restart
+                  "no",     // communicate ghost
+                  "no",    // communicate rev
+                  "-1."
+            };
+            fix_bond_random_id = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+            
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -459,7 +499,7 @@ double FixTemplateMultiplespheres::max_r_bound()
 
 double FixTemplateMultiplespheres::min_rad()
 {
-    double rmin = 0.;
+    double rmin = 100000000.;
 
     for(int j = 0; j < nspheres; j++)
       if(rmin > r_sphere[j]) rmin = r_sphere[j];
@@ -560,5 +600,12 @@ void FixTemplateMultiplespheres::randomize_ptilist(int n_random,int distribution
           pti->groupbit = groupbit | distribution_groupbit; 
 
           pti_list[i]->distorder = distorder;
+
+          if(bonded)
+          {
+            pti_list[i]->fix_property = fix_bond_random_id;
+            
+            pti_list[i]->fix_property_value = static_cast<double>(update->ntimestep)+random_insertion->uniform();
+          }
     }
 }

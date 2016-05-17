@@ -57,7 +57,7 @@ class Integrate : protected Pointers {
   virtual void init();
   virtual void setup() = 0;
   virtual void setup_minimal(int) = 0;
-  virtual void run(int) = 0;
+  virtual void run(int nsteps) = 0;
   virtual void cleanup() {}
   virtual void reset_dt() {}
   virtual bigint memory_usage() {return 0;}

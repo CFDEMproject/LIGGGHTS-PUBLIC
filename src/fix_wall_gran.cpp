@@ -74,7 +74,7 @@
 #include "contact_interface.h"
 #include "fix_property_global.h"
 #include <vector>
-#include "granular_wall.h"
+
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
   #include "math_extra_liggghts_superquadric.h"
 #endif
@@ -110,7 +110,6 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     stress_flag_ = false;
     n_FixMesh_ = 0;
     dnum_ = 0;
-    skinDistance_ = 0.0;
 
     r0_ = 0.;
 
@@ -123,6 +122,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     // initializations
     fix_wallforce_ = 0;
     fix_wallforce_contact_ = 0;
+    fix_meshforce_pbc_ = 0;
     fix_rigid_ = NULL;
     heattransfer_flag_ = false;
 
@@ -163,9 +163,13 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     if(!impl && 0 == strncmp(style,"wall/gran",9))
     {
         printf("ERROR: Detected problem with model '%s' (and possibly subsequent arguments). \n", arg[4]);
-        printf("ERROR: The user must ensure that the contact model for this fix exists in the list of variants. \n");
-        printf("ERROR: For the list of variants see the 'style_tangential_model.h' and 'style_normal_model.h' file in the src directory of your LIGGGHTS installation. \n");
-        error->fix_error(FLERR,this,"unknown contact model");
+        error->fix_error(FLERR,this, "unknown contact model or model not in whitelist. Possible root causes:\n"
+                       "  (1) it's a typo. Check the documentation of the contact model you are using.\n"
+                       "  (2) the contact model is not available in your installation. Check if a documentation for this.\n"
+                       "      contact model is available at all in your version.\n"
+                       "  (3) the model is part of a package which was not installed. Check the documentation for details. \n"
+                       "  (4) the model is available, but was not in the whitelist during compilation. Check if a file \n"
+                       "      src/style_contact_model.whitelist exists. If yes, modify it and re-compile.\n");
     }
 
     iarg_ = narg - nremaining;
@@ -435,6 +439,30 @@ void FixWallGran::post_create()
           delete []fixarg;
           delete []hist_name;
    }
+
+   if((domain->xperiodic || domain->yperiodic || domain->zperiodic) && 1 == meshwall_)
+   {
+          char *wallforce_name = new char[strlen(style)+1+15];
+          strcpy(wallforce_name,"meshforce_pbc_");
+          strcat(wallforce_name,id);
+          char **fixarg = new char*[11];
+          fixarg[0] = wallforce_name;
+          fixarg[1] = (char *) "all";
+          fixarg[2] = (char *) "property/atom";
+          fixarg[3] = wallforce_name;
+          fixarg[4] = (char *) "vector";
+          fixarg[5] = (char *) "no";    // restart
+          fixarg[6] = (char *) "no";    // communicate ghost
+          fixarg[7] = (char *) "yes";    // communicate rev
+          fixarg[8] = (char *) "0.";
+          fixarg[9] = (char *) "0.";
+          fixarg[10] = (char *) "0.";
+          modify->add_fix(11,fixarg);
+          fix_meshforce_pbc_ =
+              static_cast<FixPropertyAtom*>(modify->find_fix_property(wallforce_name,"property/atom","vector",3,0,style));
+          delete []fixarg;
+          delete []wallforce_name;
+   }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -445,6 +473,9 @@ void FixWallGran::pre_delete(bool unfixflag)
         modify->delete_fix(fix_wallforce_->id);
     if(unfixflag && fix_history_primitive_)
         modify->delete_fix(fix_history_primitive_->id);
+
+    if(unfixflag && fix_meshforce_pbc_)
+        modify->delete_fix(fix_meshforce_pbc_->id);
 
     if(unfixflag && store_force_contact_ && 0 == meshwall_)
         modify->delete_fix(fix_wallforce_contact_->id);
@@ -612,6 +643,7 @@ void FixWallGran::post_force(int vflag)
     addflag_ = 0;
 
     post_force_wall(vflag);
+
 }
 
 /* ----------------------------------------------------------------------
@@ -626,6 +658,13 @@ void FixWallGran::post_force_pgl()
     addflag_ = 1;
 
     post_force_wall(0);
+
+    // call finalize for cwl
+    if(cwl_)
+    {
+        
+        cwl_->pair_finalize();
+    }
 }
 
 /* ----------------------------------------------------------------------
@@ -704,12 +743,17 @@ void FixWallGran::post_force_mesh(int vflag)
     double v_wall[3],bary[3];
     double delta[3],deltan;
     MultiVectorContainer<double,3,3> *vMeshC;
-    double ***vMesh;
+    double *radius = atom->radius;
+    double ***vMesh = 0;
     int nlocal = atom->nlocal;
-    int nTriAll;
+    int nTriAll, barysign = -1;
+    double OneMinusContactDistanceFactor = 1.-neighbor->contactDistanceFactor;
 
     SurfacesIntersectData sidata;
     sidata.is_wall = true;
+
+    if(fix_meshforce_pbc_)
+        fix_meshforce_pbc_->set_all(0.,true);
 
     for(int iMesh = 0; iMesh < n_FixMesh_; iMesh++)
     {
@@ -727,19 +771,17 @@ void FixWallGran::post_force_mesh(int vflag)
       // get neighborList and numNeigh
       FixNeighlistMesh * meshNeighlist = FixMesh_list_[iMesh]->meshNeighlist();
 
+      // moving mesh
       vectorZeroize3D(v_wall);
       vMeshC = mesh->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
+      if(vMeshC)
+        vMesh = vMeshC->begin();
 
       atom_type_wall_ = FixMesh_list_[iMesh]->atomTypeWall();
 
-      // moving mesh
-      if(vMeshC)
+      // loop owned and ghost triangles
+      for(int iTri = 0; iTri < nTriAll; iTri++)
       {
-        vMesh = vMeshC->begin();
-
-        // loop owned and ghost triangles
-        for(int iTri = 0; iTri < nTriAll; iTri++)
-        {
           const std::vector<int> & neighborList = meshNeighlist->get_contact_list(iTri);
           const int numneigh = neighborList.size();
           for(int iCont = 0; iCont < numneigh; iCont++)
@@ -747,8 +789,9 @@ void FixWallGran::post_force_mesh(int vflag)
             
             const int iPart = neighborList[iCont];
 
-            // do not need to handle ghost particles
-            if(iPart >= nlocal) continue;
+            // do not handle ghost particles unless periodic
+            
+            if((iPart >= nlocal) && (!domain->is_periodic_ghost(iPart))) continue;
 
             int idTri = mesh->id(iTri);
 
@@ -767,86 +810,36 @@ void FixWallGran::post_force_mesh(int vflag)
                 } else
                   deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary);
             #else
-                deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary);
+                deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary,barysign);
             #endif
             
-            if(deltan > skinDistance_) //allow force calculation away from the wall
+            if(deltan > cutneighmax_) continue;
+
+            if(deltan <= 0 || (radius && deltan < OneMinusContactDistanceFactor*radius[iPart]))
             {
               
-            }
-            else
-            {
-              
-              if(fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history)) continue;
+              bool intersectflag = (deltan <= 0);
+              if(fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,7 == barysign)) continue;
 
-              for(int i = 0; i < 3; i++)
-                v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
-
+              if(vMeshC)
+              {
+                for(int i = 0; i < 3; i++)
+                    v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
+              }
               sidata.i = iPart;
-              sidata.deltan = -deltan;
+              sidata.deltan   = -deltan;
               sidata.delta[0] = -delta[0];
               sidata.delta[1] = -delta[1];
               sidata.delta[2] = -delta[2];
-              post_force_eval_contact(sidata, v_wall,iMesh,FixMesh_list_[iMesh],mesh,iTri);
-            }
-
-          }
-        }
-      }
-      // non-moving mesh - do not calculate v_wall, use standard distance function
-      else
-      {
-        // loop owned and ghost particles
-        for(int iTri = 0; iTri < nTriAll; iTri++)
-        {
-          const std::vector<int> & neighborList = meshNeighlist->get_contact_list(iTri);
-          const int numneigh = neighborList.size();
-          
-          for(int iCont = 0; iCont < numneigh; iCont++)
-          {
-            const int iPart = neighborList[iCont];
-
-            // do not need to handle ghost particles
-            if(iPart >= nlocal) continue;
-
-            int idTri = mesh->id(iTri);
-            #ifdef SUPERQUADRIC_ACTIVE_FLAG
-                if(atom->superquadric_flag) {
-                  sidata.pos_i = x_[iPart];
-                  sidata.quat_i = quat_[iPart];
-                  sidata.shape_i = shape_[iPart];
-                  sidata.roundness_i = roundness_[iPart];
-                  Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
-                  if(mesh->sphereTriangleIntersection(iTri, radius_[iPart], sidata.pos_i)) //check for Bounding Sphere-triangle intersection
-                    deltan = mesh->resolveTriSuperquadricContact(iTri, delta, sidata.contact_point, particle);
-                  else
-                    deltan = LARGE_TRIMESH;
-                  sidata.is_non_spherical = true; //by default it is false
-                } else
-                  deltan = mesh->resolveTriSphereContact(iPart,iTri,radius_ ? radius_[iPart]:r0_,x_[iPart],delta);
-            #else
-                deltan = mesh->resolveTriSphereContact(iPart,iTri,radius_ ? radius_[iPart]:r0_,x_[iPart],delta);
-            #endif
-            
-            if(deltan > skinDistance_) //allow force calculation away from the wall
-            {
-              
-            }
-             
-            else
-            {
-              
-              if(fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history)) continue;
-              
-              sidata.i = iPart;
-              sidata.deltan = -deltan;
-              sidata.delta[0] = -delta[0];
-              sidata.delta[1] = -delta[1];
-              sidata.delta[2] = -delta[2];
-              post_force_eval_contact(sidata, v_wall,iMesh,FixMesh_list_[iMesh],mesh,iTri);
+              if(impl)
+                impl->compute_force(this, sidata, intersectflag,v_wall,FixMesh_list_[iMesh],iMesh,mesh,iTri);
+              else
+              {
+                sidata.r =  r0_ - sidata.deltan;
+                compute_force(sidata, v_wall); // LEGACY CODE (SPH)
+              }
             }
           }
-        }
       }
 
       // clean-up contacts
@@ -854,6 +847,14 @@ void FixWallGran::post_force_mesh(int vflag)
       if(fix_contact) fix_contact->cleanUpContacts();
     }
 
+    if(fix_meshforce_pbc_)
+    {
+        fix_meshforce_pbc_->do_reverse_comm();
+        double **f = atom->f;
+
+        for(int i = 0; i < nlocal; i++)
+            vectorAdd3D(f[i],fix_meshforce_pbc_->array_atom[i],f[i]);
+    }
 }
 
 /* ----------------------------------------------------------------------
@@ -866,7 +867,9 @@ void FixWallGran::post_force_primitive(int vflag)
 
   SurfacesIntersectData sidata;
   sidata.is_wall = true;
-
+  double *radius = atom->radius;
+  double OneMinusContactDistanceFactor = 1.-neighbor->contactDistanceFactor;
+  
   // contact properties
   double delta[3]={},deltan,rdist[3];
   double v_wall[] = {0.,0.,0.};
@@ -890,15 +893,15 @@ void FixWallGran::post_force_primitive(int vflag)
 
     deltan = primitiveWall_->resolveContact(x_[iPart],radius_?radius_[iPart]:r0_,delta);
 
-    if(deltan > skinDistance_) //allow force calculation away from the wall
+    if(deltan>cutneighmax_) continue;
+
+    if(deltan <= 0 || deltan < OneMinusContactDistanceFactor*radius[iPart])
     {
-      if(c_history) vectorZeroizeN(c_history[iPart],dnum_);
-    }
-    else
-    {
-      bool particle_wall_intersection = true; //always true for spheres
+      // spheres
+      bool intersectflag = (deltan <= 0);
+
       #ifdef SUPERQUADRIC_ACTIVE_FLAG
-          if(atom->superquadric_flag) {
+      if(atom->superquadric_flag) {
             double sphere_contact_point[3];
             vectorAdd3D(x_[iPart], delta, sphere_contact_point);
             sidata.pos_i = x_[iPart];
@@ -907,100 +910,50 @@ void FixWallGran::post_force_primitive(int vflag)
             sidata.roundness_i = roundness_[iPart];
             double closestPoint[3], closestPointProjection[3], point_of_lowest_potential[3];
             Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
-            particle_wall_intersection = particle.plane_intersection(delta, sphere_contact_point, closestPoint, point_of_lowest_potential);
+            intersectflag = particle.plane_intersection(delta, sphere_contact_point, closestPoint, point_of_lowest_potential);
             deltan = -MathExtraLiggghtsSuperquadric::point_wall_projection(delta, sphere_contact_point, closestPoint, closestPointProjection);
             vectorCopy3D(closestPoint, sidata.contact_point);
             sidata.is_non_spherical = true; //by default it is false
-          }
+      }
       #endif
-      if(particle_wall_intersection) { //always true for spheres
-          if(shear_ && shearAxis_ >= 0)
-          {
-              primitiveWall_->calcRadialDistance(x_[iPart],rdist);
-              vectorCross3D(shearAxisVec_,rdist,v_wall);
-              
-          }
-          sidata.i = iPart;
-          sidata.contact_history = c_history ? c_history[iPart] : NULL;
-          sidata.deltan = -deltan;
-          sidata.delta[0] = -delta[0];
-          sidata.delta[1] = -delta[1];
-          sidata.delta[2] = -delta[2];
-          post_force_eval_contact(sidata,v_wall);
-      } else {
-        if(c_history) vectorZeroizeN(c_history[iPart],dnum_);
+
+      if(shear_ && shearAxis_ >= 0)
+      {
+          primitiveWall_->calcRadialDistance(x_[iPart],rdist);
+          vectorCross3D(shearAxisVec_,rdist,v_wall);
+          
+      }
+      sidata.i = iPart;
+      sidata.contact_history = c_history ? c_history[iPart] : NULL;
+      sidata.deltan = -deltan;
+      sidata.delta[0] = -delta[0];
+      sidata.delta[1] = -delta[1];
+      sidata.delta[2] = -delta[2];
+
+      if(impl)
+        impl->compute_force(this, sidata, intersectflag,v_wall);
+      else
+      {
+        sidata.r =  r0_ - sidata.deltan;
+        compute_force(sidata, v_wall); // LEGACY CODE (SPH)
+      }
+    }
+    
+    else
+    {
+      if(c_history)
+      {
+         vectorZeroizeN(c_history[iPart],dnum_);
       }
     }
   }
 }
 
+/* ---------------------------------------------------------------------- */
+
 void FixWallGran::compute_force(SurfacesIntersectData &, double *)
 {
     
-}
-
-/* ----------------------------------------------------------------------
-   actually calculate force, called for both mesh and primitive
-------------------------------------------------------------------------- */
-
-inline void FixWallGran::post_force_eval_contact(SurfacesIntersectData & sidata, double * v_wall, int iMesh, FixMeshSurface *fix_mesh, TriMesh *mesh, int iTri)
-{
-  const int iPart = sidata.i;
-
-  // deltan > 0 in compute_force
-  // but negative in distance algorithm
-  sidata.r = (radius_ ? radius_[iPart] : r0_) - sidata.deltan; // sign of corrected, because negative value is passed
-  sidata.rsq = sidata.r*sidata.r;
-  sidata.meff = rmass_ ? rmass_[iPart] : atom->mass[atom->type[iPart]];
-  sidata.area_ratio = 1.;
-
-  sidata.computeflag = computeflag_;
-  sidata.shearupdate = shearupdate_;
-  sidata.jtype = atom_type_wall_;
-
-  double force_old[3]={}, f_pw[3];
-
-  // if force should be stored - remember old force
-  if(store_force_ || stress_flag_)
-    vectorCopy3D(f_[iPart],force_old);
-
-  // add to cwl
-  if(cwl_ && addflag_)
-  {
-      double contactPoint[3];
-      vectorSubtract3D(x_[sidata.i],sidata.delta,contactPoint);
-      cwl_->add_wall_1(iMesh,mesh->id(iTri),iPart,contactPoint,v_wall);
-  }
-
-  if(impl)
-    impl->compute_force(this, sidata, v_wall,mesh,iTri);
-  else
-    compute_force(sidata, v_wall); // LEGACY CODE (SPH)
-
-  // if force should be stored or evaluated
-  if(store_force_ || stress_flag_)
-  {
-    vectorSubtract3D(f_[iPart],force_old,f_pw);
-
-    if(store_force_)
-        vectorAdd3D (wallforce_[iPart], f_pw, wallforce_[iPart]);
-
-    if(stress_flag_ && fix_mesh->trackStress())
-    {
-        double delta[3];
-        delta[0] = -sidata.delta[0];
-        delta[1] = -sidata.delta[1];
-        delta[2] = -sidata.delta[2];
-        static_cast<FixMeshSurfaceStress*>(fix_mesh)->add_particle_contribution
-        (
-           iPart,f_pw,delta,iTri,v_wall
-        );
-    }
-  }
-
-  // add heat flux
-  if(heattransfer_flag_)
-    addHeatFlux(mesh,iPart,sidata.deltan,1.);
 }
 
 /* ---------------------------------------------------------------------- */

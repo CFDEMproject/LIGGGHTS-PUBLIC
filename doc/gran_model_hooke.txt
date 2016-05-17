@@ -6,7 +6,7 @@
 
 :line
 
-gran model hooke :h3
+gran model hooke command :h3
 
 [Syntax:]
 
@@ -112,7 +112,7 @@ IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 
 This model contributes to surface heating in the frame of 
 "surface sphere/heatable"_gran_surface_sphere_heatable.html if the 
-appropriate flag is activated
+appropriate flag is activated  (only available in the PREMIUM version).
 
 [Restrictions:]
 

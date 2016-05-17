@@ -356,7 +356,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
 
         tcoi = conductivity_[type[i]-1];
         tcoj = conductivity_[type[j]-1];
-        if (tcoi < SMALL || tcoj < SMALL) hc = 0.;
+        if (tcoi < SMALL_FIX_HEAT_GRAN || tcoj < SMALL_FIX_HEAT_GRAN) hc = 0.;
         else hc = 4.*tcoi*tcoj/(tcoi+tcoj)*sqrt(contactArea);
 
         flux = (Temp[j]-Temp[i])*hc;

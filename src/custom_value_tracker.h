@@ -65,7 +65,8 @@ namespace LAMMPS_NS
 
         template<typename T>
         T* addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart,
-                              int _scalePower = 1, int _init_len = 0, const char *_statistics = 0);
+                              int _scalePower = 1, int _init_len = 0, const char *_statistics = 0, 
+                              const double _weighting_factor = 1, const char *_id_scale = 0, const bool _forget = true);
 
         template<typename T>
         T* getElementProperty(const char *_id);
@@ -106,6 +107,7 @@ namespace LAMMPS_NS
         inline void addUninitializedElement();
         inline void addZeroElement();
         inline void deleteAllElements();
+        inline void deleteRestart(bool scale,bool translate,bool rotate);
         inline void deleteElement(int i);
         inline void deleteForwardElement(int i,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int i,bool scale,bool translate,bool rotate);
@@ -115,7 +117,21 @@ namespace LAMMPS_NS
         void storeOrig();
         void resetToOrig();
 
-        bool calcStatistics(double weighting_factor);
+        bool calcStatistics();
+
+        template<typename T>
+        T* getAvgElementProperty(const char *_id);
+
+        template<typename T>
+        T* getMeanSquareElementProperty(const char *_id);
+
+        template<typename T>
+        T* getAvgAvgElementProperty(const char *_id);
+
+        template<typename T>
+        T* getAvgMeanSquareElementProperty(const char *_id);
+
+        void setWeightingFactor(double _weighting_factor);
 
         inline void storeGlobalPropOrig(const char *_id);
         inline void resetGlobalPropToOrig(const char *_id);
@@ -146,11 +162,6 @@ namespace LAMMPS_NS
         inline int globalPropsBufSize(int operation,bool scale,bool translate,bool rotate);
         inline int pushGlobalPropsToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popGlobalPropsFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
-
-        // mem managenement
-
-        int getCapacity();
-        inline void grow(int to);
 
       private:
 

@@ -130,8 +130,8 @@ namespace LAMMPS_NS
   {
           if(GeneralContainer<T,1,LEN_VEC>::numElem_ == GeneralContainer<T,1,LEN_VEC>::maxElem_)
           {
-                  grow(GeneralContainer<T,1,LEN_VEC>::arr_,GeneralContainer<T,1,LEN_VEC>::maxElem_+GROW,1,LEN_VEC);
-                  GeneralContainer<T,1,LEN_VEC>::maxElem_ += GROW;
+                  grow(GeneralContainer<T,1,LEN_VEC>::arr_,GeneralContainer<T,1,LEN_VEC>::maxElem_+GROW_CONTAINER(),1,LEN_VEC);
+                  GeneralContainer<T,1,LEN_VEC>::maxElem_ += GROW_CONTAINER();
           }
           for(int i=0;i<LEN_VEC;i++)
                   GeneralContainer<T,1,LEN_VEC>::arr_[GeneralContainer<T,1,LEN_VEC>::numElem_][0][i] = elem[i];

@@ -104,6 +104,9 @@ class DumpMeshVTK : public Dump {
   char **container_args_;
   int n_container_bases_;
 
+  int points_neightri_len_max_;
+  class ScalarContainer<int> **points_neightri_;
+
   int modify_param(int, char **);
   void write_header(bigint ndump);
   int count();

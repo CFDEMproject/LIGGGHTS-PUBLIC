@@ -51,58 +51,19 @@
 #include "pointers.h"
 #include "bounding_box.h"
 #include "superquadric_flag.h"
+#include "region_neighbor_list_definitions.h"
+#include "lmptype.h"
+#include "mpi.h"
+#include "bounding_box.h"
+#include "error.h"
+#include "region.h"
+#include <limits>
+#include <algorithm>
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+#include "math_extra_liggghts_superquadric.h"
+#endif
 
 namespace LAMMPS_NS {
-
-/**
- * @brief A small particle structure
- */
-struct Particle {
-  int index;
-  double x[3];
-  double radius;
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-  double shape[3];
-  double quaternion[4];
-#endif
-
-  Particle(int i,double * pos, double rad) {
-    index = i;
-    LAMMPS_NS::vectorCopy3D(pos, x);
-    radius = rad;
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-    quaternion[0] = 1.0;
-    quaternion[1] = quaternion[2] = quaternion[3] = 0.0;
-    shape[0] = shape[1] = shape[2] = radius;
-#endif
-  }
-  Particle(double * pos, double rad) {
-    index = -1;
-    LAMMPS_NS::vectorCopy3D(pos, x);
-    radius = rad;
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-    quaternion[0] = 1.0;
-    quaternion[1] = quaternion[2] = quaternion[3] = 0.0;
-    shape[0] = shape[1] = shape[2] = radius;
-#endif
-  }
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-  Particle(double * pos, double rad, double *quaternion_, double *shape_) {
-      index = -1;
-      LAMMPS_NS::vectorCopy3D(pos, x);
-      radius = rad;
-      LAMMPS_NS::vectorCopy4D(quaternion_, quaternion);
-      LAMMPS_NS::vectorCopy3D(shape_, shape);
-    }
-#endif
-};
-
-typedef std::vector<Particle> ParticleBin;
-
-struct Bin {
-    double center[3];
-    ParticleBin p_array;
-};
 
 /**
  * @brief A neighbor list of of a certain region
@@ -114,13 +75,17 @@ struct Bin {
  * only allocates bins for his own sub-box
  */
 
+template<bool INTERPOLATE>
 class RegionNeighborList : protected LAMMPS_NS::Pointers
 {
-public:
+  friend class FixAddforceSteadystate;
+
+  public:
     RegionNeighborList(LAMMPS_NS::LAMMPS *lmp);
+    virtual ~RegionNeighborList() {}
 
     bool hasOverlap(double * x, double radius) const;
-    bool hasOverlapWith(double * x, double radius, std::vector<int> &overlap_list) const ;
+    bool hasOverlapWith(double * x, double radius, std::vector<int> &overlap_list) const;
     void insert(double * x, double radius,int index = -1);
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
     bool hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape) const;
@@ -129,25 +94,43 @@ public:
 #endif
 
     size_t count() const;
-    void clear();
-    virtual bool setBoundingBox(LAMMPS_NS::BoundingBox & bb, double maxrad, bool extend = true, bool failsafe = false);
-    bool isInBoundingBox(double *pos);
+    virtual void clear();
+    virtual void reset();
 
-    bool boundingBoxSet()
+    inline void setBoundingBox_calc_interpolation_stencil(Bin<INTERPOLATE> &it,int ibin,int ix,int iy, int iz) const;
+
+    virtual bool setBoundingBox(LAMMPS_NS::BoundingBox & bb, double maxrad, bool extend = true, bool failsafe = false);
+    virtual BoundingBox setBoundingBoxRegion(const Region &region, double maxrad, bool extend = true, bool failsafe = false);
+
+    bool isInBoundingBox(double *pos) const;
+
+    inline void coord2bin_calc_interpolation_weights(double *x,int ibin,int ix,int iy, int iz,int &quadrant,double &wx,double &wy,double &wz) const;
+
+    int coord2bin(double *x,int &quadrant,double &wx,double &wy,double &wz) const;
+
+    inline int coord2bin(double *x) const
+    { int quadrant; double wx,wy,wz; return coord2bin(x,quadrant,wx,wy,wz); }
+
+    bool boundingBoxSet() const
     {return bbox_set; }
 
-    int coord2binGlobal(double *x) const;
-    std::vector<Bin> getBins() const
+    std::vector<LAMMPS_NS::Bin<INTERPOLATE> > getBins() const
     {return bins; }
 
     double invBinVolume() const
     { return bininvx*bininvy*bininvz; }
 
-protected:
+    inline int nbins() const
+    { return nbinx*nbiny*nbinz; }
 
-    std::vector<Bin> bins;          // list of particle bins
-    std::vector<int> stencil;       // stencil used to check bins for collisions
-    size_t ncount;                  // total number of particles in neighbor list
+    inline int mbins() const
+    { return mbinx*mbiny*mbinz; }
+
+  protected:
+
+    std::vector<Bin<INTERPOLATE> > bins;// list of particle bins
+    std::vector<int> stencil;           // stencil used to check bins for collisions
+    size_t ncount;                      // total number of particles in neighbor list
 
     bool bbox_set;
 
@@ -162,12 +145,16 @@ protected:
     double bininvx,bininvy,bininvz;     // inverse of bin sizes
 
     double bin_distance(int i, int j, int k);
-    int coord2binLocal(double *x) const;
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
   int check_obb_flag;
 #endif
 };
+
+/*
+INCLUDE INLINE HEADER FILE
+*/
+#include "region_neighbor_list_I.h"
 
 }
 

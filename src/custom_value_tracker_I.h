@@ -52,7 +52,8 @@
 
   template<typename T>
   T* CustomValueTracker::addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart,
-                                            int _scalePower, int _init_len,const char *_statistics)
+                                            int _scalePower, int _init_len, const char *_statistics,
+                                            const double _weighting_factor, const char *_id_scale,const bool _forget )
   {
      // error if property exists already
      if(elementProperties_.getPointerById<T>(_id))
@@ -67,7 +68,7 @@
      std::string id_string(_id);
 
      // add property
-     elementProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
+     ContainerBase * cb_new = elementProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
      id_list.push_back(id_string);
 
      // check if properties were set correctly
@@ -83,15 +84,35 @@
      // add to statistics if applicable
      if(_statistics)
      {
-        if(strstr(_statistics,"average"))
+        if(strstr(_statistics,ContainerBase::AVERAGESUFFIX))
         {
-            elementProperties_.add<T>(id_string.append("_average").c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(elementProperties_.getPointerById<T>(_id));
-            id_list.push_back(id_string.append("_average"));
+            std::string id_string_ave = id_string;
+            id_string_ave.append(ContainerBase::AVERAGESUFFIX);
+            T* cb_average = elementProperties_.add<T>(id_string_ave.c_str(),_comm,_ref,_restart,_scalePower);
+            cb_average->setContainerStatistics(_weighting_factor, cb_new,0,0,_forget );
+            id_list.push_back(id_string_ave);
+
+            if(strstr(_statistics,"avgVar"))
+            {
+                // this one uses the average as reference field
+                // TODO: Hard-coded higher weighting factor for second stage statistics
+                std::string id_string_avg_avg = id_string_ave;
+                id_string_avg_avg.append(ContainerBase::AVERAGESUFFIX);
+                elementProperties_.add<T>(id_string_avg_avg.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(5*_weighting_factor, cb_average,0,0,_forget );
+                id_list.push_back(id_string_avg_avg);
+
+                std::string id_string_avg_mean_square = id_string_ave;
+                id_string_avg_mean_square.append(ContainerBase::MEANSQUARESUFFIX);
+                elementProperties_.add<T>(id_string_avg_mean_square.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(5*_weighting_factor, cb_average,0,0,_forget );
+                id_list.push_back(id_string_avg_mean_square);
+            }
         }
-        if(strstr(_statistics,"variance"))
+        if(strstr(_statistics,ContainerBase::MEANSQUARESUFFIX))
         {
-            elementProperties_.add<T>(id_string.append("_variance").c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(elementProperties_.getPointerById<T>(_id));
-            id_list.push_back(id_string.append("_variance"));
+            std::string id_string_mean_square = id_string;
+            id_string_mean_square.append(ContainerBase::MEANSQUARESUFFIX);
+            elementProperties_.add<T>(id_string_mean_square.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(_weighting_factor, cb_new,0,0,_forget );
+            id_list.push_back(id_string_mean_square);
         }
      }
 
@@ -148,16 +169,6 @@
   }
 
   /* ----------------------------------------------------------------------
-   mem management
-  ------------------------------------------------------------------------- */
-
-  void CustomValueTracker::grow(int to)
-  {
-      elementProperties_.grow(to);
-      capacityElement_ = to;
-  }
-
-  /* ----------------------------------------------------------------------
    get reference
   ------------------------------------------------------------------------- */
 
@@ -192,6 +203,38 @@
   T* CustomValueTracker::getGlobalProperty(const char *_id)
   {
      return globalProperties_.getPointerById<T>(_id);
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getAvgElementProperty(const char *_id)
+  {
+      std::string id_string(_id);
+      id_string.append(ContainerBase::AVERAGESUFFIX);
+      return getElementProperty<T>(id_string.c_str());
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getMeanSquareElementProperty(const char *_id)
+  {
+      std::string id_string(_id);
+      id_string.append(ContainerBase::MEANSQUARESUFFIX);
+      return getElementProperty<T>(id_string.c_str());
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getAvgAvgElementProperty(const char *_id)
+  {
+      std::string id_string(_id);
+      id_string.append(ContainerBase::AVERAGESUFFIX).append(ContainerBase::AVERAGESUFFIX);
+      return getElementProperty<T>(id_string.c_str());
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getAvgMeanSquareElementProperty(const char *_id)
+  {
+      std::string id_string(_id);
+      id_string.append(ContainerBase::AVERAGESUFFIX).append(ContainerBase::MEANSQUARESUFFIX);
+      return getElementProperty<T>(id_string.c_str());
   }
 
   /* ----------------------------------------------------------------------
@@ -271,6 +314,15 @@
   void CustomValueTracker::deleteAllElements()
   {
       elementProperties_.deleteAllElements();
+  }
+
+  /* ----------------------------------------------------------------------
+   delete all elements
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::deleteRestart(bool scale,bool translate,bool rotate)
+  {
+      elementProperties_.deleteRestart(scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------

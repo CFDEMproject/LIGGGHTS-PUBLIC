@@ -53,6 +53,7 @@ namespace LAMMPS_NS {
   class Multisphere : protected Pointers {
 
     friend class FixMultisphere;
+    friend class FixChangeSizeMultisphere;
 
     public:
 
@@ -150,6 +151,9 @@ namespace LAMMPS_NS {
 
       inline double density(int ibody_local)
       { return density_(ibody_local); }
+
+      inline double volume(int ibody_local)
+      { return masstotal_(ibody_local)/density_(ibody_local); }
 
       inline void set_v_body(int ibody_local,double *vel)
       { vcm_.set(ibody_local,vel); }

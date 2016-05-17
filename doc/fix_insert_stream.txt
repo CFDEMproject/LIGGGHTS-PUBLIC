@@ -39,6 +39,7 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
   {overlapcheck} value = yes or no
   {all_in} value = yes or no
   {random_distribute} value = exact or uncorrelated
+  {compress_tags} value = yes or no
   {vel constant} values = vx vy vz
     vx = x-velocity at insertion (velocity units)
     vy = y-velocity at insertion (velocity units)
@@ -66,7 +67,7 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
     omegay = y-comonent of angular velocity (1/time units)
     omegaz = z-comonent of angular velocity (1/time units)
   {set_property} values = property-ID val
-    property-ID = ID of a "fix property/atom"_fix_property.html holding a scalar value for each particle
+    property-variablename = variable name of a "fix property/atom"_fix_property.html holding a scalar value for each particle
     val = value to initialize the property with upon insertion  :pre
 
 following the general keyword/value section, one or more stream keyword/value pairs can be appended for the fix insert/stream command :l
@@ -213,6 +214,15 @@ processes, this can lead to a speed-up of insertion as random number generation
 is more efficient. For cases where the extrusion volume is divided
 among few processes this will impose a small computation overhead.
 
+If keyword {compress_tags} is set to 'yes', then atom IDs are re-assigned
+after each insertion procedure. The default is 'no'. This is typically
+only recommended if some models internally store arrays which have the
+length defined via the max ID of any atom. 
+
+IMPORTANT NOTE: Setting {compress_tags} to 'yes' will result in all contact
+history to be lost at that point in time. External post-processing tools
+will give wrong results because they typically track atoms via their IDs.
+
 The initial velocity and rotational velocity can be controlled via the
 {vel} and {omega} keywords. {vel constant} simply patches a constant
 velocity to the inserted particles, {vel uniform} sets uniformly distributed
@@ -223,6 +233,14 @@ The insertion velocity must be non-zero.
 The {set_property} option can be used to initialize scalar per-particle
 properties such as temperatures, which are stored in a 
 a "fix property/atom"_fix_property.html.
+
+The setting of {compress_tags} will trigger a periodic re-tagging of
+atom ids. This is usefull in case the simulation domain is used to
+model a periodic in and outflow of particles. If this switch is set,
+the global ids of the particles will remain in a certain range,
+and no "holes" in the arrays holding the global atom ids exist.
+IMPORTANT NOTE: This functionality may confuse external tools which 
+perform post-processing based on atom IDs!
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -253,4 +271,5 @@ The insertion face cannot move.
 
 The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
-duration = insert_every, random_distribute = exact, parallel = no
+duration = insert_every, random_distribute = exact, parallel = no,
+{compress_tags} = no

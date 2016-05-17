@@ -69,7 +69,10 @@ namespace ContactModels {
       
     }
 
-    void registerSettings(Settings&) {}
+    void registerSettings(Settings& settings) 
+    {
+        settings.registerOnOff("tangential_reduce",tangentialReduce_,false);
+    }
 
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("cohEnergyDens", &MODEL_PARAMS::createCohesionEnergyDensity);
@@ -93,7 +96,7 @@ namespace ContactModels {
       else
         Acont = - M_PI/4 * ( (r-ri-rj)*(r+ri-rj)*(r-ri+rj)*(r+ri+rj) )/(r*r); //contact area of the two spheres
       const double Fn_coh = -cohEnergyDens[sidata.itype][sidata.jtype]*Acont;
-      sidata.Fn += Fn_coh;
+      if(tangentialReduce_) sidata.Fn += Fn_coh; 
 
       if(sidata.contact_flags) *sidata.contact_flags |= CONTACT_COHESION_MODEL;
 
@@ -129,6 +132,7 @@ namespace ContactModels {
 
   private:
     double ** cohEnergyDens;
+    bool tangentialReduce_;
   };
 }
 }

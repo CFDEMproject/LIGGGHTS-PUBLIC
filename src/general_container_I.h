@@ -52,20 +52,20 @@
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(const char *_id)
   : ContainerBase(_id),
     numElem_(0),
-    maxElem_(GROW),
+    maxElem_(GROW_CONTAINER()),
     defaultValue_(0)
   {
-          create<T>(arr_,GROW,NUM_VEC,LEN_VEC);
+          create<T>(arr_,GROW_CONTAINER(),NUM_VEC,LEN_VEC);
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(const char *_id, const char *_comm, const char *_ref, const char *_restart, int _scalePower)
   : ContainerBase(_id, _comm, _ref, _restart, _scalePower),
     numElem_(0),
-    maxElem_(GROW),
+    maxElem_(GROW_CONTAINER()),
     defaultValue_(0)
   {
-          create<T>(arr_,GROW,NUM_VEC,LEN_VEC);
+          create<T>(arr_,GROW_CONTAINER(),NUM_VEC,LEN_VEC);
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
@@ -127,12 +127,38 @@
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::subtract(GeneralContainer<T,NUM_VEC,LEN_VEC> const &A,
+                                                     GeneralContainer<T,NUM_VEC,LEN_VEC> const &minusB)
+  {
+      int len = size();
+      int lenA = A.size();
+      int lenB = minusB.size();
+
+      if(lenA != lenB)
+        return false;
+
+      if(len < lenA)
+        addUninitialized(lenA-len);
+
+      for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
+                    arr_[i][j][k] = A(i)[j][k] - minusB(i)[j][k];
+
+      return true;
+  }
+
+  /* ----------------------------------------------------------------------
+   add element(s)
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::add(T** elem)
   {
           if(numElem_ == maxElem_)
           {
-                  grow<T>(arr_,maxElem_+GROW,NUM_VEC,LEN_VEC);
-                  maxElem_ += GROW;
+                  grow<T>(arr_,maxElem_+GROW_CONTAINER(),NUM_VEC,LEN_VEC);
+                  maxElem_ += GROW_CONTAINER();
           }
           for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
@@ -145,8 +171,8 @@
   {
           if(numElem_ == maxElem_)
           {
-                  grow<T>(arr_,maxElem_+GROW,NUM_VEC,LEN_VEC);
-                  maxElem_ += GROW;
+                  grow<T>(arr_,maxElem_+GROW_CONTAINER(),NUM_VEC,LEN_VEC);
+                  maxElem_ += GROW_CONTAINER();
           }
           for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
@@ -161,12 +187,12 @@
         if(numElem_ >= maxElem_)
         {
             T init_val = static_cast<T>(0);
-            grow(arr_,numElem_+GROW,NUM_VEC,LEN_VEC);
-            for(int i = numElem_; i < numElem_+GROW; i++)
+            grow(arr_,numElem_+GROW_CONTAINER(),NUM_VEC,LEN_VEC);
+            for(int i = numElem_; i < numElem_+GROW_CONTAINER(); i++)
                 for(int j=0;j<NUM_VEC;j++)
                     for(int k=0;k<LEN_VEC;k++)
                           arr_[i][j][k] = init_val;
-            maxElem_ = numElem_ + GROW;
+            maxElem_ = numElem_ + GROW_CONTAINER();
         }
   }
 
@@ -322,47 +348,188 @@
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcAveFromContainer(double weighting_factor)
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcAvgFromContainer()
   {
+      
       GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+      GeneralContainer<T,1,1> *gscale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_scale_data_);
+      GeneralContainer<T,1,1> *gRedScale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_reduced_scale_data_);
 
+      // source has to be defined
+      if (!gcont)
+        return false;
+
+      // only use if identical dimensions
       if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
         return false;
 
-      int len = size();
-      for(int n = 0; n < len; n++)
-          for(int i=0;i<NUM_VEC;i++)
-                  for(int j=0;j<LEN_VEC;j++)
-                  {
-                          arr_[n][i][j] = (1.-weighting_factor)*arr_[n][i][j]+weighting_factor*gcont->arr_[n][i][j];
-                          
-                  }
+      const int len = size();
 
+      if (!gscale || !gRedScale)
+      {
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                     if(averaging_forget_ || (*gcont)(n)[i][j] != 0 )
+                        arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+weighting_factor_*(*gcont)(n)[i][j];
+      }
+      else
+      {
+          if(size() != gscale->size() || size() != gRedScale->size())
+            return false;
+
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                      arr_[n][i][j] = (1.-weighting_factor_)*(1.-weighting_factor_)*arr_[n][i][j]*(*gRedScale)(n)[1][1]+(*gcont)(n)[i][j]*(*gscale)(n)[1][1];
+      }
       return true;
   }
 
   /* ----------------------------------------------------------------------
-   variance from other container
+   mean square from other container
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcVarFromContainer(double weighting_factor)
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcMeanSquareFromContainer()
   {
+      
       GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+      GeneralContainer<T,1,1> *gscale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_scale_data_);
+      GeneralContainer<T,1,1> *gRedScale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_reduced_scale_data_);
 
+      // at least source has to be defined
+      if (!gcont)
+        return false;
+
+      // only copy if identical
       if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
         return false;
 
-      int len = size();
-      for(int n = 0; n < len; n++)
-          for(int i=0;i<NUM_VEC;i++)
+      const int len = size();
+
+      if (!gscale || !gRedScale)
+      {
+          for(int n = 0; n < len; n++)
+             for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
                   {
-                          // TODO HERE this is ave
-                          arr_[n][i][j] = (1.-weighting_factor)*arr_[n][i][j]+weighting_factor*gcont->arr_[n][i][j];
-                          //arr_[n][i][j] = (1.-weighting_factor)*arr_[n][i][j]+weighting_factor*gcont->arr_[n][i][j];
-                          
+                      const T contribution = gcont->arr_[n][i][j];
+                      if(averaging_forget_ || contribution != 0)
+                        arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+weighting_factor_*contribution*contribution;
+                  
                   }
+      }
+      else
+      {
+          if(size() != gscale->size() || size() != gRedScale->size())
+            return false;
+
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                      const T contribution = gcont->arr_[n][i][j];
+                      const T scale = (*gscale)(n)[i][j];
+                      const T redScale = (*gRedScale)(n)[i][j];
+                      arr_[n][i][j] = (1.-weighting_factor_)*(1.-weighting_factor_)*arr_[n][i][j]*redScale+scale*contribution*contribution;
+                  }
+      }
+
+      return true;
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::normalizeContainer()
+  {
+      
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+      GeneralContainer<T,1,1> *gscale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_scale_data_);
+      GeneralContainer<T,1,1> *gRedScale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_reduced_scale_data_);
+
+      // at least source has to be defined
+      if (!gcont)
+        return false;
+
+      // only copy if identical
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      const int len = size();
+      if (!gscale || !gRedScale)
+          return true;
+      else
+      {
+          if(size() != gscale->size() || size() != gRedScale->size())
+            return false;
+
+          for(int n = 0; n < len; n++)
+          {
+              if ((*gRedScale)(n)[1][1] < std::numeric_limits<T>::epsilon())
+              {
+                  (*gRedScale)(n)[1][1]  = 0;
+                  for(int i=0;i<NUM_VEC;i++)
+                      for(int j=0;j<LEN_VEC;j++)
+                          arr_[n][i][j] = 0; // assumes weighting factor > 0
+                  continue;
+              }
+              else
+              {
+                  const T redScaleInv = 1./(*gRedScale)(n)[1][1];
+                  for(int i=0;i<NUM_VEC;i++)
+                      for(int j=0;j<LEN_VEC;j++)
+                          arr_[n][i][j] = arr_[n][i][j]*redScaleInv;
+              }
+          }
+      }
+
+      return true;
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcSumFromContainer()
+  {
+      
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+      GeneralContainer<T,1,1> *gscale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_scale_data_);
+      GeneralContainer<T,1,1> *gRedScale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_reduced_scale_data_);
+
+      // at least source has to be defined
+      if (!gcont)
+        return false;
+
+      // only copy if identical
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      const int len = size();
+      if (!gscale || !gRedScale)
+      {
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                      arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+(*gcont)(n)[i][j];
+                      
+                      if (arr_[n][i][j] < std::numeric_limits<T>::epsilon())
+                          arr_[n][i][j] = 0;
+                  }
+      }
+      else
+      {
+          if(size() != gscale->size() || size() != gRedScale->size())
+            return false;
+
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                      arr_[n][i][j] = (1.-weighting_factor_)*(1.-weighting_factor_)*arr_[n][i][j]*(*gRedScale)(n)[1][1]+(*gcont)(n)[i][j]*(*gscale)(n)[1][1];
+                      
+                      if (arr_[n][i][j] < std::numeric_limits<T>::epsilon())
+                          arr_[n][i][j] = 0;
+                  }
+              }
 
       return true;
   }

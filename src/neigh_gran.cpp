@@ -565,8 +565,11 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
     // stores own/ghost pairs on both procs
 
     for (k = 0; k < nstencil; k++) {
+      
       for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
+        
         if (j <= i) continue;
+        
         if (exclude && exclusion(i,j,type[i],type[j],mask,molecule)) continue;
 
         delx = xtmp - x[j][0];
@@ -575,7 +578,7 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
         rsq = delx*delx + dely*dely + delz*delz;
         radsum = (radi + radius[j]) * contactDistanceFactor; 
         cutsq = (radsum+skin) * (radsum+skin);
-        
+
         if (rsq <= cutsq) {
           neighptr[n] = j;
           
@@ -629,6 +632,7 @@ void Neighbor::granular_bin_no_newton(NeighList *list)
       ipage_contact_flag->vgot(n);
       dpage_contact_hist->vgot(nn);
     }
+
   }
 
   list->inum = inum;

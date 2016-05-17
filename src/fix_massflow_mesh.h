@@ -96,6 +96,8 @@ class FixMassflowMesh : public Fix {
   class FixPropertyAtom *fix_counter_;
 
  private:
+  void setRefPoint();
+
   class FixMeshSurface *fix_mesh_;
   char fixid_[200];
   class FixNeighlistMesh *fix_neighlist_;

@@ -58,6 +58,7 @@
 #include "vector_liggghts.h"
 #include "mpi_liggghts.h"
 #include "fix_region_variable.h"
+#include "group.h"
 
 using namespace LAMMPS_NS;
 using namespace LMP_PROBABILITY_NS;
@@ -272,8 +273,16 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
       }
       else error->fix_error(FLERR,this,"invalid density random style");
       
-    }
-    else if(strcmp(style,"particletemplate/sphere") == 0)
+    } else if(strcmp(arg[iarg],"additional_group") == 0) {
+        if (iarg+2 > narg)
+            error->fix_error(FLERR,this,"not enough arguments for 'additional_group'");
+        iarg++;
+        const int iAddGroup = group->find(arg[iarg++]);
+        if (iAddGroup == -1) error->all(FLERR,"Could not find additional fix group ID");
+        groupbit = groupbit | group->bitmask[iAddGroup];
+        
+        hasargs = true;
+    } else if(strcmp(style,"particletemplate/sphere") == 0)
         error->fix_error(FLERR,this,"unrecognized keyword");
   }
 

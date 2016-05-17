@@ -19,7 +19,7 @@ seed_value = random # seed (positive integer) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
-general_keywords = {verbose} or {maxattempt} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {vel constant} or {vel uniform} or {vel gaussian} or {orientation} or {omega} or {set_property} :l
+general_keywords = {verbose} or {maxattempt} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or {compress_tags} or {vel constant} or {vel uniform} or {vel gaussian} or {orientation} or {omega} or {set_property} :l
   {verbose} = yes or no
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)
@@ -31,6 +31,7 @@ general_keywords = {verbose} or {maxattempt} or {insert_every} or {overlapcheck}
   {overlapcheck} value = yes or no
   {all_in} value = yes or no
   {random_distribute} value = exact or uncorrelated
+  {compress_tags} value = yes or no
   {vel constant} values = vx vy vz
     vx = x-velocity at insertion (velocity units)
     vy = y-velocity at insertion (velocity units)
@@ -151,6 +152,15 @@ the {random_distribute} settings. This is because in this case the
 and applying a simple floor/ceil rounding operation would lead to a
 statistical bias.
 
+If keyword {compress_tags} is set to 'yes', then atom IDs are re-assigned
+after each insertion procedure. The default is 'no'. This is typically
+only recommended if some models internally store arrays which have the
+length defined via the max ID of any atom. 
+
+IMPORTANT NOTE: Setting {compress_tags} to 'yes' will result in all contact
+history to be lost at that point in time. External post-processing tools
+will give wrong results because they typically track atoms via their IDs.
+
 The initial velocity and rotational velocity can be controlled via the
 {vel} and {omega} keywords. {vel constant} simply patches a constant
 velocity to the inserted particles, {vel uniform} sets uniformly distributed
@@ -221,5 +231,6 @@ Dynamic regions are not supported as insertion region.
 
 The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
-duration = insert_every,  ntry_mc = 100000, random_distribute = exact
+duration = insert_every, ntry_mc = 100000, random_distribute = exact,
+{compress_tags} = no
 

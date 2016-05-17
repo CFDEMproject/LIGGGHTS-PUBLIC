@@ -67,9 +67,12 @@ namespace MODEL_PARAMS
   /* -----------------------------------------------------------------------
    * Property Creators
    * ----------------------------------------------------------------------- */
+  VectorProperty* createCoalescenceModelSwitches(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  VectorProperty* createCoalescenceModelSettings(PropertyRegistry & registry, const char * caller, bool sanity_checks);
 
   MatrixProperty* createCohesionEnergyDensity(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   VectorProperty* createCohesionDistanceSettings(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  VectorProperty* createCohesionModelSwitches(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createCharacteristicVelocity(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   VectorProperty* createYoungsModulus(PropertyRegistry & registry, const char * caller, bool sanity_checks) ;
   VectorProperty* createPoissonsRatio(PropertyRegistry & registry, const char * caller, bool sanity_checks);
@@ -88,6 +91,7 @@ namespace MODEL_PARAMS
   ScalarProperty* createRollingStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks);
 
   ScalarProperty* createLiquidVolume(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  ScalarProperty* createLiquidDensity(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createSurfaceTension(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createSwitchModel(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createHistoryIndex(PropertyRegistry & registry, const char * caller, bool sanity_checks);

@@ -109,8 +109,11 @@
   bool AssociativePointerArray<T>::sameLength(int _len)
   {
     for(int i = 0; i < numElem_; i++)
+    {
+        
         if(content_[i]->size() != _len)
             return false;
+    }
     return true;
   }
 
@@ -183,18 +186,6 @@
   }
 
   template<typename T>
-  void AssociativePointerArray<T>::grow(int to)
-   {
-      int by;
-      for(int i = 0; i < maxElem_; i++)
-      {
-          by = to - getBasePointerByIndex(i)->size();
-          if(by > 0)
-            getBasePointerByIndex(i)->addUninitialized(by);
-      }
-  }
-
-  template<typename T>
   int AssociativePointerArray<T>::size() const
   {
     return numElem_;
@@ -234,7 +225,7 @@
   }
 
   /* ----------------------------------------------------------------------
-   delete element n
+   delete all elements in containers
   ------------------------------------------------------------------------- */
 
   template<typename T>
@@ -242,6 +233,17 @@
   {
       for(int i=0;i<numElem_;i++)
         content_[i]->clearContainer();
+  }
+
+  /* ----------------------------------------------------------------------
+   delete all restart elements in containers
+  ------------------------------------------------------------------------- */
+
+  template<typename T>
+  void AssociativePointerArray<T>::deleteRestart(bool scale,bool translate,bool rotate)
+  {
+      for(int i=0;i<numElem_;i++)
+        content_[i]->delRestart(scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------
@@ -300,20 +302,42 @@
   }
 
   /* ----------------------------------------------------------------------
-   clear reverse properties, i.e. reset all of them to 0
+   statistic functions
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  bool AssociativePointerArray<T>::calcStatistics(double weighting_factor)
+  bool AssociativePointerArray<T>::calcStatistics()
   {
       int ret = true;
+      const int  maxLevel = maxStatLevel();
 
-      for(int i=0;i<numElem_;i++)
-        if(content_[i]->isStatisticsContainer())
-            ret = ret && content_[i]->calcStatistics(weighting_factor);
+      for(int j=1;j<=maxLevel;j++)
+      {
+          for(int i=0;i<numElem_;i++)
+              if( (content_[i]->getStatLevel() == j) && (content_[i]->isStatisticsContainer() && !(content_[i]->isScalingContainer())))
+                  ret = ret && content_[i]->calcStatistics();
+
+          for(int i=0;i<numElem_;i++)
+              if( (content_[i]->getStatLevel() == j) && (content_[i]->isStatisticsContainer() && content_[i]->isScalingContainer()))
+                  ret = ret && content_[i]->updateScalingContainer();
+          for(int i=0;i<numElem_;i++)
+              if( (content_[i]->getStatLevel() == j) && (content_[i]->isStatisticsContainer() && (!content_[i]->isScalingContainer())))
+                  ret = ret && content_[i]->normalizeStatistics();
+      }
 
       // return false if any returns false
       return ret;
+  }
+
+  template<typename T>
+  int  AssociativePointerArray<T>::maxStatLevel() const
+  {
+      int maxLevel = 0;
+
+      for(int i=0;i<numElem_;i++)
+          maxLevel = std::max(maxLevel, content_[i]->getStatLevel());
+
+      return maxLevel;
   }
 
   /* ----------------------------------------------------------------------

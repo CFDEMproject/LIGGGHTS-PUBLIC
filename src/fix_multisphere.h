@@ -70,7 +70,8 @@ enum
     MS_COMM_FW_F_TORQUE,
     MS_COMM_REV_X_V_OMEGA,
     MS_COMM_REV_V_OMEGA,
-    MS_COMM_REV_IMAGE
+    MS_COMM_REV_IMAGE,
+    MS_COMM_REV_DISPLACE,
 };
 
 class FixMultisphere : public Fix
@@ -183,6 +184,15 @@ class FixMultisphere : public Fix
 
       bool allow_group_and_set()
       { return allow_group_and_set_; }
+
+      void scale_displace(int i, double factor)
+      { vectorScalarMult3D(displace_[i],factor); }
+
+      inline void rev_comm_displace()
+      {
+        rev_comm_flag_ = MS_COMM_REV_DISPLACE;
+        reverse_comm();
+      }
 
      protected:
 

@@ -19,10 +19,12 @@ mesh/surface or mesh/surface/planar = style name of this fix command  :l
 file = obligatory keyword :l
 filename = name of STL or VTK file containing the triangle mesh data :l
 zero or more premesh_keywords/premesh_value pairs may be appended :l
-premesh_keyword = {type} or {precision} or {heal} or {element_exclusion_list} or {verbose} :l
+premesh_keyword = {type} or {precision} or {heal} or {min_feature_length}  or {element_exclusion_list} or {verbose} :l
   {type} value = atom type (material type) of the wall imported from the STL file
+  {region} value = ID of "region"_region.html to filter elements which are imported
   {precision} value = length mesh nodes this far away at maximum will be recognized as identical (length units)
   {heal} value = auto_remove_duplicates or no
+  {min_feature_length} value = exclude element if belongs to an entity where no element is larger than this (length units)
   {element_exclusion_list} values = mode element_exlusion_file
     mode = read or write
     element_exlusion_file = name of file containing the elements to be excluded
@@ -37,6 +39,7 @@ mesh_keyword = {scale} or {move} or {rotate} or {temperature} or {mass_temperatu
     axis = obligatory keyword
     ax, ay, az = axis vector for rotation (length units)
     angle = obligatory keyword
+    ang = rotation angle (degrees)
   {temperature} value = T0
     T0 = Temperature of the wall (temperature units)
   {mass_temperature} value = mt0
@@ -70,9 +73,15 @@ ASCII STL files or legacy ASCII VTK files. Style {mesh/surface} is a general sur
 {mesh/surface/planar} represents a planar mesh. {mesh/surface/planar} requires the mesh to
 consist of only 1 planar face.
 
+The {region} keyword can be used to filter the elements which are imported. An element is only
+imported if all of its vertices is inside the specified "region"_region.html. Please note that 
+the geometric extent of this "region"_region.html refer to the unscaled, unmoved, and unrotated
+original state of the geometry.
+
 Generall, you can apply scaling, offset and rotation to the imported mesh via keywords {scale},
-{move}, {rotate}. Operations are applied in the order as they are specified. The group-ID defines
-which particles will "see" the mesh, in case it is used as a granular wall.
+{move}, {rotate}. Operations are applied in the order as they are specified. The rotation via {rotate} is performed around the rotation axis that goes through the origin (0,0,0) and in the direction of {axis}.
+
+The group-ID defines which particles will "see" the mesh, in case it is used as a granular wall.
 
 One fix represents one wall with a specific material, where the material is identified
 via keyword {type}. If multiple meshes with different materials are desired, the respective
@@ -106,7 +115,7 @@ If any of the obove rules is not fulfilled, a warning is generated. Keyword
 Error messages:
 
 The {curvature} must not be larger than any angle in any mesh element :l
-There must be no element with an angle <  0.181185 degrees in any element (hard limit for angles) :l
+There must be no element with an angle <  0.0181185 degrees in any element (hard limit for angles) :l
 The number of neighbor elements must be <= 5 for any element :l
 Mesh elements must not be duplicate :l
 Coplanar mesh elements that share an edge must not overlap :l
@@ -126,6 +135,7 @@ can not be read correctly in the first place:
 {curvature} :l
 {heal} :l
 {element_exclusion_list} :l
+{min_feature_length} :l
 {curvature_tolerant} :l
 
 The {precision} keyword specifies how far away mesh nodes can be at maximum to
@@ -144,10 +154,15 @@ If LIGGGHTS(R)-PUBLIC stalls because of duplicate elements, you can try setting
 by removing duplicate elements.
 
 With the optional {element_exclusion_list} keyword is used in mode 'write', LIGGGHTS(R)-PUBLIC 
-will write a list of elements which have more than the allowed 5 face neighbors per surface
-element to a file, as well as those elements which have an angle below 0.181185 degrees. 
-The 'read' mode can then use this file and will skip the elements in the list. However, you can 
-also manually write such a file to exclude elements you do not want to have included
+will write a list of elements which 
+
+have more than the allowed 5 face neighbors per surface :l
+have an angle below 0.0181185 degrees :l
+are duplicate :l
+
+element to a file. The 'read' mode can then use this file and will skip the elements in 
+the list. However, you can also manually write such a file to exclude elements you do not 
+want to have included
 
 IMPORTANT NOTE: The {element_exclusion_list write} model works in serial only. However,
 this is not a real restriction, since you can generate the exclusion lists in serial,
@@ -156,7 +171,14 @@ but then read them to import the mesh into a parallel simulation
 IMPORTANT NOTE: If you use the 'heal' or 'element_exclusion_list' keywords, you should 
 check the changes to the geometry, e.g. by using a "dump mesh/stl"_dump.html command.
 
-The {curvature_toleran} keyword can simply turn off the check that
+With the {min_feature_length} option, you can exlude elements which do not belong
+to an entity which has any element larger than {min_feature_length}. In this context,
+'entity' is defined by the 'neighborhood' of the element.
+{min_feature_length} also writes to the exclusion list, and can thus only be used along 
+with the 'element_exclusion_list' feature. This feature is only available in the
+PREMIUM version of LIGGGHTS.
+
+The {curvature_tolerant} keyword can simply turn off the check that
 the {curvature} must not be larger than any angle in any mesh element.
 This is typically not recommended, but can be used as a last resort measure.
 

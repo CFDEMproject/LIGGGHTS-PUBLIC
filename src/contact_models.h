@@ -92,10 +92,10 @@ namespace ContactModels
     static const int SURFACE = S;
     static const int64_t HASHCODE =
         (((int64_t)M)) |
-        (((int64_t)T) << 4) |
-        (((int64_t)C) << 8) |
-        (((int64_t)R) << 12) |
-        (((int64_t)S) << 16);
+        (((int64_t)T) << 6) |
+        (((int64_t)C) << 12) |
+        (((int64_t)R) << 18) |
+        (((int64_t)S) << 24);
   };
 
   int64_t generate_gran_hashcode(int model, int tangential, int cohesion, int rolling, int surface);
@@ -125,6 +125,7 @@ namespace ContactModels
     inline void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void registerSettings(Settings & settings);
+    inline void postSettings();
     inline void connectToProperties(PropertyRegistry & registry);
     inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
@@ -239,6 +240,7 @@ namespace ContactModels
     inline void postSettings()
     {
       surfaceModel.postSettings();
+      normalModel.postSettings();
     }
 
     inline void connectToProperties(PropertyRegistry & registry)

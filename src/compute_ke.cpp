@@ -104,5 +104,10 @@ double ComputeKE::compute_scalar()
 
   MPI_Allreduce(&ke,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
   scalar *= pfactor;
+
+  // for multispheres we need to get the kinetic energy from the multisphere fix
+  if (fix_ms)
+    scalar += fix_ms->extract_ke();
+
   return scalar;
 }

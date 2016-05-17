@@ -238,7 +238,7 @@ inline int vectorMax3D(int *v)
     return v[2];
 }
 
-inline int vectorMaxN(int *v, int n)
+inline int vectorMaxN(const int *v, const int n)
 {
     int max = v[0];
     for (int i=1;i<n;i++)
@@ -246,9 +246,25 @@ inline int vectorMaxN(int *v, int n)
     return max;
 }
 
-inline int vectorMinN(int *v, int n)
+inline double vectorMaxN(const double *v, const int n)
+{
+    double max = v[0];
+    for (int i=1;i<n;i++)
+        max = max > v[i] ? max : v[i];
+    return max;
+}
+
+inline int vectorMinN(const int *v, const int n)
 {
     int min = v[0];
+    for (int i=1;i<n;i++)
+        min = min < v[i] ? min : v[i];
+    return min;
+}
+
+inline double vectorMinN(const double *v, const int n)
+{
+    double min = v[0];
     for (int i=1;i<n;i++)
         min = min < v[i] ? min : v[i];
     return min;
@@ -458,6 +474,25 @@ inline void vectorSubtract2D(const double *v1,const double *v2, double *result)
   result[1]=v1[1]-v2[1];
 }
 
+inline void vectorMultiN(const double *v1, const double *v2, double *result, const int n)
+{
+  for(int i = 0; i < n; i++)
+    result[i] = v1[i] * v2[i];
+}
+
+inline void vectorMultiN(const int *v1, const int *v2, int *result, const int n)
+{
+  for(int i = 0; i < n; i++)
+    result[i] = v1[i] * v2[i];
+}
+
+template<typename T>
+inline void vectorComponentDivN(const T *v1, const T *v2, T *result, const int n)
+{
+  for(int i = 0; i < n; i++)
+    result[i] = v1[i] / v2[i];
+}
+
 inline void vectorCross3D(const double *v1,const double *v2, double *result)
 {
   result[0]=v1[1]*v2[2]-v1[2]*v2[1];
@@ -639,7 +674,7 @@ inline void printVec4D(FILE *out, const char *name, double *vec)
 
 inline void printVecN(FILE *out, const char *name, double *vec, int n)
 {
-    fprintf(out," vector %s:",name);
+    if(name) fprintf(out," vector %s:",name);
     for(int i = 0; i < n; i++)
         fprintf(out,"%f ",vec[i]);
     fprintf(out,"\n");
@@ -647,7 +682,7 @@ inline void printVecN(FILE *out, const char *name, double *vec, int n)
 
 inline void printVecN(FILE *out, const char *name, int *vec, int n)
 {
-    fprintf(out," vector %s:",name);
+    if(name) fprintf(out," vector %s:",name);
     for(int i = 0; i < n; i++)
         fprintf(out,"%d ",vec[i]);
     fprintf(out,"\n");

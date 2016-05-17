@@ -46,6 +46,7 @@
 #include <set>
 #include <map>
 #include <sstream>
+#include <stdlib.h>
 
 using namespace LAMMPS_NS;
 using namespace std;

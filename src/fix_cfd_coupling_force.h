@@ -79,14 +79,23 @@ class FixCfdCouplingForce : public Fix  {
 
   class FixPropertyAtom* fix_dispersionTime_;
   class FixPropertyAtom* fix_dispersionVel_;
+
+  class FixPropertyAtom* fix_UrelOld_;
+
   bool use_force_, use_torque_, use_dens_, use_type_;
   bool use_stochastic_;
+  bool use_virtualMass_;
   bool use_superquadric_;
 
  private:
   bool use_property_;
   char property_name[200];
   char property_type[200];
+
+  bool use_fiber_topo_;
+  class FixPropertyAtom* fix_fiber_axis_;
+  class FixPropertyAtom* fix_fiber_ends_;
+
 };
 
 }

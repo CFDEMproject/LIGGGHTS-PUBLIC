@@ -1,0 +1,82 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix property/atom/timetracer command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix id group property/atom/timetracer keyword value ... 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>property/atom/timetracer = style name of this fix command   
+
+<LI>zero or more keyword/value pairs may be appended to args 
+
+<LI>keyword = <I>add_region</I> or <I>check_region_every</I> 
+
+<PRE>  <I>add_region</I> value = <I>region-ID</I>
+    region-ID = ID of region to be added to list of regions where residence time is evaluated
+  <I>check_region_every</I> value = n
+    n = check every that many time-step if atom are in region 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix tracer all property/atom/timetracer add_region tracereg 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Fix property/atom/timetracer computes the residence time of particles 
+in the simulation domain and (optionally) a list of regions. 
+</P>
+<P>Since the look-up if a particle is in a specific region can be
+compuationally costly, keyword <I>check_region_every</I> can be used to 
+control how often the region is checked. Every <I>check_region_every</I>
+time-steps, the lookup is performed and the residence time contribution
+for each lookup is dt*<I>check_region_every</I>, where dt is the time-step 
+size. However, be careful not to choose this value too large, in this case
+you could skip particles passing through a region.
+</P>
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> .
+</P>
+<P>In case no regions are specified, this fix computes a per-atom vector 
+(the residence time of particles in the simulation domain) which can be 
+accessed by various <A HREF = "Section_howto.html#howto_8">output commands</A>.
+In case one or more optional regions are specified, this fix computes
+a per-atom array, where the first value for each particle is the residence 
+time in the simulation domain and the following values are the residence
+time in the specified regions (in the order in which the regions are
+specified).
+</P>
+<P>This fix computes a N-vector of residence times, where N=1+number of
+regions specified, which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
+commands</A>. The vector components are the
+average residence time in the fix group for the whole simulation domain
+(first value) and for each region (following values). The order
+is following the order in which the regions are specified.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>Currently, this feature does not support multi-sphere particles.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A>
+</P>
+<P><B>Default:</B>
+</P>
+<P>check_region_every = 10
+</P>
+</HTML>

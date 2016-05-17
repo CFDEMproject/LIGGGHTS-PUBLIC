@@ -102,8 +102,6 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
 
   // initialize npartner to 0 so neighbor list creation is OK the 1st time
 
-  int nlocal = atom->nlocal;
-  
   std::fill_n(npartner_, atom->nmax, 0);
 
   //=====================
@@ -215,20 +213,18 @@ void FixContactHistory::init()
 
   if(0 == strcmp(style,"contacthistory"))
   {
-      if(!force->pair_match("gran", 0))
-          error->fix_error(FLERR,this,"Please use a granular pair style for fix contacthistory");
-      pair_gran_ = static_cast<PairGran*>(force->pair_match("gran", 0));
+      
+      pair_gran_ = static_cast<PairGran*>(force->pair_match("gran", 1));
 
+      if(!pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
+        pair_gran_ = static_cast<PairGran*>(force->pair_match("gran_bubble", 1));
+      if(!pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
+        pair_gran_ = static_cast<PairGran*>(force->pair_match("bubble", 1));
+
+      if(!pair_gran_)
+          error->fix_error(FLERR,this,"Please use a pair style 'gran', 'gran_bubble' or 'bubble' for fix contacthistory");
       if(dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
-      {
-        pair_gran_ = static_cast<PairGran*>(force->pair_match("bubble", 0));
-
-        if(! pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
-            pair_gran_ = static_cast<PairGran*>(force->pair_match("gran_bubble", 0));
-
-        if(!pair_gran_ || (dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair()))
-            pair_gran_ = static_cast<PairGran*>(force->pair_match("gran", 0)); //at last, it must be a granular one! This is the case, e.g., in case extra history is used for liquid tracking
-      }
+          error->fix_error(FLERR,this,"internal error");
 
       int dim;
       computeflag_ = (int *) pair_gran_->extract("computeflag",dim);
@@ -307,12 +303,12 @@ void FixContactHistory::pre_exchange()
 
   // nlocal may include atoms added since last neigh build
 
-  int nlocal = atom->nlocal;
+  int nmax = atom->nmax;
 
   // zero npartner for all current atoms
   // clear 2 page data structures
 
-  std::fill_n(npartner_, nlocal, 0);
+  std::fill_n(npartner_, nmax, 0);
 
   ipage_->reset();
   dpage_->reset();
@@ -342,6 +338,7 @@ void FixContactHistory::pre_exchange()
 
     for (jj = 0; jj < jnum; jj++) {
       if (contact_flag[jj]) {
+        
         npartner_[i]++;
         j = jlist[jj];
         j &= NEIGHMASK;
@@ -367,7 +364,7 @@ void FixContactHistory::pre_exchange()
   // store atom IDs and shear history for my atoms
   // re-zero npartner to use as counter for all my atoms
 
-  std::fill_n(npartner_, nlocal, 0);
+  std::fill_n(npartner_, nmax, 0);
 
   for (ii = 0; ii < inum; ii++) {
     i = ilist[ii];
@@ -410,6 +407,7 @@ void FixContactHistory::pre_exchange()
   // set maxtouch = max # of partners of any owned atom
   // bump up comm->maxexchange_fix if necessary
   maxtouch_ = 0;
+  int nlocal = atom->nlocal;
   if(nlocal > 0) maxtouch_ = *std::max_element(npartner_, npartner_+nlocal);
 
   comm->maxexchange_fix = MAX(comm->maxexchange_fix,(dnum_+1)*maxtouch_+1);
@@ -566,7 +564,7 @@ void FixContactHistory::restart(char *buf)
   double *list = (double *) buf;
 
   int unpack_dnum = static_cast<int> (list[n++]);
-  //int unpack_maxtouch = static_cast<int> (list[n++]);
+  int unpack_maxtouch = static_cast<int> (list[n++]);
 
   if(unpack_dnum != dnum_)
     error->fix_error(FLERR,this,"saved simulation state used different contact history model - can not restart");

@@ -62,7 +62,7 @@ namespace PairStyles {
     virtual void settings(int nargs, char ** args) = 0;
     virtual void init_granular() = 0;
     virtual void write_restart_settings(FILE * fp) = 0;
-    virtual void read_restart_settings(FILE * fp) = 0;
+    virtual void read_restart_settings(FILE * fp, int64_t hashcode = -1) = 0;
     virtual void compute_force(LAMMPS_NS::PairGran * pg, int eflag, int vflag, int addflag) = 0;
 
     virtual int bond_history_offset() = 0;

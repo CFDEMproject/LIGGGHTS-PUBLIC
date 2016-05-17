@@ -250,7 +250,7 @@ void ComputeNparticlesTracerRegion::compute_vector_eval(bool countMass, double& 
                else
                     resultMarked += 1.0;
 
-               if(reset_marker_)
+               if(reset_marker_ && countMass)
                     marker[i] = 0.0;
             }
         }

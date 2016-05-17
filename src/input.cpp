@@ -585,6 +585,7 @@ int Input::execute_command()
   else if (!strcmp(command,"dump_modify")) dump_modify();
   else if (!strcmp(command,"fix")) fix();
   else if (!strcmp(command,"fix_modify")) fix_modify();
+  else if (!strcmp(command,"force_dt_reset")) force_dt_reset();
   else if (!strcmp(command,"group")) group_command();
   else if (!strcmp(command,"improper_coeff")) improper_coeff();
   else if (!strcmp(command,"improper_style")) improper_style();
@@ -607,6 +608,7 @@ int Input::execute_command()
   else if (!strcmp(command,"reset_timestep")) reset_timestep();
   else if (!strcmp(command,"restart")) restart();
   else if (!strcmp(command,"run_style")) run_style();
+  else if (!strcmp(command,"soft_particles")) soft_particles(); 
   else if (!strcmp(command,"special_bonds")) special_bonds();
   else if (!strcmp(command,"suffix")) suffix();
   else if (!strcmp(command,"thermo")) thermo();
@@ -1300,6 +1302,20 @@ void Input::fix_modify()
 
 /* ---------------------------------------------------------------------- */
 
+void Input::force_dt_reset()
+{
+   if(narg != 1)
+      error->all(FLERR,"force_dt_reset expects 'yes' or 'no'");
+   if(0 == strcmp(arg[0],"yes"))
+      update->set_force_dt_reset(true);
+   else if(0 == strcmp(arg[0],"no"))
+      update->set_force_dt_reset(false);
+   else
+      error->all(FLERR,"force_dt_reset expects 'yes' or 'no'");
+}
+
+/* ---------------------------------------------------------------------- */
+
 void Input::group_command()
 {
   group->assign(narg,arg);
@@ -1564,6 +1580,20 @@ void Input::run_style()
   if (domain->box_exist == 0)
     error->all(FLERR,"Run_style command before simulation box is defined");
   update->create_integrate(narg,arg,lmp->suffix);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Input::soft_particles()
+{
+   if(narg != 1)
+      error->all(FLERR,"soft_particles expects 'yes' or 'no'");
+   if(0 == strcmp(arg[0],"yes"))
+      atom->get_properties()->do_allow_soft_particles();
+   else if(0 == strcmp(arg[0],"no"))
+      atom->get_properties()->do_not_allow_soft_particles();
+   else
+      error->all(FLERR,"Soft_particles expects 'yes' or 'no'");
 }
 
 /* ---------------------------------------------------------------------- */

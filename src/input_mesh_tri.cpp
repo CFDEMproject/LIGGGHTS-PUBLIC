@@ -49,6 +49,7 @@
 #include "modify.h"
 #include "update.h"
 #include "error.h"
+#include "region.h"
 #include "domain.h"
 #include "math.h"
 #include "vector_liggghts.h"
@@ -71,7 +72,9 @@ InputMeshTri::~InputMeshTri()
    process all input from filename
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool verbose,const int size_exclusion_list, int *exclusion_list)
+void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool verbose,
+                               const int size_exclusion_list, int *exclusion_list,
+                               class Region *region)
 {
   verbose_ = verbose;
   size_exclusion_list_ = size_exclusion_list;
@@ -104,12 +107,13 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
   if(is_stl)
   {
       if (comm->me == 0) fprintf(screen,"\nReading STL file '%s' \n",filename);
-      meshtrifile_stl(mesh);
+      meshtrifile_stl(mesh,region);
+      
   }
   else if(is_vtk)
   {
       if (comm->me == 0) fprintf(screen,"\nReading VTK file '%s' \n",filename);
-      meshtrifile_vtk(mesh);
+      meshtrifile_vtk(mesh,region);
   }
   else error->all(FLERR,"Illegal command, need either an STL file or a VTK file as input for triangular mesh.");
 
@@ -120,7 +124,7 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
    process VTK file
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
+void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh,class Region *region)
 {
   int n,m;
 
@@ -284,6 +288,7 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
             i_exclusion_list_++;
          continue;
       }
+      if(!region || ( region->match(points[cells[i][0]]) && region->match(points[cells[i][1]]) && region->match(points[cells[i][2]]) ) )
       addTriangle(mesh,points[cells[i][0]],points[cells[i][1]],points[cells[i][2]],lines[i]);
   }
 
@@ -295,7 +300,7 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
    process STL file
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
+void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region)
 {
   int n,m;
   int iVertex = 0;
@@ -308,6 +313,7 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
 
   while (1)
   {
+    
     // read a line from input script
     // n = length of line including str terminator, 0 if end of file
     // if line ends in continuation char '&', concatenate next line
@@ -417,9 +423,14 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
       {
          
          if(i_exclusion_list_ < size_exclusion_list_-1)
+         {
             i_exclusion_list_++;
+            
+            while((exclusion_list_[i_exclusion_list_-1] == exclusion_list_[i_exclusion_list_]) && (i_exclusion_list_ < size_exclusion_list_-1))
+                i_exclusion_list_++;
+         }
       }
-      else
+      else if(!region || ( region->match(vertices[0]) && region->match(vertices[1]) && region->match(vertices[2]) ) )
           addTriangle(mesh,vertices[0],vertices[1],vertices[2],nLinesTri);
 
        if (me == 0) {

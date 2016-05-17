@@ -147,7 +147,7 @@ class FixInsert : public Fix {
   int maxattempt;
 
   // positions generated, and for overlap check
-  RegionNeighborList &neighList;
+  RegionNeighborList<interpolate_no> &neighList;
 
   // velocity and ang vel distribution
   // currently constant for omega - could also be a distribution
@@ -174,6 +174,9 @@ class FixInsert : public Fix {
 
   // warn if box extent too small for insertion
   bool warn_boxentent;
+
+  // compress atom tags upon insertion
+  bool compress_flag;
 
   class FixMultisphere *fix_multisphere;
   class Multisphere *multisphere;

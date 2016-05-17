@@ -76,6 +76,8 @@ namespace ContactModels
       NormalModel<HOOKE>::registerSettings(settings);
     }
 
+    inline void postSettings() {}
+
     inline void connectToProperties(PropertyRegistry & registry) {
       NormalModel<HOOKE>::connectToProperties(registry);
 

@@ -37,6 +37,10 @@
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+
+    Implementation of implicit update algorithm
+    Copyright 2016      TU Graz, Stefan Radl
+    Copyright 2016      DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -70,12 +74,21 @@ class FixScalarTransportEquation : public Fix {
   virtual double compute_scalar();
   bool match_equation_id(const char*);
 
+  //Tools for implicit fix handling
+  bool isImplicit() { return implicitMode_;};
+  void register_implicit_fixes(char*, double, char*, double);
+  void updatePtrsImpl();
+
   double *get_capacity();
 
   inline int n_every()
   { return nevery_; }
 
  protected:
+
+  void (FixScalarTransportEquation::*advanceQty)();
+  void advanceQtyExplicit();
+  void advanceQtyImplicit();
 
   int nlevels_respa;
 
@@ -87,6 +100,18 @@ class FixScalarTransportEquation : public Fix {
   char *flux_name;
   class FixPropertyAtom* fix_source;
   char *source_name;
+
+  //Implicit fixes, names, and pointers
+  double crankNicholsonFactor_;
+  bool  implicitMode_;
+  class FixPropertyAtom* fix_fluidQty_;
+  char *fluid_name_;
+  class FixPropertyAtom* fix_transCoeffQty_;
+  char *transCoeff_name_;
+  double *fluidQty_;
+  double *transCoeffQty_;
+  double fluidQty_0_;
+  double transCoeffQty_0_;
 
   //storage capacity - would be thermal capacity for heat conduction
   int capacity_flag;

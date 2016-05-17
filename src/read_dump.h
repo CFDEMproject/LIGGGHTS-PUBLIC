@@ -58,6 +58,8 @@ CommandStyle(read_dump,ReadDump)
 namespace LAMMPS_NS {
 
 class ReadDump : protected Pointers {
+ friend class Rerun;
+
  public:
   ReadDump(class LAMMPS *);
   ~ReadDump();
@@ -72,6 +74,9 @@ class ReadDump : protected Pointers {
   int fields_and_keywords(int, char **);
 
 private:
+
+  void file_search(char *infile);
+
   int me,nprocs;
   FILE *fp;
 

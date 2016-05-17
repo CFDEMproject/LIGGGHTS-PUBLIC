@@ -314,8 +314,8 @@ void FixTemplateMultisphere::init()
         error->fix_error(FLERR,this,"multisphere template types have to be consecutive starting from 1");
 
     FixMultisphere *fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere", 0));
-    if(fix_multisphere && fix_multisphere->igroup != igroup)
-        error->fix_error(FLERR,this,"Fix particletemplate/multisphere command and fix multisphere command are not compatible, must be same group");
+    if(fix_multisphere && (fix_multisphere->groupbit & groupbit) == 0)
+        error->fix_error(FLERR,this,"Fix particletemplate/multisphere command and fix multisphere command are not compatible, must be member of the same group");
 }
 
 /* ----------------------------------------------------------------------

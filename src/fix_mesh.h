@@ -48,11 +48,11 @@
 #ifndef LMP_FIX_MESH_H
 #define LMP_FIX_MESH_H
 
-#include "fix.h"
+#include "fix_base_liggghts.h"
 
 namespace LAMMPS_NS
 {
-  class FixMesh : public Fix
+  class FixMesh : public FixBaseLiggghts
   {
       public:
 
@@ -131,6 +131,9 @@ namespace LAMMPS_NS
 
         // mesh precision
         double precision_;
+
+        // ignore features smaller than this size
+        double min_feature_length_;
 
         // mesh correction
         FILE *element_exclusion_list_;

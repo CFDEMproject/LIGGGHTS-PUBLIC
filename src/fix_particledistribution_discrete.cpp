@@ -44,6 +44,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "fix_template_sphere.h"
+#include "fix_template_multiplespheres.h"
 #include "fix_particledistribution_discrete.h"
 #include "atom.h"
 #include "atom_vec.h"
@@ -474,6 +475,15 @@ void FixParticledistributionDiscrete::pre_insert(int n,class FixPropertyAtom *fp
     // loop to n, not n_pti
     if(fp)
     {
+        
+        for(int i = 0; i < ntemplates; i++)
+        {
+            if( dynamic_cast<FixTemplateMultiplespheres*>(templates[i]) &&
+                dynamic_cast<FixTemplateMultiplespheres*>(templates[i])->is_bonded()
+              )
+              error->one(FLERR,"'bonded' and setting values for a fix property upon insertion can not be used together");
+        }
+
         for(int i = 0; i < n; i++)
         {
             pti_list[i]->fix_property = fp;

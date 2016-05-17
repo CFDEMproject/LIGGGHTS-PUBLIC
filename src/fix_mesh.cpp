@@ -69,7 +69,7 @@ using namespace FixConst;
 #define EPSILON_V 0.00001
 
 FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
-: Fix(lmp, narg, arg),
+: FixBaseLiggghts(lmp, narg, arg),
   atom_type_mesh_(-1),
   mass_temperature_(0.),
   mesh_(NULL),
@@ -79,6 +79,7 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
   verbose_(false),
   autoRemoveDuplicates_(false),
   precision_(0.),
+  min_feature_length_(-1.),
   element_exclusion_list_(0),
   read_exclusion_list_(false),
   exclusion_list_(0),
@@ -87,6 +88,10 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 {
     if(narg < 5)
       error->fix_error(FLERR,this,"not enough arguments - at least keyword 'file' and a filename are required.");
+
+    do_support_multisphere();
+    do_not_need_radius();
+    do_not_need_mass();
 
     restart_global = 1;
 
@@ -123,6 +128,11 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
                 error->fix_error(FLERR,this,"expecing 'yes' or 'no' for 'verbose'");
             iarg_ += 2;
             hasargs = true;
+        } else if (strcmp(arg[iarg_],"region") == 0) {
+          if (iarg_+2 > narg) error->fix_error(FLERR,this,"not enough arguments for 'region'");
+          process_region(arg[iarg_+1]);
+          iarg_ += 2;
+          hasargs = true;
         } else if(strcmp(arg[iarg_],"heal") == 0) {
             if(narg < iarg_+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'heal'");
@@ -138,6 +148,13 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
             precision_ = force->numeric(FLERR,arg[iarg_++]);
             if(precision_ < 0. || precision_ > 0.001)
               error->fix_error(FLERR,this,"0 < precision < 0.001 required");
+            hasargs = true;
+        } else if (strcmp(arg[iarg_],"min_feature_length") == 0) {
+            if (narg < iarg_+2) error->fix_error(FLERR,this,"not enough arguments");
+            iarg_++;
+            min_feature_length_ = force->numeric(FLERR,arg[iarg_++]);
+            if(min_feature_length_ <= 0.)
+              error->fix_error(FLERR,this,"0 < min_feature_length > 0.0 required");
             hasargs = true;
         } else if (strcmp(arg[iarg_],"element_exclusion_list") == 0) {
             if (narg < iarg_+3) error->fix_error(FLERR,this,"not enough arguments");
@@ -171,6 +188,9 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
             hasargs = true;
         }
     }
+
+    if(min_feature_length_ > 0. && (!element_exclusion_list_ || read_exclusion_list_))
+        error->fix_error(FLERR,this,"'min_feature_length' requires use of 'element_exclusion_list write'");
 
     // create/handle exclusion list
     handle_exclusion_list();
@@ -320,6 +340,7 @@ void FixMesh::create_mesh(char *mesh_fname)
         if(verbose_) mesh_->setVerbose();
         if(autoRemoveDuplicates_) mesh_->autoRemoveDuplicates();
         if(precision_ > 0.) mesh_->setPrecision(precision_);
+        if(min_feature_length_ > 0.) mesh_->setMinFeatureLength(min_feature_length_);
 
         // read file
         // can be from STL file or VTK file
@@ -329,7 +350,8 @@ void FixMesh::create_mesh(char *mesh_fname)
         if(!read_exclusion_list_ && element_exclusion_list_)
             mesh_->setElementExclusionList(element_exclusion_list_);
 
-        mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_,size_exclusion_list_,exclusion_list_);
+        mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_,
+                                size_exclusion_list_,exclusion_list_,region_);
         
         delete mesh_input;
     }
@@ -380,6 +402,8 @@ void FixMesh::pre_delete(bool unfixflag)
 
 void FixMesh::init()
 {
+    FixBaseLiggghts::init();
+
     if(mass_temperature_ > 0.)
     {
         int max_type = atom->get_properties()->max_type();

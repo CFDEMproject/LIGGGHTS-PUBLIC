@@ -125,8 +125,8 @@ namespace LAMMPS_NS
   {
           if(this->numElem_ == this->maxElem_)
           {
-                  grow<T>(this->arr_,this->maxElem_+GROW,1,1);
-                  this->maxElem_ += GROW;
+                  grow<T>(this->arr_,this->maxElem_+GROW_CONTAINER(),1,1);
+                  this->maxElem_ += GROW_CONTAINER();
           }
           this->arr_[this->numElem_][0][0] = elem;
           this->numElem_++;

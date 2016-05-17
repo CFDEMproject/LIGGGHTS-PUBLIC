@@ -104,7 +104,10 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
 
   screen = NULL;
   logfile = NULL;
+  infile = NULL;
   thermofile = NULL; 
+
+  initclock = MPI_Wtime();
 
   // parse input switches
 
@@ -247,7 +250,11 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
     } else if (strcmp(arg[iarg],"-help") == 0 ||
                strcmp(arg[iarg],"-h") == 0) {
       if (iarg+1 > narg)
+      {
+        if(screen) fprintf(screen,"argument is %s\n",arg[iarg]);
+        if(logfile) fprintf(logfile,"argument is %s\n",arg[iarg]);
         error->universe_all(FLERR,"Invalid command-line argument");
+      }
       helpflag = 1;
       iarg += 1;
     } else error->universe_all(FLERR,"Invalid command-line argument");

@@ -52,6 +52,9 @@
 namespace LAMMPS_NS {
 
 class Variable : protected Pointers {
+
+ friend class Info;
+
  public:
   Variable(class LAMMPS *);
   ~Variable();

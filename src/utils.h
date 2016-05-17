@@ -53,6 +53,19 @@ namespace LIGGGHTS {
 using namespace LAMMPS_NS;
 
 namespace Utils {
+
+  template <typename T>
+  inline T* ptr_reduce(T** &t)
+  { return &(t[0][0]); }
+
+  template <typename T>
+  inline T* ptr_reduce(T* &t)
+  { return t; }
+
+  template <typename T>
+  inline T* ptr_reduce(T &t)
+  { return &t; }
+
   template<typename Interface>
   class AbstractFactory {
     typedef typename Interface::ParentType ParentType;

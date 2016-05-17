@@ -31,6 +31,10 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     value can be an atom-style variable (see below)
   {x},{y},{z} value = atom coordinate (distance units)
     value can be an atom-style variable (see below)
+  {vx},{vy},{vz} value = atom velocity (velocity units)
+    value can be an atom-style variable (see below)
+  {omegax},{omegay},{omegaz} value = atom rotational velocity (rad / time units)
+    value can be an atom-style variable (see below)
   {charge} value = atomic charge (charge units)
     value can be an atom-style variable (see below)
   {quat} values = a b c theta

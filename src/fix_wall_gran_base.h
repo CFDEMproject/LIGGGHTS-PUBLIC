@@ -48,6 +48,7 @@
 #include "fix_contact_property_atom_wall.h"
 #include "contact_interface.h"
 #include "compute_pair_gran_local.h"
+#include "fix_mesh_surface_stress.h"
 #include "tri_mesh.h"
 #include "settings.h"
 #include "string.h"
@@ -77,7 +78,8 @@ public:
   {
   }
 
-  virtual ~Granular() {
+  virtual ~Granular()
+  {
   }
 
   virtual void init_granular() {
@@ -127,10 +129,11 @@ public:
     }
   }
 
-  virtual void compute_force(FixWallGran * wg, SurfacesIntersectData & sidata, double *vwall, class TriMesh *mesh = 0,int iTri = 0)
+  virtual void compute_force(FixWallGran * wg, SurfacesIntersectData & sidata, bool intersectflag,double *vwall, class FixMeshSurface * fix_mesh = 0, int iMesh = 0, class TriMesh *mesh = 0,int iTri = 0)
   {
     const int ip = sidata.i;
 
+    double *x = atom->x[ip];
     double *f = atom->f[ip];
     double *torque = atom->torque[ip];
     double *v = atom->v[ip];
@@ -139,11 +142,48 @@ public:
     double mass = atom->rmass[ip];
     int *type = atom->type;
 
+    // copy collision data to struct (compiler can figure out a better way to
+    // interleave these stores with the double calculations above.
+    ForceData i_forces;
+    ForceData j_forces;
+    sidata.v_i = v;
+    sidata.v_j = vwall;
+    sidata.omega_i = omega;
+
+    sidata.r = radius - sidata.deltan; // sign corrected, because negative value is passed
+    sidata.rsq = sidata.r*sidata.r;
+    const double rinv = 1.0/sidata.r;
+    sidata.rinv = rinv;
+    sidata.area_ratio = 1.;
+
+    //store type here as negative in case of primitive wall!
+    sidata.j = mesh ? iTri : -wg->atom_type_wall();
+    sidata.contact_flags = NULL;
+    sidata.itype = type[ip];
+
     if(wg->fix_rigid() && wg->body(ip) >= 0)
       mass = wg->masstotal(wg->body(ip));
 
-    const double r = sidata.r;
-    const double rinv = 1.0/r;
+    sidata.meff = mass;
+    sidata.mi = mass;
+
+    sidata.computeflag = wg->computeflag();
+    sidata.shearupdate = wg->shearupdate();
+    sidata.jtype = wg->atom_type_wall();
+
+    double force_old[3]={}, f_pw[3];
+
+    // if force should be stored - remember old force
+    if(wg->store_force() || wg->stress_flag() || wg->fix_meshforce_pbc())
+        vectorCopy3D(f,force_old);
+
+    // add to cwl
+    if(wg->compute_wall_gran_local() && wg->addflag())
+    {
+      double contactPoint[3];
+      vectorSubtract3D(x,sidata.delta,contactPoint);
+      wg->compute_wall_gran_local()->add_wall_1(iMesh,mesh->id(iTri),ip,contactPoint,vwall);
+    }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
     double enx, eny, enz;
@@ -168,41 +208,72 @@ public:
     const double enz = sidata.delta[2] * rinv;
     sidata.radi = radius;
 #endif
-
-    // copy collision data to struct (compiler can figure out a better way to
-    // interleave these stores with the double calculations above.
-    ForceData i_forces;
-    ForceData j_forces;
-    sidata.v_i = v;
-    sidata.v_j = vwall;
-    sidata.omega_i = omega;
+    sidata.radsum = radius;
     sidata.en[0] = enx;
     sidata.en[1] = eny;
     sidata.en[2] = enz;
-    sidata.i = ip;
-    sidata.j = mesh?iTri : -1;
-    sidata.contact_flags = NULL;
-    sidata.itype = type[ip];
 
-    sidata.r = r;
-    sidata.rinv = rinv;
-    sidata.radsum = radius;
-    sidata.mi = mass;
+    if (intersectflag)
+    {
+       cmodel.surfacesIntersect(sidata, i_forces, j_forces);
+       cmodel.endSurfacesIntersect(sidata,mesh);
+       // if there is a surface touch, there will always be a force
+       sidata.has_force_update = true;
+    }
+    else
+    {
+       // apply force update only if selected contact models have requested it
+       sidata.has_force_update = false;
+       cmodel.surfacesClose(sidata, i_forces, j_forces);
+    }
 
-    cmodel.surfacesIntersect(sidata, i_forces, j_forces);
-
-    cmodel.endSurfacesIntersect(sidata,mesh);
-
-    if(sidata.computeflag) {
+    if(sidata.computeflag && sidata.has_force_update) {
       force_update(f, torque, i_forces);
     }
 
-    if (wg->store_force_contact()) {
+    if (wg->store_force_contact() && (intersectflag))
+    {
       wg->add_contactforce_wall(ip,i_forces,mesh?mesh->id(iTri):0);
     }
 
-    if(wg->compute_pair_gran_local() && wg->addflag()) {
-      wg->cwl_add_wall_2(sidata, i_forces);
+    if(wg->compute_wall_gran_local() && wg->addflag() && (intersectflag))
+    {
+        const double fx = i_forces.delta_F[0];
+        const double fy = i_forces.delta_F[1];
+        const double fz = i_forces.delta_F[2];
+        const double tor1 = i_forces.delta_torque[0]*sidata.area_ratio;
+        const double tor2 = i_forces.delta_torque[1]*sidata.area_ratio;
+        const double tor3 = i_forces.delta_torque[2]*sidata.area_ratio;
+        wg->compute_wall_gran_local()->add_wall_2(sidata.i,fx,fy,fz,tor1,tor2,tor3,sidata.contact_history,sidata.rsq);
+    }
+
+    // add heat flux
+    
+    if(intersectflag && wg->heattransfer_flag())
+       wg->addHeatFlux(mesh,ip,sidata.deltan,1.);
+
+    // if force should be stored or evaluated
+    if((sidata.has_force_update) && (wg->store_force() || wg->stress_flag() || wg->fix_meshforce_pbc()))
+    {
+        vectorSubtract3D(f,force_old,f_pw);
+
+        if(wg->store_force())
+            vectorAdd3D (wg->fix_wallforce()->array_atom[ip], f_pw, wg->fix_wallforce()->array_atom[ip]);
+
+        if(wg->fix_meshforce_pbc() && ip >= atom->nlocal)
+            vectorAdd3D (wg->fix_meshforce_pbc()->array_atom[ip], f_pw, wg->fix_meshforce_pbc()->array_atom[ip]);
+
+        if(wg->stress_flag() && fix_mesh->trackStress())
+        {
+            double delta[3];
+            delta[0] = -sidata.delta[0];
+            delta[1] = -sidata.delta[1];
+            delta[2] = -sidata.delta[2];
+            static_cast<FixMeshSurfaceStress*>(fix_mesh)->add_particle_contribution
+            (
+               ip,f_pw,delta,iTri,vwall
+            );
+        }
     }
   }
 };

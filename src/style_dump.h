@@ -4,6 +4,7 @@
 #include "dump_decomposition_vtk.h"
 #include "dump_euler_vtk.h"
 #include "dump_image.h"
+#include "dump_local_gran_vtk.h"
 #include "dump_local.h"
 #include "dump_mesh_stl.h"
 #include "dump_mesh_vtk.h"

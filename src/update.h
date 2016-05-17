@@ -89,9 +89,13 @@ class Update : protected Pointers {
   void update_time();
   bigint memory_usage();
 
+  void set_force_dt_reset(bool value)
+  { force_dt_reset_ = value; }
+
  private:
   void new_integrate(char *, int, char **, char *, int &);
 
+  bool force_dt_reset_; 
 };
 
 }

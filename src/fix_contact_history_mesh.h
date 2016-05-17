@@ -91,7 +91,7 @@ class FixContactHistoryMesh : public FixContactHistory {
 
   // spefific interface for mesh
 
-  bool handleContact(int iPart, int idTri, double *&history);
+  bool handleContact(int iPart, int idTri, double *&history, bool intersectflag,bool faceflag);
   void markAllContacts();
   void cleanUpContacts();
   void cleanUpContactJumps();
@@ -114,18 +114,21 @@ class FixContactHistoryMesh : public FixContactHistory {
   MyPage<int> *ipage2_;        // pages of neighbor tri IDs
   MyPage<double> *dpage2_;     // pages of contact history with neighbors
   MyPage<bool> ** keeppage_;   // pages of deletion flags with neighbors
+  MyPage<bool> ** intersectpage_;   // pages of deletion flags with neighbors
 
-  bool **keepflag_;
+  bool **keepflag_;  
+                     
+  bool **intersectflag_; 
 
   void allocate_pages();
 
  private:
 
   // functions specific for mesh - contact management
-  bool haveContact(int indexPart, int idTri, double *&history);
+  bool haveContact(int indexPart, int idTri, double *&history,bool intersectflag);
   bool coplanarContactAlready(int indexPart, int idTri);
   void checkCoplanarContactHistory(int indexPart, int idTri, double *&history);
-  void addNewTriContactToExistingParticle(int indexPart, int idTri, double *&history);
+  void addNewTriContactToExistingParticle(int indexPart, int idTri, double *&history,bool intersectflag);
 
   class TriMesh *mesh_;
   class FixNeighlistMesh *fix_neighlist_mesh_;

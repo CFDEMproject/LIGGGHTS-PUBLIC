@@ -55,6 +55,7 @@
 #include "mpi_liggghts.h"
 #include "comm.h"
 #include <cmath>
+#include <math.h>
 #include "math_extra_liggghts.h"
 
 #define EPSILON_CURVATURE 0.00001
@@ -162,6 +163,8 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
                           int *idListVisited,int &nIdListHasNode,int *idListHasNode,
                           double **edgeList,double **edgeEndPoint,bool &anyActiveEdge);
 
+        #include "surface_mesh_feature_remove.h"
+
         // (re) calc properties
         void calcSurfPropertiesOfNewElement();
         void calcSurfPropertiesOfElement(int n);
@@ -241,11 +244,14 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         // for overlap check on element insertion
         
-        RegionNeighborList &neighList_;
+        RegionNeighborList<interpolate_no> &neighList_;
 };
 
 // *************************************
 #include "surface_mesh_I.h"
+
+#include "surface_mesh_feature_remove_I.h"
+
 // *************************************
 
 } /* LAMMPS_NS */

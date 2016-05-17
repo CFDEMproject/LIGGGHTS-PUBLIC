@@ -69,6 +69,8 @@ namespace LAMMPS_NS
 
         void setPrecision(double _precision);
 
+        void setMinFeatureLength(double _min_feature_length);
+
         void setElementExclusionList(FILE *_file);
 
         void autoRemoveDuplicates();
@@ -220,6 +222,9 @@ namespace LAMMPS_NS
         inline double precision()
         { return precision_; }
 
+        inline double minFeatureLength()
+        { return min_feature_length_; }
+
         inline FILE* elementExclusionList()
         { return element_exclusion_list_; }
 
@@ -227,6 +232,9 @@ namespace LAMMPS_NS
 
         // mesh precision
         double precision_;
+
+        // ignore features smaller than this size
+        double min_feature_length_;
 
         FILE *element_exclusion_list_;
 

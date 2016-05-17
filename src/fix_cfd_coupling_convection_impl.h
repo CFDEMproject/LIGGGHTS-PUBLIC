@@ -32,56 +32,53 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    This file is from LAMMPS
-    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-    http://lammps.sandia.gov, Sandia National Laboratories
-    Steve Plimpton, sjplimp@sandia.gov
 
-    Copyright (2003) Sandia Corporation.  Under the terms of Contract
-    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-    certain rights in this software.  This software is distributed under
-    the GNU General Public License.
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Stefan Radl (TU Graz)
+
+    Copyright 2015-     DCS Computing GmbH, Linz
+    Copyright 2015-     TU Graz
 ------------------------------------------------------------------------- */
 
-#ifdef COMMAND_CLASS
+#ifdef FIX_CLASS
 
-CommandStyle(rerun,Rerun)
+FixStyle(couple/cfd/convectiveImpl,FixCfdCouplingConvectiveImpl)
 
 #else
 
-#ifndef LMP_RERUN_H
-#define LMP_RERUN_H
+#ifndef LMP_FIX_CFD_COUPLING_CONVECTIVE_IMPL_H
+#define LMP_FIX_CFD_COUPLING_CONVECTIVE_IMPL_H
 
-#include "pointers.h"
+#include "fix_cfd_coupling.h"
 
 namespace LAMMPS_NS {
 
-class Rerun : protected Pointers {
+class FixCfdCouplingConvectiveImpl : public Fix {
+
  public:
-  Rerun(class LAMMPS *);
-  void command(int, char **);
+  FixCfdCouplingConvectiveImpl(class LAMMPS *, int, char **);
+  ~FixCfdCouplingConvectiveImpl();
+  void post_create();
+  void pre_delete(bool unfixflag);
+
+  virtual int setmask();
+  virtual void init();
+  virtual void post_force(int);
+
+ protected:
+  bool  integrateHeatEqn_;      //set to true to activate integration of heat flux with a scalar transport equation
+  bool  forceExplicit_;         //force explicit calculation: i.e., aggregate all fluxes into heatFlux
+  class FixCfdCoupling*     fix_coupling;
+  class FixPropertyAtom*    fix_heatFluid;
+  class FixPropertyAtom*    fix_heatTransCoeff;
+  class FixPropertyAtom*    fix_convectiveFlux;
+
+  class FixPropertyAtom*    fix_temperature;  //only needed in case heat integration is performed
+  class FixPropertyAtom*    fix_heatFlux;  //only needed in case heat integration is performed
+  double T0;
 };
 
 }
 
 #endif
 #endif
-
-/* ERROR/WARNING messages:
-
-E: Rerun command before simulation box is defined
-
-The rerun command cannot be used before a read_data, read_restart, or
-create_box command.
-
-E: Illegal ... command
-
-Self-explanatory.  Check the input script syntax and compare to the
-documentation for the command.  You can use -echo screen as a
-command-line option when running LAMMPS to see the offending line.
-
-E: Rerun dump file does not contain requested snapshot
-
-Self-explanatory.
-
-*/

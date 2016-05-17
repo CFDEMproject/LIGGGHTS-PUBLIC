@@ -148,16 +148,21 @@ public:
     fwrite(&hashcode, sizeof(int64_t), 1, fp);
   }
 
-  virtual void read_restart_settings(FILE * fp)
+  virtual void read_restart_settings(FILE * fp, int64_t hashcode)
   {
     int me = comm->me;
-    int64_t hashcode = -1;
+    int64_t selected = -1;
     if(me == 0){
-      size_t dummy = fread(&hashcode, sizeof(int64_t), 1, fp);
+      size_t dummy = fread(&selected, sizeof(int64_t), 1, fp);
       UNUSED(dummy);
       // sanity check
-      if(hashcode != ContactModel::STYLE_HASHCODE)
-        error->all(FLERR,"wrong pair style loaded!");
+      if(hashcode != -1) { // backward compability
+          if(hashcode != ContactModel::STYLE_HASHCODE)
+              error->one(FLERR,"wrong pair style loaded!");
+      } else {
+          if(selected != ContactModel::STYLE_HASHCODE)
+              error->one(FLERR,"wrong pair style loaded!");
+      }
     }
   }
 
@@ -287,7 +292,7 @@ public:
         // rsq < radsum * radsum is broad phase check with bounding spheres
         // cmodel.checkSurfaceIntersect() is narrow phase check
         
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
+        #ifdef SUPERQUADRIC_ACTIVE_FLAG
         sidata.v_i     = v[i];
         sidata.v_j     = v[j];
         if (rmass) {
@@ -299,7 +304,7 @@ public:
         }
         sidata.omega_i = omega[i];
         sidata.omega_j = omega[j];
-#endif
+        #endif
         if (rsq < radsum * radsum && cmodel.checkSurfaceIntersect(sidata)) {
           const double r = sqrt(rsq);
           const double rinv = 1.0 / r;

@@ -257,6 +257,10 @@ void Velocity::setAngular(int narg, char **arg)
       error->all(FLERR,"Cannot set variable z velocity for 2d simulation");
   }
 
+  // other error checks
+  if (!atom->angmom_flag)
+      error->all(FLERR,"setAngular requires the atom property 'angmom' as defined by atom_style ellipsoid.");
+
   // allocate vfield array if necessary
 
   double **vfield = NULL;
@@ -266,7 +270,7 @@ void Velocity::setAngular(int narg, char **arg)
 
   double **angmom  = atom->angmom;
   int *mask = atom->mask;
-  int nlocal = atom->nlocal;
+  int nlocal = atom->nlocal;     
 
   if (varflag == CONSTANT) {
     for (int i = 0; i < nlocal; i++) {

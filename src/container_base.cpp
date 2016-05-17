@@ -42,11 +42,16 @@
 ------------------------------------------------------------------------- */
 
 #include "container_base.h"
-#include <string.h>
+#include "string_liggghts.h"
+#include "stdio.h"
+#include <string>
 
 #define GROW 100
 
 using namespace LAMMPS_NS;
+
+  const char * ContainerBase::AVERAGESUFFIX = "_average";
+  const char * ContainerBase::MEANSQUARESUFFIX = "_meansquare";
 
   /* ----------------------------------------------------------------------
    constructor
@@ -59,7 +64,13 @@ using namespace LAMMPS_NS;
     restartType_(RESTART_TYPE_UNDEFINED),
     scalePower_(-1),
     useDefault_(false),
-    container_statistics_raw_data_(0)
+    container_statistics_raw_data_(0),
+    container_statistics_scale_data_(0),
+    container_statistics_reduced_scale_data_(0),
+    statLevel_(0),
+    weighting_factor_(0.1),
+    scalingContainer_(false),
+    averaging_forget_(false)
   {
   }
 
@@ -70,7 +81,13 @@ using namespace LAMMPS_NS;
     restartType_(RESTART_TYPE_UNDEFINED),
     scalePower_(-1),
     useDefault_(false),
-    container_statistics_raw_data_(0)
+    container_statistics_raw_data_(0),
+    container_statistics_scale_data_(0),
+    container_statistics_reduced_scale_data_(0),
+    statLevel_(0),
+    weighting_factor_(0.1),
+    scalingContainer_(false),
+    averaging_forget_(false)
   {
       if(_id)
       {
@@ -86,7 +103,13 @@ using namespace LAMMPS_NS;
     restartType_(RESTART_TYPE_UNDEFINED),
     scalePower_(-1),
     useDefault_(false),
-    container_statistics_raw_data_(0)
+    container_statistics_raw_data_(0),
+    container_statistics_scale_data_(0),
+    container_statistics_reduced_scale_data_(0),
+    statLevel_(0),
+    weighting_factor_(0.1),
+    scalingContainer_(false),
+    averaging_forget_(false)
   {
           setProperties(_id, _comm, _ref,_restart,_scalePower);
   }
@@ -98,7 +121,13 @@ using namespace LAMMPS_NS;
      restartType_(orig.restartType_),
      scalePower_(orig.scalePower_),
      useDefault_(orig.useDefault_),
-    container_statistics_raw_data_(orig.container_statistics_raw_data_)
+     container_statistics_raw_data_(orig.container_statistics_raw_data_),
+     container_statistics_scale_data_(orig.container_statistics_scale_data_),
+     container_statistics_reduced_scale_data_(orig.container_statistics_reduced_scale_data_),
+     statLevel_(orig.statLevel_),
+     weighting_factor_(orig.weighting_factor_),
+     scalingContainer_(orig.scalingContainer_),
+     averaging_forget_(orig.averaging_forget_)
   {
 
   }
@@ -154,20 +183,39 @@ using namespace LAMMPS_NS;
    set container containing raw data for statistics calc
   ------------------------------------------------------------------------- */
 
-  void ContainerBase::setContainerStatistics(class ContainerBase *_cb_stat)
+  void ContainerBase::setContainerStatistics(double _weighting_factor, class ContainerBase *_cb_stat,
+                                             class ContainerBase *_cb_scale, class ContainerBase *_cb_red_scale, bool _forget)
   {
+      weighting_factor_ = _weighting_factor;
       container_statistics_raw_data_ = _cb_stat;
+      container_statistics_scale_data_ = _cb_scale;
+      container_statistics_reduced_scale_data_ = _cb_red_scale;
+      averaging_forget_ = _forget;
+
+      statLevel_ = container_statistics_raw_data_->getStatLevel()+1;
   }
 
   /* ----------------------------------------------------------------------
-   calc statistics - can be ave or variance
+   calc statistics - can be average or mean square
   ------------------------------------------------------------------------- */
 
-  bool ContainerBase::calcStatistics(double weighting_factor)
+  bool ContainerBase::calcStatistics()
   {
-      if(strstr(id_,"average"))
-        return calcAveFromContainer(weighting_factor);
-      if(strstr(id_,"variance"))
-        return calcVarFromContainer(weighting_factor);
+      if(strEndWith(id_,AVERAGESUFFIX))
+          return calcAvgFromContainer();
+      if(strEndWith(id_,MEANSQUARESUFFIX))
+          return calcMeanSquareFromContainer();
       return false;
+  }
+
+  bool ContainerBase::updateScalingContainer()
+  {
+      if(strEndWith(id_,AVERAGESUFFIX))
+          return calcSumFromContainer();
+      return false;
+  }
+
+  bool ContainerBase::normalizeStatistics()
+  {
+      return normalizeContainer();
   }

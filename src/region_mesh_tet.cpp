@@ -44,7 +44,6 @@
 #include "region_mesh_tet.h"
 #include "lammps.h"
 #include "bounding_box.h"
-#include "region_neighbor_list.h"
 #include "tri_mesh.h"
 #include "memory.h"
 #include "error.h"
@@ -65,7 +64,7 @@ using namespace LAMMPS_NS;
 RegTetMesh::RegTetMesh(LAMMPS *lmp, int narg, char **arg) :
   Region(lmp, narg, arg),
   bounding_box_mesh(*new BoundingBox(BIG,-BIG,BIG,-BIG,BIG,-BIG)),
-  neighList(*new RegionNeighborList(lmp)),
+  neighList(*new RegionNeighborList<interpolate_no>(lmp)),
   tri_mesh(*new TriMesh(lmp))
 {
   if(narg < 14) error->all(FLERR,"Illegal region mesh/tet command");
@@ -230,6 +229,7 @@ void RegTetMesh::generate_random_shrinkby_cut(double *pos,double cut,bool subdom
 {
     int ntry = 0;
     bool is_near_surface = false;
+    int barysign = -1;
 
     for(int i = 0; i < nTet; i++)
     {
@@ -249,7 +249,7 @@ void RegTetMesh::generate_random_shrinkby_cut(double *pos,double cut,bool subdom
        {
          int iSurf = surfaces[iTetChosen][is];
          
-         if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta) < 0)
+         if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta,barysign) < 0)
          {
             is_near_surface = true;
             break; 
@@ -267,7 +267,7 @@ void RegTetMesh::generate_random_shrinkby_cut(double *pos,double cut,bool subdom
            {
              int iSurf = surfaces[face_neighs[iTetChosen][iFaceNeigh]][is];
              
-             if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta) < 0)
+             if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta,barysign) < 0)
              {
                 is_near_surface = true;
                 break; 
@@ -286,7 +286,7 @@ void RegTetMesh::generate_random_shrinkby_cut(double *pos,double cut,bool subdom
            {
              int iSurf = surfaces[node_neighs[iTetChosen][iNodeNeigh]][is];
                 
-             if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta) < 0)
+             if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta,barysign) < 0)
              {
                 is_near_surface = true;
                 break; 
@@ -345,7 +345,7 @@ void RegTetMesh::add_tet(double **n)
 
 void RegTetMesh::build_neighs()
 {
-    neighList.clear();
+    neighList.reset();
 
     for(int i = 0; i < nTet; i++)
     {

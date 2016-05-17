@@ -77,7 +77,7 @@ using namespace FixConst;
 
 FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg),
-  neighList(*new RegionNeighborList(lmp))
+  neighList(*new RegionNeighborList<interpolate_no>(lmp))
 {
   if (narg < 7) error->fix_error(FLERR,this,"not enough arguments");
 
@@ -90,6 +90,8 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   fix_distribution = NULL;
   fix_multisphere = NULL;
   multisphere = NULL;
+
+  compress_flag = false ;
 
   // required args
   iarg = 3;
@@ -114,6 +116,7 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   while(iarg < narg && hasargs)
   {
     hasargs = false;
+    
     if(strcmp(arg[iarg],"distributiontemplate") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       int ifix = modify->find_fix(arg[iarg+1]);
@@ -199,6 +202,16 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       if(strcmp(arg[iarg+1],"no")==0) print_stats_during_flag = 0;
       else if(strcmp(arg[iarg+1],"yes")==0) print_stats_during_flag = 1;
       else error->fix_error(FLERR,this,"");
+      iarg += 2;
+      hasargs = true;
+    } else if (strcmp(arg[iarg],"compress_tags") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments for compress_tags");
+      if(0 == strcmp(arg[iarg+1],"yes"))
+        compress_flag = true;
+      else if(0 == strcmp(arg[iarg+1],"no"))
+        compress_flag = false;
+      else
+        error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'compress_tags'");
       iarg += 2;
       hasargs = true;
     } else if (strcmp(arg[iarg],"vel") == 0) {
@@ -434,23 +447,23 @@ void FixInsert::print_stats_start()
     if(ninsert_exists)
     {
         if (screen)
-            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %f)\n"
-                            "      %d particles (mass %f) within %d steps\n",
+            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %e)\n"
+                            "      %d particles (mass %e) within %d steps\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
 
         if (logfile)
-            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %f)\n"
-                            "      %d particles (mass %f) within %d steps\n",
+            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %e)\n"
+                            "      %d particles (mass %e) within %d steps\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
     }
     else if(massflowrate > 0.)
     {
         if (screen)
-            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %f)\n",
+            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %e)\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate);
 
         if (logfile)
-            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %f)\n",
+            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %e)\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate);
     }
     else
@@ -473,13 +486,13 @@ void FixInsert::print_stats_during(int ninsert_this, double mass_inserted_this)
   if (me == 0 && print_stats_during_flag)
   {
     if (screen)
-      fprintf(screen ,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step " BIGINT_FORMAT "\n"
-                      " - a total of %d particle templates (mass %f) inserted so far.\n",
+      fprintf(screen ,"INFO: Particle insertion %s: inserted %d particle templates (mass %e) at step " BIGINT_FORMAT "\n"
+                      " - a total of %d particle templates (mass %e) inserted so far.\n",
               id,ninsert_this,mass_inserted_this,step,ninserted,massinserted);
 
     if (logfile)
-      fprintf(logfile,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step " BIGINT_FORMAT "\n"
-                      " - a total of %d particle templates (mass %f) inserted so far.\n",
+      fprintf(logfile,"INFO: Particle insertion %s: inserted %d particle templates (mass %e) at step " BIGINT_FORMAT "\n"
+                      " - a total of %d particle templates (mass %e) inserted so far.\n",
               id,ninsert_this,mass_inserted_this,step,ninserted,massinserted);
   }
 }
@@ -671,7 +684,7 @@ void FixInsert::pre_exchange()
   // fill xnear array with particles to check overlap against
   
   // add particles in insertion volume to xnear list
-  neighList.clear();
+  neighList.reset();
 
   if(check_ol_flag)
     load_xnear(ninsert_this_local);
@@ -690,7 +703,7 @@ void FixInsert::pre_exchange()
   // actual particle insertion
 
   fix_distribution->pre_insert(ninserted_this_local,fix_property,fix_property_value);
-
+  
   ninserted_spheres_this_local = fix_distribution->insert(ninserted_this_local);
 
   // warn if max # insertions exceeded by random processes
@@ -702,9 +715,21 @@ void FixInsert::pre_exchange()
   // set tag # of new particles beyond all previous atoms, reset global natoms
   // if global map exists, reset it now instead of waiting for comm
   // since deleting atoms messes up ghosts
+  int step = update->ntimestep;
 
   if (atom->tag_enable)
   {
+
+    //force all tags to be reset by setting them to zero
+    if(compress_flag)
+    {
+        if(comm->me == 0)
+            printf("FixInsertStream: resetting tags @ step %d. \n", step);
+        int *tag = atom->tag;
+        for (int i = 0; i < atom->nlocal; i++)
+            tag[i] = 0;
+    }
+
     atom->tag_extend();
     atom->natoms += static_cast<double>(ninserted_spheres_this);
     if (atom->map_style)
@@ -855,7 +880,7 @@ int FixInsert::load_xnear(int ninsert_this_local)
   const int nall = atom->nlocal + atom->nghost;
 
   BoundingBox bb = getBoundingBox();
-  neighList.clear();
+  neighList.reset();
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
   neighList.set_obb_flag(check_obb_flag);
 #endif
@@ -877,34 +902,6 @@ int FixInsert::load_xnear(int ninsert_this_local)
       }
     }
   }
-
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-    error->one(FLERR,"Sascha, please re-work this section; there were changes in the overlap detection algorithm"
-    //Sascha, your previous code is here:
-
-    /*#ifdef SUPERQUADRIC_ACTIVE_FLAG
-      double **shape = atom->shape;
-      double **quat = atom->quaternion;
-      if(atom->superquadric_flag)
-        memory->create(xnear,nspheres_near_local + ninsert_this_local*fix_distribution->max_nspheres(), 11, "FixInsert::xnear");
-      else
-        memory->create(xnear,nspheres_near_local + ninsert_this_local*fix_distribution->max_nspheres(), 4, "FixInsert::xnear");
-    #else*/
-
-    //in the xnear loop, the code was:
-    /*
-    #ifdef SUPERQUADRIC_ACTIVE_FLAG
-          if(atom->superquadric_flag) {
-            xnear[ncount][4] = quat[i][0];
-            xnear[ncount][5] = quat[i][1];
-            xnear[ncount][6] = quat[i][2];
-            xnear[ncount][7] = quat[i][3];
-            xnear[ncount][8] = shape[i][0];
-            xnear[ncount][9] = shape[i][1];
-            xnear[ncount][10] = shape[i][2];
-          }
-    #endif*/
-#endif
 
   return neighList.count();
 }

@@ -37,6 +37,10 @@
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+
+    Implementation of implicit update algorithm
+    Copyright 2016      TU Graz, Stefan Radl
+    Copyright 2016      DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #include "math.h"
@@ -71,7 +75,32 @@ using namespace FixConst;
 
 FixScalarTransportEquation::FixScalarTransportEquation(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
 {
-  
+  fix_quantity = fix_flux = fix_source = NULL; fix_capacity = NULL;
+  fix_fluidQty_ = fix_transCoeffQty_ = NULL;
+  fluidQty_0_       = 0;
+  transCoeffQty_0_  = 0;
+
+  capacity = NULL;
+
+  int_flag = true;
+
+  nevery_  = 1;
+  performedIntegrationLastStep_ = true; //ensure flux is reset at the very first time step
+
+  peratom_flag = 1;              
+  size_peratom_cols = 0;         
+  peratom_freq = 1;
+
+  scalar_flag = 1; 
+  global_freq = 1; 
+
+  capacity_name = NULL;
+  capacity_flag = 0;
+
+  crankNicholsonFactor_ = 0.5; //0 ... fully explicit; 1 ... fully implicit
+  implicitMode_ = false;
+  advanceQty=&FixScalarTransportEquation::advanceQtyExplicit;
+
   if(strcmp(arg[2],"transportequation/scalar"))
     return;
 
@@ -104,9 +133,6 @@ FixScalarTransportEquation::FixScalarTransportEquation(LAMMPS *lmp, int narg, ch
   source_name = new char[strlen(arg[iarg])+1];
   strcpy(source_name,arg[iarg++]);
 
-  capacity_name = NULL;
-  capacity_flag = 0;
-
   if(strcmp(arg[iarg++],"capacity_quantity"))
     error->fix_error(FLERR,this,"expecting keyword 'capacity_quantity'");
   if(strcmp(arg[iarg],"none"))
@@ -115,21 +141,6 @@ FixScalarTransportEquation::FixScalarTransportEquation(LAMMPS *lmp, int narg, ch
       capacity_name = new char[strlen(arg[iarg])+1];
       strcpy(capacity_name,arg[iarg++]);
   }
-
-  fix_quantity = fix_flux = fix_source = NULL; fix_capacity = NULL;
-  capacity = NULL;
-
-  int_flag = true;
-
-  nevery_  = 1;
-  performedIntegrationLastStep_ = true; //ensure flux is reset at the very first time step
-
-  peratom_flag = 1;              
-  size_peratom_cols = 0;         
-  peratom_freq = 1;
-
-  scalar_flag = 1; 
-  global_freq = 1; 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -142,9 +153,74 @@ FixScalarTransportEquation::~FixScalarTransportEquation()
     delete []capacity_name;
     delete []equation_id;
 
+    if(implicitMode_)
+    {
+        delete []fluid_name_;
+        delete []transCoeff_name_;
+    }
+
     if(capacity) delete []capacity;
     
 }
+
+/* ---------------------------------------------------------------------- */
+void FixScalarTransportEquation::register_implicit_fixes(char* fluidName, double fluid0, char* transCoeffName, double transCoeff0)
+{
+  const char *fixarg[9];
+
+  implicitMode_ = true;
+  advanceQty=&FixScalarTransportEquation::advanceQtyImplicit;
+
+  fluid_name_ = new char[strlen(fluidName)+1];
+  strcpy(fluid_name_,fluidName);
+  fluidQty_0_ = fluid0;
+
+  transCoeff_name_ = new char[strlen(transCoeffName)+1];
+  strcpy(transCoeff_name_,transCoeffName);
+  transCoeffQty_0_ = transCoeff0;
+
+  fix_fluidQty_=static_cast<FixPropertyAtom*>(modify->find_fix_property(fluid_name_,"property/atom","scalar",0,0,style));
+  if (fix_fluidQty_==NULL) {
+        //register fluid quantity as property/atom
+        fixarg[0]=fluid_name_;
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]=fluid_name_;
+        fixarg[4]="scalar";
+        fixarg[5]="yes";    //restart
+        fixarg[6]="no";     //commGhost
+        fixarg[7]="yes";    //commGhostRev
+        char arg8[30];
+        sprintf(arg8,"%e", fluidQty_0_);
+        fixarg[8]=arg8;
+        modify->add_fix(9,const_cast<char**>(fixarg));
+        fix_fluidQty_=static_cast<FixPropertyAtom*>(modify->find_fix_property(fluid_name_,"property/atom","scalar",0,0,style));
+  }
+
+  fix_transCoeffQty_=static_cast<FixPropertyAtom*>(modify->find_fix_property(transCoeff_name_,"property/atom","scalar",0,0,style));
+  if (fix_transCoeffQty_==NULL){
+        //register transfer coefficient as property/atom
+        fixarg[0]=transCoeff_name_;
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]=transCoeff_name_;
+        fixarg[4]="scalar";
+        fixarg[5]="yes";    //restart
+        fixarg[6]="no";     //commGhost
+        fixarg[7]="yes";    //commGhostRev
+        char arg8[30];
+        sprintf(arg8,"%e", transCoeffQty_0_);
+        fixarg[8]=arg8;
+        modify->add_fix(9,const_cast<char**>(fixarg));
+        fix_transCoeffQty_=static_cast<FixPropertyAtom*>(modify->find_fix_property(transCoeff_name_,"property/atom","scalar",0,0,style));
+  }
+
+  updatePtrsImpl();
+
+  return;
+}
+
+/* ---------------------------------------------------------------------- */
 
 void FixScalarTransportEquation::pre_delete(bool unfixflag)
 {
@@ -154,6 +230,11 @@ void FixScalarTransportEquation::pre_delete(bool unfixflag)
         if (fix_quantity) modify->delete_fix(quantity_name);
         if (fix_flux) modify->delete_fix(flux_name);
         if (fix_source) modify->delete_fix(source_name);
+        if(implicitMode_)
+        {
+            if (fix_fluidQty_) modify->delete_fix(fluid_name_);
+            if (fix_transCoeffQty_) modify->delete_fix(transCoeff_name_);
+        }
     }
 }
 
@@ -177,7 +258,17 @@ void FixScalarTransportEquation::updatePtrs()
   flux = fix_flux->vector_atom;
   source = fix_source->vector_atom;
 
+  if(implicitMode_)
+    updatePtrsImpl();
+
   vector_atom = quantity; 
+}
+
+/* ---------------------------------------------------------------------- */
+void FixScalarTransportEquation::updatePtrsImpl()
+{
+  fluidQty_         = fix_fluidQty_->vector_atom;
+  transCoeffQty_    = fix_transCoeffQty_->vector_atom;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -332,12 +423,6 @@ void FixScalarTransportEquation::pre_force(int vflag)
 
 void FixScalarTransportEquation::final_integrate()
 {
-    double dt = update->dt;
-    int nlocal = atom->nlocal;
-    double *rmass = atom->rmass;
-    int *type = atom->type;
-    int *mask = atom->mask;
-    double capacity;
 
     // skip if integration turned off
     if(!int_flag)
@@ -353,6 +438,21 @@ void FixScalarTransportEquation::final_integrate()
     updatePtrs();
 
     fix_source->do_forward_comm();
+
+    (this->*advanceQty)();
+
+    performedIntegrationLastStep_ = true;
+}
+
+/* ---------------------------------------------------------------------- */
+void FixScalarTransportEquation::advanceQtyExplicit()
+{
+    double  dt = update->dt;
+    int     nlocal = atom->nlocal;
+    double  *rmass = atom->rmass;
+    int     *type = atom->type;
+    int     *mask = atom->mask;
+    double  capacity;
 
     if(capacity_flag)
     {
@@ -380,7 +480,67 @@ void FixScalarTransportEquation::final_integrate()
            }
         }
     }
-    performedIntegrationLastStep_ = true;
+}
+
+/* ---------------------------------------------------------------------- */
+void FixScalarTransportEquation::advanceQtyImplicit()
+{
+
+    double  dt = update->dt;
+    int     nlocal = atom->nlocal;
+    double  *rmass = atom->rmass;
+    int     *type = atom->type;
+    int     *mask = atom->mask;
+    double  *radius  = atom->radius;
+    double  capacity;
+    double  OneMinusCN = 1.0 - crankNicholsonFactor_;
+
+    if(capacity_flag)
+    {
+        for (int i = 0; i < nlocal; i++)
+        {
+           if (mask[i] & groupbit){
+              capacity = fix_capacity->compute_vector(type[i]-1);
+              if(fabs(capacity) > SMALL)
+              {
+                     double currRadius = radius[i];
+                     double termM  = dt / (rmass[i]*capacity);
+                     double termMP = termM
+                                   * transCoeffQty_[i]
+                                   * currRadius * currRadius * 12.5663706144 ; //surface area
+                     quantity[i]  = (   quantity[i]
+                                      * (1.0 - termMP * OneMinusCN)
+                                      + termMP * fluidQty_[i]
+                                      + termM
+                                      * (  flux[i]
+                                         + source[i]*double(nevery_)
+                                        )
+                                    ) / (1.0 + termMP*crankNicholsonFactor_);
+              }
+           }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < nlocal; i++)
+        {
+           if (mask[i] & groupbit)
+           {
+                     double currRadius = radius[i];
+                     double termMP = dt
+                                   * transCoeffQty_[i]
+                                   * currRadius * currRadius * 12.5663706144 ; //surface area
+                     quantity[i]  = (   quantity[i]
+                                      * (1.0 - termMP * OneMinusCN)
+                                      + termMP * fluidQty_[i]
+                                      + dt
+                                      * (  flux[i]
+                                         + source[i]*double(nevery_)
+                                        )
+                                    ) / (1.0 + termMP*crankNicholsonFactor_);
+           }
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------- */

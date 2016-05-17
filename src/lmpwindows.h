@@ -24,9 +24,12 @@
 //  return pow((double)i,j);
 //}
 //#endif
+
+#if !defined(__MINGW32__)
 inline double sqrt(int i){
   return sqrt((double) i);
 }
+#if !defined(__MINGW32__)
 
 inline double fabs(int i){
   return fabs((double) i);

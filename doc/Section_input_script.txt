@@ -1,4 +1,4 @@
-"Previous Section"_Section_start.html - "LIGGGHTS(R)-PUBLIC WWW Site"_lws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Section_commands.html :c
+"Previous Section"_Section_start.html - "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Section_commands.html :c
 
 :link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
@@ -6,7 +6,7 @@
 
 :line
 
-3. Commands :h3
+3. Input Script :h3
 
 This section describes how a LIGGGHTS(R)-PUBLIC input script is formatted and the
 input script commands used to define a LIGGGHTS(R)-PUBLIC simulation.
@@ -170,7 +170,7 @@ This section describes the structure of a typical LIGGGHTS(R)-PUBLIC input scrip
 The "examples" directory in the LIGGGHTS(R)-PUBLIC distribution contains many
 sample input scripts; the corresponding problems are discussed in
 "Section_example"_Section_example.html, and animated on the "LIGGGHTS(R)-PUBLIC
-WWW Site"_lws.
+WWW Site"_liws.
 
 A LIGGGHTS(R)-PUBLIC input script typically has 4 parts:
 

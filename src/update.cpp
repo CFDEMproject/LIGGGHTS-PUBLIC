@@ -102,6 +102,8 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp)
 
   str = (char *) "cg";
   create_minimize(1,&str);
+
+  force_dt_reset_ = false;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -456,7 +458,7 @@ void Update::reset_timestep(bigint newstep)
   output->reset_timestep(ntimestep);
 
   for (int i = 0; i < modify->nfix; i++) {
-    if (modify->fix[i]->time_depend)
+    if (modify->fix[i]->time_depend && !force_dt_reset_) 
       error->all(FLERR,
                  "Cannot reset timestep with a time-dependent fix defined");
     modify->fix[i]->reset_timestep(ntimestep,oldtimestep);

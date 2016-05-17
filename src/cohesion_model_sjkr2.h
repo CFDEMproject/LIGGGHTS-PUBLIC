@@ -69,7 +69,10 @@ namespace ContactModels {
       
     }
 
-    void registerSettings(Settings&) {}
+    void registerSettings(Settings& settings) 
+    {
+        settings.registerOnOff("tangential_reduce",tangentialReduce_,false);
+    }
 
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("cohEnergyDens", &MODEL_PARAMS::createCohesionEnergyDensity);
@@ -94,7 +97,7 @@ namespace ContactModels {
         Acont = M_PI * 2. * (2.*ri*rj/(ri+rj)) * (ri + rj - r);
 
       const double Fn_coh = -cohEnergyDens[sidata.itype][sidata.jtype]*Acont;
-      sidata.Fn += Fn_coh;
+      if(tangentialReduce_) sidata.Fn += Fn_coh; 
 
       if(sidata.contact_flags) *sidata.contact_flags |= CONTACT_COHESION_MODEL;
 
@@ -129,6 +132,7 @@ namespace ContactModels {
 
   private:
     double ** cohEnergyDens;
+    bool tangentialReduce_;
   };
 }
 }

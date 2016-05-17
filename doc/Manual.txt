@@ -1,3 +1,4 @@
+<!-- HTML_ONLY -->
 <HEAD>
 <TITLE>LIGGGHTS(R)-PUBLIC Users Manual</TITLE>
 <META NAME="docnumber" CONTENT="LIGGGHTS(R)-PUBLIC DEM simulation engine">
@@ -7,6 +8,8 @@
 
 <BODY>
 
+<!-- END_HTML_ONLY -->
+
 "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
@@ -15,7 +18,6 @@
 
 :line
 
-<H1></H1>
 :line
 LIGGGHTS(R)-PUBLIC Documentation, Version 3.X :c,h3
 :line
@@ -30,8 +32,7 @@ released by DCS Computing Gmbh, Linz, Austria, "www.dcs-computing.com"_dcs , off
 
 :line
 
-LIGGGHTS(R)-PUBLIC is open-source, distributed under the terms of the GNU Public
-License, version 2 or later. LIGGGHTS(R)-PUBLIC is part of CFDEM(R)project: "www.liggghts.com"_lig | "www.cfdem.com"_cfd :h4
+LIGGGHTS(R)-PUBLIC is open-source, distributed under the terms of the GNU Public License, version 2 or later. LIGGGHTS(R)-PUBLIC is part of CFDEM(R)project: "www.liggghts.com"_lig | "www.cfdem.com"_cfd
 
 :link(lig,http://www.liggghts.com)
 :link(cfd,http://www.cfdem.com)
@@ -39,11 +40,11 @@ License, version 2 or later. LIGGGHTS(R)-PUBLIC is part of CFDEM(R)project: "www
 Core developer and main author:
 Christoph Kloss, christoph.kloss@dcs-computing.com
 
-LIGGGHTS(R)-PUBLIC is an Open Source Discrete Element Method Particle
+[LIGGGHTS(R)-PUBLIC is an Open Source Discrete Element Method Particle
 Simulation Software, distributed by DCS Computing GmbH, Linz, Austria.
 LIGGGHTS (R) and CFDEM(R) are registered trade marks of DCS Computing GmbH,
 the producer of the LIGGGHTS (R) software and the CFDEM(R)coupling software
-See http://www.cfdem.com/terms-trademark-policy for details. :h4
+See http://www.cfdem.com/terms-trademark-policy for details.]
 
 LIGGGHTS (R) Version info: :h4
 
@@ -81,6 +82,33 @@ Once you are familiar with LIGGGHTS(R)-PUBLIC, you may want to bookmark "this
 page"_Section_commands.html#comm since
 it gives quick access to documentation for all LIGGGHTS(R)-PUBLIC commands.
 
+<!-- RST
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   
+   Section_intro
+   Section_start
+   Section_input_script
+   Section_commands
+   Section_gran_models
+   Section_packages
+   Section_howto
+   Section_modify
+   Section_python
+   Section_errors
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`search`
+   
+END_RST -->
+
+<!-- HTML_ONLY -->
 "Introduction"_Section_intro.html :olb,l
   1.1 "What is LIGGGHTS(R)-PUBLIC"_intro_1 :ulb,b
   1.2 "LIGGGHTS(R)-PUBLIC features"_intro_2 :b
@@ -95,7 +123,7 @@ it gives quick access to documentation for all LIGGGHTS(R)-PUBLIC commands.
   2.6 "Running LIGGGHTS(R)-PUBLIC"_start_6 :b
   2.7 "Command-line options"_start_7 :b
   2.8 "Screen output"_start_8  :ule,b
-"Input script"_Section_commands.html :l
+"Input script"_Section_input_script.html :l
   3.1 "LIGGGHTS(R)-PUBLIC input script"_inp_1 :ulb,b
   3.2 "Parsing rules"_inp_2 :b
   3.3 "Input script structure"_inp_3 :ule,b
@@ -203,3 +231,5 @@ it gives quick access to documentation for all LIGGGHTS(R)-PUBLIC commands.
 :link(err_3,Section_errors.html#err_3)
 
 </BODY>
+
+<!--END_HTML_ONLY -->

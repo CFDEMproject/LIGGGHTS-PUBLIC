@@ -11,9 +11,17 @@
 
 <H3>pair_style gran command 
 </H3>
+<H3>pair_style bubble command 
+</H3>
+<H3>pair_style gran_bubble bubble command 
+</H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>pair_style model_type model_name model_keyword model_value 
+<PRE>pair_style gran model_type model_name model_keyword model_value 
+</PRE>
+<PRE>pair_style bubble model_type model_name model_keyword model_value 
+</PRE>
+<PRE>pair_style gran_bubble model_type model_name model_keyword model_value 
 </PRE>
 <LI>zero or more model_type/model_name pairs may be appended. They must be appended in the following order (!) 
 
@@ -37,9 +45,13 @@ pair_style gran model hertz tangential no_history cohesion sjkr
 </PRE>
 <P><B>General description:</B>
 </P>
-<P>The <I>gran</I> styles use the following formula for the frictional force between two granular
-particles, when the distance r between two particles of radii Ri and Rj is less than their
-contact distance d = Ri + Rj. Typically, there is no force between the particles when r > d.
+<P>The <I>gran</I> styles imposes a force between two neighboring particles. Typically, there is
+a force when the distance r between two particles of radii Ri and Rj is less than their
+contact distance dist = Ri + Rj, and no force otherwise. Some models, such as cohesion
+models, may impose a force also when the particle surfaces do not touch. This is documented
+for those models specifically.
+</P>
+<P>The general form of a granular interaction can be written as:
 </P>
 <CENTER><IMG SRC = "Eqs/pair_gran_html_60b8ced2.png">
 </CENTER>
@@ -73,6 +85,14 @@ doc pages <A HREF = "Section_gran_models.html">here</A>
 cohesive or rolling friction forces. These are also described on separate
 doc pages <A HREF = "Section_gran_models.html">here</A>
 </P>
+<P>The styles <I>bubble</I> and <I>gran_bubble</I> are aliases for <I>gran</I>, which can e.g. be used
+for the modelling of systems with different phases using <A HREF = "pair_hybrid.html">pair hybrid</A>, where a
+different set of interaction laws is used for each phase. An example would be 
+</P>
+<PRE>pair_style hybrid gran        model hertz     tangential history &
+                  bubble      model hertz     tangential off &
+                  gran_bubble model hertz     tangential off 
+</PRE>
 <P>IMPORTANT NOTE: The order of model keywords is important, you have to stick
 to the order as outlined in the "Syntax" section of this doc page.
 </P>

@@ -102,9 +102,13 @@ namespace ContactModels {
         error->all(FLERR,"Using cohesion model easo/capillary/viscous for walls is not supported");
     }
 
-    void registerSettings(Settings&) {}
+    void registerSettings(Settings& settings)
+    {
+        settings.registerOnOff("tangential_reduce",tangentialReduce_,false);
+    }
 
-    void connectToProperties(PropertyRegistry & registry) {
+    void connectToProperties(PropertyRegistry & registry)
+    {
       registry.registerProperty("surfaceLiquidContentInitial", &MODEL_PARAMS::createliquidContentInitialEaso);
       registry.registerProperty("surfaceTension", &MODEL_PARAMS::createSurfaceTension);
       registry.registerProperty("fluidViscosity", &MODEL_PARAMS::createFluidViscosityEaso);
@@ -172,6 +176,9 @@ namespace ContactModels {
 
     void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
+      if(sidata.is_wall)
+        return;
+
       const int i = sidata.j;
       const int j = sidata.j;
       const int itype = sidata.itype;
@@ -227,7 +234,7 @@ namespace ContactModels {
       const double tor3 = sidata.en[0] * Ft2 - sidata.en[1] * Ft1;
 
       // add to fn, Ft
-      sidata.Fn += Fcapilary+FviscN;
+      if(tangentialReduce_) sidata.Fn += Fcapilary+FviscN;  
       //sidata.Ft += ...
 
       // apply normal and tangential force
@@ -265,6 +272,9 @@ namespace ContactModels {
     void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces)
     {
 	  
+	  if(scdata.is_wall)
+        return;
+
       double * const contflag = &scdata.contact_history[history_offset];
 
       // 3 cases: (i) no bridge present, (ii) bridge active, (iii) bridge breaks this step
@@ -396,7 +406,7 @@ namespace ContactModels {
           const double tor3 = enx * Ft2 - eny * Ft1;
 
           // add to fn, Ft
-          //scdata.Fn += Fcapilary+FviscN;
+          //if(tangentialReduce_) scdata.Fn += Fcapilary+FviscN;
           //scdata.Ft += ...
 
           // apply normal and tangential force
@@ -464,6 +474,7 @@ namespace ContactModels {
     FixPropertyAtom *fix_surfaceliquidcontent;
     FixPropertyAtom *fix_liquidflux;
     FixScalarTransportEquation *fix_ste;
+    bool tangentialReduce_;
   };
 }
 }

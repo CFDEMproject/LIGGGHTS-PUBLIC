@@ -51,10 +51,12 @@ class InputMeshTri : protected Input
 {
   public:
 
-    InputMeshTri(class LAMMPS *, int, char **);
+    InputMeshTri(class LAMMPS *lmp, int narg, char **arg);
     ~InputMeshTri();
 
-    void meshtrifile(const char *,class TriMesh *,bool verbose,const int size_exclusion_list, int *exclusion_list);
+    void meshtrifile(const char *filename,class TriMesh *mesh,bool verbose,
+                     const int size_exclusion_list, int *exclusion_list,
+                     class Region *region);
 
   private:
 
@@ -63,8 +65,8 @@ class InputMeshTri : protected Input
     int size_exclusion_list_;
     int *exclusion_list_;
 
-    void meshtrifile_vtk(class TriMesh *);
-    void meshtrifile_stl(class TriMesh *);
+    void meshtrifile_vtk(class TriMesh *mesh,class Region *region);
+    void meshtrifile_stl(class TriMesh *mesh,class Region *region);
     inline void addTriangle(class TriMesh *mesh,
          double *a, double *b, double *c,int lineNumber);
 

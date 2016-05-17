@@ -9,11 +9,17 @@
 
 <HR>
 
-<H3>gran cohesion sjkr 
+<H3>gran cohesion sjkr command 
 </H3>
 <P><B>Syntax:</B>
 </P>
 <PRE>cohesion sjkr 
+</PRE>
+<LI>zero or more keyword/value pairs may be appended to the end (after all models are specified) 
+
+<PRE>  <I>tangential_reduce</I> values = 'on' or 'off'
+    on = tangential model does not see normal force computed by this model
+    off = tangential model does see normal force computed by this model 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -40,11 +46,22 @@ For <I>sjkr</I>, the sphere-sphere contact area is calculated as (http://mathwor
 </PRE>
 <P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
 </P>
+<P>The optional keyword <I>tangential_reduce</I> defines if the tangential force model should
+"see" the additional normal force excerted by this model. If it is 'off' (which is default)
+then the tangential force model will be able to transmit a larger amount of tangential force
+If <I>tangential_reduce</I> = 'on' then the tangential model will not take the normal force
+from this model into account, typically leading to a lower value of tangential force
+(via the Coulomb friction limit)
+</P>
 <P><B>Restrictions:</B>
 </P>
 <P>The cohesion model has been derived for the Hertzian Style, it may note be
 appropriate for the Hookean styles. 
 </P>
 <P>It is not available for <A HREF = "atom_style.html">atom_style</A> superquadric
+</P>
+<P><B>Default:</B>
+</P>
+<P><I>tangential_reduce</I> = 'off'
 </P>
 </HTML>

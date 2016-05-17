@@ -112,11 +112,12 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
     else error->all(FLERR,"Unknown communicate_reverse_ghost style for fix property/atom. Valid styles are 'yes' or 'no'");
 
     nvalues = narg - 8;
+    
     if ((nvalues == 1) && (data_style != FIXPROPERTY_ATOM_SCALAR))
       error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with vector style. Provide more than 1 value or use style 'scalar'");
 
     if ((nvalues >1) && (data_style != FIXPROPERTY_ATOM_VECTOR))
-      error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with vector style. Provide 1 value or use style 'vector'");
+      error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with scalar style. Provide 1 value or use style 'vector'");
 
     defaultvalues = new double[nvalues];
 
@@ -387,13 +388,18 @@ void FixPropertyAtom::set_arrays(int i)
    set all atoms values
 ------------------------------------------------------------------------- */
 
-void FixPropertyAtom::set_all(double value)
+void FixPropertyAtom::set_all(double value, bool ghost)
 {
     
-    int nlocal = atom->nlocal;
+    int nall;
+
+    if(!ghost)
+        nall = atom->nlocal;
+    else
+        nall = atom->nlocal + atom->nghost;
     if (data_style)
     {
-        for(int i = 0; i < nlocal; i++)
+        for(int i = 0; i < nall; i++)
         {
             for(int k=0;k<nvalues;k++)
                 array_atom[i][k] = value;
@@ -401,7 +407,7 @@ void FixPropertyAtom::set_all(double value)
     }
     else
     {
-        for(int i = 0; i < nlocal; i++)
+        for(int i = 0; i < nall; i++)
             vector_atom[i] = value;
     }
 }

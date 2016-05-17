@@ -9,11 +9,17 @@
 
 <HR>
 
-<H3>gran cohesion easo/capillary/viscous 
+<H3>gran cohesion easo/capillary/viscous command 
 </H3>
 <P><B>Syntax:</B>
 </P>
 <PRE>cohesion easo/capillary/viscous 
+</PRE>
+<LI>zero or more keyword/value pairs may be appended to the end (after all models are specified) 
+
+<PRE>  <I>tangential_reduce</I> values = 'on' or 'off'
+    on = tangential model does not see normal force computed by this model
+    off = tangential model does see normal force computed by this model 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -114,6 +120,13 @@ fix id all property/global fluidViscosity scalar value
 fix id all property/global contactAngle peratomtype value_1 value_2 ...
     (value_i=value for contact angle of atom type i and fluid) 
 </PRE>
+<P>The optional keyword <I>tangential_reduce</I> defines if the tangential force model should
+"see" the additional normal force excerted by this model. If it is 'off' (which is default)
+then the tangential force model will be able to transmit a larger amount of tangential force
+If <I>tangential_reduce</I> = 'on' then the tangential model will not take the normal force
+from this model into account, typically leading to a lower value of tangential force
+(via the Coulomb friction limit)
+</P>
 <P><B>Restrictions:</B>
 </P>
 <P>This model can ONLY be used as part of <A HREF = "pair_gran.html">pair gran</A>, not as part
@@ -158,5 +171,9 @@ after a <A HREF = "run.html">run 0</A> command.
 <A NAME = "Soulie"></A>
 
 <P><B>(Soulie)</B> Soulie, Cherblanc, Youssoufi, Saix, Intl. J Numerical and Analytical Methods in Geomechanics, p213, 30 (2006)
+</P>
+<P><B>Default:</B>
+</P>
+<P><I>tangential_reduce</I> = 'off'
 </P>
 </HTML>

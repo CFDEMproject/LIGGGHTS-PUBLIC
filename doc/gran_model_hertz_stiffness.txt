@@ -6,7 +6,7 @@
 
 :line
 
-gran model hertz/stiffness :h3
+gran model hertz/stiffness command :h3
 
 [Syntax:]
 

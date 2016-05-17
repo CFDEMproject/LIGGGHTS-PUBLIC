@@ -7,10 +7,14 @@
 :line
 
 pair_style gran command :h3
+pair_style bubble command :h3
+pair_style gran_bubble bubble command :h3
 
 [Syntax:]
 
-pair_style model_type model_name model_keyword model_value :pre
+pair_style gran model_type model_name model_keyword model_value :pre
+pair_style bubble model_type model_name model_keyword model_value :pre
+pair_style gran_bubble model_type model_name model_keyword model_value :pre
 
 zero or more model_type/model_name pairs may be appended. They must be appended in the following order (!) :l
   {model} values = described "here"_Section_gran_models.html
@@ -30,9 +34,14 @@ pair_style gran model hertz tangential no_history cohesion sjkr  :pre
 
 [General description:]
 
-The {gran} styles use the following formula for the frictional force between two granular
-particles, when the distance r between two particles of radii Ri and Rj is less than their
-contact distance d = Ri + Rj. Typically, there is no force between the particles when r > d.
+The {gran} styles imposes a force between two neighboring particles. Typically, there is
+a force when the distance r between two particles of radii Ri and Rj is less than their
+contact distance dist = Ri + Rj, and no force otherwise. Some models, such as cohesion
+models, may impose a force also when the particle surfaces do not touch. This is documented
+for those models specifically.
+
+
+The general form of a granular interaction can be written as:
 
 :c,image(Eqs/pair_gran_html_60b8ced2.png)
 
@@ -59,6 +68,14 @@ doc pages "here"_Section_gran_models.html
 Also, other models may add additional forces or torques on the particles, such as
 cohesive or rolling friction forces. These are also described on separate
 doc pages "here"_Section_gran_models.html
+
+The styles {bubble} and {gran_bubble} are aliases for {gran}, which can e.g. be used
+for the modelling of systems with different phases using "pair hybrid"_pair_hybrid.html, where a
+different set of interaction laws is used for each phase. An example would be 
+
+pair_style hybrid gran        model hertz     tangential history &
+                  bubble      model hertz     tangential off &
+                  gran_bubble model hertz     tangential off :pre
 
 IMPORTANT NOTE: The order of model keywords is important, you have to stick
 to the order as outlined in the "Syntax" section of this doc page.

@@ -48,8 +48,10 @@
 #include "memory_ns.h"
 #include "math_extra_liggghts.h"
 #include <string.h>
+#include <limits>
 
-#define GROW 100
+inline int GROW_CONTAINER()
+{ return 10000; }
 
 using namespace LAMMPS_MEMORY_NS;
 
@@ -63,6 +65,9 @@ namespace LAMMPS_NS
 
           bool isDoubleData();
           bool isIntData();
+
+          bool subtract (GeneralContainer<T,NUM_VEC,LEN_VEC> const &A,
+                         GeneralContainer<T,NUM_VEC,LEN_VEC> const &minusB);
 
           void add(T** elem);
           void addZero();
@@ -87,8 +92,10 @@ namespace LAMMPS_NS
 
           bool setFromContainer(ContainerBase *cont);
 
-          bool calcAveFromContainer(double weighting_factor);
-          bool calcVarFromContainer(double weighting_factor);
+          bool calcAvgFromContainer();
+          bool calcMeanSquareFromContainer();
+          bool calcSumFromContainer();
+          bool normalizeContainer();
 
           T max_scalar();
           T min_scalar();

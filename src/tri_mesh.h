@@ -48,6 +48,7 @@
 #include "atom.h"
 #include "math_extra_liggghts.h"
 #include "tri_line.h"
+#include "region_neighbor_list.h"
 #include "superquadric_flag.h"
 
 #ifdef TRI_LINE_ACTIVE_FLAG
@@ -73,9 +74,9 @@ namespace LAMMPS_NS
         TriMesh(LAMMPS *lmp);
         virtual ~TriMesh();
 
-        double resolveTriSphereContact(int iPart, int nTri, double rSphere, double *cSphere, double *delta);
+        double resolveTriSphereContact(int iPart, int nTri, double rSphere, double *cSphere, double *delta,int &barysign);
         double resolveTriSphereContactBary(int iPart, int nTri, double rSphere, double *cSphere,
-                                           double *contactPoint,double *bary);
+                                           double *contactPoint,double *bary,int &barysign);
 
         #ifdef SUPERQUADRIC_ACTIVE_FLAG
 
@@ -96,9 +97,9 @@ namespace LAMMPS_NS
         #ifdef TRI_LINE_ACTIVE_FLAG
         // Extra for Line Contact Calculation ********
         double resolveTriSegmentContact    (int iPart, int nTri, double *line, double *cLine, double length, double cylRadius,
-                                            double *delta, double &segmentParameter);
+                                            double *delta, double &segmentParameter,int &barysign);
         double resolveTriSegmentContactBary(int iPart, int nTri, double *line, double *cLine, double length, double cylRadius,
-                                            double *delta, double  &segmentParameter, double *bary);
+                                            double *delta, double  &segmentParameter, double *bary,int &barysign);
         bool resolveTriSegmentNeighbuild(int nTri, double *line, double *cLine, double length, double cylRadius, double treshold);
         // Extra for Line Contact Calculation ********
         #endif

@@ -75,6 +75,7 @@ namespace ContactModels
 
     void registerSettings(Settings & settings)
     {
+      
       settings.registerOnOff("tangential_damping", tangential_damping, true);
       settings.registerOnOff("limitForce", limitForce);
       settings.registerOnOff("heating_normal_hertz",heating,false);
@@ -82,7 +83,11 @@ namespace ContactModels
       //TODO error->one(FLERR,"TODO here also check if right surface model used");
     }
 
-    void connectToProperties(PropertyRegistry & registry) {
+    inline void postSettings() {}
+
+    void connectToProperties(PropertyRegistry & registry)
+    {
+      
       registry.registerProperty("Yeff", &MODEL_PARAMS::createYeff,"model hertz");
       registry.registerProperty("Geff", &MODEL_PARAMS::createGeff,"model hertz");
       registry.registerProperty("betaeff", &MODEL_PARAMS::createBetaEff,"model hertz");
@@ -90,6 +95,7 @@ namespace ContactModels
       registry.connect("Yeff", Yeff,"model hertz");
       registry.connect("Geff", Geff,"model hertz");
       registry.connect("betaeff", betaeff,"model hertz");
+
     }
 
     // effective exponent for stress-strain relationship
@@ -101,6 +107,14 @@ namespace ContactModels
 
     inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
+
+      //if(!sidata.is_wall) // bond_history_offset_ >= 0)
+      //{
+          //double * const bond_contact_flag = &sidata.contact_history[bond_history_offset_];
+          //if(!MathExtraLiggghts::compDouble(bond_contact_flag[0],0.))
+      //       return;
+      //}
+
       const int itype = sidata.itype;
       const int jtype = sidata.jtype;
       double ri = sidata.radi;
@@ -228,6 +242,7 @@ namespace ContactModels
     bool heating;
     bool heating_track;
     class ContactModelBase *cmb;
+
   };
 
 }

@@ -29,7 +29,7 @@
 
 <LI>one or more general keyword/value pairs can be appended 
 
-<LI>general_keywords = <I>verbose</I> or <I>maxattempt</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>vel constant</I> or <I>vel uniform</I> or <I>vel gaussian</I> or <I>orientation</I> or <I>omega</I> or <I>set_property</I> 
+<LI>general_keywords = <I>verbose</I> or <I>maxattempt</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>compress_tags</I> or <I>vel constant</I> or <I>vel uniform</I> or <I>vel gaussian</I> or <I>orientation</I> or <I>omega</I> or <I>set_property</I> 
 
 <PRE>  <I>verbose</I> = yes or no
   <I>maxattempt</I> value = ma
@@ -42,6 +42,7 @@
   <I>overlapcheck</I> value = yes or no
   <I>all_in</I> value = yes or no
   <I>random_distribute</I> value = exact or uncorrelated
+  <I>compress_tags</I> value = yes or no
   <I>vel constant</I> values = vx vy vz
     vx = x-velocity at insertion (velocity units)
     vy = y-velocity at insertion (velocity units)
@@ -165,6 +166,15 @@ the <I>random_distribute</I> settings. This is because in this case the
 and applying a simple floor/ceil rounding operation would lead to a
 statistical bias.
 </P>
+<P>If keyword <I>compress_tags</I> is set to 'yes', then atom IDs are re-assigned
+after each insertion procedure. The default is 'no'. This is typically
+only recommended if some models internally store arrays which have the
+length defined via the max ID of any atom. 
+</P>
+<P>IMPORTANT NOTE: Setting <I>compress_tags</I> to 'yes' will result in all contact
+history to be lost at that point in time. External post-processing tools
+will give wrong results because they typically track atoms via their IDs.
+</P>
 <P>The initial velocity and rotational velocity can be controlled via the
 <I>vel</I> and <I>omega</I> keywords. <I>vel constant</I> simply patches a constant
 velocity to the inserted particles, <I>vel uniform</I> sets uniformly distributed
@@ -235,6 +245,7 @@ is a tet mesh region.
 </P>
 <P>The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
-duration = insert_every,  ntry_mc = 100000, random_distribute = exact
+duration = insert_every, ntry_mc = 100000, random_distribute = exact,
+<I>compress_tags</I> = no
 </P>
 </HTML>

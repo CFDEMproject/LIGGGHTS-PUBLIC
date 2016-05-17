@@ -45,6 +45,7 @@
 #define LMP_ASSOCIATIVE_POINTER_ARRAY_H
 
 #include <string.h>
+#include <algorithm>
 #include "memory.h"
 
 namespace LAMMPS_NS
@@ -73,8 +74,6 @@ class AssociativePointerArray
 
         T* getBasePointerByIndex(int i) const;
 
-        void grow(int to);
-
         int size() const;
 
         bool sameLength(int _len);
@@ -83,6 +82,7 @@ class AssociativePointerArray
         inline void addUninitializedElement();
         inline void addZeroElement();
         inline void deleteAllElements();
+        inline void deleteRestart(bool scale,bool translate,bool rotate);
         inline void deleteElement(int n);
         inline void deleteForwardElement(int n,bool scale,bool translate,bool rotate);
         inline void deleteRestartElement(int n,bool scale,bool translate,bool rotate);
@@ -90,7 +90,8 @@ class AssociativePointerArray
 
         inline void clearReverse(bool scale,bool translate,bool rotate);
 
-        inline bool calcStatistics(double weighting_factor);
+        inline bool calcStatistics();
+        inline int  maxStatLevel() const;
 
         inline void storeOrig(class AssociativePointerArray &orig);
         inline void storeOrig(const char *_id,class AssociativePointerArray &orig);

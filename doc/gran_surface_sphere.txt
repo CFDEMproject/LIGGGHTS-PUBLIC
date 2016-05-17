@@ -6,7 +6,7 @@
 
 :line
 
-gran surface sphere :h3
+gran surface sphere command :h3
 
 [Syntax:]
 

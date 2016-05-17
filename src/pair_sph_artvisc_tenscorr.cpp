@@ -224,9 +224,9 @@ void PairSphArtviscTenscorr::init_substyle()
 
     etaPPG=static_cast<FixPropertyGlobal*>(modify->find_fix_property("artViscEta","property/global","scalar",0,0,force->pair_style));
     if(!etaPPG) error->all(FLERR, "Pairstyle sph/artVisc/tensCorr only works with a fix property/global that defines artViscEta");
-    eta = etaPPG->compute_scalar(); // NP const for all type
+    eta = etaPPG->compute_scalar(); 
 
-    viscosity_ = 1; // NP dummy
+    viscosity_ = 1; 
     //viscosity_ = alpha;
 
     //pre-calculate parameters for possible contact material combinations

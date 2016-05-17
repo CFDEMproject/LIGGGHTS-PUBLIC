@@ -60,7 +60,7 @@ SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::SurfaceMesh(LAMMPS *lmp)
     
     minAngle_softLimit_(cos(0.5*M_PI/180.)),
     
-    minAngle_hardLimit_(0.999995),
+    minAngle_hardLimit_(0.9999995),
 
     // TODO should keep areaMeshSubdomain up-to-date more often for insertion faces
     areaMesh_     (*this->prop().template addGlobalProperty   < ScalarContainer<double> >                 ("areaMesh",     "comm_none","frame_trans_rot_invariant","restart_no",2)),
@@ -81,7 +81,7 @@ SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::SurfaceMesh(LAMMPS *lmp)
     hasNonCoplanarSharedNode_(*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >("hasNonCoplanarSharedNode","comm_exchange_borders","frame_invariant", "restart_no")),
     edgeActive_   (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("edgeActive",   "comm_exchange_borders","frame_invariant","restart_no")),
     cornerActive_ (*this->prop().template addElementProperty< VectorContainer<bool,NUM_NODES> >           ("cornerActive", "comm_exchange_borders","frame_invariant","restart_no")),
-    neighList_(*new RegionNeighborList(lmp))
+    neighList_(*new RegionNeighborList<interpolate_no>(lmp))
 {
     
     areaMesh_.add(0.);
@@ -313,7 +313,7 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::calcSurfPropertiesOfNewElement()
       calcObtuseAngleIndex(n,i,dot);
       if(-dot > minAngle_softLimit_)
         hasSmallAngleSoftLimit = true;
-      if(-dot > minAngle_hardLimit_)
+      if(-dot >= minAngle_hardLimit_)
         hasSmallAngleHardLimit = true;
     }
 
@@ -374,7 +374,15 @@ template<int NUM_NODES, int NUM_NEIGH_MAX>
 void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::calcSurfaceNorm(int nElem, double *surfNorm)
 {
     vectorCross3D(edgeVec(nElem)[0],edgeVec(nElem)[1],surfNorm);
-    vectorScalarDiv3D(surfNorm, vectorMag3D(surfNorm));
+    
+    if(vectorMag3D(surfNorm) <1e-15)
+    {
+        surfNorm[0] = - edgeVec(nElem)[0][1];
+        surfNorm[1] =   edgeVec(nElem)[0][0];
+        surfNorm[2] =   edgeVec(nElem)[0][2];
+    }
+    else
+        vectorScalarDiv3D(surfNorm, vectorMag3D(surfNorm));
 }
 
 template<int NUM_NODES, int NUM_NEIGH_MAX>
@@ -438,14 +446,22 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
                    this->domain->boxlo[2], this->domain->boxhi[2]);
 
     neighList_.clear();
+
+    double rBound_max = this->rBound_.max();
+    double binsize_factor = rBound_max ;
     
-    if(nall > 0 &&  neighList_.setBoundingBox(bb, this->rBound_.max() /*max bounding radius*/, true))
+    if(nall > 100000 && binsize_factor > cbrt(bb.getVolume())/(4*20.))
+    {
+        binsize_factor = cbrt(bb.getVolume())/(4*20.);
+    }
+
+    if(nall > 0 &&  neighList_.setBoundingBox(bb, binsize_factor, true, true))
     {
         std::vector<int> overlaps;
 
         for (int i = 0; i < nall; ++i)
         {
-
+            
             overlaps.clear();
             neighList_.hasOverlapWith(this->center_(i), this->rBound_(i),overlaps);
 
@@ -467,8 +483,6 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
     else if(nall > 0)
         this->error->one(FLERR,"Mesh error: bounding box for neigh topology not set sucessfully");
 
-    fflush(MultiNodeMesh<NUM_NODES>::elementExclusionList());
-
     int *idListVisited = new int[nall];
     int *idListHasNode = new int[nall];
     double **edgeList,**edgeEndPoint;
@@ -482,14 +496,19 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
             handleCorner(i,iNode,idListVisited,idListHasNode,edgeList,edgeEndPoint);
     }
 
+    handleExclusion(idListVisited);
+
     delete []idListVisited;
     delete []idListHasNode;
     this->memory->destroy(edgeList);
     this->memory->destroy(edgeEndPoint);
     
+    fflush(MultiNodeMesh<NUM_NODES>::elementExclusionList());
+
     // correct edge and corner activation/deactivation in parallel
     
     parallelCorrection();
+
 }
 
 /* ----------------------------------------------------------------------
@@ -514,7 +533,15 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
 
     neighList_.clear();
 
-    if(nall > 0 &&  neighList_.setBoundingBox(bb, this->rBound_.max() /*max bounding radius*/, true))
+    double rBound_max = this->rBound_.max();
+    double binsize_factor = rBound_max;
+
+    if(nall > 100000 && binsize_factor > cbrt(bb.getVolume())/(4*20.))
+    {
+        binsize_factor = cbrt(bb.getVolume())/(4*20.);
+    }
+
+    if(nall > 0 &&  neighList_.setBoundingBox(bb, binsize_factor, true,true))
     {
         std::vector<int> overlaps;
 
@@ -535,7 +562,10 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
                     fprintf(this->screen,"ERROR: Mesh %s: elements %d and %d (lines %d and %d) are duplicate\n",
                             this->mesh_id_,TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::id(j),
                             TrackingMesh<NUM_NODES>::lineNo(i),TrackingMesh<NUM_NODES>::lineNo(j));
-                    if(!this->removeDuplicates())
+
+                    if(MultiNodeMesh<NUM_NODES>::elementExclusionList())
+                        fprintf(MultiNodeMesh<NUM_NODES>::elementExclusionList(),"%d\n",TrackingMesh<NUM_NODES>::lineNo(j));
+                    else if(!this->removeDuplicates())
                         this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. You can try re-running with 'heal auto_remove_duplicates'");
                     else
                         this->error->one(FLERR,"Fix mesh: Bad mesh, cannot continue. The mesh probably reached the precision you defined. "
@@ -548,6 +578,8 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
     }
     else if(nall > 0)
         this->error->one(FLERR,"Mesh error: bounding box for neigh topology not set sucessfully");
+
+    fflush(MultiNodeMesh<NUM_NODES>::elementExclusionList());
 
     for(int i = 0; i < nlocal; i++)
     {
@@ -589,7 +621,6 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
                 fprintf(this->screen,"Mesh %s: element %d (line %d) has a really unreasonably high aspect ratio (hard limit: smallest angle must be > %f °) \n",
                         this->mesh_id_,TrackingMesh<NUM_NODES>::id(i),TrackingMesh<NUM_NODES>::lineNo(i),this->angleHardLimit());
              nBelowAngle_hardLimit++;
-
         }
       }
     }
@@ -868,22 +899,29 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::handleSharedEdge(int iSrf, int iEdge,
     if(neighflag)
     {
         
-        if(nNeighs_(iSrf) == NUM_NEIGH_MAX || nNeighs_(jSrf) == NUM_NEIGH_MAX)
+        if(nNeighs_(iSrf) == NUM_NEIGH_MAX)
         {
-            int ii;
-            if(nNeighs_(iSrf) == NUM_NEIGH_MAX)
-                ii = iSrf;
-            else
-                ii = jSrf;
-
             nTooManyNeighs_++;
             if(TrackingMesh<NUM_NODES>::verbose())
                 fprintf(this->screen,"Mesh %s: element id %d (line %d) has %d neighs, but only %d expected\n",
-                        this->mesh_id_,TrackingMesh<NUM_NODES>::id(ii),TrackingMesh<NUM_NODES>::lineNo(ii),nNeighs_(ii)+1,NUM_NEIGH_MAX);
+                        this->mesh_id_,TrackingMesh<NUM_NODES>::id(iSrf),TrackingMesh<NUM_NODES>::lineNo(iSrf),nNeighs_(iSrf)+1,NUM_NEIGH_MAX);
             if(MultiNodeMesh<NUM_NODES>::elementExclusionList())
             {
                 
-                fprintf(MultiNodeMesh<NUM_NODES>::elementExclusionList(),"%d\n",TrackingMesh<NUM_NODES>::lineNo(ii));
+                fprintf(MultiNodeMesh<NUM_NODES>::elementExclusionList(),"%d\n",TrackingMesh<NUM_NODES>::lineNo(iSrf));
+            }
+            
+        }
+        if(nNeighs_(jSrf) == NUM_NEIGH_MAX)
+        {
+            nTooManyNeighs_++;
+            if(TrackingMesh<NUM_NODES>::verbose())
+                fprintf(this->screen,"Mesh %s: element id %d (line %d) has %d neighs, but only %d expected\n",
+                        this->mesh_id_,TrackingMesh<NUM_NODES>::id(jSrf),TrackingMesh<NUM_NODES>::lineNo(jSrf),nNeighs_(jSrf)+1,NUM_NEIGH_MAX);
+            if(MultiNodeMesh<NUM_NODES>::elementExclusionList())
+            {
+                
+                fprintf(MultiNodeMesh<NUM_NODES>::elementExclusionList(),"%d\n",TrackingMesh<NUM_NODES>::lineNo(jSrf));
             }
             
         }

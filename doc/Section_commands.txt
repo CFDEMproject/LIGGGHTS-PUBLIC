@@ -1,4 +1,4 @@
-"Previous Section"_Section_input_script.html - "LIGGGHTS(R)-PUBLIC WWW Site"_lws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Section_gran_models.html :c
+"Previous Section"_Section_input_script.html - "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Section_gran_models.html :c
 
 :link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
@@ -77,7 +77,6 @@ in the command's documentation.
 "read_restart"_read_restart.html,
 "region"_region.html,
 "replicate"_replicate.html,
-"rerun"_rerun.html,
 "reset_timestep"_reset_timestep.html,
 "restart"_restart.html,
 "run"_run.html,
@@ -225,6 +224,7 @@ of each style or click on the style itself for a full description:
 "poems"_fix_poems.html,
 "print"_fix_print.html,
 "property/atom"_fix_property.html,
+"property/atom/timetracer"_fix_property_atom_timetracer.html,
 "property/atom/tracer"_fix_property_atom_tracer.html,
 "property/atom/tracer/stream"_fix_property_atom_tracer_stream.html,
 "property/global"_fix_property.html,
@@ -255,6 +255,7 @@ pair_style potentials :h4
 See the "pair_style"_pair_style.html command for an overview of pair
 potentials.  Click on the style itself for a full description:
 
+"bubble"_pair_gran.html,
 "gran"_pair_gran.html,
 "hybrid"_pair_hybrid.html,
 "hybrid/overlay"_pair_hybrid.html,

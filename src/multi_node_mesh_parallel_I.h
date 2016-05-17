@@ -552,9 +552,10 @@
       
       double span = this->node_.max_scalar()-this->node_.min_scalar();
       if(span < 1e-4)
-        this->error->all(FLERR,"Mesh error: dimensions too small - use different unit system");
+        this->error->all(FLERR,"Mesh error - root causes: (a) mesh empty or (b) dimensions too small - use different unit system");
 
       // delete all elements that do not belong to this processor
+      
       deleteUnowned();
 
       if(sizeGlobal() != sizeGlobalOrig())
@@ -568,9 +569,11 @@
       }
 
       // perform operations that should be done before initial setup
+      
       preInitialSetup();
 
       // set-up mesh parallelism
+      
       setup();
 
       // re-calculate properties for owned particles
@@ -583,6 +586,7 @@
       borders();
 
       // re-calculate properties for ghost particles
+      
       refreshGhosts(1);
 
       // build mesh topology and neigh list
@@ -590,6 +594,7 @@
       buildNeighbours();
 
       // perform quality check on the mesh
+      
       qualityCheck();
 
       if(doParallellization_) isParallel_ = true;
@@ -597,8 +602,9 @@
       postInitialSetup();
 
       // stuff that should be done before resuming simulation
+      
       postBorders();
-
+      
   }
 
   /* ----------------------------------------------------------------------

@@ -33,8 +33,10 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
-    Andreas Aigner (JKU Linz)
+    Andreas Aigner (DCS Computing GmbH, Linz)
     Christoph Kloss (DCS Computing GmbH, Linz)
+    Alexander Podlodhnyuk (DCS Computing GmbH, Linz)
+    Andreas Aigner (JKU Linz)
     Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
@@ -86,7 +88,7 @@ namespace ContactModels
         error->cg(FLERR,"rolling model epsd");
     }
 
-    void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces) 
+    void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
       double r_torque[3];
       vectorZeroize3D(r_torque);
@@ -120,13 +122,13 @@ namespace ContactModels
             const double Ix = sidata.inertia_i[0];
             const double Iy = sidata.inertia_i[1];
             const double Iz = sidata.inertia_i[2];
-            double inertia_tensor[3][3];
-            double inertia_tensor_local[3][3] = { {Ix, 0.0, 0.0},
-                                                  {0.0, Iy, 0.0},
-                                                  {0.0, 0.0, Iz} };
+            double inertia_tensor[9];
+            double inertia_tensor_local[9] = { Ix, 0.0, 0.0,
+                                               0.0, Iy, 0.0,
+                                               0.0, 0.0, Iz };
             MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local, sidata.quat_i, inertia_tensor);
             double temp[3];
-            MathExtra::matvec(inertia_tensor, er, temp);
+            MathExtraLiggghtsSuperquadric::matvec(inertia_tensor, er, temp);
             double Ii = MathExtra::dot3(temp, er);
             r_inertia = Ii + sidata.mi*rii*rii;
           }
@@ -174,20 +176,20 @@ namespace ContactModels
             const double Iy_j = sidata.inertia_j[1];
             const double Iz_j = sidata.inertia_j[2];
 
-            double inertia_tensor_i[3][3];
-            double inertia_tensor_local_i[3][3] = { {Ix_i, 0.0, 0.0},
-                                                    {0.0, Iy_i, 0.0},
-                                                    {0.0, 0.0, Iz_i} };
-            double inertia_tensor_j[3][3];
-            double inertia_tensor_local_j[3][3] = { {Ix_j, 0.0, 0.0},
-                                                    {0.0, Iy_j, 0.0},
-                                                    {0.0, 0.0, Iz_j} };
+            double inertia_tensor_i[9];
+            double inertia_tensor_local_i[9] = { Ix_i, 0.0, 0.0,
+                                                 0.0, Iy_i, 0.0,
+                                                 0.0, 0.0, Iz_i };
+            double inertia_tensor_j[9];
+            double inertia_tensor_local_j[9] = { Ix_j, 0.0, 0.0,
+                                                 0.0, Iy_j, 0.0,
+                                                 0.0, 0.0, Iz_j };
             MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local_i, sidata.quat_i, inertia_tensor_i);
             MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local_j, sidata.quat_j, inertia_tensor_j);
             double temp[3];
-            MathExtra::matvec(inertia_tensor_i, er, temp);
+            MathExtraLiggghtsSuperquadric::matvec(inertia_tensor_i, er, temp);
             double Ii = MathExtra::dot3(temp, er);
-            MathExtra::matvec(inertia_tensor_j, er, temp);
+            MathExtraLiggghtsSuperquadric::matvec(inertia_tensor_j, er, temp);
             double Ij = MathExtra::dot3(temp, er);
             r_inertia_red_i = Ii + sidata.mi*rii*rii; //
             r_inertia_red_j = Ij + sidata.mj*rjj*rjj;

@@ -60,6 +60,9 @@
 namespace LAMMPS_NS {
 
 class Input : protected Pointers {
+
+ friend class Info;
+
  public:
   int narg;                    // # of command args
   char **arg;                  // parsed args for command
@@ -134,6 +137,7 @@ class Input : protected Pointers {
   void dump_modify();
   void fix();
   void fix_modify();
+  void force_dt_reset();          
   void group_command();
   void improper_coeff();
   void improper_style();
@@ -157,6 +161,7 @@ class Input : protected Pointers {
   void reset_timestep();
   void restart();
   void run_style();
+  void soft_particles(); 
   void special_bonds();
   void suffix();
   void thermo();

@@ -46,15 +46,20 @@
 #include <cstring>
 #include <algorithm>
 #include "update.h"
+#include "atom.h"
 #include "error.h"
 #include "neighbor.h"
+#include "modify.h"
 #include "force.h"
 
 using namespace std;
 
 namespace MODEL_PARAMS
 {
+  static const char * COALESCENCE_MODEL_SWITCHES = "coalescenceModelSwitches";
+  static const char * COALESCENCE_MODEL_SETTINGS = "coalescenceModelSettings";
   static const char * COHESION_DISTANCE_SETTINGS = "cohesionDistanceSettings";
+  static const char * COHESION_MODEL_SWITCHES    = "cohesionModelSwitches";
   static const char * COHESION_ENERGY_DENSITY = "cohesionEnergyDensity";
   static const char * CHARACTERISTIC_VELOCITY = "characteristicVelocity";
   static const char * YOUNGS_MODULUS = "youngsModulus";
@@ -68,6 +73,7 @@ namespace MODEL_PARAMS
   static const char * MAXIMUM_RESTITUTION = "MaximumRestitution";
   static const char * CRITITCAL_STOKES = "CriticalStokes";
   static const char * LIQUID_VOLUME = "liquidVolume";
+  static const char * LIQUID_DENSITY = "liquidDensity";
   static const char * HISTORY_INDEX = "historyIndex";
   static const char * SURFACE_TENSION = "surfaceTension";
   static const char * SWITCH_MODEL = "switchModel";
@@ -217,6 +223,53 @@ namespace MODEL_PARAMS
   }
 
   /* ---------------------------------------------------------------------- */
+  VectorProperty* createCoalescenceModelSwitches(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+    int        numSettings = 3;        //use 2 settings, index = 0: for bubble-bubble, index = 1: for bubble-wall, 2: decideMethod
+    VectorProperty *   vec = new VectorProperty(numSettings); 
+    FixPropertyGlobal * ca = registry.getGlobalProperty(COALESCENCE_MODEL_SWITCHES,"property/global","vector",numSettings,0,caller);
+
+    for(int i=0; i <numSettings; i++)
+    {
+      const double aSetting = ca->compute_vector(i);
+
+      // error checks on v
+      if(sanity_checks)
+      {
+        if(aSetting < 0.0)
+          lmp->error->all(FLERR,"model switches for coalescence model must be all positive");
+      }
+      vec->data[i] = aSetting;
+    }
+
+    return vec;
+  }
+  /* ---------------------------------------------------------------------- */
+  VectorProperty* createCoalescenceModelSettings(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+    int        numSettings = 6;        //use 6 settings, starting index = 0
+    VectorProperty *   vec = new VectorProperty(numSettings); 
+    FixPropertyGlobal * ca = registry.getGlobalProperty(COALESCENCE_MODEL_SETTINGS,"property/global","vector",numSettings,0,caller);
+
+    for(int i=0; i <numSettings; i++)
+    {
+      const double aSetting = ca->compute_vector(i);
+
+      // error checks on v
+      if(sanity_checks)
+      {
+        if(aSetting < 0.0)
+          lmp->error->all(FLERR,"model settings for coalescence model must be all positive");
+      }
+
+      vec->data[i] = aSetting;
+    }
+
+    return vec;
+  }
+  /* ---------------------------------------------------------------------- */
 
   MatrixProperty* createCohesionEnergyDensity(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
@@ -229,7 +282,7 @@ namespace MODEL_PARAMS
   {
     LAMMPS * lmp = registry.getLAMMPS();
     int        numSettings = 4;        //use 4 settings, starting index = 0
-    VectorProperty *   vec = new VectorProperty(numSettings); 
+    VectorProperty *   vec = new VectorProperty(numSettings);
     FixPropertyGlobal * ca = registry.getGlobalProperty(COHESION_DISTANCE_SETTINGS,"property/global","vector",numSettings,0,caller);
 
     for(int i=0; i <numSettings; i++)
@@ -251,6 +304,29 @@ namespace MODEL_PARAMS
 
   /* ---------------------------------------------------------------------- */
 
+  VectorProperty * createCohesionModelSwitches(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+  {
+    LAMMPS * lmp = registry.getLAMMPS();
+    int        numSettings = 2;        //use 2 settings, index = 0: for particle-particle, index = 1: for particle-wall
+    VectorProperty *   vec = new VectorProperty(numSettings); 
+    FixPropertyGlobal * ca = registry.getGlobalProperty(COHESION_MODEL_SWITCHES,"property/global","vector",numSettings,0,caller);
+
+    for(int i=0; i <numSettings; i++)
+    {
+      const double aSetting = ca->compute_vector(i);
+
+      // error checks on v
+      if(sanity_checks)
+      {
+        if(aSetting < 0.0)
+          lmp->error->all(FLERR,"model switches for cohesion model must be all positive");
+      }
+      vec->data[i] = aSetting;
+    }
+
+    return vec;
+  }
+  /* ---------------------------------------------------------------------- */
   VectorProperty * createYoungsModulus(PropertyRegistry & registry, const char * caller, bool sanity_checks)
   {
     LAMMPS * lmp = registry.getLAMMPS();
@@ -264,7 +340,8 @@ namespace MODEL_PARAMS
       const double Yi = Y->compute_vector(i-1);
 
       // error checks on Y
-      if(sanity_checks)
+      
+      if(sanity_checks && (0 == lmp->modify->n_fixes_style("bubble")) && (!registry.getLAMMPS()->atom->get_properties()->allow_soft_particles()))
       {
         if(strcmp(lmp->update->unit_style,"si") == 0  && Yi < 5e6)
           lmp->error->all(FLERR,"youngsModulus >= 5e6 required for SI units");
@@ -572,6 +649,13 @@ namespace MODEL_PARAMS
   ScalarProperty* createLiquidVolume(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, LIQUID_VOLUME, caller);
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  ScalarProperty* createLiquidDensity(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createScalarProperty(registry, LIQUID_DENSITY, caller);
   }
 
   /* ---------------------------------------------------------------------- */

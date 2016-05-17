@@ -603,6 +603,7 @@ void PairGran::compute(int eflag, int vflag)
 
 void PairGran::compute_pgl(int eflag, int vflag)
 {
+  
   // update rigid body info for owned & ghost atoms if using FixRigid masses
   // body[i] = which body atom I is in, -1 if none
   // mass_body = mass of each rigid body

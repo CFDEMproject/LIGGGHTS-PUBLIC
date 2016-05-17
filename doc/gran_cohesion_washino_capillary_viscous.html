@@ -9,11 +9,23 @@
 
 <HR>
 
-<H3>gran cohesion washino/capillary/viscous 
+<H3>gran cohesion washino/capillary/viscous command 
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>cohesion washino/capillary/viscous 
+<PRE>cohesion washino/capillary/viscous [other model_type/model_name pairs as described <A HREF = "pair_gran.html">here</A> ] keyword values 
+</PRE>
+<LI>zero or more keyword/value pairs may be appended to the end (after all models are specified) 
+
+<PRE>  <I>limitLiquidContent</I> values = 'on' or 'off'
+    on = enables the model parameter <I>maxLiquidContent</I>
+    off = standard implementation without a limiter for the per particle liquid content
+  <I>modifyLbVolume</I> values = 'on' or 'off'
+    on = enables the model parameter <I>lbVolumeFraction</I>
+    off = standard implementation with lbVolumeFraction = 0.05
+  <I>tangential_reduce</I> values = 'on' or 'off'
+    on = tangential model does not see normal force computed by this model
+    off = tangential model does see normal force computed by this model 
 </PRE>
 <P><B>Description:</B>
 </P>
@@ -27,7 +39,9 @@ to the liquid bridge force, i.e. <I>radius</I>*<I>maxSeparationDistanceRatio</I>
 the effective contact radius of the particles.
 </P>
 <P>The model parameter <I>maxLiquidContent</I> allows to limit the maximum per particle 
-liquid content.
+liquid content. (enabled by keyword <I>limitLiquidContent</I>)
+</P>
+<P>The model parameter <I>lbVolumeFraction</I> defines the amout of liquid that formes the liquid bridge with a neighbouring particle. (enabled by the keyword <I>modifyLbVolume</I>)
 </P>
 <HR>
 
@@ -35,7 +49,7 @@ liquid content.
 </P>
 <P><I>Vbond</I>, the volume of surface liquid involved in the bridge, is given by
 </P>
-<PRE>Vbond = 0.05*(surfaceLiquidVolI+surfaceLiquidVolJ) 
+<PRE>Vbond = lbVolumeFraction * (surfaceLiquidVolI+surfaceLiquidVolJ) 
 </PRE>
 where <I>surfaceLiquidVolI/J</I> is the surface liquid volume attached to particle i/j.
 This model assumes that both formation distance and rupture distance
@@ -116,6 +130,13 @@ fix id all property/global contactAngle peratomtype value_1 value_2 ...
 fix id all property/global maxLiquidContent peratomtype value_1 value_2 ...
     (value_i=value for contact angle of atom type i and fluid) 
 </PRE>
+<P>The optional keyword <I>tangential_reduce</I> defines if the tangential force model should
+"see" the additional normal force excerted by this model. If it is 'off' (which is default)
+then the tangential force model will be able to transmit a larger amount of tangential force
+If <I>tangential_reduce</I> = 'on' then the tangential model will not take the normal force
+from this model into account, typically leading to a lower value of tangential force
+(via the Coulomb friction limit)
+</P>
 <P><B>Output:</B>
 </P>
 <P>This gran model stores a couple of per-particle properties, for access
@@ -137,6 +158,10 @@ of a <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
 </P>
 <P>The cohesion model is not available for <A HREF = "atom_style.html">atom_style</A> superquadric
 </P>
+<P><B>Default:</B>
+</P>
+<P>lbVolumeFraction = 0.05
+</P>
 <P><B>References:</B>
 </P>
 <A NAME = "Lian"></A>
@@ -150,5 +175,9 @@ of a <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
 <A NAME = "Rabinovitch"></A>
 
 <P><B>(Rabinovitch)</B> Rabinovitch, Esayanur, Moudil, Langmuir, p10992, 21 (2005)
+</P>
+<P><B>Default:</B>
+</P>
+<P><I>tangential_reduce</I> = 'off'
 </P>
 </HTML>

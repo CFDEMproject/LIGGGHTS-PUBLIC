@@ -68,7 +68,8 @@ namespace LAMMPS_NS
           void setProperties(const char *_id, const char* _comm, const char* _ref, const char *_restart,int _scalePower = 1);
           bool propertiesSetCorrectly();
 
-          void setContainerStatistics(class ContainerBase *_cb_stat);
+          void setContainerStatistics(double _weighting_factor, class ContainerBase *_cb_stat, class ContainerBase *_cb_scale,
+                                      class ContainerBase *_cb_red_scale = 0, bool _forget = true);
 
           inline const char* id()
           {return id_; }
@@ -82,6 +83,7 @@ namespace LAMMPS_NS
           virtual void addZero() = 0;
           virtual void addUninitialized(int n) = 0;
           virtual int size() const = 0;
+          virtual int capacity() const = 0;
           virtual int nVec() const = 0;
           virtual int lenVec() const = 0;
           virtual void* begin_slow_dirty() = 0;
@@ -98,10 +100,14 @@ namespace LAMMPS_NS
           virtual bool setFromContainer(ContainerBase *cont) = 0;
 
           bool isStatisticsContainer()
-          { return (0!=container_statistics_raw_data_); }
-          bool calcStatistics(double weighting_factor);
-          virtual bool calcAveFromContainer(double weighting_factor) = 0;
-          virtual bool calcVarFromContainer(double weighting_factor) = 0;
+          { return (container_statistics_raw_data_!=0); }
+          bool calcStatistics();
+          bool updateScalingContainer();
+          bool normalizeStatistics();
+          virtual bool calcAvgFromContainer() = 0;
+          virtual bool calcMeanSquareFromContainer() = 0;
+          virtual bool calcSumFromContainer() = 0;
+          virtual bool normalizeContainer() = 0;
 
           virtual void scale(double factor) = 0;
           virtual void move(double *dx) = 0;
@@ -113,6 +119,21 @@ namespace LAMMPS_NS
 
           inline bool useDefault()
           { return useDefault_ ; }
+
+          inline int getStatLevel() const
+          { return statLevel_; }
+
+          bool isScalingContainer() const
+          { return scalingContainer_; }
+
+          void setScalingContainer(bool _value)
+          { scalingContainer_ = _value; }
+
+          inline void setWeightingFactor(double _value)
+          { weighting_factor_ = _value; }
+
+          inline void setAveragingForget(bool _value)
+          {  averaging_forget_ = _value; }
 
           // buffer functions for parallelization
 
@@ -141,6 +162,10 @@ namespace LAMMPS_NS
           virtual int popElemFromBuffer(double *buf,int operation,
                             bool scale=false,bool translate=false, bool rotate=false) = 0;
 
+          // static elements
+          static const char * AVERAGESUFFIX;
+          static const char * MEANSQUARESUFFIX;
+
      protected:
 
           ContainerBase(const char *_id, const char* _comm, const char* _ref, const char *_restart,int _scalePower);
@@ -165,6 +190,16 @@ namespace LAMMPS_NS
           bool useDefault_;
 
           class ContainerBase *container_statistics_raw_data_;
+
+          class ContainerBase *container_statistics_scale_data_;
+          class ContainerBase *container_statistics_reduced_scale_data_;
+
+          int statLevel_;
+          double weighting_factor_;
+
+          bool scalingContainer_;
+
+          bool averaging_forget_;
 
      private:
 

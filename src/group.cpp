@@ -422,7 +422,7 @@ void Group::assign(int narg, char **arg)
    add flagged atoms to a new or existing group
 ------------------------------------------------------------------------- */
 
-void Group::create(char *name, int *flag)
+void Group::create(const char *name, int *flag)
 {
   int i;
 
@@ -446,8 +446,41 @@ void Group::create(char *name, int *flag)
   int nlocal = atom->nlocal;
   int bit = bitmask[igroup];
 
-  for (i = 0; i < nlocal; i++)
-    if (flag[i]) mask[i] |= bit;
+  if(flag)
+  {
+    for (i = 0; i < nlocal; i++)
+      if (flag[i]) mask[i] |= bit;
+  }
+}
+
+/* ----------------------------------------------------------------------
+   add flagged atoms to a new or existing group
+------------------------------------------------------------------------- */
+
+void Group::set(const char *name, bool flag)
+{
+  int igroup = find(name);
+
+  if (igroup == -1)
+    if (ngroup == MAX_GROUP) error->all(FLERR,"Did not find group for 'set'");
+
+  // add atoms to group whose flags are set
+
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+  int bit = bitmask[igroup];
+  int invbit = inversemask[igroup];
+
+  if(flag)
+  {
+    for (int i = 0; i < nlocal; i++)
+      mask[i] |= bit;
+  }
+  else
+  {
+    for (int i = 0; i < nlocal; i++)
+      mask[i] &= invbit;
+  }
 }
 
 /* ----------------------------------------------------------------------

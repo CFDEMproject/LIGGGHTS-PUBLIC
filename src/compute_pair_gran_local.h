@@ -73,15 +73,71 @@ class ComputePairGranLocal : public Compute {
   virtual void add_heat_wall(int i,double hf);
 
   virtual void pair_finalize();
+
+  /* inline access */
+
   virtual bool decide_add(double *hist)
   { return true; }
+
+  inline int get_nvalues()
+  { return nvalues; }
+
+  inline double** get_data()
+  { return array; }
+
+  inline int get_ncount()
+  { return ncount_added_via_pair; }
+
+  virtual int offset_x1()
+  { return (posflag > 0 ? 0 : -1); }
+
+  virtual int offset_x2()
+  { return (posflag > 0 ? 3 : -1); }
+
+  virtual int offset_v1()
+  { return (velflag > 0 ? posflag*6 : -1); }
+
+  virtual int offset_v2()
+  { return (velflag > 0 ? posflag*6+3 : -1); }
+
+  virtual int offset_id1()
+  { return (idflag > 0 ? posflag*6+velflag*6 : -1);}
+
+  virtual int offset_id2()
+  { return (idflag > 0 ? posflag*6+velflag*6+1 : -1);}
+
+  virtual int offset_f()
+  { return (fflag > 0 ? posflag*6+velflag*6+idflag*3 : -1);}
+
+  virtual int offset_fn()
+  { return (fnflag > 0 ? posflag*6+velflag*6+idflag*3+fflag*3 : -1);}
+
+  virtual int offset_ft()
+  { return (ftflag > 0 ? posflag*6+velflag*6+idflag*3+fflag*3+fnflag*3 : -1);}
+
+  virtual int offset_torque()
+  { return (torqueflag > 0 ? posflag*6+velflag*6+idflag*3+fflag*3+fnflag*3+ftflag*3 : -1);}
+
+  virtual int offset_history()
+  { return (histflag > 0 ? posflag*6+velflag*6+idflag*3+fflag*3+fnflag*3+ftflag*3+torqueflag*3 : -1);}
+
+  virtual int offset_area()
+  { return (areaflag > 0 ? posflag*6+velflag*6+idflag*3+fflag*3+fnflag*3+ftflag*3+torqueflag*3+histflag*dnum : -1);}
+
+  virtual int offset_delta()
+  { return (deltaflag > 0 ? posflag*6+velflag*6+idflag*3+fflag*3+fnflag*3+ftflag*3+torqueflag*3+histflag*dnum+areaflag*1 : -1);}
+
+  virtual int offset_heat()
+  { return (heatflag > 0 ? posflag*6+velflag*6+idflag*3+fflag*3+fnflag*3+ftflag*3+torqueflag*3+histflag*dnum+areaflag*1 + deltaflag*1 : -1);}
 
  protected:
 
   int nvalues;      // number of double values per entry
-  int ncount;       // count - from all who are touching up to all in neigh list, depending on extraSurfDistance
+  int ncount;       // count of eligible pair - all who are eligible for surfacesIntersect of surfacesClose
+
   int ncount_added_via_pair; // count actually added via call from pair_gran
                              // might be lower than ncount because is based on hasForceUpdate occurrences
+                             // not all the surfacesClose calls have hasForceUpdate=true
 
   int newton_pair;
 
@@ -100,10 +156,9 @@ class ComputePairGranLocal : public Compute {
 
   int ipair;
 
-  int posflag,velflag,idflag,fflag,fnflag,ftflag,tflag,hflag,aflag,dflag,hfflag;
+  int posflag,velflag,idflag,fflag,fnflag,ftflag,torqueflag,histflag,areaflag,deltaflag,heatflag;
 
   bool   verbose;
-  double extraSurfDistance;
 
   int dnum;
 

@@ -169,27 +169,25 @@ inline void Domain::min_subbox_extent(double &min_extent,int &dim)
 }
 
 /* ----------------------------------------------------------------------
-   domain check - not used very often, so not inlined
+   domain check
 ------------------------------------------------------------------------- */
 
 inline int Domain::is_periodic_ghost(int i) 
 {
+    if(i < atom->nlocal) return 0;
+
     if(is_wedge)
         return is_periodic_ghost_wedge(i);
 
     int idim;
-    int nlocal = atom->nlocal;
     double *x = atom->x[i];
-    double halfskin = 0.5*neighbor->skin;
+    const double cutneighmax = neighbor->cutneighmax;
 
-    if(i < nlocal) return 0;
-    else
-    {
-        for(idim = 0; idim < 3; idim++)
-             if ((x[idim] < (boxlo[idim]+halfskin) || x[idim] > (boxhi[idim]-halfskin)) && periodicity[idim])
-             
-                return 1;
-    }
+    for(idim = 0; idim < 3; idim++)
+         if ((x[idim] < (boxlo[idim]+cutneighmax) || x[idim] > (boxhi[idim]-cutneighmax)) && periodicity[idim])
+         
+            return 1;
+
     return 0;
 }
 

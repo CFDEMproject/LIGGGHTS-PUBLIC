@@ -103,7 +103,7 @@ int ParticleToInsertMultisphere::set_x_v_omega(double *x, double *v, double *ome
 
 /* ---------------------------------------------------------------------- */
 
-int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList & neighList)//, double **xnear, int &nnear)
+int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList<interpolate_no> & neighList)//, double **xnear, int &nnear)
 {
 
     // check every sphere against all others in xnear

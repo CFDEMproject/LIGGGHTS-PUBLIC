@@ -56,7 +56,7 @@ using namespace LAMMPS_NS;
 
 // also in read_dump.cpp
 
-enum{ID,TYPE,X,Y,Z,VX,VY,VZ,Q,IX,IY,IZ};
+enum{ID,TYPE,X,Y,Z,VX,VY,VZ,Q,IX,IY,IZ,RADIUS,MASS,DENSITY};
 enum{UNSET,NOSCALE_NOWRAP,NOSCALE_WRAP,SCALE_NOWRAP,SCALE_WRAP};
 
 /* ---------------------------------------------------------------------- */
@@ -173,10 +173,16 @@ bigint ReaderNative::read_header(double box[3][3], int &triclinic,
   nwords = atom->count_words(labelline);
   char **labels = new char*[nwords];
   labels[0] = strtok(labelline," \t\n\r\f");
-  if (labels[0] == NULL) return 1;
+  if (labels[0] == NULL) {
+    delete[] labels;
+    return 1;
+  }
   for (int m = 1; m < nwords; m++) {
     labels[m] = strtok(NULL," \t\n\r\f");
-    if (labels[m] == NULL) return 1;
+    if (labels[m] == NULL) {
+      delete[] labels;
+      return 1;
+    }
   }
 
   // match each field with a column of per-atom data
@@ -283,6 +289,15 @@ bigint ReaderNative::read_header(double box[3][3], int &triclinic,
     else if (fieldtype[i] == Q)
       fieldindex[i] = find_label("q",nwords,labels);
 
+    else if (fieldtype[i] == RADIUS)
+      fieldindex[i] = find_label("radius",nwords,labels);
+
+    else if (fieldtype[i] == MASS)
+      fieldindex[i] = find_label("mass",nwords,labels);
+
+    else if (fieldtype[i] == DENSITY)
+      fieldindex[i] = find_label("density",nwords,labels);
+
     else if (fieldtype[i] == IX)
       fieldindex[i] = find_label("ix",nwords,labels);
     else if (fieldtype[i] == IY)
@@ -350,13 +365,13 @@ int ReaderNative::find_label(const char *label, int n, char **labels)
 /* ----------------------------------------------------------------------
    read N lines from dump file
    only last one is saved in line
-   return NULL if end-of-file error, else non-NULL
    only called by proc 0
 ------------------------------------------------------------------------- */
 
 void ReaderNative::read_lines(int n)
 {
   char *eof = NULL;
+  if (n <= 0) return;
   for (int i = 0; i < n; i++) eof = fgets(line,MAXLINE,fp);
-  if (eof == NULL) error->all(FLERR,"Unexpected end of dump file");
+  if (eof == NULL) error->one(FLERR,"Unexpected end of dump file");
 }

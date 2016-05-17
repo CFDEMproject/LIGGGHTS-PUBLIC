@@ -66,6 +66,8 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
   int maxtype();
   int mintype();
   int number_spheres();
+  bool is_bonded()
+  { return bonded; }
 
   // single insertion
   virtual void randomize_single();
@@ -127,6 +129,9 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
   bool overlap_slightly;
 
   bool no_overlap;
+
+  bool bonded;
+  class FixPropertyAtom *fix_bond_random_id;
 };
 
 }

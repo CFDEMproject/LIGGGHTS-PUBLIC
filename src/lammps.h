@@ -75,6 +75,8 @@ class LAMMPS {
   FILE *logfile;                 // logfile
   FILE *thermofile;              
 
+  double initclock;              // wall clock at instantiation
+
   char *suffix;                  // suffix to add to input script style names
   int suffix_enable;             // 1 if suffix enabled, 0 if disabled
   int cite_enable;               // 1 if generating log.cite, 0 if disabled

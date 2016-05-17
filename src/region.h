@@ -84,6 +84,9 @@ class Region : protected Pointers {
 
   // called by other classes to check point versus region
 
+  inline int match(double *point) 
+  { return match(point[0],point[1],point[2]);}
+
   int match(double, double, double);
   int surface(double, double, double, double);
 

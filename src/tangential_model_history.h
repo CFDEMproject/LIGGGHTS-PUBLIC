@@ -238,6 +238,8 @@ namespace ContactModels
       // unset non-touching neighbors
       // TODO even if shearupdate == false?
       if(scdata.contact_flags) *scdata.contact_flags &= ~CONTACT_TANGENTIAL_MODEL;
+      if(!scdata.contact_history) 
+        return; //DO NOT access contact_history if not available
       double * const shear = &scdata.contact_history[history_offset];
       shear[0] = 0.0;
       shear[1] = 0.0;

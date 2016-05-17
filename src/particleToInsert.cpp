@@ -222,7 +222,7 @@ int ParticleToInsert::check_near_set_x_v_omega_ms(double *x,double *v, double *o
 
 /* ---------------------------------------------------------------------- */
 
-int ParticleToInsert::check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList & neighList)
+int ParticleToInsert::check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList<interpolate_no> & neighList)
 {
     if(nspheres > 1)
         return check_near_set_x_v_omega_ms(x,v, omega,quat,neighList);
@@ -245,7 +245,7 @@ int ParticleToInsert::check_near_set_x_v_omega(double *x,double *v, double *omeg
 
 /* ---------------------------------------------------------------------- */
 
-int ParticleToInsert::check_near_set_x_v_omega_ms(double *x,double *v, double *omega, double *quat, RegionNeighborList & neighList)
+int ParticleToInsert::check_near_set_x_v_omega_ms(double *x,double *v, double *omega, double *quat, RegionNeighborList<interpolate_no> & neighList)
 {
     // x is position where insertion should take place
     // v and omega are the velocity and omega for the newly inserted particles

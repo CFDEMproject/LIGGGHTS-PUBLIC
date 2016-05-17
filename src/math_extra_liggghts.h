@@ -65,6 +65,9 @@ namespace MathExtraLiggghts {
   inline double cbrta_halleyd(const double a, const double R);
   inline double halley_cbrt1d(double d);
 
+  //exp aproximation
+  inline double exp_fast(double x);
+
   inline int min(int a,int b);
   inline int max(int a,int b);
   inline int abs(int a);
@@ -169,6 +172,18 @@ inline double MathExtraLiggghts::halley_cbrt1d(double d)
 {
     double a = cbrt_5d(d);
     return cbrta_halleyd(a, d);
+}
+
+/* ----------------------------------------------------------------------
+   exp approx
+------------------------------------------------------------------------- */
+
+inline double MathExtraLiggghts::exp_fast(double x)
+{
+      x = 1.0 + x / 256.0;
+      x *= x; x *= x; x *= x; x *= x;
+      x *= x; x *= x; x *= x; x *= x;
+      return x;
 }
 
 /* ----------------------------------------------------------------------

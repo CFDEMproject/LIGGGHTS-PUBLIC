@@ -66,13 +66,18 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
     fix_volumeweight_(0),
     fix_dispersionTime_(0),
     fix_dispersionVel_(0),
+    fix_UrelOld_(0),
     use_force_(true),
     use_torque_(true),
     use_dens_(false),
     use_type_(false),
     use_stochastic_(false),
+    use_virtualMass_(false),
+    use_superquadric_(false),
     use_property_(false),
-    use_superquadric_(false)
+    use_fiber_topo_(false),
+    fix_fiber_axis_(0),
+    fix_fiber_ends_(0)
 {
     int iarg = 3;
 
@@ -135,6 +140,20 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_stochastic'");
             iarg++;
             hasargs = true;
+        } 
+        else if(strcmp(arg[iarg],"transfer_virtualMass") == 0)
+        {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_virtualMass'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_virtualMass_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_virtualMass_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_virtualMass'");
+            iarg++;
+            hasargs = true;
         } else if(strcmp(arg[iarg],"transfer_property") == 0) {
             if(narg < iarg+5)
                 error->fix_error(FLERR,this,"not enough arguments for 'transfer_type'");
@@ -146,6 +165,17 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
             if(strcmp(arg[iarg++],"type"))
                 error->fix_error(FLERR,this,"expecting 'type' after property name");
             sprintf(property_type,"%s",arg[iarg++]);
+            iarg++;
+            hasargs = true;
+        } else if(strcmp(arg[iarg],"transfer_fiber_topology") == 0) {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_fiber_topology'");
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_fiber_topo_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_fiber_topo_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_fiber_topology'");
             iarg++;
             hasargs = true;
         } else if(strcmp(arg[iarg],"transfer_superquadric") == 0) {
@@ -267,9 +297,36 @@ void FixCfdCouplingForce::post_create()
         fixarg[6]="no";     // communicate ghost
         fixarg[7]="no";     // communicate rev
         fixarg[8]="0";
+        fixarg[9]="0";
+        fixarg[10]="0";
+        fix_dispersionVel_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
+    }
+
+    if(!fix_UrelOld_ && use_virtualMass_)
+    {
+        const char* fixarg[11];
+        fixarg[0]="UrelOld";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="UrelOld";
+        fixarg[4]="vector"; // vector per particle to be registered
+        fixarg[5]="yes";    // restart
+        fixarg[6]="no";     // communicate ghost
+        fixarg[7]="no";     // communicate rev
+        fixarg[8]="0";
         fixarg[9]="0";        
         fixarg[10]="0";
         fix_dispersionVel_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
+    }
+
+    if(use_fiber_topo_)
+    {
+        const char *fixarg[] = {
+              "topo",       // fix id
+              "all",        // fix group
+              "bond/fiber/topology" // fix style
+        };
+        modify->add_fix(3,const_cast<char**>(fixarg));
     }
 }
 
@@ -329,8 +386,14 @@ void FixCfdCouplingForce::init()
 
     if(use_stochastic_)
     {
-	 fix_coupling_->add_pull_property("dispersionTime","scalar-atom");
-         fix_coupling_->add_pull_property("dispersionVel","vector-atom");
+        fix_coupling_->add_pull_property("dispersionTime","scalar-atom");
+        fix_coupling_->add_pull_property("dispersionVel","vector-atom");
+    }
+
+    if(use_fiber_topo_)
+    {
+        fix_coupling_->add_pull_property("fiber_axis","vector-atom");
+        fix_coupling_->add_pull_property("fiber_ends","vector-atom");
     }
 
     vectorZeroize3D(dragforce_total);
@@ -341,11 +404,12 @@ void FixCfdCouplingForce::init()
 }
 
 /* ---------------------------------------------------------------------- */
+
 void FixCfdCouplingForce::setup(int vflag)
 {
     if (strstr(update->integrate_style,"verlet"))
         post_force(vflag);
-    else 
+    else
         error->fix_error(FLERR,this,"only 'run_style verlet' supported.");
 }
 

@@ -236,15 +236,7 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
 
     // get reference point on face
     // calculate normalvec
-
-    fix_mesh_->triMesh()->node(0,0,pref_);
-    fix_mesh_->triMesh()->surfaceNorm(0,nvec_);
-    double dot = vectorDot3D(nvec_,sidevec_);
-
-    if(fabs(dot) < 1e-6 && !havePointAtOutlet_ )
-        error->fix_error(FLERR,this,"need to change 'vec_side', it is currently in or to close to the mesh plane");
-    else if(dot < 0.)
-        vectorScalarMult3D(nvec_,-1.);
+    setRefPoint();
 
     restart_global = 1;
 
@@ -294,7 +286,9 @@ void FixMassflowMesh::post_create()
     if(fix_ms_)
     {
         ms_ = &fix_ms_->data();
-        ms_counter_ = ms_->prop().addElementProperty< ScalarContainer<int> >("counter_ms","comm_exchange_borders","frame_invariant", "restart_yes");
+        char property_name[200];
+        sprintf(property_name,"counter_ms_%s",id);
+        ms_counter_ = ms_->prop().addElementProperty< ScalarContainer<int> >(static_cast<const char*>(property_name),"comm_exchange_borders","frame_invariant", "restart_yes");
         ms_counter_->setDefaultValue(-1);
 
         if(delete_atoms_)
@@ -366,7 +360,7 @@ void FixMassflowMesh::post_integrate()
     double *rmass = atom->rmass;
     int *mask = atom->mask;
     double *counter = fix_counter_->vector_atom;
-    double dot,delta[3]={};
+    double dot,delta[3]={}, bary[3];
     double mass_this = 0.;
     int nparticles_this = 0.;
     double property_this = 0.;
@@ -382,6 +376,11 @@ void FixMassflowMesh::post_integrate()
 
     TriMesh *mesh = fix_mesh_->triMesh();
     int nTriAll = mesh->sizeLocal() + mesh->sizeGhost();
+
+    // update reference point
+    if (fix_mesh_->triMesh()->isMoving() || fix_mesh_->triMesh()->isDeforming()) {
+        setRefPoint();
+    }
 
     // update time for counter
     // also store values for last invokation
@@ -401,6 +400,7 @@ void FixMassflowMesh::post_integrate()
         
         const std::vector<int> & neighborList = fix_neighlist_->get_contact_list(iTri);
         const int numneigh = neighborList.size();
+
         for(int iNeigh = 0; iNeigh < numneigh; iNeigh++)
         {
             const int iPart = neighborList[iNeigh];
@@ -418,11 +418,11 @@ void FixMassflowMesh::post_integrate()
             // in case of once_ == true, ignore everything which has been already counted
             if((ibody > -1) ?  ((*ms_counter_)(ibody) == 2) : (compDouble(counter[iPart],2.)) ) continue;
 
+            int barySign;
+            deltan = fix_mesh_->triMesh()->resolveTriSphereContactBary(iPart,iTri,radius[iPart],x[iPart],delta,bary,barySign);
+
             if(havePointAtOutlet_)
             {
-                //get the vector from the particle center
-                //to the next triangle
-                deltan = fix_mesh_->triMesh()->resolveTriSphereContact(iPart,iTri,radius[iPart],x[iPart],delta);
                 if(deltan < radius[iPart])
                 {
                     vectorSubtract3D(x[iPart],pointAtOutlet_,nvec_); //vector pointing to the particle location
@@ -451,7 +451,7 @@ void FixMassflowMesh::post_integrate()
             }
 
             // particle is now on nvec_ side
-            if(dot > 0.)
+            if(dot > 0.  && 7 == barySign) 
             {
                 //particle was not on nvec_ side before
                 if((ibody > -1) ? ((*ms_counter_)(ibody) == 0) : (compDouble(counter[iPart],0.)) ) // compDouble(counter[iPart],0.))
@@ -459,6 +459,7 @@ void FixMassflowMesh::post_integrate()
                     
                     mass_this += rmass[iPart];
                     nparticles_this ++;
+
                     if(fix_property_)
                     {
                         
@@ -509,7 +510,7 @@ void FixMassflowMesh::post_integrate()
                     counter[iPart] = once_ ? 2. : 1.;
                 
             }
-            else // dot <= 0
+            else if(dot <= 0.) // dot <= 0
             {
                 if(ibody > -1)
                     (*ms_counter_)(ibody) = 0;
@@ -651,4 +652,22 @@ double FixMassflowMesh::compute_vector(int index)
         return property_sum_;
 
     return 0.;
+}
+
+/* ----------------------------------------------------------------------
+    get reference point on face
+    calculate normalvec
+------------------------------------------------------------------------- */
+
+void FixMassflowMesh::setRefPoint()
+{
+    fix_mesh_->triMesh()->node(0,0,pref_);
+    fix_mesh_->triMesh()->surfaceNorm(0,nvec_);
+    double dot = vectorDot3D(nvec_,sidevec_);
+
+    if(fabs(dot) < 1e-6 && !havePointAtOutlet_ )
+        error->fix_error(FLERR,this,"need to change 'vec_side', it is currently in or to close to the mesh plane \n"
+                                    "This error may be caused by a moving mesh command, since 'vec_side' is not moved with the mesh.");
+    else if(dot < 0.)
+        vectorScalarMult3D(nvec_,-1.);
 }

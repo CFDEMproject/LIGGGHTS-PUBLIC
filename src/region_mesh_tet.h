@@ -50,6 +50,7 @@ RegionStyle(mesh/tet,RegTetMesh)
 
 #include "random_park.h"
 #include "region.h"
+#include "region_neighbor_list.h"
 
 namespace LAMMPS_NS {
 
@@ -122,7 +123,7 @@ class RegTetMesh : public Region {
 
    class BoundingBox &bounding_box_mesh;
 
-   class RegionNeighborList &neighList;
+   class RegionNeighborList<interpolate_no> &neighList;
 
    class TriMesh &tri_mesh;
 

@@ -6,7 +6,7 @@
 
 :line
 
-gran tangential no_history :h3
+gran tangential no_history command :h3
 
 [Syntax:]
 

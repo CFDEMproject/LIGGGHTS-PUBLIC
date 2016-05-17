@@ -27,14 +27,14 @@
 
 <PRE><I>atom_type</I> value = atom type assigned to this particle template
 <I>density</I> values = random_style param1 (param2)
-  random_style = 'constant' or 'uniform' or 'gaussian'
-  param1 = density for 'constant', low value of density for 'uniform', expectancy value for 'gaussian'
-    param2 = omitted for 'constant', high value of density for 'uniform', sigma value for 'gaussian'
+  random_style = 'constant' 
+  param1 = density for 'constant',
+    param2 = omitted for 'constant'
 <I>volume_limit</I> value = lowest particle volume allowed in simulation
 <I>radius</I> values = random_style param1 (param2)
-  random_style = 'constant' or 'uniform number' or 'uniform mass' or 'gaussian number'
-  param1 = radius for 'constant', low value of radius for 'uniform', mu value for 'gaussian'
-  param2 = omitted for 'constant', high value of radius for 'uniform', sigma value for 'gaussian'
+  random_style = 'constant' 
+  param1 = radius for 'constant'
+  param2 = omitted for 'constant'
 <I>relative</I> value = yes or no
   no = set a flag for other commands that radius given here is abosulute (in length units)
   yes = set a flag for other commands that radius given here is relative (in % of a reference radius) 
@@ -50,22 +50,14 @@
 <P>Define a particle that is used as input for a 
 <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> command. 
 You can choose the atom type, density and radius of the particles. For density and 
-radius, you can choose between 'constant', 'uniform' and 'gaussian' random styles. 
-Note that for radius, you can additionally choose between a number-based and mass-based 
-uniform distribution, where the latter is used more frequently typically. 'gaussian' for 
-radius only supports a number-based distribution.
+radius, there is currently only a 'constant' style. Note that this is not a restriction since
+multiple commands of style particletemplate/sphere can be used in a <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>
+command so any kind of distribution can be approximated to any arbitrary precision.
 </P>
 <P>Keyword <I>relative</I> lets the user set a flag to let other commands know if the radii specified
 by this command are absolute (length units) or relative (in % of a reference radius). 
 IMPORTANT NOTE: This setting should not be changed away from the default value (no) unless
 explicity required by another command! 
-</P>
-<P>It is thus possible to define a uniform or gaussian distribution on top of the discrete 
-distribution defined by <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>.
-</P>
-<P>IMPORTANT NOTE: As opposed to the number-based distributions, this fix uses the more common
-distribution based on mass-% for the radius distribution (as does
-<A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>).
 </P>
 <P>LIGGGHTS(R)-PUBLIC will throw an error if the particle volume is too small compared to machine precision.
 If you are sure you know what you are doing you can override the default limit of 1e-12.
