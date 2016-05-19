@@ -6,7 +6,7 @@
 
 :line
 
-gran model hertz command :h3
+gran model hertz model :h3
 
 [Syntax:]
 

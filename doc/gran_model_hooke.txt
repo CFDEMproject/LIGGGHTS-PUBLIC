@@ -6,7 +6,7 @@
 
 :line
 
-gran model hooke command :h3
+gran model hooke model :h3
 
 [Syntax:]
 

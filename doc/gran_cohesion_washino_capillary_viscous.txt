@@ -6,7 +6,7 @@
 
 :line
 
-gran cohesion washino/capillary/viscous command :h3
+gran cohesion washino/capillary/viscous model :h3
 
 [Syntax:]
 

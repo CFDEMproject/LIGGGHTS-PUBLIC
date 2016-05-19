@@ -6,7 +6,7 @@
 
 :line
 
-gran rolling_friction epsd command :h3
+gran rolling_friction epsd model :h3
 
 [Syntax:]
 

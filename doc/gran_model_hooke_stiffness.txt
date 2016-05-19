@@ -6,7 +6,7 @@
 
 :line
 
-gran model hooke/stiffness command :h3
+gran model hooke/stiffness model :h3
 
 [Syntax:]
 

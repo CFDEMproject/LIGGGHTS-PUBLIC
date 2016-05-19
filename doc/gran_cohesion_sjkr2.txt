@@ -6,7 +6,7 @@
 
 :line
 
-gran cohesion sjkr2 command :h3
+gran cohesion sjkr2 model :h3
 
 [Syntax:]
 

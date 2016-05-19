@@ -54,7 +54,7 @@
 #include "update.h"
 #include "modify.h"
 #include "compute.h"
-#include "compute_pair_gran_local_bond.h"
+#include "compute_pair_gran_local.h"
 #include "fix.h"
 #include "memory.h"
 #include "error.h"
@@ -112,7 +112,7 @@ DumpLocalGranVTK::DumpLocalGranVTK(LAMMPS *lmp, int narg, char **arg) :
   if(!comp || !dynamic_cast<ComputePairGranLocal*>(comp))
     error->all(FLERR,"dump local/gran/vtk requires a valid ID of a compute pair/gran/local to be provided");
 
-  cpgl_ = static_cast<ComputePairGranLocalBond*>(comp);
+  cpgl_ = static_cast<ComputePairGranLocal*>(comp);
 
   // error if compute does not write pos
   if(cpgl_->offset_x1() < 0 || cpgl_->offset_x2() < 0)
@@ -868,12 +868,12 @@ int DumpLocalGranVTK::modify_param(int narg, char **arg)
   }
 
   if (strcmp(arg[0],"element") == 0) {
-    error->all(FLERR,"Dump local/bond/gran does not support dump_modify 'element' ");
+    error->all(FLERR,"Dump local/gran/vtk does not support dump_modify 'element' ");
     return 0;
   }
 
   if (strcmp(arg[0],"thresh") == 0) {
-    error->all(FLERR,"Dump local/bond/gran does not support dump_modify 'thresh' ");
+    error->all(FLERR,"Dump local/gran/vtk does not support dump_modify 'thresh' ");
   }
 
   return 0;
