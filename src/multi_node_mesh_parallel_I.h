@@ -554,6 +554,9 @@
       if(span < 1e-4)
         this->error->all(FLERR,"Mesh error - root causes: (a) mesh empty or (b) dimensions too small - use different unit system");
 
+      double comBefore[3];
+      this->center_of_mass(comBefore);
+      
       // delete all elements that do not belong to this processor
       
       deleteUnowned();
@@ -561,10 +564,33 @@
       if(sizeGlobal() != sizeGlobalOrig())
       {
         
-        char errstr[500];
-        sprintf(errstr,"Mesh (id %s): Mesh elements have been lost / left the domain. Please use "
-                       "'boundary m m m' or scale/translate/rotate the mesh or change its dynamics",
-                       this->mesh_id_);
+        char errstr[1024];
+
+        if(0 == sizeGlobal())
+        {
+            sprintf(errstr,"Mesh (id %s): All %d mesh elements have been lost / left the domain. \n"
+                           "Please use 'boundary m m m' or scale/translate/rotate the mesh or change its dynamics\n"
+                           "FYI: center of mass of mesh including scale/tranlate/rotate is %f / %f / %f\n"
+                           "     simulation box x from %f to %f y  from %f to %f z from %f to %f\n"
+                           "     (gives indication about changes in scale/tranlate/rotate necessary to make simulation run)\n",
+                       this->mesh_id_,sizeGlobalOrig()-sizeGlobal(),comBefore[0],comBefore[1],comBefore[2],
+                       this->domain->boxlo[0],this->domain->boxhi[0],this->domain->boxlo[1],this->domain->boxhi[1],this->domain->boxlo[2],this->domain->boxhi[2]);
+        }
+        else
+        {
+            double comAfter[3];
+            this->center_of_mass(comAfter);
+
+            sprintf(errstr,"Mesh (id %s): %d mesh elements have been lost / left the domain. \n"
+                           "Please use 'boundary m m m' or scale/translate/rotate the mesh or change its dynamics\n"
+                           "FYI: center of mass of mesh including scale/tranlate/rotate before cutting out elements is %f / %f / %f\n"
+                           "     simulation box x from %f to %f y  from %f to %f z from %f to %f\n"
+                           "     center of mass of mesh after cutting out elements outside simulation box is is        %f / %f / %f\n"
+                           "     (gives indication about changes in scale/tranlate/rotate necessary to make simulation run)\n",
+                       this->mesh_id_,sizeGlobalOrig()-sizeGlobal(),comBefore[0],comBefore[1],comBefore[2],
+                       this->domain->boxlo[0],this->domain->boxhi[0],this->domain->boxlo[1],this->domain->boxhi[1],this->domain->boxlo[2],this->domain->boxhi[2],
+                       comAfter[0],comAfter[1],comAfter[2]);
+        }
         this->error->all(FLERR,errstr);
       }
 

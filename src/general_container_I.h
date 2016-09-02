@@ -36,6 +36,7 @@
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
+    Andreas Aigner (DCS Computing GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
@@ -850,12 +851,27 @@
         if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
-        for(int ii = 0; ii < n; ii++)
+        if(COMM_TYPE_REVERSE == this->communicationType())
         {
-            i = list[ii];
-            for(int j = 0; j < NUM_VEC; j++)
-                for(int k = 0; k < LEN_VEC; k++)
-                    arr_[i][j][k] += static_cast<T>(buf[m++]);
+            
+            for(int ii = 0; ii < n; ii++)
+            {
+                i = list[ii];
+                for(int j = 0; j < NUM_VEC; j++)
+                    for(int k = 0; k < LEN_VEC; k++)
+                        arr_[i][j][k] += static_cast<T>(buf[m++]);
+            }
+        }
+        else if(sizeof(int) == sizeof(T) && COMM_TYPE_REVERSE_BITFIELD == this->communicationType())
+        {
+            
+            for(int ii = 0; ii < n; ii++)
+            {
+                i = list[ii];
+                for(int j = 0; j < NUM_VEC; j++)
+                    for(int k = 0; k < LEN_VEC; k++)
+                        arr_[i][j][k] = (T) (static_cast<int>(arr_[i][j][k]) | static_cast<int>(buf[m++]));
+            }
         }
 
         return (n*NUM_VEC*LEN_VEC);

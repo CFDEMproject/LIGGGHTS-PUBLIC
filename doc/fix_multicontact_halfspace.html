@@ -1,0 +1,89 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix multicontact/halfspace command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group multicontact/halfspace geometric_prefactor gp_value 
+</PRE>
+<UL><LI>ID, group are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>multicontact/halfspace = style name of this fix command 
+
+<LI>geometric_prefactor/gp_value = optional keyword-value pair 
+
+<PRE>  <I>geometric_prefactor</I> gp_value = gamma
+    gamma is an empirical factor accounting for the geometry 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix multicontact/halfspace
+fix multicontact/halfspace geometric_prefactor 1.8 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>Implements the multicontact model by <A HREF = "#Brodu">(Brodu et al.)</A> . This model computes a per-contact deformation for each particle based on the other contacts this particles has. A particle <I>i</I> with contact <I>ij</I> has the following new radius (when computing the contact laws with particle <I>j</I>):
+</P>
+<PRE>r_i + sum_k delta_{ij->ik} 
+</PRE>
+<P>where <I>r_i</I> is the default radius of particle <I>i</I>, <I>sum_k</I> is the sum over all particles in contact with <I>i</I> (<I>k</I>!=<I>j</I>). The delta value is given by
+</P>
+<PRE>delta_{ij->ik} = - gamma (1 + nu) F_ik / (2 pi Y d_{ik->ij}) * [(<B>n</B>_ik . <B>u</B>_{ik->ij})(<B>n</B>_ij . <B>u</B>_{ik->ij}) + (3 - 4 nu) <B>n</B>_ik . <B>n</B>_ij - (1 - 2 nu) (<B>n</B>_ik + <B>u</B>_{ik->ij}) . <B>n</B>_ij) / (1 + <B>n</B>_ik <B>u</B>_{ik->ij}) ] 
+</PRE>
+<P>where
+</P>
+<UL><LI>gamma = geometric prefactor 
+
+<LI>nu = Poisson ratio 
+
+<LI>F_ik = absolute value of normal force acting at contact <I>ik</I> 
+
+<LI>Y = Youngs modulus 
+
+<LI>d_{ik->ij} = distance from contact <I>ik</I> to contact <I>ij</I> 
+
+<LI><B>u</B>_{ik->ij} = unit vector pointing from contact <I>ik</I> to contact <I>ij</I> 
+
+<LI><B>n</B>_ik = normal vector of contact <I>ik</I> 
+
+<LI><B>n</B>_ij = normal vector of contact <I>ij</I> 
+
+
+</UL>
+<HR>
+
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>No information about this fix is written to <A HREF = "restart.html">binary restart
+files</A>.
+</P>
+<P><A HREF = "fix_modify.html">fix_modify</A> cannot be used on the parameter of this fix.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>Requires the use of the <A HREF = "gran_surface_multicontact.html">gran surface model multicontact</A>
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "gran_surface_multicontact.html">gran surface multicontact</A>
+</P>
+<P><B>Default:</B> none
+</P>
+<P><B>References:</B>
+</P>
+<A NAME = "Brodu"></A>
+
+<P><B>(Brodu)</B> Brodu, Dijksman, Behringer, Multiple-contact discrete-element model for simulating dense granular media, Phys. Rev. E (2015).
+</P>
+</HTML>

@@ -65,7 +65,7 @@ namespace LAMMPS_NS
 
         template<typename T>
         T* addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart,
-                              int _scalePower = 1, int _init_len = 0, const char *_statistics = 0, 
+                              int _scalePower = 1, int _init_len = 0, const char *_statistics = 0,
                               const double _weighting_factor = 1, const char *_id_scale = 0, const bool _forget = true);
 
         template<typename T>
@@ -84,7 +84,8 @@ namespace LAMMPS_NS
 
         void removeElementProperty(const char *_id);
 
-        int nElementProperties();
+        inline int nElementProperties()
+        { return elementProperties_.size(); }
         void check_element_property_consistency(int _len);
 
         // global (e.g. mesh) properties

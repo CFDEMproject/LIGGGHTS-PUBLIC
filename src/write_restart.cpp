@@ -50,8 +50,8 @@
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
-#include "mpi.h"
-#include "string.h"
+#include <mpi.h>
+#include <string.h>
 #include "write_restart.h"
 #include "atom.h"
 #include "atom_vec.h"

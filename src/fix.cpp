@@ -49,7 +49,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "ctype.h"
 #include "fix.h"
 #include "atom.h"

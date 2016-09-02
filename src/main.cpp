@@ -43,10 +43,10 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
+#include <mpi.h>
 #include "lammps.h"
 #include "input.h"
-#include "string.h"
+#include <string.h>
 
 using namespace LAMMPS_NS;
 

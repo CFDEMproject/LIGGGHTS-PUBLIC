@@ -40,8 +40,8 @@
     Copyright 2015-     TU Graz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "atom.h"
 #include "update.h"
 #include "respa.h"
@@ -50,7 +50,7 @@
 #include "modify.h"
 #include "group.h"
 #include "comm.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "fix_cfd_coupling_convection_impl.h"
 #include "fix_property_atom.h"

@@ -139,11 +139,15 @@ double PairGranProxy::stressStrainExponent()
   return impl->stressStrainExponent();
 }
 
-int PairGranProxy::bond_history_offset()
+int PairGranProxy::get_history_offset(const std::string hname)
 {
-  return impl->bond_history_offset();
+  return impl->get_history_offset(hname);
 }
 
 int64_t PairGranProxy::hashcode() {
   return impl->hashcode();
+}
+
+bool PairGranProxy::contact_match(const std::string mtype, const std::string model) {
+  return impl->contact_match(mtype, model);
 }

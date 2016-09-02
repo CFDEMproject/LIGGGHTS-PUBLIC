@@ -46,7 +46,7 @@
 #ifndef MPI_STUBS
 #define MPI_STUBS
 
-#include "stdlib.h"
+#include <stdlib.h>
 
 /* use C bindings for MPI interface */
 

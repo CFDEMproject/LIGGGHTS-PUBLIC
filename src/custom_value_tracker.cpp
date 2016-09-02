@@ -71,15 +71,6 @@ using namespace LAMMPS_NS;
    check if all containers have same length
   ------------------------------------------------------------------------- */
 
-  int CustomValueTracker::nElementProperties()
-  {
-    return elementProperties_.size();
-  }
-
-  /* ----------------------------------------------------------------------
-   check if all containers have same length
-  ------------------------------------------------------------------------- */
-
   void CustomValueTracker::check_element_property_consistency(int _len)
   {
     if (!elementProperties_.sameLength(_len))

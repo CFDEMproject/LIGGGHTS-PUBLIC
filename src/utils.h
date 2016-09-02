@@ -41,7 +41,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "mpi.h"
+#include <mpi.h>
 #include "lmptype.h"
 #include "lammps.h"
 #include <string>
@@ -100,7 +100,7 @@ namespace Utils {
     void addStyle(const std::string & name, int variant, Creator create) {
       std::pair<std::string, int> key(name, variant);
       if(styleTable.find(key) != styleTable.end()){
-        std::cerr << "WARNING! Style collision detected! Duplicate entry (" << key.first << ", " << key.second <<  ") in style table." << std::endl;
+        std::cerr << "WARNING! Style collision detected! Duplicate entry (" << key.first << ", " << key.second << ") in style table." << std::endl;
       }
       styleTable[key] = create;
     }

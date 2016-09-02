@@ -40,10 +40,10 @@
     Copyright 2013-     TU Graz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "mpi.h"
-#include "string.h"
-#include "stdlib.h"
+#include <math.h>
+#include <mpi.h>
+#include <string.h>
+#include <stdlib.h>
 #include "fix_sph_pressure.h"
 #include "update.h"
 #include "respa.h"

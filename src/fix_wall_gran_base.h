@@ -36,9 +36,11 @@
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_FIX_WALL_GRAN_BASE_H
@@ -51,7 +53,7 @@
 #include "fix_mesh_surface_stress.h"
 #include "tri_mesh.h"
 #include "settings.h"
-#include "string.h"
+#include <string.h>
 #include "force.h"
 #include <stdlib.h>
 #include "contact_models.h"
@@ -129,6 +131,11 @@ public:
     }
   }
 
+  virtual bool checkSurfaceIntersect(SurfacesIntersectData & sidata)
+  {
+    return cmodel.checkSurfaceIntersect(sidata);
+  }
+
   virtual void compute_force(FixWallGran * wg, SurfacesIntersectData & sidata, bool intersectflag,double *vwall, class FixMeshSurface * fix_mesh = 0, int iMesh = 0, class TriMesh *mesh = 0,int iTri = 0)
   {
     const int ip = sidata.i;
@@ -138,7 +145,6 @@ public:
     double *torque = atom->torque[ip];
     double *v = atom->v[ip];
     double *omega = atom->omega[ip];
-    double radius = atom->radius[ip];
     double mass = atom->rmass[ip];
     int *type = atom->type;
 
@@ -150,7 +156,7 @@ public:
     sidata.v_j = vwall;
     sidata.omega_i = omega;
 
-    sidata.r = radius - sidata.deltan; // sign corrected, because negative value is passed
+    sidata.r = sidata.radi - sidata.deltan; // sign corrected, because negative value is passed
     sidata.rsq = sidata.r*sidata.r;
     const double rinv = 1.0/sidata.r;
     sidata.rinv = rinv;
@@ -200,15 +206,13 @@ public:
       enx = sidata.delta[0] * rinv;
       eny = sidata.delta[1] * rinv;
       enz = sidata.delta[2] * rinv;
-      sidata.radi = radius;
     }
 #else // sphere case
     const double enx = sidata.delta[0] * rinv;
     const double eny = sidata.delta[1] * rinv;
     const double enz = sidata.delta[2] * rinv;
-    sidata.radi = radius;
 #endif
-    sidata.radsum = radius;
+    sidata.radsum = sidata.radi;
     sidata.en[0] = enx;
     sidata.en[1] = eny;
     sidata.en[2] = enz;
@@ -216,7 +220,7 @@ public:
     if (intersectflag)
     {
        cmodel.surfacesIntersect(sidata, i_forces, j_forces);
-       cmodel.endSurfacesIntersect(sidata,mesh);
+       cmodel.endSurfacesIntersect(sidata, mesh, i_forces.delta_F);
        // if there is a surface touch, there will always be a force
        sidata.has_force_update = true;
     }
@@ -228,32 +232,35 @@ public:
     }
 
     if(sidata.computeflag && sidata.has_force_update) {
-      force_update(f, torque, i_forces);
+          force_update(f, torque, i_forces);
     }
 
-    if (wg->store_force_contact() && (intersectflag))
+    if (wg->store_force_contact())
     {
       wg->add_contactforce_wall(ip,i_forces,mesh?mesh->id(iTri):0);
     }
 
-    if(wg->compute_wall_gran_local() && wg->addflag() && (intersectflag))
-    {
-        const double fx = i_forces.delta_F[0];
-        const double fy = i_forces.delta_F[1];
-        const double fz = i_forces.delta_F[2];
-        const double tor1 = i_forces.delta_torque[0]*sidata.area_ratio;
-        const double tor2 = i_forces.delta_torque[1]*sidata.area_ratio;
-        const double tor3 = i_forces.delta_torque[2]*sidata.area_ratio;
-        wg->compute_wall_gran_local()->add_wall_2(sidata.i,fx,fy,fz,tor1,tor2,tor3,sidata.contact_history,sidata.rsq);
+    if (wg->store_force_contact_stress())
+      wg->add_contactforce_stress_wall(ip, i_forces, sidata.delta, vwall, mesh?mesh->id(iTri):0);
+
+    if(wg->compute_wall_gran_local() && wg->addflag())
+      {
+          const double fx = i_forces.delta_F[0];
+          const double fy = i_forces.delta_F[1];
+          const double fz = i_forces.delta_F[2];
+          const double tor1 = i_forces.delta_torque[0]*sidata.area_ratio;
+          const double tor2 = i_forces.delta_torque[1]*sidata.area_ratio;
+          const double tor3 = i_forces.delta_torque[2]*sidata.area_ratio;
+          wg->compute_wall_gran_local()->add_wall_2(sidata.i,fx,fy,fz,tor1,tor2,tor3,sidata.contact_history,sidata.rsq);
     }
 
     // add heat flux
     
-    if(intersectflag && wg->heattransfer_flag())
-       wg->addHeatFlux(mesh,ip,sidata.deltan,1.);
+    if(wg->heattransfer_flag())
+       wg->addHeatFlux(mesh,ip,sidata.radi,sidata.deltan,1.);
 
     // if force should be stored or evaluated
-    if((sidata.has_force_update) && (wg->store_force() || wg->stress_flag() || wg->fix_meshforce_pbc()))
+    if((sidata.has_force_update) && (wg->store_force() || wg->stress_flag() || wg->fix_meshforce_pbc() || (fix_mesh && fix_mesh->trackPerElementTemp())) )
     {
         vectorSubtract3D(f,force_old,f_pw);
 
@@ -263,7 +270,7 @@ public:
         if(wg->fix_meshforce_pbc() && ip >= atom->nlocal)
             vectorAdd3D (wg->fix_meshforce_pbc()->array_atom[ip], f_pw, wg->fix_meshforce_pbc()->array_atom[ip]);
 
-        if(wg->stress_flag() && fix_mesh->trackStress())
+        if( (wg->stress_flag() && fix_mesh->trackStress()) || (fix_mesh && fix_mesh->trackPerElementTemp()) )
         {
             double delta[3];
             delta[0] = -sidata.delta[0];
@@ -276,6 +283,17 @@ public:
         }
     }
   }
+
+  int get_history_offset(const std::string hname)
+  {
+    return cmodel.get_history_offset(hname);
+  }
+
+  bool contact_match(const std::string mtype, const std::string model)
+  {
+    return cmodel.contact_match(mtype, model);
+  }
+
 };
 
 }

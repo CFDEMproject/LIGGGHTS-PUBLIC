@@ -82,6 +82,11 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         bool areCoplanarNeighs(int tag_i, int tag_j);
         bool isOnSurface(double *pos);
 
+        // returns true if surfaces share an edge
+        // called with local index
+        // iEdge, jEdge return indices of first shared edge
+        bool shareEdge(int i, int j, int &iEdge, int &jEdge);
+
         void move(double *vecTotal, double *vecIncremental);
         void move(double *vecIncremental);
         void scale(double factor);
@@ -115,6 +120,9 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline void edgeLen(int i,double *el)
         { vectorCopy3D(edgeLen_(i),el); }
 
+        inline double edgeLen(int i,int iEdge)
+        { return edgeLen_(i)[iEdge]; }
+
         inline void edgeVec(int i,int j,double *ev)
         { vectorCopy3D(edgeVec_(i)[j],ev); }
 
@@ -133,6 +141,9 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         inline bool edgeActive(int i,int j)
         { return (edgeActive_)(i)[j]; }
 
+        inline bool cornerActive(int i,int j)
+        { return (cornerActive_)(i)[j]; }
+
         static const int NO_OBTUSE_ANGLE = -1;
 
       protected:
@@ -145,11 +156,6 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         void buildNeighbours();
         virtual void parallelCorrection();
-
-        // returns true if surfaces share an edge
-        // called with local index
-        // iEdge, jEdge return indices of first shared edge
-        bool shareEdge(int i, int j, int &iEdge, int &jEdge);
 
         bool edgeVecsColinear(double *v,double *w);
         bool coplanarNeighsOverlap(int iSrf,int iEdge,int jSrf,int jEdge);

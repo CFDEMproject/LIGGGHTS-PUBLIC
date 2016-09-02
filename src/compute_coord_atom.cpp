@@ -49,9 +49,9 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "string.h"
-#include "stdlib.h"
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
 #include "compute_coord_atom.h"
 #include "atom.h"
 #include "update.h"
@@ -100,6 +100,9 @@ ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int narg, char **arg) :
     typehi[0] = ntypes;
   } else if(narg == 6 && strcmp(arg[4],"mix") == 0) { 
     mix = true;
+    ncol = 1;
+    typelo[0] = 1;
+    typehi[0] = ntypes;
   } else {
     ncol = 0;
     int iarg = 4;

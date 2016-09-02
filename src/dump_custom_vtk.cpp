@@ -40,17 +40,23 @@
 
 /* ----------------------------------------------------------------------
    Contributing authors:
-   Daniel Queteschiner, daniel.queteschiner@dcs-computing.com
-   Alexander Podlozhnyuk, alexander.podlozhnyuk@dcs-computing.com
+   Daniel Queteschiner, DCS Computing daniel.queteschiner@dcs-computing.com
+   Alexander Podlozhnyuk, DCS Computing alexander.podlozhnyuk@dcs-computing.com
+   Christoph Kloss, DCS Computing
 ------------------------------------------------------------------------- */
 
 #ifdef LAMMPS_VTK
 
-#include "math.h"
-#include "math_extra.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include "math_extra_liggghts.h"
+#include <stdlib.h>
+#include <string.h>
 #include "dump_custom_vtk.h"
+
+#ifdef NONSPHERICAL_ACTIVE_FLAG
+#include "atom_vec_convexhull.h"
+#endif
+
 #include "atom.h"
 #include "force.h"
 #include "domain.h"
@@ -76,6 +82,7 @@
 #include <vtkIntArray.h>
 #include <vtkStringArray.h>
 #include <vtkPolyData.h>
+#include <vtkTriangle.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLPPolyDataWriter.h>
@@ -98,6 +105,7 @@ using namespace LAMMPS_NS;
 // * adjusting thresh part in modify_param and count functions
 
 enum{X,Y,Z, // required for vtk, must come first
+     POINTS_CONVEXHULL, 
      ID,MOL,TYPE,ELEMENT,MASS,
      XS,YS,ZS,XSTRI,YSTRI,ZSTRI,XU,YU,ZU,XUTRI,YUTRI,ZUTRI,
      XSU,YSU,ZSU,XSUTRI,YSUTRI,ZSUTRI,
@@ -167,6 +175,17 @@ DumpCustomVTK::DumpCustomVTK(LAMMPS *lmp, int narg, char **arg) :
   // only dump image style processes optional args
 
   tensor_detected = false;
+  convex_hull_max_n_tri = 0;
+#ifdef NONSPHERICAL_ACTIVE_FLAG
+  if(dynamic_cast<AtomVecConvexHull*>(atom->avec))
+  {
+    convex_hull_detected = true;
+    convex_hull_max_n_tri = dynamic_cast<AtomVecConvexHull*>(atom->avec)->get_ntri_max();
+  }
+  else
+#endif
+    convex_hull_detected = false;
+
   ioptional = parse_fields(narg,arg);
 
   if (ioptional < narg)
@@ -174,6 +193,17 @@ DumpCustomVTK::DumpCustomVTK(LAMMPS *lmp, int narg, char **arg) :
   size_one = pack_choice.size();
   if(tensor_detected)
     size_one += 8;
+
+#ifdef NONSPHERICAL_ACTIVE_FLAG
+  if(convex_hull_detected)
+  {
+    int ntri_max = static_cast<AtomVecConvexHull*>(atom->avec)->get_ntri_max();
+
+    size_one += (3*3*ntri_max); 
+                                
+  }
+#endif
+
   current_pack_choice_key = -1;
 
   if (filewriter) reset_vtk_data_containers();
@@ -330,6 +360,16 @@ void DumpCustomVTK::init_style()
     if (iregion == -1)
       error->all(FLERR,"Region ID for dump custom/vtk does not exist");
   }
+
+#ifdef NONSPHERICAL_ACTIVE_FLAG
+  if(dynamic_cast<AtomVecConvexHull*>(atom->avec))
+  {
+    convex_hull_detected = true;
+    convex_hull_max_n_tri = dynamic_cast<AtomVecConvexHull*>(atom->avec)->get_ntri_max();
+  }
+  else
+#endif
+    convex_hull_detected = false;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1038,6 +1078,8 @@ void DumpCustomVTK::pack(int *ids)
       (this->*(it->second))(n);
       if(current_pack_choice_key == TENSOR)
         n += 8;
+      if(current_pack_choice_key == POINTS_CONVEXHULL)
+        n += convex_hull_max_n_tri*3*3;
   }
 
   if (ids) {
@@ -1193,13 +1235,39 @@ void DumpCustomVTK::setFileCurrent() {
 
 void DumpCustomVTK::buf2arrays(int n, double *mybuf)
 {
-  for (int iatom=0; iatom < n; ++iatom) {
+  // pid stores the ID(s) of the newly added point
+  vtkIdType pid[100];
 
-    // pid stores the ID of the newly added point
-    vtkIdType pid[1];
+#ifdef NONSPHERICAL_ACTIVE_FLAG
+  int ntri_max = static_cast<AtomVecConvexHull*>(atom->avec)->get_ntri_max();
+#else
+  int ntri_max = 0;
+#endif
+
+  int ntri = 0;
+
+  for (int iatom=0; iatom < n; ++iatom)
+  {
     pid[0] = points->InsertNextPoint(mybuf[iatom*size_one],mybuf[iatom*size_one+1],mybuf[iatom*size_one+2]);
-
     int j=3; // 0,1,2 = x,y,z handled just above
+
+    int npoints_extra = 0; 
+    if(convex_hull_detected)
+    {
+        j += 3*3*ntri_max + 1;
+
+        // each extra tri has 3 extra points
+        ntri = mybuf[iatom*size_one+3];//(int) ubuf(mybuf[iatom*size_one+3]).i;
+        npoints_extra = 3*mybuf[iatom*size_one+3];//(int) ubuf(mybuf[iatom*size_one+3]).i;
+
+        for(int ipoint = 0; ipoint < npoints_extra; ipoint++)
+        {
+            pid[1+ipoint] = points->InsertNextPoint(mybuf[iatom*size_one+4+ipoint*3],
+                                                    mybuf[iatom*size_one+5+ipoint*3],
+                                                    mybuf[iatom*size_one+6+ipoint*3]);
+        }
+    }
+
     for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it) {
       vtkAbstractArray *paa = it->second;
       if (it->second->GetNumberOfComponents() == 3) {
@@ -1210,13 +1278,15 @@ void DumpCustomVTK::buf2arrays(int n, double *mybuf)
                              static_cast<int>(mybuf[iatom*size_one+j+1]),
                              static_cast<int>(mybuf[iatom*size_one+j+2]) };
               vtkIntArray *pia = static_cast<vtkIntArray*>(paa);
-              pia->InsertNextTupleValue(iv3);
+              for(int ii = 0; ii < npoints_extra+1; ii++)
+                pia->InsertNextTupleValue(iv3);
               break;
             }
           case DOUBLE:
             {
               vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
-              pda->InsertNextTupleValue(&mybuf[iatom*size_one+j]);
+              for(int ii = 0; ii < npoints_extra+1; ii++)
+                pda->InsertNextTupleValue(&mybuf[iatom*size_one+j]);
               break;
             }
         }
@@ -1224,7 +1294,8 @@ void DumpCustomVTK::buf2arrays(int n, double *mybuf)
       } else if (it->second->GetNumberOfComponents() == 9) {
           if(vtype[it->first] == TENSOR_DOUBLE) {
             vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
-            pda->InsertNextTupleValue(&mybuf[iatom*size_one+j]);
+            for(int ii = 0; ii < npoints_extra+1; ii++)
+              pda->InsertNextTupleValue(&mybuf[iatom*size_one+j]);
           } else {
               error->all(FLERR,"Tensors of only double values are implemented!");
           }
@@ -1234,19 +1305,22 @@ void DumpCustomVTK::buf2arrays(int n, double *mybuf)
           case INT:
             {
               vtkIntArray *pia = static_cast<vtkIntArray*>(paa);
-              pia->InsertNextValue(mybuf[iatom*size_one+j]);
+              for(int ii = 0; ii < npoints_extra+1; ii++)
+                pia->InsertNextValue(mybuf[iatom*size_one+j]);
               break;
             }
           case DOUBLE:
             {
               vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
-              pda->InsertNextValue(mybuf[iatom*size_one+j]);
+              for(int ii = 0; ii < npoints_extra+1; ii++)
+                pda->InsertNextValue(mybuf[iatom*size_one+j]);
               break;
             }
           case STRING:
             {
               vtkStringArray *psa = static_cast<vtkStringArray*>(paa);
-              psa->InsertNextValue(typenames[static_cast<int>(mybuf[iatom*size_one+j])]);
+              for(int ii = 0; ii < npoints_extra+1; ii++)
+                psa->InsertNextValue(typenames[static_cast<int>(mybuf[iatom*size_one+j])]);
               break;
             }
         }
@@ -1254,8 +1328,34 @@ void DumpCustomVTK::buf2arrays(int n, double *mybuf)
       }
     }
 
-    // 1 == VTK_VERTEX (cell type), pid is the ID of the point added above
-    pointsCells->InsertNextCell(1,pid);
+    // 1 == npoints, not VTK_VERTEX (cell type), pid is the ID of the point added above
+    if(!convex_hull_detected)
+        pointsCells->InsertNextCell(1,pid);
+    else
+    {
+        for(int itri = 0; itri < ntri; itri++)
+        {
+
+            vtkSmartPointer<vtkTriangle> triangle =
+                    vtkSmartPointer<vtkTriangle>::New();
+
+            triangle->GetPointIds()->SetNumberOfIds(3);
+            for(int ipoint = 0; ipoint < 3; ipoint++)
+                triangle->GetPointIds()->SetId(ipoint,pid[1+itri*3+ipoint]);
+
+            pointsCells->InsertNextCell(triangle);
+        }
+
+        /*
+        vtkPolyVertex *polyvertex = vtkPolyVertex::New();
+
+        polyvertex->GetPointIds()->SetNumberOfIds(npoints_extra+1);
+        for(int ipoint = 0; ipoint < npoints_extra+1; ipoint++)
+            polyvertex->GetPointIds()->SetId(ipoint,pid[ipoint]);
+
+        pointsCells->InsertNextCell(polyvertex);
+        */
+    }
   }
 }
 
@@ -1416,7 +1516,10 @@ void DumpCustomVTK::write_vtk(int n, double *mybuf)
 #ifdef UNSTRUCTURED_GRID_VTK
     vtkSmartPointer<vtkUnstructuredGrid> unstructuredGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
     unstructuredGrid->SetPoints(points);
-    unstructuredGrid->SetCells(VTK_VERTEX, pointsCells);
+    if(!convex_hull_detected)
+        unstructuredGrid->SetCells(VTK_VERTEX, pointsCells);
+    else
+        unstructuredGrid->SetCells(VTK_TRIANGE, pointsCells);
 
     for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it) {
       unstructuredGrid->GetPointData()->AddArray(it->second);
@@ -1426,7 +1529,10 @@ void DumpCustomVTK::write_vtk(int n, double *mybuf)
 #else
     vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
     polyData->SetPoints(points);
-    polyData->SetVerts(pointsCells);
+    if(!convex_hull_detected)
+        polyData->SetVerts(pointsCells);
+    else
+        polyData->SetPolys(pointsCells);
 
     for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it) {
       polyData->GetPointData()->AddArray(it->second);
@@ -1602,6 +1708,10 @@ void DumpCustomVTK::reset_vtk_data_containers()
 
   std::map<int,int>::iterator it=vtype.begin();
   ++it; ++it; ++it;
+
+  if(convex_hull_detected)
+    ++it;
+
   for (; it!=vtype.end(); ++it) {
     switch(vtype[it->first]) {
       case INT:
@@ -1645,6 +1755,13 @@ int DumpCustomVTK::parse_fields(int narg, char **arg)
   pack_choice[Z] = &DumpCustomVTK::pack_z;
   vtype[Z] = DOUBLE;
   name[Z] = "z";
+
+  if(convex_hull_detected)
+  {
+    pack_choice[POINTS_CONVEXHULL] = &DumpCustomVTK::pack_points_convexhull;
+    vtype[POINTS_CONVEXHULL] = DOUBLE;
+    name[POINTS_CONVEXHULL] = "points_convexhull";
+  }
 
   // customize by adding to if statement
   int i;
@@ -2668,6 +2785,39 @@ void DumpCustomVTK::pack_z(int n)
     buf[n] = x[clist[i]][2];
     n += size_one;
   }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void DumpCustomVTK::pack_points_convexhull(int n)
+{
+#ifdef NONSPHERICAL_ACTIVE_FLAG
+  int *shapetype = atom->shapetype;
+  double **x = atom->x;
+  double **quaternion = atom->quaternion;
+  AtomVecConvexHull *avec = static_cast<AtomVecConvexHull*>(atom->avec);
+  double point[3];
+
+  for (int i = 0; i < nchoose; i++) {
+    int shapetyp = shapetype[clist[i]];
+    int ntri = avec->get_ntri(shapetyp);
+    buf[n] = ntri; //ubuf(np).d;
+    
+    for(int itri = 0; itri < ntri; itri++)
+    {
+        for(int inode = 0; inode < 3; inode ++)
+        {
+            avec->get_tri_node(shapetyp,itri,inode,point);
+            MathExtraLiggghts::vec_quat_rotate(point,quaternion[clist[i]]);
+            vectorAdd3D(point,x[clist[i]],point);
+            buf[n+itri*9+inode*3+1] = point[0];
+            buf[n+itri*9+inode*3+2] = point[1];
+            buf[n+itri*9+inode*3+3] = point[2];
+        }
+    }
+    n += size_one;
+  }
+#endif
 }
 
 /* ---------------------------------------------------------------------- */

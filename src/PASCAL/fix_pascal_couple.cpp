@@ -24,11 +24,11 @@
    by the European Commission through FP7 Grant agreement no. 604656.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
-#include "stdio.h"
-#include "string.h"
-#include "stdlib.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "pascal.h"          // these are PASCAL include files
 #include "fix_pascal_couple.h"
 #include "atom.h"

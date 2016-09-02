@@ -43,11 +43,11 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
-#include "stdio.h"
-#include "string.h"
-#include "stdlib.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "group.h"
 #include "domain.h"
 #include "atom.h"
@@ -396,6 +396,14 @@ void Group::assign(int narg, char **arg)
     }
 
     delete [] list;
+
+  // style = init
+
+  } else if (strcmp(arg[1],"initialize") == 0) {
+
+    if (narg != 2) error->all(FLERR,"Illegal group command");
+
+    // init creates an empty group, thus nothing to do here.
 
   // not a valid group style
 

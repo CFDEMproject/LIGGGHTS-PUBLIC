@@ -10,12 +10,19 @@ fix check/timestep/gran command :h3
 
 [Syntax:]
 
-fix ID group-ID check/timestep/gran nevery fraction_r fraction_h :pre
+fix ID group-ID check/timestep/gran nevery fraction_r fraction_h  keywords vales:pre
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 check/timestep/gran = style name of this fix command :l
 nevery = evaluate time-step size accuracy every this many time-steps :l
 fraction_r = warn if time-step size exceeds this fraction of the Rayleigh time :l
 fraction_h = warn if time-step size exceeds this fraction of the Hertz time :l
+zero or more keyword/value pairs may be appended :l
+keyword = {warn} or {error} or {vmax}  :l
+  {warn} value = yes or no
+  {error} value = yes or no
+  {vmax} value = v_max
+    v_max = maximum particle velocity to be used as minimum for evaluation Hertz criterion :pre
+
 :ule
 
 [Examples:]
@@ -44,7 +51,10 @@ The effective mass m_eff, the effective radius r_eff and the effective Young's
 modulus Y_eff are as defined in "pair gran"_pair_gran.html. v_max is the
 maximum relative velocity, taking mesh movement into account. Please note
 that the Hertz criterion will also be used if you use a different granular
-pair style (e.g. Hooke).
+pair style (e.g. Hooke). If keyword {vmax} is used, a user-defined maximum
+velocity is used as a minimum in the formula above, i.e. the maximum of
+v_max of the particles in the simulation and v_max specified by the user
+is used.
 
 Additionally, this command checks the ratio of skin to the distance that
 particles can travel relative to each other in one time-step. This value
@@ -56,6 +66,10 @@ calculated for each particle in the simulation, and the minimum value is
 taken for further calculations. Hertz time dt_h is estimated by testing a
 collision of each particle with itself using v_max as the assumed collision
 velocity.
+
+Keyword {warn} can be used to turn off the warning message. Keyword {error}
+can be used to have LIGGGHTS(R)-PUBLIC issue an error message and abort the simulation
+if any of the criteria is violated.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -74,4 +88,5 @@ the "run"_run.html command. This fix is not invoked during
 
 [Related commands:] none
 
-[Default:] none
+[Default:] 
+warn = yes, error = no, v_max = 0

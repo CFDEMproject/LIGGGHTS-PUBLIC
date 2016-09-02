@@ -122,6 +122,8 @@ When using {viscous}, FluidViscosity has to be  > 0
 When using the limitForce, the specified coefficient of restitution is only approximate. This might 
 become problematic for low coefficients of resitution as showin in Schwager and Poschel.
 
+{heating_normal_hertz} may not be available in your version of the software.
+
 [Default:]
 
 {viscous} = 'off'
@@ -133,7 +135,7 @@ become problematic for low coefficients of resitution as showin in Schwager and 
 :link(Legendre)
 [(Legendre)] Legendre, Daniel and Guiraud. Phys. Fluids 17, 097105 (2005).
 
-[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525–541 (2004).
+[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525-541 (2004).
 
 [(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
 

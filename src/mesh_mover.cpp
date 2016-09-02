@@ -46,7 +46,7 @@
 ------------------------------------------------------------------------- */
 
 #include "mesh_mover.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "math_extra_liggghts.h"
 #include "input.h"

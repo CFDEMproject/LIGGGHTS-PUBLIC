@@ -52,6 +52,7 @@ FixStyle(particledistribution/discrete/massbased,FixParticledistributionDiscrete
 #define LMP_FIX_PARTICLEDISTRIBUTION_DISCRETE_H
 
 #include "fix.h"
+#include "random_park.h"
 
 enum{RAN_STYLE_CONSTANT_FPD,RAN_STYLE_UNIFORM_FPD,RAN_STYLE_GAUSSIAN_FPD};
 
@@ -101,11 +102,15 @@ class FixParticledistributionDiscrete : public Fix {
 
   inline int n_particletemplates()
   { return ntemplates; }
+
   inline class FixTemplateSphere** particletemplates()
   { return templates; }
 
   inline int dist_order(int i)
   { return (i >= ntemplates) ? (-1) : (distorder[i]); }
+
+  inline int random_state()
+  { return random->state(); }
 
  protected:
 

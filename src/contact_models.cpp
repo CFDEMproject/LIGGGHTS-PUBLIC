@@ -36,19 +36,21 @@
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
+#include <mpi.h>
 #include "ctype.h"
 #include "float.h"
 #include "limits.h"
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "pair.h"
 #include "atom.h"
 #include "neighbor.h"
@@ -136,6 +138,26 @@ void Factory::addSurfaceModel(const std::string & name, int identifier) {
   surface_models[name] = identifier;
 }
 
+int Factory::getNormalModelId(const std::string & name) {
+  return normal_models[name];
+}
+
+int Factory::getTangentialModelId(const std::string & name) {
+  return tangential_models[name];
+}
+
+int Factory::getCohesionModelId(const std::string & name) {
+  return cohesion_models[name];
+}
+
+int Factory::getRollingModelId(const std::string & name) {
+  return rolling_models[name];
+}
+
+int Factory::getSurfaceModelId(const std::string & name) {
+  return surface_models[name];
+}
+
 int64_t Factory::select(int & narg, char ** & args) {
   return instance().select_model(narg, args);
 }
@@ -213,6 +235,27 @@ int64_t Factory::select_model(int & narg, char ** & args)
     return generate_gran_hashcode(model, tangential, cohesion, rolling, surface);
   }
   return -1;
+}
+
+int ContactModelBase::get_history_offset(const string hname)
+{
+    std::map<std::string, int>::iterator it = history_offsets.find(hname);
+    if (it != history_offsets.end())
+        return it->second;
+    return -1;
+}
+
+void ContactModelBase::add_history_offset(const string hname, const int offset, const bool overwrite)
+{
+    std::map<std::string, int>::iterator it = history_offsets.find(hname);
+    if (it == history_offsets.end() || overwrite)
+    {
+        
+        history_offsets[hname] = offset;
+    }
+    else
+       error->one(FLERR, "Could not add history offset as key exists already and overwrite is not set");
+    return;
 }
 
 } // ContactModels

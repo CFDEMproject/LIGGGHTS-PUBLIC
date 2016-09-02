@@ -46,7 +46,8 @@
 #define CONTACT_INTERFACE_H_
 
 #include <string>
-#include "superquadric_flag.h"
+#include "nonspherical_flags.h"
+#include "tri_mesh.h"
 
 namespace LIGGGHTS {
 namespace ContactModels {
@@ -58,18 +59,26 @@ struct SurfacesCloseData {
   double radj;
   double radsum;
   double rsq;
-  double delta[3];
+  double delta[3];  
 
   double area_ratio;
 
   int *contact_flags;
   double *contact_history;
+  LAMMPS_NS::TriMesh *mesh;
 
   int i;
   int j;
+  int itype;
+  int jtype;
 
   bool is_wall;
   bool has_force_update;
+
+  double * v_i;
+  double * v_j;
+
+  bool is_non_spherical;
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
   double *quat_i; //quaternion of i-th particle
@@ -83,36 +92,50 @@ struct SurfacesCloseData {
   double *pos_j;
   double *inertia_i;
   double *inertia_j;
-  bool is_non_spherical;
   double koefi;
   double koefj;
-  SurfacesCloseData() : area_ratio(1.0),
-                        quat_i(NULL),
-                        quat_j(NULL),
-                        shape_i(NULL),
-                        shape_j(NULL),
-                        roundness_i(NULL),
-                        roundness_j(NULL),
-                        pos_i(NULL),
-                        pos_j(NULL),
-                        inertia_i(NULL),
-                        inertia_j(NULL),
-                        is_non_spherical(false),
-                        koefi(0.0),
-                        koefj(0.0) {}
+
+  SurfacesCloseData() :
+    area_ratio(1.0),
+    quat_i(NULL),
+    quat_j(NULL),
+    shape_i(NULL),
+    shape_j(NULL),
+    roundness_i(NULL),
+    roundness_j(NULL),
+    pos_i(NULL),
+    pos_j(NULL),
+    inertia_i(NULL),
+    inertia_j(NULL),
+    is_non_spherical(false),
+    koefi(0.0),
+    koefj(0.0)
+  {}
+#elif defined NONSPHERICAL_ACTIVE_FLAG
+  double contact_point[3];
+
+  SurfacesCloseData() :
+    area_ratio(1.0),
+    mesh(0),
+    is_non_spherical(false)
+  {}
 #else
-  SurfacesCloseData() : area_ratio(1.0) {}
+  SurfacesCloseData() :
+    area_ratio(1.0),
+    mesh(0),
+    is_non_spherical(false)
+  {}
 #endif
 };
 
 // data available in collision() only
 
 struct SurfacesIntersectData : SurfacesCloseData {
-  double r;
-  double rinv;
-  double en[3];
-  double * v_i;
-  double * v_j;
+
+  double r;         
+  double rinv;      
+  double en[3];     
+
   double * omega_i;
   double * omega_j;
 
@@ -126,26 +149,24 @@ struct SurfacesIntersectData : SurfacesCloseData {
 
   double vn;
   double deltan;
-  double cri;
-  double crj;
-  double wr1;
+  double cri;   
+  double crj;   
+  double wr1;   
   double wr2;
   double wr3;
 
-  double vtr1;
+  double vtr1;  
   double vtr2;
   double vtr3;
 
-  double mi;
+  double mi;    
   double mj;
-  double meff;
+  double meff;  
 
   mutable double P_diss; 
 
   int computeflag;
   int shearupdate;
-  int itype;
-  int jtype;
 
   SurfacesIntersectData() : Fn(0.0), Ft(0.0) {}
 };

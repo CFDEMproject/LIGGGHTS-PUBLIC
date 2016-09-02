@@ -43,9 +43,9 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "output.h"
 #include "style_dump.h"
 #include "atom.h"
@@ -76,14 +76,21 @@ using namespace LAMMPS_NS;
 
 Output::Output(LAMMPS *lmp) : Pointers(lmp)
 {
-  // create default Thermo class
   char **newarg = new char*[4];
+  // create a default compute that calculates the temperature of the system
+  // NOTE: This compute is deprecated and will be removed in the future
   newarg[0] = (char *) "thermo_temp";
   newarg[1] = (char *) "all";
   newarg[2] = (char *) "temp";
   modify->add_compute(3,newarg,lmp->suffix);
+  // create a default compute that calculates the kinetic energy of the system
+  newarg[0] = (char *) "thermo_kin_eng";
+  newarg[1] = (char *) "all";
+  newarg[2] = (char *) "ke";
+  modify->add_compute(3,newarg,lmp->suffix);
   delete [] newarg;
 
+  // create default Thermo class
   newarg = new char*[1];
   newarg[0] = (char *) "one";
   thermo = new Thermo(lmp,1,newarg);

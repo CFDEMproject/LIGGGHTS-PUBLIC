@@ -47,9 +47,9 @@
    Contributing author: Christina Payne (Vanderbilt U)
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "string.h"
-#include "stdlib.h"
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
 #include "fix_efield.h"
 #include "atom.h"
 #include "update.h"

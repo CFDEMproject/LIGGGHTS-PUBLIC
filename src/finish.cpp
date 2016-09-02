@@ -43,10 +43,10 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
-#include "string.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
 #include "finish.h"
 #include "timer.h"
 #include "universe.h"

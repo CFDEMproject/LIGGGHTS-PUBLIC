@@ -270,15 +270,10 @@ IDs of the new computes are the fix-ID + underscore + "temp" or fix_ID
 as the fix group.  Also note that the pressure compute does not
 include a kinetic component.
 </P>
-<P>Note that these are NOT the computes used by thermodynamic output (see
-the <A HREF = "thermo_style.html">thermo_style</A> command) with ID = <I>thermo_temp</I>
-and <I>thermo_press</I>.  This means you can change the attributes of this
-fix's temperature or pressure via the
+<P>You can change the attributes of this fix's temperature or pressure via the
 <A HREF = "compute_modify.html">compute_modify</A> command or print this temperature
 or pressure during thermodynamic output via the <A HREF = "thermo_style.html">thermo_style
 custom</A> command using the appropriate compute-ID.
-It also means that changing attributes of <I>thermo_temp</I> or
-<I>thermo_press</I> will have no effect on this fix.
 </P>
 <HR>
 

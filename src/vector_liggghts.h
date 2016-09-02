@@ -42,7 +42,7 @@
 #ifndef LMP_VECTOR_LIGGGHTS_H
 #define LMP_VECTOR_LIGGGHTS_H
 
-#include "math.h"
+#include <math.h>
 #include "lammps.h"
 
 namespace LAMMPS_NS {
@@ -507,6 +507,14 @@ inline double vectorCrossMag3D(const double *v1,const double *v2)
   res[1]=v1[2]*v2[0]-v1[0]*v2[2];
   res[2]=v1[0]*v2[1]-v1[1]*v2[0];
   return vectorMag3D(res);
+}
+
+template<typename T>
+inline void vectorProject3D(const T *v, const T *on, T *result)
+{
+  T norm[3] = {on[0], on[1], on[2]};
+  vectorNormalize3D(norm);
+  vectorScalarMult3D(norm,vectorDot3D(v,norm),result);
 }
 
 inline void vectorZeroize3D(double *v)

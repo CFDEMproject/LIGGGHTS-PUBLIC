@@ -47,11 +47,11 @@
    Contributing author: Nathan Fabian (Sandia)
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
+#include <mpi.h>
+#include <math.h>
 #include "ctype.h"
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "image.h"
 #include "math_extra.h"
 #include "random_mars.h"

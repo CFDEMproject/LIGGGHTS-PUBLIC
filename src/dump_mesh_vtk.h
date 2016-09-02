@@ -51,6 +51,7 @@ DumpStyle(mesh/gran/VTK,DumpMeshVTK)
 
 #include "dump.h"
 #include "container.h"
+#include <vector>
 
 namespace LAMMPS_NS {
 
@@ -90,6 +91,7 @@ class DumpMeshVTK : public Dump {
   class VectorContainer<double,3> **f_node_;
   // temp
   class ScalarContainer<double> **T_;
+  std::vector<bool> temp_per_element_;
   // min dist from active edge
   class ScalarContainer<double> **min_active_edge_dist_;
 

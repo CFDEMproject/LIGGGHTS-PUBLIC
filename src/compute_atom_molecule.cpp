@@ -43,8 +43,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "compute_atom_molecule.h"
 #include "atom.h"
 #include "update.h"

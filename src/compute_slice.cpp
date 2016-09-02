@@ -43,8 +43,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "compute_slice.h"
 #include "update.h"
 #include "modify.h"

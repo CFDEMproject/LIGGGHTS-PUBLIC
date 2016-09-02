@@ -107,6 +107,9 @@ namespace LAMMPS_NS
         bool decideRebuild();
         void storeNodePosRebuild();
 
+        // function for mesh import debugging
+        void center_of_mass(double *_com);
+
         // inline access
 
         inline bool isMoving()

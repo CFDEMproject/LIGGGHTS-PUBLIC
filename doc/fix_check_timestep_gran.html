@@ -13,9 +13,8 @@
 </H3>
 <P><B>Syntax:</B>
 </P>
-<PRE>fix ID group-ID check/timestep/gran nevery fraction_r fraction_h 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+<UL><LI>fix ID group-ID check/timestep/gran nevery fraction_r fraction_h  keywords vales:pre
+ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
 
 <LI>check/timestep/gran = style name of this fix command 
 
@@ -25,6 +24,15 @@
 
 <LI>fraction_h = warn if time-step size exceeds this fraction of the Hertz time 
 
+<LI>zero or more keyword/value pairs may be appended 
+
+<LI>keyword = <I>warn</I> or <I>error</I> or <I>vmax</I>  
+
+<PRE>  <I>warn</I> value = yes or no
+  <I>error</I> value = yes or no
+  <I>vmax</I> value = v_max
+    v_max = maximum particle velocity to be used as minimum for evaluation Hertz criterion 
+</PRE>
 
 </UL>
 <P><B>Examples:</B>
@@ -53,7 +61,10 @@ ratio. The latter quantity is expressed by
 modulus Y_eff are as defined in <A HREF = "pair_gran.html">pair gran</A>. v_max is the
 maximum relative velocity, taking mesh movement into account. Please note
 that the Hertz criterion will also be used if you use a different granular
-pair style (e.g. Hooke).
+pair style (e.g. Hooke). If keyword <I>vmax</I> is used, a user-defined maximum
+velocity is used as a minimum in the formula above, i.e. the maximum of
+v_max of the particles in the simulation and v_max specified by the user
+is used.
 </P>
 <P>Additionally, this command checks the ratio of skin to the distance that
 particles can travel relative to each other in one time-step. This value
@@ -65,6 +76,10 @@ calculated for each particle in the simulation, and the minimum value is
 taken for further calculations. Hertz time dt_h is estimated by testing a
 collision of each particle with itself using v_max as the assumed collision
 velocity.
+</P>
+<P>Keyword <I>warn</I> can be used to turn off the warning message. Keyword <I>error</I>
+can be used to have LIGGGHTS(R)-PUBLIC issue an error message and abort the simulation
+if any of the criteria is violated.
 </P>
 <P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
 </P>
@@ -83,6 +98,7 @@ the <A HREF = "run.html">run</A> command. This fix is not invoked during
 </P>
 <P><B>Related commands:</B> none
 </P>
-<P><B>Default:</B> none
+<P><B>Default:</B> 
+warn = yes, error = no, v_max = 0
 </P>
 </HTML>

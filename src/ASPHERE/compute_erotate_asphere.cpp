@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
+#include <mpi.h>
 #include "compute_erotate_asphere.h"
 #include "math_extra.h"
 #include "atom.h"

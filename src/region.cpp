@@ -49,9 +49,9 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "region.h"
 #include "update.h"
 #include "domain.h"

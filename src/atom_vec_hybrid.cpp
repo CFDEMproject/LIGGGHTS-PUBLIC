@@ -43,8 +43,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "atom_vec_hybrid.h"
 #include "atom.h"
 #include "domain.h"

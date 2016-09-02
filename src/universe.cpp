@@ -49,10 +49,10 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdlib.h"
-#include "string.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "universe.h"
 #include "version.h"
 #include "version_liggghts.h" 

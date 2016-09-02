@@ -38,10 +38,10 @@
     Copyright 2015-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "atom.h"
-#include "mpi.h"
-#include "math.h"
+#include <mpi.h>
+#include <math.h>
 #include "modify.h"
 #include "properties.h"
 #include "error.h"

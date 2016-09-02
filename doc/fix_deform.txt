@@ -557,6 +557,8 @@ shrink-wrapped via the "boundary"_boundary.html comamnd.
 You cannot apply xy, yz, or xz deformations to a 2nd dimension (y in
 xy) that is shrink-wrapped via the "boundary"_boundary.html comamnd.
 
+Fix deform does not work together with "fix multisphere"_fix_multisphere.html 
+
 [Related commands:]
 
 "change_box"_change_box.html

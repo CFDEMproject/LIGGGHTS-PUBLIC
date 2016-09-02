@@ -40,7 +40,7 @@
 ------------------------------------------------------------------------- */
 
 #include "particleToInsert_multisphere.h"
-#include "math.h"
+#include <math.h>
 #include "error.h"
 #include "vector_liggghts.h"
 #include "atom.h"
@@ -50,7 +50,7 @@
 #include "comm.h"
 #include "fix.h"
 #include "fix_multisphere.h"
-#include "string.h"
+#include <string.h>
 #include "math_extra_liggghts.h"
 
 using namespace LAMMPS_NS;

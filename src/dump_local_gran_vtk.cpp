@@ -40,9 +40,9 @@
 
 #ifdef LAMMPS_VTK
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "dump_local_gran_vtk.h"
 #include "atom.h"
 #include "force.h"
@@ -87,7 +87,7 @@ using namespace LAMMPS_NS;
 
 enum{INT,DOUBLE,STRING};       // same as in DumpCFG
 enum{VTK,VTP,VTU,PVTP,PVTU};   // file formats
-enum{X1,X2,V1,V2,ID1,ID2,F,FN,FT,TORQUE,AREA,DELTA,HEAT}; // dumps positions, force, normal and tangential forces, torque
+enum{X1,X2,V1,V2,ID1,ID2,F,FN,FT,TORQUE,TORQUEN,TORQUET,AREA,DELTA,HEAT}; // dumps positions, force, normal and tangential forces, torque, normal and tangential torque
 
 #define INVOKED_VECTOR 2
 #define INVOKED_ARRAY 4
@@ -232,7 +232,6 @@ void DumpLocalGranVTK::header_vtk(bigint)
 int DumpLocalGranVTK::count()
 {
   
-  int nmine;
   n_calls_ = 0;
 
   //TODO generalize
@@ -805,6 +804,22 @@ void DumpLocalGranVTK::define_properties()
       vector_set.insert(TORQUE);
   }
 
+  if(cpgl_->offset_torquen() > 0)
+  {
+      pack_choice[TORQUEN] = &DumpLocalGranVTK::pack_torquen;
+      vtype[TORQUEN] = DOUBLE;
+      name[TORQUEN] = "torque_normal";
+      vector_set.insert(TORQUEN);
+  }
+
+  if(cpgl_->offset_torquet() > 0)
+  {
+      pack_choice[TORQUET] = &DumpLocalGranVTK::pack_torquet;
+      vtype[TORQUET] = DOUBLE;
+      name[TORQUET] = "torque_tangential";
+      vector_set.insert(TORQUET);
+  }
+
   if(cpgl_->offset_area() > 0)
   {
       
@@ -989,6 +1004,26 @@ void DumpLocalGranVTK::pack_ft(int n)
 void DumpLocalGranVTK::pack_torque(int n)
 {
   int offset = cpgl_->offset_torque();
+
+  for (int i = 0; i < nchoose; i++) {
+    vectorCopy3D(&cpgl_->get_data()[i][offset],&buf[n]);
+    n += size_one;
+  }
+}
+
+void DumpLocalGranVTK::pack_torquen(int n)
+{
+  int offset = cpgl_->offset_torquen();
+
+  for (int i = 0; i < nchoose; i++) {
+    vectorCopy3D(&cpgl_->get_data()[i][offset],&buf[n]);
+    n += size_one;
+  }
+}
+
+void DumpLocalGranVTK::pack_torquet(int n)
+{
+  int offset = cpgl_->offset_torquet();
 
   for (int i = 0; i < nchoose; i++) {
     vectorCopy3D(&cpgl_->get_data()[i][offset],&buf[n]);

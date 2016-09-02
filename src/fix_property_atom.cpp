@@ -39,9 +39,9 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_property_atom.h"
 #include "atom.h"
 #include "memory.h"
@@ -69,7 +69,8 @@ using namespace FixConst;
 FixPropertyAtom::FixPropertyAtom(LAMMPS *lmp, int narg, char **arg, bool parse) :
   Fix(lmp, narg, arg),
   propertyname(0),
-  property(0)
+  property(0),
+  internal(false)
 {
     
     if(parse) parse_args(narg,arg);

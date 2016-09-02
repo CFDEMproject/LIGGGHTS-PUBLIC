@@ -43,8 +43,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <string.h>
 #include "reader.h"
 #include "error.h"
 

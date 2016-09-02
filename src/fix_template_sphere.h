@@ -49,6 +49,7 @@ FixStyle(particletemplate/sphere,FixTemplateSphere)
 #define LMP_FIX_TEMPLATE_SPHERE_H
 
 #include "fix.h"
+#include "random_park.h"
 #include "probability_distribution.h"
 
 namespace LAMMPS_NS {
@@ -95,6 +96,12 @@ class FixTemplateSphere : public Fix {
   class ParticleToInsert **pti_list;
 
   virtual void finalize_insertion() {}
+
+  inline int random_insertion_state()
+  { return random_insertion->state(); }
+
+  inline int random_mc_state()
+  { return random_mc->state(); }
 
  protected:
 

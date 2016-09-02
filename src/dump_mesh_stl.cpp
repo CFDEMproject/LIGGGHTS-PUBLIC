@@ -41,7 +41,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "dump_mesh_stl.h"
 #include "tri_mesh.h"
 #include "domain.h"

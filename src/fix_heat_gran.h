@@ -49,6 +49,10 @@ static const double SMALL_FIX_HEAT_GRAN = 1.e-6;
 namespace LAMMPS_NS {
 
   class FixHeatGran : public Fix {
+
+    friend class FixMultisphere;
+    friend class Multisphere;
+
   public:
     FixHeatGran(class LAMMPS *, int, char **);
     ~FixHeatGran(){};

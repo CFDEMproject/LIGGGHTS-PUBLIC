@@ -57,7 +57,7 @@ keyword = {mode} or {file} or {ave} or {start} or {beyond} or {overwrite} or {ti
 [Examples:]
 
 fix 1 all ave/histo 100 5 1000 0.5 1.5 50 c_myTemp file temp.histo ave running
-fix 1 all ave/histo 100 5 1000 -5 5 100 c_thermo_press\[2\] c_thermo_press\[3\] title1 "My output values"
+fix 1 all ave/histo 100 5 1000 -5 5 100 c_myArray\[2\] c_myArray\[3\] title1 "My output values"
 fix 1 all ave/histo 1 100 1000 -2.0 2.0 18 vx vy vz mode vector ave running beyond extra :pre
 
 [Description:]

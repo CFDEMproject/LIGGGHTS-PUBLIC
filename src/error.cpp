@@ -49,15 +49,15 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdlib.h"
+#include <mpi.h>
+#include <stdlib.h>
 #include "error.h"
 #include "universe.h"
 #include "output.h"
 #include "fix.h" 
 #include "force.h" 
 #include "compute.h" 
-#include "string.h" 
+#include <string.h> 
 
 using namespace LAMMPS_NS;
 
@@ -222,7 +222,7 @@ void Error::cg(const char *file, int line, const char *str)
     if(force->error_cg())
       all(file,line,catstr);
     else
-      warning(file,line,catstr,1);
+      warningAll(file,line,catstr,1);
     delete []catstr;
 }
 
@@ -256,6 +256,25 @@ void Error::warning(const char *file, int line, const char *str, int logflag)
   if (screen) fprintf(screen,"WARNING: %s (%s:%d)\n",str,file,line);
   if (logflag && logfile) fprintf(logfile,"WARNING: %s (%s:%d)\n",
                                   str,file,line);
+}
+
+/* ----------------------------------------------------------------------
+   called by all proc in world
+   only write to screen if non-NULL on this proc since could be file
+------------------------------------------------------------------------- */
+
+void Error::warningAll(const char *file, int line, const char *str, int logflag)
+{
+  MPI_Barrier(world);
+
+  int me;
+  MPI_Comm_rank(world,&me);
+
+  if (me == 0) {
+    if (screen) fprintf(screen,"WARNING: %s (%s:%d)\n",str,file,line);
+    if (logflag && logfile) fprintf(logfile,"WARNING: %s (%s:%d)\n",
+                                  str,file,line);
+  }
 }
 
 /* ----------------------------------------------------------------------

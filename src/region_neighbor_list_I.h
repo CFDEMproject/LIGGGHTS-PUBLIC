@@ -93,8 +93,9 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap(double * x, double radius) cons
 }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-//the same for superquadrics
-bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape) const {
+template<bool INTERPOLATE>
+bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape) const
+{
   int ibin = coord2bin(x);
 
   for(std::vector<int>::const_iterator it = stencil.begin(); it != stencil.end(); ++it) {
@@ -104,12 +105,12 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double
 
         error->one(FLERR,"assertion failed");
     }
-    const ParticleList & plist = bins[ibin+offset];
+    const std::vector<Particle<INTERPOLATE> > & plist = bins[ibin+offset].particles;
 
     double roundness[2] = {2.0, 2.0};
     Superquadric particle1(x, quaternion, shape, roundness);
-    for(ParticleList::const_iterator pit = plist.begin(); pit != plist.end(); ++pit) {
-      const Particle & p = *pit;
+    for(typename std::vector<Particle<INTERPOLATE> >::const_iterator pit = plist.begin(); pit != plist.end(); ++pit) {
+      const Particle<INTERPOLATE> & p = *pit;
       double del[3];
       vectorSubtract3D(x, p.x, del);
       const double rsq = vectorMag3DSquared(del);
@@ -121,7 +122,7 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double
         vectorCopy3D(p.shape, shape_copy);
         Superquadric particle2(x_copy, quaternion_copy, shape_copy, roundness);
 
-        if (rsq <= radsum*radsum and MathExtraLiggghtsSuperquadric::obb_intersect(&particle1, &particle2)) return true;
+        if (rsq <= radsum*radsum and MathExtraLiggghtsNonspherical::obb_intersect(&particle1, &particle2)) return true;
       } else
         if (rsq <= radsum*radsum) return true;
     }
@@ -197,16 +198,18 @@ void RegionNeighborList<INTERPOLATE>::insert(double * x, double radius,int index
 }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-//the same for superquadrics
-void RegionNeighborList<INTERPOLATE>::insert_superquadric(double * x, double radius, double *quaternion, double *shape) {
-  int ibin = coord2bin(x);
+template<bool INTERPOLATE>
+void RegionNeighborList<INTERPOLATE>::insert_superquadric(double * x, double radius, double *quaternion, double *shape, int index) {
+  int quadrant;
+  double wx,wy,wz;
+  int ibin = coord2bin(x,quadrant,wx,wy,wz);
   if((ibin < 0) || ((size_t)(ibin) >= bins.size()))
   {
 
       error->one(FLERR,"assertion failed");
   }
 
-  bins[ibin].push_back(Particle(x, radius, quaternion, shape));
+  bins[ibin].particles.push_back(Particle<INTERPOLATE>(index,x,radius,quaternion, shape, ibin,quadrant,wx,wy,wz));
   ++ncount;
 }
 #endif
@@ -342,7 +345,11 @@ inline void RegionNeighborList<true>::setBoundingBox_calc_interpolation_stencil(
                 {
                     for (int i = -1+qx; i <= qx; i++)
                     {
-                        stencilTmp.push_back((iz+k+kk)*mbiny*mbinx + (iy+j+jj)*mbinx + (ix+i+ii));
+                        int isubbin = ((iz+k+kk)*mbiny*mbinx + (iy+j+jj)*mbinx + (ix+i+ii));
+                        if( isubbin < 0 || isubbin >= mbins())
+                            stencilTmp.push_back(-1);
+                        else
+                            stencilTmp.push_back(isubbin);
                         
                     }
                 }

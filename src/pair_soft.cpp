@@ -43,10 +43,10 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "pair_soft.h"
 #include "atom.h"
 #include "comm.h"

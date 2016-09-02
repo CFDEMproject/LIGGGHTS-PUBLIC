@@ -53,11 +53,11 @@
     Mingqiu WU (TU Graz) to be integrated with LIGGGHTS-TUG's fibre modules
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
-#include "stdio.h"
-#include "string.h"
-#include "stdlib.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "workspace.h"
 #include "fix_poems.h"
 #include "atom.h"

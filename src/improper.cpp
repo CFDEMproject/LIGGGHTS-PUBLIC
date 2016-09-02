@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
+#include <math.h>
 #include "improper.h"
 #include "atom.h"
 #include "comm.h"

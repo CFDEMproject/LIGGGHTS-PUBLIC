@@ -46,10 +46,10 @@ fix		cad1 all mesh/surface file meshes/bucket.stl type 1  move -50. -250. 0. &
 region		bc block -0.9 0.9 -0.4 0.4 -0.5 -0.0 units box
 
 #particle distributions
-fix			pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.04
-fix			pdd1 all particledistribution/discrete 1.  1 pts1 1.0
+fix			pts1 all particletemplate/sphere 15485863 atom_type 1 density constant 2500 radius constant 0.04
+fix			pdd1 all particledistribution/discrete 15485867 1 pts1 1.0
 
-fix			ins all insert/pack seed 100001 distributiontemplate pdd1 vel constant 0. 0. -0.8 &
+fix			ins all insert/pack seed 32452843 distributiontemplate pdd1 vel constant 0. 0. -0.8 &
 				insert_every 2000 overlapcheck yes all_in yes particles_in_region 1500 region bc
 
 #thermo settings
@@ -57,7 +57,6 @@ compute		1 all erotate/sphere
 thermo_style	custom step atoms ke c_1 vol
 thermo		1000
 thermo_modify	lost ignore norm no
-compute_modify	thermo_temp dynamic yes
 
 
 #make a dump of particles and the stl file 

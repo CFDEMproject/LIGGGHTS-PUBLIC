@@ -43,8 +43,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "fix_momentum.h"
 #include "atom.h"
 #include "domain.h"

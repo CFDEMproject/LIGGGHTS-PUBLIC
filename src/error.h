@@ -70,6 +70,7 @@ class Error : protected Pointers {
   void cg(const char *, int, const char *); 
   void one(const char *, int, const char *);
   void warning(const char *, int, const char *, int = 1);
+  void warningAll(const char *, int, const char *, int = 1);
   void message(const char *, int, const char *, int = 1);
   void done();
 };

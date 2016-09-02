@@ -35,10 +35,12 @@
 
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
-    Philippe Richard Berger (JKU Linz)
+    Richard Berger (JKU Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -84,6 +86,8 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   /* PUBLIC ACCESS FUNCTIONS */
 
+  virtual void createMulticontactData();
+
   void setDnum(int newDnum)
   { dnum_ = newDnum; }
 
@@ -101,6 +105,12 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   int add_history_value(std::string name, std::string newtonflag)
   {  return dnum_++; }
+
+  int get_history_offset(const std::string hname)
+  {  return impl->get_history_offset(hname);}
+
+  bool contact_match(const std::string mtype, const std::string model)
+  {  return impl->contact_match(mtype, model); }
 
   inline int dnum() const
   { return dnum_; }
@@ -132,6 +142,9 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   inline bool store_force_contact() const
   { return store_force_contact_; }
 
+  inline bool store_force_contact_stress() const
+  { return store_force_contact_stress_; }
+
   inline ComputePairGranLocal * compute_wall_gran_local() const
   { return cwl_; }
 
@@ -153,26 +166,42 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
     // adds 0 as ID for primitive wall
     double forces_torques_i[6];
 
-    if(!fix_wallforce_contact_->has_partner(ip,idTri))
+    if(fix_wallforce_contact_->has_partner(ip,idTri) == -1)
     {
       vectorCopy3D(i_forces.delta_F,&(forces_torques_i[0]));
       vectorCopy3D(i_forces.delta_torque,&(forces_torques_i[3]));
       fix_wallforce_contact_->add_partner(ip,idTri,forces_torques_i);
+      
+    }
+  }
+
+  inline void add_contactforce_stress_wall(int ip, const LCM::ForceData & i_forces, const double *const delta, const double *const vwall, int idTri)
+  {
+    // add to fix wallforce contact
+    // adds 0 as ID for primitive wall
+    double forces_delta_i[9];
+
+    if(fix_wallforce_contact_stress_->has_partner(ip,idTri) == -1)
+    {
+      vectorCopy3D(i_forces.delta_F,&(forces_delta_i[0]));
+      vectorCopy3D(delta,&(forces_delta_i[3]));
+      vectorCopy3D(vwall,&(forces_delta_i[6]));
+      fix_wallforce_contact_stress_->add_partner(ip,idTri,forces_delta_i);
     }
   }
 
   class PrimitiveWall* primitiveWall();
 
-  int n_contacts_all();
-  int n_contacts_all(int);
-  int n_contacts_local();
-  int n_contacts_local(int);
+  int n_contacts_all(int &nIntersect);
+  int n_contacts_all(int contact_groupbit,int &nIntersect);
+  int n_contacts_local(int &nIntersect);
+  int n_contacts_local(int contact_groupbit,int &nIntersect);
   int is_moving();
 
   void register_compute_wall_local(ComputePairGranLocal *,int&);
   void unregister_compute_wall_local(ComputePairGranLocal *ptr);
 
-  void addHeatFlux(class TriMesh *mesh,int i,double rsq,double area_ratio);
+  void addHeatFlux(class TriMesh *mesh,int i,const double ri,double rsq,double area_ratio);
 
  protected:
 
@@ -243,6 +272,13 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   // per-contact force storage
   bool store_force_contact_;
   class FixContactPropertyAtomWall *fix_wallforce_contact_;
+
+  // for stress computation
+  bool store_force_contact_stress_;
+  class FixContactPropertyAtomWall *fix_wallforce_contact_stress_;
+
+  // storage for per contact data (for multicontact models)
+  class FixContactPropertyAtomWall *fix_store_multicontact_data_;
 
   int nlevels_respa_;
 

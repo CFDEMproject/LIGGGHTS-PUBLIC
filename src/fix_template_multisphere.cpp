@@ -44,10 +44,10 @@ Thanks to Chris Stoltz (P&G) for providing
 a Fortran version of the MC integrator
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_template_multisphere.h"
 #include "math_extra.h"
 #include "math_extra_liggghts.h"
@@ -373,7 +373,7 @@ void FixTemplateMultisphere::calc_volumeweight()
 }
 
 /* ----------------------------------------------------------------------
-   calc inertia_ tensor
+   calc inertia tensor
 ------------------------------------------------------------------------- */
 
 void FixTemplateMultisphere::calc_inertia()
@@ -429,7 +429,6 @@ void FixTemplateMultisphere::calc_inertia()
   moi_[2][0] = moi_[0][2];
   moi_[2][1] = (moi_[2][1]+moi_[2][0])/2.;
   moi_[1][2] = moi_[2][1];
-
 }
 
 /* ----------------------------------------------------------------------

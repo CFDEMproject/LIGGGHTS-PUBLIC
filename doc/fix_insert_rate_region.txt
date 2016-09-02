@@ -70,8 +70,8 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
     omegax = x-comonent of angular velocity (1/time units)
     omegay = y-comonent of angular velocity (1/time units)
     omegaz = z-comonent of angular velocity (1/time units)
-  {set_property} values = property-ID val
-    property-variablename = variable name of a "fix property/atom"_fix_property.html holding a scalar value for each particle
+  {set_property} values = property-varname val
+    property-varname = variable name of a "fix property/atom"_fix_property.html holding a scalar value for each particle
     val = value to initialize the property with upon insertion  :pre
 
 following the general keyword/value section, one or more rate_region keyword/value pairs can be appended for the fix insert/rate/region command :l

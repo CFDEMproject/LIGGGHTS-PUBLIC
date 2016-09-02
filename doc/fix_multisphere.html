@@ -21,8 +21,8 @@
 </UL>
 <P><B>Examples:</B>
 </P>
-<P>fix ms all multisphere
-</P>
+<PRE>fix ms all multisphere 
+</PRE>
 <P><B>Description:</B>
 </P>
 <P>Treat one or more sets of atoms as independent rigid bodies.  This
@@ -75,6 +75,8 @@ used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> com
 This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
 </P>
 <P><B>Restrictions:</B>
+</P>
+<P>Fix multisphere does not work together with <A HREF = "fix_deform.html">fix deform</A>
 </P>
 <P>Only one fix multisphere at a time is allowed.
 Heat transfer simulations are not possible when using this fix

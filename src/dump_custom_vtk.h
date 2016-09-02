@@ -63,6 +63,7 @@ DumpStyle(custom/vtk,DumpCustomVTK)
 #include <vtkSmartPointer.h>
 #include <vtkPoints.h>
 #include <vtkCellArray.h>
+#include <vtkPolyVertex.h>
 
 class vtkAbstractArray;
 class vtkRectilinearGrid;
@@ -186,6 +187,8 @@ class DumpCustomVTK : public Dump {
   char *parallelfilecurrent;
   char *multiname_ex;
 
+  bool convex_hull_detected;
+  int convex_hull_max_n_tri;
   bool tensor_detected;
   void setFileCurrent();
   void buf2arrays(int, double *); // transfer data from buf array to vtk arrays
@@ -204,6 +207,7 @@ class DumpCustomVTK : public Dump {
   void pack_x(int);
   void pack_y(int);
   void pack_z(int);
+  void pack_points_convexhull(int);
   void pack_xs(int);
   void pack_ys(int);
   void pack_zs(int);
@@ -266,6 +270,14 @@ class DumpCustomVTK : public Dump {
   void pack_quat3(int);
   void pack_quat4(int);
   void pack_tensor(int n);
+
+  union ubuf {
+    double   d;
+    int64_t  i;
+    ubuf(double arg) : d(arg) {}
+    ubuf(int64_t arg) : i(arg) {}
+    ubuf(int arg) : i(arg) {}
+  };
 };
 
 }

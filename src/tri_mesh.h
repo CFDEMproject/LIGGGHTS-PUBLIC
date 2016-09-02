@@ -49,15 +49,15 @@
 #include "math_extra_liggghts.h"
 #include "tri_line.h"
 #include "region_neighbor_list.h"
-#include "superquadric_flag.h"
+#include "nonspherical_flags.h"
 
 #ifdef TRI_LINE_ACTIVE_FLAG
 #include "math_extra_dist_lineTriangle.h"
 #endif
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-#include "math_extra_liggghts_superquadric.h"
-using namespace MathExtraLiggghtsSuperquadric;
+#include "math_extra_liggghts_nonspherical.h"
+using namespace MathExtraLiggghtsNonspherical;
 #endif
 
 #include <fstream>
@@ -74,9 +74,10 @@ namespace LAMMPS_NS
         TriMesh(LAMMPS *lmp);
         virtual ~TriMesh();
 
-        double resolveTriSphereContact(int iPart, int nTri, double rSphere, double *cSphere, double *delta,int &barysign);
+        double resolveTriSphereContact    (int iPart, int nTri, double rSphere, double *cSphere,
+                                           double *delta,int &barysign);
         double resolveTriSphereContactBary(int iPart, int nTri, double rSphere, double *cSphere,
-                                           double *contactPoint,double *bary,int &barysign);
+                                           double *contactPoint,double *bary,int &barysign,bool skip_inactive=true);
 
         #ifdef SUPERQUADRIC_ACTIVE_FLAG
 
@@ -85,9 +86,6 @@ namespace LAMMPS_NS
 
         bool sphereTriangleIntersection(int nTri, double rSphere, double *cSphere);
         int superquadricTriangleIntersection(int nTri, double *point_of_lowest_potential, Superquadric particle);
-        double resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary, bool triActive);
-        double resolveCornerContactBary(int iTri, int iNode, bool obtuse,
-                                                              double *p, double *delta, double *bary, bool treatActive);
         double pointToTriangleDistance(int iTri, double *Csphere, double *delta, bool treatActiveFlag, double *bary);
 
         #endif
@@ -123,8 +121,8 @@ namespace LAMMPS_NS
         double calcDistToPlane(double *p, double *pPlane, double *nPlane);
 
         double resolveCornerContactBary(int iTri, int iNode, bool obtuse,
-                                    double *p, double *delta, double *bary);
-        double resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary);
+                                    double *p, double *delta, double *bary,bool skip_inactive = true);
+        double resolveEdgeContactBary(int iTri, int iEdge, double *p, double *delta, double *bary,bool skip_inactive = true);
         double resolveFaceContactBary(int iTri, double *p, double *node0ToSphereCenter, double *delta);
   };
 

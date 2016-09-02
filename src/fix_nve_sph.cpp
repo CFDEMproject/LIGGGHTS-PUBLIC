@@ -39,8 +39,8 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <string.h>
 #include "fix_nve_sph.h"
 #include "atom.h"
 #include "force.h"

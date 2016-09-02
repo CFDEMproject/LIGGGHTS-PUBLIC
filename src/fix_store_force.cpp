@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "fix_store_force.h"
 #include "atom.h"
 #include "update.h"

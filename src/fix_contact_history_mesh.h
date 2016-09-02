@@ -32,11 +32,13 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -51,7 +53,7 @@ FixStyle(contacthistory/mesh,FixContactHistoryMesh)
 #include "fix_contact_history.h"
 #include "fix_property_atom.h"
 #include "my_page.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "atom.h"
 #include "update.h"
@@ -91,7 +93,7 @@ class FixContactHistoryMesh : public FixContactHistory {
 
   // spefific interface for mesh
 
-  bool handleContact(int iPart, int idTri, double *&history, bool intersectflag,bool faceflag);
+  bool handleContact(int iPart, int idTri, double *&history, bool intersectflag, bool faceflag);
   void markAllContacts();
   void cleanUpContacts();
   void cleanUpContactJumps();
@@ -104,8 +106,11 @@ class FixContactHistoryMesh : public FixContactHistory {
   void reset_history();
 
   // return # of contacts
-  int n_contacts();
-  int n_contacts(int contact_groupbit);
+  int n_contacts(int & nIntersect);
+  int n_contacts(int contact_groupbit, int & nIntersect);
+
+  int get_partner_iTri(const int i, const int j) const
+  { return mesh_->map(partner_[i][j]); }
 
  protected:
 
@@ -125,10 +130,10 @@ class FixContactHistoryMesh : public FixContactHistory {
  private:
 
   // functions specific for mesh - contact management
-  bool haveContact(int indexPart, int idTri, double *&history,bool intersectflag);
+  bool haveContact(int indexPart, int idTri, double *&history, bool intersectflag);
   bool coplanarContactAlready(int indexPart, int idTri);
   void checkCoplanarContactHistory(int indexPart, int idTri, double *&history);
-  void addNewTriContactToExistingParticle(int indexPart, int idTri, double *&history,bool intersectflag);
+  void addNewTriContactToExistingParticle(int indexPart, int idTri, double *&history, bool intersectflag);
 
   class TriMesh *mesh_;
   class FixNeighlistMesh *fix_neighlist_mesh_;

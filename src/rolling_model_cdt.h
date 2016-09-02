@@ -48,7 +48,7 @@ ROLLING_MODEL(ROLLING_CDT,cdt,1)
 #define ROLLING_MODEL_CDT_H_
 #include "contact_models.h"
 #include <algorithm>
-#include "math.h"
+#include <math.h>
 #include "math_extra_liggghts.h"
 
 namespace LIGGGHTS {
@@ -92,7 +92,7 @@ namespace ContactModels
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
       if(sidata.is_non_spherical)
-        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+        reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata);
 #endif
 
       if(sidata.is_wall){

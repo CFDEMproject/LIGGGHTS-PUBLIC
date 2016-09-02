@@ -39,8 +39,8 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "region_mesh_tet.h"
 #include "lammps.h"
 #include "bounding_box.h"
@@ -50,7 +50,7 @@
 #include "domain.h"
 #include "vector_liggghts.h"
 #include "mpi_liggghts.h"
-#include "math.h"
+#include <math.h>
 #include "math_extra_liggghts.h"
 #include "input_mesh_tet.h"
 
@@ -376,6 +376,7 @@ void RegTetMesh::build_neighs()
         vectorZeroizeN(n_face_neighs_node[i],4);
     }
 
+    bool badMesh = false;
     for(int i = 0; i < nTet; i++)
     {
         std::vector<int> overlaps;
@@ -411,7 +412,7 @@ void RegTetMesh::build_neighs()
             {
                 
                 if(100 == n_node_neighs[i])
-                    error->warning(FLERR,"Region mesh/tet: too many node neighbors, mesh is of bad quality; 'all_in' yes might not work correctly");
+                    badMesh = true;
                 else
                 {
                     node_neighs[i][n_node_neighs[i]] = iOverlap;
@@ -419,7 +420,7 @@ void RegTetMesh::build_neighs()
                 }
 
                 if(100 == n_node_neighs[iOverlap])
-                    error->warning(FLERR,"Region mesh/tet: too many node neighbors, mesh is of bad quality; 'all_in yes' might not work correctly");
+                    badMesh = true;
                 else
                 {
                     node_neighs[iOverlap][n_node_neighs[iOverlap]] = i;
@@ -444,11 +445,19 @@ void RegTetMesh::build_neighs()
                 //TODO: worst case: broad phase (wie auf zettel skizziert)
             }
             else
-                error->one(FLERR,"internal error");
+            {
+                
+                char errstr[256];
+
+                sprintf(errstr,"duplicate elements %d and %d in tet for region %s",i,iOverlap,id);
+                error->one(FLERR,errstr);
+            }
         }
 
         neighList.insert(center[i], rbound[i],i);
     }
+    if (badMesh)
+        error->warningAll(FLERR,"Region mesh/tet: too many node neighbors, mesh is of bad quality; 'all_in yes' might not work correctly");
 
     for(int i = 0; i < nTet; i++)
     {

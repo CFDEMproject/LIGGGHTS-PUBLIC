@@ -39,11 +39,11 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "atom.h"
 #include "update.h"
-#include "math.h"
+#include <math.h>
 #include "error.h"
 #include "fix_check_timestep_gran.h"
 #include "pair_gran.h"
@@ -71,6 +71,10 @@ using namespace MODEL_PARAMS;
 FixCheckTimestepGran::FixCheckTimestepGran(LAMMPS *lmp, int narg, char **arg) :
   Fix(lmp, narg, arg)
 {
+  warnflag = true;
+  errorflag = false;
+  vmax_user = 0.;
+
   if (narg < 6) error->all(FLERR,"Illegal fix check/timestep/gran command, not enough arguments");
 
   nevery = atoi(arg[3]);
@@ -79,11 +83,36 @@ FixCheckTimestepGran::FixCheckTimestepGran(LAMMPS *lmp, int narg, char **arg) :
 
   int iarg = 6;
 
-  warnflag = true;
-  if(iarg < narg){
-      if (narg < 8) error->all(FLERR,"Illegal fix check/timestep/gran command, not enough arguments");
-      if(strcmp(arg[iarg++],"warn")!=0) error->all(FLERR,"Illegal fix check/timestep/gran command, use keyword 'warn'");
-      if(strcmp(arg[iarg++],"no")==0) warnflag=false;
+  while(iarg < narg)
+  {
+      if (strcmp(arg[iarg],"warn") == 0) {
+          if (narg < iarg+2) error->fix_error(FLERR,this,"not enough arguments for 'warn'");
+          if(0 == strcmp(arg[iarg+1],"no"))
+            warnflag = false;
+          else if(0 == strcmp(arg[iarg+1],"yes"))
+            warnflag = true;
+          else
+            error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'warn'");
+          iarg += 2;
+      } else if (strcmp(arg[iarg],"error") == 0) {
+          if (narg < iarg+2) error->fix_error(FLERR,this,"not enough arguments for 'error'");
+          if(0 == strcmp(arg[iarg+1],"no"))
+            errorflag = false;
+          else if(0 == strcmp(arg[iarg+1],"yes"))
+            errorflag = true;
+          else
+            error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'error'");
+          iarg += 2;
+      } else if (strcmp(arg[iarg],"vmax") == 0) {
+          if (narg < iarg+2) error->fix_error(FLERR,this,"not enough arguments for 'vmax'");
+          vmax_user = force->numeric(FLERR,arg[iarg+1]);
+          iarg += 2;
+      } else if(strcmp(style,"mesh/surface") == 0) {
+          char *errmsg = new char[strlen(arg[iarg])+50];
+          sprintf(errmsg,"unknown keyword or wrong keyword order: %s", arg[iarg]);
+          error->fix_error(FLERR,this,errmsg);
+          delete []errmsg;
+      }
   }
 
   vector_flag = 1;
@@ -147,31 +176,45 @@ void FixCheckTimestepGran::end_of_step()
 
     fraction_rayleigh = dt/rayleigh_time;
     fraction_hertz = dt/hertz_time;
-    fraction_skin = (vmax * dt) / neighbor->skin;
+    fraction_skin = (v_rel_max_simulation * dt) / neighbor->skin;
 
-    if(warnflag&&comm->me==0)
+    if(errorflag || (warnflag && comm->me==0))
     {
-        if(fraction_skin >= 0.5)
-        {
-            if(screen)  fprintf(screen ,"WARNING: time step too large or skin too small - particles may travel a distance of %f per time-step, but half skin is %f\n",vmax*dt,0.5*skin);
-            if(logfile) fprintf(logfile,"WARNING: time step too large or skin too small - particles may travel a distance of %f per time-step, but half skin is %f\n",vmax*dt,0.5*skin);
-        }
-
-        if(vmax * dt > r_min)
-        {
-            if(screen)  fprintf(screen  ,"WARNING: time step way too large - particles move further than the minimum radius in one step\n");
-            if(logfile)  fprintf(logfile,"WARNING: time step way too large - particles move further than the minimum radius in one step\n");
-        }
+        char errstr[512];
 
         if(fraction_rayleigh > fraction_rayleigh_lim)
         {
-            if(screen) fprintf(screen,  "WARNING: time-step is %f %% of rayleigh time\n",fraction_rayleigh*100.);
-            if(logfile) fprintf(logfile,"WARNING: time-step is %f %% of rayleigh time\n",fraction_rayleigh*100.);
+            sprintf(errstr,"time-step is %f %% of rayleigh time",fraction_rayleigh*100.);
+            if(errorflag)
+                error->fix_error(FLERR,this,errstr);
+            else
+                error->warning(FLERR,errstr);
         }
         if(fraction_hertz > fraction_hertz_lim)
         {
-            if(screen) fprintf(screen,  "WARNING: time-step is %f %% of hertz time\n",fraction_hertz*100.);
-            if(logfile) fprintf(logfile,"WARNING: time-step is  %f %% of hertz time\n",fraction_hertz*100.);
+            sprintf(errstr,"time-step is %f %% of hertz time",fraction_hertz*100.);
+            if(errorflag)
+                error->fix_error(FLERR,this,errstr);
+            else
+                error->warning(FLERR,errstr);
+        }
+
+        if(fraction_skin > 1)
+        {
+            sprintf(errstr,"time step too large or skin too small - particles may relatively travel a distance of %f per time-step, but skin is %f",v_rel_max_simulation*dt,skin);
+            if(errorflag)
+                error->fix_error(FLERR,this,errstr);
+            else
+                error->warning(FLERR,errstr);
+        }
+
+        if(v_rel_max_simulation * dt > r_min)
+        {
+            sprintf(errstr,"time step way too large - particles relativley move further than the minimum radius in one step");
+            if(errorflag)
+                error->fix_error(FLERR,this,errstr);
+            else
+                error->warning(FLERR,errstr);
         }
     }
 }
@@ -192,9 +235,8 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
   //check rayleigh time and vmax of particles
   rayleigh_time = BIG;
   r_min = BIG;
-  vmax = 0;
-
-  double vmag;
+  double vmax_sqr = 0;
+  double vmag_sqr;
   double rayleigh_time_i;
 
   for (int i = 0; i < nlocal; i++)
@@ -205,22 +247,28 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
         rayleigh_time_i = M_PI*r[i]*sqrt(density[i]/shear_mod)/(0.1631*nu->get_values()[type[i]-1]+0.8766);
         if(rayleigh_time_i < rayleigh_time) rayleigh_time = rayleigh_time_i;
 
-        vmag = sqrt(v[i][0]*v[i][0]+v[i][1]*v[i][1]+v[i][2]*v[i][2]);
-        if(vmag > vmax) vmax=vmag;
+        vmag_sqr = vectorMag3DSquared(v[i]);
+        if(vmag_sqr > vmax_sqr)
+            vmax_sqr = vmag_sqr;
 
         if(r[i] < r_min) r_min = r[i];
     }
   }
 
   MPI_Min_Scalar(r_min,world);
-  MPI_Max_Scalar(vmax,world);
+  MPI_Max_Scalar(vmax_sqr,world);
   MPI_Min_Scalar(rayleigh_time,world);
+
+  //choose vmax_user if larger than value in simulation
+  if(vmax_user*vmax_user > vmax_sqr)
+    vmax_sqr = vmax_user*vmax_user;
 
   // get vmax of geometry
   FixMeshSurface ** mesh_list;
   TriMesh * mesh;
   double *v_node;
-  double vmax_mesh=0.;
+  double vmax_sqr_mesh=0.;
+  double vmag_sqr_mesh;
 
   if(fwg)
   {
@@ -234,21 +282,25 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
               if (mesh->prop().getElementPropertyIndex("v") == -1)
                   error->one(FLERR,"Internal error - mesh has no perElementProperty 'v' \n");
               // loop local elements only
-              for(int itri=0;itri<mesh->sizeLocal();itri++)
-                  for(int inode=0;inode<3;inode++)
+              int sizeMesh = mesh->sizeLocal();
+              for(int itri = 0; itri < sizeMesh; itri++)
+              {
+                  for(int inode = 0; inode < 3; inode++)
                   {
                       v_node = mesh->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->begin()[itri][inode];
-                      vmag = vectorMag3D(v_node);
-                      if(vmag>vmax_mesh) vmax_mesh=vmag;
+                      vmag_sqr_mesh = vectorMag3DSquared(v_node);
+                      if(vmag_sqr_mesh > vmax_sqr_mesh)
+                        vmax_sqr_mesh = vmag_sqr_mesh;
                   }
+              }
           }
       }
   }
 
- MPI_Max_Scalar(vmax_mesh,world);
+  MPI_Max_Scalar(vmax_sqr_mesh,world);
 
   // decide vmax - either particle-particle or particle-mesh contact
-  vmax = std::max(2.*vmax,vmax+vmax_mesh);
+  v_rel_max_simulation = std::max(2.*sqrt(vmax_sqr),sqrt(vmax_sqr) + sqrt(vmax_sqr_mesh));
 
   // check estimation for hertz time
   // this is not exact...
@@ -271,7 +323,7 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
                 if(type[i]!=ti || type[i]!=tj) continue;
                 meff = 4.*r[i]*r[i]*r[i]*M_PI/3.*density[i];
                 reff = r[i]/2.;
-                hertz_time_i = 2.87*pow(meff*meff/(reff*Eeff*Eeff*vmax),0.2);
+                hertz_time_i = 2.87*pow(meff*meff/(reff*Eeff*Eeff*v_rel_max_simulation),0.2);
                 if(hertz_time_i<hertz_time_min)
                     hertz_time_min=hertz_time_i;
             }
@@ -279,7 +331,7 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
       }
   }
 
- MPI_Min_Scalar(hertz_time_min,world);
+  MPI_Min_Scalar(hertz_time_min,world);
   hertz_time = hertz_time_min;
 }
 

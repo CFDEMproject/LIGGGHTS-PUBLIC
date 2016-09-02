@@ -39,9 +39,9 @@ fix zwalls2 all wall/gran model hertz tangential history primitive type 1 zplane
 
 
 #distributions for insertion
-fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.005
-fix		pts2 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.008
-fix		pdd1 all particledistribution/discrete 1.  2 pts1 0.3 pts2 0.7
+fix		pts1 all particletemplate/sphere 15485863 atom_type 1 density constant 2500 radius constant 0.005
+fix		pts2 all particletemplate/sphere 15485867 atom_type 1 density constant 2500 radius constant 0.008
+fix		pdd1 all particledistribution/discrete 32452843 2 pts1 0.3 pts2 0.7
 
 #parameters for gradually growing particle diameter
 variable	alphastart equal 0.25
@@ -54,7 +54,7 @@ variable	relaxts equal 20000
 group		nve_group region reg
 
 #particle insertion
-fix		ins nve_group insert/pack seed 5330 distributiontemplate pdd1 &
+fix		ins nve_group insert/pack seed 32452867 distributiontemplate pdd1 &
 			maxattempt 200 insert_every once overlapcheck yes all_in yes vel constant 0. 0. 0. &
 			region reg volumefraction_region ${alphastart}
 
@@ -66,7 +66,6 @@ compute		1 all erotate/sphere
 thermo_style	custom step atoms ke c_1 vol
 thermo		1000
 thermo_modify	lost ignore norm no
-compute_modify	thermo_temp dynamic yes
 
 #insert the first particles
 run		1

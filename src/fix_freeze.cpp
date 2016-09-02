@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "fix_freeze.h"
 #include "fix_property_atom.h"
 #include "atom.h"

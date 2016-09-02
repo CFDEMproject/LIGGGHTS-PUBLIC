@@ -43,9 +43,9 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "atom_vec_line.h"
 #include "atom.h"
 #include "comm.h"

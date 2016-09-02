@@ -49,7 +49,7 @@ COHESION_MODEL(COHESION_SJKR,sjkr,1)
 #define COHESION_MODEL_SJKR_H_
 
 #include "contact_models.h"
-#include "math.h"
+#include <math.h>
 
 namespace LIGGGHTS {
 namespace ContactModels {
@@ -60,8 +60,6 @@ namespace ContactModels {
   class CohesionModel<COHESION_SJKR> : protected Pointers {
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
-
-    int bond_history_offset() {return -1;}
 
     CohesionModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) :
         Pointers(lmp), cohEnergyDens(NULL)

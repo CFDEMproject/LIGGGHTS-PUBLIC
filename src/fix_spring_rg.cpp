@@ -48,9 +48,9 @@
                         Paul Crozier (SNL)
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_spring_rg.h"
 #include "atom.h"
 #include "update.h"

@@ -49,8 +49,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "ctype.h"
 #include "force.h"
 #include "style_bond.h"

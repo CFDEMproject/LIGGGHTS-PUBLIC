@@ -37,9 +37,11 @@
     Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
     Philippe Seil (JKU Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #include <math.h>
@@ -76,7 +78,7 @@
 #include <vector>
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  #include "math_extra_liggghts_superquadric.h"
+  #include "math_extra_liggghts_nonspherical.h"
 #endif
 
 using namespace LAMMPS_NS;
@@ -107,6 +109,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     // defaults
     store_force_ = false;
     store_force_contact_ = false;
+    store_force_contact_stress_ = false;
     stress_flag_ = false;
     n_FixMesh_ = 0;
     dnum_ = 0;
@@ -122,7 +125,9 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     // initializations
     fix_wallforce_ = 0;
     fix_wallforce_contact_ = 0;
+    fix_wallforce_contact_stress_ = 0;
     fix_meshforce_pbc_ = 0;
+    fix_store_multicontact_data_ = NULL;
     fix_rigid_ = NULL;
     heattransfer_flag_ = false;
 
@@ -243,6 +248,14 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
            else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'store_force_contact_'");
            hasargs = true;
            iarg_ += 2;
+        } else if (strcmp(arg[iarg_],"store_force_contact_stress") == 0) {
+           if (iarg_+2 > narg)
+              error->fix_error(FLERR,this," not enough arguments");
+           if (strcmp(arg[iarg_+1],"yes") == 0) store_force_contact_stress_ = true;
+           else if (strcmp(arg[iarg_+1],"no") == 0) store_force_contact_stress_ = false;
+           else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'store_force_contact_stress_'");
+           hasargs = true;
+           iarg_ += 2;
         } else if (strcmp(arg[iarg_],"n_meshes") == 0) {
           if (meshwall_ != 1)
              error->fix_error(FLERR,this,"have to use keyword 'mesh' before using 'n_meshes'");
@@ -337,6 +350,9 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
     if(meshwall_ == 1 && !FixMesh_list_)
         error->fix_error(FLERR,this,"Need to provide the number and a list of meshes by using 'n_meshes' and 'meshes'");
+
+    if (modify->find_fix_style("continuum/weighted", 0))
+        store_force_contact_stress_ = true;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -404,6 +420,42 @@ void FixWallGran::post_create()
         delete []fixarg;
    }
 
+   if(store_force_contact_stress_ && 0 == meshwall_)
+   {
+        char **fixarg = new char*[25];
+        char fixid[200],ownid[200];
+        sprintf(fixid,"contactforces_stress_%s",id);
+        sprintf(ownid,"%s",id);
+        fixarg[0]=fixid;
+        fixarg[1]=(char *) "all";
+        fixarg[2]=(char *) "contactproperty/atom/wall";
+        fixarg[3]=fixid;
+        fixarg[4]=(char *) "9";
+        fixarg[5]=(char *) "fx";
+        fixarg[6]=(char *) "0";
+        fixarg[7]=(char *) "fy";
+        fixarg[8]=(char *) "0";
+        fixarg[9]=(char *) "fz";
+        fixarg[10]=(char *) "0";
+        fixarg[11]=(char *) "deltax";
+        fixarg[12]=(char *) "0";
+        fixarg[13]=(char *) "deltay";
+        fixarg[14]=(char *) "0";
+        fixarg[15]=(char *) "deltaz";
+        fixarg[16]=(char *) "0";
+        fixarg[17]=(char *) "vx";
+        fixarg[18]=(char *) "0";
+        fixarg[19]=(char *) "vy";
+        fixarg[20]=(char *) "0";
+        fixarg[21]=(char *) "vz";
+        fixarg[22]=(char *) "0";
+        fixarg[23]=(char *) "primitive";
+        fixarg[24]=ownid;
+        modify->add_fix(25,fixarg);
+        fix_wallforce_contact_stress_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
+        delete []fixarg;
+   }
+
    // create neighbor list for each mesh
    
    for(int i=0;i<n_FixMesh_;i++)
@@ -414,6 +466,9 @@ void FixWallGran::post_create()
 
        if(store_force_contact_)
          FixMesh_list_[i]->createMeshforceContact();
+
+       if(store_force_contact_stress_)
+         FixMesh_list_[i]->createMeshforceContactStress();
    }
 
    // contact history for primitive wall
@@ -480,6 +535,9 @@ void FixWallGran::pre_delete(bool unfixflag)
     if(unfixflag && store_force_contact_ && 0 == meshwall_)
         modify->delete_fix(fix_wallforce_contact_->id);
 
+    if(unfixflag && store_force_contact_stress_ && 0 == meshwall_)
+        modify->delete_fix(fix_wallforce_contact_stress_->id);
+
     if(unfixflag && cwl_)
        error->fix_error(FLERR,this,"need to uncompute the active compute wall/gran/local before unfixing the wall");
 
@@ -493,6 +551,9 @@ void FixWallGran::pre_delete(bool unfixflag)
 
            if(store_force_contact_)
              FixMesh_list_[i]->deleteMeshforceContact();
+
+           if(store_force_contact_stress_)
+             FixMesh_list_[i]->deleteMeshforceContactStress();
        }
     }
 }
@@ -577,6 +638,40 @@ void FixWallGran::init()
     
 }
 
+void FixWallGran::createMulticontactData()
+{
+    if(fix_store_multicontact_data_ == NULL && 0 == meshwall_)
+    {
+        // create a new per contact property which will contain the data for the computation according to Brodu et. al. 2016
+        // surfPosIJ will contain the position of the contact surface ij, realtive to position i
+        // normalForce will contain the normal component of the contact force
+        char **fixarg = new char*[17];
+        char fixid[200], ownid[200];
+        sprintf(fixid,"multicontactData_%s",id);
+        sprintf(ownid,"%s",id);
+        fixarg[0]=fixid;
+        fixarg[1]=(char *) "all";
+        fixarg[2]=(char *) "contactproperty/atom/wall";
+        fixarg[3]=fixid;
+        fixarg[4]=(char *) "4";
+        fixarg[5]=(char *) "surfPosIJ_x";
+        fixarg[6]=(char *) "0";
+        fixarg[7]=(char *) "surfPosIJ_y";
+        fixarg[8]=(char *) "0";
+        fixarg[9]=(char *) "surfPosIJ_z";
+        fixarg[10]=(char *) "0";
+        fixarg[11]=(char *) "normalForce";
+        fixarg[12]=(char *) "0";
+        fixarg[13]=(char *) "primitive";
+        fixarg[14]=ownid;
+        fixarg[15]=(char *) "reset";
+        fixarg[16]=(char *) "no";
+        modify->add_fix(17,fixarg);
+        fix_store_multicontact_data_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
+        delete []fixarg;
+    }
+}
+
 /* ---------------------------------------------------------------------- */
 
 void FixWallGran::setup(int vflag)
@@ -608,7 +703,6 @@ void FixWallGran::pre_neighbor()
 
 void FixWallGran::pre_force(int vflag)
 {
-    double halfskin = neighbor->skin*0.5;
     int nlocal = atom->nlocal;
 
     x_ = atom->x;
@@ -625,7 +719,7 @@ void FixWallGran::pre_force(int vflag)
     // build neighlist for primitive walls
     
     if(rebuildPrimitiveNeighlist_)
-      primitiveWall_->buildNeighList(radius_ ? halfskin:(r0_+halfskin),x_,radius_,nlocal);
+      primitiveWall_->buildNeighList(radius_ ? neighbor->skin:(r0_+neighbor->skin),x_,radius_,nlocal);
 
     rebuildPrimitiveNeighlist_ = false;
 }
@@ -718,10 +812,19 @@ void FixWallGran::post_force_wall(int vflag)
   if(meshwall_ == 0 && store_force_contact_)
     fix_wallforce_contact_->do_forward_comm();
 
+  if(meshwall_ == 0 && store_force_contact_stress_)
+    fix_wallforce_contact_stress_->do_forward_comm();
+
   if(meshwall_ == 1 && store_force_contact_)
   {
     for(int imesh = 0; imesh < n_FixMesh_; imesh++)
         FixMesh_list_[imesh]->meshforceContact()->do_forward_comm();
+  }
+
+  if(meshwall_ == 1 && store_force_contact_stress_)
+  {
+    for(int imesh = 0; imesh < n_FixMesh_; imesh++)
+        FixMesh_list_[imesh]->meshforceContactStress()->do_forward_comm();
   }
 }
 
@@ -747,7 +850,7 @@ void FixWallGran::post_force_mesh(int vflag)
     double ***vMesh = 0;
     int nlocal = atom->nlocal;
     int nTriAll, barysign = -1;
-    double OneMinusContactDistanceFactor = 1.-neighbor->contactDistanceFactor;
+    const double contactDistanceMultiplier = neighbor->contactDistanceFactor - 1.0;
 
     SurfacesIntersectData sidata;
     sidata.is_wall = true;
@@ -767,6 +870,11 @@ void FixWallGran::post_force_mesh(int vflag)
 
       if(store_force_contact_)
         fix_wallforce_contact_ = FixMesh_list_[iMesh]->meshforceContact();
+
+      if(store_force_contact_stress_)
+        fix_wallforce_contact_stress_ = FixMesh_list_[iMesh]->meshforceContactStress();
+
+      fix_store_multicontact_data_ = FixMesh_list_[iMesh]->meshMulticontactData();
 
       // get neighborList and numNeigh
       FixNeighlistMesh * meshNeighlist = FixMesh_list_[iMesh]->meshNeighlist();
@@ -808,26 +916,52 @@ void FixWallGran::post_force_mesh(int vflag)
                     deltan = LARGE_TRIMESH;
                   sidata.is_non_spherical = true; //by default it is false
                 } else
-                  deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary);
+                  deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary,barysign);
             #else
-                deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary,barysign);
+                sidata.radi = radius_ ? radius_[iPart] : r0_;
+                if (fix_store_multicontact_data_)
+                {
+                    double * deltaData = NULL;
+                    const bool contact = fix_store_multicontact_data_->haveContact(iPart, iTri, deltaData);
+                    if (contact)
+                        sidata.radi += deltaData[3];
+                }
+                
+                deltan = mesh->resolveTriSphereContactBary(iPart, iTri, sidata.radi, x_[iPart], delta, bary, barysign, atom->shapetype_flag ? false : true);
             #endif
             
             if(deltan > cutneighmax_) continue;
 
-            if(deltan <= 0 || (radius && deltan < OneMinusContactDistanceFactor*radius[iPart]))
+            sidata.i = iPart;
+
+            if(atom->shapetype_flag)
+            {
+                
+                sidata.mesh = mesh;
+                sidata.j = iTri;
+                impl->checkSurfaceIntersect(sidata);
+                deltan = -sidata.deltan;
+                
+            }
+
+            if(deltan <= 0 || (radius && deltan < contactDistanceMultiplier*radius[iPart]))
             {
               
-              bool intersectflag = (deltan <= 0);
-              if(fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,7 == barysign)) continue;
+              const bool intersectflag = (deltan <= 0);
+
+              if(atom->shapetype_flag)
+                  fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,false);
+              else
+                  if(fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,7 == barysign)) continue;
 
               if(vMeshC)
               {
                 for(int i = 0; i < 3; i++)
                     v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
               }
-              sidata.i = iPart;
-              sidata.deltan   = -deltan;
+
+              if(!sidata.is_non_spherical || atom->superquadric_flag);
+                sidata.deltan   = -deltan;
               sidata.delta[0] = -delta[0];
               sidata.delta[1] = -delta[1];
               sidata.delta[2] = -delta[2];
@@ -868,7 +1002,7 @@ void FixWallGran::post_force_primitive(int vflag)
   SurfacesIntersectData sidata;
   sidata.is_wall = true;
   double *radius = atom->radius;
-  double OneMinusContactDistanceFactor = 1.-neighbor->contactDistanceFactor;
+  const double contactDistanceMultiplier = neighbor->contactDistanceFactor - 1.0;
   
   // contact properties
   double delta[3]={},deltan,rdist[3];
@@ -891,11 +1025,19 @@ void FixWallGran::post_force_primitive(int vflag)
 
     if(!(mask[iPart] & groupbit)) continue;
 
-    deltan = primitiveWall_->resolveContact(x_[iPart],radius_?radius_[iPart]:r0_,delta);
+    sidata.radi = radius_ ? radius_[iPart] : r0_;
+    if (fix_store_multicontact_data_)
+    {
+        double * deltaData = NULL;
+        const bool contact = fix_store_multicontact_data_->haveContact(iPart, 1, deltaData);
+        if (contact)
+            sidata.radi += deltaData[3];
+    }
+    deltan = primitiveWall_->resolveContact(x_[iPart], sidata.radi, delta);
 
     if(deltan>cutneighmax_) continue;
 
-    if(deltan <= 0 || deltan < OneMinusContactDistanceFactor*radius[iPart])
+    if(deltan <= 0 || deltan < contactDistanceMultiplier*radius[iPart])
     {
       // spheres
       bool intersectflag = (deltan <= 0);
@@ -911,7 +1053,7 @@ void FixWallGran::post_force_primitive(int vflag)
             double closestPoint[3], closestPointProjection[3], point_of_lowest_potential[3];
             Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
             intersectflag = particle.plane_intersection(delta, sphere_contact_point, closestPoint, point_of_lowest_potential);
-            deltan = -MathExtraLiggghtsSuperquadric::point_wall_projection(delta, sphere_contact_point, closestPoint, closestPointProjection);
+            deltan = -MathExtraLiggghtsNonspherical::point_wall_projection(delta, sphere_contact_point, closestPoint, closestPointProjection);
             vectorCopy3D(closestPoint, sidata.contact_point);
             sidata.is_non_spherical = true; //by default it is false
       }
@@ -925,13 +1067,22 @@ void FixWallGran::post_force_primitive(int vflag)
       }
       sidata.i = iPart;
       sidata.contact_history = c_history ? c_history[iPart] : NULL;
-      sidata.deltan = -deltan;
+
+      if(sidata.is_non_spherical && !impl->checkSurfaceIntersect(sidata))
+      {
+        if(c_history)
+            vectorZeroizeN(c_history[iPart],dnum_);
+        break;
+      }
+
+      if(!sidata.is_non_spherical || atom->superquadric_flag);
+        sidata.deltan   = -deltan;
       sidata.delta[0] = -delta[0];
       sidata.delta[1] = -delta[1];
       sidata.delta[2] = -delta[2];
 
       if(impl)
-        impl->compute_force(this, sidata, intersectflag,v_wall);
+        impl->compute_force(this, sidata, intersectflag, v_wall);
       else
       {
         sidata.r =  r0_ - sidata.deltan;
@@ -973,45 +1124,51 @@ int FixWallGran::is_moving()
 
 /* ---------------------------------------------------------------------- */
 
-int FixWallGran::n_contacts_local()
+int FixWallGran::n_contacts_local(int &nIntersect)
 {
     if (!is_mesh_wall() || dnum() == 0) return 0;
 
     int ncontacts = 0;
     for(int i = 0; i < n_FixMesh_; i++)
-        ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts();
+        ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts(nIntersect);
 
     return ncontacts;
 }
 
 /* ---------------------------------------------------------------------- */
 
-int FixWallGran::n_contacts_all()
+int FixWallGran::n_contacts_all(int &nIntersect)
 {
-    int ncontacts = n_contacts_local();
+    int local_nIntersect;
+    int ncontacts = n_contacts_local(local_nIntersect);
     MPI_Sum_Scalar(ncontacts,world);
+    MPI_Sum_Scalar(local_nIntersect,world);
+    nIntersect = local_nIntersect;
     return ncontacts;
 }
 
 /* ---------------------------------------------------------------------- */
 
-int FixWallGran::n_contacts_local(int contact_groupbit)
+int FixWallGran::n_contacts_local(int contact_groupbit, int &nIntersect)
 {
     if (!is_mesh_wall() || dnum() == 0) return 0;
 
     int ncontacts = 0;
     for(int i = 0; i < n_FixMesh_; i++)
-        ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts(contact_groupbit);
+        ncontacts += FixMesh_list_[i]->contactHistory()->n_contacts(contact_groupbit, nIntersect);
 
     return ncontacts;
 }
 
 /* ---------------------------------------------------------------------- */
 
-int FixWallGran::n_contacts_all(int contact_groupbit)
+int FixWallGran::n_contacts_all(int contact_groupbit, int &nIntersect)
 {
-    int ncontacts = n_contacts_local(contact_groupbit);
+    int local_nIntersect;
+    int ncontacts = n_contacts_local(contact_groupbit, local_nIntersect);
     MPI_Sum_Scalar(ncontacts,world);
+    MPI_Sum_Scalar(local_nIntersect,world);
+    nIntersect = local_nIntersect;
     return ncontacts;
 }
 
@@ -1078,17 +1235,20 @@ void FixWallGran::init_heattransfer()
 
 /* ---------------------------------------------------------------------- */
 
-void FixWallGran::addHeatFlux(TriMesh *mesh,int ip, double delta_n, double area_ratio)
+void FixWallGran::addHeatFlux(TriMesh *mesh,int ip, const double ri, double delta_n, double area_ratio)
 {
     //r is the distance between the sphere center and wall
     double tcop, tcowall, hc, Acont=0.0, r;
-    double reff_wall = atom->radius[ip];
+    double reff_wall = ri;
     int itype = atom->type[ip];
-    double ri = atom->radius[ip];
 
     if(mesh)
     {
-        Temp_wall = (*mesh->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))(0);
+        ScalarContainer<double> *temp_ptr = mesh->prop().getGlobalProperty< ScalarContainer<double> >("Temp");
+        if (!temp_ptr)
+            return;
+
+        Temp_wall = (*temp_ptr)(0);
     }
 
     double *Temp_p = fppa_T->vector_atom;

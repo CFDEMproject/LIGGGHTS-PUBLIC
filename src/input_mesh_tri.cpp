@@ -32,17 +32,19 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
 
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
+
+    Copyright 2016-     CFDEMresearch GmbH, Linz
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "ctype.h"
 #include "memory.h"
 #include "input.h"
@@ -51,7 +53,7 @@
 #include "error.h"
 #include "region.h"
 #include "domain.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "input_mesh_tri.h"
 #include "tri_mesh.h"
@@ -107,7 +109,7 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
   if(is_stl)
   {
       if (comm->me == 0) fprintf(screen,"\nReading STL file '%s' \n",filename);
-      meshtrifile_stl(mesh,region);
+      meshtrifile_stl(mesh,region,filename);
       
   }
   else if(is_vtk)
@@ -300,7 +302,7 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh,class Region *region)
    process STL file
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region)
+void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region, const char *filename)
 {
   int n,m;
   int iVertex = 0;
@@ -358,6 +360,7 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region)
     nLines++;
 
     // parse one line from the stl file
+
     parse_nonlammps();
 
     // skip empty lines
@@ -365,6 +368,16 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region)
          if (me == 0 && verbose_)
             fprintf(screen,"Note: Skipping empty line in STL file\n");
       continue;
+    }
+
+    if (strcmp(arg[0],"solid") != 0 && nLines == 1)
+    {
+        if (me == 0 && verbose_)
+            fprintf(screen,"Note: solid keyword not found, assuming binary stl file\n");
+        fclose(nonlammps_file);
+        nonlammps_file = NULL;
+        meshtrifile_stl_binary(mesh, region, filename);
+        break;
     }
 
     // detect begin and end of a solid object, facet and vertices
@@ -431,7 +444,9 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region)
          }
       }
       else if(!region || ( region->match(vertices[0]) && region->match(vertices[1]) && region->match(vertices[2]) ) )
+      {
           addTriangle(mesh,vertices[0],vertices[1],vertices[2],nLinesTri);
+      }
 
        if (me == 0) {
          //fprintf(screen,"  End of facet detected in in solid body.\n");
@@ -481,6 +496,68 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region)
                           "in a facet (only triangular meshes supported).");
     }
   }
+}
+
+void InputMeshTri::meshtrifile_stl_binary(class TriMesh *mesh, class Region *region, const char *filename)
+{
+    unsigned int num_of_facets;
+    std::ifstream stl_file;
+
+    if (me == 0) {
+        // open file for reading
+        stl_file.open(filename, std::ifstream::in | std::ifstream::binary);
+
+        // read 80 byte header into nirvana
+        for (int i=0; i<20; i++){
+          float dum;
+          stl_file.read((char *)&dum, sizeof(float));
+        }
+
+        // read number of triangles
+        stl_file.read((char *)&num_of_facets, sizeof(int));
+    }
+
+    // communicate number of triangles
+    MPI_Bcast(&num_of_facets,1,MPI_INT,0,world);
+
+    unsigned int count = 0;
+    float tri_data[12];
+    while(1) {
+        if (me == 0) {
+            // read one triangle dataset (normal + 3 vertices)
+            for (int i=0; i<12; i++)
+              stl_file.read((char *)&tri_data[i], sizeof(float));
+            // read triangle attribute into nirvana
+            short dum;
+            stl_file.read((char *)&dum, sizeof(short));
+            // error handling
+            if (!stl_file)
+                error->one(FLERR,"Corrupt STL file: Error in reading binary STL file.");
+            // increase triangle counter
+            count++;
+        }
+        // communicate triangle data
+        MPI_Bcast(&tri_data,12,MPI_FLOAT,0,world);
+        if(size_exclusion_list_ > 0 && count == (unsigned int)exclusion_list_[i_exclusion_list_]) {
+            if(i_exclusion_list_ < size_exclusion_list_-1)
+                i_exclusion_list_++;
+        }
+        else
+        {
+            double vert[9];
+            // copy float vertices into double variables (ignore normal at the beginning of tri_data)
+            for (int i=0; i<9; i++)
+                vert[i] = (double) tri_data[i+3];
+            if(!region || ( region->match(&vert[0]) && region->match(&vert[3]) && region->match(&vert[6]) ) )
+                addTriangle(mesh, &vert[0], &vert[3], &vert[6], count);
+        }
+
+        if (count == num_of_facets)
+            break;
+    }
+
+    if (me == 0)
+        stl_file.close();
 }
 
 /* ----------------------------------------------------------------------

@@ -42,7 +42,7 @@
 #ifndef LMP_INPUT_MULTISPHERE_H
 #define LMP_INPUT_MULTISPHERE_H
 
-#include "stdio.h"
+#include <stdio.h>
 #include "input.h"
 
 namespace LAMMPS_NS {

@@ -36,7 +36,7 @@
 ------------------------------------------------------------------------- */
 
 #ifdef LAMMPS_VTK
-#include "string.h"
+#include <string.h>
 #include "dump_atom_vtk.h"
 #include "atom.h"
 #include "group.h"

@@ -79,8 +79,12 @@ and 0 otherwise. For computing particle-wall data, the output <I>id</I>
 will be the mesh id, the triangle id and the particle id. The output
 <I>force</I>, <I>force_normal</I>, <I>force_tangential</I> and <I>torque</I> are the total
 contact force, the normal and tangential components of the contact
-force, and the torque divided by the
-particle radius, both in force <A HREF = "units.html">units</A>. Note that the torque
+force, and the torque divided by the particle radius, both in force 
+<A HREF = "units.html">units</A>. Note that the normal and tangential components
+are not necessarily exactly equal to the forces added by  
+<A HREF = "Section_gran_models.html">the normal and tangential model used</A> , but 
+are geometrically composed, using the connection line between the
+particle centers as normal direction. Note also that the torque
 does NOT contain any rolling friction torque. The output <I>history</I>
 will depend on what this history represents, according to the granular
 pair style used. The output <I>contactArea</I> will output the contact area,
@@ -111,6 +115,14 @@ For example, pair output from the <A HREF = "compute_property_local.html">comput
 property/local</A> command can be combined
 with data from this command and output by the <A HREF = "dump.html">dump local</A>
 command in a consistent way.
+</P>
+<P>IMPORTANT NOTE: This compute, will, when invoked, issue a call to
+the pair or wall contact models to calculate what would be the contact
+forces given the current positions, velocities etc
+</P>
+<P>Since this compute is typically done when output is created (at the end of
+the time-step), this is not necessarily exactly equal to (with machine precision)
+the p-p or p-w forces which were calculated within one time-step.
 </P>
 <P><B>Output info:</B>
 </P>

@@ -49,7 +49,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "verlet.h"
 #include "neighbor.h"
 #include "domain.h"

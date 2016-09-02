@@ -43,8 +43,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <stdio.h>
 #include "special.h"
 #include "atom.h"
 #include "atom_vec.h"

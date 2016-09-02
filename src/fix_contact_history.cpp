@@ -49,9 +49,9 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "string.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <string.h>
+#include <stdio.h>
 #include "fix_contact_history.h"
 #include "atom.h"
 #include "comm.h"
@@ -216,15 +216,27 @@ void FixContactHistory::init()
       
       pair_gran_ = static_cast<PairGran*>(force->pair_match("gran", 1));
 
-      if(!pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
-        pair_gran_ = static_cast<PairGran*>(force->pair_match("gran_bubble", 1));
-      if(!pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
-        pair_gran_ = static_cast<PairGran*>(force->pair_match("bubble", 1));
+      /*
+      if(pair_gran_ && dnum_!=static_cast<PairGran*>(pair_gran_)->dnum())
+      {
+          if(screen) fprintf(screen,"FixContactHistory: Found a PairGran 'gran', but dnum (=%d) and pair_gran->dnum (=%d) is NOT consistent! \n",
+              dnum_, static_cast<PairGran*>(pair_gran_)->dnum());
+      }
+      else if(pair_gran_)
+      {
+          if(screen) fprintf(screen,"FixContactHistory: PairGran 'gran' dnum (=%d) and pair_gran->dnum (=%d) is consistent! \n",
+	         dnum_,  static_cast<PairGran*>(pair_gran_)->dnum());
+      }*/
+
+      if(!pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum())
+          pair_gran_ = static_cast<PairGran*>(force->pair_match("gran_bubble", 1));
+      if(!pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum())
+          pair_gran_ = static_cast<PairGran*>(force->pair_match("bubble", 1));
 
       if(!pair_gran_)
-          error->fix_error(FLERR,this,"Please use a pair style 'gran', 'gran_bubble' or 'bubble' for fix contacthistory");
-      if(dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
-          error->fix_error(FLERR,this,"internal error");
+          error->fix_error(FLERR,this,"Please use a pair style 'gran', 'gran_bubble' or 'bubble' for fix contacthistory, or check your settings for dnum (they may be inconsistent)");
+      if(dnum_ != static_cast<PairGran*>(pair_gran_)->dnum())
+          error->fix_error(FLERR,this,"FixContactHistory: PairGran 'gran' and pair_gran->dnum is inconsistent!");
 
       int dim;
       computeflag_ = (int *) pair_gran_->extract("computeflag",dim);
@@ -564,7 +576,7 @@ void FixContactHistory::restart(char *buf)
   double *list = (double *) buf;
 
   int unpack_dnum = static_cast<int> (list[n++]);
-  int unpack_maxtouch = static_cast<int> (list[n++]);
+  //int unpack_maxtouch = static_cast<int> (list[n++]);
 
   if(unpack_dnum != dnum_)
     error->fix_error(FLERR,this,"saved simulation state used different contact history model - can not restart");

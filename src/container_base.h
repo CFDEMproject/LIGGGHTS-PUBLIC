@@ -44,7 +44,7 @@
 #ifndef LMP_CONTAINER_BASE_H
 #define LMP_CONTAINER_BASE_H
 
-#include "string.h"
+#include <string.h>
 
 namespace LAMMPS_NS
 {
@@ -56,6 +56,57 @@ namespace LAMMPS_NS
         OPERATION_COMM_REVERSE,
         OPERATION_RESTART,
         OPERATION_UNDEFINED};
+
+  /* ----------------------------------------------------------------------
+   definition of reference frames and comm types
+  ------------------------------------------------------------------------- */
+
+  // reference frame types
+  // invariant: invariant to scaling, translation, rotation
+  // trans invariant: invariant to translation, not invariant to scaling, rotation
+  // trans+rot invariant: invariant to translation, rotation, not invariant to scaling
+  // general: not invariant to scaling, translation, rotation
+
+  enum{ REF_FRAME_UNDEFINED,
+        REF_FRAME_INVARIANT,
+        REF_FRAME_SCALE_TRANS_INVARIANT,
+        REF_FRAME_TRANS_ROT_INVARIANT,
+        REF_FRAME_TRANS_INVARIANT,
+        REF_FRAME_GENERAL};
+
+  // communication types
+
+  enum{ // communication invoked manually
+        COMM_TYPE_MANUAL,
+        // only exchange and borders comm
+        COMM_EXCHANGE_BORDERS,
+        // forward comm every step
+        COMM_TYPE_FORWARD,
+        // forward comm based on reference frame setting
+        // ie if mesh rotates, egdeVecs are communicated
+        
+        COMM_TYPE_FORWARD_FROM_FRAME,
+        // reverse comm every step
+        
+        COMM_TYPE_REVERSE,
+        // reverse comm every step
+        
+        COMM_TYPE_REVERSE_BITFIELD,
+        // no comm at all
+        
+        COMM_TYPE_NONE,
+        // undefined state for error check
+        COMM_TYPE_UNDEFINED};  // communication types
+
+  // restart types
+
+  enum{ RESTART_TYPE_UNDEFINED,
+        RESTART_TYPE_YES,
+        RESTART_TYPE_NO};
+
+  /* ----------------------------------------------------------------------
+   class definitions
+  ------------------------------------------------------------------------- */
 
   class ContainerBase
   {
@@ -134,6 +185,9 @@ namespace LAMMPS_NS
 
           inline void setAveragingForget(bool _value)
           {  averaging_forget_ = _value; }
+
+          inline int communicationType() const
+          { return communicationType_; }
 
           // buffer functions for parallelization
 

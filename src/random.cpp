@@ -32,34 +32,44 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
+    (if no contributing author is listed, this file has been contributed
     by the core developer)
 
-    Copyright 2012-     DCS Computing GmbH, Linz
-    Copyright 2009-2012 JKU Linz
+    Copyright 2016-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#ifndef LMP_FIX_CONTACTPROPERTY_ATOM_H
-#define LMP_FIX_CONTACTPROPERTY_ATOM_H
+#include <math.h>
+#include "random.h"
+#include "error.h"
+#include "comm.h"
+#include "input.h"
+#include "math_extra_liggghts.h"
 
-#include "fix_contact_history.h"
+using namespace LAMMPS_NS;
 
-namespace LAMMPS_NS {
+/* ---------------------------------------------------------------------- */
 
-class FixContactPropertyAtom : public FixContactHistory {
+Random::Random(LAMMPS *lmp, int seed) : Pointers(lmp)
+{
 
- public:
+    if(0 == comm->me)
+    {
+        if(seed < 10000 || !MathExtraLiggghts::isPrime(seed))
+        {
+            char errstr[1024];
 
-  void do_forward_comm() {}
+            sprintf(errstr,"Random number generation: It is required that the random seed value is > 10000 and a prime number.\n"
+                           "The random seed used was %d\n"
+                           "  Hint 1: start with 'liggghts -echo both < in.script' to find out which command caused this\n"
+                           "  Hint 2: possible valid seeds would be the following numbers:\n"
+                           "          15485863, 15485867, 32452843, 32452867, 49979687, 49979693, 67867967, 67867979, 86028121, 86028157",
+                           seed);
 
-  void reset_history() {}
-
-  inline bool has_partner(int,int)
-  {return false;}
-
-  inline void add_partner(int,int,double *) {}
-};
+            if(input->seed_check_throw_error())
+                error->one(FLERR,errstr);
+            else
+                error->warning(FLERR,errstr);
+        }
+    }
 
 }
-
-#endif

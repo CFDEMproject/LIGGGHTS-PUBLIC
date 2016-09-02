@@ -44,10 +44,10 @@ Thanks to Chris Stoltz (P&G) for providing
 a Fortran version of the MC integrator
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_template_multiplespheres.h"
 #include "fix_property_atom.h"
 #include "math_extra.h"
@@ -255,7 +255,7 @@ void FixTemplateMultiplespheres::post_create()
                   "bond_random_id",     // property name
                   "scalar", // 1 vector per particle
                   "yes",    // restart
-                  "no",     // communicate ghost
+                  "yes",     // communicate ghost
                   "no",    // communicate rev
                   "-1."
             };

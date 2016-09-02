@@ -42,8 +42,9 @@
 #ifndef LMP_MPI_LIGGGHTS_H
 #define LMP_MPI_LIGGGHTS_H
 
-#include "mpi.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <stdio.h>
+#include "lmptype.h"
 
 /* ---------------------------------------------------------------------- */
 // a poor man's inline MPI wrappers for LIGGGHTS
@@ -73,6 +74,12 @@ template<>
 inline MPI_Datatype mpi_type<int>()
 {
   return MPI_INT;
+}
+
+template<>
+inline MPI_Datatype mpi_type<uint64_t>()
+{
+  return MPI_UNSIGNED_LONG ;
 }
 
 /* ---------------------------------------------------------------------- */

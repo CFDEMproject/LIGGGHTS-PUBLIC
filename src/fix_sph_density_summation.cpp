@@ -38,10 +38,10 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "mpi.h"
-#include "string.h"
-#include "stdlib.h"
+#include <math.h>
+#include <mpi.h>
+#include <string.h>
+#include <stdlib.h>
 #include "fix_sph_density_summation.h"
 #include "update.h"
 #include "respa.h"

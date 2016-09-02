@@ -49,10 +49,10 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "ctype.h"
 #include "unistd.h"
 #include "sys/stat.h"
@@ -152,6 +152,8 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
       iarg += 2;
     } else iarg++;
   }
+
+  seed_check_error = true;
 }
 
 /* ---------------------------------------------------------------------- */

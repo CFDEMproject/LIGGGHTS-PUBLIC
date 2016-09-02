@@ -96,6 +96,7 @@ class FixGravity : public Fix {
 
   void set_acceleration();
   class FixMultisphere *fm;
+  class FixRelaxContacts *fix_relax;
 };
 
 }

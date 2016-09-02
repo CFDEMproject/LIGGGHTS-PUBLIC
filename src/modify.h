@@ -52,7 +52,7 @@
 #ifndef LMP_MODIFY_H
 #define LMP_MODIFY_H
 
-#include "stdio.h"
+#include <stdio.h>
 #include "pointers.h"
 #include "fix.h"
 #include <map>
@@ -145,6 +145,9 @@ class Modify : protected Pointers {
   int n_fixes_style(const char *style); 
   int n_computes_style(const char *style); 
   int n_fixes_style_strict(const char *style); 
+  int n_fixes_property_atom_not_internal();
+  int dump_size_fixes_property_atom_not_internal();
+  class FixPropertyAtom* find_fix_property_atom_not_internal(int rank);
   bool i_am_first_of_style(class Fix *fix_to_check); 
   int index_first_fix_of_style(const char *style); 
   int index_last_fix_of_style(const char *style); 

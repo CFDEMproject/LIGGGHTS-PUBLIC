@@ -38,11 +38,11 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "atom.h"
 #include "update.h"
-#include "math.h"
+#include <math.h>
 #include "error.h"
 #include "fix_check_timestep_sph.h"
 #include "fix_property_global.h"

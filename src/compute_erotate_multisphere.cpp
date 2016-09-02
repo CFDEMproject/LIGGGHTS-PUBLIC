@@ -38,8 +38,8 @@
     Copyright 2014-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "string.h"
+#include <mpi.h>
+#include <string.h>
 #include "compute_erotate_multisphere.h"
 #include "update.h"
 #include "modify.h"

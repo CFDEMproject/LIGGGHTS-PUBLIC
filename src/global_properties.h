@@ -107,6 +107,12 @@ namespace MODEL_PARAMS
   MatrixProperty* createCoeffPlasticityDepth(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createRoughnessAbsolute(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createRoughnessRelative(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createNormalDampingCoefficient(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createTangentialDampingCoefficient(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createTangentialStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createInitialCohesiveStress(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createMaxCohesiveStress(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createCohesionStrength(PropertyRegistry & registry, const char * caller, bool sanity_checks);
 }
 
 #endif /* GLOBAL_PROPERTIES_H_ */

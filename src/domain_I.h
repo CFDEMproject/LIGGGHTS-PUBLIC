@@ -42,8 +42,6 @@
 #ifndef LMP_DOMAIN_I_H
 #define LMP_DOMAIN_I_H
 
-using namespace LAMMPS_NS;
-
 /* ----------------------------------------------------------------------
    check if coordinate in domain, subdomain or extended subdomain
    need to test with <= and >= for domain, and < and >= for subdomain
@@ -70,28 +68,20 @@ inline int Domain::is_in_subdomain(double* pos)
         return is_in_subdomain_wedge(pos);
 
     double checkhi[3];
+    double checklo[3];
 
-    // need to test with and < and >= for subdomain
-    // but need to ensure elements right at boxhi
-    // are tested correctly
-    if(subhi[0] == boxhi[0])
-        checkhi[0] = boxhi[0] + SMALL_DMBRDR;
-    else
-        checkhi[0] = subhi[0];
+    // If subdomain touches the lower or upper boundaries of the bounding box then
+    // add a small padding to avoid rounding errors
+    checkhi[0] = subhi[0] + (MathExtraLiggghts::compDouble(subhi[0], boxhi[0]) ? SMALL_DMBRDR : 0.0);
+    checkhi[1] = subhi[1] + (MathExtraLiggghts::compDouble(subhi[1], boxhi[1]) ? SMALL_DMBRDR : 0.0);
+    checkhi[2] = subhi[2] + (MathExtraLiggghts::compDouble(subhi[2], boxhi[2]) ? SMALL_DMBRDR : 0.0);
+    checklo[0] = sublo[0] - (MathExtraLiggghts::compDouble(sublo[0], boxlo[0]) ? SMALL_DMBRDR : 0.0);
+    checklo[1] = sublo[1] - (MathExtraLiggghts::compDouble(sublo[1], boxlo[1]) ? SMALL_DMBRDR : 0.0);
+    checklo[2] = sublo[2] - (MathExtraLiggghts::compDouble(sublo[2], boxlo[2]) ? SMALL_DMBRDR : 0.0);
 
-    if(subhi[1] == boxhi[1])
-        checkhi[1] = boxhi[1] + SMALL_DMBRDR;
-    else
-        checkhi[1] = subhi[1];
-
-    if(subhi[2] == boxhi[2])
-        checkhi[2] = boxhi[2] + SMALL_DMBRDR;
-    else
-        checkhi[2] = subhi[2];
-
-    if ( pos[0] >= sublo[0] && pos[0] < checkhi[0] &&
-         pos[1] >= sublo[1] && pos[1] < checkhi[1] &&
-         pos[2] >= sublo[2] && pos[2] < checkhi[2])
+    if ( pos[0] >= checklo[0] && pos[0] < checkhi[0] &&
+         pos[1] >= checklo[1] && pos[1] < checkhi[1] &&
+         pos[2] >= checklo[2] && pos[2] < checkhi[2])
         return 1;
     return 0;
 }

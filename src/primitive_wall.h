@@ -73,7 +73,7 @@ namespace LAMMPS_NS
         }
 
         inline int getNeighbors(int *&contactPtr);
-        inline void handleContact(int iPart,double *&c_history);
+        inline void handleContact(int iPart,double *&c_history, const double deltan);
         inline void handleNoContact(int iPart);
         inline void setContactHistorySize(int nPart);
 

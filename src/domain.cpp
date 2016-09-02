@@ -53,11 +53,11 @@
    Contributing author (triclinic) : Pieter in 't Veld (SNL)
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdlib.h"
-#include "string.h"
-#include "stdio.h"
-#include "math.h"
+#include <mpi.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
 #include "domain.h"
 #include "style_region.h"
 #include "atom.h"

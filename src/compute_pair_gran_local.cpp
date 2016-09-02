@@ -39,8 +39,8 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "string.h"
+#include <math.h>
+#include <string.h>
 #include "compute_pair_gran_local.h"
 #include "atom.h"
 #include "update.h"
@@ -79,14 +79,14 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
   posflag = velflag = idflag = fflag = torqueflag = histflag = areaflag = 1;
 
   // do not store fn, ft, heat flux, delta by default
-  fnflag = ftflag = deltaflag = heatflag = 0;
+  fnflag = ftflag  = torquenflag = torquetflag = deltaflag = heatflag = 0;
 
   //no extra distance for building the list of pairs
   verbose = false;
 
   // if further args, store only the properties that are listed
   if(narg > 3)
-     posflag = velflag = idflag = fflag = fnflag = ftflag = torqueflag = histflag = areaflag = deltaflag = heatflag = 0;
+     posflag = velflag = idflag = fflag = fnflag = ftflag = torqueflag = torquenflag = torquetflag = histflag = areaflag = deltaflag = heatflag = 0;
 
   for (int iarg = 3; iarg < narg; iarg++)
   {
@@ -98,6 +98,8 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
     else if (strcmp(arg[iarg],"force_normal") == 0) fnflag = 1;
     else if (strcmp(arg[iarg],"force_tangential") == 0) ftflag = 1;
     else if (strcmp(arg[iarg],"torque") == 0) torqueflag = 1;
+    else if (strcmp(arg[iarg],"torque_normal") == 0) torquenflag = 1;
+    else if (strcmp(arg[iarg],"torque_tangential") == 0) torquetflag = 1;
     else if (strcmp(arg[iarg],"history") == 0) histflag = 1;
     else if (strcmp(arg[iarg],"contactArea") == 0) areaflag = 1;
     else if (strcmp(arg[iarg],"delta") == 0) deltaflag = 1;
@@ -245,13 +247,20 @@ void ComputePairGranLocal::init_cpgl(bool requestflag)
 
       n_wall_fixes = modify->n_fixes_style("wall/gran");
 
+      bool printed_primitive_warning = false;
       for(ifix = 0; ifix < n_wall_fixes; ifix++)
       {
           fwg = static_cast<FixWallGran*>(modify->find_fix_style("wall/gran",ifix));
-          if(fwg->is_mesh_wall()) fixwall = fwg;
+          if(fwg->is_mesh_wall())
+              fixwall = fwg;
+          else if (!printed_primitive_warning)
+          {
+              error->warning(FLERR, "Compute wall/gran/local detected primitive wall, output will only happen for mesh wall - particle pairs");
+              printed_primitive_warning = true;
+          }
       }
 
-      if(!fixwall) error->all(FLERR,"Compute wall/gran/local requires a fix of type wall/gran using one or more mesh walls. This fix has come before the compute in the script");
+      if(!fixwall) error->all(FLERR,"Compute wall/gran/local requires a fix of type wall/gran using one or more mesh walls. This fix has to come before the compute in the script");
       fixwall->register_compute_wall_local(this,dnum);
   }
 
@@ -261,7 +270,7 @@ void ComputePairGranLocal::init_cpgl(bool requestflag)
   if(histflag && dnum == 0) error->all(FLERR,"Compute pair/gran/local or wall/gran/local can not calculate history values since pair or wall style does not compute them");
   // standard values: pos1,pos2,id1,id2,extra id for mesh wall,force,torque,contact area
 
-  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + fnflag*3 + ftflag*3 + torqueflag*3 + histflag*dnum + areaflag + deltaflag + heatflag;
+  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + fnflag*3 + ftflag*3 + torqueflag*3 + torquenflag*3 + torquetflag*3 + histflag*dnum + areaflag + deltaflag + heatflag;
   size_local_cols = nvalues;
 
 }
@@ -383,6 +392,7 @@ int ComputePairGranLocal::count_pairs(int & nCountSurfacesIntersect)
   if(verbose)
       printf("ComputePairGranLocal::count_pairs: detected %d pairs , and %d pairs with surface intersection. \n",
              m, nCountSurfacesIntersect);
+
   return m;
 }
 
@@ -392,11 +402,7 @@ int ComputePairGranLocal::count_pairs(int & nCountSurfacesIntersect)
 
 int ComputePairGranLocal::count_wallcontacts(int & nCountWithOverlap)
 {
-    // account for fix group
-    // no distinction between ncount and nCountWithOverlap for now
-    
-    nCountWithOverlap = fixwall->n_contacts_local(groupbit);
-    return nCountWithOverlap;
+    return fixwall->n_contacts_local(groupbit, nCountWithOverlap);
 }
 
 /* ----------------------------------------------------------------------
@@ -416,13 +422,20 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
     nlocal = atom->nlocal;
     if (newton_pair == 0 && j >= nlocal && atom->tag[i] <= atom->tag[j]) return;
 
-    if(!decide_add(hist))
+    double *contact_pos; // unused for pairs
+    if(!decide_add(hist, contact_pos))
         return;
 
     xi = atom->x[i];
     xj = atom->x[j];
     vi = atom->v[i];
     vj = atom->v[j];
+
+    if(ipair>=nmax)
+    {
+        if(screen) fprintf(screen,"ipair: %d, ncount: %d. \n", ipair, ncount);
+        error->one(FLERR,"Attempt to add_pair, but number of pairs (nmax) is too small. Try to increase contact_distance_factor via an appropriate neigh_modify command!");
+    }
 
     int n = 0;
     if(posflag)
@@ -458,6 +471,7 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
         array[ipair][n++] = fx;
         array[ipair][n++] = fy;
         array[ipair][n++] = fz;
+        
     }
     if(fnflag)
     {
@@ -487,12 +501,42 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
         array[ipair][n++] = ft[0];
         array[ipair][n++] = ft[1];
         array[ipair][n++] = ft[2];
+
     }
     if(torqueflag)
     {
         array[ipair][n++] = tor1;
         array[ipair][n++] = tor2;
         array[ipair][n++] = tor3;
+    }
+    if(torquenflag)
+    {
+        double torc[3],torn[3],normal[3];
+
+        vectorConstruct3D(torc,tor1,tor2,tor3);
+        vectorSubtract3D(atom->x[j],atom->x[i],normal);
+        vectorNormalize3D(normal);
+        const double tornmag = vectorDot3D(torc,normal);
+        vectorScalarMult3D(normal,tornmag,torn);
+
+        array[ipair][n++] = torn[0];
+        array[ipair][n++] = torn[1];
+        array[ipair][n++] = torn[2];
+    }
+    if(torquetflag)
+    {
+        double torc[3],torn[3],tort[3],normal[3];
+
+        vectorConstruct3D(torc,tor1,tor2,tor3);
+        vectorSubtract3D(atom->x[j],atom->x[i],normal);
+        vectorNormalize3D(normal);
+        const double tornmag = vectorDot3D(torc,normal);
+        vectorScalarMult3D(normal,tornmag,torn);
+        vectorSubtract3D(torc,torn,tort);
+
+        array[ipair][n++] = tort[0];
+        array[ipair][n++] = tort[1];
+        array[ipair][n++] = tort[2];
     }
     if(histflag)
     {
@@ -615,6 +659,35 @@ void ComputePairGranLocal::add_wall_1(int iFMG,int idTri,int iP,double *contact_
         array[ipair][n++] = contact_point[2];
     }
 
+    if(torqueflag)
+    {
+        n += 3;
+    }
+    if(torquenflag)
+    {
+        array[ipair][n++] = contact_point[0];
+        array[ipair][n++] = contact_point[1];
+        array[ipair][n++] = contact_point[2];
+    }
+    if(torquetflag)
+    {
+        array[ipair][n++] = contact_point[0];
+        array[ipair][n++] = contact_point[1];
+        array[ipair][n++] = contact_point[2];
+    }
+    if(histflag)
+    {
+        n += dnum;
+    }
+    if(areaflag)
+    {
+        n++;
+    }
+    if(deltaflag)
+    {
+        n++;
+    }
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -627,9 +700,21 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
 
     int n = 0;
 
+    double *contact_pos = NULL;
+    
+    if(!decide_add(hist, contact_pos))
+        return;
+
     if(posflag)
     {
-        n += 3;
+        if (contact_pos)
+        {
+            array[ipair][n++] = contact_pos[0];
+            array[ipair][n++] = contact_pos[1];
+            array[ipair][n++] = contact_pos[2];
+        }
+        else
+            n += 3;
         array[ipair][n++] = atom->x[i][0];
         array[ipair][n++] = atom->x[i][1];
         array[ipair][n++] = atom->x[i][2];
@@ -662,7 +747,7 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
         contact_point[2] = array[ipair][n++];
 
         vectorConstruct3D(fc,fx,fy,fz);
-        vectorSubtract3D(contact_point,atom->x[i],normal);
+        vectorSubtract3D(contact_pos ? contact_pos :  contact_point,atom->x[i],normal);
         vectorNormalize3D(normal);
         double fnmag = vectorDot3D(fc,normal);
         vectorScalarMult3D(normal,fnmag,fn);
@@ -680,7 +765,7 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
         contact_point[2] = array[ipair][n++];
 
         vectorConstruct3D(fc,fx,fy,fz);
-        vectorSubtract3D(contact_point,atom->x[i],normal);
+        vectorSubtract3D(contact_pos ? contact_pos : contact_point,atom->x[i],normal);
         vectorNormalize3D(normal);
         double fnmag = vectorDot3D(fc,normal);
         vectorScalarMult3D(normal,fnmag,fn);
@@ -695,6 +780,43 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
         array[ipair][n++] = tor1;
         array[ipair][n++] = tor2;
         array[ipair][n++] = tor3;
+    }
+    if(torquenflag)
+    {
+        double  contact_point[3],torc[3],torn[3],normal[3];
+
+        contact_point[0] = array[ipair][n++];
+        contact_point[1] = array[ipair][n++];
+        contact_point[2] = array[ipair][n++];
+
+        vectorConstruct3D(torc,tor1,tor2,tor3);
+        vectorSubtract3D(contact_pos ? contact_pos : contact_point,atom->x[i],normal);
+        vectorNormalize3D(normal);
+        const double tornmag = vectorDot3D(torc,normal);
+        vectorScalarMult3D(normal,tornmag,torn);
+
+        array[ipair][n-3] = torn[0];
+        array[ipair][n-2] = torn[1];
+        array[ipair][n-1] = torn[2];
+    }
+    if(torquetflag)
+    {
+        double  contact_point[3],torc[3],torn[3],tort[3],normal[3];
+
+        contact_point[0] = array[ipair][n++];
+        contact_point[1] = array[ipair][n++];
+        contact_point[2] = array[ipair][n++];
+
+        vectorConstruct3D(torc,tor1,tor2,tor3);
+        vectorSubtract3D(contact_pos ? contact_pos : contact_point,atom->x[i],normal);
+        vectorNormalize3D(normal);
+        const double tornmag = vectorDot3D(torc,normal);
+        vectorScalarMult3D(normal,tornmag,torn);
+        vectorSubtract3D(torc,torn,tort);
+
+        array[ipair][n-3] = tort[0];
+        array[ipair][n-2] = tort[1];
+        array[ipair][n-1] = tort[2];
     }
     if(histflag)
     {

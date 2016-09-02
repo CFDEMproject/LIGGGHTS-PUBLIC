@@ -213,6 +213,8 @@ class FixInsert : public Fix {
 
   bool setup_flag;
 
+  class Irregular *irregular;
+
   virtual int distribute_ninsert_this(int);
 };
 

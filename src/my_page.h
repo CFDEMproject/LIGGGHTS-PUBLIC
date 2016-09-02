@@ -80,7 +80,7 @@ methods:
 #ifndef LAMMPS_MY_PAGE_H
 #define LAMMPS_MY_PAGE_H
 
-#include "stdlib.h"
+#include <stdlib.h>
 namespace LAMMPS_NS {
 
 template<class T>

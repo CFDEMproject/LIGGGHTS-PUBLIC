@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "dump_xyz.h"
 #include "atom.h"
 #include "group.h"

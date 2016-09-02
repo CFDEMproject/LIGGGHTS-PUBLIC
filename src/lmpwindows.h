@@ -3,7 +3,7 @@
 #include "erf.h"
 #endif
 #include "direct.h"
-#include "math.h"
+#include <math.h>
 // LAMMPS uses usleep with 100 ms arguments, no microsecond precision needed
 #if !defined(__MINGW32__)
 #include "sleep.h"
@@ -29,7 +29,7 @@
 inline double sqrt(int i){
   return sqrt((double) i);
 }
-#if !defined(__MINGW32__)
+#endif
 
 inline double fabs(int i){
   return fabs((double) i);

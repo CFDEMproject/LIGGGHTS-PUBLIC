@@ -47,7 +47,7 @@ SURFACE_MODEL(SURFACE_DEFAULT,default,0)
 #ifndef SURFACE_MODEL_DEFAULT_H_
 #define SURFACE_MODEL_DEFAULT_H_
 #include "contact_models.h"
-#include "math.h"
+#include <math.h>
 #include "atom.h"
 #include "force.h"
 #include "update.h"
@@ -76,6 +76,7 @@ namespace ContactModels
       #ifdef SUPERQUADRIC_ACTIVE_FLAG
           sidata.is_non_spherical = false;
       #endif
+      
       return true;
     }
 
@@ -146,7 +147,7 @@ namespace ContactModels
       sidata.P_diss = 0.;
     }
 
-    inline void endSurfacesIntersect(SurfacesIntersectData&,TriMesh *) {}
+    inline void endSurfacesIntersect(SurfacesIntersectData&,TriMesh *, double * const) {}
     inline void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
     void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}

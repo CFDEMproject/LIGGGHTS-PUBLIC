@@ -49,8 +49,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "create_box.h"
 #include "atom.h"
 #include "force.h"

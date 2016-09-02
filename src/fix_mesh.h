@@ -63,7 +63,7 @@ namespace LAMMPS_NS
         virtual void pre_delete(bool unfixflag);
 
         virtual void init();
-        virtual void setup(int vflag) {}
+        virtual void setup(int vflag);
 
         virtual int setmask();
         void setup_pre_force(int);
@@ -86,6 +86,9 @@ namespace LAMMPS_NS
         virtual bool surfaceVel()
         { return false; }
 
+        inline bool trackPerElementTemp()
+        { return trackPerElementTemp_; }
+
         bool manipulated()
         { return manipulated_; }
 
@@ -107,6 +110,8 @@ namespace LAMMPS_NS
         int atom_type_mesh_;
 
         double mass_temperature_;
+
+        bool trackPerElementTemp_;
 
       private:
 

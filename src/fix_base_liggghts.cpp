@@ -38,9 +38,9 @@
     Copyright 2015-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "string.h"
-#include "stdlib.h"
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
 #include "fix_base_liggghts.h"
 #include "atom.h"
 #include "error.h"

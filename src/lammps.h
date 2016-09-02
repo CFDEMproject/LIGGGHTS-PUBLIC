@@ -46,7 +46,7 @@
 #ifndef LMP_LAMMPS_H
 #define LMP_LAMMPS_H
 
-#include "stdio.h"
+#include <stdio.h>
 
 namespace LAMMPS_NS {
 

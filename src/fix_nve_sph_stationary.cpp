@@ -38,8 +38,8 @@
     Andreas Aigner, JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <string.h>
 #include "fix_nve_sph_stationary.h"
 #include "atom.h"
 #include "force.h"

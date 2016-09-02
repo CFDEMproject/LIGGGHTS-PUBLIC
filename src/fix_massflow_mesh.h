@@ -93,14 +93,18 @@ class FixMassflowMesh : public Fix {
   class FixPropertyAtom* fix_orientation_;
 
  protected:
-  class FixPropertyAtom *fix_counter_;
+  class FixPropertyAtom  *fix_counter_;
+  class FixMeshSurface   *fix_mesh_;
+  class FixNeighlistMesh *fix_neighlist_;
+
+  class FixMultisphere* fix_ms_;
+  class Multisphere *ms_;
+  class ScalarContainer<int> *ms_counter_;
 
  private:
   void setRefPoint();
 
-  class FixMeshSurface *fix_mesh_;
   char fixid_[200];
-  class FixNeighlistMesh *fix_neighlist_;
   double nvec_[3];
   double pref_[3];
   double sidevec_[3];
@@ -127,10 +131,6 @@ class FixMassflowMesh : public Fix {
   int nparticles_last_;
   double t_count_, delta_t_;
   bool reset_t_count_;
-
-  class FixMultisphere* fix_ms_;
-  class Multisphere *ms_;
-  class ScalarContainer<int> *ms_counter_;
 
 }; //end class
 

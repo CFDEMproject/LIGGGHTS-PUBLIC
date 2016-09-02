@@ -49,7 +49,7 @@ ROLLING_MODEL(ROLLING_EPSD3,epsd3,4)
 #define ROLLING_MODEL_EPSD3_H_
 #include "contact_models.h"
 #include <algorithm>
-#include "math.h"
+#include <math.h>
 #include "domain.h"
 #include "math_extra_liggghts.h"
 

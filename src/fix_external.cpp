@@ -43,9 +43,9 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "string.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "fix_external.h"
 #include "atom.h"
 #include "update.h"

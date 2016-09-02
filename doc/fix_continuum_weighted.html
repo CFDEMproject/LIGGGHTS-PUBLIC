@@ -1,0 +1,151 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix continuum/weighted command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<P>fix ID group-ID continuum/weighted keyword value
+</P>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>continuum/weighted = style name of this fix command 
+
+<LI>zero or one keyword/value pairs may be appended 
+
+<PRE>keyword = {kernel_radius, kernel_type, compute}
+  <I>kernel_radius</I> value = radius
+    radius = Radius of the smoothing kernel
+  <I>kernel_type</I> value = type
+    type = Type of kernel {Top_Hat, Gaussian, Wendland}
+  <I>compute</I> value = compute-type
+    compute-type = Which tensor(s) to compute {stress, strain, stress_strain} 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<PRE>fix 1 all continuum/weighted kernel_radius 0.01 compute stress
+fix 1 all continuum/weighted kernel_radius 0.2 kernel_type Wendland compute stress_strain 
+</PRE>
+<P><B>Description:</B>
+</P>
+<P>If the <I>compute</I> keyword is set to either stress or stress_strain this fix calculates the complete stress tensor at
+each particle according to <A HREF = "#Goldhirsch">Goldhirsch</A>. The formula is given by:
+</P>
+<PRE>  sigma_{i,ab} = -1/2 sum_{j,k} f_{jk,a} r_{jk,b} integral_0^1 phi(<B>r</B>_i - <B>r</B>_j + s <B>r</B>_{jk}) ds
+               - sum_j m_j v'_{ij,a} v'_{ij,b} phi(r_i - r_j)
+               + sigma_wall_{i,ab} 
+</PRE>
+<P>where
+</P>
+<PRE>  <B>v</B>'_{ij} = <B>v</B>_j - <B>V</B>_i
+  <B>V</B>_i = <B>p</B>_i / rho_i
+  <B>p</B>_i = sum_j m_j <B>v</B>_j phi(r_i - r_j)
+  rho_i = sum_j m_j phi(r_i - r_j)
+  phi(<B>r</B>) = H(radius - |r|) / Omega(radius)
+  Omega(radius) = 4/3 pi radius^3 
+</PRE>
+<P>and
+</P>
+<PRE>  <B>v</B> is the velocity vector
+  <B>f</B>_{ij} force acting from j onto i
+  <B>r</B>_{ij} vector from center of j to center of i
+  m_i mass of particle i
+  H is the Heavyside function 
+</PRE>
+<P>In case solid boundaries are present the last term is given according to <A HREF = "#Weinhart">Weinhart et al.</A> by
+</P>
+<PRE>    sigma_wall_{i,ab} = - sum_{j,k} f_{jk,a} a_{jk,b} integral_0^1 phi(<B>r</B>_i - <B>r</B>_j + s <B>a</B>_{jk}) ds 
+</PRE>
+<P>where
+</P>
+<PRE>    <B>a</B>_{jk} = <B>r</B>_j - c_{jk} 
+</PRE>
+<P>and <B>c</B>_{jk} is the contact point of particle <I>j</I> with wall <I>k</I> and the sum runs over all particles <I>j</I> and walls <I>k</I>.
+</P>
+<P>If the <I>compute</I> keyword is set to either strain or stress_strain this fix calculates the incremental strain tensor at
+each particle according to <A HREF = "#Zhang">Zhang et al.</A> The formula is given by
+</P>
+<PRE>  epsilon_<I>i,ab</I> = 1/(2 rho_i) sum_<I>j,k</I> m_j m_k phi(<B>r</B>_{ij}) dt (<B>v</B>_{jk,a} grad_phi(<B>r</B>_{ik},b) + <B>v</B>_{jk,b} grad_phi(<B>r</B>_{ik},a)) 
+</PRE>
+<P>where most of the variables are given as above and additionally
+</P>
+<PRE>    <B>v</B>_{ij,a} is the a-th component of the velocity difference between i and j
+    grad_phi(<B>r</B>_{ij},a) is the a-th component of the gradient of phi with respect to <B>r</B>_i
+    dt is the time-step size 
+</PRE>
+<P>The following three kernel types are implemented at the moment:
+</P>
+<UL><LI>    <I>Top_Hat</I> - Top hat kernel 
+
+<PRE>        w(r) = a_t * 1 if q < 1 (q = r / kernel_radius)
+             = 0 otherwise 
+</PRE>
+<LI>    <I>Gaussian</I> - Gaussian kernel 
+
+<PRE>        w(r) = a_g * exp(-q^2) (q = 3 r / kernel_radius) 
+</PRE>
+<LI>    <I>Wendland</I> - Quinitic radial polynomial 
+
+<PRE>        w(r) = a_w * (1-q/2)^4 (1+2q) (q = 2 r / kernel_radius) 
+</PRE>
+
+</UL>
+<P>Note that all kernels are equal to zero if <I>r > kernel_radius</I> (this implies a cut-off for the Gaussian). The constants <I>a</I> (different for each kernel) are chosen such that the integral of <I>w</I> over the ball of radius <I>kernel_radius</I> is equal to one. In case of the top hat kernel <I>a_t</I> is equal to the volume of this sphere.
+</P>
+<HR>
+
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>No information about this fix is written to <A HREF = "restart.html">binary restart
+files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
+are relevant to this fix.
+</P>
+<P>The values can be dumped by using the <I>f_stressTensor_[i]</I> and/or <I>f_strainTensor_[i]</I> (0 <= i <= 8) values in <A HREF = "dump.html">dump</A> commands
+</P>
+<P>No parameter of this fix can be used with the <I>start/stop</I> keywords of
+the <A HREF = "run.html">run</A> command.  This fix is not invoked during <A HREF = "minimize.html">energy
+minimization</A>.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>Strain computation does not work with the default <I>TOP_HAT</I> kernel as its derivative is zero.
+</P>
+<P>In order to ensure that all particles in the kernel radius are considered make use of the <A HREF = "neigh_modify.html">neigh_modify</A>
+command. In particular the <I>contact_distance_factor</I> which should be set such that
+</P>
+<PRE>  2*min(radius)*contact_distance_factor >= kernel_radius 
+</PRE>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "compute.html">compute</A>, <A HREF = "compute_stress_atom.html">compute stress/atom</A>,
+<A HREF = "fix_ave_atom.html">fix ave/atom</A>, <A HREF = "fix_ave_histo.html">fix ave/histo</A>,
+<A HREF = "fix_ave_time.html">fix ave/time</A>, <A HREF = "fix_ave_spatial.html">fix ave/spatial</A>,
+<A HREF = "fix_ave_euler.html">fix ave/euler</A>
+</P>
+<P><B>Default:</B> none
+</P>
+<P><B>References:</B>
+</P>
+<A NAME = "Goldhirsch"></A>
+
+<P><B>(Goldhirsch)</B> Goldhirsch; Stress, stress asymmetry and couple stress: from discrete particles to continuous fields, Granular Matter (2010)
+</P>
+<A NAME = "Weinhart"></A>
+
+<P><B>(Weinhart)</B> Weinhart, Thornton, Luding, Bokhove; From discrete particles to continuum fields near a boundary (2012)
+</P>
+<A NAME = "Zhang"></A>
+
+<P><B>(Zhang)</B> Zhang, Behringer, Goldhirsch; Coarse-Graining of a Physical Granular System, Progress of Theoretical Physics Supplement (2010)
+</P>
+</HTML>

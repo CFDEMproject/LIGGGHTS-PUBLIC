@@ -50,17 +50,17 @@
 #include "vector_liggghts.h"
 #include "pointers.h"
 #include "bounding_box.h"
-#include "superquadric_flag.h"
+#include "nonspherical_flags.h"
 #include "region_neighbor_list_definitions.h"
 #include "lmptype.h"
-#include "mpi.h"
+#include <mpi.h>
 #include "bounding_box.h"
 #include "error.h"
 #include "region.h"
 #include <limits>
 #include <algorithm>
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-#include "math_extra_liggghts_superquadric.h"
+#include "math_extra_liggghts_nonspherical.h"
 #endif
 
 namespace LAMMPS_NS {
@@ -89,7 +89,7 @@ class RegionNeighborList : protected LAMMPS_NS::Pointers
     void insert(double * x, double radius,int index = -1);
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
     bool hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape) const;
-    void insert_superquadric(double * x, double radius, double *quaternion, double *shape);
+    void insert_superquadric(double * x, double radius, double *quaternion, double *shape, int index = -1);
     void set_obb_flag(int check_obb_flag_) {check_obb_flag = check_obb_flag_;}
 #endif
 

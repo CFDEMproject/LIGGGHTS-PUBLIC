@@ -48,10 +48,10 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
+#include <math.h>
 #include "force.h"
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "neighbor.h"
 #include "neigh_list.h"
 #include "neigh_request.h"

@@ -50,7 +50,7 @@
 #include "vector_liggghts.h"
 #include "pointers.h"
 #include "bounding_box.h"
-#include "superquadric_flag.h"
+#include "nonspherical_flags.h"
 
 namespace LAMMPS_NS {
 
@@ -90,8 +90,8 @@ class Particle<false /*interpolation*/>
   }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  Particle(double * pos, double rad, double *quaternion_, double *shape_) {
-      index = -1;
+  Particle(int _i,double * pos, double rad, double *quaternion_, double *shape_,int,int,double,double,double) {
+      index = _i;
       LAMMPS_NS::vectorCopy3D(pos, x);
       radius = rad;
       LAMMPS_NS::vectorCopy4D(quaternion_, quaternion);
@@ -134,13 +134,17 @@ class Particle<true /*interpolation*/>
   }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  Particle(double * pos, double rad, double *quaternion_, double *shape_) {
-      index = -1;
+  Particle(int _i, double * pos, double rad, double *quaternion_, double *shape_, int _ibin,int _quadrant,double _wx = -1.,double _wy = -1.,double _wz = -1.) {
+      index = _i;
       LAMMPS_NS::vectorCopy3D(pos, x);
       radius = rad;
       LAMMPS_NS::vectorCopy4D(quaternion_, quaternion);
       LAMMPS_NS::vectorCopy3D(shape_, shape);
-      TODO_QUADRANT,WEIGHTS
+      ibin = _ibin;
+      quadrant_bitfield = _quadrant;
+      wx = _wx;
+      wy = _wy;
+      wz = _wz;
     }
 #endif
 };

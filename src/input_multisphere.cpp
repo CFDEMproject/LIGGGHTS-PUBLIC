@@ -39,10 +39,10 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "ctype.h"
 #include "style_command.h"
 #include "universe.h"
@@ -145,7 +145,11 @@ int InputMultisphere::clmpfile(double **xclmp,double *rclmp,int *atomtypeclmp,in
     if(iClmp >= nclmps)
         error->all(FLERR,"Number of clumps in file larger than number specified");
 
-    if((0 == atomtypeclmp) && (narg < 4))
+    if(0 == atomtypeclmp && 0 == rclmp && (narg < 3))
+        error->all(FLERR,"Not enough arguments in one line of file for non-spherical particle, need to specify "
+                         "[xcoo ycoo zcoo] in each line");
+
+    if((0 == atomtypeclmp) && rclmp && (narg < 4))
         error->all(FLERR,"Not enough arguments in one line of clump file, need to specify "
                          "[xcoo ycoo zcoo radius] in each line");
 
@@ -153,7 +157,8 @@ int InputMultisphere::clmpfile(double **xclmp,double *rclmp,int *atomtypeclmp,in
         error->all(FLERR,"Not enough arguments in one line of clump file, need to specify "
                          "[xcoo ycoo zcoo radius type] in each line");
 
-    rclmp[iClmp] = atof(arg[3]);
+    if(rclmp)
+        rclmp[iClmp] = atof(arg[3]);
     if(atomtypeclmp)
         atomtypeclmp[iClmp] = atoi(arg[4]);
 

@@ -37,6 +37,7 @@
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 
     Copyright of original file:
     LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
@@ -49,10 +50,10 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "atom.h"
 #include "atom_vec.h"
 #include "domain.h"
@@ -112,8 +113,14 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
 
   needs_neighlist = true;
 
-  fix_contact_forces_ = 0;
-  store_contact_forces_ = 0;
+  fix_contact_forces_ = NULL;
+  store_contact_forces_ = false;
+  fix_contact_forces_stress_ = NULL;
+  store_contact_forces_stress_ = false;
+  fix_store_multicontact_data_ = NULL;
+  store_multicontact_data_ = false;
+
+  fix_relax_ = NULL;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -122,6 +129,8 @@ PairGran::~PairGran()
 {
   if (fix_history) modify->delete_fix("contacthistory");
   if (fix_contact_forces_) modify->delete_fix(fix_contact_forces_->id);
+  if (fix_contact_forces_stress_) modify->delete_fix(fix_contact_forces_stress_->id);
+  if (fix_store_multicontact_data_) modify->delete_fix(fix_store_multicontact_data_->id);
 
   if (suffix) delete[] suffix;
 
@@ -225,8 +234,8 @@ void PairGran::init_style()
   if(strcmp(update->unit_style,"metal") ==0 || strcmp(update->unit_style,"real") == 0)
     error->all(FLERR,"Cannot use a non-consistent unit system with pair gran. Please use si,cgs or lj.");
 
-  if (!atom->sphere_flag and !atom->superquadric_flag)
-    error->all(FLERR,"Pair granular requires atom style sphere");
+  if (!atom->sphere_flag && !atom->superquadric_flag && !atom->shapetype_flag)
+    error->all(FLERR,"Pair granular requires atom style sphere, superquadric or convexhull");
   if (comm->ghost_velocity == 0)
     error->all(FLERR,"Pair granular requires ghost atoms store velocity");
 
@@ -408,9 +417,9 @@ void PairGran::init_style()
   }
 
   // register per-particle properties for energy tracking
-  if(store_contact_forces_ && 0 == fix_contact_forces_)
+  if(store_contact_forces_ && fix_contact_forces_ == NULL)
   {
-    char **fixarg = new char*[17];
+    char **fixarg = new char*[19];
     fixarg[0]=(char *) "contactforces";
     fixarg[1]=(char *) "all";
     fixarg[2]=(char *) "contactproperty/atom";
@@ -422,14 +431,66 @@ void PairGran::init_style()
     fixarg[8]=(char *) "0";
     fixarg[9]=(char *) "fz";
     fixarg[10]=(char *) "0";
-    fixarg[11]=(char *) "ty";
+    fixarg[11]=(char *) "tx";
     fixarg[12]=(char *) "0";
     fixarg[13]=(char *) "ty";
     fixarg[14]=(char *) "0";
     fixarg[15]=(char *) "tz";
     fixarg[16]=(char *) "0";
-    modify->add_fix(17,fixarg);
+    fixarg[17]=(char *) "reset";
+    fixarg[18]=(char *) "yes";
+    modify->add_fix(19,fixarg);
     fix_contact_forces_ = static_cast<FixContactPropertyAtom*>(modify->find_fix_id("contactforces"));
+    delete []fixarg;
+  }
+
+  // register per-particle properties for energy tracking
+  if(store_contact_forces_stress_ && fix_contact_forces_stress_ == NULL)
+  {
+    char **fixarg = new char*[15];
+    fixarg[0]=(char *) "contactforces_stress_";
+    fixarg[1]=(char *) "all";
+    fixarg[2]=(char *) "contactproperty/atom";
+    fixarg[3]=(char *) "contactforces_stress_";
+    fixarg[4]=(char *) "4";
+    fixarg[5]=(char *) "fx";
+    fixarg[6]=(char *) "0";
+    fixarg[7]=(char *) "fy";
+    fixarg[8]=(char *) "0";
+    fixarg[9]=(char *) "fz";
+    fixarg[10]=(char *) "0";
+    fixarg[11]=(char *) "j";
+    fixarg[12]=(char *) "0";
+    fixarg[13]=(char *) "reset";
+    fixarg[14]=(char *) "yes";
+    modify->add_fix(15,fixarg);
+    fix_contact_forces_stress_ = static_cast<FixContactPropertyAtom*>(modify->find_fix_id("contactforces_stress_"));
+    delete []fixarg;
+  }
+
+    if(store_multicontact_data_ && fix_store_multicontact_data_ == NULL)
+    {
+        // create a new per contact property which will contain the data for the computation according to Brodu et. al. 2016
+        // surfPosIJ will contain the position of the contact surface ij, realtive to position i
+        // normalForce will contain the normal component of the contact force
+        char **fixarg = new char*[15];
+        fixarg[0]=(char *) "multicontactData_";
+        fixarg[1]=(char *) "all";
+        fixarg[2]=(char *) "contactproperty/atom";
+        fixarg[3]=(char *) "multicontactData_";
+        fixarg[4]=(char *) "4";
+        fixarg[5]=(char *) "surfPosIJ_x";
+        fixarg[6]=(char *) "0";
+        fixarg[7]=(char *) "surfPosIJ_y";
+        fixarg[8]=(char *) "0";
+        fixarg[9]=(char *) "surfPosIJ_z";
+        fixarg[10]=(char *) "0";
+        fixarg[11]=(char *) "normalForce";
+        fixarg[12]=(char *) "0";
+        fixarg[13]=(char *) "reset";
+        fixarg[14]=(char *) "no";
+        modify->add_fix(15,fixarg);
+        fix_store_multicontact_data_ = static_cast<FixContactPropertyAtom*>(modify->find_fix_id("multicontactData_"));
     delete []fixarg;
   }
 

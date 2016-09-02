@@ -46,7 +46,7 @@
 #ifndef LMP_ANGLE_H
 #define LMP_ANGLE_H
 
-#include "stdio.h"
+#include <stdio.h>
 #include "pointers.h"
 
 namespace LAMMPS_NS {

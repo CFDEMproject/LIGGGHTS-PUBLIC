@@ -1,0 +1,133 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix continuum/weighted command :h3
+
+[Syntax:]
+
+fix ID group-ID continuum/weighted keyword value
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+continuum/weighted = style name of this fix command :l
+zero or one keyword/value pairs may be appended :l
+keyword = \{kernel_radius, kernel_type, compute\}
+  {kernel_radius} value = radius
+    radius = Radius of the smoothing kernel
+  {kernel_type} value = type
+    type = Type of kernel \{Top_Hat, Gaussian, Wendland\}
+  {compute} value = compute-type
+    compute-type = Which tensor(s) to compute \{stress, strain, stress_strain\} :pre
+:ule
+
+[Examples:]
+
+fix 1 all continuum/weighted kernel_radius 0.01 compute stress
+fix 1 all continuum/weighted kernel_radius 0.2 kernel_type Wendland compute stress_strain :pre
+
+[Description:]
+
+If the {compute} keyword is set to either stress or stress_strain this fix calculates the complete stress tensor at
+each particle according to "Goldhirsch"_#Goldhirsch. The formula is given by:
+
+  sigma_\{i,ab\} = -1/2 sum_\{j,k\} f_\{jk,a\} r_\{jk,b\} integral_0^1 phi([r]_i - [r]_j + s [r]_\{jk\}) ds
+               - sum_j m_j v'_\{ij,a\} v'_\{ij,b\} phi(r_i - r_j)
+               + sigma_wall_\{i,ab\} :pre
+
+where
+
+  [v]'_\{ij\} = [v]_j - [V]_i
+  [V]_i = [p]_i / rho_i
+  [p]_i = sum_j m_j [v]_j phi(r_i - r_j)
+  rho_i = sum_j m_j phi(r_i - r_j)
+  phi([r]) = H(radius - |r|) / Omega(radius)
+  Omega(radius) = 4/3 pi radius^3 :pre
+
+and
+
+  [v] is the velocity vector
+  [f]_\{ij\} force acting from j onto i
+  [r]_\{ij\} vector from center of j to center of i
+  m_i mass of particle i
+  H is the Heavyside function :pre
+
+In case solid boundaries are present the last term is given according to "Weinhart et al."_#Weinhart by
+
+    sigma_wall_\{i,ab\} = - sum_\{j,k\} f_\{jk,a\} a_\{jk,b\} integral_0^1 phi([r]_i - [r]_j + s [a]_\{jk\}) ds :pre
+
+where
+
+    [a]_\{jk\} = [r]_j - c_\{jk\} :pre
+
+and [c]_\{jk\} is the contact point of particle {j} with wall {k} and the sum runs over all particles {j} and walls {k}.
+
+If the {compute} keyword is set to either strain or stress_strain this fix calculates the incremental strain tensor at
+each particle according to "Zhang et al."_#Zhang The formula is given by
+
+  epsilon_{i,ab} = 1/(2 rho_i) sum_{j,k} m_j m_k phi([r]_\{ij\}) dt ([v]_\{jk,a\} grad_phi([r]_\{ik\},b) + [v]_\{jk,b\} grad_phi([r]_\{ik\},a)) :pre
+
+where most of the variables are given as above and additionally
+
+    [v]_\{ij,a\} is the a-th component of the velocity difference between i and j
+    grad_phi([r]_\{ij\},a) is the a-th component of the gradient of phi with respect to [r]_i
+    dt is the time-step size :pre
+
+The following three kernel types are implemented at the moment:
+
+    {Top_Hat} - Top hat kernel :ulb,l
+        w(r) = a_t * 1 if q < 1 (q = r / kernel_radius)
+             = 0 otherwise :pre
+    {Gaussian} - Gaussian kernel :l
+        w(r) = a_g * exp(-q^2) (q = 3 r / kernel_radius) :pre
+    {Wendland} - Quinitic radial polynomial :l
+        w(r) = a_w * (1-q/2)^4 (1+2q) (q = 2 r / kernel_radius) :pre
+:ule
+
+Note that all kernels are equal to zero if {r > kernel_radius} (this implies a cut-off for the Gaussian). The constants {a} (different for each kernel) are chosen such that the integral of {w} over the ball of radius {kernel_radius} is equal to one. In case of the top hat kernel {a_t} is equal to the volume of this sphere.
+
+:line
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+No information about this fix is written to "binary restart
+files"_restart.html.  None of the "fix_modify"_fix_modify.html options
+are relevant to this fix.
+
+The values can be dumped by using the {f_stressTensor_\[i\]} and/or {f_strainTensor_\[i\]} (0 <= i <= 8) values in "dump"_dump.html commands
+
+No parameter of this fix can be used with the {start/stop} keywords of
+the "run"_run.html command.  This fix is not invoked during "energy
+minimization"_minimize.html.
+
+[Restrictions:]
+
+Strain computation does not work with the default {TOP_HAT} kernel as its derivative is zero.
+
+In order to ensure that all particles in the kernel radius are considered make use of the "neigh_modify"_neigh_modify.html
+command. In particular the {contact_distance_factor} which should be set such that
+
+  2*min(radius)*contact_distance_factor >= kernel_radius :pre
+
+[Related commands:]
+
+"compute"_compute.html, "compute stress/atom"_compute_stress_atom.html,
+"fix ave/atom"_fix_ave_atom.html, "fix ave/histo"_fix_ave_histo.html,
+"fix ave/time"_fix_ave_time.html, "fix ave/spatial"_fix_ave_spatial.html,
+"fix ave/euler"_fix_ave_euler.html
+
+[Default:] none
+
+[References:]
+
+:link(Goldhirsch)
+[(Goldhirsch)] Goldhirsch; Stress, stress asymmetry and couple stress: from discrete particles to continuous fields, Granular Matter (2010)
+
+:link(Weinhart)
+[(Weinhart)] Weinhart, Thornton, Luding, Bokhove; From discrete particles to continuum fields near a boundary (2012)
+
+:link(Zhang)
+[(Zhang)] Zhang, Behringer, Goldhirsch; Coarse-Graining of a Physical Granular System, Progress of Theoretical Physics Supplement (2010)

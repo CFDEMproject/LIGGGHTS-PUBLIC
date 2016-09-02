@@ -48,8 +48,8 @@
      K-space terms added by Stan Moore (BYU)
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "string.h"
+#include <mpi.h>
+#include <string.h>
 #include "compute_group_group.h"
 #include "atom.h"
 #include "update.h"
@@ -61,7 +61,7 @@
 #include "group.h"
 #include "kspace.h"
 #include "error.h"
-#include "math.h"
+#include <math.h>
 #include "comm.h"
 #include "domain.h"
 #include "math_const.h"

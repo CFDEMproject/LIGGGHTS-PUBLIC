@@ -42,7 +42,7 @@
 #ifndef LMP_INPUT_MESH_TET_H
 #define LMP_INPUT_MESH_TET_H
 
-#include "stdio.h"
+#include <stdio.h>
 #include "input.h"
 
 namespace LAMMPS_NS {

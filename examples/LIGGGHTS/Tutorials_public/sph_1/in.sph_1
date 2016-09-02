@@ -89,7 +89,6 @@ set        group all sphkernel cubicspline
 thermo_style	custom step atoms ke vol cpu
 thermo          1000
 thermo_modify	lost ignore norm no
-compute_modify	thermo_temp dynamic yes
 
 run           1
 dump	      dmp all custom 1000 post/dump*.sph id type type x y z ix iy iz vx vy vz fx fy fz vx vy vz p p rho

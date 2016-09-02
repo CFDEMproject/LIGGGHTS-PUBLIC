@@ -772,7 +772,7 @@
 
     if(flag) return true;
     else     return false;
-}
+  }
 
   /* ----------------------------------------------------------------------
    store node pos at last re-build
@@ -790,6 +790,53 @@
     nodesLastRe_.clearContainer();
     for(int i = 0; i < nlocal; i++)
         nodesLastRe_.add(node[i]);
+  }
+  /* ----------------------------------------------------------------------
+   calculate simple center of mass, NOT weighted with element area
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::center_of_mass(double *_com)
+  {
+    int nlocal = sizeLocal();
+    int nprocs = this->comm->nprocs;
+    vectorZeroize3D(_com);
+
+    for(int i = 0; i < nlocal; i++)
+        vectorAdd3D(_com,center_(i),_com);
+
+    vectorScalarDiv3D(_com,static_cast<double>(nlocal));
+
+    //printVec3D(this->screen,"_com on one proc",_com);
+
+    if(1 < nprocs)
+    {
+        double result[4];
+        vectorCopy3D(_com,result);
+        result[3] = static_cast<double>(nlocal);
+
+        double *result_all;
+        int size_all = MPI_Allgather_Vector(result,4,result_all,this->world);
+
+        if(size_all != 4*nprocs)
+            this->error->one(FLERR,"internal error");
+
+        vectorZeroize3D(_com);
+        double com_weighted[3];
+        double weightsum = 0.;
+        for(int iproc = 0; iproc < nprocs; iproc++)
+        {
+            vectorScalarMult3D(&result_all[iproc*4],static_cast<double>(result_all[iproc*4+3]),com_weighted);
+            weightsum += static_cast<double>(result_all[iproc*4+3]);
+            vectorAdd3D(_com,com_weighted,_com);
+            //printVec3D(this->screen,"com_weighted",com_weighted);
+            //fprintf(this->screen,"weightsum %f\n",weightsum);
+        }
+        vectorScalarDiv3D(_com,weightsum);
+
+        delete []result_all;
+    }
+
   }
 
 #endif

@@ -43,9 +43,9 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "string.h"
-#include "stdlib.h"
+#include <mpi.h>
+#include <string.h>
+#include <stdlib.h>
 #include "dump_local.h"
 #include "atom.h"
 #include "modify.h"

@@ -42,8 +42,9 @@
 #ifndef LMP_INPUT_MESH_TRI_H
 #define LMP_INPUT_MESH_TRI_H
 
-#include "stdio.h"
+#include <stdio.h>
 #include "input.h"
+#include <fstream>
 
 namespace LAMMPS_NS {
 
@@ -66,7 +67,8 @@ class InputMeshTri : protected Input
     int *exclusion_list_;
 
     void meshtrifile_vtk(class TriMesh *mesh,class Region *region);
-    void meshtrifile_stl(class TriMesh *mesh,class Region *region);
+    void meshtrifile_stl(class TriMesh *mesh,class Region *region, const char * filename);
+    void meshtrifile_stl_binary(class TriMesh *, class Region *region, const char * filename);
     inline void addTriangle(class TriMesh *mesh,
          double *a, double *b, double *c,int lineNumber);
 

@@ -51,7 +51,7 @@ ROLLING_MODEL(ROLLING_EPSD,epsd,2)
 #define ROLLING_MODEL_EPSD_H_
 #include "contact_models.h"
 #include <algorithm>
-#include "math.h"
+#include <math.h>
 #include "domain.h"
 #include "math_extra_liggghts.h"
 
@@ -101,7 +101,7 @@ namespace ContactModels
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
       if(sidata.is_non_spherical)
-        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+        reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata);
 #endif
       if(sidata.is_wall) {
         const double wr1 = sidata.wr1;
@@ -126,9 +126,9 @@ namespace ContactModels
             double inertia_tensor_local[9] = { Ix, 0.0, 0.0,
                                                0.0, Iy, 0.0,
                                                0.0, 0.0, Iz };
-            MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local, sidata.quat_i, inertia_tensor);
+            MathExtraLiggghtsNonspherical::tensor_quat_rotate(inertia_tensor_local, sidata.quat_i, inertia_tensor);
             double temp[3];
-            MathExtraLiggghtsSuperquadric::matvec(inertia_tensor, er, temp);
+            MathExtraLiggghtsNonspherical::matvec(inertia_tensor, er, temp);
             double Ii = MathExtra::dot3(temp, er);
             r_inertia = Ii + sidata.mi*rii*rii;
           }
@@ -184,12 +184,12 @@ namespace ContactModels
             double inertia_tensor_local_j[9] = { Ix_j, 0.0, 0.0,
                                                  0.0, Iy_j, 0.0,
                                                  0.0, 0.0, Iz_j };
-            MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local_i, sidata.quat_i, inertia_tensor_i);
-            MathExtraLiggghtsSuperquadric::tensor_quat_rotate(inertia_tensor_local_j, sidata.quat_j, inertia_tensor_j);
+            MathExtraLiggghtsNonspherical::tensor_quat_rotate(inertia_tensor_local_i, sidata.quat_i, inertia_tensor_i);
+            MathExtraLiggghtsNonspherical::tensor_quat_rotate(inertia_tensor_local_j, sidata.quat_j, inertia_tensor_j);
             double temp[3];
-            MathExtraLiggghtsSuperquadric::matvec(inertia_tensor_i, er, temp);
+            MathExtraLiggghtsNonspherical::matvec(inertia_tensor_i, er, temp);
             double Ii = MathExtra::dot3(temp, er);
-            MathExtraLiggghtsSuperquadric::matvec(inertia_tensor_j, er, temp);
+            MathExtraLiggghtsNonspherical::matvec(inertia_tensor_j, er, temp);
             double Ij = MathExtra::dot3(temp, er);
             r_inertia_red_i = Ii + sidata.mi*rii*rii; //
             r_inertia_red_j = Ij + sidata.mj*rjj*rjj;

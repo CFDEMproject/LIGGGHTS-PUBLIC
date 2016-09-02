@@ -42,11 +42,11 @@ region		bc cylinder z 0.01 0.01 0.025 0.05 0.0603 units box
 group		nve_group region reg
 
 #distributions for insertion
-fix			pts1 all particletemplate/sphere 5330 atom_type 1 density constant 2500 radius constant 0.0015
-fix			pdd1 all particledistribution/discrete 5331  1 pts1 1.0
+fix			pts1 all particletemplate/sphere 15485863 atom_type 1 density constant 2500 radius constant 0.0015
+fix			pdd1 all particledistribution/discrete 15485867 1 pts1 1.0
 
 #particle insertion
-fix		ins nve_group insert/pack seed 5332 distributiontemplate pdd1 &
+fix		ins nve_group insert/pack seed 32452843 distributiontemplate pdd1 &
 			maxattempt 100 insert_every 3000 overlapcheck yes all_in yes vel constant 0.0 0.0 -0.2 &
 			region bc particles_in_region 250 ntry_mc 10000
 
@@ -58,7 +58,6 @@ compute			rke all erotate/sphere
 thermo_style	custom step atoms ke c_rke vol
 thermo			1000
 thermo_modify	lost ignore norm no
-compute_modify	thermo_temp dynamic yes
 
 #insert the first particles so that dump is not empty
 run			1

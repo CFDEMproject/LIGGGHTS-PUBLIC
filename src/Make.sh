@@ -15,8 +15,18 @@ style () {
   wai=`whoami`
   vers=`cat version_liggghts.txt`
   bra=`cat version_liggghts_branch.txt`
-  githash=`git log -1 --format="%H"`
-  echo "#define LIGGGHTS_VERSION \"$bra $vers, compiled $builddate by $wai, git commit $githash\"" > version_liggghts.h
+
+  if [ -d .git ]; then
+    githash=`git log -1 --format="%H"`
+    echo "#define LIGGGHTS_VERSION \"$bra $vers, compiled $builddate by $wai, git commit $githash\"" > version_liggghts.h
+  elif [ -d ../.git ]; then
+    cd ..    
+    githash=`git log -1 --format="%H"`
+    cd src
+    echo "#define LIGGGHTS_VERSION \"$bra $vers, compiled $builddate by $wai, git commit $githash\"" > version_liggghts.h
+  else
+    echo "#define LIGGGHTS_VERSION \"$bra $vers, compiled $builddate by $wai, git commit unknown\"" > version_liggghts.h
+  fi;
 
   list=`grep -sl $1 $2*.h`
   if (test -e style_$3.tmp) then

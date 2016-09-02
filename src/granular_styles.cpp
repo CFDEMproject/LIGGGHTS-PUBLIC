@@ -41,14 +41,14 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
+#include <mpi.h>
 #include "ctype.h"
 #include "float.h"
 #include "limits.h"
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "pair.h"
 #include "atom.h"
 #include "neighbor.h"
@@ -115,6 +115,7 @@ private:
      typedef ContactModel<Style> CModel;
      typedef PairStyles::Granular<CModel> Type;
      int64_t hashcode = Style::HASHCODE;
+     
      factory.addStyle(name, hashcode, &create_pair_style_instance<Type>);
   }
 

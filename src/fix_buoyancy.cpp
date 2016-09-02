@@ -38,9 +38,9 @@
     Copyright 2014-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_buoyancy.h"
 #include "atom.h"
 #include "update.h"

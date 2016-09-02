@@ -49,7 +49,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "compute_erotate_sphere_atom.h"
 #include "atom.h"
 #include "update.h"

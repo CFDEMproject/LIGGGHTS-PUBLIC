@@ -39,9 +39,9 @@
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_insert_stream.h"
 #include "fix_mesh_surface.h"
 #include "atom.h"
@@ -325,8 +325,8 @@ void FixInsertStream::calc_insertion_properties()
 
         extrude_length = static_cast<double>(duration) * dt * vectorMag3D(v_normal);
         
-        if(extrude_length < 3.*max_r_bound())
-          error->fix_error(FLERR,this,"'insert_every' or 'vel' is too small, or radius of inserted particles too large");
+        if(extrude_length < 2.*max_r_bound())
+          error->fix_error(FLERR,this,"'insert_every' or 'vel' is too small, or (bounding) radius of inserted particles too large");
     }
 
     // ninsert - if ninsert not defined directly, calculate it
@@ -394,6 +394,7 @@ void FixInsertStream::init()
 
     fix_release = static_cast<FixPropertyAtom*>(modify->find_fix_property("release_fix_insert_stream","property/atom","vector",5,0,style));
     if(!fix_release) error->fix_error(FLERR,this,"Internal error if fix insert/stream");
+    fix_release->set_internal();
 
     i_am_integrator = modify->i_am_first_of_style(this);
 
@@ -543,7 +544,7 @@ BoundingBox FixInsertStream::getBoundingBox() {
   bb.extrude(delta, normalvec);
   bb.shrinkToSubbox(domain->sublo, domain->subhi);
 
-  const double extend = 3*maxrad /*cut*/ + this->extend_cut_ghost(); 
+  const double extend = 3*maxrad /*cut*/ + 2.*fix_distribution->max_r_bound(); 
   bb.extendByDelta(extend);
 
   return bb;
@@ -577,6 +578,7 @@ inline void FixInsertStream::generate_random(double *pos, double rad)
 
     vectorScalarMult3D(normalvec,r,ext);
     vectorAdd3D(pos,ext,pos);
+
 }
 
 /* ----------------------------------------------------------------------
@@ -635,15 +637,16 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
                 generate_random(pos,rad_to_insert);
                 ntry++;
             }
-            while(ntry < maxtry && ((!domain->is_in_subdomain(pos)) || (domain->dist_subbox_borders(pos) < rad_to_insert)));
-
-            // could randomize quat here
-
-            if(quat_random_)
-                    MathExtraLiggghts::random_unit_quat(random,quat_insert);
+                        
+            while(ntry < maxtry && (!domain->is_in_subdomain(pos)));
 
             if(ntry < maxtry)
             {
+                // randomize quat here
+
+                if(quat_random_)
+                        MathExtraLiggghts::random_unit_quat(random,quat_insert);
+
                 nins = pti->set_x_v_omega(pos,v_normal,omega_tmp,quat_insert);
 
                 ninserted_spheres_this_local += nins;
@@ -673,13 +676,11 @@ void FixInsertStream::x_v_omega(int ninsert_this_local,int &ninserted_this_local
                 }
                 while(ntry < maxtry && ((!domain->is_in_subdomain(pos)) || (domain->dist_subbox_borders(pos) < rad_to_insert)));
 
-                // could randomize quat here
-
-                if(quat_random_)
-                    MathExtraLiggghts::random_unit_quat(random,quat_insert);
-                
                 if(ntry < maxtry)
                 {
+                    // randomize quat here
+                    if(quat_random_)
+                        MathExtraLiggghts::random_unit_quat(random,quat_insert);
                     
                     nins = pti->check_near_set_x_v_omega(pos,v_normal,omega_tmp,quat_insert,neighList);
                 }

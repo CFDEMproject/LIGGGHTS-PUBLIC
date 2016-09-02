@@ -42,7 +42,7 @@
     Felix Kleinfeldt (OVGU Magdeburg)
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "dump_mesh_vtk.h"
 #include "tri_mesh.h"
 #include "domain.h"
@@ -474,9 +474,19 @@ void DumpMeshVTK::getRefs()
   }
   if(dump_what_ & DUMP_TEMP)
   {
+      temp_per_element_.clear();
       for(int i = 0; i < nMesh_; i++)
       {
-          T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("Temp");
+          if( meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("Temp"))
+          {
+              T_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("Temp");
+              temp_per_element_.push_back(true);
+          }
+          else
+          {
+              temp_per_element_.push_back(true);
+              T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("Temp");
+          }
           //if(0 == comm->me && !T_[i])
           //  error->warning(FLERR,"Trying to dump temperature for mesh which does not calculate temperature, will dump '0' instead");
       }
@@ -623,7 +633,7 @@ void DumpMeshVTK::pack(int *ids)
 
         if(dump_what_ & DUMP_TEMP)
         {
-            buf[m++] = T_[iMesh] ? T_[iMesh]->get(0) : 0.;
+            buf[m++] = (temp_per_element_[iMesh]) ? (T_[iMesh]->get(iTri)) : (T_[iMesh] ? T_[iMesh]->get(0) : 0.);
         }
 
         if(dump_what_ & DUMP_OWNER)

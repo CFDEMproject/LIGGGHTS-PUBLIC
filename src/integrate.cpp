@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
+#include <stdlib.h>
 #include "integrate.h"
 #include "update.h"
 #include "force.h"

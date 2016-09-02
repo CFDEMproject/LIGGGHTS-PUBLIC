@@ -53,7 +53,7 @@ FixStyle(couple/cfd/force/implicit,FixCfdCouplingForceImplicit)
 namespace LAMMPS_NS {
 
 class FixCfdCouplingForceImplicit : public FixCfdCouplingForce  {
-  friend class FixNVESuperquadric;
+  friend class FixNVEAsphereBase;
  public:
   FixCfdCouplingForceImplicit(class LAMMPS *, int, char **);
   ~FixCfdCouplingForceImplicit();

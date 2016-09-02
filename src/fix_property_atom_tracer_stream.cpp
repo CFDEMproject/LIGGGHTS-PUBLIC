@@ -39,9 +39,9 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "atom.h"
 #include "comm.h"
 #include "modify.h"
@@ -149,6 +149,10 @@ void FixPropertyAtomTracerStream::init()
 
     if(0 == atom->map_style)
       error->fix_error(FLERR,this,"requires an 'atom_modify map' command to allocate an atom map");
+
+    Fix *fix_ms = modify->find_fix_style_strict("multisphere",0);
+    if (fix_ms)
+        error->warning(FLERR,"calculates the wrong mass in case of multisphere particles!");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -216,6 +220,7 @@ void FixPropertyAtomTracerStream::mark_tracers(int ilo, int ihi)
     FixPropertyAtom *fix_release = fix_ins_stream_->fix_prop_release();
     double **release_data = fix_release->array_atom;
     double *marker = this->vector_atom;
+    int *mask = atom->mask;
     int s, step0;
     int release_step_index = fix_ins_stream_->release_step_index();
 
@@ -225,6 +230,10 @@ void FixPropertyAtomTracerStream::mark_tracers(int ilo, int ihi)
 
     for(int i = ilo; i < ihi; i++)
     {
+        // skip particles of wrong group
+        if (!(mask[i] & groupbit))
+            continue;
+
         s = static_cast<int>(release_data[i][release_step_index]);
         if (s >= step0)
         {

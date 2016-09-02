@@ -54,6 +54,7 @@ namespace LAMMPS_NS {
 
     friend class FixMultisphere;
     friend class FixChangeSizeMultisphere;
+    friend class SetMultisphere;
 
     public:
 
@@ -164,6 +165,12 @@ namespace LAMMPS_NS {
       inline class CustomValueTracker& prop()
       { return customValues_; }
 
+      void tagReset(int ibody_local)
+      { id_(ibody_local)=-1; }
+
+      void nrigidReset(int ibody_local, int resetValue)
+      { nrigid_(ibody_local) = resetValue; }
+
     protected:
 
       Multisphere(LAMMPS *lmp);
@@ -223,6 +230,7 @@ namespace LAMMPS_NS {
       VectorContainer<bool,3> &fflag_;
       VectorContainer<bool,3> &tflag_;
 
+      // step to start from for integration
       ScalarContainer<int> &start_step_;
       VectorContainer<double,3> &v_integrate_;
 
@@ -230,6 +238,10 @@ namespace LAMMPS_NS {
       // vector from xcm to center of bound sphere
       ScalarContainer<double> &r_bound_;
       VectorContainer<double,3> &xcm_to_xbound_;
+
+      // temperature and buffer for each body
+      ScalarContainer<double> &temp_;
+      ScalarContainer<double> &temp_old_;
   };
 
   // *************************************

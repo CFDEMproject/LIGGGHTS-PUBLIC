@@ -47,6 +47,7 @@
 #include "atom.h"
 #include "atom_vec.h"
 #include "vector_liggghts.h"
+#include "fix_heat_gran.h"
 
 /* ----------------------------------------------------------------------
    constructor / destructor
@@ -94,7 +95,10 @@ Multisphere::Multisphere(LAMMPS *lmp) :
   v_integrate_(*customValues_.addElementProperty< VectorContainer<double,3> >("v_integrate","comm_exchange_borders","frame_invariant", "restart_yes")),
 
   r_bound_       (*customValues_.addElementProperty< ScalarContainer<double> >("r_bound","comm_exchange_borders","frame_invariant", "restart_yes")),
-  xcm_to_xbound_ (*customValues_.addElementProperty< VectorContainer<double,3> >("xcm_to_xbound","comm_exchange_borders","frame_invariant", "restart_yes"))
+  xcm_to_xbound_ (*customValues_.addElementProperty< VectorContainer<double,3> >("xcm_to_xbound","comm_exchange_borders","frame_invariant", "restart_yes")),
+
+  temp_(*customValues_.addElementProperty< ScalarContainer<double> >("temp","comm_exchange_borders","frame_invariant","restart_yes")),
+  temp_old_(*customValues_.addElementProperty< ScalarContainer<double> >("temp_old","comm_exchange_borders","frame_invariant","restart_yes"))
 {
 
 }
@@ -165,6 +169,14 @@ void Multisphere::add_body(int nspheres, double *xcm_ins, double *xcm_to_xbound_
 
     r_bound_.set(n,r_bound_ins);
     xcm_to_xbound_.set(n,xcm_to_xbound_ins);
+
+    // initialize the temperature with the initial value
+    
+    FixHeatGran *fix_heat = static_cast<FixHeatGran*>(modify->find_fix_style("heat/gran",0));
+    if (fix_heat) {
+        temp_.set(n,fix_heat->T0);
+        temp_old_.set(n,fix_heat->T0);
+    }
 
     // calculate q and ang momentum
 
@@ -332,7 +344,10 @@ void Multisphere::id_extend_body_extend(int *body)
   }
 
   if(nobody != nobody_check)
+  {
+    if(screen) fprintf(screen,"nobody: %d nobody_check: %d, nobody_first: %d. \n", nobody, nobody_check, nobody_first);
     error->one(FLERR,"Internal error: # of atoms with no associated body inconsistent");
+  }
 
   int noid_sum;
   MPI_Scan(&noid,&noid_sum,1,MPI_INT,MPI_SUM,world);
@@ -347,8 +362,8 @@ void Multisphere::id_extend_body_extend(int *body)
     {
         id_(ibody) = itag;
         
-        if(nobody_first == nlocal-1)
-            error->one(FLERR,"Internal error: atom body id inconsistent");
+        if((nobody_first == nlocal-1) && ( nrigid_(ibody)>1 )) //allow body with a single atom
+            error->one(FLERR,"Internal error: atom body id inconsistent: (nobody_first == nlocal-1) && ( nrigid_(ibody)>1 )");
 
         for(int iatom = nobody_first; iatom < nobody_first+nrigid_(ibody); iatom++)
         {

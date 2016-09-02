@@ -46,11 +46,11 @@
 #ifndef LMP_RANPARK_H
 #define LMP_RANPARK_H
 
-#include "pointers.h"
+#include "random.h"
 
 namespace LAMMPS_NS {
 
-class RanPark : protected Pointers {
+class RanPark : public Random {
   friend class Set;
  public:
   RanPark(class LAMMPS *, int);

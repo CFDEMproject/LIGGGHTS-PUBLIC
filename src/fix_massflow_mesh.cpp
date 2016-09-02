@@ -39,9 +39,9 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "atom.h"
 #include "atom_vec.h"
 #include "comm.h"
@@ -76,6 +76,9 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   fix_counter_(0),
   fix_mesh_(0),
   fix_neighlist_(0),
+  fix_ms_(0),
+  ms_(0),
+  ms_counter_(0),
   havePointAtOutlet_(false),
   insideOut_(false),
   mass_(0.),
@@ -89,10 +92,7 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   nparticles_last_(0.),
   t_count_(0.),
   delta_t_(0.),
-  reset_t_count_(true),
-  fix_ms_(0),
-  ms_(0),
-  ms_counter_(0)
+  reset_t_count_(true)
 {
     vectorZeroize3D(nvec_);
     vectorZeroize3D(pref_);
@@ -282,7 +282,7 @@ void FixMassflowMesh::post_create()
 
     // need to find multisphere here to be able to add property
 
-    fix_ms_ = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
+    fix_ms_ = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
     if(fix_ms_)
     {
         ms_ = &fix_ms_->data();
@@ -292,9 +292,9 @@ void FixMassflowMesh::post_create()
         ms_counter_->setDefaultValue(-1);
 
         if(delete_atoms_)
-            error->fix_error(FLERR,this,"can not use 'delete_atoms' with fix multisphere");
+            error->fix_error(FLERR,this,"can not use 'delete_atoms' with fix multisphere/*");
         if(!once_)
-            error->fix_error(FLERR,this,"must use 'count once' with fix multisphere");
+            error->fix_error(FLERR,this,"must use 'count once' with fix multisphere/*");
     }
 }
 
@@ -317,7 +317,7 @@ void FixMassflowMesh::init()
     if(delete_atoms_ && 1 != atom->map_style)
         error->fix_error(FLERR,this,"requires an atom map of type 'array', via an 'atom_modify map array' command");
 
-    if(!fix_ms_ && static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0)))
+    if(!fix_ms_ && static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0)))
         error->fix_error(FLERR,this,"fix multisphere must come before fix massflow/mesh in input script");
 }
 

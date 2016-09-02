@@ -45,50 +45,6 @@
 #define LMP_CONTAINER_BASE_I_H
 
   /* ----------------------------------------------------------------------
-   definition of reference frames and comm types
-  ------------------------------------------------------------------------- */
-
-  // reference frame types
-  // invariant: invariant to scaling, translation, rotation
-  // trans invariant: invariant to translation, not invariant to scaling, rotation
-  // trans+rot invariant: invariant to translation, rotation, not invariant to scaling
-  // general: not invariant to scaling, translation, rotation
-
-  enum{ REF_FRAME_UNDEFINED,
-        REF_FRAME_INVARIANT,
-        REF_FRAME_SCALE_TRANS_INVARIANT,
-        REF_FRAME_TRANS_ROT_INVARIANT,
-        REF_FRAME_TRANS_INVARIANT,
-        REF_FRAME_GENERAL};
-
-  // communication types
-
-  enum{ // communication invoked manually
-        COMM_TYPE_MANUAL,
-        // only exchange and borders comm
-        COMM_EXCHANGE_BORDERS,
-        // forward comm every step
-        COMM_TYPE_FORWARD,
-        // forward comm based on reference frame setting
-        // ie if mesh rotates, egdeVecs are communicated
-        
-        COMM_TYPE_FORWARD_FROM_FRAME,
-        // reverse comm every step
-        
-        COMM_TYPE_REVERSE,
-        // no comm at all
-        
-        COMM_TYPE_NONE,
-        // undefined state for error check
-        COMM_TYPE_UNDEFINED};  // communication types
-
-  // restart types
-
-  enum{ RESTART_TYPE_UNDEFINED,
-        RESTART_TYPE_YES,
-        RESTART_TYPE_NO};
-
-  /* ----------------------------------------------------------------------
    decide if property is pushed or pulled at all
   ------------------------------------------------------------------------- */
 
@@ -114,7 +70,11 @@
         return false;
 
       if(OPERATION_COMM_REVERSE == operation &&
-         COMM_TYPE_REVERSE == communicationType_)
+             (
+                COMM_TYPE_REVERSE == communicationType_ ||
+                COMM_TYPE_REVERSE_BITFIELD == communicationType_
+             )
+         )
         return true;
 
       if(OPERATION_COMM_FORWARD == operation &&
@@ -157,7 +117,8 @@
       {
           
           if(communicationType_ == COMM_TYPE_NONE ||
-             communicationType_ == COMM_TYPE_REVERSE)
+             communicationType_ == COMM_TYPE_REVERSE ||
+             communicationType_ == COMM_TYPE_REVERSE_BITFIELD )
              return false;
 
           return true;

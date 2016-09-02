@@ -37,6 +37,7 @@
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifdef PAIR_CLASS
@@ -47,8 +48,11 @@
 #define LMP_PAIR_GRAN_H
 
 #include "pair.h"
+#include "atom.h"
+#include "region.h"
 #include "compute_pair_gran_local.h"
 #include "contact_interface.h"
+#include "fix_relax_contacts.h"
 #include <vector>
 #include <string>
 
@@ -81,6 +85,7 @@ public:
   virtual void read_restart(FILE *);
   virtual void write_restart_settings(FILE *){}
   virtual void read_restart_settings(FILE *){}
+  virtual bool contact_match(const std::string mtype, const std::string model) = 0;
   virtual void reset_dt();
   double memory_usage();
 
@@ -104,9 +109,7 @@ public:
   }
 
   inline void cpl_pair_finalize()
-  {
-    cpl_->pair_finalize();
-  }
+  { cpl_->pair_finalize(); }
 
   /* PUBLIC ACCESS FUNCTIONS */
 
@@ -119,35 +122,44 @@ public:
   inline int dnum()
   { return dnum_all; }
 
-  inline class ComputePairGranLocal * cpl() {
-    return cpl_;
-  }
+  inline class ComputePairGranLocal * cpl() const
+  { return cpl_; }
 
-  inline bool storeContactForces() {
-    return store_contact_forces_;
-  }
+  inline bool storeContactForces() const
+  { return store_contact_forces_; }
 
-  inline int freeze_group_bit() const {
-    return freeze_group_bit_;
-  }
+  inline bool storeContactForcesStress()
+  { return store_contact_forces_stress_; }
 
-  inline int computeflag() const {
-    return computeflag_;
-  }
+  inline bool storeSumDelta()
+  { return store_multicontact_data_; }
 
-  inline int shearupdate() const {
-    return shearupdate_;
-  }
+  inline int freeze_group_bit() const
+  { return freeze_group_bit_; }
 
-  class FixContactPropertyAtom * fix_contact_forces() {
-    return fix_contact_forces_;
-  }
+  inline int computeflag() const
+  { return computeflag_; }
 
-  class FixRigid* fr_pair()
+  inline int shearupdate() const
+  { return shearupdate_; }
+
+  class FixContactPropertyAtom * fix_contact_forces() const
+  { return fix_contact_forces_;  }
+
+  class FixContactPropertyAtom * fix_contact_forces_stress()
+  { return fix_contact_forces_stress_; }
+
+  class FixContactPropertyAtom * fix_store_multicontact_delta()
+  { return fix_store_multicontact_data_; }
+
+  class FixRigid* fr_pair() const
   { return fix_rigid; }
 
-  double * mr_pair()
+  double * mr_pair() const
   { return mass_rigid; }
+
+  double relax(int i)
+  { return (fix_relax_ ? fix_relax_->factor_relax(i) : 1.); }
 
   virtual double stressStrainExponent() = 0;
 
@@ -155,7 +167,8 @@ public:
 
   void *extract(const char *str, int &dim);
 
-  int add_history_value(std::string name, std::string newtonflag) {
+  int add_history_value(std::string name, std::string newtonflag)
+  {
     int offset = history_arg.size();
     history = true;
     history_arg.push_back(HistoryArg(name, newtonflag));
@@ -165,6 +178,15 @@ public:
 
   void do_store_contact_forces()
   { store_contact_forces_ = true; }
+
+  void do_relax_region(FixRelaxContacts *_fr)
+  { fix_relax_ = _fr; }
+
+  void do_store_contact_forces_stress()
+  { store_contact_forces_stress_ = true; }
+
+  void do_store_multicontact_data()
+  { store_multicontact_data_ = true; }
 
  protected:
 
@@ -210,9 +232,16 @@ public:
   int cpl_enable;
   class ComputePairGranLocal *cpl_;
 
-  // storage for per-contact forces
+  // storage for per-contact forces and torque
   bool store_contact_forces_;
   class FixContactPropertyAtom *fix_contact_forces_;
+
+  // storage for per-contact forces and relative position (for goldhirsch stress model)
+  bool store_contact_forces_stress_;
+  class FixContactPropertyAtom *fix_contact_forces_stress_;
+  // storage for per contact delta data (for multicontact models)
+  bool store_multicontact_data_;
+  class FixContactPropertyAtom *fix_store_multicontact_data_;
 
   // storage of rigid body masses for use in granular interactions
 
@@ -246,6 +275,8 @@ public:
   int nfix;
   Fix **fix_dnum;
   int *dnum_index;
+
+  FixRelaxContacts *fix_relax_;
 };
 
 }

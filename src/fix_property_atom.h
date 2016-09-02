@@ -100,6 +100,15 @@ class FixPropertyAtom : public Fix {
 
   virtual void mark_tracers(int ilo, int ihi) { UNUSED(ilo); UNUSED(ihi); }
 
+  inline void set_internal()
+  { internal = true; }
+
+  inline bool get_internal()
+  { return internal; }
+
+  inline int get_nvalues()
+  { return nvalues; }
+
  protected:
   void parse_args(int narg, char **arg);
 
@@ -115,6 +124,9 @@ class FixPropertyAtom : public Fix {
   // in case of initialization from property - name of property
   char *propertyname;
   double *property;
+
+  // switch for auto-output
+  bool internal;
 }; //end class
 
 }

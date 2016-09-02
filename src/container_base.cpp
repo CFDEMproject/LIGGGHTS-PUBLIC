@@ -43,7 +43,7 @@
 
 #include "container_base.h"
 #include "string_liggghts.h"
-#include "stdio.h"
+#include <stdio.h>
 #include <string>
 
 #define GROW 100
@@ -149,6 +149,7 @@ using namespace LAMMPS_NS;
       if      (strcmp(_comm,"comm_forward") == 0) communicationType_ = COMM_TYPE_FORWARD;
       else if (strcmp(_comm,"comm_forward_from_frame") == 0) communicationType_ = COMM_TYPE_FORWARD_FROM_FRAME;
       else if (strcmp(_comm,"comm_reverse") == 0) communicationType_ = COMM_TYPE_REVERSE;
+      else if (strcmp(_comm,"comm_reverse_bitfield") == 0) communicationType_ = COMM_TYPE_REVERSE_BITFIELD;
       else if (strcmp(_comm,"comm_exchange_borders") == 0) communicationType_ = COMM_EXCHANGE_BORDERS;
       else if (strcmp(_comm,"comm_none") == 0) communicationType_ = COMM_TYPE_NONE;
       else if (strcmp(_comm,"comm_manual") == 0) communicationType_ = COMM_TYPE_MANUAL;

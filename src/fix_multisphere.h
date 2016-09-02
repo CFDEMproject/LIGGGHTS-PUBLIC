@@ -54,6 +54,7 @@ FixStyle(multisphere/nointegration,FixMultisphere)
 #include "multisphere_parallel.h"
 #include "fix_property_atom.h"
 #include "fix_remove.h"
+#include "fix_heat_gran.h"
 #include "atom.h"
 #include "comm.h"
 
@@ -68,15 +69,19 @@ enum
     MS_COMM_FW_IMAGE_DISPLACE,
     MS_COMM_FW_V_OMEGA,
     MS_COMM_FW_F_TORQUE,
+    MS_COMM_FW_TEMP,
     MS_COMM_REV_X_V_OMEGA,
     MS_COMM_REV_V_OMEGA,
     MS_COMM_REV_IMAGE,
     MS_COMM_REV_DISPLACE,
+    MS_COMM_REV_TEMP
 };
 
 class FixMultisphere : public Fix
 {
-     public:
+    friend class SetMultisphere;
+
+     public:    
 
       FixMultisphere(class LAMMPS *, int, char **);
       virtual ~FixMultisphere();
@@ -96,7 +101,7 @@ class FixMultisphere : public Fix
       void initial_integrate(int);
       virtual void pre_force(int);
       void final_integrate();
-      void calc_force();
+      virtual void calc_force();
 
       void add_body_finalize();
 
@@ -215,6 +220,7 @@ class FixMultisphere : public Fix
       class FixPropertyAtom *fix_delflag_;
       class FixPropertyAtom *fix_existflag_;
       class FixGravity *fix_gravity_;
+      FixHeatGran *fix_heat_;
 
       //int comm_di_;
       int fw_comm_flag_;
@@ -233,6 +239,7 @@ class FixMultisphere : public Fix
       double *Vclump_;
 
       bool allow_group_and_set_;
+      bool allow_heatsource_;
 };
 
 }

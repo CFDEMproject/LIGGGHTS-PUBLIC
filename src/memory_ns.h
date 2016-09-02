@@ -52,7 +52,7 @@
 #ifndef LMP_MEMORY_NS_H
 #define LMP_MEMORY_NS_H
 
-#include "stdlib.h"
+#include <stdlib.h>
 #include "lmptype.h"
 
 using namespace LAMMPS_NS;

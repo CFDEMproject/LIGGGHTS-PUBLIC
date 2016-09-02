@@ -50,8 +50,8 @@ andreas.eitzlmayr@tugraz.at
 Christoph Kloss (DCS)
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "compute_reduce.h"
 #include "atom.h"
 #include "update.h"
@@ -496,7 +496,7 @@ double ComputeReduce::compute_one(int m, int flag)
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
-  double one;
+  double one = 0.0;
   if (mode == SUM) one = 0.0;
   else if (mode == MINN) one = BIG;
   else if (mode == MAXX) one = -BIG;

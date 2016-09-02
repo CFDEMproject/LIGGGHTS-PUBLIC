@@ -49,7 +49,7 @@
 #include "math_extra.h"
 #include "modify.h"
 #include "pair_gran.h"
-#include "stdlib.h"
+#include <stdlib.h>
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -147,10 +147,6 @@ void FixHeatGran::updatePtrs(){
 void FixHeatGran::init()
 {
   
-  int n_ms = modify->n_fixes_style("multisphere");
-  if(n_ms > 0)
-    error->fix_error(FLERR,this,"may not be used together with fix multisphere");
-
   if (!atom->radius_flag || !atom->rmass_flag)
     error->fix_error(FLERR,this,"must use a granular atom style ");
 
@@ -192,12 +188,13 @@ void FixHeatGran::initial_integrate(int vflag)
 
   //reset heat flux
   //sources are not reset
-  int *mask = atom->mask;
+  //int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
   for (int i = 0; i < nlocal; i++)
   {
-     if (mask[i] & groupbit)
+
+     //if (mask[i] & groupbit)
      {
         directionalHeatFlux[i][0] = 0.;
         directionalHeatFlux[i][1] = 0.;

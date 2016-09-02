@@ -48,7 +48,7 @@ TANGENTIAL_MODEL(TANGENTIAL_NO_HISTORY,no_history,1)
 #define TANGENTIAL_MODEL_NO_HISTORY_H_
 #include "contact_models.h"
 #include <algorithm>
-#include "math.h"
+#include <math.h>
 #include "global_properties.h"
 
 namespace LIGGGHTS {
@@ -103,12 +103,12 @@ namespace ContactModels
       const double tor2 = (enz*Ft1 - enx*Ft3);
       const double tor3 = (enx*Ft2 - eny*Ft1);
 
-      #ifdef SUPERQUADRIC_ACTIVE_FLAG
+      #ifdef NONSPHERICAL_ACTIVE_FLAG
           double torque_i[3];
           if(sidata.is_non_spherical) {
             double xci[3];
             double Ft_i[3] = { Ft1,  Ft2,  Ft3 };
-            vectorSubtract3D(sidata.contact_point, sidata.pos_i, xci);
+            vectorSubtract3D(sidata.contact_point, atom->x[sidata.i], xci);
             vectorCross3D(xci, Ft_i, torque_i);
           } else {
             torque_i[0] = -sidata.cri * tor1;
@@ -122,14 +122,14 @@ namespace ContactModels
         i_forces.delta_F[0] += Ft1 * area_ratio;
         i_forces.delta_F[1] += Ft2 * area_ratio;
         i_forces.delta_F[2] += Ft3 * area_ratio;
-        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        #ifdef NONSPHERICAL_ACTIVE_FLAG
                 i_forces.delta_torque[0] += torque_i[0] * area_ratio;
                 i_forces.delta_torque[1] += torque_i[1] * area_ratio;
                 i_forces.delta_torque[2] += torque_i[2] * area_ratio;
         #else
-                i_forces.delta_torque[0] = -sidata.cri * tor1 * area_ratio;
-                i_forces.delta_torque[1] = -sidata.cri * tor2 * area_ratio;
-                i_forces.delta_torque[2] = -sidata.cri * tor3 * area_ratio;
+                i_forces.delta_torque[0] += -sidata.cri * tor1 * area_ratio;
+                i_forces.delta_torque[1] += -sidata.cri * tor2 * area_ratio;
+                i_forces.delta_torque[2] += -sidata.cri * tor3 * area_ratio;
         #endif
       } else {
         i_forces.delta_F[0] += Ft1;
@@ -138,11 +138,11 @@ namespace ContactModels
         j_forces.delta_F[0] -= Ft1;
         j_forces.delta_F[1] -= Ft2;
         j_forces.delta_F[2] -= Ft3;
-        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        #ifdef NONSPHERICAL_ACTIVE_FLAG
                 double torque_j[3];
                 if(sidata.is_non_spherical) {
                   double xcj[3];
-                  vectorSubtract3D(sidata.contact_point, sidata.pos_j, xcj);
+                  vectorSubtract3D(sidata.contact_point, atom->x[sidata.j], xcj);
                   double Ft_j[3] = { -Ft1,  -Ft2,  -Ft3 };
                   vectorCross3D(xcj, Ft_j, torque_j);
                 } else {
@@ -158,13 +158,13 @@ namespace ContactModels
                 j_forces.delta_torque[1] += torque_j[1];
                 j_forces.delta_torque[2] += torque_j[2];
         #else
-                i_forces.delta_torque[0] = -sidata.cri * tor1;
-                i_forces.delta_torque[1] = -sidata.cri * tor2;
-                i_forces.delta_torque[2] = -sidata.cri * tor3;
+                i_forces.delta_torque[0] += -sidata.cri * tor1;
+                i_forces.delta_torque[1] += -sidata.cri * tor2;
+                i_forces.delta_torque[2] += -sidata.cri * tor3;
 
-                j_forces.delta_torque[0] = -sidata.crj * tor1;
-                j_forces.delta_torque[1] = -sidata.crj * tor2;
-                j_forces.delta_torque[2] = -sidata.crj * tor3;
+                j_forces.delta_torque[0] += -sidata.crj * tor1;
+                j_forces.delta_torque[1] += -sidata.crj * tor2;
+                j_forces.delta_torque[2] += -sidata.crj * tor3;
         #endif
       }
     }

@@ -104,7 +104,7 @@ problematic for low coefficients of resitution as showin in Schwager and Poschel
 {tangential_damping} = 'on'
 {limitForce} = 'off'
 
-[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525–541 (2004).
+[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, CES, 59 (3), p 525-541 (2004).
 
 [(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
 

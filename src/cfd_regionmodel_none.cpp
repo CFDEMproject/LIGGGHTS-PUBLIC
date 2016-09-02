@@ -39,13 +39,13 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "atom.h"
 #include "error.h"
 #include "memory.h"
 #include "modify.h"
-#include "math.h"
+#include <math.h>
 #include "fix_property_atom.h"
 #include "fix_property_global.h"
 #include "fix_cfd_coupling.h"

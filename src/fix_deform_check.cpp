@@ -44,9 +44,9 @@
     contacthistory when flipping the box.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
-#include "math.h"
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
 #include "fix_deform_check.h"
 #include "atom.h"
 #include "update.h"

@@ -18,7 +18,7 @@ ID, group-ID are documented in "fix"_fix.html command :ulb,l
 
 [Examples:]
 
-fix ms all multisphere
+fix ms all multisphere :pre
 
 [Description:]
 
@@ -72,6 +72,8 @@ used with the {start/stop} keywords of the "run"_run.html command.
 This fix is not invoked during "energy minimization"_minimize.html.
 
 [Restrictions:]
+
+Fix multisphere does not work together with "fix deform"_fix_deform.html
 
 Only one fix multisphere at a time is allowed.
 Heat transfer simulations are not possible when using this fix

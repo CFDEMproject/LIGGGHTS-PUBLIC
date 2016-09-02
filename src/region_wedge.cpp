@@ -44,9 +44,9 @@
 #include "region_wedge.h"
 #include "error.h"
 #include "domain.h"
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "math_extra.h"
 #include "update.h"
 #include "vector_liggghts.h"

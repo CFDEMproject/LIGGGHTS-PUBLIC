@@ -49,8 +49,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "compute_stress_atom.h"
 #include "atom.h"
 #include "update.h"

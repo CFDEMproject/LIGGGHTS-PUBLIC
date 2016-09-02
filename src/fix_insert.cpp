@@ -39,9 +39,9 @@
     Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "atom.h"
 #include "atom_vec.h"
 #include "force.h"
@@ -56,6 +56,7 @@
 #include "fix_particledistribution_discrete.h"
 #include "fix_template_sphere.h"
 #include "fix_property_atom.h"
+#include "irregular.h"
 #include "fix_insert.h"
 #include "math_extra_liggghts.h"
 #include "mpi_liggghts.h"
@@ -63,7 +64,7 @@
 
 #include "probability_distribution.h"
 #include "region_neighbor_list.h"
-#include "superquadric_flag.h"
+#include "nonspherical_flags.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -321,6 +322,8 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
 
   print_stats_start_flag = 1;
 
+  irregular = new Irregular(lmp);
+
   // calc max insertion radius
   int ntypes = atom->ntypes;
   maxrad = 0.;
@@ -341,6 +344,9 @@ FixInsert::~FixInsert()
   delete [] displs;
   delete &neighList;
   if(property_name) delete []property_name;
+
+  if(irregular) delete irregular;
+  irregular = 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -436,6 +442,37 @@ void FixInsert::sanity_check()
 
     if(insert_every == 0 && (massflowrate > 0. || nflowrate > 0.))
         error->fix_error(FLERR,this,"must not define 'particlerate' or 'massrate' for 'insert_every' = 0");
+
+    if(0 == comm->me)
+    {
+        
+        std::vector<int> seeds;
+        seeds.push_back(random->state());
+        seeds.push_back(fix_distribution->random_state());
+        for(int itemplate = 0; itemplate < fix_distribution->n_particletemplates(); itemplate++)
+        {
+            
+            seeds.push_back(fix_distribution->particletemplates()[itemplate]->random_insertion_state());
+        }
+
+        std::sort(seeds.begin(),seeds.end());
+
+        if(std::unique(seeds.begin(),seeds.end()) !=seeds.end() )
+        {
+            char errstr[1024];
+            sprintf(errstr,"Fix %s, ID %s: Random number generation: It is required that all the random seeds of this fix insert/*, \n"
+                           "  the random seed of particle distribution fix (id %s) template and all random seeds of the \n"
+                           "  fix particletemplate/* commands used by particle distribution fix (id %s) are different\n"
+                           "  Hint: possible valid (different) seeds would be the following numbers:\n"
+                           "        15485863, 15485867, 32452843, 32452867, 49979687, 49979693, 67867967, 67867979, 86028121, 86028157",
+                           style,id,fix_distribution->id,fix_distribution->id);
+
+            if(input->seed_check_throw_error())
+                error->one(FLERR,errstr);
+            else
+                error->warning(FLERR,errstr);
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -531,7 +568,6 @@ void FixInsert::init()
     {
          fix_property = static_cast<FixPropertyAtom*>(modify->find_fix_property(property_name,"property/atom","scalar",1,1,this->style,true));
     }
-
 }
 
 /* ---------------------------------------------------------------------- */
@@ -668,9 +704,9 @@ void FixInsert::pre_exchange()
 
   if(warn_boxentent && min_subbox_extent < 2.2 *max_r_bound())
   {
-      char msg[200];
-      sprintf(msg,"Particle insertion on proc %d: sub-domain too small to insert particles: \nMax. bounding "
-                  "sphere diameter is %f sub-domain extent in %s direction is only %f ",
+      char msg[256];
+      sprintf(msg,"Particle insertion on proc %d: sub-domain is smaller than the bounding radius of insert particles to insert: \nMax. bounding "
+                  "sphere diameter is %f, sub-domain extent in %s direction is only %f ",
                   comm->me,2.*max_r_bound(),0==min_dim?"x":(1==min_dim?"y":"z"),min_subbox_extent);
       error->warning(FLERR,msg);
   }
@@ -757,6 +793,9 @@ void FixInsert::pre_exchange()
 
   if(ninserted_this < ninsert_this && comm->me == 0)
       error->warning(FLERR,"Particle insertion: Less insertions than requested");
+
+  if (irregular->migrate_check())
+      irregular->migrate_atoms();
 
   // next timestep to insert
   if (insert_every && (!ninsert_exists || ninserted < ninsert)) next_reneighbor += insert_every;
@@ -885,7 +924,7 @@ int FixInsert::load_xnear(int ninsert_this_local)
   neighList.set_obb_flag(check_obb_flag);
 #endif
 
-  if(neighList.setBoundingBox(bb, maxrad))
+  if(neighList.setBoundingBox(bb, maxrad,true,true))
   {
     for (int i = 0; i < nall; ++i)
     {

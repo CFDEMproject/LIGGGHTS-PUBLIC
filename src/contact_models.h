@@ -36,9 +36,11 @@
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2013-2014 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifndef CONTACT_MODELS_H_
@@ -112,7 +114,7 @@ namespace ContactModels
     inline void connectToProperties(PropertyRegistry & registry);
     inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata);
     inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
-    inline void endSurfacesIntersect(SurfacesIntersectData & sidata,class TriMesh *mesh);
+    inline void endSurfacesIntersect(SurfacesIntersectData & sidata, class TriMesh *mesh, double * const);
     inline void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
     inline void tally_pp(double val,int i, int j, int index);
     inline void tally_pw(double val,int i, int j, int index);
@@ -169,7 +171,38 @@ namespace ContactModels
     void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
   };
 
-  class ContactModelBase {
+  class Factory {
+    typedef std::map<std::string, int> ModelTable;
+
+    ModelTable surface_models;
+    ModelTable normal_models;
+    ModelTable tangential_models;
+    ModelTable cohesion_models;
+    ModelTable rolling_models;
+
+    Factory();
+    Factory(const Factory &){}
+  public:
+    static Factory & instance();
+    static int64_t select(int & narg, char ** & args);
+
+    void addNormalModel(const std::string & name, int identifier);
+    void addTangentialModel(const std::string & name, int identifier);
+    void addCohesionModel(const std::string & name, int identifier);
+    void addRollingModel(const std::string & name, int identifier);
+    void addSurfaceModel(const std::string & name, int identifier);
+
+    int getNormalModelId(const std::string & name);
+    int getTangentialModelId(const std::string & name);
+    int getCohesionModelId(const std::string & name);
+    int getRollingModelId(const std::string & name);
+    int getSurfaceModelId(const std::string & name);
+
+  private:
+    int64_t select_model(int & narg, char ** & args);
+  };
+
+  class ContactModelBase : private Pointers{
    public:
 
     bool is_wall()
@@ -178,15 +211,20 @@ namespace ContactModels
     virtual void tally_pp(double val,int i, int j, int index) = 0;
     virtual void tally_pw(double val,int i, int j, int index) = 0;
 
-    virtual int bond_history_offset() = 0;
+    // gets a preregistred offset of a contacthistory name
+    int get_history_offset(const string hname);
+    // adds a offset for a certain history name
+    void add_history_offset(const string hname, const int offset, const bool overwrite = false);
     
     ContactModelBase(bool _is_wall) :
+      Pointers(lmp),
       is_wall_(_is_wall)
     {}
 
    private:
 
     bool is_wall_;
+    std::map<std::string, int> history_offsets;
   };
 
   template<typename Style>
@@ -270,11 +308,6 @@ namespace ContactModels
       surfaceModel.endPass(sidata, i_forces, j_forces);
     }
 
-    inline int bond_history_offset()
-    {
-      return cohesionModel.bond_history_offset();
-    }
-
     inline double stressStrainExponent()
     {
       return normalModel.stressStrainExponent();
@@ -299,14 +332,17 @@ namespace ContactModels
     {
       surfaceModel.surfacesIntersect(sidata, i_forces, j_forces);
       normalModel.surfacesIntersect(sidata, i_forces, j_forces);
+      
       cohesionModel.surfacesIntersect(sidata, i_forces, j_forces);
+      
       tangentialModel.surfacesIntersect(sidata, i_forces, j_forces);
+      
       rollingModel.surfacesIntersect(sidata, i_forces, j_forces);
     }
 
-    inline void endSurfacesIntersect(SurfacesIntersectData & sidata,class TriMesh *mesh)
+    inline void endSurfacesIntersect(SurfacesIntersectData & sidata, class TriMesh *mesh, double * const forces)
     {
-      surfaceModel.endSurfacesIntersect(sidata,mesh);
+      surfaceModel.endSurfacesIntersect(sidata, mesh, forces);
     }
 
     inline void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces)
@@ -316,6 +352,21 @@ namespace ContactModels
       cohesionModel.surfacesClose(scdata, i_forces, j_forces);
       tangentialModel.surfacesClose(scdata, i_forces, j_forces);
       rollingModel.surfacesClose(scdata, i_forces, j_forces);
+    }
+
+    bool contact_match(const std::string mtype, const std::string model)
+    {
+      if (mtype.compare("surface")==0)
+        return Style::SURFACE == Factory::instance().getSurfaceModelId(model);
+      else if (mtype.compare("normal")==0)
+        return Style::MODEL == Factory::instance().getNormalModelId(model);
+      else if (mtype.compare("cohesion")==0)
+        return Style::COHESION == Factory::instance().getCohesionModelId(model);
+      else if (mtype.compare("tangential")==0)
+        return Style::TANGENTIAL == Factory::instance().getTangentialModelId(model);
+      else if (mtype.compare("rolling_friction")==0)
+        return Style::ROLLING == Factory::instance().getRollingModelId(model);
+      return false;
     }
   };
 
@@ -347,8 +398,6 @@ namespace ContactModels
     void registerSettings(Settings&){}
     void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
     void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
-
-    int bond_history_offset() {return -1;}
   };
 
   template<>
@@ -364,31 +413,6 @@ namespace ContactModels
     void registerSettings(Settings&){}
     void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
     void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
-  };
-
-  class Factory {
-    typedef std::map<std::string, int> ModelTable;
-
-    ModelTable surface_models;
-    ModelTable normal_models;
-    ModelTable tangential_models;
-    ModelTable cohesion_models;
-    ModelTable rolling_models;
-
-    Factory();
-    Factory(const Factory &){}
-  public:
-    static Factory & instance();
-    static int64_t select(int & narg, char ** & args);
-
-    void addNormalModel(const std::string & name, int identifier);
-    void addTangentialModel(const std::string & name, int identifier);
-    void addCohesionModel(const std::string & name, int identifier);
-    void addRollingModel(const std::string & name, int identifier);
-    void addSurfaceModel(const std::string & name, int identifier);
-
-  private:
-    int64_t select_model(int & narg, char ** & args);
   };
 
 }

@@ -30,15 +30,15 @@ timestep	0.00001
 fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
 
 #granular walls
-fix		cv all mesh/surface file meshes/conveyor.stl type 1 surface_vel -5. 0. 0.
+fix		cv all mesh/surface file meshes/conveyor.stl type 1 surface_vel -4.5 0. 0.
 fix		bx all mesh/surface file meshes/box.stl      type 1 
 fix		inface all mesh/surface file meshes/insertion_face.stl type 1
 fix wall all wall/gran model hertz tangential history mesh n_meshes 2 meshes bx cv
 
 #distributions for insertion
-fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.015
-fix		pts2 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.025
-fix		pdd1 all particledistribution/discrete 1.  2 pts1 0.3 pts2 0.7
+fix		pts1 all particletemplate/sphere 15485863 atom_type 1 density constant 2500 radius constant 0.015
+fix		pts2 all particletemplate/sphere 15485867 atom_type 1 density constant 2500 radius constant 0.025
+fix		pdd1 all particledistribution/discrete 32452843 2 pts1 0.3 pts2 0.7
 
 #region for insertion
 group		nve_group region reg
@@ -48,7 +48,7 @@ region		bc block 0.3 0.5 -0.2 0.2 0.1 0.2 units box
 #fix		ins nve_group pour/dev mass 30. 1 distributiontemplate pdd1 vol 0.25 200 massflowrate 30. vel uniform 0. 0. 0. 0. 0.0 region bc
 
 #particle insertion
-fix			ins nve_group insert/stream seed 5330 distributiontemplate pdd1 &
+fix			ins nve_group insert/stream seed 32452867 distributiontemplate pdd1 &
 				maxattempt 100 mass 30. massrate 30. overlapcheck yes vel constant 0. 0. -1.0&
 				insertion_face inface extrude_length 0.1
 
@@ -62,7 +62,6 @@ compute			rke all erotate/sphere
 thermo_style	custom step atoms ke c_rke f_ts[1] f_ts[2] vol
 thermo			1000
 thermo_modify	lost ignore norm no
-compute_modify	thermo_temp dynamic yes
 
 #insert the first particles so that dump is not empty
 run			1

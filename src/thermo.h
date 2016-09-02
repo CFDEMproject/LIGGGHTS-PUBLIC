@@ -120,9 +120,9 @@ class Thermo : protected Pointers {
                          // index = where they are in computes list
                          // id = ID of Compute objects
                          // Compute * = ptrs to the Compute objects
-  int index_temp;
-  char *id_temp;
-  class Compute *temperature;
+  int index_kin_eng;          // index of compute that corresponds to the kinetic energy compute
+  char *id_kin_eng;           // id of kinetic energy compute
+  class Compute *kin_eng;     // kinetic energy compute
 
   int ncompute;                // # of Compute objects called by thermo
   char **id_compute;           // their IDs
@@ -372,9 +372,9 @@ E: This variable thermo keyword cannot be used between runs
 Keywords that refer to time (such as cpu, elapsed) do not
 make sense in between runs.
 
-E: Thermo keyword in variable requires thermo to use/init temp
+E: Thermo keyword in variable requires thermo to use/init ke
 
-You are using a thermo keyword in a variable that requires temperature
+You are using a thermo keyword in a variable that requires the kinetic energy
 to be calculated, but your thermo output does not use it.  Add it to
 your thermo output.
 

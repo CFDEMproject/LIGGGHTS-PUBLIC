@@ -33,10 +33,12 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
     Richard Berger (JKU Linz)
 
+    Copyright 2016-     CFDEMresearch GmbH, Linz
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
@@ -84,6 +86,12 @@ namespace MODEL_PARAMS
   static const char * ROUGHNESS_ABSOLUTE = "roughnessAbsolute";
   static const char * ROUGHNESS_RELATIVE = "roughnessRelative";
   static const char * ROLLING_STIFFNESS = "rollingStiffness";
+  static const char * NORMAL_DAMPING_COEFFICIENT = "normalDampingCoefficient";
+  static const char * TANGENTIAL_DAMPING_COEFFICIENT = "tangentialDampingCoefficient";
+  static const char * TANGENTIAL_STIFFNESS = "tangentialStiffness";
+  static const char * INITIAL_COHESIVE_STRESS = "initialCohesiveStress";
+  static const char * MAX_COHESIVE_STRESS = "maxCohesiveStress";
+  static const char * COHESION_STRENGTH = "cohesionStrength";
 
   /* -----------------------------------------------------------------------
    * Utility functions
@@ -227,7 +235,7 @@ namespace MODEL_PARAMS
   {
     LAMMPS * lmp = registry.getLAMMPS();
     int        numSettings = 3;        //use 2 settings, index = 0: for bubble-bubble, index = 1: for bubble-wall, 2: decideMethod
-    VectorProperty *   vec = new VectorProperty(numSettings); 
+    VectorProperty *   vec = new VectorProperty(numSettings);
     FixPropertyGlobal * ca = registry.getGlobalProperty(COALESCENCE_MODEL_SWITCHES,"property/global","vector",numSettings,0,caller);
 
     for(int i=0; i <numSettings; i++)
@@ -250,7 +258,7 @@ namespace MODEL_PARAMS
   {
     LAMMPS * lmp = registry.getLAMMPS();
     int        numSettings = 6;        //use 6 settings, starting index = 0
-    VectorProperty *   vec = new VectorProperty(numSettings); 
+    VectorProperty *   vec = new VectorProperty(numSettings);
     FixPropertyGlobal * ca = registry.getGlobalProperty(COALESCENCE_MODEL_SETTINGS,"property/global","vector",numSettings,0,caller);
 
     for(int i=0; i <numSettings; i++)
@@ -308,7 +316,7 @@ namespace MODEL_PARAMS
   {
     LAMMPS * lmp = registry.getLAMMPS();
     int        numSettings = 2;        //use 2 settings, index = 0: for particle-particle, index = 1: for particle-wall
-    VectorProperty *   vec = new VectorProperty(numSettings); 
+    VectorProperty *   vec = new VectorProperty(numSettings);
     FixPropertyGlobal * ca = registry.getGlobalProperty(COHESION_MODEL_SWITCHES,"property/global","vector",numSettings,0,caller);
 
     for(int i=0; i <numSettings; i++)
@@ -829,6 +837,43 @@ namespace MODEL_PARAMS
   ScalarProperty* createRoughnessRelative(PropertyRegistry & registry, const char * caller, bool)
   {
     return createScalarProperty(registry, ROUGHNESS_RELATIVE, caller);
+  }
+  /* ---------------------------------------------------------------------- */
+
+  MatrixProperty* createNormalDampingCoefficient(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createPerTypePairProperty(registry, NORMAL_DAMPING_COEFFICIENT, caller);
+  }
+  /* ---------------------------------------------------------------------- */
+
+  MatrixProperty* createTangentialDampingCoefficient(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createPerTypePairProperty(registry, NORMAL_DAMPING_COEFFICIENT, caller);
+  }
+
+  /* ---------------------------------------------------------------------- */
+
+  MatrixProperty* createTangentialStiffness(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createPerTypePairProperty(registry, TANGENTIAL_STIFFNESS, caller);
+  }
+  /* ---------------------------------------------------------------------- */
+
+  MatrixProperty* createInitialCohesiveStress(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createPerTypePairProperty(registry, INITIAL_COHESIVE_STRESS, caller);
+  }
+  /* ---------------------------------------------------------------------- */
+
+  MatrixProperty* createMaxCohesiveStress(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createPerTypePairProperty(registry, MAX_COHESIVE_STRESS, caller);
+  }
+  /* ---------------------------------------------------------------------- */
+
+  MatrixProperty* createCohesionStrength(PropertyRegistry & registry, const char * caller, bool)
+  {
+    return createPerTypePairProperty(registry, COHESION_STRENGTH, caller);
   }
   /* ---------------------------------------------------------------------- */
 }

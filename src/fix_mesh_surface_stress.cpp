@@ -46,7 +46,7 @@
 
 #include "fix_mesh_surface_stress.h"
 #include <stdio.h>
-#include "string.h"
+#include <string.h>
 #include "error.h"
 #include "force.h"
 #include "modify.h"
@@ -65,6 +65,7 @@ using namespace FixConst;
 FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
 : FixMeshSurface(lmp, narg, arg),
   
+  updatedStresses_(false),
   p_ref_(*mesh()->prop().addGlobalProperty<VectorContainer<double,3> >("p_ref","comm_none","frame_general","restart_yes")),
   f_(0),
   sigma_n_(0),
@@ -76,6 +77,8 @@ FixMeshSurfaceStress::FixMeshSurfaceStress(LAMMPS *lmp, int narg, char **arg)
 {
     vectorZeroize3D(f_total_);
     vectorZeroize3D(torque_total_);
+    vectorZeroize3D(f_total_old_);
+    vectorZeroize3D(torque_total_old_);
 
     double zerovec[3] = {0.,0.,0.};
     mesh()->prop().setGlobalProperty<VectorContainer<double,3> >("p_ref",zerovec);
@@ -207,7 +210,7 @@ void FixMeshSurfaceStress::zeroizeWear()
 
 void FixMeshSurfaceStress::init()
 {
-    FixMesh::init();
+    FixMeshSurface::init();
 
     if(stress_flag_)
     {
@@ -251,8 +254,11 @@ void FixMeshSurfaceStress::pre_force(int vflag)
 
     if(trackStress())
     {
+        vectorCopy3D(f_total_,f_total_old_);
+        vectorCopy3D(torque_total_,torque_total_old_);
         vectorZeroize3D(f_total_);
         vectorZeroize3D(torque_total_);
+        updatedStresses_ = false;
     }
 
 }
@@ -392,6 +398,8 @@ void FixMeshSurfaceStress::calc_total_force()
         MPI_Sum_Vector(f_total_,3,world);
         MPI_Sum_Vector(torque_total_,3,world);
         
+        updatedStresses_ = true; // f_total_ and torque_total_ are now up-to-date
+
         for(int i = 0; i < nTri; i++)
         {
             // get element surface norm and area
@@ -425,7 +433,10 @@ void FixMeshSurfaceStress::calc_total_force()
 
 double FixMeshSurfaceStress::compute_vector(int n)
 {
-  if(n < 3) return f_total_[n];
-  else if(n < 6)     return torque_total_[n-3];
-  else return p_ref_(0)[n-6];
+    if (n < 3)
+        return updatedStresses_ ? f_total_[n] : f_total_old_[n];
+    else if (n < 6)
+        return updatedStresses_ ? torque_total_[n-3] : torque_total_old_[n-3];
+    else
+        return p_ref_(0)[n-6];
 }

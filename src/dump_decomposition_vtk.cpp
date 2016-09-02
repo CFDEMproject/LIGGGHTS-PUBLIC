@@ -39,7 +39,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "dump_decomposition_vtk.h"
 #include "domain.h"
 #include "atom.h"

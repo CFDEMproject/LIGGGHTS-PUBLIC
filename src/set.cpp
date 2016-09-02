@@ -49,16 +49,16 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
+#include <mpi.h>
+#include <math.h>
 #include "math_extra.h"
-#include "superquadric_flag.h"
+#include "nonspherical_flags.h"
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-#include "math_extra_liggghts_superquadric.h"
+#include "math_extra_liggghts_nonspherical.h"
 #include "atom_vec_superquadric.h"
 #endif
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "set.h"
 #include "atom.h"
 #include "atom_vec.h"
@@ -747,21 +747,21 @@ void Set::set(int keyword)
     #ifdef SUPERQUADRIC_ACTIVE_FLAG
     else if (keyword == OMEGAX && atom->superquadric_flag) {
         atom->omega[i][0] = dvalue;
-        MathExtraLiggghtsSuperquadric::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
+        MathExtraLiggghtsNonspherical::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
     }
     #endif
     else if (keyword == OMEGAX) atom->omega[i][0] = dvalue;  
     #ifdef SUPERQUADRIC_ACTIVE_FLAG
     else if (keyword == OMEGAY && atom->superquadric_flag) {
         atom->omega[i][1] = dvalue;
-        MathExtraLiggghtsSuperquadric::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
+        MathExtraLiggghtsNonspherical::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
     }
     #endif
     else if (keyword == OMEGAY) atom->omega[i][1] = dvalue;  
     #ifdef SUPERQUADRIC_ACTIVE_FLAG
     else if (keyword == OMEGAZ && atom->superquadric_flag) {
         atom->omega[i][2] = dvalue;
-        MathExtraLiggghtsSuperquadric::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
+        MathExtraLiggghtsNonspherical::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
     }
     #endif
     else if (keyword == OMEGAZ) atom->omega[i][2] = dvalue;  
@@ -814,10 +814,10 @@ void Set::set(int keyword)
         atom->shape[i][0] = xvalue;
         atom->shape[i][1] = yvalue;
         atom->shape[i][2] = zvalue;
-        MathExtraLiggghtsSuperquadric::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
-        MathExtraLiggghtsSuperquadric::volume_superquadric(atom->shape[i], atom->roundness[i], atom->volume+i); //re-calculate volume
+        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
+        MathExtraLiggghtsNonspherical::volume_superquadric(atom->shape[i], atom->roundness[i], atom->volume+i); //re-calculate volume
         atom->rmass[i] = atom->volume[i] * atom->density[i]; //re-calculate mass
-        MathExtraLiggghtsSuperquadric::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
+        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
 
       }
       #endif // SUPERQUADRIC_ACTIVE_FLAG
@@ -833,10 +833,10 @@ void Set::set(int keyword)
       else if(avec_superquadric) {
         atom->roundness[i][0] = xvalue;
         atom->roundness[i][1] = yvalue;
-        MathExtraLiggghtsSuperquadric::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
-        MathExtraLiggghtsSuperquadric::volume_superquadric(atom->shape[i], atom->roundness[i], atom->volume+i); //re-calculate volume
+        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
+        MathExtraLiggghtsNonspherical::volume_superquadric(atom->shape[i], atom->roundness[i], atom->volume+i); //re-calculate volume
         atom->rmass[i] = atom->density[i] * atom->volume[i]; //re-calculate mass
-        MathExtraLiggghtsSuperquadric::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
+        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
 
       }
       #endif // SUPERQUADRIC_ACTIVE_FLAG
@@ -908,7 +908,7 @@ void Set::set(int keyword)
             #ifdef SUPERQUADRIC_ACTIVE_FLAG
             if (domain->dimension == 3) {
               atom->rmass[i] = atom->density[i] * atom->volume[i];
-              MathExtraLiggghtsSuperquadric::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]);
+              MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]);
             }
             else
               error->one(FLERR,"Superquadrics are implemented only in 3D");

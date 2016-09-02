@@ -54,10 +54,10 @@
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
-#include "mpi.h"
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "neighbor.h"
 #include "neigh_list.h"
 #include "neigh_request.h"
@@ -1925,6 +1925,7 @@ void Neighbor::modify_params(int narg, char **arg)
       else binsizeflag = 1;
       iarg += 2;
     } else if (strcmp(arg[iarg],"cluster") == 0) {
+      error->all(FLERR,"neigh_modify cluster is deprecated");
       if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
       if (strcmp(arg[iarg+1],"yes") == 0) cluster_check = 1;
       else if (strcmp(arg[iarg+1],"no") == 0) cluster_check = 0;

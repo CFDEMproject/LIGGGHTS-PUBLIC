@@ -46,7 +46,7 @@ COHESION_MODEL(COHESION_WASHINO_CAPILLARY_VISCOUS,washino/capillary/viscous,7)
 #define COHESION_MODEL_WASHINO_CAPILLARY_VISCOUS_H_
 
 #include "contact_models.h"
-#include "math.h"
+#include <math.h>
 #include "math_extra_liggghts.h"
 #include "global_properties.h"
 #include "fix_property_atom.h"
@@ -99,8 +99,6 @@ namespace ContactModels {
 
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
-
-    int bond_history_offset() {return -1;}
 
     CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *cmb) :
       Pointers(lmp), surfaceLiquidContentInitial(0.0), surfaceTension(0.0), contactAngle(0),
@@ -206,7 +204,7 @@ namespace ContactModels {
       if(sidata.is_wall)
         return;
 
-      const int i = sidata.j;
+      const int i = sidata.i;
       const int j = sidata.j;
       const int itype = sidata.itype;
       const int jtype = sidata.jtype;
@@ -276,29 +274,30 @@ namespace ContactModels {
         i_forces.delta_F[0] += Ft1 * area_ratio;
         i_forces.delta_F[1] += Ft2 * area_ratio;
         i_forces.delta_F[2] += Ft3 * area_ratio;
-        i_forces.delta_torque[0] = -sidata.cri * tor1 * area_ratio;
-        i_forces.delta_torque[1] = -sidata.cri * tor2 * area_ratio;
-        i_forces.delta_torque[2] = -sidata.cri * tor3 * area_ratio;*/
+        i_forces.delta_torque[0] += -sidata.cri * tor1 * area_ratio;
+        i_forces.delta_torque[1] += -sidata.cri * tor2 * area_ratio;
+        i_forces.delta_torque[2] += -sidata.cri * tor3 * area_ratio;*/
       } else {
         i_forces.delta_F[0] += fx;
         i_forces.delta_F[1] += fy;
         i_forces.delta_F[2] += fz;
-        i_forces.delta_torque[0] = -sidata.cri * tor1;
-        i_forces.delta_torque[1] = -sidata.cri * tor2;
-        i_forces.delta_torque[2] = -sidata.cri * tor3;
+        i_forces.delta_torque[0] += -sidata.cri * tor1;
+        i_forces.delta_torque[1] += -sidata.cri * tor2;
+        i_forces.delta_torque[2] += -sidata.cri * tor3;
 
         j_forces.delta_F[0] -= fx;
         j_forces.delta_F[1] -= fy;
         j_forces.delta_F[2] -= fz;
-        j_forces.delta_torque[0] = -sidata.crj * tor1;
-        j_forces.delta_torque[1] = -sidata.crj * tor2;
-        j_forces.delta_torque[2] = -sidata.crj * tor3;
+        j_forces.delta_torque[0] += -sidata.crj * tor1;
+        j_forces.delta_torque[1] += -sidata.crj * tor2;
+        j_forces.delta_torque[2] += -sidata.crj * tor3;
       }
     }
 
     void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces)
     {
 	  
+      // Wall cohesion is not properly implemented yet
 	  if(scdata.is_wall)
         return;
 
@@ -440,23 +439,23 @@ namespace ContactModels {
             i_forces.delta_F[0] += Ft1 * area_ratio;
             i_forces.delta_F[1] += Ft2 * area_ratio;
             i_forces.delta_F[2] += Ft3 * area_ratio;
-            i_forces.delta_torque[0] = -scdata.cri * tor1 * area_ratio;
-            i_forces.delta_torque[1] = -scdata.cri * tor2 * area_ratio;
-            i_forces.delta_torque[2] = -scdata.cri * tor3 * area_ratio;*/
+            i_forces.delta_torque[0] += -scdata.cri * tor1 * area_ratio;
+            i_forces.delta_torque[1] += -scdata.cri * tor2 * area_ratio;
+            i_forces.delta_torque[2] += -scdata.cri * tor3 * area_ratio;*/
           } else {
             i_forces.delta_F[0] += fx;
             i_forces.delta_F[1] += fy;
             i_forces.delta_F[2] += fz;
-            i_forces.delta_torque[0] = -radi * tor1; // using radius here, not contact radius
-            i_forces.delta_torque[1] = -radi * tor2;
-            i_forces.delta_torque[2] = -radi * tor3;
+            i_forces.delta_torque[0] += -radi * tor1; // using radius here, not contact radius
+            i_forces.delta_torque[1] += -radi * tor2;
+            i_forces.delta_torque[2] += -radi * tor3;
 
             j_forces.delta_F[0] -= fx;
             j_forces.delta_F[1] -= fy;
             j_forces.delta_F[2] -= fz;
-            j_forces.delta_torque[0] = -radj * tor1; // using radius here, not contact radius
-            j_forces.delta_torque[1] = -radj * tor2;
-            j_forces.delta_torque[2] = -radj * tor3;
+            j_forces.delta_torque[0] += -radj * tor1; // using radius here, not contact radius
+            j_forces.delta_torque[1] += -radj * tor2;
+            j_forces.delta_torque[2] += -radj * tor3;
           }
       }
       // case (iii)

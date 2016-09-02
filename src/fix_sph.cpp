@@ -37,10 +37,10 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "mpi.h"
-#include "string.h"
-#include "stdlib.h"
+#include <math.h>
+#include <mpi.h>
+#include <string.h>
+#include <stdlib.h>
 #include "fix_sph.h"
 #include "update.h"
 #include "respa.h"

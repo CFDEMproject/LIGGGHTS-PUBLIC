@@ -83,6 +83,9 @@ namespace LAMMPS_NS
         class AbstractMesh * mesh()
         { return mesh_; }
 
+        bool fixMeshCompare(const class FixMesh* fixMeshToCompare) const
+        { return fixMeshToCompare == fix_mesh_; }
+
      protected:
 
         class FixMesh* fixMesh()

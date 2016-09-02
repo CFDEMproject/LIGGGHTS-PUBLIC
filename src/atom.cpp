@@ -49,17 +49,17 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "limits.h"
 #include "atom.h"
 #include "style_atom.h"
 #include "atom_vec.h"
 #include "atom_vec_ellipsoid.h"
-#include "superquadric_flag.h"
+#include "nonspherical_flags.h"
 #include "comm.h"
 #include "neighbor.h"
 #include "force.h"
@@ -128,6 +128,7 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   e = de = NULL;
   cv = NULL;
   vest = NULL;
+
 //Superquadric bonus-----------------------------------
   shape = NULL; //half axes and roundness parameters
   inertia = NULL; //components Ix, Iy, Iz
@@ -135,6 +136,8 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   volume = NULL; area = NULL;
   quaternion = NULL; //quaternion of current orientation and angular moment
 //------------------------------------------------------
+
+  shapetype = 0;
 
   maxspecial = 1;
   nspecial = NULL;
@@ -178,6 +181,8 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   cs_flag = csforce_flag = vforce_flag = ervelforce_flag= etag_flag = 0;
   rho_flag = e_flag = cv_flag = vest_flag = 0;
   p_flag = 0; 
+
+  shapetype_flag = 0;
 
   // ntype-length arrays
 
@@ -304,6 +309,8 @@ Atom::~Atom()
   memory->destroy(quaternion); //quaternion of current orientation
 //------------------------------------------------------
 
+  memory->destroy(shapetype);
+
   // delete custom atom arrays
 
   for (int i = 0; i < nivector; i++) {
@@ -370,6 +377,8 @@ void Atom::create_avec(const char *style, int narg, char **arg, char *suffix)
   density_flag = 0; 
   rho_flag = p_flag = 0; 
   vfrac_flag = spin_flag = eradius_flag = ervel_flag = erforce_flag = 0;
+
+  shapetype_flag = 0;
 
   // create instance of AtomVec
   // use grow to initialize atom-based arrays to length 1
@@ -848,7 +857,7 @@ void Atom::data_bonus(int n, char *buf, AtomVec *avec_bonus)
 
 void Atom::data_bodies(int n, char *buf, AtomVecBody *avec_body)
 {
-  int j,m,tagdata,ninteger,ndouble;
+  int j,tagdata,ninteger,ndouble;
 
   char **ivalues = new char*[10*MAXBODY];
   char **dvalues = new char*[10*MAXBODY];
@@ -1685,10 +1694,13 @@ void *Atom::extract(const char *name,int &len)
   if (strcmp(name,"rmass") == 0) return (void *) rmass;
   if (strcmp(name,"vfrac") == 0) return (void *) vfrac;
   if (strcmp(name,"s0") == 0) return (void *) s0;
-  if (strcmp(name,"shape") == 0) return (void *) shape;
+
+#if SUPERQUADRIC_ACTIVE_FLAG
+  if (strcmp(name,"shape") == 0 && shape!=NULL) return (void *) shape;
 
   len = 4;
-  if (strcmp(name,"quaternion") == 0) return (void *) quaternion;
+  if (strcmp(name,"quaternion") == 0 && quaternion!=NULL) return (void *) quaternion;
+#endif
 
   len = -1; 
   return NULL;

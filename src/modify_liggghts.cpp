@@ -39,8 +39,8 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <string.h>
 #include "modify.h"
 #include "style_compute.h"
 #include "style_fix.h"
@@ -227,6 +227,45 @@ int Modify::n_fixes_style_strict(const char *style)
           n_fixes++;
 
     return n_fixes;
+}
+
+/* ----------------------------------------------------------------------
+   find a fix property/atom for output
+------------------------------------------------------------------------- */
+
+int Modify::n_fixes_property_atom_not_internal()
+{
+    int n_fixes = 0;
+
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixPropertyAtom*>(fix[ifix]) && !dynamic_cast<FixPropertyAtom*>(fix[ifix])->get_internal())
+          n_fixes++;
+
+    return n_fixes;
+}
+
+int Modify::dump_size_fixes_property_atom_not_internal()
+{
+    int n_dump = 0;
+
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixPropertyAtom*>(fix[ifix]) && !dynamic_cast<FixPropertyAtom*>(fix[ifix])->get_internal())
+      {
+          n_dump += dynamic_cast<FixPropertyAtom*>(fix[ifix])->get_nvalues();
+      }
+
+    return n_dump;
+}
+
+FixPropertyAtom* Modify::find_fix_property_atom_not_internal(int rank)
+{
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixPropertyAtom*>(fix[ifix]) && !dynamic_cast<FixPropertyAtom*>(fix[ifix])->get_internal())
+      {
+          if(rank > 0) rank --;
+          else return dynamic_cast<FixPropertyAtom*>(fix[ifix]);
+      }
+    return NULL;
 }
 
 /* ----------------------------------------------------------------------

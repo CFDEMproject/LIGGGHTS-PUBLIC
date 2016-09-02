@@ -58,6 +58,7 @@
 #include "fix_neighlist_mesh.h"
 #include "tri_mesh_deform.h"
 #include "fix_property_global.h"
+#include "fix_move_mesh.h"
 #include "tri_mesh_planar.h"
 #include "modify.h"
 #include "comm.h"
@@ -72,6 +73,7 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 : FixBaseLiggghts(lmp, narg, arg),
   atom_type_mesh_(-1),
   mass_temperature_(0.),
+  trackPerElementTemp_(false),
   mesh_(NULL),
   setupFlag_(false),
   pOpFlag_(false),
@@ -391,10 +393,22 @@ void FixMesh::pre_delete(bool unfixflag)
     // also error if dump is operating on mesh
     if(unfixflag)
     {
-        if(mesh_->isMoving() && modify->n_fixes_style("move/mesh") > 0)
-            error->fix_error(FLERR,this,
-                    "illegal unfix command, may not unfix a moving mesh while a fix move is applied."
-                    "Unfix the fix move/mesh first");
+        const int n_move = modify->n_fixes_style("move/mesh");
+        if(mesh_->isMoving() && n_move > 0)
+        {
+            for (int i = 0; i < n_move; i++) {
+                const FixMoveMesh* fix_move = static_cast<FixMoveMesh*>(modify->find_fix_style_strict("move/mesh", i));
+                if (fix_move->fixMeshCompare(this))
+                {
+                    std::string error_msg =
+                            std::string("illegal unfix command, may not unfix a moving mesh while a fix move is applied to it. ") +
+                            "Unfix the fix move/mesh first (id: " +
+                            fix_move->id +
+                            ")";
+                    error->fix_error(FLERR,this,error_msg.c_str());
+                }
+            }
+        }
     }
 }
 
@@ -447,6 +461,14 @@ void FixMesh::setup_pre_force(int vflag)
 
     pOpFlag_ = false;
 
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMesh::setup(int vflag)
+{
+    
+    mesh_->reverseComm();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -514,7 +536,9 @@ void FixMesh::final_integrate()
     
     mesh_->reverseComm();
 
-    if(mass_temperature_ > 0. && mesh_->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))
+    bool has_per_element_heattransfer = (0 == strcmp("mesh/surface/heattransfer",style));
+
+    if(!has_per_element_heattransfer && mass_temperature_ > 0. && mesh_->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))
     {
         double Temp_wall = (*mesh_->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))(0);
         double flux = (*mesh_->prop().getGlobalProperty< ScalarContainer<double> >("heatFlux"))(0);

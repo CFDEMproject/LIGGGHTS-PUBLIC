@@ -32,17 +32,14 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+
+    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
+    Philippe Seil (JKU Linz)
+    Arno Mayerhofer (CFDEMresearch GmbH)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
-------------------------------------------------------------------------- */
-
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -88,9 +85,15 @@ namespace LAMMPS_NS
         void createContactHistory(int dnum);
         void createMeshforceContact();
 
+        void createMeshforceContactStress();
+        void createMulticontactData();
+
         void deleteWallNeighList();
         void deleteContactHistory();
         void deleteMeshforceContact();
+
+        void deleteMeshforceContactStress();
+        void deleteMeshMulticontactData();
 
         inline bool trackStress()
         {return stress_flag_;}
@@ -110,6 +113,12 @@ namespace LAMMPS_NS
         inline class FixContactPropertyAtomWall* meshforceContact()
         { return fix_meshforce_contact_;}
 
+        inline class FixContactPropertyAtomWall* meshforceContactStress()
+        { return fix_meshforce_contact_stress_;}
+
+        inline class FixContactPropertyAtomWall* meshMulticontactData()
+        { return fix_mesh_multicontact_data_;}
+
         inline class TriMesh *triMesh()
         { return static_cast<TriMesh*>(mesh()); }
 
@@ -127,6 +136,8 @@ namespace LAMMPS_NS
         class FixContactHistoryMesh *fix_contact_history_mesh_;
         class FixNeighlistMesh *fix_mesh_neighlist_;
         class FixContactPropertyAtomWall *fix_meshforce_contact_;
+        class FixContactPropertyAtomWall *fix_meshforce_contact_stress_;
+        class FixContactPropertyAtomWall *fix_mesh_multicontact_data_;
 
         // flag for stressanalysis
         bool stress_flag_;

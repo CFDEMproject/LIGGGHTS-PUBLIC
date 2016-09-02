@@ -91,17 +91,20 @@ If using CGS units, youngsModulus must be > 5e5
 When using the limitForce, the specified coefficient of restitution is only approximate. This might 
 become problematic for low coefficients of resitution as showin in Schwager and Poschel.
 
+{heating_normal_hertz} may not be available in your version of the software.
+
 [Default:]
 
 {tangential_damping} = 'on'
 {limitForce} = 'off'
 {heating_normal_hertz} = 'off'
 
-[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525–541 (2004).
+[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525-541 (2004).
 
 [(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
 
 [(Brilliantov)] Brilliantov, Spahn, Hertzsch, Poschel, Phys Rev E, 53, p 5382-5392 (1996).
+
 [(Schwager)] Schwager, Poschel, Gran Matt, 9, p 465-469 (2007).
 
 [(Silbert)] Silbert, Ertas, Grest, Halsey, Levine, Plimpton, Phys Rev E, 64, p 051302 (2001).

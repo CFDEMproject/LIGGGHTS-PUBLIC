@@ -38,9 +38,11 @@
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
     Philippe Seil (JKU Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
@@ -73,7 +75,9 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
 : FixMesh(lmp, narg, arg),
   fix_contact_history_mesh_(0),
   fix_mesh_neighlist_(0),
-  fix_meshforce_contact_(0),
+  fix_meshforce_contact_(NULL),
+  fix_meshforce_contact_stress_(NULL),
+  fix_mesh_multicontact_data_(NULL),
   stress_flag_(false),
   velFlag_(false),
   angVelFlag_(false),
@@ -382,7 +386,7 @@ void FixMeshSurface::createMeshforceContact()
     fixarg[8]=(char *) "0";
     fixarg[9]=(char *) "fz";
     fixarg[10]=(char *) "0";
-    fixarg[11]=(char *) "ty";
+    fixarg[11]=(char *) "tx";
     fixarg[12]=(char *) "0";
     fixarg[13]=(char *) "ty";
     fixarg[14]=(char *) "0";
@@ -395,6 +399,76 @@ void FixMeshSurface::createMeshforceContact()
     delete []fixarg;
 }
 
+void FixMeshSurface::createMeshforceContactStress()
+{
+    if(fix_meshforce_contact_stress_) return;
+
+    char **fixarg = new char*[25];
+    char fixid[200],propertyid[200];
+    sprintf(fixid,"contactforces_stress_%s",id);
+    sprintf(propertyid,"contactforces_stress_%s",id);
+    fixarg[0]=(char *) fixid;
+    fixarg[1]=(char *) "all";
+    fixarg[2]=(char *) "contactproperty/atom/wall";
+    fixarg[3]=(char *) propertyid;
+    fixarg[4]=(char *) "9";
+    fixarg[5]=(char *) "fx";
+    fixarg[6]=(char *) "0";
+    fixarg[7]=(char *) "fy";
+    fixarg[8]=(char *) "0";
+    fixarg[9]=(char *) "fz";
+    fixarg[10]=(char *) "0";
+    fixarg[11]=(char *) "deltax";
+    fixarg[12]=(char *) "0";
+    fixarg[13]=(char *) "deltay";
+    fixarg[14]=(char *) "0";
+    fixarg[15]=(char *) "deltaz";
+    fixarg[16]=(char *) "0";
+    fixarg[17]=(char *) "vx";
+    fixarg[18]=(char *) "0";
+    fixarg[19]=(char *) "vy";
+    fixarg[20]=(char *) "0";
+    fixarg[21]=(char *) "vz";
+    fixarg[22]=(char *) "0";
+    fixarg[23]=(char *) "mesh";
+    fixarg[24]=(char *) this->id;
+    modify->add_fix(25,fixarg);
+    fix_meshforce_contact_stress_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
+    delete []fixarg;
+}
+
+void FixMeshSurface::createMulticontactData()
+{
+    if(fix_mesh_multicontact_data_) return;
+
+    // create a new per contact property which will contain the data for the computation according to Brodu et. al. 2016
+    // surfPosIJ will contain the position of the contact surface ij, realtive to position i
+    // normalForce will contain the normal component of the contact force
+    char **fixarg = new char*[17];
+    char fixid[200];
+    sprintf(fixid,"multicontactData_%s",id);
+    fixarg[0]=fixid;
+    fixarg[1]=(char *) "all";
+    fixarg[2]=(char *) "contactproperty/atom/wall";
+    fixarg[3]=fixid;
+    fixarg[4]=(char *) "4";
+    fixarg[5]=(char *) "surfPosIJ_x";
+    fixarg[6]=(char *) "0";
+    fixarg[7]=(char *) "surfPosIJ_y";
+    fixarg[8]=(char *) "0";
+    fixarg[9]=(char *) "surfPosIJ_z";
+    fixarg[10]=(char *) "0";
+    fixarg[11]=(char *) "normalForce";
+    fixarg[12]=(char *) "0";
+    fixarg[13]=(char *) "mesh";
+    fixarg[14]=(char *) id;
+    fixarg[15]=(char *) "reset";
+    fixarg[16]=(char *) "no";
+    modify->add_fix(17,fixarg);
+    fix_mesh_multicontact_data_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
+    delete []fixarg;
+}
+
 void FixMeshSurface::deleteMeshforceContact()
 {
     // contact tracker and neighlist are created via fix wall/gran
@@ -402,6 +476,26 @@ void FixMeshSurface::deleteMeshforceContact()
     if(fix_meshforce_contact_) {
       modify->delete_fix(fix_meshforce_contact_->id,true);
       fix_meshforce_contact_ = NULL;
+    }
+}
+
+void FixMeshSurface::deleteMeshforceContactStress()
+{
+    // contact tracker and neighlist are created via fix wall/gran
+    
+    if(fix_meshforce_contact_stress_) {
+      modify->delete_fix(fix_meshforce_contact_stress_->id,true);
+      fix_meshforce_contact_stress_ = NULL;
+    }
+}
+
+void FixMeshSurface::deleteMeshMulticontactData()
+{
+    // contact tracker and neighlist are created via fix wall/gran
+    
+    if(fix_mesh_multicontact_data_) {
+      modify->delete_fix(fix_mesh_multicontact_data_->id,true);
+      fix_mesh_multicontact_data_ = NULL;
     }
 }
 

@@ -52,13 +52,14 @@
 #ifndef LMP_DOMAIN_H
 #define LMP_DOMAIN_H
 
-#include "math.h"
+#include <math.h>
 #include "pointers.h"
 #include "error.h" 
 #include "comm.h" 
 #include "vector_liggghts.h" 
 #include "neighbor.h" 
 #include "atom.h" 
+#include "math_extra_liggghts.h"
 
 #define SMALL_DMBRDR 1.0e-8 
 

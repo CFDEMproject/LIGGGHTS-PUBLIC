@@ -1,0 +1,60 @@
+<HTML>
+<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
+</CENTER>
+
+
+
+
+
+
+<HR>
+
+<H3>fix multisphere/break command 
+</H3>
+<P><B>Syntax:</B>
+</P>
+<PRE>fix ID group-ID multisphere/break keyword value ... 
+</PRE>
+<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
+
+<LI>multisphere/break = style name of this fix command   
+
+<LI>keywords = same as for <A HREF = "fix_multisphere.html">fix multisphere</A>, in addition: <I>trigger_threshold</I> and <I>trigger_timeStep</I> and  <I>trigger_fixName</I> 
+
+<PRE>  <I>trigger_threshold</I> value = <I>x in units matching that of trigger_fixName</I>
+    this allows the user the specify a threshold value that will be compared with the per-atom value provided by trigger_fixName, e.g., the residence time in a region (e.g., computed via a fix property/atom/tracer/residencetime). if the threshold is exceeded, the multisphere particle will break.
+  <I>trigger_timeStep</I> value = <I>x in steps</I>
+    this allows the user to activate the fix after a predefined number of steps.
+  <I>trigger_fixName</I>
+    the user must specify the name of the fix that specified per-atom information that is used as the trigger value. The user can freely chose the fix, allowing a flexible use of this fix. 
+</PRE>
+
+</UL>
+<P><B>Examples:</B>
+</P>
+<P>fix integr  grpMulti  multisphere/break allow_group_and_set yes trigger_threshold 0.1 trigger_timeStep 0 trigger_fixName resTimeMill 
+</P>
+<P><B>Description:</B>
+</P>
+<P>The integration that is performed by this command is
+euqivalent to <A HREF = "fix_multisphere.html">fix_multisphere</A>. However, the user can trigger breakage events, which will destroy the "body" the atoms are in. The trigger is imiplemented such that in case the trigger value of one atom in a body exceeds the threshold value, the whole body will break. There are no fragments: all atoms that constitutea body will be released upon breakage.
+</P>
+<P>WARNING: the atoms in a body MUST NOT overlap, since the atoms are simply released from the body without adjusting their size or their position.
+</P>
+<HR>
+
+<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
+</P>
+<P>Same as for <A HREF = "fix_multisphere.html">fix_multisphere</A>.
+</P>
+<P><B>Restrictions:</B>
+</P>
+<P>Same as for <A HREF = "fix_multisphere.html">fix_multisphere</A>.
+</P>
+<P><B>Related commands:</B>
+</P>
+<P><A HREF = "fix_multisphere.html">fix_multisphere</A>
+</P>
+<P><B>Default:</B> none
+</P>
+</HTML>

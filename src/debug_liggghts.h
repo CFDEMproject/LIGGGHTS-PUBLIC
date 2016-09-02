@@ -44,8 +44,8 @@
 
 #include "lammps.h"
 #include "comm.h"
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "style_fix.h"
 #include "vector_liggghts.h"
 #include "container.h"

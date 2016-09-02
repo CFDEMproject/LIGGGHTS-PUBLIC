@@ -43,9 +43,9 @@
 #define LMP_MATH_EXTRA_LIGGGHTS_H
 
 #include "pointers.h"
-#include "math.h"
-#include "stdio.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
 #include "error.h"
 #include "vector_liggghts.h"
 #include "math_extra.h"
@@ -121,6 +121,9 @@ namespace MathExtraLiggghts {
   int sgn(T val) {
       return (T(0) < val) - (val < T(0));
   }
+
+  // prime number test, JoKer
+  inline bool isPrime(int val);
 };
 
 /* ----------------------------------------------------------------------
@@ -682,6 +685,40 @@ void MathExtraLiggghts::generateComplementBasis(double *uVec, double *vVec, doub
         vVec[1] = -direction[0]*uVec[2];
         vVec[2] =  direction[0]*uVec[1];
     }
+}
+
+/* ----------------------------------------------------------------------
+   check if integer is a prime number (primes are 6k+-1)
+------------------------------------------------------------------------- */
+
+bool MathExtraLiggghts::isPrime(int val)
+{
+  if (val < 2)
+    return false;
+  else if (val == 2)
+    return true;
+  else if (val == 3)
+    return true;
+  else if (val % 2 == 0)
+    return false;
+  else if (val % 3 == 0)
+    return false;
+
+  // max range is up to square-root
+  int testTo = static_cast<int>(floor(::sqrt(static_cast<double>(val))));
+  int test = 5;
+  int width = 2;
+
+  while (  test <= testTo )
+  {
+    if (val % test == 0)
+      return false;
+
+    test += width;
+    width = 6 - width;
+  }
+
+  return true;
 }
 
 #endif

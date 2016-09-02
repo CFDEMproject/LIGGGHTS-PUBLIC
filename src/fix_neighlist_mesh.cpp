@@ -141,6 +141,7 @@ void FixNeighlistMesh::post_create()
         fix_nneighs_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
 
         fix_nneighs_->just_created = false;
+        fix_nneighs_->set_internal();
     }
     //check for aspherical
     avec = (AtomVecEllipsoid *) atom->style_match("ellipsoid");
@@ -367,8 +368,8 @@ void FixNeighlistMesh::handleTriangle(int iTri)
     double contactDistanceFactor = neighbor->contactDistanceFactor;
 
     int                     *ellipsoid  = atom->ellipsoid;
-    AtomVecEllipsoid::Bonus *bonus;
-    double *shape;
+    AtomVecEllipsoid::Bonus *bonus = 0;
+    double *shape = 0;
     bool    haveNonSpherical = false;
     if(ellipsoid)
     {

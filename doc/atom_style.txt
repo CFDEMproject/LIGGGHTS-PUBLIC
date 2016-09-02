@@ -14,7 +14,7 @@ atom_style style args :pre
 
 style = {bond} or {charge} or \
         {ellipsoid} or {full} or {line} or \
-	{molecular}or {sphere} or {granular} or {bond/gran} or {tri} or {hybrid} or {sph} :ul
+	{molecular} or {sphere} or {granular} or {bond/gran} or {tri} or {hybrid} or {superquadric} or {convexhull} {sph} :ul
   args = none for any style except {body} and {hybrid}
   {body} args = bstyle bstyle-args
     bstyle = style of body particles
@@ -57,10 +57,11 @@ quantities.
 {bond} | bonds | bead-spring polymers |
 {bond/gran} | number of bonds and bond information | granular bond models |
 {charge} | charge | atomic system with charges |
+{convexhull} | mass, angular velocity, quaternion | granular models |
 {ellipsoid} | shape, quaternion, angular momentum | aspherical particles |
 {line} | end points, angular velocity | rigid bodies |
-{sph}  | q(pressure), density | SPH particles |
 {molecular} | bonds, angles, dihedrals, impropers | uncharged molecules |
+{sph}  | q(pressure), density | SPH particles |
 {sphere or granular} | diameter, mass, angular velocity | granular models |
 {superquadric} | semi-axes, roundness/blockiness parameters, mass, angular velocity, quaternion | granular models |
 {tri} | corner points, angular momentum | rigid bodies  AWPMD :tb(c=3,s=|)
@@ -138,8 +139,8 @@ styles; see "this section"_Section_modify.html.
 This command cannot be used after the simulation box is defined by a
 "read_data"_read_data.html or "create_box"_create_box.html command.
 
-The {superquadric} style is in preparation and not yet available in 
-the PUBLIC version
+The {superquadric} style is not yet available in the PUBLIC version
+The {convexhull} style is not yet available in the PUBLIC version
 
 The {bond}, {molecular} styles are part of the
 MOLECULAR package.  The {line} and {tri} styles are part of the

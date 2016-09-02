@@ -49,8 +49,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "string.h"
+#include <mpi.h>
+#include <string.h>
 #include "ctype.h"
 #include "lammps.h"
 #include "style_angle.h"
@@ -129,6 +129,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   int tag_offset = 0; 
 
   wedgeflag = false; 
+  bool seed_check_error = true;
 
   int iarg = 1;
   while (iarg < narg) {
@@ -152,6 +153,10 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
         error->universe_all(FLERR,"Invalid command-line argument");
       thermoflag = iarg+1;
       iarg += 2;
+    } else if (strcmp(arg[iarg],"-seedtolerant") == 0 ||
+               strcmp(arg[iarg],"-st") == 0) { 
+      seed_check_error = false;
+      iarg ++;
     } else if (strcmp(arg[iarg],"-in") == 0 ||
                strcmp(arg[iarg],"-i") == 0) {
       if (iarg+2 > narg)
@@ -520,6 +525,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   // allocate input class now that MPI is fully setup
 
   input = new Input(this,narg,arg);
+  input->seed_check_error = seed_check_error;
 
   // allocate top-level classes
 

@@ -38,8 +38,8 @@
     Copyright 2012-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "rotate.h"
 #include "domain.h"
 #include "update.h"

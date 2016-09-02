@@ -54,8 +54,8 @@
    Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <string.h>
 #include "modify.h"
 #include "style_compute.h"
 #include "style_fix.h"

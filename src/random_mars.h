@@ -46,11 +46,11 @@
 #ifndef LMP_RANMARS_H
 #define LMP_RANMARS_H
 
-#include "pointers.h"
+#include "random.h"
 
 namespace LAMMPS_NS {
 
-class RanMars : protected Pointers {
+class RanMars : public Random {
  public:
   RanMars(class LAMMPS *, int);
   ~RanMars();

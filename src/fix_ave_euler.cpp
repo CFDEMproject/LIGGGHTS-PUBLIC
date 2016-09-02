@@ -39,9 +39,9 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
-#include "math.h"
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "mpi_liggghts.h"
 #include "fix_ave_euler.h"
 #include "fix_multisphere.h"

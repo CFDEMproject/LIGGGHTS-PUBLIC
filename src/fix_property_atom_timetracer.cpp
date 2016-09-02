@@ -38,9 +38,9 @@
     Copyright 2013-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "atom.h"
 #include "force.h"
 #include "update.h"
@@ -106,22 +106,24 @@ FixPropertyAtomTimeTracer::FixPropertyAtomTimeTracer(LAMMPS *lmp, int narg, char
     char *tracer_name = new char[n];
     strcpy(tracer_name,id);
     int n_reg = iregion_.size();
-    const char *baseargs[9+n_reg];
+    char **baseargs = new char*[9+n_reg]; // VS does not support variable-length arrays --> new
     baseargs[0] = tracer_name; 
-    baseargs[1] = "all";
-    baseargs[2] = "property/atom/tracer";
+    baseargs[1] = (char *) "all";
+    baseargs[2] = (char *) "property/atom/tracer";
     baseargs[3] = tracer_name;
     if(0 == n_reg)
-        baseargs[4] = "scalar"; 
+        baseargs[4] = (char *) "scalar"; 
     else
-        baseargs[4] = "vector"; 
-    baseargs[5] = "yes";    
-    baseargs[6] = "yes";    
-    baseargs[7] = "no";    
-    baseargs[8] = "0.";
+        baseargs[4] = (char *) "vector"; 
+    baseargs[5] = (char *) "yes";    
+    baseargs[6] = (char *) "yes";    
+    baseargs[7] = (char *) "no";    
+    baseargs[8] = (char *) "0.";
     for(int i = 0; i < n_reg; i++)
-        baseargs[9+i] = "0.";
+        baseargs[9+i] = (char *) "0.";
     parse_args(9+n_reg,(char**)baseargs);
+
+    delete []baseargs;
 
     // settings
     nevery = check_every_;

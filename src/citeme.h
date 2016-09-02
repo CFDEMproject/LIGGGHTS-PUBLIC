@@ -47,7 +47,7 @@
 #define LMP_CITEME_H
 
 #include "pointers.h"
-#include "stdio.h"
+#include <stdio.h>
 #include <set>
 
 namespace LAMMPS_NS {

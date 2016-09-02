@@ -144,6 +144,10 @@ namespace LAMMPS_NS
 
         // STRESS
 
+        // buffer variables for correct output
+        double f_total_old_[3], torque_total_old_[3];
+        bool updatedStresses_;
+
         // stress flag in FixMeshSurface
         // reference point, total force and total torque
         VectorContainer<double,3> &p_ref_;

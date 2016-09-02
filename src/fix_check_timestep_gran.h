@@ -70,9 +70,10 @@ class FixCheckTimestepGran : public Fix {
   double rayleigh_time,hertz_time;
   double fraction_rayleigh,fraction_hertz,fraction_skin;
   double fraction_rayleigh_lim,fraction_hertz_lim;
-  double vmax; //max relative velocity
+  double v_rel_max_simulation; //max relative velocity detected in simulation
+  double vmax_user;
   double r_min;
-  bool warnflag;
+  bool warnflag,errorflag;
   double ** Yeff;
 };
 

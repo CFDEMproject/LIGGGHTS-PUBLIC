@@ -39,10 +39,10 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_multisphere.h"
 #include "domain_wedge.h"
 #include "math_extra.h"
@@ -98,7 +98,8 @@ FixMultisphere::FixMultisphere(LAMMPS *lmp, int narg, char **arg) :
   displace_(NULL),
   ntypes_(0),
   Vclump_(0),
-  allow_group_and_set_(false)
+  allow_group_and_set_(false),
+  allow_heatsource_(false)
 {
     int iarg = 3;
 
@@ -116,7 +117,17 @@ FixMultisphere::FixMultisphere(LAMMPS *lmp, int narg, char **arg) :
             error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'allow_group_and_set'");
           iarg += 2;
           hasargs = true;
-      } else {
+      } else if (strcmp(arg[iarg],"allow_heatsource") == 0) {
+          if (narg < iarg+2) error->fix_error(FLERR,this,"not enough arguments for 'allow_heatsource'");
+          if (strcmp(arg[iarg+1],"yes") == 0)
+              allow_heatsource_ = true;
+          else if (strcmp(arg[iarg+1],"no"))
+              allow_heatsource_ = false;
+          else
+              error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'allow_heatsource'");
+          iarg += 2;
+          hasargs = true;
+      } else if(0 == strcmp(style,"multisphere") || 0 == strcmp(style,"multisphere/advanced")) {
           char *errmsg = new char[strlen(arg[iarg])+50];
           sprintf(errmsg,"unknown keyword or wrong keyword order: %s", arg[iarg]);
           error->fix_error(FLERR,this,errmsg);
@@ -308,8 +319,29 @@ void FixMultisphere::init()
   if(domain->dimension != 3)
     error->fix_error(FLERR,this,"works with 3D simulations only");
 
-  if(modify->n_fixes_style("heat/gran") > 0)
-    error->fix_error(FLERR,this,"is not compatible with heat transfer simulations");
+  if(modify->n_fixes_style("heat/gran") > 1)
+      error->fix_error(FLERR,this,"only one fix heat/gran supported");
+  fix_heat_ = static_cast<FixHeatGran*>(modify->find_fix_style("heat/gran",0));
+
+  if (fix_heat_ && !allow_heatsource_) {
+      // check if heatsource is active for multisphere particles
+      for (int i = 0; i < atom->nlocal+atom->nghost; i++)
+      {
+          // skip if atom not in rigid body
+          if(body_[i] < 0) continue;
+
+          int ibody = map(body_[i]);
+
+          // skip if body not owned by this proc
+          if (ibody < 0) continue;
+
+          if(!domain->is_owned_or_first_ghost(i))
+              continue;
+
+          if (!MathExtraLiggghts::compDouble(fix_heat_->heatSource[i],0.,1e-6))
+              error->fix_error(FLERR,this,"The multisphere heattransfer does not support heatsources");
+      }
+  }
 
   if(domain->triclinic || dynamic_cast<DomainWedge*>(domain))
     error->fix_error(FLERR,this,"does not work with triclinic or wedge box");
@@ -613,6 +645,8 @@ void FixMultisphere::calc_force()
   double **fcm = multisphere_.fcm_.begin();
   double **dragforce_cm = multisphere_.dragforce_cm_.begin();
   double **torquecm = multisphere_.torquecm_.begin();
+  double *temp = multisphere_.temp_.begin();
+  double *temp_old = multisphere_.temp_old_.begin();
   int nbody = multisphere_.n_body();
 
   fw_comm_flag_ = MS_COMM_FW_F_TORQUE;
@@ -655,6 +689,57 @@ void FixMultisphere::calc_force()
     torquecm[ibody][1] += dz*f_one[0] - dx*f_one[2] + torque_one[1];
     torquecm[ibody][2] += dx*f_one[1] - dy*f_one[0] + torque_one[2];
 
+  }
+
+  // heat transfer
+  
+  if (fix_heat_) {
+      // communicate temperature to ghosts
+      fw_comm_flag_ = MS_COMM_FW_TEMP;
+      forward_comm();
+
+      // save old temp
+      for (ibody = 0; ibody < nbody; ibody++)
+          temp_old[ibody] = temp[ibody];
+
+      // caclulate temperature from single particles
+      for (int i = 0; i < nlocal+nghost; i++)
+      {
+          // skip if atom not in rigid body
+          if(body_[i] < 0) continue;
+
+          ibody = map(body_[i]);
+
+          // skip if body not owned by this proc
+          if (ibody < 0) continue;
+
+          if(!domain->is_owned_or_first_ghost(i))
+              continue;
+
+          //if (screen) fprintf(screen, "Update temperature for particle i = %d\n",i);
+          //if (screen) fprintf(screen, "Heat flux of particle %d is %g\n",i,fix_heat_->heatFlux[i]);
+          temp[ibody] += fix_heat_->Temp[i] - temp_old[ibody]; //fix_heat_->heatFlux[i]*update->dt/(masstotal[ibody]);
+      }
+
+      // set temperature of single particles
+      for (int i = 0; i < nlocal+nghost; i++)
+      {
+          // skip if atom not in rigid body
+          if(body_[i] < 0) continue;
+
+          ibody = map(body_[i]);
+
+          // skip if body not owned by this proc
+          if (ibody < 0) continue;
+
+          if(!domain->is_owned_or_first_ghost(i))
+              continue;
+
+          fix_heat_->Temp[i] = temp[ibody];
+      }
+
+      rev_comm_flag_ = MS_COMM_REV_TEMP;
+      reverse_comm();
   }
 
   // add external forces on bodies, such as gravity, dragforce

@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
+#include <stdlib.h>
 #include "atom_vec_atomic.h"
 #include "atom.h"
 #include "comm.h"

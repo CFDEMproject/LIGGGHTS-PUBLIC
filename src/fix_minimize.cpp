@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
+#include <stdlib.h>
 #include "fix_minimize.h"
 #include "atom.h"
 #include "domain.h"

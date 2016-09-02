@@ -50,10 +50,10 @@
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
-#include "mpi.h"
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "thermo.h"
 #include "atom.h"
 #include "update.h"
@@ -163,11 +163,11 @@ Thermo::Thermo(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
 
   // ptrs, flags, IDs for compute objects thermo may use or create
 
-  temperature = NULL;
+  kin_eng = NULL;
 
-  index_temp = -1;
+  index_kin_eng = -1;
 
-  id_temp = (char *) "thermo_temp";
+  id_kin_eng = (char *) "thermo_kin_eng";
 
   // count fields in line
   // allocate per-field memory
@@ -301,7 +301,7 @@ void Thermo::init()
 
   // set ptrs to keyword-specific Compute objects
 
-  if (index_temp >= 0) temperature = computes[index_temp];
+  if (index_kin_eng >= 0) kin_eng = computes[index_kin_eng];
 
   last_natoms = 0; 
 }
@@ -652,7 +652,7 @@ void Thermo::parse_fields(char *str)
       addfield("Atoms",&Thermo::compute_atoms,BIGINT);
     } else if (strcmp(word,"ke") == 0) {
       addfield("KinEng",&Thermo::compute_ke,FLOAT);
-      index_temp = add_compute(id_temp,SCALAR);
+      index_kin_eng = add_compute(id_kin_eng,SCALAR);
     } else if (strcmp(word,"vol") == 0) {
       addfield("Volume",&Thermo::compute_vol,FLOAT);
     } else if (strcmp(word,"density") == 0) {
@@ -956,16 +956,16 @@ int Thermo::evaluate_keyword(char *word, double *answer)
     dvalue = bivalue;
 
   } else if (strcmp(word,"ke") == 0) {
-    if (!temperature)
+    if (!kin_eng)
       error->all(FLERR,"Thermo keyword in variable requires "
-                 "thermo to use/init temp");
+                 "thermo to use/init ke");
     if (update->whichflag == 0) {
-      if (temperature->invoked_scalar != update->ntimestep)
+      if (kin_eng->invoked_scalar != update->ntimestep)
         error->all(FLERR,"Compute used in variable thermo keyword between runs "
                    "is not current");
-    } else if (!(temperature->invoked_flag & INVOKED_SCALAR)) {
-      temperature->compute_scalar();
-      temperature->invoked_flag |= INVOKED_SCALAR;
+    } else if (!(kin_eng->invoked_flag & INVOKED_SCALAR)) {
+      kin_eng->compute_scalar();
+      kin_eng->invoked_flag |= INVOKED_SCALAR;
     }
     compute_ke();
 
@@ -1215,17 +1215,9 @@ void Thermo::compute_atoms()
 
 /* ---------------------------------------------------------------------- */
 
-void Thermo::compute_temp()
-{
-  dvalue = temperature->scalar;
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Thermo::compute_ke()
 {
-  dvalue = temperature->scalar;
-  dvalue *= 0.5 * temperature->dof * force->boltz;
+  dvalue = kin_eng->scalar;
   if (normflag) dvalue /= natoms;
 }
 

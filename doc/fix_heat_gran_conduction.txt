@@ -20,7 +20,7 @@ initial_temperature = obligatory keyword :l
 T0 = initial (default) temperature for the particles :l
 zero or more keyword/value pairs may be appended :l
 keyword = {contact_area} or {area_correction} :l
-  {contact_area} values = {overlap} or {constant [value]} or {projection}
+  {contact_area} values = {overlap} or {constant areavalue} or {projection}
   {area_correction} values = {yes} or {no} :pre
 
 [Examples:]

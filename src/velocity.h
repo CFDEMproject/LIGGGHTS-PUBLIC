@@ -77,9 +77,9 @@ class Velocity : protected Pointers {
   class FixMultisphere *fix_ms_; 
 
   void set(int, char **);
+  void setAngular(int, char **);
   void ramp(int, char **);
   void zero(int, char **);
-  void setAngular(int, char **);
 
   void zero_momentum();
   void zero_rotation();

@@ -159,6 +159,8 @@ class DumpLocalGranVTK : public Dump {
   void pack_fn(int);
   void pack_ft(int);
   void pack_torque(int);
+  void pack_torquen(int);
+  void pack_torquet(int);
   void pack_area(int);
   void pack_delta(int);
   void pack_heat(int);

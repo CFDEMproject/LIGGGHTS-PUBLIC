@@ -32,11 +32,13 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if not contributing author is listed, this file has been contributed
-    by the core developer)
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_CONTACT_HISTORY_MESH_I_H
@@ -215,7 +217,7 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline int FixContactHistoryMesh::n_contacts()
+  inline int FixContactHistoryMesh::n_contacts(int & nIntersect)
   {
     int ncontacts = 0, nlocal = atom->nlocal;
 
@@ -225,8 +227,9 @@
         {
             if(intersectflag_[i][ipartner])
             {
-                ncontacts++;
+                nIntersect++;
             }
+            ncontacts++;
         }
     }
     return ncontacts;
@@ -234,7 +237,7 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline int FixContactHistoryMesh::n_contacts(int contact_groupbit)
+  inline int FixContactHistoryMesh::n_contacts(int contact_groupbit, int & nIntersect)
   {
     int ncontacts = 0, nlocal = atom->nlocal;
     int *mask = atom->mask;
@@ -247,8 +250,9 @@
             {
                 if(intersectflag_[i][ipartner])
                 {
-                    ncontacts++;
+                    nIntersect++;
                 }
+                ncontacts++;
             }
         }
     }

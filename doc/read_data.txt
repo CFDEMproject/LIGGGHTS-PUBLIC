@@ -205,6 +205,7 @@ of analysis.
 
 bond: atom-ID molecule-ID atom-type x y z
 ellipsoid: atom-ID atom-type ellipsoidflag density x y z
+sphere: atom-ID atom-type diameter density x y z
 line: atom-ID molecule-ID atom-type lineflag density x y z
 molecular: atom-ID molecule-ID atom-type x y z
 hybrid: atom-ID atom-type x y z sub-style1 sub-style2 ...  :tb(s=:)

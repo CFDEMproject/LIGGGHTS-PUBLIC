@@ -49,8 +49,8 @@
      Reese Jones (Sandia)
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "unistd.h"
 #include "fix_ave_correlate.h"
 #include "update.h"

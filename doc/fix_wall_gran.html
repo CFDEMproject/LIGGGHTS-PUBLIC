@@ -48,7 +48,7 @@
 </PRE>
 <LI>zero or more general_keyword/value pairs may be appended 
 
-<LI>general_keyword =  <I>shear</I> or <I>store_force</I> or <I>store_force_contact</I> 
+<LI>general_keyword =  <I>shear</I> or <I>store_force</I> or <I>store_force_contact</I> or <I>store_force_contact_stress</I> 
 
 <PRE>  <I>shear</I> values = dim vshear
     dim = <I>x</I> or <I>y</I> or <I>z</I>
@@ -60,6 +60,9 @@
     yes, no = determines if the wall force exerted on the particles is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID) is the id of the fix wall/gran command.
   <I>store_force_contact</I> value = 'yes' or 'no'
     yes, no = determines if the force for each particle-wall contact is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id contactforces_(ID), where (ID) is the id of the fix wall/gran command.  
+</PRE>
+<PRE>  <I>store_force_contact_stress</I> value = 'yes' or 'no'
+    yes, no = determines if the force and contact point for each particle-wall contact is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id contactforces_stress_(ID), where (ID) is the id of the fix wall/gran command. 
 </PRE>
 <LI>following the general_keyword/value pairs, zero or more model_keyword/model_value pairs may be appended in arbitrary order 
 
@@ -83,7 +86,7 @@ touching it is the same as the corresponding equation on the
 </P>
 <P>You must choose the models matching the pair style used, otherwise
 an error is created. As with <A HREF = "pair_gran.html">pair_style granular</A>, you have
-to define the mechanical properties for each material you are used in the
+to define the mechanical properties for each material you are using in the
 simulation with fix property commands. See <A HREF = "pair_gran.html">pair_style gran</A>
 for more details and <A HREF = "Section_gran_models.html">the model doc page</A> for
 details.
@@ -121,7 +124,7 @@ at whatever radius has been defined. The same applies to <I>xcylinder</I> and
 </P>
 <P>NOTE: The keywords wiggle or shear can NOT be used for <I>wallstyle mesh</I>.
 For a moving a granular wall with <I>wallstyle mesh</I>, use the more flexible
-command "fix move/mesh"fix_move_mesh.html, or use the keywords <I>velocity</I>
+command <A HREF = "fix_move_mesh.html">fix move/mesh</A>, or use the keywords <I>velocity</I>
 or <I>angular_velocity</I> in <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>.
 </P>
 <P>The keyword <I>temperature</I> is used to assign a constant temperature to the wall.
@@ -138,6 +141,12 @@ store the wall force exerted on the particles in a
 is the id of the fix wall/gran command.
 </P>
 <P><I>store_force_contact</I> does the same for contact forces between particle and wall.
+</P>
+<P><I>store_force_contact_stress</I> does the same for contact forces and contact point 
+between particle and wall. In general this keyword will be set automatically if a 
+<A HREF = "fix_continuum_weighted.html">continuum/weighted</A> fix is used. It needs to be set 
+explicitly only if a new wall is created after the such a fix is specified.
+This functionality may not be available in your version of LIGGGHTS.
 </P>
 <P>The effect of keyword <I>rolling_friction</I>, <I>cohesion</I>, <I>tangential_damping</I>,
 <I>viscous</I> and <I>absolute_damping</I> is explanted in <A HREF = "pair_gran.html">pair gran</A>
@@ -176,7 +185,7 @@ particles interpenetrate the walls before a triangle neighbor list is built
 the first time.
 </P>
 <P>The keyword shear can NOT be used for style <I>mesh</I>.
-For moving granular wall with style mesh, use "fix move/mesh"fix_move_mesh.html.
+For moving granular wall with style mesh, use <A HREF = "fix_move_mesh.html">fix move/mesh</A>.
 </P>
 <P>Any dimension (xyz) that has a planar granular wall must be non-periodic.
 </P>

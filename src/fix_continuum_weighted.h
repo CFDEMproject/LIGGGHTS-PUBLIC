@@ -32,25 +32,71 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    (if no contributing author is listed, this file has been contributed
-    by the core developer)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
 
-    Copyright 2014-     DCS Computing GmbH, Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#ifndef LMP_FIX_CONTACT_PROPERTY_ATOM_WALL_H
-#define LMP_FIX_CONTACT_PROPERTY_ATOM_WALL_H
+/*
+ * Fix for computing the stress tensor according to
+ * Goldhirsch 2010 and/or the strain tensor according
+ * to Zhang et al. 2010
+ * Boundary influences to the stress tensor were included
+ * according to Weinhart et al. 2012.
+ */
+#ifdef FIX_CLASS
 
-#include "fix_contact_property_atom.h"
+FixStyle(continuum/weighted,FixContinuumWeighted)
+
+#else
+
+#ifndef LMP_FIX_CONTINUUM_WEIGHTED_H
+#define LMP_FIX_CONTINUUM_WEIGHTED_H
+
+#include "fix.h"
+#include <vector>
 
 namespace LAMMPS_NS {
 
-class FixContactPropertyAtomWall : public FixContactPropertyAtom {
-  friend class Neighbor;
-  friend class PairGran;
+enum kernel_type_t {
+    TOP_HAT,
+    GAUSSIAN,
+    WENDLAND
+};
 
+class FixContinuumWeighted : public Fix {
+  public:
+    FixContinuumWeighted(class LAMMPS *, int, char **);
+    ~FixContinuumWeighted();
+    void post_create();
+
+    int setmask();
+    void init();
+
+    void post_integrate();
+
+    double get_phi(const double r);
+    double get_grad_phi(const double r);
+
+  private:
+    double kernel_radius_;
+    double kernel_sqRadius_;
+    class PairGran *pairgran_;
+    class FixPropertyAtom *fix_stress_;
+    class FixPropertyAtom *fix_strain_;
+    class FixPropertyAtom *fix_cont_vars_;
+    class FixContactPropertyAtom *fix_contact_forces_;
+    std::vector<FixContactPropertyAtom *> fix_wall_contact_forces_vector_;
+    double integrate_phi(const double *const xij, const double *const nkj, const double a, const double b);
+    template<kernel_type_t kernel_type> double weightingFunction(const double r);
+    template<kernel_type_t kernel_type> double gradWeightingFunction(const double r);
+    inline double compute_line_sphere_intersection(const double *const xij, const double *const xjk);
+    bool compute_stress;
+    bool compute_strain;
+    kernel_type_t kernel_type;
 };
 
 }
 
+#endif
 #endif

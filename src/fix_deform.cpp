@@ -47,9 +47,9 @@
    Contributing author: Pieter in 't Veld (SNL)
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
-#include "math.h"
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
 #include "fix_deform.h"
 #include "atom.h"
 #include "update.h"
@@ -433,6 +433,9 @@ int FixDeform::setmask()
 
 void FixDeform::init()
 {
+  if(modify->n_fixes_style("multisphere") > 0)
+    error->fix_error(FLERR,this,"fix deform and fix multisphere are incompatible");
+
   // error if more than one fix deform
   // domain, fix nvt/sllod, compute temp/deform only work on single h_rate
 

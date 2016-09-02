@@ -43,9 +43,9 @@
     Copyright 2016      DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_scalar_transport_equation.h"
 #include "atom.h"
 #include "domain.h"
@@ -398,12 +398,13 @@ void FixScalarTransportEquation::initial_integrate(int vflag)
 
   //reset heat flux
   //sources are not reset
-  int *mask = atom->mask;
+  //int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
   for (int i = 0; i < nlocal; i++)
   {
-       if (mask[i] & groupbit)
+       
+       //if (mask[i] & groupbit)
            flux[i]=0.;
   }
 

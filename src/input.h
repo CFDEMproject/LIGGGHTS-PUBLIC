@@ -52,7 +52,7 @@
 #ifndef LMP_INPUT_H
 #define LMP_INPUT_H
 
-#include "stdio.h"
+#include <stdio.h>
 #include "pointers.h"
 #include <map>
 #include <string>
@@ -62,6 +62,7 @@ namespace LAMMPS_NS {
 class Input : protected Pointers {
 
  friend class Info;
+ friend class LAMMPS;
 
  public:
   int narg;                    // # of command args
@@ -75,6 +76,9 @@ class Input : protected Pointers {
   char *one(const char *);       // process a single command
   void substitute(char *&, char *&, int &, int &, int);
                                  // substitute for variables in a string
+
+  bool seed_check_throw_error()  
+  { return seed_check_error; }
 
  protected: 
   int me;                      // proc ID
@@ -92,6 +96,8 @@ class Input : protected Pointers {
 
   FILE **infiles;              // list of open input files
   FILE *nonlammps_file;        
+
+  bool seed_check_error;       
 
   typedef void (*CommandCreator)(LAMMPS *, int, char **);
   std::map<std::string,CommandCreator> *command_map;

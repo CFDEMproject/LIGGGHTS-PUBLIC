@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
+#include <math.h>
 #include "compute_gyration.h"
 #include "update.h"
 #include "atom.h"

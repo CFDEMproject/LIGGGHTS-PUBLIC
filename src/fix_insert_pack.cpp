@@ -40,9 +40,9 @@
     Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_insert_pack.h"
 #include "atom.h"
 #include "atom_vec.h"
@@ -421,16 +421,8 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             if(screen && print_stats_during_flag && (ninsert_this_local >= 10) && (0 == itotal % (ninsert_this_local/10)))
                 fprintf(screen,"insertion: proc %d at %d %%\n",comm->me,10*itotal/(ninsert_this_local/10));
 
-            do
-            {
-                
-                if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
-                else ins_region->generate_random(pos,true);
-                ntry++;
-            }
-            while(ntry < maxtry && domain->dist_subbox_borders(pos) < rbound);
-
-            if(ntry == maxtry) break;
+            if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
+            else ins_region->generate_random(pos,true);
 
             // randomize vel, omega, quat here
             vectorCopy3D(v_insert,v_toInsert);
@@ -472,8 +464,12 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
                     if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
                     else ins_region->generate_random(pos,true);
                     ntry++;
+
                 }
+                
                 while(ntry < maxtry && domain->dist_subbox_borders(pos) < rbound);
+
+                if(ntry == maxtry) break;
 
                 // randomize vel, omega, quat here
                 vectorCopy3D(v_insert,v_toInsert);

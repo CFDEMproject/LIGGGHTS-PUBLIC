@@ -50,10 +50,10 @@
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
-#include "mpi.h"
-#include "math.h"
-#include "string.h"
-#include "stdlib.h"
+#include <mpi.h>
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
 #include "ctype.h"
 #include "read_data.h"
 #include "atom.h"
@@ -1200,8 +1200,6 @@ void ReadData::scan(int &bond_per_atom, int &angle_per_atom,
   bond_per_atom = angle_per_atom = dihedral_per_atom = improper_per_atom = 0;
   int ellipsoid_flag = 0;
   int line_flag = 0;
-  int tri_flag = 0;
-  int body_flag = 0;
 
   // customize for new sections
   // allocate topology counting vector

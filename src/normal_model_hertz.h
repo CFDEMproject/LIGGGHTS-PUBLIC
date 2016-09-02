@@ -46,9 +46,9 @@ NORMAL_MODEL(HERTZ,hertz,3)
 #else
 #ifndef NORMAL_MODEL_HERTZ_H_
 #define NORMAL_MODEL_HERTZ_H_
-#include "superquadric_flag.h"
+#include "nonspherical_flags.h"
 #include "global_properties.h"
-#include "math.h"
+#include <math.h>
 
 namespace LIGGGHTS {
 
@@ -122,7 +122,7 @@ namespace ContactModels
       double reff=sidata.is_wall ? sidata.radi : (ri*rj/(ri+rj));
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
       if(sidata.is_non_spherical)
-        reff = MathExtraLiggghtsSuperquadric::get_effective_radius(sidata);
+        reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata);
 #endif
       double meff=sidata.meff;
 
@@ -168,14 +168,15 @@ namespace ContactModels
       sidata.gamman = gamman;
       sidata.gammat = gammat;
 
-      #ifdef SUPERQUADRIC_ACTIVE_FLAG
+      #ifdef NONSPHERICAL_ACTIVE_FLAG
           double torque_i[3];
           double Fn_i[3] = { Fn * sidata.en[0], Fn * sidata.en[1], Fn * sidata.en[2]};
           if(sidata.is_non_spherical) {
             double xci[3];
-            vectorSubtract3D(sidata.contact_point, sidata.pos_i, xci);
+            vectorSubtract3D(sidata.contact_point, atom->x[sidata.i], xci);
             vectorCross3D(xci, Fn_i, torque_i);
           }
+          
       #endif
 
       if(heating)
@@ -191,7 +192,7 @@ namespace ContactModels
         i_forces.delta_F[0] = Fn_ * sidata.en[0];
         i_forces.delta_F[1] = Fn_ * sidata.en[1];
         i_forces.delta_F[2] = Fn_ * sidata.en[2];
-        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        #ifdef NONSPHERICAL_ACTIVE_FLAG
                 if(sidata.is_non_spherical) {
                   //for non-spherical particles normal force can produce torque!
                   i_forces.delta_torque[0] += torque_i[0];
@@ -207,12 +208,12 @@ namespace ContactModels
         j_forces.delta_F[0] = -i_forces.delta_F[0];
         j_forces.delta_F[1] = -i_forces.delta_F[1];
         j_forces.delta_F[2] = -i_forces.delta_F[2];
-        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        #ifdef NONSPHERICAL_ACTIVE_FLAG
                 if(sidata.is_non_spherical) {
                   //for non-spherical particles normal force can produce torque!
                   double xcj[3], torque_j[3];
                   double Fn_j[3] = { -Fn_i[0], -Fn_i[1], -Fn_i[2]};
-                  vectorSubtract3D(sidata.contact_point, sidata.pos_j, xcj);
+                  vectorSubtract3D(sidata.contact_point, atom->x[sidata.j], xcj);
                   vectorCross3D(xcj, Fn_j, torque_j);
 
                   i_forces.delta_torque[0] += torque_i[0];

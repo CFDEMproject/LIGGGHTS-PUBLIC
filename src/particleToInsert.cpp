@@ -40,7 +40,7 @@
 ------------------------------------------------------------------------- */
 
 #include "particleToInsert.h"
-#include "math.h"
+#include <math.h>
 #include "error.h"
 #include "update.h"
 #include "domain.h"
