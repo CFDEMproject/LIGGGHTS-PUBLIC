@@ -495,7 +495,7 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
         for(int iNode = 0; iNode < NUM_NODES; iNode++)
             handleCorner(i,iNode,idListVisited,idListHasNode,edgeList,edgeEndPoint);
     }
-
+if(MultiNodeMesh<NUM_NODES>::minFeatureLength() > 0. && MultiNodeMesh<NUM_NODES>::elementExclusionList())
     handleExclusion(idListVisited);
 
     delete []idListVisited;
