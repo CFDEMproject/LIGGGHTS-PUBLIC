@@ -88,9 +88,16 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
     variablename = new char[n];
     strcpy(variablename,arg[3]);
 
+    bool vector_with_one_entry = false;
     if (strcmp(arg[4],"scalar") == 0) data_style = FIXPROPERTY_ATOM_SCALAR;
     else if (strcmp(arg[4],"vector") == 0) data_style = FIXPROPERTY_ATOM_VECTOR;
-    else error->all(FLERR,"Unknown style for fix property/atom. Valid styles are 'scalar' or 'vector'");
+    // This vector style allows for a vector to have only one entry. Under normal circumstances the scalar style should be chosen instead.
+    else if (strcmp(arg[4],"vector_one_entry") == 0)
+    {
+        vector_with_one_entry = true;
+        data_style = FIXPROPERTY_ATOM_VECTOR;
+    }
+    else error->all(FLERR,"Unknown style for fix property/atom. Valid styles are 'scalar', 'vector' or 'vector_one_entry'");
 
     if (strcmp(arg[5],"yes") == 0)
     {
@@ -114,7 +121,7 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
 
     nvalues = narg - 8;
     
-    if ((nvalues == 1) && (data_style != FIXPROPERTY_ATOM_SCALAR))
+    if ((nvalues == 1) && !(data_style == FIXPROPERTY_ATOM_SCALAR || (vector_with_one_entry && data_style == FIXPROPERTY_ATOM_VECTOR)))
       error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with vector style. Provide more than 1 value or use style 'scalar'");
 
     if ((nvalues >1) && (data_style != FIXPROPERTY_ATOM_VECTOR))

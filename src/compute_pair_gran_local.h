@@ -50,8 +50,12 @@ ComputeStyle(wall/gran/local,ComputePairGranLocal)
 #define LMP_COMPUTE_PAIR_GRAN_LOCAL_H
 
 #include "compute.h"
+//#include "pair_gran.h"
+//#include "pair_gran_proxy.h"
 
 namespace LAMMPS_NS {
+
+class PairGran;
 
 class ComputePairGranLocal : public Compute {
 
@@ -69,10 +73,11 @@ class ComputePairGranLocal : public Compute {
   virtual void add_pair(int i,int j,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist);
   virtual void add_heat(int i,int j,double hf);
   virtual void add_wall_1(int iFMG,int iTri,int iP,double *contact_point,double *v_wall);
-  virtual void add_wall_2(int i,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist,double rsq);
+  virtual void add_wall_2(int i,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist,double rsq, double *normal_);
   virtual void add_heat_wall(int i,double hf);
 
   virtual void pair_finalize();
+  int get_history_offset(const char * const name);
 
   /* inline access */
 

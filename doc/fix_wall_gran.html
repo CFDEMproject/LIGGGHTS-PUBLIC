@@ -1,205 +1,392 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix wall/gran command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix wall/gran  command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix ID group-ID style model_type model_name wallstyle wallstyleargs general_keywords general_values model_keywords model_values  ... 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>style = <I>wall/gran</I> 
-
-<LI>zero or more model_type/model_name pairs may be appended. They must be appended in the following order 
-
-<PRE>  <I>model</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>tangential</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>cohesion</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>rolling_friction</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>surface</I> values = described <A HREF = "Section_gran_models.html">here</A> 
-</PRE>
-<LI>wallstyle = <I>mesh</I> or <I>primitive</I> 
-
-<LI>wallstyle args for wallstyle <I>mesh</I> = <I>n_meshes</I> and <I>meshes</I> 
-
-<PRE>  <I>n_meshes</I> value = nm
-    nm = # of meshes (see <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>) to use for the wall (positive integer)
-  <I>meshes</I> values = meshlist
-    meshlist =  id(s) of the mesh(es) (see <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>) to be used. These must be defined before 
-</PRE>
-<LI>wallstyle args for wallstyle <I>primitive</I> = <I>type</I> or <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>xcylinder</I> or <I>ycylinder</I> or <I>zcylinder</I> 
-
-<PRE>  <I>type</I> args = tp
-    tp = atom_type (material type) of the wall
-  <I>xplane</I> or <I>yplane</I> or <I>zplane</I> args = pos
-    pos = position plane (distance units)
-  <I>xcylinder</I> or <I>ycylinder</I> or <I>zcylinder</I> args = radius c1 c2
-    radius = cylinder radius (distance units)
-    c1,c2 = coordinates of center axis in other 2 dims (distance units) 
-</PRE>
-<LI>zero or more general_keyword/value pairs may be appended 
-
-<LI>general_keyword =  <I>shear</I> or <I>store_force</I> or <I>store_force_contact</I> or <I>store_force_contact_stress</I> 
-
-<PRE>  <I>shear</I> values = dim vshear
-    dim = <I>x</I> or <I>y</I> or <I>z</I>
-    vshear = magnitude of shear velocity (velocity units)
-  <I>temperature</I> value = T0
-    T0 = Temperature of the wall (temperature units)
-  <I>contact_area</I> values = 'overlap' or 'constant <B>value</B>' or 'projection'
-  <I>store_force</I> value = 'yes' or 'no'
-    yes, no = determines if the wall force exerted on the particles is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID) is the id of the fix wall/gran command.
-  <I>store_force_contact</I> value = 'yes' or 'no'
-    yes, no = determines if the force for each particle-wall contact is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id contactforces_(ID), where (ID) is the id of the fix wall/gran command.  
-</PRE>
-<PRE>  <I>store_force_contact_stress</I> value = 'yes' or 'no'
-    yes, no = determines if the force and contact point for each particle-wall contact is stored in a <A HREF = "fix_property.html">fix property/atom</A> with id contactforces_stress_(ID), where (ID) is the id of the fix wall/gran command. 
-</PRE>
-<LI>following the general_keyword/value pairs, zero or more model_keyword/model_value pairs may be appended in arbitrary order 
-
-  model_keyword/model_value pairs = described for each model separately <A HREF = "Section_gran_models.html">here</A>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix wall/gran  command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_wall_gran.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-wall-gran-command">
+<span id="index-0"></span><h1>fix wall/gran  command<a class="headerlink" href="#fix-wall-gran-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ID group-ID style model_type model_name wallstyle wallstyleargs general_keywords general_values model_keywords model_values  ...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>style = <em>wall/gran</em></li>
+<li>zero or more model_type/model_name pairs may be appended. They must be appended in the following order</li>
+</ul>
+<pre class="literal-block">
+<em>model</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+<em>tangential</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+<em>cohesion</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+<em>rolling_friction</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+<em>surface</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+</pre>
+<ul class="simple">
+<li>wallstyle = <em>mesh</em> or <em>primitive</em></li>
+<li>wallstyle args for wallstyle <em>mesh</em> = <em>n_meshes</em> and <em>meshes</em></li>
+</ul>
+<pre class="literal-block">
+<em>n_meshes</em> value = nm
+  nm = # of meshes (see <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>) to use for the wall (positive integer)
+<em>meshes</em> values = meshlist
+  meshlist =  id(s) of the mesh(es) (see <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>) to be used. These must be defined before
+</pre>
+<ul class="simple">
+<li>wallstyle args for wallstyle <em>primitive</em> = <em>type</em> or <em>xplane</em> or <em>yplane</em> or <em>zplane</em> or <em>xcylinder</em> or <em>ycylinder</em> or <em>zcylinder</em></li>
+</ul>
+<pre class="literal-block">
+<em>type</em> args = tp
+  tp = atom_type (material type) of the wall
+<em>xplane</em> or <em>yplane</em> or <em>zplane</em> args = pos
+  pos = position plane (distance units)
+<em>xcylinder</em> or <em>ycylinder</em> or <em>zcylinder</em> args = radius c1 c2
+  radius = cylinder radius (distance units)
+  c1,c2 = coordinates of center axis in other 2 dims (distance units)
+</pre>
+<ul class="simple">
+<li>zero or more general_keyword/value pairs may be appended</li>
+<li>general_keyword =  <em>shear</em> or <em>store_force</em> or <em>store_force_contact</em> or <em>store_force_contact_stress</em></li>
+</ul>
+<pre class="literal-block">
+<em>shear</em> values = dim vshear
+  dim = <em>x</em> or <em>y</em> or <em>z</em>
+  vshear = magnitude of shear velocity (velocity units)
+<em>temperature</em> value = T0
+  T0 = Temperature of the wall (temperature units)
+<em>contact_area</em> values = 'overlap' or 'constant <strong>value</strong>' or 'projection'
+<em>store_force</em> value = 'yes' or 'no'
+  yes, no = determines if the wall force exerted on the particles is stored in a <a class="reference internal" href="fix_property.html"><em>fix property/atom</em></a> with id force_(ID), where (ID) is the id of the fix wall/gran command.
+<em>store_force_contact</em> value = 'yes' or 'no'
+  yes, no = determines if the force for each particle-wall contact is stored in a <a class="reference internal" href="fix_property.html"><em>fix property/atom</em></a> with id contactforces_(ID), where (ID) is the id of the fix wall/gran command.
+</pre>
+<pre class="literal-block">
+<em>store_force_contact_stress</em> value = 'yes' or 'no'
+  yes, no = determines if the force and contact point for each particle-wall contact is stored in a <a class="reference internal" href="fix_property.html"><em>fix property/atom</em></a> with id contactforces_stress_(ID), where (ID) is the id of the fix wall/gran command.
+</pre>
+<ul class="simple">
+<li>following the general_keyword/value pairs, zero or more model_keyword/model_value pairs may be appended in arbitrary order
+model_keyword/model_value pairs = described for each model separately <a class="reference internal" href="Section_gran_models.html"><em>here</em></a></li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15
 fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15 surface superquadric
-fix meshwalls all wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2  
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Bound the simulation domain of a granular system with a frictional wall.
+fix meshwalls all wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Bound the simulation domain of a granular system with a frictional wall.
 All particles in the group interact with the wall when they are close enough
 to touch it. The equation for the force between the wall and particles
 touching it is the same as the corresponding equation on the
-<A HREF = "pair_gran.html">pair_style granular</A> doc page, in the limit of one of the
- two particles going to infinite radius and mass (flat wall).
-</P>
-<P>You must choose the models matching the pair style used, otherwise
-an error is created. As with <A HREF = "pair_gran.html">pair_style granular</A>, you have
+<a class="reference internal" href="pair_gran.html"><em>pair_style granular</em></a> doc page, in the limit of one of the</p>
+<blockquote>
+<div>two particles going to infinite radius and mass (flat wall).</div></blockquote>
+<p>You must choose the models matching the pair style used, otherwise
+an error is created. As with <a class="reference internal" href="pair_gran.html"><em>pair_style granular</em></a>, you have
 to define the mechanical properties for each material you are using in the
-simulation with fix property commands. See <A HREF = "pair_gran.html">pair_style gran</A>
-for more details and <A HREF = "Section_gran_models.html">the model doc page</A> for
-details.
-</P>
-<P>For wallstyle <I>mesh</I>, fix_id1, fix_id2 etc. must be IDs of valid fixes of
-type <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>, defining the granular mesh
+simulation with fix property commands. See <a class="reference internal" href="pair_gran.html"><em>pair_style gran</em></a>
+for more details and <a class="reference internal" href="Section_gran_models.html"><em>the model doc page</em></a> for
+details.</p>
+<p>For wallstyle <em>mesh</em>, fix_id1, fix_id2 etc. must be IDs of valid fixes of
+type <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>, defining the granular mesh
 to be used for the wall. Triangle-particle neighbor lists are built to efficiently
 track particle-triangle contacts. Particle-tri neighbor list build is triggered
 if any particle moves more than half the skin distance or (in case of moving mesh) if the mesh
 itself moves more than half the skin distance since the last build. A warning
 is generated if a dangerous particle-tri neigh list build is detected
-(e.g. if particles are inserted too close to a wall, see section 'Restrictions').
-For style <I>mesh</I>, the atom_type (material type) is inherited from the atom style provided
-in the <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command.
-</P>
-<P>For <I>wallstyle primitive</I>, the atom_type (material type) has to be provided via
-keyword <I>type</I>. Primitve walls can be <I>xplane</I> or <I>yplane</I> or <I>zplane</I> or <I>cylindrical</I>.
+(e.g. if particles are inserted too close to a wall, see section &#8216;Restrictions&#8217;).
+For style <em>mesh</em>, the atom_type (material type) is inherited from the atom style provided
+in the <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> command.</p>
+<p>For <em>wallstyle primitive</em>, the atom_type (material type) has to be provided via
+keyword <em>type</em>. Primitve walls can be <em>xplane</em> or <em>yplane</em> or <em>zplane</em> or <em>cylindrical</em>.
 The 3 planar options specify a single wall in a dimension.
-Wall positions are given by values for lo and hi. For an <I>xcylinder</I>, <I>ycylinder</I> or
-<I>zcylinder</I>, the radius and the cylinder axis in the other two dims is specified.
-</P>
-<HR>
-
-<P>Optionally, primitive walls can be moving, if the shear keyword is appended.
-</P>
-<P>For the <I>shear</I> keyword, the wall moves continuously in the specified dimension
+Wall positions are given by values for lo and hi. For an <em>xcylinder</em>, <em>ycylinder</em> or
+<em>zcylinder</em>, the radius and the cylinder axis in the other two dims is specified.</p>
+<hr class="docutils" />
+<p>Optionally, primitive walls can be moving, if the shear keyword is appended.</p>
+<p>For the <em>shear</em> keyword, the wall moves continuously in the specified dimension
 with velocity vshear. The dimension must be tangential to walls with a planar
-wallstyle, e.g. in the y or z directions for an <I>xplane</I> wall. For <I>zcylinder</I>
+wallstyle, e.g. in the y or z directions for an <em>xplane</em> wall. For <em>zcylinder</em>
 walls, a dimension of z means the cylinder is moving in the z-direction along
-it's axis. A dimension of x or y means the cylinder is spinning around the
-z-axis, either in the clockwise direction for vshear > 0 or counter-clockwise
-for vshear < 0. In this case, vshear is the tangential velocity of the wall
-at whatever radius has been defined. The same applies to <I>xcylinder</I> and
-<I>ycylinder</I> accordingly.
-</P>
-<P>NOTE: The keywords wiggle or shear can NOT be used for <I>wallstyle mesh</I>.
-For a moving a granular wall with <I>wallstyle mesh</I>, use the more flexible
-command <A HREF = "fix_move_mesh.html">fix move/mesh</A>, or use the keywords <I>velocity</I>
-or <I>angular_velocity</I> in <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>.
-</P>
-<P>The keyword <I>temperature</I> is used to assign a constant temperature to the wall.
+it&#8217;s axis. A dimension of x or y means the cylinder is spinning around the
+z-axis, either in the clockwise direction for vshear &gt; 0 or counter-clockwise
+for vshear &lt; 0. In this case, vshear is the tangential velocity of the wall
+at whatever radius has been defined. The same applies to <em>xcylinder</em> and
+<em>ycylinder</em> accordingly.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The keywords wiggle or shear can NOT be used for <em>wallstyle mesh</em>.
+For a moving a granular wall with <em>wallstyle mesh</em>, use the more flexible
+command <a class="reference internal" href="fix_move_mesh.html"><em>fix move/mesh</em></a>, or use the keywords <em>velocity</em>
+or <em>angular_velocity</em> in <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>.</p>
+</div>
+<p>The keyword <em>temperature</em> is used to assign a constant temperature to the wall.
 This setting gets effective in conjunction with heat conduction via
-<A HREF = "fix_heat_gran_conduction.html">fix heat/gran/conduction</A>. For <I>wallstyle mesh</I>, the value
+<a class="reference internal" href="fix_heat_gran_conduction.html"><em>fix heat/gran/conduction</em></a>. For <em>wallstyle mesh</em>, the value
 for the temperature given in this command is ignored and the temperature
-value is specified per mesh via <A HREF = "fix_mesh_surface.html">fix mesh/surface</A>.
-Contact area calculation can be controlled by keyword <I>contact_area</I> in the
-same manner as for <A HREF = "fix_heat_gran_conduction.html">fix heat/gran/conduction</A>.
-</P>
-<P>By specifying <I>store_force</I> = 'yes', you can instruct the command to
+value is specified per mesh via <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>.
+Contact area calculation can be controlled by keyword <em>contact_area</em> in the
+same manner as for <a class="reference internal" href="fix_heat_gran_conduction.html"><em>fix heat/gran/conduction</em></a>.</p>
+<p>By specifying <em>store_force</em> = &#8216;yes&#8217;, you can instruct the command to
 store the wall force exerted on the particles in a
-<A HREF = "fix_property.html">fix property/atom</A> with id force_(ID), where (ID)
-is the id of the fix wall/gran command.
-</P>
-<P><I>store_force_contact</I> does the same for contact forces between particle and wall.
-</P>
-<P><I>store_force_contact_stress</I> does the same for contact forces and contact point 
-between particle and wall. In general this keyword will be set automatically if a 
-<A HREF = "fix_continuum_weighted.html">continuum/weighted</A> fix is used. It needs to be set 
+<a class="reference internal" href="fix_property.html"><em>fix property/atom</em></a> with id force_(ID), where (ID)
+is the id of the fix wall/gran command.</p>
+<p><em>store_force_contact</em> does the same for contact forces between particle and wall.</p>
+<p><em>store_force_contact_stress</em> does the same for contact forces and contact point
+between particle and wall. In general this keyword will be set automatically if a
+<a class="reference internal" href="fix_continuum_weighted.html"><em>continuum/weighted</em></a> fix is used. It needs to be set
 explicitly only if a new wall is created after the such a fix is specified.
-This functionality may not be available in your version of LIGGGHTS.
-</P>
-<P>The effect of keyword <I>rolling_friction</I>, <I>cohesion</I>, <I>tangential_damping</I>,
-<I>viscous</I> and <I>absolute_damping</I> is explanted in <A HREF = "pair_gran.html">pair gran</A>
-</P>
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>If applicable, contact history is written to <A HREF = "restart.html">binary restart files</A>
+This functionality may not be available in your version of LIGGGHTS.</p>
+<p>The effect of keyword <em>rolling_friction</em>, <em>cohesion</em>, <em>tangential_damping</em>,
+<em>viscous</em> and <em>absolute_damping</em> is explanted in <a class="reference internal" href="pair_gran.html"><em>pair gran</em></a></p>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>If applicable, contact history is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>
 so simulations can continue properly.
-None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix.
+None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix.
 No global scalar or vector or are stored by this fix.
-If <I>store_force</I> = 'yes' is specified, the per-atom wall force can be
-accessed by the various output commands via f_force(ID)<B>1</B>, f_force(ID)<B>2</B>,
-f_force(ID)<B>3</B>. (ID) is the id of the fix wall/gran command.
+If <em>store_force</em> = &#8216;yes&#8217; is specified, the per-atom wall force can be
+accessed by the various output commands via f_force(ID)**1**, f_force(ID)**2**,
+f_force(ID)**3**. (ID) is the id of the fix wall/gran command.
 No parameter of this fix can be used with the start/stop keywords of the
-<A HREF = "run.html">run</A> command. This fix is not invoked during <A HREF = "minimize.html">energy minimization</A> .
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>There can be only one fix wall/gran command with style <I>mesh</I>. Note that
+<a class="reference internal" href="run.html"><em>run</em></a> command. This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt> .</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>There can be only one fix wall/gran command with style <em>mesh</em>. Note that
 this is not really a restriction because you can include multiple fixes
-of type <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> in the fix wall/gran command.
-</P>
-<P><I>store_force_contact</I> is available in selected versions only; it is not available
-in the PUBLIC version.
-</P>
-<P>When using style style <I>mesh</I>, you have to use the style <I>bin</I> for
-the <A HREF = "neighbor.html">neighbor command</A>.
-</P>
-<P>Style <I>mesh</I> can not be used in conjunction with triclinic simulation boxes.
-</P>
-<P>When using style <I>mesh</I>' in combination with a particle insertion
+of type <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> in the fix wall/gran command.</p>
+<p><em>store_force_contact</em> is available in selected versions only; it is not available
+in the PUBLIC version.</p>
+<p>When using style style <em>mesh</em>, you have to use the style <em>bin</em> for
+the <a class="reference internal" href="neighbor.html"><em>neighbor command</em></a>.</p>
+<p>Style <em>mesh</em> can not be used in conjunction with triclinic simulation boxes.</p>
+<p>When using style <em>mesh</em>&#8216; in combination with a particle insertion
 command, you always have to keep a minimum distance between the wall and the
 insertion region that is equal to maximum particle radius + half the skin
-defined in the <A HREF = "neighbor.html">neighbor command</A>. Otherwise, newly inserted
+defined in the <a class="reference internal" href="neighbor.html"><em>neighbor command</em></a>. Otherwise, newly inserted
 particles interpenetrate the walls before a triangle neighbor list is built
-the first time.
-</P>
-<P>The keyword shear can NOT be used for style <I>mesh</I>.
-For moving granular wall with style mesh, use <A HREF = "fix_move_mesh.html">fix move/mesh</A>.
-</P>
-<P>Any dimension (xyz) that has a planar granular wall must be non-periodic.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "fix_mesh_surface.html">fix mesh/surface</A>, <A HREF = "fix_move_mesh.html">fix_move_mesh</A>, <A HREF = "pair_gran.html">pair_style granular</A>
-Models for use with this command are described <A HREF = "Section_gran_models.html">here</A>
-</P>
-<P><B>Default:</B>
-</P>
-<P><I>model</I> = 'hertz'
-<I>tangential</I> = 'history'
-<I>rolling_friction</I> = 'off'
-<I>cohesion</I> = 'off'
-<I>surface</I> = 'default'
-</P>
-</HTML>
+the first time.</p>
+<p>The keyword shear can NOT be used for style <em>mesh</em>.
+For moving granular wall with style mesh, use <a class="reference internal" href="fix_move_mesh.html"><em>fix move/mesh</em></a>.</p>
+<p>Any dimension (xyz) that has a planar granular wall must be non-periodic.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>, <a class="reference internal" href="fix_move_mesh.html"><em>fix_move_mesh</em></a>, <a class="reference internal" href="pair_gran.html"><em>pair_style granular</em></a>
+Models for use with this command are described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p><em>model</em> = &#8216;hertz&#8217;
+<em>tangential</em> = &#8216;history&#8217;
+<em>rolling_friction</em> = &#8216;off&#8217;
+<em>cohesion</em> = &#8216;off&#8217;
+<em>surface</em> = &#8216;default&#8217;</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

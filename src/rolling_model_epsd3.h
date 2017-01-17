@@ -73,7 +73,13 @@ namespace ContactModels
 
     }
 
-    void registerSettings(Settings&) {}
+    void registerSettings(Settings& settings)
+    {
+       settings.registerOnOff("torsionTorque", torsion_torque, false);
+    }
+
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb)
+    {}
 
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("coeffRollFrict", &MODEL_PARAMS::createCoeffRollFrict);
@@ -99,7 +105,13 @@ namespace ContactModels
         const double wr1 = sidata.wr1;
         const double wr2 = sidata.wr2;
         const double wr3 = sidata.wr3;
-        const double radius = sidata.radi;
+        double radius = sidata.radi;
+
+        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(sidata.is_non_spherical) {
+          radius = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
+        }
+        #endif
 
         double r_inertia;
         if (domain->dimension == 2) r_inertia = 1.5*sidata.mi*radius*radius;
@@ -115,7 +127,13 @@ namespace ContactModels
 
         const double radi = sidata.radi;
         const double radj = sidata.radj;
-        const double reff = sidata.is_wall ? radi : (radi*radj/(radi+radj));
+        double reff = sidata.is_wall ? radi : (radi*radj/(radi+radj));
+        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(sidata.is_non_spherical) {
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[i], atom->roundness[j], error);
+        }
+        #endif
+
         const double * const * const omega = atom->omega;
 
         const double r_inertia_red_i = sidata.mi*radi*radi;
@@ -155,10 +173,11 @@ namespace ContactModels
     double ** coeffRollVisc;
     double coeffRollStiffness;
     int history_offset;
+    bool torsion_torque;
 
     inline void calcRollTorque(double (&r_torque)[3],const SurfacesIntersectData & sidata,double reff,double wr1,double wr2,double wr3,double r_inertia) {
 
-      double wr_n[3],wr_t[3],dr_torque[3];
+      double wr_tot[3], dr_torque[3];
 
       const int itype = sidata.itype;
       const int jtype = sidata.jtype;
@@ -172,20 +191,28 @@ namespace ContactModels
       double * const c_history = &sidata.contact_history[history_offset]; // requires Style::TANGENTIAL == TANGENTIAL_HISTORY
       const double rmu= coeffRollFrict[itype][jtype];
 
-      // remove normal (torsion) part of relative rotation
-      // use only tangential parts for rolling torque
-      const double wr_dot_delta = wr1*enx+ wr2*eny + wr3*enz;
-      wr_n[0] = enx * wr_dot_delta;
-      wr_n[1] = eny * wr_dot_delta;
-      wr_n[2] = enz * wr_dot_delta;
-      wr_t[0] = wr1 - wr_n[0];
-      wr_t[1] = wr2 - wr_n[1];
-      wr_t[2] = wr3 - wr_n[2];
+      if(torsion_torque) {
+        // use full relative rotation for rolling torque
+        wr_tot[0] = wr1;
+        wr_tot[1] = wr2;
+        wr_tot[2] = wr3;
+      } else {
+        // remove normal (torsion) part of relative rotation
+        // use only tangential parts for rolling torque
+        double wr_n[3];
+        const double wr_dot_delta = wr1*enx+ wr2*eny + wr3*enz;
+        wr_n[0] = enx * wr_dot_delta;
+        wr_n[1] = eny * wr_dot_delta;
+        wr_n[2] = enz * wr_dot_delta;
+        wr_tot[0] = wr1 - wr_n[0]; // wr_t[0];
+        wr_tot[1] = wr2 - wr_n[1]; // wr_t[1];
+        wr_tot[2] = wr3 - wr_n[2]; // wr_t[2];
+      }
 
       // spring
       const double kr = coeffRollStiffness*sidata.kn*rmu*rmu*reff*reff;
 
-      vectorScalarMult3D(wr_t,dt*kr,dr_torque);
+      vectorScalarMult3D(wr_tot,dt*kr,dr_torque);
 
       r_torque[0] = c_history[0] + dr_torque[0];
       r_torque[1] = c_history[1] + dr_torque[1];
@@ -194,6 +221,7 @@ namespace ContactModels
       // limit max. torque
       const double r_torque_mag = vectorMag3D(r_torque);
       const double r_torque_max = fabs(sidata.Fn)*reff*rmu;
+      const bool update_history = sidata.computeflag && sidata.shearupdate;
       if(r_torque_mag > r_torque_max)
       {
         //printf("[%d] %e > %e\n", update->ntimestep, r_torque_mag, r_torque_max);
@@ -203,27 +231,33 @@ namespace ContactModels
         r_torque[1] *= factor;
         r_torque[2] *= factor;
 
-        // save rolling torque due to spring
-        c_history[0] = r_torque[0];
-        c_history[1] = r_torque[1];
-        c_history[2] = r_torque[2];
+        if (update_history)
+        {
+            // save rolling torque due to spring
+            c_history[0] = r_torque[0];
+            c_history[1] = r_torque[1];
+            c_history[2] = r_torque[2];
+        }
 
         // no damping / no dashpot in case of full mobilisation rolling angle
 
       } else {
-        // save rolling torque due to spring before adding damping torque
-        c_history[0] = r_torque[0];
-        c_history[1] = r_torque[1];
-        c_history[2] = r_torque[2];
+        if (update_history)
+        {
+            // save rolling torque due to spring before adding damping torque
+            c_history[0] = r_torque[0];
+            c_history[1] = r_torque[1];
+            c_history[2] = r_torque[2];
+        }
 
         // dashpot
 
         const double r_coef = coeffRollVisc[itype][jtype] * 2 * sqrt(r_inertia*kr);
 
         // add damping torque
-        r_torque[0] += r_coef*wr_t[0];
-        r_torque[1] += r_coef*wr_t[1];
-        r_torque[2] += r_coef*wr_t[2];
+        r_torque[0] += r_coef*wr_tot[0];
+        r_torque[1] += r_coef*wr_tot[1];
+        r_torque[2] += r_coef*wr_tot[2];
       }
     }
   };

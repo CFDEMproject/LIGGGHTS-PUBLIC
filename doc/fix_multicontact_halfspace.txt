@@ -21,8 +21,8 @@ geometric_prefactor/gp_value = optional keyword-value pair :l
 
 [Examples:]
 
-fix multicontact/halfspace
-fix multicontact/halfspace geometric_prefactor 1.8 :pre
+fix mc all multicontact/halfspace
+fix mc all multicontact/halfspace geometric_prefactor 1.8 :pre
 
 [Description:]
 

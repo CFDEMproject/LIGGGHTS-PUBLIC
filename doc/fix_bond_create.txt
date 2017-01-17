@@ -28,13 +28,13 @@ keyword = {iparam} or {jparam} or {prob} :l
     newtype = change the jtype atom to this type when maxbonds exist
   {prob} values = fraction seed
     fraction = create a bond with this probability if otherwise eligible
-    seed = random number seed (positive integer) :pre
+    seed = random number seed (prime number greater 10000) :pre
 :ule
 
 [Examples:]
 
 fix 5 all bond/create 10 1 2 0.8 1
-fix 5 all bond/create 1 3 3 0.8 1 prob 0.5 85784 iparam 2 3 :pre
+fix 5 all bond/create 1 3 3 0.8 1 prob 0.5 123457 iparam 2 3 :pre
 
 [Description:]
 

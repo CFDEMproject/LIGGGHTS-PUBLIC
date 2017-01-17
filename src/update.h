@@ -55,6 +55,7 @@ class Update : protected Pointers {
   double dt;                      // timestep
   double etol,ftol;               // minimizer tolerances on energy/force
   bigint ntimestep;               // current step (dynamics or min iterations)
+  bool timestep_set;              // flag if time-step set since simulation start (object created)
   int nsteps;                     // # of steps to run (dynamics or min iter)
   int whichflag;                  // 0 for unset, 1 for dynamics, 2 for min
   double atime;                   // simulation time at atime_step

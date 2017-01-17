@@ -125,6 +125,8 @@ class FixPropertyAtom : public Fix {
   char *propertyname;
   double *property;
 
+  double extra_value;
+
   // switch for auto-output
   bool internal;
 }; //end class

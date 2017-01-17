@@ -10,7 +10,11 @@ gran rolling_friction epsd3 model :h3
 
 [Syntax:]
 
-rolling_friction epsd3 :pre
+rolling_friction epsd3 \[other model_type/model_name pairs as described "here"_pair_gran.html \] keyword values :pre
+zero or more keyword/value pairs may be appended to the end (after all models are specified) :l
+  {torsionTorque} values = 'on' or 'off'
+    on = also the normal, relative rotation (torsion) contributes to the resulting torque
+    off = only the tangential, relative rotation contributes to the resulting torque :pre
 
 [Description:]
 
@@ -64,7 +68,24 @@ fix     id all property/global coeffRollingStiffness scalar value :pre
 
 Please see Ai et al., 2011 for discussion.
 
-
 IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
+
+[Torque information:]
+
+By default the relative, normal rotation (torsion) is subtracted and does not contribute to the resulting torque. By setting the {torsionTorque} keyword to 'on', the full relative rotation contributes to the rolling friciton torque.
+
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command might lead to
+different dynamics or system state and thus to 
+inconsistancies.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
+
+[Default:]
+
+{torsionTorque} = 'off'
 
 [(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).

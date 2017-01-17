@@ -80,9 +80,6 @@ void ChangeBox::command(int narg, char **arg)
   if (domain->box_exist == 0)
     error->all(FLERR,"Change_box command before simulation box is defined");
   if (narg < 2) error->all(FLERR,"Illegal change_box command");
-  if (modify->nfix_restart_peratom)
-    error->all(FLERR,"Cannot change_box after "
-               "reading restart file with per-atom info");
 
   if (comm->me == 0 && screen) fprintf(screen,"Changing box ...\n");
 
@@ -103,6 +100,7 @@ void ChangeBox::command(int narg, char **arg)
   nops = 0;
 
   int iarg = 1;
+  bool force_change = false; // to ignore errors
   while (iarg < narg) {
     if (strcmp(arg[iarg],"x") == 0 || strcmp(arg[iarg],"y") == 0 ||
         strcmp(arg[iarg],"z") == 0) {
@@ -203,8 +201,18 @@ void ChangeBox::command(int narg, char **arg)
       nops++;
       iarg += 1;
 
+    } else if (strcmp(arg[iarg],"force") == 0) {
+      force_change = true;
+      if (comm->nprocs > 1)
+        error->all(FLERR, "change_box allows force command only in serial mode");
+      iarg += 1;
+
     } else break;
   }
+
+  if (modify->nfix_restart_peratom && !force_change)
+    error->all(FLERR,"Cannot change_box after "
+               "reading restart file with per-atom info");
 
   if (nops == 0) error->all(FLERR,"Illegal change_box command");
 

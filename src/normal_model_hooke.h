@@ -94,7 +94,7 @@ namespace ContactModels
       settings.registerOnOff("heating_tracking",heating_track,false);
     }
 
-    inline void postSettings() {}
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
 
     inline void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("Yeff", &MODEL_PARAMS::createYeff);
@@ -136,14 +136,18 @@ namespace ContactModels
     {
       const int itype = sidata.itype;
       const int jtype = sidata.jtype;
-      double ri = sidata.radi;
-      double rj = sidata.radj;
-      double reff=sidata.is_wall ? ri : (ri*rj/(ri+rj));
+      const double radi = sidata.radi;
+      const double radj = sidata.radj;
+      double reff=sidata.is_wall ? radi : (radi*radj/(radi+radj));
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(sidata.is_non_spherical)
-        reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata);
+      if(sidata.is_non_spherical) {
+        if(sidata.is_wall)
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
+        else
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
+      }
 #endif
-      double meff=sidata.meff;
+      const double meff=sidata.meff;
       double coeffRestLogChosen;
 
       const double sqrtval = sqrt(reff);
@@ -198,7 +202,7 @@ namespace ContactModels
       sidata.gammat = gammat;
 
       #ifdef NONSPHERICAL_ACTIVE_FLAG
-          double torque_i[3];
+          double torque_i[3] = {0., 0., 0.};
           double Fn_i[3] = { Fn * sidata.en[0], Fn * sidata.en[1], Fn * sidata.en[2]};
           if(sidata.is_non_spherical) {
             double xci[3];
@@ -217,9 +221,9 @@ namespace ContactModels
       // apply normal force
       if(sidata.is_wall) {
         const double Fn_ = Fn * sidata.area_ratio;
-        i_forces.delta_F[0] = Fn_ * sidata.en[0];
-        i_forces.delta_F[1] = Fn_ * sidata.en[1];
-        i_forces.delta_F[2] = Fn_ * sidata.en[2];
+        i_forces.delta_F[0] += Fn_ * sidata.en[0];
+        i_forces.delta_F[1] += Fn_ * sidata.en[1];
+        i_forces.delta_F[2] += Fn_ * sidata.en[2];
         #ifdef NONSPHERICAL_ACTIVE_FLAG
                 if(sidata.is_non_spherical) {
                   //for non-spherical particles normal force can produce torque!
@@ -233,13 +237,13 @@ namespace ContactModels
         const double fy = sidata.Fn * sidata.en[1];
         const double fz = sidata.Fn * sidata.en[2];
 
-        i_forces.delta_F[0] = fx;
-        i_forces.delta_F[1] = fy;
-        i_forces.delta_F[2] = fz;
+        i_forces.delta_F[0] += fx;
+        i_forces.delta_F[1] += fy;
+        i_forces.delta_F[2] += fz;
 
-        j_forces.delta_F[0] = -fx;
-        j_forces.delta_F[1] = -fy;
-        j_forces.delta_F[2] = -fz;
+        j_forces.delta_F[0] += -fx;
+        j_forces.delta_F[1] += -fy;
+        j_forces.delta_F[2] += -fz;
         #ifdef NONSPHERICAL_ACTIVE_FLAG
                 if(sidata.is_non_spherical) {
                   //for non-spherical particles normal force can produce torque!

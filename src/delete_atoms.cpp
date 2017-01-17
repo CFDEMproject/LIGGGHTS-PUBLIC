@@ -84,6 +84,10 @@ void DeleteAtoms::command(int narg, char **arg)
 {
   if (domain->box_exist == 0)
     error->all(FLERR,"Delete_atoms command before simulation box is defined");
+  
+  if(modify->fix_restart_in_progress())
+    error->all(FLERR,"If restart file is read, delete_atoms command must come after first 'run' command");
+
   if (narg < 1) error->all(FLERR,"Illegal delete_atoms command");
   if (atom->tag_enable == 0)
     error->all(FLERR,"Cannot use delete_atoms unless atoms have IDs");

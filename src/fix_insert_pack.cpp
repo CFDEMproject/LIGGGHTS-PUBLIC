@@ -175,7 +175,7 @@ void FixInsertPack::init()
     {
         int iregion = domain->find_region(idregion);
         if (iregion == -1)
-            error->fix_error(FLERR,this,"regions used my this command must not be deleted");
+            error->fix_error(FLERR,this,"regions used by this command must not be deleted");
         ins_region = domain->regions[iregion];
     }
 }

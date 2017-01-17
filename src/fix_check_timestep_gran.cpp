@@ -64,8 +64,6 @@ using namespace LAMMPS_NS;
 using namespace FixConst;
 using namespace MODEL_PARAMS;
 
-#define BIG 1000000.
-
 /* ---------------------------------------------------------------------- */
 
 FixCheckTimestepGran::FixCheckTimestepGran(LAMMPS *lmp, int narg, char **arg) :
@@ -77,11 +75,22 @@ FixCheckTimestepGran::FixCheckTimestepGran(LAMMPS *lmp, int narg, char **arg) :
 
   if (narg < 6) error->all(FLERR,"Illegal fix check/timestep/gran command, not enough arguments");
 
-  nevery = atoi(arg[3]);
-  fraction_rayleigh_lim = atof(arg[4]);
-  fraction_hertz_lim = atof(arg[5]);
-
   int iarg = 6;
+
+  if(0 == strcmp("check_every_time",arg[3]))
+  {
+      nevery = atoi(arg[4]);
+      fraction_rayleigh_lim = atof(arg[5]);
+      fraction_hertz_lim = atof(arg[6]);
+      iarg = 7;
+  }
+  else
+  {
+      nevery = atoi(arg[3]);
+      fraction_rayleigh_lim = atof(arg[4]);
+      fraction_hertz_lim = atof(arg[5]);
+      iarg = 6;
+  }
 
   while(iarg < narg)
   {

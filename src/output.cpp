@@ -685,7 +685,7 @@ void Output::create_thermo(int narg, char **arg)
 
   // warn if previous thermo had been modified via thermo_modify command
 
-  if (thermo->modified && comm->me == 0)
+  if (thermo->modified && comm->me == 0 && !lmp->wb)
     error->warning(FLERR,"New thermo_style command, "
                    "previous thermo_modify settings will be lost");
 

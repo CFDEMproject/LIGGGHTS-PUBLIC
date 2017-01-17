@@ -610,6 +610,7 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
     if(!bboxflag)
     {
         vol_global = vol_local = 0.;
+        error->all(FLERR,"Unable to calculate region volume. Region needs to have existing bounding box");
         return;
     }
 

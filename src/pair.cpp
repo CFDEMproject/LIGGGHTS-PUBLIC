@@ -319,7 +319,7 @@ void Pair::init_tables(double cut_coul, double *cut_respa)
   double qqrd2e = force->qqrd2e;
 
   if (force->kspace == NULL)
-    error->all(FLERR,"Pair style requres a KSpace style");
+    error->all(FLERR,"Pair style requires a KSpace style");
   double g_ewald = force->kspace->g_ewald;
 
   double cut_coulsq = cut_coul * cut_coul;
@@ -662,15 +662,14 @@ void Pair::free_disp_tables()
 
 double Pair::mix_energy(double eps1, double eps2, double sig1, double sig2)
 {
-  double value = 0.0;
   if (mix_flag == GEOMETRIC)
-    value = sqrt(eps1*eps2);
+    return sqrt(eps1*eps2);
   else if (mix_flag == ARITHMETIC)
-    value = sqrt(eps1*eps2);
+    return sqrt(eps1*eps2);
   else if (mix_flag == SIXTHPOWER)
-    value = 2.0 * sqrt(eps1*eps2) *
-      pow(sig1,3.0) * pow(sig2,3.0) / (pow(sig1,6.0) + pow(sig2,6.0));
-  return value;
+    return (2.0 * sqrt(eps1*eps2) *
+      pow(sig1,3.0) * pow(sig2,3.0) / (pow(sig1,6.0) + pow(sig2,6.0)));
+  else return 0.0;
 }
 
 /* ----------------------------------------------------------------------
@@ -679,14 +678,13 @@ double Pair::mix_energy(double eps1, double eps2, double sig1, double sig2)
 
 double Pair::mix_distance(double sig1, double sig2)
 {
-  double value = 0.0;
   if (mix_flag == GEOMETRIC)
-    value = sqrt(sig1*sig2);
+    return sqrt(sig1*sig2);
   else if (mix_flag == ARITHMETIC)
-    value = 0.5 * (sig1+sig2);
+    return (0.5 * (sig1+sig2));
   else if (mix_flag == SIXTHPOWER)
-    value = pow((0.5 * (pow(sig1,6.0) + pow(sig2,6.0))),1.0/6.0);
-  return value;
+    return pow((0.5 * (pow(sig1,6.0) + pow(sig2,6.0))),1.0/6.0);
+  else return 0.0;
 }
 
 /* ---------------------------------------------------------------------- */

@@ -21,4 +21,13 @@ simulations. In case of a multi-sphere simulation,
 this surface model is applied to all spheres within
 one rigid body.
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command should lead to
+statistically equivalent dynamics and system state.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
+
 [Restrictions:] none

@@ -75,7 +75,6 @@ class FixCfdCouplingForce : public Fix  {
   class FixCfdCoupling* fix_coupling_;
   class FixPropertyAtom* fix_dragforce_;
   class FixPropertyAtom* fix_hdtorque_; // hdtorque = hydrodynamic torque
-  class FixPropertyAtom* fix_volumeweight_;
 
   class FixPropertyAtom* fix_dispersionTime_;
   class FixPropertyAtom* fix_dispersionVel_;

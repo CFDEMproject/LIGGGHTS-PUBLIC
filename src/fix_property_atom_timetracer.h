@@ -65,6 +65,9 @@ class FixPropertyAtomTimeTracer : public FixPropertyAtom {
 
   virtual double compute_vector(int n);
 
+  inline int n_values()
+  { return 0 == iregion_.size() ? 1: iregion_.size(); }
+
  protected:
 
   int iarg_;

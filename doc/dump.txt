@@ -16,7 +16,7 @@ dump ID group-ID style N file args :pre
 
 ID = user-assigned name for the dump :ulb,l
 group-ID = ID of the group of atoms to be dumped :l
-style = {atom} or {atom/vtk} or {xyz} or {image} or {local} or {custom} or {mesh/stl} or {mesh/vtk} or {mesh/vtk} or {decomposition/vtk} or {euler/vtk} :l
+style = {atom} or {atom/vtk} or {xyz} or {image} or {local} or {custom} or {mesh/stl} or {mesh/vtk} or {mesh/vtm} or {decomposition/vtk} or {euler/vtk} :l
 N = dump every this many timesteps :l
 file = name of file to write dump info to :l
 args = list of arguments for a particular style :l
@@ -28,10 +28,17 @@ args = list of arguments for a particular style :l
 
   {mesh/stl} args = 'local' or 'ghost' or 'all' or 'region' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
       {region} values = ID for region threshold
-  {mesh/vtk} args =  zero or more keyword/ value pairs and one or more dump-identifiers
+  {mesh/vtk} args =  zero or more keyword/ value pairs followed by one or more dump-identifiers followed optionally by keyword 'meshes' and one or more mesh ids
       keywords = {output}
       {output} values = face or interpolate
-      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
+      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs'
+      mesh-ids = any ID of a "fix mesh/surface"_fix_mesh_surface.html
+  {mesh/vtm} args =  one or two keyword/ value(s) pairs
+      keywords = {meshes} (required) or {mesh_properties}
+      {meshes} value(s) = mesh-ids
+      mesh-ids = either keyword 'all' or a list of IDs of "fix mesh/surface"_fix_mesh_surface.html
+      {mesh_properties} value(s) = one or more dump-identifier
+      dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs'
   {euler/vtk} args = none
   {decomposition/vtk} args = none :pre
 
@@ -86,6 +93,10 @@ dump myDump all atom 100 dump.atom
 dump 2 subgroup atom 50 dump.run.bin
 dump 4a all custom 100 dump.myforce.* id type x y vx fx
 dump 4b flow custom 100 dump.%.myforce id type c_myF\[3\] v_ke :pre
+dump dmpMyMesh mesh/vtk 100 mesh*.vtk vel area meshes my_mesh_id
+dump dmpAllMeshes mesh/vtk 100 mesh*.vtk stress wear
+dump dmpMyMeshVTM mesh/vtm 100 mesh*.vtm meshes my_mesh_id mesh_properties vel area
+dump dmpAllMeshesVTM mesh/vtm 100 mesh*.vtm meshes all mesh_properties stress wear
 
 [Description:]
 
@@ -272,27 +283,34 @@ By providing any ID (or a list of IDs) of "fix mesh/surface"_fix_mesh_surface.ht
 commands, you can specify which meshes to dump. If no meshes are specified,
 all meshes used in the simulation are dumped.
 
-The {mesh/vtk} style can be used to dump active mesh geometries
-defined via "fix mesh"_fix_mesh.html commands to a series of VTK files.
-Different keywords can be used to dump the per-triangle averaged stress 
-in normal and shear direction, id, velocity, wear, stress components
-(fx / element area, fy / element area, fz / element area), area (area
-of each element) or the process which owns the element
+The {mesh/vtk} or the {mesh/vtm} (new) style can be used to dump active mesh
+geometries defined via "fix mesh"_fix_mesh.html commands to a series of VTK or
+VTM files, respectively.  Different keywords can be used to dump the
+per-triangle averaged stress in normal and shear direction, id, velocity, wear,
+stress components (fx / element area, fy / element area, fz / element area),
+area (area of each element) or the process which owns the element
 (visulatisation of the parallel decomposition) into the specified file using a
-VTK file format. The list of mesh IDs is optional. As with the stl style,
-all active meshes are dumped if you do not supply the optional list of
-mesh IDs. By specifying list of mesh IDs you can explicitly choose
-which meshes to dump. The group-ID is ignored. Again, a series of files
-can be post-processed in Paraview , www.paraview.org
-Most keywords as used for the {mesh/vtk} style are self-explanatory.
-Keyword {output} controlls if the data is written in a per-face manner
-or as interpolated values to VTK. Keywords {aedges} and {acorners} dump
-the number of active edges/corners per face. Keyword {nneighs} dumps the
-number of face neighbors LIGGGHTS(R)-PUBLIC has recognized for each face.
+VTK file format. The 'meshes' keyword and the list of mesh IDs is optional.  As
+with the stl style, all active meshes are dumped if you do not supply the
+optional list of mesh IDs. By specifying list of mesh IDs you can explicitly
+choose which meshes to dump. The group-ID is ignored. Again, a series of files
+can be post-processed in Paraview , www.paraview.org Most keywords as used for
+the {mesh/vtk} style are self-explanatory.  Keyword {output} controlls if the
+data is written in a per-face manner or as interpolated values to VTK. Keywords
+{aedges} and {acorners} dump the number of active edges/corners per face.
+Keyword {nneighs} dumps the number of face neighbors LIGGGHTS(R)-PUBLIC has recognized
+for each face.
 
-By providing any ID (or a list of IDs) of "fix mesh/surface"_fix_mesh_surface.html
-commands, you can specify which meshes to dump. If no meshes are specified,
-all meshes used in the simulation are dumped.
+{mesh/vtm} is similar to {mesh/vtk} but only the arguments are different. The
+former requires the use of the keyword {meshes} which has to be followed either
+by a list of mesh-ids or the keyword 'all'. The latter will cause all meshes to
+be dumped. After the mesh specification {mesh/vtm} can be provided with the
+optional keyword {mesh_properties} that needs to be followed by the dump
+identifiers. The list of such identifiers is identical to {mesh/vtk}.
+
+By providing the 'meshes' keyword and any ID (or a list of IDs) of
+"fix mesh/surface"_fix_mesh_surface.html commands, you can specify which meshes to dump.
+If no meshes are specified, all meshes used in the simulation are dumped.
 
 The {euler/vtk} style dumps the output of a "fix ave/euler"_fix_ave_euler.html
 command into a series of VTK files. No further args are expected.

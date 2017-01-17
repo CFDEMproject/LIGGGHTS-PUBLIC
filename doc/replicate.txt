@@ -10,33 +10,41 @@ replicate command :h3
 
 [Syntax:]
 
-replicate nx ny nz :pre
+replicate nx ny nz offset ox oy oz shift sx sy sz :pre
 
-nx,ny,nz = replication factors in each dimension :ul
+nx,ny,nz = replication factors (integers) in each dimension :ulb,l
+{offset} ox oy oz: required keyword with values :l
+    ox, oy, oz = offset of each replication in box units :pre
+{shift} sx sy sz: optional keyword with values :l
+    sx, sy, sz = shift all particles by these values in box units :pre
+:ule
 
 [Examples:]
 
-replicate 2 3 2 :pre
+replicate 2 3 2 offset 1.0 1.0 2.0
+replicate 1 2 2 offset 2.0 2.0 2.0 shift -0.1 0.2 0.0 :pre
 
 [Description:]
 
-Replicate the current simulation one or more times in each dimension.
-For example, replication factors of 2,2,2 will create a simulation
-with 8x as many atoms by doubling the simulation domain in each
-dimension.  A replication factor of 1 in a dimension leaves the
-simulation domain unchanged.
+Replicate the current simulation one or more times in each dimension.  For
+example, replication factors of 2,2,2 will create a simulation with 8x as many
+atoms by doubling the simulation domain in each dimension.  A replication factor
+of 1 in a dimension leaves the simulation domain unchanged. The {offset} keyword
+determines the offset between the original and replicated simulations. In
+general this should be chosen according to the size of the initial periodic box.
 
-All properties of the atoms are replicated, including their
-velocities, which may or may not be desirable.  New atom IDs are
-assigned to new atoms, as are molecule IDs.  Bonds and other topology
-interactions are created between pairs of new atoms as well as between
-old and new atoms.  This is done by using the image flag for each atom
-to "unwrap" it out of the periodic box before replicating it.
+All properties of the atoms are replicated, including their velocities, which
+may or may not be desirable.  New atom IDs are assigned to new atoms, as are
+molecule IDs.  Bonds and other topology interactions are created between pairs
+of new atoms as well as between old and new atoms.  This is done by using the
+image flag for each atom to "unwrap" it out of the periodic box before
+replicating it.
 
-This means that any molecular bond you specify in the original data
-file that crosses a periodic boundary should be between two atoms with
-image flags that differ by 1.  This will allow the bond to be
-unwrapped appropriately.
+This means that any molecular bond you specify in the original data file that
+crosses a periodic boundary should be between two atoms with image flags that
+differ by 1.  This will allow the bond to be unwrapped appropriately.
+
+The {shift} keyword allows to shift the entire simulation by a specified vector.
 
 [Restrictions:]
 

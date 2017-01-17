@@ -1,151 +1,332 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pair_style gran command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>pair_style gran command 
-</H3>
-<H3>pair_style bubble command 
-</H3>
-<H3>pair_style gran_bubble bubble command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>pair_style gran model_type model_name model_keyword model_value 
-</PRE>
-<PRE>pair_style bubble model_type model_name model_keyword model_value 
-</PRE>
-<PRE>pair_style gran_bubble model_type model_name model_keyword model_value 
-</PRE>
-<LI>zero or more model_type/model_name pairs may be appended. They must be appended in the following order (!) 
-
-<PRE>  <I>model</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>tangential</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>cohesion</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>rolling_friction</I> values = described <A HREF = "Section_gran_models.html">here</A>
-  <I>surface</I> values = described <A HREF = "Section_gran_models.html">here</A> 
-</PRE>
-<LI>following the model_type/model_name pairs, zero or more model_keyword/model_valuezero pairs may be appended in arbitrary order 
-
-<PRE>  model_type/model_name pairs = described for each model separately <A HREF = "Section_gran_models.html">here</A>  
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>pair_style gran model hooke tangential history
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>pair_style gran command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/pair_gran.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pair-style-gran-command">
+<span id="index-0"></span><h1>pair_style gran command<a class="headerlink" href="#pair-style-gran-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="pair-style-bubble-command">
+<h1>pair_style bubble command<a class="headerlink" href="#pair-style-bubble-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="pair-style-gran-bubble-bubble-command">
+<h1>pair_style gran_bubble bubble command<a class="headerlink" href="#pair-style-gran-bubble-bubble-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pair_style gran model_type model_name model_keyword model_value</pre>
+</div>
+<div class="highlight-python"><pre>pair_style bubble model_type model_name model_keyword model_value</pre>
+</div>
+<div class="highlight-python"><pre>pair_style gran_bubble model_type model_name model_keyword model_value</pre>
+</div>
+<ul class="simple">
+<li>zero or more model_type/model_name pairs may be appended. They must be appended in the following order (!)</li>
+</ul>
+<pre class="literal-block">
+<em>model</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+<em>tangential</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+<em>cohesion</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+<em>rolling_friction</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+<em>surface</em> values = described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+</pre>
+<ul class="simple">
+<li>following the model_type/model_name pairs, zero or more model_keyword/model_valuezero pairs may be appended in arbitrary order</li>
+</ul>
+<pre class="literal-block">
+model_type/model_name pairs = described for each model separately <a class="reference internal" href="Section_gran_models.html"><em>here</em></a>
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pair_style gran model hooke tangential history
 pair_style gran model hertz tangential history rolling_friction cdt
-pair_style gran model hertz tangential no_history cohesion sjkr  
-</PRE>
-<P><B>General description:</B>
-</P>
-<P>The <I>gran</I> styles imposes a force between two neighboring particles. Typically, there is
+pair_style gran model hertz tangential no_history cohesion sjkr</pre>
+</div>
+<p><strong>General description:</strong></p>
+<p>The <em>gran</em> styles imposes a force between two neighboring particles. Typically, there is
 a force when the distance r between two particles of radii Ri and Rj is less than their
 contact distance dist = Ri + Rj, and no force otherwise. Some models, such as cohesion
 models, may impose a force also when the particle surfaces do not touch. This is documented
-for those models specifically.
-</P>
-<P>The general form of a granular interaction can be written as:
-</P>
-<CENTER><IMG SRC = "Eqs/pair_gran_html_60b8ced2.png">
-</CENTER>
-<P>The quantities in the equations are as follows:
-</P>
-<UL><LI>delta_n = d - r = overlap distance of 2 particles  
-
-<LI>k_n = elastic constant for normal contact 
-
-<LI>k_t = elastic constant for tangential contact 
-
-<LI>gamma_n = viscoelastic damping constant for normal contact 
-
-<LI>gamma_t = viscoelastic damping constant for tangential contact 
-
-<LI>delta_t = tangential displacement vector between 2 spherical particles 
-
-
-</UL>
-<P>In the first term is the normal force between the two particles and the second term is the
+for those models specifically.</p>
+<p>The general form of a granular interaction can be written as:</p>
+<img alt="_images/pair_gran_html_60b8ced2.png" class="align-center" src="_images/pair_gran_html_60b8ced2.png" />
+<p>The quantities in the equations are as follows:</p>
+<ul class="simple">
+<li>delta_n = d - r = overlap distance of 2 particles</li>
+<li>k_n = elastic constant for normal contact</li>
+<li>k_t = elastic constant for tangential contact</li>
+<li>gamma_n = viscoelastic damping constant for normal contact</li>
+<li>gamma_t = viscoelastic damping constant for tangential contact</li>
+<li>delta_t = tangential displacement vector between 2 spherical particles</li>
+</ul>
+<p>In the first term is the normal force between the two particles and the second term is the
 tangential force. The normal force has 2 terms, a contact force and a damping force. The
 tangential force also has 2 terms: a shear force and a damping force. The shear force is
-a "history" effect that accounts for the tangential displacement ("tangential overlap")
-between the particles for the duration of the time they are in contact.
-</P>
-<P>The concrete implementation for k_n, k_t, gamma_n, gamma_t and the shear history
+a &#8220;history&#8221; effect that accounts for the tangential displacement (&#8220;tangential overlap&#8221;)
+between the particles for the duration of the time they are in contact.</p>
+<p>The concrete implementation for k_n, k_t, gamma_n, gamma_t and the shear history
 depend on the concrete models as chosen by the user. They are described on separate
-doc pages <A HREF = "Section_gran_models.html">here</A>
-</P>
-<P>Also, other models may add additional forces or torques on the particles, such as
+doc pages <a class="reference internal" href="Section_gran_models.html"><em>here</em></a></p>
+<p>Also, other models may add additional forces or torques on the particles, such as
 cohesive or rolling friction forces. These are also described on separate
-doc pages <A HREF = "Section_gran_models.html">here</A>
-</P>
-<P>The styles <I>bubble</I> and <I>gran_bubble</I> are aliases for <I>gran</I>, which can e.g. be used
-for the modelling of systems with different phases using <A HREF = "pair_hybrid.html">pair hybrid</A>, where a
-different set of interaction laws is used for each phase. An example would be 
-</P>
-<PRE>pair_style hybrid gran        model hertz     tangential history &
-                  bubble      model hertz     tangential off &
-                  gran_bubble model hertz     tangential off 
-</PRE>
-<P>IMPORTANT NOTE: The order of model keywords is important, you have to stick
-to the order as outlined in the "Syntax" section of this doc page.
-</P>
-<P><B>General comments:</B>
-</P>
-<P>For granular styles there are no additional coefficients to set for each pair of atom types
-via the <A HREF = "pair_coeff.html">pair_coeff</A> command. All settings are global and are made via the
-pair_style command. However you must still use the <A HREF = "pair_coeff.html">pair_coeff</A> for all pairs
-of granular atom types. For example the command
-</P>
-<PRE>pair_coeff * * 
-</PRE>
-<P>should be used if all atoms in the simulation interact via a granular potential
+doc pages <a class="reference internal" href="Section_gran_models.html"><em>here</em></a></p>
+<p>The styles <em>bubble</em> and <em>gran_bubble</em> are aliases for <em>gran</em>, which can e.g. be used
+for the modelling of systems with different phases using <a class="reference internal" href="pair_hybrid.html"><em>pair hybrid</em></a>, where a
+different set of interaction laws is used for each phase. An example would be</p>
+<div class="highlight-python"><pre>pair_style hybrid gran        model hertz     tangential history &amp;
+                  bubble      model hertz     tangential off &amp;
+                  gran_bubble model hertz     tangential off</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The order of model keywords is important, you have to stick
+to the order as outlined in the &#8220;Syntax&#8221; section of this doc page.</p>
+</div>
+<p><strong>General comments:</strong></p>
+<p>For granular styles there are no additional coefficients to set for each pair of atom types
+via the <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> command. All settings are global and are made via the
+pair_style command. However you must still use the <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> for all pairs
+of granular atom types. For example the command</p>
+<div class="highlight-python"><pre>pair_coeff * *</pre>
+</div>
+<p>should be used if all atoms in the simulation interact via a granular potential
 (i.e. one of the pair styles above is used). If a granular potential is used as a sub-style
-of <A HREF = "pair_hybrid.html">pair_style hybrid</A>, then specific atom types can be used in the pair_coeff
-command to determine which atoms interact via a granular potential.
-</P>
-<P><B>Mixing, shift, table, tail correction, restart, rRESPA info:</B>
-</P>
-<P>The <A HREF = "pair_modify.html">pair_modify</A> mix, shift, table, and tail options are not
-relevant for granular pair styles.
-</P>
-<P>These pair styles write their information to <A HREF = "restart.html">binary restart files</A>,
-so a pair_style command does not need to be specified in an input script that reads a restart file.
-</P>
-<P>IMPORTANT NOTE: The material properties are not written to restart files! Thus, if you
-restart a simulation, you have to re-define them (by using the fixes mentioned above).
-</P>
-<P>These pair styles can only be used via the pair keyword of the <A HREF = "run_style.html">run_style respa</A>
-command. They do not support the inner, middle, outer keywords.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>These pair styles require that atoms store torque and angular velocity (omega) as
-defined by the <A HREF = "atom_style.html">atom_style</A>. They also require a per-particle radius is
-stored. The <I>sphere</I> or <I>granular</I> atom style does all of this.
-</P>
-<P>This pair style requires you to use the <A HREF = "communicate.html">communicate vel yes</A> option so that
-velocites are stored by ghost atoms.
-</P>
-<P>Only unit system that are self-consistent (si, cgs, lj) can be used with this pair style.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "pair_coeff.html">pair_coeff</A>
-Models for use with this command are described <A HREF = "Section_gran_models.html">here</A>
-</P>
-<P><B>Default:</B>
-</P>
-<P><I>model</I> = 'hertz'
-<I>tangential</I> = 'off'
-<I>rolling_friction</I> = 'off'
-<I>cohesion</I> = 'off'
-<I>surface</I> = 'default'
-</P>
-</HTML>
+of <a class="reference internal" href="pair_hybrid.html"><em>pair_style hybrid</em></a>, then specific atom types can be used in the pair_coeff
+command to determine which atoms interact via a granular potential.</p>
+<p><strong>Mixing, shift, table, tail correction, restart, rRESPA info:</strong></p>
+<p>The <tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt> mix, shift, table, and tail options are not
+relevant for granular pair styles.</p>
+<p>These pair styles write their information to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>,
+so a pair_style command does not need to be specified in an input script that reads a restart file.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The material properties are not written to restart files! Thus, if you
+restart a simulation, you have to re-define them (by using the fixes mentioned above).</p>
+</div>
+<p>These pair styles can only be used via the pair keyword of the <a class="reference internal" href="run_style.html"><em>run_style respa</em></a>
+command. They do not support the inner, middle, outer keywords.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>These pair styles require that atoms store torque and angular velocity (omega) as
+defined by the <a class="reference internal" href="atom_style.html"><em>atom_style</em></a>. They also require a per-particle radius is
+stored. The <em>sphere</em> or <em>granular</em> atom style does all of this.</p>
+<p>This pair style requires you to use the <a class="reference internal" href="communicate.html"><em>communicate vel yes</em></a> option so that
+velocites are stored by ghost atoms.</p>
+<p>Only unit system that are self-consistent (si, cgs, lj) can be used with this pair style.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a>
+Models for use with this command are described <a class="reference internal" href="Section_gran_models.html"><em>here</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p><em>model</em> = &#8216;hertz&#8217;
+<em>tangential</em> = &#8216;off&#8217;
+<em>rolling_friction</em> = &#8216;off&#8217;
+<em>cohesion</em> = &#8216;off&#8217;
+<em>surface</em> = &#8216;default&#8217;</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

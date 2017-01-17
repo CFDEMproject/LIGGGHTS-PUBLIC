@@ -90,7 +90,6 @@ Note, that not using limitForce might lead to attractive forces between particle
 coefficient of restitution is small. Be sure you include this key word for the pair style and the wall model if you 
 like to avoid this.
 
-
 [Restrictions:]
 
 If using SI units, youngsModulus must be > 5e6
@@ -98,6 +97,15 @@ If using CGS units, youngsModulus must be > 5e5
 When using the limitForce, the specified coefficient of restitution is only approximate. This might become 
 problematic for low coefficients of resitution as showin in Schwager and Poschel.
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command might lead to
+different dynamics or system state and thus to 
+inconsistancies.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
 
 [Default:]
 

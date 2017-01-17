@@ -77,7 +77,13 @@ namespace ContactModels
       
     }
 
-    void registerSettings(Settings&) {}
+    void registerSettings(Settings& settings)
+    {
+       settings.registerOnOff("torsionTorque", torsion_torque, false);
+    }
+
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb)
+    {}
 
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("coeffRollFrict", &MODEL_PARAMS::createCoeffRollFrict);
@@ -97,11 +103,15 @@ namespace ContactModels
 
       const double radi = sidata.radi;
       const double radj = sidata.radj;
-      double reff=sidata.is_wall ? sidata.radi : (radi*radj/(radi+radj));
+      double reff=sidata.is_wall ? radi : (radi*radj/(radi+radj));
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(sidata.is_non_spherical)
-        reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata);
+      if(sidata.is_non_spherical) {
+        if(sidata.is_wall)
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
+        else
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
+      }
 #endif
 
       if(sidata.is_wall) {
@@ -149,9 +159,11 @@ namespace ContactModels
   private:
     double ** coeffRollFrict;
     int history_offset;
+    bool torsion_torque;
 
     inline void calcRollTorque(double (&r_torque)[3],const SurfacesIntersectData & sidata,double reff,double wr1,double wr2,double wr3) {
-      double wr_n[3],wr_t[3];
+
+      double wr_tot[3], dr_torque[3];
 
       const double enx = sidata.en[0];
       const double eny = sidata.en[1];
@@ -162,21 +174,28 @@ namespace ContactModels
       double * const c_history = &sidata.contact_history[history_offset]; // requires Style::TANGENTIAL == TANGENTIAL_HISTORY
       const double rmu= coeffRollFrict[sidata.itype][sidata.jtype];
 
-      // remove normal (torsion) part of relative rotation
-      // use only tangential parts for rolling torque
-      const double wr_dot_delta = wr1*enx+ wr2*eny + wr3*enz;
-      wr_n[0] = enx * wr_dot_delta;
-      wr_n[1] = eny * wr_dot_delta;
-      wr_n[2] = enz * wr_dot_delta;
-      wr_t[0] = wr1 - wr_n[0];
-      wr_t[1] = wr2 - wr_n[1];
-      wr_t[2] = wr3 - wr_n[2];
+      if(torsion_torque) {
+        // use full relative rotation for rolling torque
+        wr_tot[0] = wr1;
+        wr_tot[1] = wr2;
+        wr_tot[2] = wr3;
+      } else {
+        // remove normal (torsion) part of relative rotation
+        // use only tangential parts for rolling torque
+        double wr_n[3];
+        const double wr_dot_delta = wr1*enx+ wr2*eny + wr3*enz;
+        wr_n[0] = enx * wr_dot_delta;
+        wr_n[1] = eny * wr_dot_delta;
+        wr_n[2] = enz * wr_dot_delta;
+        wr_tot[0] = wr1 - wr_n[0]; // wr_t[0];
+        wr_tot[1] = wr2 - wr_n[1]; // wr_t[1];
+        wr_tot[2] = wr3 - wr_n[2]; // wr_t[2];
+      }
 
       // spring (reff depends on wall-particle or particle-particle contact)
       const double kr = sidata.kt*reff*reff; 
 
-      double dr_torque[3];
-      vectorScalarMult3D(wr_t,dt*kr,dr_torque);
+      vectorScalarMult3D(wr_tot,dt*kr,dr_torque);
 
       r_torque[0] = c_history[0] + dr_torque[0];
       r_torque[1] = c_history[1] + dr_torque[1];
@@ -198,10 +217,14 @@ namespace ContactModels
         // nothing to do
       }
 
-      // save rolling torque due to spring
-      c_history[0] = r_torque[0];
-      c_history[1] = r_torque[1];
-      c_history[2] = r_torque[2];
+      const bool update_history = sidata.computeflag && sidata.shearupdate;
+      if (update_history)
+      {
+          // save rolling torque due to spring
+          c_history[0] = r_torque[0];
+          c_history[1] = r_torque[1];
+          c_history[2] = r_torque[2];
+      }
 
       // dashpot only for the original epsd model
 

@@ -10,12 +10,12 @@ run command :h3
 
 [Syntax:]
 
-run N keyword values ... :pre
+run N keyword values ...
 
 N = # of timesteps :ulb,l
 zero or more keyword/value pairs may be appended :l
 keyword = {upto} or {start} or {stop} or {pre} or {post} or {every} :l
-  {upto} value = none
+  {upto} value = none 
   {start} value = N1
     N1 = timestep at which 1st run started
   {stop} value = N2
@@ -39,7 +39,7 @@ run 100000 every 1000 NULL :pre
 
 [Description:]
 
-Run or continue dynamics for a specified number of timesteps.
+Run or continue dynamics for a specified number of timesteps ("run").
 
 When the "run style"_run_style.html is {respa}, N refers to outer
 loop (largest) timesteps.
@@ -55,7 +55,7 @@ machine that allocates chunks of time and terminate your job when time
 is exceeded.  If you need to restart your script multiple times
 (reading in the last restart file), you can keep restarting your
 script with the same run command until the simulation finally
-completes.
+completes. 
 
 The {start} or {stop} keywords can be used if multiple runs are being
 performed and you want a "fix"_fix.html command that changes some

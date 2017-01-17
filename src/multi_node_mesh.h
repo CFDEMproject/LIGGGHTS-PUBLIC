@@ -52,6 +52,7 @@
 #include "container.h"
 #include "bounding_box.h"
 #include "random_park.h"
+#include <stdio.h>
 
 #define EPSILON_PRECISION 1e-8
 
@@ -97,6 +98,24 @@ namespace LAMMPS_NS
         // initialize movement
         bool registerMove(bool _scale, bool _translate, bool _rotate);
         void unregisterMove(bool _scale, bool _translate, bool _rotate);
+
+        // flags for saving global linear and angular velocity
+        void set_store_vel()
+        { store_vel++; }
+        void set_store_omega()
+        { store_omega++; }
+        void unset_store_vel()
+        { store_vel = store_vel > 1 ? store_vel-1 : 0; }
+        void unset_store_omega()
+        { store_omega = store_omega > 1 ? store_omega-1 : 0; }
+        bool is_set_store_vel()
+        { return store_vel ? true : false; }
+        bool is_set_store_omega()
+        { return store_omega ? true : false; }
+
+        // functions to obtain global linear and angular velocity
+        void get_global_vel(double * vel);
+        void get_global_omega(double * omega);
 
         // bbox stuff
         BoundingBox getGlobalBoundingBox() const;
@@ -247,6 +266,15 @@ namespace LAMMPS_NS
         // flags stating how many move operations are performed on the mesh
         int nMove_;
         int nScale_,nTranslate_,nRotate_;
+
+        // counters to decide whether mesh linear and angular velocity are stored
+        int store_vel, store_omega;
+
+        // step when velocities where last stored
+        int step_store_vel, step_store_omega;
+
+        // storage for global mesh linear and angular velocity
+        double global_vel[3], global_quaternion[4], prev_quaternion[4];
 
         // store current node position for use by moving mesh
         void storeNodePosOrig(int ilo, int ihi);

@@ -108,13 +108,13 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
 
   if(is_stl)
   {
-      if (comm->me == 0) fprintf(screen,"\nReading STL file '%s' \n",filename);
+      if (comm->me == 0) fprintf(screen,"\nReading STL file '%s' (mesh processing step 1/3) \n",filename);
       meshtrifile_stl(mesh,region,filename);
       
   }
   else if(is_vtk)
   {
-      if (comm->me == 0) fprintf(screen,"\nReading VTK file '%s' \n",filename);
+      if (comm->me == 0) fprintf(screen,"\nReading VTK file '%s' (mesh processing step 1/3) \n",filename);
       meshtrifile_vtk(mesh,region);
   }
   else error->all(FLERR,"Illegal command, need either an STL file or a VTK file as input for triangular mesh.");
@@ -185,6 +185,9 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh,class Region *region)
 
     // lines start with 1 (not 0)
     nLines++;
+
+    if (0 == (nLines % 100000) && comm->me == 0)
+        fprintf(screen,"   successfully read a chunk of 100000 elements in VTK file\n");
 
     // parse one line from the file
     parse_nonlammps();
@@ -359,6 +362,9 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region, con
     // lines start with 1 (not 0)
     nLines++;
 
+    if (0 == (nLines % 100000) && comm->me == 0)
+        fprintf(screen,"   successfully read a chunk of 100000 elements in STL file '%s'\n",filename);
+
     // parse one line from the stl file
 
     parse_nonlammps();
@@ -521,6 +527,7 @@ void InputMeshTri::meshtrifile_stl_binary(class TriMesh *mesh, class Region *reg
     MPI_Bcast(&num_of_facets,1,MPI_INT,0,world);
 
     unsigned int count = 0;
+    int nElems = 0;
     float tri_data[12];
     while(1) {
         if (me == 0) {
@@ -549,7 +556,12 @@ void InputMeshTri::meshtrifile_stl_binary(class TriMesh *mesh, class Region *reg
             for (int i=0; i<9; i++)
                 vert[i] = (double) tri_data[i+3];
             if(!region || ( region->match(&vert[0]) && region->match(&vert[3]) && region->match(&vert[6]) ) )
+            {
                 addTriangle(mesh, &vert[0], &vert[3], &vert[6], count);
+                nElems++;
+                if (0 == (nElems % 100000) && comm->me == 0)
+                    fprintf(screen,"   successfully read a chunk of 100000 elements in STL file '%s'\n",filename);
+            }
         }
 
         if (count == num_of_facets)

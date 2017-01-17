@@ -7,6 +7,7 @@
 :line
 
 neigh_modify command :h3
+neigh_settings command :h3
 
 [Syntax:]
 
@@ -45,6 +46,11 @@ keyword = {delay} or {every} or {check} or {once} or {include} or {exclude} or {
     size = bin size for neighbor list construction (distance units) :pre
 :ule
 
+neigh_settings binsize_value :pre
+
+binsize_value = bin size for neighbor list constrution (distance units) :ulb,l
+:ule
+
 [Examples:]
 
 neigh_modify every 2 delay 10 check yes page 100000
@@ -52,12 +58,16 @@ neigh_modify exclude type 2 3
 neigh_modify exclude group frozen frozen check no
 neigh_modify exclude group residue1 chain3
 neigh_modify exclude molecule rigid
-neigh_modify delay 0 contact_distance_factor 1.5 :pre
+neigh_modify delay 0 contact_distance_factor 1.5
+neigh_settings
+neigh_settings 0.1 :pre
 
 [Description:]
 
-This command sets parameters that affect the building and use of
-pairwise neighbor lists.
+These commands set parameters that affect the building and use of
+pairwise neighbor lists. The "neigh_settings" command is a wrapper of
+"neigh_modify" that sets {delay}=0. Its only, optional, parameter
+will be interpreted as the {binsize} value (see below).
 
 The {every}, {delay}, {check}, and {once} options affect how often
 lists are built as a simulation runs.  The {delay} setting means never

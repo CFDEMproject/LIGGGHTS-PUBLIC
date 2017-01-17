@@ -49,6 +49,7 @@ FixStyle(massflow/mesh,FixMassflowMesh)
 #define LMP_FIX_MASSFLOW_MESH_H
 
 #include "fix.h"
+#include "scalar_container.h"
 #include <vector>
 
 using namespace std;
@@ -97,9 +98,7 @@ class FixMassflowMesh : public Fix {
   class FixMeshSurface   *fix_mesh_;
   class FixNeighlistMesh *fix_neighlist_;
 
-  class FixMultisphere* fix_ms_;
-  class Multisphere *ms_;
-  class ScalarContainer<int> *ms_counter_;
+  class FixPropertyAtom *fix_volumeweight_ms_;
 
  private:
   void setRefPoint();
@@ -115,7 +114,7 @@ class FixMassflowMesh : public Fix {
 
   // mass and particles which was counted
   double mass_;
-  int nparticles_;
+  double nparticles_;
 
   // additional property to sum
   class FixPropertyAtom *fix_property_;
@@ -128,7 +127,7 @@ class FixMassflowMesh : public Fix {
 
   // data for particle and mass flow calculation
   double mass_last_;
-  int nparticles_last_;
+  double nparticles_last_;
   double t_count_, delta_t_;
   bool reset_t_count_;
 

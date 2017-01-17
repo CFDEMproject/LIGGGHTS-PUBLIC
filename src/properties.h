@@ -67,6 +67,14 @@ class Properties: protected Pointers
   void do_not_allow_soft_particles()
   { allow_soft_particles_ = false; }
 
+  bool allow_hard_particles()
+  { return allow_hard_particles_; }
+
+  void do_allow_hard_particles()
+  { allow_hard_particles_ = true; }
+  void do_not_allow_hard_particles()
+  { allow_hard_particles_ = false; }
+
  private:
 
   // multisphere
@@ -76,6 +84,7 @@ class Properties: protected Pointers
   int mintype_,maxtype_;
 
   bool allow_soft_particles_;
+  bool allow_hard_particles_;
 }; //end class
 
 }

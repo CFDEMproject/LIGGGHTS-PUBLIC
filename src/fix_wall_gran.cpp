@@ -67,7 +67,6 @@
 #include "math_extra_liggghts.h"
 #include "compute_pair_gran_local.h"
 #include "fix_neighlist_mesh.h"
-#include "fix_mesh_surface_stress.h"
 #include "tri_mesh.h"
 #include "primitive_wall.h"
 #include "primitive_wall_definitions.h"
@@ -162,7 +161,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     int nremaining = narg - 3;
     char ** remaining_args = &arg[3];
 
-    int64_t variant = Factory::instance().selectVariant("gran", nremaining, remaining_args);
+    int64_t variant = Factory::instance().selectVariant("gran", nremaining, remaining_args,force->custom_contact_models);
     impl = Factory::instance().create("gran", variant, lmp, this);
 
     if(!impl && 0 == strncmp(style,"wall/gran",9))
@@ -170,11 +169,12 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
         printf("ERROR: Detected problem with model '%s' (and possibly subsequent arguments). \n", arg[4]);
         error->fix_error(FLERR,this, "unknown contact model or model not in whitelist. Possible root causes:\n"
                        "  (1) it's a typo. Check the documentation of the contact model you are using.\n"
-                       "  (2) the contact model is not available in your installation. Check if a documentation for this.\n"
+                       "  (2) the contact model is not available in your installation. Check if a documentation if this\n"
                        "      contact model is available at all in your version.\n"
                        "  (3) the model is part of a package which was not installed. Check the documentation for details. \n"
                        "  (4) the model is available, but was not in the whitelist during compilation. Check if a file \n"
-                       "      src/style_contact_model.whitelist exists. If yes, modify it and re-compile.\n");
+                       "      src/style_contact_model.whitelist exists. If yes, modify it and re-compile. You can also \n"
+                       "      use script whitelist.sh in the /src directory to create a full whitelist.");
     }
 
     iarg_ = narg - nremaining;
@@ -341,7 +341,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     }
 
     if(impl)
-      impl->settings(narg - iarg_, &arg[iarg_]);
+      impl->settings(narg - iarg_, &arg[iarg_], this);
 
     // error checks
 
@@ -482,7 +482,10 @@ void FixWallGran::post_create()
           fixarg[1] = (char *) "all";
           fixarg[2] = (char *) "property/atom";
           fixarg[3] = hist_name;
-          fixarg[4] = (char *) "vector";
+          if (dnum_ > 1)
+              fixarg[4] = (char *) "vector";
+          else
+              fixarg[4] = (char *) "vector_one_entry";
           fixarg[5] = (char *) "yes";    // restart
           fixarg[6] = (char *) "no";    // communicate ghost
           fixarg[7] = (char *) "no";    // communicate rev
@@ -905,18 +908,23 @@ void FixWallGran::post_force_mesh(int vflag)
 
             #ifdef SUPERQUADRIC_ACTIVE_FLAG
                 if(atom->superquadric_flag) {
-                  sidata.pos_i = x_[iPart];
-                  sidata.quat_i = quat_[iPart];
-                  sidata.shape_i = shape_[iPart];
-                  sidata.roundness_i = roundness_[iPart];
-                  Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
-                  if(mesh->sphereTriangleIntersection(iTri, radius_[iPart], sidata.pos_i)) //check for Bounding Sphere-triangle intersection
+                  Superquadric particle(x_[iPart], quat_[iPart], shape_[iPart], roundness_[iPart]);
+                  if(mesh->sphereTriangleIntersection(iTri, radius_[iPart], x_[iPart])) //check for Bounding Sphere-triangle intersection
                     deltan = mesh->resolveTriSuperquadricContact(iTri, delta, sidata.contact_point, particle, bary);
                   else
                     deltan = LARGE_TRIMESH;
                   sidata.is_non_spherical = true; //by default it is false
-                } else
-                  deltan = mesh->resolveTriSphereContactBary(iPart,iTri,radius_ ? radius_[iPart]:r0_ ,x_[iPart],delta,bary,barysign);
+                } else {
+                  sidata.radi = radius_ ? radius_[iPart] : r0_;
+                  if (fix_store_multicontact_data_)
+                  {
+                      double * deltaData = NULL;
+                      const bool contact = fix_store_multicontact_data_->haveContact(iPart, iTri, deltaData);
+                      if (contact)
+                          sidata.radi += deltaData[3];
+                  }
+                  deltan = mesh->resolveTriSphereContactBary(iPart, iTri, sidata.radi, x_[iPart], delta, bary, barysign, atom->shapetype_flag ? false : true);
+                }
             #else
                 sidata.radi = radius_ ? radius_[iPart] : r0_;
                 if (fix_store_multicontact_data_)
@@ -934,21 +942,23 @@ void FixWallGran::post_force_mesh(int vflag)
 
             sidata.i = iPart;
 
+            bool intersectflag = (deltan <= 0);
+
             if(atom->shapetype_flag)
             {
                 
-                sidata.mesh = mesh;
                 sidata.j = iTri;
-                impl->checkSurfaceIntersect(sidata);
+                intersectflag = impl->checkSurfaceIntersect(sidata);
                 deltan = -sidata.deltan;
                 
             }
 
+            sidata.mesh = mesh;
+            sidata.fix_mesh = FixMesh_list_[iMesh];
+
             if(deltan <= 0 || (radius && deltan < contactDistanceMultiplier*radius[iPart]))
             {
               
-              const bool intersectflag = (deltan <= 0);
-
               if(atom->shapetype_flag)
                   fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,false);
               else
@@ -1046,12 +1056,8 @@ void FixWallGran::post_force_primitive(int vflag)
       if(atom->superquadric_flag) {
             double sphere_contact_point[3];
             vectorAdd3D(x_[iPart], delta, sphere_contact_point);
-            sidata.pos_i = x_[iPart];
-            sidata.quat_i = quat_[iPart];
-            sidata.shape_i = shape_[iPart];
-            sidata.roundness_i = roundness_[iPart];
             double closestPoint[3], closestPointProjection[3], point_of_lowest_potential[3];
-            Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
+            Superquadric particle(x_[iPart], quat_[iPart], shape_[iPart], roundness_[iPart]);
             intersectflag = particle.plane_intersection(delta, sphere_contact_point, closestPoint, point_of_lowest_potential);
             deltan = -MathExtraLiggghtsNonspherical::point_wall_projection(delta, sphere_contact_point, closestPoint, closestPointProjection);
             vectorCopy3D(closestPoint, sidata.contact_point);
@@ -1068,7 +1074,8 @@ void FixWallGran::post_force_primitive(int vflag)
       sidata.i = iPart;
       sidata.contact_history = c_history ? c_history[iPart] : NULL;
 
-      if(sidata.is_non_spherical && !impl->checkSurfaceIntersect(sidata))
+      if(    (atom->superquadric_flag && deltan > 0.0)
+          || (atom->shapetype_flag && !impl->checkSurfaceIntersect(sidata)))
       {
         if(c_history)
             vectorZeroizeN(c_history[iPart],dnum_);

@@ -58,6 +58,10 @@
 #include<vtkUnstructuredGrid.h>
 #include<vtkXMLUnstructuredGridWriter.h>
 
+#ifdef vtkGenericDataArray_h
+#define InsertNextTupleValue InsertNextTypedTuple
+#endif
+
 using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
@@ -67,8 +71,7 @@ DumpATOMVTK::DumpATOMVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   if (narg != 5) error->all(FLERR,"Illegal dump command");
   if (binary || multiproc) error->all(FLERR,"Invalid dump filename");
 
-  sort_flag = 1;
-  sortcol = 0;
+  sortBuffer = new SortBuffer(lmp, true);
 
   size_one = 17;
 

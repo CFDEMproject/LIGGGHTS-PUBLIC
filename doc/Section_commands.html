@@ -1,126 +1,596 @@
-<HTML>
-<CENTER><A HREF = "Section_input_script.html">Previous Section</A> - <A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> - <A HREF = "Section_gran_models.html">Next Section</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4. Commands &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/>
+        <link rel="next" title="5. Contact models" href="Section_gran_models.html"/>
+        <link rel="prev" title="3. Input Script" href="Section_input_script.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">4. Commands</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#list-of-all-commands">4.1. List of all commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bond-style-potentials">4.2. bond_style potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compute-styles">4.3. compute styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dump-styles">4.4. dump styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fix-styles">4.5. fix styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pair-style-potentials">4.6. pair_style potentials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>4. Commands 
-</H3>
-<P>This section describes how a LIGGGHTS(R)-PUBLIC input script is formatted and the
-input script commands used to define a LIGGGHTS(R)-PUBLIC simulation.
-</P>
-4.1 <A HREF = "#cmd_1">List of all commands</A> <BR>
-
-<HR>
-
-<HR>
-
-<H4><A NAME = "cmd_1"></A><A NAME = "comm"></A>4.1 List of all commands 
-</H4>
-<P>This section lists all LIGGGHTS commands alphabetically, with a separate
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>4. Commands</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/Section_commands.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_gran_models.html" class="btn btn-neutral float-right" title="5. Contact models" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Section_input_script.html" class="btn btn-neutral" title="3. Input Script" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="commands">
+<h1>4. Commands<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how a LIGGGHTS(R)-PUBLIC input script is formatted and the
+input script commands used to define a LIGGGHTS(R)-PUBLIC simulation.</p>
+<div class="line-block">
+<div class="line">4.1 <a class="reference internal" href="Section_commands_LAMMPS.html#cmd-1"><em>List of all commands</em></a></div>
+<div class="line"><br /></div>
+</div>
+<div class="section" id="list-of-all-commands">
+<span id="comm"></span><span id="cmd-1"></span><h2>4.1. List of all commands<a class="headerlink" href="#list-of-all-commands" title="Permalink to this headline">¶</a></h2>
+<p>This section lists all LIGGGHTS commands alphabetically, with a separate
 listing below of styles within certain commands. Note
-that some style options for some commands are part of 
+that some style options for some commands are part of
 packages, which means they cannot be used unless the package was
 included when LAMMPS was built.  Not all packages are included in a
 default build.  These dependencies are listed as Restrictions
-in the command's documentation.
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR ALIGN="center"><TD ><A HREF = "atom_modify.html">atom_modify</A></TD><TD ><A HREF = "atom_style.html">atom_style</A></TD><TD ><A HREF = "bond_coeff.html">bond_coeff</A></TD><TD ><A HREF = "bond_style.html">bond_style</A></TD><TD ><A HREF = "boundary.html">boundary</A></TD><TD ><A HREF = "box.html">box</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "change_box.html">change_box</A></TD><TD ><A HREF = "clear.html">clear</A></TD><TD ><A HREF = "communicate.html">communicate</A></TD><TD ><A HREF = "compute.html">compute</A></TD><TD ><A HREF = "compute_modify.html">compute_modify</A></TD><TD ><A HREF = "create_atoms.html">create_atoms</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "create_box.html">create_box</A></TD><TD ><A HREF = "delete_atoms.html">delete_atoms</A></TD><TD ><A HREF = "delete_bonds.html">delete_bonds</A></TD><TD ><A HREF = "dielectric.html">dielectric</A></TD><TD ><A HREF = "dimension.html">dimension</A></TD><TD ><A HREF = "displace_atoms.html">displace_atoms</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "dump.html">dump</A></TD><TD ><A HREF = "dump_modify.html">dump_modify</A></TD><TD ><A HREF = "echo.html">echo</A></TD><TD ><A HREF = "fix.html">fix</A></TD><TD ><A HREF = "fix_modify.html">fix_modify</A></TD><TD ><A HREF = "group.html">group</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "if.html">if</A></TD><TD ><A HREF = "include.html">include</A></TD><TD ><A HREF = "info.html">info</A></TD><TD ><A HREF = "jump.html">jump</A></TD><TD ><A HREF = "label.html">label</A></TD><TD ><A HREF = "lattice.html">lattice</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "log.html">log</A></TD><TD ><A HREF = "mass.html">mass</A></TD><TD ><A HREF = "neigh_modify.html">neigh_modify</A></TD><TD ><A HREF = "neighbor.html">neighbor</A></TD><TD ><A HREF = "newton.html">newton</A></TD><TD ><A HREF = "next.html">next</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "orient.html">orient</A></TD><TD ><A HREF = "origin.html">origin</A></TD><TD ><A HREF = "pair_coeff.html">pair_coeff</A></TD><TD ><A HREF = "pair_style.html">pair_style</A></TD><TD ><A HREF = "partition.html">partition</A></TD><TD ><A HREF = "print.html">print</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "processors.html">processors</A></TD><TD ><A HREF = "quit.html">quit</A></TD><TD ><A HREF = "read_data.html">read_data</A></TD><TD ><A HREF = "read_dump.html">read_dump</A></TD><TD ><A HREF = "read_restart.html">read_restart</A></TD><TD ><A HREF = "region.html">region</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "replicate.html">replicate</A></TD><TD ><A HREF = "reset_timestep.html">reset_timestep</A></TD><TD ><A HREF = "restart.html">restart</A></TD><TD ><A HREF = "run.html">run</A></TD><TD ><A HREF = "run_style.html">run_style</A></TD><TD ><A HREF = "set.html">set</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "shell.html">shell</A></TD><TD ><A HREF = "thermo.html">thermo</A></TD><TD ><A HREF = "thermo_modify.html">thermo_modify</A></TD><TD ><A HREF = "thermo_style.html">thermo_style</A></TD><TD ><A HREF = "timestep.html">timestep</A></TD><TD ><A HREF = "uncompute.html">uncompute</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "undump.html">undump</A></TD><TD ><A HREF = "unfix.html">unfix</A></TD><TD ><A HREF = "units.html">units</A></TD><TD ><A HREF = "variable.html">variable</A></TD><TD ><A HREF = "velocity.html">velocity</A></TD><TD ><A HREF = "write_data.html">write_data</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "write_dump.html">write_dump</A></TD><TD ><A HREF = "write_restart.html">write_restart</A> 
-</TD></TR></TABLE></DIV>
+in the command&#8217;s documentation.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="16%" />
+<col width="16%" />
+<col width="18%" />
+<col width="18%" />
+<col width="18%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="atom_modify.html"><em>atom_modify</em></a></td>
+<td><a class="reference internal" href="atom_style.html"><em>atom_style</em></a></td>
+<td><a class="reference internal" href="bond_coeff.html"><em>bond_coeff</em></a></td>
+<td><a class="reference internal" href="bond_style.html"><em>bond_style</em></a></td>
+<td><a class="reference internal" href="boundary.html"><em>boundary</em></a></td>
+<td><a class="reference internal" href="box.html"><em>box</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="change_box.html"><em>change_box</em></a></td>
+<td><a class="reference internal" href="clear.html"><em>clear</em></a></td>
+<td><a class="reference internal" href="communicate.html"><em>communicate</em></a></td>
+<td><a class="reference internal" href="compute.html"><em>compute</em></a></td>
+<td><a class="reference internal" href="compute_modify.html"><em>compute_modify</em></a></td>
+<td><a class="reference internal" href="create_atoms.html"><em>create_atoms</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="create_box.html"><em>create_box</em></a></td>
+<td><a class="reference internal" href="delete_atoms.html"><em>delete_atoms</em></a></td>
+<td><a class="reference internal" href="delete_bonds.html"><em>delete_bonds</em></a></td>
+<td><a class="reference internal" href="dielectric.html"><em>dielectric</em></a></td>
+<td><a class="reference internal" href="dimension.html"><em>dimension</em></a></td>
+<td><a class="reference internal" href="displace_atoms.html"><em>displace_atoms</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="dump.html"><em>dump</em></a></td>
+<td><a class="reference internal" href="dump_modify.html"><em>dump_modify</em></a></td>
+<td><a class="reference internal" href="echo.html"><em>echo</em></a></td>
+<td><a class="reference internal" href="fix.html"><em>fix</em></a></td>
+<td><a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a></td>
+<td><a class="reference internal" href="group.html"><em>group</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="if.html"><em>if</em></a></td>
+<td><a class="reference internal" href="include.html"><em>include</em></a></td>
+<td><a class="reference internal" href="info.html"><em>info</em></a></td>
+<td><a class="reference internal" href="jump.html"><em>jump</em></a></td>
+<td><a class="reference internal" href="label.html"><em>label</em></a></td>
+<td><a class="reference internal" href="lattice.html"><em>lattice</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="log.html"><em>log</em></a></td>
+<td><a class="reference internal" href="mass.html"><em>mass</em></a></td>
+<td><a class="reference internal" href="neigh_modify.html"><em>neigh_modify</em></a></td>
+<td><a class="reference internal" href="neigh_modify.html"><em>neigh_settings</em></a></td>
+<td><a class="reference internal" href="neighbor.html"><em>neighbor</em></a></td>
+<td><a class="reference internal" href="neighbor.html"><em>neighbor_skin</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="newton.html"><em>newton</em></a></td>
+<td><a class="reference internal" href="next.html"><em>next</em></a></td>
+<td><a class="reference internal" href="orient.html"><em>orient</em></a></td>
+<td><a class="reference internal" href="origin.html"><em>origin</em></a></td>
+<td><a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a></td>
+<td><a class="reference internal" href="pair_style.html"><em>pair_style</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="partition.html"><em>partition</em></a></td>
+<td><a class="reference internal" href="print.html"><em>print</em></a></td>
+<td><a class="reference internal" href="processors.html"><em>processors</em></a></td>
+<td><a class="reference internal" href="quit.html"><em>quit</em></a></td>
+<td><a class="reference internal" href="read_data.html"><em>read_data</em></a></td>
+<td><a class="reference internal" href="read_dump.html"><em>read_dump</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="read_restart.html"><em>read_restart</em></a></td>
+<td><a class="reference internal" href="region.html"><em>region</em></a></td>
+<td><a class="reference internal" href="replicate.html"><em>replicate</em></a></td>
+<td><a class="reference internal" href="reset_timestep.html"><em>reset_timestep</em></a></td>
+<td><a class="reference internal" href="restart.html"><em>restart</em></a></td>
+<td><a class="reference internal" href="run.html"><em>run</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="run_style.html"><em>run_style</em></a></td>
+<td><a class="reference internal" href="set.html"><em>set</em></a></td>
+<td><a class="reference internal" href="shell.html"><em>shell</em></a></td>
+<td><a class="reference internal" href="thermo.html"><em>thermo</em></a></td>
+<td><a class="reference internal" href="thermo_modify.html"><em>thermo_modify</em></a></td>
+<td><a class="reference internal" href="thermo_style.html"><em>thermo_style</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="timestep.html"><em>timestep</em></a></td>
+<td><a class="reference internal" href="uncompute.html"><em>uncompute</em></a></td>
+<td><a class="reference internal" href="undump.html"><em>undump</em></a></td>
+<td><a class="reference internal" href="unfix.html"><em>unfix</em></a></td>
+<td><a class="reference internal" href="units.html"><em>units</em></a></td>
+<td><a class="reference internal" href="variable.html"><em>variable</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="velocity.html"><em>velocity</em></a></td>
+<td><a class="reference internal" href="write_data.html"><em>write_data</em></a></td>
+<td><a class="reference internal" href="write_dump.html"><em>write_dump</em></a></td>
+<td><a class="reference internal" href="write_restart.html"><em>write_restart</em></a></td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr class="docutils" />
+<div class="section" id="bond-style-potentials">
+<h2>4.2. bond_style potentials<a class="headerlink" href="#bond-style-potentials" title="Permalink to this headline">¶</a></h2>
+<p>See the <a class="reference internal" href="bond_style.html"><em>bond_style</em></a> command for an overview of bond
+potentials.  Click on the style itself for a full description:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="38%" />
+<col width="33%" />
+<col width="29%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="bond_harmonic.html"><em>harmonic</em></a></td>
+<td><a class="reference internal" href="bond_hybrid.html"><em>hybrid</em></a></td>
+<td><a class="reference internal" href="bond_none.html"><em>none</em></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="compute-styles">
+<h2>4.3. compute styles<a class="headerlink" href="#compute-styles" title="Permalink to this headline">¶</a></h2>
+<p>See the <a class="reference internal" href="compute.html"><em>compute</em></a> command for one-line descriptions of
+each style or click on the style itself for a full description:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="25%" />
+<col width="23%" />
+<col width="30%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="compute_atom_molecule.html"><em>atom/molecule</em></a></td>
+<td><a class="reference internal" href="compute_bond_local.html"><em>bond/local</em></a></td>
+<td><a class="reference internal" href="compute_centro_atom.html"><em>centro/atom</em></a></td>
+<td><a class="reference internal" href="compute_cluster_atom.html"><em>cluster/atom</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_cna_atom.html"><em>cna/atom</em></a></td>
+<td><a class="reference internal" href="compute_com.html"><em>com</em></a></td>
+<td><a class="reference internal" href="compute_com_molecule.html"><em>com/molecule</em></a></td>
+<td><a class="reference internal" href="compute_contact_atom.html"><em>contact/atom</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute_contact_atom.html"><em>contact/atom/gran</em></a></td>
+<td><a class="reference internal" href="compute_coord_atom.html"><em>coord/atom</em></a></td>
+<td><a class="reference internal" href="compute_coord_gran.html"><em>coord/gran</em></a></td>
+<td><a class="reference internal" href="compute_displace_atom.html"><em>displace/atom</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_erotate_asphere.html"><em>erotate/asphere</em></a></td>
+<td><a class="reference internal" href="compute_erotate_multisphere.html"><em>erotate/multisphere</em></a></td>
+<td><a class="reference internal" href="compute_erotate_sphere.html"><em>erotate/sphere</em></a></td>
+<td><a class="reference internal" href="compute_erotate_sphere_atom.html"><em>erotate/sphere/atom</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute_group_group.html"><em>group/group</em></a></td>
+<td><a class="reference internal" href="compute_gyration.html"><em>gyration</em></a></td>
+<td><a class="reference internal" href="compute_gyration_molecule.html"><em>gyration/molecule</em></a></td>
+<td><a class="reference internal" href="compute_inertia_molecule.html"><em>inertia/molecule</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_ke.html"><em>ke</em></a></td>
+<td><a class="reference internal" href="compute_ke_atom.html"><em>ke/atom</em></a></td>
+<td><a class="reference internal" href="compute_ke_multisphere.html"><em>ke/multisphere</em></a></td>
+<td><a class="reference internal" href="compute_msd.html"><em>msd</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute_msd_molecule.html"><em>msd/molecule</em></a></td>
+<td><a class="reference internal" href="compute_msd_nongauss.html"><em>msd/nongauss</em></a></td>
+<td><a class="reference internal" href="compute_rigid.html"><em>multisphere</em></a></td>
+<td><a class="reference internal" href="compute_nparticles_tracer_region.html"><em>nparticles/tracer/region</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_pair_gran_local.html"><em>pair/gran/local</em></a></td>
+<td><a class="reference internal" href="compute_pe.html"><em>pe</em></a></td>
+<td><a class="reference internal" href="compute_pe_atom.html"><em>pe/atom</em></a></td>
+<td><a class="reference internal" href="compute_pressure.html"><em>pressure</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute_property_atom.html"><em>property/atom</em></a></td>
+<td><a class="reference internal" href="compute_property_local.html"><em>property/local</em></a></td>
+<td><a class="reference internal" href="compute_property_molecule.html"><em>property/molecule</em></a></td>
+<td><a class="reference internal" href="compute_rdf.html"><em>rdf</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_reduce.html"><em>reduce</em></a></td>
+<td><a class="reference internal" href="compute_reduce.html"><em>reduce/region</em></a></td>
+<td><a class="reference internal" href="compute_rigid.html"><em>rigid</em></a></td>
+<td><a class="reference internal" href="compute_slice.html"><em>slice</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute_stress_atom.html"><em>stress/atom</em></a></td>
+<td><a class="reference internal" href="compute_voronoi_atom.html"><em>voronoi/atom</em></a></td>
+<td><a class="reference internal" href="compute_pair_gran_local.html"><em>wall/gran/local</em></a></td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="dump-styles">
+<h2>4.4. dump styles<a class="headerlink" href="#dump-styles" title="Permalink to this headline">¶</a></h2>
+<p>See the <a class="reference internal" href="dump.html"><em>dump</em></a> command for one-line descriptions
+of each style or click on the style itself for a full description:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="30%" />
+<col width="30%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="dump_custom_vtk.html"><em>custom/vtk</em></a></td>
+<td><a class="reference internal" href="dump_image.html"><em>image</em></a></td>
+<td><a class="reference internal" href="dump_image.html"><em>movie</em></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="fix-styles">
+<h2>4.5. fix styles<a class="headerlink" href="#fix-styles" title="Permalink to this headline">¶</a></h2>
+<p>See the <a class="reference internal" href="fix.html"><em>fix</em></a> command for one-line descriptions
+of each style or click on the style itself for a full description:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="23%" />
+<col width="23%" />
+<col width="27%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="fix_adapt.html"><em>adapt</em></a></td>
+<td><a class="reference internal" href="fix_addforce.html"><em>addforce</em></a></td>
+<td><a class="reference internal" href="fix_ave_atom.html"><em>ave/atom</em></a></td>
+<td><a class="reference internal" href="fix_ave_correlate.html"><em>ave/correlate</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_ave_euler.html"><em>ave/euler</em></a></td>
+<td><a class="reference internal" href="fix_ave_histo.html"><em>ave/histo</em></a></td>
+<td><a class="reference internal" href="fix_ave_spatial.html"><em>ave/spatial</em></a></td>
+<td><a class="reference internal" href="fix_ave_time.html"><em>ave/time</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_aveforce.html"><em>aveforce</em></a></td>
+<td><a class="reference internal" href="fix_bond_break.html"><em>bond/break</em></a></td>
+<td><a class="reference internal" href="fix_bond_create.html"><em>bond/create</em></a></td>
+<td><a class="reference internal" href="fix_box_relax.html"><em>box/relax</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_buoyancy.html"><em>buoyancy</em></a></td>
+<td><a class="reference internal" href="fix_check_timestep_gran.html"><em>check/timestep/gran</em></a></td>
+<td><a class="reference internal" href="fix_continuum_weighted.html"><em>continuum/weighted</em></a></td>
+<td><a class="reference internal" href="fix_deform.html"><em>deform</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_drag.html"><em>drag</em></a></td>
+<td><a class="reference internal" href="fix_dt_reset.html"><em>dt/reset</em></a></td>
+<td><a class="reference internal" href="fix_efield.html"><em>efield</em></a></td>
+<td><a class="reference internal" href="fix_enforce2d.html"><em>enforce2d</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_external.html"><em>external</em></a></td>
+<td><a class="reference internal" href="fix_freeze.html"><em>freeze</em></a></td>
+<td><a class="reference internal" href="fix_gravity.html"><em>gravity</em></a></td>
+<td><a class="reference internal" href="fix_heat_gran_conduction.html"><em>heat/gran</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_heat_gran_conduction.html"><em>heat/gran/conduction</em></a></td>
+<td><a class="reference internal" href="fix_insert_pack.html"><em>insert/pack</em></a></td>
+<td><a class="reference internal" href="fix_insert_rate_region.html"><em>insert/rate/region</em></a></td>
+<td><a class="reference internal" href="fix_insert_stream.html"><em>insert/stream</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_lineforce.html"><em>lineforce</em></a></td>
+<td><a class="reference internal" href="fix_massflow_mesh.html"><em>massflow/mesh</em></a></td>
+<td><a class="reference internal" href="fix_massflow_mesh_sieve.html"><em>massflow/mesh/sieve</em></a></td>
+<td><a class="reference internal" href="fix_mesh_surface.html"><em>mesh/surface</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_mesh_surface.html"><em>mesh/surface/planar</em></a></td>
+<td><a class="reference internal" href="fix_momentum.html"><em>momentum</em></a></td>
+<td><a class="reference internal" href="fix_move.html"><em>move</em></a></td>
+<td><a class="reference internal" href="fix_move_mesh.html"><em>move/mesh</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_multicontact_halfspace.html"><em>multicontact/halfspace</em></a></td>
+<td><a class="reference internal" href="fix_multisphere.html"><em>multisphere</em></a></td>
+<td><a class="reference internal" href="fix_multisphere_break.html"><em>multisphere/break</em></a></td>
+<td><a class="reference internal" href="fix_nve.html"><em>nve</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_nve_asphere.html"><em>nve/asphere</em></a></td>
+<td><a class="reference internal" href="fix_nve_asphere_noforce.html"><em>nve/asphere/noforce</em></a></td>
+<td><a class="reference internal" href="fix_nve_limit.html"><em>nve/limit</em></a></td>
+<td><a class="reference internal" href="fix_nve_line.html"><em>nve/line</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_nve_noforce.html"><em>nve/noforce</em></a></td>
+<td><a class="reference internal" href="fix_nve_sphere.html"><em>nve/sphere</em></a></td>
+<td><a class="reference internal" href="fix_particledistribution_discrete.html"><em>particledistribution/discrete</em></a></td>
+<td><a class="reference internal" href="fix_particledistribution_discrete.html"><em>particledistribution/discrete/massbased</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_particledistribution_discrete.html"><em>particledistribution/discrete/numberbased</em></a></td>
+<td><a class="reference internal" href="fix_particletemplate_multisphere.html"><em>particletemplate/multisphere</em></a></td>
+<td><a class="reference internal" href="fix_particletemplate_sphere.html"><em>particletemplate/sphere</em></a></td>
+<td><a class="reference internal" href="fix_planeforce.html"><em>planeforce</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_poems.html"><em>poems</em></a></td>
+<td><a class="reference internal" href="fix_print.html"><em>print</em></a></td>
+<td><a class="reference internal" href="fix_property.html"><em>property/atom</em></a></td>
+<td><a class="reference internal" href="fix_property_atom_timetracer.html"><em>property/atom/timetracer</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_property_atom_tracer.html"><em>property/atom/tracer</em></a></td>
+<td><a class="reference internal" href="fix_property_atom_tracer_stream.html"><em>property/atom/tracer/stream</em></a></td>
+<td><a class="reference internal" href="fix_property.html"><em>property/global</em></a></td>
+<td><a class="reference internal" href="fix_rigid.html"><em>rigid</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_rigid.html"><em>rigid/nph</em></a></td>
+<td><a class="reference internal" href="fix_rigid.html"><em>rigid/npt</em></a></td>
+<td><a class="reference internal" href="fix_rigid.html"><em>rigid/nve</em></a></td>
+<td><a class="reference internal" href="fix_rigid.html"><em>rigid/nvt</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_rigid.html"><em>rigid/small</em></a></td>
+<td><a class="reference internal" href="fix_setforce.html"><em>setforce</em></a></td>
+<td><a class="reference internal" href="fix_sph_density_continuity.html"><em>sph/density/continuity</em></a></td>
+<td><a class="reference internal" href="fix_sph_density_corr.html"><em>sph/density/corr</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_sph_density_summation.html"><em>sph/density/summation</em></a></td>
+<td><a class="reference internal" href="fix_sph_pressure.html"><em>sph/pressure</em></a></td>
+<td><a class="reference internal" href="fix_spring.html"><em>spring</em></a></td>
+<td><a class="reference internal" href="fix_spring_rg.html"><em>spring/rg</em></a></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_spring_self.html"><em>spring/self</em></a></td>
+<td><a class="reference internal" href="fix_store_force.html"><em>store/force</em></a></td>
+<td><a class="reference internal" href="fix_store_state.html"><em>store/state</em></a></td>
+<td><a class="reference internal" href="fix_viscous.html"><em>viscous</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_wall_gran.html"><em>wall/gran</em></a></td>
+<td><a class="reference internal" href="fix_wall_reflect.html"><em>wall/reflect</em></a></td>
+<td><a class="reference internal" href="fix_wall_region.html"><em>wall/region</em></a></td>
+<td><a class="reference internal" href="fix_wall_region_sph.html"><em>wall/region/sph</em></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="pair-style-potentials">
+<h2>4.6. pair_style potentials<a class="headerlink" href="#pair-style-potentials" title="Permalink to this headline">¶</a></h2>
+<p>See the <a class="reference internal" href="pair_style.html"><em>pair_style</em></a> command for an overview of pair
+potentials.  Click on the style itself for a full description:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="18%" />
+<col width="21%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pair_gran.html"><em>bubble</em></a></td>
+<td><a class="reference internal" href="pair_gran.html"><em>gran</em></a></td>
+<td><a class="reference internal" href="pair_hybrid.html"><em>hybrid</em></a></td>
+<td><a class="reference internal" href="pair_hybrid.html"><em>hybrid/overlay</em></a></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pair_none.html"><em>none</em></a></td>
+<td><a class="reference internal" href="pair_soft.html"><em>soft</em></a></td>
+<td><a class="reference internal" href="pair_sph.html"><em>sph</em></a></td>
+<td><a class="reference internal" href="pair_sph_artvisc_tenscorr.html"><em>sph/artVisc/tensCorr</em></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
-<HR>
 
-<H4>bond_style potentials 
-</H4>
-<P>See the <A HREF = "bond_style.html">bond_style</A> command for an overview of bond
-potentials.  Click on the style itself for a full description:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR ALIGN="center"><TD ><A HREF = "bond_harmonic.html">harmonic</A></TD><TD ><A HREF = "bond_hybrid.html">hybrid</A></TD><TD ><A HREF = "bond_none.html">none</A> 
-</TD></TR></TABLE></DIV>
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_gran_models.html" class="btn btn-neutral float-right" title="5. Contact models" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Section_input_script.html" class="btn btn-neutral" title="3. Input Script" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
-<H4>compute styles 
-</H4>
-<P>See the <A HREF = "compute.html">compute</A> command for one-line descriptions of
-each style or click on the style itself for a full description:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR ALIGN="center"><TD ><A HREF = "compute_atom_molecule.html">atom/molecule</A></TD><TD ><A HREF = "compute_bond_local.html">bond/local</A></TD><TD ><A HREF = "compute_centro_atom.html">centro/atom</A></TD><TD ><A HREF = "compute_cluster_atom.html">cluster/atom</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_cna_atom.html">cna/atom</A></TD><TD ><A HREF = "compute_com.html">com</A></TD><TD ><A HREF = "compute_com_molecule.html">com/molecule</A></TD><TD ><A HREF = "compute_contact_atom.html">contact/atom</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_coord_atom.html">coord/atom</A></TD><TD ><A HREF = "compute_coord_gran.html">coord/gran</A></TD><TD ><A HREF = "compute_displace_atom.html">displace/atom</A></TD><TD ><A HREF = "compute_erotate_asphere.html">erotate/asphere</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_erotate_multisphere.html">erotate/multisphere</A></TD><TD ><A HREF = "compute_erotate_sphere.html">erotate/sphere</A></TD><TD ><A HREF = "compute_erotate_sphere_atom.html">erotate/sphere/atom</A></TD><TD ><A HREF = "compute_group_group.html">group/group</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_gyration.html">gyration</A></TD><TD ><A HREF = "compute_gyration_molecule.html">gyration/molecule</A></TD><TD ><A HREF = "compute_inertia_molecule.html">inertia/molecule</A></TD><TD ><A HREF = "compute_ke.html">ke</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_ke_atom.html">ke/atom</A></TD><TD ><A HREF = "compute_ke_multisphere.html">ke/multisphere</A></TD><TD ><A HREF = "compute_msd.html">msd</A></TD><TD ><A HREF = "compute_msd_molecule.html">msd/molecule</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_msd_nongauss.html">msd/nongauss</A></TD><TD ><A HREF = "compute_rigid.html">multisphere</A></TD><TD ><A HREF = "compute_nparticles_tracer_region.html">nparticles/tracer/region</A></TD><TD ><A HREF = "compute_pair_gran_local.html">pair/gran/local</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_pe.html">pe</A></TD><TD ><A HREF = "compute_pe_atom.html">pe/atom</A></TD><TD ><A HREF = "compute_pressure.html">pressure</A></TD><TD ><A HREF = "compute_property_atom.html">property/atom</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_property_local.html">property/local</A></TD><TD ><A HREF = "compute_property_molecule.html">property/molecule</A></TD><TD ><A HREF = "compute_rdf.html">rdf</A></TD><TD ><A HREF = "compute_reduce.html">reduce</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_reduce.html">reduce/region</A></TD><TD ><A HREF = "compute_rigid.html">rigid</A></TD><TD ><A HREF = "compute_slice.html">slice</A></TD><TD ><A HREF = "compute_stress_atom.html">stress/atom</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "compute_voronoi_atom.html">voronoi/atom</A></TD><TD ><A HREF = "compute_pair_gran_local.html">wall/gran/local</A> 
-</TD></TR></TABLE></DIV>
+  <hr/>
 
-<H4>dump styles 
-</H4>
-<P>See the <A HREF = "dump.html">dump</A> command for one-line descriptions
-of each style or click on the style itself for a full description:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR ALIGN="center"><TD ><A HREF = "dump_custom_vtk.html">custom/vtk</A></TD><TD ><A HREF = "dump_image.html">image</A></TD><TD ><A HREF = "dump_image.html">movie</A> 
-</TD></TR></TABLE></DIV>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
 
-<H4>fix styles 
-</H4>
-<P>See the <A HREF = "fix.html">fix</A> command for one-line descriptions
-of each style or click on the style itself for a full description:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR ALIGN="center"><TD ><A HREF = "fix_adapt.html">adapt</A></TD><TD ><A HREF = "fix_addforce.html">addforce</A></TD><TD ><A HREF = "fix_ave_atom.html">ave/atom</A></TD><TD ><A HREF = "fix_ave_correlate.html">ave/correlate</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_ave_euler.html">ave/euler</A></TD><TD ><A HREF = "fix_ave_histo.html">ave/histo</A></TD><TD ><A HREF = "fix_ave_spatial.html">ave/spatial</A></TD><TD ><A HREF = "fix_ave_time.html">ave/time</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_aveforce.html">aveforce</A></TD><TD ><A HREF = "fix_bond_break.html">bond/break</A></TD><TD ><A HREF = "fix_bond_create.html">bond/create</A></TD><TD ><A HREF = "fix_box_relax.html">box/relax</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_buoyancy.html">buoyancy</A></TD><TD ><A HREF = "fix_check_timestep_gran.html">check/timestep/gran</A></TD><TD ><A HREF = "fix_continuum_weighted.html">continuum/weighted</A></TD><TD ><A HREF = "fix_deform.html">deform</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_drag.html">drag</A></TD><TD ><A HREF = "fix_dt_reset.html">dt/reset</A></TD><TD ><A HREF = "fix_efield.html">efield</A></TD><TD ><A HREF = "fix_enforce2d.html">enforce2d</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_external.html">external</A></TD><TD ><A HREF = "fix_freeze.html">freeze</A></TD><TD ><A HREF = "fix_gravity.html">gravity</A></TD><TD ><A HREF = "fix_heat_gran_conduction.html">heat/gran</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_heat_gran_conduction.html">heat/gran/conduction</A></TD><TD ><A HREF = "fix_insert_pack.html">insert/pack</A></TD><TD ><A HREF = "fix_insert_rate_region.html">insert/rate/region</A></TD><TD ><A HREF = "fix_insert_stream.html">insert/stream</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_lineforce.html">lineforce</A></TD><TD ><A HREF = "fix_massflow_mesh.html">massflow/mesh</A></TD><TD ><A HREF = "fix_massflow_mesh_sieve.html">massflow/mesh/sieve</A></TD><TD ><A HREF = "fix_mesh_surface.html">mesh/surface</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_mesh_surface.html">mesh/surface/planar</A></TD><TD ><A HREF = "fix_mesh_surface_stress.html">mesh/surface/stress</A></TD><TD ><A HREF = "fix_mesh_surface_stress_servo.html">mesh/surface/stress/servo</A></TD><TD ><A HREF = "fix_momentum.html">momentum</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_move.html">move</A></TD><TD ><A HREF = "fix_move_mesh.html">move/mesh</A></TD><TD ><A HREF = "fix_multicontact_halfspace.html">multicontact/halfspace</A></TD><TD ><A HREF = "fix_multisphere.html">multisphere</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_multisphere_break.html">multisphere/break</A></TD><TD ><A HREF = "fix_nve.html">nve</A></TD><TD ><A HREF = "fix_nve_asphere.html">nve/asphere</A></TD><TD ><A HREF = "fix_nve_asphere_noforce.html">nve/asphere/noforce</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_nve_limit.html">nve/limit</A></TD><TD ><A HREF = "fix_nve_line.html">nve/line</A></TD><TD ><A HREF = "fix_nve_noforce.html">nve/noforce</A></TD><TD ><A HREF = "fix_nve_sphere.html">nve/sphere</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_particledistribution_discrete.html">particledistribution/discrete</A></TD><TD ><A HREF = "fix_particledistribution_discrete.html">particledistribution/discrete/massbased</A></TD><TD ><A HREF = "fix_particledistribution_discrete.html">particledistribution/discrete/numberbased</A></TD><TD ><A HREF = "fix_particletemplate_multisphere.html">particletemplate/multisphere</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_particletemplate_sphere.html">particletemplate/sphere</A></TD><TD ><A HREF = "fix_planeforce.html">planeforce</A></TD><TD ><A HREF = "fix_poems.html">poems</A></TD><TD ><A HREF = "fix_print.html">print</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_property.html">property/atom</A></TD><TD ><A HREF = "fix_property_atom_timetracer.html">property/atom/timetracer</A></TD><TD ><A HREF = "fix_property_atom_tracer.html">property/atom/tracer</A></TD><TD ><A HREF = "fix_property_atom_tracer_stream.html">property/atom/tracer/stream</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_property.html">property/global</A></TD><TD ><A HREF = "fix_rigid.html">rigid</A></TD><TD ><A HREF = "fix_rigid.html">rigid/nph</A></TD><TD ><A HREF = "fix_rigid.html">rigid/npt</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_rigid.html">rigid/nve</A></TD><TD ><A HREF = "fix_rigid.html">rigid/nvt</A></TD><TD ><A HREF = "fix_rigid.html">rigid/small</A></TD><TD ><A HREF = "fix_setforce.html">setforce</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_sph_density_continuity.html">sph/density/continuity</A></TD><TD ><A HREF = "fix_sph_density_corr.html">sph/density/corr</A></TD><TD ><A HREF = "fix_sph_density_summation.html">sph/density/summation</A></TD><TD ><A HREF = "fix_sph_pressure.html">sph/pressure</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_spring.html">spring</A></TD><TD ><A HREF = "fix_spring_rg.html">spring/rg</A></TD><TD ><A HREF = "fix_spring_self.html">spring/self</A></TD><TD ><A HREF = "fix_store_force.html">store/force</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_store_state.html">store/state</A></TD><TD ><A HREF = "fix_viscous.html">viscous</A></TD><TD ><A HREF = "fix_wall_gran.html">wall/gran</A></TD><TD ><A HREF = "fix_wall_reflect.html">wall/reflect</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "fix_wall_region.html">wall/region</A></TD><TD ><A HREF = "fix_wall_region_sph.html">wall/region/sph</A> 
-</TD></TR></TABLE></DIV>
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-<H4>pair_style potentials 
-</H4>
-<P>See the <A HREF = "pair_style.html">pair_style</A> command for an overview of pair
-potentials.  Click on the style itself for a full description:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR ALIGN="center"><TD ><A HREF = "pair_gran.html">bubble</A></TD><TD ><A HREF = "pair_gran.html">gran</A></TD><TD ><A HREF = "pair_hybrid.html">hybrid</A></TD><TD ><A HREF = "pair_hybrid.html">hybrid/overlay</A></TD></TR>
-<TR ALIGN="center"><TD ><A HREF = "pair_none.html">none</A></TD><TD ><A HREF = "pair_soft.html">soft</A></TD><TD ><A HREF = "pair_sph.html">sph</A></TD><TD ><A HREF = "pair_sph_artvisc_tenscorr.html">sph/artVisc/tensCorr</A> 
-</TD></TR></TABLE></DIV>
+</footer>
 
-</HTML>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

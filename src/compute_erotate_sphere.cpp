@@ -115,5 +115,6 @@ double ComputeERotateSphere::compute_scalar()
 
   MPI_Allreduce(&erotate,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
   scalar *= pfactor;
+  
   return scalar;
 }

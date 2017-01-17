@@ -62,8 +62,6 @@ using namespace FixConst;
 
 enum{X,V,F,COMPUTE,FIX,VARIABLE};
 
-#define INVOKED_PERATOM 8
-
 /* ---------------------------------------------------------------------- */
 
 FixAveAtom::FixAveAtom(LAMMPS *lmp, int narg, char **arg) :

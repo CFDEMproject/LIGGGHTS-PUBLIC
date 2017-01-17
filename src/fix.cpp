@@ -63,7 +63,12 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-Fix::Fix(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
+Fix::Fix(LAMMPS *lmp, int narg, char **arg) :
+    Pointers(lmp),
+    size_vector(0),
+    size_array_rows(0),
+    size_array_cols(0),
+    global_freq(0)
 {
   // fix ID, group, and style
   // ID must be all alphanumeric chars or underscores
@@ -100,6 +105,7 @@ Fix::Fix(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   rad_mass_vary_flag = 0; 
   just_created = 1; 
   recent_restart = 0; 
+  accepts_restart_data_from_style = 0; 
   vflag_global = vflag_atom = 0; 
 
   scalar_flag = vector_flag = array_flag = 0;

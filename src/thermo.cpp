@@ -103,10 +103,6 @@ enum{ONELINE,MULTILINE};
 enum{INT,FLOAT,BIGINT};
 enum{SCALAR,VECTOR,ARRAY};
 
-#define INVOKED_SCALAR 1
-#define INVOKED_VECTOR 2
-#define INVOKED_ARRAY 4
-
 #define DELTA 8
 
 /* ---------------------------------------------------------------------- */

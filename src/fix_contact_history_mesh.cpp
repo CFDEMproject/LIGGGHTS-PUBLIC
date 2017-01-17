@@ -219,7 +219,7 @@ void FixContactHistoryMesh::allocate_pages()
       // make sure page is allocated in memory near core
       keeppage_[tid] = new MyPage<bool>();
       keeppage_[tid]->init(oneatom_,pgsize_);
-      intersecthpage_[tid] = new MyPage<bool>();
+      intersectpage_[tid] = new MyPage<bool>();
       intersectpage_[tid]->init(oneatom_,pgsize_);
     }
 #else

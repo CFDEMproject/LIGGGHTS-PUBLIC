@@ -21,7 +21,15 @@ It represents a smooth (non-rough) sphere and its task is to save certain variab
 
 [Restrictions:] none
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command might lead to
+statistically different dynamics and system state.
+To the best knowledge of the developers, the 
+cross-influence between this command and coarse-graining
+is unknown.
+
 [Related commands:]
 
 "fix multicontact/halfspace"_fix_multicontact_halfspace.html
-

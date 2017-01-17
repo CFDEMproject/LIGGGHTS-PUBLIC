@@ -136,9 +136,9 @@ MeshMoverLinearVariable::MeshMoverLinearVariable(LAMMPS *lmp,AbstractMesh *_mesh
 
       vectorZeroize3D(dX_);
 
-      vel_[0] = input->variable->compute_equal(myvar1_);
-      vel_[1] = input->variable->compute_equal(myvar2_);
-      vel_[2] = input->variable->compute_equal(myvar3_);
+      vel_[0] = 0.; //input->variable->compute_equal(myvar1_);
+      vel_[1] = 0.; //input->variable->compute_equal(myvar2_);
+      vel_[2] = 0.; //input->variable->compute_equal(myvar3_);
 }
 
 void MeshMoverLinearVariable::post_create()
@@ -196,6 +196,10 @@ void MeshMoverLinearVariable::setup()
     if (myvar1_ < 0) error->all(FLERR,"Variable name 1 for fix move/mesh linear/variable does not exist");
     if (myvar2_ < 0) error->all(FLERR,"Variable name 2 for fix move/mesh linear/variable does not exist");
     if (myvar3_ < 0) error->all(FLERR,"Variable name 3 for fix move/mesh linear/variable does not exist");
+
+    vel_[0] = input->variable->compute_equal(myvar1_);
+    vel_[1] = input->variable->compute_equal(myvar2_);
+    vel_[2] = input->variable->compute_equal(myvar3_);
 }
 
 /* ---------------------------------------------------------------------- */

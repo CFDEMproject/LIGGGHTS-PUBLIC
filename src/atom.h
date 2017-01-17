@@ -233,6 +233,7 @@ class Atom : protected Pointers {
   void add_callback(int);
   void delete_callback(const char *, int);
   void update_callback(int);
+  bool has_callback(const char *, int);
 
   int find_custom(char *, int &);
   int add_custom(char *, int);

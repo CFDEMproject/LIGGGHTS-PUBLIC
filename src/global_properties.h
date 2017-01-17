@@ -84,6 +84,7 @@ namespace MODEL_PARAMS
 
   MatrixProperty* createCoeffFrict(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffRollFrict(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createCoeffFricVisc(PropertyRegistry & registry, const char * caller, bool sanity_checks); // For new models
   MatrixProperty* createCoeffRollVisc(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffMu(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffRestMax(PropertyRegistry & registry, const char * caller, bool sanity_checks);
@@ -105,6 +106,16 @@ namespace MODEL_PARAMS
   MatrixProperty* createCoeffMaxElasticStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffAdhesionStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createCoeffPlasticityDepth(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createPullOffForce(PropertyRegistry & registry, const char * caller, bool sanity_checks); // for luding's model
+  MatrixProperty* createCoeffFrictionStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks); //for luding's tangential model
+  MatrixProperty* createCoeffRollingStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  ScalarProperty* createOverlapExponent(PropertyRegistry & registry, const char * caller, bool sanity_checks); //for Edinburgh's model
+  ScalarProperty* createAdhesionExponent(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createSurfaceEnergy(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  MatrixProperty* createTangentialMultiplier(PropertyRegistry & registry, const char * caller, bool sanity_checks);
+  VectorProperty* createYieldRatio(PropertyRegistry & registry, const char * caller, bool sanity_checks); // thornton & ning
+  MatrixProperty* createUnloadingStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks); // for hysteretic models 
+  MatrixProperty* createLoadingStiffness(PropertyRegistry & registry, const char * caller, bool sanity_checks); // for hysteretic models 
   ScalarProperty* createRoughnessAbsolute(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   ScalarProperty* createRoughnessRelative(PropertyRegistry & registry, const char * caller, bool sanity_checks);
   MatrixProperty* createNormalDampingCoefficient(PropertyRegistry & registry, const char * caller, bool sanity_checks);

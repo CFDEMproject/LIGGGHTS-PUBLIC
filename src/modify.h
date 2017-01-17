@@ -173,6 +173,9 @@ class Modify : protected Pointers {
 
   int fix_restart_in_progress();
   bool have_restart_data(Fix *f);
+  bool have_restart_data_style(const char* _style);
+  int n_restart_data_global_style(const char* _style);
+  char* id_restart_data_global_style(const char* _style,int _rank);
   void max_min_rad(double &maxrad,double &minrad); 
 
  protected:

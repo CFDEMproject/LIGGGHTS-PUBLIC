@@ -105,11 +105,6 @@ enum{DONE,ADD,SUBTRACT,MULTIPLY,DIVIDE,CARAT,MODULO,UNARY,
 
 enum{SUM,XMIN,XMAX,AVE,TRAP,NEXT};
 
-#define INVOKED_SCALAR 1
-#define INVOKED_VECTOR 2
-#define INVOKED_ARRAY 4
-#define INVOKED_PERATOM 8
-
 #define BIG 1.0e20
 
 /* ---------------------------------------------------------------------- */
@@ -2823,7 +2818,7 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
      count(group),mass(group),charge(group),
      xcm(group,dim),vcm(group,dim),fcm(group,dim),
      bound(group,xmin),gyration(group),ke(group),angmom(group,dim),
-     torque(group,dim),inertia(group,dim),omega(group,dim)
+     torque(group,dim),inertia(group,dim),omega(group,dim), countMS(group)
 ------------------------------------------------------------------------- */
 
 int Variable::group_function(char *word, char *contents, Tree **tree,
@@ -2833,7 +2828,8 @@ int Variable::group_function(char *word, char *contents, Tree **tree,
 
   int n_ms = modify->n_fixes_style("multisphere");
   if(n_ms > 0 && !static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0))->allow_group_and_set())
-    error->all(FLERR,"Variable command 'group' may not be used together with fix multisphere");
+    error->all(FLERR, "By default variable command 'group' may not be used together with fix multisphere\n"
+                      "Use 'allow_group_and_set yes' with fix multisphere.");
 
   // word not a match to any group function
 
@@ -2843,7 +2839,7 @@ int Variable::group_function(char *word, char *contents, Tree **tree,
       strcmp(word,"bound") && strcmp(word,"gyration") &&
       strcmp(word,"ke") && strcmp(word,"angmom") &&
       strcmp(word,"torque") && strcmp(word,"inertia") &&
-      strcmp(word,"omega"))
+      strcmp(word,"omega") && strcmp(word,"countMS"))
     return 0;
 
   // parse contents for arg1,arg2,arg3 separated by commas
@@ -2889,6 +2885,11 @@ int Variable::group_function(char *word, char *contents, Tree **tree,
   if (strcmp(word,"count") == 0) {
     if (narg == 1) value = group->count(igroup);
     else if (narg == 2) value = group->count(igroup,region_function(arg2));
+    else error->all(FLERR,"Invalid group function in variable formula");
+
+  } else if (strcmp(word,"countMS") == 0) {
+    if (narg == 1) value = group->count_ms(igroup);
+    else if (narg == 2) value = group->count_ms(igroup,region_function(arg2));
     else error->all(FLERR,"Invalid group function in variable formula");
 
   } else if (strcmp(word,"mass") == 0) {
@@ -3082,7 +3083,8 @@ int Variable::region_function(char *id)
 
   int n_ms = modify->n_fixes_style("multisphere");
   if(n_ms > 0 && !static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0))->allow_group_and_set())
-    error->all(FLERR,"Variable command 'region' may not be used together with fix multisphere");
+    error->all(FLERR,"By default variable command 'region' may not be used together with fix multisphere.\n"
+                     "Use 'allow_group_and_set yes' with fix multisphere.");
 
   // init region in case sub-regions have been deleted
 

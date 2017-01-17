@@ -63,7 +63,6 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
     fix_coupling_(0),
     fix_dragforce_(0),
     fix_hdtorque_(0),
-    fix_volumeweight_(0),
     fix_dispersionTime_(0),
     fix_dispersionVel_(0),
     fix_UrelOld_(0),
@@ -140,7 +139,7 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_stochastic'");
             iarg++;
             hasargs = true;
-        } 
+        }
         else if(strcmp(arg[iarg],"transfer_virtualMass") == 0)
         {
             if(narg < iarg+2)
@@ -253,23 +252,6 @@ void FixCfdCouplingForce::post_create()
         fix_hdtorque_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
     }
 
-    // register volume weight for volume fraction calculation if not present
-    // is 1 per default
-    fix_volumeweight_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("volumeweight","property/atom","scalar",0,0,style,false));
-    if(!fix_volumeweight_)
-    {
-        const char* fixarg[9];
-        fixarg[0]="volumeweight";
-        fixarg[1]="all";
-        fixarg[2]="property/atom";
-        fixarg[3]="volumeweight";
-        fixarg[4]="scalar"; // 1 vector per particle to be registered
-        fixarg[5]="no";    // restart
-        fixarg[6]="no";     // communicate ghost
-        fixarg[7]="no";     // communicate rev
-        fixarg[8]="1.";
-        fix_volumeweight_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
-    }
     if(!fix_dispersionTime_ && use_stochastic_)
     {
         const char* fixarg[9];
@@ -314,7 +296,7 @@ void FixCfdCouplingForce::post_create()
         fixarg[6]="no";     // communicate ghost
         fixarg[7]="no";     // communicate rev
         fixarg[8]="0";
-        fixarg[9]="0";        
+        fixarg[9]="0";
         fixarg[10]="0";
         fix_dispersionVel_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
     }
@@ -336,7 +318,6 @@ void FixCfdCouplingForce::pre_delete(bool unfixflag)
 {
     if(unfixflag && fix_dragforce_) modify->delete_fix("dragforce");
     if(unfixflag && fix_hdtorque_) modify->delete_fix("hdtorque");
-    if(unfixflag && fix_volumeweight_) modify->delete_fix("volumeweight");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -376,7 +357,6 @@ void FixCfdCouplingForce::init()
     if(use_type_) fix_coupling_->add_push_property("type","scalar-atom");
     if(use_dens_) fix_coupling_->add_push_property("density","scalar-atom");
     if(use_torque_) fix_coupling_->add_push_property("omega","vector-atom");
-    fix_coupling_->add_push_property("volumeweight","scalar-atom");
 
     if(use_property_) fix_coupling_->add_push_property(property_name,property_type);
 

@@ -124,6 +124,15 @@ become problematic for low coefficients of resitution as showin in Schwager and 
 
 {heating_normal_hertz} may not be available in your version of the software.
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command should lead to
+statistically equivalent dynamics and system state.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
+
 [Default:]
 
 {viscous} = 'off'

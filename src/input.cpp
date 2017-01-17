@@ -597,7 +597,6 @@ int Input::execute_command()
   else if (!strcmp(command,"mass")) mass();
   else if (!strcmp(command,"min_modify")) min_modify();
   else if (!strcmp(command,"min_style")) min_style();
-  else if (!strcmp(command,"neigh_modify")) neigh_modify();
   else if (!strcmp(command,"neighbor")) neighbor_command();
   else if (!strcmp(command,"newton")) newton();
   else if (!strcmp(command,"package")) package();
@@ -611,6 +610,7 @@ int Input::execute_command()
   else if (!strcmp(command,"restart")) restart();
   else if (!strcmp(command,"run_style")) run_style();
   else if (!strcmp(command,"soft_particles")) soft_particles(); 
+  else if (!strcmp(command,"hard_particles")) hard_particles();
   else if (!strcmp(command,"special_bonds")) special_bonds();
   else if (!strcmp(command,"suffix")) suffix();
   else if (!strcmp(command,"thermo")) thermo();
@@ -1398,16 +1398,9 @@ void Input::min_style()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::neigh_modify()
-{
-  neighbor->modify_params(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::neighbor_command()
 {
-  neighbor->set(narg,arg);
+  neighbor->set(narg, arg);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1585,6 +1578,19 @@ void Input::run_style()
 }
 
 /* ---------------------------------------------------------------------- */
+void Input::hard_particles()
+{
+   if(narg != 1)
+      error->all(FLERR,"hard_particles expects 'yes' or 'no'");
+   if(0 == strcmp(arg[0],"yes"))
+      atom->get_properties()->do_allow_hard_particles();
+   else if(0 == strcmp(arg[0],"no"))
+      atom->get_properties()->do_not_allow_hard_particles();
+   else
+      error->all(FLERR,"hard_particles expects 'yes' or 'no'");
+}
+
+/* ---------------------------------------------------------------------- */
 
 void Input::soft_particles()
 {
@@ -1595,7 +1601,7 @@ void Input::soft_particles()
    else if(0 == strcmp(arg[0],"no"))
       atom->get_properties()->do_not_allow_soft_particles();
    else
-      error->all(FLERR,"Soft_particles expects 'yes' or 'no'");
+      error->all(FLERR,"soft_particles expects 'yes' or 'no'");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1673,6 +1679,7 @@ void Input::timestep()
 {
   if (narg != 1) error->all(FLERR,"Illegal timestep command");
   update->dt = force->numeric(FLERR,arg[0]);
+  update->timestep_set = true;
   
 }
 

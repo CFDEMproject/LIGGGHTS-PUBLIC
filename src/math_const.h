@@ -57,6 +57,7 @@ namespace MathConst {
   static const double MY_PI2 = 1.57079632679489661923; // pi/2
   static const double MY_PI4 = 0.78539816339744830962; // pi/4
   static const double MY_PIS = 1.77245385090551602729; // sqrt(pi)
+  static const double MY_BOLZ_CONST = 0.00000005670367; // sqrt(pi)
 }
 
 }

@@ -97,13 +97,15 @@ namespace ContactModels {
       history_offset = hsetup->add_history_value("contflag", "0");
       
       if(cmb->is_wall())
-        error->all(FLERR,"Using cohesion model easo/capillary/viscous for walls is not supported");
+        error->warning(FLERR,"Using cohesion model easo/capillary/viscous for walls only supports dry walls");
     }
 
     void registerSettings(Settings& settings)
     {
         settings.registerOnOff("tangential_reduce",tangentialReduce_,false);
     }
+
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
 
     void connectToProperties(PropertyRegistry & registry)
     {
@@ -164,9 +166,11 @@ namespace ContactModels {
       const char* neigharg[2];
       neigharg[0] = "contact_distance_factor";
       char arg2[30];
-      sprintf(arg2,"%e",maxSeparationDistanceRatio);
+      sprintf(arg2,"%e",maxSeparationDistanceRatio*1.1); 
       neigharg[1] = arg2;
       neighbor->modify_params(2,const_cast<char**>(neigharg));
+      if(maxSeparationDistanceRatio < 1.0)
+            error->one(FLERR,"\n\ncohesion model easo/capillary/viscous requires maxSeparationDistanceRatio >= 1.0. Please increase this value.\n");
     }
 
     void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
@@ -174,16 +178,13 @@ namespace ContactModels {
 
     void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
-      if(sidata.is_wall)
-        return;
-
       const int i = sidata.i;
       const int j = sidata.j;
       const int itype = sidata.itype;
       const int jtype = sidata.jtype;
 
       const double radi = sidata.radi;
-      const double radj = sidata.radj;
+      const double radj = sidata.is_wall ? radi : sidata.radj;
       const double radsum = sidata.radsum;
       double const *surfaceLiquidContent = fix_surfaceliquidcontent->vector_atom;
 
@@ -193,7 +194,7 @@ namespace ContactModels {
       contflag[0] = 1.0;
 
       const double volLi1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radi*radi*radi*surfaceLiquidContent[i];
-      const double volLj1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radj*radj*radj*surfaceLiquidContent[j];
+      const double volLj1000 = /* 4/3 * 1000 */ sidata.is_wall ? 0.0 : 1333.333333*M_PI*radj*radj*radj*surfaceLiquidContent[j];
       const double volLiBond1000 = 0.5*volLi1000*(1.-sqrt(1.-radj*radj/(radsum*radsum)));
       const double volLjBond1000 = 0.5*volLj1000*(1.-sqrt(1.-radi*radi/(radsum*radsum)));
       const double volBond1000 = volLiBond1000+volLjBond1000;
@@ -242,14 +243,13 @@ namespace ContactModels {
 
       // return resulting forces
       if(sidata.is_wall) {
-        /*  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TODO HERE!!!!!!!!!!!
         const double area_ratio = sidata.area_ratio;
-        i_forces.delta_F[0] += Ft1 * area_ratio;
-        i_forces.delta_F[1] += Ft2 * area_ratio;
-        i_forces.delta_F[2] += Ft3 * area_ratio;
+        i_forces.delta_F[0] += fx * area_ratio;
+        i_forces.delta_F[1] += fy * area_ratio;
+        i_forces.delta_F[2] += fz * area_ratio;
         i_forces.delta_torque[0] += -sidata.cri * tor1 * area_ratio;
         i_forces.delta_torque[1] += -sidata.cri * tor2 * area_ratio;
-        i_forces.delta_torque[2] += -sidata.cri * tor3 * area_ratio;*/
+        i_forces.delta_torque[2] += -sidata.cri * tor3 * area_ratio;
       } else {
         i_forces.delta_F[0] += fx;
         i_forces.delta_F[1] += fy;
@@ -269,10 +269,6 @@ namespace ContactModels {
 
     void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces)
     {
-	  
-      // Wall cohesion is not properly implemented yet
-	  if(scdata.is_wall)
-        return;
 
       double * const contflag = &scdata.contact_history[history_offset];
 
@@ -290,17 +286,17 @@ namespace ContactModels {
 
       const int i = scdata.i;
       const int j = scdata.j;
-      const int itype = atom->type[i];
-      const int jtype = atom->type[j];
+      const int itype = scdata.itype;
+      const int jtype = scdata.jtype;
       const double radi = scdata.radi;
-      const double radj = scdata.radj;
+      const double radj = scdata.is_wall ? radi : scdata.radj;
       const double r = sqrt(scdata.rsq);
       const double radsum = scdata.radsum;
-      const double dist =  r - (radi + radj);
+      const double dist = scdata.is_wall ? r - radi : r - (radi + radj);
       double const *surfaceLiquidContent = fix_surfaceliquidcontent->vector_atom;
 
       const double volLi1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radi*radi*radi*surfaceLiquidContent[i];
-      const double volLj1000 = /* 4/3 * 1000 */ 1333.333333*M_PI*radj*radj*radj*surfaceLiquidContent[j];
+      const double volLj1000 = /* 4/3 * 1000 */ scdata.is_wall ? 0.0 : 1333.333333*M_PI*radj*radj*radj*surfaceLiquidContent[j];
       const double volLiBond1000 = 0.5*volLi1000*(1.-sqrt(1.-radj*radj/(radsum*radsum)));
       const double volLjBond1000 = 0.5*volLj1000*(1.-sqrt(1.-radi*radi/(radsum*radsum)));
       const double volBond1000 = volLiBond1000+volLjBond1000;
@@ -312,9 +308,13 @@ namespace ContactModels {
       // check if liquid bridge exists
       bool bridge_active = false, bridge_breaks = false;
 
-      if (dist < distMax)
+      if (dist > (maxSeparationDistanceRatio-1.0)*(radi+radj) && MathExtraLiggghts::compDouble(contflag[0],1.0,1e-6)) // in this case always break
+      {
+        bridge_breaks = true;
+      }
+      else if (dist < distMax && dist < (maxSeparationDistanceRatio-1.0)*(radi+radj) )
         bridge_active = true;
-      else
+      else if(MathExtraLiggghts::compDouble(contflag[0],1.0,1e-6)) // can only break if exists
         bridge_breaks = true;
 
       // case (ii)
@@ -417,14 +417,13 @@ namespace ContactModels {
 
           // return resulting forces
           if(scdata.is_wall) {
-            /*  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TODO HERE!!!!!!!!!!!
             const double area_ratio = scdata.area_ratio;
-            i_forces.delta_F[0] += Ft1 * area_ratio;
-            i_forces.delta_F[1] += Ft2 * area_ratio;
-            i_forces.delta_F[2] += Ft3 * area_ratio;
-            i_forces.delta_torque[0] += -scdata.cri * tor1 * area_ratio;
-            i_forces.delta_torque[1] += -scdata.cri * tor2 * area_ratio;
-            i_forces.delta_torque[2] += -scdata.cri * tor3 * area_ratio;*/
+            i_forces.delta_F[0] += fx * area_ratio;
+            i_forces.delta_F[1] += fy * area_ratio;
+            i_forces.delta_F[2] += fz * area_ratio;
+            i_forces.delta_torque[0] += -radi * tor1 * area_ratio;
+            i_forces.delta_torque[1] += -radi * tor2 * area_ratio;
+            i_forces.delta_torque[2] += -radi * tor3 * area_ratio;
           } else {
             i_forces.delta_F[0] += fx;
             i_forces.delta_F[1] += fy;
@@ -448,19 +447,22 @@ namespace ContactModels {
 
           // store for next step
           contflag[0] = 0.0;
+          if (!scdata.is_wall)
+          {
+              // liquid transfer happens here
+              // assume liquid distributes evenly
+              double *liquidFlux = fix_liquidflux->vector_atom;
+              
+              const double invdt = 1./update->dt;
+              const double rad_ratio = radj/radi;
+              const double split_factor = 1.0/(1.0+rad_ratio*rad_ratio*rad_ratio);
+              // liquid flux is in vol% per time
+              liquidFlux[i] += invdt*(split_factor * volBond1000 - volLiBond1000) / (1333.333333*M_PI*radi*radi*radi) ;
 
-          // liquid transfer happens here
-          // assume liquid distributes evenly
-          double *liquidFlux = fix_liquidflux->vector_atom;
-          
-          const double invdt = 1./update->dt;
-
-          // liquid flux is in vol% per time
-          liquidFlux[i] += invdt*(0.5 * volBond1000 - volLiBond1000) / (1333.333333*M_PI*radi*radi*radi) ;
-
-          if (force->newton_pair || j < atom->nlocal)
-            liquidFlux[j] += invdt*(0.5 * volBond1000 - volLjBond1000) / (1333.333333*M_PI*radj*radj*radj) ;
-          
+              if (force->newton_pair || j < atom->nlocal)
+                liquidFlux[j] += invdt*((1.-split_factor) * volBond1000 - volLjBond1000) / (1333.333333*M_PI*radj*radj*radj) ;
+              
+          }
       }
       // no else here, case (i) was already caught before
     }

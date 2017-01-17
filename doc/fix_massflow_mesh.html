@@ -1,109 +1,239 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix massflow/mesh command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix massflow/mesh command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix id group massflow/mesh mesh mesh-ID vec_side vx vy vz keyword value ... 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>massflow/mesh = style name of this fix command   
-
-<LI>mesh = obligatory keyword 
-
-<LI>mesh-ID = ID of a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command 
-
-<LI>vec_side = obligatory keyword 
-
-<LI>vx, vy, vz = vector components defining the "outside" of the mesh 
-
-<LI>zero or more keyword/value pairs may be appended to args 
-
-<LI>keywords = <I>count</I> or <I>point_at_outlet</I> or <I>append</I> or <I>file</I> or <I>screen</I> or <I>delete_atoms</I> 
-
-<PRE>  <I>count</I> value = <I>once</I> or <I>multiple</I>
-    once = count particles only once
-    multiple = allow particles to be counted multiple times
-  <I>point_at_outlet</I>  pointX pointY pointZ
-    pointX pointY pointZ = coordinates of point on the outlet side of the surface
-  <I>inside_out</I>
-    use this in connection with <I>point_at_outlet</I> to flip direction particle counting
-  <I>file</I> value = filename
-  <I>append</I> value = filename
-   filename = name of the file to print diameter, position and velocity values of the particles
-  <I>screen</I> value = <I>yes</I> or <I>no</I>
-  <I>writeTime</I>
-    include this keyword to write the time to the out files
-  <I>delete_atoms</I> value = <I>yes</I> or <I>no</I>
-    yes = to remove the particles that pass through the mesh surface 
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix mass all massflow/mesh mesh inface vec_side 0. 0. -1. 
-</PRE>
-<PRE>fix mass all massflow/mesh mesh inface count once point_at_outlet 0. 0. 0. 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Fix massflow/mesh tracks how many particles penetrate through a mesh surface,
-as defined by a <A HREF = "fix_mesh_surface.html">fix mesh/surface</A> command.
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix massflow/mesh command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_massflow_mesh.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-massflow-mesh-command">
+<span id="index-0"></span><h1>fix massflow/mesh command<a class="headerlink" href="#fix-massflow-mesh-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix id group massflow/mesh mesh mesh-ID vec_side vx vy vz keyword value ...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>massflow/mesh = style name of this fix command</li>
+<li>mesh = obligatory keyword</li>
+<li>mesh-ID = ID of a <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> command</li>
+<li>vec_side = obligatory keyword</li>
+<li>vx, vy, vz = vector components defining the &#8220;outside&#8221; of the mesh</li>
+<li>zero or more keyword/value pairs may be appended to args</li>
+<li>keywords = <em>count</em> or <em>point_at_outlet</em> or <em>append</em> or <em>file</em> or <em>screen</em> or <em>delete_atoms</em></li>
+</ul>
+<pre class="literal-block">
+<em>count</em> value = <em>once</em> or <em>multiple</em>
+  once = count particles only once
+  multiple = allow particles to be counted multiple times
+<em>point_at_outlet</em>  pointX pointY pointZ
+  pointX pointY pointZ = coordinates of point on the outlet side of the surface
+<em>inside_out</em>
+  use this in connection with <em>point_at_outlet</em> to flip direction particle counting
+<em>file</em> value = filename
+<em>append</em> value = filename
+ filename = name of the file to print diameter, position and velocity values of the particles
+<em>screen</em> value = <em>yes</em> or <em>no</em>
+<em>writeTime</em>
+  include this keyword to write the time to the out files
+<em>delete_atoms</em> value = <em>yes</em> or <em>no</em>
+  yes = to remove the particles that pass through the mesh surface
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix mass all massflow/mesh mesh inface vec_side 0. 0. -1.</pre>
+</div>
+<div class="highlight-python"><pre>fix mass all massflow/mesh mesh inface count once point_at_outlet 0. 0. 0.</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Fix massflow/mesh tracks how many particles penetrate through a mesh surface,
+as defined by a <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> command.
 It counts the total number of particles and the associated mass. Only particles
-part of <I>group</I> are eligible for counting.
-</P>
-<P>Particles are counted if they cross from the inner side of the mesh to the outer
-side of the mesh. The outer side can be defined by using the keyword <I>vec_side</I>,
-by specifying a point at the outlet side of the mesh (keyword <I>point_at_outlet</I>). Note
-that the vector defined by <I>vec_side</I> does not necessarily have to be
-perpendicular to the mesh face.
-</P>
-<P>The following restrictions apply in case <I>vec_side</I> is specified: (i) the
-<A HREF = "fix_mesh_surface.html">fix mesh/surface</A> has to be planar, and (ii) the vector
-defined by <I>vec_side</I> may not lie inside the mesh plane.
-</P>
-<P>The following restriction applies in case <I>point_at_outlet</I> is used: the <I>count</I>
-value has to be set to once.
-</P>
-<P>The keyword <I>point_at_outlet</I> is especially useful in case a cylindrically-shaped
-surface is used. The <I>point_at_outlet</I> value should be on the cylinder axis in
+part of <em>group</em> are eligible for counting.</p>
+<p>Particles are counted if they cross from the inner side of the mesh to the outer
+side of the mesh. The outer side can be defined by using the keyword <em>vec_side</em>,
+by specifying a point at the outlet side of the mesh (keyword <em>point_at_outlet</em>). Note
+that the vector defined by <em>vec_side</em> does not necessarily have to be
+perpendicular to the mesh face.</p>
+<p>The following restrictions apply in case <em>vec_side</em> is specified: (i) the
+<a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> has to be planar, and (ii) the vector
+defined by <em>vec_side</em> may not lie inside the mesh plane.</p>
+<p>The following restriction applies in case <em>point_at_outlet</em> is used: the <em>count</em>
+value has to be set to once.</p>
+<p>The keyword <em>point_at_outlet</em> is especially useful in case a cylindrically-shaped
+surface is used. The <em>point_at_outlet</em> value should be on the cylinder axis in
 this case. If you like to track particles moving away from the cylinder axis,
-specify the <I>point_at_outlet</I> on the axis, and use the keyword
-<I>inside_out</I> to flip the direction.
-</P>
-<P>When <I>count</I> = once, then each particle is only counted once, for <I>count</I> = multiple
+specify the <em>point_at_outlet</em> on the axis, and use the keyword
+<em>inside_out</em> to flip the direction.</p>
+<p>When <em>count</em> = once, then each particle is only counted once, for <em>count</em> = multiple
 a particle contributes to number and mass count each time it crosses the mesh face.
 This can happen e.g. in the case of periodic boundary conditions or in re-circulating
-flow conditions.
-</P>
-<P>The diameter, position and velocity of the particles can be written into a file using the <I>file</I> keyword,
-by specifying a filename.
-</P>
-<P>If the <I>screen</I> keyword is used, output by this fix to the screen and
-logfile can be turned on or off as desired.
-</P>
-<P>If the <I>delete_atoms</I> keyword is used then the particles passing through the mesh
-surface are deleted at the next re-neighboring step.
-</P>
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> .
-</P>
-<P>This fix computes a per-atom vector (the marker) which can be accessed by
-various <A HREF = "Section_howto.html#howto_8">output commands</A>. The per-atom vector
-(i.e., the marker) can be accessed by dumps by using "f_massflow_ID", .
+flow conditions.</p>
+<p>The diameter, position and velocity of the particles can be written into a file using the <em>file</em> keyword,
+by specifying a filename.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">When using fix massflow/mesh with multispherical particles,
+the evaluation of the mass passing the mesh is done for each sphere within the
+multisphere particle. Each sphere counts as a fraction of a particle, i.e.
+floating point number might evolve for the number of particles passing the
+mesh if not all spheres belonging to one multisphere particle pass the mesh.
+The weight for each sphere is calculated taking into account the possible overlap
+between spheres in a multisphere particle.</p>
+</div>
+<p>If the <em>screen</em> keyword is used, output by this fix to the screen and
+logfile can be turned on or off as desired.</p>
+<p>If the <em>delete_atoms</em> keyword is used then the particles passing through the mesh
+surface are deleted at the next re-neighboring step.</p>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>Information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a> .</p>
+<p>This fix computes a per-atom vector (the marker) which can be accessed by
+various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>. The per-atom vector
+(i.e., the marker) can be accessed by dumps by using &#8220;f_massflow_ID&#8221;, .
 This fix also computes a global vector of length 6. This vector can be
-accessed via "f_ID", where ID is the fix id. The first vector component
+accessed via &#8220;f_ID&#8221;, where ID is the fix id. The first vector component
 is equal to the total mass which has crossed the mesh surface, the second vector
 component indicates the particle count. The third vector component
 is equal to the total mass which has crossed the mesh surface since the last output
@@ -111,18 +241,79 @@ divived by the time since the last output (i.e., the mass flow rate), the fourth
 component indicates the particle count since the last output divived by the time
 since the last output (i.e., the number rate of particles). The fifth and sixth vector
 components are the deleted mass and the number of deleted particles. This vector
-can also be accessed by various <A HREF = "Section_howto.html#howto_8">output commands</A>.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>Currently, this feature does not support multi-sphere particles.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "compute_nparticles_tracer_region.html">compute nparticles/tracer/region</A>
-</P>
-<P><B>Default:</B>
-</P>
-<P><I>count</I> = multiple, <I>inside_out</I>  =false, <I>delete_atoms</I> = false
-</P>
-</HTML>
+can also be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>none</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="compute_nparticles_tracer_region.html"><em>compute nparticles/tracer/region</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p><em>count</em> = multiple, <em>inside_out</em>  =false, <em>delete_atoms</em> = false</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

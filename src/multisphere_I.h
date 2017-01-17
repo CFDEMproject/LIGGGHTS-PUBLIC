@@ -131,6 +131,22 @@ inline int Multisphere::calc_n_steps(int, int body, double *p_ref, double *norma
 
 /* ---------------------------------------------------------------------- */
 
+inline void Multisphere::recalc_n_steps(double dt_ratio)
+{
+  
+  for(int ibody = 0; ibody < nbody_; ibody++)
+  {
+        if(start_step_(ibody) > update->ntimestep)
+        {
+            
+            start_step_(ibody) = static_cast<int>(update->ntimestep) + static_cast<int>(dt_ratio*(static_cast<double>(start_step_(ibody)) - static_cast<double>(update->ntimestep)));
+            
+        }
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
 inline void Multisphere::release(int iatom,int body,double *v_toInsert,double *omega_toInsert)
 {
     int ibody;

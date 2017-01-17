@@ -90,50 +90,90 @@ enum{NO_REMAP,X_REMAP,V_REMAP};                   // same as fix_deform.cpp
    default is periodic
 ------------------------------------------------------------------------- */
 
-Domain::Domain(LAMMPS *lmp) : Pointers(lmp)
+Domain::Domain(LAMMPS *lmp) :
+    Pointers(lmp),
+    box_exist(0),
+    dimension(3),
+    nonperiodic(0),
+    xperiodic(1),
+    yperiodic(1),
+    zperiodic(1),
+    triclinic(0),
+    tiltsmall(1),
+    xprd(0.0),
+    yprd(0.0),
+    zprd(0.0),
+    xprd_half(0.0),
+    yprd_half(0.0),
+    zprd_half(0.0),
+    minxlo(0.0),
+    minxhi(0.0),
+    minylo(0.0),
+    minyhi(0.0),
+    minzlo(0.0),
+    minzhi(0.0),
+    xy(0.0),
+    xz(0.0),
+    yz(0.0),
+    box_change(0),
+    box_change_size(0),
+    box_change_shape(0),
+    box_change_domain(0),
+    deform_flag(0),
+    deform_vremap(0),
+    deform_groupbit(0),
+    lattice(NULL),
+    nregion(0),
+    maxregion(0),
+    regions(NULL),
+    
+    is_wedge(false)
 {
-  box_exist = 0;
+    periodicity[0] = xperiodic;
+    periodicity[1] = yperiodic;
+    periodicity[2] = zperiodic;
 
-  dimension = 3;
-  nonperiodic = 0;
-  xperiodic = yperiodic = zperiodic = 1;
-  periodicity[0] = xperiodic;
-  periodicity[1] = yperiodic;
-  periodicity[2] = zperiodic;
+    boundary[0][0] = boundary[0][1] = 0;
+    boundary[1][0] = boundary[1][1] = 0;
+    boundary[2][0] = boundary[2][1] = 0;
 
-  boundary[0][0] = boundary[0][1] = 0;
-  boundary[1][0] = boundary[1][1] = 0;
-  boundary[2][0] = boundary[2][1] = 0;
+    prd[0] = prd[1] = prd[2] = 1.0;
+    prd_half[0] = prd_half[1] = prd_half[2] = 0.5;
+    prd_lamda[0] = prd_lamda[1] = prd_lamda[2] = 0.0;
+    prd_half_lamda[0] = prd_half_lamda[1] = prd_half_lamda[2] = 0.0;
 
-  triclinic = 0;
-  tiltsmall = 1;
+    boxlo[0] = boxlo[1] = boxlo[2] = -0.5;
+    boxhi[0] = boxhi[1] = boxhi[2] = 0.5;
+    boxlo_lamda[0] = boxlo_lamda[1] = boxlo_lamda[2] = 0.0;
+    boxhi_lamda[0] = boxhi_lamda[1] = boxhi_lamda[2] = 1.0;
+    boxlo_bound[0] = boxlo_bound[1] = boxlo_bound[2] = -0.5;
+    boxhi_bound[0] = boxhi_bound[1] = boxhi_bound[2] = 0.5;
 
-  boxlo[0] = boxlo[1] = boxlo[2] = -0.5;
-  boxhi[0] = boxhi[1] = boxhi[2] = 0.5;
-  xy = xz = yz = 0.0;
+    corners[0][0] = corners[0][1] = corners[0][2] = 0.0;
+    corners[1][0] = corners[1][1] = corners[1][2] = 0.0;
+    corners[2][0] = corners[2][1] = corners[2][2] = 0.0;
+    corners[3][0] = corners[3][1] = corners[3][2] = 0.0;
+    corners[4][0] = corners[4][1] = corners[4][2] = 0.0;
+    corners[5][0] = corners[5][1] = corners[5][2] = 0.0;
+    corners[6][0] = corners[6][1] = corners[6][2] = 0.0;
+    corners[7][0] = corners[7][1] = corners[7][2] = 0.0;
 
-  h[3] = h[4] = h[5] = 0.0;
-  h_inv[3] = h_inv[4] = h_inv[5] = 0.0;
-  h_rate[0] = h_rate[1] = h_rate[2] =
+    sublo[0] = sublo[1] = sublo[2] = -0.5;
+    subhi[0] = subhi[1] = subhi[2] = 0.5;
+    sublo_lamda[0] = sublo_lamda[1] = sublo_lamda[2] = 0.0;
+    subhi_lamda[0] = subhi_lamda[1] = subhi_lamda[2] = 1.0;
+
+    h[3] = h[4] = h[5] = 0.0;
+    h_inv[3] = h_inv[4] = h_inv[5] = 0.0;
+    h_rate[0] = h_rate[1] = h_rate[2] =
     h_rate[3] = h_rate[4] = h_rate[5] = 0.0;
-  h_ratelo[0] = h_ratelo[1] = h_ratelo[2] = 0.0;
+    h_ratelo[0] = h_ratelo[1] = h_ratelo[2] = 0.0;
 
-  prd_lamda[0] = prd_lamda[1] = prd_lamda[2] = 1.0;
-  prd_half_lamda[0] = prd_half_lamda[1] = prd_half_lamda[2] = 0.5;
-  boxlo_lamda[0] = boxlo_lamda[1] = boxlo_lamda[2] = 0.0;
-  boxhi_lamda[0] = boxhi_lamda[1] = boxhi_lamda[2] = 1.0;
-
-  lattice = NULL;
-  char **args = new char*[2];
-  args[0] = (char *) "none";
-  args[1] = (char *) "1.0";
-  set_lattice(2,args);
-  delete [] args;
-
-  nregion = maxregion = 0;
-  regions = NULL;
-
-  is_wedge = false; 
+    char **args = new char*[2];
+    args[0] = (char *) "none";
+    args[1] = (char *) "1.0";
+    set_lattice(2,args);
+    delete [] args;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1323,16 +1363,33 @@ void Domain::add_region(int narg, char **arg)
 
   // create the Region
 
-  if (strcmp(arg[1],"none") == 0) error->all(FLERR,"Invalid region style");
-
-#define REGION_CLASS
-#define RegionStyle(key,Class) \
-  else if (strcmp(arg[1],#key) == 0) \
-    regions[nregion] = new Class(lmp,narg,arg);
-#include "style_region.h"
-#undef REGION_CLASS
-
-  else error->all(FLERR,"Invalid region style");
+  if(!lmp->wb)
+  {
+    if (strcmp(arg[1],"none") == 0) error->all(FLERR,"Invalid region style");
+    #define REGION_CLASS
+    #define RegionStyle(key,Class) \
+      else if (strcmp(arg[1],#key) == 0) \
+        regions[nregion] = new Class(lmp,narg,arg);
+    #include "style_region.h"
+    #undef REGION_CLASS
+    else error->all(FLERR,"Invalid region style");
+  }
+  
+  else
+  {
+    if (strcmp(arg[1],"none") == 0) error->all(FLERR,"Invalid region style");
+    #define REGION_CLASS
+    #define RegionStyle(key,Class) \
+      else if (strcmp(arg[1],#key) == 0) \
+        regions[nregion] = new Class(lmp,narg,arg);
+    #include "region_block.h"
+    #include "region_cylinder.h"
+    #include "region_intersect.h"
+    #include "region_sphere.h"
+    #include "region_union.h"
+    #undef REGION_CLASS
+    else error->all(FLERR,"Invalid region style");
+  }
 
   // initialize any region variables via init()
   // in case region is used between runs, e.g. to print a variable
@@ -1362,7 +1419,7 @@ void Domain::delete_region(int narg, char **arg)
    return -1 if no such region
 ------------------------------------------------------------------------- */
 
-int Domain::find_region(char *name)
+int Domain::find_region(const char *name)
 {
   for (int iregion = 0; iregion < nregion; iregion++)
     if (strcmp(name,regions[iregion]->id) == 0) return iregion;
@@ -1386,6 +1443,7 @@ void Domain::set_boundary(int narg, char **arg, int flag)
       else if (iside == 1 && strlen(arg[idim]) == 1) c = arg[idim][0];
       else c = arg[idim][1];
 
+      const int old = boundary[idim][iside];
       if (c == 'p') boundary[idim][iside] = 0;
       else if (c == 'f') boundary[idim][iside] = 1;
       else if (c == 's') boundary[idim][iside] = 2;
@@ -1393,6 +1451,33 @@ void Domain::set_boundary(int narg, char **arg, int flag)
       else {
         if (flag == 0) error->all(FLERR,"Illegal boundary command");
         if (flag == 1) error->all(FLERR,"Illegal change_box command");
+      }
+      // if the boundary was a periodic one, but no longer is one now, set all image flags to 0 in that dimension
+      // and only do this in the change_box case
+      if (iside == 1 && old == 0 && boundary[idim][iside] != 0 && flag == 1)
+      {
+        const int nlocal = atom->nlocal;
+        tagint *image = atom->image;
+        for (int i = 0; i < nlocal; i++) {
+            tagint thisdim = 0;
+            if (idim == 0)
+            {
+                thisdim = image[i] & IMGMASK;
+                image[i] = image[i] ^ thisdim | IMGMAX;
+            }
+            else if (idim == 1)
+            {
+                thisdim = (image[i] >> IMGBITS) & IMGMASK;
+                image[i] = (image[i] ^ (thisdim << IMGBITS)) | (IMGMAX << IMGBITS);
+            }
+            else
+            {
+                thisdim = image[i] >> IMG2BITS;
+                image[i] = (image[i] ^ (thisdim << IMG2BITS)) | (IMGMAX << IMG2BITS);
+                if (image[i])
+                    printf(">>> %d %d\n", i, image[i]);
+            }
+        }
       }
     }
 

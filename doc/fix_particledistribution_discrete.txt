@@ -16,7 +16,7 @@ fix ID group-ID particledistribution/discrete seed ntemp t_id t_weight ...  :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 particledistribution/discrete or particledistribution/discrete/massbased or particledistribution/discrete/numberbased = style name of this fix command  :l
-seed = random number generator seed (integer value) :l
+seed = random number generator seed (prime number greater 10000) :l
 ntemp = number of particle templates to be used in this command :l
 zero or more {t_id}/{t_weight} pairs are appended, number of pairs must match ntemp :l
   {t_id} = ID of a fix of type particletemplate/sphere
@@ -25,8 +25,8 @@ zero or more {t_id}/{t_weight} pairs are appended, number of pairs must match nt
 
 [Examples:]
 
-fix pdd1 all particledistribution/discrete 6778  1 pts1 1.0
-fix pdd1 all particledistribution/discrete 1239  2 pts1 0.3 pts2 0.7  :pre
+fix pdd1 all particledistribution/discrete 123457  1 pts1 1.0
+fix pdd1 all particledistribution/discrete 17903  2 pts1 0.3 pts2 0.7  :pre
 
 [Description:]
 

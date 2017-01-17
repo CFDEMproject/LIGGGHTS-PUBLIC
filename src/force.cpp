@@ -91,8 +91,8 @@ Force::Force(LAMMPS *lmp) : Pointers(lmp), registry(lmp)
 
   dielectric = 1.0;
 
-  coarsegraining = 1.0; 
-  error_coarsegraining = true; 
+  coarsegraining_ = 1.0;
+  error_coarsegraining_ = true;
 
   pair = NULL;
   bond = NULL;
@@ -162,6 +162,8 @@ void Force::init()
   if (angle) angle->init();
   if (dihedral) dihedral->init();
   if (improper) improper->init();
+  if(cg_active() && atom->ntypes != int(coarsegrainingTypeBased_.size()))
+    error->warning(FLERR,"Coarse graining factor not specified for all atom types. will use maximum CG for unspecified atom types.\n\n");
 }
 
 /* ----------------------------------------------------------------------
@@ -789,7 +791,7 @@ void Force::bounds(char *str, int nmax, int &nlo, int &nhi, int nmin)
    called by various commands to check validity of their arguments
 ------------------------------------------------------------------------- */
 
-double Force::numeric(const char *file, int line, char *str)
+double Force::numeric(const char *file, const int line, const char *const str)
 {
   int n = strlen(str);
   for (int i = 0; i < n; i++) {
@@ -809,7 +811,7 @@ double Force::numeric(const char *file, int line, char *str)
    called by various commands to check validity of their arguments
 ------------------------------------------------------------------------- */
 
-int Force::inumeric(const char *file, int line, char *str)
+int Force::inumeric(const char *file, const int line, const char *const str)
 {
   int n = strlen(str);
   for (int i = 0; i < n; i++) {

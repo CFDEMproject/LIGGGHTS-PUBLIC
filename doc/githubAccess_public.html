@@ -1,55 +1,237 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">CFDEMproject WWW Site</A> - <A HREF = "CFDEMcoupling_Manual.html#comm">CFDEM Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>githubAccess_public &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
-<HR>
 
-<H3>githubAccess_public 
-</H3>
-<HR>
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>githubAccess_public</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/githubAccess_public.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="githubaccess-public">
+<h1>githubAccess_public<a class="headerlink" href="#githubaccess-public" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This routine describes how to setup a github account and pull repositories of the CFDEMproject.</p>
+<p><strong>Procedure:</strong></p>
+<ul class="simple">
+<li>Basically the following steps have to be performed:
+<em>git clone</em> the desired repository</li>
+<li>update your repositories by <em>git pull</em></li>
+</ul>
+<p><strong>*git clone* the desired repository:</strong></p>
+<p>To clone the public LIGGGHTS(R)-PUBLIC repository, open a terminal and execute:</p>
+<div class="highlight-python"><pre>git clone git@github.com:CFDEMproject/LIGGGHTS-PUBLIC.git</pre>
+</div>
+<p>Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively:</p>
+<div class="highlight-python"><pre>git clone https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git</pre>
+</div>
+<p>To clone the public CFDEMcoupling repository, open a terminal and execute:</p>
+<div class="highlight-python"><pre>git clone git@github.com:CFDEMproject/CFDEMcoupling-PUBLIC.git</pre>
+</div>
+<p>Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively:</p>
+<div class="highlight-python"><pre>git clone https://github.com/CFDEMproject/CFDEMcoupling-PUBLIC.git</pre>
+</div>
+<p><strong>Update your repositories by *git pull*:</strong></p>
+<p>To get the latest version, open a terminal, go to the location of your local installation and type:</p>
+<div class="highlight-python"><pre>git pull</pre>
+</div>
+</div>
+</div>
 
 
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
 
 
+  
 
-<P><B>Description:</B>
-</P>
-<P>This routine describes how to setup a github account and pull repositories of the CFDEMproject.
-</P>
-<P><B>Procedure:</B>
-</P>
-<UL><LI>Basically the following steps have to be performed:
-<I>git clone</I> the desired repository 
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
 
-<LI>update your repositories by <I>git pull</I> 
+  
 
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
 
-</UL>
-<P><B><I>git clone</I> the desired repository:</B>
-</P>
-<P>To clone the public LIGGGHTS(R)-PUBLIC repository, open a terminal and execute:
-</P>
-<PRE>git clone git@github.com:CFDEMproject/LIGGGHTS-PUBLIC.git 
-</PRE>
-<P>Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively:
-</P>
-<PRE>git clone https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git 
-</PRE>
-<P>To clone the public CFDEMcoupling repository, open a terminal and execute:
-</P>
-<PRE>git clone git@github.com:CFDEMproject/CFDEMcoupling-PUBLIC.git 
-</PRE>
-<P>Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively:
-</P>
-<PRE>git clone https://github.com/CFDEMproject/CFDEMcoupling-PUBLIC.git 
-</PRE>
-<P><B>Update your repositories by <I>git pull</I>:</B>
-</P>
-<P>To get the latest version, open a terminal, go to the location of your local installation and type:
-</P>
-<PRE>git pull 
-</PRE>
-</HTML>
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

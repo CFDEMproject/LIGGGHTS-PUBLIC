@@ -1,36 +1,175 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>neigh_modify command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>neigh_modify command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>neigh_modify keyword values ... 
-</PRE>
-<UL><LI>one or more keyword/value pairs may be listed 
-
-<PRE>keyword = <I>delay</I> or <I>every</I> or <I>check</I> or <I>once</I> or <I>include</I> or <I>exclude</I> or <I>page</I> or <I>one</I> or <I>binsize</I>
-  <I>delay</I> value = N
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>neigh_modify command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/neigh_modify.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="neigh-modify-command">
+<span id="index-0"></span><h1>neigh_modify command<a class="headerlink" href="#neigh-modify-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="neigh-settings-command">
+<h1>neigh_settings command<a class="headerlink" href="#neigh-settings-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>neigh_modify keyword values ...</pre>
+</div>
+<ul class="simple">
+<li>one or more keyword/value pairs may be listed</li>
+</ul>
+<pre class="literal-block">
+keyword = <em>delay</em> or <em>every</em> or <em>check</em> or <em>once</em> or <em>include</em> or <em>exclude</em> or <em>page</em> or <em>one</em> or <em>binsize</em>
+  <em>delay</em> value = N
     N = delay building until this many steps since last build
-  <I>every</I> value = M
+  <em>every</em> value = M
     M = build neighbor list every this many steps
-  <I>check</I> value = <I>yes</I> or <I>no</I>
-    <I>yes</I> = only build if some atom has moved half the skin distance or more
-    <I>no</I> = always build on 1st step that <I>every</I> and <I>delay</I> are satisfied
-  <I>once</I>
-    <I>yes</I> = only build neighbor list once at start of run and never rebuild
-    <I>no</I> = rebuild neighbor list according to other settings
-  <I>include</I> value = group-ID
+  <em>check</em> value = <em>yes</em> or <em>no</em>
+    <em>yes</em> = only build if some atom has moved half the skin distance or more
+    <em>no</em> = always build on 1st step that <em>every</em> and <em>delay</em> are satisfied
+  <em>once</em>
+    <em>yes</em> = only build neighbor list once at start of run and never rebuild
+    <em>no</em> = rebuild neighbor list according to other settings
+  <em>include</em> value = group-ID
     group-ID = only build pair neighbor lists for atoms in this group
-  <I>exclude</I> values:
+  <em>exclude</em> values:
     type M N
       M,N = exclude if one atom in pair is type M, other is type N
     group group1-ID group2-ID
@@ -39,153 +178,210 @@
       groupname = exclude if both atoms are in the same molecule and in the same group
     none
       delete all exclude settings
-  <I>page</I> value = N
+  <em>page</em> value = N
     N = number of pairs stored in a single neighbor page
-  <I>one</I> value = N
+  <em>one</em> value = N
     N = max number of neighbors of one atom
-  <I>contact_distance_factor</I> value = N
-    N = contact distance factor used to extend the range of granular neighbor lists (must be > 1).
-  <I>binsize</I> value = size
-    size = bin size for neighbor list construction (distance units) 
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>neigh_modify every 2 delay 10 check yes page 100000
+  <em>contact_distance_factor</em> value = N
+    N = contact distance factor used to extend the range of granular neighbor lists (must be &gt; 1).
+  <em>binsize</em> value = size
+    size = bin size for neighbor list construction (distance units)
+</pre>
+<div class="highlight-python"><pre>neigh_settings binsize_value</pre>
+</div>
+<ul class="simple">
+<li>binsize_value = bin size for neighbor list constrution (distance units)</li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>neigh_modify every 2 delay 10 check yes page 100000
 neigh_modify exclude type 2 3
 neigh_modify exclude group frozen frozen check no
 neigh_modify exclude group residue1 chain3
 neigh_modify exclude molecule rigid
-neigh_modify delay 0 contact_distance_factor 1.5 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>This command sets parameters that affect the building and use of
-pairwise neighbor lists.
-</P>
-<P>The <I>every</I>, <I>delay</I>, <I>check</I>, and <I>once</I> options affect how often
-lists are built as a simulation runs.  The <I>delay</I> setting means never
+neigh_modify delay 0 contact_distance_factor 1.5
+neigh_settings
+neigh_settings 0.1</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>These commands set parameters that affect the building and use of
+pairwise neighbor lists. The &#8220;neigh_settings&#8221; command is a wrapper of
+&#8220;neigh_modify&#8221; that sets <em>delay*=0. Its only, optional, parameter
+will be interpreted as the *binsize</em> value (see below).</p>
+<p>The <em>every</em>, <em>delay</em>, <em>check</em>, and <em>once</em> options affect how often
+lists are built as a simulation runs.  The <em>delay</em> setting means never
 build a new list until at least N steps after the previous build.  The
-<I>every</I> setting means build the list every M steps (after the delay
-has passed).  If the <I>check</I> setting is <I>no</I>, the list is built on the
-1st step that satisfies the <I>delay</I> and <I>every</I> settings.  If the
-<I>check</I> setting is <I>yes</I>, then the list is only built on a particular
+<em>every</em> setting means build the list every M steps (after the delay
+has passed).  If the <em>check</em> setting is <em>no</em>, the list is built on the
+1st step that satisfies the <em>delay</em> and <em>every</em> settings.  If the
+<em>check</em> setting is <em>yes</em>, then the list is only built on a particular
 step if some atom has moved more than half the skin distance
-(specified in the <A HREF = "neighbor.html">neighbor</A> command) since the last
-build. If the <I>once</I> setting is yes, then the neighbor list is only
+(specified in the <a class="reference internal" href="neighbor.html"><em>neighbor</em></a> command) since the last
+build. If the <em>once</em> setting is yes, then the neighbor list is only
 built once at the beginning of each run, and never rebuilt.  This
 should only be done if you are certain atoms will not move far enough
 that the list should be rebuilt.  E.g. running a simulation of a cold
 crystal.  Note that it is not that expensive to check if neighbor
-lists should be rebuilt.
-</P>
-<P>When the rRESPA integrator is used (see the <A HREF = "run_style.html">run_style</A>
-command), the <I>every</I> and <I>delay</I> parameters refer to the longest
-(outermost) timestep.
-</P>
-<P>The <I>contact_distance_factor</I> setting can be used to increase the range
-of granular neighbor lists. When <I>contact_distance_factor</I> > 1.0,
-instead of the standard criterion ri+rj+skin < distance, LIGGGHTS(R)-PUBLIC is
-checking for <I>contact_distance_factor</I> *(ri+rj)+skin < distance to
-decided if a pair of granular particles goes into a neighbor list.
-</P>
-<P>The <I>include</I> option limits the building of pairwise neighbor lists to
+lists should be rebuilt.</p>
+<p>When the rRESPA integrator is used (see the <a class="reference internal" href="run_style.html"><em>run_style</em></a>
+command), the <em>every</em> and <em>delay</em> parameters refer to the longest
+(outermost) timestep.</p>
+<p>The <em>contact_distance_factor</em> setting can be used to increase the range
+of granular neighbor lists. When <em>contact_distance_factor</em> &gt; 1.0,
+instead of the standard criterion ri+rj+skin &lt; distance, LIGGGHTS(R)-PUBLIC is
+checking for <em>contact_distance_factor</em> <a href="#id1"><span class="problematic" id="id2">*</span></a>(ri+rj)+skin &lt; distance to
+decided if a pair of granular particles goes into a neighbor list.</p>
+<p>The <em>include</em> option limits the building of pairwise neighbor lists to
 atoms in the specified group.  This can be useful for models where a
 large portion of the simulation is particles that do not interact with
 other particles or with each other via pairwise interactions.  The
 group specified with this option must also be specified via the
-<A HREF = "atom_modify.html">atom_modify first</A> command.
-</P>
-<P>The <I>exclude</I> option turns off pairwise interactions between certain
+<a class="reference internal" href="atom_modify.html"><em>atom_modify first</em></a> command.</p>
+<p>The <em>exclude</em> option turns off pairwise interactions between certain
 pairs of atoms, by not including them in the neighbor list.  These are
-sample scenarios where this is useful:
-</P>
-<UL><LI>In crack simulations, pairwise interactions can be shut off between 2
-slabs of atoms to effectively create a crack. 
-
-<LI>When a large collection of atoms is treated as frozen, interactions
+sample scenarios where this is useful:</p>
+<ul class="simple">
+<li>In crack simulations, pairwise interactions can be shut off between 2
+slabs of atoms to effectively create a crack.</li>
+<li>When a large collection of atoms is treated as frozen, interactions
 between those atoms can be turned off to save needless
-computation. E.g. Using the <A HREF = "fix_setforce.html">fix setforce</A> command
-to freeze a wall or portion of a bio-molecule. 
-
-<LI>When one or more rigid bodies are specified, interactions within each
-body can be turned off to save needless computation.  See the <A HREF = "fix_rigid.html">fix
-rigid</A> command for more details. 
-</UL>
-<P>The <I>exclude type</I> option turns off the pairwise interaction if one
+computation. E.g. Using the <a class="reference internal" href="fix_setforce.html"><em>fix setforce</em></a> command
+to freeze a wall or portion of a bio-molecule.</li>
+<li>When one or more rigid bodies are specified, interactions within each
+body can be turned off to save needless computation.  See the <a class="reference internal" href="fix_rigid.html"><em>fix rigid</em></a> command for more details.</li>
+</ul>
+<p>The <em>exclude type</em> option turns off the pairwise interaction if one
 atom is of type M and the other of type N.  M can equal N.  The
-<I>exclude group</I> option turns off the interaction if one atom is in the
+<em>exclude group</em> option turns off the interaction if one atom is in the
 first group and the other is the second.  Group1-ID can equal
-group2-ID.  The <I>exclude molecule</I> option turns off the interaction if
+group2-ID.  The <em>exclude molecule</em> option turns off the interaction if
 both atoms are in the specified group and in the same molecule, as
-determined by their molecule ID.
-</P>
-<P>Each of the exclude options can be specified multiple times.  The
-<I>exclude type</I> option is the most efficient option to use; it requires
+determined by their molecule ID.</p>
+<p>Each of the exclude options can be specified multiple times.  The
+<em>exclude type</em> option is the most efficient option to use; it requires
 only a single check, no matter how many times it has been specified.
 The other exclude options are more expensive if specified multiple
-times; they require one check for each time they have been specified.
-</P>
-<P>Note that the exclude options only affect pairwise interactions; see
-the <A HREF = "delete_bonds.html">delete_bonds</A> command for information on
-turning off bond interactions.
-</P>
-<P>The <I>page</I> and <I>one</I> options affect how memory is allocated for the
+times; they require one check for each time they have been specified.</p>
+<p>Note that the exclude options only affect pairwise interactions; see
+the <a class="reference internal" href="delete_bonds.html"><em>delete_bonds</em></a> command for information on
+turning off bond interactions.</p>
+<p>The <em>page</em> and <em>one</em> options affect how memory is allocated for the
 neighbor lists.  For most simulations the default settings for these
 options are fine, but if a very large problem is being run or a very
 long cutoff is being used, these parameters can be tuned.  The indices
-of neighboring atoms are stored in "pages", which are allocated one
+of neighboring atoms are stored in &#8220;pages&#8221;, which are allocated one
 after another as they fill up.  The size of each page is set by the
-<I>page</I> value.  A new page is allocated when the next atom's neighbors
+<em>page</em> value.  A new page is allocated when the next atom&#8217;s neighbors
 could potentially overflow the list.  This threshold is set by the
-<I>one</I> value which tells LIGGGHTS(R)-PUBLIC the maximum number of neighbor's one
-atom can have.
-</P>
-<P>IMPORTANT NOTE: LIGGGHTS(R)-PUBLIC can crash without an error message if the
-number of neighbors for a single particle is larger than the <I>page</I>
-setting, which means it is much, much larger than the <I>one</I> setting.
-This is because LIGGGHTS(R)-PUBLIC doesn't error check these limits for every
-pairwise interaction (too costly), but only after all the particle's
+<em>one</em> value which tells LIGGGHTS(R)-PUBLIC the maximum number of neighbor&#8217;s one
+atom can have.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">LIGGGHTS(R)-PUBLIC can crash without an error message if the
+number of neighbors for a single particle is larger than the <em>page</em>
+setting, which means it is much, much larger than the <em>one</em> setting.
+This is because LIGGGHTS(R)-PUBLIC doesn&#8217;t error check these limits for every
+pairwise interaction (too costly), but only after all the particle&#8217;s
 neighbors have been found.  This problem usually means something is
-very wrong with the way you've setup your problem (particle spacing,
+very wrong with the way you&#8217;ve setup your problem (particle spacing,
 cutoff length, neighbor skin distance, etc).  If you really expect
-that many neighbors per particle, then boost the <I>one</I> and <I>page</I>
-settings accordingly.
-</P>
-<P>The <I>binsize</I> option allows you to specify what size of bins will be
+that many neighbors per particle, then boost the <em>one</em> and <em>page</em>
+settings accordingly.</p>
+</div>
+<p>The <em>binsize</em> option allows you to specify what size of bins will be
 used in neighbor list construction to sort and find neighboring atoms.
-By default, for <A HREF = "neighbor.html">neighbor style bin</A>, LIGGGHTS(R)-PUBLIC uses bins
-that are 1/2 the size of the maximum pair cutoff.  For <A HREF = "neighbor.html">neighbor style
-multi</A>, the bins are 1/2 the size of the minimum pair
+By default, for <a class="reference internal" href="neighbor.html"><em>neighbor style bin</em></a>, LIGGGHTS(R)-PUBLIC uses bins
+that are 1/2 the size of the maximum pair cutoff.  For <a class="reference internal" href="neighbor.html"><em>neighbor style multi</em></a>, the bins are 1/2 the size of the minimum pair
 cutoff.  Typically these are good values values for minimizing the
 time for neighbor list construction.  This setting overrides the
 default.  If you make it too big, there is little overhead due to
 looping over bins, but more atoms are checked.  If you make it too
 small, the optimal number of atoms is checked, but bin overhead goes
 up.  If you set the binsize to 0.0, LIGGGHTS(R)-PUBLIC will use the default
-binsize of 1/2 the cutoff.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>If the "delay" setting is non-zero, then it must be a multiple of the
-"every" setting.
-</P>
-<P>The exclude molecule option can only be used with atom styles that
-define molecule IDs.
-</P>
-<P>The value of the <I>page</I> setting must be at least 10x larger than the
-<I>one</I> setting.  This insures neighbor pages are not mostly empty
-space.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "neighbor.html">neighbor</A>, <A HREF = "delete_bonds.html">delete_bonds</A>
-</P>
-<P><B>Default:</B>
-</P>
-<P>The option defaults are delay = 10, every = 1, check = yes, once = no,
+binsize of 1/2 the cutoff.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>If the &#8220;delay&#8221; setting is non-zero, then it must be a multiple of the
+&#8220;every&#8221; setting.</p>
+<p>The exclude molecule option can only be used with atom styles that
+define molecule IDs.</p>
+<p>The value of the <em>page</em> setting must be at least 10x larger than the
+<em>one</em> setting.  This insures neighbor pages are not mostly empty
+space.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="neighbor.html"><em>neighbor</em></a>, <a class="reference internal" href="delete_bonds.html"><em>delete_bonds</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p>The option defaults are delay = 10, every = 1, check = yes, once = no,
 include = all, exclude = none, page = 100000, one =
-2000, and binsize = 0.0.
-</P>
-</HTML>
+2000, and binsize = 0.0.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

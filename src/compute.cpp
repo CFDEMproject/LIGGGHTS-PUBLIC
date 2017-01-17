@@ -138,7 +138,7 @@ Compute::~Compute()
 void Compute::modify_params(int narg, char **arg)
 {
   if (narg == 0) error->all(FLERR,"Illegal compute_modify command");
-  if (strcmp(id, "thermo_temp") == 0) error->warning(FLERR,"Changing thermo_temp compute object. This object is deprecated and will be removed in the future.");
+  if (!lmp->wb && strcmp(id, "thermo_temp") == 0) error->warning(FLERR,"Changing thermo_temp compute object. This object is deprecated and will be removed in the future.");
 
   int iarg = 0;
   while (iarg < narg) {

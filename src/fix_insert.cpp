@@ -64,7 +64,6 @@
 
 #include "probability_distribution.h"
 #include "region_neighbor_list.h"
-#include "nonspherical_flags.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -155,10 +154,17 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       nflowrate = atof(arg[iarg+1]);
       iarg += 2;
       hasargs = true;
-    } else if (strcmp(arg[iarg],"insert_every") == 0 || strcmp(arg[iarg],"every") == 0) {
+    } else if (strcmp(arg[iarg],"insert_every_time") == 0 || strcmp(arg[iarg],"insert_every") == 0 || strcmp(arg[iarg],"every") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       if(strcmp(arg[iarg+1],"once") == 0) insert_every = 0;
-      else insert_every = atoi(arg[iarg+1]);
+      else if(strcmp(arg[iarg],"insert_every_time") == 0)
+      {
+          if(!update->timestep_set)
+            error->fix_error(FLERR,this,"need so set 'timestep' before");
+          insert_every = static_cast<int>(atof(arg[iarg+1])/update->dt);
+      }
+      else
+          insert_every = atoi(arg[iarg+1]);
       if(insert_every < 0) error->fix_error(FLERR,this,"insert_every must be >= 0");
       iarg += 2;
       hasargs = true;
@@ -562,7 +568,10 @@ void FixInsert::init()
 
     // in case of new fix insert in a restarted simulation, have to add current time-step
     if(next_reneighbor > 0 && next_reneighbor < ntimestep)
+    {
+        
         error->fix_error(FLERR,this,"'start' step can not be before current step");
+    }
 
     if(property_name)
     {
@@ -689,6 +698,9 @@ void FixInsert::pre_exchange()
       // schedule next insertion
       if (insert_every && (!ninsert_exists || ninserted < ninsert))
         next_reneighbor += insert_every;
+      
+      else if(0 == insert_every)
+        next_reneighbor = -1;
 
       return;
   }
@@ -928,7 +940,8 @@ int FixInsert::load_xnear(int ninsert_this_local)
   {
     for (int i = 0; i < nall; ++i)
     {
-      if (is_nearby(i))
+      
+      if (is_nearby(i) && neighList.isInBoundingBox(x[i]) )
       {
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
         if(atom->superquadric_flag and check_obb_flag)

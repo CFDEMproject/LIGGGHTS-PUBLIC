@@ -50,6 +50,8 @@
 ------------------------------------------------------------------------- */
 
 #include <string.h>
+#include <stdio.h>
+#include <time.h>
 #include "verlet.h"
 #include "neighbor.h"
 #include "domain.h"
@@ -130,7 +132,11 @@ void Verlet::init()
 
 void Verlet::setup()
 {
-  if (comm->me == 0 && screen) fprintf(screen,"Setting up run ...\n");
+  time_t curtime;
+  time(&curtime);
+
+  if (comm->me == 0 && screen) fprintf(screen,"Setting up run at %s\n",ctime(&curtime));
+  if (comm->me == 0 && logfile) fprintf(logfile,"Setting up run at %s\n",ctime(&curtime));
 
   update->setupflag = 1;
 

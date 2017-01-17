@@ -61,8 +61,8 @@ FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
   couple_this_step_(false),
   pascal_setup_(false),
   prePostRun_(false),
-  pasc_(0),
-  time_(0.)
+  time_(0.),
+  pasc_(0)
 {
 
   iarg_ = 3;
@@ -267,8 +267,9 @@ int* FixParScaleCouple::get_liggghts_map(int &length)
 
         for(int iGlobal=0; iGlobal < length; iGlobal++)
         {
-            printf("[%d/%d]:original_map[%d]: %d, _ext_map[%d]: %d, particle r: %g\n",
-                    comm->me, comm->nprocs, iGlobal, atom->get_map_array()[iGlobal+1], //offset by one in LIGGGHTS
+            printf("[%d/%d]:original_map[%d]: %d, map_copy[%d]: %d, particle r: %g\n",
+                    comm->me, comm->nprocs, 
+                    iGlobal, atom->get_map_array()[iGlobal+1], //offset by one in LIGGGHTS
                     iGlobal, map_copy[iGlobal],
                     atom->radius[map_copy[iGlobal]]);
         }

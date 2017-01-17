@@ -49,6 +49,7 @@
 #include <mpi.h>
 #include <stdio.h>
 #include "pointers.h"
+#include "sort_buffer.h"
 
 namespace LAMMPS_NS {
 
@@ -102,15 +103,11 @@ class Dump : protected Pointers {
 
   int header_flag;           // 0 = item, 2 = xyz
   int flush_flag;            // 0 if no flush, 1 if flush every dump
-  int sort_flag;             // 1 if sorted output
   int append_flag;           // 1 if open file in append mode, 0 if not
   int buffer_allow;          // 1 if style allows for buffer_flag, 0 if not
   int buffer_flag;           // 1 if buffer output as one big string, 0 if not
   int padflag;               // timestep padding in filename
   int singlefile_opened;     // 1 = one big file, already opened, else 0
-  int sortcol;               // 0 to sort on ID, 1-N on columns
-  int sortcolm1;             // sortcol - 1
-  int sortorder;             // ASCEND or DESCEND
 
   char boundstr[9];          // encoding of boundary flags
   char *format_default;      // default format string
@@ -127,10 +124,6 @@ class Dump : protected Pointers {
   double boxxy,boxxz,boxyz;
 
   bigint ntotal;             // total # of per-atom lines in snapshot
-  int reorderflag;           // 1 if OK to reorder instead of sort
-  int ntotal_reorder;        // # of atoms that must be in snapshot
-  int nme_reorder;           // # of atoms I must own in snapshot
-  int idlo;                  // lowest ID I own when reordering
 
   int maxbuf;                // size of buf
   double *buf;               // memory for atom quantities
@@ -138,14 +131,7 @@ class Dump : protected Pointers {
   int maxsbuf;               // size of sbuf
   char *sbuf;                // memory for atom quantities in string format
 
-  int maxids;                // size of ids
-  int maxsort;               // size of bufsort, idsort, index
-  int maxproc;               // size of proclist
-  int *ids;                  // list of atom IDs, if sorting on IDs
-  double *bufsort;
-  int *idsort,*index,*proclist;
-
-  class Irregular *irregular;
+  SortBuffer *sortBuffer;   // class used for sorting buffers
 
   virtual void init_style() = 0;
   virtual void openfile();
@@ -155,11 +141,6 @@ class Dump : protected Pointers {
   virtual void pack(int *) = 0;
   virtual int convert_string(int, double *) {return 0;}
   virtual void write_data(int, double *) = 0;
-
-  void sort();
-  static int idcompare(const void *, const void *);
-  static int bufcompare(const void *, const void *);
-  static int bufcompare_reverse(const void *, const void *);
 };
 
 }

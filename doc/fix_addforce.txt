@@ -136,6 +136,16 @@ the system (the quantity being minimized), you MUST enable the
 
 [Restrictions:] none
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command might lead to
+different dynamics or system state and thus to 
+inconsistancies.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
+
 [Related commands:]
 
 "fix setforce"_fix_setforce.html, "fix aveforce"_fix_aveforce.html

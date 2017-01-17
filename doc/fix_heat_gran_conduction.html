@@ -1,151 +1,331 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix heat/gran command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix heat/gran command 
-</H3>
-<H3>fix heat/gran/conduction command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix ID group-ID heat/gran initial_temperature T0 keyword values 
-</PRE>
-<PRE>fix ID group-ID heat/gran/conduction initial_temperature T0 keyword values 
-</PRE>
-<LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>heat/gran/conduction or fix heat/gran = style name of this fix command 
-
-<LI>initial_temperature = obligatory keyword 
-
-<LI>T0 = initial (default) temperature for the particles 
-
-<LI>zero or more keyword/value pairs may be appended 
-
-<LI>keyword = <I>contact_area</I> or <I>area_correction</I> 
-
-<PRE>  <I>contact_area</I> values = <I>overlap</I> or <I>constant areavalue</I> or <I>projection</I>
-  <I>area_correction</I> values = <I>yes</I> or <I>no</I> 
-</PRE>
-<P><B>Examples:</B>
-</P>
-<PRE>fix 3 hg heat/gran/conduction initial_temperature 273.15 
-</PRE>
-<P><B>LIGGGHTS(R)-PUBLIC vs. LIGGGHTS(R)-PUBLIC info:</B>
-</P>
-<P>This command is not available in LIGGGHTS(R)-PUBLIC.
-</P>
-<P><B>Description:</B>
-</P>
-<P>Calculates heat conduction between particles in contact and temperature 
-update (see <A HREF = "#Chaudhuri">(Chaudhuri)</A>) according to
-</P>
-<CENTER><IMG SRC = "Eqs/heat_gran.png">
-</CENTER>
-<P>It is assumed that the temperature within the particles is uniform.
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix heat/gran command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_heat_gran_conduction.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-heat-gran-command">
+<span id="index-0"></span><h1>fix heat/gran command<a class="headerlink" href="#fix-heat-gran-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="fix-heat-gran-conduction-command">
+<h1>fix heat/gran/conduction command<a class="headerlink" href="#fix-heat-gran-conduction-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ID group-ID heat/gran initial_temperature T0 keyword values</pre>
+</div>
+<div class="highlight-python"><pre>fix ID group-ID heat/gran/conduction initial_temperature T0 keyword values</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>heat/gran/conduction or fix heat/gran = style name of this fix command</li>
+<li>initial_temperature = obligatory keyword</li>
+<li>T0 = initial (default) temperature for the particles</li>
+<li>zero or more keyword/value pairs may be appended</li>
+<li>keyword = <em>contact_area</em> or <em>area_correction</em></li>
+</ul>
+<pre class="literal-block">
+<em>contact_area</em> values = <em>overlap</em> or <em>constant areavalue</em> or <em>projection</em>
+<em>area_correction</em> values = <em>yes</em> or <em>no</em>
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix 3 hg heat/gran/conduction initial_temperature 273.15</pre>
+</div>
+<p><strong>LIGGGHTS(R)-PUBLIC vs. LIGGGHTS(R)-PUBLIC info:</strong></p>
+<p>This command is not available in LIGGGHTS(R)-PUBLIC.</p>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Calculates heat conduction between particles in contact and temperature
+update (see <a class="reference internal" href="#chaudhuri"><em>(Chaudhuri)</em></a>) according to</p>
+<img alt="_images/heat_gran.png" class="align-center" src="_images/heat_gran.png" />
+<p>It is assumed that the temperature within the particles is uniform.
 To make particles adiabatic (so they do not change the temperature),
 do not include them in the fix group. However, heat transfer is calculated
 between particles in the group and particles not in the group (but
 temperature update is not performed for particles not in the group).
 Thermal conductivity and specific thermal capacity must be defined for
 each atom type used in the simulation by means of
-<A HREF = "fix_property.html">fix property/global</A> commands:
-</P>
-<PRE>fix id all property/global thermalConductivity peratomtype value_1 value_2 ...
-(value_i=value for thermal conductivity of atom type i) 
-</PRE>
-<PRE>fix id all property/global thermalCapacity peratomtype value_1 value_2 ...
-(value_i=value for thermal capacity of atom type i) 
-</PRE>
-<P>To set the temperature for a group of particles, you can use the set command
-with keyword <I>property/atom</I> and values <I>Temp T</I>. <I>T</I> is the
+<a class="reference internal" href="fix_property.html"><em>fix property/global</em></a> commands:</p>
+<div class="highlight-python"><pre>fix id all property/global thermalConductivity peratomtype value_1 value_2 ...
+(value_i=value for thermal conductivity of atom type i)</pre>
+</div>
+<div class="highlight-python"><pre>fix id all property/global thermalCapacity peratomtype value_1 value_2 ...
+(value_i=value for thermal capacity of atom type i)</pre>
+</div>
+<p>To set the temperature for a group of particles, you can use the set command
+with keyword <em>property/atom</em> and values <em>Temp T</em>. <em>T</em> is the
 temperature value you want the particles to have. To set heat sources
 (or sinks) for a group of particles, you can also use the set command
-with the set keyword: <I>property/atom</I> and the set values: <I>heatSource h</I>
-where <I>h</I> is the heat source value you want the particles to have (in Energy/time
-units). A negative value means it is a heat sink. Examples would be:
-</P>
-<PRE>set region halfbed property/peratom Temp 800.
-set region srcreg property/peratom heatSource 0.5 
-</PRE>
-<HR>
-
-<P>Contact area calculation:
-</P>
-<P>Using keyword <I>contact_area</I>, you can choose from 3 modes of calulating
-the contact area for particle-particle heat transfer: If <I>overlap</I> is used,
+with the set keyword: <em>property/atom</em> and the set values: <em>heatSource h</em>
+where <em>h</em> is the heat source value you want the particles to have (in Energy/time
+units). A negative value means it is a heat sink. Examples would be:</p>
+<div class="highlight-python"><pre>set region halfbed property/peratom Temp 800.
+set region srcreg property/peratom heatSource 0.5</pre>
+</div>
+<hr class="docutils" />
+<p>Contact area calculation:</p>
+<p>Using keyword <em>contact_area</em>, you can choose from 3 modes of calulating
+the contact area for particle-particle heat transfer: If <em>overlap</em> is used,
 the contact area is calculated from the area of the sphere-sphere intersection
-If <I>constant</I> is used, a constant user-defined overlap area is assumed.
-If <I>projection</I> is used, the overlap area is assumed to be equal to rmin*rmin*Pi,
-where rmin is the radius of the smaller of the two particles in contact.
-</P>
-<P>Area correction:
-</P>
-<P>For <I>contact_area</I>  = overlap, an area correction can additionally
-be performed using keyword <I>area_correction</I> to account for the fact that
-the Young's modulus might have been decreased in order to speed-up the
+If <em>constant</em> is used, a constant user-defined overlap area is assumed.
+If <em>projection</em> is used, the overlap area is assumed to be equal to rmin*rmin*Pi,
+where rmin is the radius of the smaller of the two particles in contact.</p>
+<p>Area correction:</p>
+<p>For <em>contact_area</em>  = overlap, an area correction can additionally
+be performed using keyword <em>area_correction</em> to account for the fact that
+the Young&#8217;s modulus might have been decreased in order to speed-up the
 simulation, thus artificially increasing the overlap. In this case, you have
-to specify the original Young's modulus of each material by means of a
-<A HREF = "fix_property.html">fix property/global</A> command:
-</P>
-<PRE>fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
-(value_i=value for original Young's modulus of atom type i) 
-</PRE>
-<P>This area correction is performed by scaling the contact area with
+to specify the original Young&#8217;s modulus of each material by means of a
+<a class="reference internal" href="fix_property.html"><em>fix property/global</em></a> command:</p>
+<div class="highlight-python"><pre>fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
+(value_i=value for original Young's modulus of atom type i)</pre>
+</div>
+<p>This area correction is performed by scaling the contact area with
 (Y*/Y*,orig)^a, where Y* and Y*,orig are calculated as defined in
-<A HREF = "pair_gran.html">pair_style gran</A> .
+<a class="reference internal" href="pair_gran.html"><em>pair_style gran</em></a> .
 The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz
-interaction.
-</P>
-<P><B>Output info:</B>
-</P>
-<P>You can visualize the heat sources by accessing f_heatSource[0], and the
+interaction.</p>
+<p><strong>Coarse-graining information:</strong></p>
+<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+combination with this command should lead to
+statistically equivalent dynamics and system state.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+may not be available in LIGGGHTS(R)-PUBLIC.</p>
+</div>
+<p><strong>Output info:</strong></p>
+<p>You can visualize the heat sources by accessing f_heatSource[0], and the
 heatFluxes by f_heatFlux[0] . With f_directionalHeatFlux[0], f_directionalHeatFlux[1]
 and f_directionalHeatFlux[2] you can access the conductive heat fluxes in x,y,z directions.
 The conductive heat fluxes are calculated per-contact and
 half the value is stored in each atom participating in the contact.
 With f_Temp[0] you can access the per-particle
 temperature. You can also access the total thermal energy of the fix group
-(useful for the thermo command) with f_id .
-</P>
-<P><B>Restart, fix_modify, run start/stop, minimize info:</B>
-</P>
-<P>The particle temperature and heat source is written is written to
-<A HREF = "restart.html">binary restart files</A> so simulations can continue properly.
-None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix.
-</P>
-<P>This fix computes a scalar which can be accessed by various <A HREF = "Section_howto.html#4_15">output
-commands</A>.  This scalar is the total thermal energy
-of the fix group
-</P>
-<P>No parameter of this fix can be used with the <I>start/stop</I> keywords of
-the <A HREF = "run.html">run</A> command.  This fix is not invoked during <A HREF = "minimize.html">energy
-minimization</A>.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>none
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "compute_temp.html">compute temp</A>, <A HREF = "compute_temp_region.html">compute
-temp/region</A>
-</P>
-<P><B>Default:</B> 
-</P>
-<P><I>contact_area</I> = overlap, <I>area_correction</I> = no
-</P>
-<P><B>Literature:</B> 
-</P>
-<A NAME = "Chaudhuri"></A>
+(useful for the thermo command) with f_id .</p>
+<p><strong>Restart, fix_modify, run start/stop, minimize info:</strong></p>
+<p>The particle temperature and heat source is written is written to
+<a class="reference internal" href="restart.html"><em>binary restart files</em></a> so simulations can continue properly.
+None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix.</p>
+<p>This fix computes a scalar which can be accessed by various <em class="xref std std-ref">output commands</em>.  This scalar is the total thermal energy
+of the fix group</p>
+<p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>none</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp</span></tt>, <tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/region</span></tt></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p><em>contact_area</em> = overlap, <em>area_correction</em> = no</p>
+<p><strong>Literature:</strong></p>
+<p id="chaudhuri"><strong>(Chaudhuri)</strong> Chaudhuri et al, Chemical Engineering Science, 61, p 6348 (2006).</p>
+</div>
+</div>
 
-<P><B>(Chaudhuri)</B> Chaudhuri et al, Chemical Engineering Science, 61, p 6348 (2006).
-</P>
-</HTML>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

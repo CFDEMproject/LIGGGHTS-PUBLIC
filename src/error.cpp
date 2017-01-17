@@ -52,6 +52,7 @@
 #include <mpi.h>
 #include <stdlib.h>
 #include "error.h"
+#include "error_special.h"
 #include "universe.h"
 #include "output.h"
 #include "fix.h" 
@@ -63,7 +64,18 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-Error::Error(LAMMPS *lmp) : Pointers(lmp) {}
+Error::Error(LAMMPS *lmp) :
+  Pointers(lmp),
+  specialMessages_(*new SpecialMessages(lmp))
+{
+}
+
+/* ---------------------------------------------------------------------- */
+
+Error::~Error()
+{
+    delete &specialMessages_;
+}
 
 /* ----------------------------------------------------------------------
    called by all procs in universe
@@ -76,10 +88,20 @@ void Error::universe_all(const char *file, int line, const char *str)
   MPI_Barrier(universe->uworld);
 
   if (universe->me == 0) {
+
     if (universe->uscreen) fprintf(universe->uscreen,
                                    "ERROR: %s (%s:%d)\n",str,file,line);
     if (universe->ulogfile) fprintf(universe->ulogfile,
                                     "ERROR: %s (%s:%d)\n",str,file,line);
+
+    const char * special_msg = specialMessages_.generate_message();
+    if(special_msg)
+    {
+        if (universe->uscreen) fprintf(universe->uscreen,
+                                       "%s (%s:%d)\n",special_msg,file,line);
+        if (universe->ulogfile) fprintf(universe->ulogfile,
+                                        "%s (%s:%d)\n",special_msg,file,line);
+    }
   }
 
   if (output) delete output;
@@ -103,6 +125,14 @@ void Error::universe_one(const char *file, int line, const char *str)
   if (universe->uscreen)
     fprintf(universe->uscreen,"ERROR on proc %d: %s (%s:%d)\n",
             universe->me,str,file,line);
+
+  const char * special_msg = specialMessages_.generate_message();
+  if(special_msg)
+  {
+      if (universe->uscreen) fprintf(universe->uscreen,
+                                     "%s (%s:%d)\n",special_msg,file,line);
+  }
+
   MPI_Abort(universe->uworld,1);
 }
 
@@ -135,6 +165,13 @@ void Error::all(const char *file, int line, const char *str)
   if (me == 0) {
     if (screen) fprintf(screen,"ERROR: %s (%s:%d)\n",str,file,line);
     if (logfile) fprintf(logfile,"ERROR: %s (%s:%d)\n",str,file,line);
+
+    const char * special_msg = specialMessages_.generate_message();
+    if(special_msg)
+    {
+        if (screen) fprintf(screen,"%s (%s:%d)\n",special_msg,file,line);
+        if (logfile) fprintf(logfile," %s (%s:%d)\n",special_msg,file,line);
+    }
   }
 
   if (output) delete output;
@@ -159,7 +196,8 @@ void Error::fix_error(const char *file, int line, Fix *fix,const char *str)
   int me;
   MPI_Comm_rank(world,&me);
 
-  if (me == 0) {
+  if (me == 0)
+  {
     if(strlen(str) > 2)
     {
         if (screen) fprintf(screen,"ERROR: Fix %s (id %s): %s (%s:%d)\n",fix->style,fix->id,str,file,line);
@@ -169,6 +207,13 @@ void Error::fix_error(const char *file, int line, Fix *fix,const char *str)
     {
         if (screen) fprintf(screen,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fix->style,fix->id,file,line);
         if (logfile) fprintf(logfile,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fix->style,fix->id,file,line);
+    }
+
+    const char * special_msg = specialMessages_.generate_message();
+    if(special_msg)
+    {
+        if (screen) fprintf(screen,"%s (%s:%d)\n",special_msg,file,line);
+        if (logfile) fprintf(logfile," %s (%s:%d)\n",special_msg,file,line);
     }
   }
 
@@ -188,7 +233,8 @@ void Error::compute_error(const char *file, int line, Compute *compute,const cha
   int me;
   MPI_Comm_rank(world,&me);
 
-  if (me == 0) {
+  if (me == 0)
+  {
     if(strlen(str) > 2)
     {
         if (screen) fprintf(screen,"ERROR: Compute %s (id %s): %s (%s:%d)\n",compute->style,compute->id,str,file,line);
@@ -198,6 +244,13 @@ void Error::compute_error(const char *file, int line, Compute *compute,const cha
     {
         if (screen) fprintf(screen,"ERROR: Illegal compute %s (id %s) command (%s:%d)\n",compute->style,compute->id,file,line);
         if (logfile) fprintf(logfile,"ERROR: Illegal compute %s (id %s) command (%s:%d)\n",compute->style,compute->id,file,line);
+    }
+
+    const char * special_msg = specialMessages_.generate_message();
+    if(special_msg)
+    {
+        if (screen) fprintf(screen,"%s (%s:%d)\n",special_msg,file,line);
+        if (logfile) fprintf(logfile," %s (%s:%d)\n",special_msg,file,line);
     }
   }
 
@@ -237,12 +290,25 @@ void Error::one(const char *file, int line, const char *str)
 {
   int me;
   MPI_Comm_rank(world,&me);
-  if (screen) fprintf(screen,"ERROR on proc %d: %s (%s:%d)\n",
+  if (screen)
+  {
+      fprintf(screen,"ERROR on proc %d: %s (%s:%d)\n",
                       me,str,file,line);
+      const char * special_msg = specialMessages_.generate_message();
+      if(special_msg)
+        fprintf(screen,"%s (%s:%d)\n",special_msg,file,line);
+  }
   if (universe->nworlds > 1)
+  {
     if (universe->uscreen)
-      fprintf(universe->uscreen,"ERROR on proc %d: %s (%s:%d)\n",
-              universe->me,str,file,line);
+    {
+        fprintf(universe->uscreen,"ERROR on proc %d: %s (%s:%d)\n",
+                universe->me,str,file,line);
+        const char * special_msg = specialMessages_.generate_message();
+        if(special_msg)
+            fprintf(universe->uscreen,"%s (%s:%d)\n",special_msg,file,line);
+    }
+  }
   MPI_Abort(world,1);
 }
 

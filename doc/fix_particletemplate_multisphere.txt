@@ -14,7 +14,7 @@ fix ID group-ID particletemplate/multisphere seed keyword values nspheres nspher
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 particletemplate/multisphere = style name of this fix command :l
-seed = random number generator seed (integer value) :l
+seed = random number generator seed (prime number greater 10000) :l
 zero or more keyword/value pairs can be appended :l
 keyword, values are documented in "fix particletemplate/sphere"_fix_particletemplate_sphere.html command :l
 nspheres = obligatory keyword :l
@@ -46,8 +46,8 @@ opt_keyword = {mass} or {inertia_tensor} or {use_volume} or {use_density} or {ff
 
 [Examples:]
 
-fix pts1 all particletemplate/multisphere 1 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres file data/stone1.multisphere scale 0.001 type 1
-fix pts2 all particletemplate/multisphere 1 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres 0. 0. 0. 0.005   0.005 0. 0. 0.005   0.01 0. 0. 0.005 scale 0.001 type 1  :pre
+fix pts1 all particletemplate/multisphere 123457 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres file data/stone1.multisphere scale 0.001 type 1
+fix pts2 all particletemplate/multisphere 17903 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres 0. 0. 0. 0.005   0.005 0. 0. 0.005   0.01 0. 0. 0.005 scale 0.001 type 1  :pre
 
 [Description:]
 
@@ -69,7 +69,8 @@ up or down the particle positions and radii.
 
 After the spheres are read, a Monte Carlo procedure is used to assess
 everything that is needed for the motion integration: mass, center of mass,
-and the inertia tensor including its eigensystem.
+and the inertia tensor including its eigensystem. The values calculated
+are written to the logfile.
 
 As an alternative, the body's mass and inertia tensor can be specified
 directly via keywords {mass} and {inertia_tensor}. Note that you can

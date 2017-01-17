@@ -26,6 +26,15 @@ over the years.
 LIGGGHTS(R)-PUBLIC is an Open Source Discrete Element Method Particle
 Simulation Software.
 
+Core developer and main author:
+Christoph Kloss, christoph.kloss@dcs-computing.com
+
+LIGGGHTS(R)-PUBLIC is an Open Source Discrete Element Method Particle
+Simulation Software, distributed by DCS Computing GmbH, Linz, Austria.
+LIGGGHTS (R) and CFDEM(R) are registered trade marks of DCS Computing GmbH,
+the producer of the LIGGGHTS (R) software and the CFDEM(R)coupling software
+See http://www.cfdem.com/terms-trademark-policy for details.
+
 LIGGGHTS (R) stands for LAMMPS improved for general granular and
 granular heat transfer simulations.
 LAMMPS is a classical molecular dynamics simulator. It is widely
@@ -128,7 +137,7 @@ LIGGGHTS(R)-PUBLIC General features :h4
   LIGGGHTS(R)-PUBLIC can be coupled to CFDEM(R)coupling for CFD-DEM simulations and Lagrange-Euler coupling in general
   LIGGGHTS(R)-PUBLIC can be coupled to the simulation engine ParScale for the modelling of intra-particle transport processes :ul
 
-LIGGGHTS(R)-PUBLIC Model features: LIGGGHTS-PUBLIC features for  :h4
+LIGGGHTS(R)-PUBLIC Model features: LIGGGHTS-PUBLIC features  :h4
 
   import and handling of complex geometries: STL walls and VTK tet volume meshes
   moving mesh feature with a varierty of motion schemes and a model for conveyor belts
@@ -195,21 +204,21 @@ and attributions back to you. :l
 
 LIGGGHTS(R)-PUBLIC development has been funded by a variety of sources:
 
-  A variety of industrial partners in bi-laterial projects
-  Christian Doppler Forschungsgesellschaft, www.cdg.at
+  The by far largest part of funding has been contributed by a variety of companies in bi-laterial projects with DCS Computing
   The EU FP7 programmes NanoSim and T-MAPPP
-  The Austrial funding agency FFG, www.ffg.at  :ul
+  The Austrial funding agency FWF, www.fwf.at
+  The Austrial funding agency FFG, www.ffg.at   :ul
+
+The early days of LIGGGHTS(R)-PUBLIC development have been funded by:
+  Christian Doppler Forschungsgesellschaft, www.cdg.at
+  Industrial partner of the CD Lab of Particulate Flow Modelling, JKU Linz :ul
 
 As LIGGGHTS(R)-PUBLIC is based on LAMMPS, we also acknowledge the funding
 that helped creating LAMMPS.  LAMMPS development has been funded by the "US Department of
 Energy"_doe (DOE), through its CRADA, LDRD, ASCI, and Genomes-to-Life
-programs and its "OASCR"_oascr and "OBER"_ober offices.
-
-Specifically, work on the latest version was funded in part by the US
-Department of Energy's Genomics:GTL program
-("www.doegenomestolife.org"_gtl) under the "project"_ourgtl, "Carbon
-Sequestration in Synechococcus Sp.: From Molecular Machines to
-Hierarchical Modeling".
+programs and its "OASCR"_oascr and "OBER"_ober offices. Also there was funding
+by the US Department of Energy's Genomics:GTL program ("www.doegenomestolife.org"_gtl) under the "project"_ourgtl, "Carbon
+Sequestration in Synechococcus Sp.: From Molecular Machines to Hierarchical Modeling".
 
 :link(doe,http://www.doe.gov)
 :link(gtl,http://www.doegenomestolife.org)

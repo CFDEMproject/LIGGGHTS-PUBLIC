@@ -7,10 +7,12 @@
 :line
 
 neighbor command :h3
+neighbor_skin command :h3
 
 [Syntax:]
 
-neighbor skin style :pre
+neighbor skin style
+neighbor_skin skin :pre
 
 skin = extra distance beyond force cutoff (distance units)
 style = {bin} or {nsq} or {multi} :ul
@@ -18,18 +20,21 @@ style = {bin} or {nsq} or {multi} :ul
 [Examples:]
 
 neighbor 0.3 bin
-neighbor 2.0 nsq :pre
+neighbor 2.0 nsq
+neighbor_skin 0.3 :pre
 
 [Description:]
 
-This command sets parameters that affect the building of pairwise
+These commands set parameters that affect the building of pairwise
 neighbor lists.  All atom pairs within a neighbor cutoff distance
 equal to the their force cutoff plus the {skin} distance are stored in
 the list.  Typically, the larger the skin distance, the less often
 neighbor lists need to be built, but more pairs must be checked for
 possible force interactions every timestep.  The default value for
 {skin} depends on the choice of units for the simulation; see the
-default values below.
+default values below. The "neighbor_skin" command is a wrapper for
+"neighbor" that only takes the {skin} value as input and sets {style}
+to {bin}.
 
 The {skin} distance is also used to determine how often atoms migrate
 to new processors if the {check} option of the

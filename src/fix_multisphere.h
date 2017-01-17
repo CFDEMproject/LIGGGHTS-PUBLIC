@@ -81,7 +81,8 @@ class FixMultisphere : public Fix
 {
     friend class SetMultisphere;
 
-     public:    
+     friend class FixMoveMultisphere;
+     public:
 
       FixMultisphere(class LAMMPS *, int, char **);
       virtual ~FixMultisphere();
@@ -101,7 +102,7 @@ class FixMultisphere : public Fix
       void initial_integrate(int);
       virtual void pre_force(int);
       void final_integrate();
-      virtual void calc_force();
+      virtual void calc_force(bool setupflag);
 
       void add_body_finalize();
 
@@ -178,8 +179,12 @@ class FixMultisphere : public Fix
       inline void set_omega_body_from_atom_index(int iatom,double *omega)
       {if(body_[iatom] >= 0) multisphere_.set_omega_body(body_[iatom],omega); }
 
-      inline void set_body_displace(int i,double *_displace,int body_id)
-      { body_[i] = body_id; vectorCopy3D(_displace,displace_[i]); }
+      inline void set_body_displace(int i,double *_displace,int body_id,double volume_weight)
+      {
+        body_[i] = body_id; vectorCopy3D(_displace,displace_[i]);
+        if(fix_volumeweight_ms_)
+            fix_volumeweight_ms_->vector_atom[i] = volume_weight;
+      }
 
       int calc_n_steps(int iatom,double *p_ref,double *normalvec,double *v_normal)
       { return multisphere_.calc_n_steps(iatom,body_[iatom],p_ref,normalvec,v_normal); }
@@ -189,6 +194,12 @@ class FixMultisphere : public Fix
 
       bool allow_group_and_set()
       { return allow_group_and_set_; }
+
+      bool use_volumeweight()
+      { return use_volumeweight_ms_; }
+
+      const FixPropertyAtom *get_volumeweight() const
+      { return fix_volumeweight_ms_; }
 
       void scale_displace(int i, double factor)
       { vectorScalarMult3D(displace_[i],factor); }
@@ -219,6 +230,8 @@ class FixMultisphere : public Fix
       class FixPropertyAtom *fix_corner_ghost_;
       class FixPropertyAtom *fix_delflag_;
       class FixPropertyAtom *fix_existflag_;
+      class FixPropertyAtom *fix_volumeweight_ms_; 
+      bool use_volumeweight_ms_;
       class FixGravity *fix_gravity_;
       FixHeatGran *fix_heat_;
 
@@ -240,6 +253,9 @@ class FixMultisphere : public Fix
 
       bool allow_group_and_set_;
       bool allow_heatsource_;
+
+      inline int getMask(int ibody)
+      { return 1; }
 };
 
 }

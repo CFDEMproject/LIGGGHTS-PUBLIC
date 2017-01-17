@@ -1,0 +1,299 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mesh module servo &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>mesh module servo</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/mesh_module_servo.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mesh-module-servo">
+<h1>mesh module servo<a class="headerlink" href="#mesh-module-servo" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>servo servo_keywords servo_values</pre>
+</div>
+<ul class="simple">
+<li>zero or more servo_keyword/value pairs may be appended</li>
+<li>servo keywords = <em>com</em> (obligatory) or <em>dim</em> (obligatory) or <em>ctrlPV</em> (obligatory) or <em>vel_max</em> (obligatory) or <em>kp</em> or <em>ki</em> or <em>kd</em>
+<em>com</em> values = x, y, z</li>
+</ul>
+<pre class="literal-block">
+    x, y, z = coordinates of the center of mass of the body (distance units)
+<em>ctrlPV</em> values = force or torque
+    force = use force as controll process value, i.e. control force
+    torque = use torque as controll process value, i.e. control torque
+<em>axis</em> args = x y z
+    x y z = vector direction to apply the controlled mesh motion
+    x or y or z can be a variable (see below)
+<em>target_val</em> values = val
+    val = target value for the controller (force units or torque units, depending on <em>ctrlPV</em>)
+<em>vel_max</em> values = v
+    v = maximum velocity magnitude for servo wall (velocity units)
+<em>kp</em> values = k
+    k = proportional constant for PID controller
+<em>ki</em> values = k
+    k = integral constant for PID controller
+<em>kd</em> values = k
+    k = differential constant for PID controller
+<em>mode</em> values = auto
+    auto = use alternative controller algorithm
+<em>ratio</em> values = dr
+    dr = constant for the alternative controller approach (<em>mode</em> = auto)
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
+fix servo all mesh/surface/stress/servo file stirrer.stl type 1 com 0. 0. 0. ctrlPV torque axis 0. 0. 1. target_val 10 vel_max 1. ratio 0.01 mode auto</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This mesh module assumes the mesh being a servo wall that compacts a particle packing until either a
+total force (for <em>ctrlPV</em> = force)  or a total torque (for <em>ctrlPV</em> = torque) is acting on the mesh.
+The target value is defined via keyword <em>target_val</em>. The servo can act in any dimension
+(as specified by the <em>axis</em> keyword). Only the direction of the axis is important; it&#8217;s
+length is ignored.
+A negative value for <em>target_val</em> leads to a wall motion towards negative <em>axis</em>-direction and vice versa. The user has to specify
+the center of mass (keyword <em>com</em>) and the maximum velocity allowed for the servo wall by keyword <em>vel_max</em>.
+Note that <em>vel_max</em> &lt; <a class="reference internal" href="neighbor.html"><em>skin</em></a> /(2* <a class="reference internal" href="timestep.html"><em>timestep</em></a> ) is required.</p>
+<p>The controller itself is a proportional-integral-derivative (PID) controller which is controlled by
+3 constants <em>kp</em>, <em>ki</em>, <em>kd</em>:</p>
+<p>output = kp * error + ki * errorsum + kd * errorchange</p>
+<p>where &#8216;error&#8217; is the current deviation of the controll process value to the target value,
+&#8216;errorsum&#8217; is the time integration (sum) of the error values and &#8216;errorchange&#8217; its derivative. The controller
+also includes an &#8220;anti-wind-up scheme&#8221; which prohibits accumulation of erroneous controller output caused
+by the integral part due to unavoidable long-lasting deviations.</p>
+<p>By using the keyword <em>mode</em> = auto an alternative controller approach is applied. It is a pure proportional controller with gain scheduling. In the absence of neighbour particles the servo wall may move with maximum velocity (defined by <em>vel_max</em>). Otherwise, the maximum wall velocity is defined by <em>ratio</em> * min(radius) / dt. Approaching <em>target_val</em> the maximum velocity decreases to 0.1 * <em>ratio</em> * min(radius) / dt.</p>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>This mesh module stores a global vector with 3 components for access by various <em class="xref std std-ref">output commands</em>.
+The 3 components output the wall position.
+Furthermore, this mesh module writes the state of the servo wall to binary restart files so
+that a simulation can continue correctly.
+This mesh module supports <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> with option <em>servo/integrate</em> = &#8216;start&#8217; or &#8216;stop&#8217;
+to start or stop the servo wall integration inbetween two runs.
+This module also supports <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> with option <em>servo/target_val</em> = val to
+change the target value inbetween two runs.
+This module also supports <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> with option <em>servo/ctrlParam</em> = kp ki kd
+to change the controller params inbetween two runs.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>This mesh module requires the usage of <a class="reference internal" href="mesh_module_stress.html"><em>mesh module stress</em></a> and that module needs to
+preceede the servo module.</p>
+<p>When using this mesh module, along with scaling or rotate the body, all the servo_keyword/value pairs have to represent
+the state after scaling/rotation.
+Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary.
+In this case, an error is generated. See <a class="reference internal" href="boundary.html"><em>boundary</em></a> command for details.
+This mesh module can not be used in conjunction with another fix that manipulates mesh geometry,
+such as a <a class="reference internal" href="fix_move_mesh.html"><em>fix move/mesh</em></a> or the <tt class="xref doc docutils literal"><span class="pre">mesh</span> <span class="pre">module</span> <span class="pre">6dof</span></tt></p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="mesh_module_stress.html"><em>Mesh module stress</em></a>, <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>, <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p>kp = 1e-2, ki = 0, kd = 0</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

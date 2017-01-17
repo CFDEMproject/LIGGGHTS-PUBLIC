@@ -63,7 +63,7 @@ class FixMultisphereBreak : public FixMultisphere
       void init();
       void final_integrate();
       void pre_neighbor();
-      void calc_force();
+      void calc_force(bool setupflag);
 
     protected:
 

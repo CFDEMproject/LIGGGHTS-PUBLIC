@@ -22,7 +22,7 @@ style = {group} or {region} or {overlap} or {porosity} :ulb,l
   {porosity} args = region-ID fraction seed
     region-ID = region within which to perform deletions
     fraction = delete this fraction of atoms
-    seed = random number seed (positive integer) :pre
+    seed = random number seed (prime number greater 10000) :pre
 zero or more keyword/value pairs may be appended :l
 keyword = {compress} or {mol} :l
   {compress} value = {no} or {yes}
@@ -35,7 +35,7 @@ delete_atoms group edge
 delete_atoms region sphere compress no
 delete_atoms overlap 0.3 all all
 delete_atoms overlap 0.5 solvent colloid
-delete_atoms porosity cube 0.1 482793 :pre
+delete_atoms porosity cube 0.1 123457 :pre
 
 [Description:]
 

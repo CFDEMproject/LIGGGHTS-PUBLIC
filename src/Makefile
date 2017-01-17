@@ -62,8 +62,8 @@ help:
 	@echo ''
 	@echo 'make machine             build LAMMPS where machine is one of:'
 	@echo ''
-	@files="`ls MAKE/Makefile.*`"; \
-	  for file in $$files; do head -1 $$file; done
+	@files="`ls MAKE/ -I Makefile.user -I Makefile.user_default -I CMakeLists_Catalyst.txt -I Makefile.auto.options`"; \
+	  for file in $$files; do head -1 MAKE/$$file; done
 	@echo ''
 
 # Build the code
@@ -90,10 +90,10 @@ clean:
 	@echo 'make clean-machine       delete object files for one machine'
 
 clean-all:
-	rm -rf Obj_* *.a
+	rm -rf Obj_* *.a MAKE/Makefile.auto.options
 
 clean-%:
-	rm -rf Obj_$(@:clean-%=%)
+	rm -rf Obj_$(@:clean-%=%) MAKE/Makefile.$(@:clean-%=%).options
 
 purge: Purge.list
 	@echo 'Purging obsolete and auto-generated source files'

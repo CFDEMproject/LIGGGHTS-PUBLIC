@@ -63,7 +63,8 @@ Properties::Properties(LAMMPS *lmp): Pointers(lmp),
   ms_data_(0),
   mintype_(-1),
   maxtype_(-1),
-  allow_soft_particles_(false)
+  allow_soft_particles_(false),
+  allow_hard_particles_(false)
 {
 }
 
@@ -114,11 +115,20 @@ int Properties::max_type()
   maxtype_ = maxtype_all;
 
   //error check
-  if(mintype_ != 1)
-    error->all(FLERR,"Atom types must start from 1 for granular simulations");
-  if(maxtype_ > atom->ntypes)
-    error->all(FLERR,"Please increase the number of atom types in the 'create_box' command to match the number of atom types you use in the simulation");
-
+  if(!lmp->wb)
+  {
+      if(mintype_ != 1)
+        error->all(FLERR,"Atom types must start from 1 for granular simulations");
+      if(maxtype_ > atom->ntypes)
+        error->all(FLERR,"Please increase the number of atom types in the 'create_box' command to match the number of atom types you use in the simulation");
+  }
+  else
+  {
+      if(mintype_ != 1)
+        error->all(FLERR,"Materials defined but not used in the simulation as particle or wall material must be the last materials defined");
+      if(maxtype_ > atom->ntypes)
+        error->all(FLERR,"Please increase the number of atom types in the 'create_box' command to match the number of atom types you use in the simulation");
+  }
   return maxtype_;
 }
 
@@ -243,6 +253,11 @@ void* Properties::find_property(const char *name, const char *type, int &len1, i
         // check if length correct
         if(((strcmp(type,"scalar-atom") == 0) && (len2 != 1)) || ((strcmp(type,"vector-atom") == 0) && (len2 != 3)))
             return NULL;
+        else if(ptr && strstr(type,"multisphere"))
+        {
+            error->one(FLERR,"mismatch of data found and type specified");
+            return NULL;
+        }
         return ptr;
     }
 
@@ -258,9 +273,15 @@ void* Properties::find_property(const char *name, const char *type, int &len1, i
         ptr = ms_->extract(name,len1,len2);
         if(((strcmp(type,"scalar-multisphere") == 0) && (len2 != 1)) || ((strcmp(type,"vector-multisphere") == 0) && (len2 != 3)))
             return NULL;
+        
+        else if(ptr && (strcmp(name,"body") && strstr(type,"atom")))
+        {
+            error->one(FLERR,"mismatch of data found and type specified");
+            return NULL;
+        }
 
         if(ptr || ((len1 >= 0) && (len2 >= 0)))
-        return ptr;
+            return ptr;
     }
 
     // possiblility 3

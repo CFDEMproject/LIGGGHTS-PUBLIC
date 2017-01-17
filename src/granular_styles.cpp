@@ -125,6 +125,7 @@ private:
      typedef ContactModel<Style> CModel;
      typedef Walls::Granular<CModel> Type;
      int64_t hashcode = Style::HASHCODE;
+     
      factory.addStyle(name, hashcode, &create_wall_style_instance<Type>);
   }
 } granStyles;

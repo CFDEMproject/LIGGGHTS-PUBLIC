@@ -5044,11 +5044,11 @@ Radius must be >= 0.0. :dd
 
 {Invalid random number seed in fix ttm command} :dt
 
-Random number seed must be > 0. :dd
+Random number seed must be a prime number greater 10000. :dd
 
 {Invalid random number seed in set command} :dt
 
-Random number seed must be > 0. :dd
+Random number seed must be a prime number greater 10000. :dd
 
 {Invalid region style} :dt
 
@@ -5078,13 +5078,13 @@ Self-explanatory. :dd
 
 {Invalid seed for Marsaglia random # generator} :dt
 
-The initial seed for this random number generator must be a positive
-integer less than or equal to 900 million. :dd
+The initial seed for this random number generator must be a prime
+number greater 10000 and smaller than 900 million. :dd
 
 {Invalid seed for Park random # generator} :dt
 
-The initial seed for this random number generator must be a positive
-integer. :dd
+The initial seed for this random number generator must be a prime
+number greater 10000. :dd
 
 {Invalid shape in Ellipsoids section of data file} :dt
 

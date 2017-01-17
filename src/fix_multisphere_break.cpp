@@ -132,7 +132,8 @@ FixMultisphereBreak::FixMultisphereBreak(LAMMPS *lmp, int narg, char **arg) :
 
 FixMultisphereBreak::~FixMultisphereBreak()
 {
-
+    if (triggerFixName_)
+        delete[] triggerFixName_;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,7 +178,7 @@ void FixMultisphereBreak::pre_neighbor()
     vectorZeroizeN(delflag,atom->nlocal+atom->nghost);
     vectorZeroizeN(existflag,atom->nlocal+atom->nghost);
 
-    if(multisphere_.check_lost_atoms(body_,delflag,existflag))
+    if(multisphere_.check_lost_atoms(body_,delflag,existflag,fix_volumeweight_ms_->vector_atom))
         next_reneighbor = update->ntimestep + 100;
 
     fix_delflag_->do_reverse_comm();
@@ -276,7 +277,7 @@ void FixMultisphereBreak::final_integrate()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FixMultisphereBreak::calc_force()
+void FixMultisphereBreak::calc_force(bool setupflag)
 {
 
 //  int ghostflag = LOOP_ALL;
@@ -288,7 +289,7 @@ void FixMultisphereBreak::calc_force()
 //  else if(ghostflag == LOOP_LOCAL) nloop = nlocal;
 //  else error->all(FLERR,"Illegal call to FixMultisphereBreak::final_integrate()");
 
-  FixMultisphere::calc_force();
+  FixMultisphere::calc_force(setupflag);
 
   //add gravity to atoms not belonging to a body to ensure they move correctly
   if(false) //fix_gravity_)

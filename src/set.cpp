@@ -52,9 +52,8 @@
 #include <mpi.h>
 #include <math.h>
 #include "math_extra.h"
-#include "nonspherical_flags.h"
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-#include "math_extra_liggghts_nonspherical.h"
+#include "math_extra_liggghts_superquadric.h"
 #include "atom_vec_superquadric.h"
 #endif
 #include <stdlib.h>
@@ -361,7 +360,7 @@ void Set::command(int narg, char **arg)
     } else if (strcmp(arg[iarg],"diameter") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
       if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
-      else dvalue = force->numeric(FLERR,arg[iarg+1])*force->cg();
+      else dvalue = force->numeric(FLERR,arg[iarg+1]);
       if (!atom->radius_flag)
         error->all(FLERR,"Cannot set this attribute for this atom style");
       if (dvalue < 0.0) error->all(FLERR,"Invalid diameter in set command");
@@ -772,7 +771,7 @@ void Set::set(int keyword)
     }
     else if (keyword == DIAMETER) {
        if (dvalue < 0.0) error->one(FLERR,"Invalid diameter in set command");
-        atom->radius[i] = 0.5 * dvalue;
+        atom->radius[i] = 0.5 * dvalue * force->cg(atom->type[i]);
         
         if(atom->rmass_flag && atom->density_flag && atom->density[i] > 0.)
         {
@@ -816,6 +815,7 @@ void Set::set(int keyword)
         atom->shape[i][2] = zvalue;
         MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
         MathExtraLiggghtsNonspherical::volume_superquadric(atom->shape[i], atom->roundness[i], atom->volume+i); //re-calculate volume
+        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->roundness[i], atom->area+i);  //re-calculate surface area
         atom->rmass[i] = atom->volume[i] * atom->density[i]; //re-calculate mass
         MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
 
@@ -835,6 +835,7 @@ void Set::set(int keyword)
         atom->roundness[i][1] = yvalue;
         MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
         MathExtraLiggghtsNonspherical::volume_superquadric(atom->shape[i], atom->roundness[i], atom->volume+i); //re-calculate volume
+        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->roundness[i], atom->area+i); //re-calculate surface area
         atom->rmass[i] = atom->density[i] * atom->volume[i]; //re-calculate mass
         MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
 

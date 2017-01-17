@@ -1,135 +1,286 @@
-<HTML>
-<CENTER><A HREF = "Section_packages.html">Previous Section</A> - <A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> - <A HREF = "Section_modify.html">Next Section</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>8. How-to discussions &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/>
+        <link rel="next" title="9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC" href="Section_modify.html"/>
+        <link rel="prev" title="7. Packages" href="Section_packages.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">8. How-to discussions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#restarting-a-simulation">8.1. Restarting a simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#d-simulations">8.2. 2d simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-multiple-simulations-from-one-input-script">8.3. Running multiple simulations from one input script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#granular-models">8.4. Granular models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#coupling-liggghts-r-public-to-other-codes">8.5. Coupling LIGGGHTS(R)-PUBLIC to other codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visualizing-liggghts-r-public-snapshots">8.6. Visualizing LIGGGHTS(R)-PUBLIC snapshots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#triclinic-non-orthogonal-simulation-boxes">8.7. Triclinic (non-orthogonal) simulation boxes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-from-liggghts-r-public-thermo-dumps-computes-fixes-variables">8.8. Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#global-per-atom-local-data">8.8.1. Global/per-atom/local data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scalar-vector-array-data">8.8.2. Scalar/vector/array data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#thermodynamic-output">8.8.3. Thermodynamic output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dump-file-output">8.8.4. Dump file output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fixes-that-write-output-files">8.8.5. Fixes that write output files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#computes-that-process-output-quantities">8.8.6. Computes that process output quantities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fixes-that-process-output-quantities">8.8.7. Fixes that process output quantities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#computes-that-generate-values-to-output">8.8.8. Computes that generate values to output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fixes-that-generate-values-to-output">8.8.9. Fixes that generate values to output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#variables-that-generate-values-to-output">8.8.10. Variables that generate values to output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary-table-of-output-options-and-data-flow-between-commands">8.8.11. Summary table of output options and data flow between commands</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#walls">8.9. Walls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#library-interface-to-liggghts-r-public">8.10. Library interface to LIGGGHTS(R)-PUBLIC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>7. How-to discussions 
-</H3>
-<P>This section describes how to perform common tasks using LIGGGHTS(R)-PUBLIC.
-</P>
-7.1 <A HREF = "#howto_1">Restarting a simulation</A><BR>
-7.2 <A HREF = "#howto_2">2d simulations</A><BR>
-7.3 <A HREF = "#howto_3">Running multiple simulations from one input script</A><BR>
-7.4 <A HREF = "#howto_4">Granular models</A><BR>
-7.5 <A HREF = "#howto_5">Coupling LIGGGHTS(R)-PUBLIC to other codes</A><BR>
-7.6 <A HREF = "#howto_6">Visualizing LIGGGHTS(R)-PUBLIC snapshots</A><BR>
-7.7 <A HREF = "#howto_7">Triclinic (non-orthogonal) simulation boxes</A><BR>
-7.8 <A HREF = "#howto_8">Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)</A><BR>
-7.9 <A HREF = "#howto_9">Walls</A><BR>
-7.10 <A HREF = "#howto_10">Library interface to LIGGGHTS(R)-PUBLIC</A> <BR>
-
-<P>The example input scripts included in the LIGGGHTS(R)-PUBLIC distribution and
-highlighted in <A HREF = "Section_example.html">Section_example</A> also show how to
-setup and run various kinds of simulations.
-</P>
-<HR>
-
-<HR>
-
-<A NAME = "howto_1"></A><H4>7.1 Restarting a simulation 
-</H4>
-<P>There are 3 ways to continue a long LIGGGHTS(R)-PUBLIC simulation.  Multiple
-<A HREF = "run.html">run</A> commands can be used in the same input script.  Each
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>8. How-to discussions</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/Section_howto.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_modify.html" class="btn btn-neutral float-right" title="9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Section_packages.html" class="btn btn-neutral" title="7. Packages" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="how-to-discussions">
+<h1>8. How-to discussions<a class="headerlink" href="#how-to-discussions" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how to perform common tasks using LIGGGHTS(R)-PUBLIC.</p>
+<div class="line-block">
+<div class="line">7.1 <a class="reference internal" href="#howto-1"><em>Restarting a simulation</em></a></div>
+<div class="line">7.2 <a class="reference internal" href="#howto-2"><em>2d simulations</em></a></div>
+<div class="line">7.3 <a class="reference internal" href="#howto-3"><em>Running multiple simulations from one input script</em></a></div>
+<div class="line">7.4 <a class="reference internal" href="#howto-4"><em>Granular models</em></a></div>
+<div class="line">7.5 <a class="reference internal" href="#howto-5"><em>Coupling LIGGGHTS(R)-PUBLIC to other codes</em></a></div>
+<div class="line">7.6 <a class="reference internal" href="#howto-6"><em>Visualizing LIGGGHTS(R)-PUBLIC snapshots</em></a></div>
+<div class="line">7.7 <a class="reference internal" href="#howto-7"><em>Triclinic (non-orthogonal) simulation boxes</em></a></div>
+<div class="line">7.8 <a class="reference internal" href="#howto-8"><em>Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)</em></a></div>
+<div class="line">7.9 <a class="reference internal" href="#howto-9"><em>Walls</em></a></div>
+<div class="line">7.10 <a class="reference internal" href="#howto-10"><em>Library interface to LIGGGHTS(R)-PUBLIC</em></a></div>
+<div class="line"><br /></div>
+</div>
+<p>The example input scripts included in the LIGGGHTS(R)-PUBLIC distribution and
+highlighted in <tt class="xref doc docutils literal"><span class="pre">Section_example</span></tt> also show how to
+setup and run various kinds of simulations.</p>
+<div class="section" id="restarting-a-simulation">
+<span id="howto-1"></span><h2>8.1. Restarting a simulation<a class="headerlink" href="#restarting-a-simulation" title="Permalink to this headline">¶</a></h2>
+<p>There are 3 ways to continue a long LIGGGHTS(R)-PUBLIC simulation.  Multiple
+<a class="reference internal" href="run.html"><em>run</em></a> commands can be used in the same input script.  Each
 run will continue from where the previous run left off.  Or binary
-restart files can be saved to disk using the <A HREF = "restart.html">restart</A>
+restart files can be saved to disk using the <a class="reference internal" href="restart.html"><em>restart</em></a>
 command.  At a later time, these binary files can be read via a
-<A HREF = "read_restart.html">read_restart</A> command in a new script.  Or they can
-be converted to text data files using the <A HREF = "Section_start.html#start_7">-r command-line
-switch</A> and read by a
-<A HREF = "read_data.html">read_data</A> command in a new script.
-</P>
-<P>The <A HREF = "read_restart.html">read_restart</A> command typically replaces
-the "create_box"create_box.html command in the input script that restarts
-the simulation.
-</P>
-<P>Note that while the internal state of the simulation is stored in the
+<a class="reference internal" href="read_restart.html"><em>read_restart</em></a> command in a new script.  Or they can
+be converted to text data files using the <a class="reference internal" href="Section_start.html#start-7"><em>-r command-line switch</em></a> and read by a
+<a class="reference internal" href="read_data.html"><em>read_data</em></a> command in a new script.</p>
+<p>The <a class="reference internal" href="read_restart.html"><em>read_restart</em></a> command typically replaces
+the &#8220;create_box&#8221;create_box.html command in the input script that restarts
+the simulation.</p>
+<p>Note that while the internal state of the simulation is stored in the
 restart file, most material properties and simulation settings are
 not stored in the restart file. Be careful when changing settings and/or
-material parameters when restarting a simulation.
-</P>
-<P>The following commands do not need to be repeated because
-their settings are included in the restart file: <I>units, atom_style</I>.
-</P>
-<P>As an alternate approach, the restart file could be converted to a data
-file as follows:
-</P>
-<PRE>lmp_g++ -r tmp.restart.50 tmp.restart.data 
-</PRE>
-<P>Then, the "read_data"read_data.html command can be used to restart the
-simulation.
-</P>
-<P><A HREF = "reset_timestep.html">reset_timestep</A> command can be used to tell
-LIGGGHTS(R)-PUBLIC the current timestep.
-</P>
-<HR>
-
-<A NAME = "howto_2"></A><H4>7.2 2d simulations 
-</H4>
-<P>Use the <A HREF = "dimension.html">dimension</A> command to specify a 2d simulation.
-</P>
-<P>Make the simulation box periodic in z via the <A HREF = "boundary.html">boundary</A>
-command.  This is the default.
-</P>
-<P>If using the <A HREF = "create_box.html">create box</A> command to define a
+material parameters when restarting a simulation.</p>
+<p>The following commands do not need to be repeated because
+their settings are included in the restart file: <em>units, atom_style</em>.</p>
+<p>As an alternate approach, the restart file could be converted to a data
+file as follows:</p>
+<div class="highlight-python"><pre>lmp_g++ -r tmp.restart.50 tmp.restart.data</pre>
+</div>
+<p>Then, the &#8220;read_data&#8221;read_data.html command can be used to restart the
+simulation.</p>
+<p><a class="reference internal" href="reset_timestep.html"><em>reset_timestep</em></a> command can be used to tell
+LIGGGHTS(R)-PUBLIC the current timestep.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="d-simulations">
+<span id="howto-2"></span><h2>8.2. 2d simulations<a class="headerlink" href="#d-simulations" title="Permalink to this headline">¶</a></h2>
+<p>Use the <a class="reference internal" href="dimension.html"><em>dimension</em></a> command to specify a 2d simulation.</p>
+<p>Make the simulation box periodic in z via the <a class="reference internal" href="boundary.html"><em>boundary</em></a>
+command.  This is the default.</p>
+<p>If using the <a class="reference internal" href="create_box.html"><em>create box</em></a> command to define a
 simulation box, set the z dimensions narrow, but finite, so that the
 create_atoms command will tile the 3d simulation box with a single z
-plane of atoms - e.g.
-</P>
-<PRE><A HREF = "create_box.html">create box</A> 1 -10 10 -10 10 -0.25 0.25 
-</PRE>
-<P>If using the <A HREF = "read_data.html">read data</A> command to read in a file of
-atom coordinates, set the "zlo zhi" values to be finite but narrow,
+plane of atoms - e.g.</p>
+<pre class="literal-block">
+<a class="reference internal" href="create_box.html"><em>create box</em></a> 1 -10 10 -10 10 -0.25 0.25
+</pre>
+<p>If using the <a class="reference internal" href="read_data.html"><em>read data</em></a> command to read in a file of
+atom coordinates, set the &#8220;zlo zhi&#8221; values to be finite but narrow,
 similar to the create_box command settings just described.  For each
 atom in the file, assign a z coordinate so it falls inside the
-z-boundaries of the box - e.g. 0.0.
-</P>
-<P>Use the <A HREF = "fix_enforce2d.html">fix enforce2d</A> command as the last
+z-boundaries of the box - e.g. 0.0.</p>
+<p>Use the <a class="reference internal" href="fix_enforce2d.html"><em>fix enforce2d</em></a> command as the last
 defined fix to insure that the z-components of velocities and forces
 are zeroed out every timestep.  The reason to make it the last fix is
-so that any forces induced by other fixes will be zeroed out.
-</P>
-<P>Many of the example input scripts included in the LIGGGHTS(R)-PUBLIC distribution
-are for 2d models.
-</P>
-<P>IMPORTANT NOTE: Some models in LIGGGHTS(R)-PUBLIC treat particles as finite-size
+so that any forces induced by other fixes will be zeroed out.</p>
+<p>Many of the example input scripts included in the LIGGGHTS(R)-PUBLIC distribution
+are for 2d models.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Some models in LIGGGHTS(R)-PUBLIC treat particles as finite-size
 spheres, as opposed to point particles.  In 2d, the particles will
 still be spheres, not disks, meaning their moment of inertia will be
-the same as in 3d.
-</P>
-<HR>
-
-<A NAME = "howto_3"></A><H4>7.3 Running multiple simulations from one input script 
-</H4>
-<P>This can be done in several ways.  See the documentation for
-individual commands for more details on how these examples work.
-</P>
-<P>If "multiple simulations" means continue a previous simulation for
-more timesteps, then you simply use the <A HREF = "run.html">run</A> command
-multiple times.  For example, this script
-</P>
-<PRE>units lj
+the same as in 3d.</p>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="running-multiple-simulations-from-one-input-script">
+<span id="howto-3"></span><h2>8.3. Running multiple simulations from one input script<a class="headerlink" href="#running-multiple-simulations-from-one-input-script" title="Permalink to this headline">¶</a></h2>
+<p>This can be done in several ways.  See the documentation for
+individual commands for more details on how these examples work.</p>
+<p>If &#8220;multiple simulations&#8221; means continue a previous simulation for
+more timesteps, then you simply use the <a class="reference internal" href="run.html"><em>run</em></a> command
+multiple times.  For example, this script</p>
+<div class="highlight-python"><pre>units lj
 atom_style atomic
 read_data data.lj
 run 10000
 run 10000
 run 10000
 run 10000
-run 10000 
-</PRE>
-<P>would run 5 successive simulations of the same system for a total of
-50,000 timesteps.
-</P>
-<P>If you wish to run totally different simulations, one after the other,
-the <A HREF = "clear.html">clear</A> command can be used in between them to
-re-initialize LIGGGHTS(R)-PUBLIC.  For example, this script
-</P>
-<PRE>units lj
+run 10000</pre>
+</div>
+<p>would run 5 successive simulations of the same system for a total of
+50,000 timesteps.</p>
+<p>If you wish to run totally different simulations, one after the other,
+the <a class="reference internal" href="clear.html"><em>clear</em></a> command can be used in between them to
+re-initialize LIGGGHTS(R)-PUBLIC.  For example, this script</p>
+<div class="highlight-python"><pre>units lj
 atom_style atomic
 read_data data.lj
 run 10000
@@ -137,31 +288,28 @@ clear
 units lj
 atom_style atomic
 read_data data.lj.new
-run 10000 
-</PRE>
-<P>would run 2 independent simulations, one after the other.
-</P>
-<P>For large numbers of independent simulations, you can use
-<A HREF = "variable.html">variables</A> and the <A HREF = "next.html">next</A> and
-<A HREF = "jump.html">jump</A> commands to loop over the same input script
+run 10000</pre>
+</div>
+<p>would run 2 independent simulations, one after the other.</p>
+<p>For large numbers of independent simulations, you can use
+<a class="reference internal" href="variable.html"><em>variables</em></a> and the <a class="reference internal" href="next.html"><em>next</em></a> and
+<a class="reference internal" href="jump.html"><em>jump</em></a> commands to loop over the same input script
 multiple times with different settings.  For example, this
-script, named in.polymer
-</P>
-<PRE>variable d index run1 run2 run3 run4 run5 run6 run7 run8
+script, named in.polymer</p>
+<div class="highlight-python"><pre>variable d index run1 run2 run3 run4 run5 run6 run7 run8
 shell cd $d
 read_data data.polymer
 run 10000
 shell cd ..
 clear
 next d
-jump in.polymer 
-</PRE>
-<P>would run 8 simulations in different directories, using a data.polymer
+jump in.polymer</pre>
+</div>
+<p>would run 8 simulations in different directories, using a data.polymer
 file in each directory.  The same concept could be used to run the
 same system at 8 different temperatures, using a temperature variable
-and storing the output in different log and dump files, for example
-</P>
-<PRE>variable a loop 8
+and storing the output in different log and dump files, for example</p>
+<div class="highlight-python"><pre>variable a loop 8
 variable t index 0.8 0.85 0.9 0.95 1.0 1.05 1.1 1.15
 log log.$a
 read data.polymer
@@ -171,165 +319,139 @@ dump 1 all atom 1000 dump.$a
 run 100000
 next t
 next a
-jump in.polymer 
-</PRE>
-<P>All of the above examples work whether you are running on 1 or
+jump in.polymer</pre>
+</div>
+<p>All of the above examples work whether you are running on 1 or
 multiple processors, but assumed you are running LIGGGHTS(R)-PUBLIC on a single
 partition of processors.  LIGGGHTS(R)-PUBLIC can be run on multiple partitions via
-the "-partition" command-line switch as described in <A HREF = "Section_start.html#start_7">this
-section</A> of the manual.
-</P>
-<P>In the last 2 examples, if LIGGGHTS(R)-PUBLIC were run on 3 partitions, the same
-scripts could be used if the "index" and "loop" variables were
-replaced with <I>universe</I>-style variables, as described in the
-<A HREF = "variable.html">variable</A> command.  Also, the "next t" and "next a"
-commands would need to be replaced with a single "next a t" command.
+the &#8220;-partition&#8221; command-line switch as described in <a class="reference internal" href="Section_start.html#start-7"><em>this section</em></a> of the manual.</p>
+<p>In the last 2 examples, if LIGGGHTS(R)-PUBLIC were run on 3 partitions, the same
+scripts could be used if the &#8220;index&#8221; and &#8220;loop&#8221; variables were
+replaced with <em>universe</em>-style variables, as described in the
+<a class="reference internal" href="variable.html"><em>variable</em></a> command.  Also, the &#8220;next t&#8221; and &#8220;next a&#8221;
+commands would need to be replaced with a single &#8220;next a t&#8221; command.
 With these modifications, the 8 simulations of each script would run
 on the 3 partitions one after the other until all were finished.
 Initially, 3 simulations would be started simultaneously, one on each
 partition.  When one finished, that partition would then start
-the 4th simulation, and so forth, until all 8 were completed.
-</P>
-<HR>
-
-<A NAME = "howto_4"></A><H4>7.4 Granular models 
-</H4>
-<P>Granular system are composed of spherical particles with a diameter,
+the 4th simulation, and so forth, until all 8 were completed.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="granular-models">
+<span id="howto-4"></span><h2>8.4. Granular models<a class="headerlink" href="#granular-models" title="Permalink to this headline">¶</a></h2>
+<p>Granular system are composed of spherical particles with a diameter,
 as opposed to point particles.  This means they have an angular
-velocity and torque can be imparted to them to cause them to rotate.
-</P>
-<P>To run a simulation of a granular model, you will want to use
-the following commands:
-</P>
-<UL><LI><A HREF = "atom_style.html">atom_style sphere</A>
-<LI><A HREF = "fix_nve_sphere.html">fix nve/sphere</A>
-<LI><A HREF = "fix_gravity.html">fix gravity</A> 
-</UL>
-<P>This compute
-</P>
-<UL><LI><A HREF = "compute_erotate_sphere.html">compute erotate/sphere</A> 
-</UL>
-<P>calculates rotational kinetic energy which can be <A HREF = "Section_howto.html#howto_8">output with
-thermodynamic info</A>.
-</P>
-<P>Use a number of particle-particle and particle-wall contact models,
+velocity and torque can be imparted to them to cause them to rotate.</p>
+<p>To run a simulation of a granular model, you will want to use
+the following commands:</p>
+<ul class="simple">
+<li><a class="reference internal" href="atom_style.html"><em>atom_style sphere</em></a></li>
+<li><a class="reference internal" href="fix_nve_sphere.html"><em>fix nve/sphere</em></a></li>
+<li><a class="reference internal" href="fix_gravity.html"><em>fix gravity</em></a></li>
+</ul>
+<p>This compute</p>
+<ul class="simple">
+<li><a class="reference internal" href="compute_erotate_sphere.html"><em>compute erotate/sphere</em></a></li>
+</ul>
+<p>calculates rotational kinetic energy which can be <a class="reference internal" href="#howto-8"><em>output with thermodynamic info</em></a>.</p>
+<p>Use a number of particle-particle and particle-wall contact models,
 which compute forces and torques between interacting pairs of particles
 and between particles and primitive walls or mesh elements. Details
-can be found here:
-</P>
-<UL><LI><A HREF = "pair_gran.html">pair_style gran</A>
-<LI><A HREF = "Section_gran_models.html">List of all contact models</A> 
-</UL>
-<P>These commands implement fix options specific to granular systems:
-</P>
-<UL><LI><A HREF = "fix_freeze.html">fix freeze</A>
-<LI><A HREF = "fix_pour.html">fix pour</A>
-<LI><A HREF = "fix_viscous.html">fix viscous</A>
-<LI><A HREF = "fix_wall_gran.html">fix wall/gran</A> 
-</UL>
-<P><A HREF = "fix_wall_gran.html">fix wall/gran</A> commands can define two types of
+can be found here:</p>
+<ul class="simple">
+<li><a class="reference internal" href="pair_gran.html"><em>pair_style gran</em></a></li>
+<li><a class="reference internal" href="Section_gran_models.html"><em>List of all contact models</em></a></li>
+</ul>
+<p>These commands implement fix options specific to granular systems:</p>
+<ul class="simple">
+<li><a class="reference internal" href="fix_freeze.html"><em>fix freeze</em></a></li>
+<li><tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">pour</span></tt></li>
+<li><a class="reference internal" href="fix_viscous.html"><em>fix viscous</em></a></li>
+<li><a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a></li>
+</ul>
+<p><a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a> commands can define two types of
 walls: primitive and mesh. Mesh walls are defined using a
-<A HREF = "fix_mesh_surface.html">fix mesh/surface</A> or related command.
-</P>
-<P>The fix style <I>freeze</I> zeroes both the force and torque of frozen
+<a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> or related command.</p>
+<p>The fix style <em>freeze</em> zeroes both the force and torque of frozen
 atoms, and should be used for granular system instead of the fix style
-<I>setforce</I>.
-</P>
-<P>For computational efficiency, you can eliminate needless pairwise
-computations between frozen atoms by using this command:
-</P>
-<UL><LI><A HREF = "neigh_modify.html">neigh_modify</A> exclude 
-</UL>
-<HR>
-
-<A NAME = "howto_5"></A><H4>7.5 Coupling LIGGGHTS(R)-PUBLIC to other codes 
-</H4>
-<P>LIGGGHTS(R)-PUBLIC is designed to allow it to be coupled to other codes.  For
+<em>setforce</em>.</p>
+<p>For computational efficiency, you can eliminate needless pairwise
+computations between frozen atoms by using this command:</p>
+<ul class="simple">
+<li><a class="reference internal" href="neigh_modify.html"><em>neigh_modify</em></a> exclude</li>
+</ul>
+<hr class="docutils" />
+</div>
+<div class="section" id="coupling-liggghts-r-public-to-other-codes">
+<span id="howto-5"></span><h2>8.5. Coupling LIGGGHTS(R)-PUBLIC to other codes<a class="headerlink" href="#coupling-liggghts-r-public-to-other-codes" title="Permalink to this headline">¶</a></h2>
+<p>LIGGGHTS(R)-PUBLIC is designed to allow it to be coupled to other codes.  For
 example, a quantum mechanics code might compute forces on a subset of
 atoms and pass those forces to LIGGGHTS(R)-PUBLIC.  Or a continuum finite element
 (FE) simulation might use atom positions as boundary conditions on FE
 nodal points, compute a FE solution, and return interpolated forces on
-MD atoms.
-</P>
-<P>LIGGGHTS(R)-PUBLIC can be coupled to other codes in at least 3 ways.  Each has
-advantages and disadvantages, which you'll have to think about in the
-context of your application.
-</P>
-<P>(1) Define a new <A HREF = "fix.html">fix</A> command that calls the other code.  In
+MD atoms.</p>
+<p>LIGGGHTS(R)-PUBLIC can be coupled to other codes in at least 3 ways.  Each has
+advantages and disadvantages, which you&#8217;ll have to think about in the
+context of your application.</p>
+<p>(1) Define a new <a class="reference internal" href="fix.html"><em>fix</em></a> command that calls the other code.  In
 this scenario, LIGGGHTS(R)-PUBLIC is the driver code.  During its timestepping,
 the fix is invoked, and can make library calls to the other code,
 which has been linked to LIGGGHTS(R)-PUBLIC as a library.  This is the way the
-<A HREF = "http://www.rpi.edu/~anderk5/lab">POEMS</A> package that performs constrained rigid-body motion on
+<a class="reference external" href="poems_">POEMS</a> package that performs constrained rigid-body motion on
 groups of atoms is hooked to LIGGGHTS(R)-PUBLIC.  See the
-<A HREF = "fix_poems.html">fix_poems</A> command for more details.  See <A HREF = "Section_modify.html">this
-section</A> of the documentation for info on how to add
-a new fix to LIGGGHTS(R)-PUBLIC.
-</P>
-
-
-<P>(2) Define a new LIGGGHTS(R)-PUBLIC command that calls the other code.  This is
+<a class="reference internal" href="fix_poems.html"><em>fix_poems</em></a> command for more details.  See <a class="reference internal" href="Section_modify.html"><em>this section</em></a> of the documentation for info on how to add
+a new fix to LIGGGHTS(R)-PUBLIC.</p>
+<p>(2) Define a new LIGGGHTS(R)-PUBLIC command that calls the other code.  This is
 conceptually similar to method (1), but in this case LIGGGHTS(R)-PUBLIC and the
 other code are on a more equal footing.  Note that now the other code
 is not called during the timestepping of a LIGGGHTS(R)-PUBLIC run, but between
 runs.  The LIGGGHTS(R)-PUBLIC input script can be used to alternate LIGGGHTS(R)-PUBLIC runs
 with calls to the other code, invoked via the new command.  The
-<A HREF = "run.html">run</A> command facilitates this with its <I>every</I> option, which
+<a class="reference internal" href="run.html"><em>run</em></a> command facilitates this with its <em>every</em> option, which
 makes it easy to run a few steps, invoke the command, run a few steps,
-invoke the command, etc.
-</P>
-<P>In this scenario, the other code can be called as a library, as in
+invoke the command, etc.</p>
+<p>In this scenario, the other code can be called as a library, as in
 (1), or it could be a stand-alone code, invoked by a system() call
 made by the command (assuming your parallel machine allows one or more
 processors to start up another program).  In the latter case the
 stand-alone code could communicate with LIGGGHTS(R)-PUBLIC thru files that the
-command writes and reads.
-</P>
-<P>See <A HREF = "Section_modify.html">Section_modify</A> of the documentation for how
-to add a new command to LIGGGHTS(R)-PUBLIC.
-</P>
-<P>(3) Use LIGGGHTS(R)-PUBLIC as a library called by another code.  In this case the
+command writes and reads.</p>
+<p>See <a class="reference internal" href="Section_modify.html"><em>Section_modify</em></a> of the documentation for how
+to add a new command to LIGGGHTS(R)-PUBLIC.</p>
+<p>(3) Use LIGGGHTS(R)-PUBLIC as a library called by another code.  In this case the
 other code is the driver and calls LIGGGHTS(R)-PUBLIC as needed.  Or a wrapper
 code could link and call both LIGGGHTS(R)-PUBLIC and another code as libraries.
-Again, the <A HREF = "run.html">run</A> command has options that allow it to be
+Again, the <a class="reference internal" href="run.html"><em>run</em></a> command has options that allow it to be
 invoked with minimal overhead (no setup or clean-up) if you wish to do
-multiple short runs, driven by another program.
-</P>
-<P>Examples of driver codes that call LIGGGHTS(R)-PUBLIC as a library are included in
+multiple short runs, driven by another program.</p>
+<p>Examples of driver codes that call LIGGGHTS(R)-PUBLIC as a library are included in
 the examples/COUPLE directory of the LIGGGHTS(R)-PUBLIC distribution; see
-examples/COUPLE/README for more details:
-</P>
-<UL><LI>simple: simple driver programs in C++ and C which invoke LIGGGHTS(R)-PUBLIC as a
-library 
-
-<LI>lammps_quest: coupling of LIGGGHTS(R)-PUBLIC and <A HREF = "http://dft.sandia.gov/Quest">Quest</A>, to run classical
-MD with quantum forces calculated by a density functional code 
-
-<LI>lammps_spparks: coupling of LIGGGHTS(R)-PUBLIC and <A HREF = "http://www.sandia.gov/~sjplimp/spparks.html">SPPARKS</A>, to couple
+examples/COUPLE/README for more details:</p>
+<ul class="simple">
+<li>simple: simple driver programs in C++ and C which invoke LIGGGHTS(R)-PUBLIC as a
+library</li>
+<li>lammps_quest: coupling of LIGGGHTS(R)-PUBLIC and <a class="reference external" href="quest_">Quest</a>, to run classical
+MD with quantum forces calculated by a density functional code</li>
+<li>lammps_spparks: coupling of LIGGGHTS(R)-PUBLIC and <a class="reference external" href="spparks_">SPPARKS</a>, to couple
 a kinetic Monte Carlo model for grain growth using MD to calculate
-strain induced across grain boundaries 
-</UL>
-
-
-
-
-<P><A HREF = "Section_start.html#start_5">This section</A> of the documentation
+strain induced across grain boundaries</li>
+</ul>
+<p><a class="reference internal" href="Section_start.html#start-5"><em>This section</em></a> of the documentation
 describes how to build LIGGGHTS(R)-PUBLIC as a library.  Once this is done, you
 can interface with LIGGGHTS(R)-PUBLIC either via C++, C, Fortran, or Python (or
 any other language that supports a vanilla C-like interface).  For
-example, from C++ you could create one (or more) "instances" of
+example, from C++ you could create one (or more) &#8220;instances&#8221; of
 LIGGGHTS(R)-PUBLIC, pass it an input script to process, or execute individual
 commands, all by invoking the correct class methods in LIGGGHTS(R)-PUBLIC.  From C
 or Fortran you can make function calls to do the same things.  See
-<A HREF = "Section_python.html">Section_python</A> of the manual for a description
+<a class="reference internal" href="Section_python.html"><em>Section_python</em></a> of the manual for a description
 of the Python wrapper provided with LIGGGHTS(R)-PUBLIC that operates through the
-LIGGGHTS(R)-PUBLIC library interface.
-</P>
-<P>The files src/library.cpp and library.h contain the C-style interface
-to LIGGGHTS(R)-PUBLIC.  See <A HREF = "Section_howto.html#howto_19">Section_howto 19</A> of the
+LIGGGHTS(R)-PUBLIC library interface.</p>
+<p>The files src/library.cpp and library.h contain the C-style interface
+to LIGGGHTS(R)-PUBLIC.  See <em class="xref std std-ref">Section_howto 19</em> of the
 manual for a description of the interface and how to extend it for
-your needs.
-</P>
-<P>Note that the lammps_open() function that creates an instance of
+your needs.</p>
+<p>Note that the lammps_open() function that creates an instance of
 LIGGGHTS(R)-PUBLIC takes an MPI communicator as an argument.  This means that
 instance of LIGGGHTS(R)-PUBLIC will run on the set of processors in the
 communicator.  Thus the calling code can run LIGGGHTS(R)-PUBLIC on all or a subset
@@ -338,481 +460,430 @@ alternate between LIGGGHTS(R)-PUBLIC and another code, allowing them both to run
 on all the processors.  Or it might allocate half the processors to
 LIGGGHTS(R)-PUBLIC and half to the other code and run both codes simultaneously
 before syncing them up periodically.  Or it might instantiate multiple
-instances of LIGGGHTS(R)-PUBLIC to perform different calculations.
-</P>
-<HR>
-
-<A NAME = "howto_6"></A><H4>7.6 Visualizing LIGGGHTS(R)-PUBLIC snapshots 
-</H4>
-<P>LIGGGHTS(R)-PUBLIC itself does not do visualization, but snapshots from LIGGGHTS(R)-PUBLIC
-simulations can be visualized (and analyzed) in a variety of ways.
-</P>
-<P>LIGGGHTS(R)-PUBLIC snapshots are created by the <A HREF = "dump.html">dump</A> command which can
+instances of LIGGGHTS(R)-PUBLIC to perform different calculations.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="visualizing-liggghts-r-public-snapshots">
+<span id="howto-6"></span><h2>8.6. Visualizing LIGGGHTS(R)-PUBLIC snapshots<a class="headerlink" href="#visualizing-liggghts-r-public-snapshots" title="Permalink to this headline">¶</a></h2>
+<p>LIGGGHTS(R)-PUBLIC itself does not do visualization, but snapshots from LIGGGHTS(R)-PUBLIC
+simulations can be visualized (and analyzed) in a variety of ways.</p>
+<p>LIGGGHTS(R)-PUBLIC snapshots are created by the <a class="reference internal" href="dump.html"><em>dump</em></a> command which can
 create files in several formats.  The native LIGGGHTS(R)-PUBLIC dump format is a
-text file (see "dump atom" or "dump custom").
-</P>
-<P>A Python-based toolkit (LPP) distributed by our group can read native LIGGGHTS(R)-PUBLIC
+text file (see &#8220;dump atom&#8221; or &#8220;dump custom&#8221;).</p>
+<p>A Python-based toolkit (LPP) distributed by our group can read native LIGGGHTS(R)-PUBLIC
 dump files, including custom dump files with additional columns of
 user-specified atom information, and convert them to VTK file formats
-that can be read with Paraview.
-</P>
-<P>Also, there exist a number of <A HREF = "dump.html">dump</A> commands that output to
-VTK natively.
-</P>
-<HR>
-
-<A NAME = "howto_7"></A><H4>7.7 Triclinic (non-orthogonal) simulation boxes 
-</H4>
-<P>By default, LIGGGHTS(R)-PUBLIC uses an orthogonal simulation box to encompass the
-particles.  The <A HREF = "boundary.html">boundary</A> command sets the boundary
+that can be read with Paraview.</p>
+<p>Also, there exist a number of <a class="reference internal" href="dump.html"><em>dump</em></a> commands that output to
+VTK natively.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="triclinic-non-orthogonal-simulation-boxes">
+<span id="howto-7"></span><h2>8.7. Triclinic (non-orthogonal) simulation boxes<a class="headerlink" href="#triclinic-non-orthogonal-simulation-boxes" title="Permalink to this headline">¶</a></h2>
+<p>By default, LIGGGHTS(R)-PUBLIC uses an orthogonal simulation box to encompass the
+particles.  The <a class="reference internal" href="boundary.html"><em>boundary</em></a> command sets the boundary
 conditions of the box (periodic, non-periodic, etc).  The orthogonal
-box has its "origin" at (xlo,ylo,zlo) and is defined by 3 edge vectors
-starting from the origin given by <B>a</B> = (xhi-xlo,0,0); <B>b</B> =
-(0,yhi-ylo,0); <B>c</B> = (0,0,zhi-zlo).  The 6 parameters
+box has its &#8220;origin&#8221; at (xlo,ylo,zlo) and is defined by 3 edge vectors
+starting from the origin given by <strong>a</strong> = (xhi-xlo,0,0); <strong>b</strong> =
+(0,yhi-ylo,0); <strong>c</strong> = (0,0,zhi-zlo).  The 6 parameters
 (xlo,xhi,ylo,yhi,zlo,zhi) are defined at the time the simulation box
-is created, e.g. by the <A HREF = "create_box.html">create_box</A> or
-<A HREF = "read_data.html">read_data</A> or <A HREF = "read_restart.html">read_restart</A>
+is created, e.g. by the <a class="reference internal" href="create_box.html"><em>create_box</em></a> or
+<a class="reference internal" href="read_data.html"><em>read_data</em></a> or <a class="reference internal" href="read_restart.html"><em>read_restart</em></a>
 commands.  Additionally, LIGGGHTS(R)-PUBLIC defines box size parameters lx,ly,lz
 where lx = xhi-xlo, and similarly in the y and z dimensions.  The 6
-parameters, as well as lx,ly,lz, can be output via the <A HREF = "thermo_style.html">thermo_style
-custom</A> command.
-</P>
-<P>LIGGGHTS(R)-PUBLIC also allows simulations to be performed in triclinic
+parameters, as well as lx,ly,lz, can be output via the <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a> command.</p>
+<p>LIGGGHTS(R)-PUBLIC also allows simulations to be performed in triclinic
 (non-orthogonal) simulation boxes shaped as a parallelepiped with
-triclinic symmetry.  The parallelepiped has its "origin" at
+triclinic symmetry.  The parallelepiped has its &#8220;origin&#8221; at
 (xlo,ylo,zlo) and is defined by 3 edge vectors starting from the
-origin given by <B>a</B> = (xhi-xlo,0,0); <B>b</B> = (xy,yhi-ylo,0); <B>c</B> =
-(xz,yz,zhi-zlo).  <I>xy,xz,yz</I> can be 0.0 or positive or negative values
-and are called "tilt factors" because they are the amount of
+origin given by <strong>a</strong> = (xhi-xlo,0,0); <strong>b</strong> = (xy,yhi-ylo,0); <strong>c</strong> =
+(xz,yz,zhi-zlo).  <em>xy,xz,yz</em> can be 0.0 or positive or negative values
+and are called &#8220;tilt factors&#8221; because they are the amount of
 displacement applied to faces of an originally orthogonal box to
 transform it into the parallelepiped.  In LIGGGHTS(R)-PUBLIC the triclinic
-simulation box edge vectors <B>a</B>, <B>b</B>, and <B>c</B> cannot be arbitrary
-vectors.  As indicated, <B>a</B> must lie on the positive x axis.  <B>b</B> must
-lie in the xy plane, with strictly positive y component. <B>c</B> may have
+simulation box edge vectors <strong>a</strong>, <strong>b</strong>, and <strong>c</strong> cannot be arbitrary
+vectors.  As indicated, <strong>a</strong> must lie on the positive x axis.  <strong>b</strong> must
+lie in the xy plane, with strictly positive y component. <strong>c</strong> may have
 any orientation with strictly positive z component.  The requirement
-that <B>a</B>, <B>b</B>, and <B>c</B> have strictly positive x, y, and z components,
-respectively, ensures that <B>a</B>, <B>b</B>, and <B>c</B> form a complete
+that <strong>a</strong>, <strong>b</strong>, and <strong>c</strong> have strictly positive x, y, and z components,
+respectively, ensures that <strong>a</strong>, <strong>b</strong>, and <strong>c</strong> form a complete
 right-handed basis.  These restrictions impose no loss of generality,
 since it is possible to rotate/invert any set of 3 crystal basis
-vectors so that they conform to the restrictions.
-</P>
-<P>For example, assume that the 3 vectors <B>A</B>,<B>B</B>,<B>C</B> are the edge
+vectors so that they conform to the restrictions.</p>
+<p>For example, assume that the 3 vectors <strong>A</strong>,**B**,**C** are the edge
 vectors of a general parallelepiped, where there is no restriction on
-<B>A</B>,<B>B</B>,<B>C</B> other than they form a complete right-handed basis i.e.
-<B>A</B> x <B>B</B> . <B>C</B> > 0.  The equivalent LIGGGHTS(R)-PUBLIC <B>a</B>,<B>b</B>,<B>c</B> are a linear
-rotation of <B>A</B>, <B>B</B>, and <B>C</B> and can be computed as follows:
-</P>
-<CENTER><IMG SRC = "Eqs/transform.jpg">
-</CENTER>
-<P>where A = |<B>A</B>| indicates the scalar length of <B>A</B>. The ^ hat symbol
-indicates the corresponding unit vector. <I>beta</I> and <I>gamma</I> are angles
+<strong>A</strong>,**B**,**C** other than they form a complete right-handed basis i.e.
+<strong>A</strong> x <strong>B</strong> . <strong>C</strong> &gt; 0.  The equivalent LIGGGHTS(R)-PUBLIC <strong>a</strong>,**b**,**c** are a linear
+rotation of <strong>A</strong>, <strong>B</strong>, and <strong>C</strong> and can be computed as follows:</p>
+<img alt="_images/transform.jpg" class="align-center" src="_images/transform.jpg" />
+<p>where A = <a href="#id63"><span class="problematic" id="id64">|**A**|</span></a> indicates the scalar length of <strong>A</strong>. The ^ hat symbol
+indicates the corresponding unit vector. <em>beta</em> and <em>gamma</em> are angles
 between the vectors described below. Note that by construction,
-<B>a</B>, <B>b</B>, and <B>c</B> have strictly positive x, y, and z components, respectively.
+<strong>a</strong>, <strong>b</strong>, and <strong>c</strong> have strictly positive x, y, and z components, respectively.
 If it should happen that
-<B>A</B>, <B>B</B>, and <B>C</B> form a left-handed basis, then the above equations
-are not valid for <B>c</B>. In this case, it is necessary
+<strong>A</strong>, <strong>B</strong>, and <strong>C</strong> form a left-handed basis, then the above equations
+are not valid for <strong>c</strong>. In this case, it is necessary
 to first apply an inversion. This can be achieved
-by interchanging two basis vectors or by changing the sign of one of them.
-</P>
-<P>For consistency, the same rotation/inversion applied to the basis vectors
+by interchanging two basis vectors or by changing the sign of one of them.</p>
+<p>For consistency, the same rotation/inversion applied to the basis vectors
 must also be applied to atom positions, velocities,
 and any other vector quantities.
 This can be conveniently achieved by first converting to
 fractional coordinates in the
 old basis and then converting to distance coordinates in the new basis.
-The transformation is given by the following equation:
-</P>
-<CENTER><IMG SRC = "Eqs/rotate.jpg">
-</CENTER>
-<P>where <I>V</I> is the volume of the box, <B>X</B> is the original vector quantity and
-<B>x</B> is the vector in the LIGGGHTS(R)-PUBLIC basis.
-</P>
-<P>There is no requirement that a triclinic box be periodic in any
+The transformation is given by the following equation:</p>
+<img alt="_images/rotate.jpg" class="align-center" src="_images/rotate.jpg" />
+<p>where <em>V</em> is the volume of the box, <strong>X</strong> is the original vector quantity and
+<strong>x</strong> is the vector in the LIGGGHTS(R)-PUBLIC basis.</p>
+<p>There is no requirement that a triclinic box be periodic in any
 dimension, though it typically should be in at least the 2nd dimension
 of the tilt (y in xy) if you want to enforce a shift in periodic
 boundary conditions across that boundary.  Some commands that work
-with triclinic boxes, e.g. the <A HREF = "fix_deform.html">fix deform</A> and <A HREF = "fix_nh.html">fix
-npt</A> commands, require periodicity or non-shrink-wrap
+with triclinic boxes, e.g. the <a class="reference internal" href="fix_deform.html"><em>fix deform</em></a> and <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></tt> commands, require periodicity or non-shrink-wrap
 boundary conditions in specific dimensions.  See the command doc pages
-for details.
-</P>
-<P>The 9 parameters (xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz) are defined at the
+for details.</p>
+<p>The 9 parameters (xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz) are defined at the
 time the simluation box is created.  This happens in one of 3 ways.
-If the <A HREF = "create_box.html">create_box</A> command is used with a region of
-style <I>prism</I>, then a triclinic box is setup.  See the
-<A HREF = "region.html">region</A> command for details.  If the
-<A HREF = "read_data.html">read_data</A> command is used to define the simulation
-box, and the header of the data file contains a line with the "xy xz
-yz" keyword, then a triclinic box is setup.  See the
-<A HREF = "read_data.html">read_data</A> command for details.  Finally, if the
-<A HREF = "read_restart.html">read_restart</A> command reads a restart file which
+If the <a class="reference internal" href="create_box.html"><em>create_box</em></a> command is used with a region of
+style <em>prism</em>, then a triclinic box is setup.  See the
+<a class="reference internal" href="region.html"><em>region</em></a> command for details.  If the
+<a class="reference internal" href="read_data.html"><em>read_data</em></a> command is used to define the simulation
+box, and the header of the data file contains a line with the &#8220;xy xz
+yz&#8221; keyword, then a triclinic box is setup.  See the
+<a class="reference internal" href="read_data.html"><em>read_data</em></a> command for details.  Finally, if the
+<a class="reference internal" href="read_restart.html"><em>read_restart</em></a> command reads a restart file which
 was written from a simulation using a triclinic box, then a triclinic
-box will be setup for the restarted simulation.
-</P>
-<P>Note that you can define a triclinic box with all 3 tilt factors =
+box will be setup for the restarted simulation.</p>
+<p>Note that you can define a triclinic box with all 3 tilt factors =
 0.0, so that it is initially orthogonal.  This is necessary if the box
-will become non-orthogonal, e.g. due to the <A HREF = "fix_nh.html">fix npt</A> or
-<A HREF = "fix_deform.html">fix deform</A> commands.  Alternatively, you can use the
-<A HREF = "change_box.html">change_box</A> command to convert a simulation box from
-orthogonal to triclinic and vice versa.
-</P>
-<P>As with orthogonal boxes, LIGGGHTS(R)-PUBLIC defines triclinic box size parameters
+will become non-orthogonal, e.g. due to the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></tt> or
+<a class="reference internal" href="fix_deform.html"><em>fix deform</em></a> commands.  Alternatively, you can use the
+<a class="reference internal" href="change_box.html"><em>change_box</em></a> command to convert a simulation box from
+orthogonal to triclinic and vice versa.</p>
+<p>As with orthogonal boxes, LIGGGHTS(R)-PUBLIC defines triclinic box size parameters
 lx,ly,lz where lx = xhi-xlo, and similarly in the y and z dimensions.
 The 9 parameters, as well as lx,ly,lz, can be output via the
-<A HREF = "thermo_style.html">thermo_style custom</A> command.
-</P>
-<P>To avoid extremely tilted boxes (which would be computationally
+<a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a> command.</p>
+<p>To avoid extremely tilted boxes (which would be computationally
 inefficient), LIGGGHTS(R)-PUBLIC normally requires that no tilt factor can skew
 the box more than half the distance of the parallel box length, which
 is the 1st dimension in the tilt factor (x for xz).  This is required
 both when the simulation box is created, e.g. via the
-<A HREF = "create_box.html">create_box</A> or <A HREF = "read_data.html">read_data</A> commands,
+<a class="reference internal" href="create_box.html"><em>create_box</em></a> or <a class="reference internal" href="read_data.html"><em>read_data</em></a> commands,
 as well as when the box shape changes dynamically during a simulation,
-e.g. via the <A HREF = "fix_deform.html">fix deform</A> command.
-</P>
-<P>For example, if xlo = 2 and xhi = 12, then the x box length is 10 and
+e.g. via the <a class="reference internal" href="fix_deform.html"><em>fix deform</em></a> command.</p>
+<p>For example, if xlo = 2 and xhi = 12, then the x box length is 10 and
 the xy tilt factor must be between -5 and 5.  Similarly, both xz and
 yz must be between -(xhi-xlo)/2 and +(yhi-ylo)/2.  Note that this is
 not a limitation, since if the maximum tilt factor is 5 (as in this
 example), then configurations with tilt = ..., -15, -5, 5, 15, 25,
 ... are geometrically all equivalent.  If the box tilt exceeds this
-limit during a dynamics run (e.g. via the <A HREF = "fix_deform.html">fix deform</A>
-command), then the box is "flipped" to an equivalent shape with a tilt
-factor within the bounds, so the run can continue.  See the <A HREF = "fix_deform.html">fix
-deform</A> doc page for further details.
-</P>
-<P>One exception to this rule is if the 1st dimension in the tilt
+limit during a dynamics run (e.g. via the <a class="reference internal" href="fix_deform.html"><em>fix deform</em></a>
+command), then the box is &#8220;flipped&#8221; to an equivalent shape with a tilt
+factor within the bounds, so the run can continue.  See the <a class="reference internal" href="fix_deform.html"><em>fix deform</em></a> doc page for further details.</p>
+<p>One exception to this rule is if the 1st dimension in the tilt
 factor (x for xy) is non-periodic.  In that case, the limits on the
 tilt factor are not enforced, since flipping the box in that dimension
 does not change the atom positions due to non-periodicity.  In this
 mode, if you tilt the system to extreme angles, the simulation will
-simply become inefficient, due to the highly skewed simulation box.
-</P>
-<P>The limitation on not creating a simulation box with a tilt factor
+simply become inefficient, due to the highly skewed simulation box.</p>
+<p>The limitation on not creating a simulation box with a tilt factor
 skewing the box more than half the distance of the parallel box length
-can be overridden via the <A HREF = "box.html">box</A> command.  Setting the <I>tilt</I>
-keyword to <I>large</I> allows any tilt factors to be specified.
-</P>
-<P>Note that if a simulation box has a large tilt factor, LIGGGHTS(R)-PUBLIC will run
+can be overridden via the <a class="reference internal" href="box.html"><em>box</em></a> command.  Setting the <em>tilt</em>
+keyword to <em>large</em> allows any tilt factors to be specified.</p>
+<p>Note that if a simulation box has a large tilt factor, LIGGGHTS(R)-PUBLIC will run
 less efficiently, due to the large volume of communication needed to
-acquire ghost atoms around a processor's irregular-shaped sub-domain.
+acquire ghost atoms around a processor&#8217;s irregular-shaped sub-domain.
 For extreme values of tilt, LIGGGHTS(R)-PUBLIC may also lose atoms and generate an
-error.
-</P>
-<P>Triclinic crystal structures are often defined using three lattice
-constants <I>a</I>, <I>b</I>, and <I>c</I>, and three angles <I>alpha</I>, <I>beta</I> and
-<I>gamma</I>. Note that in this nomenclature, the a, b, and c lattice
-constants are the scalar lengths of the edge vectors <B>a</B>, <B>b</B>, and <B>c</B>
+error.</p>
+<p>Triclinic crystal structures are often defined using three lattice
+constants <em>a</em>, <em>b</em>, and <em>c</em>, and three angles <em>alpha</em>, <em>beta</em> and
+<em>gamma</em>. Note that in this nomenclature, the a, b, and c lattice
+constants are the scalar lengths of the edge vectors <strong>a</strong>, <strong>b</strong>, and <strong>c</strong>
 defined above.  The relationship between these 6 quantities
 (a,b,c,alpha,beta,gamma) and the LIGGGHTS(R)-PUBLIC box sizes (lx,ly,lz) =
-(xhi-xlo,yhi-ylo,zhi-zlo) and tilt factors (xy,xz,yz) is as follows:
-</P>
-<CENTER><IMG SRC = "Eqs/box.jpg">
-</CENTER>
-<P>The inverse relationship can be written as follows:
-</P>
-<CENTER><IMG SRC = "Eqs/box_inverse.jpg">
-</CENTER>
-<P>The values of <I>a</I>, <I>b</I>, <I>c</I> , <I>alpha</I>, <I>beta</I> , and <I>gamma</I> can be printed
+(xhi-xlo,yhi-ylo,zhi-zlo) and tilt factors (xy,xz,yz) is as follows:</p>
+<img alt="_images/box.jpg" class="align-center" src="_images/box.jpg" />
+<p>The inverse relationship can be written as follows:</p>
+<img alt="_images/box_inverse.jpg" class="align-center" src="_images/box_inverse.jpg" />
+<p>The values of <em>a</em>, <em>b</em>, <em>c</em> , <em>alpha</em>, <em>beta</em> , and <em>gamma</em> can be printed
 out or accessed by computes using the
-<A HREF = "thermo_style.html">thermo_style custom</A> keywords
-<I>cella</I>, <I>cellb</I>, <I>cellc</I>, <I>cellalpha</I>, <I>cellbeta</I>, <I>cellgamma</I>,
-respectively.
-</P>
-<P>As discussed on the <A HREF = "dump.html">dump</A> command doc page, when the BOX
+<a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a> keywords
+<em>cella</em>, <em>cellb</em>, <em>cellc</em>, <em>cellalpha</em>, <em>cellbeta</em>, <em>cellgamma</em>,
+respectively.</p>
+<p>As discussed on the <a class="reference internal" href="dump.html"><em>dump</em></a> command doc page, when the BOX
 BOUNDS for a snapshot is written to a dump file for a triclinic box,
 an orthogonal bounding box which encloses the triclinic simulation box
 is output, along with the 3 tilt factors (xy, xz, yz) of the triclinic
-box, formatted as follows:
-</P>
-<PRE>ITEM: BOX BOUNDS xy xz yz
+box, formatted as follows:</p>
+<div class="highlight-python"><pre>ITEM: BOX BOUNDS xy xz yz
 xlo_bound xhi_bound xy
 ylo_bound yhi_bound xz
-zlo_bound zhi_bound yz 
-</PRE>
-<P>This bounding box is convenient for many visualization programs and is
+zlo_bound zhi_bound yz</pre>
+</div>
+<p>This bounding box is convenient for many visualization programs and is
 calculated from the 9 triclinic box parameters
-(xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz) as follows:
-</P>
-<PRE>xlo_bound = xlo + MIN(0.0,xy,xz,xy+xz)
-xhi_bound = xhi + MAX(0.0,xy,xz,xy+xz)
-ylo_bound = ylo + MIN(0.0,yz)
-yhi_bound = yhi + MAX(0.0,yz)
-zlo_bound = zlo
-zhi_bound = zhi 
-</PRE>
-<P>These formulas can be inverted if you need to convert the bounding box
+(xlo,xhi,ylo,yhi,zlo,zhi,xy,xz,yz) as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">xlo_bound</span> <span class="o">=</span> <span class="n">xlo</span> <span class="o">+</span> <span class="n">MIN</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="n">xy</span><span class="p">,</span><span class="n">xz</span><span class="p">,</span><span class="n">xy</span><span class="o">+</span><span class="n">xz</span><span class="p">)</span>
+<span class="n">xhi_bound</span> <span class="o">=</span> <span class="n">xhi</span> <span class="o">+</span> <span class="n">MAX</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="n">xy</span><span class="p">,</span><span class="n">xz</span><span class="p">,</span><span class="n">xy</span><span class="o">+</span><span class="n">xz</span><span class="p">)</span>
+<span class="n">ylo_bound</span> <span class="o">=</span> <span class="n">ylo</span> <span class="o">+</span> <span class="n">MIN</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="n">yz</span><span class="p">)</span>
+<span class="n">yhi_bound</span> <span class="o">=</span> <span class="n">yhi</span> <span class="o">+</span> <span class="n">MAX</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="n">yz</span><span class="p">)</span>
+<span class="n">zlo_bound</span> <span class="o">=</span> <span class="n">zlo</span>
+<span class="n">zhi_bound</span> <span class="o">=</span> <span class="n">zhi</span>
+</pre></div>
+</div>
+<p>These formulas can be inverted if you need to convert the bounding box
 back into the triclinic box parameters, e.g. xlo = xlo_bound -
-MIN(0.0,xy,xz,xy+xz).
-</P>
-<HR>
-
-<A NAME = "howto_8"></A><H4>7.8 Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables) 
-</H4>
-<P>There are four basic kinds of LIGGGHTS(R)-PUBLIC output:
-</P>
-<UL><LI><A HREF = "thermo_style.html">Thermodynamic output</A>, which is a list
-of quantities printed every few timesteps to the screen and logfile. 
-
-<LI><A HREF = "dump.html">Dump files</A>, which contain snapshots of atoms and various
-per-atom values and are written at a specified frequency. 
-
-<LI>Certain fixes can output user-specified quantities to files: <A HREF = "fix_ave_time.html">fix
-ave/time</A> for time averaging, <A HREF = "fix_ave_spatial.html">fix
-ave/spatial</A> for spatial averaging, and <A HREF = "fix_print.html">fix
-print</A> for single-line output of
-<A HREF = "variable.html">variables</A>.  Fix print can also output to the
-screen. 
-
-<LI><A HREF = "restart.html">Restart files</A>. 
-</UL>
-<P>A simulation prints one set of thermodynamic output and (optionally)
+MIN(0.0,xy,xz,xy+xz).</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="output-from-liggghts-r-public-thermo-dumps-computes-fixes-variables">
+<span id="howto-8"></span><h2>8.8. Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)<a class="headerlink" href="#output-from-liggghts-r-public-thermo-dumps-computes-fixes-variables" title="Permalink to this headline">¶</a></h2>
+<p>There are four basic kinds of LIGGGHTS(R)-PUBLIC output:</p>
+<ul class="simple">
+<li><a class="reference internal" href="thermo_style.html"><em>Thermodynamic output</em></a>, which is a list
+of quantities printed every few timesteps to the screen and logfile.</li>
+<li><a class="reference internal" href="dump.html"><em>Dump files</em></a>, which contain snapshots of atoms and various
+per-atom values and are written at a specified frequency.</li>
+<li>Certain fixes can output user-specified quantities to files: <a class="reference internal" href="fix_ave_time.html"><em>fix ave/time</em></a> for time averaging, <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a> for spatial averaging, and <a class="reference internal" href="fix_print.html"><em>fix print</em></a> for single-line output of
+<a class="reference internal" href="variable.html"><em>variables</em></a>.  Fix print can also output to the
+screen.</li>
+<li><a class="reference internal" href="restart.html"><em>Restart files</em></a>.</li>
+</ul>
+<p>A simulation prints one set of thermodynamic output and (optionally)
 restart files.  It can generate any number of dump files and fix
-output files, depending on what <A HREF = "dump.html">dump</A> and <A HREF = "fix.html">fix</A>
-commands you specify.
-</P>
-<P>As discussed below, LIGGGHTS(R)-PUBLIC gives you a variety of ways to determine
+output files, depending on what <a class="reference internal" href="dump.html"><em>dump</em></a> and <a class="reference internal" href="fix.html"><em>fix</em></a>
+commands you specify.</p>
+<p>As discussed below, LIGGGHTS(R)-PUBLIC gives you a variety of ways to determine
 what quantities are computed and printed when the thermodynamics,
 dump, or fix commands listed above perform output.  Throughout this
-discussion, note that users can also <A HREF = "Section_modify.html">add their own computes and fixes
-to LIGGGHTS(R)-PUBLIC</A> which can then generate values that can
-then be output with these commands.
-</P>
-<P>The following sub-sections discuss different LIGGGHTS(R)-PUBLIC command related
-to output and the kind of data they operate on and produce:
-</P>
-<UL><LI><A HREF = "#global">Global/per-atom/local data</A>
-<LI><A HREF = "#scalar">Scalar/vector/array data</A>
-<LI><A HREF = "#thermo">Thermodynamic output</A>
-<LI><A HREF = "#dump">Dump file output</A>
-<LI><A HREF = "#fixoutput">Fixes that write output files</A>
-<LI><A HREF = "#computeoutput">Computes that process output quantities</A>
-<LI><A HREF = "#fixoutput">Fixes that process output quantities</A>
-<LI><A HREF = "#compute">Computes that generate values to output</A>
-<LI><A HREF = "#fix">Fixes that generate values to output</A>
-<LI><A HREF = "#variable">Variables that generate values to output</A>
-<LI><A HREF = "#table">Summary table of output options and data flow between commands</A> 
-</UL>
-<H5><A NAME = "global"></A>Global/per-atom/local data 
-</H5>
-<P>Various output-related commands work with three different styles of
+discussion, note that users can also <a class="reference internal" href="Section_modify.html"><em>add their own computes and fixes to LIGGGHTS(R)-PUBLIC</em></a> which can then generate values that can
+then be output with these commands.</p>
+<p>The following sub-sections discuss different LIGGGHTS(R)-PUBLIC command related
+to output and the kind of data they operate on and produce:</p>
+<ul class="simple">
+<li><a class="reference internal" href="#global"><em>Global/per-atom/local data</em></a></li>
+<li><a class="reference internal" href="#scalar"><em>Scalar/vector/array data</em></a></li>
+<li><a class="reference internal" href="#thermo"><em>Thermodynamic output</em></a></li>
+<li><a class="reference internal" href="#dump"><em>Dump file output</em></a></li>
+<li><em class="xref std std-ref">Fixes that write output files</em></li>
+<li><a class="reference internal" href="#computeoutput"><em>Computes that process output quantities</em></a></li>
+<li><em class="xref std std-ref">Fixes that process output quantities</em></li>
+<li><a class="reference internal" href="#compute"><em>Computes that generate values to output</em></a></li>
+<li><a class="reference internal" href="#fix"><em>Fixes that generate values to output</em></a></li>
+<li><a class="reference internal" href="#variable"><em>Variables that generate values to output</em></a></li>
+<li><a class="reference internal" href="#table"><em>Summary table of output options and data flow between commands</em></a></li>
+</ul>
+<div class="section" id="global-per-atom-local-data">
+<span id="global"></span><h3>8.8.1. Global/per-atom/local data<a class="headerlink" href="#global-per-atom-local-data" title="Permalink to this headline">¶</a></h3>
+<p>Various output-related commands work with three different styles of
 data: global, per-atom, or local.  A global datum is one or more
 system-wide values, e.g. the temperature of the system.  A per-atom
 datum is one or more values per atom, e.g. the kinetic energy of each
 atom.  Local datums are calculated by each processor based on the
 atoms it owns, but there may be zero or more per atom, e.g. a list of
-bond distances.
-</P>
-<H5><A NAME = "scalar"></A>Scalar/vector/array data 
-</H5>
-<P>Global, per-atom, and local datums can each come in three kinds: a
+bond distances.</p>
+</div>
+<div class="section" id="scalar-vector-array-data">
+<span id="scalar"></span><h3>8.8.2. Scalar/vector/array data<a class="headerlink" href="#scalar-vector-array-data" title="Permalink to this headline">¶</a></h3>
+<p>Global, per-atom, and local datums can each come in three kinds: a
 single scalar value, a vector of values, or a 2d array of values.  The
-doc page for a "compute" or "fix" or "variable" that generates data
+doc page for a &#8220;compute&#8221; or &#8220;fix&#8221; or &#8220;variable&#8221; that generates data
 will specify both the style and kind of data it produces, e.g. a
-per-atom vector.
-</P>
-<P>When a quantity is accessed, as in many of the output commands
+per-atom vector.</p>
+<p>When a quantity is accessed, as in many of the output commands
 discussed below, it can be referenced via the following bracket
 notation, where ID in this case is the ID of a compute.  The leading
-"c_" would be replaced by "f_" for a fix, or "v_" for a variable:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >c_ID </TD><TD > entire scalar, vector, or array</TD></TR>
-<TR><TD >c_ID[I] </TD><TD > one element of vector, one column of array</TD></TR>
-<TR><TD >c_ID[I][J] </TD><TD > one element of array 
-</TD></TR></TABLE></DIV>
-
-<P>In other words, using one bracket reduces the dimension of the data
-once (vector -> scalar, array -> vector).  Using two brackets reduces
-the dimension twice (array -> scalar).  Thus a command that uses
+&#8220;<a href="#id65"><span class="problematic" id="id66">c_</span></a>&#8221; would be replaced by &#8220;<a href="#id67"><span class="problematic" id="id68">f_</span></a>&#8221; for a fix, or &#8220;<a href="#id69"><span class="problematic" id="id70">v_</span></a>&#8221; for a variable:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>c_ID</td>
+<td>entire scalar, vector, or array</td>
+</tr>
+<tr class="row-even"><td>c_ID[I]</td>
+<td>one element of vector, one column of array</td>
+</tr>
+<tr class="row-odd"><td>c_ID[I][J]</td>
+<td>one element of array</td>
+</tr>
+</tbody>
+</table>
+<p>In other words, using one bracket reduces the dimension of the data
+once (vector -&gt; scalar, array -&gt; vector).  Using two brackets reduces
+the dimension twice (array -&gt; scalar).  Thus a command that uses
 scalar values as input can typically also process elements of a vector
-or array.
-</P>
-<H5><A NAME = "thermo"></A>Thermodynamic output 
-</H5>
-<P>The frequency and format of thermodynamic output is set by the
-<A HREF = "thermo.html">thermo</A>, <A HREF = "thermo_style.html">thermo_style</A>, and
-<A HREF = "thermo_modify.html">thermo_modify</A> commands.  The
-<A HREF = "thermo_style.html">thermo_style</A> command also specifies what values
+or array.</p>
+</div>
+<div class="section" id="thermodynamic-output">
+<span id="thermo"></span><h3>8.8.3. Thermodynamic output<a class="headerlink" href="#thermodynamic-output" title="Permalink to this headline">¶</a></h3>
+<p>The frequency and format of thermodynamic output is set by the
+<a class="reference internal" href="thermo.html"><em>thermo</em></a>, <a class="reference internal" href="thermo_style.html"><em>thermo_style</em></a>, and
+<a class="reference internal" href="thermo_modify.html"><em>thermo_modify</em></a> commands.  The
+<a class="reference internal" href="thermo_style.html"><em>thermo_style</em></a> command also specifies what values
 are calculated and written out.  Pre-defined keywords can be specified
 (e.g. press, etotal, etc).  Three additional kinds of keywords can
-also be specified (c_ID, f_ID, v_name), where a <A HREF = "compute.html">compute</A>
-or <A HREF = "fix.html">fix</A> or <A HREF = "variable.html">variable</A> provides the value to be
+also be specified (c_ID, f_ID, v_name), where a <a class="reference internal" href="compute.html"><em>compute</em></a>
+or <a class="reference internal" href="fix.html"><em>fix</em></a> or <a class="reference internal" href="variable.html"><em>variable</em></a> provides the value to be
 output.  In each case, the compute, fix, or variable must generate
-global values for input to the <A HREF = "dump.html">thermo_style custom</A>
-command.
-</P>
-<P>Note that thermodynamic output values can be "extensive" or
-"intensive".  The former scale with the number of atoms in the system
+global values for input to the <a class="reference internal" href="dump.html"><em>thermo_style custom</em></a>
+command.</p>
+<p>Note that thermodynamic output values can be &#8220;extensive&#8221; or
+&#8220;intensive&#8221;.  The former scale with the number of atoms in the system
 (e.g. total energy), the latter do not (e.g. temperature).  The
-setting for <A HREF = "thermo_modify.html">thermo_modify norm</A> determines whether
+setting for <a class="reference internal" href="thermo_modify.html"><em>thermo_modify norm</em></a> determines whether
 extensive quantities are normalized or not.  Computes and fixes
 produce either extensive or intensive values; see their individual doc
-pages for details.  <A HREF = "variable.html">Equal-style variables</A> produce only
-intensive values; you can include a division by "natoms" in the
+pages for details.  <a class="reference internal" href="variable.html"><em>Equal-style variables</em></a> produce only
+intensive values; you can include a division by &#8220;natoms&#8221; in the
 formula if desired, to make an extensive calculation produce an
-intensive result.
-</P>
-<H5><A NAME = "dump"></A>Dump file output 
-</H5>
-<P>Dump file output is specified by the <A HREF = "dump.html">dump</A> and
-<A HREF = "dump_modify.html">dump_modify</A> commands.  There are several
-pre-defined formats (dump atom, dump xtc, etc).
-</P>
-<P>There is also a <A HREF = "dump.html">dump custom</A> format where the user
+intensive result.</p>
+</div>
+<div class="section" id="dump-file-output">
+<span id="dump"></span><h3>8.8.4. Dump file output<a class="headerlink" href="#dump-file-output" title="Permalink to this headline">¶</a></h3>
+<p>Dump file output is specified by the <a class="reference internal" href="dump.html"><em>dump</em></a> and
+<a class="reference internal" href="dump_modify.html"><em>dump_modify</em></a> commands.  There are several
+pre-defined formats (dump atom, dump xtc, etc).</p>
+<p>There is also a <a class="reference internal" href="dump.html"><em>dump custom</em></a> format where the user
 specifies what values are output with each atom.  Pre-defined atom
 attributes can be specified (id, x, fx, etc).  Three additional kinds
 of keywords can also be specified (c_ID, f_ID, v_name), where a
-<A HREF = "compute.html">compute</A> or <A HREF = "fix.html">fix</A> or <A HREF = "variable.html">variable</A>
+<a class="reference internal" href="compute.html"><em>compute</em></a> or <a class="reference internal" href="fix.html"><em>fix</em></a> or <a class="reference internal" href="variable.html"><em>variable</em></a>
 provides the values to be output.  In each case, the compute, fix, or
-variable must generate per-atom values for input to the <A HREF = "dump.html">dump
-custom</A> command.
-</P>
-<P>There is also a <A HREF = "dump.html">dump local</A> format where the user specifies
+variable must generate per-atom values for input to the <a class="reference internal" href="dump.html"><em>dump custom</em></a> command.</p>
+<p>There is also a <a class="reference internal" href="dump.html"><em>dump local</em></a> format where the user specifies
 what local values to output.  A pre-defined index keyword can be
 specified to enumuerate the local values.  Two additional kinds of
 keywords can also be specified (c_ID, f_ID), where a
-<A HREF = "compute.html">compute</A> or <A HREF = "fix.html">fix</A> or <A HREF = "variable.html">variable</A>
+<a class="reference internal" href="compute.html"><em>compute</em></a> or <a class="reference internal" href="fix.html"><em>fix</em></a> or <a class="reference internal" href="variable.html"><em>variable</em></a>
 provides the values to be output.  In each case, the compute or fix
-must generate local values for input to the <A HREF = "dump.html">dump local</A>
-command.
-</P>
-<H5><A NAME = "fixoutput"></A>Fixes that write output files 
-</H5>
-<P>Several fixes take various quantities as input and can write output
-files: <A HREF = "fix_ave_time.html">fix ave/time</A>, <A HREF = "fix_ave_spatial.html">fix
-ave/spatial</A>, <A HREF = "fix_ave_histo.html">fix ave/histo</A>,
-<A HREF = "fix_ave_correlate.html">fix ave/correlate</A>, and <A HREF = "fix_print.html">fix
-print</A>.
-</P>
-<P>The <A HREF = "fix_ave_time.html">fix ave/time</A> command enables direct output to
+must generate local values for input to the <a class="reference internal" href="dump.html"><em>dump local</em></a>
+command.</p>
+</div>
+<div class="section" id="fixes-that-write-output-files">
+<span id="fixoutput"></span><h3>8.8.5. Fixes that write output files<a class="headerlink" href="#fixes-that-write-output-files" title="Permalink to this headline">¶</a></h3>
+<p>Several fixes take various quantities as input and can write output
+files: <a class="reference internal" href="fix_ave_time.html"><em>fix ave/time</em></a>, <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>, <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a>,
+<a class="reference internal" href="fix_ave_correlate.html"><em>fix ave/correlate</em></a>, and <a class="reference internal" href="fix_print.html"><em>fix print</em></a>.</p>
+<p>The <a class="reference internal" href="fix_ave_time.html"><em>fix ave/time</em></a> command enables direct output to
 a file and/or time-averaging of global scalars or vectors.  The user
 specifies one or more quantities as input.  These can be global
-<A HREF = "compute.html">compute</A> values, global <A HREF = "fix.html">fix</A> values, or
-<A HREF = "variable.html">variables</A> of any style except the atom style which
+<a class="reference internal" href="compute.html"><em>compute</em></a> values, global <a class="reference internal" href="fix.html"><em>fix</em></a> values, or
+<a class="reference internal" href="variable.html"><em>variables</em></a> of any style except the atom style which
 produces per-atom values.  Since a variable can refer to keywords used
-by the <A HREF = "thermo_style.html">thermo_style custom</A> command (like temp or
+by the <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a> command (like temp or
 press) and individual per-atom values, a wide variety of quantities
 can be time averaged and/or output in this way.  If the inputs are one
 or more scalar values, then the fix generate a global scalar or vector
 of output.  If the inputs are one or more vector values, then the fix
 generates a global vector or array of output.  The time-averaged
-output of this fix can also be used as input to other output commands.
-</P>
-<P>The <A HREF = "fix_ave_spatial.html">fix ave/spatial</A> command enables direct
+output of this fix can also be used as input to other output commands.</p>
+<p>The <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a> command enables direct
 output to a file of spatial-averaged per-atom quantities like those
 output in dump files, within 1d layers of the simulation box.  The
 per-atom quantities can be atom density (mass or number) or atom
 attributes such as position, velocity, force.  They can also be
-per-atom quantities calculated by a <A HREF = "compute.html">compute</A>, by a
-<A HREF = "fix.html">fix</A>, or by an atom-style <A HREF = "variable.html">variable</A>.  The
+per-atom quantities calculated by a <a class="reference internal" href="compute.html"><em>compute</em></a>, by a
+<a class="reference internal" href="fix.html"><em>fix</em></a>, or by an atom-style <a class="reference internal" href="variable.html"><em>variable</em></a>.  The
 spatial-averaged output of this fix can also be used as input to other
-output commands.
-</P>
-<P>The <A HREF = "fix_ave_histo.html">fix ave/histo</A> command enables direct output
+output commands.</p>
+<p>The <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a> command enables direct output
 to a file of histogrammed quantities, which can be global or per-atom
 or local quantities.  The histogram output of this fix can also be
-used as input to other output commands.
-</P>
-<P>The <A HREF = "fix_ave_correlate.html">fix ave/correlate</A> command enables direct
+used as input to other output commands.</p>
+<p>The <a class="reference internal" href="fix_ave_correlate.html"><em>fix ave/correlate</em></a> command enables direct
 output to a file of time-correlated quantities, which can be global
 scalars.  The correlation matrix output of this fix can also be used
-as input to other output commands.
-</P>
-<P>The <A HREF = "fix_print.html">fix print</A> command can generate a line of output
+as input to other output commands.</p>
+<p>The <a class="reference internal" href="fix_print.html"><em>fix print</em></a> command can generate a line of output
 written to the screen and log file or to a separate file, periodically
 during a running simulation.  The line can contain one or more
-<A HREF = "variable.html">variable</A> values for any style variable except the atom
+<a class="reference internal" href="variable.html"><em>variable</em></a> values for any style variable except the atom
 style).  As explained above, variables themselves can contain
-references to global values generated by <A HREF = "thermo_style.html">thermodynamic
-keywords</A>, <A HREF = "compute.html">computes</A>,
-<A HREF = "fix.html">fixes</A>, or other <A HREF = "variable.html">variables</A>, or to per-atom
-values for a specific atom.  Thus the <A HREF = "fix_print.html">fix print</A>
+references to global values generated by <a class="reference internal" href="thermo_style.html"><em>thermodynamic keywords</em></a>, <a class="reference internal" href="compute.html"><em>computes</em></a>,
+<a class="reference internal" href="fix.html"><em>fixes</em></a>, or other <a class="reference internal" href="variable.html"><em>variables</em></a>, or to per-atom
+values for a specific atom.  Thus the <a class="reference internal" href="fix_print.html"><em>fix print</em></a>
 command is a means to output a wide variety of quantities separate
-from normal thermodynamic or dump file output.
-</P>
-<H5><A NAME = "computeoutput"></A>Computes that process output quantities 
-</H5>
-<P>The <A HREF = "compute_reduce.html">compute reduce</A> and <A HREF = "compute_reduce.html">compute
-reduce/region</A> commands take one or more per-atom
-or local vector quantities as inputs and "reduce" them (sum, min, max,
+from normal thermodynamic or dump file output.</p>
+</div>
+<div class="section" id="computes-that-process-output-quantities">
+<span id="computeoutput"></span><h3>8.8.6. Computes that process output quantities<a class="headerlink" href="#computes-that-process-output-quantities" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a> and <a class="reference internal" href="compute_reduce.html"><em>compute reduce/region</em></a> commands take one or more per-atom
+or local vector quantities as inputs and &#8220;reduce&#8221; them (sum, min, max,
 ave) to scalar quantities.  These are produced as output values which
-can be used as input to other output commands.
-</P>
-<P>The <A HREF = "compute_slice.html">compute slice</A> command take one or more global
+can be used as input to other output commands.</p>
+<p>The <a class="reference internal" href="compute_slice.html"><em>compute slice</em></a> command take one or more global
 vector or array quantities as inputs and extracts a subset of their
 values to create a new vector or array.  These are produced as output
-values which can be used as input to other output commands.
-</P>
-<P>The <A HREF = "compute_property_atom.html">compute property/atom</A> command takes a
+values which can be used as input to other output commands.</p>
+<p>The <a class="reference internal" href="compute_property_atom.html"><em>compute property/atom</em></a> command takes a
 list of one or more pre-defined atom attributes (id, x, fx, etc) and
 stores the values in a per-atom vector or array.  These are produced
 as output values which can be used as input to other output commands.
-The list of atom attributes is the same as for the <A HREF = "dump.html">dump
-custom</A> command.
-</P>
-<P>The <A HREF = "compute_property_local.html">compute property/local</A> command takes
+The list of atom attributes is the same as for the <a class="reference internal" href="dump.html"><em>dump custom</em></a> command.</p>
+<p>The <a class="reference internal" href="compute_property_local.html"><em>compute property/local</em></a> command takes
 a list of one or more pre-defined local attributes (bond info, angle
 info, etc) and stores the values in a local vector or array.  These
 are produced as output values which can be used as input to other
-output commands.
-</P>
-<P>The <A HREF = "compute_atom_molecule.html">compute atom/molecule</A> command takes a
+output commands.</p>
+<p>The <a class="reference internal" href="compute_atom_molecule.html"><em>compute atom/molecule</em></a> command takes a
 list of one or more per-atom quantities (from a compute, fix, per-atom
 variable) and sums the quantities on a per-molecule basis.  It
 produces a global vector or array as output values which can be used
-as input to other output commands.
-</P>
-<H5><A NAME = "fixoutput"></A>Fixes that process output quantities 
-</H5>
-<P>The <A HREF = "fix_ave_atom.html">fix ave/atom</A> command performs time-averaging
+as input to other output commands.</p>
+</div>
+<div class="section" id="fixes-that-process-output-quantities">
+<span id="id4"></span><h3>8.8.7. Fixes that process output quantities<a class="headerlink" href="#fixes-that-process-output-quantities" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a> command performs time-averaging
 of per-atom vectors.  The per-atom quantities can be atom attributes
 such as position, velocity, force.  They can also be per-atom
-quantities calculated by a <A HREF = "compute.html">compute</A>, by a
-<A HREF = "fix.html">fix</A>, or by an atom-style <A HREF = "variable.html">variable</A>.  The
+quantities calculated by a <a class="reference internal" href="compute.html"><em>compute</em></a>, by a
+<a class="reference internal" href="fix.html"><em>fix</em></a>, or by an atom-style <a class="reference internal" href="variable.html"><em>variable</em></a>.  The
 time-averaged per-atom output of this fix can be used as input to
-other output commands.
-</P>
-<P>The <A HREF = "fix_store_state.html">fix store/state</A> command can archive one or
+other output commands.</p>
+<p>The <a class="reference internal" href="fix_store_state.html"><em>fix store/state</em></a> command can archive one or
 more per-atom attributes at a particular time, so that the old values
 can be used in a future calculation or output.  The list of atom
-attributes is the same as for the <A HREF = "dump.html">dump custom</A> command,
-including per-atom quantities calculated by a <A HREF = "compute.html">compute</A>,
-by a <A HREF = "fix.html">fix</A>, or by an atom-style <A HREF = "variable.html">variable</A>.
-The output of this fix can be used as input to other output commands.
-</P>
-<H5><A NAME = "compute"></A>Computes that generate values to output 
-</H5>
-<P>Every <A HREF = "compute.html">compute</A> in LIGGGHTS(R)-PUBLIC produces either global or
+attributes is the same as for the <a class="reference internal" href="dump.html"><em>dump custom</em></a> command,
+including per-atom quantities calculated by a <a class="reference internal" href="compute.html"><em>compute</em></a>,
+by a <a class="reference internal" href="fix.html"><em>fix</em></a>, or by an atom-style <a class="reference internal" href="variable.html"><em>variable</em></a>.
+The output of this fix can be used as input to other output commands.</p>
+</div>
+<div class="section" id="computes-that-generate-values-to-output">
+<span id="compute"></span><h3>8.8.8. Computes that generate values to output<a class="headerlink" href="#computes-that-generate-values-to-output" title="Permalink to this headline">¶</a></h3>
+<p>Every <a class="reference internal" href="compute.html"><em>compute</em></a> in LIGGGHTS(R)-PUBLIC produces either global or
 per-atom or local values.  The values can be scalars or vectors or
 arrays of data.  These values can be output using the other commands
 described in this section.  The doc page for each compute command
 describes what it produces.  Computes that produce per-atom or local
-values have the word "atom" or "local" in their style name.  Computes
-without the word "atom" or "local" produce global values.
-</P>
-<H5><A NAME = "fix"></A>Fixes that generate values to output 
-</H5>
-<P>Some <A HREF = "fix.html">fixes</A> in LIGGGHTS(R)-PUBLIC produces either global or per-atom or
+values have the word &#8220;atom&#8221; or &#8220;local&#8221; in their style name.  Computes
+without the word &#8220;atom&#8221; or &#8220;local&#8221; produce global values.</p>
+</div>
+<div class="section" id="fixes-that-generate-values-to-output">
+<span id="fix"></span><h3>8.8.9. Fixes that generate values to output<a class="headerlink" href="#fixes-that-generate-values-to-output" title="Permalink to this headline">¶</a></h3>
+<p>Some <a class="reference internal" href="fix.html"><em>fixes</em></a> in LIGGGHTS(R)-PUBLIC produces either global or per-atom or
 local values which can be accessed by other commands.  The values can
 be scalars or vectors or arrays of data.  These values can be output
 using the other commands described in this section.  The doc page for
 each fix command tells whether it produces any output quantities and
-describes them.
-</P>
-<H5><A NAME = "variable"></A>Variables that generate values to output 
-</H5>
-<P>Every <A HREF = "variable.html">variables</A> defined in an input script generates
+describes them.</p>
+</div>
+<div class="section" id="variables-that-generate-values-to-output">
+<span id="variable"></span><h3>8.8.10. Variables that generate values to output<a class="headerlink" href="#variables-that-generate-values-to-output" title="Permalink to this headline">¶</a></h3>
+<p>Every <a class="reference internal" href="variable.html"><em>variables</em></a> defined in an input script generates
 either a global scalar value or a per-atom vector (only atom-style
 variables) when it is accessed.  The formulas used to define equal-
 and atom-style variables can contain references to the thermodynamic
 keywords and to global and per-atom data generated by computes, fixes,
 and other variables.  The values generated by variables can be output
-using the other commands described in this section.
-</P>
-<H5><A NAME = "table"></A>Summary table of output options and data flow between commands 
-</H5>
-<P>This table summarizes the various commands that can be used for
+using the other commands described in this section.</p>
+</div>
+<div class="section" id="summary-table-of-output-options-and-data-flow-between-commands">
+<span id="table"></span><h3>8.8.11. Summary table of output options and data flow between commands<a class="headerlink" href="#summary-table-of-output-options-and-data-flow-between-commands" title="Permalink to this headline">¶</a></h3>
+<p>This table summarizes the various commands that can be used for
 generating output from LIGGGHTS(R)-PUBLIC.  Each command produces output data of
 some kind and/or writes data to a file.  Most of the commands can take
 data from other commands as input.  Thus you can link many of these
@@ -820,224 +891,334 @@ commands together in pipeline form, where data produced by one command
 is used as input to another command and eventually written to the
 screen or to a file.  Note that to hook two commands together the
 output and input data types must match, e.g. global/per-atom/local
-data and scalar/vector/array data.
-</P>
-<P>Also note that, as described above, when a command takes a scalar as
+data and scalar/vector/array data.</p>
+<p>Also note that, as described above, when a command takes a scalar as
 input, that could be an element of a vector or array.  Likewise a
-vector input could be a column of an array.
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >Command</TD><TD > Input</TD><TD > Output</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "thermo_style.html">thermo_style custom</A></TD><TD > global scalars</TD><TD > screen, log file</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "dump.html">dump custom</A></TD><TD > per-atom vectors</TD><TD > dump file</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "dump.html">dump local</A></TD><TD > local vectors</TD><TD > dump file</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "fix_print.html">fix print</A></TD><TD > global scalar from variable</TD><TD > screen, file</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "print.html">print</A></TD><TD > global scalar from variable</TD><TD > screen</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "compute.html">computes</A></TD><TD > N/A</TD><TD > global/per-atom/local scalar/vector/array</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "fix.html">fixes</A></TD><TD > N/A</TD><TD > global/per-atom/local scalar/vector/array</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "variable.html">variables</A></TD><TD > global scalars, per-atom vectors</TD><TD > global scalar, per-atom vector</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "compute_reduce.html">compute reduce</A></TD><TD > per-atom/local vectors</TD><TD > global scalar/vector</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "compute_slice.html">compute slice</A></TD><TD > global vectors/arrays</TD><TD > global vector/array</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "compute_property_atom.html">compute property/atom</A></TD><TD > per-atom vectors</TD><TD > per-atom vector/array</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "compute_property_local.html">compute property/local</A></TD><TD > local vectors</TD><TD > local vector/array</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "compute_atom_molecule.html">compute atom/molecule</A></TD><TD > per-atom vectors</TD><TD > global vector/array</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "fix_ave_atom.html">fix ave/atom</A></TD><TD > per-atom vectors</TD><TD > per-atom vector/array</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "fix_ave_time.html">fix ave/time</A></TD><TD > global scalars/vectors</TD><TD > global scalar/vector/array, file</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "fix_ave_spatial.html">fix ave/spatial</A></TD><TD > per-atom vectors</TD><TD > global array, file</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "fix_ave_histo.html">fix ave/histo</A></TD><TD > global/per-atom/local scalars and vectors</TD><TD > global array, file</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "fix_ave_correlate.html">fix ave/correlate</A></TD><TD > global scalars</TD><TD > global array, file</TD><TD ></TD></TR>
-<TR><TD ><A HREF = "fix_store_state.html">fix store/state</A></TD><TD > per-atom vectors</TD><TD > per-atom vector/array</TD><TD ></TD></TR>
-<TR><TD >
-</TD></TR></TABLE></DIV>
-
-<HR>
-
-<A NAME = "howto_9"></A><H4>7.9 Walls 
-</H4>
-<P>Walls are typically used to bound particle motion,
-i.e. to serve as a boundary condition.
-</P>
-<P>Walls in LIGGGHTS(R)-PUBLIC for granular simulations are
-typically defined using <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
+vector input could be a column of an array.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="30%" />
+<col width="30%" />
+<col width="1%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Command</td>
+<td>Input</td>
+<td>Output</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a></td>
+<td>global scalars</td>
+<td>screen, log file</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="dump.html"><em>dump custom</em></a></td>
+<td>per-atom vectors</td>
+<td>dump file</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="dump.html"><em>dump local</em></a></td>
+<td>local vectors</td>
+<td>dump file</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_print.html"><em>fix print</em></a></td>
+<td>global scalar from variable</td>
+<td>screen, file</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="print.html"><em>print</em></a></td>
+<td>global scalar from variable</td>
+<td>screen</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute.html"><em>computes</em></a></td>
+<td>N/A</td>
+<td>global/per-atom/local scalar/vector/array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix.html"><em>fixes</em></a></td>
+<td>N/A</td>
+<td>global/per-atom/local scalar/vector/array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="variable.html"><em>variables</em></a></td>
+<td>global scalars, per-atom vectors</td>
+<td>global scalar, per-atom vector</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a></td>
+<td>per-atom/local vectors</td>
+<td>global scalar/vector</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute_slice.html"><em>compute slice</em></a></td>
+<td>global vectors/arrays</td>
+<td>global vector/array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_property_atom.html"><em>compute property/atom</em></a></td>
+<td>per-atom vectors</td>
+<td>per-atom vector/array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute_property_local.html"><em>compute property/local</em></a></td>
+<td>local vectors</td>
+<td>local vector/array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_atom_molecule.html"><em>compute atom/molecule</em></a></td>
+<td>per-atom vectors</td>
+<td>global vector/array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a></td>
+<td>per-atom vectors</td>
+<td>per-atom vector/array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_ave_time.html"><em>fix ave/time</em></a></td>
+<td>global scalars/vectors</td>
+<td>global scalar/vector/array, file</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a></td>
+<td>per-atom vectors</td>
+<td>global array, file</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a></td>
+<td>global/per-atom/local scalars and vectors</td>
+<td>global array, file</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="fix_ave_correlate.html"><em>fix ave/correlate</em></a></td>
+<td>global scalars</td>
+<td>global array, file</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="fix_store_state.html"><em>fix store/state</em></a></td>
+<td>per-atom vectors</td>
+<td>per-atom vector/array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+</div>
+</div>
+<div class="section" id="walls">
+<span id="howto-9"></span><h2>8.9. Walls<a class="headerlink" href="#walls" title="Permalink to this headline">¶</a></h2>
+<p>Walls are typically used to bound particle motion,
+i.e. to serve as a boundary condition.</p>
+<p>Walls in LIGGGHTS(R)-PUBLIC for granular simulations are
+typically defined using <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>.
 This command can define two types of
 walls: primitive and mesh. Mesh walls are defined using a
-<A HREF = "fix_mesh_surface.html">fix mesh/surface</A> or related command.
-</P>
-<P>Also. walls can be constructed made of particles
-</P>
-<P>Rough walls, built of particles, can be created in various ways.  The
+<a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> or related command.</p>
+<p>Also. walls can be constructed made of particles</p>
+<p>Rough walls, built of particles, can be created in various ways.  The
 particles themselves can be generated like any other particle, via the
-<A HREF = "lattice.html">lattice</A> and <A HREF = "create_atoms.html">create_atoms</A> commands,
-or read in via the <A HREF = "read_data.html">read_data</A> command.
-</P>
-<P>Their motion can be constrained by many different commands, so that
+<a class="reference internal" href="lattice.html"><em>lattice</em></a> and <a class="reference internal" href="create_atoms.html"><em>create_atoms</em></a> commands,
+or read in via the <a class="reference internal" href="read_data.html"><em>read_data</em></a> command.</p>
+<p>Their motion can be constrained by many different commands, so that
 they do not move at all, move together as a group at constant velocity
 or in response to a net force acting on them, move in a prescribed
 fashion (e.g. rotate around a point), etc.  Note that if a time
-integration fix like <A HREF = "fix_nve.html">fix nve</A>
+integration fix like <a class="reference internal" href="fix_nve.html"><em>fix nve</em></a>
 is not used with the group that contains wall particles, their
-positions and velocities will not be updated.
-</P>
-<UL><LI><A HREF = "fix_aveforce.html">fix aveforce</A> - set force on particles to average value, so they move together
-<LI><A HREF = "fix_setforce.html">fix setforce</A> - set force on particles to a value, e.g. 0.0
-<LI><A HREF = "fix_freeze.html">fix freeze</A> - freeze particles for use as granular walls
-<LI><A HREF = "fix_nve_noforce.html">fix nve/noforce</A> - advect particles by their velocity, but without force
-<LI><A HREF = "fix_move.html">fix move</A> - prescribe motion of particles by a linear velocity, oscillation, rotation, variable 
-</UL>
-<P>The <A HREF = "fix_move.html">fix move</A> command offers the most generality, since
+positions and velocities will not be updated.</p>
+<ul class="simple">
+<li><a class="reference internal" href="fix_aveforce.html"><em>fix aveforce</em></a> - set force on particles to average value, so they move together</li>
+<li><a class="reference internal" href="fix_setforce.html"><em>fix setforce</em></a> - set force on particles to a value, e.g. 0.0</li>
+<li><a class="reference internal" href="fix_freeze.html"><em>fix freeze</em></a> - freeze particles for use as granular walls</li>
+<li><a class="reference internal" href="fix_nve_noforce.html"><em>fix nve/noforce</em></a> - advect particles by their velocity, but without force</li>
+<li><a class="reference internal" href="fix_move.html"><em>fix move</em></a> - prescribe motion of particles by a linear velocity, oscillation, rotation, variable</li>
+</ul>
+<p>The <a class="reference internal" href="fix_move.html"><em>fix move</em></a> command offers the most generality, since
 the motion of individual particles can be specified with
-<A HREF = "variable.html">variable</A> formula which depends on time and/or the
-particle position.
-</P>
-<P>For rough walls, it may be useful to turn off pairwise interactions
-between wall particles via the <A HREF = "neigh_modify.html">neigh_modify
-exclude</A> command.
-</P>
-<P>Rough walls can also be created by specifying frozen particles that do
+<a class="reference internal" href="variable.html"><em>variable</em></a> formula which depends on time and/or the
+particle position.</p>
+<p>For rough walls, it may be useful to turn off pairwise interactions
+between wall particles via the <a class="reference internal" href="neigh_modify.html"><em>neigh_modify exclude</em></a> command.</p>
+<p>Rough walls can also be created by specifying frozen particles that do
 not move and do not interact with mobile particles, and then tethering
-other particles to the fixed particles, via a <A HREF = "bond_style.html">bond</A>.
-The bonded particles do interact with other mobile particles.
-</P>
-<UL><LI><A HREF = "fix_wall_reflect.html">fix wall/reflect</A> - reflective flat walls
-<LI><A HREF = "fix_wall_region.html">fix wall/region</A> - use region surface as wall 
-</UL>
-<P>The <A HREF = "fix_wall_region.html">fix wall/region</A> command offers the most
+other particles to the fixed particles, via a <a class="reference internal" href="bond_style.html"><em>bond</em></a>.
+The bonded particles do interact with other mobile particles.</p>
+<ul class="simple">
+<li><a class="reference internal" href="fix_wall_reflect.html"><em>fix wall/reflect</em></a> - reflective flat walls</li>
+<li><a class="reference internal" href="fix_wall_region.html"><em>fix wall/region</em></a> - use region surface as wall</li>
+</ul>
+<p>The <a class="reference internal" href="fix_wall_region.html"><em>fix wall/region</em></a> command offers the most
 generality, since the region surface is treated as a wall, and the
 geometry of the region can be a simple primitive volume (e.g. a
 sphere, or cube, or plane), or a complex volume made from the union
-and intersection of primitive volumes.  <A HREF = "region.html">Regions</A> can also
-specify a volume "interior" or "exterior" to the specified primitive
-shape or <I>union</I> or <I>intersection</I>.  <A HREF = "region.html">Regions</A> can also be
-"dynamic" meaning they move with constant velocity, oscillate, or
-rotate.
-</P>
-<HR>
-
-<A NAME = "howto_10"></A><H4>7.10 Library interface to LIGGGHTS(R)-PUBLIC 
-</H4>
-<P>As described in <A HREF = "Section_start.html#start_5">Section_start 5</A>, LIGGGHTS(R)-PUBLIC
+and intersection of primitive volumes.  <a class="reference internal" href="region.html"><em>Regions</em></a> can also
+specify a volume &#8220;interior&#8221; or &#8220;exterior&#8221; to the specified primitive
+shape or <em>union</em> or <em>intersection</em>.  <a class="reference internal" href="region.html"><em>Regions</em></a> can also be
+&#8220;dynamic&#8221; meaning they move with constant velocity, oscillate, or
+rotate.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="library-interface-to-liggghts-r-public">
+<span id="howto-10"></span><h2>8.10. Library interface to LIGGGHTS(R)-PUBLIC<a class="headerlink" href="#library-interface-to-liggghts-r-public" title="Permalink to this headline">¶</a></h2>
+<p>As described in <a class="reference internal" href="Section_start.html#start-5"><em>Section_start 5</em></a>, LIGGGHTS(R)-PUBLIC
 can be built as a library, so that it can be called by another code,
-used in a <A HREF = "Section_howto.html#howto_10">coupled manner</A> with other
-codes, or driven through a <A HREF = "Section_python.html">Python interface</A>.
-</P>
-<P>All of these methodologies use a C-style interface to LIGGGHTS(R)-PUBLIC that is
+used in a <a class="reference internal" href="#howto-10"><em>coupled manner</em></a> with other
+codes, or driven through a <a class="reference internal" href="Section_python.html"><em>Python interface</em></a>.</p>
+<p>All of these methodologies use a C-style interface to LIGGGHTS(R)-PUBLIC that is
 provided in the files src/library.cpp and src/library.h.  The
 functions therein have a C-style argument list, but contain C++ code
 you could write yourself in a C++ application that was invoking LIGGGHTS(R)-PUBLIC
 directly.  The C++ code in the functions illustrates how to invoke
 internal LIGGGHTS(R)-PUBLIC operations.  Note that LIGGGHTS(R)-PUBLIC classes are defined
 within a LIGGGHTS(R)-PUBLIC namespace (LAMMPS_NS) if you use them from another C++
-application.
-</P>
-<P>Library.cpp contains these 4 functions:
-</P>
-<PRE>void lammps_open(int, char **, MPI_Comm, void **);
+application.</p>
+<p>Library.cpp contains these 4 functions:</p>
+<div class="highlight-python"><pre>void lammps_open(int, char **, MPI_Comm, void **);
 void lammps_close(void *);
 void lammps_file(void *, char *);
-char *lammps_command(void *, char *); 
-</PRE>
-<P>The lammps_open() function is used to initialize LIGGGHTS(R)-PUBLIC, passing in a
-list of strings as if they were <A HREF = "Section_start.html#start_7">command-line
-arguments</A> when LIGGGHTS(R)-PUBLIC is run in
+char *lammps_command(void *, char *);</pre>
+</div>
+<p>The lammps_open() function is used to initialize LIGGGHTS(R)-PUBLIC, passing in a
+list of strings as if they were <a class="reference internal" href="Section_start.html#start-7"><em>command-line arguments</em></a> when LIGGGHTS(R)-PUBLIC is run in
 stand-alone mode from the command line, and a MPI communicator for
 LIGGGHTS(R)-PUBLIC to run under.  It returns a ptr to the LIGGGHTS(R)-PUBLIC object that is
 created, and which is used in subsequent library calls.  The
 lammps_open() function can be called multiple times, to create
-multiple instances of LIGGGHTS(R)-PUBLIC.
-</P>
-<P>LIGGGHTS(R)-PUBLIC will run on the set of processors in the communicator.  This
+multiple instances of LIGGGHTS(R)-PUBLIC.</p>
+<p>LIGGGHTS(R)-PUBLIC will run on the set of processors in the communicator.  This
 means the calling code can run LIGGGHTS(R)-PUBLIC on all or a subset of
 processors.  For example, a wrapper script might decide to alternate
 between LIGGGHTS(R)-PUBLIC and another code, allowing them both to run on all the
 processors.  Or it might allocate half the processors to LIGGGHTS(R)-PUBLIC and
 half to the other code and run both codes simultaneously before
 syncing them up periodically.  Or it might instantiate multiple
-instances of LIGGGHTS(R)-PUBLIC to perform different calculations.
-</P>
-<P>The lammps_close() function is used to shut down an instance of LIGGGHTS(R)-PUBLIC
-and free all its memory.
-</P>
-<P>The lammps_file() and lammps_command() functions are used to pass a
+instances of LIGGGHTS(R)-PUBLIC to perform different calculations.</p>
+<p>The lammps_close() function is used to shut down an instance of LIGGGHTS(R)-PUBLIC
+and free all its memory.</p>
+<p>The lammps_file() and lammps_command() functions are used to pass a
 file or string to LIGGGHTS(R)-PUBLIC as if it were an input script or single
 command in an input script.  Thus the calling code can read or
 generate a series of LIGGGHTS(R)-PUBLIC commands one line at a time and pass it
 thru the library interface to setup a problem and then run it,
 interleaving the lammps_command() calls with other calls to extract
 information from LIGGGHTS(R)-PUBLIC, perform its own operations, or call another
-code's library.
-</P>
-<P>Other useful functions are also included in library.cpp.  For example:
-</P>
-<PRE>void *lammps_extract_global(void *, char *)
+code&#8217;s library.</p>
+<p>Other useful functions are also included in library.cpp.  For example:</p>
+<div class="highlight-python"><pre>void *lammps_extract_global(void *, char *)
 void *lammps_extract_atom(void *, char *)
 void *lammps_extract_compute(void *, char *, int, int)
 void *lammps_extract_fix(void *, char *, int, int, int, int)
 void *lammps_extract_variable(void *, char *, char *)
 int lammps_get_natoms(void *)
 void lammps_get_coords(void *, double *)
-void lammps_put_coords(void *, double *) 
-</PRE>
-<P>These can extract various global or per-atom quantities from LIGGGHTS(R)-PUBLIC as
-well as values calculated by a compute, fix, or variable.  The "get"
-and "put" operations can retrieve and reset atom coordinates.
+void lammps_put_coords(void *, double *)</pre>
+</div>
+<p>These can extract various global or per-atom quantities from LIGGGHTS(R)-PUBLIC as
+well as values calculated by a compute, fix, or variable.  The &#8220;get&#8221;
+and &#8220;put&#8221; operations can retrieve and reset atom coordinates.
 See the library.cpp file and its associated header file library.h for
-details.
-</P>
-<P>The key idea of the library interface is that you can write any
+details.</p>
+<p>The key idea of the library interface is that you can write any
 functions you wish to define how your code talks to LIGGGHTS(R)-PUBLIC and add
-them to src/library.cpp and src/library.h, as well as to the <A HREF = "Section_python.html">Python
-interface</A>.  The routines you add can access or
+them to src/library.cpp and src/library.h, as well as to the <a class="reference internal" href="Section_python.html"><em>Python interface</em></a>.  The routines you add can access or
 change any LIGGGHTS(R)-PUBLIC data you wish.  The examples/COUPLE and python
 directories have example C++ and C and Python codes which show how a
 driver code can link to LIGGGHTS(R)-PUBLIC as a library, run LIGGGHTS(R)-PUBLIC on a subset of
 processors, grab data from LIGGGHTS(R)-PUBLIC, change it, and put it back into
-LIGGGHTS(R)-PUBLIC.
-</P>
-<HR>
+LIGGGHTS(R)-PUBLIC.</p>
+<p id="berendsen"><strong>(Berendsen)</strong> Berendsen, Grigera, Straatsma, J Phys Chem, 91,
+6269-6271 (1987).</p>
+<p id="cornell"><strong>(Cornell)</strong> Cornell, Cieplak, Bayly, Gould, Merz, Ferguson,
+Spellmeyer, Fox, Caldwell, Kollman, JACS 117, 5179-5197 (1995).</p>
+<p id="horn"><strong>(Horn)</strong> Horn, Swope, Pitera, Madura, Dick, Hura, and Head-Gordon,
+J Chem Phys, 120, 9665 (2004).</p>
+<p id="ikeshoji"><strong>(Ikeshoji)</strong> Ikeshoji and Hafskjold, Molecular Physics, 81, 251-261
+(1994).</p>
+<p id="mackerell"><strong>(MacKerell)</strong> MacKerell, Bashford, Bellott, Dunbrack, Evanseck, Field,
+Fischer, Gao, Guo, Ha, et al, J Phys Chem, 102, 3586 (1998).</p>
+<p id="mayo"><strong>(Mayo)</strong> Mayo, Olfason, Goddard III, J Phys Chem, 94, 8897-8909
+(1990).</p>
+<p id="jorgensen"><strong>(Jorgensen)</strong> Jorgensen, Chandrasekhar, Madura, Impey, Klein, J Chem
+Phys, 79, 926 (1983).</p>
+<p id="price"><strong>(Price)</strong> Price and Brooks, J Chem Phys, 121, 10096 (2004).</p>
+<p id="shinoda"><strong>(Shinoda)</strong> Shinoda, Shiga, and Mikami, Phys Rev B, 69, 134103 (2004).</p>
+</div>
+</div>
 
-<HR>
 
-<A NAME = "Berendsen"></A>
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_modify.html" class="btn btn-neutral float-right" title="9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Section_packages.html" class="btn btn-neutral" title="7. Packages" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
-<P><B>(Berendsen)</B> Berendsen, Grigera, Straatsma, J Phys Chem, 91,
-6269-6271 (1987).
-</P>
-<A NAME = "Cornell"></A>
+  <hr/>
 
-<P><B>(Cornell)</B> Cornell, Cieplak, Bayly, Gould, Merz, Ferguson,
-Spellmeyer, Fox, Caldwell, Kollman, JACS 117, 5179-5197 (1995).
-</P>
-<A NAME = "Horn"></A>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
 
-<P><B>(Horn)</B> Horn, Swope, Pitera, Madura, Dick, Hura, and Head-Gordon,
-J Chem Phys, 120, 9665 (2004).
-</P>
-<A NAME = "Ikeshoji"></A>
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-<P><B>(Ikeshoji)</B> Ikeshoji and Hafskjold, Molecular Physics, 81, 251-261
-(1994).
-</P>
-<A NAME = "MacKerell"></A>
+</footer>
 
-<P><B>(MacKerell)</B> MacKerell, Bashford, Bellott, Dunbrack, Evanseck, Field,
-Fischer, Gao, Guo, Ha, et al, J Phys Chem, 102, 3586 (1998).
-</P>
-<A NAME = "Mayo"></A>
+        </div>
+      </div>
 
-<P><B>(Mayo)</B> Mayo, Olfason, Goddard III, J Phys Chem, 94, 8897-8909
-(1990).
-</P>
-<A NAME = "Jorgensen"></A>
+    </section>
 
-<P><B>(Jorgensen)</B> Jorgensen, Chandrasekhar, Madura, Impey, Klein, J Chem
-Phys, 79, 926 (1983).
-</P>
-<A NAME = "Price"></A>
+  </div>
+  
 
-<P><B>(Price)</B> Price and Brooks, J Chem Phys, 121, 10096 (2004).
-</P>
-<A NAME = "Shinoda"></A>
 
-<P><B>(Shinoda)</B> Shinoda, Shiga, and Mikami, Phys Rev B, 69, 134103 (2004).
-</P>
-</HTML>
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

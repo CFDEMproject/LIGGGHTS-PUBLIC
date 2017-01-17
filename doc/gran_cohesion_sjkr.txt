@@ -56,6 +56,14 @@ appropriate for the Hookean styles.
 
 It is not available for "atom_style"_atom_style.html superquadric
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command should lead to
+statistically equivalent dynamics and system state.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
 
 [Default:]
 

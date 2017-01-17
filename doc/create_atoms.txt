@@ -21,7 +21,7 @@ style = {box} or {region} or {single} or {random} :l
     x,y,z = coordinates of a single atom (distance units)
   {random} args = N seed region-ID
     N = number of atoms to create
-    seed = random # seed (positive integer)
+    seed = random # seed (prime number greater 10000)
     region-ID = create atoms within this region, use NULL for entire simulation box :pre
 zero or more keyword/value pairs may be appended :l
 keyword = {basis} or {remap} or {units} or {all_in} :l

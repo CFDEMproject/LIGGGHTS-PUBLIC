@@ -73,7 +73,7 @@ using namespace LAMMPS_NS;
 
 // also in reader_native.cpp
 
-enum{ID,TYPE,X,Y,Z,VX,VY,VZ,Q,IX,IY,IZ,RADIUS,MASS,DENSITY};
+enum{ID,TYPE,X,Y,Z,VX,VY,VZ,OMEGAX,OMEGAY,OMEGAZ,Q,IX,IY,IZ,RADIUS,MASS,DENSITY,FX,FY,FZ};
 enum{UNSET,NOSCALE_NOWRAP,NOSCALE_WRAP,SCALE_NOWRAP,SCALE_WRAP};
 
 /* ---------------------------------------------------------------------- */
@@ -740,6 +740,21 @@ int ReadDump::fields_and_keywords(int narg, char **arg)
     else if (strcmp(arg[iarg],"vx") == 0) fieldtype[nfield++] = VX;
     else if (strcmp(arg[iarg],"vy") == 0) fieldtype[nfield++] = VY;
     else if (strcmp(arg[iarg],"vz") == 0) fieldtype[nfield++] = VZ;
+    else if (strcmp(arg[iarg],"omegax") == 0) {
+      if (!atom->omega_flag)
+        error->all(FLERR,"Read dump of atom property omegax that isn't allocated");
+      fieldtype[nfield++] = OMEGAX;
+    }
+    else if (strcmp(arg[iarg],"omegay") == 0) {
+      if (!atom->omega_flag)
+        error->all(FLERR,"Read dump of atom property omegay that isn't allocated");
+      fieldtype[nfield++] = OMEGAY;
+    }
+    else if (strcmp(arg[iarg],"omegaz") == 0) {
+      if (!atom->omega_flag)
+        error->all(FLERR,"Read dump of atom property omegaz that isn't allocated");
+      fieldtype[nfield++] = OMEGAZ;
+    }
     else if (strcmp(arg[iarg],"q") == 0) {
       if (!atom->q_flag)
         error->all(FLERR,"Read dump of atom property that isn't allocated");
@@ -763,6 +778,9 @@ int ReadDump::fields_and_keywords(int narg, char **arg)
     else if (strcmp(arg[iarg],"ix") == 0) fieldtype[nfield++] = IX;
     else if (strcmp(arg[iarg],"iy") == 0) fieldtype[nfield++] = IY;
     else if (strcmp(arg[iarg],"iz") == 0) fieldtype[nfield++] = IZ;
+    else if (strcmp(arg[iarg],"fx") == 0) fieldtype[nfield++] = FX;
+    else if (strcmp(arg[iarg],"fy") == 0) fieldtype[nfield++] = FY;
+    else if (strcmp(arg[iarg],"fz") == 0) fieldtype[nfield++] = FZ;
     else break;
     iarg++;
   }
@@ -855,7 +873,10 @@ int ReadDump::fields_and_keywords(int narg, char **arg)
       strcpy(readerstyle,arg[iarg+1]);
       iarg += 2;
       break;
-    } else error->all(FLERR,"Illegal read_dump command");
+    } else {
+      
+      error->all(FLERR,"Illegal read_dump command");
+    }
   }
 
   if (purgeflag && (replaceflag || trimflag))
@@ -881,6 +902,8 @@ void ReadDump::process_atoms(int n)
 
   double **x = atom->x;
   double **v = atom->v;
+  double **f = atom->f;
+  double **omega = atom->omega;
   double *q = atom->q;
   double *radius = atom->radius;
   double *rmass= atom->rmass;
@@ -935,6 +958,15 @@ void ReadDump::process_atoms(int n)
         case VZ:
           v[m][2] = fields[i][ifield];
           break;
+        case OMEGAX:
+          omega[m][0] = fields[i][ifield];
+          break;
+        case OMEGAY:
+          omega[m][1] = fields[i][ifield];
+          break;
+        case OMEGAZ:
+          omega[m][2] = fields[i][ifield];
+          break;
         case Q:
           q[m] = fields[i][ifield];
           break;
@@ -955,6 +987,15 @@ void ReadDump::process_atoms(int n)
           break;
         case IZ:
           zbox = static_cast<int> (fields[i][ifield]);
+          break;
+        case FX:
+          f[m][0] = fields[i][ifield];
+          break;
+        case FY:
+          f[m][1] = fields[i][ifield];
+          break;
+        case FZ:
+          f[m][2] = fields[i][ifield];
           break;
         }
       }
@@ -1018,6 +1059,8 @@ void ReadDump::process_atoms(int n)
     nadd++;
 
     v = atom->v;
+    f = atom->f;
+    omega = atom->omega;
     q = atom->q;
     radius = atom->radius;
     rmass = atom->rmass;
@@ -1039,6 +1082,15 @@ void ReadDump::process_atoms(int n)
       case VZ:
         v[m][2] = fields[i][ifield];
         break;
+      case OMEGAX:
+        omega[m][0] = fields[i][ifield];
+        break;
+      case OMEGAY:
+        omega[m][1] = fields[i][ifield];
+        break;
+      case OMEGAZ:
+        omega[m][2] = fields[i][ifield];
+        break;
       case Q:
         q[m] = fields[i][ifield];
         break;
@@ -1059,6 +1111,15 @@ void ReadDump::process_atoms(int n)
         break;
       case IZ:
         zbox = static_cast<int> (fields[i][ifield]);
+        break;
+      case FX:
+        f[m][0] = fields[i][ifield];
+        break;
+      case FY:
+        f[m][1] = fields[i][ifield];
+        break;
+      case FZ:
+        f[m][2] = fields[i][ifield];
         break;
       }
 

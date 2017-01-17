@@ -453,17 +453,17 @@ product of one atom's y and z coordinates.
 Most of the math functions perform obvious operations.  The ln() is
 the natural log; log() is the base 10 log.
 
-The random(x,y,z) function takes 3 arguments: x = lo, y = hi, and z =
-seed.  It generates a uniform random number between lo and hi.  The
-normal(x,y,z) function also takes 3 arguments: x = mu, y = sigma, and
-z = seed.  It generates a Gaussian variate centered on mu with
+The random(x,y,z) function takes 3 arguments: x = lo, y = hi, and z = seed.
+It generates a uniform random number between lo and hi.  The normal(x,y,z)
+function also takes 3 arguments: x = mu, y = sigma, and z = seed (prime
+number greater 10000).  It generates a Gaussian variate centered on mu with
 variance sigma^2.  In both cases the seed is used the first time the
 internal random number generator is invoked, to initialize it.  For
-equal-style variables, every processor uses the same seed so that they
-each generate the same sequence of random numbers.  For atom-style
-variables, a unique seed is created for each processor, based on the
-specified seed.  This effectively generates a different random number
-for each atom being looped over in the atom-style variable.
+equal-style variables, every processor uses the same seed so that they each
+generate the same sequence of random numbers.  For atom-style variables, a
+unique seed is created for each processor, based on the specified seed.
+This effectively generates a different random number for each atom being
+looped over in the atom-style variable.
 
 IMPORTANT NOTE: Internally, there is just one random number generator
 for all equal-style variables and one for all atom-style variables.

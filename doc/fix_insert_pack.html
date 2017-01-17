@@ -1,253 +1,422 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix insert/pack command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix insert/pack command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix ID group-ID insert/pack seed seed_value distributiontemplate dist-ID general_keywords general_values pack_keywords pack_values ... 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>insert/pack = style name of this fix command 
-
-<LI>seed = obligatory keyword 
-
-<LI>seed_value = random # seed (positive integer) 
-
-<LI>distributiontemplate = obligatory keyword 
-
-<LI>dist-ID = ID of a <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> to be used for particle insertion 
-
-<LI>one or more general keyword/value pairs can be appended 
-
-<LI>general_keywords = <I>verbose</I> or <I>maxattempt</I> or <I>insert_every</I> or <I>overlapcheck</I> or <I>all_in</I> or <I>random_distribute</I> or <I>compress_tags</I> or <I>vel constant</I> or <I>vel uniform</I> or <I>vel gaussian</I> or <I>orientation</I> or <I>omega</I> or <I>set_property</I> 
-
-<PRE>  <I>verbose</I> = yes or no
-  <I>maxattempt</I> value = ma
-    ma = max # of insertion attempts per atom (positive integer)
-  <I>insert_every</I> value = once or ie
-    once = value to signalise that isertion takes place only once (the step after the fix is issued)
-    ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
-  <I>start</I> value = ts
-    ts = time-step at which insertion should start (positive integer larger than current time-step)
-  <I>overlapcheck</I> value = yes or no
-  <I>all_in</I> value = yes or no
-  <I>random_distribute</I> value = exact or uncorrelated
-  <I>compress_tags</I> value = yes or no
-  <I>vel constant</I> values = vx vy vz
-    vx = x-velocity at insertion (velocity units)
-    vy = y-velocity at insertion (velocity units)
-    vz = z-velocity at insertion (velocity units)
-  <I>vel uniform</I> values = vx vy vz vFluctx vFlucty vFluctz
-    vx = mean x-velocity at insertion (velocity units)
-    vy = mean y-velocity at insertion (velocity units)
-    vz = mean z-velocity at insertion (velocity units)
-    vFluctx = amplitude of uniform x-velocity fluctuation at insertion (velocity units)
-    vFlucty = amplitude of uniform y-velocity fluctuation at insertion (velocity units)
-    vFluctz = amplitude of uniform z-velocity fluctuation at insertion (velocity units)
-  <I>vel gaussian</I> values = vx vy vz vFluctx vFlucty vFluctz
-    vx = mean x-velocity at insertion (velocity units)
-    vy = mean y-velocity at insertion (velocity units)
-    vz = mean z-velocity at insertion (velocity units)
-    vFluctx = standard deviation of Gaussian x-velocity fluctuation at insertion (velocity units)
-    vFlucty = standard deviation of Gaussian y-velocity fluctuation at insertion (velocity units)
-    vFluctz = standard deviation of Gaussian z-velocity fluctuation at insertion (velocity units)
-  <I>orientation</I> values = random or template or constant q1 q2 q3 q4
-    random = randomize rotational orientation
-    template = use orientation from particle template
-    constant = use constant quaternion for orientation
-    q1 q2 q3 q4 = quaternion values for constant orientation
-  <I>omega</I> values = constant omegax omegay omegaz
-    constant = obligatory word
-    omegax = x-comonent of angular velocity (1/time units)
-    omegay = y-comonent of angular velocity (1/time units)
-    omegaz = z-comonent of angular velocity (1/time units)
-  <I>set_property</I> values = property-varname val
-    property-varname = variable name of a <A HREF = "fix_property.html">fix property/atom</A> holding a scalar value for each particle
-    val = value to initialize the property with upon insertion  
-</PRE>
-<LI>following the general keyword/value section, one or more pack keyword/value pairs can be appended for the fix insert/pack command 
-
-<LI>pack_keywords = <I>region</I> or <I>volumefraction_region</I> or <I>particles_in_region</I> or <I>mass_in_region</I> or <I>ntry_mc</I> 
-
-<PRE>pack_keywords = where exactly one out of <I>volumefraction_region</I> or <I>particles_in_region</I> or <I>mass_in_region</I> has to be defined:l
-  <I>region</I> value = region-ID
-    region-ID = ID of the <A HREF = "region.html">region</A> where the particles will be generated 
-  <I>volumefraction_region</I> values = vol
-    vol =  desired volume fraction for the region (positive float, 0 < vol < 1)
-  <I>particles_in_region</I> values = np
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix insert/pack command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_insert_pack.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-insert-pack-command">
+<span id="index-0"></span><h1>fix insert/pack command<a class="headerlink" href="#fix-insert-pack-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ID group-ID insert/pack seed seed_value distributiontemplate dist-ID general_keywords general_values pack_keywords pack_values ...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>insert/pack = style name of this fix command</li>
+<li>seed = obligatory keyword</li>
+<li>seed_value = random # seed (prime number greater than 10000)</li>
+<li>distributiontemplate = obligatory keyword</li>
+<li>dist-ID = ID of a <a class="reference internal" href="fix_particledistribution_discrete.html"><em>fix_particledistribution_discrete</em></a> to be used for particle insertion</li>
+<li>one or more general keyword/value pairs can be appended</li>
+<li>general_keywords = <em>verbose</em> or <em>maxattempt</em> or <em>insert_every</em> or <em>overlapcheck</em> or <em>all_in</em> or <em>random_distribute</em> or <em>compress_tags</em> or <em>vel constant</em> or <em>vel uniform</em> or <em>vel gaussian</em> or <em>orientation</em> or <em>omega</em> or <em>set_property</em></li>
+</ul>
+<pre class="literal-block">
+<em>verbose</em> = yes or no
+<em>maxattempt</em> value = ma
+  ma = max # of insertion attempts per atom (positive integer)
+<em>insert_every</em> value = once or ie
+  once = value to signalise that isertion takes place only once (the step after the fix is issued)
+  ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
+<em>start</em> value = ts
+  ts = time-step at which insertion should start (positive integer larger than current time-step)
+<em>overlapcheck</em> value = yes or no
+<em>all_in</em> value = yes or no
+<em>random_distribute</em> value = exact or uncorrelated
+<em>compress_tags</em> value = yes or no
+<em>vel constant</em> values = vx vy vz
+  vx = x-velocity at insertion (velocity units)
+  vy = y-velocity at insertion (velocity units)
+  vz = z-velocity at insertion (velocity units)
+<em>vel uniform</em> values = vx vy vz vFluctx vFlucty vFluctz
+  vx = mean x-velocity at insertion (velocity units)
+  vy = mean y-velocity at insertion (velocity units)
+  vz = mean z-velocity at insertion (velocity units)
+  vFluctx = amplitude of uniform x-velocity fluctuation at insertion (velocity units)
+  vFlucty = amplitude of uniform y-velocity fluctuation at insertion (velocity units)
+  vFluctz = amplitude of uniform z-velocity fluctuation at insertion (velocity units)
+<em>vel gaussian</em> values = vx vy vz vFluctx vFlucty vFluctz
+  vx = mean x-velocity at insertion (velocity units)
+  vy = mean y-velocity at insertion (velocity units)
+  vz = mean z-velocity at insertion (velocity units)
+  vFluctx = standard deviation of Gaussian x-velocity fluctuation at insertion (velocity units)
+  vFlucty = standard deviation of Gaussian y-velocity fluctuation at insertion (velocity units)
+  vFluctz = standard deviation of Gaussian z-velocity fluctuation at insertion (velocity units)
+<em>orientation</em> values = random or template or constant q1 q2 q3 q4
+  random = randomize rotational orientation
+  template = use orientation from particle template
+  constant = use constant quaternion for orientation
+  q1 q2 q3 q4 = quaternion values for constant orientation
+<em>omega</em> values = constant omegax omegay omegaz
+  constant = obligatory word
+  omegax = x-comonent of angular velocity (1/time units)
+  omegay = y-comonent of angular velocity (1/time units)
+  omegaz = z-comonent of angular velocity (1/time units)
+<em>set_property</em> values = property-varname val
+  property-varname = variable name of a <a class="reference internal" href="fix_property.html"><em>fix property/atom</em></a> holding a scalar value for each particle
+  val = value to initialize the property with upon insertion
+</pre>
+<ul class="simple">
+<li>following the general keyword/value section, one or more pack keyword/value pairs can be appended for the fix insert/pack command</li>
+<li>pack_keywords = <em>region</em> or <em>volumefraction_region</em> or <em>particles_in_region</em> or <em>mass_in_region</em> or <em>ntry_mc</em></li>
+</ul>
+<pre class="literal-block">
+pack_keywords = where exactly one out of <em>volumefraction_region</em> or <em>particles_in_region</em> or <em>mass_in_region</em> has to be defined:l
+  <em>region</em> value = region-ID
+    region-ID = ID of the <a class="reference internal" href="region.html"><em>region</em></a> where the particles will be generated
+  <em>volumefraction_region</em> values = vol
+    vol =  desired volume fraction for the region (positive float, 0 &lt; vol &lt; 1)
+  <em>particles_in_region</em> values = np
     np =  desired number of particles in the region (positive integer)
-  <I>mass_in_region</I> values = m
-    m =  desired mass in the region (positive float, m > 0)
-  <I>ntry_mc</I> values = n
-    n = number of Monte-Carlo steps for calculating the region's volume  (positive integer) 
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix ins all insert/pack seed 1001 distributiontemplate pdd1 insert_every once overlapcheck yes volumefraction_region 0.3 region mysphere ntry_mc 10000 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Insert particles into a granular run either once or every few timesteps
-within the specified region, as defined via the <I>region</I> keyword.
-</P>
-<P>The <I>verbose</I> keyword controlls whether statistics about particle
-insertion is output to the screen each time particles are inserted.
-</P>
-<P>This command must use the distributiontemplate keyword to refer to a
-<A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> (defined by dist-fix-ID) that defines the properties of the
-inserted particles.
-</P>
-<P>At each insertion step, fix insert/pack tries inserts as many particles as
+  <em>mass_in_region</em> values = m
+    m =  desired mass in the region (positive float, m &gt; 0)
+  <em>ntry_mc</em> values = n
+    n = number of Monte-Carlo steps for calculating the region's volume  (positive integer)
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ins all insert/pack seed 123457 distributiontemplate pdd1 insert_every once overlapcheck yes volumefraction_region 0.3 region mysphere ntry_mc 10000</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Insert particles into a granular run either once or every few timesteps
+within the specified region, as defined via the <em>region</em> keyword.</p>
+<p>The <em>verbose</em> keyword controlls whether statistics about particle
+insertion is output to the screen each time particles are inserted.</p>
+<p>This command must use the distributiontemplate keyword to refer to a
+<a class="reference internal" href="fix_particledistribution_discrete.html"><em>fix_particledistribution_discrete</em></a> (defined by dist-fix-ID) that defines the properties of the
+inserted particles.</p>
+<p>At each insertion step, fix insert/pack tries inserts as many particles as
 needed to reach a defined target, which can be either a region volume
-fraction (keyword <I>volumefraction_region</I>), the total number of particles
-in the region (keyword <I>particles_in_region</I>), or the total particle mass
-in the region (keyword <I>mass_in_region</I>). Exactly one out of the keywords
-<I>volumefraction_region</I>, <I>particles_in_region</I>, <I>mass_in_region</I> must
-be defined.
-</P>
-<P>The frequency of the particle insertion can be controlled by the
-keyword <I>insert_every</I>, which defines  the number of time-steps between
-two insertions. Alternatively, by specifying <I>insert_every once</I>,
-particles are inserted only once.
-</P>
-<P>The <I>start</I> keyword can be used to set the time-step at which the insertion
-should start.
-</P>
-<P>Inserted particles are assigned the atom type specified by the
-particledistribution defined via the <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> and
-are assigned to 4 groups: the default group "all" and the group
+fraction (keyword <em>volumefraction_region</em>), the total number of particles
+in the region (keyword <em>particles_in_region</em>), or the total particle mass
+in the region (keyword <em>mass_in_region</em>). Exactly one out of the keywords
+<em>volumefraction_region</em>, <em>particles_in_region</em>, <em>mass_in_region</em> must
+be defined.</p>
+<p>The frequency of the particle insertion can be controlled by the
+keyword <em>insert_every</em>, which defines  the number of time-steps between
+two insertions. Alternatively, by specifying <em>insert_every once</em>,
+particles are inserted only once.</p>
+<p>The <em>start</em> keyword can be used to set the time-step at which the insertion
+should start.</p>
+<p>Inserted particles are assigned the atom type specified by the
+particledistribution defined via the <a class="reference internal" href="fix_particledistribution_discrete.html"><em>fix_particledistribution_discrete</em></a> and
+are assigned to 4 groups: the default group &#8220;all&#8221; and the group
 specified in the fix insert command, as well as the groups specified
-in the <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> and <A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A>
-command (all of which can also be "all").
-</P>
-<P>The keyword <I>overlapcheck</I> controls if overlap is checked for at insertion,
+in the <a class="reference internal" href="fix_particledistribution_discrete.html"><em>fix_particledistribution_discrete</em></a> and <a class="reference internal" href="fix_particletemplate_sphere.html"><em>fix_particletemplate_sphere</em></a>
+command (all of which can also be &#8220;all&#8221;).</p>
+<p>The keyword <em>overlapcheck</em> controls if overlap is checked for at insertion,
 both within the inserted particle package and with other existig particles.
 If this option is turned off, insertion will scale very well in parallel,
 otherwise not. Be aware that in case of no overlap check, highly overlapping
-configurations will be produced, so you will have to relax these configurations.
-</P>
-<P>If overlapcheck if performed, the number of insertion attempts per
-particle can be specified via the <I>maxattempt</I> keyword. Each timestep
+configurations will be produced, so you will have to relax these configurations.</p>
+<p>If overlapcheck if performed, the number of insertion attempts per
+particle can be specified via the <em>maxattempt</em> keyword. Each timestep
 particles are inserted, the command will make up to a total of M tries
 to insert the new particles without overlaps, where
 M = # of inserted particles * ma.  If unsuccessful at completing all
-insertions, a warning will be printed.
-</P>
-<P>The <I>all_in</I> flag determines if the particle is completely contained
-in the insertion region (<I>all_in yes</I>) or only the particle center
-(<I>all_in no</I>). Currently <I>all_in yes</I> is not yet supported for all
-types of insertion.
-</P>
-<P>Keyword <I>random_distribute</I> controls how the number of particles to
+insertions, a warning will be printed.</p>
+<p>The <em>all_in</em> flag determines if the particle is completely contained
+in the insertion region (<em>all_in yes</em>) or only the particle center
+(<em>all_in no</em>). Currently <em>all_in yes</em> is not yet supported for all
+types of insertion.</p>
+<p>Keyword <em>random_distribute</em> controls how the number of particles to
 be inserted is distributed among parallel processors and among the
-particle templates in the particle distribution. For style <I>exact</I>,
+particle templates in the particle distribution. For style <em>exact</em>,
 the number of particles to be inserted each step is matched exactly.
-For style <I>uncorrelated</I>, the number of particles to be inserted
+For style <em>uncorrelated</em>, the number of particles to be inserted
 for each particle template will be rounded in an uncorrelated way,
 so the total number of inserted particles may vary for each insertion
 step. However, statistically both ways should produce the same
-result. Style <I>uncorrelated</I> may be faster in parallel since it
+result. Style <em>uncorrelated</em> may be faster in parallel since it
 does not need global MPI operations.
 Please note that if the # of particles to be inserted is calculated
 e.g. from a particle mass to be inserted, the number of particles
 to be inserted each insertion step will vary by 1, irrespective of
-the <I>random_distribute</I> settings. This is because in this case the
+the <em>random_distribute</em> settings. This is because in this case the
 # of particles to insert in each step will be a floating point number,
 and applying a simple floor/ceil rounding operation would lead to a
-statistical bias.
-</P>
-<P>If keyword <I>compress_tags</I> is set to 'yes', then atom IDs are re-assigned
-after each insertion procedure. The default is 'no'. This is typically
+statistical bias.</p>
+<p>If keyword <em>compress_tags</em> is set to &#8216;yes&#8217;, then atom IDs are re-assigned
+after each insertion procedure. The default is &#8216;no&#8217;. This is typically
 only recommended if some models internally store arrays which have the
-length defined via the max ID of any atom. 
-</P>
-<P>IMPORTANT NOTE: Setting <I>compress_tags</I> to 'yes' will result in all contact
+length defined via the max ID of any atom.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Setting <em>compress_tags</em> to &#8216;yes&#8217; will result in all contact
 history to be lost at that point in time. External post-processing tools
-will give wrong results because they typically track atoms via their IDs.
-</P>
-<P>The initial velocity and rotational velocity can be controlled via the
-<I>vel</I> and <I>omega</I> keywords. <I>vel constant</I> simply patches a constant
-velocity to the inserted particles, <I>vel uniform</I> sets uniformly distributed
-velocities with mean and amplitude. <I>vel gaussian</I> sets Gaussian
-distributed particle velocities with mean and std. deviation.
-</P>
-<P>The <I>set_property</I> option can be used to initialize scalar per-particle
-properties such as temperatures, which are stored in a 
-a <A HREF = "fix_property.html">fix property/atom</A>.
-</P>
-<P><B>Description for fix insert/pack:</B>
-</P>
-<P>This command must use the <I>region</I> keyword to define an insertion
+will give wrong results because they typically track atoms via their IDs.</p>
+</div>
+<p>The initial velocity and rotational velocity can be controlled via the
+<em>vel</em> and <em>omega</em> keywords. <em>vel constant</em> simply patches a constant
+velocity to the inserted particles, <em>vel uniform</em> sets uniformly distributed
+velocities with mean and amplitude. <em>vel gaussian</em> sets Gaussian
+distributed particle velocities with mean and std. deviation.</p>
+<p>The <em>set_property</em> option can be used to initialize scalar per-particle
+properties such as temperatures, which are stored in a
+a <a class="reference internal" href="fix_property.html"><em>fix property/atom</em></a>.</p>
+<p><strong>Description for fix insert/pack:</strong></p>
+<p>This command must use the <em>region</em> keyword to define an insertion
 volume. The specified region must have been previously defined with a
-<A HREF = "region.html">region</A> command. Dynamic regions are not supported as insertion region.
+<a class="reference internal" href="region.html"><em>region</em></a> command. Dynamic regions are not supported as insertion region.
 Each timestep particles are inserted, they are placed randomly inside the
-insertion volume.
-</P>
-<P>The <I>volumefraction</I> option specifies what volume fraction of the insertion
+insertion volume.</p>
+<p>The <em>volumefraction</em> option specifies what volume fraction of the insertion
 volume will be filled with particles. The higher the value, the more
 particles are inserted each timestep. Since inserted particles should not
-overlap, the maximum volume fraction should be no higher than about 0.6.
-</P>
-<P>To determine the volume of the insertion region, a Monte Carlo approach
+overlap, the maximum volume fraction should be no higher than about 0.6.</p>
+<p>To determine the volume of the insertion region, a Monte Carlo approach
 might be used for some cases where the volume is difficult to calculate
 or where the volume calculation is simply not implemented by the region.
-The <I>ntry_mc</I> keyword is used to control the number of MC tries that
-are used for the volume calculation.
-</P>
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>Information about this fix is written to <A HREF = "restart.html">binary restart
-files</A>.  This means you can restart a simulation
+The <em>ntry_mc</em> keyword is used to control the number of MC tries that
+are used for the volume calculation.</p>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>Information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  This means you can restart a simulation
 while inserting particles, when the restart file was written during the
-insertion operation.
-</P>
-<P>None of the <A HREF = "fix_modify.html">fix_modify</A> options are relevant to this
-fix. A global vector is stored by this fix for access by various <A HREF = "Section_howto.html#4_15">output
-commands</A>. The first component of the vector is the
+insertion operation.</p>
+<p>None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this
+fix. A global vector is stored by this fix for access by various <em class="xref std std-ref">output commands</em>. The first component of the vector is the
 number of particles already inserted, the second component is the mass
 of particles already inserted. No parameter of this fix can be
-used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
-This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>The <I>overlapcheck</I> = 'yes' option performs an inherently serial operation
+used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.
+This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>The <em>overlapcheck</em> = &#8216;yes&#8217; option performs an inherently serial operation
 and will thus not scale well in parallel. For this reason, if you
-want to generate large systems, you are advised to turn <I>overlapcheck</I>
-off and let the packing relax afterwards to generate a valid packing.
-</P>
-<P>Option <I>all_in</I> = 'yes' will not work if the <A HREF = "region.html">region</A> used
-is a tet mesh region. 
-</P>
-<P>Keywords <I>duration</I> and <I>extrude_length</I> can not be used together.
-</P>
-<P>Currently <I>all_in yes</I> is not yet supported for all types of insertion.
-</P>
-<P>Dynamic regions are not supported as insertion region.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "fix_insert_stream.html">fix_insert_stream</A>, 
-<A HREF = "fix_insert_rate_region.html">fix_insert_rate_region</A>,
-<A HREF = "region.html">region</A>
-</P>
-<P><B>Default:</B>
-</P>
-<P>The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
+want to generate large systems, you are advised to turn <em>overlapcheck</em>
+off and let the packing relax afterwards to generate a valid packing.</p>
+<p>Option <em>all_in</em> = &#8216;yes&#8217; will not work if the <a class="reference internal" href="region.html"><em>region</em></a> used
+is a tet mesh region.</p>
+<p>Keywords <em>duration</em> and <em>extrude_length</em> can not be used together.</p>
+<p>Currently <em>all_in yes</em> is not yet supported for all types of insertion.</p>
+<p>Dynamic regions are not supported as insertion region.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="fix_insert_stream.html"><em>fix_insert_stream</em></a>,
+<a class="reference internal" href="fix_insert_rate_region.html"><em>fix_insert_rate_region</em></a>,
+<a class="reference internal" href="region.html"><em>region</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p>The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
 duration = insert_every, ntry_mc = 100000, random_distribute = exact,
-<I>compress_tags</I> = no
-</P>
-</HTML>
+<em>compress_tags</em> = no</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

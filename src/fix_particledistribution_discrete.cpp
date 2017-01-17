@@ -416,10 +416,10 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
             j = 0;
             rsum = remainder[0];
 
-            while(j < (ntemplates-1) && rsum < r)
+            while(rsum < r && j < (ntemplates-1) )
             {
-                rsum += remainder[j];
                 j++;
+                rsum += remainder[j];
             }
             
             parttogen[j]++;

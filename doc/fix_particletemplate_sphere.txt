@@ -14,7 +14,7 @@ fix ID group-ID particletemplate/sphere seed keyword values ...  :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 particletemplate/sphere = style name of this fix command  :l
-seed = random number generator seed (integer value) :l
+seed = random number generator seed (prime number greater 10000) :l
 zero or more keyword/value pairs can be appended :l
 keyword = {atom_type} or {density} or {volume_limit} or {radius} or {relative} :l
 {atom_type} value = atom type assigned to this particle template
@@ -34,7 +34,7 @@ keyword = {atom_type} or {density} or {volume_limit} or {radius} or {relative} :
 
 [Examples:]
 
-fix pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0015 :pre
+fix pts1 all particletemplate/sphere 123457 atom_type 1 density constant 2500 radius constant 0.0015 :pre
 
 [Description:]
 

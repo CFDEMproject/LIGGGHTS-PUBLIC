@@ -46,7 +46,6 @@ NORMAL_MODEL(HERTZ,hertz,3)
 #else
 #ifndef NORMAL_MODEL_HERTZ_H_
 #define NORMAL_MODEL_HERTZ_H_
-#include "nonspherical_flags.h"
 #include "global_properties.h"
 #include <math.h>
 
@@ -60,7 +59,7 @@ namespace ContactModels
   public:
     static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
-    NormalModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *c) : Pointers(lmp),
+    NormalModel(LAMMPS * lmp, IContactHistorySetup* hsetup, class ContactModelBase *c) : Pointers(lmp),
       Yeff(NULL),
       Geff(NULL),
       betaeff(NULL),
@@ -68,6 +67,10 @@ namespace ContactModels
       displayedSettings(false),
       heating(false),
       heating_track(false),
+      elastic_potential_offset_(-1),
+      elasticpotflag_(false),
+      disable_when_bonded_(false),
+      bond_history_offset_(-1),
       cmb(c)
     {
       
@@ -80,10 +83,29 @@ namespace ContactModels
       settings.registerOnOff("limitForce", limitForce);
       settings.registerOnOff("heating_normal_hertz",heating,false);
       settings.registerOnOff("heating_tracking",heating_track,false);
+      settings.registerOnOff("computeElasticPotential", elasticpotflag_, false);
+      settings.registerOnOff("disableNormalWhenBonded", disable_when_bonded_, false);
       //TODO error->one(FLERR,"TODO here also check if right surface model used");
     }
 
-    inline void postSettings() {}
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb)
+    {
+      if (elasticpotflag_)
+      {
+        elastic_potential_offset_ = cmb->get_history_offset("elastic_potential");
+        if (elastic_potential_offset_ == -1)
+        {
+          elastic_potential_offset_ = hsetup->add_history_value("elastic_potential", "0");
+          cmb->add_history_offset("elastic_potential", elastic_potential_offset_);
+        }
+      }
+      if (disable_when_bonded_)
+      {
+        bond_history_offset_ = cmb->get_history_offset("bond_contactflag");
+        if (bond_history_offset_ < 0)
+          error->one(FLERR, "Could not find bond history offset");
+      }
+    }
 
     void connectToProperties(PropertyRegistry & registry)
     {
@@ -117,28 +139,31 @@ namespace ContactModels
 
       const int itype = sidata.itype;
       const int jtype = sidata.jtype;
-      double ri = sidata.radi;
-      double rj = sidata.radj;
-      double reff=sidata.is_wall ? sidata.radi : (ri*rj/(ri+rj));
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(sidata.is_non_spherical)
-        reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata);
-#endif
-      double meff=sidata.meff;
+      const double radi = sidata.radi;
+      const double radj = sidata.radj;
+      double reff = sidata.is_wall ? radi : (radi*radj/(radi+radj));
 
-      double sqrtval = sqrt(reff*sidata.deltan);
+      #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(sidata.is_non_spherical) {
+          if(sidata.is_wall)
+            reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
+          else
+            reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
+        }
+      #endif
+      const double meff=sidata.meff;
 
-      double Sn=2.*Yeff[itype][jtype]*sqrtval;
-      double St=8.*Geff[itype][jtype]*sqrtval;
+      const double sqrtval = sqrt(reff*sidata.deltan);
+
+      const double Sn=2.*Yeff[itype][jtype]*sqrtval;
+      const double St=8.*Geff[itype][jtype]*sqrtval;
 
       double kn=4./3.*Yeff[itype][jtype]*sqrtval;
       double kt=St;
       const double sqrtFiveOverSix = 0.91287092917527685576161630466800355658790782499663875;
-      double gamman=-2.*sqrtFiveOverSix*betaeff[itype][jtype]*sqrt(Sn*meff);
-      double gammat=-2.*sqrtFiveOverSix*betaeff[itype][jtype]*sqrt(St*meff);
+      const double gamman=-2.*sqrtFiveOverSix*betaeff[itype][jtype]*sqrt(Sn*meff);
+      const double gammat= tangential_damping ? -2.*sqrtFiveOverSix*betaeff[itype][jtype]*sqrt(St*meff) : 0.0;
       
-      if (!tangential_damping) gammat = 0.0;
-
       if(!displayedSettings)
       {
         displayedSettings = true;
@@ -169,7 +194,7 @@ namespace ContactModels
       sidata.gammat = gammat;
 
       #ifdef NONSPHERICAL_ACTIVE_FLAG
-          double torque_i[3];
+          double torque_i[3] = {0., 0., 0.};
           double Fn_i[3] = { Fn * sidata.en[0], Fn * sidata.en[1], Fn * sidata.en[2]};
           if(sidata.is_non_spherical) {
             double xci[3];
@@ -187,44 +212,51 @@ namespace ContactModels
       }
 
       // apply normal force
-      if(sidata.is_wall) {
-        const double Fn_ = Fn * sidata.area_ratio;
-        i_forces.delta_F[0] = Fn_ * sidata.en[0];
-        i_forces.delta_F[1] = Fn_ * sidata.en[1];
-        i_forces.delta_F[2] = Fn_ * sidata.en[2];
-        #ifdef NONSPHERICAL_ACTIVE_FLAG
-                if(sidata.is_non_spherical) {
-                  //for non-spherical particles normal force can produce torque!
-                  i_forces.delta_torque[0] += torque_i[0];
-                  i_forces.delta_torque[1] += torque_i[1];
-                  i_forces.delta_torque[2] += torque_i[2];
-                }
-        #endif
-      } else {
-        i_forces.delta_F[0] = sidata.Fn * sidata.en[0];
-        i_forces.delta_F[1] = sidata.Fn * sidata.en[1];
-        i_forces.delta_F[2] = sidata.Fn * sidata.en[2];
+      if (!disable_when_bonded_ || MathExtraLiggghts::compDouble(sidata.contact_history[bond_history_offset_], 0.0, 1e-5))
+      {
+        // compute increment in elastic potential
+        if (elasticpotflag_ && sidata.computeflag && sidata.shearupdate)
+          sidata.contact_history[elastic_potential_offset_] += -update->dt*sidata.vn*Fn_contact;
 
-        j_forces.delta_F[0] = -i_forces.delta_F[0];
-        j_forces.delta_F[1] = -i_forces.delta_F[1];
-        j_forces.delta_F[2] = -i_forces.delta_F[2];
-        #ifdef NONSPHERICAL_ACTIVE_FLAG
-                if(sidata.is_non_spherical) {
-                  //for non-spherical particles normal force can produce torque!
-                  double xcj[3], torque_j[3];
-                  double Fn_j[3] = { -Fn_i[0], -Fn_i[1], -Fn_i[2]};
-                  vectorSubtract3D(sidata.contact_point, atom->x[sidata.j], xcj);
-                  vectorCross3D(xcj, Fn_j, torque_j);
+        if(sidata.is_wall) {
+          const double Fn_ = Fn * sidata.area_ratio;
+          i_forces.delta_F[0] += Fn_ * sidata.en[0];
+          i_forces.delta_F[1] += Fn_ * sidata.en[1];
+          i_forces.delta_F[2] += Fn_ * sidata.en[2];
+          #ifdef NONSPHERICAL_ACTIVE_FLAG
+                  if(sidata.is_non_spherical) {
+                    //for non-spherical particles normal force can produce torque!
+                    i_forces.delta_torque[0] += torque_i[0];
+                    i_forces.delta_torque[1] += torque_i[1];
+                    i_forces.delta_torque[2] += torque_i[2];
+                  }
+          #endif
+        } else {
+          i_forces.delta_F[0] += sidata.Fn * sidata.en[0];
+          i_forces.delta_F[1] += sidata.Fn * sidata.en[1];
+          i_forces.delta_F[2] += sidata.Fn * sidata.en[2];
 
-                  i_forces.delta_torque[0] += torque_i[0];
-                  i_forces.delta_torque[1] += torque_i[1];
-                  i_forces.delta_torque[2] += torque_i[2];
+          j_forces.delta_F[0] += -i_forces.delta_F[0];
+          j_forces.delta_F[1] += -i_forces.delta_F[1];
+          j_forces.delta_F[2] += -i_forces.delta_F[2];
+          #ifdef NONSPHERICAL_ACTIVE_FLAG
+                  if(sidata.is_non_spherical) {
+                    //for non-spherical particles normal force can produce torque!
+                    double xcj[3], torque_j[3];
+                    double Fn_j[3] = { -Fn_i[0], -Fn_i[1], -Fn_i[2]};
+                    vectorSubtract3D(sidata.contact_point, atom->x[sidata.j], xcj);
+                    vectorCross3D(xcj, Fn_j, torque_j);
 
-                  j_forces.delta_torque[0] += torque_j[0];
-                  j_forces.delta_torque[1] += torque_j[1];
-                  j_forces.delta_torque[2] += torque_j[2];
-                }
-        #endif
+                    i_forces.delta_torque[0] += torque_i[0];
+                    i_forces.delta_torque[1] += torque_i[1];
+                    i_forces.delta_torque[2] += torque_i[2];
+
+                    j_forces.delta_torque[0] += torque_j[0];
+                    j_forces.delta_torque[1] += torque_j[1];
+                    j_forces.delta_torque[2] += torque_j[2];
+                  }
+          #endif
+        }
       }
     }
 
@@ -242,6 +274,10 @@ namespace ContactModels
     bool displayedSettings;
     bool heating;
     bool heating_track;
+    int elastic_potential_offset_;
+    bool elasticpotflag_;
+    bool disable_when_bonded_;
+    int bond_history_offset_;
     class ContactModelBase *cmb;
 
   };

@@ -68,8 +68,15 @@
     nScale_(0),
     nTranslate_(0),
     nRotate_(0),
+    store_vel(0),
+    store_omega(0),
+    step_store_vel(0),
+    step_store_omega(0),
     stepLastReset_(-1)
   {
+    vectorZeroize3D(global_vel);
+    quatUnitize4D(global_quaternion);
+    quatUnitize4D(prev_quaternion);
   }
 
   /* ----------------------------------------------------------------------
@@ -454,6 +461,10 @@
     if(!isTranslating())
         this->error->all(FLERR,"Illegal call, need to register movement first");
 
+    double displacement_00[3] = {0., 0., 0.};
+    if (store_vel)
+        vectorCopy3D(node_(0)[0], displacement_00);
+
     resetToOrig();
 
     int n = sizeLocal() + sizeGhost();
@@ -468,6 +479,17 @@
             vectorAdd3D(node_(i)[j],center_(i),center_(i));
         }
         vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
+    }
+
+    if (store_vel)
+    {
+        if (step_store_vel != update->ntimestep)
+        {
+            step_store_vel = update->ntimestep;
+            vectorZeroize3D(global_vel);
+        }
+        vectorSubtract3D(displacement_00, node_(0)[0], displacement_00);
+        vectorAddMultiple3D(global_vel, -1.0/update->dt, displacement_00, global_vel);
     }
 
     updateGlobalBoundingBox();
@@ -489,6 +511,16 @@
             vectorAdd3D(node_(i)[j],vecIncremental,node_(i)[j]);
 
         vectorAdd3D(center_(i),vecIncremental,center_(i));
+    }
+
+    if (store_vel)
+    {
+        if (step_store_vel != update->ntimestep)
+        {
+            step_store_vel = update->ntimestep;
+            vectorZeroize3D(global_vel);
+        }
+        vectorAddMultiple3D(global_vel, 1.0/update->dt, vecIncremental, global_vel);
     }
 
     updateGlobalBoundingBox();
@@ -568,6 +600,16 @@
       vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
     }
 
+    if (store_omega)
+    {
+        if (step_store_omega != update->ntimestep)
+        {
+            step_store_omega = update->ntimestep;
+            vectorCopy4D(global_quaternion, prev_quaternion);
+        }
+        vectorCopy4D(totalQ, global_quaternion);
+    }
+
     updateGlobalBoundingBox();
   }
 
@@ -619,6 +661,16 @@
         vectorAdd3D(node_(i)[j],center_(i),center_(i));
       }
       vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
+    }
+
+    if (store_omega)
+    {
+        if (step_store_omega != update->ntimestep)
+        {
+            step_store_omega = update->ntimestep;
+            vectorCopy4D(global_quaternion, prev_quaternion);
+        }
+        quatMult4D(global_quaternion, dQ);
     }
 
     updateGlobalBoundingBox();
@@ -838,5 +890,44 @@
     }
 
   }
+
+template<int NUM_NODES>
+void MultiNodeMesh<NUM_NODES>::get_global_vel(double *vel)
+{
+    if (!store_vel)
+        return;
+    if (step_store_vel != update->ntimestep)
+    {
+        step_store_vel = update->ntimestep;
+        vectorZeroize3D(global_vel);
+    }
+    vectorCopy3D(global_vel, vel);
+}
+
+template<int NUM_NODES>
+void MultiNodeMesh<NUM_NODES>::get_global_omega(double *omega)
+{
+    if (!store_omega)
+        return;
+    if (step_store_omega != update->ntimestep)
+    {
+        step_store_omega = update->ntimestep;
+        vectorCopy4D(global_quaternion, prev_quaternion);
+    }
+    double dQ[4];
+    double invPrevQ[4];
+    quatInverse4D(prev_quaternion, invPrevQ);
+    quatMult4D(invPrevQ, global_quaternion, dQ);
+    dQ[0] = fmax(-1.0, fmin(1.0, dQ[0]));
+    const double dAngle = 2.0*acos(dQ[0]);
+    if (fabs(dAngle) > 1e-12)
+    {
+        const double SinHalfdAngle = sin(dAngle*0.5);
+        const double multi = dAngle/(SinHalfdAngle*update->dt);
+        vectorScalarMult3D(&(dQ[1]), multi, omega);
+    }
+    else
+        vectorZeroize3D(omega);
+}
 
 #endif

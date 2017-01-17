@@ -91,6 +91,10 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         void move(double *vecIncremental);
         void scale(double factor);
 
+        using MultiNodeMesh<NUM_NODES>::rotate;
+        void rotate(double *totalQ, double *dQ,double *origin);
+        void rotate(double *dQ,double *origin);
+
         virtual int generateRandomOwnedGhost(double *pos) = 0;
         virtual int generateRandomOwnedGhostWithin(double *pos,double delta) = 0;
         virtual int generateRandomSubbox(double *pos) = 0;
@@ -188,9 +192,6 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         virtual bool isInElement(double *pos, int i) = 0;
 
         int randomOwnedGhostElement();
-
-        void rotate(double *totalQ, double *dQ,double *origin);
-        void rotate(double *dQ,double *origin);
 
         // inline access
         inline double&  area(int i)         {return (area_)(i);}

@@ -424,7 +424,7 @@ void DumpImage::init_style()
 {
   if (multifile == 0 && !multifile_override)
     error->all(FLERR,"Dump image requires one snapshot per file");
-  if (sort_flag) error->all(FLERR,"Dump image cannot perform sorting");
+  if (sortBuffer && sortBuffer->sort_set()) error->all(FLERR,"Dump image cannot perform sorting");
 
   DumpCustom::init_style();
 

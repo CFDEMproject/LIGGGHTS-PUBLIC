@@ -94,6 +94,8 @@ class DumpMeshVTK : public Dump {
   std::vector<bool> temp_per_element_;
   // min dist from active edge
   class ScalarContainer<double> **min_active_edge_dist_;
+  // liquid content
+  class ScalarContainer<double> **liquid_content_;
 
   // general implementation
   class ScalarContainer<double> ***scalar_containers_;

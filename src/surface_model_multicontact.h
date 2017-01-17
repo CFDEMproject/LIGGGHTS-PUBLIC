@@ -38,7 +38,7 @@
 ------------------------------------------------------------------------- */
 
 #ifdef SURFACE_MODEL
-SURFACE_MODEL(SURFACE_MULTICONTACT,multicontact,1)
+SURFACE_MODEL(SURFACE_MULTICONTACT,multicontact,2)
 #else
 #ifndef SURFACE_MODEL_MULTICONTACT_H_
 #define SURFACE_MODEL_MULTICONTACT_H_
@@ -79,7 +79,7 @@ namespace ContactModels
         }
 
         inline void registerSettings(Settings&) {}
-        inline void postSettings() {}
+        inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
         inline void connectToProperties(PropertyRegistry&)
         {
             FixMultiContactHalfSpace *fix_mc = static_cast<FixMultiContactHalfSpace*>(modify->find_fix_style("multicontact/halfspace", 0));
@@ -103,13 +103,20 @@ namespace ContactModels
 
         inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData&, ForceData&)
         {
-            if (sidata.is_wall) {
-                sidata.contact_history[delta_offset  ] = -sidata.delta[0];
-                sidata.contact_history[delta_offset+1] = -sidata.delta[1];
-                sidata.contact_history[delta_offset+2] = -sidata.delta[2];
-            } else {
-                sidata.contact_history[delta_offset  ] = sidata.radi;
-                sidata.contact_history[delta_offset+1] = sidata.radj;
+            const bool update_history = sidata.computeflag && sidata.shearupdate;
+            if (update_history)
+            {
+                if (sidata.is_wall)
+                {
+                    sidata.contact_history[delta_offset  ] = -sidata.delta[0];
+                    sidata.contact_history[delta_offset+1] = -sidata.delta[1];
+                    sidata.contact_history[delta_offset+2] = -sidata.delta[2];
+                }
+                else
+                {
+                    sidata.contact_history[delta_offset  ] = sidata.radi;
+                    sidata.contact_history[delta_offset+1] = sidata.radj;
+                }
             }
             #ifdef SUPERQUADRIC_ACTIVE_FLAG
             if(sidata.is_non_spherical)
@@ -180,22 +187,28 @@ namespace ContactModels
         {
             // add the normal force to the contact history
             const int fn_offset = sidata.is_wall ? 3 : 2;
-            sidata.contact_history[delta_offset+fn_offset] = fabs(vectorDot3D(i_forces, sidata.en));
+            const bool update_history = sidata.computeflag && sidata.shearupdate;
+            if (update_history)
+                sidata.contact_history[delta_offset+fn_offset] = fabs(vectorDot3D(i_forces, sidata.en));
         }
 
         inline void surfacesClose(SurfacesCloseData& sidata, ForceData&, ForceData&)
         {
-            if (sidata.is_wall) {
-                const double lenDelta = vectorMag3D(sidata.delta);
-                const double rinv = lenDelta > 1e-15 ? -1.0/lenDelta : 0.0;
-                sidata.contact_history[delta_offset  ] = sidata.delta[0]*sidata.radi*rinv;
-                sidata.contact_history[delta_offset+1] = sidata.delta[1]*sidata.radi*rinv;
-                sidata.contact_history[delta_offset+2] = sidata.delta[2]*sidata.radi*rinv;
-                sidata.contact_history[delta_offset+3] = 0.0;
-            } else {
-                sidata.contact_history[delta_offset  ] = sidata.radi;
-                sidata.contact_history[delta_offset+1] = sidata.radj;
-                sidata.contact_history[delta_offset+2] = 0.0;
+            const bool update_history = sidata.computeflag && sidata.shearupdate;
+            if (update_history)
+            {
+                if (sidata.is_wall) {
+                    const double lenDelta = vectorMag3D(sidata.delta);
+                    const double rinv = lenDelta > 1e-15 ? -1.0/lenDelta : 0.0;
+                    sidata.contact_history[delta_offset  ] = sidata.delta[0]*sidata.radi*rinv;
+                    sidata.contact_history[delta_offset+1] = sidata.delta[1]*sidata.radi*rinv;
+                    sidata.contact_history[delta_offset+2] = sidata.delta[2]*sidata.radi*rinv;
+                    sidata.contact_history[delta_offset+3] = 0.0;
+                } else {
+                    sidata.contact_history[delta_offset  ] = sidata.radi;
+                    sidata.contact_history[delta_offset+1] = sidata.radj;
+                    sidata.contact_history[delta_offset+2] = 0.0;
+                }
             }
         }
 

@@ -50,7 +50,6 @@
 #include <stdio.h>
 #include "dump.h"
 #include "atom.h"
-#include "irregular.h"
 #include "update.h"
 #include "domain.h"
 #include "group.h"
@@ -61,19 +60,11 @@
 
 using namespace LAMMPS_NS;
 
-// allocate space for static class variable
-
-Dump *Dump::dumpptr;
-
-#define BIG 1.0e20
-#define IBIG 2147483647
-#define EPSILON 1.0e-6
-
-enum{ASCEND,DESCEND};
-
 /* ---------------------------------------------------------------------- */
 
-Dump::Dump(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
+Dump::Dump(LAMMPS *lmp, int narg, char **arg) :
+    Pointers(lmp),
+    sortBuffer(NULL)
 {
   MPI_Comm_rank(world,&me);
   MPI_Comm_size(world,&nprocs);
@@ -101,16 +92,15 @@ Dump::Dump(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   format_user = NULL;
   format_default = NULL;
   clearstep = 0;
-  sort_flag = 0;
   append_flag = 0;
   buffer_allow = 0;
   buffer_flag = 0;
   padflag = 0;
 
-  maxbuf = maxids = maxsort = maxproc = 0;
-  buf = bufsort = NULL;
-  ids = idsort = index = proclist = NULL;
-  irregular = NULL;
+  maxbuf = 0;
+  buf = NULL;
+
+  size_one = 0;
 
   maxsbuf = 0;
   sbuf = NULL;
@@ -171,12 +161,6 @@ Dump::~Dump()
   delete [] format_user;
 
   memory->destroy(buf);
-  memory->destroy(bufsort);
-  memory->destroy(ids);
-  memory->destroy(idsort);
-  memory->destroy(index);
-  memory->destroy(proclist);
-  delete irregular;
 
   memory->destroy(sbuf);
 
@@ -197,79 +181,23 @@ Dump::~Dump()
 
 void Dump::init()
 {
-  init_style();
+    init_style();
 
-  if (!sort_flag) {
-    memory->destroy(bufsort);
-    memory->destroy(ids);
-    memory->destroy(idsort);
-    memory->destroy(index);
-    memory->destroy(proclist);
-    delete irregular;
+    if (sortBuffer)
+    {
+        sortBuffer->init(igroup);
 
-    maxids = maxsort = maxproc = 0;
-    bufsort = NULL;
-    ids = idsort = index = proclist = NULL;
-    irregular = NULL;
-  }
-
-  if (sort_flag) {
-    if (multiproc > 1)
-      error->all(FLERR,
-                 "Cannot dump sort when multiple procs write the dump file");
-    if (sortcol == 0 && atom->tag_enable == 0)
-      error->all(FLERR,"Cannot dump sort on atom IDs with no atom IDs defined");
-    if (sortcol && sortcol > size_one)
-      error->all(FLERR,"Dump sort column is invalid");
-    if (nprocs > 1 && irregular == NULL)
-      irregular = new Irregular(lmp);
-
-    bigint size = group->count(igroup);
-    if (size > MAXSMALLINT) error->all(FLERR,"Too many atoms to dump sort");
-
-    // set reorderflag = 1 if can simply reorder local atoms rather than sort
-    // criteria: sorting by ID, atom IDs are consecutive from 1 to Natoms
-    //           min/max IDs of group match size of group
-    // compute ntotal_reorder, nme_reorder, idlo/idhi to test against later
-
-    reorderflag = 0;
-    if (sortcol == 0 && atom->tag_consecutive()) {
-      int *tag = atom->tag;
-      int *mask = atom->mask;
-      int nlocal = atom->nlocal;
-
-      int min = IBIG;
-      int max = 0;
-      for (int i = 0; i < nlocal; i++)
-        if (mask[i] & groupbit) {
-          min = MIN(min,tag[i]);
-          max = MAX(max,tag[i]);
+        if (sortBuffer->sort_set())
+        {
+            if (multiproc > 1)
+                error->all(FLERR,
+                           "Cannot dump sort when multiple procs write the dump file");
+            if (sortBuffer->get_sortcol() == 0 && atom->tag_enable == 0)
+                error->all(FLERR,"Cannot dump sort on atom IDs with no atom IDs defined");
+            if (sortBuffer->get_sortcol() && sortBuffer->get_sortcol() > size_one)
+                error->all(FLERR,"Dump sort column is invalid");
         }
-      int minall,maxall;
-      MPI_Allreduce(&min,&minall,1,MPI_INT,MPI_MIN,world);
-      MPI_Allreduce(&max,&maxall,1,MPI_INT,MPI_MAX,world);
-      int isize = static_cast<int> (size);
-
-      if (maxall-minall+1 == isize) {
-        reorderflag = 1;
-        double range = maxall-minall + EPSILON;
-        idlo = static_cast<int> (range*me/nprocs + minall);
-        int idhi = static_cast<int> (range*(me+1)/nprocs + minall);
-
-        int lom1 = static_cast<int> ((idlo-1-minall)/range * nprocs);
-        int lo = static_cast<int> ((idlo-minall)/range * nprocs);
-        int him1 = static_cast<int> ((idhi-1-minall)/range * nprocs);
-        int hi = static_cast<int> ((idhi-minall)/range * nprocs);
-        if (me && me == lom1) idlo--;
-        else if (me && me != lo) idlo++;
-        if (me+1 == him1) idhi--;
-        else if (me+1 != hi) idhi++;
-
-        nme_reorder = idhi-idlo;
-        ntotal_reorder = isize;
-      }
     }
-  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -340,8 +268,8 @@ void Dump::write()
 
   if (filewriter) write_header(nheader);
 
-  // insure buf is sized for packing and communicating
-  // use nmax to insure filewriter proc can receive info from others
+  // ensure buf is sized for packing and communicating
+  // use nmax to ensure filewriter proc can receive info from others
   // limit nmax*size_one to int since used as arg in MPI calls
 
   if (nmax > maxbuf) {
@@ -352,24 +280,24 @@ void Dump::write()
     memory->create(buf,maxbuf*size_one,"dump:buf");
   }
 
-  // insure ids buffer is sized for sorting
+  // ensure ids buffer is sized for sorting
 
-  if (sort_flag && sortcol == 0 && nmax > maxids) {
-    maxids = nmax;
-    memory->destroy(ids);
-    memory->create(ids,maxids,"dump:ids");
-  }
+  if (sortBuffer)
+    sortBuffer->realloc_ids(nmax);
 
   // pack my data into buf
   // if sorting on IDs also request ID list from pack()
   // sort buf as needed
 
-  if (sort_flag && sortcol == 0) pack(ids);
-  else pack(NULL);
-  if (sort_flag) sort();
+  if (sortBuffer)
+    pack(sortBuffer->get_ids());
+  else
+    pack(NULL);
+  if (sortBuffer)
+    sortBuffer->sort(buf, nme, maxbuf, size_one, ntotal);
 
   // if buffering, convert doubles into strings
-  // insure sbuf is sized for communicating
+  // ensure sbuf is sized for communicating
   // cannot buffer if output is to binary file
 
   if (buffer_flag && !binary) {
@@ -518,220 +446,6 @@ void Dump::openfile()
 }
 
 /* ----------------------------------------------------------------------
-   parallel sort of buf across all procs
-   changes nme, reorders datums in buf, grows buf if necessary
-------------------------------------------------------------------------- */
-
-void Dump::sort()
-{
-  int i,iproc;
-  double value;
-
-  // if single proc, swap ptrs to buf,ids <-> bufsort,idsort
-
-  if (nprocs == 1) {
-    if (nme > maxsort) {
-      maxsort = nme;
-      memory->destroy(bufsort);
-      memory->create(bufsort,maxsort*size_one,"dump:bufsort");
-      memory->destroy(index);
-      memory->create(index,maxsort,"dump:index");
-      if (sortcol == 0) {
-        memory->destroy(idsort);
-        memory->create(idsort,maxsort,"dump:idsort");
-      }
-    }
-
-    double *dptr = buf;
-    buf = bufsort;
-    bufsort = dptr;
-
-    if (sortcol == 0) {
-      int *iptr = ids;
-      ids = idsort;
-      idsort = iptr;
-    }
-
-  // if multiple procs, exchange datums between procs via irregular
-
-  } else {
-
-    // grow proclist if necessary
-
-    if (nme > maxproc) {
-      maxproc = nme;
-      memory->destroy(proclist);
-      memory->create(proclist,maxproc,"dump:proclist");
-    }
-
-    // proclist[i] = which proc Ith datum will be sent to
-
-    if (sortcol == 0) {
-      int min = IBIG;
-      int max = 0;
-      for (i = 0; i < nme; i++) {
-        min = MIN(min,ids[i]);
-        max = MAX(max,ids[i]);
-      }
-      int minall,maxall;
-      MPI_Allreduce(&min,&minall,1,MPI_INT,MPI_MIN,world);
-      MPI_Allreduce(&max,&maxall,1,MPI_INT,MPI_MAX,world);
-      double range = maxall-minall + EPSILON;
-      for (i = 0; i < nme; i++) {
-        iproc = static_cast<int> ((ids[i]-minall)/range * nprocs);
-        proclist[i] = iproc;
-      }
-
-    } else {
-      double min = BIG;
-      double max = -BIG;
-      for (i = 0; i < nme; i++) {
-        value = buf[i*size_one + sortcolm1];
-        min = MIN(min,value);
-        max = MAX(max,value);
-      }
-      double minall,maxall;
-      MPI_Allreduce(&min,&minall,1,MPI_DOUBLE,MPI_MIN,world);
-      MPI_Allreduce(&max,&maxall,1,MPI_DOUBLE,MPI_MAX,world);
-      double range = maxall-minall + EPSILON*(maxall-minall);
-      if (range == 0.0) range = EPSILON;
-      for (i = 0; i < nme; i++) {
-        value = buf[i*size_one + sortcolm1];
-        iproc = static_cast<int> ((value-minall)/range * nprocs);
-        proclist[i] = iproc;
-      }
-    }
-
-    // create comm plan, grow recv bufs if necessary,
-    // exchange datums, destroy plan
-    // if sorting on atom IDs, exchange IDs also
-
-    nme = irregular->create_data(nme,proclist);
-
-    if (nme > maxsort) {
-      maxsort = nme;
-      memory->destroy(bufsort);
-      memory->create(bufsort,maxsort*size_one,"dump:bufsort");
-      memory->destroy(index);
-      memory->create(index,maxsort,"dump:index");
-      if (sortcol == 0) {
-        memory->destroy(idsort);
-        memory->create(idsort,maxsort,"dump:idsort");
-      }
-    }
-
-    irregular->exchange_data((char *) buf,size_one*sizeof(double),
-                             (char *) bufsort);
-    if (sortcol == 0)
-      irregular->exchange_data((char *) ids,sizeof(int),(char *) idsort);
-    irregular->destroy_data();
-  }
-
-  // if reorder flag is set & total/per-proc counts match pre-computed values,
-  // then create index directly from idsort
-  // else quicksort of index using IDs or buf column as comparator
-
-  if (reorderflag) {
-    if (ntotal != ntotal_reorder) reorderflag = 0;
-    int flag = 0;
-    if (nme != nme_reorder) flag = 1;
-    int flagall;
-    MPI_Allreduce(&flag,&flagall,1,MPI_INT,MPI_SUM,world);
-    if (flagall) reorderflag = 0;
-
-    if (reorderflag)
-      for (i = 0; i < nme; i++)
-        index[idsort[i]-idlo] = i;
-  }
-
-  if (!reorderflag) {
-    dumpptr = this;
-    for (i = 0; i < nme; i++) index[i] = i;
-    if (sortcol == 0) qsort(index,nme,sizeof(int),idcompare);
-    else if (sortorder == ASCEND) qsort(index,nme,sizeof(int),bufcompare);
-    else qsort(index,nme,sizeof(int),bufcompare_reverse);
-  }
-
-  // reset buf size and maxbuf to largest of any post-sort nme values
-  // this insures proc 0 can receive everyone's info
-
-  int nmax;
-  MPI_Allreduce(&nme,&nmax,1,MPI_INT,MPI_MAX,world);
-
-  if (nmax > maxbuf) {
-    maxbuf = nmax;
-    memory->destroy(buf);
-    memory->create(buf,maxbuf*size_one,"dump:buf");
-  }
-
-  // copy data from bufsort to buf using index
-
-  int nbytes = size_one*sizeof(double);
-  for (i = 0; i < nme; i++)
-    memcpy(&buf[i*size_one],&bufsort[index[i]*size_one],nbytes);
-}
-
-/* ----------------------------------------------------------------------
-   compare two atom IDs
-   called via qsort() in sort() method
-   is a static method so access data via dumpptr
-------------------------------------------------------------------------- */
-
-int Dump::idcompare(const void *pi, const void *pj)
-{
-  int *idsort = dumpptr->idsort;
-
-  int i = *((int *) pi);
-  int j = *((int *) pj);
-
-  if (idsort[i] < idsort[j]) return -1;
-  if (idsort[i] > idsort[j]) return 1;
-  return 0;
-}
-
-/* ----------------------------------------------------------------------
-   compare two buffer values with size_one stride
-   called via qsort() in sort() method
-   is a static method so access data via dumpptr
-   sort in ASCENDing order
-------------------------------------------------------------------------- */
-
-int Dump::bufcompare(const void *pi, const void *pj)
-{
-  double *bufsort = dumpptr->bufsort;
-  int size_one = dumpptr->size_one;
-  int sortcolm1 = dumpptr->sortcolm1;
-
-  int i = *((int *) pi)*size_one + sortcolm1;
-  int j = *((int *) pj)*size_one + sortcolm1;
-
-  if (bufsort[i] < bufsort[j]) return -1;
-  if (bufsort[i] > bufsort[j]) return 1;
-  return 0;
-}
-
-/* ----------------------------------------------------------------------
-   compare two buffer values with size_one stride
-   called via qsort() in sort() method
-   is a static method so access data via dumpptr
-   sort in DESCENDing order
-------------------------------------------------------------------------- */
-
-int Dump::bufcompare_reverse(const void *pi, const void *pj)
-{
-  double *bufsort = dumpptr->bufsort;
-  int size_one = dumpptr->size_one;
-  int sortcolm1 = dumpptr->sortcolm1;
-
-  int i = *((int *) pi)*size_one + sortcolm1;
-  int j = *((int *) pj)*size_one + sortcolm1;
-
-  if (bufsort[i] > bufsort[j]) return -1;
-  if (bufsort[i] < bufsort[j]) return 1;
-  return 0;
-}
-
-/* ----------------------------------------------------------------------
    process params common to all dumps here
    if unknown param, call modify_param specific to the dump
 ------------------------------------------------------------------------- */
@@ -869,29 +583,16 @@ void Dump::modify_params(int narg, char **arg)
       if (padflag < 0) error->all(FLERR,"Illegal dump_modify command");
       iarg += 2;
 
-    } else if (strcmp(arg[iarg],"sort") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal dump_modify command");
-      if (strcmp(arg[iarg+1],"off") == 0) sort_flag = 0;
-      else if (strcmp(arg[iarg+1],"id") == 0) {
-        sort_flag = 1;
-        sortcol = 0;
-        sortorder = ASCEND;
-      } else {
-        sort_flag = 1;
-        sortcol = force->inumeric(FLERR,arg[iarg+1]);
-        sortorder = ASCEND;
-        if (sortcol == 0) error->all(FLERR,"Illegal dump_modify command");
-        if (sortcol < 0) {
-          sortorder = DESCEND;
-          sortcol = -sortcol;
-        }
-        sortcolm1 = sortcol - 1;
-      }
-      iarg += 2;
-
     } else {
       int n = modify_param(narg-iarg,&arg[iarg]);
-      if (n == 0) error->all(FLERR,"Illegal dump_modify command");
+      if (n == 0)
+      {
+        if (!sortBuffer)
+            sortBuffer = new SortBuffer(lmp, false);
+        n = sortBuffer->modify_param(narg-iarg, &arg[iarg]);
+        if (n == 0)
+            error->all(FLERR,"Illegal dump_modify command");
+      }
       iarg += n;
     }
   }
@@ -903,15 +604,11 @@ void Dump::modify_params(int narg, char **arg)
 
 bigint Dump::memory_usage()
 {
-  bigint bytes = memory->usage(buf,size_one*maxbuf);
+  bigint bytes = 0;
+  bytes += memory->usage(buf,size_one*maxbuf);
   bytes += memory->usage(sbuf,maxsbuf);
-  if (sort_flag) {
-    if (sortcol == 0) bytes += memory->usage(ids,maxids);
-    bytes += memory->usage(bufsort,size_one*maxsort);
-    if (sortcol == 0) bytes += memory->usage(idsort,maxsort);
-    bytes += memory->usage(index,maxsort);
-    bytes += memory->usage(proclist,maxproc);
-    if (irregular) bytes += irregular->memory_usage();
+  if (sortBuffer) {
+    bytes += sortBuffer->memory_usage(size_one);
   }
   return bytes;
 }

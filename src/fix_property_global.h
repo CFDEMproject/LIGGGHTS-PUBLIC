@@ -42,6 +42,7 @@
 #ifdef FIX_CLASS
 
 FixStyle(property/global,FixPropertyGlobal)
+FixStyle(custom_property/global,FixPropertyGlobal) 
 FixStyle(property/atomtype,FixPropertyGlobal)
 FixStyle(property/atomtypepair,FixPropertyGlobal)
 

@@ -46,8 +46,13 @@
 #define CONTACT_INTERFACE_H_
 
 #include <string>
-#include "nonspherical_flags.h"
-#include "tri_mesh.h"
+
+// forward declaration
+namespace LAMMPS_NS 
+{
+class TriMesh;
+class FixMeshSurface;
+}
 
 namespace LIGGGHTS {
 namespace ContactModels {
@@ -66,6 +71,7 @@ struct SurfacesCloseData {
   int *contact_flags;
   double *contact_history;
   LAMMPS_NS::TriMesh *mesh;
+  LAMMPS_NS::FixMeshSurface *fix_mesh;
 
   int i;
   int j;
@@ -80,38 +86,22 @@ struct SurfacesCloseData {
 
   bool is_non_spherical;
 
+  int computeflag;
+  int shearupdate;
+
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  double *quat_i; //quaternion of i-th particle
-  double *quat_j; //quaternion of j-th particle
-  double *shape_i; //shape parameters of i-th particle (a,b,c)
-  double *shape_j; //shape parameters of j-th particle (a,b,c)
-  double *roundness_i; //roundness parameters of i-th particle (eps1, eps2)
-  double *roundness_j; //roundness parameters of j-th particle (eps1, eps2)
   double contact_point[3];
-  double *pos_i;
-  double *pos_j;
-  double *inertia_i;
-  double *inertia_j;
   double koefi;
   double koefj;
 
   SurfacesCloseData() :
     area_ratio(1.0),
-    quat_i(NULL),
-    quat_j(NULL),
-    shape_i(NULL),
-    shape_j(NULL),
-    roundness_i(NULL),
-    roundness_j(NULL),
-    pos_i(NULL),
-    pos_j(NULL),
-    inertia_i(NULL),
-    inertia_j(NULL),
+    mesh(0),
     is_non_spherical(false),
     koefi(0.0),
     koefj(0.0)
   {}
-#elif defined NONSPHERICAL_ACTIVE_FLAG
+#elif defined CONVEX_ACTIVE_FLAG
   double contact_point[3];
 
   SurfacesCloseData() :
@@ -164,9 +154,6 @@ struct SurfacesIntersectData : SurfacesCloseData {
   double meff;  
 
   mutable double P_diss; 
-
-  int computeflag;
-  int shearupdate;
 
   SurfacesIntersectData() : Fn(0.0), Ft(0.0) {}
 };

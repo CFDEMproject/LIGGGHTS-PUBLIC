@@ -48,6 +48,12 @@
 
 #include "pointers.h"
 
+#define INVOKED_SCALAR  1<<0
+#define INVOKED_VECTOR  1<<1
+#define INVOKED_ARRAY   1<<2
+#define INVOKED_PERATOM 1<<3
+#define INVOKED_LOCAL   1<<4
+
 namespace LAMMPS_NS {
 
 class Compute : protected Pointers {

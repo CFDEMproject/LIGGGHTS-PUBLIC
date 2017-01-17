@@ -55,6 +55,7 @@ namespace LAMMPS_NS {
     friend class FixMultisphere;
     friend class FixChangeSizeMultisphere;
     friend class SetMultisphere;
+    friend class FixMoveMultisphere;
 
     public:
 
@@ -77,9 +78,10 @@ namespace LAMMPS_NS {
       void id_extend_body_extend(int *body);
 
       void calc_nbody_all();
-      bool check_lost_atoms(int *body, double *atom_delflag,double *body_existflag);
+      bool check_lost_atoms(int *body, double *atom_delflag,double *body_existflag, double *volumeweight);
 
       int calc_n_steps(int iatom,int body,double *p_ref,double *normalvec,double *v_normal);
+      void recalc_n_steps(double dt_ratio);
       void release(int iatom,int body,double *v_toInsert,double *omega_toInsert);
 
       double max_r_bound();

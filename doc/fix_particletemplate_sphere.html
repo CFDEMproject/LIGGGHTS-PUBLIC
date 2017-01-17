@@ -1,84 +1,278 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix particletemplate/sphere command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix particletemplate/sphere command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix ID group-ID particletemplate/sphere seed keyword values ...  
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>particletemplate/sphere = style name of this fix command  
-
-<LI>seed = random number generator seed (integer value) 
-
-<LI>zero or more keyword/value pairs can be appended 
-
-<LI>keyword = <I>atom_type</I> or <I>density</I> or <I>volume_limit</I> or <I>radius</I> or <I>relative</I> 
-
-<PRE><I>atom_type</I> value = atom type assigned to this particle template
-<I>density</I> values = random_style param1 (param2)
-  random_style = 'constant' 
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix particletemplate/sphere command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_particletemplate_sphere.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-particletemplate-sphere-command">
+<span id="index-0"></span><h1>fix particletemplate/sphere command<a class="headerlink" href="#fix-particletemplate-sphere-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ID group-ID particletemplate/sphere seed keyword values ...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>particletemplate/sphere = style name of this fix command</li>
+<li>seed = random number generator seed (prime number greater 10000)</li>
+<li>zero or more keyword/value pairs can be appended</li>
+<li>keyword = <em>atom_type</em> or <em>density</em> or <em>volume_limit</em> or <em>radius</em> or <em>relative</em></li>
+</ul>
+<pre class="literal-block">
+<em>atom_type</em> value = atom type assigned to this particle template
+<em>density</em> values = random_style param1 (param2)
+  random_style = 'constant'
   param1 = density for 'constant',
     param2 = omitted for 'constant'
-<I>volume_limit</I> value = lowest particle volume allowed in simulation
-<I>radius</I> values = random_style param1 (param2)
-  random_style = 'constant' 
+<em>volume_limit</em> value = lowest particle volume allowed in simulation
+<em>radius</em> values = random_style param1 (param2)
+  random_style = 'constant'
   param1 = radius for 'constant'
   param2 = omitted for 'constant'
-<I>relative</I> value = yes or no
+<em>relative</em> value = yes or no
   no = set a flag for other commands that radius given here is abosulute (in length units)
-  yes = set a flag for other commands that radius given here is relative (in % of a reference radius) 
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0015 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Define a particle that is used as input for a 
-<A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A> command. 
-You can choose the atom type, density and radius of the particles. For density and 
-radius, there is currently only a 'constant' style. Note that this is not a restriction since
-multiple commands of style particletemplate/sphere can be used in a <A HREF = "fix_particledistribution_discrete.html">fix_particledistribution_discrete</A>
-command so any kind of distribution can be approximated to any arbitrary precision.
-</P>
-<P>Keyword <I>relative</I> lets the user set a flag to let other commands know if the radii specified
-by this command are absolute (length units) or relative (in % of a reference radius). 
+  yes = set a flag for other commands that radius given here is relative (in % of a reference radius)
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix pts1 all particletemplate/sphere 123457 atom_type 1 density constant 2500 radius constant 0.0015</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Define a particle that is used as input for a
+<a class="reference internal" href="fix_particledistribution_discrete.html"><em>fix_particledistribution_discrete</em></a> command.
+You can choose the atom type, density and radius of the particles. For density and
+radius, there is currently only a &#8216;constant&#8217; style. Note that this is not a restriction since
+multiple commands of style particletemplate/sphere can be used in a <a class="reference internal" href="fix_particledistribution_discrete.html"><em>fix_particledistribution_discrete</em></a>
+command so any kind of distribution can be approximated to any arbitrary precision.</p>
+<p>Keyword <em>relative</em> lets the user set a flag to let other commands know if the radii specified
+by this command are absolute (length units) or relative (in % of a reference radius).
 IMPORTANT NOTE: This setting should not be changed away from the default value (no) unless
-explicity required by another command! 
-</P>
-<P>LIGGGHTS(R)-PUBLIC will throw an error if the particle volume is too small compared to machine precision.
-If you are sure you know what you are doing you can override the default limit of 1e-12.
-</P>
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>Information about the random state in this fix is written to <A HREF = "restart.html">binary restart files</A> 
-so you can restart a simulation with the same particles being chosen for insertion. None of the 
-<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global scalar or vector or 
-per-atom quantities are stored by this fix for access by various <A HREF = "Section_howto.html#4_15">output commands</A>. 
-No parameter of this fix can be used with the <I>start</I>/<I>stop</I> keywords of the <A HREF = "run.html">run</A> command. 
-This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
-</P>
-<P><B>Restrictions:</B> none
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "fix_particletemplate_sphere.html">fix_particletemplate_sphere</A>
-</P>
-<P><B>Default:</B> 
-</P>
-<P>radius = 1.0, density = 1.0, atom_type = 1, volume_limit = 1e-12, relative = no
-</P>
-</HTML>
+explicity required by another command!</p>
+<p>LIGGGHTS(R)-PUBLIC will throw an error if the particle volume is too small compared to machine precision.
+If you are sure you know what you are doing you can override the default limit of 1e-12.</p>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>Information about the random state in this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>
+so you can restart a simulation with the same particles being chosen for insertion. None of the
+<a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix. No global scalar or vector or
+per-atom quantities are stored by this fix for access by various <em class="xref std std-ref">output commands</em>.
+No parameter of this fix can be used with the <em>start</em>/<em>stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.
+This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href=""><em>fix_particletemplate_sphere</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p>radius = 1.0, density = 1.0, atom_type = 1, volume_limit = 1e-12, relative = no</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

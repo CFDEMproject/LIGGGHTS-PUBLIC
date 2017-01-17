@@ -140,6 +140,7 @@ FixMassflowMeshSieve::FixMassflowMeshSieve(LAMMPS *lmp, int narg, char **arg) :
 
 FixMassflowMeshSieve::~FixMassflowMeshSieve()
 {
+    if (random_) delete random_;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -224,10 +225,9 @@ void FixMassflowMeshSieve::post_force(int vflag)
             if (!(mask[iPart] & groupbit))
                 continue;
 
-            const int ibody = fix_ms_ ? ( (fix_ms_->belongs_to(iPart) > -1) ? (ms_->map(fix_ms_->belongs_to(iPart))) : -1 ) : -1;
-
             // in case of once_ == true, ignore everything which has been already counted
-            if((ibody > -1) ?  ((*ms_counter_)(ibody) == 2) : (compDouble(counter[iPart],2.)) ) continue;
+            if(compDouble(counter[iPart],2.))
+                continue;
 
             int barySign;
             deltan = fix_mesh_->triMesh()->resolveTriSphereContactBary(iPart,iTri,radius[iPart],x[iPart],delta,bary,barySign);
@@ -238,42 +238,42 @@ void FixMassflowMeshSieve::post_force(int vflag)
                 if(applyForce[iPart]<0.0) //have first contact
                 {
                     double randNumber = random_->uniform();
-                    if(!sieveMultiSphereCanPass_ && (ibody > -1)) //have an unwanted multisphere collision --> apply force in any case!
-                        applyForce[iPart] = 1+iTriDouble;  
-                    else if( randNumber  < sievePassProbability(radius[iPart]) ) 
+                    if(!sieveMultiSphereCanPass_ && (fix_volumeweight_ms_ && fix_volumeweight_ms_->vector_atom[iPart] > 0)) //have an unwanted multisphere collision --> apply force in any case!
+                        applyForce[iPart] = 1+iTriDouble;
+                    else if( randNumber  < sievePassProbability(radius[iPart]) )
                     {
                         applyForce[iPart] = 0;
                         continue;
                     }
                     else
-                        applyForce[iPart] = 1+iTriDouble; 
-    
+                        applyForce[iPart] = 1+iTriDouble;
+
 //                    printf("FixMassflowMeshSieve:: particle %d has an overlap with deltan: %g, delta: %g %g %g, radius: %g, applyForce: %g, randNumber: %g \n",
 //                       iPart, deltan, delta[0],delta[1],delta[2],radius[iPart], applyForce[iPart],randNumber);
 
                 }
                 else if(compDouble(applyForce[iPart],0)) continue; //suppress force calculation
-            
+
                 double contactNormal[3];
                 double invRadius = 1/radius[iPart];
                 contactNormal[0] = delta[0] * invRadius;
                 contactNormal[1] = delta[1] * invRadius;
                 contactNormal[2] = delta[2] * invRadius;
 
-                double 
-                normalVel = v[iPart][0] * contactNormal[0] 
-                          + v[iPart][1] * contactNormal[1] 
+                double
+                normalVel = v[iPart][0] * contactNormal[0]
+                          + v[iPart][1] * contactNormal[1]
                           + v[iPart][2] * contactNormal[2];
 
-                const double Fn_damping = sieveDamping_  * normalVel;    
+                const double Fn_damping = sieveDamping_  * normalVel;
                 const double Fn_contact =-sieveStiffness_* deltan; //deltan is NEGATIVE!
                 double Fn = Fn_damping + Fn_contact;
                 if(Fn<0.0) //avoid attractive forces during contact
                   Fn = 0.0;
 
-                f[iPart][0] -= Fn*contactNormal[0]; 
-                f[iPart][1] -= Fn*contactNormal[1]; 
-                f[iPart][2] -= Fn*contactNormal[2]; 
+                f[iPart][0] -= Fn*contactNormal[0];
+                f[iPart][1] -= Fn*contactNormal[1];
+                f[iPart][2] -= Fn*contactNormal[2];
             }
             else //particle has no contact with this triangle now - but check if it had previously
             {

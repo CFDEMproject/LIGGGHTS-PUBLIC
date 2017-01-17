@@ -72,6 +72,8 @@ namespace ContactModels {
         settings.registerOnOff("tangential_reduce",tangentialReduce_,false);
     }
 
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
+
     void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("cohEnergyDens", &MODEL_PARAMS::createCohesionEnergyDensity);
       registry.connect("cohEnergyDens", cohEnergyDens,"cohesion_model sjkr");

@@ -60,6 +60,7 @@ using namespace LAMMPS_NS;
 ParticleToInsertMultisphere::ParticleToInsertMultisphere(LAMMPS* lmp,int ns) : ParticleToInsert(lmp,ns)
 {
     memory->create(displace,nspheres,3,"displace");
+    memory->create(volumeweight,nspheres,"displace");
 
     for(int i = 0; i < nspheres; i++)
        vectorZeroize3D(displace[i]);
@@ -73,6 +74,7 @@ ParticleToInsertMultisphere::ParticleToInsertMultisphere(LAMMPS* lmp,int ns) : P
 ParticleToInsertMultisphere::~ParticleToInsertMultisphere()
 {
     memory->destroy(displace);
+    memory->destroy(volumeweight);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -217,8 +219,10 @@ int ParticleToInsertMultisphere::insert()
     
     int nlocal = atom->nlocal;
 
-    if(modify->n_fixes_style("multisphere") != 1)
-        error->one(FLERR,"Multi-sphere particle inserted: You have to use exactly one fix multisphere");
+    if(modify->n_fixes_style("multisphere") != 1) {
+        printf("Number of fix multisphere used: %d\n", modify->n_fixes_style("multisphere"));
+        error->one(FLERR,"Multi-sphere particle inserted: You have to use exactly one fix multisphere.");
+    }
 
     FixMultisphere *fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
 
@@ -229,7 +233,11 @@ int ParticleToInsertMultisphere::insert()
     
     int i = 0;
     for(int isphere = nlocal-nspheres; isphere < nlocal; isphere++)
-        fix_multisphere->set_body_displace(isphere,displace[i++],-2);
+    {
+        
+        fix_multisphere->set_body_displace(isphere,displace[i],-2,volumeweight[i]);
+        i++;
+    }
 
     return inserted;
 }
@@ -249,7 +257,7 @@ void ParticleToInsertMultisphere::random_rotate(double rn1,double rn2, double rn
     if(nspheres==1)return;
 
     double *vert_before_rot;
-    double vert_after_rot[3];
+    double vert_after_rot[3]={0.0,0.0,0.0};
 
     double phix=rn1*2.*M_PI;
     double phiy=rn2*2.*M_PI;

@@ -170,7 +170,7 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
       pdf_radius = new PDF(error);
       if (strcmp(arg[iarg+1],"constant") == 0)
       {
-          double value = atof(arg[iarg+2])*force->cg();
+          double value = atof(arg[iarg+2])*force->cg(atom_type);
           if( value <= 0.)
             error->all(FLERR,"Illegal fix particletemplate/sphere command, radius must be >= 0");
           pdf_radius->set_params<RANDOM_CONSTANT>(value);
@@ -184,7 +184,7 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
               pdf_radius->activate_mass_shift();
           else if(strcmp(arg[iarg+2],"number"))
               error->fix_error(FLERR,this,"expecting 'mass' or 'number'");
-          if(force->cg() > 1.)
+          if(force->cg(atom_type) > 1.)
               error->fix_error(FLERR,this,"cannot use distribution with coarse-graining.");
           double min = atof(arg[iarg+3]);
           double max = atof(arg[iarg+4]);
@@ -201,7 +201,7 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
               pdf_radius->activate_mass_shift();
           else if(strcmp(arg[iarg+2],"number"))
               error->fix_error(FLERR,this,"expecting 'mass' or 'number'");
-          if(force->cg() > 1.)
+          if(force->cg(atom_type) > 1.)
               error->fix_error(FLERR,this,"cannot use distribution with coarse-graining.");
           double mu = atof(arg[iarg+3]);
           double sigma = atof(arg[iarg+4]);
@@ -218,7 +218,7 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
               pdf_radius->activate_mass_shift();
           else if(strcmp(arg[iarg+2],"number"))
               error->fix_error(FLERR,this,"expecting 'mass' or 'number'");
-          if(force->cg() > 1.)
+          if(force->cg(atom_type) > 1.)
               error->fix_error(FLERR,this,"cannot use distribution with coarse-graining.");
           double mu = atof(arg[iarg+3]);
           double sigma = atof(arg[iarg+4]);

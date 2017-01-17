@@ -50,7 +50,6 @@
 #include "vector_liggghts.h"
 #include "pointers.h"
 #include "bounding_box.h"
-#include "nonspherical_flags.h"
 #include "region_neighbor_list_definitions.h"
 #include "lmptype.h"
 #include <mpi.h>
@@ -59,8 +58,9 @@
 #include "region.h"
 #include <limits>
 #include <algorithm>
+
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-#include "math_extra_liggghts_nonspherical.h"
+#include "math_extra_liggghts_superquadric.h"
 #endif
 
 namespace LAMMPS_NS {

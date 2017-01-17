@@ -67,6 +67,14 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
     //Check args
     if (narg < 6) error->all(FLERR,"Illegal fix property/global command, not enough arguments");
 
+    if(0 == strcmp(style,"custom_property/global"))
+    {
+        int len = strlen("property/global") + 1;
+        delete []style;
+        style = new char[len];
+        strcpy(style,"property/global");
+    }
+
     //Read args
     int n = strlen(arg[3]) + 1;
     variablename = new char[n];
@@ -156,8 +164,18 @@ FixPropertyGlobal::FixPropertyGlobal(LAMMPS *lmp, int narg, char **arg) :
                 if(array[i][j] != array[j][i])
                     sflag = false;
 
-        if(!sflag)
-            error->fix_error(FLERR,this,"per-atomtype property matrix must be symmetric");
+        if(!lmp->wb)
+        {
+            if(!sflag)
+                error->fix_error(FLERR,this,"per-atomtype property matrix must be symmetric");
+        }
+        else
+        {
+            char errstr[512];
+            sprintf(errstr,"Property %s is required to be symmetric",variablename);
+            if(!sflag)
+                error->all(FLERR,errstr);
+        }
     }
 }
 

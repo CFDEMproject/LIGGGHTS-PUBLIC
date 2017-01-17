@@ -47,6 +47,7 @@
 #include "force.h"
 #include "pair.h"
 #include "pair_gran.h"
+#include "pair_gran_proxy.h"
 #include "modify.h"
 #include "neighbor.h"
 #include "neigh_request.h"
@@ -692,7 +693,7 @@ void ComputePairGranLocal::add_wall_1(int iFMG,int idTri,int iP,double *contact_
 
 /* ---------------------------------------------------------------------- */
 
-void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist,double rsq)
+void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist,double rsq, double *normal)
 {
     double contactArea;
 
@@ -740,40 +741,28 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
     }
     if(fnflag)
     {
-        double contact_point[3], fc[3],fn[3], normal[3];
-
-        contact_point[0] = array[ipair][n++];
-        contact_point[1] = array[ipair][n++];
-        contact_point[2] = array[ipair][n++];
+        double fc[3],fn[3];
 
         vectorConstruct3D(fc,fx,fy,fz);
-        vectorSubtract3D(contact_pos ? contact_pos :  contact_point,atom->x[i],normal);
-        vectorNormalize3D(normal);
         double fnmag = vectorDot3D(fc,normal);
         vectorScalarMult3D(normal,fnmag,fn);
 
-        array[ipair][n-3] = fn[0];
-        array[ipair][n-2] = fn[1];
-        array[ipair][n-1] = fn[2];
+        array[ipair][n++] = fn[0];
+        array[ipair][n++] = fn[1];
+        array[ipair][n++] = fn[2];
     }
     if(ftflag)
     {
-        double contact_point[3], fc[3],fn[3],ft[3], normal[3];
-
-        contact_point[0] = array[ipair][n++];
-        contact_point[1] = array[ipair][n++];
-        contact_point[2] = array[ipair][n++];
+        double fc[3],fn[3],ft[3];
 
         vectorConstruct3D(fc,fx,fy,fz);
-        vectorSubtract3D(contact_pos ? contact_pos : contact_point,atom->x[i],normal);
-        vectorNormalize3D(normal);
         double fnmag = vectorDot3D(fc,normal);
         vectorScalarMult3D(normal,fnmag,fn);
         vectorSubtract3D(fc,fn,ft);
 
-        array[ipair][n-3] = ft[0];
-        array[ipair][n-2] = ft[1];
-        array[ipair][n-1] = ft[2];
+        array[ipair][n++] = ft[0];
+        array[ipair][n++] = ft[1];
+        array[ipair][n++] = ft[2];
     }
     if(torqueflag)
     {
@@ -783,40 +772,28 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
     }
     if(torquenflag)
     {
-        double  contact_point[3],torc[3],torn[3],normal[3];
-
-        contact_point[0] = array[ipair][n++];
-        contact_point[1] = array[ipair][n++];
-        contact_point[2] = array[ipair][n++];
+        double torc[3],torn[3];
 
         vectorConstruct3D(torc,tor1,tor2,tor3);
-        vectorSubtract3D(contact_pos ? contact_pos : contact_point,atom->x[i],normal);
-        vectorNormalize3D(normal);
         const double tornmag = vectorDot3D(torc,normal);
         vectorScalarMult3D(normal,tornmag,torn);
 
-        array[ipair][n-3] = torn[0];
-        array[ipair][n-2] = torn[1];
-        array[ipair][n-1] = torn[2];
+        array[ipair][n++] = torn[0];
+        array[ipair][n++] = torn[1];
+        array[ipair][n++] = torn[2];
     }
     if(torquetflag)
     {
-        double  contact_point[3],torc[3],torn[3],tort[3],normal[3];
-
-        contact_point[0] = array[ipair][n++];
-        contact_point[1] = array[ipair][n++];
-        contact_point[2] = array[ipair][n++];
+        double torc[3],torn[3],tort[3];
 
         vectorConstruct3D(torc,tor1,tor2,tor3);
-        vectorSubtract3D(contact_pos ? contact_pos : contact_point,atom->x[i],normal);
-        vectorNormalize3D(normal);
         const double tornmag = vectorDot3D(torc,normal);
         vectorScalarMult3D(normal,tornmag,torn);
         vectorSubtract3D(torc,torn,tort);
 
-        array[ipair][n-3] = tort[0];
-        array[ipair][n-2] = tort[1];
-        array[ipair][n-1] = tort[2];
+        array[ipair][n++] = tort[0];
+        array[ipair][n++] = tort[1];
+        array[ipair][n++] = tort[2];
     }
     if(histflag)
     {
@@ -876,4 +853,17 @@ double ComputePairGranLocal::memory_usage()
 {
   double bytes = nmax*nvalues * sizeof(double);
   return bytes;
+}
+
+int ComputePairGranLocal::get_history_offset(const char * const name)
+{
+    if (pairgran)
+        return static_cast<PairGranProxy*>(pairgran)->get_history_offset(name);
+    else if (fixwall)
+        return fixwall->get_history_offset(name);
+    else
+    {
+        error->all(FLERR, "Internal error");
+        return -1;
+    }
 }

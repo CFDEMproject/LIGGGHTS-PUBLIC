@@ -32,7 +32,15 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    This file is from LAMMPS
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Christoph Kloss (DCS Computing GmbH)
+    Arno Mayrhofer (DCS Computing GmbH)
+
+    Copyright 2016-     DCS Computing GmbH, Linz
+
+    Copyright of original file:
     LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
     http://lammps.sandia.gov, Sandia National Laboratories
     Steve Plimpton, sjplimp@sandia.gov
@@ -59,7 +67,7 @@ namespace LAMMPS_NS {
 class Run : protected Pointers {
  public:
   Run(class LAMMPS *);
-  void command(int, char **);
+  void command(int narg, char ** arg, bigint nsteps_input_ext=-1);
 };
 
 }

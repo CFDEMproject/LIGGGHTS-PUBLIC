@@ -60,6 +60,8 @@ namespace LCM = LIGGGHTS::ContactModels;
 
 namespace LAMMPS_NS {
 
+class ComputePairGranLocal;
+
 class PairGran : public Pair, public LIGGGHTS::IContactHistorySetup {
 public:
 
@@ -97,19 +99,9 @@ public:
   void register_compute_pair_local(class ComputePairGranLocal *,int&);
   void unregister_compute_pair_local(class ComputePairGranLocal *ptr);
 
-  inline void cpl_add_pair(LCM::SurfacesIntersectData & sidata, LCM::ForceData & i_forces)
-  {
-    const double fx = i_forces.delta_F[0];
-    const double fy = i_forces.delta_F[1];
-    const double fz = i_forces.delta_F[2];
-    const double tor1 = i_forces.delta_torque[0];
-    const double tor2 = i_forces.delta_torque[1];
-    const double tor3 = i_forces.delta_torque[2];
-    cpl_->add_pair(sidata.i, sidata.j, fx,fy,fz,tor1,tor2,tor3,sidata.contact_history);
-  }
+  void cpl_add_pair(LCM::SurfacesIntersectData & sidata, LCM::ForceData & i_forces);
 
-  inline void cpl_pair_finalize()
-  { cpl_->pair_finalize(); }
+  void cpl_pair_finalize();
 
   /* PUBLIC ACCESS FUNCTIONS */
 

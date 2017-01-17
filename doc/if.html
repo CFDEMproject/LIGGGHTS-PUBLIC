@@ -1,163 +1,348 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>if command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>if command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>if boolean then t1 t2 ... elif boolean f1 f2 ... elif boolean f1 f2 ... else e1 e2 ... 
-</PRE>
-<UL><LI>boolean = a Boolean expression evaluated as TRUE or FALSE (see below)
-<LI>then = required word
-<LI>t1,t2,...,tN = one or more LIGGGHTS(R)-PUBLIC commands to execute if condition is met, each enclosed in quotes
-<LI>elif = optional word, can appear multiple times
-<LI>f1,f2,...,fN = one or more LIGGGHTS(R)-PUBLIC commands to execute if elif condition is met, each enclosed in quotes (optional arguments)
-<LI>else = optional argument
-<LI>e1,e2,...,eN = one or more LIGGGHTS(R)-PUBLIC commands to execute if no condition is met, each enclosed in quotes (optional arguments) 
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>if "${steps} > 1000" then quit
-if "$x <= $y" then "print X is smaller = $x" else "print Y is smaller = $y"
-if "(${eng} > 0.0) || ($n < 1000)" then &
-  "timestep 0.005" &
-elif $n<10000 &
-  "timestep 0.01" &
-else &
-  "timestep 0.02" &
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>if command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/if.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="if-command">
+<span id="index-0"></span><h1>if command<a class="headerlink" href="#if-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>if boolean then t1 t2 ... elif boolean f1 f2 ... elif boolean f1 f2 ... else e1 e2 ...</pre>
+</div>
+<ul class="simple">
+<li>boolean = a Boolean expression evaluated as TRUE or FALSE (see below)</li>
+<li>then = required word</li>
+<li>t1,t2,...,tN = one or more LIGGGHTS(R)-PUBLIC commands to execute if condition is met, each enclosed in quotes</li>
+<li>elif = optional word, can appear multiple times</li>
+<li>f1,f2,...,fN = one or more LIGGGHTS(R)-PUBLIC commands to execute if elif condition is met, each enclosed in quotes (optional arguments)</li>
+<li>else = optional argument</li>
+<li>e1,e2,...,eN = one or more LIGGGHTS(R)-PUBLIC commands to execute if no condition is met, each enclosed in quotes (optional arguments)</li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>if "${steps} &gt; 1000" then quit
+if "$x &lt;= $y" then "print X is smaller = $x" else "print Y is smaller = $y"
+if "(${eng} &gt; 0.0) || ($n &lt; 1000)" then &amp;
+  "timestep 0.005" &amp;
+elif $n&lt;10000 &amp;
+  "timestep 0.01" &amp;
+else &amp;
+  "timestep 0.02" &amp;
   "print 'Max step reached'"
-if "${eng} > ${eng_previous}" then "jump file1" else "jump file2" 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>This command provides an if-then-else capability within an input
+if "${eng} &gt; ${eng_previous}" then "jump file1" else "jump file2"</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This command provides an if-then-else capability within an input
 script.  A Boolean expression is evaluted and the result is TRUE or
 FALSE.  Note that as in the examples above, the expression can contain
-variables, as defined by the <A HREF = "variable.html">variable</A> command, which
+variables, as defined by the <a class="reference internal" href="variable.html"><em>variable</em></a> command, which
 will be evaluated as part of the expression.  Thus a user-defined
 formula that reflects the current state of the simulation can be used
-to issue one or more new commands.
-</P>
-<P>If the result of the Boolean expression is TRUE, then one or more
+to issue one or more new commands.</p>
+<p>If the result of the Boolean expression is TRUE, then one or more
 commands (t1, t2, ..., tN) are executed.  If it is FALSE, then Boolean
 expressions associated with successive elif keywords are evaluated
 until one is found to be true, in which case its commands (f1, f2,
 ..., fN) are executed.  If no Boolean expression is TRUE, then the
 commands associated with the else keyword, namely (e1, e2, ..., eN),
 are executed.  The elif and else keywords and their associated
-commands are optional.  If they aren't specified and the initial
-Boolean expression is FALSE, then no commands are executed.
-</P>
-<P>The syntax for Boolean expressions is described below.
-</P>
-<P>Each command (t1, f1, e1, etc) can be any valid LIGGGHTS(R)-PUBLIC input script
-command, except an <A HREF = "include.html">include</A> command, which is not
+commands are optional.  If they aren&#8217;t specified and the initial
+Boolean expression is FALSE, then no commands are executed.</p>
+<p>The syntax for Boolean expressions is described below.</p>
+<p>Each command (t1, f1, e1, etc) can be any valid LIGGGHTS(R)-PUBLIC input script
+command, except an <a class="reference internal" href="include.html"><em>include</em></a> command, which is not
 allowed.  If the command is more than one word, it must enclosed in
 quotes, so it will be treated as a single argument, as in the examples
-above.
-</P>
-<P>IMPORTANT NOTE: If a command itself requires a quoted argument (e.g. a
-<A HREF = "print.html">print</A> command), then double and single quotes can be used
+above.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If a command itself requires a quoted argument (e.g. a
+<a class="reference internal" href="print.html"><em>print</em></a> command), then double and single quotes can be used
 and nested in the usual manner, as in the examples above and below.
-See <A HREF = "Section_commands.html#cmd_2">Section_commands 2</A> of the manual for
+See <em class="xref std std-ref">Section_commands 2</em> of the manual for
 more details on using quotes in arguments.  Only one of level of
-nesting is allowed, but that should be sufficient for most use cases.
-</P>
-<P>Note that by using the line continuation character "&", the if command
-can be spread across many lines, though it is still a single command:
-</P>
-<PRE>if "$a < $b" then &
-  "print 'Minimum value = $a'" &
-  "run 1000" &
-else &
-  'print "Minimum value = $b"' &
-  "minimize 0.001 0.001 1000 10000" 
-</PRE>
-<P>Note that if one of the commands to execute is <A HREF = "quit.html">quit</A> (of an
-invalid LIGGGHTS(R)-PUBLIC command such as "blah"), as in the first example above,
-then executing the command will cause LIGGGHTS(R)-PUBLIC to halt.
-</P>
-<P>Note that by jumping to a label in the same input script, the if
-command can be used to break out of a loop.  See the <A HREF = "variable.html">variable
-delete</A> command for info on how to delete the associated
-loop variable, so that it can be re-used later in the input script.
-</P>
-<P>Here is an example of a double loop which uses the if and
-<A HREF = "jump.html">jump</A> commands to break out of the inner loop when a
-condition is met, then continues iterating thru the outer loop.
-</P>
-<PRE>label	    loopa
+nesting is allowed, but that should be sufficient for most use cases.</p>
+</div>
+<p>Note that by using the line continuation character &#8220;&amp;&#8221;, the if command
+can be spread across many lines, though it is still a single command:</p>
+<div class="highlight-python"><pre>if "$a &lt; $b" then &amp;
+  "print 'Minimum value = $a'" &amp;
+  "run 1000" &amp;
+else &amp;
+  'print "Minimum value = $b"' &amp;
+  "minimize 0.001 0.001 1000 10000"</pre>
+</div>
+<p>Note that if one of the commands to execute is <a class="reference internal" href="quit.html"><em>quit</em></a> (of an
+invalid LIGGGHTS(R)-PUBLIC command such as &#8220;blah&#8221;), as in the first example above,
+then executing the command will cause LIGGGHTS(R)-PUBLIC to halt.</p>
+<p>Note that by jumping to a label in the same input script, the if
+command can be used to break out of a loop.  See the <a class="reference internal" href="variable.html"><em>variable delete</em></a> command for info on how to delete the associated
+loop variable, so that it can be re-used later in the input script.</p>
+<p>Here is an example of a double loop which uses the if and
+<a class="reference internal" href="jump.html"><em>jump</em></a> commands to break out of the inner loop when a
+condition is met, then continues iterating thru the outer loop.</p>
+<div class="highlight-python"><pre>label            loopa
 variable    a loop 5
-  label	    loopb
+  label          loopb
   variable  b loop 5
-  print	    "A,B = $a,$b"
+  print          "A,B = $a,$b"
   run       10000
-  if	    '$b > 2' then "print 'Jumping to another script'" "jump in.script break"
-  next	    b
-  jump	    in.script loopb
-label	    break
-variable    b delete 
-</PRE>
-<PRE>next	    a
-jump	    in.script loopa 
-</PRE>
-<HR>
-
-<P>The Boolean expressions for the if and elif keywords have a C-like
+  if     '$b &gt; 2' then "print 'Jumping to another script'" "jump in.script break"
+  next           b
+  jump           in.script loopb
+label            break
+variable    b delete</pre>
+</div>
+<div class="highlight-python"><pre>next     a
+jump     in.script loopa</pre>
+</div>
+<hr class="docutils" />
+<p>The Boolean expressions for the if and elif keywords have a C-like
 syntax.  Note that each expression is a single argument within the if
 command.  Thus if you want to include spaces in the expression for
-clarity, you must enclose the entire expression in quotes.
-</P>
-<P>An expression is built out of numbers:
-</P>
-<PRE>0.2, 100, 1.0e20, -15.4, etc 
-</PRE>
-<P>and Boolean operators:
-</P>
-<PRE>A == B, A != B, A < B, A <= B, A > B, A >= B, A && B, A || B, !A 
-</PRE>
-<P>Each A and B is a number or a variable reference like $a or ${abc},
-or another Boolean expression.
-</P>
-<P>If a variable is used it must produce a number when evaluated and
-substituted for in the expression, else an error will be generated.
-</P>
-<P>Expressions are evaluated left to right and have the usual C-style
-precedence: the unary logical NOT operator "!" has the highest
-precedence, the 4 relational operators "<", "<=", ">", and ">=" are
-next; the two remaining relational operators "==" and "!=" are next;
-then the logical AND operator "&&"; and finally the logical OR
-operator "||" has the lowest precedence.  Parenthesis can be used to
+clarity, you must enclose the entire expression in quotes.</p>
+<p>An expression is built out of numbers:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="mf">0.2</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mf">1.0e20</span><span class="p">,</span> <span class="o">-</span><span class="mf">15.4</span><span class="p">,</span> <span class="n">etc</span>
+</pre></div>
+</div>
+<p>and Boolean operators:</p>
+<div class="highlight-python"><pre>A == B, A != B, A &lt; B, A &lt;= B, A &gt; B, A &gt;= B, A &amp;&amp; B, A || B, !A</pre>
+</div>
+<p>Each A and B is a number or a variable reference like $a or ${abc},
+or another Boolean expression.</p>
+<p>If a variable is used it must produce a number when evaluated and
+substituted for in the expression, else an error will be generated.</p>
+<p>Expressions are evaluated left to right and have the usual C-style
+precedence: the unary logical NOT operator &#8221;!&#8221; has the highest
+precedence, the 4 relational operators &#8220;&lt;&#8221;, &#8220;&lt;=&#8221;, &#8220;&gt;&#8221;, and &#8220;&gt;=&#8221; are
+next; the two remaining relational operators &#8220;==&#8221; and &#8221;!=&#8221; are next;
+then the logical AND operator &#8220;&amp;&amp;&#8221;; and finally the logical OR
+operator &#8220;||&#8221; has the lowest precedence.  Parenthesis can be used to
 group one or more portions of an expression and/or enforce a different
-order of evaluation than what would occur with the default precedence.
-</P>
-<P>The 6 relational operators return either a 1.0 or 0.0 depending on
+order of evaluation than what would occur with the default precedence.</p>
+<p>The 6 relational operators return either a 1.0 or 0.0 depending on
 whether the relationship between x and y is TRUE or FALSE.  The
 logical AND operator will return 1.0 if both its arguments are
 non-zero, else it returns 0.0.  The logical OR operator will return
 1.0 if either of its arguments is non-zero, else it returns 0.0.  The
 logical NOT operator returns 1.0 if its argument is 0.0, else it
-returns 0.0.
-</P>
-<P>The overall Boolean expression produces a TRUE result if the result is
-non-zero.  If the result is zero, the expression result is FALSE.
-</P>
-<HR>
+returns 0.0.</p>
+<p>The overall Boolean expression produces a TRUE result if the result is
+non-zero.  If the result is zero, the expression result is FALSE.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="variable.html"><em>variable</em></a>, <a class="reference internal" href="print.html"><em>print</em></a></p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
 
-<P><B>Restrictions:</B> none
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "variable.html">variable</A>, <A HREF = "print.html">print</A>
-</P>
-<P><B>Default:</B> none
-</P>
-</HTML>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

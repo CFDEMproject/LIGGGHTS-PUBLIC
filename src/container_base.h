@@ -125,6 +125,12 @@ namespace LAMMPS_NS
           inline const char* id()
           {return id_; }
 
+          inline void setDoNotReset(bool _doNotReset)
+          { doNotReset_ = _doNotReset; }
+
+          inline bool doNotReset()
+          { return doNotReset_; }
+
           inline void id(char *_id);
           inline bool matches_id(const char *_id);
 
@@ -242,6 +248,8 @@ namespace LAMMPS_NS
           int scalePower_;
 
           bool useDefault_;
+
+          bool doNotReset_;
 
           class ContainerBase *container_statistics_raw_data_;
 

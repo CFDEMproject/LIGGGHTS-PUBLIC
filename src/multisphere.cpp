@@ -428,7 +428,7 @@ void Multisphere::generate_map()
    check for lost atoms and bodies
 ------------------------------------------------------------------------- */
 
-bool Multisphere::check_lost_atoms(int *body, double *atom_delflag, double *body_existflag)
+bool Multisphere::check_lost_atoms(int *body, double *atom_delflag, double *body_existflag, double *volumeweight)
 {
     int body_tag,ibody,i;
     int nall = atom->nlocal + atom->nghost;
@@ -438,6 +438,8 @@ bool Multisphere::check_lost_atoms(int *body, double *atom_delflag, double *body
     int *delflag = new int[nbody_];
     vectorZeroizeN(nrigid_current,nbody_);
     vectorZeroizeN(delflag,nbody_);
+
+    //double _4pi_over_3 = 4.*M_PI/3.;
 
     for(i = 0; i < nall; i++)
     {
@@ -482,6 +484,8 @@ bool Multisphere::check_lost_atoms(int *body, double *atom_delflag, double *body
            atom_delflag[i] = 1.;
            body[i] = -1;
            deleted = 1;
+           
+           atom->rmass[i] *= volumeweight[i];
         }
     }
 

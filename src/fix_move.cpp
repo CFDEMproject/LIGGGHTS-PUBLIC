@@ -286,8 +286,10 @@ FixMove::FixMove(LAMMPS *lmp, int narg, char **arg) :
   int nlocal = atom->nlocal;
 
   for (int i = 0; i < nlocal; i++) {
-    if (mask[i] & groupbit) domain->unmap(x[i],image[i],xoriginal[i]);
-    else xoriginal[i][0] = xoriginal[i][1] = xoriginal[i][2] = 0.0;
+    if (mask[i] & groupbit)
+        domain->unmap(x[i],image[i],xoriginal[i]);
+    else
+        xoriginal[i][0] = xoriginal[i][1] = xoriginal[i][2] = 0.0;
   }
 
   time_origin = update->ntimestep;

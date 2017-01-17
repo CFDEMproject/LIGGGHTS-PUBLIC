@@ -1,0 +1,59 @@
+# Particle and Domain Properties for DEM
+
+#--------------------------Domain Properties-----------------------------------------------------------
+
+variable timeStep  equal 	 1e-5		#[s]		simulation timestep DEM
+
+variable domainWidth  equal 	 0.020		#[m]		widht of domain  (x)
+variable domainDepth  equal 	 0.010		#[m]		depht of domain  (y)
+variable domainHeight equal      0.200		#[m]		height of domain (z)
+
+
+#--------------------------Particle and Wall Properties---------------------------------------------------------
+
+variable numParticles equal 10             #[-]n       umber of particles - WARNING: value must be placed directly after 'equal' !
+variable particlesDiam equal 	 2e-3		#[m]		particle diameter
+variable particlesDensity equal  2500		#[kg/m³]	particle density
+#variable particlesTemp equal     293 		#[K] 		initial particle temperature - irrelevant for ParScale
+variable wallTemp equal     	 293 		#[K] 		initial wall temperature 
+variable lambdaP equal           0.8		#[W/(K*m)] 	lambda particle
+variable lambdaW1 equal          0.8		#[W/(K*m)] 	lambda wall1
+variable lambdaW2 equal          0.19		#[W/(K*m)] 	lambda wall2
+variable cpP equal               800		#[J/(kg*K)] 	cp particle
+variable cpW1 equal              800		#[J/(kg*K)] 	cp wall1
+variable cpW2 equal              1470		#[J/(kg*K)] 	cp wall2
+
+#
+variable youngsMod equal	 1.e7		#[Pa] 		youngsModulus
+variable poissionsRat equal	 0.45		#[-] 		poissonsRatio
+variable coeffRest equal	 0.97		#[-] 		coefficientRestitution
+variable coeffFricPP equal	 0.10		#[-] 		coefficientFriction particle-particle 
+variable coeffFricPW1 equal	 0.10		#[-] 		coefficientFriction particle-wall1
+variable coeffFricPW2 equal	 0.30		#[-] 		coefficientFriction particle-wall2
+variable coeffFricRoll equal	 0.125		#[-] 		coefficientRollingFriction
+
+# Goniva, C., et al. Influence of rolling friction on single spout fluidized bed simulation. 
+# Particuology (2012), http://dx.doi.org/10.1016/j.partic.2012.05.002
+
+
+
+#--------------------------Average Particle Temperature Properties-------------------------------------
+
+variable Nfreq equal  	 	20000		# make averaging every this many timesteps
+variable delta equal		0.005		# height of averaging domain
+variable Nevery equal   	1		# timeaverage stepSize
+variable Nrepeat equal  	1		# timeaverage over this many timesteps
+
+
+#--------------------------Dump Properties-------------------------------------------------------------
+
+variable dumpStep equal		5000		# write dumpfiles every this many timesteps
+
+
+#--------------------------Preprocessor---------------------------------------------------------------
+
+variable particlesRadius equal ${particlesDiam}/2.0
+
+
+
+

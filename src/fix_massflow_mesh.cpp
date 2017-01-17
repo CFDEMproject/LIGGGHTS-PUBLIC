@@ -76,13 +76,11 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
   fix_counter_(0),
   fix_mesh_(0),
   fix_neighlist_(0),
-  fix_ms_(0),
-  ms_(0),
-  ms_counter_(0),
+  fix_volumeweight_ms_(0),
   havePointAtOutlet_(false),
   insideOut_(false),
   mass_(0.),
-  nparticles_(0),
+  nparticles_(0.),
   fix_property_(0),
   property_sum_(0.),
   screenflag_(false),
@@ -178,6 +176,7 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
                 fp_ = fopen(filecurrent,"w");
             else
                 fp_ = fopen(filecurrent,"a");
+            delete[] filecurrent;
             if (fp_ == NULL) {
                char str[512];
                sprintf(str,"Cannot open file %s",arg[iarg_+1]);
@@ -252,6 +251,10 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
 FixMassflowMesh::~FixMassflowMesh()
 {
    if(fp_) fclose(fp_);
+   if(fix_neighlist_) {
+     fix_mesh_->deleteOtherNeighList(id);
+     fix_neighlist_ = NULL;
+   }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -280,22 +283,29 @@ void FixMassflowMesh::post_create()
 
     fix_neighlist_ = fix_mesh_->createOtherNeighList(igroup,id);
 
-    // need to find multisphere here to be able to add property
+    fix_volumeweight_ms_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("volumeweight_ms","property/atom","scalar",0,0,style,false));
 
-    fix_ms_ = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
-    if(fix_ms_)
+    // need to find multisphere here to be able to add property
+    
+    FixMultisphere *fix_ms = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
+    if(fix_ms)
     {
-        ms_ = &fix_ms_->data();
+        Multisphere *ms = &fix_ms->data();
         char property_name[200];
         sprintf(property_name,"counter_ms_%s",id);
-        ms_counter_ = ms_->prop().addElementProperty< ScalarContainer<int> >(static_cast<const char*>(property_name),"comm_exchange_borders","frame_invariant", "restart_yes");
-        ms_counter_->setDefaultValue(-1);
+
+        if(!ms->prop().getElementProperty< ScalarContainer<int> >(static_cast<const char*>(property_name)))
+        {
+            (ms->prop().addElementProperty< ScalarContainer<int> >(static_cast<const char*>(property_name),"comm_exchange_borders","frame_invariant", "restart_yes"))->setDefaultValue(-1);
+            
+        }
 
         if(delete_atoms_)
             error->fix_error(FLERR,this,"can not use 'delete_atoms' with fix multisphere/*");
         if(!once_)
             error->fix_error(FLERR,this,"must use 'count once' with fix multisphere/*");
     }
+
 }
 
 /* ---------------------------------------------------------------------- */
@@ -311,14 +321,17 @@ void FixMassflowMesh::pre_delete(bool unfixflag)
 
 void FixMassflowMesh::init()
 {
+    
+    fix_volumeweight_ms_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("volumeweight_ms","property/atom","scalar",0,0,style,false));
+
     if (atom->rmass_flag == 0)
         error->fix_error(FLERR,this,"requires atoms have mass");
 
     if(delete_atoms_ && 1 != atom->map_style)
         error->fix_error(FLERR,this,"requires an atom map of type 'array', via an 'atom_modify map array' command");
-
+/*
     if(!fix_ms_ && static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0)))
-        error->fix_error(FLERR,this,"fix multisphere must come before fix massflow/mesh in input script");
+        error->fix_error(FLERR,this,"fix multisphere must come before fix massflow/mesh in input script");*/
 }
 
 /* ---------------------------------------------------------------------- */
@@ -353,6 +366,7 @@ int FixMassflowMesh::setmask()
 
 void FixMassflowMesh::post_integrate()
 {
+    
     int nlocal = atom->nlocal;
     double **x = atom->x;
     double **v = atom->v;
@@ -362,7 +376,7 @@ void FixMassflowMesh::post_integrate()
     double *counter = fix_counter_->vector_atom;
     double dot,delta[3]={}, bary[3];
     double mass_this = 0.;
-    int nparticles_this = 0.;
+    double nparticles_this = 0.;
     double property_this = 0.;
     double deltan;
     int *tag = atom->tag;
@@ -413,10 +427,9 @@ void FixMassflowMesh::post_integrate()
             if (!(mask[iPart] & groupbit))
                 continue;
 
-            const int ibody = fix_ms_ ? ( (fix_ms_->belongs_to(iPart) > -1) ? (ms_->map(fix_ms_->belongs_to(iPart))) : -1 ) : -1;
-
             // in case of once_ == true, ignore everything which has been already counted
-            if((ibody > -1) ?  ((*ms_counter_)(ibody) == 2) : (compDouble(counter[iPart],2.)) ) continue;
+            if(compDouble(counter[iPart],2.))
+                continue;
 
             int barySign;
             deltan = fix_mesh_->triMesh()->resolveTriSphereContactBary(iPart,iTri,radius[iPart],x[iPart],delta,bary,barySign);
@@ -440,12 +453,9 @@ void FixMassflowMesh::post_integrate()
             }
 
             // first-time, just set 0 or 1 depending on what side of the mesh
-            if((ibody > -1) ? ((*ms_counter_)(ibody) == -1) : (compDouble(counter[iPart],-1.)) )
+            if(compDouble(counter[iPart],-1.))
             {
-                if(ibody > -1)
-                    (*ms_counter_)(ibody) = (dot <= 0.) ? 0. : 1.;
-                else
-                    counter[iPart] = (dot <= 0.) ? 0. : 1.;
+                counter[iPart] = (dot <= 0.) ? 0. : 1.;
                 
                 continue;
             }
@@ -454,11 +464,11 @@ void FixMassflowMesh::post_integrate()
             if(dot > 0.  && 7 == barySign) 
             {
                 //particle was not on nvec_ side before
-                if((ibody > -1) ? ((*ms_counter_)(ibody) == 0) : (compDouble(counter[iPart],0.)) ) // compDouble(counter[iPart],0.))
+                if((compDouble(counter[iPart],0.)) ) // compDouble(counter[iPart],0.))
                 {
                     
-                    mass_this += rmass[iPart];
-                    nparticles_this ++;
+                    mass_this += (fix_volumeweight_ms_ ? fix_volumeweight_ms_->vector_atom[iPart] : 1.) * rmass[iPart];
+                    nparticles_this += (fix_volumeweight_ms_ ? fix_volumeweight_ms_->vector_atom[iPart] : 1.);
 
                     if(fix_property_)
                     {
@@ -475,7 +485,7 @@ void FixMassflowMesh::post_integrate()
 
                     if (screenflag_ && screen)
                         fprintf(screen," %d %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g \n ",
-                                       tag[iPart],2.*radius[iPart]/force->cg(),
+                                       tag[iPart],2.*radius[iPart]/force->cg(atom->type[iPart]),
                                        x[iPart][0],x[iPart][1],x[iPart][2],
                                        v[iPart][0],v[iPart][1],v[iPart][2]);
                     if(fp_)
@@ -486,7 +496,7 @@ void FixMassflowMesh::post_integrate()
                             fprintf(fp_,"  %4.4g ", update->dt*update->ntimestep);
 
                         fprintf(fp_," %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g %4.4g",
-                                2.*radius[iPart]/force->cg(),
+                                2.*radius[iPart]/force->cg(atom->type[iPart]),
                                    x[iPart][0],x[iPart][1],x[iPart][2],
                                 v[iPart][0],v[iPart][1],v[iPart][2]);
 
@@ -504,18 +514,13 @@ void FixMassflowMesh::post_integrate()
                     }
                 }
 
-                if(ibody > -1)
-                    (*ms_counter_)(ibody) = once_ ? 2. : 1.;
-                else if(!delete_atoms_) //only set if not marked for deletion
+                 if(!delete_atoms_) //only set if not marked for deletion
                     counter[iPart] = once_ ? 2. : 1.;
                 
             }
             else if(dot <= 0.) // dot <= 0
             {
-                if(ibody > -1)
-                    (*ms_counter_)(ibody) = 0;
-                else
-                    counter[iPart] = 0.;
+                counter[iPart] = 0.;
                 
             }
         }
@@ -542,7 +547,7 @@ void FixMassflowMesh::pre_exchange()
     if (delete_atoms_)
     {
         double mass_deleted_this_ = 0.;
-        int nparticles_deleted_this_ = 0.;
+        double nparticles_deleted_this = 0.;
         int *atom_map_array = atom->get_map_array();
 
         // delete particles
@@ -552,7 +557,7 @@ void FixMassflowMesh::pre_exchange()
             int iPart = atom->map(atom_tags_delete_[0]);
 
             mass_deleted_this_ += atom->rmass[iPart];
-            nparticles_deleted_this_++;
+            nparticles_deleted_this += (fix_volumeweight_ms_ ? fix_volumeweight_ms_->vector_atom[iPart] : 1.);
 
             atom->avec->copy(atom->nlocal-1,iPart,1);
 
@@ -566,12 +571,12 @@ void FixMassflowMesh::pre_exchange()
         atom_tags_delete_.clear();
 
         MPI_Sum_Scalar(mass_deleted_this_,world);
-        MPI_Sum_Scalar(nparticles_deleted_this_,world);
+        MPI_Sum_Scalar(nparticles_deleted_this,world);
 
         mass_deleted_ += mass_deleted_this_;
-        nparticles_deleted_ += nparticles_deleted_this_;
+        nparticles_deleted_ += nparticles_deleted_this;
 
-        if(nparticles_deleted_this_)
+        if(nparticles_deleted_this)
         {
             if (atom->tag_enable) {
               if (atom->map_style) {
@@ -595,9 +600,9 @@ void FixMassflowMesh::write_restart(FILE *fp)
   list[n++] = mass_;
   list[n++] = t_count_;
   list[n++] = mass_last_;
-  list[n++] = static_cast<double>(nparticles_last_);
+  list[n++] = nparticles_last_;
   list[n++] = mass_deleted_;
-  list[n++] = static_cast<double>(nparticles_deleted_);
+  list[n++] = nparticles_deleted_;
 
   if (comm->me == 0) {
     int size = n * sizeof(double);
@@ -618,9 +623,9 @@ void FixMassflowMesh::restart(char *buf)
   mass_ = list[n++];
   t_count_ = list[n++];
   mass_last_ = list[n++];
-  nparticles_last_ = static_cast<int>(list[n++]);
+  nparticles_last_ = list[n++];
   mass_deleted_ = list[n++];
-  nparticles_deleted_ = static_cast<int>(list[n++]);
+  nparticles_deleted_ = list[n++];
 }
 
 /* ----------------------------------------------------------------------
@@ -639,15 +644,15 @@ double FixMassflowMesh::compute_vector(int index)
     if(index == 0)
         return mass_;
     if(index == 1)
-        return static_cast<double>(nparticles_);
+        return nparticles_;
     if(index == 2)
         return delta_t_ == 0. ? 0. : (mass_-mass_last_)/delta_t_;
     if(index == 3)
-        return delta_t_ == 0. ? 0. : static_cast<double>(nparticles_-nparticles_last_)/delta_t_;
+        return delta_t_ == 0. ? 0. : (nparticles_-nparticles_last_)/delta_t_;
     if(index == 4)
         return mass_deleted_;
     if(index == 5)
-        return static_cast<double>(nparticles_deleted_);
+        return nparticles_deleted_;
     if(index == 6 && fix_property_)
         return property_sum_;
 

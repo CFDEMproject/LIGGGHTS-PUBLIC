@@ -34,7 +34,9 @@ to the liquid bridge force, i.e. {radius}*{maxSeparationDistanceRatio} is
 the effective contact radius of the particles.
 
 The model parameter {maxLiquidContent} allows to limit the maximum per particle 
-liquid content. (enabled by keyword {limitLiquidContent})
+liquid content (enabled by keyword {limitLiquidContent}). In case this feature is
+enabled, the maxSeparationDistanceRation will be overwritten by a value that
+allows the maximum volume to be achieved.
 
 The model parameter {lbVolumeFraction} defines the amout of liquid that formes the liquid bridge with a neighbouring particle. (enabled by the keyword {modifyLbVolume})
 
@@ -152,6 +154,16 @@ This model can ONLY be used as part of "pair gran"_pair_gran.html, not as part
 of a "fix wall/gran"_fix_wall_gran.html.
 
 The cohesion model is not available for "atom_style"_atom_style.html superquadric
+
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command might lead to
+different dynamics or system state and thus to 
+inconsistancies.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
 
 [Default:]
 

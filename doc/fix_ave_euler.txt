@@ -97,6 +97,20 @@ of a structured (equidistant regular) grid, so volume fractions and
 stresses near walls that are not alligned with the grid will be
 incorrect.
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command might lead to
+different dynamics or system state and thus to 
+inconsistancies. However, the influence of this
+model on the global dynamics or system state might 
+be small so in some cases the results may be valid. 
+This has to be reviewed by a specialist on a 
+case-by-case basis.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
+
 [Related commands:]
 
 "compute"_compute.html, "compute stress/atom"_compute_stress_atom.html,

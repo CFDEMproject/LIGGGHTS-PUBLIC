@@ -1,0 +1,8 @@
+{
+    "properties":
+	{
+      "model" :  "const",
+	   "const_value" :  800.0
+    }
+	
+}

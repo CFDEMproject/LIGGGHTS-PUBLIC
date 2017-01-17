@@ -60,8 +60,6 @@ using namespace LAMMPS_NS;
 
 enum{COMPUTE,FIX,VARIABLE};
 
-#define INVOKED_PERATOM 8
-
 /* ---------------------------------------------------------------------- */
 
 ComputeAtomMolecule::

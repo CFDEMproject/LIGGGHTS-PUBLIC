@@ -64,8 +64,6 @@ using namespace FixConst;
 
 enum{KEYWORD,COMPUTE,FIX,VARIABLE};
 
-#define INVOKED_PERATOM 8
-
 /* ---------------------------------------------------------------------- */
 
 FixStoreState::FixStoreState(LAMMPS *lmp, int narg, char **arg) :

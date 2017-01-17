@@ -67,8 +67,7 @@ DumpXYZ::DumpXYZ(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg)
 
   buffer_allow = 1;
   buffer_flag = 1;
-  sort_flag = 1;
-  sortcol = 0;
+  sortBuffer = new SortBuffer(lmp, true);
 
   if (format_default) delete [] format_default;
 

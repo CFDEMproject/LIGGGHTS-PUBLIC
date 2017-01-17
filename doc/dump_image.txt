@@ -59,14 +59,14 @@ keyword = {adiam} or {atom} or {bond} or {size} or {view} or {center} or {up} or
     sfactor = shinyness of spheres and cylinders from 0.0 to 1.0
   {ssao} value = yes/no seed dfactor = SSAO depth shading
     yes/no = turn depth shading on/off
-    seed = random # seed (positive integer)
+    seed = random # seed (prime number greater 10000)
     dfactor = strength of shading from 0.0 to 1.0 :pre
 :ule
 
 [Examples:]
 
 dump d0 all image 100 dump.*.jpg type type
-dump d1 mobile image 500 snap.*.png element element ssao yes 4539 0.6
+dump d1 mobile image 500 snap.*.png element element ssao yes 123457 0.6
 dump d2 all image 200 img-*.ppm type type zoom 2.5 adiam 1.5 size 1280 720
 dump m0 all movie 1000 movie.mpg type type size 640 480
 dump m1 all movie 1000 movie.avi type type size 640 480

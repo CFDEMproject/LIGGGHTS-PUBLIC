@@ -126,6 +126,9 @@ class Fix : protected Pointers {
   int recent_restart;            
 
   int restart_reset;             // 1 if restart just re-initialized fix
+
+  char *accepts_restart_data_from_style; 
+
   unsigned int datamask;
   unsigned int datamask_ext;
 

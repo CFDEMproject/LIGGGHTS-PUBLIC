@@ -1,109 +1,310 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>LIGGGHTS(R)-PUBLIC 3.X vs. LIGGGHTS(R)-PUBLIC 2.X - syntax changes &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H1>LIGGGHTS(R)-PUBLIC 3.X vs. LIGGGHTS(R)-PUBLIC 2.X - syntax changes 
-</H1>
-<H2>Introduction: 
-</H2>
-<P>This is a short outline of the most important changes in LIGGGHTS(R)-PUBLIC 3.X
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>LIGGGHTS(R)-PUBLIC 3.X vs. LIGGGHTS(R)-PUBLIC 2.X - syntax changes</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/liggghts_3.X_tutorial.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="liggghts-r-public-3-x-vs-liggghts-r-public-2-x-syntax-changes">
+<h1>LIGGGHTS(R)-PUBLIC 3.X vs. LIGGGHTS(R)-PUBLIC 2.X - syntax changes<a class="headerlink" href="#liggghts-r-public-3-x-vs-liggghts-r-public-2-x-syntax-changes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction:<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This is a short outline of the most important changes in LIGGGHTS(R)-PUBLIC 3.X
 compared to LIGGGHTS(R)-PUBLIC 2.X regarding the syntax of major commands. The
 motivation for these changes was to make the script language more readable and to
 improve extendability (in the sense of object oriented programming) with respect
-to modelling approaches.
-</P>
-<H2>Commands covered by this tutorial: 
-</H2>
-<LI>fix wall/gran/* 
+to modelling approaches.</p>
+</div>
+<div class="section" id="commands-covered-by-this-tutorial">
+<h2>Commands covered by this tutorial:<a class="headerlink" href="#commands-covered-by-this-tutorial" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>fix wall/gran/*</li>
+<li>pair_style gran/*</li>
+</ul>
+</div>
+<div class="section" id="changes-in-syntax-for-each-command">
+<h2>Changes in syntax for each command:<a class="headerlink" href="#changes-in-syntax-for-each-command" title="Permalink to this headline">¶</a></h2>
+<p>Changes are indicated as follows</p>
+<div class="highlight-python"><pre>OLD: old_syntax
+NEW: new_syntax</pre>
+</div>
+<p>where <em>old_syntax</em> refers to the syntax used in LIGGGHTS(R)-PUBLIC 2.X and before,
+and <em>new_syntax</em> refers to the syntax used in LIGGGHTS(R)-PUBLIC 3.X.</p>
+<hr class="docutils" />
+<p><strong>fix wall/gran/*:</strong></p>
+<pre class="literal-block">
+OLD: fix ID group-ID wall/gran/* <em>WALL-OPTIONS</em>
+NEW: fix ID group-ID wall/gran <em>MODEL-SELECTION</em> <em>WALL-OPTIONS</em> <em>MODEL-SETTINGS</em>
+</pre>
+<div class="section" id="model-selection">
+<h3>MODEL-SELECTION<a class="headerlink" href="#model-selection" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+<em>MODEL-SELECTION</em> = model <em>M</em> [tangential <em>T</em>] [cohesion <em>C</em>] [rolling_friction <em>R</em>]
+</pre>
+<pre class="literal-block">
+<em>M</em> = hooke | hooke/stiffness | hooke/hysteresis | hertz | hertz/stiffness
+</pre>
+<pre class="literal-block">
+<em>T</em> = <strong>no_history</strong> | history
+</pre>
+<pre class="literal-block">
+<em>C</em> = <strong>off</strong> | sjkr | sjkr2 | hamaker
+</pre>
+<pre class="literal-block">
+<em>R</em> = <strong>off</strong> | cdt | epsd
+</pre>
+</div>
+<div class="section" id="model-settings">
+<h3>MODEL-SETTINGS<a class="headerlink" href="#model-settings" title="Permalink to this headline">¶</a></h3>
+<pre class="literal-block">
+<em>MODEL-SELECTION</em> = [tangential_damping (<strong>on**|off)] [absolute_damping (on|**off</strong>)] [viscous (on|**off**)]
+</pre>
+</div>
+<div class="section" id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2
+NEW: fix ID group-ID wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2</pre>
+</div>
+<div class="highlight-python"><pre>OLD: fix ID1 group-ID wall/gran/hooke/history type 1 xplane -0.5
+NEW: fix ID1 group-ID wall/gran model hooke tangential history type 1 xplane -0.5</pre>
+</div>
+<div class="highlight-python"><pre>OLD: fix ID1 group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 rolling_friction cdt
+NEW: fix ID1 group-ID wall/gran model hertz tangential history rolling_friction cdt primitive type 1 xplane -0.5</pre>
+</div>
+<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 0.5 cohesion sjkr
+NEW: fix ID group-ID wall/gran model hertz tangential history cohesion sjkr primitive type 1 xplane -0.5 0.5</pre>
+</div>
+<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off
+NEW: fix ID group-ID wall/gran model hertz tangential history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off</pre>
+</div>
+<hr class="docutils" />
+<p><strong>pair_style gran/*:</strong></p>
+<pre class="literal-block">
+OLD: pair_style gran/* <strong>MODEL-SETTINGS</strong>
+NEW: pair_style gran  <strong>MODEL-SELECTION</strong> <strong>MODEL-SETTINGS</strong>
+</pre>
+</div>
+<div class="section" id="id1">
+<h3>MODEL-SELECTION<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Same as in fix wall/gran/*</p>
+</div>
+<div class="section" id="id2">
+<h3>MODEL-SETTINGS<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>Same as in fix wall/gran/*</p>
+</div>
+<div class="section" id="id3">
+<h3>Examples<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history
+NEW: pair_style gran model hertz tangential history</pre>
+</div>
+<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history rolling_friction cdt
+NEW: pair_style gran model hertz tangential history rolling_friction cdt</pre>
+</div>
+<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history cohesion sjkr
+NEW: pair_style gran model hertz tangential history cohesion sjkr</pre>
+</div>
+<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history tangential_damping off
+OLD: pair_style gran model hertz tangential history tangential_damping off</pre>
+</div>
+</div>
+</div>
+</div>
 
-<LI>pair_style gran/* 
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
 
 
-</UL>
-<H2>Changes in syntax for each command: 
-</H2>
-<P>Changes are indicated as follows
-</P>
-<PRE>OLD: old_syntax
-NEW: new_syntax  
-</PRE>
-<P>where <I>old_syntax</I> refers to the syntax used in LIGGGHTS(R)-PUBLIC 2.X and before,
-and <I>new_syntax</I> refers to the syntax used in LIGGGHTS(R)-PUBLIC 3.X.
-</P>
-<HR>
+  
 
-<P><B>fix wall/gran/*:</B>
-</P>
-<PRE>OLD: fix ID group-ID wall/gran/* <I>WALL-OPTIONS</I>
-NEW: fix ID group-ID wall/gran <I>MODEL-SELECTION</I> <I>WALL-OPTIONS</I> <I>MODEL-SETTINGS</I> 
-</PRE>
-<H3>MODEL-SELECTION 
-</H3>
-<PRE><I>MODEL-SELECTION</I> = model <I>M</I> [tangential <I>T</I>] [cohesion <I>C</I>] [rolling_friction <I>R</I>] 
-</PRE>
-<PRE><I>M</I> = hooke | hooke/stiffness | hooke/hysteresis | hertz | hertz/stiffness 
-</PRE>
-<PRE><I>T</I> = <B>no_history</B> | history 
-</PRE>
-<PRE><I>C</I> = <B>off</B> | sjkr | sjkr2 | hamaker 
-</PRE>
-<PRE><I>R</I> = <B>off</B> | cdt | epsd 
-</PRE>
-<H3>MODEL-SETTINGS 
-</H3>
-<PRE><I>MODEL-SELECTION</I> = [tangential_damping (<B>on</B>|off)] [absolute_damping (on|<B>off</B>)] [viscous (on|<B>off</B>)] 
-</PRE>
-<H3>Examples 
-</H3>
-<PRE>OLD: fix ID group-ID wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2
-NEW: fix ID group-ID wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2 
-</PRE>
-<PRE>OLD: fix ID1 group-ID wall/gran/hooke/history type 1 xplane -0.5
-NEW: fix ID1 group-ID wall/gran model hooke tangential history type 1 xplane -0.5 
-</PRE>
-<PRE>OLD: fix ID1 group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 rolling_friction cdt
-NEW: fix ID1 group-ID wall/gran model hertz tangential history rolling_friction cdt primitive type 1 xplane -0.5 
-</PRE>
-<PRE>OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 0.5 cohesion sjkr
-NEW: fix ID group-ID wall/gran model hertz tangential history cohesion sjkr primitive type 1 xplane -0.5 0.5  
-</PRE>
-<PRE>OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off
-NEW: fix ID group-ID wall/gran model hertz tangential history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off 
-</PRE>
-<HR>
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
 
-<P><B>pair_style gran/*:</B>
-</P>
-<PRE>OLD: pair_style gran/* <B>MODEL-SETTINGS</B>
-NEW: pair_style gran  <B>MODEL-SELECTION</B> <B>MODEL-SETTINGS</B> 
-</PRE>
-<H3>MODEL-SELECTION 
-</H3>
-<P>Same as in fix wall/gran/*
-</P>
-<H3>MODEL-SETTINGS 
-</H3>
-<P>Same as in fix wall/gran/*
-</P>
-<H3>Examples 
-</H3>
-<PRE>OLD: pair_style gran/hertz/history
-NEW: pair_style gran model hertz tangential history 
-</PRE>
-<PRE>OLD: pair_style gran/hertz/history rolling_friction cdt
-NEW: pair_style gran model hertz tangential history rolling_friction cdt  
-</PRE>
-<PRE>OLD: pair_style gran/hertz/history cohesion sjkr
-NEW: pair_style gran model hertz tangential history cohesion sjkr   
-</PRE>
-<PRE>OLD: pair_style gran/hertz/history tangential_damping off
-OLD: pair_style gran model hertz tangential history tangential_damping off 
-</PRE>
-</HTML>
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

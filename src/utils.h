@@ -43,16 +43,30 @@
 
 #include <mpi.h>
 #include "lmptype.h"
-#include "lammps.h"
+#include "force.h"
 #include <string>
 #include <map>
 #include <iostream>
 #include "contact_interface.h"
+#include <sstream>
 
 namespace LIGGGHTS {
 using namespace LAMMPS_NS;
 
 namespace Utils {
+
+  inline std::string int_to_string(int a)
+  {
+    return static_cast< std::ostringstream & >(( std::ostringstream() << std::dec << a ) ).str();
+  }
+
+  inline std::string double_to_string(double dbl)
+  {
+    std::ostringstream strs;
+    strs << dbl;
+    std::string str = strs.str();
+    return str;
+  }
 
   template <typename T>
   inline T* ptr_reduce(T** &t)
@@ -70,7 +84,7 @@ namespace Utils {
   class AbstractFactory {
     typedef typename Interface::ParentType ParentType;
     typedef Interface * (*Creator)(class LAMMPS * lmp, ParentType* parent);
-    typedef int64_t (*VariantSelector)(int & argc, char ** & argv);
+    typedef int64_t (*VariantSelector)(int & argc, char ** & argv, Custom_contact_models ccm);
     typedef std::map<std::pair<std::string, int>, Creator> StyleTable;
     typedef std::map<std::string, VariantSelector> VariantSelectorTable;
     StyleTable styleTable;
@@ -90,9 +104,9 @@ namespace Utils {
       return NULL;
     }
 
-    int64_t selectVariant(const std::string & name, int & argc, char ** & argv) {
+    int64_t selectVariant(const std::string & name, int & argc, char ** & argv,Custom_contact_models ccm) {
       if(variantSelectorTable.find(name) != variantSelectorTable.end()) {
-        return variantSelectorTable[name](argc, argv);
+        return variantSelectorTable[name](argc, argv,ccm);
       }
       return 0;
     }

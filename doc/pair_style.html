@@ -1,90 +1,277 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pair_style command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>pair_style command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>pair_style style args 
-</PRE>
-<UL><LI>style = one of the styles from the list <A HREF = "Section_commands.html#cmd_5">here</A>
-<LI>args = arguments used by a particular style 
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>pair_style gran model hertz tangential history
-pair_style none 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Set the formula(s) LIGGGHTS(R)-PUBLIC uses to compute pairwise interactions.  In
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>pair_style command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/pair_style.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="pair-style-command">
+<span id="index-0"></span><h1>pair_style command<a class="headerlink" href="#pair-style-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pair_style style args</pre>
+</div>
+<ul class="simple">
+<li>style = one of the styles from the list <em class="xref std std-ref">here</em></li>
+<li>args = arguments used by a particular style</li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pair_style gran model hertz tangential history
+pair_style none</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Set the formula(s) LIGGGHTS(R)-PUBLIC uses to compute pairwise interactions.  In
 LIGGGHTS(R)-PUBLIC, pair potentials are defined between pairs of atoms that are
 within a cutoff distance and the set of active interactions typically
-changes over time.  See the <A HREF = "bond_style.html">bond_style</A> command to
+changes over time.  See the <a class="reference internal" href="bond_style.html"><em>bond_style</em></a> command to
 define potentials between pairs of bonded atoms, which typically
-remain in place for the duration of a simulation.
-</P>
-<P>The full list of pair styles defined in LIGGGHTS(R)-PUBLIC is on <A HREF = "Section_commands.html#cmd_5">this
-page</A>.
-</P>
-<P>Hybrid models where specified pairs of atom types interact via
-different pair potentials can be setup using the <I>hybrid</I> pair style.
-</P>
-<P>The coefficients associated with a pair style are typically set for
+remain in place for the duration of a simulation.</p>
+<p>The full list of pair styles defined in LIGGGHTS(R)-PUBLIC is on <em class="xref std std-ref">this page</em>.</p>
+<p>Hybrid models where specified pairs of atom types interact via
+different pair potentials can be setup using the <em>hybrid</em> pair style.</p>
+<p>The coefficients associated with a pair style are typically set for
 each pair of atom types, and are specified by the
-<A HREF = "pair_coeff.html">pair_coeff</A> command or read from a file by the
-<A HREF = "read_data.html">read_data</A> or <A HREF = "read_restart.html">read_restart</A>
-commands.
-</P>
-<P>The <A HREF = "pair_modify.html">pair_modify</A> command sets options for mixing of
-type I-J interaction coefficients.
-</P>
-<P>If the pair_style command has a cutoff argument, it sets global
+<a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> command or read from a file by the
+<a class="reference internal" href="read_data.html"><em>read_data</em></a> or <a class="reference internal" href="read_restart.html"><em>read_restart</em></a>
+commands.</p>
+<p>The <tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt> command sets options for mixing of
+type I-J interaction coefficients.</p>
+<p>If the pair_style command has a cutoff argument, it sets global
 cutoffs for all pairs of atom types.  The distance(s) can be smaller
-or larger than the dimensions of the simulation box.
-</P>
-<P>Typically, the global cutoff value can be overridden for a specific
-pair of atom types by the <A HREF = "pair_coeff.html">pair_coeff</A> command.  The
+or larger than the dimensions of the simulation box.</p>
+<p>Typically, the global cutoff value can be overridden for a specific
+pair of atom types by the <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> command.  The
 pair style settings (including global cutoffs) can be changed by a
 subsequent pair_style command using the same style.  This will reset
 the cutoffs for all atom type pairs, including those previously set
-explicitly by a <A HREF = "pair_coeff.html">pair_coeff</A> command.  The exceptions
-to this are that pair_style <I>table</I> and <I>hybrid</I> settings cannot be
+explicitly by a <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> command.  The exceptions
+to this are that pair_style <em>table</em> and <em>hybrid</em> settings cannot be
 reset.  A new pair_style command for these styles will wipe out all
-previously specified pair_coeff values.
-</P>
-<HR>
-
-<P>The full list of pair styles defined in LIGGGHTS(R)-PUBLIC is on <A HREF = "Section_commands.html#cmd_5">this
-page</A>.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>This command must be used before any coefficients are set by the
-<A HREF = "pair_coeff.html">pair_coeff</A>, <A HREF = "read_data.html">read_data</A>, or
-<A HREF = "read_restart.html">read_restart</A> commands.
-</P>
-<P>Some pair styles are part of specific packages.  They are only enabled
-if LIGGGHTS(R)-PUBLIC was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LIGGGHTS(R)-PUBLIC</A> section for more info on packages.
+previously specified pair_coeff values.</p>
+<hr class="docutils" />
+<p>The full list of pair styles defined in LIGGGHTS(R)-PUBLIC is on <em class="xref std std-ref">this page</em>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>This command must be used before any coefficients are set by the
+<a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a>, <a class="reference internal" href="read_data.html"><em>read_data</em></a>, or
+<a class="reference internal" href="read_restart.html"><em>read_restart</em></a> commands.</p>
+<p>Some pair styles are part of specific packages.  They are only enabled
+if LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info on packages.
 The doc pages for individual pair potentials tell if it is part of a
-package.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "pair_coeff.html">pair_coeff</A>, <A HREF = "read_data.html">read_data</A>,
-<A HREF = "pair_modify.html">pair_modify</A>, <A HREF = "dielectric.html">dielectric</A>,
-</P>
-<P><B>Default:</B>
-</P>
-<PRE>pair_style none 
-</PRE>
-</HTML>
+package.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a>, <a class="reference internal" href="read_data.html"><em>read_data</em></a>,
+<tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt>, <a class="reference internal" href="dielectric.html"><em>dielectric</em></a>,</p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pair_style none</pre>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

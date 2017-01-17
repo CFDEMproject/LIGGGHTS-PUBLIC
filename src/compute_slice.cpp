@@ -58,9 +58,6 @@ using namespace LAMMPS_NS;
 
 enum{COMPUTE,FIX};
 
-#define INVOKED_VECTOR 2
-#define INVOKED_ARRAY 4
-
 /* ---------------------------------------------------------------------- */
 
 ComputeSlice::ComputeSlice(LAMMPS *lmp, int narg, char **arg) :

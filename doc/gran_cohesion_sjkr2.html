@@ -1,68 +1,275 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>gran cohesion sjkr2 model &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>gran cohesion sjkr2 model 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>cohesion sjkr2 
-</PRE>
-<LI>zero or more keyword/value pairs may be appended to the end (after all models are specified) 
-
-<PRE>  <I>tangential_reduce</I> values = 'on' or 'off'
-    on = tangential model does not see normal force computed by this model
-    off = tangential model does see normal force computed by this model 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>This model can be used as part of <A HREF = "pair_gran.html">pair gran</A> and
-<A HREF = "fix_wall_gran.html">fix wall/gran</A>
-</P>
-<P>The modified simplified JKR - Johnson-Kendall-Roberts (SJKR2) model adds an additional normal force
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>gran cohesion sjkr2 model</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/gran_cohesion_sjkr2.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="gran-cohesion-sjkr2-model">
+<span id="index-0"></span><h1>gran cohesion sjkr2 model<a class="headerlink" href="#gran-cohesion-sjkr2-model" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>cohesion sjkr2</pre>
+</div>
+<ul class="simple">
+<li>zero or more keyword/value pairs may be appended to the end (after all models are specified)</li>
+</ul>
+<pre class="literal-block">
+<em>tangential_reduce</em> values = 'on' or 'off'
+  on = tangential model does not see normal force computed by this model
+  off = tangential model does see normal force computed by this model
+</pre>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This model can be used as part of <a class="reference internal" href="pair_gran.html"><em>pair gran</em></a> and
+<a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a></p>
+<p>The modified simplified JKR - Johnson-Kendall-Roberts (SJKR2) model adds an additional normal force
 contribution. If two particle are in contact, it adds an additional normal force tending
-to maintain the contact, which writes
-</P>
-<P>F = k A,
-</P>
-<P>where A is the particle contact area and k is the cohesion energy density in J/m3.
-For <I>sjkr2</I>, the sphere-sphere contact area is calculated as
-</P>
-<P>A = 2*Pi * delta_n * (2R*)
-</P>
-<P>If you are using the SJKR2 model, you must also define the cohesion energy density:
-</P>
-<PRE>fix id all property/global cohesionEnergyDensity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the cohesion energy density (in Energy/Length3 units) between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation) 
-</PRE>
-<P>IMPORTANT NOTE: The cohesion model has been derived for the Hertzian Style, it may note be
-appropriate for the Hookean styles.
-</P>
-<P>IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
-</P>
-<P>The optional keyword <I>tangential_reduce</I> defines if the tangential force model should
-"see" the additional normal force excerted by this model. If it is 'off' (which is default)
+to maintain the contact, which writes</p>
+<p>F = k A,</p>
+<p>where A is the particle contact area and k is the cohesion energy density in J/m3.
+For <em>sjkr2</em>, the sphere-sphere contact area is calculated as</p>
+<p>A = 2*Pi * delta_n * (2R*)</p>
+<p>If you are using the SJKR2 model, you must also define the cohesion energy density:</p>
+<div class="highlight-python"><pre>fix id all property/global cohesionEnergyDensity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for the cohesion energy density (in Energy/Length3 units) between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The cohesion model has been derived for the Hertzian Style, it may note be
+appropriate for the Hookean styles.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">You have to use atom styles beginning from 1, e.g. 1,2,3,...</p>
+</div>
+<p>The optional keyword <em>tangential_reduce</em> defines if the tangential force model should
+&#8220;see&#8221; the additional normal force excerted by this model. If it is &#8216;off&#8217; (which is default)
 then the tangential force model will be able to transmit a larger amount of tangential force
-If <I>tangential_reduce</I> = 'on' then the tangential model will not take the normal force
+If <em>tangential_reduce</em> = &#8216;on&#8217; then the tangential model will not take the normal force
 from this model into account, typically leading to a lower value of tangential force
-(via the Coulomb friction limit)
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>The cohesion model has been derived for the Hertzian Style, it may note be
-appropriate for the Hookean styles. 
-</P>
-<P>It is not available for <A HREF = "atom_style.html">atom_style</A> superquadric
-</P>
-<P><B>Default:</B>
-</P>
-<P><I>tangential_reduce</I> = 'off'
-</P>
-</HTML>
+(via the Coulomb friction limit)</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>The cohesion model has been derived for the Hertzian Style, it may note be
+appropriate for the Hookean styles.</p>
+<p>It is not available for <a class="reference internal" href="atom_style.html"><em>atom_style</em></a> superquadric</p>
+<p><strong>Coarse-graining information:</strong></p>
+<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+combination with this command might lead to
+statistically different dynamics and system state.
+To the best knowledge of the developers, the
+cross-influence between this command and coarse-graining
+is unknown.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+may not be available in LIGGGHTS(R)-PUBLIC.</p>
+</div>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p><em>tangential_reduce</em> = &#8216;off&#8217;</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

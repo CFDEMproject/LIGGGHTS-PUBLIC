@@ -1,256 +1,378 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix rigid command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix rigid command 
-</H3>
-<H3>fix rigid/nve command 
-</H3>
-<H3>fix rigid/nvt command 
-</H3>
-<H3>fix rigid/npt command 
-</H3>
-<H3>fix rigid/nph command 
-</H3>
-<H3>fix rigid/small command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix ID group-ID style bodystyle args keyword values ... 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>style = <I>rigid</I> 
-
-<LI>bodystyle = <I>single</I> or <I>molecule</I> or <I>group</I> 
-
-<PRE>  <I>single</I> args = none
-  <I>molecule</I> args = none
-  <I>group</I> args = N groupID1 groupID2 ...
-    N = # of groups
-    groupID1, groupID2, ... = list of N group IDs 
-</PRE>
-<LI>zero or more keyword/value pairs may be appended 
-
-<LI>keyword =  or <I>temp</I> or <I>iso</I> or <I>aniso</I> or <I>x</I> or <I>y</I> or <I>z</I> or <I>couple</I> or <I>tparam</I> or <I>pchain</I> or <I>dilate</I> or <I>force</I> or <I>torque</I> or <I>infile</I> 
-
-<PRE>  <I>langevin</I> values = Tstart Tstop Tperiod seed
-    Tstart,Tstop = desired temperature at start/stop of run (temperature units)
-    Tdamp = temperature damping parameter (time units)
-    seed = random number seed to use for white noise (positive integer)
-  <I>temp</I> values = Tstart Tstop Tdamp
-    Tstart,Tstop = desired temperature at start/stop of run (temperature units)
-    Tdamp = temperature damping parameter (time units)
-  <I>iso</I> or <I>aniso</I> values = Pstart Pstop Pdamp
-    Pstart,Pstop = scalar external pressure at start/end of run (pressure units)
-    Pdamp = pressure damping parameter (time units)
-  <I>x</I> or <I>y</I> or <I>z</I> values = Pstart Pstop Pdamp
-    Pstart,Pstop = external stress tensor component at start/end of run (pressure units)
-    Pdamp = stress damping parameter (time units)
-  <I>couple</I> = <I>none</I> or <I>xyz</I> or <I>xy</I> or <I>yz</I> or <I>xz</I>
-  <I>tparam</I> values = Tchain Titer Torder
-    Tchain = length of Nose/Hoover thermostat chain
-    Titer = number of thermostat iterations performed
-    Torder = 3 or 5 = Yoshida-Suzuki integration parameters
-  <I>pchain</I> values = Pchain
-    Pchain = length of the Nose/Hoover thermostat chain coupled with the barostat
-  <I>dilate</I> value = dilate-group-ID
-    dilate-group-ID = only dilate atoms in this group due to barostat volume changes
-  <I>force</I> values = M xflag yflag zflag
-    M = which rigid body from 1-Nbody (see asterisk form below)
-    xflag,yflag,zflag = off/on if component of center-of-mass force is active
-  <I>torque</I> values = M xflag yflag zflag
-    M = which rigid body from 1-Nbody (see asterisk form below)
-    xflag,yflag,zflag = off/on if component of center-of-mass torque is active
-  <I>infile</I> filename
-    filename = file with per-body values of mass, center-of-mass, moments of inertia 
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix 1 clump rigid single
-fix 2 fluid rigid group 3 clump1 clump2 clump3 torque * off off off 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Treat one or more sets of atoms as independent rigid bodies.  This
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix rigid command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_rigid.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-rigid-command">
+<span id="index-0"></span><h1>fix rigid command<a class="headerlink" href="#fix-rigid-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="fix-rigid-nve-command">
+<h1>fix rigid/nve command<a class="headerlink" href="#fix-rigid-nve-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="fix-rigid-nvt-command">
+<h1>fix rigid/nvt command<a class="headerlink" href="#fix-rigid-nvt-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="fix-rigid-npt-command">
+<h1>fix rigid/npt command<a class="headerlink" href="#fix-rigid-npt-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="fix-rigid-nph-command">
+<h1>fix rigid/nph command<a class="headerlink" href="#fix-rigid-nph-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="fix-rigid-small-command">
+<h1>fix rigid/small command<a class="headerlink" href="#fix-rigid-small-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ID group-ID style bodystyle args keyword values ...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>style = <em>rigid</em></li>
+<li>bodystyle = <em>single</em> or <em>molecule</em> or <em>group</em></li>
+</ul>
+<pre class="literal-block">
+<em>single</em> args = none
+<em>molecule</em> args = none
+<em>group</em> args = N groupID1 groupID2 ...
+  N = # of groups
+  groupID1, groupID2, ... = list of N group IDs
+</pre>
+<ul class="simple">
+<li>zero or more keyword/value pairs may be appended</li>
+<li>keyword =  or <em>temp</em> or <em>iso</em> or <em>aniso</em> or <em>x</em> or <em>y</em> or <em>z</em> or <em>couple</em> or <em>tparam</em> or <em>pchain</em> or <em>dilate</em> or <em>force</em> or <em>torque</em> or <em>infile</em></li>
+</ul>
+<pre class="literal-block">
+<em>langevin</em> values = Tstart Tstop Tperiod seed
+  Tstart,Tstop = desired temperature at start/stop of run (temperature units)
+  Tdamp = temperature damping parameter (time units)
+  seed = random number seed to use for white noise (prime number greater 10000)
+<em>temp</em> values = Tstart Tstop Tdamp
+  Tstart,Tstop = desired temperature at start/stop of run (temperature units)
+  Tdamp = temperature damping parameter (time units)
+<em>iso</em> or <em>aniso</em> values = Pstart Pstop Pdamp
+  Pstart,Pstop = scalar external pressure at start/end of run (pressure units)
+  Pdamp = pressure damping parameter (time units)
+<em>x</em> or <em>y</em> or <em>z</em> values = Pstart Pstop Pdamp
+  Pstart,Pstop = external stress tensor component at start/end of run (pressure units)
+  Pdamp = stress damping parameter (time units)
+<em>couple</em> = <em>none</em> or <em>xyz</em> or <em>xy</em> or <em>yz</em> or <em>xz</em>
+<em>tparam</em> values = Tchain Titer Torder
+  Tchain = length of Nose/Hoover thermostat chain
+  Titer = number of thermostat iterations performed
+  Torder = 3 or 5 = Yoshida-Suzuki integration parameters
+<em>pchain</em> values = Pchain
+  Pchain = length of the Nose/Hoover thermostat chain coupled with the barostat
+<em>dilate</em> value = dilate-group-ID
+  dilate-group-ID = only dilate atoms in this group due to barostat volume changes
+<em>force</em> values = M xflag yflag zflag
+  M = which rigid body from 1-Nbody (see asterisk form below)
+  xflag,yflag,zflag = off/on if component of center-of-mass force is active
+<em>torque</em> values = M xflag yflag zflag
+  M = which rigid body from 1-Nbody (see asterisk form below)
+  xflag,yflag,zflag = off/on if component of center-of-mass torque is active
+<em>infile</em> filename
+  filename = file with per-body values of mass, center-of-mass, moments of inertia
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix 1 clump rigid single
+fix 2 fluid rigid group 3 clump1 clump2 clump3 torque * off off off</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Treat one or more sets of atoms as independent rigid bodies.  This
 means that each timestep the total force and torque on each rigid body
 is computed as the sum of the forces and torques on its constituent
 particles and the coordinates, velocities, and orientations of the
 atoms in each body are updated so that the body moves and rotates as a
-single entity.
-</P>
-<P>Examples of large rigid bodies are a large colloidal particle, or
-portions of a large biomolecule such as a protein.
-</P>
-<P>Example of small rigid bodies are patchy nanoparticles, such as those
-modeled in <A HREF = "#Zhang">this paper</A> by Sharon Glotzer's group, clumps of
+single entity.</p>
+<p>Examples of large rigid bodies are a large colloidal particle, or
+portions of a large biomolecule such as a protein.</p>
+<p>Example of small rigid bodies are patchy nanoparticles, such as those
+modeled in <a class="reference internal" href="#zhang"><em>this paper</em></a> by Sharon Glotzer&#8217;s group, clumps of
 granular particles, lipid molecules consiting of one or more point
 dipoles connected to other spheroids or ellipsoids, irregular
 particles built from line segments (2d) or triangles (3d), and
 coarse-grain models of nano or colloidal particles consisting of a
-small number of constituent particles.  Note that the <A HREF = "fix_shake.html">fix
-shake</A> command can also be used to rigidify small
+small number of constituent particles.  Note that the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">shake</span></tt> command can also be used to rigidify small
 molecules of 2, 3, or 4 atoms, e.g. water molecules.  That fix treats
-the constituent atoms as point masses.
-</P>
-<P>These fixes also update the positions and velocities of the atoms in
-each rigid body via time integration, in the NVE ensemble.
-</P>
-<P>IMPORTANT NOTE: Not all of the bodystyle options and keyword/value
-options are available for both the <I>rigid</I> and <I>rigid/small</I> variants.
-See details below.
-</P>
-<P>The <I>rigid</I> variant is typically the best choice for a system with a
+the constituent atoms as point masses.</p>
+<p>These fixes also update the positions and velocities of the atoms in
+each rigid body via time integration, in the NVE ensemble.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Not all of the bodystyle options and keyword/value
+options are available for both the <em>rigid</em> and <em>rigid/small</em> variants.
+See details below.</p>
+</div>
+<p>The <em>rigid</em> variant is typically the best choice for a system with a
 small number of large rigid bodies, each of which can extend across
 the domain of many processors.  It operates by creating a single
 global list of rigid bodies, which all processors contribute to.
 MPI_Allreduce operations are performed each timestep to sum the
 contributions from each processor to the force and torque on all the
 bodies.  This operation will not scale well in parallel if large
-numbers of rigid bodies are simulated.
-</P>
-<P>Which of the two variants is faster for a particular problem is hard
+numbers of rigid bodies are simulated.</p>
+<p>Which of the two variants is faster for a particular problem is hard
 to predict.  The best way to decide is to perform a short test run.
 Both variants should give identical numerical answers for short runs.
 Long runs should give statistically similar results, but round-off
-differences will accumulate to produce divergent trajectories.
-</P>
-<P>IMPORTANT NOTE: You should not update the atoms in rigid bodies via
-other time-integration fixes (e.g. <A HREF = "fix_nve.html">fix nve</A>), or you will
+differences will accumulate to produce divergent trajectories.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">You should not update the atoms in rigid bodies via
+other time-integration fixes (e.g. <a class="reference internal" href="fix_nve.html"><em>fix nve</em></a>), or you will
 be integrating
 their motion more than once each timestep.  When performing a hybrid
 simulation with some atoms in rigid bodies, and some not, a separate
-time integration fix like <A HREF = "fix_nve.html">fix nve</A> should be used for the
-non-rigid particles.
-</P>
-<P>IMPORTANT NOTE: These fixes are overkill if you simply want to hold a
+time integration fix like <a class="reference internal" href="fix_nve.html"><em>fix nve</em></a> should be used for the
+non-rigid particles.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">These fixes are overkill if you simply want to hold a
 collection of atoms stationary or have them move with a constant
 velocity.  A simpler way to hold atoms stationary is to not include
-those atoms in your time integration fix.  E.g. use "fix 1 mobile nve"
-instead of "fix 1 all nve", where "mobile" is the group of atoms that
+those atoms in your time integration fix.  E.g. use &#8220;fix 1 mobile nve&#8221;
+instead of &#8220;fix 1 all nve&#8221;, where &#8220;mobile&#8221; is the group of atoms that
 you want to move.  You can move atoms with a constant velocity by
-assigning them an initial velocity (via the <A HREF = "velocity.html">velocity</A>
-command), setting the force on them to 0.0 (via the <A HREF = "fix_setforce.html">fix
-setforce</A> command), and integrating them as usual
-(e.g. via the <A HREF = "fix_nve.html">fix nve</A> command).
-</P>
-<HR>
-
-<P>Each rigid body must have two or more atoms.  An atom can belong to at
+assigning them an initial velocity (via the <a class="reference internal" href="velocity.html"><em>velocity</em></a>
+command), setting the force on them to 0.0 (via the <a class="reference internal" href="fix_setforce.html"><em>fix setforce</em></a> command), and integrating them as usual
+(e.g. via the <a class="reference internal" href="fix_nve.html"><em>fix nve</em></a> command).</p>
+</div>
+<hr class="docutils" />
+<p>Each rigid body must have two or more atoms.  An atom can belong to at
 most one rigid body.  Which atoms are in which bodies can be defined
-via several options.
-</P>
-<P>For bodystyle <I>single</I> the entire fix group of atoms is treated as one
+via several options.</p>
+<p>For bodystyle <em>single</em> the entire fix group of atoms is treated as one
 rigid body.  This option is only allowed for fix rigid and its
-sub-styles.
-</P>
-<P>For bodystyle <I>molecule</I>, each set of atoms in the fix group with a
+sub-styles.</p>
+<p>For bodystyle <em>molecule</em>, each set of atoms in the fix group with a
 different molecule ID is treated as a rigid body.  This option is
 allowed for fix rigid and fix rigid/small, and their sub-styles.  Note
 that atoms with a molecule ID = 0 will be treated as a single rigid
 body.  For a system with atomic solvent (typically this is atoms with
 molecule ID = 0) surrounding rigid bodies, this may not be what you
 want.  Thus you should be careful to use a fix group that only
-includes atoms you want to be part of rigid bodies.
-</P>
-<P>For bodystyle <I>group</I>, each of the listed groups is treated as a
+includes atoms you want to be part of rigid bodies.</p>
+<p>For bodystyle <em>group</em>, each of the listed groups is treated as a
 separate rigid body.  Only atoms that are also in the fix group are
 included in each rigid body.  This option is only allowed for fix
-rigid and its sub-styles.
-</P>
-<P>IMPORTANT NOTE: To compute the initial center-of-mass position and
+rigid and its sub-styles.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">To compute the initial center-of-mass position and
 other properties of each rigid body, the image flags for each atom in
-the body are used to "unwrap" the atom coordinates.  Thus you must
+the body are used to &#8220;unwrap&#8221; the atom coordinates.  Thus you must
 insure that these image flags are consistent so that the unwrapping
 creates a valid rigid body (one where the atoms are close together),
 particularly if the atoms in a single rigid body straddle a periodic
 boundary.  This means the input data file or restart file must define
 the image flags for each atom consistently or that you have used the
-<A HREF = "set.html">set</A> command to specify them correctly.  If a dimension is
+<a class="reference internal" href="set.html"><em>set</em></a> command to specify them correctly.  If a dimension is
 non-periodic then the image flag of each atom must be 0 in that
-dimension, else an error is generated.
-</P>
-<P>The <I>force</I> and <I>torque</I> keywords discussed next are only allowed for
-fix rigid and its sub-styles.
-</P>
-<P>By default, each rigid body is acted on by other atoms which induce an
+dimension, else an error is generated.</p>
+</div>
+<p>The <em>force</em> and <em>torque</em> keywords discussed next are only allowed for
+fix rigid and its sub-styles.</p>
+<p>By default, each rigid body is acted on by other atoms which induce an
 external force and torque on its center of mass, causing it to
 translate and rotate.  Components of the external center-of-mass force
-and torque can be turned off by the <I>force</I> and <I>torque</I> keywords.
+and torque can be turned off by the <em>force</em> and <em>torque</em> keywords.
 This may be useful if you wish a body to rotate but not translate, or
 vice versa, or if you wish it to rotate or translate continuously
 unaffected by interactions with other particles.  Note that if you
 expect a rigid body not to move or rotate by using these keywords, you
 must insure its initial center-of-mass translational or angular
 velocity is 0.0.  Otherwise the initial translational or angular
-momentum the body has will persist.
-</P>
-<P>An xflag, yflag, or zflag set to <I>off</I> means turn off the component of
-force of torque in that dimension.  A setting of <I>on</I> means turn on
+momentum the body has will persist.</p>
+<p>An xflag, yflag, or zflag set to <em>off</em> means turn off the component of
+force of torque in that dimension.  A setting of <em>on</em> means turn on
 the component, which is the default.  Which rigid body(s) the settings
-apply to is determined by the first argument of the <I>force</I> and
-<I>torque</I> keywords.  It can be an integer M from 1 to Nbody, where
+apply to is determined by the first argument of the <em>force</em> and
+<em>torque</em> keywords.  It can be an integer M from 1 to Nbody, where
 Nbody is the number of rigid bodies defined.  A wild-card asterisk can
 be used in place of, or in conjunction with, the M argument to set the
-flags for multiple rigid bodies.  This takes the form "*" or "*n" or
-"n*" or "m*n".  If N = the number of rigid bodies, then an asterisk
+flags for multiple rigid bodies.  This takes the form &#8220;*&#8221; or &#8220;<em>n&#8221; or
+&#8220;n</em>&#8221; or &#8220;m*n&#8221;.  If N = the number of rigid bodies, then an asterisk
 with no numeric values means all bodies from 1 to N.  A leading
 asterisk means all bodies from 1 to n (inclusive).  A trailing
 asterisk means all bodies from n to N (inclusive).  A middle asterisk
 means all types from m to n (inclusive).  Note that you can use the
-<I>force</I> or <I>torque</I> keywords as many times as you like.  If a
+<em>force</em> or <em>torque</em> keywords as many times as you like.  If a
 particular rigid body has its component flags set multiple times, the
-settings from the final keyword are used.
-</P>
-<P>For computational efficiency, you may wish to turn off pairwise and
+settings from the final keyword are used.</p>
+<p>For computational efficiency, you may wish to turn off pairwise and
 bond interactions within each rigid body, as they no longer contribute
-to the motion.  The <A HREF = "neigh_modify.html">neigh_modify exclude</A> and
-<A HREF = "delete_bonds.html">delete_bonds</A> commands are used to do this.
-</P>
-<P>For computational efficiency, you should typically define one fix
+to the motion.  The <a class="reference internal" href="neigh_modify.html"><em>neigh_modify exclude</em></a> and
+<a class="reference internal" href="delete_bonds.html"><em>delete_bonds</em></a> commands are used to do this.</p>
+<p>For computational efficiency, you should typically define one fix
 rigid or fix rigid/small command which includes all the desired rigid
 bodies.  LIGGGHTS(R)-PUBLIC will allow multiple rigid fixes to be defined, but it
-is more expensive.
-</P>
-<HR>
-
-<P>The constituent particles within a rigid body can be point particles
+is more expensive.</p>
+<hr class="docutils" />
+<p>The constituent particles within a rigid body can be point particles
 (the default in LIGGGHTS(R)-PUBLIC) or finite-size particles, such as spheres or
-ellipsoids or line segments or triangles.  See the <A HREF = "atom_style.html">atom_style sphere
-and ellipsoid and line and tri</A> commands for more
+ellipsoids or line segments or triangles.  See the <a class="reference internal" href="atom_style.html"><em>atom_style sphere and ellipsoid and line and tri</em></a> commands for more
 details on these kinds of particles.  Finite-size particles contribute
 differently to the moment of inertia of a rigid body than do point
 particles.  Finite-size particles can also experience torque (e.g. due
-to <A HREF = "pair_gran.html">frictional granular interactions</A>) and have an
-orientation.  These contributions are accounted for by these fixes.
-</P>
-<P>Forces between particles within a body do not contribute to the
+to <a class="reference internal" href="pair_gran.html"><em>frictional granular interactions</em></a>) and have an
+orientation.  These contributions are accounted for by these fixes.</p>
+<p>Forces between particles within a body do not contribute to the
 external force or torque on the body.  Thus for computational
 efficiency, you may wish to turn off pairwise and bond interactions
-between particles within each rigid body.  The <A HREF = "neigh_modify.html">neigh_modify
-exclude</A> and <A HREF = "delete_bonds.html">delete_bonds</A>
+between particles within each rigid body.  The <a class="reference internal" href="neigh_modify.html"><em>neigh_modify exclude</em></a> and <a class="reference internal" href="delete_bonds.html"><em>delete_bonds</em></a>
 commands are used to do this.  For finite-size particles this also
 means the particles can be highly overlapped when creating the rigid
-body.
-</P>
-<HR>
-
-<P>The <I>rigid</I> style performs constant
+body.</p>
+<hr class="docutils" />
+<p>The <em>rigid</em> style performs constant
 NVE time integration based on Richardson
-iterations.
-</P>
-<HR>
-
-<P>The <I>infile</I> keyword allows a file of rigid body attributes to be read
+iterations.</p>
+<hr class="docutils" />
+<p>The <em>infile</em> keyword allows a file of rigid body attributes to be read
 in from a file, rather then having LIGGGHTS(R)-PUBLIC compute them.  There are 3
 such attributes: the total mass of the rigid body, its center-of-mass
 position, and its 6 moments of inertia.  For rigid bodies consisting
@@ -260,28 +382,25 @@ consisting of finite-size particles which overlap each other, LIGGGHTS(R)-PUBLIC
 will ignore the overlaps when computing these 3 attributes.  The
 amount of error this induces depends on the amount of overlap.  To
 avoid this issue, the values can be pre-computed (e.g. using Monte
-Carlo integration).
-</P>
-<P>The format of the file is as follows.  Note that the file does not
+Carlo integration).</p>
+<p>The format of the file is as follows.  Note that the file does not
 have to list attributes for every rigid body integrated by fix rigid.
 Only bodies which the file specifies will have their computed
 attributes overridden.  The file can contain initial blank lines or
-comment lines starting with "#" which are ignored.  The first
+comment lines starting with &#8220;#&#8221; which are ignored.  The first
 non-blank, non-comment line should list N = the number of lines to
-follow.  The N successive lines contain the following information:
-</P>
-<PRE>ID1 masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz
+follow.  The N successive lines contain the following information:</p>
+<div class="highlight-python"><pre>ID1 masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz
 ID2 masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz
 ...
-IDN masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz 
-</PRE>
-<P>The rigid body IDs are all positive integers.  For the <I>single</I>
-bodystyle, only an ID of 1 can be used.  For the <I>group</I> bodystyle,
+IDN masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz</pre>
+</div>
+<p>The rigid body IDs are all positive integers.  For the <em>single</em>
+bodystyle, only an ID of 1 can be used.  For the <em>group</em> bodystyle,
 IDs from 1 to Ng can be used where Ng is the number of specified
-groups.  For the <I>molecule</I> bodystyle, use the molecule ID for the
-atoms in a specific rigid body as the rigid body ID.
-</P>
-<P>The masstotal and center-of-mass coordinates (xcm,ycm,zcm) are
+groups.  For the <em>molecule</em> bodystyle, use the molecule ID for the
+atoms in a specific rigid body as the rigid body ID.</p>
+<p>The masstotal and center-of-mass coordinates (xcm,ycm,zcm) are
 self-explanatory.  The center-of-mass should be consistent with what
 is calculated for the position of the rigid body with all its atoms
 unwrapped by their respective image flags.  If this produces a
@@ -291,160 +410,191 @@ should be the values consistent with the current orientation of the
 rigid body around its center of mass.  The values are with respect to
 the simulation box XYZ axes, not with respect to the prinicpal axes of
 the rigid body itself.  LIGGGHTS(R)-PUBLIC performs the latter calculation
-internally.
-</P>
-<P>IMPORTANT NOTE: If you use the <I>infile</I> keyword and write restart
+internally.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you use the <em>infile</em> keyword and write restart
 files during a simulation, then each time a restart file is written,
 the fix also write an auxiliary restart file with the name
-rfile.rigid, where "rfile" is the name of the restart file,
+rfile.rigid, where &#8220;rfile&#8221; is the name of the restart file,
 e.g. tmp.restart.10000 and tmp.restart.10000.rigid.  This auxiliary
 file is in the same format described above and contains info on the
 current center-of-mass and 6 moments of inertia.  Thus it can be used
 in a new input script that restarts the run and re-specifies a rigid
-fix using an <I>infile</I> keyword and the appropriate filename.  Note that
+fix using an <em>infile</em> keyword and the appropriate filename.  Note that
 the auxiliary file will contain one line for every rigid body, even if
-the original file only listed a subset of the rigid bodies.
-</P>
-<HR>
-
-<P>IMPORTANT NOTE: The periodic image flags of atoms in rigid bodies are
+the original file only listed a subset of the rigid bodies.</p>
+</div>
+<hr class="docutils" />
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The periodic image flags of atoms in rigid bodies are
 altered so that the rigid body can be reconstructed correctly when it
 straddles periodic boundaries.  The atom image flags are not
 incremented/decremented as they would be for non-rigid atoms as the
 rigid body crosses periodic boundaries.  Specifically, they are set so
 that the center-of-mass (COM) of the rigid body always remains inside
-the simulation box.
-</P>
-<P>This means that if you output per-atom image flags you cannot
+the simulation box.</p>
+</div>
+<p>This means that if you output per-atom image flags you cannot
 interpret them as you normally would.  I.e. the image flag values
-written to a <A HREF = "dump.html">dump file</A> will be different than they would
-be if the atoms were not in a rigid body.  Likewise the <A HREF = "compute_msd.html">compute
-msd</A> will not compute the expected mean-squared
+written to a <a class="reference internal" href="dump.html"><em>dump file</em></a> will be different than they would
+be if the atoms were not in a rigid body.  Likewise the <a class="reference internal" href="compute_msd.html"><em>compute msd</em></a> will not compute the expected mean-squared
 displacement for such atoms if the body moves across periodic
 boundaries.  It also means that if you have bonds between a pair of
 rigid bodies and the bond straddles a periodic boundary, you cannot
-use the <A HREF = "replicate.html">replicate</A> command to increase the system
-size.
-</P>
-<P>Here are details on how, you can post-process a dump file to calculate
+use the <a class="reference internal" href="replicate.html"><em>replicate</em></a> command to increase the system
+size.</p>
+<p>Here are details on how, you can post-process a dump file to calculate
 a diffusion coefficient for rigid bodies, using the altered per-atom
 image flags written to a dump file.  The image flags for atoms in the
 same rigid body can be used to unwrap the body and calculate its
 center-of-mass (COM).  As mentioned above, this COM will always be
-inside the simulation box.  Thus it will "jump" from one side of the
+inside the simulation box.  Thus it will &#8220;jump&#8221; from one side of the
 box to the other when the COM crosses a periodic boundary.  If you
-keep track of the jumps, you can effectively "unwrap" the COM and use
+keep track of the jumps, you can effectively &#8220;unwrap&#8221; the COM and use
 that value to track the displacement of each rigid body, and thus the
 mean-squared displacement (MSD) of an ensemble of bodies, and thus a
-diffusion coefficient.
-</P>
-<P>Note that fix rigid does define image flags for each rigid body, which
+diffusion coefficient.</p>
+<p>Note that fix rigid does define image flags for each rigid body, which
 are incremented when the center-of-mass of the rigid body crosses a
 periodic boundary in the usual way.  These image flags have the same
-meaning as atom images (see the "dump" command) and can be accessed
-and output as described below.
-</P>
-<HR>
-
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>No information is written to <A HREF = "restart.html">binary restart files</A>.
-<A HREF = "read_restart.html">read_restart</A> command for info on how to re-specify
+meaning as atom images (see the &#8220;dump&#8221; command) and can be accessed
+and output as described below.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>No information is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.
+<a class="reference internal" href="read_restart.html"><em>read_restart</em></a> command for info on how to re-specify
 a fix in an input script that reads a restart file, so that the
-operation of the fix continues in an uninterrupted fashion.
-</P>
-<P>The <A HREF = "fix_modify.html">fix_modify</A> <I>energy</I> option is supported by the
+operation of the fix continues in an uninterrupted fashion.</p>
+<p>The <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> <em>energy</em> option is supported by the
 rigid/nvt fix to add the energy change induced by the thermostatting
-to the system's potential energy as part of <A HREF = "thermo_style.html">thermodynamic
-output</A>.
-</P>
-<P>The <A HREF = "fix_modify.html">fix_modify</A> <I>temp</I> and <I>press</I> options are
+to the system&#8217;s potential energy as part of <a class="reference internal" href="thermo_style.html"><em>thermodynamic output</em></a>.</p>
+<p>The <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> <em>temp</em> and <em>press</em> options are
 supported by the rigid/npt and rigid/nph fixes to change the computes used
 to calculate the instantaneous pressure tensor. Note that the rigid/nvt fix
-does not use any external compute to compute instantaneous temperature.
-</P>
-<P>The  fixes compute a global
-scalar which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
-commands</A>.  The scalar value calculated by
-these fixes is "intensive".  The scalar is the current temperature of
+does not use any external compute to compute instantaneous temperature.</p>
+<p>The  fixes compute a global
+scalar which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The scalar value calculated by
+these fixes is &#8220;intensive&#8221;.  The scalar is the current temperature of
 the collection of rigid bodies.  This is averaged over all rigid
 bodies and their translational and rotational degrees of freedom.  The
 translational energy of a rigid body is 1/2 m v^2, where m = total
 mass of the body and v = the velocity of its center of mass.  The
 rotational energy of a rigid body is 1/2 I w^2, where I = the moment
 of inertia tensor of the body and w = its angular velocity.  Degrees
-of freedom constrained by the <I>force</I> and <I>torque</I> keywords are
-removed from this calculation, but only for the <I>rigid</I> and
-<I>rigid/nve</I> fixes.
-</P>
-<P>This fix computes a global array
-of values which can be accessed by various <A HREF = "Section_howto.html#howto_8">output
-commands</A>.  The number of rows in the
+of freedom constrained by the <em>force</em> and <em>torque</em> keywords are
+removed from this calculation, but only for the <em>rigid</em> and
+<em>rigid/nve</em> fixes.</p>
+<p>This fix computes a global array
+of values which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The number of rows in the
 array is equal to the number of rigid bodies.  The number of columns
 is 15.  Thus for each rigid body, 15 values are stored: the xyz coords
 of the center of mass (COM), the xyz components of the COM velocity,
 the xyz components of the force acting on the COM, the xyz components
 of the torque acting on the COM, and the xyz image flags of the COM,
 which have the same meaning as image flags for atom positions (see the
-"dump" command).  The force and torque values in the array are not
-affected by the <I>force</I> and <I>torque</I> keywords in the fix rigid
+&#8220;dump&#8221; command).  The force and torque values in the array are not
+affected by the <em>force</em> and <em>torque</em> keywords in the fix rigid
 command; they reflect values before any changes are made by those
-keywords.
-</P>
-<P>The ordering of the rigid bodies (by row in the array) is as follows.
-For the <I>single</I> keyword there is just one rigid body.  For the
-<I>molecule</I> keyword, the bodies are ordered by ascending molecule ID.
-For the <I>group</I> keyword, the list of group IDs determines the ordering
-of bodies.
-</P>
-<P>The array values calculated by these fixes are "intensive", meaning
-they are independent of the number of atoms in the simulation.
-</P>
-<P>No parameter of these fixes can be used with the <I>start/stop</I> keywords
-of the <A HREF = "run.html">run</A> command.  These fixes are not invoked during
-<A HREF = "minimize.html">energy minimization</A>.
-</P>
-<HR>
-
-<P><B>Restrictions:</B>
-</P>
-<P>These fixes are all part of the RIGID package.  It is only enabled if
-LIGGGHTS(R)-PUBLIC was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LIGGGHTS(R)-PUBLIC</A> section for more info.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "delete_bonds.html">delete_bonds</A>, <A HREF = "neigh_modify.html">neigh_modify</A>
-exclude
-</P>
-<P><B>Default:</B>
-</P>
-<P>The option defaults are force * on on on and torque * on on on,
+keywords.</p>
+<p>The ordering of the rigid bodies (by row in the array) is as follows.
+For the <em>single</em> keyword there is just one rigid body.  For the
+<em>molecule</em> keyword, the bodies are ordered by ascending molecule ID.
+For the <em>group</em> keyword, the list of group IDs determines the ordering
+of bodies.</p>
+<p>The array values calculated by these fixes are &#8220;intensive&#8221;, meaning
+they are independent of the number of atoms in the simulation.</p>
+<p>No parameter of these fixes can be used with the <em>start/stop</em> keywords
+of the <a class="reference internal" href="run.html"><em>run</em></a> command.  These fixes are not invoked during
+<tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>These fixes are all part of the RIGID package.  It is only enabled if
+LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="delete_bonds.html"><em>delete_bonds</em></a>, <a class="reference internal" href="neigh_modify.html"><em>neigh_modify</em></a>
+exclude</p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p>The option defaults are force * on on on and torque * on on on,
 meaning all rigid bodies are acted on by center-of-mass force and
-torque.  Also Tchain = Pchain = 10, Titer = 1, Torder = 3.
-</P>
-<HR>
+torque.  Also Tchain = Pchain = 10, Titer = 1, Torder = 3.</p>
+<hr class="docutils" />
+<p id="hoover"><strong>(Hoover)</strong> Hoover, Phys Rev A, 31, 1695 (1985).</p>
+<p id="kamberaj"><strong>(Kamberaj)</strong> Kamberaj, Low, Neal, J Chem Phys, 122, 224114 (2005).</p>
+<p id="martyna"><strong>(Martyna)</strong> Martyna, Klein, Tuckerman, J Chem Phys, 97, 2635 (1992);
+Martyna, Tuckerman, Tobias, Klein, Mol Phys, 87, 1117.</p>
+<p id="miller"><strong>(Miller)</strong> Miller, Eleftheriou, Pattnaik, Ndirango, and Newns,
+J Chem Phys, 116, 8649 (2002).</p>
+<p id="zhang"><strong>(Zhang)</strong> Zhang, Glotzer, Nanoletters, 4, 1407-1413 (2004).</p>
+</div>
+</div>
 
-<A NAME = "Hoover"></A>
 
-<P><B>(Hoover)</B> Hoover, Phys Rev A, 31, 1695 (1985).
-</P>
-<A NAME = "Kamberaj"></A>
+           </div>
+          </div>
+          <footer>
+  
 
-<P><B>(Kamberaj)</B> Kamberaj, Low, Neal, J Chem Phys, 122, 224114 (2005).
-</P>
-<A NAME = "Martyna"></A>
+  <hr/>
 
-<P><B>(Martyna)</B> Martyna, Klein, Tuckerman, J Chem Phys, 97, 2635 (1992);
-Martyna, Tuckerman, Tobias, Klein, Mol Phys, 87, 1117.
-</P>
-<A NAME = "Miller"></A>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
 
-<P><B>(Miller)</B> Miller, Eleftheriou, Pattnaik, Ndirango, and Newns,
-J Chem Phys, 116, 8649 (2002).
-</P>
-<A NAME = "Zhang"></A>
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-<P><B>(Zhang)</B> Zhang, Glotzer, Nanoletters, 4, 1407-1413 (2004).
-</P>
-</HTML>
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

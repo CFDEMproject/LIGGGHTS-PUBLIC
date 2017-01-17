@@ -384,50 +384,39 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
 
   // test for too many global bins in any dimension due to huge global domain or small maxrad
   const int max_small_int = std::numeric_limits<int>::max();
-
-  if (extent[0]*binsizeinv > 200 || extent[1]*binsizeinv > 200 ||
-      extent[2]*binsizeinv > 200)
+  // we may repeat this calculation in case of failsafe
+  bool repeat = false;
+  bigint bbin = -1; // final number of bins
+  double bsubboxlo[3], bsubboxhi[3]; // box bounds
+  do
   {
+    // create actual bins
+    nbinx = static_cast<int>(extent[0]*binsizeinv);
+    nbiny = static_cast<int>(extent[1]*binsizeinv);
+    nbinz = static_cast<int>(extent[2]*binsizeinv);
 
-    if(failsafe)
+    if (nbinx == 0) nbinx = 1;
+    if (nbiny == 0) nbiny = 1;
+    if (nbinz == 0) nbinz = 1;
+
+    binsizex = extent[0]/nbinx;
+    binsizey = extent[1]/nbiny;
+    binsizez = extent[2]/nbinz;
+
+    bininvx = 1.0 / binsizex;
+    bininvy = 1.0 / binsizey;
+    bininvz = 1.0 / binsizez;
+
+    // mbinlo/hi = lowest and highest global bins my ghost atoms could be in
+    // coord = lowest and highest values of coords for my ghost atoms
+    // static_cast(-1.5) = -1, so subract additional -1
+    // add in SMALL for round-off safety
+    bb.getBoxBounds(bsubboxlo, bsubboxhi);
+
+    // list is extended for ghost atoms or
+    // the list covers just exactly the region
+    if (extend)
     {
-        binsizeinv = 1./ (vectorMax3D(extent) / 100.);
-    }
-    else
-    {
-        printf("ERROR: too many bins for this domain\n");
-        return false;
-    }
-  }
-
-  // create actual bins
-  nbinx = static_cast<int>(extent[0]*binsizeinv);
-  nbiny = static_cast<int>(extent[1]*binsizeinv);
-  nbinz = static_cast<int>(extent[2]*binsizeinv);
-
-  if (nbinx == 0) nbinx = 1;
-  if (nbiny == 0) nbiny = 1;
-  if (nbinz == 0) nbinz = 1;
-
-  binsizex = extent[0]/nbinx;
-  binsizey = extent[1]/nbiny;
-  binsizez = extent[2]/nbinz;
-
-  bininvx = 1.0 / binsizex;
-  bininvy = 1.0 / binsizey;
-  bininvz = 1.0 / binsizez;
-
-  // mbinlo/hi = lowest and highest global bins my ghost atoms could be in
-  // coord = lowest and highest values of coords for my ghost atoms
-  // static_cast(-1.5) = -1, so subract additional -1
-  // add in SMALL for round-off safety
-  double bsubboxlo[3], bsubboxhi[3];
-  bb.getBoxBounds(bsubboxlo, bsubboxhi);
-
-  // list is extended for ghost atoms or
-  // the list covers just exactly the region
-  if (extend)
-  {
       double coord = bsubboxlo[0] - SMALL_REGION_NEIGHBOR_LIST*extent[0];
       mbinxlo = static_cast<int> ((coord-bboxlo[0])*bininvx);
       if (coord < bboxlo[0]) mbinxlo = mbinxlo - 1;
@@ -460,39 +449,53 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
       mbinz = mbinzhi - mbinzlo + 1;
 
 #ifdef LIGGGHTS_DEBUG
-  printf("setting region neighlist bounding box: maxrad %g [%g, %g] x [%g, %g] x [%g, %g]\n", maxrad, bsubboxlo[0], bsubboxhi[0], bsubboxlo[1], bsubboxhi[1], bsubboxlo[2], bsubboxhi[2]);
-  printf("nbinx %d nbiny %d, nbinz %d\n",nbinx,nbiny,nbinz);
-  printf("mbinxlo: %d, mbinxhi: %d\n", mbinxlo, mbinxhi);
-  printf("mbinylo: %d, mbinyhi: %d\n", mbinylo, mbinyhi);
-  printf("mbinzlo: %d, mbinzhi: %d\n", mbinzlo, mbinzhi);
-  printf("mbinx %d mbiny %d, mbinz %d\n",mbinx,mbiny,mbinz);
+      printf("setting region neighlist bounding box: maxrad %g [%g, %g] x [%g, %g] x [%g, %g]\n", maxrad, bsubboxlo[0], bsubboxhi[0], bsubboxlo[1], bsubboxhi[1], bsubboxlo[2], bsubboxhi[2]);
+      printf("nbinx %d nbiny %d, nbinz %d\n",nbinx,nbiny,nbinz);
+      printf("mbinxlo: %d, mbinxhi: %d\n", mbinxlo, mbinxhi);
+      printf("mbinylo: %d, mbinyhi: %d\n", mbinylo, mbinyhi);
+      printf("mbinzlo: %d, mbinzhi: %d\n", mbinzlo, mbinzhi);
+      printf("mbinx %d mbiny %d, mbinz %d\n",mbinx,mbiny,mbinz);
 #endif
 
-  }
-  else
-  {
+    }
+    else
+    {
       mbinxlo = mbinylo = mbinzlo = 0;
       mbinx = nbinx;
       mbiny = nbiny;
       mbinz = nbinz;
 
 #ifdef LIGGGHTS_DEBUG
-  printf("setting reduced! insertion bounding box: [%g, %g] x [%g, %g] x [%g, %g]\n", bsubboxlo[0], bsubboxhi[0], bsubboxlo[1], bsubboxhi[1], bsubboxlo[2], bsubboxhi[2]);
-  printf("nbinx %d nbiny %d, nbinz %d\n",nbinx,nbiny,nbinz);
-  printf("mbinxlo: %d\n", mbinxlo);
-  printf("mbinylo: %d\n", mbinylo);
-  printf("mbinzlo: %d\n", mbinzlo);
-  printf("mbinx %d mbiny %d, mbinz %d\n",mbinx,mbiny,mbinz);
+      printf("setting reduced! insertion bounding box: [%g, %g] x [%g, %g] x [%g, %g]\n", bsubboxlo[0], bsubboxhi[0], bsubboxlo[1], bsubboxhi[1], bsubboxlo[2], bsubboxhi[2]);
+      printf("nbinx %d nbiny %d, nbinz %d\n",nbinx,nbiny,nbinz);
+      printf("mbinxlo: %d\n", mbinxlo);
+      printf("mbinylo: %d\n", mbinylo);
+      printf("mbinzlo: %d\n", mbinzlo);
+      printf("mbinx %d mbiny %d, mbinz %d\n",mbinx,mbiny,mbinz);
 #endif
 
-  }
+    }
+
+    // final check of number of bins
+    bbin = ((bigint) mbinx) * ((bigint) mbiny) * ((bigint) mbinz);
+
+    if (bbin > max_small_int) { // too many bins
+      // check for failsafe mode
+      // check for repeat - ensure that we run the loop only once!
+      if(failsafe && !repeat)
+      {
+        binsizeinv = 1./ (vectorMax3D(extent) / 100.);
+        repeat = true;
+      } else {
+        printf("ERROR: Too many neighbor bins\n");
+        return false;
+      }
+    }
+    else
+        repeat = false;
+  } while (repeat);
 
   // allocate bins
-  bigint bbin = ((bigint) mbinx) * ((bigint) mbiny) * ((bigint) mbinz);
-  if (bbin > max_small_int) {
-    printf("ERROR: Too many neighbor bins\n");
-    return false;
-  }
   bins.resize(bbin);
 
   // set cell center and stencils for each bin

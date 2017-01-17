@@ -81,7 +81,7 @@ ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int narg, char **arg) :
   cvec(NULL),
   carray(NULL)
 {
-  if (narg != 4 && narg != 6)
+  if (narg < 4 )
     error->compute_error(FLERR,this,"Illegal # of arguments"); 
 
   double cutoff = force->numeric(FLERR,arg[3]);
@@ -92,17 +92,22 @@ ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int narg, char **arg) :
   typelo = new int[ncol];
   typehi = new int[ncol];
 
-  mix = false;
-
   if (narg == 4) {
     ncol = 1;
     typelo[0] = 1;
     typehi[0] = ntypes;
+
   } else if(narg == 6 && strcmp(arg[4],"mix") == 0) { 
-    mix = true;
     ncol = 1;
     typelo[0] = 1;
     typehi[0] = ntypes;
+    if (strcmp(arg[5],"yes") == 0)
+      mix = true;
+    else if (strcmp(arg[5],"no") == 0)
+      mix = false;
+    else
+      error->compute_error(FLERR,this,"valid arguments for 'mix' are 'yes' or 'no'");
+
   } else {
     ncol = 0;
     int iarg = 4;

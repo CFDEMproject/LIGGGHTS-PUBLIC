@@ -1,161 +1,382 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>atom_style command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>atom_style command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>atom_style style args 
-</PRE>
-<UL><LI>style = <I>bond</I> or <I>charge</I> or         <I>ellipsoid</I> or <I>full</I> or <I>line</I> or 	<I>molecular</I> or <I>sphere</I> or <I>granular</I> or <I>bond/gran</I> or <I>tri</I> or <I>hybrid</I> or <I>superquadric</I> or <I>convexhull</I> <I>sph</I> 
-</UL>
-<PRE>  args = none for any style except <I>body</I> and <I>hybrid</I>
-  <I>body</I> args = bstyle bstyle-args
-    bstyle = style of body particles
-    bstyle-args = additional arguments specific to the bstyle
-                  see the <A HREF = "body.html">body</A> doc page for details
-  <I>hybrid</I> args = list of one or more sub-styles, each with their args 
-</PRE>
-<P><B>Examples:</B>
-</P>
-<PRE>atom_style bond
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>atom_style command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/atom_style.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="atom-style-command">
+<span id="index-0"></span><h1>atom_style command<a class="headerlink" href="#atom-style-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>atom_style style args</pre>
+</div>
+<ul class="simple">
+<li>style = <em>bond</em> or <em>charge</em> or         <em>ellipsoid</em> or <em>full</em> or <em>line</em> or      <em>molecular</em> or <em>sphere</em> or <em>granular</em> or <em>bond/gran</em> or <em>tri</em> or <em>hybrid</em> or <em>superquadric</em> or <em>convexhull</em> <em>sph</em></li>
+</ul>
+<pre class="literal-block">
+args = none for any style except <em>body</em> and <em>hybrid</em>
+<em>body</em> args = bstyle bstyle-args
+  bstyle = style of body particles
+  bstyle-args = additional arguments specific to the bstyle
+                see the <tt class="xref doc docutils literal"><span class="pre">body</span></tt> doc page for details
+<em>hybrid</em> args = list of one or more sub-styles, each with their args
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>atom_style bond
 atom_style sphere
 atom_style superquadric (not available yet in the PUBLIC version)
-atom_style hybrid sphere bond  
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Define what style of atoms to use in a simulation.  This determines
+atom_style hybrid sphere bond</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Define what style of atoms to use in a simulation.  This determines
 what attributes are associated with the atoms.  This command must be
-used before a simulation is setup via a <A HREF = "read_data.html">read_data</A>,
-<A HREF = "read_restart.html">read_restart</A>, or <A HREF = "create_box.html">create_box</A>
-command.
-</P>
-<P>Once a style is assigned, it cannot be changed, so use a style general
-enough to encompass all attributes.  E.g. with style <I>bond</I>, angular
+used before a simulation is setup via a <a class="reference internal" href="read_data.html"><em>read_data</em></a>,
+<a class="reference internal" href="read_restart.html"><em>read_restart</em></a>, or <a class="reference internal" href="create_box.html"><em>create_box</em></a>
+command.</p>
+<p>Once a style is assigned, it cannot be changed, so use a style general
+enough to encompass all attributes.  E.g. with style <em>bond</em>, angular
 terms cannot be used or added later to the model.  It is OK to use a
-style more general than needed, though it may be slightly inefficient.
-</P>
-<P>The choice of style affects what quantities are stored by each atom,
+style more general than needed, though it may be slightly inefficient.</p>
+<p>The choice of style affects what quantities are stored by each atom,
 what quantities are communicated between processors to enable forces
 to be computed, and what quantities are listed in the data file read
-by the <A HREF = "read_data.html">read_data</A> command.
-</P>
-<P>These are the additional attributes of each style and the typical
+by the <a class="reference internal" href="read_data.html"><em>read_data</em></a> command.</p>
+<p>These are the additional attributes of each style and the typical
 kinds of physical systems they are used to model.  All styles store
 coordinates, velocities, atom IDs and types.  See the
-<A HREF = "read_data.html">read_data</A>, <A HREF = "create_atoms.html">create_atoms</A>, and
-<A HREF = "set.html">set</A> commands for info on how to set these various
-quantities.
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD ><I>bond</I> </TD><TD > bonds </TD><TD > bead-spring polymers </TD></TR>
-<TR><TD ><I>bond/gran</I> </TD><TD > number of bonds and bond information </TD><TD > granular bond models </TD></TR>
-<TR><TD ><I>charge</I> </TD><TD > charge </TD><TD > atomic system with charges </TD></TR>
-<TR><TD ><I>convexhull</I> </TD><TD > mass, angular velocity, quaternion </TD><TD > granular models </TD></TR>
-<TR><TD ><I>ellipsoid</I> </TD><TD > shape, quaternion, angular momentum </TD><TD > aspherical particles </TD></TR>
-<TR><TD ><I>line</I> </TD><TD > end points, angular velocity </TD><TD > rigid bodies </TD></TR>
-<TR><TD ><I>molecular</I> </TD><TD > bonds, angles, dihedrals, impropers </TD><TD > uncharged molecules </TD></TR>
-<TR><TD ><I>sph</I>  </TD><TD > q(pressure), density </TD><TD > SPH particles </TD></TR>
-<TR><TD ><I>sphere or granular</I> </TD><TD > diameter, mass, angular velocity </TD><TD > granular models </TD></TR>
-<TR><TD ><I>superquadric</I> </TD><TD > semi-axes, roundness/blockiness parameters, mass, angular velocity, quaternion </TD><TD > granular models </TD></TR>
-<TR><TD ><I>tri</I> </TD><TD > corner points, angular momentum </TD><TD > rigid bodies  AWPMD 
-</TD></TR></TABLE></DIV>
-
-<P>IMPORTANT NOTE: It is possible to add some attributes, such as a
-molecule ID, to atom styles that do not have them via the <A HREF = "fix_property_atom.html">fix
-property/atom</A> command.  This command also
+<a class="reference internal" href="read_data.html"><em>read_data</em></a>, <a class="reference internal" href="create_atoms.html"><em>create_atoms</em></a>, and
+<a class="reference internal" href="set.html"><em>set</em></a> commands for info on how to set these various
+quantities.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="62%" />
+<col width="22%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><em>bond</em></td>
+<td>bonds</td>
+<td>bead-spring polymers</td>
+</tr>
+<tr class="row-even"><td><em>bond/gran</em></td>
+<td>number of bonds and bond information</td>
+<td>granular bond models</td>
+</tr>
+<tr class="row-odd"><td><em>charge</em></td>
+<td>charge</td>
+<td>atomic system with charges</td>
+</tr>
+<tr class="row-even"><td><em>convexhull</em></td>
+<td>mass, angular velocity, quaternion</td>
+<td>granular models</td>
+</tr>
+<tr class="row-odd"><td><em>ellipsoid</em></td>
+<td>shape, quaternion, angular momentum</td>
+<td>aspherical particles</td>
+</tr>
+<tr class="row-even"><td><em>line</em></td>
+<td>end points, angular velocity</td>
+<td>rigid bodies</td>
+</tr>
+<tr class="row-odd"><td><em>molecular</em></td>
+<td>bonds, angles, dihedrals, impropers</td>
+<td>uncharged molecules</td>
+</tr>
+<tr class="row-even"><td><em>sph</em></td>
+<td>q(pressure), density</td>
+<td>SPH particles</td>
+</tr>
+<tr class="row-odd"><td><em>sphere or granular</em></td>
+<td>diameter, mass, angular velocity</td>
+<td>granular models</td>
+</tr>
+<tr class="row-even"><td><em>superquadric</em></td>
+<td>semi-axes, roundness/blockiness parameters, mass, angular velocity, quaternion</td>
+<td>granular models</td>
+</tr>
+<tr class="row-odd"><td><em>tri</em></td>
+<td>corner points, angular momentum</td>
+<td>rigid bodies  AWPMD</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">It is possible to add some attributes, such as a
+molecule ID, to atom styles that do not have them via the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> command.  This command also
 allows new custom attributes consisting of extra integer or
-floating-point values to be added to atoms.  See the <A HREF = "fix_property_atom.html">fix
-property/atom</A> doc page for examples of cases
+floating-point values to be added to atoms.  See the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> doc page for examples of cases
 where this is useful and details on how to initialize, access, and
-output the custom values.
-</P>
-<P>All of the styles assign mass to particles on a per-type basis, using
-the <A HREF = "mass.html">mass</A> command, except for <I>sphere or granular</I>
+output the custom values.</p>
+</div>
+<p>All of the styles assign mass to particles on a per-type basis, using
+the <a class="reference internal" href="mass.html"><em>mass</em></a> command, except for <em>sphere or granular</em>
 styles.  They assign mass to individual particles on a per-particle
-basis.
-</P>
-<P>For the <I>sphere</I> style, the particles are spheres and each stores a
-per-particle diameter and mass.  If the diameter > 0.0, the particle
+basis.</p>
+<p>For the <em>sphere</em> style, the particles are spheres and each stores a
+per-particle diameter and mass.  If the diameter &gt; 0.0, the particle
 is a finite-size sphere.  If the diameter = 0.0, it is a point
 particle. This is typically used for granular models. Instead of
-<I>sphere</I>, keyword <I>granular</I> can be used.
-</P>
-<P>For the <I>bond/gran</I> style, the number of granular bonds per atom is
+<em>sphere</em>, keyword <em>granular</em> can be used.</p>
+<p>For the <em>bond/gran</em> style, the number of granular bonds per atom is
 stored, and the information associated to it: the type of each bond,
 the ID of the bonded partner atom and the so-called bond history.
 The bond history is similar to the contact history for granular
 interaction, it stores the internal state of the bond. What exactly
 is stored in this internal state is defined by the granular
-<A HREF = "bond_gran.html">bond style</A> used. There are 2 parameters: The number
+<tt class="xref doc docutils literal"><span class="pre">bond</span> <span class="pre">style</span></tt> used. There are 2 parameters: The number
 of bond types, and the maximum number of bonds that each atom can
 have. For each bond type, the parameters have to be specified via the
-<A HREF = "bond_coeff.html">bond_coeff</A> command (see example <A HREF = "bond_gran.html">here</A> )
-Note that <I>bond/gran</I> is an experimental code which is may not be
-available in your release of LIGGGHTS. An example for the sytnax is given below:
-</P>
-<PRE>atom_style bond/gran n_bondtypes 1 bonds_per_atom 6 
-</PRE>
-<P>For the <I>ellipsoid</I> style, the particles are ellipsoids and each
+<a class="reference internal" href="bond_coeff.html"><em>bond_coeff</em></a> command (see example <tt class="xref doc docutils literal"><span class="pre">here</span></tt> )
+Note that <em>bond/gran</em> is an experimental code which is may not be
+available in your release of LIGGGHTS. An example for the sytnax is given below:</p>
+<div class="highlight-python"><pre>atom_style bond/gran n_bondtypes 1 bonds_per_atom 6</pre>
+</div>
+<p>For the <em>ellipsoid</em> style, the particles are ellipsoids and each
 stores a flag which indicates whether it is a finite-size ellipsoid or
 a point particle.  If it is an ellipsoid, it also stores a shape
 vector with the 3 diamters of the ellipsoid and a quaternion 4-vector
-with its orientation.
-</P>
-<P>For the <I>line</I> style, the particles are idealized line segments and
+with its orientation.</p>
+<p>For the <em>line</em> style, the particles are idealized line segments and
 each stores a per-particle mass and length and orientation (i.e. the
-end points of the line segment).
-</P>
-<P>For the <I>tri</I> style, the particles are planar triangles and each
+end points of the line segment).</p>
+<p>For the <em>tri</em> style, the particles are planar triangles and each
 stores a per-particle mass and size and orientation (i.e. the corner
-points of the triangle).
-</P>
-<HR>
-
-<P>Typically, simulations require only a single (non-hybrid) atom style.
+points of the triangle).</p>
+<hr class="docutils" />
+<p>Typically, simulations require only a single (non-hybrid) atom style.
 If some atoms in the simulation do not have all the properties defined
 by a particular style, use the simplest style that defines all the
 needed properties by any atom.  For example, if some atoms in a
-simulation are charged, but others are not, use the <I>charge</I> style.
-If some atoms have bonds, but others do not, use the <I>bond</I> style.
-</P>
-<P>The only scenario where the <I>hybrid</I> style is needed is if there is no
+simulation are charged, but others are not, use the <em>charge</em> style.
+If some atoms have bonds, but others do not, use the <em>bond</em> style.</p>
+<p>The only scenario where the <em>hybrid</em> style is needed is if there is no
 single style which defines all needed properties of all atoms.  For
 example, if you want dipolar particles which will rotate due to
-torque, you would need to use "atom_style hybrid sphere dipole".  When
+torque, you would need to use &#8220;atom_style hybrid sphere dipole&#8221;.  When
 a hybrid style is used, atoms store and communicate the union of all
-quantities implied by the individual styles.
-</P>
-<P>LIGGGHTS(R)-PUBLIC can be extended with new atom styles as well as new body
-styles; see <A HREF = "Section_modify.html">this section</A>.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>This command cannot be used after the simulation box is defined by a
-<A HREF = "read_data.html">read_data</A> or <A HREF = "create_box.html">create_box</A> command.
-</P>
-<P>The <I>superquadric</I> style is not yet available in the PUBLIC version
-The <I>convexhull</I> style is not yet available in the PUBLIC version
-</P>
-<P>The <I>bond</I>, <I>molecular</I> styles are part of the
-MOLECULAR package.  The <I>line</I> and <I>tri</I> styles are part of the
+quantities implied by the individual styles.</p>
+<p>LIGGGHTS(R)-PUBLIC can be extended with new atom styles as well as new body
+styles; see <a class="reference internal" href="Section_modify.html"><em>this section</em></a>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>This command cannot be used after the simulation box is defined by a
+<a class="reference internal" href="read_data.html"><em>read_data</em></a> or <a class="reference internal" href="create_box.html"><em>create_box</em></a> command.</p>
+<p>The <em>superquadric</em> style is not yet available in the PUBLIC version
+The <em>convexhull</em> style is not yet available in the PUBLIC version</p>
+<p>The <em>bond</em>, <em>molecular</em> styles are part of the
+MOLECULAR package.  The <em>line</em> and <em>tri</em> styles are part of the
 ASPHERE package.  They are
-only enabled if LIGGGHTS(R)-PUBLIC was built with that package.  See the <A HREF = "Section_start.html#start_3">Making
-LIGGGHTS(R)-PUBLIC</A> section for more info.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "read_data.html">read_data</A>, <A HREF = "pair_style.html">pair_style</A>
-</P>
-<P><B>Default:</B> none
-</P>
-</HTML>
+only enabled if LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="read_data.html"><em>read_data</em></a>, <a class="reference internal" href="pair_style.html"><em>pair_style</em></a></p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

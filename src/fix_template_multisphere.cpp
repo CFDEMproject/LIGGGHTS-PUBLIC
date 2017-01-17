@@ -212,7 +212,7 @@ FixTemplateMultisphere::FixTemplateMultisphere(LAMMPS *lmp, int narg, char **arg
     }
 
     // check if type has been defined
-    if(type_ < 1)
+    if(!lmp->wb && type_ < 1)
         error->fix_error(FLERR,this,"have to provide a type >=1");
 
     if((mass_set_ && !moi_set_) || (!mass_set_ && moi_set_))
@@ -275,6 +275,8 @@ void FixTemplateMultisphere::post_create()
       
   }
 
+  calc_volumeweight();
+
   print_info();
 }
 
@@ -304,13 +306,13 @@ void FixTemplateMultisphere::init()
         for(int j = i+1; j < n_fixes; j++)
         {
             ftms_j = static_cast<FixTemplateMultisphere*>(modify->find_fix_style_strict(style,j));
-            if(ftms_j != ftms_i && type_i == ftms_j->type())
+            if(!lmp->wb && ftms_j != ftms_i && type_i == ftms_j->type())
                 error->fix_error(FLERR,this,"multisphere template types have to be unique");
         }
     }
 
     // types are consecutive if no double usage and min/max is met
-    if(type_min != 1 || type_max != n_fixes)
+    if(!lmp->wb &&  (type_min != 1 || type_max != n_fixes))
         error->fix_error(FLERR,this,"multisphere template types have to be consecutive starting from 1");
 
     FixMultisphere *fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere", 0));
@@ -327,49 +329,47 @@ void FixTemplateMultisphere::calc_volumeweight()
 {
     double x_try[3],distSqr,n_hits;
 
-    int *hits_j = new int[nspheres];
-    int *hits_only_j = new int[nspheres];
+    bool *hits_j = new bool[nspheres];
 
-    vectorZeroizeN(hits_j,nspheres);
-    vectorZeroizeN(hits_only_j,nspheres);
+    vectorZeroizeN(volumeweight_,nspheres);
 
     // volumeweight_ = 0.5 + 0.5 * hits only in j / hits in j
 
+    int hits_tot = 0;
     for(int i = 0; i < ntry; i++)
     {
         generate_xtry(x_try);
         n_hits = 0;
+        vectorInitializeN(hits_j,nspheres,false);
 
         for(int j = 0; j < nspheres; j++)
         {
             distSqr = dist_sqr(j,x_try);
             if(distSqr < r_sphere[j]*r_sphere[j])
             {
-                hits_j[j]++;
+                hits_j[j] = true;
                 n_hits++;
             }
         }
 
-        if(n_hits == 1)
+        for(int j = 0; j < nspheres; j++)
         {
-            for(int j = 0; j < nspheres; j++)
-            {
-                distSqr = dist_sqr(j,x_try);
-                if(distSqr < r_sphere[j]*r_sphere[j])
-                {
-                    hits_only_j[j]++;
-                    n_hits++;
-                }
-            }
+            if(hits_j[j])
+                volumeweight_[j] += 1./static_cast<double>(n_hits);
         }
+
+        if (n_hits > 0)
+            hits_tot++;
     }
 
     // calculate volume weight
-    for(int j = 0; j < nspheres; j++)
-        volumeweight_[j] = 0.5 + 0.5 * hits_only_j[j]/hits_j[j];
+    if (hits_tot > 0) {
+        const double hits_tot_inv = 1./static_cast<double>(hits_tot);
+        for(int j = 0; j < nspheres; j++)
+            volumeweight_[j] *= hits_tot_inv;
+    }
 
     delete []hits_j;
-    delete []hits_only_j;
 }
 
 /* ----------------------------------------------------------------------
@@ -550,6 +550,7 @@ void FixTemplateMultisphere::randomize_single()
   for(int j = 0; j < nspheres; j++)
   {
       pti_m->radius_ins[j] = r_sphere[j];
+      pti_m->volumeweight[j] = volumeweight_[j];
       vectorCopy3D(x_sphere[j],pti_m->x_ins[j]);
       vectorCopy3D(displace_[j],pti_m->displace[j]);
   }
@@ -621,6 +622,7 @@ void FixTemplateMultisphere::randomize_ptilist(int n_random,int distribution_gro
           for(int j = 0; j < nspheres; j++)
           {
               pti_m->radius_ins[j] = r_sphere[j];
+              pti_m->volumeweight[j] = volumeweight_[j];
               vectorCopy3D(x_sphere[j],pti_m->x_ins[j]);
               vectorCopy3D(displace_[j],pti_m->displace[j]);
           }

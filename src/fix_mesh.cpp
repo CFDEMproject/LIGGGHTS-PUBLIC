@@ -305,7 +305,7 @@ void FixMesh::handle_exclusion_list()
 FixMesh::~FixMesh()
 {
     delete mesh_;
-    if (element_exclusion_list_ && 0 == comm->me)
+    if (element_exclusion_list_)
         fclose(element_exclusion_list_);
 
     if(exclusion_list_)
@@ -536,7 +536,7 @@ void FixMesh::final_integrate()
     
     mesh_->reverseComm();
 
-    bool has_per_element_heattransfer = (0 == strcmp("mesh/surface/heattransfer",style));
+    bool has_per_element_heattransfer = (0 == strcmp("mesh/surface",style) && 0 == strcmp("heattransfer", style));
 
     if(!has_per_element_heattransfer && mass_temperature_ > 0. && mesh_->prop().getGlobalProperty< ScalarContainer<double> >("Temp"))
     {

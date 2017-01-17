@@ -57,6 +57,8 @@ namespace LAMMPS_NS {
            // per-particle displace in body coordinates
            double **displace;
 
+           double *volumeweight;
+
            // vector to center of bounding sphere in body coos
            double xcm_to_xbound[3];
 

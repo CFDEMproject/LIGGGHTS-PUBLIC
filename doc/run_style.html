@@ -1,114 +1,241 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>run_style command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>run_style command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>run_style style args 
-</PRE>
-<UL><LI>style = <I>verlet</I> or or <I>respa</I> or 
-
-<PRE>  <I>verlet</I> args = none
-  <I>respa</I> args = N n1 n2 ... keyword values ...
-    N = # of levels of rRESPA
-    n1, n2, ... = loop factor between rRESPA levels (N-1 values)
-    zero or more keyword/value pairings may be appended to the loop factors
-    keyword = <I>bond</I> or
-	      <I>pair</I> or <I>inner</I> or <I>middle</I> or <I>outer</I>
-      <I>bond</I> value = M
-        M = which level (1-N) to compute bond forces in
-      <I>pair</I> value = M
-        M = which level (1-N) to compute pair forces in
-      <I>inner</I> values = M cut1 cut2
-        M = which level (1-N) to compute pair inner forces in
-	cut1 = inner cutoff between pair inner and
-	       pair middle or outer  (distance units)
-	cut2 = outer cutoff between pair inner and
-	       pair middle or outer  (distance units)
-      <I>middle</I> values = M cut1 cut2
-        M = which level (1-N) to compute pair middle forces in
-	cut1 = inner cutoff between pair middle and pair outer (distance units)
-	cut2 = outer cutoff between pair middle and pair outer (distance units)
-      <I>outer</I> value = M
-        M = which level (1-N) to compute pair outer forces in  
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>run_style verlet
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>run_style command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/run_style.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="run-style-command">
+<span id="index-0"></span><h1>run_style command<a class="headerlink" href="#run-style-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>run_style style args</pre>
+</div>
+<ul class="simple">
+<li>style = <em>verlet</em> or or <em>respa</em> or</li>
+</ul>
+<pre class="literal-block">
+<em>verlet</em> args = none
+<em>respa</em> args = N n1 n2 ... keyword values ...
+  N = # of levels of rRESPA
+  n1, n2, ... = loop factor between rRESPA levels (N-1 values)
+  zero or more keyword/value pairings may be appended to the loop factors
+  keyword = <em>bond</em> or
+         <em>pair</em> or <em>inner</em> or <em>middle</em> or <em>outer</em>
+    <em>bond</em> value = M
+      M = which level (1-N) to compute bond forces in
+    <em>pair</em> value = M
+      M = which level (1-N) to compute pair forces in
+    <em>inner</em> values = M cut1 cut2
+      M = which level (1-N) to compute pair inner forces in
+   cut1 = inner cutoff between pair inner and
+          pair middle or outer  (distance units)
+   cut2 = outer cutoff between pair inner and
+          pair middle or outer  (distance units)
+    <em>middle</em> values = M cut1 cut2
+      M = which level (1-N) to compute pair middle forces in
+   cut1 = inner cutoff between pair middle and pair outer (distance units)
+   cut2 = outer cutoff between pair middle and pair outer (distance units)
+    <em>outer</em> value = M
+      M = which level (1-N) to compute pair outer forces in
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>run_style verlet
 run_style respa 4 2 2 2 bond 1 dihedral 2 pair 3 kspace 4
-run_style respa 4 2 2 2 bond 1 dihedral 2 inner 3 5.0 6.0 outer 4 kspace 4 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Choose the style of time integrator used for molecular dynamics
-simulations performed by LIGGGHTS(R)-PUBLIC.
-</P>
-<P>The <I>verlet</I> style is a standard velocity-Verlet integrator.
-</P>
-<HR>
-
-<P>The <I>respa</I> style implements the rRESPA multi-timescale integrator
-<A HREF = "#Tuckerman">(Tuckerman)</A> with N hierarchical levels, where level 1 is
+run_style respa 4 2 2 2 bond 1 dihedral 2 inner 3 5.0 6.0 outer 4 kspace 4</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Choose the style of time integrator used for molecular dynamics
+simulations performed by LIGGGHTS(R)-PUBLIC.</p>
+<p>The <em>verlet</em> style is a standard velocity-Verlet integrator.</p>
+<hr class="docutils" />
+<p>The <em>respa</em> style implements the rRESPA multi-timescale integrator
+<a class="reference internal" href="#tuckerman"><em>(Tuckerman)</em></a> with N hierarchical levels, where level 1 is
 the innermost loop (shortest timestep) and level N is the outermost
 loop (largest timestep).  The loop factor arguments specify what the
 looping factor is between levels.  N1 specifies the number of
 iterations of level 1 for a single iteration of level 2, N2 is the
 iterations of level 2 per iteration of level 3, etc.  N-1 looping
-parameters must be specified.
-</P>
-<P>The <A HREF = "timestep.html">timestep</A> command sets the timestep for the
+parameters must be specified.</p>
+<p>The <a class="reference internal" href="timestep.html"><em>timestep</em></a> command sets the timestep for the
 outermost rRESPA level.  Thus if the example command above for a
 4-level rRESPA had an outer timestep of 4.0 fmsec, the inner timestep
 would be 8x smaller or 0.5 fmsec.  All other LIGGGHTS(R)-PUBLIC commands that
-specify number of timesteps (e.g. <A HREF = "neigh_modify.html">neigh_modify</A>
-parameters, <A HREF = "dump.html">dump</A> every N timesteps, etc) refer to the
-outermost timesteps.
-</P>
-<P>The rRESPA keywords enable you to specify at what level of the
+specify number of timesteps (e.g. <a class="reference internal" href="neigh_modify.html"><em>neigh_modify</em></a>
+parameters, <a class="reference internal" href="dump.html"><em>dump</em></a> every N timesteps, etc) refer to the
+outermost timesteps.</p>
+<p>The rRESPA keywords enable you to specify at what level of the
 hierarchy various forces will be computed.  If not specified, the
 defaults are that bond forces are computed at level 1 (innermost
 loop), angle forces are computed where bond forces are, dihedral
 forces are computed where angle forces are, improper forces are
 computed where dihedral forces are, pair forces are computed at the
 outermost level, and kspace forces are computed where pair forces are.
-The inner, middle, outer forces have no defaults.
-</P>
-<P>The <I>inner</I> and <I>middle</I> keywords take additional arguments for
+The inner, middle, outer forces have no defaults.</p>
+<p>The <em>inner</em> and <em>middle</em> keywords take additional arguments for
 cutoffs that are used by the pairwise force computations.  If the 2
-cutoffs for <I>inner</I> are 5.0 and 6.0, this means that all pairs up to
+cutoffs for <em>inner</em> are 5.0 and 6.0, this means that all pairs up to
 6.0 apart are computed by the inner force.  Those between 5.0 and 6.0
 have their force go ramped to 0.0 so the overlap with the next regime
 (middle or outer) is smooth.  The next regime (middle or outer) will
 compute forces for all pairs from 5.0 outward, with those from 5.0 to
-6.0 having their value ramped in an inverse manner.
-</P>
-<P>Only some pair potentials support the use of the <I>inner</I> and <I>middle</I>
-and <I>outer</I> keywords.  If not, only the <I>pair</I> keyword can be used
+6.0 having their value ramped in an inverse manner.</p>
+<p>Only some pair potentials support the use of the <em>inner</em> and <em>middle</em>
+and <em>outer</em> keywords.  If not, only the <em>pair</em> keyword can be used
 with that pair style, meaning all pairwise forces are computed at the
 same rRESPA level.  See the doc pages for individual pair styles for
-details.
-</P>
-<P>When using rRESPA (or for any MD simulation) care must be taken to
+details.</p>
+<p>When using rRESPA (or for any MD simulation) care must be taken to
 choose a timestep size(s) that insures the Hamiltonian for the chosen
 ensemble is conserved.  For the constant NVE ensemble, total energy
-must be conserved.  Unfortunately, it is difficult to know <I>a priori</I>
+must be conserved.  Unfortunately, it is difficult to know <em>a priori</em>
 how well energy will be conserved, and a fairly long test simulation
 (~10 ps) is usually necessary in order to verify that no long-term
-drift in energy occurs with the trial set of parameters.
-</P>
-<P>With that caveat, a few rules-of-thumb may be useful in selecting
-<I>respa</I> settings.  The following applies mostly to biomolecular
+drift in energy occurs with the trial set of parameters.</p>
+<p>With that caveat, a few rules-of-thumb may be useful in selecting
+<em>respa</em> settings.  The following applies mostly to biomolecular
 simulations using the CHARMM or a similar all-atom force field, but
 the concepts are adaptable to other problems.  Without SHAKE, bonds
 involving hydrogen atoms exhibit high-frequency vibrations and require
@@ -118,37 +245,94 @@ impropers, and dihedrals can be computed on this innermost 0.5 fmsec
 step.  The outermost timestep cannot be greater than 4.0 fmsec without
 risking energy drift.  Smooth switching of forces between the levels
 of the rRESPA hierarchy is also necessary to avoid drift, and a 1-2
-angstrom "healing distance" (the distance between the outer and inner
+angstrom &#8220;healing distance&#8221; (the distance between the outer and inner
 cutoffs) works reasonably well.  We thus recommend the following
-settings for use of the <I>respa</I> style without SHAKE in biomolecular
-simulations:
-</P>
-<PRE>timestep  4.0
-run_style respa 4 2 2 2 inner 2 4.5 6.0 middle 3 8.0 10.0 outer 4 
-</PRE>
-<P>With these settings, users can expect good energy conservation and
-roughly a 2.5 fold speedup over the <I>verlet</I> style with a 0.5 fmsec
-timestep.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>Whenever using rRESPA, the user should experiment with trade-offs in
+settings for use of the <em>respa</em> style without SHAKE in biomolecular
+simulations:</p>
+<div class="highlight-python"><pre>timestep  4.0
+run_style respa 4 2 2 2 inner 2 4.5 6.0 middle 3 8.0 10.0 outer 4</pre>
+</div>
+<p>With these settings, users can expect good energy conservation and
+roughly a 2.5 fold speedup over the <em>verlet</em> style with a 0.5 fmsec
+timestep.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Whenever using rRESPA, the user should experiment with trade-offs in
 speed and accuracy for their system, and verify that they are
-conserving energy to adequate precision.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "timestep.html">timestep</A>, <A HREF = "run.html">run</A>
-</P>
-<P><B>Default:</B>
-</P>
-<PRE>run_style verlet 
-</PRE>
-<HR>
+conserving energy to adequate precision.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="timestep.html"><em>timestep</em></a>, <a class="reference internal" href="run.html"><em>run</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>run_style verlet</pre>
+</div>
+<hr class="docutils" />
+<p id="tuckerman"><strong>(Tuckerman)</strong> Tuckerman, Berne and Martyna, J Chem Phys, 97, p 1990
+(1992).</p>
+</div>
+</div>
 
-<A NAME = "Tuckerman"></A>
 
-<P><B>(Tuckerman)</B> Tuckerman, Berne and Martyna, J Chem Phys, 97, p 1990
-(1992).
-</P>
-</HTML>
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

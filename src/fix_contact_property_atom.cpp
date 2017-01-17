@@ -45,11 +45,11 @@
 #include <stdio.h>
 #include "fix_contact_property_atom.h"
 #include "fix_property_atom.h"
+#include "pair_gran.h"
 #include "atom.h"
 #include "comm.h"
 #include "neighbor.h"
 #include "neigh_list.h"
-#include "pair_gran.h"
 #include "force.h"
 #include "pair.h"
 #include "update.h"

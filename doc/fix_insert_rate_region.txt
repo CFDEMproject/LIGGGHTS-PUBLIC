@@ -15,7 +15,7 @@ fix ID group-ID insert/rate/region   seed seed_value distributiontemplate dist-I
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 insert/pack and insert/stream = style names of these fix commands :l
 seed = obligatory keyword :l
-seed_value = random # seed (positive integer) :l
+seed_value = random # seed (prime number greater 10000) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
@@ -33,8 +33,7 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
     pr = particle inseration rate (particles/time units)
   {massrate} values = mr
     mr = mass inseration rate (mass/time units)
-  {insert_every} value = once or ie
-    once = value to signalise that isertion takes place only once (the step after the fix is issued)
+  {insert_every} value = ie
     ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
   {start} value = ts
     ts = time-step at which insertion should start (positive integer larger than current time-step)
@@ -85,7 +84,7 @@ rate_region keywords = {region} or {ntry_mc} :l
 
 [Examples:]
 
-fix ins all insert/rate/region seed 1001 distributiontemplate pdd1 nparticles 1000 particlerate 5000 insert_every 1000 overlapcheck yes region mysphere ntry_mc 10000 :pre
+fix ins all insert/rate/region seed 123457 distributiontemplate pdd1 nparticles 1000 particlerate 5000 insert_every 1000 overlapcheck yes region mysphere ntry_mc 10000 :pre
 
 [General description:]
 

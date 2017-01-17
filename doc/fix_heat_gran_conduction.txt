@@ -93,6 +93,15 @@ This area correction is performed by scaling the contact area with
 The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz
 interaction.
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command should lead to
+statistically equivalent dynamics and system state.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
+
 [Output info:]
 
 You can visualize the heat sources by accessing f_heatSource\[0\], and the

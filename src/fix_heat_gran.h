@@ -69,7 +69,7 @@ namespace LAMMPS_NS {
     virtual void cpl_evaluate(class ComputePairGranLocal *);
     virtual void register_compute_pair_local(class ComputePairGranLocal *);
     virtual void unregister_compute_pair_local(class ComputePairGranLocal *);
-    void updatePtrs();
+    virtual void updatePtrs();
 
   protected:
     class ComputePairGranLocal *cpl;

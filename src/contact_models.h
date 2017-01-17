@@ -78,7 +78,7 @@ namespace ContactModels
 
   template
   <
-    int M,
+    int M = NORMAL_OFF,
     int T = TANGENTIAL_OFF,
     int C = COHESION_OFF,
     int R = ROLLING_OFF,
@@ -110,7 +110,7 @@ namespace ContactModels
     inline void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
 
     inline void registerSettings(Settings & settings);
-    inline void postSettings();
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb);
     inline void connectToProperties(PropertyRegistry & registry);
     inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata);
     inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
@@ -127,7 +127,7 @@ namespace ContactModels
     inline void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void registerSettings(Settings & settings);
-    inline void postSettings();
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb);
     inline void connectToProperties(PropertyRegistry & registry);
     inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     inline void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
@@ -154,6 +154,7 @@ namespace ContactModels
     void beginPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     void endPass(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     void registerSettings(Settings & settings);
+    void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb);
     void connectToProperties(PropertyRegistry & registry);
     void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces);
     void surfacesClose(SurfacesCloseData & scdata, ForceData & i_forces, ForceData & j_forces);
@@ -182,9 +183,10 @@ namespace ContactModels
 
     Factory();
     Factory(const Factory &){}
+    //Factory(const Factory &){}
   public:
     static Factory & instance();
-    static int64_t select(int & narg, char ** & args);
+    static int64_t select(int & narg, char ** & args,Custom_contact_models ccm);
 
     void addNormalModel(const std::string & name, int identifier);
     void addTangentialModel(const std::string & name, int identifier);
@@ -199,10 +201,10 @@ namespace ContactModels
     int getSurfaceModelId(const std::string & name);
 
   private:
-    int64_t select_model(int & narg, char ** & args);
+    int64_t select_model(int & narg, char ** & args, Custom_contact_models ccm);
   };
 
-  class ContactModelBase : private Pointers{
+  class ContactModelBase : private Pointers {
    public:
 
     bool is_wall()
@@ -275,10 +277,13 @@ namespace ContactModels
       rollingModel.registerSettings(settings);
     }
 
-    inline void postSettings()
+    inline void postSettings(IContactHistorySetup * hsetup)
     {
-      surfaceModel.postSettings();
-      normalModel.postSettings();
+      surfaceModel.postSettings(hsetup, this);
+      normalModel.postSettings(hsetup, this);
+      cohesionModel.postSettings(hsetup, this);
+      tangentialModel.postSettings(hsetup, this);
+      rollingModel.postSettings(hsetup, this);
     }
 
     inline void connectToProperties(PropertyRegistry & registry)
@@ -371,6 +376,23 @@ namespace ContactModels
   };
 
   template<>
+  class NormalModel<NORMAL_OFF> : protected Pointers
+  {
+  public:
+    static const int MASK = 0;
+
+    NormalModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *c) : Pointers(lmp) {}
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void connectToProperties(PropertyRegistry&){}
+    void registerSettings(Settings&){}
+    void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
+    inline double stressStrainExponent() { return 0.0; }
+  };
+
+  template<>
   class TangentialModel<TANGENTIAL_OFF> : protected Pointers
   {
   public:
@@ -383,6 +405,7 @@ namespace ContactModels
     void registerSettings(Settings&){}
     void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
     void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
   };
 
   template<>
@@ -396,6 +419,7 @@ namespace ContactModels
     void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     void connectToProperties(PropertyRegistry&){}
     void registerSettings(Settings&){}
+    void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb){}
     void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
     void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
   };
@@ -413,6 +437,7 @@ namespace ContactModels
     void registerSettings(Settings&){}
     void surfacesIntersect(SurfacesIntersectData&, ForceData&, ForceData&){}
     void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
   };
 
 }

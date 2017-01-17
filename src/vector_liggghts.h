@@ -442,6 +442,14 @@ inline void vectorAdd3D(const double *v1, const double *v2, double *result)
   result[2]=v1[2]+v2[2];
 }
 
+inline void vectorAdd4D(double *v1, const double *v2)
+{
+  v1[0]+=v2[0];
+  v1[1]+=v2[1];
+  v1[2]+=v2[2];
+  v1[3]+=v2[3];
+}
+
 inline void vectorAddN(double *v1, const double *v2, int n)
 {
   for(int i = 0; i < n; i++)
@@ -459,6 +467,14 @@ inline void vectorAddMultiple3D(const double *v1, double v2factor, const double 
   result[0]=v1[0]+v2factor*v2[0];
   result[1]=v1[1]+v2factor*v2[1];
   result[2]=v1[2]+v2factor*v2[2];
+}
+
+inline void vectorSubtract4D(const double *v1,const double *v2, double *result)
+{
+  result[0]=v1[0]-v2[0];
+  result[1]=v1[1]-v2[1];
+  result[2]=v1[2]-v2[2];
+  result[3]=v1[3]-v2[3];
 }
 
 inline void vectorSubtract3D(const double *v1,const double *v2, double *result)
@@ -608,6 +624,30 @@ inline bool isUnitQuat4D(double *q)
         q[2] == 0. &&
         q[3] == 0.
     );
+}
+
+inline void quatMult4D(double *q, double *p, double *result)
+{
+    result[0] = q[0]*p[0] - q[1]*p[1] - q[2]*p[2] - q[3]*p[3];
+    result[1] = q[0]*p[1] + q[1]*p[0] + q[2]*p[3] - q[3]*p[2];
+    result[2] = q[0]*p[2] - q[1]*p[3] + q[2]*p[0] + q[3]*p[1];
+    result[3] = q[0]*p[3] + q[1]*p[2] - q[2]*p[1] + q[3]*p[0];
+}
+
+inline void quatMult4D(double *q, double *p)
+{
+    double tmp[4];
+    quatMult4D(q, p, tmp);
+    vectorCopy4D(tmp, q);
+}
+
+inline void quatInverse4D(double *q, double *result)
+{
+    double invNorm = 1.0/vectorMag4DSquared(q);
+    result[0] =  q[0]*invNorm;
+    result[1] = -q[1]*invNorm;
+    result[2] = -q[2]*invNorm;
+    result[3] = -q[3]*invNorm;
 }
 
 inline void normalize_bary(double *v)

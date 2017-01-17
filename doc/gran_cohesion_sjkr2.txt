@@ -57,6 +57,18 @@ appropriate for the Hookean styles.
 
 It is not available for "atom_style"_atom_style.html superquadric
 
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command might lead to
+statistically different dynamics and system state.
+To the best knowledge of the developers, the 
+cross-influence between this command and coarse-graining
+is unknown.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
+
 [Default:]
 
 {tangential_reduce} = 'off'

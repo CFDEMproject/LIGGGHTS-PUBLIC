@@ -49,17 +49,13 @@ DumpStyle(local/gran/vtk,DumpLocalGranVTK)
 #define LMP_DUMP_LOCAL_GRAN_VTK_H
 
 #include "dump.h"
+#include "dump_local_gran.h"
 #include <map>
 #include <set>
 #include <string>
 
 #include <vtkSmartPointer.h>
-#include <vtkPoints.h>
-#include <vtkCellArray.h>
-
-class vtkAbstractArray;
-class vtkRectilinearGrid;
-class vtkUnstructuredGrid;
+#include <vtkMultiBlockDataSet.h>
 
 namespace LAMMPS_NS {
 
@@ -89,29 +85,19 @@ class DumpLocalGranVTK : public Dump {
 
   int nevery;                // dump frequency for output
   char *label;               // string for dump file header 
-  int iregion;               // -1 if no region, else which region
-  char *idregion;            // region ID
+  DumpLocalGran *dumpLocalGran; // class that generates the vtk output
 
   int vtk_file_format;       // which vtk file format to write (vtk, vtp, vtu ...)
 
-  int nchoose;               // # of selected local datums
-  int maxlocal;              // size of atom selection and variable arrays
-
   // private methods
-
-  class ComputePairGranLocal *cpgl_;
 
   virtual void init_style();
   virtual void write_header(bigint);
   int count();
-  void pack(int *);
+  void pack(int *) {};
   virtual void write_data(int, double *);
   bigint memory_usage();
 
-  int parse_fields(int, char **);
-  int add_compute(char *);
-  int add_fix(char *);
-  int add_variable(char *);
   virtual int modify_param(int, char **);
 
   typedef void (DumpLocalGranVTK::*FnPtrHeader)(bigint);
@@ -124,46 +110,14 @@ class DumpLocalGranVTK : public Dump {
   void write_vtp(int, double *);
   void write_vtu(int, double *);
 
-  void define_properties();
-  typedef void (DumpLocalGranVTK::*FnPtrPack)(int);
-  
-  std::map<int, FnPtrPack> pack_choice;  // ptrs to pack functions
-  std::map<int, int> vtype;              // data type for each attribute
-  std::map<int, std::string> name;       // label for each attribute
-  std::set<int> vector_set;              // set of vector attributes; defines which are vectors
-
-  // vtk data containers
-  vtkSmartPointer<vtkPoints> points;                            // list of points, 2 points for each line cell
-  vtkSmartPointer<vtkCellArray> lineCells;                      // list of line cells
-  std::map<int, vtkSmartPointer<vtkAbstractArray> > myarrays;   // list of a list of arrays that is presents data for each atom (x, v,...)
-                                                                // is then added to the point cells upon writing
-  int n_calls_;
+  // vtk data container
+  vtkSmartPointer<vtkMultiBlockDataSet> mbSet;
 
   char *filecurrent;
   char *parallelfilecurrent;
   char *multiname_ex;
 
   void setFileCurrent();
-  void buf2arrays(int, double *); // transfer data from buf array to vtk arrays
-  void reset_vtk_data_containers();
-
-  // customize by adding a method prototype
-  void pack_x1(int);
-  void pack_x2(int);
-  void pack_v1(int);
-  void pack_v2(int);
-  void pack_id1(int);
-  void pack_id2(int);
-  void pack_id3(int);
-  void pack_f(int);
-  void pack_fn(int);
-  void pack_ft(int);
-  void pack_torque(int);
-  void pack_torquen(int);
-  void pack_torquet(int);
-  void pack_area(int);
-  void pack_delta(int);
-  void pack_heat(int);
 };
 
 }

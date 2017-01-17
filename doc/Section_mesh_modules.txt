@@ -1,0 +1,23 @@
+"Previous Section"_Section_gran_models.html - "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Section_packages.html :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+6. Mesh modules :h3
+
+This section describes what granular models can be used along with
+"fix mesh/surface"_fix_mesh_surface.html :
+
+
+
+module commands :h4
+
+Click on the style itself for a full description:
+
+"liquidtransfer"_mesh_module_liquidtransfer.html,
+"servo"_mesh_module_servo.html,
+"stress"_mesh_module_stress.html :tb(c=4,ea=c)
+

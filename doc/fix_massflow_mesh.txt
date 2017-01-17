@@ -77,6 +77,14 @@ flow conditions.
 The diameter, position and velocity of the particles can be written into a file using the {file} keyword,
 by specifying a filename.
 
+IMPORTANT NOTE: When using fix massflow/mesh with multispherical particles,
+the evaluation of the mass passing the mesh is done for each sphere within the
+multisphere particle. Each sphere counts as a fraction of a particle, i.e. 
+floating point number might evolve for the number of particles passing the
+mesh if not all spheres belonging to one multisphere particle pass the mesh.
+The weight for each sphere is calculated taking into account the possible overlap 
+between spheres in a multisphere particle.
+
 If the {screen} keyword is used, output by this fix to the screen and
 logfile can be turned on or off as desired.
 
@@ -103,7 +111,7 @@ can also be accessed by various "output commands"_Section_howto.html#howto_8.
 
 [Restrictions:]
 
-Currently, this feature does not support multi-sphere particles.
+none
 
 [Related commands:]
 

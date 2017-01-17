@@ -118,16 +118,17 @@ class Neighbor : protected Pointers {
   Neighbor(class LAMMPS *);
   virtual ~Neighbor();
   virtual void init();
-  int request(void *);              // another class requests a neighbor list
-  void print_lists_of_lists();      // debug print out
-  int decide();                     // decide whether to build or not
-  virtual int check_distance();     // check max distance moved since last build
-  void setup_bins();                // setup bins based on box and cutoff
-  virtual void build(int topoflag=1);  // create all neighbor lists (pair,bond)
-  virtual void build_topology();    // create all topology neighbor lists
-  void build_one(int);              // create a single neighbor list
-  void set(int, char **);           // set neighbor style and skin distance
-  void modify_params(int, char**);  // modify parameters that control builds
+  int request(void *);                          // another class requests a neighbor list
+  void print_lists_of_lists();                  // debug print out
+  int decide();                                 // decide whether to build or not
+  virtual int check_distance();                 // check max distance moved since last build
+  void setup_bins();                            // setup bins based on box and cutoff
+  virtual void build(int topoflag=1);           // create all neighbor lists (pair,bond)
+  virtual void build_topology();                // create all topology neighbor lists
+  void build_one(int);                          // create a single neighbor list
+  void set(int narg, char **arg, bool auto_set_bin = false); // set neighbor style and skin distance
+  void modify_params(int, char**);              // modify parameters that control builds
+  void modify_params_restricted(int, char**);   // modify parameters that control builds (restricted version for neigh_settings)
   bigint memory_usage();
   int exclude_setting();
   int neigh_once(){return build_once;} 

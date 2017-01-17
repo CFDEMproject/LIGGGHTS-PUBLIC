@@ -1,52 +1,184 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>compute command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>compute command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>compute ID group-ID style args 
-</PRE>
-<UL><LI>ID = user-assigned name for the computation
-<LI>group-ID = ID of the group of atoms to perform the computation on
-<LI>style = one of a list of possible style names (see below)
-<LI>args = arguments used by a particular style 
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>compute 1 all temp
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/compute.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compute-command">
+<span id="index-0"></span><h1>compute command<a class="headerlink" href="#compute-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute ID group-ID style args</pre>
+</div>
+<ul class="simple">
+<li>ID = user-assigned name for the computation</li>
+<li>group-ID = ID of the group of atoms to perform the computation on</li>
+<li>style = one of a list of possible style names (see below)</li>
+<li>args = arguments used by a particular style</li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute 1 all temp
 compute newtemp flow temp/partial 1 1 0
-compute 3 all ke/atom 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Define a computation that will be performed on a group of atoms.
+compute 3 all ke/atom</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Define a computation that will be performed on a group of atoms.
 Quantities calculated by a compute are instantaneous values, meaning
 they are calculated from information about atoms on the current
 timestep or iteration, though a compute may internally store some
 information about a previous state of the system.  Defining a compute
 does not perform a computation.  Instead computes are invoked by other
 LIGGGHTS(R)-PUBLIC commands as needed, e.g. to calculate  dump file output.
-See this <A HREF = "Section_howto.html#howto_8">howto section</A> for a summary of
-various LIGGGHTS(R)-PUBLIC output options, many of which involve computes.
-</P>
-<P>The full list of fixes defined in LIGGGHTS(R)-PUBLIC is on <A HREF = "Section_commands.html#cmd_5">this
-page</A>.
-</P>
-<P>The ID of a compute can only contain alphanumeric characters and
-underscores.
-</P>
-<HR>
-
-<P>Computes calculate one of three styles of quantities: global,
+See this <a class="reference internal" href="Section_howto.html#howto-8"><em>howto section</em></a> for a summary of
+various LIGGGHTS(R)-PUBLIC output options, many of which involve computes.</p>
+<p>The full list of fixes defined in LIGGGHTS(R)-PUBLIC is on <em class="xref std std-ref">this page</em>.</p>
+<p>The ID of a compute can only contain alphanumeric characters and
+underscores.</p>
+<hr class="docutils" />
+<p>Computes calculate one of three styles of quantities: global,
 per-atom, or local.  A global quantity is one or more system-wide
 values, e.g. the temperature of the system.  A per-atom quantity is
 one or more values per atom, e.g. the kinetic energy of each atom.
@@ -54,103 +186,155 @@ Per-atom values are set to 0.0 for atoms not in the specified compute
 group.  Local quantities are calculated by each processor based on the
 atoms it owns, but there may be zero or more per atom, e.g. a list of
 bond distances.  Computes that produce per-atom quantities have the
-word "atom" in their style, e.g. <I>ke/atom</I>.  Computes that produce
-local quantities have the word "local" in their style,
-e.g. <I>bond/local</I>.  Styles with neither "atom" or "local" in their
-style produce global quantities.
-</P>
-<P>Note that a single compute produces either global or per-atom or local
-quantities, but never more than one of these.
-</P>
-<P>Global, per-atom, and local quantities each come in three kinds: a
+word &#8220;atom&#8221; in their style, e.g. <em>ke/atom</em>.  Computes that produce
+local quantities have the word &#8220;local&#8221; in their style,
+e.g. <em>bond/local</em>.  Styles with neither &#8220;atom&#8221; or &#8220;local&#8221; in their
+style produce global quantities.</p>
+<p>Note that a single compute produces either global or per-atom or local
+quantities, but never more than one of these.</p>
+<p>Global, per-atom, and local quantities each come in three kinds: a
 single scalar value, a vector of values, or a 2d array of values.  The
 doc page for each compute describes the style and kind of values it
 produces, e.g. a per-atom vector.  Some computes produce more than one
-kind of a single style, e.g. a global scalar and a global vector.
-</P>
-<P>When a compute quantity is accessed, as in many of the output commands
+kind of a single style, e.g. a global scalar and a global vector.</p>
+<p>When a compute quantity is accessed, as in many of the output commands
 discussed below, it can be referenced via the following bracket
-notation, where ID is the ID of the compute:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >c_ID </TD><TD > entire scalar, vector, or array</TD></TR>
-<TR><TD >c_ID[I] </TD><TD > one element of vector, one column of array</TD></TR>
-<TR><TD >c_ID[I][J] </TD><TD > one element of array 
-</TD></TR></TABLE></DIV>
-
-<P>In other words, using one bracket reduces the dimension of the
-quantity once (vector -> scalar, array -> vector).  Using two brackets
-reduces the dimension twice (array -> scalar).  Thus a command that
+notation, where ID is the ID of the compute:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>c_ID</td>
+<td>entire scalar, vector, or array</td>
+</tr>
+<tr class="row-even"><td>c_ID[I]</td>
+<td>one element of vector, one column of array</td>
+</tr>
+<tr class="row-odd"><td>c_ID[I][J]</td>
+<td>one element of array</td>
+</tr>
+</tbody>
+</table>
+<p>In other words, using one bracket reduces the dimension of the
+quantity once (vector -&gt; scalar, array -&gt; vector).  Using two brackets
+reduces the dimension twice (array -&gt; scalar).  Thus a command that
 uses scalar compute values as input can also process elements of a
-vector or array.
-</P>
-<P>Note that commands and <A HREF = "variable.html">variables</A> which use compute
+vector or array.</p>
+<p>Note that commands and <a class="reference internal" href="variable.html"><em>variables</em></a> which use compute
 quantities typically do not allow for all kinds, e.g. a command may
 require a vector of values, not a scalar.  This means there is no
 ambiguity about referring to a compute quantity as c_ID even if it
 produces, for example, both a scalar and vector.  The doc pages for
-various commands explain the details.
-</P>
-<HR>
-
-<P>In LIGGGHTS(R)-PUBLIC, the values generated by a compute can be used in several
-ways:
-</P>
-<LI>Global values can be output via the <A HREF = "thermo_style.html">thermo_style
-custom</A> or <A HREF = "fix_ave_time.html">fix ave/time</A> command.
-Or the values can be referenced in a <A HREF = "variable.html">variable equal</A> or
-<A HREF = "variable.html">variable atom</A> command. 
-
-<LI>Per-atom values can be output via the <A HREF = "dump.html">dump custom</A> command
-or the <A HREF = "fix_ave_spatial.html">fix ave/spatial</A> command.  Or they can be
-time-averaged via the <A HREF = "fix_ave_atom.html">fix ave/atom</A> command or
-reduced by the <A HREF = "compute_reduce.html">compute reduce</A> command.  Or the
-per-atom values can be referenced in an <A HREF = "variable.html">atom-style
-variable</A>. 
-
-<LI>Local values can be reduced by the <A HREF = "compute_reduce.html">compute
-reduce</A> command, or histogrammed by the <A HREF = "fix_ave_histo.html">fix
-ave/histo</A> command, or output by the <A HREF = "dump.html">dump
-local</A> command. 
-</UL>
-<P>The results of computes that calculate global quantities can be either
-"intensive" or "extensive" values.  Intensive means the value is
+various commands explain the details.</p>
+<hr class="docutils" />
+<p>In LIGGGHTS(R)-PUBLIC, the values generated by a compute can be used in several
+ways:</p>
+<ul class="simple">
+<li>Global values can be output via the <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a> or <a class="reference internal" href="fix_ave_time.html"><em>fix ave/time</em></a> command.
+Or the values can be referenced in a <a class="reference internal" href="variable.html"><em>variable equal</em></a> or
+<a class="reference internal" href="variable.html"><em>variable atom</em></a> command.</li>
+<li>Per-atom values can be output via the <a class="reference internal" href="dump.html"><em>dump custom</em></a> command
+or the <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a> command.  Or they can be
+time-averaged via the <a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a> command or
+reduced by the <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a> command.  Or the
+per-atom values can be referenced in an <a class="reference internal" href="variable.html"><em>atom-style variable</em></a>.</li>
+<li>Local values can be reduced by the <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a> command, or histogrammed by the <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a> command, or output by the <a class="reference internal" href="dump.html"><em>dump local</em></a> command.</li>
+</ul>
+<p>The results of computes that calculate global quantities can be either
+&#8220;intensive&#8221; or &#8220;extensive&#8221; values.  Intensive means the value is
 independent of the number of atoms in the simulation,
 e.g. temperature.  Extensive means the value scales with the number of
 atoms in the simulation, e.g. total rotational kinetic energy.
-<A HREF = "thermo_style.html">Thermodynamic output</A> will normalize extensive
+<a class="reference internal" href="thermo_style.html"><em>Thermodynamic output</em></a> will normalize extensive
 values by the number of atoms in the system, depending on the
-"thermo_modify norm" setting.  It will not normalize intensive values.
+&#8220;thermo_modify norm&#8221; setting.  It will not normalize intensive values.
 If a compute value is accessed in another way, e.g. by a
-<A HREF = "variable.html">variable</A>, you may want to know whether it is an
+<a class="reference internal" href="variable.html"><em>variable</em></a>, you may want to know whether it is an
 intensive or extensive value.  See the doc page for individual
-computes for further info.
-</P>
-<HR>
-
-<P>Properties of either a default or user-defined compute can be modified
-via the <A HREF = "compute_modify.html">compute_modify</A> command.
-</P>
-<P>Computes can be deleted with the <A HREF = "uncompute.html">uncompute</A> command.
-</P>
-<P>Code for new computes can be added to LIGGGHTS(R)-PUBLIC (see <A HREF = "Section_modify.html">this
-section</A> of the manual) and the results of their
-calculations accessed in the various ways described above.
-</P>
-<HR>
-
-<P>Each compute style has its own doc page which describes its arguments
+computes for further info.</p>
+<hr class="docutils" />
+<p>Properties of either a default or user-defined compute can be modified
+via the <a class="reference internal" href="compute_modify.html"><em>compute_modify</em></a> command.</p>
+<p>Computes can be deleted with the <a class="reference internal" href="uncompute.html"><em>uncompute</em></a> command.</p>
+<p>Code for new computes can be added to LIGGGHTS(R)-PUBLIC (see <a class="reference internal" href="Section_modify.html"><em>this section</em></a> of the manual) and the results of their
+calculations accessed in the various ways described above.</p>
+<hr class="docutils" />
+<p>Each compute style has its own doc page which describes its arguments
 and what it does. The full list of computes defined in LIGGGHTS(R)-PUBLIC is on
-<A HREF = "Section_commands.html#cmd_5">this page</A>.
-</P>
-<P><B>Restrictions:</B> none
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "uncompute.html">uncompute</A>, <A HREF = "compute_modify.html">compute_modify</A>, <A HREF = "fix_ave_atom.html">fix
-ave/atom</A>, <A HREF = "fix_ave_spatial.html">fix ave/spatial</A>,
-<A HREF = "fix_ave_time.html">fix ave/time</A>, <A HREF = "fix_ave_histo.html">fix ave/histo</A>
-</P>
-<P><B>Default:</B> none
-</P>
-</HTML>
+<em class="xref std std-ref">this page</em>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="uncompute.html"><em>uncompute</em></a>, <a class="reference internal" href="compute_modify.html"><em>compute_modify</em></a>, <a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a>, <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>,
+<a class="reference internal" href="fix_ave_time.html"><em>fix ave/time</em></a>, <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a></p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

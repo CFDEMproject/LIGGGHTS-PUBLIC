@@ -1,128 +1,313 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>compute property/local command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>compute property/local command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>compute ID group-ID property/local input1 input2 ... 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command 
-
-<LI>property/local = style name of this compute command 
-
-<LI>input = one or more attributes 
-
-<PRE>  possible attributes = natom1 natom2 ntype1 ntype2
-		        patom1 patom2 ptype1 ptype2
-                        batom1 batom2 btype 
-</PRE>
-<PRE>     natom1, natom2 = IDs of 2 atoms in each pair (within neighbor cutoff)
-     ntype1, ntype2 = type of 2 atoms in each pair (within neighbor cutoff)
-     patom1, patom2 = IDs of 2 atoms in each pair (within force cutoff)
-     ptype1, ptype2 = type of 2 atoms in each pair (within force cutoff)
-     batom1, batom2 = IDs of 2 atoms in each bond
-     btype = bond type of each bond  
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>compute 1 all property/local btype batom1 batom2
-compute 1 all property/local atype aatom2 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Define a computation that stores the specified attributes as local
-data so it can be accessed by other <A HREF = "Section_howto.html#howto_8">output
-commands</A>.  If the input attributes refer
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute property/local command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/compute_property_local.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compute-property-local-command">
+<span id="index-0"></span><h1>compute property/local command<a class="headerlink" href="#compute-property-local-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute ID group-ID property/local input1 input2 ...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
+<li>property/local = style name of this compute command</li>
+<li>input = one or more attributes</li>
+</ul>
+<div class="highlight-python"><pre>possible attributes = natom1 natom2 ntype1 ntype2
+                   patom1 patom2 ptype1 ptype2
+                      batom1 batom2 btype</pre>
+</div>
+<div class="highlight-python"><pre>natom1, natom2 = IDs of 2 atoms in each pair (within neighbor cutoff)
+ntype1, ntype2 = type of 2 atoms in each pair (within neighbor cutoff)
+patom1, patom2 = IDs of 2 atoms in each pair (within force cutoff)
+ptype1, ptype2 = type of 2 atoms in each pair (within force cutoff)
+batom1, batom2 = IDs of 2 atoms in each bond
+btype = bond type of each bond</pre>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute 1 all property/local btype batom1 batom2
+compute 1 all property/local atype aatom2</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Define a computation that stores the specified attributes as local
+data so it can be accessed by other <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  If the input attributes refer
 to bond information, then the number of datums generated, aggregated
 across all processors, equals the number of bonds in the system.
-Ditto for pairs.
-</P>
-<P>If multiple input attributes are specified then they must all generate
+Ditto for pairs.</p>
+<p>If multiple input attributes are specified then they must all generate
 the same amount of information, so that the resulting local array has
 the same number of rows for each column.  This means that only bond
-attributes can be specified together.
-</P>
-<P>If the inputs are pair attributes, the local data is generated by
+attributes can be specified together.</p>
+<p>If the inputs are pair attributes, the local data is generated by
 looping over the pairwise neighbor list.  Info about an individual
 pairwise interaction will only be included if both atoms in the pair
-are in the specified compute group.  For <I>natom1</I> and <I>natom2</I>, all
+are in the specified compute group.  For <em>natom1</em> and <em>natom2</em>, all
 atom pairs in the neighbor list are considered (out to the neighbor
-cutoff = force cutoff + <A HREF = "neighbor.html">neighbor skin</A>).  For <I>patom1</I>
-and <I>patom2</I>, the distance between the atoms must be less than the
+cutoff = force cutoff + <a class="reference internal" href="neighbor.html"><em>neighbor skin</em></a>).  For <em>patom1</em>
+and <em>patom2</em>, the distance between the atoms must be less than the
 force cutoff distance for that pair to be included, as defined by the
-<A HREF = "pair_style.html">pair_style</A> and <A HREF = "pair_coeff.html">pair_coeff</A>
-commands.
-</P>
-<P>If the inputs are bond, etc attributes, the local data is
+<a class="reference internal" href="pair_style.html"><em>pair_style</em></a> and <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a>
+commands.</p>
+<p>If the inputs are bond, etc attributes, the local data is
 generated by looping over all the atoms owned on a processor and
 extracting bond, etc info.  For bonds, info about an individual
 bond will only be included if both atoms in the bond are in the
-specified compute group.  Likewise for angles, dihedrals, etc.
-</P>
-<P>Note that as atoms migrate from processor to processor, there will be
+specified compute group.  Likewise for angles, dihedrals, etc.</p>
+<p>Note that as atoms migrate from processor to processor, there will be
 no consistent ordering of the entries within the local vector or array
 from one timestep to the next.  The only consistency that is
 guaranteed is that the ordering on a particular timestep will be the
 same for local vectors or arrays generated by other compute commands.
-For example, output from the <A HREF = "compute_bond_local.html">compute
-bond/local</A> command can be combined with bond
-atom indices from this command and output by the <A HREF = "dump.html">dump
-local</A> command in a consistent way.
-</P>
-<P>The <I>natom1</I> and <I>natom2</I>, or <I>patom1</I> and <I>patom2</I> attributes refer
+For example, output from the <a class="reference internal" href="compute_bond_local.html"><em>compute bond/local</em></a> command can be combined with bond
+atom indices from this command and output by the <a class="reference internal" href="dump.html"><em>dump local</em></a> command in a consistent way.</p>
+<p>The <em>natom1</em> and <em>natom2</em>, or <em>patom1</em> and <em>patom2</em> attributes refer
 to the atom IDs of the 2 atoms in each pairwise interaction computed
-by the <A HREF = "pair_style.html">pair_style</A> command.  The <I>ntype1</I> and
-<I>ntype2</I>, or <I>ptype1</I> and <I>ptype2</I> attributes refer to the atom types
-of the 2 atoms in each pairwise interaction.
-</P>
-<P>IMPORTANT NOTE: For pairs, if two atoms I,J are involved in 1-2, 1-3,
+by the <a class="reference internal" href="pair_style.html"><em>pair_style</em></a> command.  The <em>ntype1</em> and
+<em>ntype2</em>, or <em>ptype1</em> and <em>ptype2</em> attributes refer to the atom types
+of the 2 atoms in each pairwise interaction.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">For pairs, if two atoms I,J are involved in 1-2, 1-3,
 1-4 interactions within the molecular topology, their pairwise
 interaction may be turned off, and thus they may not appear in the
 neighbor list, and will not be part of the local data created by this
 command.  More specifically, this may be true of I,J pairs with a
 weighting factor of 0.0; pairs with a non-zero weighting factor are
 included.  The weighting factors for 1-2, 1-3, and 1-4 pairwise
-interactions are set by the <A HREF = "special_bonds.html">special_bonds</A>
-command.
-</P>
-<P>The <I>batom1</I> and <I>batom2</I> attributes refer to the atom IDs of the 2
-atoms in each <A HREF = "bond_style.html">bond</A>.  The <I>btype</I> attribute refers to
+interactions are set by the <tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt>
+command.</p>
+</div>
+<p>The <em>batom1</em> and <em>batom2</em> attributes refer to the atom IDs of the 2
+atoms in each <a class="reference internal" href="bond_style.html"><em>bond</em></a>.  The <em>btype</em> attribute refers to
 the type of the bond, from 1 to Nbtypes = # of bond types.  The number
 of bond types is defined in the data file read by the
-<A HREF = "read_data.html">read_data</A> command.
-</P>
-<P><B>Output info:</B>
-</P>
-<P>This compute calculates a local vector or local array depending on the
+<a class="reference internal" href="read_data.html"><em>read_data</em></a> command.</p>
+<p><strong>Output info:</strong></p>
+<p>This compute calculates a local vector or local array depending on the
 number of input values.  The length of the vector or number of rows in
 the array is the number of bonds. If a single input is
 specified, a local vector is produced.  If two or more inputs are
 specified, a local array is produced where the number of columns = the
 number of inputs.  The vector or array can be accessed by any command
-that uses local values from a compute as input.  See <A HREF = "Section_howto.html#howto_8">this
-section</A> for an overview of LIGGGHTS(R)-PUBLIC output
-options.
-</P>
-<P>The vector or array values will be integers that correspond to the
-specified attribute.
-</P>
-<P><B>Restrictions:</B> none
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "dump.html">dump local</A>, <A HREF = "compute_reduce.html">compute reduce</A>
-</P>
-<P><B>Default:</B> none
-</P>
-</HTML>
+that uses local values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><em>this section</em></a> for an overview of LIGGGHTS(R)-PUBLIC output
+options.</p>
+<p>The vector or array values will be integers that correspond to the
+specified attribute.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="dump.html"><em>dump local</em></a>, <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a></p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

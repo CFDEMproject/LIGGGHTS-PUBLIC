@@ -75,7 +75,9 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
-  FixInsert(lmp, narg, arg)
+  FixInsert(lmp, narg, arg),
+  recalc_release_ms(false),
+  dt_ratio(0.)
 {
   // set defaults first, then parse args
   init_defaults();
@@ -104,9 +106,12 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
       if(extrude_length < 0. ) error->fix_error(FLERR,this,"invalid extrude_length");
       iarg += 2;
       hasargs = true;
-    } else if (strcmp(arg[iarg],"duration") == 0) {
+    } else if (strcmp(arg[iarg],"duration") == 0 || strcmp(arg[iarg],"duration_time") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments");
-      duration = atoi(arg[iarg+1]);
+      if(strcmp(arg[iarg],"duration_time") == 0)
+          duration = static_cast<int>(atof(arg[iarg+1])/update->dt);
+      else
+        duration = atoi(arg[iarg+1]);
       if(duration < 1 ) error->fix_error(FLERR,this,"'duration' can not be < 1");
       iarg += 2;
       hasargs = true;
@@ -182,6 +187,12 @@ void FixInsertStream::post_create()
         fixarg[20]="0.";
         fixarg[21]="0.";
         modify->add_fix_property_atom(22,const_cast<char**>(fixarg),style);
+
+        fix_release = static_cast<FixPropertyAtom*>(modify->find_fix_property("release_fix_insert_stream","property/atom","vector",5,0,style));
+        if(!fix_release) error->fix_error(FLERR,this,"Internal error in fix insert/stream");
+
+        if( modify->fix_restart_in_progress())
+            recalc_release_restart();
   }
 }
 
@@ -404,6 +415,15 @@ void FixInsertStream::init()
 
     if(ins_face->isMoving() || ins_face->isScaling())
         error->fix_error(FLERR,this,"cannot translate, rotate, scale mesh which is used for particle insertion");
+
+    if(recalc_release_ms)
+    {
+        recalc_release_ms = false;
+        
+        if(fix_multisphere && dt_ratio > 0.)
+            fix_multisphere->data().recalc_n_steps(dt_ratio);
+        
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -845,6 +865,7 @@ void FixInsertStream::end_of_step()
 
                 // set x,v,omega
                 vectorAdd3D(x_ins,dist_elapsed,x[i]);
+                
                 vectorCopy3D(v_integrate,v[i]);
                 vectorZeroize3D(omega[i]);
 
@@ -889,4 +910,34 @@ void FixInsertStream::reset_releasedata(bigint newstep,bigint oldstep)
         // 6-8th value is integration velocity
         vectorCopy3D(v_normal,&release_data[i][5]);
   }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixInsertStream::recalc_release_restart()
+{
+  
+  const int nlocal = atom->nlocal;
+  double **x = atom->x;
+  double **release_data = fix_release->array_atom;
+  const double dt = update->dt;
+  double change_ratio = -1.;
+
+  for(int i = 0; i < nlocal; i++)
+  {
+        if(release_data[i][4] > update->ntimestep)
+        {
+            double dx[3];
+            vectorSubtract3D(x[i],release_data[i],dx);
+            const double dt_old = (vectorMag3D(dx)) / (vectorMag3D(&release_data[i][5]) * (static_cast<double>(update->ntimestep) - release_data[i][3]));
+
+            change_ratio = dt_old / dt;
+            
+            release_data[i][4] = static_cast<double>(update->ntimestep) + static_cast<double>(static_cast<int>(change_ratio*(release_data[i][4] - static_cast<double>(update->ntimestep))));
+            
+        }
+  }
+
+  recalc_release_ms = true;
+  dt_ratio = change_ratio;
 }

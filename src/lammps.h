@@ -85,6 +85,7 @@ class LAMMPS {
   class CiteMe *citeme;          // citation info
 
   bool wedgeflag;
+  bool wb;
 
   LAMMPS(int, char **, MPI_Comm);
   ~LAMMPS();

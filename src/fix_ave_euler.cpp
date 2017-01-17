@@ -60,8 +60,6 @@
 
 #define BIG 1000000000
 
-#define INVOKED_PERATOM 8
-
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
@@ -167,6 +165,7 @@ FixAveEuler::~FixAveEuler()
   memory->destroy(ncount_);
   memory->destroy(mass_);
   memory->destroy(stress_);
+  if (random_) delete random_;
 }
 
 /* ---------------------------------------------------------------------- */

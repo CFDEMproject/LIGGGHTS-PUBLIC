@@ -50,7 +50,6 @@
 #include "vector_liggghts.h"
 #include "pointers.h"
 #include "bounding_box.h"
-#include "nonspherical_flags.h"
 
 namespace LAMMPS_NS {
 

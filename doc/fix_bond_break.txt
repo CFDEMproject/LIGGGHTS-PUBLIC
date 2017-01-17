@@ -21,13 +21,13 @@ zero or more keyword/value pairs may be appended to args :l
 keyword = {prob} :l
   {prob} values = fraction seed
     fraction = break a bond with this probability if otherwise eligible
-    seed = random number seed (positive integer) :pre
+    seed = random number seed (prime number greater 10000) :pre
 :ule
 
 [Examples:]
 
 fix 5 all bond/break 10 2 1.2
-fix 5 polymer bond/break 1 1 2.0 prob 0.5 49829 :pre
+fix 5 polymer bond/break 1 1 2.0 prob 0.5 123457 :pre
 
 [Description:]
 

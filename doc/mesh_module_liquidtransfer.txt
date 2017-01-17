@@ -1,0 +1,64 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+mesh module liquidtransfer :h3
+
+[Syntax:]
+
+liquidtransfer liquidtransfer_keywords liquidtransfer_values :pre
+
+two liquidtransfer_keyword/value pairs need to be appended  :ulb,l
+heattransfer_keyword = {wall_thickness} or {initial_liquid_content} :l
+  {wall_thickness} value = wall_thickness (in length units)
+    wall_thickness = virtual wall thickness
+  {initial_liquid_content} value = LC_initial
+    LC_initial = initial liquid content (in vol%) :pre
+
+:ule
+
+[Examples:]
+
+fix plate all mesh/surface/liquidtransfer file meshes/plate.stl type 1 scale 1.0 wall_thickness 0.01 initial_liquid_content 0.05
+
+[Description:]
+
+This module allows the use of a liquid bridge cohesion model that exchanges liquid with the wall.
+Additionally, it also allows the use of the "fix_addliquid_wall"_fix_addliquid_wall.html
+which acts as an external liquid source for a certain part of the mesh.
+
+The initial liquid content is given by the {initial_liquid_content} parameter and is then
+evolved when bridges break. The {wall_thickness} parameter asigns a virtual thickness to
+the wall and is responsible for the volume of liquid a wall can store. The other
+parameters for the cohesion model are taken from the global definitions.
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+This module writes information to "binary restart files"_restart.html to be
+able to continue correctly after restart.  None of the "fix_modify"_fix_modify.html 
+options are relevant to this module.
+
+This mesh module stores per-mesh-element properties ("liquid": liquid vol%)
+which can be accessed via "dump mesh/vtk"_dump_mesh_vtk.html
+
+No parameter of this mesh module can be used with the {start/stop} keywords of
+the "run"_run.html command.  This mesh module is not invoked during "energy
+minimization"_minimize.html.
+
+[Restrictions:] 
+
+None.
+
+[Related commands:]
+
+"fix mesh/surface"_fix_mesh_surface.html
+"fix wall/gran"_fix_wall_gran.html
+"fix mesh/surface/heattransfer"_fix_mesh_surface_heattransfer.html
+
+[Default:]
+
+none

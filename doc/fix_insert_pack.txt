@@ -15,7 +15,7 @@ fix ID group-ID insert/pack seed seed_value distributiontemplate dist-ID general
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 insert/pack = style name of this fix command :l
 seed = obligatory keyword :l
-seed_value = random # seed (positive integer) :l
+seed_value = random # seed (prime number greater than 10000) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
@@ -81,7 +81,7 @@ pack_keywords = where exactly one out of {volumefraction_region} or {particles_i
 
 [Examples:]
 
-fix ins all insert/pack seed 1001 distributiontemplate pdd1 insert_every once overlapcheck yes volumefraction_region 0.3 region mysphere ntry_mc 10000 :pre
+fix ins all insert/pack seed 123457 distributiontemplate pdd1 insert_every once overlapcheck yes volumefraction_region 0.3 region mysphere ntry_mc 10000 :pre
 
 [Description:]
 

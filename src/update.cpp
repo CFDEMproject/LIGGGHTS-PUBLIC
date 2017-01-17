@@ -70,6 +70,7 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp)
   char *str;
 
   ntimestep = 0;
+  timestep_set = false;
   atime = 0.0;
   atimestep = 0;
   first_update = 0;

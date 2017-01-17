@@ -99,6 +99,7 @@ namespace LAMMPS_NS
 
         // mesh manipulation upon creation
         virtual void moveMesh(double const dx, double const dy, double const dz);
+
         virtual void rotateMesh(double const axisX, double const axisY, double const axisZ, double const phi);
         virtual void scaleMesh(double const factor);
 
@@ -147,6 +148,9 @@ namespace LAMMPS_NS
         int size_exclusion_list_;
 
         class FixPropertyGlobal *fix_capacity_;
+
+        // this friend class needs access to the moveMesh function
+        friend class MeshModuleStress6DOF;
   };
 
 } /* namespace LAMMPS_NS */

@@ -73,7 +73,6 @@ enum{SAMPLE,ALL};
 enum{BOX,LATTICE,REDUCED};
 enum{ONE,RUNNING,WINDOW};
 
-#define INVOKED_PERATOM 8
 #define BIG 1000000000
 
 /* ---------------------------------------------------------------------- */

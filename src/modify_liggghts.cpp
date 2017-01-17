@@ -418,6 +418,53 @@ bool Modify::have_restart_data(Fix *f)
   return false;
 }
 
+bool Modify::have_restart_data_style(const char* _style)
+{
+  
+  // check if Fix is in restart_global list
+
+  for (int i = 0; i < nfix_restart_global; i++)
+    if (strncmp(style_restart_global[i],_style,strlen(_style)) == 0)
+      return true;
+
+  // check if Fix is in restart_peratom list
+
+  for (int i = 0; i < nfix_restart_peratom; i++)
+    if (strncmp(style_restart_peratom[i],_style,strlen(_style)) == 0)
+      return true;
+
+  return false;
+}
+
+int Modify::n_restart_data_global_style(const char* _style)
+{
+  
+  int nhave = 0;
+
+  // check if Fix is in restart_global list
+
+  for (int i = 0; i < nfix_restart_global; i++)
+    if (strncmp(style_restart_global[i],_style,strlen(_style)) == 0)
+      nhave++;
+
+  return nhave;
+}
+
+char* Modify::id_restart_data_global_style(const char* _style,int _rank)
+{
+  
+  // check if Fix is in restart_global list
+
+  for (int i = 0; i < nfix_restart_global; i++)
+    if (strncmp(style_restart_global[i],_style,strlen(_style)) == 0)
+    {
+          if(_rank > 0) _rank --;
+          else return id_restart_global[i];
+    }
+
+  return 0;
+}
+
 /* ----------------------------------------------------------------------
    let fixes extend bounding box
 ------------------------------------------------------------------------- */

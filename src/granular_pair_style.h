@@ -59,7 +59,7 @@ namespace PairStyles {
     typedef LAMMPS_NS::PairGran ParentType;
 
     virtual ~IGranularPairStyle();
-    virtual void settings(int nargs, char ** args) = 0;
+    virtual void settings(int nargs, char ** args, IContactHistorySetup *hsetup) = 0;
     virtual void init_granular() = 0;
     virtual void write_restart_settings(FILE * fp) = 0;
     virtual void read_restart_settings(FILE * fp, int64_t hashcode = -1) = 0;

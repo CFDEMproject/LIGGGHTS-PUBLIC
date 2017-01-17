@@ -64,11 +64,12 @@ void PairGranProxy::settings(int nargs, char ** args)
 {
   delete impl;
 
-  int64_t variant = Factory::instance().selectVariant("gran", nargs, args);
+  //TODO add additional map here which maps tangential "custom" to "history"
+  int64_t variant = Factory::instance().selectVariant("gran", nargs, args,force->custom_contact_models);
   impl = Factory::instance().create("gran", variant, lmp, this);
 
   if(impl) {
-    impl->settings(nargs, args);
+    impl->settings(nargs, args, this);
   } else {
     
     error->all(FLERR, "unknown contact model or model not in whitelist. Possible root causes:\n"
@@ -77,7 +78,8 @@ void PairGranProxy::settings(int nargs, char ** args)
                        "      contact model is available at all in your version.\n"
                        "  (3) the model is part of a package which was not installed. Check the documentation for details. \n"
                        "  (4) the model is available, but was not in the whitelist during compilation. Check if a file \n"
-                       "      src/style_contact_model.whitelist exists. If yes, modify it and re-compile.\n");
+                       "      src/style_contact_model.whitelist exists. If yes, modify it and re-compile. You can also \n"
+                       "      use script whitelist.sh in the /src directory to create a full whitelist.");
   }
 }
 

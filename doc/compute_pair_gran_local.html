@@ -1,157 +1,350 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>compute pair/gran/local command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>compute pair/gran/local command 
-</H3>
-<H3>compute wall/gran/local command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>compute ID group-ID pair/gran/local keywords ...
-compute ID group-ID wall/gran/local keywords ... 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command 
-
-<LI>pair/gran/local or wall/gran/local = style name of this compute command 
-
-<LI>zero or more keywords may be appended 
-
-<PRE>keyword = <I>pos</I> or <I>vel</I> or <I>id</I> or <I>force</I> or <I>torque</I> or <I>history</I> or <I>contactArea</I> or <I>delta</I>:l
-  <I>pos</I> = positions of particles in contact (6 values)
-  <I>vel</I> = velocities of particles in contact (6 values)
-  <I>id</I> = IDs of particles in contact and a periodicity flag (3 values) or IDs of the mesh, the triangle and the particle (3 values)
-  <I>force</I> = contact force (3 values)
-  <I>force_normal</I> = normal component of contact force (3 values)
-  <I>force_tangential</I> = tangential component of contact force (3 values)
-  <I>torque</I> = torque divided by particle diameter (3 values)
-  <I>history</I> = contact history (# depends on pair style, e.g. 3 shear history values)
-  <I>contactArea</I> = area of the contact (1 value)
-  <I>delta</I> = overlap of the contact (1 value)
-  <I>heatFlux</I> = conductive heat flux of the contact (1 value) 
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>compute 1 all pair/gran/local
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute pair/gran/local command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/compute_pair_gran_local.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compute-pair-gran-local-command">
+<span id="index-0"></span><h1>compute pair/gran/local command<a class="headerlink" href="#compute-pair-gran-local-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="compute-wall-gran-local-command">
+<h1>compute wall/gran/local command<a class="headerlink" href="#compute-wall-gran-local-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute ID group-ID pair/gran/local keywords ...
+compute ID group-ID wall/gran/local keywords ...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
+<li>pair/gran/local or wall/gran/local = style name of this compute command</li>
+<li>zero or more keywords may be appended</li>
+</ul>
+<pre class="literal-block">
+keyword = <em>pos</em> or <em>vel</em> or <em>id</em> or <em>force</em> or <em>torque</em> or <em>history</em> or <em>contactArea</em> or <em>delta</em>:l
+  <em>pos</em> = positions of particles in contact (6 values)
+  <em>vel</em> = velocities of particles in contact (6 values)
+  <em>id</em> = IDs of particles in contact and a periodicity flag (3 values) or IDs of the mesh, the triangle and the particle (3 values)
+  <em>force</em> = contact force (3 values)
+  <em>force_normal</em> = normal component of contact force (3 values)
+  <em>force_tangential</em> = tangential component of contact force (3 values)
+  <em>torque</em> = torque divided by particle diameter (3 values)
+  <em>history</em> = contact history (# depends on pair style, e.g. 3 shear history values)
+  <em>contactArea</em> = area of the contact (1 value)
+  <em>delta</em> = overlap of the contact (1 value)
+  <em>heatFlux</em> = conductive heat flux of the contact (1 value)
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute 1 all pair/gran/local
 compute 1 all pair/gran/local pos force
-compute 1 all wall/gran/local 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Define a computation that calculates properties of individual pairwise or
+compute 1 all wall/gran/local</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Define a computation that calculates properties of individual pairwise or
 particle-wall interactions of a granular pair style. The number of datums
 generated, aggregated across all processors, equals the number of pairwise
-interactions or particle-wall interactions in the system.
-</P>
-<P>The local data stored by this command is generated by looping over the
+interactions or particle-wall interactions in the system.</p>
+<p>The local data stored by this command is generated by looping over the
 pairwise neighbor list.  Info about an individual pairwise interaction
 will only be included if both atoms in the pair are in the specified
 compute group, and if the current pairwise distance is less than the
 force cutoff distance for that interaction, as defined by the
-<A HREF = "pair_style.html">pair_style</A> and <A HREF = "pair_coeff.html">pair_coeff</A>
-commands.
-</P>
-<P>IMPORTANT NOTE: For accessing particle-wall contact data, only mesh
-walls (see <A HREF = "fix_mesh.html">fix mesh</A>) can be used.
+<a class="reference internal" href="pair_style.html"><em>pair_style</em></a> and <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a>
+commands.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">For accessing particle-wall contact data, only mesh
+walls (see <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></tt>) can be used.
 For computing particle-wall (compute wall/gran/local), the code will
-automatically look for a <A HREF = "fix_wall_gran.html">fix wall/gran</A> command
+automatically look for a <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a> command
 that uses mesh walls. The order of the meshes in the fix wall/gran
 command is called the mesh id (starting with 0), and the triangle id
 reflects the order of the triangles in the STL/VTK file read via the
 dedicated fix mesh command. For how to output the trangle id,
-see "dump mesh/gran/VTK command"dump.html.
-</P>
-<P>The output <I>pos</I> is the particle positions (6 values) in distance
-<A HREF = "units.html">units</A>. Keyword <I>vel</I> will do the same for velocities.
-For computing pairwise data, the output <I>id</I> will
+see &#8220;dump mesh/gran/VTK command&#8221;dump.html.</p>
+</div>
+<p>The output <em>pos</em> is the particle positions (6 values) in distance
+<a class="reference internal" href="units.html"><em>units</em></a>. Keyword <em>vel</em> will do the same for velocities.
+For computing pairwise data, the output <em>id</em> will
 be the two particle IDs (using this option requires to use an atom
 map) and a flag that is 1 for interaction over a periodic boundary
-and 0 otherwise. For computing particle-wall data, the output <I>id</I>
+and 0 otherwise. For computing particle-wall data, the output <em>id</em>
 will be the mesh id, the triangle id and the particle id. The output
-<I>force</I>, <I>force_normal</I>, <I>force_tangential</I> and <I>torque</I> are the total
+<em>force</em>, <em>force_normal</em>, <em>force_tangential</em> and <em>torque</em> are the total
 contact force, the normal and tangential components of the contact
-force, and the torque divided by the particle radius, both in force 
-<A HREF = "units.html">units</A>. Note that the normal and tangential components
-are not necessarily exactly equal to the forces added by  
-<A HREF = "Section_gran_models.html">the normal and tangential model used</A> , but 
+force, and the torque divided by the particle radius, both in force
+<a class="reference internal" href="units.html"><em>units</em></a>. Note that the normal and tangential components
+are not necessarily exactly equal to the forces added by
+<a class="reference internal" href="Section_gran_models.html"><em>the normal and tangential model used</em></a> , but
 are geometrically composed, using the connection line between the
 particle centers as normal direction. Note also that the torque
-does NOT contain any rolling friction torque. The output <I>history</I>
+does NOT contain any rolling friction torque. The output <em>history</em>
 will depend on what this history represents, according to the granular
-pair style used. The output <I>contactArea</I> will output the contact area,
-in distance^2 <A HREF = "units.html">units</A>. Note that <I>contactArea</I> is based on
+pair style used. The output <em>contactArea</em> will output the contact area,
+in distance^2 <a class="reference internal" href="units.html"><em>units</em></a>. Note that <em>contactArea</em> is based on
 an analytic geometric calculation of sphere-sphere or sphere-plane intersection
 rather than a calculation based on mechanics. This is to ensure that
-<I>contactArea</I> works with all types of contact models. 
-</P>
-<P>The output <I>delta</I> will output the
+<em>contactArea</em> works with all types of contact models.</p>
+<p>The output <em>delta</em> will output the
 overlap (sum of radii - distance between particle centers) in distance
-<A HREF = "units.html">units</A> .The output <I>heatFlux</I> (available only
-if a <A HREF = "fix_heat_gran.html">fix heat/gran</A> is used to compute  heat
+<a class="reference internal" href="units.html"><em>units</em></a> .The output <em>heatFlux</em> (available only
+if a <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">heat/gran</span></tt> is used to compute  heat
 fluxes) will output the per-contact conductive heat flux area, in
-energy/time <A HREF = "units.html">units</A>.
-</P>
-<P>IMPORTANT NOTE:
-The data associated to the different keywords is output in the
-following order: <I>pos</I>, <I>vel</I>, <I>id</I>, <I>force</I>, <I>force_normal</I>,
-<I>force_tangential</I>, <I>torque</I>, <I>history</I>, <I>contactArea</I>, <I>heatFlux</I>. 
-This is independant of the order in which the keywords are specified.
-</P>
-<P>Note that as atoms migrate from processor to processor, there will be
+energy/time <a class="reference internal" href="units.html"><em>units</em></a>.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The data associated to the different keywords is output in the
+following order: <em>pos</em>, <em>vel</em>, <em>id</em>, <em>force</em>, <em>force_normal</em>,
+<em>force_tangential</em>, <em>torque</em>, <em>history</em>, <em>contactArea</em>, <em>heatFlux</em>.
+This is independant of the order in which the keywords are specified.</p>
+</div>
+<p>Note that as atoms migrate from processor to processor, there will be
 no consistent ordering of the entries within the local vector or array
 from one timestep to the next.  The only consistency that is
 guaranteed is that the ordering on a particular timestep will be the
 same for local vectors or arrays generated by other compute commands.
-For example, pair output from the <A HREF = "compute_property_local.html">compute
-property/local</A> command can be combined
-with data from this command and output by the <A HREF = "dump.html">dump local</A>
-command in a consistent way.
-</P>
-<P>IMPORTANT NOTE: This compute, will, when invoked, issue a call to
+For example, pair output from the <a class="reference internal" href="compute_property_local.html"><em>compute property/local</em></a> command can be combined
+with data from this command and output by the <a class="reference internal" href="dump.html"><em>dump local</em></a>
+command in a consistent way.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This compute, will, when invoked, issue a call to
 the pair or wall contact models to calculate what would be the contact
-forces given the current positions, velocities etc
-</P>
-<P>Since this compute is typically done when output is created (at the end of
+forces given the current positions, velocities etc</p>
+</div>
+<p>Since this compute is typically done when output is created (at the end of
 the time-step), this is not necessarily exactly equal to (with machine precision)
-the p-p or p-w forces which were calculated within one time-step.
-</P>
-<P><B>Output info:</B>
-</P>
-<P>This compute calculates a local vector or local array depending on the
+the p-p or p-w forces which were calculated within one time-step.</p>
+<p><strong>Output info:</strong></p>
+<p>This compute calculates a local vector or local array depending on the
 number of keywords.  The length of the vector or number of rows in the
 array is the number of pairs.  If a single keyword is specified, a
 local vector is produced.  If two or more keywords are specified, a
 local array is produced where the number of columns = the number of
 keywords.  The vector or array can be accessed by any command that
-uses local values from a compute as input.  See <A HREF = "Section_howto.html#4_15">this
-section</A> for an overview of LIGGGHTS(R)-PUBLIC output
-options.
-</P>
-<P>For information on the <A HREF = "units.html">units</A> of the output, see above.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>Can only be used together with a granular pair style.
-For accessing particle-wall contact data, only mesh walls can be used.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "dump.html">dump local</A>, <A HREF = "compute_property_local.html">compute property/local</A>
-</P>
-<P><B>Default:</B>
-</P>
-<P>By default, all of the outputs keywords (except force_normal, force_tangential,
- heat flux and delta) are activated,
-i.e. when no keyword is used, positions velocities, ids, forces, torques, history
-and contact area are output.
-</P>
-</HTML>
+uses local values from a compute as input.  See <em class="xref std std-ref">this section</em> for an overview of LIGGGHTS(R)-PUBLIC output
+options.</p>
+<p>For information on the <a class="reference internal" href="units.html"><em>units</em></a> of the output, see above.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Can only be used together with a granular pair style.
+For accessing particle-wall contact data, only mesh walls can be used.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="dump.html"><em>dump local</em></a>, <a class="reference internal" href="compute_property_local.html"><em>compute property/local</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>By default, all of the outputs keywords (except force_normal, force_tangential,</dt>
+<dd>heat flux and delta) are activated,</dd>
+</dl>
+<p>i.e. when no keyword is used, positions velocities, ids, forces, torques, history
+and contact area are output.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

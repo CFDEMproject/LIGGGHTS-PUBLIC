@@ -728,7 +728,7 @@ int Modify::min_reset_ref()
 
 void Modify::add_fix(int narg, char **arg, char *suffix)
 {
-
+  
   if (narg < 3) error->all(FLERR,"Illegal fix command");
 
   // cannot define fix before box exists unless style is in exception list
@@ -814,6 +814,12 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
     fix[ifix] = fix_creator(lmp,narg,arg);
   }
 
+  if (fix[ifix] == NULL && strncmp(arg[2], "mesh/surface", 12) == 0)
+  {
+    FixCreator fix_creator = (*fix_map)["mesh/surface"];
+    fix[ifix] = fix_creator(lmp, narg, arg);
+  }
+
   if (fix[ifix] == NULL){ 
     char * errmsg = new char[30+strlen(arg[2])]; 
     sprintf(errmsg,"Invalid fix style: \"%s\"",arg[2]);
@@ -835,7 +841,11 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
   {
     
     if (strcmp(id_restart_global[i],fix[ifix]->id) == 0 &&
-        strcmp(style_restart_global[i],fix[ifix]->style) == 0) {
+          (strcmp(style_restart_global[i],fix[ifix]->style) == 0 ||
+            (fix[ifix]->accepts_restart_data_from_style && strcmp(style_restart_global[i],fix[ifix]->accepts_restart_data_from_style) == 0)
+          )
+       )
+      {
           fix[ifix]->restart(state_restart_global[i]);
           fix[ifix]->recent_restart = 1; 
           if (comm->me == 0) {
@@ -853,7 +863,10 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
   for (int i = 0; i < nfix_restart_peratom; i++)
   {
     if (strcmp(id_restart_peratom[i],fix[ifix]->id) == 0 &&
-        strcmp(style_restart_peratom[i],fix[ifix]->style) == 0)
+          (strcmp(style_restart_peratom[i],fix[ifix]->style) == 0 ||
+            (fix[ifix]->accepts_restart_data_from_style && strcmp(style_restart_peratom[i],fix[ifix]->accepts_restart_data_from_style) == 0)
+          )
+       )
     {
       for (int j = 0; j < atom->nlocal; j++)
         fix[ifix]->unpack_restart(j,index_restart_peratom[i]);
@@ -1236,8 +1249,14 @@ int Modify::read_restart(FILE *fp)
 
 void Modify::restart_deallocate()
 {
+  
+  int n_ms = n_fixes_style("multisphere");
+  bool have_ms_in_restart = false;
+
   if (nfix_restart_global) {
     for (int i = 0; i < nfix_restart_global; i++) {
+      if(strncmp(style_restart_global[i],"multisphere",11) == 0)
+        have_ms_in_restart = true;
       delete [] id_restart_global[i];
       delete [] style_restart_global[i];
       delete [] state_restart_global[i];
@@ -1249,6 +1268,8 @@ void Modify::restart_deallocate()
 
   if (nfix_restart_peratom) {
     for (int i = 0; i < nfix_restart_peratom; i++) {
+      if(strncmp(style_restart_peratom[i],"multisphere",11) == 0)
+        have_ms_in_restart = true;
       delete [] id_restart_peratom[i];
       delete [] style_restart_peratom[i];
     }
@@ -1258,6 +1279,10 @@ void Modify::restart_deallocate()
   }
 
   nfix_restart_global = nfix_restart_peratom = 0;
+
+  if(0 == n_ms && have_ms_in_restart)
+    error->all(FLERR,"Restart data contains multi-sphere data, which was not restarted. In order to restart it,\n"
+                         "you have to place a fix multisphere/* command before the first run command in the input script\n");
 }
 
 /* ----------------------------------------------------------------------

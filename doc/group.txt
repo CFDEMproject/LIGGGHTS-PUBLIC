@@ -31,7 +31,8 @@ style = {delete} or {region} or {type} or {id} or {molecule} or {variable} or \
   {variable} args  = variable-ID
   {subtract} args = two or more group IDs
   {union} args = one or more group IDs
-  {intersect} args = two or more group IDs :pre
+  {intersect} args = two or more group IDs
+  {initialize} args = no args :pre
 :ule
 
 [Examples:]
@@ -150,6 +151,11 @@ added to the specified group.
 The {intersect} style takes a list of two or more existing group names
 as arguments.  Atoms that belong to every one of the listed groups are
 added to the specified group.
+
+The {initialize} style creates a new empty group if it does not 
+already exist. This is in particular useful in combination with 
+"particletemplates"_fix_particletemplate_sphere.txt to allow separate 
+integrators for different groups.
 
 A group with the ID {all} is predefined.  All atoms belong to this
 group.  This group cannot be deleted.

@@ -1,237 +1,431 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix mesh/surface command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix mesh/surface command 
-</H3>
-<H3>fix mesh/surface/planar command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
-fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values 
-</PRE>
-<UL><LI>ID, is documented in <A HREF = "fix.html">fix</A> command. 
-
-<LI>mesh/surface or mesh/surface/planar = style name of this fix command  
-
-<LI>file = obligatory keyword 
-
-<LI>filename = name of STL or VTK file containing the triangle mesh data 
-
-<LI>zero or more premesh_keywords/premesh_value pairs may be appended 
-
-<LI>premesh_keyword = <I>type</I> or <I>precision</I> or <I>heal</I> or <I>min_feature_length</I>  or <I>element_exclusion_list</I> or <I>verbose</I> 
-
-<PRE>  <I>type</I> value = atom type (material type) of the wall imported from the STL file
-  <I>region</I> value = ID of <A HREF = "region.html">region</A> to filter elements which are imported
-  <I>precision</I> value = length mesh nodes this far away at maximum will be recognized as identical (length units)
-  <I>heal</I> value = auto_remove_duplicates or no
-  <I>min_feature_length</I> value = exclude element if belongs to an entity where no element is larger than this (length units)
-  <I>element_exclusion_list</I> values = mode element_exlusion_file
-    mode = read or write
-    element_exlusion_file = name of file containing the elements to be excluded
-  <I>verbose</I> value = yes or no 
-</PRE>
-<LI>zero or more mesh_keywords/mesh_value pairs may be appended 
-
-<LI>mesh_keyword = <I>scale</I> or <I>move</I> or <I>rotate</I> or <I>temperature</I> or <I>mass_temperature</I> 
-
-<PRE>  <I>scale</I> value = factor
-    factor = factor to scale the mesh in x-, y-, and z-direction (double value)
-  <I>move</I> values = mx my mz
-    mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
-  <I>rotate</I> values = axis ax ay az angle ang
-    axis = obligatory keyword
-    ax, ay, az = axis vector for rotation (length units)
-    angle = obligatory keyword
-    ang = rotation angle (degrees)
-  <I>temperature</I> value = T0
-    T0 = Temperature of the wall (temperature units)
-  <I>mass_temperature</I> value = mt0
-    mt0 = mass (mass units) assumed for temperature update in the frame of <A HREF = "gran_surface_sphere_heatable.html">surface sphere/heatable</A> 
-</PRE>
-<LI>zero or more surface_keywords/surface_value pairs may be appended 
-
-<LI>surface_keyword = <I>surface_vel</I> or <I>surface_ang_vel</I> or <I>curvature</I> or <I>curvature_tolerant</I> 
-
-<PRE>  <I>surface_vel</I> values = vx vy vz
-    vx vy vz = conveyor belt surface velocity  (velocity units)
-  <I>surface_ang_vel</I> values = origin ox oy oz axis ax ay az omega om
-    origin = mandatory keyword
-    ox oy oz = origin of rotation (length units)
-    axis = mandatory keyword
-    ax ay az = axis vector for rotation (length units)
-    omega = mandatory keyword
-    om = rotaional velocity around specifyied axis (rad/time units)
-  <I>curvature</I> value = c
-    c = maximum angle between mesh faces belonging to the same surface (in degree) 
-  <I>curvature_tolerant</I> value = ct
-    ct = yes or no 
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix cad all mesh/surface file mesh.stl type 1 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from
-ASCII STL files or legacy ASCII VTK files. Style <I>mesh/surface</I> is a general surface mesh, and
-<I>mesh/surface/planar</I> represents a planar mesh. <I>mesh/surface/planar</I> requires the mesh to
-consist of only 1 planar face.
-</P>
-<P>The <I>region</I> keyword can be used to filter the elements which are imported. An element is only
-imported if all of its vertices is inside the specified <A HREF = "region.html">region</A>. Please note that 
-the geometric extent of this <A HREF = "region.html">region</A> refer to the unscaled, unmoved, and unrotated
-original state of the geometry.
-</P>
-<P>Generall, you can apply scaling, offset and rotation to the imported mesh via keywords <I>scale</I>,
-<I>move</I>, <I>rotate</I>. Operations are applied in the order as they are specified. The rotation via <I>rotate</I> is performed around the rotation axis that goes through the origin (0,0,0) and in the direction of <I>axis</I>.
-</P>
-<P>The group-ID defines which particles will "see" the mesh, in case it is used as a granular wall.
-</P>
-<P>One fix represents one wall with a specific material, where the material is identified
-via keyword <I>type</I>. If multiple meshes with different materials are desired, the respective
-meshes must be imported with different fix mesh/surface commands.
-</P>
-<P>With the <I>temperature</I> keyword, you can define a constant temperature for a mesh in
-conjunction with heat conduction via <A HREF = "fix_heat_gran.html">fix heat/gran</A>. Note that the
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix mesh/surface command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_mesh_surface.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-mesh-surface-command">
+<span id="index-0"></span><h1>fix mesh/surface command<a class="headerlink" href="#fix-mesh-surface-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="fix-mesh-surface-planar-command">
+<h1>fix mesh/surface/planar command<a class="headerlink" href="#fix-mesh-surface-planar-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
+fix ID group-ID mesh/surface/module_list file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values module_keywords module_values
+fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values</pre>
+</div>
+<ul class="simple">
+<li>ID, is documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command.</li>
+<li>mesh/surface or mesh/surface/planar = style name of this fix command</li>
+<li>module_list = list of mesh modules separated by /</li>
+<li>file = obligatory keyword</li>
+<li>filename = name of STL or VTK file containing the triangle mesh data</li>
+<li>zero or more premesh_keywords/premesh_value pairs may be appended</li>
+<li>premesh_keyword = <em>type</em> or <em>precision</em> or <em>heal</em> or <em>min_feature_length</em>  or <em>element_exclusion_list</em> or <em>verbose</em></li>
+</ul>
+<pre class="literal-block">
+<em>type</em> value = atom type (material type) of the wall imported from the STL file
+<em>region</em> value = ID of <a class="reference internal" href="region.html"><em>region</em></a> to filter elements which are imported
+<em>precision</em> value = length mesh nodes this far away at maximum will be recognized as identical (length units)
+<em>heal</em> value = auto_remove_duplicates or no
+<em>min_feature_length</em> value = exclude element if belongs to an entity where no element is larger than this (length units)
+<em>element_exclusion_list</em> values = mode element_exlusion_file
+  mode = read or write
+  element_exlusion_file = name of file containing the elements to be excluded
+<em>verbose</em> value = yes or no
+</pre>
+<ul class="simple">
+<li>zero or more mesh_keywords/mesh_value pairs may be appended</li>
+<li>mesh_keyword = <em>scale</em> or <em>move</em> or <em>rotate</em> or <em>temperature</em> or <em>mass_temperature</em></li>
+</ul>
+<pre class="literal-block">
+<em>scale</em> value = factor
+  factor = factor to scale the mesh in x-, y-, and z-direction (double value)
+<em>move</em> values = mx my mz
+  mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
+<em>rotate</em> values = axis ax ay az angle ang
+  axis = obligatory keyword
+  ax, ay, az = axis vector for rotation (length units)
+  angle = obligatory keyword
+  ang = rotation angle (degrees)
+<em>temperature</em> value = T0
+  T0 = Temperature of the wall (temperature units)
+<em>mass_temperature</em> value = mt0
+  mt0 = mass (mass units) assumed for temperature update in the frame of <tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt>
+</pre>
+<ul class="simple">
+<li>zero or more surface_keywords/surface_value pairs may be appended</li>
+<li>surface_keyword = <em>surface_vel</em> or <em>surface_ang_vel</em> or <em>curvature</em> or <em>curvature_tolerant</em></li>
+</ul>
+<pre class="literal-block">
+<em>surface_vel</em> values = vx vy vz
+  vx vy vz = conveyor belt surface velocity  (velocity units)
+<em>surface_ang_vel</em> values = origin ox oy oz axis ax ay az omega om
+  origin = mandatory keyword
+  ox oy oz = origin of rotation (length units)
+  axis = mandatory keyword
+  ax ay az = axis vector for rotation (length units)
+  omega = mandatory keyword
+  om = rotational velocity around specifyied axis (rad/time units)
+<em>curvature</em> value = c
+  c = maximum angle between mesh faces belonging to the same surface (in degree)
+<em>curvature_tolerant</em> value = ct
+  ct = yes or no
+</pre>
+<ul class="simple">
+<li>zero or more module_keywords/module_value pairs may be appended if a mesh module is used</li>
+</ul>
+<div class="highlight-python"><pre>see the respective mesh module parameter list for details</pre>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix cad all mesh/surface file mesh.stl type 1
+fix cad1 all mesh/surface/stress/deform file meshes/plate.stl type 1 scale 1.0 wear finnie</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from
+ASCII STL files or legacy ASCII VTK files. Style <em>mesh/surface</em> is a general surface mesh, and
+<em>mesh/surface/planar</em> represents a planar mesh. <em>mesh/surface/planar</em> requires the mesh to
+consist of only 1 planar face.</p>
+<p>The <em>region</em> keyword can be used to filter the elements which are imported. An element is only
+imported if all of its vertices is inside the specified <a class="reference internal" href="region.html"><em>region</em></a>. Please note that
+the geometric extent of this <a class="reference internal" href="region.html"><em>region</em></a> refer to the unscaled, unmoved, and unrotated
+original state of the geometry.</p>
+<p>Generall, you can apply scaling, offset and rotation to the imported mesh via keywords <em>scale</em>,
+<em>move</em>, <em>rotate</em>. Operations are applied in the order as they are specified. The rotation via <em>rotate</em> is performed around the rotation axis that goes through the origin (0,0,0) and in the direction of <em>axis</em>.</p>
+<p>The group-ID defines which particles will &#8220;see&#8221; the mesh, in case it is used as a granular wall.</p>
+<p>One fix represents one wall with a specific material, where the material is identified
+via keyword <em>type</em>. If multiple meshes with different materials are desired, the respective
+meshes must be imported with different fix mesh/surface commands.</p>
+<p>With the <em>temperature</em> keyword, you can define a constant temperature for a mesh in
+conjunction with heat conduction via <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">heat/gran</span></tt>. Note that the
 actual calculation of the heat transfer happens only if you use the mesh in conjunction
-with a granular wall, see <A HREF = "fix_wall_gran.html">fix wall/gran</A>.
-</P>
-<P>With the optional <I>surface_vel</I> keyword, you can specify the imported mesh as conveyor belt.
+with a granular wall, see <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>.</p>
+<p>With the optional <em>surface_vel</em> keyword, you can specify the imported mesh as conveyor belt.
 The velocity direction for each mesh face is given by the projection of the conveyor
 belt velocity parallel to the mesh face, the velocity magnitude for each mesh face is
 equal to the conveyor belt velocity. This ensures the model makes sense also in case
 the mesh is curved. Likewise, the optional rotation model activated via keyword
-<I>surface_ang_vel</I> mimics rotational motion of the mesh (e.g. for modeling a shear cell)
-</P>
-<P><B>Quality checks / error and warning messages:</B>
-</P>
-<P>LIGGGHTS(R)-PUBLIC checks a couple of quality criteria upon loading a mesh. LIGGGHTS(R)-PUBLIC tries
-to give you as much information about the issue as possible.
-</P>
-<P>Warning messages:
-</P>
-<LI>There should be no angle < 0.5 degrees in any element (soft limit for angles) 
-
-<LI>All nodes should be within the simlation box 
-
-<P>If any of the obove rules is not fulfilled, a warning is generated. Keyword
-<I>verbose</I> controls if details about the warning are written to the screen.
-</P>
-<P>Error messages:
-</P>
-<LI>The <I>curvature</I> must not be larger than any angle in any mesh element 
-
-<LI>There must be no element with an angle <  0.0181185 degrees in any element (hard limit for angles) 
-
-<LI>The number of neighbor elements must be <= 5 for any element 
-
-<LI>Mesh elements must not be duplicate 
-
-<LI>Coplanar mesh elements that share an edge must not overlap 
-
-<LI>Mesh elements must not leave the simulation domain (based on the center of the element) 
-
-<P>If any of the obove rules is not fulfilled, an error is generated and
-LIGGGHTS(R)-PUBLIC halts. Error messages are always <I>verbose</I>.
+<em>surface_ang_vel</em> mimics rotational motion of the mesh (e.g. for modeling a shear cell)</p>
+<p><strong>Mesh modules:</strong></p>
+<p>The &#8220;mesh/surface&#8221; fix allows for several mesh modules to be appended.</p>
+<ul class="simple">
+<li><tt class="xref doc docutils literal"><span class="pre">6dof</span></tt></li>
+<li><tt class="xref doc docutils literal"><span class="pre">binning</span></tt></li>
+<li><tt class="xref doc docutils literal"><span class="pre">contact</span></tt></li>
+<li><tt class="xref doc docutils literal"><span class="pre">deform</span></tt></li>
+<li><tt class="xref doc docutils literal"><span class="pre">heattransfer</span></tt></li>
+<li><a class="reference internal" href="mesh_module_liquidtransfer.html"><em>liquidtransfer</em></a></li>
+<li><a class="reference internal" href="mesh_module_servo.html"><em>servo</em></a></li>
+<li><a class="reference internal" href="mesh_module_stress.html"><em>stress</em></a></li>
+</ul>
+<p>Note that some of these modules are dependent on each other and some are mutually exclusive.
+The order of the mesh modules is important and the arguments for each mesh module need to
+be appended in the same order as the modules.</p>
+<p><strong>Quality checks / error and warning messages:</strong></p>
+<p>LIGGGHTS(R)-PUBLIC checks a couple of quality criteria upon loading a mesh. LIGGGHTS(R)-PUBLIC tries
+to give you as much information about the issue as possible.</p>
+<p>Warning messages:</p>
+<ul class="simple">
+<li>There should be no angle &lt; 0.5 degrees in any element (soft limit for angles)</li>
+<li>All nodes should be within the simlation box</li>
+</ul>
+<p>If any of the obove rules is not fulfilled, a warning is generated. Keyword
+<em>verbose</em> controls if details about the warning are written to the screen.</p>
+<p>Error messages:</p>
+<ul class="simple">
+<li>The <em>curvature</em> must not be larger than any angle in any mesh element</li>
+<li>There must be no element with an angle &lt;  0.0181185 degrees in any element (hard limit for angles)</li>
+<li>The number of neighbor elements must be &lt;= 5 for any element</li>
+<li>Mesh elements must not be duplicate</li>
+<li>Coplanar mesh elements that share an edge must not overlap</li>
+<li>Mesh elements must not leave the simulation domain (based on the center of the element)</li>
+</ul>
+<p>If any of the obove rules is not fulfilled, an error is generated and
+LIGGGHTS(R)-PUBLIC halts. Error messages are always <em>verbose</em>.
 If LIGGGHTS(R)-PUBLIC halts due to the last error, you might think about (a)
-changing the mesh import parameters (<I>scale</I>, <I>move</I>, <I>rotate</I>), (b)
-changing the mesh dynamics if a <A HREF = "fix_move_mesh.html">fix move/mesh</A> is
-applied or using <A HREF = "boundary.html">boundary m m m</A>
-</P>
-<P>There are a couple of features that help you read / repair a mesh which 
-can not be read correctly in the first place:
-</P>
-<LI><I>precision</I> 
-
-<LI><I>curvature</I> 
-
-<LI><I>heal</I> 
-
-<LI><I>element_exclusion_list</I> 
-
-<LI><I>min_feature_length</I> 
-
-<LI><I>curvature_tolerant</I> 
-
-<P>The <I>precision</I> keyword specifies how far away mesh nodes can be at maximum to
+changing the mesh import parameters (<em>scale</em>, <em>move</em>, <em>rotate</em>), (b)
+changing the mesh dynamics if a <a class="reference internal" href="fix_move_mesh.html"><em>fix move/mesh</em></a> is
+applied or using <a class="reference internal" href="boundary.html"><em>boundary m m m</em></a></p>
+<p>There are a couple of features that help you read / repair a mesh which
+can not be read correctly in the first place:</p>
+<ul class="simple">
+<li><em>precision</em></li>
+<li><em>curvature</em></li>
+<li><em>heal</em></li>
+<li><em>element_exclusion_list</em></li>
+<li><em>min_feature_length</em></li>
+<li><em>curvature_tolerant</em></li>
+</ul>
+<p>The <em>precision</em> keyword specifies how far away mesh nodes can be at maximum to
 be recognized as identical. This is important for building the topology of the mesh
 and identify elements as neighbors. Normally, this should only be changed if the mesh file
-you are working with is suffering from precsion / round-off issues.
-</P>
-<P>The <I>curvature</I> keyword lets you specify up to which angle between two triangles the
+you are working with is suffering from precsion / round-off issues.</p>
+<p>The <em>curvature</em> keyword lets you specify up to which angle between two triangles the
 triangles should be treated as belonging to the same surface (e.g. useful for bends).
 This angle is used to decide if (a) contact history is copied from one triangle to
 the other as the contact point proceeds and (b) if edge and corner interaction is
-calculated.
-</P>
-<P>If LIGGGHTS(R)-PUBLIC stalls because of duplicate elements, you can try setting
-<I>heal</I> to auto_remove_duplicates. LIGGGHTS(R)-PUBLIC will then try to heal the geometry
-by removing duplicate elements.
-</P>
-<P>With the optional <I>element_exclusion_list</I> keyword is used in mode 'write', LIGGGHTS(R)-PUBLIC 
-will write a list of elements which 
-</P>
-<LI>have more than the allowed 5 face neighbors per surface 
-
-<LI>have an angle below 0.0181185 degrees 
-
-<LI>are duplicate 
-
-<P>element to a file. The 'read' mode can then use this file and will skip the elements in 
-the list. However, you can also manually write such a file to exclude elements you do not 
-want to have included
-</P>
-<P>IMPORTANT NOTE: The <I>element_exclusion_list write</I> model works in serial only. However,
+calculated.</p>
+<p>If LIGGGHTS(R)-PUBLIC stalls because of duplicate elements, you can try setting
+<em>heal</em> to auto_remove_duplicates. LIGGGHTS(R)-PUBLIC will then try to heal the geometry
+by removing duplicate elements.</p>
+<p>With the optional <em>element_exclusion_list</em> keyword is used in mode &#8216;write&#8217;, LIGGGHTS(R)-PUBLIC
+will write a list of elements which</p>
+<ul class="simple">
+<li>have more than the allowed 5 face neighbors per surface</li>
+<li>have an angle below 0.0181185 degrees</li>
+<li>are duplicate</li>
+</ul>
+<p>element to a file. The &#8216;read&#8217; mode can then use this file and will skip the elements in
+the list. However, you can also manually write such a file to exclude elements you do not
+want to have included</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The <em>element_exclusion_list write</em> model works in serial only. However,
 this is not a real restriction, since you can generate the exclusion lists in serial,
-but then read them to import the mesh into a parallel simulation
-</P>
-<P>IMPORTANT NOTE: If you use the 'heal' or 'element_exclusion_list' keywords, you should 
-check the changes to the geometry, e.g. by using a <A HREF = "dump.html">dump mesh/stl</A> command.
-</P>
-<P>With the <I>min_feature_length</I> option, you can exlude elements which do not belong
-to an entity which has any element larger than <I>min_feature_length</I>. In this context,
-'entity' is defined by the 'neighborhood' of the element.
-<I>min_feature_length</I> also writes to the exclusion list, and can thus only be used along 
-with the 'element_exclusion_list' feature. This feature is only available in the
-PREMIUM version of LIGGGHTS.
-</P>
-<P>The <I>curvature_tolerant</I> keyword can simply turn off the check that
-the <I>curvature</I> must not be larger than any angle in any mesh element.
-This is typically not recommended, but can be used as a last resort measure.
-</P>
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>This fix writes the STL data to binary <A HREF = "restart.html">restart files</A> to be able to
+but then read them to import the mesh into a parallel simulation</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you use the &#8216;heal&#8217; or &#8216;element_exclusion_list&#8217; keywords, you should
+check the changes to the geometry, e.g. by using a <a class="reference internal" href="dump.html"><em>dump mesh/stl</em></a> command.</p>
+</div>
+<p>With the <em>min_feature_length</em> option, you can exlude elements which do not belong
+to an entity which has any element larger than <em>min_feature_length</em>. In this context,
+&#8216;entity&#8217; is defined by the &#8216;neighborhood&#8217; of the element.
+<em>min_feature_length</em> also writes to the exclusion list, and can thus only be used along
+with the &#8216;element_exclusion_list&#8217; feature. This feature is only available in the
+PREMIUM version of LIGGGHTS.</p>
+<p>The <em>curvature_tolerant</em> keyword can simply turn off the check that
+the <em>curvature</em> must not be larger than any angle in any mesh element.
+This is typically not recommended, but can be used as a last resort measure.</p>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>This fix writes the STL data to binary <a class="reference internal" href="restart.html"><em>restart files</em></a> to be able to
 correctly resume the simulation in case the mesh is moved. None of the
-<A HREF = "fix_modify.html">fix_modify</A> options are relevant to this fix. No global
-scalar or vector or per-atom quantities are stored by this fix for access by
-various <A HREF = "Section_howto.html#4_15">output commands</A>. No parameter of this fix
-can be used with the <I>start/stop</I> keywords of the <A HREF = "run.html">run</A> command.
-This fix is not invoked during <A HREF = "minimize.html">energy minimization</A>.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>To date, only ASCII STL and VTK files can be read (binary is not supported).
+<a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix directly. However,
+some mesh modules do have fix_modify options, please refer to the respective module
+for further information.</p>
+<p>No global scalar or vector or per-atom quantities are stored by this fix for access by
+various <em class="xref std std-ref">output commands</em>. No parameter of this fix
+can be used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.
+This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>To date, only ASCII STL and VTK files can be read (binary is not supported).
 In the current implementation, each processor allocates memory for the whole
 geometry, which may lead to memory issues for very large geometries .
-It is not supported to use both the moving mesh and the conveyor belt feature.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "fix_wall_gran.html">fix wall/gran</A>
-</P>
-<P><B>Default:</B> curvature = 0.256235 degrees, precision = 1e-8, verbose = no, heal = no
-</P>
-</HTML>
+It is not supported to use both the moving mesh and the conveyor belt feature.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a></p>
+<p><strong>Default:</strong> curvature = 0.256235 degrees, precision = 1e-8, verbose = no, heal = no</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,81 +1,277 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>compute com/molecule command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>compute com/molecule command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>compute ID group-ID com/molecule 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command
-<LI>com/molecule = style name of this compute command 
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>compute 1 fluid com/molecule 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Define a computation that calculates the center-of-mass of individual
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute com/molecule command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/compute_com_molecule.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compute-com-molecule-command">
+<span id="index-0"></span><h1>compute com/molecule command<a class="headerlink" href="#compute-com-molecule-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute ID group-ID com/molecule</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
+<li>com/molecule = style name of this compute command</li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute 1 fluid com/molecule</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Define a computation that calculates the center-of-mass of individual
 molecules.  The calculation includes all effects due to atoms passing
-thru periodic boundaries.
-</P>
-<P>The x,y,z coordinates of the center-of-mass for a particular molecule
+thru periodic boundaries.</p>
+<p>The x,y,z coordinates of the center-of-mass for a particular molecule
 are only computed if one or more of its atoms are in the specified
 group.  Normally all atoms in the molecule should be in the group,
 however this is not required.  LIGGGHTS(R)-PUBLIC will warn you if this is not the
 case.  Only atoms in the group contribute to the center-of-mass
-calculation for the molecule.
-</P>
-<P>The ordering of per-molecule quantities produced by this compute is
+calculation for the molecule.</p>
+<p>The ordering of per-molecule quantities produced by this compute is
 consistent with the ordering produced by other compute commands that
 generate per-molecule datums.  Conceptually, them molecule IDs will be
 in ascending order for any molecule with one or more of its atoms in
-the specified group.
-</P>
-<P>IMPORTANT NOTE: The coordinates of an atom contribute to the
-molecule's center-of-mass in "unwrapped" form, by using the image
-flags associated with each atom.  See the <A HREF = "dump.html">dump custom</A>
-command for a discussion of "unwrapped" coordinates.  See the Atoms
-section of the <A HREF = "read_data.html">read_data</A> command for a discussion of
+the specified group.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The coordinates of an atom contribute to the
+molecule&#8217;s center-of-mass in &#8220;unwrapped&#8221; form, by using the image
+flags associated with each atom.  See the <a class="reference internal" href="dump.html"><em>dump custom</em></a>
+command for a discussion of &#8220;unwrapped&#8221; coordinates.  See the Atoms
+section of the <a class="reference internal" href="read_data.html"><em>read_data</em></a> command for a discussion of
 image flags and how they are set for each atom.  You can reset the
-image flags (e.g. to 0) before invoking this compute by using the <A HREF = "set.html">set
-image</A> command.
-</P>
-<P>IMPORTANT NOTE: If an atom is part of a rigid body (see the <A HREF = "fix_rigid.html">fix
-rigid</A> command), it's periodic image flags are altered,
+image flags (e.g. to 0) before invoking this compute by using the <a class="reference internal" href="set.html"><em>set image</em></a> command.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If an atom is part of a rigid body (see the <a class="reference internal" href="fix_rigid.html"><em>fix rigid</em></a> command), it&#8217;s periodic image flags are altered,
 and its contribution to the center-of-mass may not reflect its true
-contribution.  See the <A HREF = "fix_rigid.html">fix rigid</A> command for details.
+contribution.  See the <a class="reference internal" href="fix_rigid.html"><em>fix rigid</em></a> command for details.
 Thus, to compute the center-of-mass of rigid bodies as they cross
-periodic boundaries, you will need to post-process a <A HREF = "dump.html">dump
-file</A> containing coordinates of the atoms in the bodies.
-</P>
-<P><B>Output info:</B>
-</P>
-<P>This compute calculates a global array where the number of rows =
+periodic boundaries, you will need to post-process a <a class="reference internal" href="dump.html"><em>dump file</em></a> containing coordinates of the atoms in the bodies.</p>
+</div>
+<p><strong>Output info:</strong></p>
+<p>This compute calculates a global array where the number of rows =
 Nmolecules and the number of columns = 3 for the x,y,z center-of-mass
 coordinates of each molecule.  These values can be accessed by any
 command that uses global array values from a compute as input.  See
-<A HREF = "Section_howto.html#howto_8">Section_howto 15</A> for an overview of
-LIGGGHTS(R)-PUBLIC output options.
-</P>
-<P>The array values are "intensive".  The array values will be in
-distance <A HREF = "units.html">units</A>.
-</P>
-<P><B>Restrictions:</B> none
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "compute_com.html">compute com</A>
-</P>
-<P><B>Default:</B> none
-</P>
-</HTML>
+<a class="reference internal" href="Section_howto.html#howto-8"><em>Section_howto 15</em></a> for an overview of
+LIGGGHTS(R)-PUBLIC output options.</p>
+<p>The array values are &#8220;intensive&#8221;.  The array values will be in
+distance <a class="reference internal" href="units.html"><em>units</em></a>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="compute_com.html"><em>compute com</em></a></p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

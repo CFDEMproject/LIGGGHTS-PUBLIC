@@ -89,7 +89,6 @@ enum{ID,MOL,TYPE,ELEMENT,MASS,
 enum{LT,LE,GT,GE,EQ,NEQ};
 enum{INT,DOUBLE,STRING};    // same as in DumpCFG
 
-#define INVOKED_PERATOM 8
 #define ONEFIELD 32
 #define DELTA 1048576
 

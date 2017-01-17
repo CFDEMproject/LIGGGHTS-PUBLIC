@@ -154,7 +154,6 @@ class Input : protected Pointers {
   void min_modify();
   void min_style();
   void modify_timing();
-  void neigh_modify();
   void neighbor_command();
   void newton();
   void package();
@@ -168,6 +167,7 @@ class Input : protected Pointers {
   void restart();
   void run_style();
   void soft_particles(); 
+  void hard_particles();
   void special_bonds();
   void suffix();
   void thermo();

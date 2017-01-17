@@ -109,7 +109,11 @@ FixPrint::FixPrint(LAMMPS *lmp, int narg, char **arg) :
       title = new char[n];
       strcpy(title,arg[iarg+1]);
       iarg += 2;
-    } else error->all(FLERR,"Illegal fix print command");
+    } else
+    {
+        
+        error->all(FLERR,"Illegal fix print command");
+    }
   }
 
   // print file comment line

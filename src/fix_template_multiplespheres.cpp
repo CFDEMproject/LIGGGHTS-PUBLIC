@@ -79,7 +79,8 @@ using namespace LMP_PROBABILITY_NS;
 /* ---------------------------------------------------------------------- */
 
 FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, char **arg) :
-  FixTemplateSphere(lmp, narg, arg)
+  FixTemplateSphere(lmp, narg, arg),
+  scale_fact(1.0)
 {
   if(pdf_density->rand_style() != RANDOM_CONSTANT) error->all(FLERR,"Fix particletemplate/multiplespheres currently only supports constant density");
   if(pdf_radius) error->fix_error(FLERR,this,"currently does not support keyword 'radius'");
@@ -154,8 +155,16 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
           for(int i = 0; i < nspheres; i++)
           {
               if(r_sphere[i] <= 0.) error->fix_error(FLERR,this,"radius must be > 0");
-              r_sphere[i] *= (scale_fact*force->cg());
-              vectorScalarMult3D(x_sphere[i],scale_fact*force->cg());
+              if(different_type)
+              {
+                r_sphere[i] *= (scale_fact*force->cg(atom_type_sphere[i]));
+                vectorScalarMult3D(x_sphere[i],scale_fact*force->cg(atom_type_sphere[i]));
+              }
+              else
+              {
+                r_sphere[i] *= (scale_fact*force->cg(atom_type));
+                vectorScalarMult3D(x_sphere[i],scale_fact*force->cg(atom_type));
+              }
           }
 
           // calculate bounding box
@@ -178,11 +187,17 @@ FixTemplateMultiplespheres::FixTemplateMultiplespheres(LAMMPS *lmp, int narg, ch
           //read sphere r and coos, determine min and max
           for(int i = 0; i < nspheres; i++)
           {
-              r_sphere[i] = atof(arg[iarg+3])*force->cg();
+              if(different_type)
+                r_sphere[i] = atof(arg[iarg+3])*force->cg(atom_type_sphere[i]);
+              else
+                r_sphere[i] = atof(arg[iarg+3])*force->cg(atom_type);
               if(r_sphere[i] <= 0.) error->fix_error(FLERR,this,"radius must be >0");
               for(int j = 0; j < 3; j++)
               {
-                x_sphere[i][j] = atof(arg[iarg+j])*force->cg();
+                if(different_type)
+                  x_sphere[i][j] = atof(arg[iarg+j])*force->cg(atom_type_sphere[i]);
+                else
+                  x_sphere[i][j] = atof(arg[iarg+j])*force->cg(atom_type);
                 if (x_sphere[i][j]-r_sphere[i]<x_min[j]) x_min[j]=x_sphere[i][j]-r_sphere[i];
                 if (x_sphere[i][j]+r_sphere[i]>x_max[j]) x_max[j]=x_sphere[i][j]+r_sphere[i];
               }

@@ -61,7 +61,6 @@ using namespace LAMMPS_NS;
 
 enum{INT,DOUBLE};
 
-#define INVOKED_LOCAL 16
 #define ONEFIELD 32
 #define DELTA 1048576
 
@@ -160,7 +159,7 @@ DumpLocal::~DumpLocal()
 
 void DumpLocal::init_style()
 {
-  if (sort_flag && sortcol == 0)
+  if (sortBuffer && sortBuffer->sort_set() && sortBuffer->get_sortcol() == 0)
     error->all(FLERR,"Dump local cannot sort by atom ID");
 
   delete [] format;

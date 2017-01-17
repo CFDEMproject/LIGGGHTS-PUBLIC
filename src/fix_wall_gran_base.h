@@ -50,7 +50,6 @@
 #include "fix_contact_property_atom_wall.h"
 #include "contact_interface.h"
 #include "compute_pair_gran_local.h"
-#include "fix_mesh_surface_stress.h"
 #include "tri_mesh.h"
 #include "settings.h"
 #include <string.h>
@@ -100,11 +99,11 @@ public:
 #endif
   }
 
-  virtual void settings(int nargs, char ** args) {
+  virtual void settings(int nargs, char ** args, IContactHistorySetup *hsetup) {
     Settings settings(lmp);
     cmodel.registerSettings(settings);
     bool success = settings.parseArguments(nargs, args);
-    cmodel.postSettings();
+    cmodel.postSettings(hsetup);
 
 #ifdef LIGGGHTS_DEBUG
     if(comm->me == 0) {
@@ -152,6 +151,8 @@ public:
     // interleave these stores with the double calculations above.
     ForceData i_forces;
     ForceData j_forces;
+    memset(&i_forces, 0, sizeof(ForceData));
+    memset(&j_forces, 0, sizeof(ForceData));
     sidata.v_i = v;
     sidata.v_j = vwall;
     sidata.omega_i = omega;
@@ -180,7 +181,7 @@ public:
     double force_old[3]={}, f_pw[3];
 
     // if force should be stored - remember old force
-    if(wg->store_force() || wg->stress_flag() || wg->fix_meshforce_pbc())
+    if(wg->store_force() || fix_mesh || wg->fix_meshforce_pbc())
         vectorCopy3D(f,force_old);
 
     // add to cwl
@@ -188,6 +189,11 @@ public:
     {
       double contactPoint[3];
       vectorSubtract3D(x,sidata.delta,contactPoint);
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(atom->superquadric_flag) {
+        vectorCopy3D(sidata.contact_point, contactPoint);
+      }
+#endif
       wg->compute_wall_gran_local()->add_wall_1(iMesh,mesh->id(iTri),ip,contactPoint,vwall);
     }
 
@@ -199,9 +205,8 @@ public:
       eny = sidata.delta[1] * delta_inv;
       enz = sidata.delta[2] * delta_inv;
       sidata.radi = cbrt(0.75 * atom->volume[ip] / M_PI);
-      Superquadric particle(sidata.pos_i, sidata.quat_i, sidata.shape_i, sidata.roundness_i);
+      Superquadric particle(atom->x[ip], atom->quaternion[ip], atom->shape[ip], atom->roundness[ip]);
       sidata.koefi = particle.calc_curvature_coefficient(sidata.contact_point);
-      sidata.inertia_i = atom->inertia[ip];
     } else { // sphere case
       enx = sidata.delta[0] * rinv;
       eny = sidata.delta[1] * rinv;
@@ -224,7 +229,8 @@ public:
        // if there is a surface touch, there will always be a force
        sidata.has_force_update = true;
     }
-    else
+    // surfacesClose is not supported for convex particles
+    else if (!atom->shapetype_flag)
     {
        // apply force update only if selected contact models have requested it
        sidata.has_force_update = false;
@@ -251,7 +257,10 @@ public:
           const double tor1 = i_forces.delta_torque[0]*sidata.area_ratio;
           const double tor2 = i_forces.delta_torque[1]*sidata.area_ratio;
           const double tor3 = i_forces.delta_torque[2]*sidata.area_ratio;
-          wg->compute_wall_gran_local()->add_wall_2(sidata.i,fx,fy,fz,tor1,tor2,tor3,sidata.contact_history,sidata.rsq);
+          double normal[3];
+          vectorCopy3D(sidata.en, normal);
+          vectorNegate3D(normal);
+          wg->compute_wall_gran_local()->add_wall_2(sidata.i,fx,fy,fz,tor1,tor2,tor3,sidata.contact_history,sidata.rsq, normal);
     }
 
     // add heat flux
@@ -260,7 +269,7 @@ public:
        wg->addHeatFlux(mesh,ip,sidata.radi,sidata.deltan,1.);
 
     // if force should be stored or evaluated
-    if((sidata.has_force_update) && (wg->store_force() || wg->stress_flag() || wg->fix_meshforce_pbc() || (fix_mesh && fix_mesh->trackPerElementTemp())) )
+    if(sidata.has_force_update && (wg->store_force() || wg->fix_meshforce_pbc() || (fix_mesh)) )
     {
         vectorSubtract3D(f,force_old,f_pw);
 
@@ -270,16 +279,13 @@ public:
         if(wg->fix_meshforce_pbc() && ip >= atom->nlocal)
             vectorAdd3D (wg->fix_meshforce_pbc()->array_atom[ip], f_pw, wg->fix_meshforce_pbc()->array_atom[ip]);
 
-        if( (wg->stress_flag() && fix_mesh->trackStress()) || (fix_mesh && fix_mesh->trackPerElementTemp()) )
+        if (fix_mesh)
         {
             double delta[3];
             delta[0] = -sidata.delta[0];
             delta[1] = -sidata.delta[1];
             delta[2] = -sidata.delta[2];
-            static_cast<FixMeshSurfaceStress*>(fix_mesh)->add_particle_contribution
-            (
-               ip,f_pw,delta,iTri,vwall
-            );
+            fix_mesh->add_particle_contribution (ip,f_pw,delta,iTri,vwall);
         }
     }
   }

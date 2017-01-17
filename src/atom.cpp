@@ -59,7 +59,6 @@
 #include "style_atom.h"
 #include "atom_vec.h"
 #include "atom_vec_ellipsoid.h"
-#include "nonspherical_flags.h"
 #include "comm.h"
 #include "neighbor.h"
 #include "force.h"
@@ -1417,7 +1416,10 @@ void Atom::setup_sort_bins()
       binsize = pow(1.0*CUDA_CHUNK/natoms*area,1.0/2.0);
     }
   }
-  if (binsize == 0.0) error->all(FLERR,"Atom sorting has bin size = 0.0");
+  if (binsize == 0.0 && !lmp->wb)
+    error->all(FLERR,"Atom sorting has bin size = 0.0");
+  else if (binsize == 0.0)
+    error->all(FLERR,"No particles in the simulation. Please add particle templates");
 
   double bininv = 1.0/binsize;
 
@@ -1564,6 +1566,37 @@ void Atom::update_callback(int ifix)
 }
 
 /* ----------------------------------------------------------------------
+   look if has callback for this fix ID
+------------------------------------------------------------------------- */
+
+bool Atom::has_callback(const char *id, int flag)
+{
+  int ifix;
+  for (ifix = 0; ifix < modify->nfix; ifix++)
+    if (strcmp(id,modify->fix[ifix]->id) == 0) break;
+
+  // compact the list of callbacks
+
+  if (flag == 0) {
+    int match;
+    for (match = 0; match < nextra_grow; match++)
+      if (extra_grow[match] == ifix) return true;
+
+  } else if (flag == 1) {
+    int match;
+    for (match = 0; match < nextra_restart; match++)
+      if (extra_restart[match] == ifix) return true;
+
+  } else if (flag == 2) {
+    int match;
+    for (match = 0; match < nextra_border; match++)
+      if (extra_border[match] == ifix) return true;
+  }
+
+  return false;
+}
+
+/* ----------------------------------------------------------------------
    find custom per-atom vector with name
    return index if found, and flag = 0/1 for int/double
    return -1 if not found
@@ -1695,7 +1728,7 @@ void *Atom::extract(const char *name,int &len)
   if (strcmp(name,"vfrac") == 0) return (void *) vfrac;
   if (strcmp(name,"s0") == 0) return (void *) s0;
 
-#if SUPERQUADRIC_ACTIVE_FLAG
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
   if (strcmp(name,"shape") == 0 && shape!=NULL) return (void *) shape;
 
   len = 4;

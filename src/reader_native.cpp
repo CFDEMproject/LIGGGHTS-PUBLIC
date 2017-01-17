@@ -56,7 +56,7 @@ using namespace LAMMPS_NS;
 
 // also in read_dump.cpp
 
-enum{ID,TYPE,X,Y,Z,VX,VY,VZ,Q,IX,IY,IZ,RADIUS,MASS,DENSITY};
+enum{ID,TYPE,X,Y,Z,VX,VY,VZ,OMEGAX,OMEGAY,OMEGAZ,Q,IX,IY,IZ,RADIUS,MASS,DENSITY,FX,FY,FZ};
 enum{UNSET,NOSCALE_NOWRAP,NOSCALE_WRAP,SCALE_NOWRAP,SCALE_WRAP};
 
 /* ---------------------------------------------------------------------- */
@@ -286,6 +286,13 @@ bigint ReaderNative::read_header(double box[3][3], int &triclinic,
     else if (fieldtype[i] == VZ)
       fieldindex[i] = find_label("vz",nwords,labels);
 
+    else if (fieldtype[i] == OMEGAX)
+      fieldindex[i] = find_label("omegax",nwords,labels);
+    else if (fieldtype[i] == OMEGAY)
+      fieldindex[i] = find_label("omegay",nwords,labels);
+    else if (fieldtype[i] == OMEGAZ)
+      fieldindex[i] = find_label("omegaz",nwords,labels);
+
     else if (fieldtype[i] == Q)
       fieldindex[i] = find_label("q",nwords,labels);
 
@@ -304,6 +311,13 @@ bigint ReaderNative::read_header(double box[3][3], int &triclinic,
       fieldindex[i] = find_label("iy",nwords,labels);
     else if (fieldtype[i] == IZ)
       fieldindex[i] = find_label("iz",nwords,labels);
+
+    else if (fieldtype[i] == FX)
+      fieldindex[i] = find_label("fx",nwords,labels);
+    else if (fieldtype[i] == FY)
+      fieldindex[i] = find_label("fy",nwords,labels);
+    else if (fieldtype[i] == FZ)
+      fieldindex[i] = find_label("fz",nwords,labels);
   }
 
   delete [] labels;
@@ -357,6 +371,7 @@ void ReaderNative::read_atoms(int n, int nfield, double **fields)
 
 int ReaderNative::find_label(const char *label, int n, char **labels)
 {
+  
   for (int i = 0; i < n; i++)
     if (strcmp(label,labels[i]) == 0) return i;
   return -1;

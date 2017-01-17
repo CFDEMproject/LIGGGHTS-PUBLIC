@@ -20,7 +20,13 @@ zero or more keyword/value pairs may be appended to the end (after all models ar
     off = no tangential damping 
   {heating_normal_hertz} values = 'on' or 'off'
     on = model contributes to surface heating in the frame of "surface sphere/heatable"_gran_surface_sphere_heatable.html
-    off = model does not contributes to surface heating :pre
+    off = model does not contributes to surface heating
+  {disableNormalWhenBonded} values = 'on' or 'off'
+    on = if the "cohesion bond"_gran_cohesion_bond.html model is used, then the normal force is only added if the two particles are not bonded
+    of = the normal force is always added if two particles overlap
+  {computeElasticPotential} values = 'on' or 'off'
+    on = the normal model saves the current elastic potential for each contact for the use in "compute elastic_potential"_compute_elastic_potential.html
+    of = no values are saved :pre
 
 [Description:]
 
@@ -78,6 +84,11 @@ This model contributes to surface heating in the frame of
 "surface sphere/heatable"_gran_surface_sphere_heatable.html if the 
 appropriate flag is activated (only available in the PREMIUM version).
 
+When the "cohesion model bond"_gran_cohesion_bond.html is used the
+{disableNormalWhenBonded} keyword can be used. If this parameter is set to 'on' then the
+normal model will only compute its contribution if the two neighboring particles do not
+have an active bond.
+
 [Force Limiting:]
 
 Note, that not using limitForce might lead to attractive forces between particles and walls, 
@@ -92,6 +103,15 @@ When using the limitForce, the specified coefficient of restitution is only appr
 become problematic for low coefficients of resitution as showin in Schwager and Poschel.
 
 {heating_normal_hertz} may not be available in your version of the software.
+
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command should lead to
+statistically equivalent dynamics and system state.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
 
 [Default:]
 

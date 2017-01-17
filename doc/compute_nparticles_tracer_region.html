@@ -1,108 +1,294 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>compute nparticles/tracer/region command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>compute nparticles/tracer/region command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>compute ID group-ID nparticles/tracer/region 
-</PRE>
-<LI>ID, group-ID are documented in <A HREF = "compute.html">compute</A> command  
-
-<LI>nparticles/tracer/region = style name of this compute command 
-
-<LI>region_count = obligatory keyword 
-
-<LI>region-ID = ID of region atoms must be in to be counted 
-
-<LI>tracer = obligatory keyword 
-
-<LI>tracer-ID = ID of a fix of type <A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>  
-
-<LI>zero or more keyword/value pairs may be appended to args 
-
-<LI>keyword = <I>periodic</I> or <I>reset_marker</I> 
-
-<PRE>  <I>periodic</I> value = dim image
-    dim = <I>x</I> or <I>y</I> or <I>z</I>
-    image = image that a particle has to be in to be counted (any integer number or <I>all</I>)
-  <I>reset_marker</I> value = <I>yes</I> or <I>no</I>
-    yes = un-mark particles after counting them
-    no = do not un-mark particles after counting them  
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>compute nparticles all nparticles/tracer/region region_count count tracer tr periodic z -1 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Define a computation that calculates the number and mass of marked and un-marked particles
-that are in the region speficied via the <I>region_count</I> keyword. Particles have
-to be in the group "group-ID" to be counted.
-</P>
-<P>Note that only particles marked by a <A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>
-or <A HREF = "fix_property_atom_tracer_stream.html">fix property/atom/tracer/stream</A>
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute nparticles/tracer/region command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/compute_nparticles_tracer_region.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compute-nparticles-tracer-region-command">
+<span id="index-0"></span><h1>compute nparticles/tracer/region command<a class="headerlink" href="#compute-nparticles-tracer-region-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute ID group-ID nparticles/tracer/region</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
+<li>nparticles/tracer/region = style name of this compute command</li>
+<li>region_count = obligatory keyword</li>
+<li>region-ID = ID of region atoms must be in to be counted</li>
+<li>tracer = obligatory keyword</li>
+<li>tracer-ID = ID of a fix of type <a class="reference internal" href="fix_property_atom_tracer.html"><em>fix property/atom/tracer</em></a></li>
+<li>zero or more keyword/value pairs may be appended to args</li>
+<li>keyword = <em>periodic</em> or <em>reset_marker</em></li>
+</ul>
+<pre class="literal-block">
+<em>periodic</em> value = dim image
+  dim = <em>x</em> or <em>y</em> or <em>z</em>
+  image = image that a particle has to be in to be counted (any integer number or <em>all</em>)
+<em>reset_marker</em> value = <em>yes</em> or <em>no</em>
+  yes = un-mark particles after counting them
+  no = do not un-mark particles after counting them
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute nparticles all nparticles/tracer/region region_count count tracer tr periodic z -1</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Define a computation that calculates the number and mass of marked and un-marked particles
+that are in the region speficied via the <em>region_count</em> keyword. Particles have
+to be in the group &#8220;group-ID&#8221; to be counted.</p>
+<p>Note that only particles marked by a <a class="reference internal" href="fix_property_atom_tracer.html"><em>fix property/atom/tracer</em></a>
+or <a class="reference internal" href="fix_property_atom_tracer_stream.html"><em>fix property/atom/tracer/stream</em></a>
 command are counted - therefore, a valid ID of such a fix has to be
-provided via the <I>tracer</I> keyword.
-</P>
-<P>The <I>reset_marker</I> keyword controls if particles are un-marked (default)
-after they have been counted once by this command.
-</P>
-<P>IMPORTANT NOTE: If multiple compute nparticles/tracer/region
-commands are operating on the same <A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>
+provided via the <em>tracer</em> keyword.</p>
+<p>The <em>reset_marker</em> keyword controls if particles are un-marked (default)
+after they have been counted once by this command.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If multiple compute nparticles/tracer/region
+commands are operating on the same <a class="reference internal" href="fix_property_atom_tracer.html"><em>fix property/atom/tracer</em></a>
 commands, and the first compute resets the marker value, the second
-compute will not count them.
-</P>
-<P>With the <I>periodic</I> keyword, you can restrict counting/unmarking to
+compute will not count them.</p>
+</div>
+<p>With the <em>periodic</em> keyword, you can restrict counting/unmarking to
 particles which are in a specified image in a periodic simulation.
-For example, using
-</P>
-<PRE>periodic z +2 
-</PRE>
-<P>means that particles are only counted if they are in z-image #2.
+For example, using</p>
+<div class="highlight-python"><pre>periodic z +2</pre>
+</div>
+<p>means that particles are only counted if they are in z-image #2.
 By default, all particles are counted/unmarked regardless in which
-periodic image they are.
-</P>
-<P>IMPORTANT NOTE: Currently, this command only supports one periodic
-boundary restriction via the <I>periodic</I> keyword. If keyword <I>periodic</I>
-is used multiple times, the last setting will be applied.
-</P>
-<P><B>Output info:</B>
-</P>
-<P>This this compute calculates a global vector containing the following information
-(the number in brackets corresponds to the vector id):
-</P>
-<LI><B>(1)</B> total number of (marked + un-marked) particles in region 
+periodic image they are.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Currently, this command only supports one periodic
+boundary restriction via the <em>periodic</em> keyword. If keyword <em>periodic</em>
+is used multiple times, the last setting will be applied.</p>
+</div>
+<p><strong>Output info:</strong></p>
+<p>This this compute calculates a global vector containing the following information
+(the number in brackets corresponds to the vector id):</p>
+<ul class="simple">
+<li><strong>(1)</strong> total number of (marked + un-marked) particles in region</li>
+<li><strong>(2)</strong> number of marked particles in region</li>
+<li><strong>(3)</strong> total mass of (marked + un-marked) particles in region</li>
+<li><strong>(4)</strong> mass of marked particles in region</li>
+</ul>
+<p>See <a class="reference internal" href="Section_howto.html#howto-8"><em>this section</em></a> for an overview of LIGGGHTS(R)-PUBLIC output
+options.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Currently, only one periodic restriction via the <em>periodic</em> keyword
+can be used.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="fix_property_atom_tracer.html"><em>fix property/atom/tracer</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p><em>reset_marker</em> = yes, <em>periodic</em> is off per default</p>
+</div>
+</div>
 
-<LI><B>(2)</B> number of marked particles in region 
 
-<LI><B>(3)</B> total mass of (marked + un-marked) particles in region 
+           </div>
+          </div>
+          <footer>
+  
 
-<LI><B>(4)</B> mass of marked particles in region 
+  <hr/>
 
-<P>See <A HREF = "Section_howto.html#howto_8">this section</A> for an overview of LIGGGHTS(R)-PUBLIC output
-options.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>Currently, only one periodic restriction via the <I>periodic</I> keyword
-can be used.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "fix_property_atom_tracer.html">fix property/atom/tracer</A>
-</P>
-<P><B>Default:</B>
-<I>reset_marker</I> = yes, <I>periodic</I> is off per default
-</P>
-</HTML>
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

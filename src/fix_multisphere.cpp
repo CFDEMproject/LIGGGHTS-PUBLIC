@@ -91,6 +91,8 @@ FixMultisphere::FixMultisphere(LAMMPS *lmp, int narg, char **arg) :
   fix_corner_ghost_(0),
   fix_delflag_(0),
   fix_existflag_(0),
+  fix_volumeweight_ms_(0),
+  use_volumeweight_ms_(true),
   fix_gravity_(0),
   fw_comm_flag_(MS_COMM_UNDEFINED),
   rev_comm_flag_(MS_COMM_UNDEFINED),
@@ -117,7 +119,7 @@ FixMultisphere::FixMultisphere(LAMMPS *lmp, int narg, char **arg) :
             error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'allow_group_and_set'");
           iarg += 2;
           hasargs = true;
-      } else if (strcmp(arg[iarg],"allow_heatsource") == 0) {
+      }  else if (strcmp(arg[iarg],"allow_heatsource") == 0) {
           if (narg < iarg+2) error->fix_error(FLERR,this,"not enough arguments for 'allow_heatsource'");
           if (strcmp(arg[iarg+1],"yes") == 0)
               allow_heatsource_ = true;
@@ -157,6 +159,11 @@ FixMultisphere::FixMultisphere(LAMMPS *lmp, int narg, char **arg) :
   atom->add_callback(0);
   atom->add_callback(1);
 
+  if(accepts_restart_data_from_style)
+    delete []accepts_restart_data_from_style;
+  accepts_restart_data_from_style = new char[21];
+  sprintf(accepts_restart_data_from_style,"multisphere/advanced");
+
   // fix handles properties that need to be initialized at particle creation
   create_attribute = 1;
 
@@ -193,6 +200,12 @@ FixMultisphere::~FixMultisphere()
     delete &multisphere_;
 
     memory->destroy(displace_);
+
+    if(accepts_restart_data_from_style)
+    {
+        delete []accepts_restart_data_from_style;
+        accepts_restart_data_from_style = 0;
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -243,6 +256,21 @@ void FixMultisphere::post_create()
         fixarg[7]="yes";     // communicate rev
         fixarg[8]="1.";
         fix_existflag_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+    }
+    
+    if(!fix_volumeweight_ms_ && use_volumeweight_ms_)
+    {
+        const char* fixarg[9];
+        fixarg[0]="volumeweight_ms";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="volumeweight_ms";
+        fixarg[4]="scalar";
+        fixarg[5]="yes";     // restart
+        fixarg[6]="yes";      // communicate ghost
+        fixarg[7]="no";     // communicate rev
+        fixarg[8]="1.";     
+        fix_volumeweight_ms_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
     }
 
     if(modify->have_restart_data(this))
@@ -323,26 +351,6 @@ void FixMultisphere::init()
       error->fix_error(FLERR,this,"only one fix heat/gran supported");
   fix_heat_ = static_cast<FixHeatGran*>(modify->find_fix_style("heat/gran",0));
 
-  if (fix_heat_ && !allow_heatsource_) {
-      // check if heatsource is active for multisphere particles
-      for (int i = 0; i < atom->nlocal+atom->nghost; i++)
-      {
-          // skip if atom not in rigid body
-          if(body_[i] < 0) continue;
-
-          int ibody = map(body_[i]);
-
-          // skip if body not owned by this proc
-          if (ibody < 0) continue;
-
-          if(!domain->is_owned_or_first_ghost(i))
-              continue;
-
-          if (!MathExtraLiggghts::compDouble(fix_heat_->heatSource[i],0.,1e-6))
-              error->fix_error(FLERR,this,"The multisphere heattransfer does not support heatsources");
-      }
-  }
-
   if(domain->triclinic || dynamic_cast<DomainWedge*>(domain))
     error->fix_error(FLERR,this,"does not work with triclinic or wedge box");
 
@@ -410,7 +418,28 @@ void FixMultisphere::setup(int vflag)
         vatom[i][n] *= 2.0;
   }
 
-  calc_force();
+  if (fix_heat_ && !allow_heatsource_) {
+      // check if heatsource is active for multisphere particles
+
+      for (int i = 0; i < nlocal; i++)
+      {
+          // skip if atom not in rigid body
+          if(body_[i] < 0) continue;
+
+          int ibody = map(body_[i]);
+
+          // skip if body not owned by this proc
+          if (ibody < 0) continue;
+
+          if(!domain->is_owned_or_first_ghost(i))
+              continue;
+
+          if (!MathExtraLiggghts::compDouble(fix_heat_->fix_heatSource->vector_atom[i],0.,1e-6))
+              error->fix_error(FLERR,this,"The multisphere heattransfer does not support heatsources");
+      }
+  }
+
+  calc_force(true);
 
 }
 
@@ -453,6 +482,36 @@ void FixMultisphere::copy_arrays(int i, int j,int delflag)
 }
 
 /* ---------------------------------------------------------------------- */
+/*
+int FixMultisphere::getMask(int ibody)
+{
+
+  int    *mask     = atom->mask;
+  int nloop = 0;
+  int nlocal = atom->nlocal;
+  int nghost = atom->nghost;
+
+  nloop = nlocal+nghost;
+  int counter = 0;
+  int mask_curr = 0, mask_prev = 0;
+  for (int i = 0; i < nloop; i++) {
+    if (body_[i] < 0) continue;
+    if(ibody == map(body_[i])) {
+      mask_curr = mask[i];
+      if(counter > 0) {
+        if(mask_prev != mask_curr)
+          error->one(FLERR,"Atoms in a multisphere particle have different group-IDs");
+      }
+      mask_prev = mask_curr;
+      counter ++;
+    }
+  }
+  return mask_curr;
+
+}
+*/
+
+/* ---------------------------------------------------------------------- */
 
 void FixMultisphere::initial_integrate(int vflag)
 {
@@ -479,10 +538,16 @@ void FixMultisphere::initial_integrate(int vflag)
   if(strstr(style,"nointegration"))
     return;
 
+  int n_stream = modify->n_fixes_style("insert/stream");
+  bool has_stream = n_stream > 0;
+
   for (int ibody = 0; ibody < nbody; ibody++)
   {
+    /*
+    if(!(getMask(ibody) & groupbit) )
+      continue;*/
 
-    if(timestep < start_step[ibody])
+    if(has_stream && timestep < start_step[ibody])
     {
         vectorCopy3D(v_integrate[ibody],vcm[ibody]);
 
@@ -586,15 +651,22 @@ void FixMultisphere::final_integrate()
 
   // calculate forces and torques on body
 
-  calc_force();
+  calc_force(false);
 
   if(strstr(style,"nointegration"))
     return;
 
+  int n_stream = modify->n_fixes_style("insert/stream");
+  bool has_stream = n_stream > 0;
+
   // resume integration
   for (int ibody = 0; ibody < nbody; ibody++)
   {
-    if(timestep < start_step[ibody]) continue;
+    /*
+    if (!(getMask(ibody) & groupbit))
+      continue; */
+
+    if(has_stream && timestep < start_step[ibody]) continue;
 
     // update vcm by 1/2 step
 
@@ -629,7 +701,7 @@ void FixMultisphere::final_integrate()
    v = Vcm + (W cross (x - Xcm))
 ------------------------------------------------------------------------- */
 
-void FixMultisphere::calc_force()
+void FixMultisphere::calc_force(bool setupflag)
 {
   int ibody;
   tagint *image = atom->image;
@@ -651,6 +723,9 @@ void FixMultisphere::calc_force()
 
   fw_comm_flag_ = MS_COMM_FW_F_TORQUE;
   forward_comm();
+  
+  if(setupflag)
+    fix_volumeweight_ms_->do_forward_comm();
 
   double unwrap[3],dx,dy,dz;
 
@@ -702,6 +777,9 @@ void FixMultisphere::calc_force()
       for (ibody = 0; ibody < nbody; ibody++)
           temp_old[ibody] = temp[ibody];
 
+      if(setupflag)
+        vectorZeroizeN(temp,nbody);
+
       // caclulate temperature from single particles
       for (int i = 0; i < nlocal+nghost; i++)
       {
@@ -718,7 +796,11 @@ void FixMultisphere::calc_force()
 
           //if (screen) fprintf(screen, "Update temperature for particle i = %d\n",i);
           //if (screen) fprintf(screen, "Heat flux of particle %d is %g\n",i,fix_heat_->heatFlux[i]);
-          temp[ibody] += fix_heat_->Temp[i] - temp_old[ibody]; //fix_heat_->heatFlux[i]*update->dt/(masstotal[ibody]);
+
+          if(!setupflag)
+            temp[ibody] += fix_heat_->fix_temp->vector_atom[i] - temp_old[ibody]; //fix_heat_->heatFlux[i]*update->dt/(masstotal[ibody]);
+          else
+            temp[ibody] += fix_volumeweight_ms_->vector_atom[i] * fix_heat_->fix_temp->vector_atom[i];
       }
 
       // set temperature of single particles
@@ -735,7 +817,7 @@ void FixMultisphere::calc_force()
           if(!domain->is_owned_or_first_ghost(i))
               continue;
 
-          fix_heat_->Temp[i] = temp[ibody];
+          fix_heat_->fix_temp->vector_atom[i] = temp[ibody];
       }
 
       rev_comm_flag_ = MS_COMM_REV_TEMP;
@@ -782,7 +864,7 @@ void FixMultisphere::set_xv(int ghostflag)
 {
   int ibody;
   int xbox,ybox,zbox;
-  double x0,x1,x2,v0,v1,v2,fc0,fc1,fc2,massone;
+  double x0=0.0,x1=0.0,x2=0.0,v0=0.0,v1=0.0,v2=0.0,massone;
   double vr[6];
 
   tagint *image = atom->image;
@@ -867,9 +949,9 @@ void FixMultisphere::set_xv(int ghostflag)
     if (evflag && i < nlocal) { 
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
-      fc0 = massone*(v[i][0] - v0)/dtf - f[i][0];
-      fc1 = massone*(v[i][1] - v1)/dtf - f[i][1];
-      fc2 = massone*(v[i][2] - v2)/dtf - f[i][2];
+      const double fc0 = massone*(v[i][0] - v0)/dtf - f[i][0];
+      const double fc1 = massone*(v[i][1] - v1)/dtf - f[i][1];
+      const double fc2 = massone*(v[i][2] - v2)/dtf - f[i][2];
 
       vr[0] = 0.5*x0*fc0;
       vr[1] = 0.5*x1*fc1;
@@ -900,7 +982,7 @@ void FixMultisphere::set_v(int ghostflag)
 {
   int ibody;
   int xbox,ybox,zbox;
-  double x0,x1,x2,v0,v1,v2,fc0,fc1,fc2,massone;
+  double x0=0.0,x1=0.0,x2=0.0,v0=0.0,v1=0.0,v2=0.0,massone;
   double delta[3],vr[6];
 
   double **x = atom->x;
@@ -963,9 +1045,9 @@ void FixMultisphere::set_v(int ghostflag)
     if (evflag && i < nlocal) { 
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
-      fc0 = massone*(v[i][0] - v0)/dtf - f[i][0];
-      fc1 = massone*(v[i][1] - v1)/dtf - f[i][1];
-      fc2 = massone*(v[i][2] - v2)/dtf - f[i][2];
+      const double fc0 = massone*(v[i][0] - v0)/dtf - f[i][0];
+      const double fc1 = massone*(v[i][1] - v1)/dtf - f[i][1];
+      const double fc2 = massone*(v[i][2] - v2)/dtf - f[i][2];
 
       xbox = (image[i] & IMGMASK) - IMGMAX;
       ybox = (image[i] >> IMGBITS & IMGMASK) - IMGMAX;
@@ -1067,8 +1149,8 @@ void FixMultisphere::pre_neighbor()
     vectorZeroizeN(delflag,atom->nlocal+atom->nghost);
     vectorZeroizeN(existflag,atom->nlocal+atom->nghost);
 
-    if(multisphere_.check_lost_atoms(body_,delflag,existflag))
-        next_reneighbor = update->ntimestep + 100;
+    if(multisphere_.check_lost_atoms(body_,delflag,existflag,fix_volumeweight_ms_->vector_atom))
+        next_reneighbor = update->ntimestep + 5;
 
     fix_delflag_->do_reverse_comm();
     fix_existflag_->do_reverse_comm();
@@ -1178,6 +1260,19 @@ void FixMultisphere::restart(char *buf)
 {
     double *list = (double *) buf;
 
+    bool have_massflow_mesh = modify->have_restart_data_style("massflow/mesh");
+    if(have_massflow_mesh)
+    {
+        int nmassflow = modify->n_restart_data_global_style("massflow/mesh");
+
+        char property_name[200];
+        for(int imf = 0; imf < nmassflow; imf++)
+        {
+            char *id_this = modify->id_restart_data_global_style("massflow/mesh",imf);
+            sprintf(property_name,"counter_ms_%s",id_this);
+            multisphere_.prop().addElementProperty< ScalarContainer<int> >(static_cast<const char*>(property_name),"comm_exchange_borders","frame_invariant", "restart_yes");
+        }
+    }
+
     multisphere_.restart(list);
 }
-

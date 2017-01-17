@@ -366,13 +366,24 @@
 
       const int len = size();
 
+      T epsilon = std::numeric_limits<T>::epsilon();
+
       if (!gscale || !gRedScale)
       {
           for(int n = 0; n < len; n++)
               for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
-                     if(averaging_forget_ || (*gcont)(n)[i][j] != 0 )
-                        arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+weighting_factor_*(*gcont)(n)[i][j];
+                  {
+                     const T contribution = gcont->arr_[n][i][j];
+
+                     if(averaging_forget_ || MathExtraLiggghts::abs(contribution) > epsilon )
+                     {
+                        if(MathExtraLiggghts::abs(arr_[n][i][j]) < epsilon)
+                            arr_[n][i][j] = contribution;
+                        else
+                            arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+weighting_factor_*contribution;
+                     }
+                  }
       }
       else
       {
@@ -409,6 +420,8 @@
 
       const int len = size();
 
+      T epsilon = std::numeric_limits<T>::epsilon();
+
       if (!gscale || !gRedScale)
       {
           for(int n = 0; n < len; n++)
@@ -416,8 +429,14 @@
                   for(int j=0;j<LEN_VEC;j++)
                   {
                       const T contribution = gcont->arr_[n][i][j];
-                      if(averaging_forget_ || contribution != 0)
-                        arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+weighting_factor_*contribution*contribution;
+
+                      if(averaging_forget_ || MathExtraLiggghts::abs(contribution) > epsilon )
+                      {
+                        if(MathExtraLiggghts::abs(arr_[n][i][j]) < epsilon)
+                            arr_[n][i][j] = contribution*contribution;
+                        else if(averaging_forget_ || MathExtraLiggghts::abs(contribution) > std::numeric_limits<T>::epsilon() )
+                            arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+weighting_factor_*contribution*contribution;
+                      }
                   
                   }
       }

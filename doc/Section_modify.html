@@ -1,584 +1,999 @@
-<HTML>
-<CENTER><A HREF = "Section_howto.html">Previous Section</A> - <A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> - <A HREF = "Section_python.html">Next Section</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/>
+        <link rel="next" title="10. Python interface to LIGGGHTS(R)-PUBLIC" href="Section_python.html"/>
+        <link rel="prev" title="8. How-to discussions" href="Section_howto.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#atom-styles">9.1. Atom styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compute-styles">9.2. Compute styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dump-styles">9.3. Dump styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dump-custom-output-options">9.4. Dump custom output options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fix-styles">9.5. Fix styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-script-commands">9.6. Input script commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pairwise-potentials">9.7. Pairwise potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#region-styles">9.8. Region styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#thermodynamic-output-options">9.9. Thermodynamic output options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#variable-options">9.10. Variable options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#submitting-new-features-for-inclusion-in-liggghts-r-public">9.11. Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>8. Modifying & extending LIGGGHTS(R)-PUBLIC 
-</H3>
-<P>This section describes how to customize LIGGGHTS(R)-PUBLIC by modifying
-and extending its source code.
-</P>
-8.1 <A HREF = "#mod_1">Atom styles</A><BR>
-8.2 <A HREF = "#mod_2">Compute styles</A><BR>
-8.4 <A HREF = "#mod_3">Dump styles</A><BR>
-8.5 <A HREF = "#mod_4">Dump custom output options</A><BR>
-8.6 <A HREF = "#mod_5">Fix styles</A> which include integrators,      temperature and pressure control, force constraints,      boundary conditions, diagnostic output, etc<BR>
-8.6 <A HREF = "#mod_6">Input script commands</A><BR>
-8.7 <A HREF = "#mod_7">Pairwise potentials</A><BR>
-8.8 <A HREF = "#mod_8">Region styles</A><BR>
-8.9 <A HREF = "#mod_9">Thermodynamic output options</A><BR>
-8.10 <A HREF = "#mod_10">Variable options</A><BR>
-8.11 <A HREF = "#mod_11">Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC</A> <BR>
-
-<P>LIGGGHTS(R)-PUBLIC is designed in a modular fashion so as to be easy to modify and
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/Section_modify.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_python.html" class="btn btn-neutral float-right" title="10. Python interface to LIGGGHTS(R)-PUBLIC" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Section_howto.html" class="btn btn-neutral" title="8. How-to discussions" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="modifying-extending-liggghts-r-public">
+<h1>9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC<a class="headerlink" href="#modifying-extending-liggghts-r-public" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how to customize LIGGGHTS(R)-PUBLIC by modifying
+and extending its source code.</p>
+<div class="line-block">
+<div class="line">8.1 <a class="reference internal" href="#mod-1"><em>Atom styles</em></a></div>
+<div class="line">8.2 <a class="reference internal" href="#mod-2"><em>Compute styles</em></a></div>
+<div class="line">8.4 <a class="reference internal" href="#mod-3"><em>Dump styles</em></a></div>
+<div class="line">8.5 <a class="reference internal" href="#mod-4"><em>Dump custom output options</em></a></div>
+<div class="line">8.6 <a class="reference internal" href="#mod-5"><em>Fix styles</em></a> which include integrators,      temperature and pressure control, force constraints,      boundary conditions, diagnostic output, etc</div>
+<div class="line">8.6 <a class="reference internal" href="#mod-6"><em>Input script commands</em></a></div>
+<div class="line">8.7 <a class="reference internal" href="#mod-7"><em>Pairwise potentials</em></a></div>
+<div class="line">8.8 <a class="reference internal" href="#mod-8"><em>Region styles</em></a></div>
+<div class="line">8.9 <a class="reference internal" href="#mod-9"><em>Thermodynamic output options</em></a></div>
+<div class="line">8.10 <a class="reference internal" href="#mod-10"><em>Variable options</em></a></div>
+<div class="line">8.11 <a class="reference internal" href="#mod-11"><em>Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC</em></a></div>
+<div class="line"><br /></div>
+</div>
+<p>LIGGGHTS(R)-PUBLIC is designed in a modular fashion so as to be easy to modify and
 extend with new functionality.  In fact, about 75% of its source code
-is files added in this fashion.
-</P>
-<P>In this section, changes and additions users can make are listed along
+is files added in this fashion.</p>
+<p>In this section, changes and additions users can make are listed along
 with minimal instructions.  If you add a new feature to LIGGGHTS(R)-PUBLIC and
 think it will be of interest to general users, we encourage you to
 submit it to the developers for inclusion in the released version of
 LIGGGHTS(R)-PUBLIC.  Information about how to do this is provided
-<A HREF = "#mod_14">below</A>.
-</P>
-<P>The best way to add a new feature is to find a similar feature in
+<em class="xref std std-ref">below</em>.</p>
+<p>The best way to add a new feature is to find a similar feature in
 LIGGGHTS(R)-PUBLIC and look at the corresponding source and header files to figure
 out what it does.  You will need some knowledge of C++ to be able to
 understand the hi-level structure of LIGGGHTS(R)-PUBLIC and its class
 organization, but functions (class methods) that do actual
 computations are written in vanilla C-style code and operate on simple
-C-style data structures (vectors and arrays).
-</P>
-<P>Most of the new features described in this section require you to
+C-style data structures (vectors and arrays).</p>
+<p>Most of the new features described in this section require you to
 write a new C++ derived class (except for exceptions described below,
 where you can make small edits to existing files).  Creating a new
-class requires 2 files, a source code file (*.cpp) and a header file
-(*.h).  The derived class must provide certain methods to work as a
+class requires 2 files, a source code file (<em>.cpp) and a header file
+(</em>.h).  The derived class must provide certain methods to work as a
 new option.  Depending on how different your new feature is compared
 to existing features, you can either derive from the base class
 itself, or from a derived class that already exists.  Enabling LIGGGHTS(R)-PUBLIC
 to invoke the new class is as simple as putting the two source
-files in the src dir and re-building LIGGGHTS(R)-PUBLIC.
-</P>
-<P>The advantage of C++ and its object-orientation is that all the code
+files in the src dir and re-building LIGGGHTS(R)-PUBLIC.</p>
+<p>The advantage of C++ and its object-orientation is that all the code
 and variables needed to define the new feature are in the 2 files you
-write, and thus shouldn't make the rest of LIGGGHTS(R)-PUBLIC more complex or
-cause side-effect bugs.
-</P>
-<P>Here is a concrete example.  Suppose you write 2 files pair_foo.cpp
+write, and thus shouldn&#8217;t make the rest of LIGGGHTS(R)-PUBLIC more complex or
+cause side-effect bugs.</p>
+<p>Here is a concrete example.  Suppose you write 2 files pair_foo.cpp
 and pair_foo.h that define a new class PairFoo that computes pairwise
-potentials described in the classic 1997 <A HREF = "#Foo">paper</A> by Foo, et al.
+potentials described in the classic 1997 <a class="reference internal" href="#foo"><em>paper</em></a> by Foo, et al.
 If you wish to invoke those potentials in a LIGGGHTS(R)-PUBLIC input script with a
-command like
-</P>
-<PRE>pair_style foo 0.1 3.5 
-</PRE>
-<P>then your pair_foo.h file should be structured as follows:
-</P>
-<PRE>#ifdef PAIR_CLASS
+command like</p>
+<div class="highlight-python"><pre>pair_style foo 0.1 3.5</pre>
+</div>
+<p>then your pair_foo.h file should be structured as follows:</p>
+<div class="highlight-python"><pre>#ifdef PAIR_CLASS
 PairStyle(foo,PairFoo)
 #else
 ...
 (class definition for PairFoo)
 ...
-#endif 
-</PRE>
-<P>where "foo" is the style keyword in the pair_style command, and
+#endif</pre>
+</div>
+<p>where &#8220;foo&#8221; is the style keyword in the pair_style command, and
 PairFoo is the class name defined in your pair_foo.cpp and pair_foo.h
-files.
-</P>
-<P>When you re-build LIGGGHTS(R)-PUBLIC, your new pairwise potential becomes part of
+files.</p>
+<p>When you re-build LIGGGHTS(R)-PUBLIC, your new pairwise potential becomes part of
 the executable and can be invoked with a pair_style command like the
 example above.  Arguments like 0.1 and 3.5 can be defined and
-processed by your new class.
-</P>
-<P>As illustrated by this pairwise example, many kinds of options are
-referred to in the LIGGGHTS(R)-PUBLIC documentation as the "style" of a particular
-command.
-</P>
-<P>The instructions below give the header file for the base class that
+processed by your new class.</p>
+<p>As illustrated by this pairwise example, many kinds of options are
+referred to in the LIGGGHTS(R)-PUBLIC documentation as the &#8220;style&#8221; of a particular
+command.</p>
+<p>The instructions below give the header file for the base class that
 these styles are derived from.  Public variables in that file are ones
 used and set by the derived classes which are also used by the base
 class.  Sometimes they are also used by the rest of LIGGGHTS(R)-PUBLIC.  Virtual
 functions in the base class header file which are set = 0 are ones you
 must define in your new derived class to give it the functionality
 LIGGGHTS(R)-PUBLIC expects.  Virtual functions that are not set to 0 are functions
-you can optionally define.
-</P>
-<P>Additionally, new output options can be added directly to the
+you can optionally define.</p>
+<p>Additionally, new output options can be added directly to the
 thermo.cpp, dump_custom.cpp, and variable.cpp files as explained
-below.
-</P>
-<P>Here are additional guidelines for modifying LIGGGHTS(R)-PUBLIC and adding new
-functionality:
-</P>
-<UL><LI>Think about whether what you want to do would be better as a pre- or
+below.</p>
+<p>Here are additional guidelines for modifying LIGGGHTS(R)-PUBLIC and adding new
+functionality:</p>
+<ul class="simple">
+<li>Think about whether what you want to do would be better as a pre- or
 post-processing step.  Many computations are more easily and more
-quickly done that way. 
-
-<LI>Don't do anything within the timestepping of a run that isn't
-parallel.  E.g. don't accumulate a bunch of data on a single processor
+quickly done that way.</li>
+<li>Don&#8217;t do anything within the timestepping of a run that isn&#8217;t
+parallel.  E.g. don&#8217;t accumulate a bunch of data on a single processor
 and analyze it.  You run the risk of seriously degrading the parallel
-efficiency. 
-
-<LI>If your new feature reads arguments or writes output, make sure you
-follow the unit conventions discussed by the <A HREF = "units.html">units</A>
-command. 
-
-<LI>If you add something you think is truly useful and doesn't impact
-LIGGGHTS(R)-PUBLIC performance when it isn't used, send an email to the
-<A HREF = "http://lammps.sandia.gov/authors.html">developers</A>.  We might be
+efficiency.</li>
+<li>If your new feature reads arguments or writes output, make sure you
+follow the unit conventions discussed by the <a class="reference internal" href="units.html"><em>units</em></a>
+command.</li>
+<li>If you add something you think is truly useful and doesn&#8217;t impact
+LIGGGHTS(R)-PUBLIC performance when it isn&#8217;t used, send an email to the
+<a class="reference external" href="http://lammps.sandia.gov/authors.html">developers</a>.  We might be
 interested in adding it to the LIGGGHTS(R)-PUBLIC distribution.  See further
-details on this at the bottom of this page. 
-</UL>
-<HR>
-
-<HR>
-
-<A NAME = "mod_1"></A><H4>8.1 Atom styles 
-</H4>
-<P>Classes that define an <A HREF = "atom_style.html">atom style</A> are derived from
+details on this at the bottom of this page.</li>
+</ul>
+<div class="section" id="atom-styles">
+<span id="mod-1"></span><h2>9.1. Atom styles<a class="headerlink" href="#atom-styles" title="Permalink to this headline">¶</a></h2>
+<p>Classes that define an <a class="reference internal" href="atom_style.html"><em>atom style</em></a> are derived from
 the AtomVec class and managed by the Atom class.  The atom style
 determines what attributes are associated with an atom.  A new atom
 style can be created if one of the existing atom styles does not
 define all the attributes you need to store and communicate with
-atoms.
-</P>
-<P>Atom_vec_atomic.cpp is a simple example of an atom style.
-</P>
-<P>Here is a brief description of methods you define in your new derived
-class.  See atom_vec.h for details.
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >init</TD><TD > one time setup (optional)</TD></TR>
-<TR><TD >grow</TD><TD > re-allocate atom arrays to longer lengths (required)</TD></TR>
-<TR><TD >grow_reset</TD><TD > make array pointers in Atom and AtomVec classes consistent (required)</TD></TR>
-<TR><TD >copy</TD><TD > copy info for one atom to another atom's array locations (required)</TD></TR>
-<TR><TD >pack_comm</TD><TD > store an atom's info in a buffer communicated every timestep (required)</TD></TR>
-<TR><TD >pack_comm_vel</TD><TD > add velocity info to communication buffer (required)</TD></TR>
-<TR><TD >pack_comm_hybrid</TD><TD > store extra info unique to this atom style (optional)</TD></TR>
-<TR><TD >unpack_comm</TD><TD > retrieve an atom's info from the buffer (required)</TD></TR>
-<TR><TD >unpack_comm_vel</TD><TD > also retrieve velocity info (required)</TD></TR>
-<TR><TD >unpack_comm_hybrid</TD><TD > retreive extra info unique to this atom style (optional)</TD></TR>
-<TR><TD >pack_reverse</TD><TD > store an atom's info in a buffer communicating partial forces  (required)</TD></TR>
-<TR><TD >pack_reverse_hybrid</TD><TD > store extra info unique to this atom style (optional)</TD></TR>
-<TR><TD >unpack_reverse</TD><TD > retrieve an atom's info from the buffer (required)</TD></TR>
-<TR><TD >unpack_reverse_hybrid</TD><TD > retreive extra info unique to this atom style (optional)</TD></TR>
-<TR><TD >pack_border</TD><TD > store an atom's info in a buffer communicated on neighbor re-builds (required)</TD></TR>
-<TR><TD >pack_border_vel</TD><TD > add velocity info to buffer (required)</TD></TR>
-<TR><TD >pack_border_hybrid</TD><TD > store extra info unique to this atom style (optional)</TD></TR>
-<TR><TD >unpack_border</TD><TD > retrieve an atom's info from the buffer (required)</TD></TR>
-<TR><TD >unpack_border_vel</TD><TD > also retrieve velocity info (required)</TD></TR>
-<TR><TD >unpack_border_hybrid</TD><TD > retreive extra info unique to this atom style (optional)</TD></TR>
-<TR><TD >pack_exchange</TD><TD > store all an atom's info to migrate to another processor (required)</TD></TR>
-<TR><TD >unpack_exchange</TD><TD > retrieve an atom's info from the buffer (required)</TD></TR>
-<TR><TD >size_restart</TD><TD > number of restart quantities associated with proc's atoms (required)</TD></TR>
-<TR><TD >pack_restart</TD><TD > pack atom quantities into a buffer (required)</TD></TR>
-<TR><TD >unpack_restart</TD><TD > unpack atom quantities from a buffer (required)</TD></TR>
-<TR><TD >create_atom</TD><TD > create an individual atom of this style (required)</TD></TR>
-<TR><TD >data_atom</TD><TD > parse an atom line from the data file (required)</TD></TR>
-<TR><TD >data_atom_hybrid</TD><TD > parse additional atom info unique to this atom style (optional)</TD></TR>
-<TR><TD >data_vel</TD><TD > parse one line of velocity information from data file (optional)</TD></TR>
-<TR><TD >data_vel_hybrid</TD><TD > parse additional velocity data unique to this atom style (optional)</TD></TR>
-<TR><TD >memory_usage</TD><TD > tally memory allocated by atom arrays (required) 
-</TD></TR></TABLE></DIV>
-
-<P>The constructor of the derived class sets values for several variables
+atoms.</p>
+<p>Atom_vec_atomic.cpp is a simple example of an atom style.</p>
+<p>Here is a brief description of methods you define in your new derived
+class.  See atom_vec.h for details.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>init</td>
+<td>one time setup (optional)</td>
+</tr>
+<tr class="row-even"><td>grow</td>
+<td>re-allocate atom arrays to longer lengths (required)</td>
+</tr>
+<tr class="row-odd"><td>grow_reset</td>
+<td>make array pointers in Atom and AtomVec classes consistent (required)</td>
+</tr>
+<tr class="row-even"><td>copy</td>
+<td>copy info for one atom to another atom&#8217;s array locations (required)</td>
+</tr>
+<tr class="row-odd"><td>pack_comm</td>
+<td>store an atom&#8217;s info in a buffer communicated every timestep (required)</td>
+</tr>
+<tr class="row-even"><td>pack_comm_vel</td>
+<td>add velocity info to communication buffer (required)</td>
+</tr>
+<tr class="row-odd"><td>pack_comm_hybrid</td>
+<td>store extra info unique to this atom style (optional)</td>
+</tr>
+<tr class="row-even"><td>unpack_comm</td>
+<td>retrieve an atom&#8217;s info from the buffer (required)</td>
+</tr>
+<tr class="row-odd"><td>unpack_comm_vel</td>
+<td>also retrieve velocity info (required)</td>
+</tr>
+<tr class="row-even"><td>unpack_comm_hybrid</td>
+<td>retreive extra info unique to this atom style (optional)</td>
+</tr>
+<tr class="row-odd"><td>pack_reverse</td>
+<td>store an atom&#8217;s info in a buffer communicating partial forces  (required)</td>
+</tr>
+<tr class="row-even"><td>pack_reverse_hybrid</td>
+<td>store extra info unique to this atom style (optional)</td>
+</tr>
+<tr class="row-odd"><td>unpack_reverse</td>
+<td>retrieve an atom&#8217;s info from the buffer (required)</td>
+</tr>
+<tr class="row-even"><td>unpack_reverse_hybrid</td>
+<td>retreive extra info unique to this atom style (optional)</td>
+</tr>
+<tr class="row-odd"><td>pack_border</td>
+<td>store an atom&#8217;s info in a buffer communicated on neighbor re-builds (required)</td>
+</tr>
+<tr class="row-even"><td>pack_border_vel</td>
+<td>add velocity info to buffer (required)</td>
+</tr>
+<tr class="row-odd"><td>pack_border_hybrid</td>
+<td>store extra info unique to this atom style (optional)</td>
+</tr>
+<tr class="row-even"><td>unpack_border</td>
+<td>retrieve an atom&#8217;s info from the buffer (required)</td>
+</tr>
+<tr class="row-odd"><td>unpack_border_vel</td>
+<td>also retrieve velocity info (required)</td>
+</tr>
+<tr class="row-even"><td>unpack_border_hybrid</td>
+<td>retreive extra info unique to this atom style (optional)</td>
+</tr>
+<tr class="row-odd"><td>pack_exchange</td>
+<td>store all an atom&#8217;s info to migrate to another processor (required)</td>
+</tr>
+<tr class="row-even"><td>unpack_exchange</td>
+<td>retrieve an atom&#8217;s info from the buffer (required)</td>
+</tr>
+<tr class="row-odd"><td>size_restart</td>
+<td>number of restart quantities associated with proc&#8217;s atoms (required)</td>
+</tr>
+<tr class="row-even"><td>pack_restart</td>
+<td>pack atom quantities into a buffer (required)</td>
+</tr>
+<tr class="row-odd"><td>unpack_restart</td>
+<td>unpack atom quantities from a buffer (required)</td>
+</tr>
+<tr class="row-even"><td>create_atom</td>
+<td>create an individual atom of this style (required)</td>
+</tr>
+<tr class="row-odd"><td>data_atom</td>
+<td>parse an atom line from the data file (required)</td>
+</tr>
+<tr class="row-even"><td>data_atom_hybrid</td>
+<td>parse additional atom info unique to this atom style (optional)</td>
+</tr>
+<tr class="row-odd"><td>data_vel</td>
+<td>parse one line of velocity information from data file (optional)</td>
+</tr>
+<tr class="row-even"><td>data_vel_hybrid</td>
+<td>parse additional velocity data unique to this atom style (optional)</td>
+</tr>
+<tr class="row-odd"><td>memory_usage</td>
+<td>tally memory allocated by atom arrays (required)</td>
+</tr>
+</tbody>
+</table>
+<p>The constructor of the derived class sets values for several variables
 that you must set when defining a new atom style, which are documented
 in atom_vec.h.  New atom arrays are defined in atom.cpp.  Search for
-the word "customize" and you will find locations you will need to
-modify.
-</P>
-<P>IMPORTANT NOTE: It is possible to add some attributes, such as a
-molecule ID, to atom styles that do not have them via the <A HREF = "fix_property_atom.html">fix
-property/atom</A> command.  This command also
+the word &#8220;customize&#8221; and you will find locations you will need to
+modify.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">It is possible to add some attributes, such as a
+molecule ID, to atom styles that do not have them via the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> command.  This command also
 allows new custom attributes consisting of extra integer or
-floating-point values to be added to atoms.  See the <A HREF = "fix_property_atom.html">fix
-property/atom</A> doc page for examples of cases
+floating-point values to be added to atoms.  See the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> doc page for examples of cases
 where this is useful and details on how to initialize, access, and
-output the custom values.
-</P>
-<P>New <A HREF = "pair_style.html">pair styles</A>, <A HREF = "fix.html">fixes</A>, or
-<A HREF = "compute.html">computes</A> can be added to LIGGGHTS(R)-PUBLIC, as discussed below.
+output the custom values.</p>
+</div>
+<p>New <a class="reference internal" href="pair_style.html"><em>pair styles</em></a>, <a class="reference internal" href="fix.html"><em>fixes</em></a>, or
+<a class="reference internal" href="compute.html"><em>computes</em></a> can be added to LIGGGHTS(R)-PUBLIC, as discussed below.
 The code for these classes can use the per-atom properties defined by
 fix property/atom.  The Atom class has a find_custom() method that is
-useful in this context:
-</P>
-<PRE>int index = atom->find_custom(char *name, int &flag); 
-</PRE>
-<P>The "name" of a custom attribute, as specified in the <A HREF = "fix_property_atom.html">fix
-property/atom</A> command, is checked to verify
+useful in this context:</p>
+<div class="highlight-python"><pre>int index = atom-&gt;find_custom(char *name, int &amp;flag);</pre>
+</div>
+<p>The &#8220;name&#8221; of a custom attribute, as specified in the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> command, is checked to verify
 that it exists and its index is returned.  The method also sets flag =
 0/1 depending on whether it is an integer or floating-point attribute.
 The vector of values associated with the attribute can then be
-accessed using the returned index as
-</P>
-<PRE>int *ivector = atom->ivector[index];
-double *dvector = atom->dvector[index]; 
-</PRE>
-<P>Ivector or dvector are vectors of length Nlocal = # of owned atoms,
-which store the attributes of individual atoms.
-</P>
-<HR>
-
-<A NAME = "mod_2"></A><H4>8.2 Compute styles 
-</H4>
-<P>Classes that compute scalar and vector quantities like temperature
+accessed using the returned index as</p>
+<div class="highlight-python"><pre>int *ivector = atom-&gt;ivector[index];
+double *dvector = atom-&gt;dvector[index];</pre>
+</div>
+<p>Ivector or dvector are vectors of length Nlocal = # of owned atoms,
+which store the attributes of individual atoms.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="compute-styles">
+<span id="mod-2"></span><h2>9.2. Compute styles<a class="headerlink" href="#compute-styles" title="Permalink to this headline">¶</a></h2>
+<p>Classes that compute scalar and vector quantities like temperature
 and the pressure tensor, as well as classes that compute per-atom
 quantities like kinetic energy and the centro-symmetry parameter
 are derived from the Compute class.  New styles can be created
-to add new calculations to LIGGGHTS(R)-PUBLIC.
-</P>
-<P>Compute_temp.cpp is a simple example of computing a scalar
+to add new calculations to LIGGGHTS(R)-PUBLIC.</p>
+<p>Compute_temp.cpp is a simple example of computing a scalar
 temperature.  Compute_ke_atom.cpp is a simple example of computing
-per-atom kinetic energy.
-</P>
-<P>Here is a brief description of methods you define in your new derived
-class.  See compute.h for details.
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >init</TD><TD > perform one time setup (required)</TD></TR>
-<TR><TD >init_list</TD><TD > neighbor list setup, if needed (optional)</TD></TR>
-<TR><TD >compute_scalar</TD><TD > compute a scalar quantity (optional)</TD></TR>
-<TR><TD >compute_vector</TD><TD > compute a vector of quantities (optional)</TD></TR>
-<TR><TD >compute_peratom</TD><TD > compute one or more quantities per atom (optional)</TD></TR>
-<TR><TD >compute_local</TD><TD > compute one or more quantities per processor (optional)</TD></TR>
-<TR><TD >pack_comm</TD><TD > pack a buffer with items to communicate (optional)</TD></TR>
-<TR><TD >unpack_comm</TD><TD > unpack the buffer (optional)</TD></TR>
-<TR><TD >pack_reverse</TD><TD > pack a buffer with items to reverse communicate (optional)</TD></TR>
-<TR><TD >unpack_reverse</TD><TD > unpack the buffer (optional)</TD></TR>
-<TR><TD >remove_bias</TD><TD > remove velocity bias from one atom (optional)</TD></TR>
-<TR><TD >remove_bias_all</TD><TD > remove velocity bias from all atoms in group (optional)</TD></TR>
-<TR><TD >restore_bias</TD><TD > restore velocity bias for one atom after remove_bias (optional)</TD></TR>
-<TR><TD >restore_bias_all</TD><TD > same as before, but for all atoms in group (optional)</TD></TR>
-<TR><TD >memory_usage</TD><TD > tally memory usage (optional) 
-</TD></TR></TABLE></DIV>
-
-<HR>
-
-<A NAME = "mod_3"></A><H4>8.3 Dump styles 
-</H4>
-<A NAME = "mod_4"></A><H4>8.4 Dump custom output options 
-</H4>
-<P>Classes that dump per-atom info to files are derived from the Dump
+per-atom kinetic energy.</p>
+<p>Here is a brief description of methods you define in your new derived
+class.  See compute.h for details.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>init</td>
+<td>perform one time setup (required)</td>
+</tr>
+<tr class="row-even"><td>init_list</td>
+<td>neighbor list setup, if needed (optional)</td>
+</tr>
+<tr class="row-odd"><td>compute_scalar</td>
+<td>compute a scalar quantity (optional)</td>
+</tr>
+<tr class="row-even"><td>compute_vector</td>
+<td>compute a vector of quantities (optional)</td>
+</tr>
+<tr class="row-odd"><td>compute_peratom</td>
+<td>compute one or more quantities per atom (optional)</td>
+</tr>
+<tr class="row-even"><td>compute_local</td>
+<td>compute one or more quantities per processor (optional)</td>
+</tr>
+<tr class="row-odd"><td>pack_comm</td>
+<td>pack a buffer with items to communicate (optional)</td>
+</tr>
+<tr class="row-even"><td>unpack_comm</td>
+<td>unpack the buffer (optional)</td>
+</tr>
+<tr class="row-odd"><td>pack_reverse</td>
+<td>pack a buffer with items to reverse communicate (optional)</td>
+</tr>
+<tr class="row-even"><td>unpack_reverse</td>
+<td>unpack the buffer (optional)</td>
+</tr>
+<tr class="row-odd"><td>remove_bias</td>
+<td>remove velocity bias from one atom (optional)</td>
+</tr>
+<tr class="row-even"><td>remove_bias_all</td>
+<td>remove velocity bias from all atoms in group (optional)</td>
+</tr>
+<tr class="row-odd"><td>restore_bias</td>
+<td>restore velocity bias for one atom after remove_bias (optional)</td>
+</tr>
+<tr class="row-even"><td>restore_bias_all</td>
+<td>same as before, but for all atoms in group (optional)</td>
+</tr>
+<tr class="row-odd"><td>memory_usage</td>
+<td>tally memory usage (optional)</td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+</div>
+<div class="section" id="dump-styles">
+<span id="mod-3"></span><h2>9.3. Dump styles<a class="headerlink" href="#dump-styles" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="dump-custom-output-options">
+<span id="mod-4"></span><h2>9.4. Dump custom output options<a class="headerlink" href="#dump-custom-output-options" title="Permalink to this headline">¶</a></h2>
+<p>Classes that dump per-atom info to files are derived from the Dump
 class.  To dump new quantities or in a new format, a new derived dump
 class can be added, but it is typically simpler to modify the
-DumpCustom class contained in the dump_custom.cpp file.
-</P>
-<P>Dump_atom.cpp is a simple example of a derived dump class.
-</P>
-<P>Here is a brief description of methods you define in your new derived
-class.  See dump.h for details.
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >write_header</TD><TD > write the header section of a snapshot of atoms</TD></TR>
-<TR><TD >count</TD><TD > count the number of lines a processor will output</TD></TR>
-<TR><TD >pack</TD><TD > pack a proc's output data into a buffer</TD></TR>
-<TR><TD >write_data</TD><TD > write a proc's data to a file 
-</TD></TR></TABLE></DIV>
-
-<P>See the <A HREF = "dump.html">dump</A> command and its <I>custom</I> style for a list of
+DumpCustom class contained in the dump_custom.cpp file.</p>
+<p>Dump_atom.cpp is a simple example of a derived dump class.</p>
+<p>Here is a brief description of methods you define in your new derived
+class.  See dump.h for details.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>write_header</td>
+<td>write the header section of a snapshot of atoms</td>
+</tr>
+<tr class="row-even"><td>count</td>
+<td>count the number of lines a processor will output</td>
+</tr>
+<tr class="row-odd"><td>pack</td>
+<td>pack a proc&#8217;s output data into a buffer</td>
+</tr>
+<tr class="row-even"><td>write_data</td>
+<td>write a proc&#8217;s data to a file</td>
+</tr>
+</tbody>
+</table>
+<p>See the <a class="reference internal" href="dump.html"><em>dump</em></a> command and its <em>custom</em> style for a list of
 keywords for atom information that can already be dumped by
 DumpCustom.  It includes options to dump per-atom info from Compute
 classes, so adding a new derived Compute class is one way to calculate
-new quantities to dump.
-</P>
-<P>Alternatively, you can add new keywords to the dump custom command.
-Search for the word "customize" in dump_custom.cpp to see the
-half-dozen or so locations where code will need to be added.
-</P>
-<HR>
-
-<A NAME = "mod_5"></A><H4>8.5 Fix styles 
-</H4>
-<P>In LIGGGHTS(R)-PUBLIC, a "fix" is any operation that is computed during
+new quantities to dump.</p>
+<p>Alternatively, you can add new keywords to the dump custom command.
+Search for the word &#8220;customize&#8221; in dump_custom.cpp to see the
+half-dozen or so locations where code will need to be added.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="fix-styles">
+<span id="mod-5"></span><h2>9.5. Fix styles<a class="headerlink" href="#fix-styles" title="Permalink to this headline">¶</a></h2>
+<p>In LIGGGHTS(R)-PUBLIC, a &#8220;fix&#8221; is any operation that is computed during
 timestepping that alters some property of the system.  Essentially
 everything that happens during a simulation besides force computation,
-neighbor list construction, and output, is a "fix".  This includes
+neighbor list construction, and output, is a &#8220;fix&#8221;.  This includes
 time integration (update of coordinates and velocities), force
 constraints or boundary conditions (SHAKE or walls), and diagnostics
 (compute a diffusion coefficient).  New styles can be created to add
-new options to LIGGGHTS(R)-PUBLIC.
-</P>
-<P>Fix_setforce.cpp is a simple example of setting forces on atoms to
+new options to LIGGGHTS(R)-PUBLIC.</p>
+<p>Fix_setforce.cpp is a simple example of setting forces on atoms to
 prescribed values.  There are dozens of fix options already in LIGGGHTS(R)-PUBLIC;
 choose one as a template that is similar to what you want to
-implement.
-</P>
-<P>Here is a brief description of methods you can define in your new
-derived class.  See fix.h for details.
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >setmask</TD><TD > determines when the fix is called during the timestep (required)</TD></TR>
-<TR><TD >init</TD><TD > initialization before a run (optional)</TD></TR>
-<TR><TD >setup_pre_exchange</TD><TD > called before atom exchange in setup (optional)</TD></TR>
-<TR><TD >setup_pre_force</TD><TD > called before force computation in setup (optional)</TD></TR>
-<TR><TD >setup</TD><TD > called immediately before the 1st timestep and after forces are computed (optional)</TD></TR>
-<TR><TD >min_setup_pre_force</TD><TD > like setup_pre_force, but for minimizations instead of MD runs (optional)</TD></TR>
-<TR><TD >min_setup</TD><TD > like setup, but for minimizations instead of MD runs (optional)</TD></TR>
-<TR><TD >initial_integrate</TD><TD > called at very beginning of each timestep (optional)</TD></TR>
-<TR><TD >pre_exchange</TD><TD > called before atom exchange on re-neighboring steps (optional)</TD></TR>
-<TR><TD >pre_neighbor</TD><TD > called before neighbor list build (optional)</TD></TR>
-<TR><TD >pre_force</TD><TD > called after pair & molecular forces are computed (optional)</TD></TR>
-<TR><TD >post_force</TD><TD > called after pair & molecular forces are computed and communicated (optional)</TD></TR>
-<TR><TD >final_integrate</TD><TD > called at end of each timestep (optional)</TD></TR>
-<TR><TD >end_of_step</TD><TD > called at very end of timestep (optional)</TD></TR>
-<TR><TD >write_restart</TD><TD > dumps fix info to restart file (optional)</TD></TR>
-<TR><TD >restart</TD><TD > uses info from restart file to re-initialize the fix (optional)</TD></TR>
-<TR><TD >grow_arrays</TD><TD > allocate memory for atom-based arrays used by fix (optional)</TD></TR>
-<TR><TD >copy_arrays</TD><TD > copy atom info when an atom migrates to a new processor (optional)</TD></TR>
-<TR><TD >pack_exchange</TD><TD > store atom's data in a buffer (optional)</TD></TR>
-<TR><TD >unpack_exchange</TD><TD > retrieve atom's data from a buffer (optional)</TD></TR>
-<TR><TD >pack_restart</TD><TD > store atom's data for writing to restart file (optional)</TD></TR>
-<TR><TD >unpack_restart</TD><TD > retrieve atom's data from a restart file buffer (optional)</TD></TR>
-<TR><TD >size_restart</TD><TD > size of atom's data (optional)</TD></TR>
-<TR><TD >maxsize_restart</TD><TD > max size of atom's data (optional)</TD></TR>
-<TR><TD >setup_pre_force_respa</TD><TD > same as setup_pre_force, but for rRESPA (optional)</TD></TR>
-<TR><TD >initial_integrate_respa</TD><TD > same as initial_integrate, but for rRESPA (optional)</TD></TR>
-<TR><TD >post_integrate_respa</TD><TD > called after the first half integration step is done in rRESPA (optional)</TD></TR>
-<TR><TD >pre_force_respa</TD><TD > same as pre_force, but for rRESPA (optional)</TD></TR>
-<TR><TD >post_force_respa</TD><TD > same as post_force, but for rRESPA (optional)</TD></TR>
-<TR><TD >final_integrate_respa</TD><TD > same as final_integrate, but for rRESPA (optional)</TD></TR>
-<TR><TD >min_pre_force</TD><TD > called after pair & molecular forces are computed in minimizer (optional)</TD></TR>
-<TR><TD >min_post_force</TD><TD > called after pair & molecular forces are computed and communicated in minmizer (optional)</TD></TR>
-<TR><TD >min_store</TD><TD > store extra data for linesearch based minimization on a LIFO stack (optional)</TD></TR>
-<TR><TD >min_pushstore</TD><TD > push the minimization LIFO stack one element down (optional)</TD></TR>
-<TR><TD >min_popstore</TD><TD > pop the minimization LIFO stack one element up (optional)</TD></TR>
-<TR><TD >min_clearstore</TD><TD > clear minimization LIFO stack (optional)</TD></TR>
-<TR><TD >min_step</TD><TD > reset or move forward on line search minimization (optional)</TD></TR>
-<TR><TD >min_dof</TD><TD > report number of degrees of freedom <I>added</I> by this fix in minimization (optional)</TD></TR>
-<TR><TD >max_alpha</TD><TD > report maximum allowed step size during linesearch minimization (optional)</TD></TR>
-<TR><TD >pack_comm</TD><TD > pack a buffer to communicate a per-atom quantity (optional)</TD></TR>
-<TR><TD >unpack_comm</TD><TD > unpack a buffer to communicate a per-atom quantity (optional)</TD></TR>
-<TR><TD >pack_reverse_comm</TD><TD > pack a buffer to reverse communicate a per-atom quantity (optional)</TD></TR>
-<TR><TD >unpack_reverse_comm</TD><TD > unpack a buffer to reverse communicate a per-atom quantity (optional)</TD></TR>
-<TR><TD >dof</TD><TD > report number of degrees of freedom <I>removed</I> by this fix during MD (optional)</TD></TR>
-<TR><TD >compute_scalar</TD><TD > return a global scalar property that the fix computes (optional)</TD></TR>
-<TR><TD >compute_vector</TD><TD > return a component of a vector property that the fix computes (optional)</TD></TR>
-<TR><TD >compute_array</TD><TD > return a component of an array property that the fix computes (optional)</TD></TR>
-<TR><TD >deform</TD><TD > called when the box size is changed (optional)</TD></TR>
-<TR><TD >reset_target</TD><TD > called when a change of the target temperature is requested during a run (optional)</TD></TR>
-<TR><TD >reset_dt</TD><TD > is called when a change of the time step is requested during a run (optional)</TD></TR>
-<TR><TD >modify_param</TD><TD > called when a fix_modify request is executed (optional)</TD></TR>
-<TR><TD >memory_usage</TD><TD > report memory used by fix (optional)</TD></TR>
-<TR><TD >thermo</TD><TD > compute quantities for thermodynamic output (optional) 
-</TD></TR></TABLE></DIV>
-
-<P>Typically, only a small fraction of these methods are defined for a
+implement.</p>
+<p>Here is a brief description of methods you can define in your new
+derived class.  See fix.h for details.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>setmask</td>
+<td>determines when the fix is called during the timestep (required)</td>
+</tr>
+<tr class="row-even"><td>init</td>
+<td>initialization before a run (optional)</td>
+</tr>
+<tr class="row-odd"><td>setup_pre_exchange</td>
+<td>called before atom exchange in setup (optional)</td>
+</tr>
+<tr class="row-even"><td>setup_pre_force</td>
+<td>called before force computation in setup (optional)</td>
+</tr>
+<tr class="row-odd"><td>setup</td>
+<td>called immediately before the 1st timestep and after forces are computed (optional)</td>
+</tr>
+<tr class="row-even"><td>min_setup_pre_force</td>
+<td>like setup_pre_force, but for minimizations instead of MD runs (optional)</td>
+</tr>
+<tr class="row-odd"><td>min_setup</td>
+<td>like setup, but for minimizations instead of MD runs (optional)</td>
+</tr>
+<tr class="row-even"><td>initial_integrate</td>
+<td>called at very beginning of each timestep (optional)</td>
+</tr>
+<tr class="row-odd"><td>pre_exchange</td>
+<td>called before atom exchange on re-neighboring steps (optional)</td>
+</tr>
+<tr class="row-even"><td>pre_neighbor</td>
+<td>called before neighbor list build (optional)</td>
+</tr>
+<tr class="row-odd"><td>pre_force</td>
+<td>called after pair &amp; molecular forces are computed (optional)</td>
+</tr>
+<tr class="row-even"><td>post_force</td>
+<td>called after pair &amp; molecular forces are computed and communicated (optional)</td>
+</tr>
+<tr class="row-odd"><td>final_integrate</td>
+<td>called at end of each timestep (optional)</td>
+</tr>
+<tr class="row-even"><td>end_of_step</td>
+<td>called at very end of timestep (optional)</td>
+</tr>
+<tr class="row-odd"><td>write_restart</td>
+<td>dumps fix info to restart file (optional)</td>
+</tr>
+<tr class="row-even"><td>restart</td>
+<td>uses info from restart file to re-initialize the fix (optional)</td>
+</tr>
+<tr class="row-odd"><td>grow_arrays</td>
+<td>allocate memory for atom-based arrays used by fix (optional)</td>
+</tr>
+<tr class="row-even"><td>copy_arrays</td>
+<td>copy atom info when an atom migrates to a new processor (optional)</td>
+</tr>
+<tr class="row-odd"><td>pack_exchange</td>
+<td>store atom&#8217;s data in a buffer (optional)</td>
+</tr>
+<tr class="row-even"><td>unpack_exchange</td>
+<td>retrieve atom&#8217;s data from a buffer (optional)</td>
+</tr>
+<tr class="row-odd"><td>pack_restart</td>
+<td>store atom&#8217;s data for writing to restart file (optional)</td>
+</tr>
+<tr class="row-even"><td>unpack_restart</td>
+<td>retrieve atom&#8217;s data from a restart file buffer (optional)</td>
+</tr>
+<tr class="row-odd"><td>size_restart</td>
+<td>size of atom&#8217;s data (optional)</td>
+</tr>
+<tr class="row-even"><td>maxsize_restart</td>
+<td>max size of atom&#8217;s data (optional)</td>
+</tr>
+<tr class="row-odd"><td>setup_pre_force_respa</td>
+<td>same as setup_pre_force, but for rRESPA (optional)</td>
+</tr>
+<tr class="row-even"><td>initial_integrate_respa</td>
+<td>same as initial_integrate, but for rRESPA (optional)</td>
+</tr>
+<tr class="row-odd"><td>post_integrate_respa</td>
+<td>called after the first half integration step is done in rRESPA (optional)</td>
+</tr>
+<tr class="row-even"><td>pre_force_respa</td>
+<td>same as pre_force, but for rRESPA (optional)</td>
+</tr>
+<tr class="row-odd"><td>post_force_respa</td>
+<td>same as post_force, but for rRESPA (optional)</td>
+</tr>
+<tr class="row-even"><td>final_integrate_respa</td>
+<td>same as final_integrate, but for rRESPA (optional)</td>
+</tr>
+<tr class="row-odd"><td>min_pre_force</td>
+<td>called after pair &amp; molecular forces are computed in minimizer (optional)</td>
+</tr>
+<tr class="row-even"><td>min_post_force</td>
+<td>called after pair &amp; molecular forces are computed and communicated in minmizer (optional)</td>
+</tr>
+<tr class="row-odd"><td>min_store</td>
+<td>store extra data for linesearch based minimization on a LIFO stack (optional)</td>
+</tr>
+<tr class="row-even"><td>min_pushstore</td>
+<td>push the minimization LIFO stack one element down (optional)</td>
+</tr>
+<tr class="row-odd"><td>min_popstore</td>
+<td>pop the minimization LIFO stack one element up (optional)</td>
+</tr>
+<tr class="row-even"><td>min_clearstore</td>
+<td>clear minimization LIFO stack (optional)</td>
+</tr>
+<tr class="row-odd"><td>min_step</td>
+<td>reset or move forward on line search minimization (optional)</td>
+</tr>
+<tr class="row-even"><td>min_dof</td>
+<td>report number of degrees of freedom <em>added</em> by this fix in minimization (optional)</td>
+</tr>
+<tr class="row-odd"><td>max_alpha</td>
+<td>report maximum allowed step size during linesearch minimization (optional)</td>
+</tr>
+<tr class="row-even"><td>pack_comm</td>
+<td>pack a buffer to communicate a per-atom quantity (optional)</td>
+</tr>
+<tr class="row-odd"><td>unpack_comm</td>
+<td>unpack a buffer to communicate a per-atom quantity (optional)</td>
+</tr>
+<tr class="row-even"><td>pack_reverse_comm</td>
+<td>pack a buffer to reverse communicate a per-atom quantity (optional)</td>
+</tr>
+<tr class="row-odd"><td>unpack_reverse_comm</td>
+<td>unpack a buffer to reverse communicate a per-atom quantity (optional)</td>
+</tr>
+<tr class="row-even"><td>dof</td>
+<td>report number of degrees of freedom <em>removed</em> by this fix during MD (optional)</td>
+</tr>
+<tr class="row-odd"><td>compute_scalar</td>
+<td>return a global scalar property that the fix computes (optional)</td>
+</tr>
+<tr class="row-even"><td>compute_vector</td>
+<td>return a component of a vector property that the fix computes (optional)</td>
+</tr>
+<tr class="row-odd"><td>compute_array</td>
+<td>return a component of an array property that the fix computes (optional)</td>
+</tr>
+<tr class="row-even"><td>deform</td>
+<td>called when the box size is changed (optional)</td>
+</tr>
+<tr class="row-odd"><td>reset_target</td>
+<td>called when a change of the target temperature is requested during a run (optional)</td>
+</tr>
+<tr class="row-even"><td>reset_dt</td>
+<td>is called when a change of the time step is requested during a run (optional)</td>
+</tr>
+<tr class="row-odd"><td>modify_param</td>
+<td>called when a fix_modify request is executed (optional)</td>
+</tr>
+<tr class="row-even"><td>memory_usage</td>
+<td>report memory used by fix (optional)</td>
+</tr>
+<tr class="row-odd"><td>thermo</td>
+<td>compute quantities for thermodynamic output (optional)</td>
+</tr>
+</tbody>
+</table>
+<p>Typically, only a small fraction of these methods are defined for a
 particular fix.  Setmask is mandatory, as it determines when the fix
 will be invoked during the timestep.  Fixes that perform time
-integration (<I>nve</I>, <I>nvt</I>, <I>npt</I>) implement initial_integrate() and
+integration (<em>nve</em>, <em>nvt</em>, <em>npt</em>) implement initial_integrate() and
 final_integrate() to perform velocity Verlet updates.  Fixes that
-constrain forces implement post_force().
-</P>
-<P>Fixes that perform diagnostics typically implement end_of_step().  For
+constrain forces implement post_force().</p>
+<p>Fixes that perform diagnostics typically implement end_of_step().  For
 an end_of_step fix, one of your fix arguments must be the variable
-"nevery" which is used to determine when to call the fix and you must
+&#8220;nevery&#8221; which is used to determine when to call the fix and you must
 set this variable in the constructor of your fix.  By convention, this
-is the first argument the fix defines (after the ID, group-ID, style).
-</P>
-<P>If the fix needs to store information for each atom that persists from
+is the first argument the fix defines (after the ID, group-ID, style).</p>
+<p>If the fix needs to store information for each atom that persists from
 timestep to timestep, it can manage that memory and migrate the info
 with the atoms as they move from processors to processor by
 implementing the grow_arrays, copy_arrays, pack_exchange, and
 unpack_exchange methods.  Similarly, the pack_restart and
 unpack_restart methods can be implemented to store information about
 the fix in restart files.  If you wish an integrator or force
-constraint fix to work with rRESPA (see the <A HREF = "run_style.html">run_style</A>
+constraint fix to work with rRESPA (see the <a class="reference internal" href="run_style.html"><em>run_style</em></a>
 command), the initial_integrate, post_force_integrate, and
 final_integrate_respa methods can be implemented.  The thermo method
 enables a fix to contribute values to thermodynamic output, as printed
-quantities and/or to be summed to the potential energy of the system.
-</P>
-<HR>
-
-<A NAME = "mod_6"></A><H4>8.6 Input script commands 
-</H4>
-<P>New commands can be added to LIGGGHTS(R)-PUBLIC input scripts by adding new
-classes that have a "command" method.  For example, the create_atoms,
+quantities and/or to be summed to the potential energy of the system.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="input-script-commands">
+<span id="mod-6"></span><h2>9.6. Input script commands<a class="headerlink" href="#input-script-commands" title="Permalink to this headline">¶</a></h2>
+<p>New commands can be added to LIGGGHTS(R)-PUBLIC input scripts by adding new
+classes that have a &#8220;command&#8221; method.  For example, the create_atoms,
 read_data, velocity, and run commands are all implemented in this
 fashion.  When such a command is encountered in the LIGGGHTS(R)-PUBLIC input
 script, LIGGGHTS(R)-PUBLIC simply creates a class with the corresponding name,
-invokes the "command" method of the class, and passes it the arguments
+invokes the &#8220;command&#8221; method of the class, and passes it the arguments
 from the input script.  The command method can perform whatever
-operations it wishes on LIGGGHTS(R)-PUBLIC data structures.
-</P>
-<P>The single method your new class must define is as follows:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >command</TD><TD > operations performed by the new command 
-</TD></TR></TABLE></DIV>
-
-<P>Of course, the new class can define other methods and variables as
-needed.
-</P>
-<HR>
-
-<A NAME = "mod_7"></A><H4>8.7 Pairwise potentials 
-</H4>
-<P>Classes that compute pairwise interactions are derived from the Pair
+operations it wishes on LIGGGHTS(R)-PUBLIC data structures.</p>
+<p>The single method your new class must define is as follows:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="82%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>command</td>
+<td>operations performed by the new command</td>
+</tr>
+</tbody>
+</table>
+<p>Of course, the new class can define other methods and variables as
+needed.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="pairwise-potentials">
+<span id="mod-7"></span><h2>9.7. Pairwise potentials<a class="headerlink" href="#pairwise-potentials" title="Permalink to this headline">¶</a></h2>
+<p>Classes that compute pairwise interactions are derived from the Pair
 class.  In LIGGGHTS(R)-PUBLIC, pairwise calculation include manybody potentials
 such as EAM or Tersoff where particles interact without a static bond
 topology.  New styles can be created to add new pair potentials to
-LIGGGHTS(R)-PUBLIC.
-</P>
-<P>Here is a brief description of the class methods in pair.h:
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >compute</TD><TD > workhorse routine that computes pairwise interactions</TD></TR>
-<TR><TD >settings</TD><TD > reads the input script line with arguments you define</TD></TR>
-<TR><TD >coeff</TD><TD > set coefficients for one i,j type pair</TD></TR>
-<TR><TD >init_one</TD><TD > perform initialization for one i,j type pair</TD></TR>
-<TR><TD >init_style</TD><TD > initialization specific to this pair style</TD></TR>
-<TR><TD >write & read_restart</TD><TD > write/read i,j pair coeffs to restart files</TD></TR>
-<TR><TD >write & read_restart_settings</TD><TD > write/read global settings to restart files</TD></TR>
-<TR><TD >single</TD><TD > force and energy of a single pairwise interaction between 2 atoms</TD></TR>
-<TR><TD >compute_inner/middle/outer</TD><TD > versions of compute used by rRESPA 
-</TD></TR></TABLE></DIV>
-
-<P>The inner/middle/outer routines are optional.
-</P>
-<HR>
-
-<A NAME = "mod_8"></A><H4>8.8 Region styles 
-</H4>
-<P>Classes that define geometric regions are derived from the Region
+LIGGGHTS(R)-PUBLIC.</p>
+<p>Here is a brief description of the class methods in pair.h:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>compute</td>
+<td>workhorse routine that computes pairwise interactions</td>
+</tr>
+<tr class="row-even"><td>settings</td>
+<td>reads the input script line with arguments you define</td>
+</tr>
+<tr class="row-odd"><td>coeff</td>
+<td>set coefficients for one i,j type pair</td>
+</tr>
+<tr class="row-even"><td>init_one</td>
+<td>perform initialization for one i,j type pair</td>
+</tr>
+<tr class="row-odd"><td>init_style</td>
+<td>initialization specific to this pair style</td>
+</tr>
+<tr class="row-even"><td>write &amp; read_restart</td>
+<td>write/read i,j pair coeffs to restart files</td>
+</tr>
+<tr class="row-odd"><td>write &amp; read_restart_settings</td>
+<td>write/read global settings to restart files</td>
+</tr>
+<tr class="row-even"><td>single</td>
+<td>force and energy of a single pairwise interaction between 2 atoms</td>
+</tr>
+<tr class="row-odd"><td>compute_inner/middle/outer</td>
+<td>versions of compute used by rRESPA</td>
+</tr>
+</tbody>
+</table>
+<p>The inner/middle/outer routines are optional.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="region-styles">
+<span id="mod-8"></span><h2>9.8. Region styles<a class="headerlink" href="#region-styles" title="Permalink to this headline">¶</a></h2>
+<p>Classes that define geometric regions are derived from the Region
 class.  Regions are used elsewhere in LIGGGHTS(R)-PUBLIC to group atoms, delete
 atoms to create a void, insert atoms in a specified region, etc.  New
-styles can be created to add new region shapes to LIGGGHTS(R)-PUBLIC.
-</P>
-<P>Region_sphere.cpp is an example of a spherical region.
-</P>
-<P>Here is a brief description of methods you define in your new derived
-class.  See region.h for details.
-</P>
-<DIV ALIGN=center><TABLE  BORDER=1 >
-<TR><TD >match</TD><TD > determine whether a point is in the region 
-</TD></TR></TABLE></DIV>
-
-<HR>
-
-<A NAME = "mod_9"></A><H4>8.9 Thermodynamic output options 
-</H4>
-<P>There is one class that computes and prints thermodynamic information
-to the screen and log file; see the file thermo.cpp.
-</P>
-<P>There are two styles defined in thermo.cpp: "one" and "multi".  There
-is also a flexible "custom" style which allows the user to explicitly
+styles can be created to add new region shapes to LIGGGHTS(R)-PUBLIC.</p>
+<p>Region_sphere.cpp is an example of a spherical region.</p>
+<p>Here is a brief description of methods you define in your new derived
+class.  See region.h for details.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="86%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>match</td>
+<td>determine whether a point is in the region</td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+</div>
+<div class="section" id="thermodynamic-output-options">
+<span id="mod-9"></span><h2>9.9. Thermodynamic output options<a class="headerlink" href="#thermodynamic-output-options" title="Permalink to this headline">¶</a></h2>
+<p>There is one class that computes and prints thermodynamic information
+to the screen and log file; see the file thermo.cpp.</p>
+<p>There are two styles defined in thermo.cpp: &#8220;one&#8221; and &#8220;multi&#8221;.  There
+is also a flexible &#8220;custom&#8221; style which allows the user to explicitly
 list keywords for quantities to print when thermodynamic info is
-output.  See the <A HREF = "thermo_style.html">thermo_style</A> command for a list
-of defined quantities.
-</P>
-<P>The thermo styles (one, multi, etc) are simply lists of keywords.
+output.  See the <a class="reference internal" href="thermo_style.html"><em>thermo_style</em></a> command for a list
+of defined quantities.</p>
+<p>The thermo styles (one, multi, etc) are simply lists of keywords.
 Adding a new style thus only requires defining a new list of keywords.
-Search for the word "customize" with references to "thermo style" in
-thermo.cpp to see the two locations where code will need to be added.
-</P>
-<P>New keywords can also be added to thermo.cpp to compute new quantities
-for output.  Search for the word "customize" with references to
-"keyword" in thermo.cpp to see the several locations where code will
-need to be added.
-</P>
-<P>Note that the <A HREF = "thermo.html">thermo_style custom</A> command already allows
-for thermo output of quantities calculated by <A HREF = "fix.html">fixes</A>,
-<A HREF = "compute.html">computes</A>, and <A HREF = "variable.html">variables</A>.  Thus, it may
+Search for the word &#8220;customize&#8221; with references to &#8220;thermo style&#8221; in
+thermo.cpp to see the two locations where code will need to be added.</p>
+<p>New keywords can also be added to thermo.cpp to compute new quantities
+for output.  Search for the word &#8220;customize&#8221; with references to
+&#8220;keyword&#8221; in thermo.cpp to see the several locations where code will
+need to be added.</p>
+<p>Note that the <a class="reference internal" href="thermo.html"><em>thermo_style custom</em></a> command already allows
+for thermo output of quantities calculated by <a class="reference internal" href="fix.html"><em>fixes</em></a>,
+<a class="reference internal" href="compute.html"><em>computes</em></a>, and <a class="reference internal" href="variable.html"><em>variables</em></a>.  Thus, it may
 be simpler to compute what you wish via one of those constructs, than
-by adding a new keyword to the thermo command.
-</P>
-<HR>
-
-<A NAME = "mod_10"></A><H4>8.10 Variable options 
-</H4>
-<P>There is one class that computes and stores <A HREF = "variable.html">variable</A>
+by adding a new keyword to the thermo command.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="variable-options">
+<span id="mod-10"></span><h2>9.10. Variable options<a class="headerlink" href="#variable-options" title="Permalink to this headline">¶</a></h2>
+<p>There is one class that computes and stores <a class="reference internal" href="variable.html"><em>variable</em></a>
 information in LIGGGHTS(R)-PUBLIC; see the file variable.cpp.  The value
 associated with a variable can be periodically printed to the screen
-via the <A HREF = "print.html">print</A>, <A HREF = "fix_print.html">fix print</A>, or
-<A HREF = "thermo_style.html">thermo_style custom</A> commands.  Variables of style
-"equal" can compute complex equations that involve the following types
-of arguments:
-</P>
-<P>thermo keywords = ke, vol, atoms, ...
+via the <a class="reference internal" href="print.html"><em>print</em></a>, <a class="reference internal" href="fix_print.html"><em>fix print</em></a>, or
+<a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a> commands.  Variables of style
+&#8220;equal&#8221; can compute complex equations that involve the following types
+of arguments:</p>
+<p>thermo keywords = ke, vol, atoms, ...
 other variables = v_a, v_myvar, ...
 math functions = div(x,y), mult(x,y), add(x,y), ...
 group functions = mass(group), xcm(group,x), ...
-atom values = x<B>123</B>, y<B>3</B>, vx<B>34</B>, ...
-compute values = c_mytemp<B>0</B>, c_thermo_press<B>3</B>, ...
-</P>
-<P>Adding keywords for the <A HREF = "thermo_style.html">thermo_style custom</A> command
+atom values = x**123**, y**3**, vx**34**, ...
+compute values = c_mytemp**0**, c_thermo_press**3**, ...</p>
+<p>Adding keywords for the <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a> command
 (which can then be accessed by variables) was discussed
-<A HREF = "Section_modify.html#thermo">here</A> on this page.
-</P>
-<P>Adding a new math function of one or two arguments can be done by
+<a class="reference internal" href="Section_howto.html#thermo"><em>here</em></a> on this page.</p>
+<p>Adding a new math function of one or two arguments can be done by
 editing one section of the Variable::evaulate() method.  Search for
-the word "customize" to find the appropriate location.
-</P>
-<P>Adding a new group function can be done by editing one section of the
-Variable::evaulate() method.  Search for the word "customize" to find
+the word &#8220;customize&#8221; to find the appropriate location.</p>
+<p>Adding a new group function can be done by editing one section of the
+Variable::evaulate() method.  Search for the word &#8220;customize&#8221; to find
 the appropriate location.  You may need to add a new method to the
-Group class as well (see the group.cpp file).
-</P>
-<P>Accessing a new atom-based vector can be done by editing one section
-of the Variable::evaulate() method.  Search for the word "customize"
-to find the appropriate location.
-</P>
-<P>Adding new <A HREF = "compute.html">compute styles</A> (whose calculated values can
+Group class as well (see the group.cpp file).</p>
+<p>Accessing a new atom-based vector can be done by editing one section
+of the Variable::evaulate() method.  Search for the word &#8220;customize&#8221;
+to find the appropriate location.</p>
+<p>Adding new <a class="reference internal" href="compute.html"><em>compute styles</em></a> (whose calculated values can
 then be accessed by variables) was discussed
-<A HREF = "Section_modify.html#compute">here</A> on this page.
-</P>
-<HR>
-
-<HR>
-
-<A NAME = "mod_11"></A><H4>8.11 Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC 
-</H4>
-<P>We encourage users to submit new features that they add to LIGGGHTS(R)-PUBLIC, especially if
+<a class="reference internal" href="Section_howto.html#compute"><em>here</em></a> on this page.</p>
+</div>
+<div class="section" id="submitting-new-features-for-inclusion-in-liggghts-r-public">
+<span id="mod-11"></span><h2>9.11. Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC<a class="headerlink" href="#submitting-new-features-for-inclusion-in-liggghts-r-public" title="Permalink to this headline">¶</a></h2>
+<p>We encourage users to submit new features that they add to LIGGGHTS(R)-PUBLIC, especially if
 you think the features will be of interest to other users.  If they
-are broadly useful we may add them as core files to LIGGGHTS(R)-PUBLIC.
-</P>
-<P>The previous sections of this doc page describe how to add new
+are broadly useful we may add them as core files to LIGGGHTS(R)-PUBLIC.</p>
+<p>The previous sections of this doc page describe how to add new
 features of various kinds to LIGGGHTS(R)-PUBLIC.  Packages are simply collections
-of one or more new class files which are invoked as a new "style"
+of one or more new class files which are invoked as a new &#8220;style&#8221;
 within a LIGGGHTS(R)-PUBLIC input script.  If designed correctly, these additions
 typically do not require changes to the main core of LIGGGHTS(R)-PUBLIC; they are
-simply add-on files.
-</P>
-<P>Here is what you need to do to submit a user package or single file
+simply add-on files.</p>
+<p>Here is what you need to do to submit a user package or single file
 for our consideration.  Following these steps will save time for both
-you and us.  See existing package files for examples.
-</P>
-<UL><LI>All source files you provide must compile with the most current
-version of LIGGGHTS(R)-PUBLIC. 
-
-<LI>If you want your file(s) to be added to main LIGGGHTS(R)-PUBLIC or one of its
+you and us.  See existing package files for examples.</p>
+<ul class="simple">
+<li>All source files you provide must compile with the most current
+version of LIGGGHTS(R)-PUBLIC.</li>
+<li>If you want your file(s) to be added to main LIGGGHTS(R)-PUBLIC or one of its
 standard packages, then it needs to be written in a style compatible
 with other LIGGGHTS(R)-PUBLIC source files.  This is so the developers can
 understand it and hopefully maintain it.  This basically means that
 the code accesses data structures, performs its operations, and is
 formatted similar to other LIGGGHTS(R)-PUBLIC source files, including the use of
-the error class for error and warning messages. 
-
-<LI>Your new source files need to have the LIGGGHTS(R)-PUBLIC copyright, GPL notice,
+the error class for error and warning messages.</li>
+<li>Your new source files need to have the LIGGGHTS(R)-PUBLIC copyright, GPL notice,
 and your name at the top, like other LIGGGHTS(R)-PUBLIC source files.  They need
 to create a class that is inside the LIGGGHTS(R)-PUBLIC namespace.  I.e. they do not need to be
 in the same stylistic format and syntax as other LIGGGHTS(R)-PUBLIC files, though
-that would be nice. 
-
-<LI>Finally, you must also send a documentation file for each new command
+that would be nice.</li>
+<li>Finally, you must also send a documentation file for each new command
 or style you are adding to LIGGGHTS(R)-PUBLIC.  This will be one file for a
 single-file feature.  For a package, it might be several files.  These
 are simple text files which we will convert to HTML.  They must be in
-the same format as other *.txt files in the lammps/doc directory for
+the same format as other <a href="#id7"><span class="problematic" id="id8">*</span></a>.txt files in the lammps/doc directory for
 similar commands and styles.  The txt2html
-tool we use to do the conversion can be downloaded from <A HREF = "http://www.sandia.gov/~sjplimp/download.html">this
-site</A>, so you can perform
-the HTML conversion yourself to proofread your doc page.  
-</UL>
-<P>Note that the more clear and self-explanatory you make your doc and
+tool we use to do the conversion can be downloaded from <a class="reference external" href="http://www.sandia.gov/~sjplimp/download.html">this site</a>, so you can perform
+the HTML conversion yourself to proofread your doc page.</li>
+</ul>
+<p>Note that the more clear and self-explanatory you make your doc and
 README files, the more likely it is that users will try out your new
-feature.
-</P>
-<HR>
+feature.</p>
+<p id="foo"><strong>(Foo)</strong> Foo, Morefoo, and Maxfoo, J of Classic Potentials, 75, 345 (1997).</p>
+</div>
+</div>
 
-<HR>
 
-<A NAME = "Foo"></A>
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_python.html" class="btn btn-neutral float-right" title="10. Python interface to LIGGGHTS(R)-PUBLIC" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Section_howto.html" class="btn btn-neutral" title="8. How-to discussions" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
-<P><B>(Foo)</B> Foo, Morefoo, and Maxfoo, J of Classic Potentials, 75, 345 (1997).
-</P>
-</HTML>
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

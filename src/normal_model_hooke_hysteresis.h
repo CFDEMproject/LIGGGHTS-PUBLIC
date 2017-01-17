@@ -76,7 +76,7 @@ namespace ContactModels
       NormalModel<HOOKE>::registerSettings(settings);
     }
 
-    inline void postSettings() {}
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
 
     inline void connectToProperties(PropertyRegistry & registry) {
       NormalModel<HOOKE>::connectToProperties(registry);
@@ -113,12 +113,16 @@ namespace ContactModels
       const int itype = sidata.itype;
       const int jtype = sidata.jtype;
       const double deltan = sidata.deltan;
-      double ri = sidata.radi;
-      double rj = sidata.radj;
-      double reff=sidata.is_wall ? sidata.radi : (ri*rj/(ri+rj));
+      const double radi = sidata.radi;
+      const double radj = sidata.radj;
+      double reff=sidata.is_wall ? radi : (radi*radj/(radi+radj));
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(sidata.is_non_spherical)
-        reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata);
+      if(sidata.is_non_spherical) {
+        if(sidata.is_wall)
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
+        else
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
+      }
 #endif
       double meff=sidata.meff;
       double coeffRestLogChosen;
@@ -163,6 +167,7 @@ namespace ContactModels
       // this accounts for an increasing stiffness with deformation
       const double deltaMaxLim =(k2Max/(k2Max-kn))*phiF[itype][jtype]*2*reff;
       double k2, fHys;
+      const bool update_history = sidata.computeflag && sidata.shearupdate;
       if (deltaMax >= deltaMaxLim) // big overlap ... no kn at all
       {
           k2 = k2Max;
@@ -173,7 +178,8 @@ namespace ContactModels
               fHys = -kc*deltan;
 
               const double newDeltaMax = 0.5*(deltan+sqrt(deltan*deltan+4*((kn+kc)*deltan*deltaMaxLim/(k2Max-kn))));
-              history[0] = newDeltaMax;
+              if (update_history)
+                  history[0] = newDeltaMax;
           }
       } else {
           k2 = kn+(k2Max-kn)*deltaMax/deltaMaxLim;
@@ -187,7 +193,8 @@ namespace ContactModels
                   fHys = -kc*deltan;
 
                   const double newDeltaMax = 0.5*(deltan+sqrt(deltan*deltan+4*((kn+kc)*deltan*deltaMaxLim/(k2Max-kn))));
-                  history[0] = newDeltaMax;
+                  if (update_history)
+                      history[0] = newDeltaMax;
               }
           }
       }
@@ -202,8 +209,8 @@ namespace ContactModels
       sidata.gammat = gammat;
 
       #ifdef NONSPHERICAL_ACTIVE_FLAG
-          double torque_i[3];
           double Fn_i[3] = { Fn * sidata.en[0], Fn * sidata.en[1], Fn * sidata.en[2]};
+          double torque_i[3] = {0.0, 0.0, 0.0}; //initialized here with zeros to avoid compiler warnings
           if(sidata.is_non_spherical) {
             double xci[3];
             vectorSubtract3D(sidata.contact_point, atom->x[sidata.i], xci);
@@ -213,9 +220,9 @@ namespace ContactModels
       // apply normal force
       if(sidata.is_wall) {
         const double Fn_ = Fn * sidata.area_ratio;
-        i_forces.delta_F[0] = Fn_ * sidata.en[0];
-        i_forces.delta_F[1] = Fn_ * sidata.en[1];
-        i_forces.delta_F[2] = Fn_ * sidata.en[2];
+        i_forces.delta_F[0] += Fn_ * sidata.en[0];
+        i_forces.delta_F[1] += Fn_ * sidata.en[1];
+        i_forces.delta_F[2] += Fn_ * sidata.en[2];
         #ifdef NONSPHERICAL_ACTIVE_FLAG
                 if(sidata.is_non_spherical) {
                   //for non-spherical particles normal force can produce torque!
@@ -225,13 +232,13 @@ namespace ContactModels
                 }
         #endif
       } else {
-        i_forces.delta_F[0] = sidata.Fn * sidata.en[0];
-        i_forces.delta_F[1] = sidata.Fn * sidata.en[1];
-        i_forces.delta_F[2] = sidata.Fn * sidata.en[2];
+        i_forces.delta_F[0] += sidata.Fn * sidata.en[0];
+        i_forces.delta_F[1] += sidata.Fn * sidata.en[1];
+        i_forces.delta_F[2] += sidata.Fn * sidata.en[2];
 
-        j_forces.delta_F[0] = -i_forces.delta_F[0];
-        j_forces.delta_F[1] = -i_forces.delta_F[1];
-        j_forces.delta_F[2] = -i_forces.delta_F[2];
+        j_forces.delta_F[0] += -i_forces.delta_F[0];
+        j_forces.delta_F[1] += -i_forces.delta_F[1];
+        j_forces.delta_F[2] += -i_forces.delta_F[2];
         #ifdef NONSPHERICAL_ACTIVE_FLAG
                 if(sidata.is_non_spherical) {
                   //for non-spherical particles normal force can produce torque!

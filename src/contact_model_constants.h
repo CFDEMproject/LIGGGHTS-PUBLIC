@@ -56,6 +56,7 @@ static const int identifier = constant;
 #undef SURFACE_MODEL
 
   // normal models
+  static const int NORMAL_OFF = 9;
 #define NORMAL_MODEL(identifier,str,constant) \
   static const int identifier = constant;
 #include "style_normal_model.h"

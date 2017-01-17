@@ -64,18 +64,25 @@ namespace LAMMPS_NS {
     void init();
     virtual void post_force(int);
 
-    void cpl_evaluate(class ComputePairGranLocal *);
+    virtual void cpl_evaluate(class ComputePairGranLocal *);
     void register_compute_pair_local(ComputePairGranLocal *);
     void unregister_compute_pair_local(ComputePairGranLocal *);
+
+    virtual void updatePtrs();
 
   protected:
     int iarg_;
 
-  private:
     template <int,int> void post_force_eval(int,int);
 
     class FixPropertyGlobal* fix_conductivity_;
     double *conductivity_;
+
+    bool store_contact_data_;
+    class FixPropertyAtom* fix_conduction_contact_area_;
+    class FixPropertyAtom* fix_n_conduction_contacts_;
+    double *conduction_contact_area_;
+    double *n_conduction_contacts_;
 
     // model for contact area calculation
     int area_calculation_mode_;

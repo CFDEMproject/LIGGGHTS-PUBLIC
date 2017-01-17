@@ -32,7 +32,15 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    This file is from LAMMPS
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Christoph Kloss (DCS Computing GmbH)
+    Arno Mayrhofer (DCS Computing GmbH)
+
+    Copyright 2016-     DCS Computing GmbH, Linz
+
+    Copyright of original file:
     LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
     http://lammps.sandia.gov, Sandia National Laboratories
     Steve Plimpton, sjplimp@sandia.gov
@@ -67,14 +75,14 @@ Run::Run(LAMMPS *lmp) : Pointers(lmp) {}
 
 /* ---------------------------------------------------------------------- */
 
-void Run::command(int narg, char **arg)
+void Run::command(int narg, char **arg, bigint nsteps_input_ext)
 {
   if (narg < 1) error->all(FLERR,"Illegal run command");
 
   if (domain->box_exist == 0)
     error->all(FLERR,"Run command before simulation box is defined");
 
-  bigint nsteps_input = ATOBIGINT(arg[0]);
+  bigint nsteps_input = nsteps_input_ext > 0 ? nsteps_input_ext : ATOBIGINT(arg[0]);
 
   // parse optional args
 
@@ -86,7 +94,7 @@ void Run::command(int narg, char **arg)
   int postflag = 1;
   int nevery = 0;
   int ncommands = 0;
-  int first,last;
+  int first=0,last=0;
 
   int iarg = 1;
   while (iarg < narg) {

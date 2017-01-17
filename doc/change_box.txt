@@ -10,7 +10,7 @@ change_box command :h3
 
 [Syntax:]
 
-change_box group-ID parameter args ... keyword args ... :pre
+change_box group-ID parameter args ... keyword args ... force :pre
 
 group-ID = ID of group of atoms to (optionally) displace :ulb,l
 one or more parameter/arg pairs may be appended :l
@@ -46,6 +46,8 @@ keyword = {units} :l
   {units} value = {lattice} or {box}
     lattice = distances are defined in lattice units
     box = distances are defined in simulation box units :pre
+
+the {force} keyword can be appended :l
 :ule
 
 [Examples:]
@@ -294,6 +296,10 @@ in lattice spacings.  The "lattice"_lattice.html command must have
 been previously used to define the lattice spacing.
 
 :line
+
+The {change_box} command cannot be used on restarted simulations that contain
+fixes with restart data. In order to circumvent this the {force} keyword can be
+used. Note, that this only works if LIGGGHTS(r) is run on one processor only.
 
 [Restrictions:]
 

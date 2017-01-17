@@ -47,6 +47,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include "finish.h"
 #include "timer.h"
 #include "universe.h"
@@ -154,14 +155,16 @@ void Finish::end(int flag)
     }
 #else
     if (me == 0) {
+      time_t curtime;
+      ::time(&curtime);
       if (screen) fprintf(screen,
                           "Loop time of %g on %d procs for %d steps with "
-                          BIGINT_FORMAT " atoms\n",
-                          time_loop,nprocs,update->nsteps,atom->natoms);
+                          BIGINT_FORMAT " atoms, finish time %s\n",
+                          time_loop,nprocs,update->nsteps,atom->natoms,ctime(&curtime));
       if (logfile) fprintf(logfile,
                            "Loop time of %g on %d procs for %d steps with "
-                           BIGINT_FORMAT " atoms\n",
-                           time_loop,nprocs,update->nsteps,atom->natoms);
+                           BIGINT_FORMAT " atoms, finish time %s\n",
+                           time_loop,nprocs,update->nsteps,atom->natoms,ctime(&curtime));
     }
 #endif
 

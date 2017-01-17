@@ -14,3 +14,6 @@ make no-PASCAL
 
 rm lmp_*
 rm *.a
+
+#remove all whitelists, e.g., for contact models
+rm *.whitelist

@@ -73,16 +73,143 @@ libraries, etc.  Such questions are better answered by a local expert.
 
 If you have a build problem that you are convinced is a LIGGGHTS(R)-PUBLIC issue
 (e.g. the compiler complains about a line of LIGGGHTS(R)-PUBLIC source code), then
-please post a question to the "LIGGGHTS(R)-PUBLIC mail
-list"_http://lammps.sandia.gov/mail.html.
+please post a question to the "LIGGGHTS(R)-PUBLIC forum
+"_http://www.cfdem.com/forum.
 
 If you succeed in building LIGGGHTS(R)-PUBLIC on a new kind of machine, for which
 there isn't a similar Makefile for in the src/MAKE directory, send it
-to the developers and we can include it in the LIGGGHTS(R)-PUBLIC distribution.
+to the developers and we can include it in the LIGGGHTS(R)-PUBLIC distribution. In
+particular, we are interested in cases where Makefile.auto does not work, so
+that we can improve its performance.
 
 :line
 
 [{Steps to build a LIGGGHTS(R)-PUBLIC executable:}] :link(start_2_2)
+
+Wth LIGGGHTS version 3.5.1 we have rolled out a all new and magic
+Makefile.auto which hopefully will make building LIGGGHTS as simple as
+possible. If the following steps do not work for you please see the advanced
+building description "here"_#start_2_2_expert.
+
+[Step 0]
+
+The src directory contains the C++ source and header files for LIGGGHTS(R)-PUBLIC.
+It also contains a top-level Makefile and a MAKE sub-directory with
+several Makefile.* files for many machines.  From within the src
+directory, type "make" or "gmake".  You should see a list of available
+choices. Of particular interest is the auto option, as it should do all the
+heavy lifting for us. So start by typing
+
+make auto :pre
+
+into the command line. If you are running this for the first time you won't
+achieve much and a message like the following will be shown:
+
+>>> WARNING <<<
+Created MAKE/Makefile.user for the first time. Please check that the options
+in that file are set correctly and run make again. :pre
+
+That is perfectly normal as *MAKE/Makefile.user* does not exist by default
+and contains your personal, machine specific options.
+
+[Step 1]
+
+To configure these options open *MAKE/Makefile.user* with your favourite
+text editor. There are two sections in this file. The first one specifies
+which options and features in LIGGGHTS(R)-PUBLIC you would like to activate. The first
+three lines are related to MPI and read:
+
+# MPI: "ON" or "OFF"
+# Description: Use the message passing interface for parallel execution
+USE_MPI = "ON" :pre
+
+The first, commented line indicates that either "ON" or "OFF" are valid
+parameters of the variable called *USE_MPI*. A short description of the
+option follows and the last line actually sets the option to "ON". The
+default *MAKE/Makefile.user* comes with some sensibly set defaults. So you
+might not need to change anything at all.
+
+The second part of this file is by default all commented out and deals with
+user and machine specific paths. Say that *USE_VTK* is set to "ON" and your
+VTK installation is not in your */usr* path, but in */home/liggghts/vtk*. In
+that case have a look at the following lines:
+
+# VTK specific variables
+#
+# Path that contains the includes (vtkVersion.h)
+#VTK_INC_USR=/path/to/vtk/include
+# Path that contains the VTK libraries
+#VTK_LIB_USR=/path/to/vtk/lib
+# Additional VTK libraries to include
+#VTK_ADDLIBS_USR= :pre
+
+In this case you would want to change *VTK_INC_USR* and *VTK_LIB_USR* so
+that they become
+
+# VTK specific variables
+#
+# Path that contains the includes (vtkVersion.h)
+VTK_INC_USR=-I/home/liggghts/vtk/include
+# Path that contains the VTK libraries
+VTK_LIB_USR=-L/home/liggghts/vtk/lib
+# Additional VTK libraries to include
+#VTK_ADDLIBS_USR= :pre
+
+Note that the two lines were uncommented and their values were changed as
+required. You can also see that include paths (normally containing *INC* in
+the variable name) need to be prefixed with -I and library paths (containing
+*LIB*) with -L. If you have non-standard paths, this can be a bit tricky to
+set up, so if you need any help ask a local expert that knows the setup of
+your machine.
+
+NOTE: If you set a *_USR* variable, such as *VTK_INC_USR* and its
+corresponding non-*_USR* variable (*VTK_INC* in our example) is set. Then
+the first will have no effect, as the non-*_USR* variable will have
+precedence.
+
+If you run *make auto* the Makefile will automatically check if the options
+you have provided are valid. It will hopefully supply you with helpful error
+messages in case some options cannot be found.
+
+NOTE: If you change any options in the first part of your
+*MAKE/Makefile.auto* after a first compilation you will be requested to
+perform a *make clean-auto* to do a full recompilation of the code.
+
+[Step 2]
+
+After all options are set to your satisfaction. Simply run
+
+make auto :pre
+
+again to test the options and compile LIGGGHTS(R)-PUBLIC. After the compilation is
+finished you will obtain a executable name *lmp_auto* and you can continue
+"here"_#start_6.
+
+NOTE: Should the compilation not work due to some deficiency of the
+*Makefile.auto* that cannot be solved by adjusting *MAKE/Makefile.user*,
+then continue reading to see how to make a custom Makefile for your machine.
+If you want to help us, then please send us your finished Makefile via the
+"forums"_http://www.cfdem.com/forum so that we can improve it for future
+use.
+
+The default compilation routine only compiles a certain subset of all
+possible contact model combinations. This is due to the fact that compiling
+all of them would cause issues nearly all machines (except if you have
+several 100 GB RAM). If your simulation uses a combination that is not
+enabled by default you can create a file called
+*style_contact_model.whitelist* in your LIGGGHTS(R)-PUBLIC source folder and fill
+it with entries such as
+
+GRAN_MODEL(HERTZ, TANGENTIAL_OFF, COHESION_OFF, ROLLING_OFF, SURFACE_DEFAULT)
+GRAN_MODEL(HERTZ, TANGENTIAL_HISTORY, COHESION_OFF, ROLLING_EPSD, SURFACE_DEFAULT) :pre
+
+After creating such a file with the appropriate entries you will need to
+recompile LIGGGHTS(R)-PUBLIC and this time it will be built only with the model
+combinations specified in this file.
+
+:line
+
+[Advanced building using custom makefiles] :link(start_2_2_expert)
 
 [Step 0]
 
@@ -756,16 +883,16 @@ To build LIGGGHTS(R)-PUBLIC as a static library (*.a file on Linux), type
 make makelib
 make -f Makefile.lib foo :pre
 
-where foo is the machine name.  This kind of library is typically used
-to statically link a driver application to LIGGGHTS(R)-PUBLIC, so that you can
-insure all dependencies are satisfied at compile time.  Note that
-inclusion or exclusion of any desired optional packages should be done
-before typing "make makelib".  The first "make" command will create a
-current Makefile.lib with all the file names in your src dir.  The
-second "make" command will use it to build LIGGGHTS(R)-PUBLIC as a static library,
-using the ARCHIVE and ARFLAGS settings in src/MAKE/Makefile.foo.  The
-build will create the file liblammps_foo.a which another application can
-link to.
+where foo is the machine name (if you normally compile with *auto* then use
+this option).  This kind of library is typically used to statically link a
+driver application to LIGGGHTS(R)-PUBLIC, so that you can insure all dependencies
+are satisfied at compile time.  Note that inclusion or exclusion of any
+desired optional packages should be done before typing "make makelib".  The
+first "make" command will create a current Makefile.lib with all the file
+names in your src dir.  The second "make" command will use it to build
+LIGGGHTS(R)-PUBLIC as a static library, using the ARCHIVE and ARFLAGS settings in
+src/MAKE/Makefile.foo.  The build will create the file liblammps_foo.a which
+another application can link to.
 
 [Shared library:] :h5
 
@@ -775,17 +902,17 @@ dynamically loaded, e.g. from Python, type
 make makeshlib
 make -f Makefile.shlib foo :pre
 
-where foo is the machine name.  This kind of library is required when
-wrapping LIGGGHTS(R)-PUBLIC with Python; see "Section_python"_Section_python.html
-for details.  Again, note that inclusion or exclusion of any desired
-optional packages should be done before typing "make makelib".  The
-first "make" command will create a current Makefile.shlib with all the
-file names in your src dir.  The second "make" command will use it to
-build LIGGGHTS(R)-PUBLIC as a shared library, using the SHFLAGS and SHLIBFLAGS
-settings in src/MAKE/Makefile.foo.  The build will create the file
-liblammps_foo.so which another application can link to dyamically.  It
-will also create a soft link liblammps.so, which the Python wrapper uses
-by default.
+where foo is the machine name (if you normally compile with *auto* then use
+this option). This kind of library is required when wrapping LIGGGHTS(R)-PUBLIC
+with Python; see "Section_python"_Section_python.html for details.  Again,
+note that inclusion or exclusion of any desired optional packages should be
+done before typing "make makelib".  The first "make" command will create a
+current Makefile.shlib with all the file names in your src dir.  The second
+"make" command will use it to build LIGGGHTS(R)-PUBLIC as a shared library, using
+the SHFLAGS and SHLIBFLAGS settings in src/MAKE/Makefile.foo.  The build
+will create the file liblammps_foo.so which another application can link to
+dyamically.  It will also create a soft link liblammps.so, which the Python
+wrapper uses by default.
 
 Note that for a shared library to be usable by a calling program, all
 the auxiliary libraries it depends on must also exist as shared
@@ -858,7 +985,7 @@ interface and how to extend it for your needs.
 
 2.6 Running LIGGGHTS(R)-PUBLIC :h4,link(start_6)
 
-By default, LIGGGHTS(R)-PUBLIC runs by reading commands from stdin; e.g. lmp_linux
+By default, LIGGGHTS(R)-PUBLIC runs by reading commands from stdin; e.g. lmp_auto
 < in.file.  This means you first create an input script (e.g. in.file)
 containing the desired commands.  "This section"_Section_commands.html
 describes how input scripts are structured and what commands they
@@ -874,9 +1001,9 @@ Linux box, using mpirun to launch a parallel job:
 
 cd src
 make linux
-cp lmp_linux ../bench
+cp lmp_auto ../bench
 cd ../bench
-mpirun -np 4 lmp_linux < in.lj :pre
+mpirun -np 4 lmp_auto < in.lj :pre
 
 :line
 
@@ -978,10 +1105,10 @@ letter abbreviation can be used:
 -sf or -suffix
 -v or -var :ul
 
-For example, lmp_ibm might be launched as follows:
+For example, lmp_auto might be launched as follows:
 
-mpirun -np 16 lmp_ibm -v f tmp.out -l my.log -sc none < in.alloy
-mpirun -np 16 lmp_ibm -var f tmp.out -log my.log -screen none < in.alloy :pre
+mpirun -np 16 lmp_auto -v f tmp.out -l my.log -sc none < in.alloy
+mpirun -np 16 lmp_auto -var f tmp.out -log my.log -screen none < in.alloy :pre
 
 Here are the details on the options:
 
@@ -998,7 +1125,7 @@ set by using the "echo"_echo.html command in the input script itself.
 
 Specify a file to use as an input script.  This is an optional switch
 when running LIGGGHTS(R)-PUBLIC in one-partition mode.  If it is not specified,
-LIGGGHTS(R)-PUBLIC reads its input script from stdin - e.g. lmp_linux < in.run.
+LIGGGHTS(R)-PUBLIC reads its input script from stdin - e.g. lmp_auto < in.run.
 This is a required switch when running LIGGGHTS(R)-PUBLIC in multi-partition mode,
 since multiple processors cannot all read from stdin.
 

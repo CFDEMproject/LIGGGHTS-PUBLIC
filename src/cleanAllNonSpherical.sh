@@ -24,3 +24,6 @@ make no-DIPOLE
 make no-ASPHERE
 make no-PASCAL
 rm make.log
+
+#remove all whitelists, e.g., for contact models
+rm *.whitelist

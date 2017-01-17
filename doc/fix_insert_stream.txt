@@ -14,7 +14,7 @@ fix ID group-ID insert/stream seed seed_value distributiontemplate dist-ID gener
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 insert/stream = style name of this fix command :l
 seed = obligatory keyword :l
-seed_value = random # seed (positive integer) :l
+seed_value = random # seed (prime number greater 1000) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
@@ -86,7 +86,7 @@ stream_keywords = {duration} or {parallel} or {insertion_face} or {extrude_lengt
 
 [Examples:]
 
-fix ins all insert/stream seed 1001 distributiontemplate pdd1 nparticles 5000 vel constant 0. -0.5 -2. particlerate 1000 overlapcheck yes insertion_face ins_mesh extrude_length 0.6
+fix ins all insert/stream seed 123457 distributiontemplate pdd1 nparticles 5000 vel constant 0. -0.5 -2. particlerate 1000 overlapcheck yes insertion_face ins_mesh extrude_length 0.6
 
 [Description:]
 

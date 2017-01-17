@@ -1,121 +1,312 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix ave/euler command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix ave/euler command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix ID group-ID ave/euler nevery N cell_size_relative c parallel par keywords values 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>ave/euler = style name of this fix command 
-
-<LI>nevery = obligatory keyword 
-
-<LI>n = calculate average values every this many timesteps 
-
-<LI>cell_size_relative = obligatory keyword 
-
-<LI>c = cell size in multiples of max cutoff 
-
-<LI>parallel = obligatory keyword 
-
-<LI>par = "yes" or "no 
-
-<LI>zero or more keyword/value pairs may be appended 
-
-<LI>keyword = <I>basevolume_region</I> 
-
-<PRE>  <I>basevolume_region</I> values = reg-ID
-    region-ID = correct grid cell volume based on this region  
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix 1 all ave/euler nevery 100 cell_size_relative 4.5 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Calculate cell-based averages of velocity, radius, volume fraction,
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix ave/euler command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_ave_euler.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-ave-euler-command">
+<span id="index-0"></span><h1>fix ave/euler command<a class="headerlink" href="#fix-ave-euler-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ID group-ID ave/euler nevery N cell_size_relative c parallel par keywords values</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>ave/euler = style name of this fix command</li>
+<li>nevery = obligatory keyword</li>
+<li>n = calculate average values every this many timesteps</li>
+<li>cell_size_relative = obligatory keyword</li>
+<li>c = cell size in multiples of max cutoff</li>
+<li>parallel = obligatory keyword</li>
+<li>par = &#8220;yes&#8221; or &#8220;no</li>
+<li>zero or more keyword/value pairs may be appended</li>
+<li>keyword = <em>basevolume_region</em></li>
+</ul>
+<pre class="literal-block">
+<em>basevolume_region</em> values = reg-ID
+  region-ID = correct grid cell volume based on this region
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix 1 all ave/euler nevery 100 cell_size_relative 4.5</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Calculate cell-based averages of velocity, radius, volume fraction,
 and pressure (-1/3 * trace of the stress tensor) every few timesteps,
-as specified by the <I>nevery</I> keyword. The size of the cells is calculated
-as multiple of the maximum cutoff, via the <I>cell_size_relative</I>.
-Note that at least a relative cell size of 3 is required.
-</P>
-<P>Note that velocity is favre (mass) averaged, whereas radius is arithmetically
+as specified by the <em>nevery</em> keyword. The size of the cells is calculated
+as multiple of the maximum cutoff, via the <em>cell_size_relative</em>.
+Note that at least a relative cell size of 3 is required.</p>
+<p>Note that velocity is favre (mass) averaged, whereas radius is arithmetically
 averaged. To calculate the stress, this command internally uses a
-<A HREF = "compute_stress_atom.html">compute stress/atom</A> . It includes the convective
+<a class="reference internal" href="compute_stress_atom.html"><em>compute stress/atom</em></a> . It includes the convective
 term correctly for granular particles with non-zero average velocity
-(which is not included  in <A HREF = "compute_stress_atom.html">compute stress/atom</A>).
+(which is not included  in <a class="reference internal" href="compute_stress_atom.html"><em>compute stress/atom</em></a>).
 However, it does not include bond, angle, diahedral or kspace contributions
-so that the stress tensor finally reads
-</P>
-<CENTER><IMG SRC = "Eqs/stress_tensor_granular.png">
-</CENTER>
-<P>where vave is the (cell-based) average velocity.
-The first term is a kinetic energy contribution for atom <I>I</I>.  The
-second term is a pairwise energy contribution where <I>n</I> loops over the
-<I>Np</I> neighbors of atom <I>I</I>, <I>r1</I> and <I>r2</I> are the positions of the 2
-atoms in the pairwise interaction, and <I>F1</I> and <I>F2</I> are the forces on
-the 2 atoms resulting from the pairwise interaction.
-</P>
-<P>The <I>parallel</I> option determines if every process allocates
-its own local grid for postprocessing (for <I>parallel</I> = yes),
-or each proc contributes to one single global grid (for <I>parallel</I> = no).
+so that the stress tensor finally reads</p>
+<img alt="_images/stress_tensor_granular.png" class="align-center" src="_images/stress_tensor_granular.png" />
+<p>where vave is the (cell-based) average velocity.
+The first term is a kinetic energy contribution for atom <em>I</em>.  The
+second term is a pairwise energy contribution where <em>n</em> loops over the
+<em>Np</em> neighbors of atom <em>I</em>, <em>r1</em> and <em>r2</em> are the positions of the 2
+atoms in the pairwise interaction, and <em>F1</em> and <em>F2</em> are the forces on
+the 2 atoms resulting from the pairwise interaction.</p>
+<p>The <em>parallel</em> option determines if every process allocates
+its own local grid for postprocessing (for <em>parallel</em> = yes),
+or each proc contributes to one single global grid (for <em>parallel</em> = no).
 This will be slower since it requires parallel communication,
 but will ensure that the grid cells do not move over time (e.g.
-in case of a moving boundary)
-</P>
-<P>The <I>basevolume_region</I> option allows to specify a region that
+in case of a moving boundary)</p>
+<p>The <em>basevolume_region</em> option allows to specify a region that
 represents the volume which can theoretically be filled with
 particles. This will then be used to correct the basis of the averaging
 volume for each cell in the grid. For example, if you use a cylindrical
-wall, it makes sense to use an identical cylindrical region for 
-the <I>basevolume_region</I> option, and the command will correctly
+wall, it makes sense to use an identical cylindrical region for
+the <em>basevolume_region</em> option, and the command will correctly
 calculate the volume fraction in the near-wall cells.
 the calculation of overlap between grid cells and the region
-is done using a Monte-Carlo approach.
-</P>
-<HR>
-
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>No information about this fix is written to <A HREF = "restart.html">binary restart
-files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
-are relevant to this fix.
-</P>
-<P>This fix computes the above-mentioned quantities for output via a
-<A HREF = "dump.html">dump euler/vtk</A> command.  The values can
-only be accessed on timesteps that are multiples of <I>nevery</I> since that
-is when calculations are performed.
-</P>
-<P>No parameter of this fix can be used with the <I>start/stop</I> keywords of
-the <A HREF = "run.html">run</A> command.  This fix is not invoked during <A HREF = "minimize.html">energy
-minimization</A>.
-</P>
-<P><B>Restrictions:</B>
-</P>
-<P>Volume fractions and stresses are calculated based on the assumption
+is done using a Monte-Carlo approach.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
+are relevant to this fix.</p>
+<p>This fix computes the above-mentioned quantities for output via a
+<a class="reference internal" href="dump.html"><em>dump euler/vtk</em></a> command.  The values can
+only be accessed on timesteps that are multiples of <em>nevery</em> since that
+is when calculations are performed.</p>
+<p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Volume fractions and stresses are calculated based on the assumption
 of a structured (equidistant regular) grid, so volume fractions and
 stresses near walls that are not alligned with the grid will be
-incorrect.
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "compute.html">compute</A>, <A HREF = "compute_stress_atom.html">compute stress/atom</A>,
-<A HREF = "fix_ave_atom.html">fix ave/atom</A>, <A HREF = "fix_ave_histo.html">fix ave/histo</A>,
-<A HREF = "fix_ave_time.html">fix ave/time</A>, <A HREF = "fix_ave_spatial.html">fix ave/spatial</A>,
-</P>
-<P><B>Default:</B> none
-</P>
-</HTML>
+incorrect.</p>
+<p><strong>Coarse-graining information:</strong></p>
+<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+combination with this command might lead to
+different dynamics or system state and thus to
+inconsistancies. However, the influence of this
+model on the global dynamics or system state might
+be small so in some cases the results may be valid.
+This has to be reviewed by a specialist on a
+case-by-case basis.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+may not be available in LIGGGHTS(R)-PUBLIC.</p>
+</div>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="compute.html"><em>compute</em></a>, <a class="reference internal" href="compute_stress_atom.html"><em>compute stress/atom</em></a>,
+<a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a>, <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a>,
+<a class="reference internal" href="fix_ave_time.html"><em>fix ave/time</em></a>, <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>,</p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

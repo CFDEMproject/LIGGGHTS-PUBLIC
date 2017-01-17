@@ -49,14 +49,13 @@
 #include "math_extra_liggghts.h"
 #include "tri_line.h"
 #include "region_neighbor_list.h"
-#include "nonspherical_flags.h"
 
 #ifdef TRI_LINE_ACTIVE_FLAG
 #include "math_extra_dist_lineTriangle.h"
 #endif
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-#include "math_extra_liggghts_nonspherical.h"
+#include "math_extra_liggghts_superquadric.h"
 using namespace MathExtraLiggghtsNonspherical;
 #endif
 

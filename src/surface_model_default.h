@@ -68,7 +68,7 @@ namespace ContactModels
     }
 
     inline void registerSettings(Settings&) {}
-    inline void postSettings() {}
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
     inline void connectToProperties(PropertyRegistry&) {}
 
     inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata)

@@ -69,10 +69,6 @@ enum{COMPUTE,FIX,VARIABLE};
 enum{ONE,RUNNING};
 enum{AUTO,UPPER,LOWER,AUTOUPPER,AUTOLOWER,FULL};
 
-#define INVOKED_SCALAR 1
-#define INVOKED_VECTOR 2
-#define INVOKED_ARRAY 4
-
 /* ---------------------------------------------------------------------- */
 
 FixAveCorrelate::FixAveCorrelate(LAMMPS * lmp, int narg, char **arg):

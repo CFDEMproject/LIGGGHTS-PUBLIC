@@ -1,111 +1,291 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix property/global command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix property/global command 
-</H3>
-<H3>fix property/atom command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<PRE>fix id group property/atom variablename style restartvalue comm_ghost_value comm_reverse_ghost_value defaultvalue(s)...
-fix id group property/global variablename style stylearg defaultvalue(s)... 
-</PRE>
-<UL><LI>ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>property/global or property/atom = style name of this fix command   
-
-<LI>variablename = a valid C++ string 
-
-<LI>restartvalues = 'yes' or 'no' 
-
-<LI>comm_ghost_value = 'yes' or 'no' 
-
-<LI>comm_reverse_ghost_value = 'yes' or 'no' 
-
-
-</UL>
-<P>fix property/global:
-</P>
-<UL><LI>    style = scalar or vector or atomtype or matrix or atomtypepair 
-
-<PRE>    stylearg for scalar/vector: none
-    stylearg for matrix/atomtypepair: nCols 
-</PRE>
-
-</UL>
-<P>fix property/atom:
-</P>
-<UL><LI>    style = scalar or vector  
-
-<LI>    restartvalue = yes or no 
-
-<LI>    communicate_ghost_value = yes or no 
-
-<LI>    communicate_reverse_ghost_value = yes or no 
-
- 
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix property/global command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_property.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-property-global-command">
+<span id="index-0"></span><h1>fix property/global command<a class="headerlink" href="#fix-property-global-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="fix-property-atom-command">
+<h1>fix property/atom command<a class="headerlink" href="#fix-property-atom-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix id group property/atom variablename style restartvalue comm_ghost_value comm_reverse_ghost_value defaultvalue(s)...
+fix id group property/global variablename style stylearg defaultvalue(s)...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>property/global or property/atom = style name of this fix command</li>
+<li>variablename = a valid C++ string</li>
+<li>restartvalues = &#8216;yes&#8217; or &#8216;no&#8217;</li>
+<li>comm_ghost_value = &#8216;yes&#8217; or &#8216;no&#8217;</li>
+<li>comm_reverse_ghost_value = &#8216;yes&#8217; or &#8216;no&#8217;</li>
+</ul>
+<p>fix property/global:</p>
+<ul class="simple">
+<li>style = scalar or vector or atomtype or matrix or atomtypepair</li>
+</ul>
+<div class="highlight-python"><pre>stylearg for scalar/vector: none
+stylearg for matrix/atomtypepair: nCols</pre>
+</div>
+<p>fix property/atom:</p>
+<ul class="simple">
+<li>style = scalar or vector</li>
+<li>restartvalue = yes or no</li>
+<li>communicate_ghost_value = yes or no</li>
+<li>communicate_reverse_ghost_value = yes or no</li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
 fix m5 all property/global characteristicVelocity scalar 2.
-fix uf all property/atom uf vector yes no no  0. 0. 0. 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P><B>Fix property/atom</B> reserves per-atom properties to be accessed by the user or other fixes.
-Style <I>scalar</I> reserves one value per atom, style <I>vector</I> multiple values per atoms, where
-the number of <I>defaultvalues</I> (that are assigned to the atoms at creation) determines the
-length of the vector. The group of atoms the fix is applied to is always "all", irrespective
+fix uf all property/atom uf vector yes no no  0. 0. 0.</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p><strong>Fix property/atom</strong> reserves per-atom properties to be accessed by the user or other fixes.
+Style <em>scalar</em> reserves one value per atom, style <em>vector</em> multiple values per atoms, where
+the number of <em>defaultvalues</em> (that are assigned to the atoms at creation) determines the
+length of the vector. The group of atoms the fix is applied to is always &#8220;all&#8221;, irrespective
 of which group is used for the fix command . If you want to assign different values for
-different groups, you can use the <A HREF = "set.html">set</A> command with keyword 'property/atom'.
-Keyword <I>restartvalues</I> determines whether information about the values stored by this fix
+different groups, you can use the <a class="reference internal" href="set.html"><em>set</em></a> command with keyword &#8216;property/atom&#8217;.
+Keyword <em>restartvalues</em> determines whether information about the values stored by this fix
 is written to binary restart files.
-Keyword <I>communicate_ghost_value</I> determines whether information about the values stored by this fix
+Keyword <em>communicate_ghost_value</em> determines whether information about the values stored by this fix
 can be communicated to ghost particles (forward communication). The exact location during a time-step
 when this happens depends on the model that uses this fix.
-Keyword <I>communicate_reverse_ghost_value</I> determines whether information about the values stored by this fix
+Keyword <em>communicate_reverse_ghost_value</em> determines whether information about the values stored by this fix
 can be communicated from ghost particles to owned particles (reverse communication). The exact location
-during a time-step when this happens depends on the model that uses this fix.
-</P>
-<P><B>Fix property/global</B> reserves global properties to be accessed by the user or other
+during a time-step when this happens depends on the model that uses this fix.</p>
+<p><strong>Fix property/global</strong> reserves global properties to be accessed by the user or other
 fixes or pair styles. The number of defaultvalues determines the length of the vector /
-the number of matrix components . For style <I>vector</I> or <I>atomtype</I>, the user provides
-the number of vector components . For style <I>matrix</I> or <I>atomtypepair</I>, the user provides
-the number of matrix columns (<I>nCols</I>) .
-</P>
-<P>Example: <I>nCols</I>= 2 and <I>defaultvalues</I> = 1 2 3 4 5 6 would be mapped into a matrix like
-</P>
-<P>[ 1 2 ]
-</P>
-<P>[ 3 4 ]
-</P>
-<P>[ 5 6 ]
-</P>
-<P>Note that the number of default values must thus be a multiple of <I>nCols</I>.
-Note that <I>vector</I> and <I>atomtype</I> do the same thing, <I>atomtype</I> is just provided to make input scripts more readable .
-Note that <I>matrix</I> and <I>atomtypepair</I> both refer to a matrix of global values. However, a matrix defined via <I>atomtypepair</I> is required to be symmetric.
-</P>
-<P>Note that the group of atoms the fix is applied to is ignored (as the fix is not applied to atoms, but defines values of global scope).
-</P>
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>Information about this fix is written to <A HREF = "restart.html">binary restart files</A> if you set <I>restartvalue</I> to 'yes'.
-</P>
-<P><B>Restrictions:</B> none
-</P>
-<P><B>Related commands:</B>
-</P>
-<P><A HREF = "set.html">set</A>, <A HREF = "pair_gran.html">pair_gran</A>
-</P>
-<P><B>Default:</B> none
-</P>
-</HTML>
+the number of matrix components . For style <em>vector</em> or <em>atomtype</em>, the user provides
+the number of vector components . For style <em>matrix</em> or <em>atomtypepair</em>, the user provides
+the number of matrix columns (<em>nCols</em>) .</p>
+<p>Example: <em>nCols*= 2 and *defaultvalues</em> = 1 2 3 4 5 6 would be mapped into a matrix like</p>
+<p>[ 1 2 ]</p>
+<p>[ 3 4 ]</p>
+<p>[ 5 6 ]</p>
+<p>Note that the number of default values must thus be a multiple of <em>nCols</em>.
+Note that <em>vector</em> and <em>atomtype</em> do the same thing, <em>atomtype</em> is just provided to make input scripts more readable .
+Note that <em>matrix</em> and <em>atomtypepair</em> both refer to a matrix of global values. However, a matrix defined via <em>atomtypepair</em> is required to be symmetric.</p>
+<p>Note that the group of atoms the fix is applied to is ignored (as the fix is not applied to atoms, but defines values of global scope).</p>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>Information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a> if you set <em>restartvalue</em> to &#8216;yes&#8217;.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="set.html"><em>set</em></a>, <a class="reference internal" href="pair_gran.html"><em>pair_gran</em></a></p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

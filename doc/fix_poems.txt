@@ -10,7 +10,7 @@ fix poems command :h3
 
 Syntax:
 
-fix ID group-ID poems keyword values modelType keyword:pre
+fix ID group-ID poems keyword values modelType keyword :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 poems = style name of this fix command :l
@@ -18,8 +18,8 @@ keyword = {group} or {file} or {molecule} :l
   {group} values = list of group IDs
   {molecule} values = none
   {file} values = filename :pre
-modelType = segment joint model :1
-keyword = {SFJ} or {SF} :1
+modelType = segment joint model :l
+keyword = {SFJ} or {SF} :l
   {SFJ} = Spherrical Flexible Joint
   {SJ}  = Spherical Joint :pre
 :ule

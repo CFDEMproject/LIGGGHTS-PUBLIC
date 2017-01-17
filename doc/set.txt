@@ -26,7 +26,7 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
   {type/fraction} values = type fraction seed
     type = new atom type
     fraction = fraction of selected atoms to set to new atom type
-    seed = random # seed (positive integer)
+    seed = random # seed (prime number greater 10000)
   {mol} value = molecule ID
     value can be an atom-style variable (see below)
   {x},{y},{z} value = atom coordinate (distance units)
@@ -42,7 +42,7 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     theta = rotation angle (degrees)
     any of a,b,c,theta can be an atom-style variable (see below)
   {quat/random} value = seed
-    seed = random # seed (positive integer) for quaternion orientations
+    seed = random # seed (prime number greater 10000) for quaternion orientations
   {quat_direct} values = q1 q2 q3 q4
     q1,q2,q3,q4 = components of the unit quaternion, alternative to {quat} a b c theta
     any of q1,q2,q3,q4 can be an atom-style variable (see below)
@@ -85,7 +85,7 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
 [Examples:]
 
 set group solvent type 2
-set group solvent type/fraction 2 0.5 12393
+set group solvent type/fraction 2 0.5 123457
 set group edge bond 4
 set region half charge 0.5
 set type 3 charge 0.5

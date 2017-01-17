@@ -377,20 +377,57 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::calcSurfaceNorm(int nElem, double *su
     
     if(vectorMag3D(surfNorm) <1e-15)
     {
-        surfNorm[0] = - edgeVec(nElem)[0][1];
-        surfNorm[1] =   edgeVec(nElem)[0][0];
-        surfNorm[2] =   edgeVec(nElem)[0][2];
+        
+        vectorCross3D(edgeVec(nElem)[1],edgeVec(nElem)[2],surfNorm);
+        
+        if(vectorMag3D(surfNorm) <1e-15)
+        {
+            vectorCross3D(edgeVec(nElem)[2],edgeVec(nElem)[0],surfNorm);
+            
+            if(vectorMag3D(surfNorm) <1e-15)
+            {
+                double tmpvec[] = {1.1233,2.123231,-3.3343434};
+                vectorCross3D(edgeVec(nElem)[0],tmpvec,surfNorm);
+                
+                if(vectorMag3D(surfNorm) <1e-15)
+                {
+                    vectorCross3D(edgeVec(nElem)[1],tmpvec,surfNorm);
+                    
+                    if(vectorMag3D(surfNorm) <1e-15)
+                    {
+                        double tmpvec2[] = {1.1233,-2.123231,3.3343434};
+                        vectorCross3D(edgeVec(nElem)[0],tmpvec2,surfNorm);
+                        
+                        if(vectorMag3D(surfNorm) <1e-15)
+                        {
+                            vectorCross3D(edgeVec(nElem)[1],tmpvec2,surfNorm);
+                            
+                        }
+                    }
+                }
+            }
+        }
+        
     }
-    else
-        vectorScalarDiv3D(surfNorm, vectorMag3D(surfNorm));
+
+    vectorScalarDiv3D(surfNorm, vectorMag3D(surfNorm));
 }
 
 template<int NUM_NODES, int NUM_NEIGH_MAX>
 void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::calcEdgeNormals(int nElem, double **edgeNorm)
 {
-    for(int i=0;i<NUM_NODES;i++){
+    for(int i=0;i<NUM_NODES;i++)
+    {
       vectorCross3D(edgeVec(nElem)[i],surfaceNorm(nElem),edgeNorm[i]);
-      vectorScalarDiv3D(edgeNorm[i],vectorMag3D(edgeNorm[i]));
+
+      if(vectorMag3D(edgeNorm[i]) <1e-15)
+      {
+          int otherIndex = (i+1)%3;
+          vectorCopy3D(edgeVec(nElem)[otherIndex],edgeNorm[i]);
+          
+      }
+      else
+        vectorScalarDiv3D(edgeNorm[i],vectorMag3D(edgeNorm[i]));
     }
 }
 
@@ -418,6 +455,9 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
 {
     
     int nall = this->sizeLocal()+this->sizeGhost();
+
+    if (this->lmp->wb && this->comm->me == 0)
+        fprintf(this->screen,"\nBuilding mesh topology (mesh processing step 2/3) \n");
 
     bool t[NUM_NODES], f[NUM_NODES];
     int neighs[NUM_NEIGH_MAX];
@@ -461,7 +501,10 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
 
         for (int i = 0; i < nall; ++i)
         {
-            
+            //useless since would need allreduce to work
+            //if (this->lmp->wb && this->comm->me == 0 && 0 == i % 100000)
+            //    fprintf(this->screen,"   successfully built for a chunk of 100000 mesh elements\n");
+
             overlaps.clear();
             neighList_.hasOverlapWith(this->center_(i), this->rBound_(i),overlaps);
 
@@ -495,8 +538,9 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::buildNeighbours()
         for(int iNode = 0; iNode < NUM_NODES; iNode++)
             handleCorner(i,iNode,idListVisited,idListHasNode,edgeList,edgeEndPoint);
     }
-if(MultiNodeMesh<NUM_NODES>::minFeatureLength() > 0. && MultiNodeMesh<NUM_NODES>::elementExclusionList())
-    handleExclusion(idListVisited);
+
+    if(MultiNodeMesh<NUM_NODES>::minFeatureLength() > 0. && MultiNodeMesh<NUM_NODES>::elementExclusionList())
+        handleExclusion(idListVisited);
 
     delete []idListVisited;
     delete []idListHasNode;
@@ -518,7 +562,9 @@ if(MultiNodeMesh<NUM_NODES>::minFeatureLength() > 0. && MultiNodeMesh<NUM_NODES>
 template<int NUM_NODES, int NUM_NEIGH_MAX>
 void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
 {
-    
+    if (this->lmp->wb && this->comm->me == 0)
+        fprintf(this->screen,"\nChecking quality of mesh (mesh processing step 3/3) \n");
+
     // iterate over surfaces
     
     int nlocal = this->sizeLocal();
@@ -547,6 +593,9 @@ void SurfaceMesh<NUM_NODES,NUM_NEIGH_MAX>::qualityCheck()
 
         for (int i = 0; i < nall; ++i)
         {
+            //useless since would need allreduce to work
+            //if (this->lmp->wb && this->comm->me == 0 && 0 == i % 100000)
+            //    fprintf(this->screen,"   successfully checked a chunk of 100000 mesh elements\n");
 
             overlaps.clear();
             neighList_.hasOverlapWith(this->center_(i), this->rBound_(i),overlaps);

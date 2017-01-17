@@ -93,6 +93,7 @@ it gives quick access to documentation for all LIGGGHTS(R)-PUBLIC commands.
    Section_input_script
    Section_commands
    Section_gran_models
+   Section_mesh_modules
    Section_packages
    Section_howto
    Section_modify
@@ -131,43 +132,45 @@ END_RST -->
   4.1 "List of available commands "_cmd_1 :ule,b
 "Contact models"_Section_gran_models.html :l
   5.1 "List of available contact models"_con_1 :ule,b
+"Mesh modules"_Section_mesh_modules.html :l
+  6.1 "List of available mesh modules"_mod_1 :ule,b
 "Packages"_Section_packages.html :l
-  6.1 "Standard packages"_pkg_1 :ulb,b
-  6.2 "User packages"_pkg_2 :ule,b
+  7.1 "Standard packages"_pkg_1 :ulb,b
+  7.2 "User packages"_pkg_2 :ule,b
 "How-to discussions"_Section_howto.html :l
-  7.1 "Restarting a simulation"_howto_1 :ulb,b
-  7.2 "2d simulations"_howto_2 :b
-  7.3 "Running multiple simulations from one input script"_howto_3 :b
-  7.4 "Granular models"_howto_4 :b
-  7.5 "Coupling LIGGGHTS(R)-PUBLIC to other codes"_howto_5 :b
-  7.6 "Visualizing LIGGGHTS(R)-PUBLIC snapshots"_howto_6 :b
-  7.7 "Triclinic (non-orthogonal) simulation boxes"_howto_7 :b
-  7.8 "Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)"_howto_8 :b
-  7.9 "Walls"_howto_9 :b
-  7.10 "Library interface to LIGGGHTS(R)-PUBLIC"_#howto_10 :ule,b
+  8.1 "Restarting a simulation"_howto_1 :ulb,b
+  8.2 "2d simulations"_howto_2 :b
+  8.3 "Running multiple simulations from one input script"_howto_3 :b
+  8.4 "Granular models"_howto_4 :b
+  8.5 "Coupling LIGGGHTS(R)-PUBLIC to other codes"_howto_5 :b
+  8.6 "Visualizing LIGGGHTS(R)-PUBLIC snapshots"_howto_6 :b
+  8.7 "Triclinic (non-orthogonal) simulation boxes"_howto_7 :b
+  8.8 "Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)"_howto_8 :b
+  8.9 "Walls"_howto_9 :b
+  8.10 "Library interface to LIGGGHTS(R)-PUBLIC"_#howto_10 :ule,b
 "Modifying & extending LIGGGHTS(R)-PUBLIC"_Section_modify.html :l
-  8.1 "Atom styles"_mod_1 :ulb,b
-  8.2 "Compute styles"_mod_2 :b
-  8.4 "Dump styles"_mod_3 :b
-  8.5 "Dump custom output options"_mod_4 :b
-  8.6 "Fix styles"_mod_5 :b
-  8.6 "Input script commands"_mod_6 :b
-  8.7 "Pairwise potentials"_mod_7 :b
-  8.8 "Region styles"_mod_8 :b
-  8.9 "Thermodynamic output options"_mod_9 :b
-  8.10 "Variable options"_mod_10 :b
-  8.11 "Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC"_mod_11 :ule,b
+  9.1 "Atom styles"_mod_1 :ulb,b
+  9.2 "Compute styles"_mod_2 :b
+  9.4 "Dump styles"_mod_3 :b
+  9.5 "Dump custom output options"_mod_4 :b
+  9.6 "Fix styles"_mod_5 :b
+  9.6 "Input script commands"_mod_6 :b
+  9.7 "Pairwise potentials"_mod_7 :b
+  9.8 "Region styles"_mod_8 :b
+  9.9 "Thermodynamic output options"_mod_9 :b
+  9.10 "Variable options"_mod_10 :b
+  9.11 "Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC"_mod_11 :ule,b
 "Python interface"_Section_python.html :l
-  9.1 "Building LIGGGHTS(R)-PUBLIC as a shared library"_py_1 :ulb,b
-  9.2 "Installing the Python wrapper into Python"_py_2 :b
-  9.3 "Extending Python with MPI to run in parallel"_py_3 :b
-  9.4 "Testing the Python-LIGGGHTS(R)-PUBLIC interface"_py_4 :b
-  9.5 "Using LIGGGHTS(R)-PUBLIC from Python"_py_5 :b
-  9.6 "Example Python scripts that use LIGGGHTS(R)-PUBLIC"_py_6 :ule,b
+  10.1 "Building LIGGGHTS(R)-PUBLIC as a shared library"_py_1 :ulb,b
+  10.2 "Installing the Python wrapper into Python"_py_2 :b
+  10.3 "Extending Python with MPI to run in parallel"_py_3 :b
+  10.4 "Testing the Python-LIGGGHTS(R)-PUBLIC interface"_py_4 :b
+  10.5 "Using LIGGGHTS(R)-PUBLIC from Python"_py_5 :b
+  10.6 "Example Python scripts that use LIGGGHTS(R)-PUBLIC"_py_6 :ule,b
 "Errors"_Section_errors.html :l
-  10.1 "Common problems"_err_1 :ulb,b
-  10.2 "Reporting bugs"_err_2 :b
-  10.3 "Error & warning messages"_err_3 :ule,b
+  11.1 "Common problems"_err_1 :ulb,b
+  11.2 "Reporting bugs"_err_2 :b
+  11.3 "Error & warning messages"_err_3 :ule,b
 
 :ole
 
@@ -192,6 +195,8 @@ END_RST -->
 :link(cmd_1,Section_commands.html#cmd_1)
 
 :link(con_1,Section_gran_models.html)
+
+:link(mod_1,Section_mesh_modules.html)
 
 :link(pkg_1,Section_packages.html#pkg_1)
 :link(pkg_2,Section_packages.html#pkg_2)

@@ -45,8 +45,6 @@
 #include "fix_massflow_mesh_sieve.h"
 #include "fix_mesh.h"
 #include "fix_mesh_surface.h"
-#include "fix_mesh_surface_stress.h"
-#include "fix_mesh_surface_stress_servo.h"
 #include "fix_minimize.h"
 #include "fix_momentum.h"
 #include "fix_move.h"

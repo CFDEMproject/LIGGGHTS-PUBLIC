@@ -76,6 +76,9 @@ namespace ContactModels
 
     }
 
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb)
+    {}
+
     inline void registerSettings(Settings& settings)
     {
         settings.registerOnOff("heating_tangential_history",heating,false);
@@ -100,7 +103,8 @@ namespace ContactModels
       if(sidata.contact_flags) *sidata.contact_flags |= CONTACT_TANGENTIAL_MODEL;
       double * const shear = &sidata.contact_history[history_offset];
 
-      if (sidata.shearupdate && sidata.computeflag) {
+      const bool update_history = sidata.computeflag && sidata.shearupdate;
+      if (update_history) {
         const double dt = update->dt;
         shear[0] += sidata.vtr1 * dt;
         shear[1] += sidata.vtr2 * dt;
@@ -142,9 +146,12 @@ namespace ContactModels
           Ft2 *= ratio;
           Ft3 *= ratio;
           
-          shear[0] = -Ft1/kt;
-          shear[1] = -Ft2/kt;
-          shear[2] = -Ft3/kt;
+          if (update_history)
+          {
+              shear[0] = -Ft1/kt;
+              shear[1] = -Ft2/kt;
+              shear[2] = -Ft3/kt;
+          }
         }
         else Ft1 = Ft2 = Ft3 = 0.0;
       }

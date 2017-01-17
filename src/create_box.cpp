@@ -35,6 +35,9 @@
     This file is from LAMMPS, but has been modified. Copyright for
     modification:
 
+    Christoph Kloss (DCS Computing GmbH)
+    Arno Mayrhofer (DCS Computing GmbH)
+
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
 
@@ -72,7 +75,7 @@ CreateBox::CreateBox(LAMMPS *lmp) : Pointers(lmp) {}
 
 void CreateBox::command(int narg, char **arg)
 {
-  if (narg < 2) error->all(FLERR,"Illegal create_box command"); 
+  if (narg < 1) error->all(FLERR,"Illegal create_box command"); 
 
   if (domain->box_exist)
     error->all(FLERR,"Cannot create_box after simulation box is defined");
@@ -83,8 +86,17 @@ void CreateBox::command(int narg, char **arg)
 
   // region check
 
-  int iregion = domain->find_region(arg[1]);
-  if (iregion == -1) error->all(FLERR,"Create_box region ID does not exist");
+  int sim_region = domain->find_region("simulation_domain_region_");
+  int iregion = narg>=2 ? domain->find_region(arg[1]) : sim_region;
+  //if (sim_region != -1 && narg >= 2)
+  //  error->warning(FLERR, "simulation_domain command ignored as a region is specified in the create_box command");
+  if (iregion == -1)
+  {
+    if (narg >= 2)
+      error->all(FLERR,"Create_box region ID does not exist");
+    else
+      error->all(FLERR, "Create_box did not find region created by simulation_domain command. Ensure that the simulation_domain command preceedes the create_box command");
+  }
   if (domain->regions[iregion]->bboxflag == 0)
     error->all(FLERR,"Create_box region does not support a bounding box");
 
@@ -163,7 +175,7 @@ void CreateBox::command(int narg, char **arg)
   comm->set_proc_grid();
   domain->set_local_box();
 
-  if(narg == 2) return;
+  if(narg <= 2) return;
 
   if(strcmp(arg[2],"bonds") == 0)
     error->all(FLERR,"Illegal create_box command, 'bonds' keyword moved to atom_style bond/gran command");

@@ -149,7 +149,7 @@ void DisplaceAtoms::command(int narg, char **arg)
     else if (strcmp(arg[2],"z") == 0) d_dim = 2;
     else error->all(FLERR,"Illegal displace_atoms ramp command");
 
-    double d_lo,d_hi;
+    double d_lo=0.0,d_hi=0.0;
     if (d_dim == 0) {
       d_lo = xscale*force->numeric(FLERR,arg[3]);
       d_hi = xscale*force->numeric(FLERR,arg[4]);
@@ -167,7 +167,7 @@ void DisplaceAtoms::command(int narg, char **arg)
     else if (strcmp(arg[5],"z") == 0) coord_dim = 2;
     else error->all(FLERR,"Illegal displace_atoms ramp command");
 
-    double coord_lo,coord_hi;
+    double coord_lo=0.0,coord_hi=0.0;
     if (coord_dim == 0) {
       coord_lo = xscale*force->numeric(FLERR,arg[6]);
       coord_hi = xscale*force->numeric(FLERR,arg[7]);
@@ -183,14 +183,12 @@ void DisplaceAtoms::command(int narg, char **arg)
     int *mask = atom->mask;
     int nlocal = atom->nlocal;
 
-    double fraction,dramp;
-
     for (i = 0; i < nlocal; i++) {
       if (mask[i] & groupbit) {
-        fraction = (x[i][coord_dim] - coord_lo) / (coord_hi - coord_lo);
+        double fraction = (x[i][coord_dim] - coord_lo) / (coord_hi - coord_lo);
         fraction = MAX(fraction,0.0);
         fraction = MIN(fraction,1.0);
-        dramp = d_lo + fraction*(d_hi - d_lo);
+        const double dramp = d_lo + fraction*(d_hi - d_lo);
         x[i][d_dim] += dramp;
       }
     }

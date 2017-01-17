@@ -1858,19 +1858,44 @@ double Neighbor::bin_largest_distance(int i, int j, int k)
    set neighbor style and skin distance
 ------------------------------------------------------------------------- */
 
-void Neighbor::set(int narg, char **arg)
+void Neighbor::set(int narg, char **arg, bool auto_set_bin)
 {
-  if (narg != 2) error->all(FLERR,"Illegal neighbor command");
+  if (narg != (auto_set_bin ? 1 : 2))
+    error->all(FLERR,"Illegal neighbor command");
 
-  skin = force->cg()*force->numeric(FLERR,arg[0]); 
+  skin = force->cg_max()*force->numeric(FLERR,arg[0]); 
   if (skin < 0.0) error->all(FLERR,"Illegal neighbor command");
 
-  if (strcmp(arg[1],"nsq") == 0) style = NSQ;
-  else if (strcmp(arg[1],"bin") == 0) style = BIN;
-  else if (strcmp(arg[1],"multi") == 0) style = MULTI;
-  else error->all(FLERR,"Illegal neighbor command");
+  if (auto_set_bin)
+    style = BIN;
+  else
+  {
+    if (strcmp(arg[1],"nsq") == 0) style = NSQ;
+    else if (strcmp(arg[1],"bin") == 0) style = BIN;
+    else if (strcmp(arg[1],"multi") == 0) style = MULTI;
+    else error->all(FLERR,"Illegal neighbor command");
+  }
 
   if (style == MULTI && lmp->citeme) lmp->citeme->add(cite_neigh_multi);
+}
+
+/* ----------------------------------------------------------------------
+   modify parameters of the pair-wise neighbor build (neigh_settings)
+------------------------------------------------------------------------- */
+
+void Neighbor::modify_params_restricted(int narg, char **arg)
+{
+    // set delay to 0
+    delay = 0;
+    // allow only one input
+    if (narg > 1)
+        error->all (FLERR, "neigh_settings requires at most one parameter");
+    // which is to be the binsize
+    binsize_user = force->cg_max()*force->numeric(FLERR,arg[0]);
+    if (binsize_user <= 0.0)
+        binsizeflag = 0;
+    else
+        binsizeflag = 1;
 }
 
 /* ----------------------------------------------------------------------
@@ -1920,7 +1945,7 @@ void Neighbor::modify_params(int narg, char **arg)
       iarg += 2;
     } else if (strcmp(arg[iarg],"binsize") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
-      binsize_user = force->cg()*force->numeric(FLERR,arg[iarg+1]); 
+      binsize_user = force->cg_max()*force->numeric(FLERR,arg[iarg+1]); 
       if (binsize_user <= 0.0) binsizeflag = 0;
       else binsizeflag = 1;
       iarg += 2;

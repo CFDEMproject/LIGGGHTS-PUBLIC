@@ -141,8 +141,13 @@ class FixInsertStream : public FixInsert {
 
  private:
 
+  void recalc_release_restart();
+
   class FixPropertyAtomTracerStream **tracer;
   int ntracer;
+
+  bool recalc_release_ms;
+  double dt_ratio;
 };
 
 }

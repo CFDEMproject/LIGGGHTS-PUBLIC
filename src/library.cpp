@@ -189,6 +189,8 @@ void *lammps_extract_global(void *ptr, char *name)
   if (strcmp(name,"nlocal") == 0) return (void *) &lmp->atom->nlocal;
   if (strcmp(name,"nghost") == 0) return (void *) &lmp->atom->nghost;
   if (strcmp(name,"ago") == 0) return (void *) &lmp->neighbor->ago; //INT,  time steps since last neighbor->decide,
+  if (strcmp(name,"ntimestep") == 0) return (void *) &lmp->update->ntimestep;
+  if (strcmp(name,"firststep") == 0) return (void *) &lmp->update->firststep;
   return NULL;
 }
 

@@ -1,104 +1,287 @@
-<HTML>
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS(R)-PUBLIC WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS(R)-PUBLIC Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS(R)-PUBLIC Commands</A> 
-</CENTER>
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix check/timestep/gran command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-
-<HR>
-
-<H3>fix check/timestep/gran command 
-</H3>
-<P><B>Syntax:</B>
-</P>
-<UL><LI>fix ID group-ID check/timestep/gran nevery fraction_r fraction_h  keywords vales:pre
-ID, group-ID are documented in <A HREF = "fix.html">fix</A> command 
-
-<LI>check/timestep/gran = style name of this fix command 
-
-<LI>nevery = evaluate time-step size accuracy every this many time-steps 
-
-<LI>fraction_r = warn if time-step size exceeds this fraction of the Rayleigh time 
-
-<LI>fraction_h = warn if time-step size exceeds this fraction of the Hertz time 
-
-<LI>zero or more keyword/value pairs may be appended 
-
-<LI>keyword = <I>warn</I> or <I>error</I> or <I>vmax</I>  
-
-<PRE>  <I>warn</I> value = yes or no
-  <I>error</I> value = yes or no
-  <I>vmax</I> value = v_max
-    v_max = maximum particle velocity to be used as minimum for evaluation Hertz criterion 
-</PRE>
-
-</UL>
-<P><B>Examples:</B>
-</P>
-<PRE>fix ts_check all check/timestep/gran 1000 0.1 0.1 
-</PRE>
-<P><B>Description:</B>
-</P>
-<P>Periodically calculate estimations of the Rayleigh- and Hertz time
-dt_r and dt_h for a granular system every 'nevery' time-steps. The user
-can specify two quantities <I>fraction_r</I> and <I>fraction_h</I>. A warning
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix check/timestep/gran command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_check_timestep_gran.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-check-timestep-gran-command">
+<span id="index-0"></span><h1>fix check/timestep/gran command<a class="headerlink" href="#fix-check-timestep-gran-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>fix ID group-ID check/timestep/gran nevery fraction_r fraction_h  keywords vales:pre
+ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>check/timestep/gran = style name of this fix command</li>
+<li>nevery = evaluate time-step size accuracy every this many time-steps</li>
+<li>fraction_r = warn if time-step size exceeds this fraction of the Rayleigh time</li>
+<li>fraction_h = warn if time-step size exceeds this fraction of the Hertz time</li>
+<li>zero or more keyword/value pairs may be appended</li>
+<li>keyword = <em>warn</em> or <em>error</em> or <em>vmax</em></li>
+</ul>
+<pre class="literal-block">
+<em>warn</em> value = yes or no
+<em>error</em> value = yes or no
+<em>vmax</em> value = v_max
+  v_max = maximum particle velocity to be used as minimum for evaluation Hertz criterion
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ts_check all check/timestep/gran 1000 0.1 0.1</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Periodically calculate estimations of the Rayleigh- and Hertz time
+dt_r and dt_h for a granular system every &#8216;nevery&#8217; time-steps. The user
+can specify two quantities <em>fraction_r</em> and <em>fraction_h</em>. A warning
 message is printed if the time-step size as specified via the
-<A HREF = "timestep.html">timestep</A> command exceeds either of dt_r * fraction_r
-or dt_h * fraction_h.
-</P>
-The former quantity is 
-
-<P>dt_r = PI*r*sqrt(rho/G)/(0.1631*nu+0.8766),
-</P>
-<P>where rho is particle density, G is the shear modulus and nu is Poisson's
-ratio. The latter quantity is expressed by
-</P>
-<P>dt_h = 2.87*(m_eff^2/(r_eff*Y_eff^2*v_max))^0.2.
-</P>
-<P>The effective mass m_eff, the effective radius r_eff and the effective Young's
-modulus Y_eff are as defined in <A HREF = "pair_gran.html">pair gran</A>. v_max is the
+<a class="reference internal" href="timestep.html"><em>timestep</em></a> command exceeds either of dt_r * fraction_r
+or dt_h * fraction_h.</p>
+<p>The former quantity is :</p>
+<p>dt_r = PI*r*sqrt(rho/G)/(0.1631*nu+0.8766),</p>
+<p>where rho is particle density, G is the shear modulus and nu is Poisson&#8217;s
+ratio. The latter quantity is expressed by</p>
+<p>dt_h = 2.87*(m_eff^2/(r_eff*Y_eff^2*v_max))^0.2.</p>
+<p>The effective mass m_eff, the effective radius r_eff and the effective Young&#8217;s
+modulus Y_eff are as defined in <a class="reference internal" href="pair_gran.html"><em>pair gran</em></a>. v_max is the
 maximum relative velocity, taking mesh movement into account. Please note
 that the Hertz criterion will also be used if you use a different granular
-pair style (e.g. Hooke). If keyword <I>vmax</I> is used, a user-defined maximum
+pair style (e.g. Hooke). If keyword <em>vmax</em> is used, a user-defined maximum
 velocity is used as a minimum in the formula above, i.e. the maximum of
 v_max of the particles in the simulation and v_max specified by the user
-is used.
-</P>
-<P>Additionally, this command checks the ratio of skin to the distance that
+is used.</p>
+<p>Additionally, this command checks the ratio of skin to the distance that
 particles can travel relative to each other in one time-step. This value
-should be >1, otherwise some interactions may be missed or overlap energy
-may be generated artificially. This command will warn you if this is the case.
-</P>
-<P>These criteria are checked every 'nevery' time-steps. Rayleigh time dt_r is
+should be &gt;1, otherwise some interactions may be missed or overlap energy
+may be generated artificially. This command will warn you if this is the case.</p>
+<p>These criteria are checked every &#8216;nevery&#8217; time-steps. Rayleigh time dt_r is
 calculated for each particle in the simulation, and the minimum value is
 taken for further calculations. Hertz time dt_h is estimated by testing a
 collision of each particle with itself using v_max as the assumed collision
-velocity.
-</P>
-<P>Keyword <I>warn</I> can be used to turn off the warning message. Keyword <I>error</I>
+velocity.</p>
+<p>Keyword <em>warn</em> can be used to turn off the warning message. Keyword <em>error</em>
 can be used to have LIGGGHTS(R)-PUBLIC issue an error message and abort the simulation
-if any of the criteria is violated.
-</P>
-<P><B>Restart, fix_modify, output, run start/stop, minimize info:</B>
-</P>
-<P>No information about this fix is written to <A HREF = "restart.html">binary restart
-files</A>.  None of the <A HREF = "fix_modify.html">fix_modify</A> options
+if any of the criteria is violated.</p>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.  This fix computes a 3-vector, for access by
-various <A HREF = "Section_howto.html#4_15">output commands</A>.  The vector consists
+various <em class="xref std std-ref">output commands</em>.  The vector consists
 of the time-step size expressed as fraction of the Rayleigh and Hertz
 time-step sizes and the ratio of skin to the distance particles can
 travel relative to each other in one time-step, respectively. No
-parameter of this fix can be used with the <I>start/stop</I> keywords of
-the <A HREF = "run.html">run</A> command. This fix is not invoked during
-<A HREF = "minimize.html">energy minimization</A>.
-</P>
-<P><B>Restrictions:</B> none
-</P>
-<P><B>Related commands:</B> none
-</P>
-<P><B>Default:</B> 
-warn = yes, error = no, v_max = 0
-</P>
-</HTML>
+parameter of this fix can be used with the <em>start/stop</em> keywords of
+the <a class="reference internal" href="run.html"><em>run</em></a> command. This fix is not invoked during
+<tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+<p><strong>Related commands:</strong> none</p>
+<p><strong>Default:</strong>
+warn = yes, error = no, v_max = 0</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

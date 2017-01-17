@@ -12,10 +12,12 @@ fix mesh/surface/planar command :h3
 [Syntax:]
 
 fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
+fix ID group-ID mesh/surface/module_list file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values module_keywords module_values
 fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values :pre
 
 ID, is documented in "fix"_fix.html command. :ulb,l
 mesh/surface or mesh/surface/planar = style name of this fix command  :l
+module_list = list of mesh modules separated by / :l
 file = obligatory keyword :l
 filename = name of STL or VTK file containing the triangle mesh data :l
 zero or more premesh_keywords/premesh_value pairs may be appended :l
@@ -54,17 +56,20 @@ surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} or {curvatur
     axis = mandatory keyword
     ax ay az = axis vector for rotation (length units)
     omega = mandatory keyword
-    om = rotaional velocity around specifyied axis (rad/time units)
+    om = rotational velocity around specifyied axis (rad/time units)
   {curvature} value = c
     c = maximum angle between mesh faces belonging to the same surface (in degree) 
   {curvature_tolerant} value = ct
     ct = yes or no :pre
+zero or more module_keywords/module_value pairs may be appended if a mesh module is used :l
+  see the respective mesh module parameter list for details :pre
 
 :ule
 
 [Examples:]
 
-fix cad all mesh/surface file mesh.stl type 1 :pre
+fix cad all mesh/surface file mesh.stl type 1
+fix cad1 all mesh/surface/stress/deform file meshes/plate.stl type 1 scale 1.0 wear finnie :pre
 
 [Description:]
 
@@ -98,6 +103,24 @@ belt velocity parallel to the mesh face, the velocity magnitude for each mesh fa
 equal to the conveyor belt velocity. This ensures the model makes sense also in case
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 {surface_ang_vel} mimics rotational motion of the mesh (e.g. for modeling a shear cell)
+
+[Mesh modules:]
+
+The "mesh/surface" fix allows for several mesh modules to be appended.
+
+"6dof"_mesh_module_6dof.html :ulb,l
+"binning"_mesh_module_binning.html :l
+"contact"_mesh_module_contact.html :l
+"deform"_mesh_module_deform.html :l
+"heattransfer"_mesh_module_heattransfer.html :l
+"liquidtransfer"_mesh_module_liquidtransfer.html :l
+"servo"_mesh_module_servo.html :l
+"stress"_mesh_module_stress.html :l
+:ule
+
+Note that some of these modules are dependent on each other and some are mutually exclusive.
+The order of the mesh modules is important and the arguments for each mesh module need to
+be appended in the same order as the modules.
 
 [Quality checks / error and warning messages:]
 
@@ -186,8 +209,11 @@ This is typically not recommended, but can be used as a last resort measure.
 
 This fix writes the STL data to binary "restart files"_restart.html to be able to
 correctly resume the simulation in case the mesh is moved. None of the
-"fix_modify"_fix_modify.html options are relevant to this fix. No global
-scalar or vector or per-atom quantities are stored by this fix for access by
+"fix_modify"_fix_modify.html options are relevant to this fix directly. However,
+some mesh modules do have fix_modify options, please refer to the respective module
+for further information.
+
+No global scalar or vector or per-atom quantities are stored by this fix for access by
 various "output commands"_Section_howto.html#4_15. No parameter of this fix
 can be used with the {start/stop} keywords of the "run"_run.html command.
 This fix is not invoked during "energy minimization"_minimize.html.

@@ -48,7 +48,6 @@
 #define PAIR_GRAN_BASE_H_
 
 #include "contact_interface.h"
-#include "nonspherical_flags.h"
 #include "math_extra_liggghts.h"
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
@@ -105,11 +104,11 @@ public:
   int64_t hashcode()
   { return cmodel.hashcode(); }
 
-  virtual void settings(int nargs, char ** args) {
+  virtual void settings(int nargs, char ** args, IContactHistorySetup *hsetup) {
     Settings settings(lmp);
     cmodel.registerSettings(settings);
     bool success = settings.parseArguments(nargs, args);
-    cmodel.postSettings();
+    cmodel.postSettings(hsetup);
 
 #ifdef LIGGGHTS_DEBUG
     if(comm->me == 0) {
@@ -203,10 +202,6 @@ public:
     int nlocal = atom->nlocal;
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
     int superquadric_flag = atom->superquadric_flag;
-    double **quat = atom->quaternion;
-    double **shape = atom->shape;
-    double **roundness = atom->roundness;
-    double **inertia = atom->inertia;
 #endif // SUPERQUADRIC_ACTIVE_FLAG
     const int newton_pair = force->newton_pair;
 
@@ -256,12 +251,7 @@ public:
       sidata.i = i;
       #ifdef SUPERQUADRIC_ACTIVE_FLAG
           if(superquadric_flag) {
-            sidata.pos_i = x[i];
-            sidata.quat_i = quat[i];
-            sidata.shape_i = shape[i];
-            sidata.roundness_i = roundness[i];
             sidata.radi = cbrt(0.75 * atom->volume[i] / M_PI);
-            sidata.inertia_i = inertia[i];
           }
       #endif
 
@@ -305,12 +295,7 @@ public:
         sidata.contact_history = all_contact_hist ? &all_contact_hist[dnum*jj] : NULL;
         #ifdef SUPERQUADRIC_ACTIVE_FLAG
             if(superquadric_flag) {
-              sidata.pos_j = x[j];
-              sidata.quat_j = quat[j];
-              sidata.shape_j = shape[j];
-              sidata.roundness_j = roundness[j];
               sidata.radj = cbrt(0.75 * atom->volume[j] / M_PI);
-              sidata.inertia_j = inertia[j];
             }
         #endif
 
@@ -396,7 +381,8 @@ public:
           // if there is a surface touch, there will always be a force
           sidata.has_force_update = true;
 
-        } else if(rsq < contactDistanceMultiplier * radsum * radsum) {
+        // surfacesClose is not supported for convex particles
+        } else if(rsq < contactDistanceMultiplier * radsum * radsum && !atom->shapetype_flag) {
           // apply force update only if selected contact models have requested it
           sidata.has_force_update = false;
           cmodel.surfacesClose(sidata, i_forces, j_forces);

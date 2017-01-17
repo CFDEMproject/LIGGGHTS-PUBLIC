@@ -128,12 +128,20 @@ void FixHeatGran::post_create()
     newarg[14] = "thermalCapacity";
     modify->add_fix(15,(char**)newarg);
   }
+
+  fix_temp = static_cast<FixPropertyAtom*>(modify->find_fix_property("Temp","property/atom","scalar",0,0,style));
+  fix_heatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatFlux","property/atom","scalar",0,0,style));
+  fix_heatSource = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatSource","property/atom","scalar",0,0,style));
+  fix_directionalHeatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("directionalHeatFlux","property/atom","vector",0,0,style));
+
+  if(!fix_temp || !fix_heatFlux || !fix_heatSource || !fix_directionalHeatFlux)
+    error->one(FLERR,"internal error");
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixHeatGran::updatePtrs(){
-
+void FixHeatGran::updatePtrs()
+{
   Temp = fix_temp->vector_atom;
   vector_atom = Temp; 
 
@@ -167,6 +175,9 @@ void FixHeatGran::init()
   fix_heatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatFlux","property/atom","scalar",0,0,style));
   fix_heatSource = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatSource","property/atom","scalar",0,0,style));
   fix_directionalHeatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("directionalHeatFlux","property/atom","vector",0,0,style));
+
+  if(!fix_temp || !fix_heatFlux || !fix_heatSource || !fix_directionalHeatFlux)
+    error->one(FLERR,"internal error");
 
   updatePtrs();
 }

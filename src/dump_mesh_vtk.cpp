@@ -60,19 +60,20 @@ using namespace LAMMPS_NS;
 
 enum
 {
-    DUMP_STRESS = 1,
-    DUMP_STRESSCOMPONENTS = 2,
-    DUMP_ID = 4,
-    DUMP_VEL = 8,
-    DUMP_WEAR = 16,
-    DUMP_TEMP = 32,
-    DUMP_OWNER = 64,
-    DUMP_AREA = 128,
-    DUMP_AEDGES = 256,
-    DUMP_ACORNERS = 512,
-    DUMP_INDEX = 1024,
-    DUMP_NNEIGHS = 2048,
-    DUMP_MIN_ACTIVE_EDGE_DIST = 2048
+    DUMP_STRESS               = 1<<0,
+    DUMP_STRESSCOMPONENTS     = 1<<1,
+    DUMP_ID                   = 1<<2,
+    DUMP_VEL                  = 1<<3,
+    DUMP_WEAR                 = 1<<4,
+    DUMP_TEMP                 = 1<<5,
+    DUMP_OWNER                = 1<<6,
+    DUMP_AREA                 = 1<<7,
+    DUMP_AEDGES               = 1<<8,
+    DUMP_ACORNERS             = 1<<9,
+    DUMP_INDEX                = 1<<10,
+    DUMP_NNEIGHS              = 1<<11,
+    DUMP_MIN_ACTIVE_EDGE_DIST = 1<<12,
+    DUMP_LIQUID_CONTENT       = 1<<13
 };
 
 enum
@@ -99,6 +100,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   f_node_(0),
   T_(0),
   min_active_edge_dist_(0),
+  liquid_content_(0),
   scalar_containers_(0),
   scalar_container_names_(0),
   n_scalar_containers_(0),
@@ -130,7 +132,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           if (iarg+2 > narg) error->all(FLERR,"Dump mesh/vtk: not enough arguments for 'interpolate'");
           if(strcmp(arg[iarg+1],"face")==0) dataMode_ = 0;
           else if(strcmp(arg[iarg+1],"interpolate")==0) dataMode_ = 1;
-          else error->all(FLERR,"Dump mesh/vtk: wrong arrgument for 'output'");
+          else error->all(FLERR,"Dump mesh/vtk: wrong argument for 'output'");
           iarg += 2;
           hasargs = true;
       }
@@ -206,6 +208,12 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           iarg++;
           hasargs = true;
       }
+      else if(strcmp(arg[iarg],"liquid")==0)
+      {
+          dump_what_ |= DUMP_LIQUID_CONTENT;
+          iarg++;
+          hasargs = true;
+      }
       else if(strcmp(arg[iarg],"distaa")==0)
       {
           dump_what_ |= DUMP_MIN_ACTIVE_EDGE_DIST;
@@ -267,6 +275,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   f_node_ = new VectorContainer<double,3>*[nMesh_];
   T_ = new ScalarContainer<double>*[nMesh_];
   min_active_edge_dist_ = new ScalarContainer<double>*[nMesh_];
+  liquid_content_ = new ScalarContainer<double>*[nMesh_];
 
   scalar_containers_ = new ScalarContainer<double>**[n_container_bases_];
   scalar_container_names_ = new char*[n_container_bases_];
@@ -309,6 +318,7 @@ DumpMeshVTK::~DumpMeshVTK()
   delete [] f_node_;
   delete [] T_;
   delete [] min_active_edge_dist_;
+  delete [] liquid_content_;
 
   for(int i = 0; i < n_container_bases_; i++)
   {
@@ -380,6 +390,8 @@ void DumpMeshVTK::init_style()
   if(dump_what_ & DUMP_NNEIGHS)
     size_one += 1;
   if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
+    size_one += 1;
+  if(dump_what_ & DUMP_LIQUID_CONTENT)
     size_one += 1;
 
   getGeneralRefs();
@@ -484,7 +496,7 @@ void DumpMeshVTK::getRefs()
           }
           else
           {
-              temp_per_element_.push_back(true);
+              temp_per_element_.push_back(false);
               T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("Temp");
           }
           //if(0 == comm->me && !T_[i])
@@ -496,6 +508,13 @@ void DumpMeshVTK::getRefs()
       for(int i = 0; i < nMesh_; i++)
       {
           min_active_edge_dist_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("minActiveEdgeDist");
+      }
+  }
+  if(dump_what_ & DUMP_LIQUID_CONTENT)
+  {
+      for(int i = 0; i < nMesh_; i++)
+      {
+          liquid_content_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("LiquidContent");
       }
   }
 }
@@ -667,6 +686,10 @@ void DumpMeshVTK::pack(int *ids)
         if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
         {
             buf[m++] = min_active_edge_dist_[iMesh] ? min_active_edge_dist_[iMesh]->get(iTri) : 0.;
+        }
+        if(dump_what_ & DUMP_LIQUID_CONTENT)
+        {
+            buf[m++] = liquid_content_[iMesh] ? liquid_content_[iMesh]->get(iTri) : 0.;
         }
 
         for(int ib = 0; ib < n_scalar_containers_; ib++)
@@ -987,6 +1010,22 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
       {
         buf_pos++;
       }
+      // not able to interpolate this
+      if(dump_what_ & DUMP_LIQUID_CONTENT)
+      {
+        // write liquid content
+        fprintf(fp,"SCALARS liquid_content float 1\nLOOKUP_TABLE default\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+            double helper=0;
+            for (int j=0; j < points_neightri_[i]->size();j++)
+                helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+            helper /= points_neightri_[i]->size();
+            fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+      }
 
     return;
 }
@@ -1193,10 +1232,22 @@ void DumpMeshVTK::write_data_ascii_face(int n, double *mybuf)
       }
       buf_pos++;
   }
-  if(dump_what_ & DUMP_NNEIGHS)
+  if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
   {
       //write owner data
       fprintf(fp,"SCALARS min_active_edge_dist float 1\nLOOKUP_TABLE default\n");
+      m = buf_pos;
+      for (int i = 0; i < n; i++)
+      {
+          fprintf(fp,"%f\n",mybuf[m]);
+          m += size_one;
+      }
+      buf_pos++;
+  }
+  if(dump_what_ & DUMP_LIQUID_CONTENT)
+  {
+      // write liquid content
+      fprintf(fp,"SCALARS liquid_content float 1\nLOOKUP_TABLE default\n");
       m = buf_pos;
       for (int i = 0; i < n; i++)
       {

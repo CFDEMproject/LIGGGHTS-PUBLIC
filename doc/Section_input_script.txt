@@ -281,9 +281,9 @@ fix          cylwalls all wall/gran model hertz tangential history primitive typ
 #region of insertion
 region       bc cylinder z 0. 0. 0.045 0.00 0.15 units box
 #particle distributions
-fix          pts1 all particletemplate/sphere 1 atom_type 1 density constant 2500 radius constant 0.0025
-fix          pdd1 all particledistribution/discrete 1.  1 pts1 1.0
-fix          ins all insert/pack seed 100001 distributiontemplate pdd1 vel constant 0. 0. -0.5 &
+fix          pts1 all particletemplate/sphere 12345787 1 density constant 2500 radius constant 0.0025
+fix          pdd1 all particledistribution/discrete 17903  1 pts1 1.0
+fix          ins all insert/pack seed 123457 distributiontemplate pdd1 vel constant 0. 0. -0.5 &
              insert_every once overlapcheck yes all_in yes particles_in_region 1800 region bc
 #apply nve integration to all particles
 fix          integr all nve/sphere

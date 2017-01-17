@@ -59,17 +59,32 @@ namespace ContactModels
   template<>
   class TangentialModel<TANGENTIAL_NO_HISTORY> : protected Pointers
   {
-    double ** coeffFrict;
-
   public:
     static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
-    TangentialModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) : Pointers(lmp), coeffFrict(NULL)
+    TangentialModel(LAMMPS * lmp, IContactHistorySetup *hsetup, class ContactModelBase *cmb) :
+      Pointers(lmp),
+      coeffFrict(NULL),
+      disable_when_bonded_(false),
+      bond_history_offset_(-1)
     {
       
     }
 
-    inline void registerSettings(Settings&){}
+    inline void registerSettings(Settings &settings)
+    {
+      settings.registerOnOff("disableTangentialWhenBonded", disable_when_bonded_, false);
+    }
+
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb)
+    {
+      if (disable_when_bonded_)
+      {
+        bond_history_offset_ = cmb->get_history_offset("bond_contactflag");
+        if (bond_history_offset_ < 0)
+          error->one(FLERR, "Could not find bond history offset");
+      }
+    }
 
     inline void connectToProperties(PropertyRegistry & registry){
       registry.registerProperty("coeffFrict", &MODEL_PARAMS::createCoeffFrict);
@@ -85,17 +100,18 @@ namespace ContactModels
 
       // force normalization
       const double Ft_friction = xmu * fabs(sidata.Fn);
-      const double Ft_damping = sidata.gammat*vrel;     
-      double Ft;
+      double gamma = 0.0;
 
-      if (vrel != 0.0) Ft = min(Ft_friction, Ft_damping) / vrel;
-      else Ft = 0.0;
+      if (Ft_friction < sidata.gammat*vrel)
+        gamma = Ft_friction/vrel;
+      else
+        gamma = sidata.gammat;
 
       // tangential force due to tangential velocity damping
 
-      const double Ft1 = -Ft*sidata.vtr1;
-      const double Ft2 = -Ft*sidata.vtr2;
-      const double Ft3 = -Ft*sidata.vtr3;
+      const double Ft1 = -gamma*sidata.vtr1;
+      const double Ft2 = -gamma*sidata.vtr2;
+      const double Ft3 = -gamma*sidata.vtr3;
 
       // forces & torques
 
@@ -117,61 +133,70 @@ namespace ContactModels
           }
       #endif
       // return resulting forces
-      if(sidata.is_wall) {
-        const double area_ratio = sidata.area_ratio;
-        i_forces.delta_F[0] += Ft1 * area_ratio;
-        i_forces.delta_F[1] += Ft2 * area_ratio;
-        i_forces.delta_F[2] += Ft3 * area_ratio;
-        #ifdef NONSPHERICAL_ACTIVE_FLAG
-                i_forces.delta_torque[0] += torque_i[0] * area_ratio;
-                i_forces.delta_torque[1] += torque_i[1] * area_ratio;
-                i_forces.delta_torque[2] += torque_i[2] * area_ratio;
-        #else
-                i_forces.delta_torque[0] += -sidata.cri * tor1 * area_ratio;
-                i_forces.delta_torque[1] += -sidata.cri * tor2 * area_ratio;
-                i_forces.delta_torque[2] += -sidata.cri * tor3 * area_ratio;
-        #endif
-      } else {
-        i_forces.delta_F[0] += Ft1;
-        i_forces.delta_F[1] += Ft2;
-        i_forces.delta_F[2] += Ft3;
-        j_forces.delta_F[0] -= Ft1;
-        j_forces.delta_F[1] -= Ft2;
-        j_forces.delta_F[2] -= Ft3;
-        #ifdef NONSPHERICAL_ACTIVE_FLAG
-                double torque_j[3];
-                if(sidata.is_non_spherical) {
-                  double xcj[3];
-                  vectorSubtract3D(sidata.contact_point, atom->x[sidata.j], xcj);
-                  double Ft_j[3] = { -Ft1,  -Ft2,  -Ft3 };
-                  vectorCross3D(xcj, Ft_j, torque_j);
-                } else {
-                  torque_j[0] = -sidata.crj * tor1;
-                  torque_j[1] = -sidata.crj * tor2;
-                  torque_j[2] = -sidata.crj * tor3;
-                }
-                i_forces.delta_torque[0] += torque_i[0];
-                i_forces.delta_torque[1] += torque_i[1];
-                i_forces.delta_torque[2] += torque_i[2];
+      if (!disable_when_bonded_ || MathExtraLiggghts::compDouble(sidata.contact_history[bond_history_offset_], 0.0, 1e-5))
+      {
+        if(sidata.is_wall) {
+          const double area_ratio = sidata.area_ratio;
+          i_forces.delta_F[0] += Ft1 * area_ratio;
+          i_forces.delta_F[1] += Ft2 * area_ratio;
+          i_forces.delta_F[2] += Ft3 * area_ratio;
+          #ifdef NONSPHERICAL_ACTIVE_FLAG
+                  i_forces.delta_torque[0] += torque_i[0] * area_ratio;
+                  i_forces.delta_torque[1] += torque_i[1] * area_ratio;
+                  i_forces.delta_torque[2] += torque_i[2] * area_ratio;
+          #else
+                  i_forces.delta_torque[0] += -sidata.cri * tor1 * area_ratio;
+                  i_forces.delta_torque[1] += -sidata.cri * tor2 * area_ratio;
+                  i_forces.delta_torque[2] += -sidata.cri * tor3 * area_ratio;
+          #endif
+        } else {
+          i_forces.delta_F[0] += Ft1;
+          i_forces.delta_F[1] += Ft2;
+          i_forces.delta_F[2] += Ft3;
+          j_forces.delta_F[0] -= Ft1;
+          j_forces.delta_F[1] -= Ft2;
+          j_forces.delta_F[2] -= Ft3;
+          #ifdef NONSPHERICAL_ACTIVE_FLAG
+                  double torque_j[3];
+                  if(sidata.is_non_spherical) {
+                    double xcj[3];
+                    vectorSubtract3D(sidata.contact_point, atom->x[sidata.j], xcj);
+                    double Ft_j[3] = { -Ft1,  -Ft2,  -Ft3 };
+                    vectorCross3D(xcj, Ft_j, torque_j);
+                  } else {
+                    torque_j[0] = -sidata.crj * tor1;
+                    torque_j[1] = -sidata.crj * tor2;
+                    torque_j[2] = -sidata.crj * tor3;
+                  }
+                  i_forces.delta_torque[0] += torque_i[0];
+                  i_forces.delta_torque[1] += torque_i[1];
+                  i_forces.delta_torque[2] += torque_i[2];
 
-                j_forces.delta_torque[0] += torque_j[0];
-                j_forces.delta_torque[1] += torque_j[1];
-                j_forces.delta_torque[2] += torque_j[2];
-        #else
-                i_forces.delta_torque[0] += -sidata.cri * tor1;
-                i_forces.delta_torque[1] += -sidata.cri * tor2;
-                i_forces.delta_torque[2] += -sidata.cri * tor3;
+                  j_forces.delta_torque[0] += torque_j[0];
+                  j_forces.delta_torque[1] += torque_j[1];
+                  j_forces.delta_torque[2] += torque_j[2];
+          #else
+                  i_forces.delta_torque[0] += -sidata.cri * tor1;
+                  i_forces.delta_torque[1] += -sidata.cri * tor2;
+                  i_forces.delta_torque[2] += -sidata.cri * tor3;
 
-                j_forces.delta_torque[0] += -sidata.crj * tor1;
-                j_forces.delta_torque[1] += -sidata.crj * tor2;
-                j_forces.delta_torque[2] += -sidata.crj * tor3;
-        #endif
+                  j_forces.delta_torque[0] += -sidata.crj * tor1;
+                  j_forces.delta_torque[1] += -sidata.crj * tor2;
+                  j_forces.delta_torque[2] += -sidata.crj * tor3;
+          #endif
+        }
       }
     }
 
     inline void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     inline void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     inline void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
+
+  private:
+    double ** coeffFrict;
+    bool disable_when_bonded_;
+    int bond_history_offset_;
+
   };
 }
 }

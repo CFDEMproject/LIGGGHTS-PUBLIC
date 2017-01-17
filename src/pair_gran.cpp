@@ -57,6 +57,7 @@
 #include "atom.h"
 #include "atom_vec.h"
 #include "domain.h"
+#include "modify.h"
 #include "force.h"
 #include "update.h"
 #include "modify.h"
@@ -121,6 +122,9 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
   store_multicontact_data_ = false;
 
   fix_relax_ = NULL;
+
+  if(modify->n_fixes_style("multisphere/advanced"))
+    do_store_contact_forces();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -782,4 +786,20 @@ double PairGran::memory_usage()
 
 bool PairGran::forceoff() {
   return false;
+}
+
+void PairGran::cpl_add_pair(LCM::SurfacesIntersectData & sidata, LCM::ForceData & i_forces)
+{
+    const double fx = i_forces.delta_F[0];
+    const double fy = i_forces.delta_F[1];
+    const double fz = i_forces.delta_F[2];
+    const double tor1 = i_forces.delta_torque[0];
+    const double tor2 = i_forces.delta_torque[1];
+    const double tor3 = i_forces.delta_torque[2];
+    cpl_->add_pair(sidata.i, sidata.j, fx,fy,fz,tor1,tor2,tor3,sidata.contact_history);
+}
+
+void PairGran::cpl_pair_finalize()
+{
+    cpl_->pair_finalize();
 }

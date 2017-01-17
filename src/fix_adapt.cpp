@@ -416,6 +416,7 @@ void FixAdapt::change_settings()
             if (mask[i] & groupbit)
             {
               if (is_atomstyle) value = fppat->vector_atom[i];  
+              if (scaleflag) value *= radius[i]*2.0;
               radius[i] = 0.5*value;
             }
         } else {
@@ -424,6 +425,7 @@ void FixAdapt::change_settings()
               if (is_atomstyle) value = fppat->vector_atom[i];  
               density = rmass[i] / (4.0*MY_PI/3.0 *
                                     radius[i]*radius[i]*radius[i]);
+              if (scaleflag) value *= radius[i]*2.0;
               radius[i] = 0.5*value;
               rmass[i] = 4.0*MY_PI/3.0 *
                 radius[i]*radius[i]*radius[i] * density;
