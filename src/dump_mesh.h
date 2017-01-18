@@ -39,6 +39,8 @@
     Copyright 2016-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
+#if defined(LAMMPS_VTK) //NP do not use #ifdef here (VS C++ bug)
+
 #ifndef LMP_DUMP_MESH_H
 #define LMP_DUMP_MESH_H
 
@@ -128,3 +130,4 @@ class DumpMesh : public Pointers
 }
 
 #endif
+#endif // LAMMPS_VTK

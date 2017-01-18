@@ -39,6 +39,8 @@
     Copyright 2016-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
+#ifdef LAMMPS_VTK
+
 #include <string.h>
 #include "dump_mesh.h"
 #include "domain.h"
@@ -922,3 +924,5 @@ void DumpMesh::prepare_mbSet(vtkSmartPointer<vtkMultiBlockDataSet> mbSet)
 
     return;
 }
+
+#endif // LAMMPS_VTK
