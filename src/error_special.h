@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string>
+#include <cstring>
 #include <vector>
 
 namespace LAMMPS_NS {
