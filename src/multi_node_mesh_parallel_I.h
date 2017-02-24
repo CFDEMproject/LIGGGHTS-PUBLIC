@@ -1,22 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_MULTI_NODE_MESH_PARALLEL_I_H
@@ -532,25 +552,54 @@
       
       double span = this->node_.max_scalar()-this->node_.min_scalar();
       if(span < 1e-4)
-        this->error->all(FLERR,"Mesh error: dimensions too small - use different unit system");
+        this->error->all(FLERR,"Mesh error - root causes: (a) mesh empty or (b) dimensions too small - use different unit system");
 
+      double comBefore[3];
+      this->center_of_mass(comBefore);
+      
       // delete all elements that do not belong to this processor
+      
       deleteUnowned();
 
       if(sizeGlobal() != sizeGlobalOrig())
       {
         
-        char errstr[500];
-        sprintf(errstr,"Mesh (id %s): Mesh elements have been lost / left the domain. Please use "
-                       "'boundary m m m' or scale/translate/rotate the mesh or change its dynamics",
-                       this->mesh_id_);
+        char errstr[1024];
+
+        if(0 == sizeGlobal())
+        {
+            sprintf(errstr,"Mesh (id %s): All %d mesh elements have been lost / left the domain. \n"
+                           "Please use 'boundary m m m' or scale/translate/rotate the mesh or change its dynamics\n"
+                           "FYI: center of mass of mesh including scale/tranlate/rotate is %f / %f / %f\n"
+                           "     simulation box x from %f to %f y  from %f to %f z from %f to %f\n"
+                           "     (gives indication about changes in scale/tranlate/rotate necessary to make simulation run)\n",
+                       this->mesh_id_,sizeGlobalOrig()-sizeGlobal(),comBefore[0],comBefore[1],comBefore[2],
+                       this->domain->boxlo[0],this->domain->boxhi[0],this->domain->boxlo[1],this->domain->boxhi[1],this->domain->boxlo[2],this->domain->boxhi[2]);
+        }
+        else
+        {
+            double comAfter[3];
+            this->center_of_mass(comAfter);
+
+            sprintf(errstr,"Mesh (id %s): %d mesh elements have been lost / left the domain. \n"
+                           "Please use 'boundary m m m' or scale/translate/rotate the mesh or change its dynamics\n"
+                           "FYI: center of mass of mesh including scale/tranlate/rotate before cutting out elements is %f / %f / %f\n"
+                           "     simulation box x from %f to %f y  from %f to %f z from %f to %f\n"
+                           "     center of mass of mesh after cutting out elements outside simulation box is is        %f / %f / %f\n"
+                           "     (gives indication about changes in scale/tranlate/rotate necessary to make simulation run)\n",
+                       this->mesh_id_,sizeGlobalOrig()-sizeGlobal(),comBefore[0],comBefore[1],comBefore[2],
+                       this->domain->boxlo[0],this->domain->boxhi[0],this->domain->boxlo[1],this->domain->boxhi[1],this->domain->boxlo[2],this->domain->boxhi[2],
+                       comAfter[0],comAfter[1],comAfter[2]);
+        }
         this->error->all(FLERR,errstr);
       }
 
       // perform operations that should be done before initial setup
+      
       preInitialSetup();
 
       // set-up mesh parallelism
+      
       setup();
 
       // re-calculate properties for owned particles
@@ -563,6 +612,7 @@
       borders();
 
       // re-calculate properties for ghost particles
+      
       refreshGhosts(1);
 
       // build mesh topology and neigh list
@@ -570,6 +620,7 @@
       buildNeighbours();
 
       // perform quality check on the mesh
+      
       qualityCheck();
 
       if(doParallellization_) isParallel_ = true;
@@ -577,8 +628,9 @@
       postInitialSetup();
 
       // stuff that should be done before resuming simulation
+      
       postBorders();
-
+      
   }
 
   /* ----------------------------------------------------------------------
@@ -609,7 +661,12 @@
       if(sizeGlobal() != sizeGlobalOrig())
       {
         
-        this->error->all(FLERR,"Mesh elements have been lost");
+        //this->error->all(FLERR,"Mesh elements have been lost");
+        char errstr[500];
+        sprintf(errstr,"Mesh (id %s): Mesh elements have been lost / left the domain. Please use "
+                       "'boundary m m m' or scale/translate/rotate the mesh or change its dynamics",
+                       this->mesh_id_);
+        this->error->all(FLERR,errstr);
       }
 
       // re-calculate properties for owned particles
@@ -792,6 +849,7 @@
           MPI_Request request;
           MPI_Status status;
 
+          nfirst = 0;
           iswap = 0;
           smax = rmax = 0;
 

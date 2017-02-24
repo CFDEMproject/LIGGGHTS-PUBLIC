@@ -1,0 +1,272 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mesh module stress &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>mesh module stress</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/mesh_module_stress.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mesh-module-stress">
+<h1>mesh module stress<a class="headerlink" href="#mesh-module-stress" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>stress stress_keywords stress_values</pre>
+</div>
+<ul class="simple">
+<li>zero or more stress_keyword/value pairs may be appended</li>
+<li>stress_keyword = <em>reference_point</em>, <em>stress</em> or <em>wear</em></li>
+</ul>
+<pre class="literal-block">
+<em>reference_point</em> values = rx ry rz
+  rx, ry, rz = coordinates of reference point
+<em>stress</em> value = on or off
+<em>wear</em> value = finnie or off
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix cad all mesh/surface/stress file mesh.stl type 1 wear finnie</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This mesh module computes the average normal and shear stresses that the particles in the
+fix group exert on each triangle of the mesh is evaluated (which costs a bit of performance).
+Also, the total force and torque on the particle is calculated (see output info).
+The per-element average normal stress can be dumped into VTK format using <a class="reference internal" href="dump.html"><em>dump mesh/vtk</em></a>.</p>
+<p>With the optional <em>stress</em> keyword, stress tracking can be turned off if desired. The
+reference point for calculating the body torque can be controlled via the <em>referece_point</em>
+keyword. The optional <em>wear</em> keyword can activates a simple qualitative wear model
+(<em>finnie</em>) - for details on the model, see the seperate /doc/finnie-wear.pdf. The
+finnie constant k in Eqn. (4.23) has to be specified as follows:</p>
+<div class="highlight-python"><pre>fix id all property/global k_finnie peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .</pre>
+</div>
+<div class="highlight-python"><pre>(value_ij=value for the finnie constant between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)</pre>
+</div>
+<p>This mesh module is a prerequisite for the following mesh modules</p>
+<ul class="simple">
+<li><tt class="xref doc docutils literal"><span class="pre">6dof</span></tt></li>
+<li><tt class="xref doc docutils literal"><span class="pre">binning</span></tt></li>
+<li><tt class="xref doc docutils literal"><span class="pre">contact</span></tt></li>
+<li><tt class="xref doc docutils literal"><span class="pre">deform</span></tt></li>
+<li><a class="reference internal" href="mesh_module_servo.html"><em>servo</em></a></li>
+<li><a class="reference internal" href=""><em>stress</em></a></li>
+</ul>
+</div>
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>This mesh module stores a global vector with 9 components for access by various
+<em class="xref std std-ref">output commands</em>. The first 3 components are equal to the
+total force on the mesh, the next 3 components store the total torque on the body
+exerted by the particles. Finally, the last 3 components are the coordinates (moved, scaled, rotated) of the reference point. Other info see <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></tt>.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>
+<a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p>reference_point = 0. 0. 0.
+stress = on
+wear = off</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

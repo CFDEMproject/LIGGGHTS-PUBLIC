@@ -1,0 +1,33 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+gran surface sphere model :h3
+
+[Syntax:]
+
+surface sphere :pre
+
+[Description:]
+
+This is the default surface model for a particle, it 
+prepresents a smooth (non-rough) sphere.
+It is the default surface model for all LIGGGHTS(R)-PUBLIC
+simulations. In case of a multi-sphere simulation,
+this surface model is applied to all spheres within
+one rigid body.
+
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command should lead to
+statistically equivalent dynamics and system state.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
+
+[Restrictions:] none

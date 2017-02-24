@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -30,9 +30,9 @@ fix 1 all external pf/array 10 :pre
 
 [Description:]
 
-This fix allows external programs that are running LAMMPS through its
+This fix allows external programs that are running LIGGGHTS(R)-PUBLIC through its
 "library interface"_Section_howto.html#howto_19 to modify certain
-LAMMPS properties on specific timesteps, similar to the way other
+LIGGGHTS(R)-PUBLIC properties on specific timesteps, similar to the way other
 fixes do.  The external driver can be a "C/C++ or Fortran
 program"_Section_howto.html#howto_19 or a "Python
 script"_Section_python.html.
@@ -55,7 +55,7 @@ foo(void *ptr, bigint timestep, int nlocal, int *ids, double **x, double **fexte
 The arguments are as follows:
 
 ptr = pointer provided by and simply passed back to external driver
-timestep = current LAMMPS timestep
+timestep = current LIGGGHTS(R)-PUBLIC timestep
 nlocal = # of atoms on this processor
 ids = list of atom IDs on this processor
 x = coordinates of atoms on this processor
@@ -68,7 +68,7 @@ Fexternal are the forces returned by the driver program.
 
 The fix has a set_callback() method which the external driver can call
 to pass a pointer to its foo() function.  See the
-couple/lammps_quest/lmpqst.cpp file in the LAMMPS distribution for an
+couple/lammps_quest/lmpqst.cpp file in the LIGGGHTS(R)-PUBLIC distribution for an
 example of how this is done.  This sample application performs
 classical MD using quantum forces computed by a density functional
 code "Quest"_quest.
@@ -94,8 +94,8 @@ fx, fy, fz components of force.
 It is up to the external program to set the values in this array to
 the desired quantities, as often as desired.  For example, the driver
 program might perform an MD run in stages of 1000 timesteps each.  In
-between calls to the LAMMPS "run"_run.html command, it could retrieve
-atom coordinates from LAMMPS, compute forces, set values in fexternal,
+between calls to the LIGGGHTS(R)-PUBLIC "run"_run.html command, it could retrieve
+atom coordinates from LIGGGHTS(R)-PUBLIC, compute forces, set values in fexternal,
 etc.
 
 :line
@@ -120,7 +120,7 @@ insure this energy setting is used appropriately in a minimization.
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
 No information about this fix is written to "binary restart
-files"_restart.html.  
+files"_restart.html.
 
 The "fix_modify"_fix_modify.html {energy} option is supported by this
 fix to add the potential "energy" set by the external driver to the
@@ -132,7 +132,7 @@ decrease in potential energy when atoms move in the direction of the
 added force.
 
 This fix computes a global scalar which can be accessed by various
-"output commands"_Section_howto.html#howto_15.  The scalar is the
+"output commands"_Section_howto.html#howto_8.  The scalar is the
 potential energy discussed above.  The scalar stored by this fix
 is "extensive".
 
@@ -140,7 +140,7 @@ No parameter of this fix can be used with the {start/stop} keywords of
 the "run"_run.html command.
 
 The forces due to this fix are imposed during an energy minimization,
-invoked by the "minimize"_minimize.html command. 
+invoked by the "minimize"_minimize.html command.
 
 IMPORTANT NOTE: If you want the fictitious potential energy associated
 with the added forces to be included in the total potential energy of

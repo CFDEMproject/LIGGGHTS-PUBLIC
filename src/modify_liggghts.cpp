@@ -1,26 +1,46 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <string.h>
 #include "modify.h"
 #include "style_compute.h"
 #include "style_fix.h"
@@ -61,10 +81,23 @@ FixPropertyAtom* Modify::add_fix_property_atom(int narg,char **arg,const char *c
    find a fix scalar transport equation
 ------------------------------------------------------------------------- */
 
-FixScalarTransportEquation* Modify::find_fix_scalar_transport_equation(const char *equation_id)
+FixScalarTransportEquation* Modify::find_fix_scalar_transport_equation_strict(const char *equation_id)
 {
+    
     for(int ifix = 0; ifix < nfix; ifix++)
       if(strcmp(fix[ifix]->style,"transportequation/scalar") == 0)
+      {
+          FixScalarTransportEquation *fix_ste = static_cast<FixScalarTransportEquation*>(fix[ifix]);
+          if(fix_ste->match_equation_id(equation_id)) return fix_ste;
+      }
+    return NULL;
+}
+
+FixScalarTransportEquation* Modify::find_fix_scalar_transport_equation(const char *equation_id)
+{
+    
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixScalarTransportEquation*>(fix[ifix]))
       {
           FixScalarTransportEquation *fix_ste = static_cast<FixScalarTransportEquation*>(fix[ifix]);
           if(fix_ste->match_equation_id(equation_id)) return fix_ste;
@@ -194,6 +227,45 @@ int Modify::n_fixes_style_strict(const char *style)
           n_fixes++;
 
     return n_fixes;
+}
+
+/* ----------------------------------------------------------------------
+   find a fix property/atom for output
+------------------------------------------------------------------------- */
+
+int Modify::n_fixes_property_atom_not_internal()
+{
+    int n_fixes = 0;
+
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixPropertyAtom*>(fix[ifix]) && !dynamic_cast<FixPropertyAtom*>(fix[ifix])->get_internal())
+          n_fixes++;
+
+    return n_fixes;
+}
+
+int Modify::dump_size_fixes_property_atom_not_internal()
+{
+    int n_dump = 0;
+
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixPropertyAtom*>(fix[ifix]) && !dynamic_cast<FixPropertyAtom*>(fix[ifix])->get_internal())
+      {
+          n_dump += dynamic_cast<FixPropertyAtom*>(fix[ifix])->get_nvalues();
+      }
+
+    return n_dump;
+}
+
+FixPropertyAtom* Modify::find_fix_property_atom_not_internal(int rank)
+{
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixPropertyAtom*>(fix[ifix]) && !dynamic_cast<FixPropertyAtom*>(fix[ifix])->get_internal())
+      {
+          if(rank > 0) rank --;
+          else return dynamic_cast<FixPropertyAtom*>(fix[ifix]);
+      }
+    return NULL;
 }
 
 /* ----------------------------------------------------------------------
@@ -344,6 +416,53 @@ bool Modify::have_restart_data(Fix *f)
       return true;
 
   return false;
+}
+
+bool Modify::have_restart_data_style(const char* _style)
+{
+  
+  // check if Fix is in restart_global list
+
+  for (int i = 0; i < nfix_restart_global; i++)
+    if (strncmp(style_restart_global[i],_style,strlen(_style)) == 0)
+      return true;
+
+  // check if Fix is in restart_peratom list
+
+  for (int i = 0; i < nfix_restart_peratom; i++)
+    if (strncmp(style_restart_peratom[i],_style,strlen(_style)) == 0)
+      return true;
+
+  return false;
+}
+
+int Modify::n_restart_data_global_style(const char* _style)
+{
+  
+  int nhave = 0;
+
+  // check if Fix is in restart_global list
+
+  for (int i = 0; i < nfix_restart_global; i++)
+    if (strncmp(style_restart_global[i],_style,strlen(_style)) == 0)
+      nhave++;
+
+  return nhave;
+}
+
+char* Modify::id_restart_data_global_style(const char* _style,int _rank)
+{
+  
+  // check if Fix is in restart_global list
+
+  for (int i = 0; i < nfix_restart_global; i++)
+    if (strncmp(style_restart_global[i],_style,strlen(_style)) == 0)
+    {
+          if(_rank > 0) _rank --;
+          else return id_restart_global[i];
+    }
+
+  return 0;
 }
 
 /* ----------------------------------------------------------------------

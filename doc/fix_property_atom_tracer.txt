@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -33,32 +32,28 @@ keyword = {marker_style} or {check_mark_every} :l
 
 fix tracer all property/atom/tracer region_mark mark mark_step 10000 marker_style dirac check_mark_every 10 :pre
 
-[LIGGGHTS vs. LAMMPS Info:]
-
-This LIGGGHTS command is not available in LAMMPS.
-
 [Description:]
 
-Fix property/atom/tracer marks particles using either a Dirac delta 
-impulse (default) or a Heaviside impulse, as specified by the 
+Fix property/atom/tracer marks particles using either a Dirac delta
+impulse (default) or a Heaviside impulse, as specified by the
 {marker_style} keyword. Particles are marked if they are inside the region
-specified by the {region_mark} keyword. Using the Dirac impulse means that all the 
-particles which are in the region at the time-step specified by the 
-{mark_step} keyword are marked. Using the Heaviside impulse means that all 
+specified by the {region_mark} keyword. Using the Dirac impulse means that all the
+particles which are in the region at the time-step specified by the
+{mark_step} keyword are marked. Using the Heaviside impulse means that all
 the particles which pass by the specified region after the specified time-step
 are marked.
 
-Keyword {check_mark_every} can be used to control how often the region 
-is checked. Typically, this is useful when the {heaviside} option is 
+Keyword {check_mark_every} can be used to control how often the region
+is checked. Typically, this is useful when the {heaviside} option is
 used, because you may not want to check each particle each time-step.
 However, be careful not to choose this value too large, in this case
 you could skip particles passing through the region.
 
-It is useful to combine this command with a 
-"compute nparticles/tracer/region"_compute_nparticles_tracer_region.html 
+It is useful to combine this command with a
+"compute nparticles/tracer/region"_compute_nparticles_tracer_region.html
 command to compute residence time distributions.
 
-IMPORTANT NOTE: Using "compute nparticles/tracer/region"_compute_nparticles_tracer_region.html 
+IMPORTANT NOTE: Using "compute nparticles/tracer/region"_compute_nparticles_tracer_region.html
 can change the tracer value (keyword [reset_marker].)
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
@@ -66,19 +61,19 @@ can change the tracer value (keyword [reset_marker].)
 Information about this fix is written to "binary restart files"_restart.html .
 
 This fix computes a per-atom vector (the marker) which can be accessed by
-various "output commands"_Section_howto.html#howto_15. . 
+various "output commands"_Section_howto.html#howto_8. .
 This fix also computes a global scalar indicating how many particles were
 marked since the last time the global scalar was computed. This scalar
-can also be accessed by various "output commands"_Section_howto.html#howto_15. . 
+can also be accessed by various "output commands"_Section_howto.html#howto_8. .
 
-[Restrictions:] 
+[Restrictions:]
 
 Currently, this feature does not support multi-sphere particles.
 
 [Related commands:]
 
-"compute nparticles/tracer/region"_compute_nparticles_tracer_region.html 
+"compute nparticles/tracer/region"_compute_nparticles_tracer_region.html
 
-[Default:] 
+[Default:]
 
 {marker_style} = dirac, check_mark_every = 10

@@ -1,0 +1,103 @@
+#
+# Example for the multicontact model implemented in LIGGGHTS
+# The model is based on the paper by Brodu et al. 2015 and can be retrieved from
+# http://journals.aps.org/pre/abstract/10.1103/PhysRevE.91.032201
+# The input data was kindly provided by the researchers and the associated gnuplot script compares Figure 3 of this paper.
+#
+# The present file DOES NOT apply the multicontact model.
+#
+
+atom_style	sphere
+atom_modify	map array
+boundary	f f f
+newton		off
+soft_particles yes
+
+communicate	single vel yes
+processors * 1 1
+
+units		si
+
+read_data data/input.data
+
+neighbor	0.004 bin
+neigh_modify	delay 0
+
+#Material properties required for new pair styles
+
+fix 		m1 all property/global youngsModulus peratomtype 23.3e3 5e7
+#fix 		m1 all property/global youngsModulus peratomtype 5e6
+fix 		m2 all property/global poissonsRatio peratomtype 0.5 0.5
+fix 		m3 all property/global coefficientRestitution peratomtypepair 2 0.95 0.95 0.95 0.95
+fix 		m4 all property/global coefficientFriction peratomtypepair 2 0.03 0.03 0.03 0.03
+
+#New pair style
+# AM: or no history?
+pair_style gran model hertz tangential history
+pair_coeff	* *
+
+variable dt equal 0.00001
+timestep  ${dt}
+
+fix		gravi all gravity 9.81 vector 0.0 0.0 -1.0
+
+# parameters from brodu file
+variable sizeX equal 0.165190844117647
+variable sizeY equal 0.165833589215686
+
+fix wall_bottom all wall/gran model hertz tangential history primitive type 2 zplane 0.0
+fix wall_left   all wall/gran model hertz tangential history primitive type 2 xplane 0.0
+fix wall_rigth  all wall/gran model hertz tangential history primitive type 2 xplane ${sizeX}
+fix wall_front  all wall/gran model hertz tangential history primitive type 2 yplane 0.0
+fix wall_back   all wall/gran model hertz tangential history primitive type 2 yplane ${sizeY}
+
+variable startZ    equal 0.1676430125
+variable endZ      equal 0.1375165625
+variable ts_move   equal 30000
+variable dz        equal ${endZ}-${startZ}
+variable cvel      equal ${dz}/(${ts_move}*${dt})
+variable rvel      equal -1*${cvel}
+
+print "Velocity of piston: ${rvel}"
+
+fix piston_m    all mesh/surface/stress &
+                file meshes/piston_hydrogel.stl &
+                type 2 &
+                move 0. 0. ${startZ}
+fix piston      all wall/gran model hertz tangential history mesh   n_meshes 1   meshes piston_m
+
+fix piston_force all ave/time 1 100 100 f_piston_m[1] f_piston_m[2] f_piston_m[3] file post/piston_force_default.txt
+
+#apply nve integration to all particles
+fix		integr all nve/sphere
+
+#output settings, include total thermal energy
+compute		1 all erotate/sphere
+thermo_style	custom step atoms ke c_1 vol
+thermo		1000
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+fix piston_move all move/mesh mesh piston_m linear 0. 0. ${cvel}
+run		1
+
+dump		dmp all custom/vtk 100 post/hydrogel_default*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+dump		dmp2 all mesh/vtk 100 post/hydrogel_default_mesh*.vtk id stress stresscomponents vel
+
+#run more timesteps to insert large particles
+run             ${ts_move} upto
+unfix piston_move
+
+# relax piston
+fix piston_move all move/mesh mesh piston_m linear 0. 0. ${rvel}
+run             ${ts_move}
+unfix piston_move
+
+# compress piston
+fix piston_move all move/mesh mesh piston_m linear 0. 0. ${cvel}
+run             ${ts_move}
+unfix piston_move
+
+# relax piston
+fix piston_move all move/mesh mesh piston_m linear 0. 0. ${rvel}
+run             ${ts_move}

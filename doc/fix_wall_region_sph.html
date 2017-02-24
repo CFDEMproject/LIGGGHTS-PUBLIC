@@ -1,0 +1,268 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix wall/region/sph command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix wall/region/sph command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_wall_region_sph.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-wall-region-sph-command">
+<span id="index-0"></span><h1>fix wall/region/sph command<a class="headerlink" href="#fix-wall-region-sph-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix ID group-ID wall/region/sph region-ID r0 D</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>wall/region/sph = style name of this fix command</li>
+<li>region-ID = region whose boundary will act as wall</li>
+<li>r0 = cutoff distance from wall at which wall-particle interaction due to repulsive force is cut off (distance units)</li>
+<li>D = prefactor for repulsive force</li>
+</ul>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix wall all wall/region/sph myWall 0.01 2.5</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Treat the surface of the geometric region defined by the <em>region-ID</em> as a wall which interacts with nearby particles. The distance between a particle and the surface is the distance to the nearest point on the surface and the force the wall exerts on the particle is along the direction between that point and the particle, which is the direction normal to the surface at that point.</p>
+<p>Regions are defined using the <a class="reference internal" href="region.html"><em>region</em></a> command. Note that the region volume can be interior or exterior to the bounding surface, which will determine in which direction the surface interacts with particles, i.e. the direction of the surface normal. Regions can either be primitive shapes (block, sphere, cylinder, etc) or combinations of primitive shapes specified via the <em>union</em> or <em>intersect</em> region styles. These latter styles can be used to construct particle containers with complex shapes. Regions can also change over time via keywords like <em>linear</em>, <em>wiggle</em>, and <em>rotate</em>, which when used with this fix, have the effect of moving the region surface in a prescribed manner.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">As discussed on the <a class="reference internal" href="region.html"><em>region</em></a> command doc page, regions in LIGGGHTS(R)-PUBLIC do not get wrapped across periodic boundaries. It is up to you to insure that periodic or non-periodic boundaries are specified appropriately via the <a class="reference internal" href="boundary.html"><em>boundary</em></a> command when using a region as a wall that bounds particle motion.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">For primitive regions with sharp corners and/or edges (e.g. a block or cylinder), wall/particle forces are computed accurately for both interior and exterior regions. For <em>union</em> and <em>intersect</em> regions, additional sharp corners and edges may be present due to the intersection of the surfaces of 2 or more primitive volumes. These corners and edges can be of two types: concave or convex. Concave points/edges are like the corners of a cube as seen by particles in the interior of a cube. Wall/particle forces around these features are computed correctly. Convex points/edges are like the corners of a cube as seen by particles exterior to the cube, i.e. the points jut into the volume where particles are present. LIGGGHTS(R)-PUBLIC does NOT compute the location of these convex points directly, and hence wall/particle forces in the cutoff volume around these points suffer from inaccuracies. The basic problem is that the outward normal of the surface is not continuous at these points. This can cause particles to feel no force (they don&#8217;t &#8220;see&#8221; the wall) when in one location, then move a distance epsilon, and suddenly feel a large force because they now &#8220;see&#8221; the wall. In the worst-case scenario, this can blow particles out of the simulation box. Thus, as a general rule you should not use the fix wall/region command with <em>union</em> or <em>interesect</em> regions that have convex points or edges.</p>
+</div>
+<p>The wall-particle interaction consists of two parts. The main one is a repulsive force which is calculated similar to the Lennard-Jones potential:</p>
+<img alt="_images/fix_wall_region_sph.jpg" class="align-center" src="_images/fix_wall_region_sph.jpg" />
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">For all of the styles, you must insure that r is always &gt; 0 for all particles in the group, or LIGGGHTS(R)-PUBLIC will generate an error. This means you cannot start your simulation with particles on the region surface (r = 0) or with particles on the wrong side of the region surface (r &lt; 0). The force on the partice blows up as r -&gt; 0. This means the initial particle distance from the region surface must be larger than r0.</p>
+</div>
+<p>An additional force is acting on particles within the cutoff distance of the interpolating kernel. They can &#8220;see&#8221; a clone of theirself at the wall. This leads to a small disturbance which prevents particle stacking.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.</p>
+<p>None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix.</p>
+<p>No global scalar or vector or per_atom quantities are stored by this fix for access by various <em class="xref std std-ref">output commands</em>.</p>
+<p>No parameter of this fix can be used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.</p>
+<p>This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">wall/sph/basic</span></tt></p>
+<p><strong>Default:</strong> none</p>
+<hr class="docutils" />
+<p id="monaghan1992"><strong>(Monaghan, 1992)</strong> &#8220;Smoothed Particle Hydrodynamics&#8221;, J. J. Monaghan, Annu. Rev. Astron. Astrophys., 30, p. 543-574 (1992).</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -57,7 +57,6 @@ bool Body::ReadInPoints(istream& in){
   char pointname[256];
 
   in >> numpoints;
-
   for(int i=points.GetNumElements();i<numpoints;i++){
     // error check
     in >> index;
@@ -68,7 +67,6 @@ bool Body::ReadInPoints(istream& in){
 
     in >> pointtype >> pointname;
     point = NewPoint(pointtype);
-
     if(!point){
       cerr << "Unrecognized point type '" << pointtype << endl;
       return false;
@@ -90,7 +88,6 @@ void Body::WriteOutPoints(std::ostream& out){
   int numpoints = points.GetNumElements();
 
   out << numpoints << endl;
-
   // list element pointer
   ListElement<Point>* ele = points.GetHeadElement();
 

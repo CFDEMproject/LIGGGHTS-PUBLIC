@@ -1,22 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -29,6 +49,7 @@ FixStyle(massflow/mesh,FixMassflowMesh)
 #define LMP_FIX_MASSFLOW_MESH_H
 
 #include "fix.h"
+#include "scalar_container.h"
 #include <vector>
 
 using namespace std;
@@ -57,12 +78,32 @@ class FixMassflowMesh : public Fix {
 
   double compute_vector(int index);
 
- private:
+ protected:
 
-  class FixMeshSurface *fix_mesh_;
-  class FixPropertyAtom *fix_counter_;
-  char fixid_[200];
+  // in case particles counted should be deleted or transferred
+  bool delete_atoms_;
+  vector<int> atom_tags_delete_;
+  double mass_deleted_;
+  double nparticles_deleted_;
+
+  // true if any given particle is
+  // counted only once
+  bool once_;
+
+  int  iarg_;
+  class FixPropertyAtom* fix_orientation_;
+
+ protected:
+  class FixPropertyAtom  *fix_counter_;
+  class FixMeshSurface   *fix_mesh_;
   class FixNeighlistMesh *fix_neighlist_;
+
+  class FixPropertyAtom *fix_volumeweight_ms_;
+
+ private:
+  void setRefPoint();
+
+  char fixid_[200];
   double nvec_[3];
   double pref_[3];
   double sidevec_[3];
@@ -71,28 +112,24 @@ class FixMassflowMesh : public Fix {
   bool   insideOut_;
   double pointAtOutlet_[3];
 
-  // true if any given particle is
-  // counted only once
-  bool once_;
-
+  // mass and particles which was counted
   double mass_;
-  int nparticles_;
+  double nparticles_;
+
+  // additional property to sum
+  class FixPropertyAtom *fix_property_;
+  double property_sum_;
 
   // data write
   bool screenflag_;
   FILE *fp_;
+  bool writeTime_; //switch to write time to the outfile
 
   // data for particle and mass flow calculation
   double mass_last_;
-  int nparticles_last_;
+  double nparticles_last_;
   double t_count_, delta_t_;
   bool reset_t_count_;
-
-  // in case particles counted should be deleted
-  bool delete_atoms_;
-  vector<int> atom_tags_delete_;
-  double mass_deleted_;
-  double nparticles_deleted_;
 
 }; //end class
 

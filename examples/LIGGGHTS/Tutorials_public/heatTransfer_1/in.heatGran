@@ -45,13 +45,11 @@ fix             heattransfer all heat/gran initial_temperature 300.
 region		bc cylinder z 0. 0. 0.045 0.00 0.15 units box
 
 #particle distributions and insertion
-fix		pts1 all particletemplate/sphere 1 atom_type 1 density constant 8000 radius constant 0.004
-fix		pdd1 all particledistribution/discrete 1.  1 pts1 1.0
+fix		pts1 all particletemplate/sphere 15485863 atom_type 1 density constant 8000 radius constant 0.004
+fix		pdd1 all particledistribution/discrete 15485867 1 pts1 1.0
 
-fix		ins all insert/pack seed 100001 distributiontemplate pdd1 vel constant 0. 0. -0.3 &
+fix		ins all insert/pack seed 32452843 distributiontemplate pdd1 vel constant 0. 0. -0.3 &
 		insert_every once overlapcheck yes all_in yes volumefraction_region 0.25 region bc
-
-#fix		ins nve_group pour/legacy 500 1 1 vol 0.7 1000 diam 0.008 0.008 dens 8000 8000 vel 0. 0. 0. 0. -0.3 region bc
 
 #apply nve integration to all particles
 fix		integr all nve/sphere
@@ -61,7 +59,6 @@ compute		rke all erotate/sphere
 thermo_style	custom step atoms ke c_rke f_heattransfer vol
 thermo		1000
 thermo_modify	lost ignore norm no
-compute_modify	thermo_temp dynamic yes
 
 #insert the first particles so that dump is not empty
 run		1

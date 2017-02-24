@@ -1,19 +1,51 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "ctype.h"
 #include "pair_hybrid.h"
 #include "atom.h"
@@ -100,10 +132,10 @@ void PairHybrid::compute(int eflag, int vflag)
 
   for (m = 0; m < nstyles; m++) {
 
-    // invoke compute() unless 
+    // invoke compute() unless
     // outerflag is set and sub-style has a compute_outer() method
 
-    if (outerflag && styles[m]->respa_enable) 
+    if (outerflag && styles[m]->respa_enable)
       styles[m]->compute_outer(eflag,vflag_substyle);
     else styles[m]->compute(eflag,vflag_substyle);
 
@@ -331,7 +363,7 @@ void PairHybrid::coeff(int narg, char **arg)
   // 4th arg = pair sub-style index if name used multiple times
   // allow for "none" as valid sub-style name
 
-  int multflag;
+  int multflag = 0;
   int m;
 
   for (m = 0; m < nstyles; m++) {
@@ -341,7 +373,10 @@ void PairHybrid::coeff(int narg, char **arg)
         multflag = 1;
         if (narg < 4) error->all(FLERR,"Incorrect args for pair coefficients");
         if (!isdigit(arg[3][0]))
+        {
+          
           error->all(FLERR,"Incorrect args for pair coefficients");
+        }
         int index = force->inumeric(FLERR,arg[3]);
         if (index == multiple[m]) break;
         else continue;
@@ -721,7 +756,7 @@ void *PairHybrid::extract(const char *str, int &dim)
 {
   void *cutptr = NULL;
   void *ptr;
-  double cutvalue;
+  double cutvalue = 0.0;
 
   for (int m = 0; m < nstyles; m++) {
     ptr = styles[m]->extract(str,dim);

@@ -1,29 +1,57 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "create_atoms.h"
 #include "atom.h"
 #include "atom_vec.h"
@@ -58,6 +86,9 @@ void CreateAtoms::command(int narg, char **arg)
     error->all(FLERR,"Cannot create_atoms after "
                "reading restart file with per-atom info");
 
+  all_in = false; 
+  all_in_dist = 0.; 
+
   // parse arguments
 
   if (narg < 2) error->all(FLERR,"Illegal create_atoms command");
@@ -65,7 +96,7 @@ void CreateAtoms::command(int narg, char **arg)
   if (itype <= 0 || itype > atom->ntypes)
     error->all(FLERR,"Invalid atom type in create_atoms command");
 
-  int iarg;
+  int iarg = 0;
   if (strcmp(arg[1],"box") == 0) {
     style = BOX;
     iarg = 2;
@@ -101,7 +132,7 @@ void CreateAtoms::command(int narg, char **arg)
 
   // process optional keywords
 
-  int scaleflag = 1;
+  int scaleflag = 0; 
   remapflag = 0;
 
   nbasis = domain->lattice->nbasis;
@@ -124,6 +155,13 @@ void CreateAtoms::command(int narg, char **arg)
       else if (strcmp(arg[iarg+1],"no") == 0) remapflag = 0;
       else error->all(FLERR,"Illegal create_atoms command");
       iarg += 2;
+    } else if (strcmp(arg[iarg],"all_in") == 0) { 
+      if (iarg+2 > narg) error->all(FLERR,"Illegal create_atoms command");
+      all_in_dist = force->numeric(FLERR,arg[iarg+1]);
+      if(all_in_dist <= 0.)
+            error->all(FLERR,"Illegal create_atoms command, 'all_in' > 0 required");
+      all_in = true;
+      iarg += 2;
     } else if (strcmp(arg[iarg],"units") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal create_atoms command");
       if (strcmp(arg[iarg+1],"box") == 0) scaleflag = 0;
@@ -139,6 +177,9 @@ void CreateAtoms::command(int narg, char **arg)
     if (nrandom < 0) error->all(FLERR,"Illegal create_atoms command");
     if (seed <= 0) error->all(FLERR,"Illegal create_atoms command");
   }
+
+  if(all_in && ! (REGION==style))
+    error->all(FLERR,"Illegal create_atoms command, 'all_in' can only be used together with region");
 
   // demand non-none lattice be defined for BOX and REGION
   // else setup scaling for SINGLE and RANDOM
@@ -217,8 +258,11 @@ void CreateAtoms::command(int narg, char **arg)
   for (int m = 0; m < modify->nfix; m++) {
     Fix *fix = modify->fix[m];
     if (fix->create_attribute)
+    {
+      fix->pre_set_arrays();
       for (int i = nlocal_previous; i < nlocal; i++)
         fix->set_arrays(i);
+    }
   }
 
   // clean up
@@ -249,7 +293,7 @@ void CreateAtoms::command(int narg, char **arg)
   // change these to MAXTAGINT when allow tagint = bigint
 
   if (atom->natoms > MAXSMALLINT) {
-    if (comm->me == 0) 
+    if (comm->me == 0)
       error->warning(FLERR,"Total atom count exceeds ID limit, "
                      "atoms will not have individual IDs");
     atom->tag_enable = 0;
@@ -312,7 +356,11 @@ void CreateAtoms::add_single()
         atom->avec->create_atom(itype,xone);
         
           for (int j = 0; j < modify->nfix; j++)
-            if (modify->fix[j]->create_attribute) modify->fix[j]->set_arrays(atom->nlocal-1);
+            if (modify->fix[j]->create_attribute)
+            {
+                modify->fix[j]->pre_set_arrays();
+                modify->fix[j]->set_arrays(atom->nlocal-1);
+            }
    }
 }
 
@@ -324,7 +372,7 @@ void CreateAtoms::add_random()
 {
   double xlo,ylo,zlo,xhi,yhi,zhi,zmid;
   double lamda[3],*coord;
-  double *boxlo,*boxhi;
+  double *boxlo=NULL,*boxhi=NULL;
 
   // random number generator, same for all procs
 
@@ -373,9 +421,15 @@ void CreateAtoms::add_random()
       if (domain->dimension == 2) xone[2] = zmid;
 
       valid = 1;
-      if (nregion >= 0 &&
-          domain->regions[nregion]->match(xone[0],xone[1],xone[2]) == 0)
-        valid = 0;
+      if (nregion >= 0) 
+      {
+        if(!all_in && domain->regions[nregion]->match(xone[0],xone[1],xone[2]) == 0)
+            valid = 0;
+
+        else if(all_in && domain->regions[nregion]->match_shrinkby_cut(xone,all_in_dist) == 0)
+            valid = 0;
+      }
+
       if (triclinic) {
         domain->x2lamda(xone,lamda);
         coord = lamda;
@@ -396,7 +450,11 @@ void CreateAtoms::add_random()
         atom->avec->create_atom(itype,xone);
         
           for (int j = 0; j < modify->nfix; j++)
-            if (modify->fix[j]->create_attribute) modify->fix[j]->set_arrays(atom->nlocal-1);
+            if (modify->fix[j]->create_attribute)
+            {
+                modify->fix[j]->pre_set_arrays();
+                modify->fix[j]->set_arrays(atom->nlocal-1);
+            }
     }
   }
 
@@ -491,8 +549,11 @@ void CreateAtoms::add_lattice()
 
           // if a region was specified, test if atom is in it
 
-          if (style == REGION)
-            if (!domain->regions[nregion]->match(x[0],x[1],x[2])) continue;
+          if (style == REGION) 
+          {
+            if (!all_in && !domain->regions[nregion]->match(x[0],x[1],x[2])) continue;
+            if (all_in && !domain->regions[nregion]->match_shrinkby_cut(x,all_in_dist)) continue;
+          }
 
           // test if atom is in my subbox
 
@@ -510,6 +571,10 @@ void CreateAtoms::add_lattice()
           atom->avec->create_atom(basistype[m],x);
           
           for (int k = 0; k < modify->nfix; k++)
-        if (modify->fix[k]->create_attribute) modify->fix[k]->set_arrays(atom->nlocal-1);
+            if (modify->fix[k]->create_attribute)
+            {
+                modify->fix[k]->pre_set_arrays();
+                modify->fix[k]->set_arrays(atom->nlocal-1);
+            }
         }
 }

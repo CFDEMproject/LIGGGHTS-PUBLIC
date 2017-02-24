@@ -1,29 +1,48 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
-   Niels Dallinger (TU Chemnitz, viblin and vibrot)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Philippe Seil (JKU Linz)
+    Niels Dallinger (TU Chemnitz, viblin and vibrot)
+    Christian Richter (OVGU Magdeburg, linear variable and rotate/variable)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+    Copyright 2013-2015 TU Chemnitz
+    Copyroght 2013      OVGU Magdeburg
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_MESH_MOVER_H
@@ -49,6 +68,7 @@ namespace LAMMPS_NS
         virtual ~MeshMover()
         {}
 
+        virtual void post_create() = 0;
         virtual void pre_delete() = 0;
         virtual void setup() {};
 
@@ -105,6 +125,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
 
@@ -122,6 +143,7 @@ namespace LAMMPS_NS
         virtual ~MeshMoverLinearVariable();
 
         void pre_delete();
+        void post_create();
         void setup();
 
         void initial_integrate(double dTAbs,double dTSetup,double dt);
@@ -153,6 +175,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
 
@@ -174,6 +197,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
 
@@ -193,6 +217,7 @@ namespace LAMMPS_NS
         virtual ~MeshMoverRotateVariable();
 
         void pre_delete();
+        void post_create();
         void setup();
 
         void initial_integrate(double dTAbs,double dTSetup,double dt);
@@ -205,7 +230,7 @@ namespace LAMMPS_NS
       private:
 
         char *var1str_;
-        int myvar1_,myvar2_,myvar3_;
+        int myvar1_;
         double axis_[3], point_[3], omega_, totalPhi_;
   };
 
@@ -224,6 +249,7 @@ namespace LAMMPS_NS
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
 
@@ -238,16 +264,17 @@ namespace LAMMPS_NS
         MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
                             double px, double py,double pz,
                             double axisX, double axisY, double axisZ,
-                            int order, double amplitude[10], double phase[10],
-                            double T);
+                            int order, double amplitude[30], double phase[30],
+                            double period[30]);
         virtual ~MeshMoverVibRot();
 
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
-        double axis_[3], ord, ampl[10], phi[10], p_[3], omega_;
+        double axis_[3], ord, ampl[30], phi[30], p_[3], omega[30];
 
   };
 
@@ -257,16 +284,17 @@ namespace LAMMPS_NS
       public:
         MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh,FixMoveMesh *_fix_move_mesh,
                             double axisX, double axisY, double axisZ,
-                            int order, double amplitude[10], double phase[10],
-                            double T);
+                            int order, double amplitude[30], double phase[30],
+                            double period[30]);
         virtual ~MeshMoverVibLin();
 
         void initial_integrate(double dTAbs,double dTSetup,double dt);
         void final_integrate(double dTAbs,double dTSetup,double dt) {}
         void pre_delete();
+        void post_create();
 
       private:
-        double axis_[3], ord, omega_, ampl[10], phi[10];
+        double axis_[3], ord, omega[30], ampl[30], phi[30];
 
   };
 
@@ -399,14 +427,16 @@ namespace LAMMPS_NS
                 return 0;
             if(strcmp("period",arg[9+2*order]))
                 return 0;
-            double pha[10];
-            double amp[10];
+            double pha[30];
+            double amp[30];
+            double per[30];
             // creating array of amplitude and phase
             for (int zv=0; zv<order; zv++) {
                 //amplitude
                 amp[zv] = lmp->force->numeric(FLERR,arg[8+zv]);
                 // angle of phase
                 pha[zv] = lmp->force->numeric(FLERR,arg[9+order+zv]);
+                per[zv] =lmp->force->numeric(FLERR,arg[10+order+order+zv]);
                }
 
             return new MeshMoverVibLin(lmp,mesh,fix_mm,
@@ -421,7 +451,7 @@ namespace LAMMPS_NS
                           // phases
                           pha,
                           // periode
-                          lmp->force->numeric(FLERR,arg[10+2*order]));
+                          per);
           }
         }
         else if(strcmp(name,"vibrot") == 0){
@@ -441,14 +471,16 @@ namespace LAMMPS_NS
                 return 0;
             if(strcmp("period",arg[13+2*order]))
                 return 0;
-            double pha[10];
-            double amp[10];
+            double pha[30];
+            double amp[30];
+            double per[30];
             // creating array of amplitude and phase
             for (int zv=0; zv<order; zv++) {
                 //amplitude
                 amp[zv] = lmp->force->numeric(FLERR,arg[12+zv]);
                 // angle of phase
                 pha[zv] = lmp->force->numeric(FLERR,arg[13+order+zv]);
+                per[zv] =lmp->force->numeric(FLERR,arg[14+order+order+zv]);
                }
             return new MeshMoverVibRot(lmp,mesh,fix_mm,
                           // origin px py pz
@@ -466,7 +498,7 @@ namespace LAMMPS_NS
                           // phases
                           pha,
                           // periode
-                          lmp->force->numeric(FLERR,arg[14+2*order]));
+                          per);
            }
         }
         return 0;

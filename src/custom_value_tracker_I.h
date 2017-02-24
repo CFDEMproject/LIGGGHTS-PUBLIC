@@ -1,28 +1,46 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Philippe Seil (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_CUSTOM_VALUE_TRACKER_I_H
@@ -33,7 +51,9 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  T* CustomValueTracker::addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower, int _init_len)
+  T* CustomValueTracker::addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart,
+                                            int _scalePower, int _init_len, const char *_statistics,
+                                            const double _weighting_factor, const char *_id_scale,const bool _forget )
   {
      // error if property exists already
      if(elementProperties_.getPointerById<T>(_id))
@@ -44,8 +64,12 @@
          delete []errmsg;
      }
 
+     std::vector<std::string> id_list;
+     std::string id_string(_id);
+
      // add property
-     elementProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
+     ContainerBase * cb_new = elementProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
+     id_list.push_back(id_string);
 
      // check if properties were set correctly
      // error here since ContainerBase not derived from Pointers
@@ -57,14 +81,55 @@
          delete []errmsg;
      }
 
+     // add to statistics if applicable
+     if(_statistics)
+     {
+        if(strstr(_statistics,ContainerBase::AVERAGESUFFIX))
+        {
+            std::string id_string_ave = id_string;
+            id_string_ave.append(ContainerBase::AVERAGESUFFIX);
+            T* cb_average = elementProperties_.add<T>(id_string_ave.c_str(),_comm,_ref,_restart,_scalePower);
+            cb_average->setContainerStatistics(_weighting_factor, cb_new,0,0,_forget );
+            id_list.push_back(id_string_ave);
+
+            if(strstr(_statistics,"avgVar"))
+            {
+                // this one uses the average as reference field
+                // TODO: Hard-coded higher weighting factor for second stage statistics
+                std::string id_string_avg_avg = id_string_ave;
+                id_string_avg_avg.append(ContainerBase::AVERAGESUFFIX);
+                elementProperties_.add<T>(id_string_avg_avg.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(5*_weighting_factor, cb_average,0,0,_forget );
+                id_list.push_back(id_string_avg_avg);
+
+                std::string id_string_avg_mean_square = id_string_ave;
+                id_string_avg_mean_square.append(ContainerBase::MEANSQUARESUFFIX);
+                elementProperties_.add<T>(id_string_avg_mean_square.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(5*_weighting_factor, cb_average,0,0,_forget );
+                id_list.push_back(id_string_avg_mean_square);
+            }
+        }
+        if(strstr(_statistics,ContainerBase::MEANSQUARESUFFIX))
+        {
+            std::string id_string_mean_square = id_string;
+            id_string_mean_square.append(ContainerBase::MEANSQUARESUFFIX);
+            elementProperties_.add<T>(id_string_mean_square.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(_weighting_factor, cb_new,0,0,_forget );
+            id_list.push_back(id_string_mean_square);
+        }
+     }
+
      // allocate memory and initialize
      
-     if(ownerMesh_)
-        elementProperties_.getPointerById<T>(_id)->addUninitialized(ownerMesh_->sizeLocal()+ownerMesh_->sizeGhost());
-     if(_init_len > 0)
-        elementProperties_.getPointerById<T>(_id)->addUninitialized(_init_len);
+     for(size_t inew = 0; inew < id_list.size(); inew++)
+     {
+         if(ownerMesh_)
+         {
+            elementProperties_.getPointerById<T>(id_list[inew].c_str())->addUninitialized(ownerMesh_->sizeLocal()+ownerMesh_->sizeGhost());
+         }
 
-     elementProperties_.getPointerById<T>(_id)->setAll(0);
+         if(_init_len > 0)
+            elementProperties_.getPointerById<T>(id_list[inew].c_str())->addUninitialized(_init_len);
+
+         elementProperties_.getPointerById<T>(id_list[inew].c_str())->setAll(0);
+     }
 
      // return pointer
      return elementProperties_.getPointerById<T>(_id);
@@ -104,16 +169,6 @@
   }
 
   /* ----------------------------------------------------------------------
-   mem management
-  ------------------------------------------------------------------------- */
-
-  void CustomValueTracker::grow(int to)
-  {
-      elementProperties_.grow(to);
-      capacityElement_ = to;
-  }
-
-  /* ----------------------------------------------------------------------
    get reference
   ------------------------------------------------------------------------- */
 
@@ -123,9 +178,20 @@
      return elementProperties_.getPointerById<T>(_id);
   }
 
+  template<typename T>
+  T* CustomValueTracker::getElementProperty(int _i)
+  {
+     return elementProperties_.getPointerByIndex<T>(_i);
+  }
+
   inline ContainerBase* CustomValueTracker::getElementPropertyBase(const char *_id)
   {
      return elementProperties_.getBasePointerById(_id);
+  }
+
+  inline ContainerBase* CustomValueTracker::getElementPropertyBase(int i)
+  {
+     return elementProperties_.getBasePointerByIndex(i);
   }
 
   inline int CustomValueTracker::getElementPropertyIndex(const char *_id)
@@ -137,6 +203,38 @@
   T* CustomValueTracker::getGlobalProperty(const char *_id)
   {
      return globalProperties_.getPointerById<T>(_id);
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getAvgElementProperty(const char *_id)
+  {
+      std::string id_string(_id);
+      id_string.append(ContainerBase::AVERAGESUFFIX);
+      return getElementProperty<T>(id_string.c_str());
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getMeanSquareElementProperty(const char *_id)
+  {
+      std::string id_string(_id);
+      id_string.append(ContainerBase::MEANSQUARESUFFIX);
+      return getElementProperty<T>(id_string.c_str());
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getAvgAvgElementProperty(const char *_id)
+  {
+      std::string id_string(_id);
+      id_string.append(ContainerBase::AVERAGESUFFIX).append(ContainerBase::AVERAGESUFFIX);
+      return getElementProperty<T>(id_string.c_str());
+  }
+
+  template<typename T>
+  T* CustomValueTracker::getAvgMeanSquareElementProperty(const char *_id)
+  {
+      std::string id_string(_id);
+      id_string.append(ContainerBase::AVERAGESUFFIX).append(ContainerBase::MEANSQUARESUFFIX);
+      return getElementProperty<T>(id_string.c_str());
   }
 
   /* ----------------------------------------------------------------------
@@ -210,6 +308,24 @@
   }
 
   /* ----------------------------------------------------------------------
+   delete all elements
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::deleteAllElements()
+  {
+      elementProperties_.deleteAllElements();
+  }
+
+  /* ----------------------------------------------------------------------
+   delete all elements
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::deleteRestart(bool scale,bool translate,bool rotate)
+  {
+      elementProperties_.deleteRestart(scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
    delete element i
   ------------------------------------------------------------------------- */
 
@@ -237,12 +353,41 @@
   }
 
   /* ----------------------------------------------------------------------
+   delete global restart properties
+  ------------------------------------------------------------------------- */
+
+  void CustomValueTracker::deleteRestartGlobal(bool scale,bool translate,bool rotate)
+  {
+      globalProperties_.deleteRestartGlobal(scale,translate,rotate);
+      globalProperties_orig_.deleteRestartGlobal(scale,translate,rotate);
+  }
+
+  /* ----------------------------------------------------------------------
    move element i
   ------------------------------------------------------------------------- */
 
   void CustomValueTracker::moveElement(int i, double *delta)
   {
       elementProperties_.moveElement(i,delta);
+  }
+
+  /* ----------------------------------------------------------------------
+   push / pop for all lements
+  ------------------------------------------------------------------------- */
+
+  int CustomValueTracker::allElemBufSize(int operation,bool scale,bool translate,bool rotate) const
+  {
+    return elementProperties_.bufSize(operation,scale,translate,rotate);
+  }
+
+  int CustomValueTracker::pushAllElemToBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    return elementProperties_.pushToBuffer(buf,operation,scale,translate,rotate);
+  }
+
+  int CustomValueTracker::popAllElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate)
+  {
+    return elementProperties_.popFromBuffer(buf, operation,scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------

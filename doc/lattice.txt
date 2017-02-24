@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -43,13 +43,13 @@ lattice none 2.0 :pre
 
 [Description:]
 
-Define a lattice for use by other commands.  In LAMMPS, a lattice is
+Define a lattice for use by other commands.  In LIGGGHTS(R)-PUBLIC, a lattice is
 simply a set of points in space, determined by a unit cell with basis
 atoms, that is replicated infinitely in all dimensions.  The arguments
 of the lattice command can be used to define a wide variety of
 crystallographic lattices.
 
-A lattice is used by LAMMPS in two ways.  First, the
+A lattice is used by LIGGGHTS(R)-PUBLIC in two ways.  First, the
 "create_atoms"_create_atoms.html command creates atoms on the lattice
 points inside the simulation box.  Note that the
 "create_atoms"_create_atoms.html command allows different atom types
@@ -70,7 +70,7 @@ A lattice consists of a unit cell, a set of basis atoms within that
 cell, and a set of transformation parameters (scale, origin, orient)
 that map the unit cell into the simulation box.  The vectors a1,a2,a3
 are the edge vectors of the unit cell.  This is the nomenclature for
-"primitive" vectors in solid-state crystallography, but in LAMMPS the
+"primitive" vectors in solid-state crystallography, but in LIGGGHTS(R)-PUBLIC the
 unit cell they determine does not have to be a "primitive cell" of
 minimum volume.
 
@@ -137,7 +137,7 @@ spacing of 3.52 Angstroms.  In {cgs} units, the spacing would be 3.52
 cm.
 
 For unit style {lj}, the scale argument is the Lennard-Jones reduced
-density, typically written as rho*.  LAMMPS converts this value into
+density, typically written as rho*.  LIGGGHTS(R)-PUBLIC converts this value into
 the multiplicative factor via the formula "factor^dim = rho/rho*",
 where rho = N/V with V = the volume of the lattice unit cell and N =
 the number of basis atoms in the unit cell (described below), and dim
@@ -169,7 +169,7 @@ simulation box.
 
 :line
 
-Several LAMMPS commands have the option to use distance units that are
+Several LIGGGHTS(R)-PUBLIC commands have the option to use distance units that are
 inferred from "lattice spacing" in the x,y,z box directions.  E.g. the
 "region"_region.html command can create a block of size 10x20x20,
 where 10 means 10 lattice spacings in the x direction.
@@ -179,12 +179,12 @@ be non-zero (use 1.0 for dz in a 2d simulation).  The specified values
 are multiplied by the multiplicative factor described above that is
 associated with the scale factor.  Thus a spacing of 1.0 means one
 unit cell independent of the scale factor.  This option can be useful
-if the spacings LAMMPS computes are inconvenient to use in subsequent
+if the spacings LIGGGHTS(R)-PUBLIC computes are inconvenient to use in subsequent
 commands, which can be the case for non-orthogonal or rotated
 lattices.
 
 If the {spacing} option is not specified, the lattice spacings are
-computed by LAMMPS in the following way.  A unit cell of the lattice
+computed by LIGGGHTS(R)-PUBLIC in the following way.  A unit cell of the lattice
 is mapped into the simulation box (scaled, shifted, rotated), so that
 it now has (perhaps) a modified size and orientation.  The lattice
 spacing in X is defined as the difference between the min/max extent
@@ -210,7 +210,7 @@ lattice spacing, and then fill it with atoms via the
 create a periodic system.  I.e. atoms may overlap incorrectly at the
 faces of the simulation box.
 
-Regardless of these issues, the values of the lattice spacings LAMMPS
+Regardless of these issues, the values of the lattice spacings LIGGGHTS(R)-PUBLIC
 calculates are printed out, so their effect in commands that use the
 spacings should be decipherable.
 

@@ -1,0 +1,68 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix massflow/mesh/sieve command :h3
+
+[Syntax:]
+
+fix id group massflow/mesh/sieve mesh mesh-ID point_at_outlet pointX pointY pointZ keyword value ... :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+massflow/mesh/sieve = style name of this fix command   :l
+mesh = obligatory keyword :l
+mesh-ID = ID of a "fix mesh/surface"_fix_mesh_surface.html command :l
+point_at_outlet = obligatory keyword :l
+pointX pointY pointZ = vector components defining the "outside" point of the mesh :l
+zero or more keyword/value pairs may be appended to args :l
+keywords = same as for "fix massflow/mesh"_fix_massflow_mesh.html, in addition: {sieveSize} and {sieveSpacing} and  {sieveStiffness}, and {sieveDampings}, or {sieveMultiSphereCanPass} :l
+  {sieveSize} value = {x in meters}
+    this is the diameter of the sieve opening. Used to compute the probability of sieve passage.
+  {sieveSpacing} value = {x in meters}
+    this is the spacing between sieve openings. Used to compute the probability of sieve passage.
+  {sieveStiffness} value = {x in Newton per meter}
+    value to compute the linear spring part of the normal repulsive force. WARNING: use a reasonable value to avoid popcorn!
+  {sieveDamping} value = {x in Newton per meter/s}
+    value to compute the dashpot part of the normal repulsive force. ARNING: use a reasonable value to avoid popcorn!
+  {sieveMultiSphereCanPass}
+    add this keyword to also calculate the probability of sieve passage for multisphere particles. If not set, it is impossible for multisphere particles to pass the sieve. :pre
+
+:ule
+
+[Example:]
+
+fix     massFlow1 all massflow/mesh/sieve mesh massFlow1M point_at_outlet 0 0 -1000 count once delete_atoms no file massFlow1.dat sieveSize 2e-3 sieveSpacing 2.5e-3 sieveStiffness 1e5 sieveDamping 1e3 :pre
+
+[Description:]
+
+This fix is an extension of the fix "massflow/mesh", so the reader may wish to consult 
+also the documentation of this fix for further details.
+
+Fix massflow/mesh/sieve models a sieve, and counts the particles that cross the sieve 
+(same as in massflow/mesh). The sieve is modeled with circular holes in a the mesh (the holes 
+have a certain spacing), and a passage probability is computed based on the particle diameter. 
+Thus, a probability is computed based on the relative area that would result into particle passage 
+divided by the total cross-sectional area of the sieve, assuming particles move perfectly normal 
+to the mesh. This probability is evaluated at the first time step of every collision event, and 
+compared with a uniformly-distributed random number. Thus, sliding contacts, or multiple collision 
+may not by modelled accurately.
+
+[Restrictions:]
+
+Currently, this feature does not allow deleting multi-sphere particles when crossing the sieve. 
+Also, it is strongly recommended to NOT activate {sieveMultiSphereCanPass}, since this feature 
+is not tested in high detail. For example, it may occur that multisphere particles may get stuck 
+when passing the sieve.
+
+[Related commands:]
+
+"compute nparticles/tracer/region"_compute_nparticles_tracer_region.html
+"fix massflow/mesh"_fix_massflow_mesh.html
+
+[Default:]
+
+{sieveDamping} = 0; {sieveMultiSphereCanPass} = false; all other parameters need to be set by the user.

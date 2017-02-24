@@ -1,28 +1,46 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Philippe Seil (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_MULTI_NODE_MESH_I_H
@@ -43,13 +61,22 @@
     random_(new RanPark(lmp,179424799)), // big prime #
     mesh_id_(0),
     precision_(EPSILON_PRECISION),
+    min_feature_length_(-1.),
+    element_exclusion_list_(0),
     autoRemoveDuplicates_(false),
     nMove_(0),
     nScale_(0),
     nTranslate_(0),
     nRotate_(0),
+    store_vel(0),
+    store_omega(0),
+    step_store_vel(0),
+    step_store_omega(0),
     stepLastReset_(-1)
   {
+    vectorZeroize3D(global_vel);
+    quatUnitize4D(global_quaternion);
+    quatUnitize4D(prev_quaternion);
   }
 
   /* ----------------------------------------------------------------------
@@ -84,6 +111,18 @@
   }
 
   template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::setMinFeatureLength(double _min_feature_length)
+  {
+      min_feature_length_ = _min_feature_length;
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::setElementExclusionList(FILE *_file)
+  {
+      element_exclusion_list_ = _file;
+  }
+
+  template<int NUM_NODES>
   void MultiNodeMesh<NUM_NODES>::autoRemoveDuplicates()
   {
       autoRemoveDuplicates_ = true;
@@ -99,6 +138,10 @@
   {
     
     double avg[3];
+
+    if(nodesAreEqual(nodeToAdd[0],nodeToAdd[1]) || nodesAreEqual(nodeToAdd[1],nodeToAdd[2]) ||
+       nodesAreEqual(nodeToAdd[0],nodeToAdd[2]) )
+       return false;
 
     // add node
     node_.add(nodeToAdd);
@@ -323,7 +366,7 @@
           double **tmp;
           this->memory->template create<double>(tmp,NUM_NODES,3,"MultiNodeMesh:tmp");
 
-          if(node_orig_)
+          if(node_orig_ || (0 == nall && 0 == sizeGlobal()))
             error->one(FLERR,"Illegal situation in MultiNodeMesh<NUM_NODES>::registerMove");
 
           node_orig_ = new MultiVectorContainer<double,NUM_NODES,3>("node_orig");
@@ -370,6 +413,11 @@
     if(!node_orig_)
         error->one(FLERR,"Internal error in MultiNodeMesh<NUM_NODES>::storeNodePosOrig");
 
+    int nall = this->sizeLocal()+this->sizeGhost();
+    int capacity = this->node_orig_->capacity();
+    if(capacity < nall)
+        this->node_orig_->addUninitialized(nall - capacity);
+
     for(int i = ilo; i < ihi; i++)
         for(int j = 0; j < NUM_NODES; j++)
         {
@@ -413,6 +461,10 @@
     if(!isTranslating())
         this->error->all(FLERR,"Illegal call, need to register movement first");
 
+    double displacement_00[3] = {0., 0., 0.};
+    if (store_vel)
+        vectorCopy3D(node_(0)[0], displacement_00);
+
     resetToOrig();
 
     int n = sizeLocal() + sizeGhost();
@@ -427,6 +479,17 @@
             vectorAdd3D(node_(i)[j],center_(i),center_(i));
         }
         vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
+    }
+
+    if (store_vel)
+    {
+        if (step_store_vel != update->ntimestep)
+        {
+            step_store_vel = update->ntimestep;
+            vectorZeroize3D(global_vel);
+        }
+        vectorSubtract3D(displacement_00, node_(0)[0], displacement_00);
+        vectorAddMultiple3D(global_vel, -1.0/update->dt, displacement_00, global_vel);
     }
 
     updateGlobalBoundingBox();
@@ -448,6 +511,16 @@
             vectorAdd3D(node_(i)[j],vecIncremental,node_(i)[j]);
 
         vectorAdd3D(center_(i),vecIncremental,center_(i));
+    }
+
+    if (store_vel)
+    {
+        if (step_store_vel != update->ntimestep)
+        {
+            step_store_vel = update->ntimestep;
+            vectorZeroize3D(global_vel);
+        }
+        vectorAddMultiple3D(global_vel, 1.0/update->dt, vecIncremental, global_vel);
     }
 
     updateGlobalBoundingBox();
@@ -527,6 +600,16 @@
       vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
     }
 
+    if (store_omega)
+    {
+        if (step_store_omega != update->ntimestep)
+        {
+            step_store_omega = update->ntimestep;
+            vectorCopy4D(global_quaternion, prev_quaternion);
+        }
+        vectorCopy4D(totalQ, global_quaternion);
+    }
+
     updateGlobalBoundingBox();
   }
 
@@ -578,6 +661,16 @@
         vectorAdd3D(node_(i)[j],center_(i),center_(i));
       }
       vectorScalarDiv3D(center_(i),static_cast<double>(NUM_NODES));
+    }
+
+    if (store_omega)
+    {
+        if (step_store_omega != update->ntimestep)
+        {
+            step_store_omega = update->ntimestep;
+            vectorCopy4D(global_quaternion, prev_quaternion);
+        }
+        quatMult4D(global_quaternion, dQ);
     }
 
     updateGlobalBoundingBox();
@@ -731,7 +824,7 @@
 
     if(flag) return true;
     else     return false;
-}
+  }
 
   /* ----------------------------------------------------------------------
    store node pos at last re-build
@@ -750,5 +843,91 @@
     for(int i = 0; i < nlocal; i++)
         nodesLastRe_.add(node[i]);
   }
+  /* ----------------------------------------------------------------------
+   calculate simple center of mass, NOT weighted with element area
+  ------------------------------------------------------------------------- */
+
+  template<int NUM_NODES>
+  void MultiNodeMesh<NUM_NODES>::center_of_mass(double *_com)
+  {
+    int nlocal = sizeLocal();
+    int nprocs = this->comm->nprocs;
+    vectorZeroize3D(_com);
+
+    for(int i = 0; i < nlocal; i++)
+        vectorAdd3D(_com,center_(i),_com);
+
+    vectorScalarDiv3D(_com,static_cast<double>(nlocal));
+
+    //printVec3D(this->screen,"_com on one proc",_com);
+
+    if(1 < nprocs)
+    {
+        double result[4];
+        vectorCopy3D(_com,result);
+        result[3] = static_cast<double>(nlocal);
+
+        double *result_all;
+        int size_all = MPI_Allgather_Vector(result,4,result_all,this->world);
+
+        if(size_all != 4*nprocs)
+            this->error->one(FLERR,"internal error");
+
+        vectorZeroize3D(_com);
+        double com_weighted[3];
+        double weightsum = 0.;
+        for(int iproc = 0; iproc < nprocs; iproc++)
+        {
+            vectorScalarMult3D(&result_all[iproc*4],static_cast<double>(result_all[iproc*4+3]),com_weighted);
+            weightsum += static_cast<double>(result_all[iproc*4+3]);
+            vectorAdd3D(_com,com_weighted,_com);
+            //printVec3D(this->screen,"com_weighted",com_weighted);
+            //fprintf(this->screen,"weightsum %f\n",weightsum);
+        }
+        vectorScalarDiv3D(_com,weightsum);
+
+        delete []result_all;
+    }
+
+  }
+
+template<int NUM_NODES>
+void MultiNodeMesh<NUM_NODES>::get_global_vel(double *vel)
+{
+    if (!store_vel)
+        return;
+    if (step_store_vel != update->ntimestep)
+    {
+        step_store_vel = update->ntimestep;
+        vectorZeroize3D(global_vel);
+    }
+    vectorCopy3D(global_vel, vel);
+}
+
+template<int NUM_NODES>
+void MultiNodeMesh<NUM_NODES>::get_global_omega(double *omega)
+{
+    if (!store_omega)
+        return;
+    if (step_store_omega != update->ntimestep)
+    {
+        step_store_omega = update->ntimestep;
+        vectorCopy4D(global_quaternion, prev_quaternion);
+    }
+    double dQ[4];
+    double invPrevQ[4];
+    quatInverse4D(prev_quaternion, invPrevQ);
+    quatMult4D(invPrevQ, global_quaternion, dQ);
+    dQ[0] = fmax(-1.0, fmin(1.0, dQ[0]));
+    const double dAngle = 2.0*acos(dQ[0]);
+    if (fabs(dAngle) > 1e-12)
+    {
+        const double SinHalfdAngle = sin(dAngle*0.5);
+        const double multi = dAngle/(SinHalfdAngle*update->dt);
+        vectorScalarMult3D(&(dQ[1]), multi, omega);
+    }
+    else
+        vectorZeroize3D(omega);
+}
 
 #endif

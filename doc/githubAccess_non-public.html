@@ -1,0 +1,264 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>githubAccess_non-public &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>githubAccess_non-public</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/githubAccess_non-public.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="githubaccess-non-public">
+<h1>githubAccess_non-public<a class="headerlink" href="#githubaccess-non-public" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This routine describes how to setup a github account and pull repositories of the CFDEMproject.</p>
+<p><strong>Procedure:</strong></p>
+<p>Basically the following steps have to be performed:</p>
+<ul class="simple">
+<li>get access to non-public repositories</li>
+<li>create an account at <a class="reference external" href="http://github.com">http://github.com</a></li>
+<li>create your RSA key</li>
+<li>add your RSA key to your github account</li>
+<li><em>git clone</em> the desired repository</li>
+<li>update your repositories by <em>git pull</em></li>
+</ul>
+<p><strong>Get acces to non-public repositories:</strong></p>
+<p>If you have a support contract / non-public repository access by DCS Computing GmbH, please follow the steps below to set up your user and RSA key. After that please send your username and company affiliation to DCS Computing GmbH to get your account activated. Afterwards you can clone also the non-public repositories.</p>
+<p><strong>Create an account:</strong></p>
+<p>Please create a free account at <a class="reference external" href="github_">https://github.com</a>.</p>
+<div class="highlight-python"><pre>example:
+user (username)
+user@mail.com
+pwd (pwd)</pre>
+</div>
+<p>Please use your own username and mail adress here and for the following steps!</p>
+<p><strong>Create your RSA key:</strong></p>
+<p>Please find the complete setup description <a class="reference external" href="gitHelp_">here</a>, or use the short description below.</p>
+<p>Open a terminal and execute:</p>
+<div class="highlight-python"><pre>cd ~/.ssh
+ssh-keygen -t rsa -C "user@mail.com"
+gedit id_rsa.pub&amp;</pre>
+</div>
+<p><strong>Add your RSA key to your github account:</strong></p>
+<p>Login at <a class="reference external" href="github_">https://github.com</a> with you user, then</p>
+<ul class="simple">
+<li>click <em>Account Settings</em></li>
+<li>click <em>SSH Keys</em></li>
+<li>click <em>Add SSH key</em></li>
+<li>paste your key into the <em>Key</em> field</li>
+<li>Hit <em>Add Key.</em></li>
+</ul>
+<p>To check your settings, open a terminal and execute:</p>
+<div class="highlight-python"><pre>ssh -T git@github.com</pre>
+</div>
+<p><strong>*git clone* the desired repository:</strong></p>
+<p>To clone the non-public LIGGGHTS(R)-PUBLIC repository (in this example LIGGGHTS-COMPANY, where COMPANY is the name of your company), open a terminal and execute:</p>
+<div class="highlight-python"><pre>git clone git@github.com:CFDEMproject/LIGGGHTS-COMPANY.git</pre>
+</div>
+<p>Note: the git protocol will not work if your computer is behind a firewall which blocks the relevant TCP port, you can use alternatively this command (you need to enter your password):</p>
+<div class="highlight-python"><pre>git clone https://user@github.com/CFDEMproject/LIGGGHTS-COMPANY.git</pre>
+</div>
+<p><strong>Update your repositories by *git pull*:</strong></p>
+<p>To get the latest version, open a terminal, go to the location of your local installation and type:</p>
+<div class="highlight-python"><pre>git pull</pre>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

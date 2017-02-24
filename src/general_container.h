@@ -1,28 +1,45 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Philippe Seil (JKU Linz)
+    Andreas Aigner (DCS Computing GmbH, Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_GENERAL_CONTAINER
@@ -32,8 +49,10 @@
 #include "memory_ns.h"
 #include "math_extra_liggghts.h"
 #include <string.h>
+#include <limits>
 
-#define GROW 100
+inline int GROW_CONTAINER()
+{ return 10000; }
 
 using namespace LAMMPS_MEMORY_NS;
 
@@ -48,6 +67,9 @@ namespace LAMMPS_NS
           bool isDoubleData();
           bool isIntData();
 
+          bool subtract (GeneralContainer<T,NUM_VEC,LEN_VEC> const &A,
+                         GeneralContainer<T,NUM_VEC,LEN_VEC> const &minusB);
+
           void add(T** elem);
           void addZero();
 
@@ -55,16 +77,26 @@ namespace LAMMPS_NS
           void del(int n);
           void delForward(int n,bool scale,bool translate,bool rotate);
           void delRestart(int n,bool scale,bool translate,bool rotate);
+          void delRestart(bool scale,bool translate,bool rotate);
           void clearReverse(bool scale,bool translate,bool rotate);
 
           void get(int n, T** elem);
 
+          void setToDefault(int n);
           void setAll(T def);
           void setAll(int to, T def);
+          void setAllToZero()
+          { setAll(static_cast<T>(0)); }
+
           void set(int i, T** elem);
           void set(int i, int j, T* elem);
 
           bool setFromContainer(ContainerBase *cont);
+
+          bool calcAvgFromContainer();
+          bool calcMeanSquareFromContainer();
+          bool calcSumFromContainer();
+          bool normalizeContainer();
 
           T max_scalar();
           T min_scalar();
@@ -85,10 +117,10 @@ namespace LAMMPS_NS
           // push / pop all elements
           
           inline int bufSize(int operation = OPERATION_UNDEFINED,
-                            bool scale=false,bool translate=false, bool rotate=false);
-          inline int pushToBuffer(double *buf, int operation,
+                            bool scale=false,bool translate=false, bool rotate=false) const;
+          inline int pushToBuffer(double *buf, int operation = OPERATION_UNDEFINED,
                            bool scale=false,bool translate=false, bool rotate=false);
-          inline int popFromBuffer(double *buf, int operation,
+          inline int popFromBuffer(double *buf, int operation = OPERATION_UNDEFINED,
                            bool scale=false,bool translate=false, bool rotate=false);
 
           // push / pop a list elements
@@ -115,20 +147,23 @@ namespace LAMMPS_NS
 
           void addUninitialized(int n);
 
-          inline int size()
+          inline int size() const
           { return numElem_; }
 
-          inline int nVec()
+          inline int nVec() const
           { return NUM_VEC; }
 
-          inline int lenVec()
+          inline int lenVec() const
           { return LEN_VEC; }
 
-          inline int capacity()
+          inline int capacity() const
           { return maxElem_; }
 
           inline void clearContainer()
           { numElem_ = 0; }
+
+          inline void setDefaultValue(T val)
+          { defaultValue_ = val; useDefault_ = true; }
 
       protected:
 
@@ -143,6 +178,8 @@ namespace LAMMPS_NS
           int numElem_, maxElem_;
 
           T*** arr_;
+
+          T defaultValue_;
   };
 
   // *************************************

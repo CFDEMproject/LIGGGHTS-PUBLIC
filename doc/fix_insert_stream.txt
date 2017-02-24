@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -15,11 +14,11 @@ fix ID group-ID insert/stream seed seed_value distributiontemplate dist-ID gener
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 insert/stream = style name of this fix command :l
 seed = obligatory keyword :l
-seed_value = random # seed (positive integer) :l
+seed_value = random # seed (prime number greater 1000) :l
 distributiontemplate = obligatory keyword :l
 dist-ID = ID of a "fix_particledistribution_discrete"_fix_particledistribution_discrete.html to be used for particle insertion :l
 one or more general keyword/value pairs can be appended :l
-general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or{vel constant} or {vel uniform} or {vel gaussian} or {orientation} or {omega} :l
+general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {particlerate} or {massrate} or {insert_every} or {overlapcheck} or {all_in} or {random_distribute} or{vel constant} or {vel uniform} or {vel gaussian} or {orientation} or {omega} or {set_property} :l
   {verbose} = yes or no
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)
@@ -37,8 +36,10 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
     ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
   {start} value = ts
     ts = time-step at which insertion should start (positive integer larger than current time-step)
+  {overlapcheck} value = yes or no
   {all_in} value = yes or no
   {random_distribute} value = exact or uncorrelated
+  {compress_tags} value = yes or no
   {vel constant} values = vx vy vz
     vx = x-velocity at insertion (velocity units)
     vy = y-velocity at insertion (velocity units)
@@ -57,14 +58,19 @@ general_keywords = {verbose} or {maxattampt} or {nparticles} or {mass} or {parti
     vFluctx = standard deviation of Gaussian x-velocity fluctuation at insertion (velocity units)
     vFlucty = standard deviation of Gaussian y-velocity fluctuation at insertion (velocity units)
     vFluctz = standard deviation of Gaussian z-velocity fluctuation at insertion (velocity units)
-  {orientation} values = random or template
+  {orientation} values = random or template or constant q1 q2 q3 q4
     random = randomize rotational orientation
     template = use orientation from particle template
+    constant = use constant quaternion for orientation
+    q1 q2 q3 q4 = quaternion values for constant orientation
   {omega} values = constant omegax omegay omegaz
     constant = obligatory word
     omegax = x-comonent of angular velocity (1/time units)
     omegay = y-comonent of angular velocity (1/time units)
-    omegaz = z-comonent of angular velocity (1/time units) :pre
+    omegaz = z-comonent of angular velocity (1/time units)
+  {set_property} values = property-varname val
+    property-varname = variable name of a "fix property/atom"_fix_property.html holding a scalar value for each particle
+    val = value to initialize the property with upon insertion  :pre
 
 following the general keyword/value section, one or more stream keyword/value pairs can be appended for the fix insert/stream command :l
 stream_keywords = {duration} or {parallel} or {insertion_face} or {extrude_length} :l
@@ -80,7 +86,7 @@ stream_keywords = {duration} or {parallel} or {insertion_face} or {extrude_lengt
 
 [Examples:]
 
-fix ins all insert/stream seed 1001 distributiontemplate pdd1 nparticles 5000 vel constant 0. -0.5 -2. particlerate 1000 overlapcheck yes insertion_face ins_mesh extrude_length 0.6
+fix ins all insert/stream seed 123457 distributiontemplate pdd1 nparticles 5000 vel constant 0. -0.5 -2. particlerate 1000 overlapcheck yes insertion_face ins_mesh extrude_length 0.6
 
 [Description:]
 
@@ -162,6 +168,12 @@ in the "fix_particledistribution_discrete"_fix_particledistribution_discrete.htm
 and "fix_particletemplate_sphere"_fix_particletemplate_sphere.html
 command (all of which can also be "all").
 
+The keyword {overlapcheck} controls if overlap is checked for at insertion,
+both within the inserted particle package and with other existig particles.
+If this option is turned off, insertion will scale very well in parallel,
+otherwise not. Be aware that in case of no overlap check, highly overlapping
+configurations will be produced, so you will have to relax these configurations.
+
 If overlapcheck if performed, the number of insertion attempts per
 particle can be specified via the {maxattempt} keyword. Each timestep
 particles are inserted, the command will make up to a total of M tries
@@ -171,12 +183,12 @@ insertions, a warning will be printed.
 
 The {all_in} flag determines if the particle is completely contained
 in the insertion region ({all_in = yes}) or only the particle center
-({all_in = no}).Using {all_in} = yes requires you to use an insertion 
+({all_in = no}).Using {all_in} = yes requires you to use an insertion
 face of style "fix mesh/surface/planar"_fix_mesh_surface.html
 
-NOTE: You also have to use "fix mesh/surface/planar"_fix_mesh_surface.html 
-if there is a "run"_run.html command between the definition of the 
-insertion face and the fix insert/stream command. Otherwise, a 
+NOTE: You also have to use "fix mesh/surface/planar"_fix_mesh_surface.html
+if there is a "run"_run.html command between the definition of the
+insertion face and the fix insert/stream command. Otherwise, a
 "fix mesh/surface/planar"_fix_mesh_surface.html will do.
 
 Keyword {random_distribute} controls how the number of particles to
@@ -186,30 +198,51 @@ the number of particles to be inserted each step is matched exactly.
 For style {uncorrelated}, the number of particles to be inserted
 for each particle template will be rounded in an uncorrelated way,
 so the total number of inserted particles may vary for each insertion
-step. However, statistically both ways should produce the same 
-result. Style {uncorrelated} may be faster in parallel since it 
+step. However, statistically both ways should produce the same
+result. Style {uncorrelated} may be faster in parallel since it
 does not need global MPI operations.
 Please note that if the # of particles to be inserted is calculated
 e.g. from a particle mass to be inserted, the number of particles
 to be inserted each insertion step will vary by 1, irrespective of
 the {random_distribute} settings. This is because in this case the
 # of particles to insert in each step will be a floating point number,
-and applying a simple floor/ceil rounding operation would lead to a 
+and applying a simple floor/ceil rounding operation would lead to a
 statistical bias.
 
-If keyword {parallel} is set to 'yes', LIGGGHTS tries to pre-calculate 
+If keyword {parallel} is set to 'yes', LIGGGHTS(R)-PUBLIC tries to pre-calculate
 more accurately the overlap of process subdomains and extrusion volume.
 For cases where the insertion volume is highly divided between different
-processes, this can lead to a speed-up of insertion as random number generation 
-is more efficient. For cases where the extrusion volume is divided 
+processes, this can lead to a speed-up of insertion as random number generation
+is more efficient. For cases where the extrusion volume is divided
 among few processes this will impose a small computation overhead.
 
+If keyword {compress_tags} is set to 'yes', then atom IDs are re-assigned
+after each insertion procedure. The default is 'no'. This is typically
+only recommended if some models internally store arrays which have the
+length defined via the max ID of any atom. 
+
+IMPORTANT NOTE: Setting {compress_tags} to 'yes' will result in all contact
+history to be lost at that point in time. External post-processing tools
+will give wrong results because they typically track atoms via their IDs.
+
 The initial velocity and rotational velocity can be controlled via the
-{vel} and {omega} keywords. {vel constant} simply patches a constant 
-velocity to the inserted particles, {vel uniform} sets uniformly distributed 
-velocities with mean and amplitude. {vel gaussian} sets Gaussian 
+{vel} and {omega} keywords. {vel constant} simply patches a constant
+velocity to the inserted particles, {vel uniform} sets uniformly distributed
+velocities with mean and amplitude. {vel gaussian} sets Gaussian
 distributed particle velocities with mean and std. deviation.
 The insertion velocity must be non-zero.
+
+The {set_property} option can be used to initialize scalar per-particle
+properties such as temperatures, which are stored in a 
+a "fix property/atom"_fix_property.html.
+
+The setting of {compress_tags} will trigger a periodic re-tagging of
+atom ids. This is usefull in case the simulation domain is used to
+model a periodic in and outflow of particles. If this switch is set,
+the global ids of the particles will remain in a certain range,
+and no "holes" in the arrays holding the global atom ids exist.
+IMPORTANT NOTE: This functionality may confuse external tools which 
+perform post-processing based on atom IDs!
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
@@ -233,11 +266,12 @@ The insertion face cannot move.
 
 [Related commands:]
 
-"fix_insert_pack"_fix_insert_pack.html, "fix_insert_rate_region"_fix_insert_rate_region.html,
-"fix_deposit"_fix_deposit.html, "fix_pour_dev"_fix_pour_dev.html, "fix_pour"_fix_pour.html
+"fix_insert_pack"_fix_insert_pack.html, 
+"fix_insert_rate_region"_fix_insert_rate_region.html,
 
 [Default:]
 
 The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
-duration = insert_every, random_distribute = exact, parallel = no
+duration = insert_every, random_distribute = exact, parallel = no,
+{compress_tags} = no

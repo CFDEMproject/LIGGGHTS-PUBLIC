@@ -1,18 +1,50 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "unistd.h"
 #include "fix_ave_histo.h"
 #include "atom.h"
@@ -34,12 +66,6 @@ enum{ONE,RUNNING};
 enum{SCALAR,VECTOR,WINDOW};
 enum{GLOBAL,PERATOM,LOCAL};
 enum{IGNORE,END,EXTRA};
-
-#define INVOKED_SCALAR 1
-#define INVOKED_VECTOR 2
-#define INVOKED_ARRAY 4
-#define INVOKED_PERATOM 8
-#define INVOKED_LOCAL 16
 
 #define BIG 1.0e20
 /* ---------------------------------------------------------------------- */
@@ -246,7 +272,7 @@ FixAveHisto::FixAveHisto(LAMMPS *lmp, int narg, char **arg) :
   if (ave != RUNNING && overwrite)
     error->all(FLERR,"Illegal fix ave/histo command");
 
-  int kindflag;
+  int kindflag = 0;
   for (int i = 0; i < nvalues; i++) {
     if (which[i] == X || which[i] == V || which[i] == F) kindflag = PERATOM;
     else if (which[i] == COMPUTE) {
@@ -931,7 +957,7 @@ void FixAveHisto::options(int narg, char **arg)
       if (me == 0) {
         fp = fopen(arg[iarg+1],"w");
         if (fp == NULL) {
-          char str[128];
+          char str[512];
           sprintf(str,"Cannot open fix ave/histo file %s",arg[iarg+1]);
           error->one(FLERR,str);
         }

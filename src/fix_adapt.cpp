@@ -1,29 +1,57 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "string.h"
-#include "stdlib.h"
+#include <math.h>
+#include <string.h>
+#include <stdlib.h>
 #include "fix_adapt.h"
 #include "atom.h"
 #include "update.h"
@@ -127,8 +155,8 @@ FixAdapt::FixAdapt(LAMMPS *lmp, int narg, char **arg) : Fix(lmp, narg, arg)
         rad_mass_vary_flag = 1;
         diamflag = 1;
       } else if (strcmp(arg[iarg+1],"charge") == 0) {
-        adapt[nadapt].aparam = CHARGE; 
-        chgflag = 1; 
+        adapt[nadapt].aparam = CHARGE;
+        chgflag = 1;
       } else error->all(FLERR,"Illegal fix adapt command");
       if (strstr(arg[iarg+2],"v_") == arg[iarg+2]) {
         int n = strlen(&arg[iarg+2][2]) + 1;
@@ -253,7 +281,7 @@ void FixAdapt::init()
       Pair *pair = force->pair_match(ad->pstyle,1);
       if (pair == NULL) error->all(FLERR,"Fix adapt pair style does not exist");
       void *ptr = pair->extract(ad->pparam,ad->pdim);
-      if (ptr == NULL) 
+      if (ptr == NULL)
         error->all(FLERR,"Fix adapt pair style param not supported");
 
       ad->pdim = 2;
@@ -339,7 +367,7 @@ void FixAdapt::change_settings()
   for (int m = 0; m < nadapt; m++) {
     Adapt *ad = &adapt[m];
 
-    double value;
+    double value = 0.0;
     if (input->variable->equalstyle(ad->ivar)) value = input->variable->compute_equal(ad->ivar);
     else if(input->variable->atomstyle(ad->ivar)) input->variable->compute_atom(ad->ivar, igroup, fppat->vector_atom, 1, 0);
     else error->all(FLERR,"Wrong variable style in fix adapt - must use a scalar property");
@@ -388,6 +416,7 @@ void FixAdapt::change_settings()
             if (mask[i] & groupbit)
             {
               if (is_atomstyle) value = fppat->vector_atom[i];  
+              if (scaleflag) value *= radius[i]*2.0;
               radius[i] = 0.5*value;
             }
         } else {
@@ -396,17 +425,18 @@ void FixAdapt::change_settings()
               if (is_atomstyle) value = fppat->vector_atom[i];  
               density = rmass[i] / (4.0*MY_PI/3.0 *
                                     radius[i]*radius[i]*radius[i]);
+              if (scaleflag) value *= radius[i]*2.0;
               radius[i] = 0.5*value;
               rmass[i] = 4.0*MY_PI/3.0 *
                 radius[i]*radius[i]*radius[i] * density;
             }
         }
       } else if (ad->aparam == CHARGE) {
-        double *q = atom->q; 
+        double *q = atom->q;
         int *mask = atom->mask;
         int nlocal = atom->nlocal;
         for (i = 0; i < nlocal; i++)
-          if (mask[i] & groupbit) q[i] = value; 
+          if (mask[i] & groupbit) q[i] = value;
       }
     }
   }

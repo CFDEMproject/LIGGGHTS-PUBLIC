@@ -1,27 +1,47 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "string.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <string.h>
+#include <stdio.h>
 #include "fix_contact_history_mesh.h"
 #include "atom.h"
 #include "fix_mesh_surface.h"
@@ -52,7 +72,9 @@ FixContactHistoryMesh::FixContactHistoryMesh(LAMMPS *lmp, int narg, char **arg) 
   ipage2_(0),
   dpage2_(0),
   keeppage_(0),
+  intersectpage_(0),
   keepflag_(0),
+  intersectflag_(0),
   mesh_(0),
   fix_neighlist_mesh_(0),
   fix_nneighs_(0),
@@ -69,9 +91,12 @@ FixContactHistoryMesh::FixContactHistoryMesh(LAMMPS *lmp, int narg, char **arg) 
 
   swap_ = new double[dnum_];
 
-  // initial allocation of delflag
+  // initial allocation of keepflag
   keepflag_ = (bool **) memory->srealloc(keepflag_,atom->nmax*sizeof(bool *),
                                       "contact_history:keepflag");
+  // initial allocation of intersectflag
+  intersectflag_ = (bool **) memory->srealloc(intersectflag_,atom->nmax*sizeof(bool *),
+                                      "contact_history:intersectflag");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -93,6 +118,14 @@ FixContactHistoryMesh::~FixContactHistoryMesh()
     delete [] keeppage_;
     keeppage_ = NULL;
   }
+  if(intersectpage_) {
+    for(int i = 0; i < numpages_; i++) {
+      delete intersectpage_[i];
+      intersectpage_[i] = NULL;
+    }
+    delete [] intersectpage_;
+    intersectpage_ = NULL;
+  }
 
   ipage_ = 0;
   dpage_ = 0;
@@ -100,6 +133,7 @@ FixContactHistoryMesh::~FixContactHistoryMesh()
   delete [] swap_;
 
   if(keepflag_) memory->sfree(keepflag_);
+  if(intersectflag_) memory->sfree(intersectflag_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -153,6 +187,14 @@ void FixContactHistoryMesh::allocate_pages()
       delete [] keeppage_;
       keeppage_ = NULL;
     }
+    if(intersectpage_) {
+      for(int i = 0; i < numpages_; i++) {
+        delete intersectpage_[i];
+        intersectpage_[i] = NULL;
+      }
+      delete [] intersectpage_;
+      intersectpage_ = NULL;
+    }
 
     pgsize_ = neighbor->pgsize;
     oneatom_ = neighbor->oneatom;
@@ -162,6 +204,7 @@ void FixContactHistoryMesh::allocate_pages()
     ipage2_ = new MyPage<int>[numpages_];
     dpage2_ = new MyPage<double>[numpages_];
     keeppage_ = new MyPage<bool>*[numpages_];
+    intersectpage_ = new MyPage<bool>*[numpages_];
     for (int i = 0; i < numpages_; i++) {
       ipage1_[i].init(oneatom_,pgsize_);
       dpage1_[i].init(oneatom_*MathExtraLiggghts::max(1,dnum_),pgsize_);
@@ -176,11 +219,15 @@ void FixContactHistoryMesh::allocate_pages()
       // make sure page is allocated in memory near core
       keeppage_[tid] = new MyPage<bool>();
       keeppage_[tid]->init(oneatom_,pgsize_);
+      intersectpage_[tid] = new MyPage<bool>();
+      intersectpage_[tid]->init(oneatom_,pgsize_);
     }
 #else
     for (int i = 0; i < numpages_; i++) {
       keeppage_[i] = new MyPage<bool>();
       keeppage_[i]->init(oneatom_,pgsize_);
+      intersectpage_[i] = new MyPage<bool>();
+      intersectpage_[i]->init(oneatom_,pgsize_);
     }
 #endif
 
@@ -195,6 +242,13 @@ void FixContactHistoryMesh::allocate_pages()
         dpage_ = dpage2_;
     }
   }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixContactHistoryMesh::setup_pre_neighbor()
+{
+    
 }
 
 /* ---------------------------------------------------------------------- */
@@ -263,10 +317,15 @@ void FixContactHistoryMesh::pre_force(int dummy)
         return;
     build_neighlist_ = false;
 
+    int nall = atom->nlocal+atom->nghost;
+    int nlocal = atom->nlocal;
+
+    for(int i = nlocal; i < nall; i++)
+        npartner_[i] = 0;
+
     cleanUpContactJumps();
 
     int nneighs_next;
-    int nlocal = atom->nlocal;
     int *partner_prev;
     double *contacthistory_prev;
 
@@ -276,7 +335,7 @@ void FixContactHistoryMesh::pre_force(int dummy)
     ipage_next->reset();
     dpage_next->reset();
 
-    for (int i = 0; i < nlocal; i++)
+    for (int i = 0; i < nall; i++)
     {
         nneighs_next = fix_nneighs_->get_vector_atom_int(i);
 
@@ -284,6 +343,8 @@ void FixContactHistoryMesh::pre_force(int dummy)
         contacthistory_prev = contacthistory_[i];
 
         partner_[i] = ipage_next->get(nneighs_next);
+        if (!partner_[i])
+            error->one(FLERR,"mesh neighbor list overflow, boost neigh_modify one and/or page");
         vectorInitializeN(partner_[i],nneighs_next,-1);
         
         contacthistory_[i] = dpage_next->get(nneighs_next*dnum_);
@@ -347,19 +408,21 @@ void FixContactHistoryMesh::sort_contacts()
 }
 
 /* ----------------------------------------------------------------------
-     mark all contacts for deletion
+     mark all contacts for deletion, mark all as not intersecting
 ------------------------------------------------------------------------- */
 
 void FixContactHistoryMesh::markAllContacts()
 {
-    int nlocal = atom->nlocal;
+    int nall = atom->nlocal+atom->nghost;
     keeppage_[0]->reset(true);
+    intersectpage_[0]->reset(false);
 
-    for(int i = 0; i < nlocal; i++)
+    for(int i = 0; i < nall; i++)
     {
       const int nneighs = fix_nneighs_->get_vector_atom_int(i);
       keepflag_[i] = keeppage_[0]->get(nneighs);
-      if (!keepflag_[i])
+      intersectflag_[i] = intersectpage_[0]->get(nneighs);
+      if (!keepflag_[i] || !intersectflag_[i])
         error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
     }
 }
@@ -372,6 +435,7 @@ void FixContactHistoryMesh::resetDeletionPage(int tid)
 {
     // keep pages are initalized with 0 (= false)
     keeppage_[tid]->reset(true);
+    intersectpage_[tid]->reset(false);
 }
 
 /* ----------------------------------------------------------------------
@@ -384,7 +448,8 @@ void FixContactHistoryMesh::markForDeletion(int tid, int ifrom, int ito)
     {
       const int nneighs = fix_nneighs_->get_vector_atom_int(i);
       keepflag_[i] = keeppage_[tid]->get(nneighs);
-      if (!keepflag_[i])
+      intersectflag_[i] = intersectpage_[tid]->get(nneighs);
+      if (!keepflag_[i] || !intersectflag_[i])
         error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
     }
 }
@@ -393,7 +458,7 @@ void FixContactHistoryMesh::markForDeletion(int tid, int ifrom, int ito)
 
 void FixContactHistoryMesh::cleanUpContacts()
 {
-    cleanUpContacts(0, atom->nlocal);
+    cleanUpContacts(0, atom->nlocal+atom->nghost);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -417,6 +482,7 @@ void FixContactHistoryMesh::cleanUpContacts(int ifrom, int ito)
                     
                 }
                 partner_[i][j] = -1;
+                intersectflag_[i][j] = false;
                 vectorZeroizeN(&(contacthistory_[i][j*dnum_]),dnum_);
             }
         }
@@ -428,17 +494,20 @@ void FixContactHistoryMesh::cleanUpContacts(int ifrom, int ito)
 
 void FixContactHistoryMesh::cleanUpContactJumps()
 {
-    int nlocal = atom->nlocal;
+    int nall = atom->nlocal+atom->nghost;
     int iTri;
 
-    for(int i = 0; i < nlocal; i++)
+    for(int i = 0; i < nall; i++)
     {
         int ipartner = 0;
         while (ipartner < npartner_[i])
         {
             
             if(partner_[i][ipartner] < 0)
+            {
+                
                 error->one(FLERR,"internal error");
+            }
 
             iTri = mesh_->map(partner_[i][ipartner]);
             
@@ -446,6 +515,7 @@ void FixContactHistoryMesh::cleanUpContactJumps()
             {
                 
                 partner_[i][ipartner] = -1;
+                intersectflag_[i][ipartner] = false;
                 vectorZeroizeN(&(contacthistory_[i][ipartner*dnum_]),dnum_);
                 swap(i,ipartner,npartner_[i]-1,false);
                 npartner_[i]--;
@@ -461,9 +531,9 @@ void FixContactHistoryMesh::cleanUpContactJumps()
 
 void FixContactHistoryMesh::reset_history()
 {
-    int nlocal = atom->nlocal;
+    int nall = atom->nlocal+atom->nghost;
 
-    for(int i = 0; i < nlocal; i++)
+    for(int i = 0; i < nall; i++)
     {
         const int nneighs = fix_nneighs_->get_vector_atom_int(i);
 
@@ -497,6 +567,8 @@ void FixContactHistoryMesh::grow_arrays(int nmax)
   FixContactHistory::grow_arrays(nmax);
   keepflag_ = (bool **) memory->srealloc(keepflag_,nmax*sizeof(bool *),
                                       "contact_history:keepflag");
+  intersectflag_ = (bool **) memory->srealloc(intersectflag_,nmax*sizeof(bool *),
+                                      "contact_history:keepflag");
 }
 
 /* ----------------------------------------------------------------------
@@ -513,6 +585,7 @@ void FixContactHistoryMesh::copy_arrays(int i, int j, int delflag)
 
   FixContactHistory::copy_arrays(i,j,delflag);
   keepflag_[j] = keepflag_[i];
+  intersectflag_[j] = intersectflag_[i];
 }
 
 /* ----------------------------------------------------------------------
@@ -528,8 +601,9 @@ int FixContactHistoryMesh::unpack_exchange(int nlocal, double *buf)
 
   npartner_[nlocal] = ubuf(buf[m++]).i;
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
-  partner_[nlocal] = ipage_->get(nneighs);
-  contacthistory_[nlocal] = dpage_->get(dnum_*nneighs);
+  int nalloc = MathExtraLiggghts::max(nneighs,npartner_[nlocal]);
+  partner_[nlocal] = ipage_->get(nalloc);
+  contacthistory_[nlocal] = dpage_->get(dnum_*nalloc);
 
   if (!partner_[nlocal] || !contacthistory_[nlocal])
         error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
@@ -545,6 +619,7 @@ int FixContactHistoryMesh::unpack_exchange(int nlocal, double *buf)
 
   for (int n = npartner_[nlocal]; n < nneighs; n++) {
     partner_[nlocal][n] = -1;
+    
     for (int d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = 0.;
     }
@@ -585,6 +660,7 @@ void FixContactHistoryMesh::unpack_restart(int nlocal, int nth)
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
     partner_[nlocal][n] = ubuf(extra[nlocal][m++]).i;
+    
     for (d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = extra[nlocal][m++];
       
@@ -620,6 +696,7 @@ double FixContactHistoryMesh::memory_usage()
     bytes += ipage2_[i].size();
     bytes += dpage2_[i].size();
     bytes += keeppage_[i]->size();
+    bytes += intersectpage_[i]->size();
   }
 
   return bytes;

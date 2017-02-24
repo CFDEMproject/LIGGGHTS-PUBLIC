@@ -19,27 +19,43 @@
 #include "system.h"
 #include "matrices.h"
 
+/***************************************************************/
+// CONSTRUCTOR
+/***************************************************************/
 Solver::Solver(){
 
 }
 
+/***************************************************************/
+// DESTRUCTOR
+/***************************************************************/
 Solver::~Solver(){
 }
 
+/***************************************************************/
+// PROTECTED MEMBER FUNCTIONS
+/***************************************************************/
+void Solver::ComputeForces()
+{
+    system->ComputeForces();
+}
+
+
+/***************************************************************/
+// PUBLIC MEMBER FUNCTIONS
+/***************************************************************/
 void Solver::SetSystem(System* s){
   system = s;
   CreateModel();
 }
 
-void Solver::ComputeForces(){
-system->ComputeForces();
-}
-
+/***************************************************************/
 SolverType Solver::GetSolverType()
 {
 	return type;
 }
 
+/***************************************************************/
 Solver * Solver::GetSolver(SolverType solverToMake) //returning a pointer to a new Solver object of the appropriate type
 {
 	switch((int)solverToMake)
@@ -49,14 +65,18 @@ Solver * Solver::GetSolver(SolverType solverToMake) //returning a pointer to a n
 	}
 }
 
+/***************************************************************/
 ColMatMap* Solver::GetState(){
   return &state;
 }
 
+/***************************************************************/
 ColMatMap* Solver::GetStateDerivative(){
   return &statedot;
 }
 
+/***************************************************************/
 ColMatMap* Solver::GetStateDerivativeDerivative(){
   return &statedoubledot;
 }
+

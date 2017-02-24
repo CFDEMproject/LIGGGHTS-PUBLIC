@@ -26,6 +26,9 @@
 
 using namespace std;
 
+/***************************************************************/
+// CONSTRUCTOR
+/***************************************************************/
 OnSolver::OnSolver(){
   numbodies = 0;
   bodyarray = 0;
@@ -33,10 +36,16 @@ OnSolver::OnSolver(){
   type = ONSOLVER;
 }
 
+/***************************************************************/
+// DESTRUCTOR
+/***************************************************************/
 OnSolver::~OnSolver(){
   DeleteModel();
 }
 
+/***************************************************************/
+// PRIVATE MEMBER FUNCTIONS
+/***************************************************************/
 void OnSolver::DeleteModel(){
   delete [] bodyarray;
 
@@ -51,37 +60,7 @@ void OnSolver::DeleteModel(){
   numbodies = 0;
 }
 
-void OnSolver::CreateModel(){
-  // delete old model
-  DeleteModel();
-
-  // clear system body IDs (primer for traversal algorithm)
-  system->ClearBodyIDs();
-  
-
-  // error check for inertial frame
-  Body* sysbasebody = system->bodies.GetHeadElement()->value;
-  if( sysbasebody->GetType() != INERTIALFRAME ){
-    cerr << "ERROR: inertial frame not at head of bodies list" << endl;
-    exit(1);
-  }
-
-  // setup the O(n) spanning tree
-  numbodies = inertialframe.RecursiveSetup( (InertialFrame*) sysbasebody );
-  if(!numbodies){
-    cerr << "ERROR: unable to create O(n) model" << endl;
-    exit(1);
-  }
-  
-  
-  
-  bodyarray = new OnBody* [numbodies];
-  
-  CreateTopologyArray(0,&inertialframe);	  
-  
-  CreateStateMatrixMaps();  
-}
-
+/***************************************************************/
 int OnSolver::CreateTopologyArray(int num, OnBody* body){
   int i = num;
   bodyarray[i] = body;    
@@ -99,6 +78,7 @@ int OnSolver::CreateTopologyArray(int num, OnBody* body){
   return i;  
 }
 
+/***************************************************************/
 void OnSolver::CreateStateMatrixMaps(){
   
 	
@@ -123,7 +103,39 @@ void OnSolver::CreateStateMatrixMaps(){
   }
 }
 
+/***************************************************************/
+// PUBLIC MEMBER FUNCTIONS
+/***************************************************************/
+void OnSolver::CreateModel(){
+  // delete old model
+  DeleteModel();
 
+  // clear system body IDs (primer for traversal algorithm)
+  system->ClearBodyIDs();
+  
+
+  // error check for inertial frame
+  Body* sysbasebody = system->bodies.GetHeadElement()->value;
+  if( sysbasebody->GetType() != INERTIALFRAME ){
+    cerr << "ERROR: inertial frame not at head of bodies list" << endl;
+    exit(1);
+  }
+
+  // setup the O(n) spanning tree
+  numbodies = inertialframe.RecursiveSetup( (InertialFrame*) sysbasebody );
+  if(!numbodies){
+    cerr << "ERROR: unable to create O(n) model" << endl;
+    exit(1);
+  }
+  
+  bodyarray = new OnBody* [numbodies];
+  
+  CreateTopologyArray(0,&inertialframe);	  
+  
+  CreateStateMatrixMaps();  
+}
+
+/***************************************************************/
 void OnSolver::Solve(double time, Matrix& FF){
 	system->SetTime(time);
 	for(int i=1;i<numbodies;i++)
@@ -144,5 +156,7 @@ void OnSolver::Solve(double time, Matrix& FF){
    	
 	for(int i=1;i<numbodies;i++){
 		bodyarray[i]->LocalForwardSubstitution();
+		//cout<<" what is bodyarray= "<< bodyarray[i] <<endl;
 	}  
 }
+/***************************************************************/

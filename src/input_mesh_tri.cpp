@@ -1,36 +1,59 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
+
+    Copyright 2016-     CFDEMresearch GmbH, Linz
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "ctype.h"
 #include "memory.h"
 #include "input.h"
 #include "modify.h"
 #include "update.h"
 #include "error.h"
+#include "region.h"
 #include "domain.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "input_mesh_tri.h"
 #include "tri_mesh.h"
@@ -38,7 +61,10 @@
 using namespace LAMMPS_NS;
 
 InputMeshTri::InputMeshTri(LAMMPS *lmp, int argc, char **argv) : Input(lmp, argc, argv),
-verbose_(false)
+verbose_(false),
+i_exclusion_list_(0),
+size_exclusion_list_(0),
+exclusion_list_(0)
 {}
 
 InputMeshTri::~InputMeshTri()
@@ -48,9 +74,14 @@ InputMeshTri::~InputMeshTri()
    process all input from filename
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool verbose)
+void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool verbose,
+                               const int size_exclusion_list, int *exclusion_list,
+                               class Region *region)
 {
   verbose_ = verbose;
+  size_exclusion_list_ = size_exclusion_list;
+  exclusion_list_ = exclusion_list;
+  
   if(strlen(filename) < 5)
     error->all(FLERR,"Illegal command, file name too short for input of triangular mesh");
   const char *ext = &(filename[strlen(filename)-3]);
@@ -69,7 +100,7 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
   {
     nonlammps_file = fopen(filename,"r");
     if (nonlammps_file == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open mesh file %s",filename);
       error->one(FLERR,str);
     }
@@ -77,13 +108,14 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
 
   if(is_stl)
   {
-      if (comm->me == 0) fprintf(screen,"\nReading STL file '%s' \n",filename);
-      meshtrifile_stl(mesh);
+      if (comm->me == 0) fprintf(screen,"\nReading STL file '%s' (mesh processing step 1/3) \n",filename);
+      meshtrifile_stl(mesh,region,filename);
+      
   }
   else if(is_vtk)
   {
-      if (comm->me == 0) fprintf(screen,"\nReading VTK file '%s' \n",filename);
-      meshtrifile_vtk(mesh);
+      if (comm->me == 0) fprintf(screen,"\nReading VTK file '%s' (mesh processing step 1/3) \n",filename);
+      meshtrifile_vtk(mesh,region);
   }
   else error->all(FLERR,"Illegal command, need either an STL file or a VTK file as input for triangular mesh.");
 
@@ -94,15 +126,15 @@ void InputMeshTri::meshtrifile(const char *filename, class TriMesh *mesh,bool ve
    process VTK file
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
+void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh,class Region *region)
 {
   int n,m;
 
-  double **points;
-  int ipoint,npoints = 0;
+  double **points = NULL;
+  int ipoint = 0,npoints = 0;
 
-  int **cells, *lines;
-  int icell,ncells = 0;
+  int **cells = NULL, *lines = NULL;
+  int icell = 0,ncells = 0;
 
   int ntris = 0;
   int iLine = 0;
@@ -153,6 +185,9 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
 
     // lines start with 1 (not 0)
     nLines++;
+
+    if (0 == (nLines % 100000) && comm->me == 0)
+        fprintf(screen,"   successfully read a chunk of 100000 elements in VTK file\n");
 
     // parse one line from the file
     parse_nonlammps();
@@ -252,6 +287,13 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
   for(int i = 0; i < ncells; i++)
   {
       if(cells[i][0] == -1) continue;
+      if(size_exclusion_list_ > 0 && lines[i] == exclusion_list_[i_exclusion_list_])
+      {
+         if(i_exclusion_list_ < size_exclusion_list_-1)
+            i_exclusion_list_++;
+         continue;
+      }
+      if(!region || ( region->match(points[cells[i][0]]) && region->match(points[cells[i][1]]) && region->match(points[cells[i][2]]) ) )
       addTriangle(mesh,points[cells[i][0]],points[cells[i][1]],points[cells[i][2]],lines[i]);
   }
 
@@ -263,7 +305,7 @@ void InputMeshTri::meshtrifile_vtk(class TriMesh *mesh)
    process STL file
 ------------------------------------------------------------------------- */
 
-void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
+void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region, const char *filename)
 {
   int n,m;
   int iVertex = 0;
@@ -276,6 +318,7 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
 
   while (1)
   {
+    
     // read a line from input script
     // n = length of line including str terminator, 0 if end of file
     // if line ends in continuation char '&', concatenate next line
@@ -319,7 +362,11 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
     // lines start with 1 (not 0)
     nLines++;
 
+    if (0 == (nLines % 100000) && comm->me == 0)
+        fprintf(screen,"   successfully read a chunk of 100000 elements in STL file '%s'\n",filename);
+
     // parse one line from the stl file
+
     parse_nonlammps();
 
     // skip empty lines
@@ -327,6 +374,16 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
          if (me == 0 && verbose_)
             fprintf(screen,"Note: Skipping empty line in STL file\n");
       continue;
+    }
+
+    if (strcmp(arg[0],"solid") != 0 && nLines == 1)
+    {
+        if (me == 0 && verbose_)
+            fprintf(screen,"Note: solid keyword not found, assuming binary stl file\n");
+        fclose(nonlammps_file);
+        nonlammps_file = NULL;
+        meshtrifile_stl_binary(mesh, region, filename);
+        break;
     }
 
     // detect begin and end of a solid object, facet and vertices
@@ -378,7 +435,24 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
       //printVec3D(screen,"vertex",vertices[0]);
       //printVec3D(screen,"vertex",vertices[1]);
       //printVec3D(screen,"vertex",vertices[2]);
-      addTriangle(mesh,vertices[0],vertices[1],vertices[2],nLinesTri);
+
+      // nLinesTri is the line
+      
+      if(size_exclusion_list_ > 0 && nLinesTri == exclusion_list_[i_exclusion_list_])
+      {
+         
+         if(i_exclusion_list_ < size_exclusion_list_-1)
+         {
+            i_exclusion_list_++;
+            
+            while((exclusion_list_[i_exclusion_list_-1] == exclusion_list_[i_exclusion_list_]) && (i_exclusion_list_ < size_exclusion_list_-1))
+                i_exclusion_list_++;
+         }
+      }
+      else if(!region || ( region->match(vertices[0]) && region->match(vertices[1]) && region->match(vertices[2]) ) )
+      {
+          addTriangle(mesh,vertices[0],vertices[1],vertices[2],nLinesTri);
+      }
 
        if (me == 0) {
          //fprintf(screen,"  End of facet detected in in solid body.\n");
@@ -428,6 +502,74 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh)
                           "in a facet (only triangular meshes supported).");
     }
   }
+}
+
+void InputMeshTri::meshtrifile_stl_binary(class TriMesh *mesh, class Region *region, const char *filename)
+{
+    unsigned int num_of_facets;
+    std::ifstream stl_file;
+
+    if (me == 0) {
+        // open file for reading
+        stl_file.open(filename, std::ifstream::in | std::ifstream::binary);
+
+        // read 80 byte header into nirvana
+        for (int i=0; i<20; i++){
+          float dum;
+          stl_file.read((char *)&dum, sizeof(float));
+        }
+
+        // read number of triangles
+        stl_file.read((char *)&num_of_facets, sizeof(int));
+    }
+
+    // communicate number of triangles
+    MPI_Bcast(&num_of_facets,1,MPI_INT,0,world);
+
+    unsigned int count = 0;
+    int nElems = 0;
+    float tri_data[12];
+    while(1) {
+        if (me == 0) {
+            // read one triangle dataset (normal + 3 vertices)
+            for (int i=0; i<12; i++)
+              stl_file.read((char *)&tri_data[i], sizeof(float));
+            // read triangle attribute into nirvana
+            short dum;
+            stl_file.read((char *)&dum, sizeof(short));
+            // error handling
+            if (!stl_file)
+                error->one(FLERR,"Corrupt STL file: Error in reading binary STL file.");
+            // increase triangle counter
+            count++;
+        }
+        // communicate triangle data
+        MPI_Bcast(&tri_data,12,MPI_FLOAT,0,world);
+        if(size_exclusion_list_ > 0 && count == (unsigned int)exclusion_list_[i_exclusion_list_]) {
+            if(i_exclusion_list_ < size_exclusion_list_-1)
+                i_exclusion_list_++;
+        }
+        else
+        {
+            double vert[9];
+            // copy float vertices into double variables (ignore normal at the beginning of tri_data)
+            for (int i=0; i<9; i++)
+                vert[i] = (double) tri_data[i+3];
+            if(!region || ( region->match(&vert[0]) && region->match(&vert[3]) && region->match(&vert[6]) ) )
+            {
+                addTriangle(mesh, &vert[0], &vert[3], &vert[6], count);
+                nElems++;
+                if (0 == (nElems % 100000) && comm->me == 0)
+                    fprintf(screen,"   successfully read a chunk of 100000 elements in STL file '%s'\n",filename);
+            }
+        }
+
+        if (count == num_of_facets)
+            break;
+    }
+
+    if (me == 0)
+        stl_file.close();
 }
 
 /* ----------------------------------------------------------------------

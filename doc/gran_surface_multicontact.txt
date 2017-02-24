@@ -1,0 +1,35 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+gran surface multicontact :h3
+
+[Syntax:]
+
+surface multicontact :pre
+
+[Description:]
+
+This is the surface model for a spherical particle that can have multiple contacts. 
+It represents a smooth (non-rough) sphere and its task is to save certain variables 
+(surface position and normal force) for the 
+"fix multicontact/halfspace"_fix_multicontact_halfspace.html which is mandatory with this style.
+
+[Restrictions:] none
+
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command might lead to
+statistically different dynamics and system state.
+To the best knowledge of the developers, the 
+cross-influence between this command and coarse-graining
+is unknown.
+
+[Related commands:]
+
+"fix multicontact/halfspace"_fix_multicontact_halfspace.html

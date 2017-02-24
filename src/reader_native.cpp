@@ -1,18 +1,50 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "reader_native.h"
 #include "atom.h"
 #include "memory.h"
@@ -24,7 +56,7 @@ using namespace LAMMPS_NS;
 
 // also in read_dump.cpp
 
-enum{ID,TYPE,X,Y,Z,VX,VY,VZ,Q,IX,IY,IZ};
+enum{ID,TYPE,X,Y,Z,VX,VY,VZ,OMEGAX,OMEGAY,OMEGAZ,Q,IX,IY,IZ,RADIUS,MASS,DENSITY,FX,FY,FZ};
 enum{UNSET,NOSCALE_NOWRAP,NOSCALE_WRAP,SCALE_NOWRAP,SCALE_WRAP};
 
 /* ---------------------------------------------------------------------- */
@@ -141,10 +173,16 @@ bigint ReaderNative::read_header(double box[3][3], int &triclinic,
   nwords = atom->count_words(labelline);
   char **labels = new char*[nwords];
   labels[0] = strtok(labelline," \t\n\r\f");
-  if (labels[0] == NULL) return 1;
+  if (labels[0] == NULL) {
+    delete[] labels;
+    return 1;
+  }
   for (int m = 1; m < nwords; m++) {
     labels[m] = strtok(NULL," \t\n\r\f");
-    if (labels[m] == NULL) return 1;
+    if (labels[m] == NULL) {
+      delete[] labels;
+      return 1;
+    }
   }
 
   // match each field with a column of per-atom data
@@ -248,8 +286,24 @@ bigint ReaderNative::read_header(double box[3][3], int &triclinic,
     else if (fieldtype[i] == VZ)
       fieldindex[i] = find_label("vz",nwords,labels);
 
+    else if (fieldtype[i] == OMEGAX)
+      fieldindex[i] = find_label("omegax",nwords,labels);
+    else if (fieldtype[i] == OMEGAY)
+      fieldindex[i] = find_label("omegay",nwords,labels);
+    else if (fieldtype[i] == OMEGAZ)
+      fieldindex[i] = find_label("omegaz",nwords,labels);
+
     else if (fieldtype[i] == Q)
       fieldindex[i] = find_label("q",nwords,labels);
+
+    else if (fieldtype[i] == RADIUS)
+      fieldindex[i] = find_label("radius",nwords,labels);
+
+    else if (fieldtype[i] == MASS)
+      fieldindex[i] = find_label("mass",nwords,labels);
+
+    else if (fieldtype[i] == DENSITY)
+      fieldindex[i] = find_label("density",nwords,labels);
 
     else if (fieldtype[i] == IX)
       fieldindex[i] = find_label("ix",nwords,labels);
@@ -257,6 +311,13 @@ bigint ReaderNative::read_header(double box[3][3], int &triclinic,
       fieldindex[i] = find_label("iy",nwords,labels);
     else if (fieldtype[i] == IZ)
       fieldindex[i] = find_label("iz",nwords,labels);
+
+    else if (fieldtype[i] == FX)
+      fieldindex[i] = find_label("fx",nwords,labels);
+    else if (fieldtype[i] == FY)
+      fieldindex[i] = find_label("fy",nwords,labels);
+    else if (fieldtype[i] == FZ)
+      fieldindex[i] = find_label("fz",nwords,labels);
   }
 
   delete [] labels;
@@ -310,6 +371,7 @@ void ReaderNative::read_atoms(int n, int nfield, double **fields)
 
 int ReaderNative::find_label(const char *label, int n, char **labels)
 {
+  
   for (int i = 0; i < n; i++)
     if (strcmp(label,labels[i]) == 0) return i;
   return -1;
@@ -318,13 +380,13 @@ int ReaderNative::find_label(const char *label, int n, char **labels)
 /* ----------------------------------------------------------------------
    read N lines from dump file
    only last one is saved in line
-   return NULL if end-of-file error, else non-NULL
    only called by proc 0
 ------------------------------------------------------------------------- */
 
 void ReaderNative::read_lines(int n)
 {
-  char *eof;
+  char *eof = NULL;
+  if (n <= 0) return;
   for (int i = 0; i < n; i++) eof = fgets(line,MAXLINE,fp);
-  if (eof == NULL) error->all(FLERR,"Unexpected end of dump file");
+  if (eof == NULL) error->one(FLERR,"Unexpected end of dump file");
 }

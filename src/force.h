@@ -1,24 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_FORCE_H
@@ -28,11 +56,23 @@
 #include "property_registry.h"
 #include <map>
 #include <string>
+#include <vector>
+#include <algorithm>
 
 namespace LAMMPS_NS {
 
+struct Custom_contact_models
+{
+  std::string custom_surface_model;
+  std::string custom_normal_model;
+  std::string custom_tangential_model;
+  std::string custom_cohesion_model;
+  std::string custom_rolling_model;
+};
+
 class Force : protected Pointers {
  friend class Coarsegraining;
+ friend class StiffnessScaling;
 
  public:
   double boltz;                      // Boltzmann constant (eng/degree-K)
@@ -62,6 +102,7 @@ class Force : protected Pointers {
 
   typedef Pair *(*PairCreator)(LAMMPS *);
   std::map<std::string,PairCreator> *pair_map;
+  Custom_contact_models custom_contact_models;
 
   class Bond *bond;
   char *bond_style;
@@ -116,27 +157,96 @@ class Force : protected Pointers {
 
   void set_special(int, char **);
   void bounds(char *, int, int &, int &, int nmin=1);
-  double numeric(const char *, int, char *);
-  int inumeric(const char *, int, char *);
+  double numeric(const char *, const int, const char *const);
+  int inumeric(const char *, const int, const char *const);
   bigint memory_usage();
 
-  inline double cg() 
-  { return coarsegraining; }
+  bool setCG(double cg)
+  {
+      bool useTypeSpecific = false;
+      if(coarsegraining_>1.0)
+      {
+        coarsegraining_ = std::max(coarsegraining_,cg); //set maximum we use type-specific CG
+        useTypeSpecific = true;
+      }
+      else
+        coarsegraining_ = cg;
+
+      coarsegrainingTypeBased_.push_back(cg);
+
+      return useTypeSpecific;
+  }
+
+  void reportCG()
+  {
+    printf("Force: coarsegrainingfactor: %g.\n", coarsegraining_);
+    for(unsigned int it=0;it<coarsegrainingTypeBased_.size();it++)
+        printf("Force: type-specific coarsegrainingfactor(%d): %g.\n", it,coarsegrainingTypeBased_[it]);
+  }
+
+  inline double cg(int typeID)
+  {
+    if(typeID<=int(coarsegrainingTypeBased_.size()))
+        return coarsegrainingTypeBased_[typeID-1];
+    else
+        return coarsegraining_;
+  }
+
+  inline double cg_max()
+  {
+    if (coarsegrainingTypeBased_.size() > 0) {
+      const double max_cg_type = *(std::max_element(coarsegrainingTypeBased_.begin(),coarsegrainingTypeBased_.end())  );
+      if(max_cg_type > coarsegraining_)
+        return max_cg_type;
+    }
+
+    return coarsegraining_;
+  }
+
+  //inline double cg() 
+  //{ return coarsegraining_; }
 
   inline bool cg_active() 
-  { return (cg() > 1.); }
+  { return (coarsegraining_ > 1. || coarsegrainingTypeBased_.size() > 0); }
 
   inline bool error_cg() 
-  { return error_coarsegraining; }
+  { return error_coarsegraining_; }
 
   PropertyRegistry registry;
+
+  void set_custom_surface_model(std::string param)
+  { custom_contact_models.custom_surface_model = param; }
+  std::string get_custom_surface_model()
+  { return custom_contact_models.custom_surface_model; }
+
+  void set_custom_normal_model(std::string param)
+  { custom_contact_models.custom_normal_model = param; }
+  std::string get_custom_normal_model()
+  { return custom_contact_models.custom_normal_model; }
+
+  void set_custom_tangential_model(std::string param)
+  { custom_contact_models.custom_tangential_model = param; }
+  std::string get_custom_tangential_model()
+  { return custom_contact_models.custom_tangential_model; }
+
+  void set_custom_cohesion_model(std::string param)
+  { custom_contact_models.custom_cohesion_model = param; }
+  std::string get_custom_cohesion_model()
+  { return custom_contact_models.custom_cohesion_model; }
+
+  void set_custom_rolling_model(std::string param)
+  { custom_contact_models.custom_rolling_model = param; }
+  std::string get_custom_rolling_model()
+  { return custom_contact_models.custom_rolling_model; }
 
  private:
   template <typename T> static Pair *pair_creator(LAMMPS *);
 
-  double coarsegraining; 
-  bool error_coarsegraining; 
+  double    coarsegraining_;
+  std::vector<double> coarsegrainingTypeBased_;
+  bool      error_coarsegraining_;
 };
+
 }
 
 #endif

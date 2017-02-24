@@ -1,27 +1,55 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "string.h"
+#include <string.h>
 #include "ctype.h"
 #include "fix.h"
 #include "atom.h"
@@ -35,7 +63,12 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-Fix::Fix(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
+Fix::Fix(LAMMPS *lmp, int narg, char **arg) :
+    Pointers(lmp),
+    size_vector(0),
+    size_array_rows(0),
+    size_array_cols(0),
+    global_freq(0)
 {
   // fix ID, group, and style
   // ID must be all alphanumeric chars or underscores
@@ -72,12 +105,19 @@ Fix::Fix(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   rad_mass_vary_flag = 0; 
   just_created = 1; 
   recent_restart = 0; 
+  accepts_restart_data_from_style = 0; 
+  vflag_global = vflag_atom = 0; 
 
   scalar_flag = vector_flag = array_flag = 0;
   peratom_flag = local_flag = 0;
 
   comm_forward = comm_reverse = comm_border = 0;
   restart_reset = 0;
+
+  vector_atom = 0;
+  array_atom = 0;
+  vector_local = 0;
+  array_local = 0;
 
   // reasonable defaults
   // however, each fix that uses these values should explicitly set them

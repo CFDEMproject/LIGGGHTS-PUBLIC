@@ -1,28 +1,44 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Philippe Seil (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -32,11 +48,11 @@
 #ifndef LMP_FIX_MESH_H
 #define LMP_FIX_MESH_H
 
-#include "fix.h"
+#include "fix_base_liggghts.h"
 
 namespace LAMMPS_NS
 {
-  class FixMesh : public Fix
+  class FixMesh : public FixBaseLiggghts
   {
       public:
 
@@ -46,8 +62,8 @@ namespace LAMMPS_NS
         virtual void post_create();
         virtual void pre_delete(bool unfixflag);
 
-        virtual void init() {}
-        virtual void setup(int vflag) {}
+        virtual void init();
+        virtual void setup(int vflag);
 
         virtual int setmask();
         void setup_pre_force(int);
@@ -70,6 +86,9 @@ namespace LAMMPS_NS
         virtual bool surfaceVel()
         { return false; }
 
+        inline bool trackPerElementTemp()
+        { return trackPerElementTemp_; }
+
         bool manipulated()
         { return manipulated_; }
 
@@ -80,6 +99,7 @@ namespace LAMMPS_NS
 
         // mesh manipulation upon creation
         virtual void moveMesh(double const dx, double const dy, double const dz);
+
         virtual void rotateMesh(double const axisX, double const axisY, double const axisZ, double const phi);
         virtual void scaleMesh(double const factor);
 
@@ -90,7 +110,13 @@ namespace LAMMPS_NS
 
         int atom_type_mesh_;
 
+        double mass_temperature_;
+
+        bool trackPerElementTemp_;
+
       private:
+
+        void handle_exclusion_list();
 
         void initialSetup();
 
@@ -111,6 +137,20 @@ namespace LAMMPS_NS
 
         // mesh precision
         double precision_;
+
+        // ignore features smaller than this size
+        double min_feature_length_;
+
+        // mesh correction
+        FILE *element_exclusion_list_;
+        bool read_exclusion_list_;
+        int *exclusion_list_;
+        int size_exclusion_list_;
+
+        class FixPropertyGlobal *fix_capacity_;
+
+        // this friend class needs access to the moveMesh function
+        friend class MeshModuleStress6DOF;
   };
 
 } /* namespace LAMMPS_NS */

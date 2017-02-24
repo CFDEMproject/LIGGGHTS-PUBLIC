@@ -1,20 +1,53 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
-#include "string.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
 #include "finish.h"
 #include "timer.h"
 #include "universe.h"
@@ -42,7 +75,7 @@ Finish::Finish(LAMMPS *lmp) : Pointers(lmp) {}
 
 void Finish::end(int flag)
 {
-  int i,m,nneigh,nneighfull;
+  int i,m,nneigh=0,nneighfull=0;
   int histo[10];
   int loopflag,minflag,prdflag,tadflag,timeflag,fftflag,histoflag,neighflag;
   double time,tmp,ave,max,min;
@@ -122,14 +155,16 @@ void Finish::end(int flag)
     }
 #else
     if (me == 0) {
+      time_t curtime;
+      ::time(&curtime);
       if (screen) fprintf(screen,
                           "Loop time of %g on %d procs for %d steps with "
-                          BIGINT_FORMAT " atoms\n",
-                          time_loop,nprocs,update->nsteps,atom->natoms);
+                          BIGINT_FORMAT " atoms, finish time %s\n",
+                          time_loop,nprocs,update->nsteps,atom->natoms,ctime(&curtime));
       if (logfile) fprintf(logfile,
                            "Loop time of %g on %d procs for %d steps with "
-                           BIGINT_FORMAT " atoms\n",
-                           time_loop,nprocs,update->nsteps,atom->natoms);
+                           BIGINT_FORMAT " atoms, finish time %s\n",
+                           time_loop,nprocs,update->nsteps,atom->natoms,ctime(&curtime));
     }
 #endif
 
@@ -331,6 +366,26 @@ void Finish::end(int flag)
           fprintf(logfile,"  Modify   time (%%) = %g (%g)\n",
                   time,time/time_loop*100.0);
       }
+
+      if(modify->timing > 1) {
+        double * modify_times = NULL;
+        if (me == 0) modify_times = new double[comm->nprocs];
+        MPI_Gather(&timer->array[TIME_MODIFY], 1, MPI_DOUBLE, modify_times, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+        if (me == 0) {
+            for (int p = 0; p < comm->nprocs; ++p) {
+              if (screen)
+                fprintf(screen,"  Modify   time [%d] (%%) = %g (%g)\n", p,
+                    modify_times[p],modify_times[p]/time_loop*100.0);
+
+              if(logfile)
+                fprintf(logfile,"  Modify   time [%d] (%%) = %g (%g)\n", p,
+                        modify_times[p],modify_times[p]/time_loop*100.0);
+            }
+        }
+
+        delete [] modify_times;
+      }
     }
 
     time = time_other;
@@ -442,6 +497,26 @@ void Finish::end(int flag)
           fprintf(logfile,"Modfy time (%%) = %g (%g)\n",
                   time,time/time_loop*100.0);
       }
+
+      if(modify->timing > 1) {
+        double * modify_times = NULL;
+        if (me == 0) modify_times = new double[comm->nprocs];
+        MPI_Gather(&timer->array[TIME_MODIFY], 1, MPI_DOUBLE, modify_times, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+        if (me == 0) {
+            for (int p = 0; p < comm->nprocs; ++p) {
+              if (screen)
+                fprintf(screen,"  Modify   time [%d] (%%) = %g (%g)\n", p,
+                    modify_times[p],modify_times[p]/time_loop*100.0);
+
+              if(logfile)
+                fprintf(logfile,"  Modify   time [%d] (%%) = %g (%g)\n", p,
+                        modify_times[p],modify_times[p]/time_loop*100.0);
+            }
+        }
+
+        delete [] modify_times;
+      }
     }
 
     time = time_other;
@@ -457,6 +532,9 @@ void Finish::end(int flag)
     }
 
     if(modify->timing) {
+      double * fix_times = NULL;
+      if (me == 0) fix_times = new double[comm->nprocs];
+
       // output fix timings
       for(int i = 0; i < modify->nfix; i++) {
         Fix * fix = modify->fix[i];
@@ -472,7 +550,22 @@ void Finish::end(int flag)
               fprintf(logfile,"Fix %s %s time (%%) = %g (%g)\n",
                   fix->id, fix->style, time,time/time_loop*100.0);
         }
+
+        if(modify->timing > 1) {
+          time = fix->get_recorded_time();
+          MPI_Gather(&time, 1, MPI_DOUBLE, fix_times, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+          if (me == 0) {
+             for (int p = 0; p < comm->nprocs; ++p) {
+               if (screen)
+                 fprintf(screen,"  [%d] Fix %s %s time %g\n", p, fix->id, fix->style, fix_times[p]);
+               if (logfile)
+                 fprintf(logfile," [%d] Fix %s %s time %g\n", p, fix->id, fix->style, fix_times[p]);
+             }
+          }
+        }
       }
+      delete [] fix_times;
     }
   }
 

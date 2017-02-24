@@ -29,11 +29,11 @@ class TreeNode{
 
 private:
 // points to the left and right children of the node
+	int data;
 	TreeNode *left;
 	TreeNode *right;
 
 	int balanceFactor;
-	int data;
 	void * aux_data;
 public:	
 	// make Tree a friend because it needs access to left and right pointer fields of a node

@@ -1,18 +1,58 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Christoph Kloss (DCS Computing GmbH)
+    Arno Mayrhofer (DCS Computing GmbH)
+
+    Copyright 2016-     DCS Computing GmbH, Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "run.h"
 #include "domain.h"
 #include "update.h"
@@ -35,26 +75,26 @@ Run::Run(LAMMPS *lmp) : Pointers(lmp) {}
 
 /* ---------------------------------------------------------------------- */
 
-void Run::command(int narg, char **arg)
+void Run::command(int narg, char **arg, bigint nsteps_input_ext)
 {
   if (narg < 1) error->all(FLERR,"Illegal run command");
 
   if (domain->box_exist == 0)
     error->all(FLERR,"Run command before simulation box is defined");
 
-  bigint nsteps_input = ATOBIGINT(arg[0]);
+  bigint nsteps_input = nsteps_input_ext > 0 ? nsteps_input_ext : ATOBIGINT(arg[0]);
 
   // parse optional args
 
   int uptoflag = 0;
   int startflag = 0;
   int stopflag = 0;
-  bigint start,stop;
+  bigint start = 0, stop = 0;
   int preflag = 1;
   int postflag = 1;
   int nevery = 0;
   int ncommands = 0;
-  int first,last;
+  int first=0,last=0;
 
   int iarg = 1;
   while (iarg < narg) {

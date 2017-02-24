@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -20,7 +20,7 @@ dimension 2 :pre
 
 [Description:]
 
-Set the dimensionality of the simulation.  By default LAMMPS runs 3d
+Set the dimensionality of the simulation.  By default LIGGGHTS(R)-PUBLIC runs 3d
 simulations.  To run a 2d simulation, this command should be used
 prior to setting up a simulation box via the
 "create_box"_create_box.html or "read_data"_read_data.html commands.
@@ -29,7 +29,7 @@ Restart files also store this setting.
 See the discussion in "Section_howto"_Section_howto.html for
 additional instructions on how to run 2d simulations.
 
-IMPORTANT NOTE: Some models in LAMMPS treat particles as finite-size
+IMPORTANT NOTE: Some models in LIGGGHTS(R)-PUBLIC treat particles as finite-size
 spheres or ellipsoids, as opposed to point particles.  In 2d, the
 particles will still be spheres or ellipsoids, not circular disks or
 ellipses, meaning their moment of inertia will be the same as in 3d.

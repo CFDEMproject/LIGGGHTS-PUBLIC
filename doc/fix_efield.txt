@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -63,7 +63,7 @@ If the {region} keyword is used, the atom must also be in the
 specified geometric "region"_region.html in order to have force added
 to it.
 
-:line 
+:line
 
 Adding a force or torque to atoms implies a change in their potential
 energy as they move or rotate due to the applied E-field.
@@ -76,7 +76,7 @@ self-consistent minimization problem (see below).
 
 The {energy} keyword is not allowed if the added field is a constant
 vector (ex,ey,ez), with all components defined as numeric constants
-and not as variables.  This is because LAMMPS can compute the energy
+and not as variables.  This is because LIGGGHTS(R)-PUBLIC can compute the energy
 for each charged particle directly as E = -x dot qE = -q (x*ex + y*ey
 + z*ez), so that -Grad(E) = F.  Similarly for point-dipole particles
 the energy can be computed as E = -mu dot E = -(mux*ex + muy*ey +
@@ -84,13 +84,13 @@ muz*ez).
 
 The {energy} keyword is optional if the added force is defined with
 one or more variables, and if you are performing dynamics via the
-"run"_run.html command.  If the keyword is not used, LAMMPS will set
+"run"_run.html command.  If the keyword is not used, LIGGGHTS(R)-PUBLIC will set
 the energy to 0.0, which is typically fine for dynamics.
 
 The {energy} keyword is required if the added force is defined with
 one or more variables, and you are performing energy minimization via
 the "minimize" command for charged particles.  It is not required for
-point-dipoles, but a warning is issued since the minimizer in LAMMPS
+point-dipoles, but a warning is issued since the minimizer in LIGGGHTS(R)-PUBLIC
 does not rotate dipoles, so you should not expect to be able to
 minimize the orientation of dipoles in an applied electric field.
 
@@ -108,12 +108,12 @@ due to the electric field were a spring-like F = kx, then the energy
 formula should be E = -0.5kx^2.  If you don't do this correctly, the
 minimization will not converge properly.
 
-:line 
+:line
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
 No information about this fix is written to "binary restart
-files"_restart.html.  
+files"_restart.html.
 
 The "fix_modify"_fix_modify.html {energy} option is supported by this
 fix to add the potential "energy" inferred by the added force due to
@@ -126,7 +126,7 @@ direction of the added force due to the electric field.
 
 This fix computes a global scalar and a global 3-vector of forces,
 which can be accessed by various "output
-commands"_Section_howto.html#howto_15.  The scalar is the potential
+commands"_Section_howto.html#howto_8.  The scalar is the potential
 energy discussed above.  The vector is the total force added to the
 group of atoms.  The scalar and vector values calculated by this fix
 are "extensive".
@@ -145,11 +145,7 @@ with the added forces to be included in the total potential energy of
 the system (the quantity being minimized), you MUST enable the
 "fix_modify"_fix_modify.html {energy} option for this fix.
 
-[Restrictions:]
-
-This fix is part of the MISC package.  It is only enabled if LAMMPS
-was built with that package.  See the "Making
-LAMMPS"_Section_start.html#start_3 section for more info.
+[Restrictions:] none
 
 [Related commands:]
 

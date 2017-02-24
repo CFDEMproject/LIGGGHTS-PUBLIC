@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -23,7 +23,7 @@ style = {move} or {ramp} or {random} or {rotate} :l
     clo,chi = lower and upper bound of domain to displace (distance units)
   {random} args = dx dy dz seed
     dx,dy,dz = random displacement magnitude in each dimension (distance units)
-    seed = random # seed (positive integer)
+    seed = random # seed (prime number greater 10000)
   {rotate} args = Px Py Pz Rx Ry Rz theta
     Px,Py,Pz = origin point of axis of rotation (distance units)
     Rx,Ry,Rz = axis of rotation vector

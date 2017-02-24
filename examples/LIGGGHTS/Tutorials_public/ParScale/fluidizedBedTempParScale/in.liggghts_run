@@ -1,0 +1,128 @@
+# Parameters for DEM Simulation 
+
+#--------------------------Input Parameters---------------------------------------------------------
+
+include in.DEM
+
+
+#-------------Read Packed Bed and Calc Convective Heat Transfer-------------------------------------
+
+log             log.liggghts
+thermo_log      post/thermo.txt
+
+#------------------General Settings for Granular Systems--------------------------------------------
+
+atom_style      granular
+atom_modify     map array
+communicate     single vel yes
+#boundary        f f f
+boundary        p p f
+newton          off
+echo            both
+units           si
+processors      2 1 *
+
+#------------------------read the restart file------------------------------------------------------
+
+read_restart    post/restart/liggghts.restart
+
+neighbor        0.0003 bin
+neigh_modify    delay 0 
+
+
+#---------------------Material Properties-----------------------------------------------------------
+
+fix         m1 all property/global youngsModulus peratomtype ${youngsMod} ${youngsMod} ${youngsMod} #[Pa]
+fix         m2 all property/global poissonsRatio peratomtype ${poissionsRat} ${poissionsRat} ${poissionsRat}
+fix         m3 all property/global coefficientRestitution peratomtypepair 3 ${coeffRest} ${coeffRest} ${coeffRest}  ${coeffRest} ${coeffRest} ${coeffRest}  ${coeffRest} ${coeffRest} ${coeffRest}
+fix         m4 all property/global coefficientFriction peratomtypepair 3 ${coeffFricPP} ${coeffFricPW1} ${coeffFricPW2}  ${coeffFricPW1} ${coeffFricPW1} ${coeffFricPW2}  ${coeffFricPW2} ${coeffFricPW2} ${coeffFricPW2}
+fix 	    m5 all property/global coefficientRollingFriction peratomtypepair 3 ${coeffFricRoll} ${coeffFricRoll} ${coeffFricRoll}  ${coeffFricRoll} ${coeffFricRoll} ${coeffFricRoll}  ${coeffFricRoll} ${coeffFricRoll} ${coeffFricRoll}
+
+#----------------------------Pair Style-------------------------------------------------------------
+
+pair_style  gran model hertz tangential history # Hertzian without cohesion
+pair_coeff  * *
+
+#-----------------------------Time Step--------------------------------------------------------------
+
+timestep    ${timeStep}
+
+#-------------------------------Gravity--------------------------------------------------------------
+
+fix         gravi all gravity 9.81 vector 0. 0. -1.
+#fix         momZ  all momentum 1 linear 1 1 0 #zeros the momentum in x and y
+velocity    all set 2 0 0 units box
+
+#-------------------------------Walls----------------------------------------------------------------
+
+fix     zwalls1 all wall/gran model hertz tangential history primitive type 3 zplane 0.0
+fix     zwalls2 all wall/gran model hertz tangential history primitive type 3 zplane ${domainHeight}
+#fix     zwalls3 all wall/gran model hertz tangential history primitive type 3 xplane 0.0 temperature 293
+#fix     zwalls4 all wall/gran model hertz tangential history primitive type 2 xplane ${domainWidth} temperature 293
+#fix     zwalls5 all wall/gran model hertz tangential history primitive type 3 yplane 0.0 temperature 293
+#fix     zwalls6 all wall/gran model hertz tangential history primitive type 3 yplane ${domainDepth} temperature 293
+
+
+#-------------------------Heat Transfer and Particle Temperature-------------------------------------
+
+#These parameters are used by the CONTACT HEAT CONDUCTION model
+fix         ftco all property/global   thermalConductivity peratomtype  ${lambdaP} ${lambdaW1} ${lambdaW2}  # lambda in [W/(K*m)]
+fix         ftca all property/global   thermalCapacity peratomtype      ${cpP} ${cpW1} ${cpW2}	   # cp in [J/(kg*K)]
+
+fix         heattransfer all heat/gran initial_temperature 999 ##temperature not relevant - will be overwritten by ParScale
+
+
+#------------------------------Parscale Coupling_pascal-----------------------------------------------
+
+fix         coupling_pascal all couple/pascal reneighbor_at_least_every 1 couple_every 1 # verbose
+fix         heatAv          all property/atom heatAv    scalar no yes no none  #average temperature
+fix         TempMin         all property/atom TempMin   scalar no yes no none #minimum particle 
+
+
+#------------------------------CFD Coupling-----------------------------------------------------------
+
+fix     cfd all couple/cfd couple_every 9999999 mpi
+fix     cfd2 all couple/cfd/force/integrateImp CrankNicolson 0.5 CAddRhoFluid 0 0	
+fix     cfd3 all couple/cfd/convectiveImpl
+
+#--------------------------Average Particle Temperature-----------------------------------------------
+
+fix 	Tave all ave/spatial ${Nevery} ${Nrepeat} ${Nfreq} z center ${delta} f_heatAv[0] f_heatFlux[0] units box &
+			file particleTemp.profile
+
+
+#---------------------------------Screen Output-------------------------------------------------------
+
+compute         rke all erotate/sphere
+thermo_style    custom step atoms ke c_rke vol
+thermo          1000
+thermo_modify   lost ignore norm no
+compute_modify  thermo_temp dynamic yes
+
+
+compute  myPair all pair/gran/local delta
+compute  myPairMax all reduce max c_myPair[1] #maximum overlap
+variable kinE equal ke 
+variable pairMax equal c_myPairMax
+fix      myprint all print 100 "${kinE} ${pairMax}" file monitorEnergyOverlap.dat screen no
+
+
+compute  myTotalHeatFlux all reduce sum f_heatFlux[0]
+variable TotalHeatFlux equal c_myTotalHeatFlux
+variable Time equal time
+fix      TotalHeatFlux all print ${dumpStep} "time ${Time} total_heat_flux ${TotalHeatFlux}" title "Total Heat Flux" file TotalHeatFlux.dat screen no
+
+
+run 1
+
+#dump        dmp all custom ${dumpStep} post/dump*.liggghts id type x y z vx vy vz fx fy fz omegax omegay omegaz radius  f_Temp f_heatFlux f_TempMin f_heatAv  f_heatFluid
+
+#run         50000
+
+reset_timestep 1
+label       infrontofloop
+    variable iter loop 60000
+    run         1 post no # pre no
+    next iter
+jump in.liggghts_run infrontofloop
+

@@ -1,36 +1,55 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #include "pointers.h"
 #include "lammps.h"
 #include "fix_property_global.h"
 #include <map>
 #include <set>
 #include <string>
-#include "mech_param_gran.h"
+#include "properties.h"
 #include "error.h"
 #include "modify.h"
 #include "property_registry.h"
@@ -38,7 +57,7 @@
 using namespace std;
 using namespace LAMMPS_NS;
 
-PropertyRegistry::PropertyRegistry(LAMMPS* lmp) : Pointers(lmp), mpg(lmp)
+PropertyRegistry::PropertyRegistry(LAMMPS* lmp) : Pointers(lmp), properties(lmp)
 {
 }
 
@@ -49,7 +68,17 @@ PropertyRegistry::~PropertyRegistry()
 
 int PropertyRegistry::max_type()
 {
-  return mpg.max_type();
+  return properties.max_type();
+}
+
+double PropertyRegistry::min_radius()
+{
+  return properties.min_radius();
+}
+
+double PropertyRegistry::max_radius()
+{
+  return properties.max_radius();
 }
 
 LAMMPS * PropertyRegistry::getLAMMPS()
@@ -135,6 +164,7 @@ void PropertyRegistry::connect(string varname, double ** & variable, const char 
       matrices[varname] = (*matrix_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
+      error->message(FLERR, "unknown matrix property");
     }
   }
   matrices[varname]->connect(variable);
@@ -147,6 +177,7 @@ void PropertyRegistry::connect(string varname, double * & variable, const char *
       vectors[varname] = (*vector_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
+      error->message(FLERR, "unknown vector property");
     }
   }
   vectors[varname]->connect(variable);
@@ -159,6 +190,7 @@ void PropertyRegistry::connect(string varname, double & variable, const char *ca
       scalars[varname] = (*scalar_creators[varname])(*this, caller, use_sanity_checks[varname]);
     } else {
       // ERROR unknown property
+      error->message(FLERR, "unknown scalar property");
     }
   }
   scalars[varname]->connect(variable);
@@ -178,4 +210,23 @@ void PropertyRegistry::init()
   scalars.clear();
   vectors.clear();
   matrices.clear();
+}
+
+void PropertyRegistry::print_all(FILE * out)
+{
+  for(std::map<string,ScalarProperty*>::iterator it = scalars.begin(); it != scalars.end(); ++it) {
+      fprintf(out, " %s = ", it->first.c_str());
+      it->second->print_value(out);
+      fprintf(out, "\n");
+  }
+  for(std::map<string,VectorProperty*>::iterator it = vectors.begin(); it != vectors.end(); ++it) {
+      fprintf(out, " %s = ", it->first.c_str());
+      it->second->print_value(out);
+      fprintf(out, "\n");
+  }
+  for(std::map<string,MatrixProperty*>::iterator it = matrices.begin(); it != matrices.end(); ++it) {
+      fprintf(out, " %s = ", it->first.c_str());
+      it->second->print_value(out);
+      fprintf(out, "\n");
+  }
 }

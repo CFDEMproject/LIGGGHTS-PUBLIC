@@ -1,27 +1,47 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "sys/stat.h"
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "atom.h"
 #include "comm.h"
 #include "update.h"
@@ -29,7 +49,7 @@
 #include "error.h"
 #include "memory.h"
 #include "modify.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "fix_property_atom.h"
 #include "fix_property_global.h"
@@ -226,7 +246,7 @@ void CfdDatacouplingFile::readVectorData(const char *name, double ** field)
 
     fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
     struct stat st;
-    while (stat(file,&st)) sleep(0.03);
+    while (stat(file,&st)) sleep(10);
 
     // set file pointer
     ifstream inputPtr(file);
@@ -260,7 +280,7 @@ void CfdDatacouplingFile::readScalarData(const char* name, double *field)
 
     fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
     struct stat st;
-    while (stat(file,&st)) sleep(0.03);
+    while (stat(file,&st)) sleep(10);
 
     // set file pointer
     ifstream inputPtr(file);
@@ -295,7 +315,7 @@ void CfdDatacouplingFile::readGlobalArrayData(const char *name, double ** field,
 
     fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
     struct stat st;
-    while (stat(file,&st)) sleep(0.03);
+    while (stat(file,&st)) sleep(10);
 
     // set file pointerfrom
     ifstream inputPtr(file);
@@ -336,7 +356,7 @@ void CfdDatacouplingFile::readGlobalVectorData(const char* name, double *field, 
 
     fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
     struct stat st;
-    while (stat(file,&st)) sleep(0.03);
+    while (stat(file,&st)) sleep(10);
 
     // set file pointer
     int l1;
@@ -371,7 +391,7 @@ void CfdDatacouplingFile::writeVectorData(const char *name,  double ** field)
     {
       fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
        struct stat st;
-       while (stat(file,&st)) sleep(0.03);
+       while (stat(file,&st)) sleep(10);
     }
 
     // set file pointer
@@ -402,7 +422,7 @@ void CfdDatacouplingFile::writeScalarData(const char* name, double * field)
     {
       fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
        struct stat st;
-       while (stat(file,&st)) sleep(0.03);
+       while (stat(file,&st)) sleep(10);
     }
 
     // set file pointer
@@ -434,7 +454,7 @@ void CfdDatacouplingFile::writeGlobalVectorData(const char *name,  double *field
     {
       fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
        struct stat st;
-       while (stat(file,&st)) sleep(0.03);
+       while (stat(file,&st)) sleep(10);
     }
 
     // set file pointer
@@ -466,7 +486,7 @@ void CfdDatacouplingFile::writeGlobalArrayData(const char* name, double **field,
     {
       fprintf(screen,"Fix couple/cfd/file: waiting for file: %s\n",file);
        struct stat st;
-       while (stat(file,&st)) sleep(0.03);
+       while (stat(file,&st)) sleep(10);
     }
 
     // set file pointer

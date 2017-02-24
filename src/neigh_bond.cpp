@@ -1,24 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "neighbor.h"
@@ -60,7 +88,7 @@ void Neighbor::bond_all()
     for (m = 0; m < num_bond[i]; m++) {
       atom1 = atom->map(bond_atom[i][m]);
       if (atom1 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Bond atoms %d %d missing on proc %d at step " BIGINT_FORMAT,
                 tag[i],bond_atom[i][m],me,update->ntimestep);
@@ -113,7 +141,7 @@ void Neighbor::bond_partial()
       if (bond_type[i][m] <= 0) continue;
       atom1 = atom->map(bond_atom[i][m]);
       if (atom1 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Bond atoms %d %d missing on proc %d at step " BIGINT_FORMAT,
                 tag[i],bond_atom[i][m],me,update->ntimestep);
@@ -145,7 +173,7 @@ void Neighbor::bond_check()
 {
   int i,j;
   double dx,dy,dz,dxstart,dystart,dzstart;
-  
+
   double **x = atom->x;
   int flag = 0;
 
@@ -186,7 +214,7 @@ void Neighbor::angle_all()
       atom2 = atom->map(angle_atom2[i][m]);
       atom3 = atom->map(angle_atom3[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Angle atoms %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -235,7 +263,7 @@ void Neighbor::angle_partial()
       atom2 = atom->map(angle_atom2[i][m]);
       atom3 = atom->map(angle_atom3[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Angle atoms %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -267,7 +295,7 @@ void Neighbor::angle_check()
 {
   int i,j,k;
   double dx,dy,dz,dxstart,dystart,dzstart;
-  
+
   double **x = atom->x;
   int flag = 0;
 
@@ -324,7 +352,7 @@ void Neighbor::dihedral_all()
       atom3 = atom->map(dihedral_atom3[i][m]);
       atom4 = atom->map(dihedral_atom4[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1 || atom4 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Dihedral atoms %d %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -379,7 +407,7 @@ void Neighbor::dihedral_partial()
       atom3 = atom->map(dihedral_atom3[i][m]);
       atom4 = atom->map(dihedral_atom4[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1 || atom4 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Dihedral atoms %d %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -415,7 +443,7 @@ void Neighbor::dihedral_check(int nlist, int **list)
 {
   int i,j,k,l;
   double dx,dy,dz,dxstart,dystart,dzstart;
-  
+
   double **x = atom->x;
   int flag = 0;
 
@@ -461,7 +489,7 @@ void Neighbor::dihedral_check(int nlist, int **list)
 
   int flag_all;
   MPI_Allreduce(&flag,&flag_all,1,MPI_INT,MPI_SUM,world);
-  if (flag_all) 
+  if (flag_all)
     error->all(FLERR,"Dihedral/improper extent > half of periodic box length");
 }
 
@@ -489,7 +517,7 @@ void Neighbor::improper_all()
       atom3 = atom->map(improper_atom3[i][m]);
       atom4 = atom->map(improper_atom4[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1 || atom4 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Improper atoms %d %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,
@@ -544,7 +572,7 @@ void Neighbor::improper_partial()
       atom3 = atom->map(improper_atom3[i][m]);
       atom4 = atom->map(improper_atom4[i][m]);
       if (atom1 == -1 || atom2 == -1 || atom3 == -1 || atom4 == -1) {
-        char str[128];
+        char str[512];
         sprintf(str,
                 "Improper atoms %d %d %d %d missing on proc %d at step "
                 BIGINT_FORMAT,

@@ -1,26 +1,62 @@
-/* -*- c++ -*- ----------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+/* ----------------------------------------------------------------------
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_DUMP_H
 #define LMP_DUMP_H
 
-#include "mpi.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <stdio.h>
 #include "pointers.h"
+#include "sort_buffer.h"
 
 namespace LAMMPS_NS {
 
 class Dump : protected Pointers {
+
+ friend class Info;
+
  public:
   char *id;                  // user-defined name of Dump
   char *style;               // style of Dump
@@ -57,7 +93,7 @@ class Dump : protected Pointers {
   int binary;                // 1 if dump file is written binary, 0 no
   int multifile;             // 0 = one big file, 1 = one file per timestep
 
-  int multiproc;             // 0 = proc 0 writes for all, 
+  int multiproc;             // 0 = proc 0 writes for all,
                              // else # of procs writing files
   int nclusterprocs;         // # of procs in my cluster that write to one file
   int filewriter;            // 1 if this proc writes a file, else 0
@@ -67,15 +103,11 @@ class Dump : protected Pointers {
 
   int header_flag;           // 0 = item, 2 = xyz
   int flush_flag;            // 0 if no flush, 1 if flush every dump
-  int sort_flag;             // 1 if sorted output
   int append_flag;           // 1 if open file in append mode, 0 if not
   int buffer_allow;          // 1 if style allows for buffer_flag, 0 if not
   int buffer_flag;           // 1 if buffer output as one big string, 0 if not
   int padflag;               // timestep padding in filename
   int singlefile_opened;     // 1 = one big file, already opened, else 0
-  int sortcol;               // 0 to sort on ID, 1-N on columns
-  int sortcolm1;             // sortcol - 1
-  int sortorder;             // ASCEND or DESCEND
 
   char boundstr[9];          // encoding of boundary flags
   char *format_default;      // default format string
@@ -92,10 +124,6 @@ class Dump : protected Pointers {
   double boxxy,boxxz,boxyz;
 
   bigint ntotal;             // total # of per-atom lines in snapshot
-  int reorderflag;           // 1 if OK to reorder instead of sort
-  int ntotal_reorder;        // # of atoms that must be in snapshot
-  int nme_reorder;           // # of atoms I must own in snapshot
-  int idlo;                  // lowest ID I own when reordering
 
   int maxbuf;                // size of buf
   double *buf;               // memory for atom quantities
@@ -103,14 +131,7 @@ class Dump : protected Pointers {
   int maxsbuf;               // size of sbuf
   char *sbuf;                // memory for atom quantities in string format
 
-  int maxids;                // size of ids
-  int maxsort;               // size of bufsort, idsort, index
-  int maxproc;               // size of proclist
-  int *ids;                  // list of atom IDs, if sorting on IDs
-  double *bufsort;
-  int *idsort,*index,*proclist;
-
-  class Irregular *irregular;
+  SortBuffer *sortBuffer;   // class used for sorting buffers
 
   virtual void init_style() = 0;
   virtual void openfile();
@@ -120,11 +141,6 @@ class Dump : protected Pointers {
   virtual void pack(int *) = 0;
   virtual int convert_string(int, double *) {return 0;}
   virtual void write_data(int, double *) = 0;
-
-  void sort();
-  static int idcompare(const void *, const void *);
-  static int bufcompare(const void *, const void *);
-  static int bufcompare_reverse(const void *, const void *);
 };
 
 }

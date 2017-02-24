@@ -1,21 +1,53 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
-#include "stdio.h"
-#include "string.h"
-#include "stdlib.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "group.h"
 #include "domain.h"
 #include "atom.h"
@@ -30,6 +62,7 @@
 #include "dump.h"
 #include "memory.h"
 #include "error.h"
+#include "fix_multisphere.h"
 
 using namespace LAMMPS_NS;
 
@@ -44,7 +77,8 @@ enum{LT,LE,GT,GE,EQ,NEQ,BETWEEN};
    initialize group memory
 ------------------------------------------------------------------------- */
 
-Group::Group(LAMMPS *lmp) : Pointers(lmp)
+Group::Group(LAMMPS *lmp) : Pointers(lmp),
+  fix_ms_(NULL)
 {
   MPI_Comm_rank(world,&me);
 
@@ -162,19 +196,19 @@ void Group::assign(int narg, char **arg)
 
     if (narg < 3) error->all(FLERR,"Illegal group command");
 
-    int category;
+    int category = 0;
     if (strcmp(arg[1],"type") == 0) category = TYPE;
     else if (strcmp(arg[1],"molecule") == 0) category = MOLECULE;
     else if (strcmp(arg[1],"id") == 0) category = ID;
 
     // args = logical condition
-    
+
     if (narg > 3 &&
         (strcmp(arg[2],"<") == 0 || strcmp(arg[2],">") == 0 ||
          strcmp(arg[2],"<=") == 0 || strcmp(arg[2],">=") == 0 ||
          strcmp(arg[2],"<>") == 0)) {
 
-      int condition,bound1,bound2;
+      int condition = 0;
       if (strcmp(arg[2],"<") == 0) condition = LT;
       else if (strcmp(arg[2],"<=") == 0) condition = LE;
       else if (strcmp(arg[2],">") == 0) condition = GT;
@@ -183,9 +217,9 @@ void Group::assign(int narg, char **arg)
       else if (strcmp(arg[2],"!=") == 0) condition = NEQ;
       else if (strcmp(arg[2],"<>") == 0) condition = BETWEEN;
       else error->all(FLERR,"Illegal group command");
-      
-      bound1 = force->inumeric(FLERR,arg[3]);
-      bound2 = -1;
+
+      int bound1 = force->inumeric(FLERR,arg[3]);
+      int bound2 = -1;
 
       if (condition == BETWEEN) {
         if (narg != 5) error->all(FLERR,"Illegal group command");
@@ -215,9 +249,9 @@ void Group::assign(int narg, char **arg)
       for (i = 0; i < nlocal; i++)
         if (attribute[i] >= bound1 && attribute[i] <= bound2) mask[i] |= bit;
       }
-      
+
     // args = list of values
-      
+
     } else {
       int *attribute;
       if (category == TYPE) attribute = atom->type;
@@ -229,7 +263,7 @@ void Group::assign(int narg, char **arg)
 
       for (int iarg = 2; iarg < narg; iarg++) {
         if (strchr(arg[iarg],':')) {
-          start = atoi(strtok(arg[iarg],":")); 
+          start = atoi(strtok(arg[iarg],":"));
           stop = atoi(strtok(NULL,":"));
           ptr = strtok(NULL,":");
           if (ptr) delta = atoi(ptr);
@@ -240,7 +274,7 @@ void Group::assign(int narg, char **arg)
         }
 
         // add to group if attribute matches value or sequence
-      
+
         for (i = 0; i < nlocal; i++)
           if (attribute[i] >= start && attribute[i] <= stop &&
               (attribute[i]-start) % delta == 0) mask[i] |= bit;
@@ -257,7 +291,7 @@ void Group::assign(int narg, char **arg)
       error->all(FLERR,"Variable for group is invalid style");
 
     double *aflag;
-    
+
     // aflag = evaluation of per-atom variable
 
     memory->create(aflag,nlocal,"group:aflag");
@@ -365,6 +399,14 @@ void Group::assign(int narg, char **arg)
 
     delete [] list;
 
+  // style = init
+
+  } else if (strcmp(arg[1],"initialize") == 0) {
+
+    if (narg != 2) error->all(FLERR,"Illegal group command");
+
+    // init creates an empty group, thus nothing to do here.
+
   // not a valid group style
 
   } else error->all(FLERR,"Illegal group command");
@@ -390,7 +432,7 @@ void Group::assign(int narg, char **arg)
    add flagged atoms to a new or existing group
 ------------------------------------------------------------------------- */
 
-void Group::create(char *name, int *flag)
+void Group::create(const char *name, int *flag)
 {
   int i;
 
@@ -414,8 +456,50 @@ void Group::create(char *name, int *flag)
   int nlocal = atom->nlocal;
   int bit = bitmask[igroup];
 
-  for (i = 0; i < nlocal; i++)
-    if (flag[i]) mask[i] |= bit;
+  if(flag)
+  {
+    for (i = 0; i < nlocal; i++)
+      if (flag[i]) mask[i] |= bit;
+  }
+}
+
+/* ----------------------------------------------------------------------
+   general setup function before run
+------------------------------------------------------------------------- */
+
+void Group::init()
+{
+  fix_ms_ =  static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
+}
+
+/* ----------------------------------------------------------------------
+   add flagged atoms to a new or existing group
+------------------------------------------------------------------------- */
+
+void Group::set(const char *name, bool flag)
+{
+  int igroup = find(name);
+
+  if (igroup == -1)
+    if (ngroup == MAX_GROUP) error->all(FLERR,"Did not find group for 'set'");
+
+  // add atoms to group whose flags are set
+
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+  int bit = bitmask[igroup];
+  int invbit = inversemask[igroup];
+
+  if(flag)
+  {
+    for (int i = 0; i < nlocal; i++)
+      mask[i] |= bit;
+  }
+  else
+  {
+    for (int i = 0; i < nlocal; i++)
+      mask[i] &= invbit;
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -553,6 +637,67 @@ bigint Group::count(int igroup, int iregion)
 }
 
 /* ----------------------------------------------------------------------
+   count atoms in group
+------------------------------------------------------------------------- */
+
+bigint Group::count_ms(int igroup)
+{
+  int groupbit = bitmask[igroup];
+
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+
+  int n = 0;
+  if (fix_ms_) {
+    double ntmp = 0; // for ratios of a multisphere; cast afterwards to int
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit) ntmp+=fix_ms_->get_volumeweight()->vector_atom[i];
+
+    n = static_cast<int>(ntmp);
+  } else {
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit) n++;
+  }
+
+  bigint nsingle = n;
+  bigint nall;
+  MPI_Allreduce(&nsingle,&nall,1,MPI_LMP_BIGINT,MPI_SUM,world);
+  return nall;
+}
+
+/* ----------------------------------------------------------------------
+   count atoms in group and region
+------------------------------------------------------------------------- */
+
+bigint Group::count_ms(int igroup, int iregion)
+{
+  int groupbit = bitmask[igroup];
+  Region *region = domain->regions[iregion];
+
+  double **x = atom->x;
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+
+  int n = 0;
+  if (fix_ms_) {
+    double ntmp = 0; // for ratios of a multisphere; cast afterwards to int
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+        ntmp+=fix_ms_->get_volumeweight()->vector_atom[i];
+
+    n = static_cast<int>(ntmp);
+  } else {
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2])) n++;
+  }
+
+  bigint nsingle = n;
+  bigint nall;
+  MPI_Allreduce(&nsingle,&nall,1,MPI_LMP_BIGINT,MPI_SUM,world);
+  return nall;
+}
+
+/* ----------------------------------------------------------------------
    compute the total mass of group of atoms
    use either per-type mass or per-atom rmass
 ------------------------------------------------------------------------- */
@@ -569,12 +714,24 @@ double Group::mass(int igroup)
 
   double one = 0.0;
 
-  if (rmass) {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit) one += rmass[i];
+  if (fix_ms_) {
+    if (rmass) {
+      for (int i = 0; i < nlocal; i++) {
+        
+        if (mask[i] & groupbit) one += rmass[i]*fix_ms_->get_volumeweight()->vector_atom[i];
+      }
+    } else {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit) one += mass[type[i]]*fix_ms_->get_volumeweight()->vector_atom[i];
+    }
   } else {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit) one += mass[type[i]];
+    if (rmass) {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit) one += rmass[i];
+    } else {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit) one += mass[type[i]];
+    }
   }
 
   double all;
@@ -601,14 +758,26 @@ double Group::mass(int igroup, int iregion)
 
   double one = 0.0;
 
-  if (rmass) {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
-        one += rmass[i];
+  if (fix_ms_) {
+    if (rmass) {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+          one += rmass[i]*fix_ms_->get_volumeweight()->vector_atom[i];
+    } else {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+          one += mass[type[i]]*fix_ms_->get_volumeweight()->vector_atom[i];
+    }
   } else {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
-        one += mass[type[i]];
+    if (rmass) {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+          one += rmass[i];
+    } else {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+          one += mass[type[i]];
+    }
   }
 
   double all;
@@ -629,8 +798,13 @@ double Group::charge(int igroup)
   int nlocal = atom->nlocal;
 
   double qone = 0.0;
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit) qone += q[i];
+  if (fix_ms_) {
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit) qone += q[i] * fix_ms_->get_volumeweight()->vector_atom[i];
+  } else {
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit) qone += q[i];
+  }
 
   double qall;
   MPI_Allreduce(&qone,&qall,1,MPI_DOUBLE,MPI_SUM,world);
@@ -652,9 +826,15 @@ double Group::charge(int igroup, int iregion)
   int nlocal = atom->nlocal;
 
   double qone = 0.0;
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
-      qone += q[i];
+  if (fix_ms_) {
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+        qone += q[i] * fix_ms_->get_volumeweight()->vector_atom[i];
+  } else {
+    for (int i = 0; i < nlocal; i++)
+      if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+        qone += q[i];
+  }
 
   double qall;
   MPI_Allreduce(&qone,&qall,1,MPI_DOUBLE,MPI_SUM,world);
@@ -772,11 +952,11 @@ void Group::xcm(int igroup, double masstotal, double *cm)
 
   double massone;
   double unwrap[3];
-
   if (rmass) {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
         massone = rmass[i];
+        if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
         domain->unmap(x[i],image[i],unwrap);
         cmone[0] += unwrap[0] * massone;
         cmone[1] += unwrap[1] * massone;
@@ -786,6 +966,7 @@ void Group::xcm(int igroup, double masstotal, double *cm)
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
         massone = mass[type[i]];
+        if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
         domain->unmap(x[i],image[i],unwrap);
         cmone[0] += unwrap[0] * massone;
         cmone[1] += unwrap[1] * massone;
@@ -826,11 +1007,11 @@ void Group::xcm(int igroup, double masstotal, double *cm, int iregion)
 
   double massone;
   double unwrap[3];
-
   if (rmass) {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2])) {
         massone = rmass[i];
+        if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
         domain->unmap(x[i],image[i],unwrap);
         cmone[0] += unwrap[0] * massone;
         cmone[1] += unwrap[1] * massone;
@@ -840,6 +1021,7 @@ void Group::xcm(int igroup, double masstotal, double *cm, int iregion)
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2])) {
         massone = mass[type[i]];
+        if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
         domain->unmap(x[i],image[i],unwrap);
         cmone[0] += unwrap[0] * massone;
         cmone[1] += unwrap[1] * massone;
@@ -874,11 +1056,11 @@ void Group::vcm(int igroup, double masstotal, double *cm)
 
   double p[3],massone;
   p[0] = p[1] = p[2] = 0.0;
-
   if (rmass) {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
         massone = rmass[i];
+        if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
         p[0] += v[i][0]*massone;
         p[1] += v[i][1]*massone;
         p[2] += v[i][2]*massone;
@@ -887,6 +1069,7 @@ void Group::vcm(int igroup, double masstotal, double *cm)
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit) {
         massone = mass[type[i]];
+        if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
         p[0] += v[i][0]*massone;
         p[1] += v[i][1]*massone;
         p[2] += v[i][2]*massone;
@@ -922,11 +1105,11 @@ void Group::vcm(int igroup, double masstotal, double *cm, int iregion)
 
   double p[3],massone;
   p[0] = p[1] = p[2] = 0.0;
-
   if (rmass) {
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2])) {
         massone = rmass[i];
+        if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
         p[0] += v[i][0]*massone;
         p[1] += v[i][1]*massone;
         p[2] += v[i][2]*massone;
@@ -935,6 +1118,7 @@ void Group::vcm(int igroup, double masstotal, double *cm, int iregion)
     for (int i = 0; i < nlocal; i++)
       if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2])) {
         massone = mass[type[i]];
+        if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
         p[0] += v[i][0]*massone;
         p[1] += v[i][1]*massone;
         p[2] += v[i][2]*massone;
@@ -1018,16 +1202,30 @@ double Group::ke(int igroup)
 
   double one = 0.0;
 
-  if (rmass) {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit)
-        one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
-          rmass[i];
+  if (fix_ms_) {
+    if (rmass) {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit)
+          one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
+              rmass[i] * fix_ms_->get_volumeweight()->vector_atom[i];
+    } else {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit)
+          one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
+              mass[type[i]] * fix_ms_->get_volumeweight()->vector_atom[i];
+    }
   } else {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit)
-        one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
-          mass[type[i]];
+    if (rmass) {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit)
+          one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
+              rmass[i];
+    } else {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit)
+          one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
+              mass[type[i]];
+    }
   }
 
   double all;
@@ -1055,16 +1253,30 @@ double Group::ke(int igroup, int iregion)
 
   double one = 0.0;
 
-  if (rmass) {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
-        one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
-          rmass[i];
+  if (fix_ms_) {
+    if (rmass) {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+          one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
+              rmass[i] * fix_ms_->get_volumeweight()->vector_atom[i];
+    } else {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+          one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
+              mass[type[i]] * fix_ms_->get_volumeweight()->vector_atom[i];
+    }
   } else {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
-        one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
-          mass[type[i]];
+    if (rmass) {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+          one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
+              rmass[i];
+    } else {
+      for (int i = 0; i < nlocal; i++)
+        if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2]))
+          one += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
+              mass[type[i]];
+    }
   }
 
   double all;
@@ -1094,7 +1306,6 @@ double Group::gyration(int igroup, double masstotal, double *cm)
   double dx,dy,dz,massone;
   double unwrap[3];
   double rg = 0.0;
-
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
       domain->unmap(x[i],image[i],unwrap);
@@ -1103,6 +1314,7 @@ double Group::gyration(int igroup, double masstotal, double *cm)
       dz = unwrap[2] - cm[2];
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
+      if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
       rg += (dx*dx + dy*dy + dz*dz) * massone;
     }
   double rg_all;
@@ -1134,7 +1346,6 @@ double Group::gyration(int igroup, double masstotal, double *cm, int iregion)
   double dx,dy,dz,massone;
   double unwrap[3];
   double rg = 0.0;
-
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit && region->match(x[i][0],x[i][1],x[i][2])) {
       domain->unmap(x[i],image[i],unwrap);
@@ -1143,6 +1354,7 @@ double Group::gyration(int igroup, double masstotal, double *cm, int iregion)
       dz = unwrap[2] - cm[2];
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
+      if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
       rg += (dx*dx + dy*dy + dz*dz) * massone;
     }
   double rg_all;
@@ -1176,7 +1388,6 @@ void Group::angmom(int igroup, double *cm, double *lmom)
 
   double p[3];
   p[0] = p[1] = p[2] = 0.0;
-
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit) {
       domain->unmap(x[i],image[i],unwrap);
@@ -1185,6 +1396,7 @@ void Group::angmom(int igroup, double *cm, double *lmom)
       dz = unwrap[2] - cm[2];
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
+      if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
       p[0] += massone * (dy*v[i][2] - dz*v[i][1]);
       p[1] += massone * (dz*v[i][0] - dx*v[i][2]);
       p[2] += massone * (dx*v[i][1] - dy*v[i][0]);
@@ -1227,6 +1439,7 @@ void Group::angmom(int igroup, double *cm, double *lmom, int iregion)
       dz = unwrap[2] - cm[2];
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
+      if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
       p[0] += massone * (dy*v[i][2] - dz*v[i][1]);
       p[1] += massone * (dz*v[i][0] - dx*v[i][2]);
       p[2] += massone * (dx*v[i][1] - dy*v[i][0]);
@@ -1343,6 +1556,7 @@ void Group::inertia(int igroup, double *cm, double itensor[3][3])
       dz = unwrap[2] - cm[2];
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
+      if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
       ione[0][0] += massone * (dy*dy + dz*dz);
       ione[1][1] += massone * (dx*dx + dz*dz);
       ione[2][2] += massone * (dx*dx + dy*dy);
@@ -1393,6 +1607,7 @@ void Group::inertia(int igroup, double *cm, double itensor[3][3], int iregion)
       dz = unwrap[2] - cm[2];
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
+      if (fix_ms_) massone *= fix_ms_->get_volumeweight()->vector_atom[i];
       ione[0][0] += massone * (dy*dy + dz*dz);
       ione[1][1] += massone * (dx*dx + dz*dz);
       ione[2][2] += massone * (dx*dx + dy*dy);

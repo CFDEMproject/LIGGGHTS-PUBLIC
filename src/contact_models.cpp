@@ -1,36 +1,56 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
-#include "mpi.h"
+#include <mpi.h>
 #include "ctype.h"
 #include "float.h"
 #include "limits.h"
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "pair.h"
 #include "atom.h"
 #include "neighbor.h"
@@ -56,10 +76,10 @@ namespace ContactModels {
 int64_t generate_gran_hashcode(int model, int tangential, int cohesion, int rolling, int surface)
 {
    return (((int64_t)model)) |
-       (((int64_t)tangential) << 4) |
-       (((int64_t)cohesion) << 8) |
-       (((int64_t)rolling) << 12) |
-       (((int64_t)surface) << 16);
+       (((int64_t)tangential) << 6) |
+       (((int64_t)cohesion) << 12) |
+       (((int64_t)rolling) << 18) |
+       (((int64_t)surface) << 24);
  }
 
 Factory::Factory() {
@@ -69,11 +89,13 @@ Factory::Factory() {
   #include "style_surface_model.h"
   #undef SURFACE_MODEL
 
+  addNormalModel("off", NORMAL_OFF);
   #define NORMAL_MODEL(identifier,str,constant) \
   addNormalModel(#str, identifier);
   #include "style_normal_model.h"
   #undef NORMAL_MODEL
 
+  addTangentialModel("off", TANGENTIAL_OFF);
   #define TANGENTIAL_MODEL(identifier,str,constant) \
   addTangentialModel(#str, identifier);
   #include "style_tangential_model.h"
@@ -117,17 +139,37 @@ void Factory::addSurfaceModel(const std::string & name, int identifier) {
   surface_models[name] = identifier;
 }
 
-int64_t Factory::select(int & narg, char ** & args) {
-  return instance().select_model(narg, args);
+int Factory::getNormalModelId(const std::string & name) {
+  return normal_models[name];
 }
 
-int64_t Factory::select_model(int & narg, char ** & args)
+int Factory::getTangentialModelId(const std::string & name) {
+  return tangential_models[name];
+}
+
+int Factory::getCohesionModelId(const std::string & name) {
+  return cohesion_models[name];
+}
+
+int Factory::getRollingModelId(const std::string & name) {
+  return rolling_models[name];
+}
+
+int Factory::getSurfaceModelId(const std::string & name) {
+  return surface_models[name];
+}
+
+int64_t Factory::select(int & narg, char ** & args,Custom_contact_models ccm) {
+  return instance().select_model(narg, args,ccm);
+}
+
+int64_t Factory::select_model(int & narg, char ** & args, Custom_contact_models ccm)
 {
   // this method will consume arguments to determine which granular contact model is active
 
   // default configuration
-  int model = -1;
-  int tangential = TANGENTIAL_NO_HISTORY;
+  int model = NORMAL_OFF;
+  int tangential = TANGENTIAL_OFF;
   int cohesion = COHESION_OFF;
   int rolling = ROLLING_OFF;
   int surface = SURFACE_DEFAULT;
@@ -136,6 +178,11 @@ int64_t Factory::select_model(int & narg, char ** & args)
   if (narg > 1 && strcmp(args[0], "model") == 0) {
     if (normal_models.find(args[1]) != normal_models.end()) {
       model = normal_models[args[1]];
+    } else if (0 == strcmp(args[1],"custom")) {
+      if (normal_models.find(ccm.custom_normal_model) != normal_models.end())
+         model = normal_models[ccm.custom_normal_model];
+      else
+         model = -1;
     }
 
     if(narg > 2) args = &args[2];
@@ -146,6 +193,11 @@ int64_t Factory::select_model(int & narg, char ** & args)
   if (narg > 1 && strcmp(args[0], "tangential") == 0) {
     if (tangential_models.find(args[1]) != tangential_models.end()) {
       tangential = tangential_models[args[1]];
+    } else if (0 == strcmp(args[1],"custom")) {
+      if (tangential_models.find(ccm.custom_tangential_model) != tangential_models.end())
+         tangential = tangential_models[ccm.custom_tangential_model];
+      else
+         tangential = -1;
     } else {
       tangential = -1;
     }
@@ -158,6 +210,11 @@ int64_t Factory::select_model(int & narg, char ** & args)
   if (narg > 1 && strcmp(args[0], "cohesion") == 0) {
     if (cohesion_models.find(args[1]) != cohesion_models.end()) {
       cohesion = cohesion_models[args[1]];
+    } else if (0 == strcmp(args[1],"custom")) {
+      if (cohesion_models.find(ccm.custom_cohesion_model) != cohesion_models.end())
+         cohesion = cohesion_models[ccm.custom_cohesion_model];
+      else
+         cohesion = -1;
     } else {
       cohesion = -1;
     }
@@ -170,6 +227,11 @@ int64_t Factory::select_model(int & narg, char ** & args)
   if (narg > 1 && strcmp(args[0], "rolling_friction") == 0) {
     if (rolling_models.find(args[1]) != rolling_models.end()) {
       rolling = rolling_models[args[1]];
+    } else if (0 == strcmp(args[1],"custom")) {
+      if (rolling_models.find(ccm.custom_rolling_model) != rolling_models.end())
+         rolling = rolling_models[ccm.custom_rolling_model];
+      else
+         rolling = -1;
     } else {
       rolling = -1;
     }
@@ -182,6 +244,11 @@ int64_t Factory::select_model(int & narg, char ** & args)
   if (narg > 1 && strcmp(args[0], "surface") == 0) {
     if (surface_models.find(args[1]) != surface_models.end()) {
       surface = surface_models[args[1]];
+    } else if (0 == strcmp(args[1],"custom")) {
+      if (surface_models.find(ccm.custom_surface_model) != surface_models.end())
+         surface = surface_models[ccm.custom_surface_model];
+      else
+         surface = -1;
     } else {
       surface = -1;
     }
@@ -194,6 +261,27 @@ int64_t Factory::select_model(int & narg, char ** & args)
     return generate_gran_hashcode(model, tangential, cohesion, rolling, surface);
   }
   return -1;
+}
+
+int ContactModelBase::get_history_offset(const string hname)
+{
+    std::map<std::string, int>::iterator it = history_offsets.find(hname);
+    if (it != history_offsets.end())
+        return it->second;
+    return -1;
+}
+
+void ContactModelBase::add_history_offset(const string hname, const int offset, const bool overwrite)
+{
+    std::map<std::string, int>::iterator it = history_offsets.find(hname);
+    if (it == history_offsets.end() || overwrite)
+    {
+        
+        history_offsets[hname] = offset;
+    }
+    else
+       error->one(FLERR, "Could not add history offset as key exists already and overwrite is not set");
+    return;
 }
 
 } // ContactModels

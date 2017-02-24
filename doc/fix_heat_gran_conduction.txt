@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -21,21 +20,21 @@ initial_temperature = obligatory keyword :l
 T0 = initial (default) temperature for the particles :l
 zero or more keyword/value pairs may be appended :l
 keyword = {contact_area} or {area_correction} :l
-  {contact_area} values = {overlap} or {constant [value]} or {projection}
+  {contact_area} values = {overlap} or {constant areavalue} or {projection}
   {area_correction} values = {yes} or {no} :pre
-
 
 [Examples:]
 
 fix 3 hg heat/gran/conduction initial_temperature 273.15 :pre
 
-[LIGGGHTS vs. LAMMPS info:]
+[LIGGGHTS(R)-PUBLIC vs. LIGGGHTS(R)-PUBLIC info:]
 
-This command is not available in LAMMPS.
+This command is not available in LIGGGHTS(R)-PUBLIC.
 
 [Description:]
 
-Calculates heat conduction between particles in contact and temperature update according to
+Calculates heat conduction between particles in contact and temperature 
+update (see "(Chaudhuri)"_#Chaudhuri) according to
 
 :c,image(Eqs/heat_gran.png)
 
@@ -79,9 +78,9 @@ where rmin is the radius of the smaller of the two particles in contact.
 Area correction:
 
 For {contact_area}  = overlap, an area correction can additionally
-be performed using keyword {area_correction} to account for the fact that 
-the Young's modulus might have been decreased in order to speed-up the 
-simulation, thus artificially increasing the overlap. In this case, you have 
+be performed using keyword {area_correction} to account for the fact that
+the Young's modulus might have been decreased in order to speed-up the
+simulation, thus artificially increasing the overlap. In this case, you have
 to specify the original Young's modulus of each material by means of a
 "fix property/global"_fix_property.html command:
 
@@ -91,15 +90,24 @@ fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
 This area correction is performed by scaling the contact area with
 (Y*/Y*,orig)^a, where Y* and Y*,orig are calculated as defined in
 "pair_style gran"_pair_gran.html .
-The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz 
+The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz
 interaction.
+
+[Coarse-graining information:]
+
+Using "coarsegraining"_coarsegraining.html in
+combination with this command should lead to
+statistically equivalent dynamics and system state.
+
+NOTE: "Coarsegraining"_coarsegraining.html may or 
+may not be available in LIGGGHTS(R)-PUBLIC.
 
 [Output info:]
 
 You can visualize the heat sources by accessing f_heatSource\[0\], and the
-heatFluxes by f_heatFlux\[0\] . With f_directionalHeatFlux\[0\], f_directionalHeatFlux\[1\]  
-and f_directionalHeatFlux\[2\] you can access the conductive heat fluxes in x,y,z directions. 
-The conductive heat fluxes are calculated per-contact and 
+heatFluxes by f_heatFlux\[0\] . With f_directionalHeatFlux\[0\], f_directionalHeatFlux\[1\]
+and f_directionalHeatFlux\[2\] you can access the conductive heat fluxes in x,y,z directions.
+The conductive heat fluxes are calculated per-contact and
 half the value is stored in each atom participating in the contact.
 With f_Temp\[0\] you can access the per-particle
 temperature. You can also access the total thermal energy of the fix group
@@ -128,5 +136,12 @@ none
 "compute temp"_compute_temp.html, "compute
 temp/region"_compute_temp_region.html
 
-[Default:] {contact_area} = overlap, {area_correction} = {off}
+[Default:] 
+
+{contact_area} = overlap, {area_correction} = no
+
+[Literature:] 
+
+:link(Chaudhuri)
+[(Chaudhuri)] Chaudhuri et al, Chemical Engineering Science, 61, p 6348 (2006).
 

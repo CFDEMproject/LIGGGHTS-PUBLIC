@@ -1,24 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
@@ -26,10 +54,10 @@
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
-#include "mpi.h"
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "neighbor.h"
 #include "neigh_list.h"
 #include "neigh_request.h"
@@ -51,6 +79,8 @@
 #include "error.h"
 #include "neigh_multi_level_grid.h" 
 #include "math_extra_liggghts.h"    
+#include "fix_contact_history.h"
+#include <assert.h>
 
 using namespace LAMMPS_NS;
 
@@ -97,6 +127,7 @@ Neighbor::Neighbor(LAMMPS *lmp) : Pointers(lmp)
   build_once = 0;
   cluster_check = 0;
 
+  cutneighmax = 0;
   cutneighsq = NULL;
   cutneighghostsq = NULL;
   cuttype = NULL;
@@ -584,11 +615,13 @@ void Neighbor::init()
 
       if (requests[i]->granhistory) {
         lists[i-1]->listgranhistory = lists[i];
-        for (int ifix = 0; ifix < modify->nfix; ifix++)
-          if (strcmp(modify->fix[ifix]->style,"contacthistory") == 0)  
-            lists[i-1]->fix_history = (FixContactHistory *) modify->fix[ifix]; 
-           processed = 1;
-
+        for (int ifix = 0; ifix < modify->nfix; ifix++){
+          if (strcmp(modify->fix[ifix]->style,"contacthistory") == 0) {  
+            lists[i-1]->fix_history = dynamic_cast<FixContactHistory*>(modify->fix[ifix]); 
+            assert(lists[i-1]->fix_history != NULL);
+          }
+        }
+        processed = 1;
       } else if (requests[i]->respaouter) {
         if (requests[i-1]->respainner) {
           lists[i]->respamiddle = 0;
@@ -757,6 +790,29 @@ void Neighbor::init()
 #ifdef NEIGH_LIST_DEBUG
     print_lists_of_lists();
 #endif
+  } else {
+    for (i = 0; i < nlist; i++) {
+      if (requests[i]->pair) {
+        Pair *pair = (Pair *) requests[i]->requestor;
+        pair->init_list(requests[i]->id,lists[i]);
+      } else if (requests[i]->fix) {
+        Fix *fix = (Fix *) requests[i]->requestor;
+        fix->init_list(requests[i]->id,lists[i]);
+      } else if (requests[i]->compute) {
+        Compute *compute = (Compute *) requests[i]->requestor;
+        compute->init_list(requests[i]->id,lists[i]);
+      }
+
+      // update contacthistory pointer
+      if (requests[i]->granhistory) {
+        for (int ifix = 0; ifix < modify->nfix; ifix++) {
+          if (strcmp(modify->fix[ifix]->style,"contacthistory") == 0) {  
+            lists[i-1]->fix_history = dynamic_cast<FixContactHistory*>(modify->fix[ifix]); 
+            assert(lists[i-1]->fix_history != NULL);
+          }
+        }
+      }
+    }
   }
 
   // delete old requests
@@ -1371,6 +1427,7 @@ int Neighbor::check_distance()
   if (includegroup) nlocal = atom->nfirst;
 
   int flag = 0;
+  
   if(radvary_flag == 0) 
   {
       for (int i = 0; i < nlocal; i++) {
@@ -1717,6 +1774,7 @@ void Neighbor::setup_bins()
   // memory for bin ptrs
 
   bigint bbin = ((bigint) mbinx) * ((bigint) mbiny) * ((bigint) mbinz);
+  
   if (bbin > MAXSMALLINT) error->one(FLERR,"Too many neighbor bins");
   mbins = bbin;
   if (mbins > maxhead) {
@@ -1800,19 +1858,44 @@ double Neighbor::bin_largest_distance(int i, int j, int k)
    set neighbor style and skin distance
 ------------------------------------------------------------------------- */
 
-void Neighbor::set(int narg, char **arg)
+void Neighbor::set(int narg, char **arg, bool auto_set_bin)
 {
-  if (narg != 2) error->all(FLERR,"Illegal neighbor command");
+  if (narg != (auto_set_bin ? 1 : 2))
+    error->all(FLERR,"Illegal neighbor command");
 
-  skin = force->cg()*force->numeric(FLERR,arg[0]); 
+  skin = force->cg_max()*force->numeric(FLERR,arg[0]); 
   if (skin < 0.0) error->all(FLERR,"Illegal neighbor command");
 
-  if (strcmp(arg[1],"nsq") == 0) style = NSQ;
-  else if (strcmp(arg[1],"bin") == 0) style = BIN;
-  else if (strcmp(arg[1],"multi") == 0) style = MULTI;
-  else error->all(FLERR,"Illegal neighbor command");
+  if (auto_set_bin)
+    style = BIN;
+  else
+  {
+    if (strcmp(arg[1],"nsq") == 0) style = NSQ;
+    else if (strcmp(arg[1],"bin") == 0) style = BIN;
+    else if (strcmp(arg[1],"multi") == 0) style = MULTI;
+    else error->all(FLERR,"Illegal neighbor command");
+  }
 
   if (style == MULTI && lmp->citeme) lmp->citeme->add(cite_neigh_multi);
+}
+
+/* ----------------------------------------------------------------------
+   modify parameters of the pair-wise neighbor build (neigh_settings)
+------------------------------------------------------------------------- */
+
+void Neighbor::modify_params_restricted(int narg, char **arg)
+{
+    // set delay to 0
+    delay = 0;
+    // allow only one input
+    if (narg > 1)
+        error->all (FLERR, "neigh_settings requires at most one parameter");
+    // which is to be the binsize
+    binsize_user = force->cg_max()*force->numeric(FLERR,arg[0]);
+    if (binsize_user <= 0.0)
+        binsizeflag = 0;
+    else
+        binsizeflag = 1;
 }
 
 /* ----------------------------------------------------------------------
@@ -1862,11 +1945,12 @@ void Neighbor::modify_params(int narg, char **arg)
       iarg += 2;
     } else if (strcmp(arg[iarg],"binsize") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
-      binsize_user = force->cg()*force->numeric(FLERR,arg[iarg+1]); 
+      binsize_user = force->cg_max()*force->numeric(FLERR,arg[iarg+1]); 
       if (binsize_user <= 0.0) binsizeflag = 0;
       else binsizeflag = 1;
       iarg += 2;
     } else if (strcmp(arg[iarg],"cluster") == 0) {
+      error->all(FLERR,"neigh_modify cluster is deprecated");
       if (iarg+2 > narg) error->all(FLERR,"Illegal neigh_modify command");
       if (strcmp(arg[iarg+1],"yes") == 0) cluster_check = 1;
       else if (strcmp(arg[iarg+1],"no") == 0) cluster_check = 0;
@@ -2092,6 +2176,7 @@ int Neighbor::exclusion(int i, int j, int itype, int jtype,
   if (nex_mol) {
     for (m = 0; m < nex_mol; m++)
       if (mask[i] & ex_mol_bit[m] && mask[j] & ex_mol_bit[m] &&
+          (molecule[i] > -1 && molecule[j] > -1) &&  
           molecule[i] == molecule[j]) return 1;
   }
 

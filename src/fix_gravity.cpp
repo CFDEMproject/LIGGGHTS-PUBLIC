@@ -1,20 +1,58 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_gravity.h"
 #include "atom.h"
 #include "update.h"
@@ -25,6 +63,7 @@
 #include "variable.h"
 #include "math_const.h"
 #include "fix_multisphere.h"  
+#include "fix_relax_contacts.h"  
 #include "error.h"
 #include "force.h"
 
@@ -234,6 +273,14 @@ void FixGravity::init()
     error->fix_error(FLERR,this,"support for more than one fix multisphere not implemented");
   if(nms)
     fm = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
+
+  int n_relax = modify->n_fixes_style("relax");
+  if(n_relax > 1)
+        error->fix_error(FLERR,this,"does not work with more than 1 fix relax");
+  else if(1 == n_relax)
+        fix_relax = static_cast<FixRelaxContacts*>(modify->find_fix_style("relax",0));
+  else
+        fix_relax = 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -284,7 +331,7 @@ void FixGravity::post_force(int vflag)
   if (rmass) {
     for (int i = 0; i < nlocal; i++)
       if ((mask[i] & groupbit) && (!fm || (fm && fm->belongs_to(i) < 0))) { 
-        massone = rmass[i];
+        massone = rmass[i] * (fix_relax ? (fix_relax->factor_relax(i)) : 1.);
         f[i][0] += massone*xacc;
         f[i][1] += massone*yacc;
         f[i][2] += massone*zacc;

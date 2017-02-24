@@ -1,22 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -43,22 +63,34 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
   double max_r_bound();
   double max_rad();
   double min_rad();
+  int maxtype();
+  int mintype();
   int number_spheres();
+  bool is_bonded()
+  { return bonded; }
 
   // single insertion
   virtual void randomize_single();
 
   // multi insertion
   virtual void init_ptilist(int);
-  void randomize_ptilist(int ,int );
+  void randomize_ptilist(int ,int ,int);
 
   virtual void finalize_insertion() {}
+
+  inline bool all_overlap_none()
+  { return no_overlap; }
+
+  inline bool all_overlap_atleast_one_slightly()
+  { return overlap_slightly; }
 
  protected:
 
   // template calculations
   virtual void calc_bounding_sphere();
   virtual void calc_center_of_mass();
+  virtual void check_overlap();
+  virtual void print_info();
 
   // sqr distance from x_sphere[j] to xtest
   double dist_sqr(int j,double *xtest);
@@ -78,6 +110,9 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
   // scale factor if read from a file
   double scale_fact;
 
+  // atom type might be variable if read from file
+  int *atom_type_sphere;
+
   // bounding box
   double x_min[3], x_max[3];
 
@@ -90,6 +125,13 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
 
   // number of tries for mc
   int ntry;
+
+  bool overlap_slightly;
+
+  bool no_overlap;
+
+  bool bonded;
+  class FixPropertyAtom *fix_bond_random_id;
 };
 
 }

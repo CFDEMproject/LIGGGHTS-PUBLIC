@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -31,10 +31,10 @@ allows simulation domains to be created with arbitrary tilt factors,
 e.g. via the "create_box"_create_box.html or
 "read_data"_read_data.html commands.  Tilt factors determine how
 skewed the triclinic box is; see "this
-section"_Section_howto.html#howto_12 of the manual for a discussion of
-triclinic boxes in LAMMPS.
+section"_Section_howto.html#howto_7 of the manual for a discussion of
+triclinic boxes in LIGGGHTS(R)-PUBLIC.
 
-LAMMPS normally requires that no tilt factor can skew the box more
+LIGGGHTS(R)-PUBLIC normally requires that no tilt factor can skew the box more
 than half the distance of the parallel box length, which is the 1st
 dimension in the tilt factor (x for xz).  If {tilt} is set to
 {small}, which is the default, then an error will be
@@ -42,10 +42,10 @@ generated if a box is created which exceeds this limit.  If {tilt}
 is set to {large}, then no limit is enforced.  You can create
 a box with any tilt factors you wish.
 
-Note that if a simulation box has a large tilt factor, LAMMPS will run
+Note that if a simulation box has a large tilt factor, LIGGGHTS(R)-PUBLIC will run
 less efficiently, due to the large volume of communication needed to
 acquire ghost atoms around a processor's irregular-shaped sub-domain.
-For extreme values of tilt, LAMMPS may also lose atoms and generate an
+For extreme values of tilt, LIGGGHTS(R)-PUBLIC may also lose atoms and generate an
 error.
 
 [Restrictions:]

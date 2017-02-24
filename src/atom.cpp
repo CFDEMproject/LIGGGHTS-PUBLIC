@@ -1,31 +1,59 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "limits.h"
 #include "atom.h"
 #include "style_atom.h"
@@ -100,6 +128,16 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   cv = NULL;
   vest = NULL;
 
+//Superquadric bonus-----------------------------------
+  shape = NULL; //half axes and roundness parameters
+  inertia = NULL; //components Ix, Iy, Iz
+  roundness = NULL;
+  volume = NULL; area = NULL;
+  quaternion = NULL; //quaternion of current orientation and angular moment
+//------------------------------------------------------
+
+  shapetype = 0;
+
   maxspecial = 1;
   nspecial = NULL;
   special = NULL;
@@ -107,6 +145,7 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   num_bond = NULL;
   bond_type = bond_atom = NULL;
   bond_hist = NULL;
+  n_bondhist = 0; 
 
   num_angle = NULL;
   angle_type = angle_atom1 = angle_atom2 = angle_atom3 = NULL;
@@ -130,6 +169,7 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   // customize by adding new flag
 
   sphere_flag = ellipsoid_flag = line_flag = tri_flag = body_flag = 0;
+  superquadric_flag = 0;
   peri_flag = electron_flag = 0;
   wavepacket_flag = sph_flag = 0;
 
@@ -140,6 +180,8 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   cs_flag = csforce_flag = vforce_flag = ervelforce_flag= etag_flag = 0;
   rho_flag = e_flag = cv_flag = vest_flag = 0;
   p_flag = 0; 
+
+  shapetype_flag = 0;
 
   // ntype-length arrays
 
@@ -174,6 +216,8 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   datamask_ext = ALL_MASK;
 
   radvary_flag = 0;
+
+  properties = new Properties(lmp); 
 }
 
 /* ---------------------------------------------------------------------- */
@@ -255,6 +299,17 @@ Atom::~Atom()
   memory->destroy(improper_atom3);
   memory->destroy(improper_atom4);
 
+//Superquadric bonus-----------------------------------
+  memory->destroy(shape); //half axes and roundness parameters
+  memory->destroy(inertia); //components Ix, Iy, Iz
+  memory->destroy(roundness);
+  memory->destroy(volume);
+  memory->destroy(area);
+  memory->destroy(quaternion); //quaternion of current orientation
+//------------------------------------------------------
+
+  memory->destroy(shapetype);
+
   // delete custom atom arrays
 
   for (int i = 0; i < nivector; i++) {
@@ -286,6 +341,8 @@ Atom::~Atom()
   // delete mapping data structures
 
   map_delete();
+
+  delete properties; 
 }
 
 /* ----------------------------------------------------------------------
@@ -319,6 +376,8 @@ void Atom::create_avec(const char *style, int narg, char **arg, char *suffix)
   density_flag = 0; 
   rho_flag = p_flag = 0; 
   vfrac_flag = spin_flag = eradius_flag = ervel_flag = erforce_flag = 0;
+
+  shapetype_flag = 0;
 
   // create instance of AtomVec
   // use grow to initialize atom-based arrays to length 1
@@ -592,7 +651,6 @@ int Atom::count_words(const char *line)
 
 void Atom::data_atoms(int n, char *buf)
 {
-  int m,xptr,iptr;
   tagint imagedata;
   double xdata[3],lamda[3];
   double *coord;
@@ -649,7 +707,8 @@ void Atom::data_atoms(int n, char *buf)
   // xptr = which word in line starts xyz coords
   // iptr = which word in line starts ix,iy,iz image flags
 
-  xptr = avec->xcol_data - 1;
+  int xptr = avec->xcol_data - 1;
+  int iptr = 0;
   int imageflag = 0;
   if (nwords > avec->size_data_atom) imageflag = 1;
   if (imageflag) iptr = nwords - 3;
@@ -666,7 +725,7 @@ void Atom::data_atoms(int n, char *buf)
     values[0] = strtok(buf," \t\n\r\f");
     if (values[0] == NULL)
       error->all(FLERR,"Incorrect atom format in data file");
-    for (m = 1; m < nwords; m++) {
+    for (int m = 1; m < nwords; m++) {
       values[m] = strtok(NULL," \t\n\r\f");
       if (values[m] == NULL)
         error->all(FLERR,"Incorrect atom format in data file");
@@ -797,7 +856,7 @@ void Atom::data_bonus(int n, char *buf, AtomVec *avec_bonus)
 
 void Atom::data_bodies(int n, char *buf, AtomVecBody *avec_body)
 {
-  int j,m,tagdata,ninteger,ndouble;
+  int j,tagdata,ninteger,ndouble;
 
   char **ivalues = new char*[10*MAXBODY];
   char **dvalues = new char*[10*MAXBODY];
@@ -820,8 +879,6 @@ void Atom::data_bodies(int n, char *buf, AtomVecBody *avec_body)
     if (tagdata <= 0 || tagdata > map_tag_max)
       error->one(FLERR,"Invalid atom ID in Bodies section of data file");
 
-    if ((m = map(tagdata)) >= 0)
-      avec_body->data_body(m,ninteger,ndouble,ivalues,dvalues);
   }
 
   delete [] ivalues;
@@ -1125,7 +1182,7 @@ void Atom::check_mass()
 {
   if (mass == NULL) return;
   for (int itype = 1; itype <= ntypes; itype++)
-    if (mass_setflag[itype] == 0) error->all(FLERR,"All masses are not set");
+    if (mass_setflag[itype] == 0 && !rmass_flag) error->all(FLERR,"All masses are not set"); 
 }
 
 /* ----------------------------------------------------------------------
@@ -1359,7 +1416,10 @@ void Atom::setup_sort_bins()
       binsize = pow(1.0*CUDA_CHUNK/natoms*area,1.0/2.0);
     }
   }
-  if (binsize == 0.0) error->all(FLERR,"Atom sorting has bin size = 0.0");
+  if (binsize == 0.0 && !lmp->wb)
+    error->all(FLERR,"Atom sorting has bin size = 0.0");
+  else if (binsize == 0.0)
+    error->all(FLERR,"No particles in the simulation. Please add particle templates");
 
   double bininv = 1.0/binsize;
 
@@ -1506,6 +1566,37 @@ void Atom::update_callback(int ifix)
 }
 
 /* ----------------------------------------------------------------------
+   look if has callback for this fix ID
+------------------------------------------------------------------------- */
+
+bool Atom::has_callback(const char *id, int flag)
+{
+  int ifix;
+  for (ifix = 0; ifix < modify->nfix; ifix++)
+    if (strcmp(id,modify->fix[ifix]->id) == 0) break;
+
+  // compact the list of callbacks
+
+  if (flag == 0) {
+    int match;
+    for (match = 0; match < nextra_grow; match++)
+      if (extra_grow[match] == ifix) return true;
+
+  } else if (flag == 1) {
+    int match;
+    for (match = 0; match < nextra_restart; match++)
+      if (extra_restart[match] == ifix) return true;
+
+  } else if (flag == 2) {
+    int match;
+    for (match = 0; match < nextra_border; match++)
+      if (extra_border[match] == ifix) return true;
+  }
+
+  return false;
+}
+
+/* ----------------------------------------------------------------------
    find custom per-atom vector with name
    return index if found, and flag = 0/1 for int/double
    return -1 if not found
@@ -1616,6 +1707,11 @@ void *Atom::extract(const char *name,int &len)
   if (strcmp(name,"density") == 0) return (void *) density; 
   if (strcmp(name,"rho") == 0) return (void *) rho;  
   if (strcmp(name,"pressure") == 0) return (void *) p;  
+  if (strcmp(name,"volume") == 0) return (void *) volume;
+  if (strcmp(name,"area") == 0) return (void *) area;
+
+  len = 2;
+  if (strcmp(name,"roundness") == 0) return (void *) roundness; 
 
   len = 3; 
   if (strcmp(name,"x") == 0) return (void *) x;
@@ -1631,6 +1727,13 @@ void *Atom::extract(const char *name,int &len)
   if (strcmp(name,"rmass") == 0) return (void *) rmass;
   if (strcmp(name,"vfrac") == 0) return (void *) vfrac;
   if (strcmp(name,"s0") == 0) return (void *) s0;
+
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  if (strcmp(name,"shape") == 0 && shape!=NULL) return (void *) shape;
+
+  len = 4;
+  if (strcmp(name,"quaternion") == 0 && quaternion!=NULL) return (void *) quaternion;
+#endif
 
   len = -1; 
   return NULL;

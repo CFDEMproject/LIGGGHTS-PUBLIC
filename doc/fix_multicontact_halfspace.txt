@@ -1,0 +1,72 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix multicontact/halfspace command :h3
+
+[Syntax:]
+
+fix ID group multicontact/halfspace geometric_prefactor gp_value :pre
+
+ID, group are documented in "fix"_fix.html command :ulb,l
+multicontact/halfspace = style name of this fix command :l
+geometric_prefactor/gp_value = optional keyword-value pair :l
+  {geometric_prefactor} gp_value = gamma
+    gamma is an empirical factor accounting for the geometry :pre
+:ule
+
+[Examples:]
+
+fix mc all multicontact/halfspace
+fix mc all multicontact/halfspace geometric_prefactor 1.8 :pre
+
+[Description:]
+
+Implements the multicontact model by "(Brodu et al.)"_#Brodu . This model computes a per-contact deformation for each particle based on the other contacts this particles has. A particle {i} with contact {ij} has the following new radius (when computing the contact laws with particle {j}):
+
+r_i + sum_k delta_\{ij->ik\} :pre
+
+where {r_i} is the default radius of particle {i}, {sum_k} is the sum over all particles in contact with {i} ({k}!={j}). The delta value is given by
+
+delta_\{ij->ik\} = - gamma (1 + nu) F_ik / (2 pi Y d_\{ik->ij\}) * \[([n]_ik . [u]_\{ik->ij\})([n]_ij . [u]_\{ik->ij\}) + (3 - 4 nu) [n]_ik . [n]_ij - (1 - 2 nu) ([n]_ik + [u]_\{ik->ij\}) . [n]_ij) / (1 + [n]_ik [u]_\{ik->ij\}) \] :pre
+
+where
+
+gamma = geometric prefactor :ulb,l
+nu = Poisson ratio :l
+F_ik = absolute value of normal force acting at contact {ik} :l
+Y = Youngs modulus :l
+d_\{ik->ij\} = distance from contact {ik} to contact {ij} :l
+[u]_\{ik->ij\} = unit vector pointing from contact {ik} to contact {ij} :l
+[n]_ik = normal vector of contact {ik} :l
+[n]_ij = normal vector of contact {ij} :l
+:ule
+
+:line
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+No information about this fix is written to "binary restart
+files"_restart.html.
+
+"fix_modify"_fix_modify.html cannot be used on the parameter of this fix.
+
+[Restrictions:]
+
+Requires the use of the "gran surface model multicontact"_gran_surface_multicontact.html
+
+[Related commands:]
+
+"gran surface multicontact"_gran_surface_multicontact.html
+
+[Default:] none
+
+[References:]
+
+:link(Brodu)
+[(Brodu)] Brodu, Dijksman, Behringer, Multiple-contact discrete-element model for simulating dense granular media, Phys. Rev. E (2015).
+

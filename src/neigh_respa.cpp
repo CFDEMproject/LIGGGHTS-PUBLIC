@@ -1,14 +1,46 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "neighbor.h"
@@ -30,9 +62,9 @@ using namespace LAMMPS_NS;
 
 void Neighbor::respa_nsq_no_newton(NeighList *list)
 {
-  int i,j,n,itype,jtype,n_inner,n_middle,bitmask;
+  int i,j,n,itype,jtype,n_inner,n_middle=0,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // loop over each atom, storing neighbors
 
@@ -65,7 +97,7 @@ void Neighbor::respa_nsq_no_newton(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;
@@ -173,9 +205,9 @@ void Neighbor::respa_nsq_no_newton(NeighList *list)
 
 void Neighbor::respa_nsq_newton(NeighList *list)
 {
-  int i,j,n,itype,jtype,itag,jtag,n_inner,n_middle,bitmask;
+  int i,j,n,itype,jtype,itag,jtag,n_inner,n_middle=0,bitmask=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // loop over each atom, storing neighbors
 
@@ -208,7 +240,7 @@ void Neighbor::respa_nsq_newton(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;
@@ -334,9 +366,9 @@ void Neighbor::respa_nsq_newton(NeighList *list)
 
 void Neighbor::respa_bin_no_newton(NeighList *list)
 {
-  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle;
+  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // bin local & ghost atoms
 
@@ -371,7 +403,7 @@ void Neighbor::respa_bin_no_newton(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;
@@ -487,9 +519,9 @@ void Neighbor::respa_bin_no_newton(NeighList *list)
 
 void Neighbor::respa_bin_newton(NeighList *list)
 {
-  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle;
+  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // bin local & ghost atoms
 
@@ -523,8 +555,8 @@ void Neighbor::respa_bin_newton(NeighList *list)
   MyPage<int> *ipage_inner = listinner->ipage;
 
   NeighList *listmiddle;
-  int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  int *ilist_middle = NULL,*numneigh_middle = NULL,**firstneigh_middle = NULL;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;
@@ -681,9 +713,9 @@ void Neighbor::respa_bin_newton(NeighList *list)
 
 void Neighbor::respa_bin_newton_tri(NeighList *list)
 {
-  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle;
+  int i,j,k,n,itype,jtype,ibin,n_inner,n_middle=0;
   double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
-  int *neighptr,*neighptr_inner,*neighptr_middle;
+  int *neighptr,*neighptr_inner,*neighptr_middle = NULL;
 
   // bin local & ghost atoms
 
@@ -718,7 +750,7 @@ void Neighbor::respa_bin_newton_tri(NeighList *list)
 
   NeighList *listmiddle;
   int *ilist_middle,*numneigh_middle,**firstneigh_middle;
-  MyPage<int> *ipage_middle;
+  MyPage<int> *ipage_middle = NULL;
   int respamiddle = list->respamiddle;
   if (respamiddle) {
     listmiddle = list->listmiddle;

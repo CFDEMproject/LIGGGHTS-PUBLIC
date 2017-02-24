@@ -1,36 +1,56 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Richard Berger (JKU Linz)
-------------------------------------------------------------------------- */
 #ifdef NORMAL_MODEL
+
 NORMAL_MODEL(HOOKE,hooke,0)
+
 #else
+
 #ifndef NORMAL_MODEL_HOOKE_H_
 #define NORMAL_MODEL_HOOKE_H_
+
 #include "contact_models.h"
-#include "math.h"
+#include <math.h>
 #include "atom.h"
 #include "force.h"
 #include "update.h"
@@ -38,13 +58,13 @@ NORMAL_MODEL(HOOKE,hooke,0)
 namespace LIGGGHTS {
 namespace ContactModels
 {
-  template<typename Style>
-  class NormalModel<HOOKE, Style> : protected Pointers
+  template<>
+  class NormalModel<HOOKE> : protected Pointers
   {
   public:
-    static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_COLLISION;
+    static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
 
-    NormalModel(LAMMPS * lmp, IContactHistorySetup*) : Pointers(lmp),
+    NormalModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *c) : Pointers(lmp),
       Yeff(NULL),
       Geff(NULL),
       coeffRestMax(NULL),
@@ -56,7 +76,10 @@ namespace ContactModels
       tangential_damping(false),
       limitForce(false),
       ktToKn(false),
-      displayedSettings(false)
+      displayedSettings(false),
+      heating(false),
+      heating_track(false),
+      cmb(c)
     {
       
     }
@@ -67,7 +90,11 @@ namespace ContactModels
       settings.registerOnOff("tangential_damping", tangential_damping, true);
       settings.registerOnOff("limitForce", limitForce);
       settings.registerOnOff("ktToKnUser", ktToKn);
+      settings.registerOnOff("heating_normal_hooke",heating,false);
+      settings.registerOnOff("heating_tracking",heating_track,false);
     }
+
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
 
     inline void connectToProperties(PropertyRegistry & registry) {
       registry.registerProperty("Yeff", &MODEL_PARAMS::createYeff);
@@ -92,6 +119,10 @@ namespace ContactModels
 
         registry.connect("coeffRestLog", coeffRestLog,"model hooke viscous");
       }
+
+      // error checks on coarsegraining
+      if(force->cg_active())
+        error->cg(FLERR,"model hooke");
     }
 
     // effective exponent for stress-strain relationship
@@ -101,14 +132,22 @@ namespace ContactModels
       return 1.;
     }
 
-    inline void collision(CollisionData & cdata, ForceData & i_forces, ForceData & j_forces)
+    inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
-      const int itype = cdata.itype;
-      const int jtype = cdata.jtype;
-      double ri = cdata.radi;
-      double rj = cdata.radj;
-      double reff=cdata.is_wall ? ri : (ri*rj/(ri+rj));
-      double meff=cdata.meff;
+      const int itype = sidata.itype;
+      const int jtype = sidata.jtype;
+      const double radi = sidata.radi;
+      const double radj = sidata.radj;
+      double reff=sidata.is_wall ? radi : (radi*radj/(radi+radj));
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+      if(sidata.is_non_spherical) {
+        if(sidata.is_wall)
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
+        else
+          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
+      }
+#endif
+      const double meff=sidata.meff;
       double coeffRestLogChosen;
 
       const double sqrtval = sqrt(reff);
@@ -129,7 +168,7 @@ namespace ContactModels
       }
       if (viscous)  {
          // Stokes Number from MW Schmeeckle (2001)
-         const double stokes=cdata.meff*cdata.vn/(6.0*M_PI*coeffMu[itype][jtype]*reff*reff);
+         const double stokes=sidata.meff*sidata.vn/(6.0*M_PI*coeffMu[itype][jtype]*reff*reff);
          // Empirical from Legendre (2006)
          coeffRestLogChosen=log(coeffRestMax[itype][jtype])+coeffStc[itype][jtype]/stokes;
       } else {
@@ -146,46 +185,88 @@ namespace ContactModels
       kn /= force->nktv2p;
       kt /= force->nktv2p;
 
-      const double Fn_damping = -gamman*cdata.vn;
-      const double Fn_contact = kn*(cdata.radsum-cdata.r);
-      double Fn                         = Fn_damping + Fn_contact;
+      const double Fn_damping = -gamman*sidata.vn;
+      const double Fn_contact = kn*sidata.deltan;
+      double Fn = Fn_damping + Fn_contact;
 
       //limit force to avoid the artefact of negative repulsion force
       if(limitForce && (Fn<0.0) )
       {
           Fn = 0.0;
       }
-      cdata.Fn = Fn;
+      sidata.Fn = Fn;
 
-      cdata.kn = kn;
-      cdata.kt = kt;
-      cdata.gamman = gamman;
-      cdata.gammat = gammat;
+      sidata.kn = kn;
+      sidata.kt = kt;
+      sidata.gamman = gamman;
+      sidata.gammat = gammat;
+
+      #ifdef NONSPHERICAL_ACTIVE_FLAG
+          double torque_i[3] = {0., 0., 0.};
+          double Fn_i[3] = { Fn * sidata.en[0], Fn * sidata.en[1], Fn * sidata.en[2]};
+          if(sidata.is_non_spherical) {
+            double xci[3];
+            vectorSubtract3D(sidata.contact_point, atom->x[sidata.i], xci);
+            vectorCross3D(xci, Fn_i, torque_i);
+          }
+      #endif
+
+      if(heating)
+      {
+        sidata.P_diss += fabs(Fn_damping*sidata.vn); //fprintf(screen,"  contrib %f\n",fabs(Fn_damping*sidata.vn));}
+        if(heating_track && sidata.is_wall) cmb->tally_pw(fabs(Fn_damping*sidata.vn),sidata.i,jtype,0);
+        if(heating_track && !sidata.is_wall) cmb->tally_pp(fabs(Fn_damping*sidata.vn),sidata.i,sidata.j,0);
+      }
 
       // apply normal force
-      if(cdata.is_wall) {
-        const double Fn_ = Fn * cdata.area_ratio;
-        i_forces.delta_F[0] = Fn_ * cdata.en[0];
-        i_forces.delta_F[1] = Fn_ * cdata.en[1];
-        i_forces.delta_F[2] = Fn_ * cdata.en[2];
+      if(sidata.is_wall) {
+        const double Fn_ = Fn * sidata.area_ratio;
+        i_forces.delta_F[0] += Fn_ * sidata.en[0];
+        i_forces.delta_F[1] += Fn_ * sidata.en[1];
+        i_forces.delta_F[2] += Fn_ * sidata.en[2];
+        #ifdef NONSPHERICAL_ACTIVE_FLAG
+                if(sidata.is_non_spherical) {
+                  //for non-spherical particles normal force can produce torque!
+                  i_forces.delta_torque[0] += torque_i[0];
+                  i_forces.delta_torque[1] += torque_i[1];
+                  i_forces.delta_torque[2] += torque_i[2];
+                }
+        #endif
       } else {
-        const double fx = cdata.Fn * cdata.en[0];
-        const double fy = cdata.Fn * cdata.en[1];
-        const double fz = cdata.Fn * cdata.en[2];
+        const double fx = sidata.Fn * sidata.en[0];
+        const double fy = sidata.Fn * sidata.en[1];
+        const double fz = sidata.Fn * sidata.en[2];
 
-        i_forces.delta_F[0] = fx;
-        i_forces.delta_F[1] = fy;
-        i_forces.delta_F[2] = fz;
+        i_forces.delta_F[0] += fx;
+        i_forces.delta_F[1] += fy;
+        i_forces.delta_F[2] += fz;
 
-        j_forces.delta_F[0] = -fx;
-        j_forces.delta_F[1] = -fy;
-        j_forces.delta_F[2] = -fz;
+        j_forces.delta_F[0] += -fx;
+        j_forces.delta_F[1] += -fy;
+        j_forces.delta_F[2] += -fz;
+        #ifdef NONSPHERICAL_ACTIVE_FLAG
+                if(sidata.is_non_spherical) {
+                  //for non-spherical particles normal force can produce torque!
+                  double xcj[3], torque_j[3];
+                  double Fn_j[3] = { -Fn_i[0], -Fn_i[1], -Fn_i[2]};
+                  vectorSubtract3D(sidata.contact_point, atom->x[sidata.j], xcj);
+                  vectorCross3D(xcj, Fn_j, torque_j);
+
+                  i_forces.delta_torque[0] += torque_i[0];
+                  i_forces.delta_torque[1] += torque_i[1];
+                  i_forces.delta_torque[2] += torque_i[2];
+
+                  j_forces.delta_torque[0] += torque_j[0];
+                  j_forces.delta_torque[1] += torque_j[1];
+                  j_forces.delta_torque[2] += torque_j[2];
+                }
+        #endif
       }
     }
 
-    inline void noCollision(ContactData&, ForceData&, ForceData&){}
-    void beginPass(CollisionData&, ForceData&, ForceData&){}
-    void endPass(CollisionData&, ForceData&, ForceData&){}
+    inline void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
+    void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
+    void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
 
   protected:
     double ** Yeff;
@@ -201,6 +282,9 @@ namespace ContactModels
     bool limitForce;
     bool ktToKn;
     bool displayedSettings;
+    bool heating;
+    bool heating_track;
+    class ContactModelBase *cmb;
   };
 }
 }

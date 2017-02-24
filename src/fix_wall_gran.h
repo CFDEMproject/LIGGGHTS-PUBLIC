@@ -1,24 +1,46 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -41,6 +63,9 @@ namespace LCM = LIGGGHTS::ContactModels;
 namespace LAMMPS_NS {
 
 class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
+
+ friend class LIGGGHTS::Walls::IGranularWall;
+
  public:
   FixWallGran(class LAMMPS *, int, char **);
   ~FixWallGran();
@@ -61,95 +86,122 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   /* PUBLIC ACCESS FUNCTIONS */
 
-  void setSkinDistance(double newSkinDistance)
-  { skinDistance_ = newSkinDistance; }
+  virtual void createMulticontactData();
 
   void setDnum(int newDnum)
   { dnum_ = newDnum; }
 
-  inline int store_force()
+  inline int store_force() const
   { return store_force_; }
 
-  inline int iarg()
+  inline FixPropertyAtom* fix_meshforce_pbc() const
+  { return fix_meshforce_pbc_; }
+
+  inline FixPropertyAtom* fix_wallforce() const
+  { return fix_wallforce_; }
+
+  inline int iarg() const
   { return iarg_; }
 
-  int add_history_value(std::string name, std::string newtonflag) {
-      return dnum_++;
-  }
+  int add_history_value(std::string name, std::string newtonflag)
+  {  return dnum_++; }
 
-  inline int dnum()
+  int get_history_offset(const std::string hname)
+  {  return impl->get_history_offset(hname);}
+
+  bool contact_match(const std::string mtype, const std::string model)
+  {  return impl->contact_match(mtype, model); }
+
+  inline int dnum() const
   { return dnum_; }
 
-  inline int n_meshes()
+  inline int n_meshes() const
   { return n_FixMesh_; }
 
-  inline class FixMeshSurface ** mesh_list()
+  inline class FixMeshSurface ** mesh_list() const
   { return FixMesh_list_; }
 
-  inline int atom_type_wall()
+  inline int atom_type_wall() const
   { return atom_type_wall_; }
 
-  inline bool is_mesh_wall()
+  inline bool is_mesh_wall() const
   { return 1 == meshwall_; }
 
-  inline bool store_force_contact()
+  inline int computeflag() const
+  { return computeflag_; }
+
+  inline int shearupdate() const
+  { return shearupdate_; }
+
+  inline int heattransfer_flag() const
+  { return heattransfer_flag_; }
+
+  inline int stress_flag() const
+  { return stress_flag_; }
+
+  inline bool store_force_contact() const
   { return store_force_contact_; }
+
+  inline bool store_force_contact_stress() const
+  { return store_force_contact_stress_; }
+
+  inline ComputePairGranLocal * compute_wall_gran_local() const
+  { return cwl_; }
+
+  inline int addflag() const
+  { return addflag_; }
+
+  inline int body(int i) const
+  { return body_[i]; }
+
+  inline double masstotal(int i) const
+  { return masstotal_[i]; }
+
+  inline class FixRigid *fix_rigid() const
+  { return fix_rigid_; }
+
+  inline void add_contactforce_wall(int ip, const LCM::ForceData & i_forces,int idTri)
+  {
+    // add to fix wallforce contact
+    // adds 0 as ID for primitive wall
+    double forces_torques_i[6];
+
+    if(fix_wallforce_contact_->has_partner(ip,idTri) == -1)
+    {
+      vectorCopy3D(i_forces.delta_F,&(forces_torques_i[0]));
+      vectorCopy3D(i_forces.delta_torque,&(forces_torques_i[3]));
+      fix_wallforce_contact_->add_partner(ip,idTri,forces_torques_i);
+      
+    }
+  }
+
+  inline void add_contactforce_stress_wall(int ip, const LCM::ForceData & i_forces, const double *const delta, const double *const vwall, int idTri)
+  {
+    // add to fix wallforce contact
+    // adds 0 as ID for primitive wall
+    double forces_delta_i[9];
+
+    if(fix_wallforce_contact_stress_->has_partner(ip,idTri) == -1)
+    {
+      vectorCopy3D(i_forces.delta_F,&(forces_delta_i[0]));
+      vectorCopy3D(delta,&(forces_delta_i[3]));
+      vectorCopy3D(vwall,&(forces_delta_i[6]));
+      fix_wallforce_contact_stress_->add_partner(ip,idTri,forces_delta_i);
+    }
+  }
 
   class PrimitiveWall* primitiveWall();
 
-  int n_contacts_all();
-  int n_contacts_all(int);
-  int n_contacts_local();
-  int n_contacts_local(int);
+  int n_contacts_all(int &nIntersect);
+  int n_contacts_all(int contact_groupbit,int &nIntersect);
+  int n_contacts_local(int &nIntersect);
+  int n_contacts_local(int contact_groupbit,int &nIntersect);
   int is_moving();
 
   void register_compute_wall_local(ComputePairGranLocal *,int&);
   void unregister_compute_wall_local(ComputePairGranLocal *ptr);
 
-  ComputePairGranLocal * compute_pair_gran_local() {
-    return cwl_;
-  }
-
-  int addflag() const {
-    return addflag_;
-  }
-
-  int body(int i) {
-    return body_[i];
-  }
-
-  double masstotal(int i) {
-    return masstotal_[i];
-  }
-
-  class FixRigid *fix_rigid() {
-    return fix_rigid_;
-  }
-
-  void add_contactforce_wall(int ip, const LCM::ForceData & i_forces)
-  {
-    // add to fix wallforce contact
-    // always add 0 as ID
-    double forces_torques_i[6];
-
-    if(!fix_wallforce_contact_->has_partner(ip,0))
-    {
-      vectorCopy3D(i_forces.delta_F,&(forces_torques_i[0]));
-      vectorCopy3D(i_forces.delta_torque,&(forces_torques_i[3]));
-      fix_wallforce_contact_->add_partner(ip,0,forces_torques_i);
-    }
-  }
-
-  void cwl_add_wall_2(const LCM::CollisionData & cdata, const LCM::ForceData & i_forces)
-  {
-    const double fx = i_forces.delta_F[0];
-    const double fy = i_forces.delta_F[1];
-    const double fz = i_forces.delta_F[2];
-    const double tor1 = i_forces.delta_torque[0]*cdata.area_ratio;
-    const double tor2 = i_forces.delta_torque[1]*cdata.area_ratio;
-    const double tor3 = i_forces.delta_torque[2]*cdata.area_ratio;
-    cwl_->add_wall_2(cdata.i,fx,fy,fz,tor1,tor2,tor3,cdata.contact_history,cdata.rsq);
-  }
+  void addHeatFlux(class TriMesh *mesh,int i,const double ri,double rsq,double area_ratio);
 
  protected:
 
@@ -168,6 +220,10 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   int nlocal_;
   double **x_, **f_, *radius_, *rmass_, **wallforce_, r0_;
 
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  double **quat_, **shape_, **roundness_;
+#endif
+
   void set_r0(double _r0)
   { r0_ = _r0; }
 
@@ -185,8 +241,7 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   // virtual functions that allow implementation of the
   // actual physics in the derived classes
-  virtual void compute_force(LCM::CollisionData & cdata, double *vwall);
-  void addHeatFlux(class TriMesh *mesh,int i,double rsq,double area_ratio);
+  virtual void compute_force(LCM::SurfacesIntersectData & sidata, double *vwall);
 
   // sets flag that neigh list shall be built
   virtual void pre_neighbor();
@@ -218,6 +273,13 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   bool store_force_contact_;
   class FixContactPropertyAtomWall *fix_wallforce_contact_;
 
+  // for stress computation
+  bool store_force_contact_stress_;
+  class FixContactPropertyAtomWall *fix_wallforce_contact_stress_;
+
+  // storage for per contact data (for multicontact models)
+  class FixContactPropertyAtomWall *fix_store_multicontact_data_;
+
   int nlevels_respa_;
 
   int shear_, shearDim_, shearAxis_;
@@ -226,13 +288,16 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   // distance in order to calculate interaction with
   // rough wall
-  double skinDistance_;
+  //double skinDistance_;
 
   // number of values for contact history
   int dnum_;
 
   // flag if mesh wall
   int meshwall_;
+
+  // flag to actiate potential energy calculation
+  bool track_energy_;
 
   // flag for stressanalysis
   // true if any of the meshes tracks stresses
@@ -248,12 +313,12 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   bool store_force_;
   class FixPropertyAtom *fix_wallforce_;
 
+  class FixPropertyAtom *fix_meshforce_pbc_;
+
   // max neigh cutoff - as in Neighbor
   double cutneighmax_;
 
   virtual void post_force_wall(int vflag);
-
-  inline void post_force_eval_contact(LCM::CollisionData & cdata, double * v_wall, int iMesh = -1, FixMeshSurface *fix_mesh = 0, TriMesh *mesh = 0, int iTri = 0);
 };
 
 }

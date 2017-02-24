@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -98,18 +98,18 @@ way, as explained on the "fix rigid"_fix_rigid.html doc page.
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
 No information about this fix is written to "binary restart
-files"_restart.html. 
+files"_restart.html.
 
 The "fix_modify"_fix_modify.html {energy} option is supported by this
 fix to add the energy stored in the spring to the system's potential
 energy as part of "thermodynamic output"_thermo_style.html.
 
 This fix computes a global scalar which can be accessed by various
-"output commands"_Section_howto.html#howto_15.  The scalar is the
+"output commands"_Section_howto.html#howto_8.  The scalar is the
 spring energy = 0.5 * K * r^2.
 
 This fix also computes global 4-vector which can be accessed by
-various "output commands"_Section_howto.html#howto_15.  The first 3
+various "output commands"_Section_howto.html#howto_8.  The first 3
 quantities in the vector are xyz components of the total force added
 to the group of atoms by the spring.  In the case of the {couple}
 style, it is the force on the fix group (group-ID) or the negative of
@@ -136,7 +136,7 @@ this fix.
 
 [Related commands:]
 
-"fix drag"_fix_drag.html, "fix spring/self"_fix_spring_self.html, 
+"fix drag"_fix_drag.html, "fix spring/self"_fix_spring_self.html,
 "fix spring/rg"_fix_spring_rg.html, "fix smd"_fix_smd.html
 
 [Default:] none

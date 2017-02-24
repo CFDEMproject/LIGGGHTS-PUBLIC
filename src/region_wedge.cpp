@@ -1,36 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Stefan Amberger (JKU Linz)
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
-
-/*
-Contributing authors:
-Stefan Amberger (JKU Linz)
-Christoph Kloss (DCS Computing GmbH, Linz and JKU Linz)
-*/
 
 #include "region_wedge.h"
 #include "error.h"
 #include "domain.h"
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "math_extra.h"
 #include "update.h"
 #include "vector_liggghts.h"
@@ -306,8 +322,8 @@ RegWedge::~RegWedge(){
  inside = 0 if x,y,z is ouside and not on surface
  -----------------------------------------------------------------------------*/
 int RegWedge::inside(double x, double y, double z){
-  double lohi, distsq, sp1, sp2;
-  double del[2];
+  double lohi=0.0, distsq, sp1, sp2;
+  double del[2]={};
 
   if (axis == 'x'){
     lohi = x;
@@ -368,8 +384,8 @@ int RegWedge::surface_interior(double *x, double cutoff){
                           // to be changed depending on which axis the wedge
                           // is aligned to
   double delta;           // ... distance from surface to particle
-  double lohi;            // ... coord of particle in dimension of axis
-  double del[2];          // ... vector from center to particle
+  double lohi = 0.0;      // ... coord of particle in dimension of axis
+  double del[2] = {};     // ... vector from center to particle
   double delxyz[2];       // ... vector from nearest point on surface to particle
   double rr;              // ... distance from point to center
 
@@ -513,7 +529,7 @@ void RegWedge::printProperty(const char *name, double val){
 
 void RegWedge::printContacts(double *x, int n){
   for (int i = 0; i<n; i++){
-    printf("step "BIGINT_FORMAT" Contact %i\n",update->ntimestep,i);
+    printf("step " BIGINT_FORMAT " Contact %i\n",update->ntimestep,i);
     printf("\tx\t: %f\t%f\t%f\n",x[0],x[1],x[2]);
     printf("\tr\t: %f\n\tdx\t: %f\n\tdy\t: %f\n\tdz\t: %f\n",contact[i].r,contact[i].delx,contact[i].dely,contact[i].delz);
   }

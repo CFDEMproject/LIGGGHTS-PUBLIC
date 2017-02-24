@@ -1,27 +1,48 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_insert_pack.h"
 #include "atom.h"
 #include "atom_vec.h"
@@ -62,7 +83,11 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
     if (strcmp(arg[iarg],"region") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       int iregion = domain->find_region(arg[iarg+1]);
-      if (iregion == -1) error->fix_error(FLERR,this,"region ID does not exist");
+      if (iregion == -1)
+        error->fix_error(FLERR,this,"region ID does not exist");
+      int n = strlen(arg[iarg+1]) + 1;
+      idregion = new char[n];
+      strcpy(idregion,arg[iarg+1]);
       ins_region = domain->regions[iregion];
       iarg += 2;
       hasargs = true;
@@ -77,7 +102,8 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
       if (iarg+2 > narg)
         error->fix_error(FLERR,this,"");
       ntotal_region = atoi(arg[iarg+1]);
-      if(ntotal_region <= 0) error->fix_error(FLERR,this,"'ntotal_region' > 0 required");
+      if(ntotal_region <= 0)
+        error->fix_error(FLERR,this,"'ntotal_region' > 0 required");
       iarg += 2;
       hasargs = true;
     } else if (strcmp(arg[iarg],"mass_in_region") == 0) {
@@ -90,7 +116,8 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
     } else if (strcmp(arg[iarg],"ntry_mc") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       ntry_mc = atoi(arg[iarg+1]);
-      if(ntry_mc < 1000) error->fix_error(FLERR,this,"ntry_mc must be > 1000");
+      if(ntry_mc < 1000)
+        error->fix_error(FLERR,this,"ntry_mc must be > 1000");
       iarg += 2;
       hasargs = true;
     } else if (strcmp(arg[iarg],"warn_region") == 0) {
@@ -99,7 +126,8 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
         warn_region = true;
       else if(strcmp(arg[iarg+1],"no") == 0)
         warn_region = false;
-      else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'warn_region'");
+      else
+        error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'warn_region'");
       iarg += 2;
       hasargs = true;
     } else if(strcmp(style,"insert/pack") == 0)
@@ -115,7 +143,7 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
 
 FixInsertPack::~FixInsertPack()
 {
-
+    if(idregion) delete []idregion;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -123,6 +151,7 @@ FixInsertPack::~FixInsertPack()
 void FixInsertPack::init_defaults()
 {
       ins_region = NULL;
+      idregion = 0;
       ntry_mc = 100000;
 
       volumefraction_region = 0.0;
@@ -134,6 +163,21 @@ void FixInsertPack::init_defaults()
       insertion_ratio = 0.;
 
       warn_region = true;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixInsertPack::init()
+{
+    FixInsert::init();
+
+    if (ins_region)
+    {
+        int iregion = domain->find_region(idregion);
+        if (iregion == -1)
+            error->fix_error(FLERR,this,"regions used by this command must not be deleted");
+        ins_region = domain->regions[iregion];
+    }
 }
 
 /* ----------------------------------------------------------------------
@@ -263,6 +307,7 @@ int FixInsertPack::calc_ninsert_this()
       MPI_Sum_Scalar(vol_region,world);
       ninsert_this = static_cast<int>((volumefraction_region*region_volume - vol_region) / fix_distribution->vol_expect() + random->uniform());
       insertion_ratio = vol_region / (volumefraction_region*region_volume);
+      
   }
   else if(ntotal_region > 0)
   {
@@ -279,7 +324,9 @@ int FixInsertPack::calc_ninsert_this()
   }
   else error->one(FLERR,"Internal error in FixInsertPack::calc_ninsert_this()");
 
-  // can be < 0 due to round-off etc
+  // can be < 0 due to overflow, round-off etc
+  if(ninsert_this < -200000)
+    error->fix_error(FLERR,this,"overflow in particle number calculation: inserting too many particles in one step");
   if(ninsert_this < 0) ninsert_this = 0;
 
   if(insertion_ratio < 0.) insertion_ratio = 0.;
@@ -315,6 +362,19 @@ inline int FixInsertPack::is_nearby(int i)
 
     if(ins_region->match_expandby_cut(pos,cut)) return 1;
     return 0;
+}
+
+/* ---------------------------------------------------------------------- */
+
+BoundingBox FixInsertPack::getBoundingBox() {
+  BoundingBox bb(ins_region->extent_xlo, ins_region->extent_xhi,
+                 ins_region->extent_ylo, ins_region->extent_yhi,
+                 ins_region->extent_zlo, ins_region->extent_zhi);
+
+  double extend = 2*maxrad /*cut*/ + this->extend_cut_ghost(); 
+  bb.shrinkToSubbox(domain->sublo, domain->subhi);
+  bb.extendByDelta(extend);
+  return bb;
 }
 
 /* ----------------------------------------------------------------------
@@ -358,32 +418,16 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             pti = fix_distribution->pti_list[ninserted_this_local];
             double rbound = pti->r_bound_ins;
 
-            do
-            {
-                
-                if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
-                else ins_region->generate_random(pos,true);
-                ntry++;
-            }
-            while(ntry < maxtry && domain->dist_subbox_borders(pos) < rbound);
+            if(screen && print_stats_during_flag && (ninsert_this_local >= 10) && (0 == itotal % (ninsert_this_local/10)))
+                fprintf(screen,"insertion: proc %d at %d %%\n",comm->me,10*itotal/(ninsert_this_local/10));
 
-            if(ntry == maxtry) break;
+            if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
+            else ins_region->generate_random(pos,true);
 
             // randomize vel, omega, quat here
             vectorCopy3D(v_insert,v_toInsert);
             // could ramdonize vel, omega, quat here
-            if(v_randomSetting==1)
-            {
-                v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
-                v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
-                v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
-            }
-            if(v_randomSetting==2)
-            {
-                v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
-                v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
-                v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
-            }
+            generate_random_velocity(v_toInsert);
 
             if(quat_random_)
                 MathExtraLiggghts::random_unit_quat(random,quat_insert);
@@ -408,6 +452,9 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
             pti = fix_distribution->pti_list[ninserted_this_local];
             double rbound = pti->r_bound_ins;
 
+            if(screen && print_stats_during_flag && (ninsert_this_local >= 10) && (0 == ninserted_this_local % (ninsert_this_local/10)) )
+                fprintf(screen,"insertion: proc %d at %d %%\n",comm->me,10*ninserted_this_local/(ninsert_this_local/10));
+
             int nins = 0;
             while(nins == 0 && ntry < maxtry)
             {
@@ -417,30 +464,23 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
                     if(all_in_flag) ins_region->generate_random_shrinkby_cut(pos,rbound,true);
                     else ins_region->generate_random(pos,true);
                     ntry++;
+
                 }
+                
                 while(ntry < maxtry && domain->dist_subbox_borders(pos) < rbound);
+
+                if(ntry == maxtry) break;
 
                 // randomize vel, omega, quat here
                 vectorCopy3D(v_insert,v_toInsert);
 
                 // could ramdonize vel, omega, quat here
-                if(v_randomSetting==1)
-                {
-                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
-                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
-                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
-                }
-                else if(v_randomSetting==2)
-                {
-                    v_toInsert[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
-                    v_toInsert[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
-                    v_toInsert[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
-                }
+                generate_random_velocity(v_toInsert);
 
                 if(quat_random_)
                     MathExtraLiggghts::random_unit_quat(random,quat_insert);
 
-                nins = pti->check_near_set_x_v_omega(pos,v_toInsert,omega_insert,quat_insert,xnear,nspheres_near);
+                nins = pti->check_near_set_x_v_omega(pos,v_toInsert,omega_insert,quat_insert,neighList);
 
             }
 

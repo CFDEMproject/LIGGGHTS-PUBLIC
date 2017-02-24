@@ -1,0 +1,125 @@
+%#***************************************************************************************
+%#
+%# filename:             modeldata.txt
+%#
+%# author:               Peter Gruber
+%#
+%# generated:            December 2012
+%#
+%# description:          this file is part of the Hotint model web_contact_3D.cpp
+%#
+%#
+%# Copyright (c) 2003-2013 Johannes Gerstmayr, Linz Center of Mechatronics GmbH, Austrian
+%# Center of Competence in Mechatronics GmbH, Institute of Technical Mechanics at the 
+%# Johannes Kepler Universitaet Linz, Austria. All rights reserved.
+%#
+%# This file is part of HotInt.
+%# HotInt is free software: you can redistribute it and/or modify it under the terms of 
+%# the HOTINT license. See folder 'licenses' for more details.
+%#
+%# bug reports are welcome!!!
+%# WWW:		www.hotint.org
+%# email:	bug_reports@hotint.org or support@hotint.org
+%#***************************************************************************************
+
+Modeloptions
+{
+  nx = 10
+  ny = 10
+}
+
+SolverOptions
+{
+  start_time= 0  %
+  end_time= 2  %Final simulation time; for static and timeint solver
+  do_static_computation= 0  %Do only static computation; velocities and acceleration terms are ignored; system may not have kinematic degrees of freedom.
+  Timeint
+  {
+    max_step_size= 1e-005  %Maxial step size of timeint solver.
+    min_step_size= 1e-005  %Minimal step size of timeint solver.
+    max_index= 2  %maximum index which solver the solver needs to handle
+    tableau_name= "LobattoIIIA"  %Runge Kutta tableau chosen
+    max_stages= 2  %Number of stages for simulation, max. stages for variable order.
+    min_stages= 1  %Min. stages for variable order.
+    automatic_stepsize_control= 1  %1|(0) ... Full adaptive stepsize selection of timeint is (not) active?
+    init_step_size= 0.01  %Initial stepsize for timeint.
+    absolute_accuracy= 0.01  %Absolute accuracy, for full adaptive timeint.
+    relative_accuracy= 1  %Relative accuracy, for full adaptive timeint.
+    variable_order= 0  %1|(0) ... Variable order algorithm  is (not) active.
+    do_implicit_integration= 1  %1 .. Use implicit integration, 0..use explicit integration.
+    reset_after_simulation= 1  %Reset start time and initial values after each simulation.
+    assume_constant_mass_matrix= 0  %Experimental version of constant mass matrix (WARNING: experimental only)
+  }
+  Static
+  {
+    min_load_inc= 0.01  %Minimal increment.
+    max_load_inc= 0.01  %Maximum load increment.
+    init_load_inc= 0.01  %Initial load increment.
+    load_inc_up= 2  %Increase load increment if success very often.
+    load_inc_down= 2  %Decrease load increment if no success.
+    increase_load_inc_steps= 1  %If increase_load_inc_steps successfull steps --> leads to increase of load increment.
+    spring_regularisation_parameter= 0  %Spring-type regularisation parameter to stabilize almost kinematic systems during static comp.
+    use_tolerance_relax_factor= 0  %Enables/disables [1/0] the use of the relaxation factor on the tolerance goal (discontinuous accuracy) within static comp. Relaxation depends on load factor (0..1)
+    max_tolerance_relax_factor= 10  %Uper bound for relaxation factor on the tolerance goal (discontinuous accuracy)
+    experimental_sparse_jacobian= 1  %Experimental: optimized (low memory) sparse jacobian matrix
+  }
+  Newton
+  {
+    relative_accuracy= 1e-007  %Relative accuracy for Newton method
+    absolute_accuracy= 100  %Absolute accuracy for Newton method
+    num_diff_parameter= 1e-007  %Numerical differentiation parameter
+    use_central_diff_quotient= 1  %Use central difference quotient for numerical differentiation ( slower ).
+    use_modified_newton= 1  %Use modified Newton ( approximated Jacobian, much faster ).
+    max_modified_newton_steps= 50  %Max. modified Newton steps.
+    max_restart_newton_steps= 5  %Max. modified Newton steps after restart.
+    max_full_newton_steps= 13  %Max. full Newton steps.
+    use_trust_region= 0  %0...do not use trust region; 1..use line search algorithm for newton's method, usually not necessary.
+    trust_region_division= 0.1  %Increment for line search.
+  }
+  Linalg
+  {
+    use_sparse_solver= 1  %1|(0) ... Sparse Jacobian and sparse solver is (not)activated.
+  }
+  Discontinuous
+  {
+    absolute_accuracy= 0.0001  %Accuracy for discontinuous problems ( plasticity, contact, friction, ... ).
+    max_iterations= 8  %Max. number of iterations for discont. problems.
+    ignore_max_iterations= 0  %continue anyway if error goal is not reached after max discontinuous iterations
+  }
+  Solution
+  {
+    write_solution= 1  %(0)|1 ... (Don't) write results to file.
+    write_solution_every_x_step= 10  %Write solution every xx steps.
+    store_data_every= 0.0005  %Store data with data-manager, redraw and create animations: # -2 == always, -1 == at max stepsize, 0 = never, x.x = at every time x.x.
+    store_data_to_files= 1  %if checked, then solution data (for data manager) is stored in files, instead of memory; these files are located in subdirectory solution_data of 'GeneralOptions.Paths.sensor_output_path'.
+    immediately_write_file= 1  %1 ... SLOW: immediately write data to file with '<< flush' (no buffering), 0=FAST
+    always_replace_files= 1  %1 = always replace files, 0 = append solution to files
+    SolutionFile
+    {
+      write_solution_file_header= 1  %Write solution file header.
+      solution_file_header_comment= ""  %Comment written in solution file header.
+      output_filename= "sol.txt"  %Filename for general solution file (sensor output).
+    }
+    ParameterFile
+    {
+      parameter_variation_filename= "edge_constraint_test_parvar.txt"  %Filename for parameter variation solution file.
+      write_final_sensor_values= 1  %Write final sensor values into parameter file.
+      write_cost_function= 1  %Write cost function of sensors into parameter file.
+      write_second_order_size= 0  %Write second order size into parameter file.
+      write_CPU_time= 0  %Write CPU-time into parameter file.
+    }
+    store_solution_state= 0  %Store final solution state in file.
+    store_solution_state_name= ""  %Filename for final solution state storage.
+    load_solution_state= 0  %Load initial configuration from file.
+    load_solution_state_name= ""  %Filename for initial configuration.
+    Sensor
+    {
+      postproc_compute_eigenvalues= 0  %Compute eigenvalues in postprocessing.
+    }
+  }
+  Element
+  {
+    store_finite_elements_matrices= 1  %Store intermediate matrices for finite elements (faster, but uses huge memory).
+    element_wise_jacobian= 1  %Jacobian is computed only for each element, taking into account known couplings.
+  }
+}

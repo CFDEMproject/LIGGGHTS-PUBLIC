@@ -122,8 +122,7 @@ Tree& Tree::operator = (const Tree& rhs)
 
 // search for data item in the tree. if found, return its node
 // address and a pointer to its parent; otherwise, return NULL
-TreeNode *Tree::FindNode(const int& item,
-								   TreeNode* & parent) const
+TreeNode *Tree::FindNode(const int& item,TreeNode* & parent) const
 {
 	// cycle t through the tree starting with root
 	TreeNode *t = root;

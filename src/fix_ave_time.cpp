@@ -1,22 +1,54 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
    Contributing author: Pieter in 't Veld (SNL)
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "unistd.h"
 #include "fix_ave_time.h"
 #include "update.h"
@@ -35,10 +67,6 @@ using namespace FixConst;
 enum{COMPUTE,FIX,VARIABLE};
 enum{ONE,RUNNING,WINDOW};
 enum{SCALAR,VECTOR};
-
-#define INVOKED_SCALAR 1
-#define INVOKED_VECTOR 2
-#define INVOKED_ARRAY 4
 
 /* ---------------------------------------------------------------------- */
 
@@ -242,7 +270,7 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
   // nrows = # of rows in output array
 
   if (mode == VECTOR) {
-    int length;
+    int length = 0;
 
     for (int i = 0; i < nvalues; i++) {
       if (which[i] == COMPUTE) {
@@ -384,7 +412,7 @@ FixAveTime::FixAveTime(LAMMPS *lmp, int narg, char **arg) :
       array_flag = 1;
       size_array_rows = nrows;
       size_array_cols = nvalues;
-      int value;
+      int value = -1;
       for (int i = 0; i < nvalues; i++) {
         if (which[i] == COMPUTE) {
           Compute *compute = modify->compute[modify->find_compute(ids[i])];
@@ -523,7 +551,7 @@ void FixAveTime::end_of_step()
 void FixAveTime::invoke_scalar(bigint ntimestep)
 {
   int i,m;
-  double scalar;
+  double scalar = 0.0;
 
   // zero if first step
 
@@ -847,7 +875,7 @@ void FixAveTime::options(int narg, char **arg)
       if (me == 0) {
         fp = fopen(arg[iarg+1],"w");
         if (fp == NULL) {
-          char str[128];
+          char str[512];
           sprintf(str,"Cannot open fix ave/time file %s",arg[iarg+1]);
           error->one(FLERR,str);
         }

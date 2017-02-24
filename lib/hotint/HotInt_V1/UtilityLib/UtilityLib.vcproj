@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioProject Keyword="Win32Proj" Name="UtilityLib" ProjectGUID="{BAEEBB47-21E3-4506-A6F1-A9531D9DD12D}" ProjectType="Visual C++" RootNamespace="UtilityLib" TargetFrameworkVersion="131072" Version="9,00">
+	
+   <Platforms>
+		
+      <Platform Name="Win32"/>
+		
+	
+   </Platforms>
+	
+   <ToolFiles>
+	
+   </ToolFiles>
+	
+   <Configurations>
+		
+      <Configuration CharacterSet="2" ConfigurationType="4" IntermediateDirectory="$(ConfigurationName)" Name="Debug|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" UseOfMFC="2">
+			
+         <Tool Name="VCPreBuildEventTool"/>
+			
+         <Tool Name="VCCustomBuildTool"/>
+			
+         <Tool Name="VCXMLDataGeneratorTool"/>
+			
+         <Tool Name="VCWebServiceProxyGeneratorTool"/>
+			
+         <Tool Name="VCMIDLTool"/>
+			
+         <Tool AdditionalIncludeDirectories="&#34;..\mbs_interface&#34;" BasicRuntimeChecks="3" DebugInformationFormat="4" MinimalRebuild="true" Name="VCCLCompilerTool" Optimization="0" PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE" RuntimeLibrary="3"/>
+			
+         <Tool Name="VCManagedResourceCompilerTool"/>
+			
+         <Tool Name="VCResourceCompilerTool"/>
+			
+         <Tool Name="VCPreLinkEventTool"/>
+			
+         <Tool AdditionalDependencies="blas_win32_MT.lib lapack_win32_MT.lib" AdditionalLibraryDirectories="..\WCDriver3D\extern_lib" Name="VCLibrarianTool"/>
+			
+         <Tool Name="VCALinkTool"/>
+			
+         <Tool Name="VCXDCMakeTool"/>
+			
+         <Tool Name="VCBscMakeTool"/>
+			
+         <Tool Name="VCFxCopTool"/>
+			
+         <Tool Name="VCPostBuildEventTool"/>
+		
+      </Configuration>
+		
+		
+      <Configuration CharacterSet="2" ConfigurationType="4" IntermediateDirectory="$(ConfigurationName)" Name="Release|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" WholeProgramOptimization="1">
+			
+         <Tool Name="VCPreBuildEventTool"/>
+			
+         <Tool Name="VCCustomBuildTool"/>
+			
+         <Tool Name="VCXMLDataGeneratorTool"/>
+			
+         <Tool Name="VCWebServiceProxyGeneratorTool"/>
+			
+         <Tool Name="VCMIDLTool"/>
+			
+         <Tool AdditionalIncludeDirectories="&#34;..\mbs_interface&#34;" Name="VCCLCompilerTool" PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE" RuntimeLibrary="2"/>
+			
+         <Tool Name="VCManagedResourceCompilerTool"/>
+			
+         <Tool Name="VCResourceCompilerTool"/>
+			
+         <Tool Name="VCPreLinkEventTool"/>
+			
+         <Tool AdditionalDependencies="blas_win32_MT.lib lapack_win32_MT.lib" AdditionalLibraryDirectories="..\WCDriver3D\extern_lib" Name="VCLibrarianTool"/>
+			
+         <Tool Name="VCALinkTool"/>
+			
+         <Tool Name="VCXDCMakeTool"/>
+			
+         <Tool Name="VCBscMakeTool"/>
+			
+         <Tool Name="VCFxCopTool"/>
+			
+         <Tool Name="VCPostBuildEventTool"/>
+		
+      </Configuration>
+		
+		
+		
+	
+   </Configurations>
+	
+   <References>
+	
+   </References>
+	
+   <Files>
+		
+      <Filter Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx" Name="Quelldateien" UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			
+         <File RelativePath=".\elementdata.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\elementDataAccess.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\femathhelperfunctions.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\fft_utilities.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\FieldVariableDescriptor.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\lapack_routines.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\linalg.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\linalg3d.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\linalgeig.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\mathfunc.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\myfile.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\mystring.cpp">
+			
+         </File>
+		
+      </Filter>
+		
+      <Filter Filter="h;hpp;hxx;hm;inl;inc;xsd" Name="Headerdateien" UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			
+         <File RelativePath=".\elementdata.h">
+			
+         </File>
+			
+         <File RelativePath=".\elementdataaccess.h">
+			
+         </File>
+			
+         <File RelativePath=".\femathHelperFunctions.h">
+			
+         </File>
+			
+         <File RelativePath=".\fft_utilities.h">
+			
+         </File>
+			
+         <File RelativePath=".\FieldVariableDescriptor.h">
+			
+         </File>
+			
+         <File RelativePath=".\ioincludes.h">
+			
+         </File>
+			
+         <File RelativePath=".\lapack_routines.h">
+			
+         </File>
+			
+         <File RelativePath=".\linalg.h">
+			
+         </File>
+			
+         <File RelativePath=".\linalg3d.h">
+			
+         </File>
+			
+         <File RelativePath=".\linalgeig.h">
+			
+         </File>
+			
+         <File RelativePath=".\mathaux.h">
+			
+         </File>
+			
+         <File RelativePath=".\mathfunc.h">
+			
+         </File>
+			
+         <File RelativePath=".\myfile.h">
+			
+         </File>
+			
+         <File RelativePath=".\mystring.h">
+			
+         </File>
+			
+         <File RelativePath=".\release_assert.h">
+			
+         </File>
+			
+         <File RelativePath=".\tarray.h">
+			
+         </File>
+		
+      </Filter>
+		
+      <Filter Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav" Name="Ressourcendateien" UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+		
+      </Filter>
+	
+   </Files>
+	
+   <Globals>
+	
+   </Globals>
+
+</VisualStudioProject>

@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E0CC2B22-58A4-4AAD-8CE7-20CE16B258E0}</ProjectGuid>
+    <RootNamespace>SuperLU</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\UtilityLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NEW_VISUAL_STUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)SuperLU.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>..\UtilityLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NEW_VISUAL_STUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)SuperLU.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="colamd.c" />
+    <ClCompile Include="dasum.c" />
+    <ClCompile Include="daxpy.c" />
+    <ClCompile Include="dcolumn_bmod.c" />
+    <ClCompile Include="dcolumn_dfs.c" />
+    <ClCompile Include="dcopy.c" />
+    <ClCompile Include="dcopy_to_ucol.c" />
+    <ClCompile Include="ddot.c" />
+    <ClCompile Include="dgemv.c" />
+    <ClCompile Include="dger.c" />
+    <ClCompile Include="dgscon.c" />
+    <ClCompile Include="dgsequ.c" />
+    <ClCompile Include="dgsrfs.c" />
+    <ClCompile Include="dgssv.c" />
+    <ClCompile Include="dgssvx.c" />
+    <ClCompile Include="dgstrf.c" />
+    <ClCompile Include="dgstrs.c" />
+    <ClCompile Include="dlacon.c" />
+    <ClCompile Include="dlamch.c" />
+    <ClCompile Include="dlangs.c" />
+    <ClCompile Include="dlaqgs.c" />
+    <ClCompile Include="dmemory.c" />
+    <ClCompile Include="dmyblas2.c" />
+    <ClCompile Include="dnrm2.c" />
+    <ClCompile Include="dpanel_bmod.c" />
+    <ClCompile Include="dpanel_dfs.c" />
+    <ClCompile Include="dpivotgrowth.c" />
+    <ClCompile Include="dpivotL.c" />
+    <ClCompile Include="dpruneL.c" />
+    <ClCompile Include="dreadhb.c" />
+    <ClCompile Include="drot.c" />
+    <ClCompile Include="dscal.c" />
+    <ClCompile Include="dsnode_bmod.c" />
+    <ClCompile Include="dsnode_dfs.c" />
+    <ClCompile Include="dsp_blas2.c" />
+    <ClCompile Include="dsp_blas3.c" />
+    <ClCompile Include="dsymv.c" />
+    <ClCompile Include="dsyr2.c" />
+    <ClCompile Include="dtrsv.c" />
+    <ClCompile Include="dutil.c" />
+    <ClCompile Include="get_perm_c.c" />
+    <ClCompile Include="heap_relax_snode.c" />
+    <ClCompile Include="idamax.c" />
+    <ClCompile Include="lsame.c" />
+    <ClCompile Include="memory.c" />
+    <ClCompile Include="mmd.c" />
+    <ClCompile Include="relax_snode.c" />
+    <ClCompile Include="sp_coletree.c" />
+    <ClCompile Include="sp_ienv.c" />
+    <ClCompile Include="sp_preorder.c" />
+    <ClCompile Include="superlu.c" />
+    <ClCompile Include="superlu_timer.c" />
+    <ClCompile Include="SuperLUmain.cpp" />
+    <ClCompile Include="util.c" />
+    <ClCompile Include="xerbla.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="lib\SuperLU.lib">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="lib\SuperLUd.lib">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="lib\SuperLUx64.lib">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="lib\SuperLUx64d.lib">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="colamd.h" />
+    <ClInclude Include="dsp_defs.h" />
+    <ClInclude Include="f2c.h" />
+    <ClInclude Include="slu_Cnames.h" />
+    <ClInclude Include="slu_ddefs.h" />
+    <ClInclude Include="slu_util.h" />
+    <ClInclude Include="superlu_f2c.h" />
+    <ClInclude Include="SuperLUmain.h" />
+    <ClInclude Include="supermatrix.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

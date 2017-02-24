@@ -1,28 +1,45 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Philippe Seil (JKU Linz)
+    Andreas Aigner (DCS Computing GmbH, Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_GENERAL_CONTAINER_I_H
@@ -36,25 +53,28 @@
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(const char *_id)
   : ContainerBase(_id),
     numElem_(0),
-    maxElem_(GROW)
+    maxElem_(GROW_CONTAINER()),
+    defaultValue_(0)
   {
-          create<T>(arr_,GROW,NUM_VEC,LEN_VEC);
+          create<T>(arr_,GROW_CONTAINER(),NUM_VEC,LEN_VEC);
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(const char *_id, const char *_comm, const char *_ref, const char *_restart, int _scalePower)
   : ContainerBase(_id, _comm, _ref, _restart, _scalePower),
     numElem_(0),
-    maxElem_(GROW)
+    maxElem_(GROW_CONTAINER()),
+    defaultValue_(0)
   {
-          create<T>(arr_,GROW,NUM_VEC,LEN_VEC);
+          create<T>(arr_,GROW_CONTAINER(),NUM_VEC,LEN_VEC);
   }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   GeneralContainer<T,NUM_VEC,LEN_VEC>::GeneralContainer(GeneralContainer<T,NUM_VEC,LEN_VEC> const &orig)
   : ContainerBase(orig),
     numElem_(orig.numElem_),
-    maxElem_(orig.numElem_)
+    maxElem_(orig.numElem_),
+    defaultValue_(orig.defaultValue_)
   {
           create<T>(arr_,maxElem_,NUM_VEC,LEN_VEC);
           for(int i=0;i<maxElem_;i++)
@@ -108,12 +128,38 @@
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::subtract(GeneralContainer<T,NUM_VEC,LEN_VEC> const &A,
+                                                     GeneralContainer<T,NUM_VEC,LEN_VEC> const &minusB)
+  {
+      int len = size();
+      int lenA = A.size();
+      int lenB = minusB.size();
+
+      if(lenA != lenB)
+        return false;
+
+      if(len < lenA)
+        addUninitialized(lenA-len);
+
+      for(int i = 0; i < len; i++)
+            for(int j = 0; j < NUM_VEC; j++)
+                for(int k = 0; k < LEN_VEC; k++)
+                    arr_[i][j][k] = A(i)[j][k] - minusB(i)[j][k];
+
+      return true;
+  }
+
+  /* ----------------------------------------------------------------------
+   add element(s)
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::add(T** elem)
   {
           if(numElem_ == maxElem_)
           {
-                  grow<T>(arr_,maxElem_+GROW,NUM_VEC,LEN_VEC);
-                  maxElem_ += GROW;
+                  grow<T>(arr_,maxElem_+GROW_CONTAINER(),NUM_VEC,LEN_VEC);
+                  maxElem_ += GROW_CONTAINER();
           }
           for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
@@ -126,8 +172,8 @@
   {
           if(numElem_ == maxElem_)
           {
-                  grow<T>(arr_,maxElem_+GROW,NUM_VEC,LEN_VEC);
-                  maxElem_ += GROW;
+                  grow<T>(arr_,maxElem_+GROW_CONTAINER(),NUM_VEC,LEN_VEC);
+                  maxElem_ += GROW_CONTAINER();
           }
           for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
@@ -141,8 +187,13 @@
         numElem_ += n;
         if(numElem_ >= maxElem_)
         {
-            grow(arr_,numElem_+GROW,NUM_VEC,LEN_VEC);
-            maxElem_ = numElem_ + GROW;
+            T init_val = static_cast<T>(0);
+            grow(arr_,numElem_+GROW_CONTAINER(),NUM_VEC,LEN_VEC);
+            for(int i = numElem_; i < numElem_+GROW_CONTAINER(); i++)
+                for(int j=0;j<NUM_VEC;j++)
+                    for(int k=0;k<LEN_VEC;k++)
+                          arr_[i][j][k] = init_val;
+            maxElem_ = numElem_ + GROW_CONTAINER();
         }
   }
 
@@ -153,6 +204,7 @@
   template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::del(int n)
   {
+          
           numElem_--;
           if(numElem_ == n) return;
           for(int i=0;i<NUM_VEC;i++)
@@ -209,13 +261,13 @@
   }
 
   /* ----------------------------------------------------------------------
-   delete an element
+   delete an element if restart
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::delRestart(int n,bool scale,bool translate,bool rotate)
   {
-          // do only delete property if it is a forward comm property
+          // do only delete property if it is a restart property
           if(!decidePackUnpackOperation(OPERATION_RESTART, scale, translate, rotate))
             return;
 
@@ -224,6 +276,20 @@
           for(int i=0;i<NUM_VEC;i++)
                   for(int j=0;j<LEN_VEC;j++)
                           arr_[n][i][j] = arr_[numElem_][i][j];
+  }
+
+  /* ----------------------------------------------------------------------
+   delete all elements if restart
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::delRestart(bool scale,bool translate,bool rotate)
+  {
+          // do only delete property if it is a restart property
+          if(!decidePackUnpackOperation(OPERATION_RESTART, scale, translate, rotate))
+            return;
+
+          numElem_ = 0;
   }
 
   /* ----------------------------------------------------------------------
@@ -278,7 +344,226 @@
       return true;
   }
 
+  /* ----------------------------------------------------------------------
+   average from other container
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcAvgFromContainer()
+  {
+      
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+      GeneralContainer<T,1,1> *gscale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_scale_data_);
+      GeneralContainer<T,1,1> *gRedScale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_reduced_scale_data_);
+
+      // source has to be defined
+      if (!gcont)
+        return false;
+
+      // only use if identical dimensions
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      const int len = size();
+
+      T epsilon = std::numeric_limits<T>::epsilon();
+
+      if (!gscale || !gRedScale)
+      {
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                     const T contribution = gcont->arr_[n][i][j];
+
+                     if(averaging_forget_ || MathExtraLiggghts::abs(contribution) > epsilon )
+                     {
+                        if(MathExtraLiggghts::abs(arr_[n][i][j]) < epsilon)
+                            arr_[n][i][j] = contribution;
+                        else
+                            arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+weighting_factor_*contribution;
+                     }
+                  }
+      }
+      else
+      {
+          if(size() != gscale->size() || size() != gRedScale->size())
+            return false;
+
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                      arr_[n][i][j] = (1.-weighting_factor_)*(1.-weighting_factor_)*arr_[n][i][j]*(*gRedScale)(n)[1][1]+(*gcont)(n)[i][j]*(*gscale)(n)[1][1];
+      }
+      return true;
+  }
+
+  /* ----------------------------------------------------------------------
+   mean square from other container
+  ------------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcMeanSquareFromContainer()
+  {
+      
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+      GeneralContainer<T,1,1> *gscale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_scale_data_);
+      GeneralContainer<T,1,1> *gRedScale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_reduced_scale_data_);
+
+      // at least source has to be defined
+      if (!gcont)
+        return false;
+
+      // only copy if identical
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      const int len = size();
+
+      T epsilon = std::numeric_limits<T>::epsilon();
+
+      if (!gscale || !gRedScale)
+      {
+          for(int n = 0; n < len; n++)
+             for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                      const T contribution = gcont->arr_[n][i][j];
+
+                      if(averaging_forget_ || MathExtraLiggghts::abs(contribution) > epsilon )
+                      {
+                        if(MathExtraLiggghts::abs(arr_[n][i][j]) < epsilon)
+                            arr_[n][i][j] = contribution*contribution;
+                        else if(averaging_forget_ || MathExtraLiggghts::abs(contribution) > std::numeric_limits<T>::epsilon() )
+                            arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+weighting_factor_*contribution*contribution;
+                      }
+                  
+                  }
+      }
+      else
+      {
+          if(size() != gscale->size() || size() != gRedScale->size())
+            return false;
+
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                      const T contribution = gcont->arr_[n][i][j];
+                      const T scale = (*gscale)(n)[i][j];
+                      const T redScale = (*gRedScale)(n)[i][j];
+                      arr_[n][i][j] = (1.-weighting_factor_)*(1.-weighting_factor_)*arr_[n][i][j]*redScale+scale*contribution*contribution;
+                  }
+      }
+
+      return true;
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::normalizeContainer()
+  {
+      
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+      GeneralContainer<T,1,1> *gscale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_scale_data_);
+      GeneralContainer<T,1,1> *gRedScale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_reduced_scale_data_);
+
+      // at least source has to be defined
+      if (!gcont)
+        return false;
+
+      // only copy if identical
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      const int len = size();
+      if (!gscale || !gRedScale)
+          return true;
+      else
+      {
+          if(size() != gscale->size() || size() != gRedScale->size())
+            return false;
+
+          for(int n = 0; n < len; n++)
+          {
+              if ((*gRedScale)(n)[1][1] < std::numeric_limits<T>::epsilon())
+              {
+                  (*gRedScale)(n)[1][1]  = 0;
+                  for(int i=0;i<NUM_VEC;i++)
+                      for(int j=0;j<LEN_VEC;j++)
+                          arr_[n][i][j] = 0; // assumes weighting factor > 0
+                  continue;
+              }
+              else
+              {
+                  const T redScaleInv = 1./(*gRedScale)(n)[1][1];
+                  for(int i=0;i<NUM_VEC;i++)
+                      for(int j=0;j<LEN_VEC;j++)
+                          arr_[n][i][j] = arr_[n][i][j]*redScaleInv;
+              }
+          }
+      }
+
+      return true;
+  }
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  bool GeneralContainer<T,NUM_VEC,LEN_VEC>::calcSumFromContainer()
+  {
+      
+      GeneralContainer<T,NUM_VEC,LEN_VEC> *gcont = static_cast<GeneralContainer<T,NUM_VEC,LEN_VEC>* >(container_statistics_raw_data_);
+      GeneralContainer<T,1,1> *gscale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_scale_data_);
+      GeneralContainer<T,1,1> *gRedScale = dynamic_cast<GeneralContainer<T,1,1>* >(container_statistics_reduced_scale_data_);
+
+      // at least source has to be defined
+      if (!gcont)
+        return false;
+
+      // only copy if identical
+      if(size() != gcont->size() || nVec() != gcont->nVec() || lenVec() != gcont->lenVec())
+        return false;
+
+      const int len = size();
+      if (!gscale || !gRedScale)
+      {
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                      arr_[n][i][j] = (1.-weighting_factor_)*arr_[n][i][j]+(*gcont)(n)[i][j];
+                      
+                      if (arr_[n][i][j] < std::numeric_limits<T>::epsilon())
+                          arr_[n][i][j] = 0;
+                  }
+      }
+      else
+      {
+          if(size() != gscale->size() || size() != gRedScale->size())
+            return false;
+
+          for(int n = 0; n < len; n++)
+              for(int i=0;i<NUM_VEC;i++)
+                  for(int j=0;j<LEN_VEC;j++)
+                  {
+                      arr_[n][i][j] = (1.-weighting_factor_)*(1.-weighting_factor_)*arr_[n][i][j]*(*gRedScale)(n)[1][1]+(*gcont)(n)[i][j]*(*gscale)(n)[1][1];
+                      
+                      if (arr_[n][i][j] < std::numeric_limits<T>::epsilon())
+                          arr_[n][i][j] = 0;
+                  }
+              }
+
+      return true;
+  }
+
   /* ---------------------------------------------------------------------- */
+
+  template<typename T, int NUM_VEC, int LEN_VEC>
+  void GeneralContainer<T,NUM_VEC,LEN_VEC>::setToDefault(int n)
+  {
+    
+          for(int i = 0; i < NUM_VEC; i++)
+                          for(int j = 0; j < LEN_VEC; j++)
+                                  arr_[n][i][j] = defaultValue_;
+  }
 
   template<typename T, int NUM_VEC, int LEN_VEC>
   void GeneralContainer<T,NUM_VEC,LEN_VEC>::set(int n, T** elem)
@@ -428,7 +713,7 @@
   ------------------------------------------------------------------------- */
 
   template<typename T, int NUM_VEC, int LEN_VEC>
-  int GeneralContainer<T,NUM_VEC,LEN_VEC>::bufSize(int operation,bool scale,bool translate,bool rotate)
+  int GeneralContainer<T,NUM_VEC,LEN_VEC>::bufSize(int operation,bool scale,bool translate,bool rotate) const
   {
       if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
@@ -585,12 +870,27 @@
         if(!this->decidePackUnpackOperation(operation,scale,translate,rotate))
             return 0;
 
-        for(int ii = 0; ii < n; ii++)
+        if(COMM_TYPE_REVERSE == this->communicationType())
         {
-            i = list[ii];
-            for(int j = 0; j < NUM_VEC; j++)
-                for(int k = 0; k < LEN_VEC; k++)
-                    arr_[i][j][k] += static_cast<T>(buf[m++]);
+            
+            for(int ii = 0; ii < n; ii++)
+            {
+                i = list[ii];
+                for(int j = 0; j < NUM_VEC; j++)
+                    for(int k = 0; k < LEN_VEC; k++)
+                        arr_[i][j][k] += static_cast<T>(buf[m++]);
+            }
+        }
+        else if(sizeof(int) == sizeof(T) && COMM_TYPE_REVERSE_BITFIELD == this->communicationType())
+        {
+            
+            for(int ii = 0; ii < n; ii++)
+            {
+                i = list[ii];
+                for(int j = 0; j < NUM_VEC; j++)
+                    for(int k = 0; k < LEN_VEC; k++)
+                        arr_[i][j][k] = (T) (static_cast<int>(arr_[i][j][k]) | static_cast<int>(buf[m++]));
+            }
         }
 
         return (n*NUM_VEC*LEN_VEC);

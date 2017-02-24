@@ -1,0 +1,273 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>compute rigid command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute rigid command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/compute_rigid.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compute-rigid-command">
+<span id="index-0"></span><h1>compute rigid command<a class="headerlink" href="#compute-rigid-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="compute-multisphere-command">
+<h1>compute multisphere command<a class="headerlink" href="#compute-multisphere-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute ID group-ID rigid (or multisphere) property property_name</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
+<li>property = obligatory keyword</li>
+<li>property_name = <em>xcm</em> or <em>vcm</em> or <em>fcm</em> or <em>torque</em> or <em>quat</em> or <em>angmom</em> or <em>omega</em> or <em>density</em> or <em>type</em> or <em>id</em> or <em>masstotal</em> or <em>inertia</em> or <em>ex_space</em> or <em>ey_space</em> or <em>ez_space</em></li>
+</ul>
+<pre class="literal-block">
+<em>xcm</em> = body position (based on center of mass) (3 values)
+<em>vcm</em> = body velocity (based on center of mass) (3 values)
+<em>fcm</em> = body force (based on center of mass) (3 values)
+<em>torque</em> = body torque (based on center of mass) (3 values)
+<em>quat</em> = body quaternion (based on center of mass) (4 values)
+<em>angmom</em> = body angular momentum (based on center of mass) (3 values)
+<em>omega</em> = body angular velocity (based on center of mass) (3 values)
+<em>density</em> = body density (1 value)
+<em>atomtype</em> = atom type (material type) of the rigid body (1 value)
+<em>clumptype</em> = multi-sphere type as defined in <a class="reference internal" href="fix_particletemplate_multisphere.html"><em>fix paticleteplate/multisphere</em></a> (1 value)
+<em>id_multisphere</em> = body id (1 value)
+<em>masstotal</em> = body mass (1 value)
+<em>inertia</em> = body intertia (based on center of mass, around ex_space, ey_space, ez_space) (3 values)
+<em>ex_space</em>, <em>ey_space</em>, <em>ez_space</em> = eigensystem of the body (based on center of mass) (3 values each)
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>compute xcm all rigid property xcm
+compute xcm all multisphere property xcm</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Define a computation that calculates properties of individual multi-sphere
+bodies (clumps) in the similation that were defined via
+<a class="reference internal" href="fix_particletemplate_multisphere.html"><em>fix particletemplate/multisphere</em></a></p>
+<p>The local data stored by this command is generated by looping over the
+all the bodies owned on a process.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">the group-ID is ignored for this command, as
+group data is atom-based, not clump-based.</p>
+</div>
+<p><strong>Output info:</strong></p>
+<p>This compute calculates a local vector or local array depending on the
+length of the data (see above).
+The vector or array can be accessed by any command that
+uses local values from a compute as input.  See <em class="xref std std-ref">this section</em> for an overview of LIGGGHTS(R)-PUBLIC output
+options.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Can only be used together with a granular pair style.
+For accessing particle-wall contact data, only mesh walls can be used.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="dump.html"><em>dump local</em></a>, <a class="reference internal" href="compute_property_local.html"><em>compute property/local</em></a></p>
+<p><strong>Default:</strong> none</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

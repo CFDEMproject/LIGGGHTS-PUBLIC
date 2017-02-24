@@ -31,27 +31,33 @@
 class System;
 class Solver;
 
+//The Struct holding all the data, as well as the solver and integrator ids
 struct SysData{
-	System * system;
-	int solver;
-	int integrator;
+	System *    system;         // a pointer to the actual multibody system
+	int         solver;         // id of the solver to be used
+	int         integrator;     // id of the integrator to be used (NOT used in the code)
 };
 
 class Workspace {
-	SysData * system; // the multibody systems data
-	int currentIndex;
-	int maxAlloc;
+
+    //Private data/structs
+	SysData * systemContainer;   // a pointer to the structs that host the multibody systems data
+	int currentIndex;            // the current id of the (last) multibody system = number of multibody systems that are computed
+	int maxAlloc;                // just for saving the number of currently allocated multibody systems
+	bool mydebug;
 	
 public:
      Workspace();
      ~Workspace();
      
-     double Thalf;
-     double Tfull;
-     double ConFac;
-     double KE_val;
-	  int FirstTime;
+     //Public data/structs
+     double Thalf;              // half time step size
+     double Tfull;              // full time step size
+     double ConFac;             // ??
+     double KE_val;             // kinetic energy of the system
+     int    FirstTime;          // indicator used for first-time setting of kinetic energy
      
+     //Pubic member functions
      bool LoadFile(char* filename);
      
      bool SaveFile(char* filename, int index = -1);
@@ -66,7 +72,7 @@ public:
      void LobattoTwo(double **&vcm,double **&omega,double **&torque, double **&fcm);	 
      
  
-     bool MakeSystem(int& nbody, double *&masstotal, double **&inertia, double **&xcm, double **&vcm, double **&omega, double **&ex_space, double **&ey_space, double **&ez_space, int &njoint, int **&jointbody, double **&xjoint, int& nfree, int*freelist, double dthalf, double dtv, double tempcon, double KE);
+     bool MakeSystem(int& nbody, double *&masstotal, double **&inertia, double **&xcm, double **&vcm, double **&omega, double **&ex_space, double **&ey_space, double **&ez_space, int &njoint, int **&jointbody, double **&xjoint, int& nfree, int*freelist, double dthalf, double dtv, double tempcon, double KE, int flag);
      																																							
 	  
 	  bool SaveSystem(int& nbody, double *&masstotal, double **&inertia, double **&xcm, double **&xjoint, double **&vcm, double **&omega, double **&ex_space, double **&ey_space, double **&ez_space, double **&acm, double **&alpha, double **&torque, double **&fcm, int **&jointbody, int &njoint);

@@ -1,0 +1,127 @@
+# MPI: "ON" or "OFF"
+# Description: Use the message passing interface for parallel execution
+USE_MPI = "ON"
+# CATALYST: "ON" or "OFF"
+# Description: Allow the use of in-situ visualization using ParaView
+USE_CATALYST = "OFF"
+# VTK: "ON" or "OFF"
+# Description: Allow the use of VTK output that can be read directly with ParaView
+USE_VTK = "ON"
+# SUPERQUADRICS: "ON" or "OFF"
+# Description: Enable superquadric particles (Note: requires boost)
+USE_SUPERQUADRICS = "OFF"
+# JPG: "ON" or "OFF"
+# Description: Allow the output of jpg files of the simulation (only sphere rendering available)
+USE_JPG = "OFF"
+# FPIC: "ON" or "OFF"
+# Description: Generate position independent code
+USE_FPIC = "ON"
+# DEBUG:
+#  "OFF"   : optimized code for production (-O2 optimization, no -g)
+#  "ON"    : optimized debug mode (-Og and -g)
+#  "NOOPT" : non-optimized debug mode (-O0 and -g)
+USE_DEBUG = "OFF"
+# CONVEX: "ON" or "OFF"
+# Decription: Enable polyhedral particles (premium only)
+USE_CONVEX = "OFF"
+# If you want to use the polyhedral particles feature and did not install libccd yourself
+# then set the following to "ON" and uncomment it to allow for an automatic download and compilation
+#AUTOINSTALL_CONVEX = "OFF"
+# GZIP: "ON" or "OFF"
+# Description: Some output and input is zipped to reduce file sizes
+USE_GZIP = "OFF"
+# XDR: "ON" or "OFF"
+# Description: Allows dumping of particles in XTC format. This is only necessary if the platform does not have its own XDR files available.
+USE_XDR = "OFF"
+
+################################################################################################
+#
+# WARNING:
+# All variables that follow are overridden if their corresponding non-"_USR" variables are set.
+# E.g. if MPICXX is set, then setting MPICXX_USR will have no effect.
+#
+################################################################################################
+
+# MPI specific variables
+#
+# MPI compiler
+#MPICXX_USR=/path/to/mpicxx
+# Path that contains the includes (mpi.h)
+#MPI_INC_USR=/path/to/mpi/include
+# Path that contains the MPI libraries
+#MPI_LIB_USR=/path/to/mpi/lib
+# Additional MPI libraries
+#MPI_ADDLIBS_USR=-lmpi
+# Additional MPI flags for compilation
+#MPI_CCFLAGS_USR=-funroll-loops -fstrict-aliasing -Wall -Wno-unused-result
+# Additional MPI flags for linking
+#MPI_LDFLAGS_USR=-lstdc++
+# Additional MPI flags for dependency generation
+#MPI_DEPFLAGS_USR=-M
+#
+# C++ Compiler specific variables (only required if USE_MPI is "OFF")
+#
+# C++ compiler
+#CC_USR=/usr/bin/g++
+# Additional flags for compilation
+#CCFLAGS_USR=-funroll-loops -fstrict-aliasing -Wall -Wno-unused-result
+# Additional flags for linking
+#LDFLAGS_USR=-lstdc++
+# Additional flags for dependency generation
+#DEPFLAGS_USR=-M
+
+# Library compilation variables
+#
+# Static library flags
+#ARCHIVE_USR=ar
+#ARFLAGS_USR=-rcsv
+#
+# Shared library flags
+#SHLIBFLAGS_USR=-shared
+
+# Size executable
+#SIZE_USR=size
+
+# Catalyst specific variables
+#
+# Path in which ParaView was built (should contain ParaViewConfig.cmake)
+#PV_BUILD_DIR_USR=/path/to/paraview-build
+
+# VTK specific variables
+#
+# Path that contains the includes (vtkVersion.h)
+#VTK_INC_USR=/path/to/vtk/include
+# Path that contains the VTK libraries
+#VTK_LIB_USR=/path/to/vtk/lib
+# Additional VTK libraries to include
+#VTK_ADDLIBS_USR=
+
+# SUPERQUADRICS specific variables
+#
+# Boost include path
+#BOOST_INC_USR=/path/to/boost/include
+
+# JPG specific variables
+#
+# Path that contains the includes (libjpeg.h)
+#JPG_INC_USR=/path/to/jpeg/include
+# Path that contains the JPG libraries
+#JPG_LIB_USR=/path/to/jpeg/lib
+# Additional JPG libraries to include (-ljpeg added by default)
+#JPG_ADDLIBS_USR=
+
+# CONVEX specific variables
+#
+# Path that contains the includes (ccd/ccd.h)
+#CONVEX_INC_USR=/path/to/libccd/include
+# Path that contains the CONVEX libraries
+#CONVEX_LIB_USR=/path/to/libccd/lib
+# Additional CONVEX libraries to include (-lccd added by default)
+#CONVEX_ADDLIBS_USR=
+
+# LIGGGHTS pre-processor flags
+# Note: Most of these flags can be set by one of the USE_* variables at the top of this file
+#LMP_INC=
+
+# Version of Makefile.user (do not delete the following line)
+MAKEFILE_USER_VERSION = "1.0"

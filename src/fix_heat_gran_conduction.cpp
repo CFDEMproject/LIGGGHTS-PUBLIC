@@ -1,22 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "fix_heat_gran_conduction.h"
@@ -28,7 +48,7 @@
 #include "force.h"
 #include "math_extra.h"
 #include "math_extra_liggghts.h"
-#include "mech_param_gran.h"
+#include "properties.h"
 #include "modify.h"
 #include "neigh_list.h"
 #include "pair_gran.h"
@@ -49,6 +69,11 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) :
   FixHeatGran(lmp, narg, arg),
   fix_conductivity_(0),
   conductivity_(0),
+  store_contact_data_(false),
+  fix_conduction_contact_area_(0),
+  fix_n_conduction_contacts_(0),
+  conduction_contact_area_(0),
+  n_conduction_contacts_(0),
   area_calculation_mode_(CONDUCTION_CONTACT_AREA_OVERLAP),
   fixed_contact_area_(0.),
   area_correction_flag_(0),
@@ -76,7 +101,7 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) :
             error->fix_error(FLERR,this,"'contact_area constant' value must be > 0");
         iarg_++;
       }
-      else error->fix_error(FLERR,this,"expecting 'yes' otr 'no' after 'area_correction'");
+      else error->fix_error(FLERR,this,"expecting 'overlap', 'projection' or 'constant' after 'contact_area'");
       iarg_ += 2;
       hasargs = true;
     } else if(strcmp(arg[iarg_],"area_correction") == 0) {
@@ -85,7 +110,16 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) :
         area_correction_flag_ = 1;
       else if(strcmp(arg[iarg_+1],"no") == 0)
         area_correction_flag_ = 0;
-      else error->fix_error(FLERR,this,"expecting 'overlap', 'projection' or 'constant' after 'contact_area'");
+      else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'area_correction'");
+      iarg_ += 2;
+      hasargs = true;
+    } else if(strcmp(arg[iarg_],"store_contact_data") == 0) {
+      if (iarg_+2 > narg) error->fix_error(FLERR,this,"not enough arguments for keyword 'store_contact_data'");
+      if(strcmp(arg[iarg_+1],"yes") == 0)
+        store_contact_data_ = true;
+      else if(strcmp(arg[iarg_+1],"no") == 0)
+        store_contact_data_ = false;
+      else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'store_contact_data'");
       iarg_ += 2;
       hasargs = true;
     } else if(strcmp(style,"heat/gran/conduction") == 0)
@@ -110,6 +144,42 @@ FixHeatGranCond::~FixHeatGranCond()
 void FixHeatGranCond::post_create()
 {
   FixHeatGran::post_create();
+
+  // register contact storage
+  fix_conduction_contact_area_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("contactAreaConduction","property/atom","scalar",0,0,this->style,false));
+  if(!fix_conduction_contact_area_ && store_contact_data_)
+  {
+    const char* fixarg[10];
+    fixarg[0]="contactAreaConduction";
+    fixarg[1]="all";
+    fixarg[2]="property/atom";
+    fixarg[3]="contactAreaConduction";
+    fixarg[4]="scalar";
+    fixarg[5]="no";
+    fixarg[6]="yes";
+    fixarg[7]="no";
+    fixarg[8]="0.";
+    fix_conduction_contact_area_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+  }
+
+  fix_n_conduction_contacts_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("nContactsConduction","property/atom","scalar",0,0,this->style,false));
+  if(!fix_n_conduction_contacts_ && store_contact_data_)
+  {
+    const char* fixarg[10];
+    fixarg[0]="nContactsConduction";
+    fixarg[1]="all";
+    fixarg[2]="property/atom";
+    fixarg[3]="nContactsConduction";
+    fixarg[4]="scalar";
+    fixarg[5]="no";
+    fixarg[6]="yes";
+    fixarg[7]="no";
+    fixarg[8]="0.";
+    fix_n_conduction_contacts_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+  }
+
+  if(store_contact_data_ && (!fix_conduction_contact_area_ || !fix_n_conduction_contacts_))
+    error->one(FLERR,"internal error");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -133,6 +203,19 @@ int FixHeatGranCond::setmask()
 
 /* ---------------------------------------------------------------------- */
 
+void FixHeatGranCond::updatePtrs()
+{
+  FixHeatGran::updatePtrs();
+
+  if(store_contact_data_)
+  {
+    conduction_contact_area_ = fix_conduction_contact_area_->vector_atom;
+    n_conduction_contacts_ = fix_n_conduction_contacts_->vector_atom;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixHeatGranCond::init()
 {
   // initialize base class
@@ -140,7 +223,7 @@ void FixHeatGranCond::init()
 
   const double *Y, *nu, *Y_orig;
   double expo, Yeff_ij, Yeff_orig_ij, ratio;
-  int max_type = pair_gran->mpg->max_type();
+  int max_type = atom->get_properties()->max_type();
 
   if (conductivity_) delete []conductivity_;
   conductivity_ = new double[max_type];
@@ -192,8 +275,7 @@ void FixHeatGranCond::init()
   updatePtrs();
 
   // error checks on coarsegraining
-  if(force->cg_active())
-    error->cg(FLERR,this->style);
+  
 }
 
 /* ---------------------------------------------------------------------- */
@@ -249,7 +331,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
   double xtmp,ytmp,ztmp,delx,dely,delz;
   double radi,radj,radsum,rsq,r,tcoi,tcoj;
   int *ilist,*jlist,*numneigh,**firstneigh;
-  int *touch,**firsttouch;
+  int *contact_flag,**first_contact_flag;
 
   int newton_pair = force->newton_pair;
 
@@ -262,7 +344,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
   ilist = pair_gran->list->ilist;
   numneigh = pair_gran->list->numneigh;
   firstneigh = pair_gran->list->firstneigh;
-  if(HISTFLAG) firsttouch = pair_gran->listgranhistory->firstneigh;
+  if(HISTFLAG) first_contact_flag = pair_gran->listgranhistory->firstneigh;
 
   double *radius = atom->radius;
   double **x = atom->x;
@@ -271,6 +353,12 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
   int *mask = atom->mask;
 
   updatePtrs();
+
+  if(store_contact_data_)
+  {
+    fix_conduction_contact_area_->set_all(0.);
+    fix_n_conduction_contacts_->set_all(0.);
+  }
 
   // loop over neighbors of my atoms
   for (ii = 0; ii < inum; ii++) {
@@ -281,7 +369,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
     radi = radius[i];
     jlist = firstneigh[i];
     jnum = numneigh[i];
-    if(HISTFLAG) touch = firsttouch[i];
+    if(HISTFLAG) contact_flag = first_contact_flag[i];
 
     for (jj = 0; jj < jnum; jj++) {
       j = jlist[jj];
@@ -299,7 +387,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
         radsum = radi + radj;
       }
 
-      if ((HISTFLAG && touch[jj]) || (!HISTFLAG && (rsq < radsum*radsum))) {  //contact
+      if ((HISTFLAG && contact_flag[jj]) || (!HISTFLAG && (rsq < radsum*radsum))) {  //contact
         
         if(HISTFLAG)
         {
@@ -324,7 +412,15 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
               r = radsum - delta_n;
             }
 
-            contactArea = - M_PI/4 * ( (r-radi-radj)*(r+radi-radj)*(r-radi+radj)*(r+radi+radj) )/(r*r); //contact area of the two spheres
+            if (r < fmax(radi, radj)) // one sphere is inside the other
+            {
+                // set contact area to area of smaller sphere
+                contactArea = fmin(radi,radj);
+                contactArea *= contactArea * M_PI;
+            }
+            else
+                //contact area of the two spheres
+                contactArea = - M_PI/4.0 * ( (r-radi-radj)*(r+radi-radj)*(r-radi+radj)*(r+radi+radj) )/(r*r);
         }
         else if (CONTACTAREA == CONDUCTION_CONTACT_AREA_CONSTANT)
             contactArea = fixed_contact_area_;
@@ -336,7 +432,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
 
         tcoi = conductivity_[type[i]-1];
         tcoj = conductivity_[type[j]-1];
-        if (tcoi < SMALL || tcoj < SMALL) hc = 0.;
+        if (tcoi < SMALL_FIX_HEAT_GRAN || tcoj < SMALL_FIX_HEAT_GRAN) hc = 0.;
         else hc = 4.*tcoi*tcoj/(tcoi+tcoj)*sqrt(contactArea);
 
         flux = (Temp[j]-Temp[i])*hc;
@@ -351,14 +447,25 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
           directionalHeatFlux[i][0] += 0.50 * dirFlux[0];
           directionalHeatFlux[i][1] += 0.50 * dirFlux[1];
           directionalHeatFlux[i][2] += 0.50 * dirFlux[2];
+
+          if(store_contact_data_)
+          {
+              conduction_contact_area_[i] += contactArea;
+              n_conduction_contacts_[i] += 1.;
+          }
           if (newton_pair || j < nlocal)
           {
             heatFlux[j] -= flux;
             directionalHeatFlux[j][0] += 0.50 * dirFlux[0];
             directionalHeatFlux[j][1] += 0.50 * dirFlux[1];
             directionalHeatFlux[j][2] += 0.50 * dirFlux[2];
-          }
 
+            if(store_contact_data_)
+            {
+                conduction_contact_area_[j] += contactArea;
+                n_conduction_contacts_[j] += 1.;
+            }
+          }
         }
 
         if(cpl_flag && cpl) cpl->add_heat(i,j,flux);
@@ -366,8 +473,20 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
     }
   }
 
-  if(newton_pair) fix_heatFlux->do_reverse_comm();
-  if(newton_pair) fix_directionalHeatFlux->do_reverse_comm();
+  if(newton_pair)
+  {
+    fix_heatFlux->do_reverse_comm();
+    fix_directionalHeatFlux->do_reverse_comm();
+    fix_conduction_contact_area_->do_reverse_comm();
+    fix_n_conduction_contacts_->do_reverse_comm();
+  }
+
+  if(!cpl_flag && store_contact_data_)
+  for(int i = 0; i < nlocal; i++)
+  {
+     if(n_conduction_contacts_[i] > 0.5)
+        conduction_contact_area_[i] /= n_conduction_contacts_[i];
+  }
 }
 
 /* ----------------------------------------------------------------------

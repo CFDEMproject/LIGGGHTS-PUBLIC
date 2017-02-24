@@ -27,7 +27,16 @@ action () {
 }
 
 # all package files with no dependencies
-
+# explicity exclude wildcard actions
 for file in *.cpp *.h; do
+
+  if [ "$file" == "*.cpp" ];then
+     continue
+  fi
+  if [ "$file" == "*.h" ];then
+     continue
+  fi
+
+  #echo "action for file $file" 
   action $file
 done

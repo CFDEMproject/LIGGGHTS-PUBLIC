@@ -15,56 +15,72 @@
  *      CONTACT:        anderk5@rpi.edu                                    *
  *_________________________________________________________________________*/
 
-
+#include <stdio.h>
 #include "system.h"
 #include "body.h"
 #include "joint.h"
 #include <math.h>
 
-
+/***************************************************************/
+// CONSTRUCTOR
+/***************************************************************/
 System::System(){
 	mappings = NULL;
 }
 
+/***************************************************************/
+// DESTRUCTOR
+/***************************************************************/
 System::~System(){
   Delete();
 }
 
+/***************************************************************/
+// PUBLIC MEMBER FUNCTIONS
+/***************************************************************/
 void System::Delete(){
   delete [] mappings;
   bodies.DeleteValues();
   joints.DeleteValues();
 }
 
+/***************************************************************/
 int System::GetNumBodies(){
   return bodies.GetNumElements();
 }
 
+/***************************************************************/
 int * System::GetMappings()
 {
 	return mappings;
 }
 
+/***************************************************************/
 void System::AddBody(Body* body){
   bodies.Append(body);
 }
 
+/***************************************************************/
 void System::AddJoint(Joint* joint){
   joints.Append(joint);
 }
 
+/***************************************************************/
 void System::SetTime(double t){
   time = t;
 }
 
+/***************************************************************/
 double System::GetTime(){
   return time;
 }
 
+/***************************************************************/
 void System::ComputeForces(){	
 	// NOT DOING ANYTHING AT THIS TIME
   }  
-  
+
+/***************************************************************/  
 bool System::ReadIn(istream& in){
   int numbodies;
   Body* body;
@@ -169,6 +185,7 @@ bool System::ReadIn(istream& in){
   return true;
 }
 
+/***************************************************************/
 void System::WriteOut(ostream& out){
   // number of bodies
   out << bodies.GetNumElements() << endl;
@@ -212,6 +229,7 @@ void System::WriteOut(ostream& out){
   }
 }
 
+/***************************************************************/
 void System::ClearBodyIDs(){
   ListElement<Body>* current = bodies.GetHeadElement();
 
@@ -221,6 +239,7 @@ void System::ClearBodyIDs(){
   }
 }
 
+/***************************************************************/
 void System::ClearJointIDs(){
   ListElement<Joint>* current = joints.GetHeadElement();
 
@@ -230,7 +249,7 @@ void System::ClearJointIDs(){
   }
 }
 
-
+/***************************************************************/
 void System::Create_DegenerateSystem(int& nfree, int*freelist, double *&masstotal, double **&inertia, double **&xcm, double **&vcm, double **&omega, double **&ex_space, double **&ey_space, double **&ez_space){
 
  //-------------------------------------------------------------------------//    
@@ -382,8 +401,8 @@ void System::Create_DegenerateSystem(int& nfree, int*freelist, double *&masstota
   delete xh2;  
 }
 
-
-void System::Create_System_LAMMPS(int numbodies, double *mass,double **inertia, double ** xcm, double ** xjoint,double **vcm,double **omega,double **ex_space, double **ey_space, double **ez_space, int b, int * mapping, int count){
+/***************************************************************/
+void System::Create_System_LAMMPS(int numbodies, double *mass,double **inertia, double ** xcm, double ** xjoint,double **vcm,double **omega,double **ex_space, double **ey_space, double **ez_space, int b, int * mapping, int count, int flag){
 
 	//-------------------------------------------------------------------------//    
   // Declaring Temporary Entities 
@@ -462,7 +481,7 @@ void System::Create_System_LAMMPS(int numbodies, double *mass,double **inertia, 
 
 	
 	//-------------------------------------------------------------------------//    
-// Begin looping over each body for recursive kinematics
+    // Begin looping over each body for recursive kinematics
 	//-------------------------------------------------------------------------//
 	for(int i=0;i<b;i++){	    
 		if (i == 0){
@@ -545,7 +564,7 @@ void System::Create_System_LAMMPS(int numbodies, double *mass,double **inertia, 
         
 	
 		//-------------------------------------------------------------------------//    
-// Create bodies and joints with associated properties for POEMS
+        // Create bodies and joints with associated properties for POEMS
 		//-------------------------------------------------------------------------//
 
 		point_CM = new FixedPoint(r2);
@@ -570,8 +589,21 @@ void System::Create_System_LAMMPS(int numbodies, double *mass,double **inertia, 
 			joint->SetZeroOrientation(One);
 			joint->DimQandU(7,6);
 			joint->SetInitialState(qq,vv);  	  
-			joint->ForwardKinematics();  
-		}    
+			joint->ForwardKinematics();
+
+		} 
+		else if (flag ==1){
+		        joint= new SphericalFlexiblejoint;
+			AddJoint(joint);
+			joint->SetBodies(prev,body);
+			body->AddJoint(joint);
+			prev->AddJoint(joint);
+			joint->SetPoints(point_p,point_k);          
+			joint->SetZeroOrientation(One);
+			joint->DimQandU(4,3);
+			joint->SetInitialState(q,qdot);
+			joint->ForwardKinematics(); 
+		}   
 		else{	     
 			joint= new SphericalJoint;
 			AddJoint(joint);
@@ -582,7 +614,8 @@ void System::Create_System_LAMMPS(int numbodies, double *mass,double **inertia, 
 			joint->SetZeroOrientation(One);
 			joint->DimQandU(4,3);
 			joint->SetInitialState(q,qdot);
-			joint->ForwardKinematics();  
+			joint->ForwardKinematics(); 
+                        
 		}
 	}
 	for(int i = 0; i < b; i++)
@@ -594,3 +627,4 @@ void System::Create_System_LAMMPS(int numbodies, double *mass,double **inertia, 
 	delete [] xh2;
   
 }
+/***************************************************************/

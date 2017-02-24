@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioProject Name="WorkingModule" ProjectGUID="{CB7AE449-C692-4C70-B9F2-A9F10E7D61A4}" ProjectType="Visual C++" RootNamespace="WorkingModule" TargetFrameworkVersion="0" Version="9,00">
+	
+   <Platforms>
+		
+      <Platform Name="Win32"/>
+		
+	
+   </Platforms>
+	
+   <ToolFiles>
+	
+   </ToolFiles>
+	
+   <Configurations>
+		
+      <Configuration ATLMinimizesCRunTimeLibraryUsage="false" CharacterSet="2" ConfigurationType="2" InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops" IntermediateDirectory=".\Debug" Name="Debug|Win32" OutputDirectory=".\Debug" UseOfMFC="0">
+			
+         <Tool Name="VCPreBuildEventTool"/>
+			
+         <Tool Name="VCCustomBuildTool"/>
+			
+         <Tool Name="VCXMLDataGeneratorTool"/>
+			
+         <Tool Name="VCWebServiceProxyGeneratorTool"/>
+			
+         <Tool MkTypLibCompatible="true" Name="VCMIDLTool" PreprocessorDefinitions="_DEBUG" SuppressStartupBanner="true" TargetEnvironment="1" TypeLibraryName=".\Debug/WorkingModule.tlb"/>
+			
+         <Tool AdditionalIncludeDirectories="&#34;..\MBSKernelLib&#34;;&#34;..\UtilityLib&#34;; &#34;..\mbs_interface&#34;;  &#34;..\parser&#34;" AssemblerListingLocation=".\Debug/" BasicRuntimeChecks="3" DebugInformationFormat="4" Name="VCCLCompilerTool" ObjectFile=".\Debug/" Optimization="0" PrecompiledHeaderFile=".\Debug/WorkingModule.pch" PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;WIN32;_DEBUG;_WINDOWS;_USRDLL;WORKINGMODULE_EXPORTS" ProgramDataBaseFileName=".\Debug/" RuntimeLibrary="3" SuppressStartupBanner="true" UsePrecompiledHeader="0"/>
+			
+         <Tool Name="VCManagedResourceCompilerTool"/>
+			
+         <Tool AdditionalIncludeDirectories="" Culture="1049" Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG"/>
+			
+         <Tool Name="VCPreLinkEventTool"/>
+			
+         <Tool AdditionalDependencies="lapack_win32_MT.lib blas_win32_MT.lib" AdditionalLibraryDirectories="..\WCDriver3D\extern_lib" AdditionalOptions="/MACHINE:I386" GenerateDebugInformation="true" GenerateMapFile="false" IgnoreDefaultLibraryNames="" ImportLibrary=".\Debug/WorkingModule.lib" LinkIncremental="1" Name="VCLinkerTool" OutputFile=".\Debug\WorkingModule.dll" ProgramDatabaseFile=".\Debug/WorkingModule.pdb" SuppressStartupBanner="true"/>
+			
+         <Tool Name="VCALinkTool"/>
+			
+         <Tool Name="VCManifestTool"/>
+			
+         <Tool Name="VCXDCMakeTool"/>
+			
+         <Tool Name="VCBscMakeTool"/>
+			
+         <Tool Name="VCFxCopTool"/>
+			
+         <Tool Name="VCAppVerifierTool"/>
+			
+         <Tool CommandLine="copy &#34;$(TargetPath)&#34; &#34;..\hotint$(PlatformName)\$(ConfigurationName)\$(TargetFileName)&#34;" Name="VCPostBuildEventTool"/>
+		
+      </Configuration>
+		
+      <Configuration ATLMinimizesCRunTimeLibraryUsage="false" CharacterSet="2" ConfigurationType="2" InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops" IntermediateDirectory=".\Release" Name="Release|Win32" OutputDirectory=".\Release" UseOfMFC="0">
+			
+         <Tool Name="VCPreBuildEventTool"/>
+			
+         <Tool Name="VCCustomBuildTool"/>
+			
+         <Tool Name="VCXMLDataGeneratorTool"/>
+			
+         <Tool Name="VCWebServiceProxyGeneratorTool"/>
+			
+         <Tool MkTypLibCompatible="true" Name="VCMIDLTool" PreprocessorDefinitions="NDEBUG" SuppressStartupBanner="true" TargetEnvironment="1" TypeLibraryName=".\Release/WorkingModule.tlb"/>
+			
+         <Tool AdditionalIncludeDirectories="&#34;..\MBSKernelLib&#34;;&#34;..\UtilityLib&#34;; &#34;..\mbs_interface&#34;;  &#34;..\parser&#34;" AssemblerListingLocation=".\Release/" BasicRuntimeChecks="0" BufferSecurityCheck="true" EnableFunctionLevelLinking="true" EnableIntrinsicFunctions="false" ExceptionHandling="1" FavorSizeOrSpeed="1" ForceConformanceInForLoopScope="false" InlineFunctionExpansion="2" Name="VCCLCompilerTool" ObjectFile=".\Release/" OmitFramePointers="true" Optimization="2" PrecompiledHeaderFile=".\Release/WorkingModule.pch" PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;WORKINGMODULE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE" ProgramDataBaseFileName=".\Release/" RuntimeLibrary="2" SmallerTypeCheck="false" StringPooling="true" UsePrecompiledHeader="0"/>
+			
+         <Tool Name="VCManagedResourceCompilerTool"/>
+			
+         <Tool AdditionalIncludeDirectories="" Culture="1033" Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG"/>
+			
+         <Tool Name="VCPreLinkEventTool"/>
+			
+         <Tool AdditionalDependencies="blas_win32_MT.lib lapack_win32_MT.lib" AdditionalLibraryDirectories="..\WCDriver3D\extern_lib" AdditionalOptions="/MACHINE:I386" DelayLoadDLLs="" GenerateDebugInformation="false" GenerateMapFile="false" ImportLibrary=".\Release/WorkingModule.lib" LinkIncremental="1" MapExports="false" Name="VCLinkerTool" OutputFile=".\Release\WorkingModule.dll" ProgramDatabaseFile=".\Release/WorkingModule.pdb" SuppressStartupBanner="true"/>
+			
+         <Tool Name="VCALinkTool"/>
+			
+         <Tool Name="VCManifestTool"/>
+			
+         <Tool Name="VCXDCMakeTool"/>
+			
+         <Tool Name="VCBscMakeTool"/>
+			
+         <Tool Name="VCFxCopTool"/>
+			
+         <Tool Name="VCAppVerifierTool"/>
+			
+         <Tool CommandLine="copy &#34;$(TargetPath)&#34; &#34;..\hotint$(PlatformName)\$(ConfigurationName)\$(TargetFileName)&#34;" Name="VCPostBuildEventTool"/>
+		
+      </Configuration>
+		
+		
+		
+		
+	
+   </Configurations>
+	
+   <References>
+	
+   </References>
+	
+   <Files>
+		
+      <Filter Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat" Name="Source Files">
+			
+         <File RelativePath=".\WorkingModule.cpp">
+				
+            <FileConfiguration Name="Release|Win32">
+					
+               <Tool Name="VCCLCompilerTool" Optimization="4"/>
+				
+            </FileConfiguration>
+				
+				
+				
+			
+         </File>
+			
+         <File RelativePath="WorkingModule.rc">
+			
+         </File>
+			
+         <File RelativePath="WorkingModuleBaseClass.cpp">
+				
+            <FileConfiguration Name="Release|Win32">
+					
+               <Tool Name="VCCLCompilerTool" RuntimeLibrary="0"/>
+				
+            </FileConfiguration>
+				
+			
+         </File>
+		
+      </Filter>
+		
+      <Filter Filter="h;hpp;hxx;hm;inl" Name="Header Files">
+			
+         <File RelativePath=".\hotint_version.h">
+			
+         </File>
+			
+         <File RelativePath=".\hotint_version_info.h">
+			
+         </File>
+			
+         <File RelativePath="resource.h">
+			
+         </File>
+			
+         <File RelativePath=".\StdAfx.h">
+			
+         </File>
+			
+         <File RelativePath=".\UserOutput.h">
+			
+         </File>
+			
+         <File RelativePath=".\WinCompDriverInterface.h">
+			
+         </File>
+			
+         <File RelativePath=".\WorkingModuleBaseClass.h">
+			
+         </File>
+		
+      </Filter>
+		
+      <Filter Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe" Name="Resource Files">
+		
+      </Filter>
+	
+   </Files>
+	
+   <Globals>
+	
+   </Globals>
+
+</VisualStudioProject>

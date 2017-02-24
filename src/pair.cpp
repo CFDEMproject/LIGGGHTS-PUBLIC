@@ -1,28 +1,60 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
    Contributing author: Paul Crozier (SNL)
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
+#include <mpi.h>
 #include "ctype.h"
 #include "float.h"
 #include "limits.h"
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "pair.h"
 #include "atom.h"
 #include "neighbor.h"
@@ -283,11 +315,11 @@ void Pair::init_list(int which, NeighList *ptr)
 void Pair::init_tables(double cut_coul, double *cut_respa)
 {
   int masklo,maskhi;
-  double r,grij,expm2,derfc,egamma,fgamma,rsw;
+  double r,grij=0.0,expm2=0.0,derfc=0.0,egamma=0.0,fgamma=0.0,rsw;
   double qqrd2e = force->qqrd2e;
 
   if (force->kspace == NULL)
-    error->all(FLERR,"Pair style requres a KSpace style");
+    error->all(FLERR,"Pair style requires a KSpace style");
   double g_ewald = force->kspace->g_ewald;
 
   double cut_coulsq = cut_coul * cut_coul;
@@ -630,15 +662,14 @@ void Pair::free_disp_tables()
 
 double Pair::mix_energy(double eps1, double eps2, double sig1, double sig2)
 {
-  double value;
   if (mix_flag == GEOMETRIC)
-    value = sqrt(eps1*eps2);
+    return sqrt(eps1*eps2);
   else if (mix_flag == ARITHMETIC)
-    value = sqrt(eps1*eps2);
+    return sqrt(eps1*eps2);
   else if (mix_flag == SIXTHPOWER)
-    value = 2.0 * sqrt(eps1*eps2) *
-      pow(sig1,3.0) * pow(sig2,3.0) / (pow(sig1,6.0) + pow(sig2,6.0));
-  return value;
+    return (2.0 * sqrt(eps1*eps2) *
+      pow(sig1,3.0) * pow(sig2,3.0) / (pow(sig1,6.0) + pow(sig2,6.0)));
+  else return 0.0;
 }
 
 /* ----------------------------------------------------------------------
@@ -647,14 +678,13 @@ double Pair::mix_energy(double eps1, double eps2, double sig1, double sig2)
 
 double Pair::mix_distance(double sig1, double sig2)
 {
-  double value;
   if (mix_flag == GEOMETRIC)
-    value = sqrt(sig1*sig2);
+    return sqrt(sig1*sig2);
   else if (mix_flag == ARITHMETIC)
-    value = 0.5 * (sig1+sig2);
+    return (0.5 * (sig1+sig2));
   else if (mix_flag == SIXTHPOWER)
-    value = pow((0.5 * (pow(sig1,6.0) + pow(sig2,6.0))),1.0/6.0);
-  return value;
+    return pow((0.5 * (pow(sig1,6.0) + pow(sig2,6.0))),1.0/6.0);
+  else return 0.0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1462,7 +1492,7 @@ void Pair::write_file(int narg, char **arg)
 
   int n = force->inumeric(FLERR,arg[2]);
 
-  int style;
+  int style = 0;
   if (strcmp(arg[3],"r") == 0) style = RLINEAR;
   else if (strcmp(arg[3],"rsq") == 0) style = RSQ;
   else if (strcmp(arg[3],"bitmap") == 0) style = BMP;
@@ -1478,7 +1508,7 @@ void Pair::write_file(int narg, char **arg)
 
   int me;
   MPI_Comm_rank(world,&me);
-  FILE *fp;
+  FILE *fp = NULL;
   if (me == 0) {
     fp = fopen(arg[6],"a");
     if (fp == NULL) error->one(FLERR,"Cannot open pair_write file");
@@ -1515,7 +1545,7 @@ void Pair::write_file(int narg, char **arg)
     q[0] = force->numeric(FLERR,arg[8]);
     q[1] = force->numeric(FLERR,arg[9]);
   }
-  double *q_hold;
+  double *q_hold = NULL;
 
   if (atom->q) {
     q_hold = atom->q;

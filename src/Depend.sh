@@ -41,71 +41,8 @@ depend () {
 # add one if statement per parent package
 # add one depend() call per child package that depends on that parent
 
-if (test $1 = "ASPHERE") then
-  depend GPU
-  depend USER-OMP
-fi
-
-if (test $1 = "CLASS2") then
-  depend GPU
-  depend USER-CUDA
-  depend USER-OMP
-fi
-
-if (test $1 = "COLLOID") then
-  depend GPU
-  depend USER-OMP
-fi
-
-if (test $1 = "DIPOLE") then
-  depend USER-MISC
-  depend USER-OMP
-fi
-
-if (test $1 = "GRANULAR") then
-  depend USER-CUDA
-  depend USER-OMP
-fi
-
-if (test $1 = "KSPACE") then
-  depend GPU
-  depend OPT
-  depend USER-CUDA
-  depend USER-OMP
-  depend USER-PHONON
-fi
-
-if (test $1 = "MANYBODY") then
-  depend GPU
-  depend OPT
-  depend USER-CUDA
-  depend USER-MISC
-  depend USER-OMP
-fi
-
-if (test $1 = "MOLECULE") then
-  depend GPU
-  depend USER-CUDA
-  depend USER-MISC
-  depend USER-OMP
-fi
-
-if (test $1 = "PERI") then
-  depend USER-OMP
-fi
-
-if (test $1 = "RIGID") then
-  depend USER-OMP
-fi
-
-if (test $1 = "USER-CG-CMM") then
-  depend GPU
-  depend USER-CUDA
-  depend USER-OMP
-fi
-
-if (test $1 = "USER-MISC") then
-  depend GPU
-  depend USER-OMP
-fi
+#if (test $1 = "ASPHERE") then
+#  depend GPU
+#  depend USER-OMP
+#fi
 

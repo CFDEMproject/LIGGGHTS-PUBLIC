@@ -1,0 +1,50 @@
+%================================================%
+%      Option settings and model parameters      %
+%================================================%
+
+
+GeneralOptions
+{
+  Application
+  {  
+    start_computation_automatically=0
+    reload_last_model=0
+  } 
+}		
+
+storefact = 100  
+
+LoggingOptions.Solver.general_information = 0
+
+ViewingOptions.Misc.redraw_frequency = 4			%2...100s, 3...20s, 4...2s
+ViewingOptions.Origin.show = 0
+
+SolverOptions
+{		
+  end_time = 10.0
+  Timeint
+  {
+    max_step_size = 2.5e-4     
+    min_step_size = max_step_size
+    tableau_name =  "LobattoIIIA"
+    max_stages = 2
+    do_implicit_integration = 1    
+  }
+  Solution
+  {
+    write_solution_every_x_step = storefact
+    store_data_every =  SolverOptions.Timeint.max_step_size*storefact
+    store_data_to_files = 1
+  }
+  Linalg
+  {
+    use_sparse_solver = 1				%1|(0) ... Sparse Jacobian and sparse solver is (not)activated
+  }
+  Newton
+  {
+    max_modified_newton_steps = 20  	%max. modified Newton steps
+    relative_accuracy = 1e-7
+    absolute_accuracy = 1e-7   			%should be much smaller than typical forces
+    use_modified_newton = 1
+  }
+}

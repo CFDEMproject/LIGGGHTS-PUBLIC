@@ -1,19 +1,20 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
 :line
 
 neigh_modify command :h3
+neigh_settings command :h3
 
 [Syntax:]
 
 neigh_modify keyword values ... :pre
 
 one or more keyword/value pairs may be listed :ulb,l
-keyword = {delay} or {every} or {check} or {once} or {cluster} or {include} or {exclude} or {page} or {one} or {binsize}
+keyword = {delay} or {every} or {check} or {once} or {include} or {exclude} or {page} or {one} or {binsize}
   {delay} value = N
     N = delay building until this many steps since last build
   {every} value = M
@@ -24,9 +25,6 @@ keyword = {delay} or {every} or {check} or {once} or {cluster} or {include} or {
   {once}
     {yes} = only build neighbor list once at start of run and never rebuild
     {no} = rebuild neighbor list according to other settings
-  {cluster}
-    {yes} = check bond,angle,etc neighbor list for nearby clusters
-    {no} = do not check bond,angle,etc neighbor list for nearby clusters
   {include} value = group-ID
     group-ID = only build pair neighbor lists for atoms in this group
   {exclude} values:
@@ -48,6 +46,11 @@ keyword = {delay} or {every} or {check} or {once} or {cluster} or {include} or {
     size = bin size for neighbor list construction (distance units) :pre
 :ule
 
+neigh_settings binsize_value :pre
+
+binsize_value = bin size for neighbor list constrution (distance units) :ulb,l
+:ule
+
 [Examples:]
 
 neigh_modify every 2 delay 10 check yes page 100000
@@ -55,12 +58,16 @@ neigh_modify exclude type 2 3
 neigh_modify exclude group frozen frozen check no
 neigh_modify exclude group residue1 chain3
 neigh_modify exclude molecule rigid
-neigh_modify delay 0 contact_distance_factor 1.5 :pre
+neigh_modify delay 0 contact_distance_factor 1.5
+neigh_settings
+neigh_settings 0.1 :pre
 
 [Description:]
 
-This command sets parameters that affect the building and use of
-pairwise neighbor lists.
+These commands set parameters that affect the building and use of
+pairwise neighbor lists. The "neigh_settings" command is a wrapper of
+"neigh_modify" that sets {delay}=0. Its only, optional, parameter
+will be interpreted as the {binsize} value (see below).
 
 The {every}, {delay}, {check}, and {once} options affect how often
 lists are built as a simulation runs.  The {delay} setting means never
@@ -84,24 +91,9 @@ command), the {every} and {delay} parameters refer to the longest
 
 The {contact_distance_factor} setting can be used to increase the range
 of granular neighbor lists. When {contact_distance_factor} > 1.0,
-instead of the standard criterion ri+rj+skin < distance, LIGGGHTS is
+instead of the standard criterion ri+rj+skin < distance, LIGGGHTS(R)-PUBLIC is
 checking for {contact_distance_factor} *(ri+rj)+skin < distance to
 decided if a pair of granular particles goes into a neighbor list.
-
-The {cluster} option does a sanity test every time neighbor lists are
-built for bond, angle, dihedral, and improper interactions, to check
-that each set of 2, 3, or 4 atoms is a cluster of nearby atoms.  It
-does this by computing the distance between pairs of atoms in the
-interaction and insuring they are not further apart than half the
-periodic box length.  If they are, an error is generated, since the
-interaction would be computed between far-away atoms instead of their
-nearby periodic images.  The only way this should happen is if the
-pairwise cutoff is so short that atoms that are part of the same
-interaction are not communicated as ghost atoms.  This is an unusual
-model (e.g. no pair interactions at all) and the problem can be fixed
-by use of the "communicate cutoff"_communicate.html command.  Note
-that to save time, the default {cluster} setting is {no}, so that this
-check is not performed.
 
 The {include} option limits the building of pairwise neighbor lists to
 atoms in the specified group.  This can be useful for models where a
@@ -144,17 +136,6 @@ Note that the exclude options only affect pairwise interactions; see
 the "delete_bonds"_delete_bonds.html command for information on
 turning off bond interactions.
 
-IMPORTANT NOTE: Excluding pairwise interactions will not work
-correctly when also using a long-range solver via the
-"kspace_style"_kspace_style.html command.  LAMMPS will give a warning
-to this effect.  This is because the short-range pairwise interaction
-needs to subtract off a term from the total energy for pairs whose
-short-range interaction is excluded, to compensate for how the
-long-range solver treats the interaction.  This is done correctly for
-pairwise interactions that are excluded (or weighted) via the
-"special_bonds"_special_bonds.html command.  But it is not done for
-interactions that are excluded via these neigh_modify exclude options.
-
 The {page} and {one} options affect how memory is allocated for the
 neighbor lists.  For most simulations the default settings for these
 options are fine, but if a very large problem is being run or a very
@@ -163,13 +144,13 @@ of neighboring atoms are stored in "pages", which are allocated one
 after another as they fill up.  The size of each page is set by the
 {page} value.  A new page is allocated when the next atom's neighbors
 could potentially overflow the list.  This threshold is set by the
-{one} value which tells LAMMPS the maximum number of neighbor's one
+{one} value which tells LIGGGHTS(R)-PUBLIC the maximum number of neighbor's one
 atom can have.
 
-IMPORTANT NOTE: LAMMPS can crash without an error message if the
+IMPORTANT NOTE: LIGGGHTS(R)-PUBLIC can crash without an error message if the
 number of neighbors for a single particle is larger than the {page}
 setting, which means it is much, much larger than the {one} setting.
-This is because LAMMPS doesn't error check these limits for every
+This is because LIGGGHTS(R)-PUBLIC doesn't error check these limits for every
 pairwise interaction (too costly), but only after all the particle's
 neighbors have been found.  This problem usually means something is
 very wrong with the way you've setup your problem (particle spacing,
@@ -179,7 +160,7 @@ settings accordingly.
 
 The {binsize} option allows you to specify what size of bins will be
 used in neighbor list construction to sort and find neighboring atoms.
-By default, for "neighbor style bin"_neighbor.html, LAMMPS uses bins
+By default, for "neighbor style bin"_neighbor.html, LIGGGHTS(R)-PUBLIC uses bins
 that are 1/2 the size of the maximum pair cutoff.  For "neighbor style
 multi"_neighbor.html, the bins are 1/2 the size of the minimum pair
 cutoff.  Typically these are good values values for minimizing the
@@ -187,7 +168,7 @@ time for neighbor list construction.  This setting overrides the
 default.  If you make it too big, there is little overhead due to
 looping over bins, but more atoms are checked.  If you make it too
 small, the optimal number of atoms is checked, but bin overhead goes
-up.  If you set the binsize to 0.0, LAMMPS will use the default
+up.  If you set the binsize to 0.0, LIGGGHTS(R)-PUBLIC will use the default
 binsize of 1/2 the cutoff.
 
 [Restrictions:]
@@ -209,5 +190,5 @@ space.
 [Default:]
 
 The option defaults are delay = 10, every = 1, check = yes, once = no,
-cluster = no, include = all, exclude = none, page = 100000, one =
+include = all, exclude = none, page = 100000, one =
 2000, and binsize = 0.0.

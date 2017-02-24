@@ -1,30 +1,48 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Contributing author for interpolated output:
+    Felix Kleinfeldt (OVGU Magdeburg)
 ------------------------------------------------------------------------- */
 
-/* ----------------------------------------------------------------------
-   Contributing author for interpolated output:
-   Felix Kleinfeldt (OVGU Magdeburg)
-------------------------------------------------------------------------- */
-
-#include "string.h"
+#include <string.h>
 #include "dump_mesh_vtk.h"
 #include "tri_mesh.h"
 #include "domain.h"
@@ -42,19 +60,20 @@ using namespace LAMMPS_NS;
 
 enum
 {
-    DUMP_STRESS = 1,
-    DUMP_STRESSCOMPONENTS = 2,
-    DUMP_ID = 4,
-    DUMP_VEL = 8,
-    DUMP_WEAR = 16,
-    DUMP_TEMP = 32,
-    DUMP_OWNER = 64,
-    DUMP_AREA = 128,
-    DUMP_AEDGES = 256,
-    DUMP_ACORNERS = 512,
-    DUMP_INDEX = 1024,
-    DUMP_NNEIGHS = 2048,
-    DUMP_MIN_ACTIVE_EDGE_DIST = 2048
+    DUMP_STRESS               = 1<<0,
+    DUMP_STRESSCOMPONENTS     = 1<<1,
+    DUMP_ID                   = 1<<2,
+    DUMP_VEL                  = 1<<3,
+    DUMP_WEAR                 = 1<<4,
+    DUMP_TEMP                 = 1<<5,
+    DUMP_OWNER                = 1<<6,
+    DUMP_AREA                 = 1<<7,
+    DUMP_AEDGES               = 1<<8,
+    DUMP_ACORNERS             = 1<<9,
+    DUMP_INDEX                = 1<<10,
+    DUMP_NNEIGHS              = 1<<11,
+    DUMP_MIN_ACTIVE_EDGE_DIST = 1<<12,
+    DUMP_LIQUID_CONTENT       = 1<<13
 };
 
 enum
@@ -81,6 +100,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   f_node_(0),
   T_(0),
   min_active_edge_dist_(0),
+  liquid_content_(0),
   scalar_containers_(0),
   scalar_container_names_(0),
   n_scalar_containers_(0),
@@ -88,7 +108,9 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   vector_container_names_(0),
   n_vector_containers_(0),
   container_args_(0),
-  n_container_bases_(0)
+  n_container_bases_(0),
+  points_neightri_len_max_(0),
+  points_neightri_(0)
 {
   if (narg < 5)
     error->all(FLERR,"Illegal dump mesh/vtk command");
@@ -110,7 +132,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           if (iarg+2 > narg) error->all(FLERR,"Dump mesh/vtk: not enough arguments for 'interpolate'");
           if(strcmp(arg[iarg+1],"face")==0) dataMode_ = 0;
           else if(strcmp(arg[iarg+1],"interpolate")==0) dataMode_ = 1;
-          else error->all(FLERR,"Dump mesh/vtk: wrong arrgument for 'output'");
+          else error->all(FLERR,"Dump mesh/vtk: wrong argument for 'output'");
           iarg += 2;
           hasargs = true;
       }
@@ -186,6 +208,12 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
           iarg++;
           hasargs = true;
       }
+      else if(strcmp(arg[iarg],"liquid")==0)
+      {
+          dump_what_ |= DUMP_LIQUID_CONTENT;
+          iarg++;
+          hasargs = true;
+      }
       else if(strcmp(arg[iarg],"distaa")==0)
       {
           dump_what_ |= DUMP_MIN_ACTIVE_EDGE_DIST;
@@ -232,6 +260,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
       {
           
           meshList_[iMesh] = static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->triMesh();
+         static_cast<FixMeshSurface*>(modify->find_fix_style("mesh/surface",iMesh))->dumpAdd();
       }
 
       if (nMesh_ == 0)
@@ -246,6 +275,7 @@ DumpMeshVTK::DumpMeshVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   f_node_ = new VectorContainer<double,3>*[nMesh_];
   T_ = new ScalarContainer<double>*[nMesh_];
   min_active_edge_dist_ = new ScalarContainer<double>*[nMesh_];
+  liquid_content_ = new ScalarContainer<double>*[nMesh_];
 
   scalar_containers_ = new ScalarContainer<double>**[n_container_bases_];
   scalar_container_names_ = new char*[n_container_bases_];
@@ -288,6 +318,7 @@ DumpMeshVTK::~DumpMeshVTK()
   delete [] f_node_;
   delete [] T_;
   delete [] min_active_edge_dist_;
+  delete [] liquid_content_;
 
   for(int i = 0; i < n_container_bases_; i++)
   {
@@ -300,6 +331,14 @@ DumpMeshVTK::~DumpMeshVTK()
   delete [] vector_containers_;
   delete [] scalar_container_names_;
   delete [] vector_container_names_;
+
+  if(points_neightri_)
+  {
+    for (int i=0; i < points_neightri_len_max_; i++)
+        delete points_neightri_[i];
+
+    delete  [] points_neightri_;
+  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -351,6 +390,8 @@ void DumpMeshVTK::init_style()
   if(dump_what_ & DUMP_NNEIGHS)
     size_one += 1;
   if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
+    size_one += 1;
+  if(dump_what_ & DUMP_LIQUID_CONTENT)
     size_one += 1;
 
   getGeneralRefs();
@@ -415,8 +456,8 @@ void DumpMeshVTK::getRefs()
       {
           sigma_n_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("sigma_n");
           sigma_t_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("sigma_t");
-          if(0 == comm->me && (!sigma_n_[i] || !sigma_t_[i]))
-            error->warning(FLERR,"Trying to dump stress for mesh which does not calculate stress, will dump '0' instead");
+          //if(0 == comm->me && (!sigma_n_[i] || !sigma_t_[i]))
+          //  error->warning(FLERR,"Trying to dump stress for mesh which does not calculate stress, will dump '0' instead");
       }
   }
   if(dump_what_ & DUMP_STRESSCOMPONENTS)
@@ -439,17 +480,27 @@ void DumpMeshVTK::getRefs()
       for(int i = 0; i < nMesh_; i++)
       {
           wear_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("wear");
-          if(0 == comm->me && !wear_[i])
-            error->warning(FLERR,"Trying to dump wear for mesh which does not calculate wear, will dump '0' instead");
+          //if(0 == comm->me && !wear_[i])
+          //  error->warning(FLERR,"Trying to dump wear for mesh which does not calculate wear, will dump '0' instead");
       }
   }
   if(dump_what_ & DUMP_TEMP)
   {
+      temp_per_element_.clear();
       for(int i = 0; i < nMesh_; i++)
       {
-          T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("Temp");
-          if(0 == comm->me && !T_[i])
-            error->warning(FLERR,"Trying to dump temperature for mesh which does not calculate temperature, will dump '0' instead");
+          if( meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("Temp"))
+          {
+              T_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("Temp");
+              temp_per_element_.push_back(true);
+          }
+          else
+          {
+              temp_per_element_.push_back(false);
+              T_[i] = meshList_[i]->prop().getGlobalProperty<ScalarContainer<double> >("Temp");
+          }
+          //if(0 == comm->me && !T_[i])
+          //  error->warning(FLERR,"Trying to dump temperature for mesh which does not calculate temperature, will dump '0' instead");
       }
   }
   if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
@@ -457,6 +508,13 @@ void DumpMeshVTK::getRefs()
       for(int i = 0; i < nMesh_; i++)
       {
           min_active_edge_dist_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("minActiveEdgeDist");
+      }
+  }
+  if(dump_what_ & DUMP_LIQUID_CONTENT)
+  {
+      for(int i = 0; i < nMesh_; i++)
+      {
+          liquid_content_[i] = meshList_[i]->prop().getElementProperty<ScalarContainer<double> >("LiquidContent");
       }
   }
 }
@@ -594,7 +652,7 @@ void DumpMeshVTK::pack(int *ids)
 
         if(dump_what_ & DUMP_TEMP)
         {
-            buf[m++] = T_[iMesh] ? T_[iMesh]->get(0) : 0.;
+            buf[m++] = (temp_per_element_[iMesh]) ? (T_[iMesh]->get(iTri)) : (T_[iMesh] ? T_[iMesh]->get(0) : 0.);
         }
 
         if(dump_what_ & DUMP_OWNER)
@@ -628,6 +686,10 @@ void DumpMeshVTK::pack(int *ids)
         if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
         {
             buf[m++] = min_active_edge_dist_[iMesh] ? min_active_edge_dist_[iMesh]->get(iTri) : 0.;
+        }
+        if(dump_what_ & DUMP_LIQUID_CONTENT)
+        {
+            buf[m++] = liquid_content_[iMesh] ? liquid_content_[iMesh]->get(iTri) : 0.;
         }
 
         for(int ib = 0; ib < n_scalar_containers_; ib++)
@@ -701,7 +763,7 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
     ScalarContainer<int> tri_points("DumpMeshVTK::tri_points");
     bool add;
     for (int i = 0; i < n; i++)
-      {
+    {
         for (int j=0;j<3;j++)
         {
         add = true;
@@ -729,20 +791,39 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
 
     buf_pos += 9;
 
-    // points_neightri
-    class ScalarContainer<int> **points_neightri;
-    points_neightri = new ScalarContainer<int>*[(int)points.size()/3];
-    for (int i=0; i < points.size()/3; i++)
-        points_neightri[i] = new ScalarContainer<int>("DumpMeshVTK::points_neightri");
+    // points_neightri_
+
+    if(points.size()/3 > points_neightri_len_max_)
+    {
+        if(points_neightri_)
+        {
+            for (int i=0; i < points.size()/3; i++)
+                delete points_neightri_[i];
+
+            delete  [] points_neightri_;
+        }
+
+        points_neightri_ = new ScalarContainer<int>*[(int)points.size()/3];
+        for (int i=0; i < points.size()/3; i++)
+            points_neightri_[i] = new ScalarContainer<int>("DumpMeshVTK::points_neightri");
+
+        points_neightri_len_max_ = points.size()/3;
+    }
+    else
+    {
+        for(int i = 0; i < points_neightri_len_max_; i++)
+            points_neightri_[i]->clearContainer();
+    }
+
     for (int i=0; i < 3*n; i+=3)
     {
         for (int j=0; j<3;j++)
-        points_neightri[tri_points.get(i+j)]->add(i/3);
+            points_neightri_[tri_points.get(i+j)]->add(i/3);
     }
 
     // write point data
       fprintf(fp,"DATASET UNSTRUCTURED_GRID\nPOINTS %d float\n", points.size()/3);
-    for (int i=0; i < points.size(); i+=3)
+      for (int i=0; i < points.size(); i+=3)
         fprintf(fp,"%f %f %f\n",points.get(i+0),points.get(i+1),points.get(i+2));
 
     // write polygon data
@@ -761,25 +842,25 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
       if(dump_what_ & DUMP_STRESS)
       {
         // write pressure and shear stress
-        fprintf(fp,"SCALARS pressure float 1\nLOOKUP_TABLE default\n");
+        fprintf(fp,"SCALARS normal_stress_average float 1\nLOOKUP_TABLE default\n");
             m = buf_pos;
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper=0;
-        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
-        helper /= points_neightri[i]->size();
+        for (int j=0; j < points_neightri_[i]->size();j++) helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+        helper /= points_neightri_[i]->size();
         fprintf(fp,"%f\n",helper);
         }
         buf_pos++;
 
         // write shear stress
-        fprintf(fp,"SCALARS shearstress float 1\nLOOKUP_TABLE default\n");
+        fprintf(fp,"SCALARS shear_stress_average float 1\nLOOKUP_TABLE default\n");
         m = buf_pos;
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper=0;
-        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
-        helper /= points_neightri[i]->size();
+        for (int j=0; j < points_neightri_[i]->size();j++) helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+        helper /= points_neightri_[i]->size();
         fprintf(fp,"%f\n",helper);
         }
         buf_pos++;
@@ -792,15 +873,15 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper1=0, helper2=0, helper3=0;
-        for (int j=0; j < points_neightri[i]->size();j++)
+        for (int j=0; j < points_neightri_[i]->size();j++)
         {
-            helper1 += mybuf[m + points_neightri[i]->get(j)*size_one];
-            helper2 += mybuf[m+1 + points_neightri[i]->get(j)*size_one];
-             helper3 += mybuf[m+2 + points_neightri[i]->get(j)*size_one];
+            helper1 += mybuf[m + points_neightri_[i]->get(j)*size_one];
+            helper2 += mybuf[m+1 + points_neightri_[i]->get(j)*size_one];
+             helper3 += mybuf[m+2 + points_neightri_[i]->get(j)*size_one];
         }
-        helper1 /= points_neightri[i]->size();
-        helper2 /= points_neightri[i]->size();
-        helper3 /= points_neightri[i]->size();
+        helper1 /= points_neightri_[i]->size();
+        helper2 /= points_neightri_[i]->size();
+        helper3 /= points_neightri_[i]->size();
         fprintf(fp,"%f %f %f\n",helper1,helper2,helper3);
         }
         buf_pos += 3;
@@ -814,8 +895,8 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper=0;
-        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
-        helper /= points_neightri[i]->size();
+        for (int j=0; j < points_neightri_[i]->size();j++) helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+        helper /= points_neightri_[i]->size();
         fprintf(fp,"%f\n",helper);
         }
         buf_pos++;
@@ -829,15 +910,15 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper1=0, helper2=0, helper3=0;
-        for (int j=0; j < points_neightri[i]->size();j++)
+        for (int j=0; j < points_neightri_[i]->size();j++)
         {
-            helper1 += mybuf[m + points_neightri[i]->get(j)*size_one];
-            helper2 += mybuf[m+1 + points_neightri[i]->get(j)*size_one];
-            helper3 += mybuf[m+2 + points_neightri[i]->get(j)*size_one];
+            helper1 += mybuf[m + points_neightri_[i]->get(j)*size_one];
+            helper2 += mybuf[m+1 + points_neightri_[i]->get(j)*size_one];
+            helper3 += mybuf[m+2 + points_neightri_[i]->get(j)*size_one];
         }
-        helper1 /= points_neightri[i]->size();
-        helper2 /= points_neightri[i]->size();
-        helper3 /= points_neightri[i]->size();
+        helper1 /= points_neightri_[i]->size();
+        helper2 /= points_neightri_[i]->size();
+        helper3 /= points_neightri_[i]->size();
         fprintf(fp,"%f %f %f\n",helper1,helper2,helper3);
         }
         buf_pos += 3;
@@ -851,8 +932,8 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper=0;
-        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
-        helper /= points_neightri[i]->size();
+        for (int j=0; j < points_neightri_[i]->size();j++) helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+        helper /= points_neightri_[i]->size();
         fprintf(fp,"%f\n",helper);
         }
         buf_pos++;
@@ -866,8 +947,8 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper=0;
-        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
-        helper /= points_neightri[i]->size();
+        for (int j=0; j < points_neightri_[i]->size();j++) helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+        helper /= points_neightri_[i]->size();
         fprintf(fp,"%f\n",helper);
         }
         buf_pos++;
@@ -881,8 +962,8 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper=0;
-        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
-        helper /= points_neightri[i]->size();
+        for (int j=0; j < points_neightri_[i]->size();j++) helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+        helper /= points_neightri_[i]->size();
         fprintf(fp,"%f\n",helper);
         }
         buf_pos++;
@@ -896,8 +977,8 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
         for (int i = 0; i < points.size()/3; i++)
         {
         double helper=0;
-        for (int j=0; j < points_neightri[i]->size();j++) helper += mybuf[m + points_neightri[i]->get(j)*size_one];
-        helper /= points_neightri[i]->size();
+        for (int j=0; j < points_neightri_[i]->size();j++) helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+        helper /= points_neightri_[i]->size();
         fprintf(fp,"%f\n",helper);
         }
         buf_pos++;
@@ -929,6 +1010,23 @@ void DumpMeshVTK::write_data_ascii_point(int n, double *mybuf)
       {
         buf_pos++;
       }
+      // not able to interpolate this
+      if(dump_what_ & DUMP_LIQUID_CONTENT)
+      {
+        // write liquid content
+        fprintf(fp,"SCALARS liquid_content float 1\nLOOKUP_TABLE default\n");
+        m = buf_pos;
+        for (int i = 0; i < points.size()/3; i++)
+        {
+            double helper=0;
+            for (int j=0; j < points_neightri_[i]->size();j++)
+                helper += mybuf[m + points_neightri_[i]->get(j)*size_one];
+            helper /= points_neightri_[i]->size();
+            fprintf(fp,"%f\n",helper);
+        }
+        buf_pos++;
+      }
+
     return;
 }
 
@@ -975,7 +1073,7 @@ void DumpMeshVTK::write_data_ascii_face(int n, double *mybuf)
   if(dump_what_ & DUMP_STRESS)
   {
       // write pressure and shear stress
-      fprintf(fp,"SCALARS pressure float 1\nLOOKUP_TABLE default\n");
+      fprintf(fp,"SCALARS normal_stress_average float 1\nLOOKUP_TABLE default\n");
       m = buf_pos;
       for (int i = 0; i < n; i++)
       {
@@ -985,7 +1083,7 @@ void DumpMeshVTK::write_data_ascii_face(int n, double *mybuf)
       buf_pos++;
 
       // write shear stress
-      fprintf(fp,"SCALARS shearstress float 1\nLOOKUP_TABLE default\n");
+      fprintf(fp,"SCALARS shear_stress_average float 1\nLOOKUP_TABLE default\n");
       m = buf_pos;
       for (int i = 0; i < n; i++)
       {
@@ -1134,10 +1232,22 @@ void DumpMeshVTK::write_data_ascii_face(int n, double *mybuf)
       }
       buf_pos++;
   }
-  if(dump_what_ & DUMP_NNEIGHS)
+  if(dump_what_ & DUMP_MIN_ACTIVE_EDGE_DIST)
   {
       //write owner data
       fprintf(fp,"SCALARS min_active_edge_dist float 1\nLOOKUP_TABLE default\n");
+      m = buf_pos;
+      for (int i = 0; i < n; i++)
+      {
+          fprintf(fp,"%f\n",mybuf[m]);
+          m += size_one;
+      }
+      buf_pos++;
+  }
+  if(dump_what_ & DUMP_LIQUID_CONTENT)
+  {
+      // write liquid content
+      fprintf(fp,"SCALARS liquid_content float 1\nLOOKUP_TABLE default\n");
       m = buf_pos;
       for (int i = 0; i < n; i++)
       {

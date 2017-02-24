@@ -1,6 +1,6 @@
-"LIGGGHTS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://www.cfdem.com)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -17,13 +17,17 @@ compute ID group-ID wall/gran/local keywords ... :pre
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 pair/gran/local or wall/gran/local = style name of this compute command :l
 zero or more keywords may be appended :l
-keyword = {pos} or {id} or {force} or {torque} or {history} or {contactArea} :l
+keyword = {pos} or {vel} or {id} or {force} or {torque} or {history} or {contactArea} or {delta}:l
   {pos} = positions of particles in contact (6 values)
+  {vel} = velocities of particles in contact (6 values)
   {id} = IDs of particles in contact and a periodicity flag (3 values) or IDs of the mesh, the triangle and the particle (3 values)
   {force} = contact force (3 values)
+  {force_normal} = normal component of contact force (3 values)
+  {force_tangential} = tangential component of contact force (3 values)
   {torque} = torque divided by particle diameter (3 values)
   {history} = contact history (# depends on pair style, e.g. 3 shear history values)
   {contactArea} = area of the contact (1 value)
+  {delta} = overlap of the contact (1 value)
   {heatFlux} = conductive heat flux of the contact (1 value) :pre
 :ule
 
@@ -59,20 +63,40 @@ dedicated fix mesh command. For how to output the trangle id,
 see "dump mesh/gran/VTK command"dump.html.
 
 The output {pos} is the particle positions (6 values) in distance
-"units"_units.html. For computing pairwise data, the output {id} will
+"units"_units.html. Keyword {vel} will do the same for velocities.
+For computing pairwise data, the output {id} will
 be the two particle IDs (using this option requires to use an atom
 map) and a flag that is 1 for interaction over a periodic boundary
 and 0 otherwise. For computing particle-wall data, the output {id}
 will be the mesh id, the triangle id and the particle id. The output
-{force} and {torque} are the contact force and the torque divided by the
-particle radius, both in force "units"_units.html. Note that the torque
+{force}, {force_normal}, {force_tangential} and {torque} are the total
+contact force, the normal and tangential components of the contact
+force, and the torque divided by the particle radius, both in force 
+"units"_units.html. Note that the normal and tangential components
+are not necessarily exactly equal to the forces added by  
+"the normal and tangential model used"_Section_gran_models.html , but 
+are geometrically composed, using the connection line between the
+particle centers as normal direction. Note also that the torque
 does NOT contain any rolling friction torque. The output {history}
 will depend on what this history represents, according to the granular
 pair style used. The output {contactArea} will output the contact area,
-in distance^2 "units"_units.html. The output {heatFlux} (available only
+in distance^2 "units"_units.html. Note that {contactArea} is based on
+an analytic geometric calculation of sphere-sphere or sphere-plane intersection
+rather than a calculation based on mechanics. This is to ensure that
+{contactArea} works with all types of contact models. 
+
+The output {delta} will output the
+overlap (sum of radii - distance between particle centers) in distance
+"units"_units.html .The output {heatFlux} (available only
 if a "fix heat/gran"_fix_heat_gran.html is used to compute  heat
 fluxes) will output the per-contact conductive heat flux area, in
 energy/time "units"_units.html.
+
+IMPORTANT NOTE:
+The data associated to the different keywords is output in the
+following order: {pos}, {vel}, {id}, {force}, {force_normal},
+{force_tangential}, {torque}, {history}, {contactArea}, {heatFlux}. 
+This is independant of the order in which the keywords are specified.
 
 Note that as atoms migrate from processor to processor, there will be
 no consistent ordering of the entries within the local vector or array
@@ -84,6 +108,14 @@ property/local"_compute_property_local.html command can be combined
 with data from this command and output by the "dump local"_dump.html
 command in a consistent way.
 
+IMPORTANT NOTE: This compute, will, when invoked, issue a call to
+the pair or wall contact models to calculate what would be the contact
+forces given the current positions, velocities etc
+
+Since this compute is typically done when output is created (at the end of
+the time-step), this is not necessarily exactly equal to (with machine precision)
+the p-p or p-w forces which were calculated within one time-step.
+
 [Output info:]
 
 This compute calculates a local vector or local array depending on the
@@ -93,7 +125,7 @@ local vector is produced.  If two or more keywords are specified, a
 local array is produced where the number of columns = the number of
 keywords.  The vector or array can be accessed by any command that
 uses local values from a compute as input.  See "this
-section"_Section_howto.html#4_15 for an overview of LAMMPS output
+section"_Section_howto.html#4_15 for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 
 For information on the "units"_units.html of the output, see above.
@@ -105,11 +137,11 @@ For accessing particle-wall contact data, only mesh walls can be used.
 
 [Related commands:]
 
-"dump local"_dump.html, "compute property/local"_compute_property_local.html,
-"compute pair/local"_compute/pair/local.html
+"dump local"_dump.html, "compute property/local"_compute_property_local.html
 
 [Default:]
 
-By default, all of the outputs keywords (except the heat flux) are activated,
-i.e. when no keyword is used, positions, ids, forces, torques, history
+By default, all of the outputs keywords (except force_normal, force_tangential,
+ heat flux and delta) are activated,
+i.e. when no keyword is used, positions velocities, ids, forces, torques, history
 and contact area are output.

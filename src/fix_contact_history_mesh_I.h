@@ -1,22 +1,44 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_CONTACT_HISTORY_MESH_I_H
@@ -26,29 +48,35 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline bool FixContactHistoryMesh::handleContact(int iP, int idTri, double *&history)
+  inline bool FixContactHistoryMesh::handleContact(int iP, int idTri, double *&history,bool intersect,bool faceflag)
   {
     
     // check if contact with iTri was there before
     // if so, set history to correct location and return
-    if(haveContact(iP,idTri,history))
+    if(haveContact(iP,idTri,history,intersect))
       return true;
 
     // else new contact - add contact if did not calculate contact with coplanar neighbor already
     
-    if(coplanarContactAlready(iP,idTri))
+    if(faceflag && coplanarContactAlready(iP,idTri))
+    {
         // did not add new contact
         return false;
+    }
     else
     {
-        addNewTriContactToExistingParticle(iP,idTri,history);
+        /*if (coplanarContactAlready(iP,idTri) && !faceflag)
+            {
+                fprintf(screen,"WEIRD: atom ID %d, ts " BIGINT_FORMAT "\n",atom->tag[iP],update->ntimestep);
+            }
+        */
+        addNewTriContactToExistingParticle(iP,idTri,history,intersect);
 
         // check if one of the contacts of previous steps is coplanar with iTri
         
         // if so, copy history
-        // also check if this contact has delflag = false, i.e. has been executed already
-        // this step. If so, signalize not to execute this contact (return false)
-        checkCoplanarContactHistory(iP,idTri,history);
+        if(faceflag)
+            checkCoplanarContactHistory(iP,idTri,history);
         return true;
     }
   }
@@ -73,12 +101,16 @@
           const bool keepflag_temp  = keepflag_[ilocal][ineigh];
           keepflag_[ilocal][ineigh] = keepflag_[ilocal][jneigh];
           keepflag_[ilocal][jneigh] = keepflag_temp;
+
+          const bool intersectflag_temp = intersectflag_[ilocal][ineigh];
+          intersectflag_[ilocal][ineigh] = intersectflag_[ilocal][jneigh];
+          intersectflag_[ilocal][jneigh] = intersectflag_temp;
       }
   }
 
   /* ---------------------------------------------------------------------- */
 
-  inline bool FixContactHistoryMesh::haveContact(int iP, int idTri, double *&history)
+  inline bool FixContactHistoryMesh::haveContact(int iP, int idTri, double *&history,bool intersect)
   {
     int *tri = partner_[iP];
     const int nneighs = fix_nneighs_->get_vector_atom_int(iP);
@@ -89,6 +121,7 @@
         {
             if(dnum_ > 0) history = &(contacthistory_[iP][i*dnum_]);
             keepflag_[iP][i] = true;
+            intersectflag_[iP][i] = intersect;
             return true;
         }
     }
@@ -139,7 +172,7 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline void FixContactHistoryMesh::addNewTriContactToExistingParticle(int iP, int idTri, double *&history)
+  inline void FixContactHistoryMesh::addNewTriContactToExistingParticle(int iP, int idTri, double *&history, bool intersect)
   {
       
       const int nneighs = fix_nneighs_->get_vector_atom_int(iP);
@@ -168,6 +201,7 @@
 
       partner_[iP][iContact] = idTri;
       keepflag_[iP][iContact] = true;
+      intersectflag_[iP][iContact] = intersect;
 
       if(dnum_ > 0)
       {
@@ -183,25 +217,45 @@
 
   /* ---------------------------------------------------------------------- */
 
-  inline int FixContactHistoryMesh::n_contacts()
+  inline int FixContactHistoryMesh::n_contacts(int & nIntersect)
   {
     int ncontacts = 0, nlocal = atom->nlocal;
 
     for(int i = 0; i < nlocal; i++)
-           ncontacts += npartner_[i];
+    {
+        for(int ipartner = 0; ipartner < npartner_[i]; ipartner++)
+        {
+            if(intersectflag_[i][ipartner])
+            {
+                nIntersect++;
+            }
+            ncontacts++;
+        }
+    }
     return ncontacts;
   }
 
   /* ---------------------------------------------------------------------- */
 
-  inline int FixContactHistoryMesh::n_contacts(int contact_groupbit)
+  inline int FixContactHistoryMesh::n_contacts(int contact_groupbit, int & nIntersect)
   {
     int ncontacts = 0, nlocal = atom->nlocal;
     int *mask = atom->mask;
 
     for(int i = 0; i < nlocal; i++)
+    {
         if(mask[i] & contact_groupbit)
-           ncontacts += npartner_[i];
+        {
+            for(int ipartner = 0; ipartner < npartner_[i]; ipartner++)
+            {
+                if(intersectflag_[i][ipartner])
+                {
+                    nIntersect++;
+                }
+                ncontacts++;
+            }
+        }
+    }
     return ncontacts;
   }
 

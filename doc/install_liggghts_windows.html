@@ -1,0 +1,313 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Compile LIGGGHTS(R)-PUBLIC for Windows &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>Compile LIGGGHTS(R)-PUBLIC for Windows</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/install_liggghts_windows.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="compile-liggghts-r-public-for-windows">
+<h1>Compile LIGGGHTS(R)-PUBLIC for Windows<a class="headerlink" href="#compile-liggghts-r-public-for-windows" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<div class="section" id="description">
+<h2>Description:<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This routine describes how to setup your system in order to compile LIGGGHTS(R)-PUBLIC for Windows.</p>
+</div>
+<div class="section" id="prerequisites">
+<h2>Prerequisites:<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>All mentioned programs are available for free.</p>
+<div class="section" id="mpi">
+<h3>MPI:<a class="headerlink" href="#mpi" title="Permalink to this headline">¶</a></h3>
+<p>LIGGGHTS(R)-PUBLIC is a highly parallelized simulation engine. If you want to run simulations in parallel you have to install MPI (Message Passing Interface standard). We suggest to use the implementation of Microsoft, which is available <a class="reference external" href="msmpi_">here</a>. You need the binaries and the header files (included in the SDK). Please follow the instructions of the installer.</p>
+</div>
+<div class="section" id="git">
+<h3>Git:<a class="headerlink" href="#git" title="Permalink to this headline">¶</a></h3>
+<p>GIT is an open-source version control system. We provide LIGGGHTS(R)-PUBLIC via <a class="reference external" href="gitHub_">github</a>. It is to your advantage to use any git program to keep your LIGGGHTS(R)-PUBLIC version up-to-date. We recommend to use <a class="reference external" href="gitbash_">git-scm</a> as it provides a minimum bash environment too.</p>
+<p>You can set up your GIT environment to use the SSH-Keys thus you don&#8217;t have to enter your user and password multiple times. Check the GIT GUI documentation for more details.</p>
+<p><strong>Important: Git-scm will ask during installation how it should handle newlines; please use &#8220;Checkout as-is, commit Unix-style line endings&#8221;.</strong></p>
+</div>
+<div class="section" id="python-or-cygwin">
+<h3>Python or Cygwin:<a class="headerlink" href="#python-or-cygwin" title="Permalink to this headline">¶</a></h3>
+<p>A python script updates the VS-project, thus you have to install either <a class="reference external" href="python_">python</a> or <a class="reference external" href="cygwin_">cygwin</a>. In case of cygwin you can use another GIT program, because cygwin provides also a bash environment. The description of the procedure assumes that you have installed cygwin.</p>
+</div>
+<div class="section" id="visual-studio">
+<h3>Visual studio:<a class="headerlink" href="#visual-studio" title="Permalink to this headline">¶</a></h3>
+<p>To compile LIGGGHTS(R)-PUBLIC you need a development environment. You can download Microsoft Visual Studio Express (current version: Express 2013 with Update 4 for Windows Desktop) for free from <a class="reference external" href="vs_">www.visualstudio.com</a>. Therefore, you have to create an Microsoft account.</p>
+</div>
+<div class="section" id="vtk-support">
+<h3>VTK support:<a class="headerlink" href="#vtk-support" title="Permalink to this headline">¶</a></h3>
+<p>A detailed description how to compile LIGGGHTS(R)-PUBLIC with VTK support will follow here.</p>
+</div>
+</div>
+<div class="section" id="procedure">
+<h2>Procedure:<a class="headerlink" href="#procedure" title="Permalink to this headline">¶</a></h2>
+<p>Basically the following steps have to be performed:</p>
+<ul class="simple">
+<li>download/clone your repository from <a class="reference external" href="gitHub_">github</a></li>
+<li>update auto-generated header-files</li>
+<li>update your VS-project</li>
+<li>compile your LIGGGHTS(R)-PUBLIC version</li>
+</ul>
+<div class="section" id="download-clone-your-liggghts-r-public-version">
+<h3>Download/clone your LIGGGHTS(R)-PUBLIC version:<a class="headerlink" href="#download-clone-your-liggghts-r-public-version" title="Permalink to this headline">¶</a></h3>
+<p>In this tutorial we use the suggested <a class="reference external" href="gitbash_">git-scm</a>. You can use either the <em>Git GUI</em> or the <em>Git Bash</em>. In case of a bash you can follow the instructions in the documentation <a class="reference external" href="gitMan_">githubAccess_non-public</a>. Otherwise copy the link to your repository, for instance <em>https://github.com/CFDEMproject/LIGGGHTS-COMPANY.git</em>, into the <em>Git GUI</em> and save the repository at your computer, e.g. <em>C:/repositories/LIGGGHTS-COMPANY</em>.</p>
+<p>In the directory <em>LIGGGHTS-COMPANY/src/WINDOWS</em> you find an README, which describes the following steps in detail.</p>
+</div>
+<div class="section" id="update-auto-generated-header-files">
+<h3>Update auto-generated header-files:<a class="headerlink" href="#update-auto-generated-header-files" title="Permalink to this headline">¶</a></h3>
+<p>Start <em>cygwin</em> and change your current directory to the src-directory inside of your repository, for instance</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cd</span> <span class="o">/</span><span class="n">cygdrive</span><span class="o">/</span><span class="n">c</span><span class="o">/</span><span class="n">repositories</span><span class="o">/</span><span class="n">LIGGGHTS</span><span class="o">-</span><span class="n">COMPANY</span><span class="o">/</span><span class="n">src</span>
+</pre></div>
+</div>
+<p>Update the header files by</p>
+<div class="highlight-python"><pre>sh Make.sh styles
+sh Make.sh models</pre>
+</div>
+<p>You can check the files by</p>
+<div class="highlight-python"><pre>ls style_*</pre>
+</div>
+<p>which should output a list of style file headers.</p>
+</div>
+<div class="section" id="update-your-vs-project">
+<h3>Update your VS-project:<a class="headerlink" href="#update-your-vs-project" title="Permalink to this headline">¶</a></h3>
+<p>In order to update the Visual Studio project in die WINDOWS directory run following commands (still in cygwin):</p>
+<div class="highlight-python"><pre>cd WINDOWS
+python update_project.py LIGGGHTS.vcxproj</pre>
+</div>
+</div>
+<div class="section" id="compile-your-liggghts-r-public-version">
+<h3>Compile your LIGGGHTS(R)-PUBLIC version:<a class="headerlink" href="#compile-your-liggghts-r-public-version" title="Permalink to this headline">¶</a></h3>
+<p>Finally to compile your LIGGGHTS(R)-PUBLIC version open the file <em>LIGGGHTS_VS2013.sln</em> with Visual Studio.</p>
+<p>To compile with MPI:</p>
+<ol class="arabic simple">
+<li>Switch to the correct setting for your system. <em>Debug</em> or <em>Release</em> and <em>32bit</em> or <em>64bit</em>.</li>
+</ol>
+<p>#. Check if the MPI include and lib directories are correctly set in the project properties of LIGGGHTS(R)-PUBLIC - Open the <em>LIGGGHTS/Properties</em> and go to <em>Configuration Properties/VC++ Directories</em>.
+For instance, a common include path is <em>C:Program Files x86Microsoft SDKsMPIInclude</em>.
+#. Build the LIGGGHTS(R)-PUBLIC project.</p>
+<p>To compile without MPI:</p>
+<ol class="arabic simple">
+<li>Build the STUBS project.</li>
+<li>Build LIGGGHTS(R)-PUBLIC using Debug_STUBS or Release_STUBS configurations from the provided project. (use x64 for 64bit binary)</li>
+</ol>
+<p>You have now generated the executable <strong>LIGGGHTS.exe</strong> in the sub-directory <em>LIGGGHTS-COMPANYsrcWINDOWSRelease</em>. You can add this directory to your PATH environment variable to shorten the call command.</p>
+</div>
+<div class="section" id="run-an-example">
+<h3>Run an example<a class="headerlink" href="#run-an-example" title="Permalink to this headline">¶</a></h3>
+<p>You can start a LIGGGHTS(R)-PUBLIC simulation inside of <em>cygwin</em> or a <em>command prompt</em> (search for cmd.exe).
+Assuming you use your cygwin, change to one example in your repository.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cd</span> <span class="o">/</span><span class="n">cygdrive</span><span class="o">/</span><span class="n">c</span><span class="o">/</span><span class="n">repositories</span><span class="o">/</span><span class="n">LIGGGHTS</span><span class="o">-</span><span class="n">COMPANY</span><span class="o">/</span><span class="n">examples</span><span class="o">/</span><span class="n">LIGGGHTS</span><span class="o">/</span><span class="n">Tutorials_public</span><span class="o">/</span><span class="n">chute_wear</span>
+</pre></div>
+</div>
+<p>and start the simulation by</p>
+<div class="highlight-python"><pre>/cygdrive/c/repositories/LIGGGHTS-COMPANY/src/WINDOWS/Release/LIGGGHTS.exe -in in.chute_wear</pre>
+</div>
+<p>If you added the Release-folder to your PATH variable the command shortens to</p>
+<div class="highlight-python"><pre>LIGGGHTS.exe -in in.chute_wear</pre>
+</div>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="questions">
+<h2>Questions?<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h2>
+<p>If any questions remain, contact us.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

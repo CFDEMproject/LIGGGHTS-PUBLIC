@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualStudioProject Keyword="ManagedCProj" Name="HOTINT_Log" ProjectGUID="{B0B89A0B-5D95-4223-AFFA-7A013F3FE53F}" ProjectType="Visual C++" RootNamespace="HOTINT_Log" TargetFrameworkVersion="196613" Version="9,00">
+	
+   <Platforms>
+		
+      <Platform Name="Win32"/>
+	
+   </Platforms>
+	
+   <ToolFiles>
+	
+   </ToolFiles>
+	
+   <Configurations>
+		
+      <Configuration CharacterSet="1" ConfigurationType="1" IntermediateDirectory="$(ConfigurationName)" ManagedExtensions="2" Name="Debug|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)">
+			
+         <Tool Name="VCPreBuildEventTool"/>
+			
+         <Tool Name="VCCustomBuildTool"/>
+			
+         <Tool Name="VCXMLDataGeneratorTool"/>
+			
+         <Tool Name="VCWebServiceProxyGeneratorTool"/>
+			
+         <Tool Name="VCMIDLTool"/>
+			
+         <Tool AdditionalIncludeDirectories="..\..\..\..\MBS_Interface" DebugInformationFormat="3" Name="VCCLCompilerTool" Optimization="0" PreprocessorDefinitions="WIN32;_DEBUG" RuntimeLibrary="3" UsePrecompiledHeader="2" WarningLevel="3"/>
+			
+         <Tool Name="VCManagedResourceCompilerTool"/>
+			
+         <Tool Name="VCResourceCompilerTool"/>
+			
+         <Tool Name="VCPreLinkEventTool"/>
+			
+         <Tool AdditionalDependencies="$(NoInherit)" AssemblyDebug="1" EntryPointSymbol="main" GenerateDebugInformation="true" LinkIncremental="2" Name="VCLinkerTool" SubSystem="2" TargetMachine="1"/>
+			
+         <Tool Name="VCALinkTool"/>
+			
+         <Tool Name="VCManifestTool"/>
+			
+         <Tool Name="VCXDCMakeTool"/>
+			
+         <Tool Name="VCBscMakeTool"/>
+			
+         <Tool Name="VCFxCopTool"/>
+			
+         <Tool Name="VCAppVerifierTool"/>
+			
+         <Tool Name="VCPostBuildEventTool"/>
+		
+      </Configuration>
+		
+      <Configuration CharacterSet="1" ConfigurationType="1" IntermediateDirectory="$(ConfigurationName)" ManagedExtensions="2" Name="Release|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" WholeProgramOptimization="1">
+			
+         <Tool Name="VCPreBuildEventTool"/>
+			
+         <Tool Name="VCCustomBuildTool"/>
+			
+         <Tool Name="VCXMLDataGeneratorTool"/>
+			
+         <Tool Name="VCWebServiceProxyGeneratorTool"/>
+			
+         <Tool Name="VCMIDLTool"/>
+			
+         <Tool AdditionalIncludeDirectories="..\..\..\..\MBS_Interface" DebugInformationFormat="3" Name="VCCLCompilerTool" PreprocessorDefinitions="WIN32;NDEBUG" RuntimeLibrary="2" UsePrecompiledHeader="2" WarningLevel="3"/>
+			
+         <Tool Name="VCManagedResourceCompilerTool"/>
+			
+         <Tool Name="VCResourceCompilerTool"/>
+			
+         <Tool Name="VCPreLinkEventTool"/>
+			
+         <Tool AdditionalDependencies="$(NoInherit)" EntryPointSymbol="main" GenerateDebugInformation="true" LinkIncremental="1" Name="VCLinkerTool" SubSystem="2" TargetMachine="1"/>
+			
+         <Tool Name="VCALinkTool"/>
+			
+         <Tool Name="VCManifestTool"/>
+			
+         <Tool Name="VCXDCMakeTool"/>
+			
+         <Tool Name="VCBscMakeTool"/>
+			
+         <Tool Name="VCFxCopTool"/>
+			
+         <Tool Name="VCAppVerifierTool"/>
+			
+         <Tool Name="VCPostBuildEventTool"/>
+		
+      </Configuration>
+	
+   </Configurations>
+	
+   <References>
+		
+      <AssemblyReference AssemblyName="System, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" MinFrameworkVersion="131072" RelativePath="System.dll"/>
+		
+      <AssemblyReference AssemblyName="System.Data, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=x86" MinFrameworkVersion="131072" RelativePath="System.Data.dll"/>
+		
+      <AssemblyReference AssemblyName="System.Drawing, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" MinFrameworkVersion="131072" RelativePath="System.Drawing.dll"/>
+		
+      <AssemblyReference AssemblyName="System.Windows.Forms, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" MinFrameworkVersion="131072" RelativePath="System.Windows.Forms.dll"/>
+		
+      <AssemblyReference AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" MinFrameworkVersion="131072" RelativePath="System.XML.dll"/>
+	
+   </References>
+	
+   <Files>
+		
+      <Filter Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx" Name="Quelldateien" UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			
+         <File RelativePath=".\AssemblyInfo.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\HOTINT_Log.cpp">
+			
+         </File>
+			
+         <File RelativePath=".\stdafx.cpp">
+				
+            <FileConfiguration Name="Debug|Win32">
+					
+               <Tool Name="VCCLCompilerTool" UsePrecompiledHeader="1"/>
+				
+            </FileConfiguration>
+				
+            <FileConfiguration Name="Release|Win32">
+					
+               <Tool Name="VCCLCompilerTool" UsePrecompiledHeader="1"/>
+				
+            </FileConfiguration>
+			
+         </File>
+		
+      </Filter>
+		
+      <Filter Filter="h;hpp;hxx;hm;inl;inc;xsd" Name="Headerdateien" UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			
+         <File FileType="3" RelativePath=".\Form1.h">
+				
+            <File RelativePath=".\Form1.resX" SubType="Designer">
+				
+            </File>
+			
+         </File>
+			
+         <File RelativePath=".\log_tool_classes.h">
+			
+         </File>
+			
+         <File RelativePath="..\..\..\MBSKernelLib\mystring.h">
+			
+         </File>
+			
+         <File RelativePath=".\resource.h">
+			
+         </File>
+			
+         <File RelativePath=".\stdafx.h">
+			
+         </File>
+			
+         <File RelativePath="..\..\..\MBSKernelLib\tarray.h">
+			
+         </File>
+		
+      </Filter>
+		
+      <Filter Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav" Name="Ressourcendateien" UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			
+         <File RelativePath=".\app.ico">
+			
+         </File>
+			
+         <File RelativePath=".\app.rc">
+			
+         </File>
+		
+      </Filter>
+		
+      <File RelativePath=".\ReadMe.txt">
+		
+      </File>
+	
+   </Files>
+	
+   <Globals>
+	
+   </Globals>
+
+</VisualStudioProject>

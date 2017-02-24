@@ -1,0 +1,54 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+compute ke/multisphere command :h3
+
+[Syntax:]
+
+compute ID group-ID ke/multisphere  :pre
+
+ID, group-ID are documented in "compute"_compute.html command
+ke = style name of this compute command :ul
+
+[Examples:]
+
+compute 1 all ke/multisphere :pre
+
+[Description:]
+
+Define a computation that calculates the translational kinetic energy
+of a collection of multisphere bodies.
+
+The kinetic energy of each multisphere body is computed as 1/2 M Vcm^2,
+where M is the total mass of the multisphere body, and Vcm is its
+center-of-mass velocity.
+
+This compute automatically connects to the "fix multisphere"_fix_multisphere.html
+commands which defines the multisphere bodies.  The group specified in the
+compute command is ignored.  The kinetic energy of all the multisphere
+bodies defined by the fix multisphere command in included in the
+calculation.
+
+[Output info:]
+
+This compute calculates a global scalar (the summed KE of all the
+multisphere bodies).  This value can be used by any command that uses a
+global scalar value from a compute as input.  See "Section_howto
+15"_Section_howto.html#howto_8 for an overview of LIGGGHTS(R)-PUBLIC output
+options.
+
+The scalar value calculated by this compute is "extensive".  The
+scalar value will be in energy "units"_units.html.
+
+[Restrictions:] none
+
+[Related commands:]
+
+"compute erotate/multisphere"_compute_erotate_multisphere.html
+
+[Default:] none

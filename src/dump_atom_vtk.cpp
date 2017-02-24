@@ -1,31 +1,42 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing author:
-   Anton Gladky(TU Bergakademie Freiberg), gladky.anton@gmail.com
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    Anton Gladky(TU Bergakademie Freiberg), gladky.anton@gmail.com
 ------------------------------------------------------------------------- */
 
 #ifdef LAMMPS_VTK
-#include "string.h"
+#include <string.h>
 #include "dump_atom_vtk.h"
 #include "atom.h"
 #include "group.h"
@@ -33,6 +44,10 @@
 #include "memory.h"
 #include "comm.h"
 #include <sstream>
+#include <vtkVersion.h>
+#ifndef VTK_MAJOR_VERSION
+#include <vtkConfigure.h>
+#endif
 #include<vtkCellArray.h>
 #include<vtkDoubleArray.h>
 #include<vtkIntArray.h>
@@ -43,6 +58,10 @@
 #include<vtkUnstructuredGrid.h>
 #include<vtkXMLUnstructuredGridWriter.h>
 
+#ifdef vtkGenericDataArray_h
+#define InsertNextTupleValue InsertNextTypedTuple
+#endif
+
 using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
@@ -52,8 +71,7 @@ DumpATOMVTK::DumpATOMVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, ar
   if (narg != 5) error->all(FLERR,"Illegal dump command");
   if (binary || multiproc) error->all(FLERR,"Invalid dump filename");
 
-  sort_flag = 1;
-  sortcol = 0;
+  sortBuffer = new SortBuffer(lmp, true);
 
   size_one = 17;
 
@@ -305,7 +323,11 @@ void DumpATOMVTK::vtkExportData::writeSER() {
 
   vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
   writer->SetDataModeToAscii();
+#if VTK_MAJOR_VERSION < 6
   writer->SetInput(spheresUg);
+#else
+  writer->SetInputData(spheresUg);
+#endif
   writer->SetFileName(_fileName);
   writer->Write();
 }

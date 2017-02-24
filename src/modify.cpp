@@ -1,24 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
@@ -26,8 +54,8 @@
    Richard Berger (JKU Linz)
 ------------------------------------------------------------------------- */
 
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <string.h>
 #include "modify.h"
 #include "style_compute.h"
 #include "style_fix.h"
@@ -286,6 +314,7 @@ void Modify::setup(int vflag)
      if (!fix[i]->recent_restart && fix[i]->just_created && fix[i]->create_attribute)
      {
          fix[i]->just_created = 0;
+         fix[i]->pre_set_arrays();
          for(int j = 0; j < nlocal; j++)
            if(mask[j] & fix[i]->groupbit) fix[i]->set_arrays(j);
      }
@@ -699,7 +728,7 @@ int Modify::min_reset_ref()
 
 void Modify::add_fix(int narg, char **arg, char *suffix)
 {
-
+  
   if (narg < 3) error->all(FLERR,"Illegal fix command");
 
   // cannot define fix before box exists unless style is in exception list
@@ -743,6 +772,9 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
 
   if (ifix < nfix) {
     newflag = 0;
+    
+    if (strncmp(fix[ifix]->style,"insert/",7) == 0)
+      error->all(FLERR,"Using a fix insert/* ID twice, which is not possible. Please use different ID");
     if (strcmp(arg[2],fix[ifix]->style) != 0)
       error->all(FLERR,"Replacing a fix, but new style != old style");
     if (fix[ifix]->igroup != igroup && comm->me == 0)
@@ -750,6 +782,8 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
     
     fix[ifix]->pre_delete(true);
     delete fix[ifix];
+    
+    atom->update_callback(ifix);
     fix[ifix] = NULL;
   } else {
     newflag = 1;
@@ -780,6 +814,12 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
     fix[ifix] = fix_creator(lmp,narg,arg);
   }
 
+  if (fix[ifix] == NULL && strncmp(arg[2], "mesh/surface", 12) == 0)
+  {
+    FixCreator fix_creator = (*fix_map)["mesh/surface"];
+    fix[ifix] = fix_creator(lmp, narg, arg);
+  }
+
   if (fix[ifix] == NULL){ 
     char * errmsg = new char[30+strlen(arg[2])]; 
     sprintf(errmsg,"Invalid fix style: \"%s\"",arg[2]);
@@ -801,7 +841,11 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
   {
     
     if (strcmp(id_restart_global[i],fix[ifix]->id) == 0 &&
-        strcmp(style_restart_global[i],fix[ifix]->style) == 0) {
+          (strcmp(style_restart_global[i],fix[ifix]->style) == 0 ||
+            (fix[ifix]->accepts_restart_data_from_style && strcmp(style_restart_global[i],fix[ifix]->accepts_restart_data_from_style) == 0)
+          )
+       )
+      {
           fix[ifix]->restart(state_restart_global[i]);
           fix[ifix]->recent_restart = 1; 
           if (comm->me == 0) {
@@ -817,8 +861,13 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
   // if yes, loop over atoms so they can extract info from atom->extra array
 
   for (int i = 0; i < nfix_restart_peratom; i++)
+  {
     if (strcmp(id_restart_peratom[i],fix[ifix]->id) == 0 &&
-        strcmp(style_restart_peratom[i],fix[ifix]->style) == 0) {
+          (strcmp(style_restart_peratom[i],fix[ifix]->style) == 0 ||
+            (fix[ifix]->accepts_restart_data_from_style && strcmp(style_restart_peratom[i],fix[ifix]->accepts_restart_data_from_style) == 0)
+          )
+       )
+    {
       for (int j = 0; j < atom->nlocal; j++)
         fix[ifix]->unpack_restart(j,index_restart_peratom[i]);
       fix[ifix]->recent_restart = 1; 
@@ -828,11 +877,12 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
                      "from restart file info\n");
         if (screen) fprintf(screen,str,fix[ifix]->id,fix[ifix]->style);
         if (logfile) fprintf(logfile,str,fix[ifix]->id,fix[ifix]->style);
+
       }
     }
+  }
 
   fix[ifix]->post_create(); 
-
 }
 
 /* ----------------------------------------------------------------------
@@ -880,7 +930,7 @@ void Modify::delete_fix(const char *id, bool unfixflag)
   atom->update_callback(ifix);
 
   // move other Fixes and fmask down in list one slot
-
+  
   for (int i = ifix+1; i < nfix; i++) fix[i-1] = fix[i];
   for (int i = ifix+1; i < nfix; i++) fmask[i-1] = fmask[i];
   nfix--;
@@ -1070,6 +1120,7 @@ void Modify::write_restart(FILE *fp)
   for (int i = 0; i < nfix; i++)
     if (fix[i]->restart_global) {
       if (me == 0) {
+        
         n = strlen(fix[i]->id) + 1;
         fwrite(&n,sizeof(int),1,fp);
         fwrite(fix[i]->id,sizeof(char),n,fp);
@@ -1090,6 +1141,7 @@ void Modify::write_restart(FILE *fp)
     if (fix[i]->restart_peratom) {
       int maxsize_restart = fix[i]->maxsize_restart();
       if (me == 0) {
+        
         n = strlen(fix[i]->id) + 1;
         fwrite(&n,sizeof(int),1,fp);
         fwrite(fix[i]->id,sizeof(char),n,fp);
@@ -1185,6 +1237,7 @@ int Modify::read_restart(FILE *fp)
     maxsize += n;
 
     index_restart_peratom[i] = i;
+
   }
 
   return maxsize;
@@ -1196,8 +1249,14 @@ int Modify::read_restart(FILE *fp)
 
 void Modify::restart_deallocate()
 {
+  
+  int n_ms = n_fixes_style("multisphere");
+  bool have_ms_in_restart = false;
+
   if (nfix_restart_global) {
     for (int i = 0; i < nfix_restart_global; i++) {
+      if(strncmp(style_restart_global[i],"multisphere",11) == 0)
+        have_ms_in_restart = true;
       delete [] id_restart_global[i];
       delete [] style_restart_global[i];
       delete [] state_restart_global[i];
@@ -1209,6 +1268,8 @@ void Modify::restart_deallocate()
 
   if (nfix_restart_peratom) {
     for (int i = 0; i < nfix_restart_peratom; i++) {
+      if(strncmp(style_restart_peratom[i],"multisphere",11) == 0)
+        have_ms_in_restart = true;
       delete [] id_restart_peratom[i];
       delete [] style_restart_peratom[i];
     }
@@ -1218,6 +1279,10 @@ void Modify::restart_deallocate()
   }
 
   nfix_restart_global = nfix_restart_peratom = 0;
+
+  if(0 == n_ms && have_ms_in_restart)
+    error->all(FLERR,"Restart data contains multi-sphere data, which was not restarted. In order to restart it,\n"
+                         "you have to place a fix multisphere/* command before the first run command in the input script\n");
 }
 
 /* ----------------------------------------------------------------------

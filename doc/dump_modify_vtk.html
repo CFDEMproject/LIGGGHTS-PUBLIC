@@ -1,0 +1,420 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dump_modify command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>dump_modify command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/dump_modify_vtk.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dump-modify-command">
+<span id="index-0"></span><h1>dump_modify command<a class="headerlink" href="#dump-modify-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>dump_modify dump-ID keyword values ...</pre>
+</div>
+<ul class="simple">
+<li>dump-ID = ID of dump to modify</li>
+<li>one or more keyword/value pairs may be appended</li>
+<li>these keywords apply to the dump custom/vtk style</li>
+<li>keyword = <em>binary</em> or <em>element</em> or <em>every</em> or <em>fileper</em> or <em>first</em> or <em>label</em> or <em>nfile</em> or <em>pad</em> or <em>region</em> or <em>sort</em> or <em>thresh</em></li>
+</ul>
+<pre class="literal-block">
+<em>binary</em> arg = <em>yes</em> or <em>no</em>
+<em>element</em> args = E1 E2 ... EN, where N = # of atom types
+  E1,...,EN = element name, e.g. C or Fe or Ga
+<em>every</em> arg = N
+  N = dump every this many timesteps
+  N can be a variable (see below)
+<em>fileper</em> arg = Np
+  Np = write one file for every this many processors
+<em>first</em> arg = <em>yes</em> or <em>no</em>
+<em>label</em> arg = string
+  string = character string to use in header of legacy VTK file
+<em>nfile</em> arg = Nf
+  Nf = write this many files, one from each of Nf processors
+<em>pad</em> arg = Nchar = # of characters to convert timestep to
+<em>region</em> arg = region-ID or &quot;none&quot;
+<em>sort</em> arg = <em>off</em> or <em>id</em> or N or -N
+   off = no sorting of per-atom lines within a snapshot
+   id = sort per-atom lines by atom ID
+   N = sort per-atom lines in ascending order by the Nth column
+   -N = sort per-atom lines in descending order by the Nth column
+<em>thresh</em> args = attribute operation value
+  attribute = same attributes (x,fy,etotal,sxx,etc) used by dump custom style
+  operation = &quot;&lt;&quot; or &quot;&lt;=&quot; or &quot;&gt;&quot; or &quot;&gt;=&quot; or &quot;==&quot; or &quot;!=&quot;
+  value = numeric value to compare to
+  these 3 args can be replaced by the word &quot;none&quot; to turn off thresholding
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>dump_modify dmpvtp binary yes
+dump_modify e_data region mySphere thresh x &lt; 0.0 thresh ervel &gt;= 0.2
+dump_modify dmpvtk every 1000 nfile 20
+dump_modify dmpvtk every v_myVar</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Modify the parameters of a previously defined dump command.</p>
+<p>These keywords apply to the <a class="reference internal" href="dump_custom_vtk.html"><em>dump custom/vtk</em></a> style.
+The description gives details.</p>
+<hr class="docutils" />
+<p>The <em>binary</em> keyword, if specified as <em>yes</em>, causes the output to be
+written in binary format. If specified as <em>no</em>, which is the default,
+the data is written in ASCII format to the output file.</p>
+<hr class="docutils" />
+<p>The <em>element</em> keyword associates element names (e.g. H, C, Fe) with
+LIGGGHTS(R)-PUBLIC atom types.  There are no restrictions to what
+label can be used as an element name.  Any whitespace separated text
+will be accepted.</p>
+<hr class="docutils" />
+<p>The <em>every</em> keyword changes the dump frequency originally specified by
+the <a class="reference internal" href="dump_custom_vtk.html"><em>dump custom/vtk</em></a> command to a new value.
+The every keyword can be specified in one of two ways.
+It can be a numeric value in which case it must be &gt; 0.
+Or it can be an <a class="reference internal" href="variable.html"><em>equal-style variable</em></a>,
+which should be specified as v_name, where name is the variable name.</p>
+<p>In this case, the variable is evaluated at the beginning of a run to
+determine the next timestep at which a dump snapshot will be written
+out.  On that timestep the variable will be evaluated again to
+determine the next timestep, etc.  Thus the variable should return
+timestep values.  See the stagger() and logfreq() and stride() math
+functions for <a class="reference internal" href="variable.html"><em>equal-style variables</em></a>, as examples of
+useful functions to use in this context.  Other similar math functions
+could easily be added as options for <a class="reference internal" href="variable.html"><em>equal-style variables</em></a>.  Also see the next() function, which allows
+use of a file-style variable which reads successive values from a
+file, each time the variable is evaluated.  Used with the <em>every</em>
+keyword, if the file contains a list of ascending timesteps, you can
+output snapshots whenever you wish.</p>
+<p>Note that when using the variable option with the <em>every</em> keyword, you
+need to use the <em>first</em> option if you want an initial snapshot written
+to the dump file.</p>
+<p>For example, the following commands will
+write snapshots at timesteps 0,10,20,30,100,200,300,1000,2000,etc:</p>
+<div class="highlight-python"><pre>variable     s equal logfreq(10,3,10)
+dump         1 all custom/vtk 100 tmp.dump*.vtk vx vy vz
+dump_modify  1 every v_s first yes</pre>
+</div>
+<p>The following commands would write snapshots at the timesteps listed
+in file tmp.times:</p>
+<div class="highlight-python"><pre>variable        f file tmp.times
+variable     s equal next(f)
+dump         1 all custom/vtk 100 tmp.dump*.vtk vx vy vz
+dump_modify  1 every v_s</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">When using a file-style variable with the <em>every</em>
+keyword, the file of timesteps must list a first timestep that is
+beyond the current timestep (e.g. it cannot be 0).  And it must list
+one or more timesteps beyond the length of the run you perform.  This
+is because the dump command will generate an error if the next
+timestep it reads from the file is not a value greater than the
+current timestep.  Thus if you wanted output on steps 0,15,100 of a
+100-timestep run, the file should contain the values 15,100,101 and
+you should also use the dump_modify first command.  Any final value &gt;
+100 could be used in place of 101.</p>
+</div>
+<hr class="docutils" />
+<p>The <em>first</em> keyword determines whether a dump snapshot is written on
+the very first timestep after the dump command is invoked.  This will
+always occur if the current timestep is a multiple of N, the frequency
+specified in the <a class="reference internal" href="dump_custom_vtk.html"><em>dump custom/vtk</em></a> command,
+including timestep 0.  But if this is not the case, a dump snapshot
+will only be written if the setting of this keyword is <em>yes</em>.
+If it is <em>no</em>, which is the default, then it will not be written.</p>
+<hr class="docutils" />
+<p>The <em>fileper</em> keyword is documented below with the <em>nfile</em> keyword.</p>
+<hr class="docutils" />
+<p>When writing to legacy VTK files, the dump <em>custom/vtk</em> style will
+use the specified <em>label</em> as the header line.  By default this header line is:</p>
+<div class="highlight-python"><pre>Generated by LIGGGHTS(R)-PUBLIC</pre>
+</div>
+<hr class="docutils" />
+<p>The <em>nfile</em> or <em>fileper</em> keywords can be used in conjunction with the
+&#8220;%&#8221; wildcard character in the specified dump file name, if an XML file
+format was specified.  As explained on the <a class="reference internal" href="dump_custom_vtk.html"><em>dump custom_vtk</em></a>
+command doc page, the &#8220;%&#8221; character causes the dump file to be written
+in pieces, one piece for each of P processors.  By default P = the
+number of processors the simulation is running on.  The <em>nfile</em> or
+<em>fileper</em> keyword can be used to set P to a smaller value, which can
+be more efficient when running on a large number of processors.</p>
+<p>The <em>nfile</em> keyword sets P to the specified Nf value.  For example, if
+Nf = 4, and the simulation is running on 100 processors, 4 files will
+be written, by processors 0,25,50,75.  Each will collect information
+from itself and the next 24 processors and write it to a dump file.</p>
+<p>For the <em>fileper</em> keyword, the specified value of Np means write one
+file for every Np processors.  For example, if Np = 4, every 4th
+processor (0,4,8,12,etc) will collect information from itself and the
+next 3 processors and write it to a dump file.</p>
+<hr class="docutils" />
+<p>The <em>pad</em> keyword only applies when the dump filename is specified
+with a wildcard &#8220;*&#8221; character which becomes the timestep.  If <em>pad</em> is
+0, which is the default, the timestep is converted into a string of
+unpadded length, e.g. 100 or 12000 or 2000000.  When <em>pad</em> is
+specified with <em>Nchar</em> &gt; 0, the string is padded with leading zeroes
+so they are all the same length = <em>Nchar</em>.  For example, pad 7 would
+yield 0000100, 0012000, 2000000.  This can be useful so that
+post-processing programs can easily read the files in ascending
+timestep order.</p>
+<hr class="docutils" />
+<p>If the <em>region</em> keyword is specified, only atoms in the region
+will be written to the dump file.  Only one region can be applied as
+a filter (the last one specified).  See the <a class="reference internal" href="region.html"><em>region</em></a>
+command for more details.  Note that a region can be defined as the
+&#8220;inside&#8221; or &#8220;outside&#8221; of a geometric shape, and it can be the &#8220;union&#8221;
+or &#8220;intersection&#8221; of a series of simpler regions.</p>
+<hr class="docutils" />
+<p>The <em>sort</em> keyword determines whether lines of per-atom output in a
+snapshot are sorted or not.  A sort value of <em>off</em> means they will
+typically be written in indeterminate order, either in serial or
+parallel.  This is the case even in serial if the <a class="reference internal" href="atom_modify.html"><em>atom_modify sort</em></a> option is turned on, which it is by default, to
+improve performance.  A sort value of <em>id</em> means sort the output by
+atom ID.  A sort value of N or -N means sort the output by the value
+in the Nth column of per-atom info in either ascending or descending
+order.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Unless it is required by the dump style, sorting dump
+file output requires extra overhead in terms of CPU and communication
+cost, as well as memory, versus unsorted output.</p>
+</div>
+<hr class="docutils" />
+<p>Using the <em>thresh</em> keyword, multiple thresholds can be specified.
+Specifying &#8220;none&#8221; turns off all threshold criteria.  If thresholds are
+specified, only atoms whose attributes meet all the threshold criteria
+are written to the dump file.  The possible attributes that can be
+tested for are the same as those that can be specified in the
+<a class="reference internal" href="dump_custom_vtk.html"><em>dump custom/vtk</em></a> command, with the exception
+of the <em>element</em> attribute, since it is not a numeric value.  Note
+that different attributes can be output by the dump custom/vtk command
+than are used as threshold criteria by the dump_modify command.
+E.g. you can output the coordinates and stress of atoms whose energy
+is above some threshold.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>none</div></blockquote>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="dump.html"><em>dump</em></a>, <a class="reference internal" href="dump_custom_vtk.html"><em>dump custom/vtk</em></a>, <a class="reference internal" href="dump_image.html"><em>dump image</em></a>, <a class="reference internal" href="undump.html"><em>undump</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p>The option defaults are</p>
+<ul class="simple">
+<li>binary = no</li>
+<li>element = &#8220;C&#8221; for every atom type</li>
+<li>every = whatever it was set to via the <a class="reference internal" href="dump_custom_vtk.html"><em>dump custom/vtk</em></a> command</li>
+<li>fileper = # of processors</li>
+<li>first = no</li>
+<li>label = &#8220;Generated by LIGGGHTS&#8221;</li>
+<li>nfile = 1</li>
+<li>pad = 0</li>
+<li>region = none</li>
+<li>sort = off</li>
+<li>thresh = none</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

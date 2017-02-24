@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -64,13 +64,13 @@ and xhi faces of the box are planes tilting in the +y direction as y
 increases.  These tilted planes are shrink-wrapped around the atoms to
 determine the x extent of the box.
 
-See "Section_howto 12"_Section_howto.html#howto_12 of the doc pages
-for a geometric description of triclinic boxes, as defined by LAMMPS,
+See "Section_howto 12"_Section_howto.html#howto_7 of the doc pages
+for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.
 
 IMPORTANT NOTE: If mesh walls (e.g. "fix mesh/surface"_fix_mesh_surface.html)
-are used, not only atom positions, but also the mesh nodes are used 
+are used, not only atom positions, but also the mesh nodes are used
 for setting the boundaries.
 
 [Restrictions:]

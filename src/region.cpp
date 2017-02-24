@@ -1,29 +1,57 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "region.h"
 #include "update.h"
 #include "domain.h"
@@ -60,6 +88,8 @@ Region::Region(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   lastshape = lastdynamic = -1;
 
   random = NULL; 
+
+  volume_limit_ = 1.e-10;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -159,7 +189,7 @@ int Region::surface(double x, double y, double z, double cutoff)
 {
   int ncontact;
   double xs,ys,zs;
-  double xnear[3],xorig[3];
+  double xnear[3],xorig[3]={};
 
   if (varshape && update->ntimestep != lastshape) {
     shape_update();
@@ -269,17 +299,16 @@ void Region::inverse_transform(double &x, double &y, double &z)
    rotate x,y,z by angle via right-hand rule around point and runit normal
    sign of angle determines whether rotating forward/backward in time
    return updated x,y,z
-   P = point = vector = point of rotation
-   R = vector = axis of rotation
-   w = omega of rotation (from period)
-   X0 = x,y,z = initial coord of atom
+   R = vector axis of rotation
+   P = point = point to rotate around
    R0 = runit = unit vector for R
-   C = (X0 dot R0) R0 = projection of atom coord onto R
+   X0 = x,y,z = initial coord of atom
    D = X0 - P = vector from P to X0
-   A = D - C = vector from R line to X0
-   B = R0 cross A = vector perp to A in plane of rotation
+   C = (D dot R0) R0 = projection of D onto R, i.e. Dparallel
+   A = D - C = vector from R line to X0, i.e. Dperp
+   B = R0 cross A = vector perp to A in plane of rotation, same len as A
    A,B define plane of circular rotation around R line
-   x,y,z = P + C + A cos(w*dt) + B sin(w*dt)
+   new x,y,z = P + C + A cos(angle) + B sin(angle)
 ------------------------------------------------------------------------- */
 
 void Region::rotate(double &x, double &y, double &z, double angle)
@@ -288,13 +317,13 @@ void Region::rotate(double &x, double &y, double &z, double angle)
 
   double sine = sin(angle);
   double cosine = cos(angle);
-  double x0dotr = x*runit[0] + y*runit[1] + z*runit[2];
-  c[0] = x0dotr * runit[0];
-  c[1] = x0dotr * runit[1];
-  c[2] = x0dotr * runit[2];
   d[0] = x - point[0];
   d[1] = y - point[1];
   d[2] = z - point[2];
+  double x0dotr = d[0]*runit[0] + d[1]*runit[1] + d[2]*runit[2];
+  c[0] = x0dotr * runit[0];
+  c[1] = x0dotr * runit[1];
+  c[2] = x0dotr * runit[2];
   a[0] = d[0] - c[0];
   a[1] = d[1] - c[1];
   a[2] = d[2] - c[2];
@@ -307,6 +336,7 @@ void Region::rotate(double &x, double &y, double &z, double angle)
   x = point[0] + c[0] + disp[0];
   y = point[1] + c[1] + disp[1];
   z = point[2] + c[2] + disp[2];
+
 }
 
 /* ----------------------------------------------------------------------
@@ -320,7 +350,7 @@ void Region::options(int narg, char **arg)
   // option defaults
 
   interior = 1;
-  scaleflag = 1;
+  scaleflag = 0; 
   moveflag = rotateflag = 0;
 
   seed = 3012211;
@@ -386,6 +416,11 @@ void Region::options(int narg, char **arg)
       if (iarg+2 > narg)
         error->all(FLERR,"Illegal region command");
       seed = force->numeric(FLERR,arg[iarg+1]);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"volume_limit") == 0) {
+      if (iarg+2 > narg)
+        error->all(FLERR,"Illegal region command");
+      volume_limit_ = force->numeric(FLERR,arg[iarg+1]);
       iarg += 2;
     }
      else error->all(FLERR,"Illegal region command");
@@ -484,6 +519,7 @@ void Region::generate_random(double *pos,bool subdomain_flag)
 // i.e. generate random point in region "shrunk" by cut
 void Region::generate_random_shrinkby_cut(double *pos,double cut,bool subdomain_flag)
 {
+    
     double lo[3],hi[3],diff[3];
     rand_bounds(subdomain_flag,lo,hi);
     vectorSubtract3D(hi,lo,diff);
@@ -574,6 +610,7 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
     if(!bboxflag)
     {
         vol_global = vol_local = 0.;
+        error->all(FLERR,"Unable to calculate region volume. Region needs to have existing bounding box");
         return;
     }
 
@@ -611,7 +648,7 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
     MPI_Sum_Scalar(n_in_global,n_in_global_all,world);
     if(n_in_global_all == 0)
         error->all(FLERR,"Unable to calculate region volume. Possible sources of error: \n"
-                         "   (a) region volume is too small or out of domain\n"
+                         "   (a) region volume is too small or out of domain (you may want to increase the 'volume_limit' in the input script)\n"
                          "   (b) particles for insertion are too large when using all_in yes\n"
                          "   (c) region is 2d, but should be 3d");
 
@@ -623,9 +660,9 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
 
     MPI_Sum_Scalar(vol_local,vol_local_all,world);
 
-    if(vol_local_all < 1e-10)
+    if(vol_local_all < volume_limit_)
         error->all(FLERR,"Unable to calculate region volume. Possible sources of error: \n"
-                         "   (a) region volume is too small or out of domain\n"
+                         "   (a) region volume is too small or out of domain (you may want to increase the 'volume_limit' in the input script)\n"
                          "   (b) particles for insertion are too large when using all_in yes\n"
                          "   (c) region is 2d, but should be 3d\n");
 

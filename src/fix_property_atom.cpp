@@ -1,32 +1,53 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_property_atom.h"
 #include "atom.h"
 #include "memory.h"
 #include "error.h"
 
+#include "pair_gran.h"
 #include "atom_vec.h"
 #include "force.h"
 #include "update.h"
@@ -46,7 +67,10 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixPropertyAtom::FixPropertyAtom(LAMMPS *lmp, int narg, char **arg, bool parse) :
-  Fix(lmp, narg, arg)
+  Fix(lmp, narg, arg),
+  propertyname(0),
+  property(0),
+  internal(false)
 {
     
     if(parse) parse_args(narg,arg);
@@ -64,9 +88,16 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
     variablename = new char[n];
     strcpy(variablename,arg[3]);
 
+    bool vector_with_one_entry = false;
     if (strcmp(arg[4],"scalar") == 0) data_style = FIXPROPERTY_ATOM_SCALAR;
     else if (strcmp(arg[4],"vector") == 0) data_style = FIXPROPERTY_ATOM_VECTOR;
-    else error->all(FLERR,"Unknown style for fix property/atom. Valid styles are 'scalar' or 'vector'");
+    // This vector style allows for a vector to have only one entry. Under normal circumstances the scalar style should be chosen instead.
+    else if (strcmp(arg[4],"vector_one_entry") == 0)
+    {
+        vector_with_one_entry = true;
+        data_style = FIXPROPERTY_ATOM_VECTOR;
+    }
+    else error->all(FLERR,"Unknown style for fix property/atom. Valid styles are 'scalar', 'vector' or 'vector_one_entry'");
 
     if (strcmp(arg[5],"yes") == 0)
     {
@@ -89,25 +120,55 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
     else error->all(FLERR,"Unknown communicate_reverse_ghost style for fix property/atom. Valid styles are 'yes' or 'no'");
 
     nvalues = narg - 8;
-    if ((nvalues == 1) && (data_style != FIXPROPERTY_ATOM_SCALAR))
+    
+    if ((nvalues == 1) && !(data_style == FIXPROPERTY_ATOM_SCALAR || (vector_with_one_entry && data_style == FIXPROPERTY_ATOM_VECTOR)))
       error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with vector style. Provide more than 1 value or use style 'scalar'");
 
     if ((nvalues >1) && (data_style != FIXPROPERTY_ATOM_VECTOR))
-      error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with vector style. Provide 1 value or use style 'vector'");
+      error->all(FLERR,"Error in fix property/atom: Number of default values provided not consistent with scalar style. Provide 1 value or use style 'vector'");
 
     defaultvalues = new double[nvalues];
 
     // fix handles properties that need to be initialized at particle creation
     create_attribute = 1;
-    for (int j = 0; j < nvalues; j++)
+
+    // special case: only implemented for scalar default value from scalar
+    // initialize property from another existing scalar, which is found via Property class
+    // since this fix must exist already, it is initialized before this fix property
+    propertyname = 0;
+    if(FIXPROPERTY_ATOM_SCALAR == data_style)
     {
-        // if any of the values is none, this fix will not init properties
-        if(strcmp(arg[8+j],"none") == 0)
+        char *prop = arg[8];
+        int n = strlen(prop);
+        bool is_digit = false;
+        for (int i = 0; i < n; i++)
+            if (isdigit(prop[i])) is_digit = true;
+
+        if(!is_digit)
         {
-            create_attribute = 0;
-            continue;
+            // scalar property found
+            int len1,len2;
+            if(atom->get_properties()->find_property(prop,"scalar-atom",len1,len2))
+            {
+                propertyname = new char[n+1];
+                strcpy(propertyname,prop);
+            }
         }
-        defaultvalues[j] = force->numeric(FLERR,arg[8+j]);
+    }
+
+    // set default values
+    if(!propertyname)
+    {
+        for (int j = 0; j < nvalues; j++)
+        {
+            // if any of the values is none, this fix will not init properties
+            if(strcmp(arg[8+j],"none") == 0)
+            {
+                create_attribute = 0;
+                continue;
+            }
+            defaultvalues[j] = force->numeric(FLERR,arg[8+j]);
+        }
     }
 
     if (data_style) size_peratom_cols = nvalues;
@@ -133,14 +194,27 @@ void FixPropertyAtom::parse_args(int narg, char **arg)
     int nlocal = atom->nlocal;
     if(create_attribute)
     {
-        for (int i = 0; i < nlocal; i++)
+        if(propertyname)
         {
-          if (data_style)
-          {
-            for (int m = 0; m < nvalues; m++)
-                array_atom[i][m] = defaultvalues[m];
-          }
-          else vector_atom[i] = defaultvalues[0];
+            // not implemented
+            if(data_style)
+                error->all(FLERR,"internal error");
+            
+            pre_set_arrays();
+            for (int i = 0; i < nlocal; i++)
+                vector_atom[i] = property[i];
+        }
+        else
+        {
+            for (int i = 0; i < nlocal; i++)
+            {
+              if (data_style)
+              {
+                for (int m = 0; m < nvalues; m++)
+                    array_atom[i][m] = defaultvalues[m];
+              }
+              else vector_atom[i] = defaultvalues[0];
+            }
         }
     }
 
@@ -166,8 +240,9 @@ FixPropertyAtom::~FixPropertyAtom()
   if (restart_peratom) atom->delete_callback(id,1);
 
   // delete locally stored arrays
-  delete[] variablename;
-  delete[] defaultvalues;
+  delete []variablename;
+  delete []defaultvalues;
+  if(propertyname) delete []propertyname;
 
   if (data_style) memory->destroy(array_atom);
   else memory->destroy(vector_atom);
@@ -186,7 +261,9 @@ Fix* FixPropertyAtom::check_fix(const char *varname,const char *svmstyle,int len
         // check variable style
         if(
             (strcmp(svmstyle,"scalar") == 0 && data_style != FIXPROPERTY_ATOM_SCALAR) ||
-            (strcmp(svmstyle,"vector") == 0 && data_style != FIXPROPERTY_ATOM_VECTOR)
+            (strcmp(svmstyle,"vector") == 0 && data_style != FIXPROPERTY_ATOM_VECTOR) ||
+            (strcmp(svmstyle,"vector2D") == 0 && data_style != FIXPROPERTY_ATOM_VECTOR2D) ||
+            (strcmp(svmstyle,"quaternion") == 0 && data_style != FIXPROPERTY_ATOM_QUATERNION)
         )
         {
             if(errflag)
@@ -278,6 +355,31 @@ void FixPropertyAtom::copy_arrays(int i, int j, int delflag)
 }
 
 /* ----------------------------------------------------------------------
+   called before set_arrays is called for each atom
+------------------------------------------------------------------------- */
+
+void FixPropertyAtom::pre_set_arrays()
+{
+    
+    property = 0;
+    if(propertyname)
+    {
+        
+        int len1,len2;
+        
+        property = (double*) atom->get_properties()->find_property(propertyname,"scalar-atom",len1,len2);
+        if(!property)
+        {
+            char errstr[200];
+            sprintf(errstr,"Property %s not found",propertyname);
+            
+            error->fix_error(FLERR,this,errstr);
+        }
+
+    }
+}
+
+/* ----------------------------------------------------------------------
    initialize one atom's array values, called when atom is created
 ------------------------------------------------------------------------- */
 
@@ -287,7 +389,35 @@ void FixPropertyAtom::set_arrays(int i)
     if (data_style)
         for(int k=0;k<nvalues;k++)
             array_atom[i][k] = defaultvalues[k];
-    else vector_atom[i] = defaultvalues[0];
+    else vector_atom[i] = property ? property[i] : defaultvalues[0];
+}
+
+/* ----------------------------------------------------------------------
+   set all atoms values
+------------------------------------------------------------------------- */
+
+void FixPropertyAtom::set_all(double value, bool ghost)
+{
+    
+    int nall;
+
+    if(!ghost)
+        nall = atom->nlocal;
+    else
+        nall = atom->nlocal + atom->nghost;
+    if (data_style)
+    {
+        for(int i = 0; i < nall; i++)
+        {
+            for(int k=0;k<nvalues;k++)
+                array_atom[i][k] = value;
+        }
+    }
+    else
+    {
+        for(int i = 0; i < nall; i++)
+            vector_atom[i] = value;
+    }
 }
 
 /* ----------------------------------------------------------------------

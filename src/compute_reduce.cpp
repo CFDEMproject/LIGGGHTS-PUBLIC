@@ -1,14 +1,46 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 /* ----------------------------------------------------------------------
@@ -18,8 +50,8 @@ andreas.eitzlmayr@tugraz.at
 Christoph Kloss (DCS)
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "compute_reduce.h"
 #include "atom.h"
 #include "update.h"
@@ -40,11 +72,6 @@ enum{SUM,MINN,MAXX,AVE};
 enum{X,V,F,COMPUTE,FIX,VARIABLE,RHO,P}; 
 enum{PERATOM,LOCAL};
 
-#define INVOKED_VECTOR 2
-#define INVOKED_ARRAY 4
-#define INVOKED_PERATOM 8
-#define INVOKED_LOCAL 16
-
 #define BIG 1.0e20
 
 /* ---------------------------------------------------------------------- */
@@ -52,7 +79,7 @@ enum{PERATOM,LOCAL};
 ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
   Compute(lmp, narg, arg)
 {
-  int iarg;
+  int iarg = 0;
   if (strcmp(style,"reduce") == 0) {
     if (narg < 5) error->all(FLERR,"Illegal compute reduce command");
     idregion = NULL;
@@ -66,7 +93,7 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
     idregion = new char[n];
     strcpy(idregion,arg[3]);
     iarg = 4;
-  }
+  } else error->all(FLERR,"Illegal compute reduce command: invalid style");
 
   if (strcmp(arg[iarg],"sum") == 0) mode = SUM;
   else if (strcmp(arg[iarg],"min") == 0) mode = MINN;
@@ -464,7 +491,7 @@ double ComputeReduce::compute_one(int m, int flag)
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
-  double one;
+  double one = 0.0;
   if (mode == SUM) one = 0.0;
   else if (mode == MINN) one = BIG;
   else if (mode == MAXX) one = -BIG;

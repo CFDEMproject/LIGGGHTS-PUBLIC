@@ -1,26 +1,46 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "atom.h"
 #include "update.h"
 #include "respa.h"
@@ -28,7 +48,7 @@
 #include "memory.h"
 #include "modify.h"
 #include "comm.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "mpi_liggghts.h"
 #include "fix_cfd_coupling_force.h"
@@ -43,12 +63,20 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
     fix_coupling_(0),
     fix_dragforce_(0),
     fix_hdtorque_(0),
-    fix_volumeweight_(0),
+    fix_dispersionTime_(0),
+    fix_dispersionVel_(0),
+    fix_UrelOld_(0),
     use_force_(true),
     use_torque_(true),
     use_dens_(false),
     use_type_(false),
-    use_property_(false)
+    use_stochastic_(false),
+    use_virtualMass_(false),
+    use_superquadric_(false),
+    use_property_(false),
+    use_fiber_topo_(false),
+    fix_fiber_axis_(0),
+    fix_fiber_ends_(0)
 {
     int iarg = 3;
 
@@ -69,7 +97,23 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_density'");
             iarg++;
             hasargs = true;
-        } else if(strcmp(arg[iarg],"transfer_type") == 0) {
+        }
+        else if(strcmp(arg[iarg],"transfer_torque") == 0)
+        {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_torque'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_torque_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_torque_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_torque'");
+            iarg++;
+            hasargs = true;
+        }
+        else if(strcmp(arg[iarg],"transfer_type") == 0)
+        {
             if(narg < iarg+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'transfer_type'");
             iarg++;
@@ -79,6 +123,34 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 use_type_ = false;
             else
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_type'");
+            iarg++;
+            hasargs = true;
+        }
+        else if(strcmp(arg[iarg],"transfer_stochastic") == 0)
+        {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_stochastic'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_stochastic_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_stochastic_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_stochastic'");
+            iarg++;
+            hasargs = true;
+        }
+        else if(strcmp(arg[iarg],"transfer_virtualMass") == 0)
+        {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_virtualMass'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_virtualMass_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_virtualMass_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_virtualMass'");
             iarg++;
             hasargs = true;
         } else if(strcmp(arg[iarg],"transfer_property") == 0) {
@@ -92,6 +164,33 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
             if(strcmp(arg[iarg++],"type"))
                 error->fix_error(FLERR,this,"expecting 'type' after property name");
             sprintf(property_type,"%s",arg[iarg++]);
+            iarg++;
+            hasargs = true;
+        } else if(strcmp(arg[iarg],"transfer_fiber_topology") == 0) {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_fiber_topology'");
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_fiber_topo_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_fiber_topo_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_fiber_topology'");
+            iarg++;
+            hasargs = true;
+        } else if(strcmp(arg[iarg],"transfer_superquadric") == 0) {
+            if(narg < iarg+2)
+              error->fix_error(FLERR,this,"not enough arguments for 'transfer_superquadric'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0) {
+              use_superquadric_ = true;
+              use_torque_ = true;
+              use_force_ = true;
+            }
+            else if(strcmp(arg[iarg],"no") == 0) {
+              use_superquadric_ = false;
+            }
+            else
+              error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_superquadric'");
             iarg++;
             hasargs = true;
         } else if (strcmp(this->style,"couple/cfd/force") == 0) {
@@ -153,22 +252,63 @@ void FixCfdCouplingForce::post_create()
         fix_hdtorque_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
     }
 
-    // register volume weight for volume fraction calculation if not present
-    // is 1 per default
-    fix_volumeweight_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("volumeweight","property/atom","scalar",0,0,style,false));
-    if(!fix_volumeweight_)
+    if(!fix_dispersionTime_ && use_stochastic_)
     {
         const char* fixarg[9];
-        fixarg[0]="volumeweight";
+        fixarg[0]="dispersionTime";
         fixarg[1]="all";
         fixarg[2]="property/atom";
-        fixarg[3]="volumeweight";
+        fixarg[3]="dispersionTime";
         fixarg[4]="scalar"; // 1 vector per particle to be registered
-        fixarg[5]="no";    // restart
+        fixarg[5]="yes";    // restart
         fixarg[6]="no";     // communicate ghost
         fixarg[7]="no";     // communicate rev
-        fixarg[8]="1.";
-        fix_volumeweight_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+        fixarg[8]="1e12";
+        fix_dispersionTime_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+    }
+
+    if(!fix_dispersionVel_ && use_stochastic_)
+    {
+        const char* fixarg[11];
+        fixarg[0]="dispersionVel";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="dispersionVel";
+        fixarg[4]="vector"; // vector per particle to be registered
+        fixarg[5]="yes";    // restart
+        fixarg[6]="no";     // communicate ghost
+        fixarg[7]="no";     // communicate rev
+        fixarg[8]="0";
+        fixarg[9]="0";
+        fixarg[10]="0";
+        fix_dispersionVel_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
+    }
+
+    if(!fix_UrelOld_ && use_virtualMass_)
+    {
+        const char* fixarg[11];
+        fixarg[0]="UrelOld";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="UrelOld";
+        fixarg[4]="vector"; // vector per particle to be registered
+        fixarg[5]="yes";    // restart
+        fixarg[6]="no";     // communicate ghost
+        fixarg[7]="no";     // communicate rev
+        fixarg[8]="0";
+        fixarg[9]="0";
+        fixarg[10]="0";
+        fix_dispersionVel_ = modify->add_fix_property_atom(11,const_cast<char**>(fixarg),style);
+    }
+
+    if(use_fiber_topo_)
+    {
+        const char *fixarg[] = {
+              "topo",       // fix id
+              "all",        // fix group
+              "bond/fiber/topology" // fix style
+        };
+        modify->add_fix(3,const_cast<char**>(fixarg));
     }
 }
 
@@ -178,7 +318,6 @@ void FixCfdCouplingForce::pre_delete(bool unfixflag)
 {
     if(unfixflag && fix_dragforce_) modify->delete_fix("dragforce");
     if(unfixflag && fix_hdtorque_) modify->delete_fix("hdtorque");
-    if(unfixflag && fix_volumeweight_) modify->delete_fix("volumeweight");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -208,9 +347,16 @@ void FixCfdCouplingForce::init()
     fix_coupling_->add_push_property("x","vector-atom");
     fix_coupling_->add_push_property("v","vector-atom");
     fix_coupling_->add_push_property("radius","scalar-atom");
+    if(use_superquadric_) {
+      fix_coupling_->add_push_property("volume","scalar-atom");
+      fix_coupling_->add_push_property("area","scalar-atom");
+      fix_coupling_->add_push_property("shape","vector-atom");
+      fix_coupling_->add_push_property("roundness","vector2D-atom");
+      fix_coupling_->add_push_property("quaternion","quaternion-atom");
+    }
     if(use_type_) fix_coupling_->add_push_property("type","scalar-atom");
     if(use_dens_) fix_coupling_->add_push_property("density","scalar-atom");
-    fix_coupling_->add_push_property("volumeweight","scalar-atom");
+    if(use_torque_) fix_coupling_->add_push_property("omega","vector-atom");
 
     if(use_property_) fix_coupling_->add_push_property(property_name,property_type);
 
@@ -218,7 +364,33 @@ void FixCfdCouplingForce::init()
     if(use_force_) fix_coupling_->add_pull_property("dragforce","vector-atom");
     if(use_torque_) fix_coupling_->add_pull_property("hdtorque","vector-atom");
 
+    if(use_stochastic_)
+    {
+        fix_coupling_->add_pull_property("dispersionTime","scalar-atom");
+        fix_coupling_->add_pull_property("dispersionVel","vector-atom");
+    }
+
+    if(use_fiber_topo_)
+    {
+        fix_coupling_->add_pull_property("fiber_axis","vector-atom");
+        fix_coupling_->add_pull_property("fiber_ends","vector-atom");
+    }
+
     vectorZeroize3D(dragforce_total);
+
+    if (strcmp(update->integrate_style,"respa") == 0)
+       error->fix_error(FLERR,this,"'run_style respa' not supported.");
+
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixCfdCouplingForce::setup(int vflag)
+{
+    if (strstr(update->integrate_style,"verlet"))
+        post_force(vflag);
+    else
+        error->fix_error(FLERR,this,"only 'run_style verlet' supported.");
 }
 
 /* ---------------------------------------------------------------------- */

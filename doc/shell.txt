@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -37,7 +37,6 @@ shell mkdir tmp1 tmp2 tmp3
 shell rmdir tmp1
 shell mv log.lammps hold/log.1
 shell rm TMP/file1 TMP/file2
-shell putenv LAMMPS_POTENTIALS=../../potentials
 shell my_setup file1 10 file2
 shell my_post_process 100 dump.out :pre
 
@@ -51,15 +50,15 @@ the command in a shell.
 This is means to invoke other commands from your input script.  For
 example, you can move files around in preparation for the next section
 of the input script.  Or you can run a program that pre-processes data
-for input into LAMMPS.  Or you can run a program that post-processes
-LAMMPS output data.
+for input into LIGGGHTS(R)-PUBLIC.  Or you can run a program that post-processes
+LIGGGHTS(R)-PUBLIC output data.
 
 With the exception of {cd}, all commands, including ones invoked via a
 system() call, are executed by only a single processor, so that
 files/directories are not being manipulated by multiple processors.
 
 The {cd} cmd executes the Unix "cd" command to change the working
-directory.  All subsequent LAMMPS commands that read/write files will
+directory.  All subsequent LIGGGHTS(R)-PUBLIC commands that read/write files will
 use the new directory.  All processors execute this command.
 
 The {mkdir} cmd executes the Unix "mkdir" command to create one or
@@ -78,7 +77,7 @@ removed.
 The {putenv} cmd defines or updates an environment variable directly.
 Since this command does not pass through the shell, no shell variable
 expansion or globbing is performed, only the usual substitution for
-LAMMPS variables defined with the "variable"_variable.html command is
+LIGGGHTS(R)-PUBLIC variables defined with the "variable"_variable.html command is
 performed.  The resulting string is then used literally.
 
 Any other cmd is passed as-is to the shell along with its arguments as
@@ -98,7 +97,7 @@ with 3 arguments: file1 10 file2.
 
 [Restrictions:]
 
-LAMMPS does not detect errors or print warnings when any of these
+LIGGGHTS(R)-PUBLIC does not detect errors or print warnings when any of these
 commands execute.  E.g. if the specified directory does not exist,
 executing the {cd} command will silently do nothing.
 

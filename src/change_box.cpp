@@ -1,21 +1,53 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #include "lmptype.h"
-#include "mpi.h"
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "change_box.h"
 #include "atom.h"
 #include "modify.h"
@@ -48,9 +80,6 @@ void ChangeBox::command(int narg, char **arg)
   if (domain->box_exist == 0)
     error->all(FLERR,"Change_box command before simulation box is defined");
   if (narg < 2) error->all(FLERR,"Illegal change_box command");
-  if (modify->nfix_restart_peratom)
-    error->all(FLERR,"Cannot change_box after "
-               "reading restart file with per-atom info");
 
   if (comm->me == 0 && screen) fprintf(screen,"Changing box ...\n");
 
@@ -71,6 +100,7 @@ void ChangeBox::command(int narg, char **arg)
   nops = 0;
 
   int iarg = 1;
+  bool force_change = false; // to ignore errors
   while (iarg < narg) {
     if (strcmp(arg[iarg],"x") == 0 || strcmp(arg[iarg],"y") == 0 ||
         strcmp(arg[iarg],"z") == 0) {
@@ -171,8 +201,18 @@ void ChangeBox::command(int narg, char **arg)
       nops++;
       iarg += 1;
 
+    } else if (strcmp(arg[iarg],"force") == 0) {
+      force_change = true;
+      if (comm->nprocs > 1)
+        error->all(FLERR, "change_box allows force command only in serial mode");
+      iarg += 1;
+
     } else break;
   }
+
+  if (modify->nfix_restart_peratom && !force_change)
+    error->all(FLERR,"Cannot change_box after "
+               "reading restart file with per-atom info");
 
   if (nops == 0) error->all(FLERR,"Illegal change_box command");
 
@@ -372,7 +412,7 @@ void ChangeBox::command(int narg, char **arg)
   bigint nblocal = atom->nlocal;
   MPI_Allreduce(&nblocal,&natoms,1,MPI_LMP_BIGINT,MPI_SUM,world);
   if (natoms != atom->natoms && comm->me == 0) {
-    char str[128];
+    char str[512];
     sprintf(str,"Lost atoms via change_box: original " BIGINT_FORMAT
             " current " BIGINT_FORMAT,atom->natoms,natoms);
     error->warning(FLERR,str);
@@ -387,7 +427,7 @@ void ChangeBox::options(int narg, char **arg)
 {
   if (narg < 0) error->all(FLERR,"Illegal change_box command");
 
-  scaleflag = 1;
+  scaleflag = 0; 
 
   int iarg = 0;
   while (iarg < narg) {

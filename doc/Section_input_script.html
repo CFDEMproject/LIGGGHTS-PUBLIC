@@ -1,0 +1,487 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3. Input Script &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/>
+        <link rel="next" title="4. Commands" href="Section_commands.html"/>
+        <link rel="prev" title="2. Getting Started" href="Section_start.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">3. Input Script</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#liggghts-r-public-input-script">3.1. LIGGGHTS(R)-PUBLIC input script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parsing-rules">3.2. Parsing rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-script-structure">3.3. Input script structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#an-example-input-script">3.4. An example input script</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>3. Input Script</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/Section_input_script.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_commands.html" class="btn btn-neutral float-right" title="4. Commands" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Section_start.html" class="btn btn-neutral" title="2. Getting Started" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="input-script">
+<h1>3. Input Script<a class="headerlink" href="#input-script" title="Permalink to this headline">¶</a></h1>
+<p>This section describes how a LIGGGHTS(R)-PUBLIC input script is formatted and the
+input script commands used to define a LIGGGHTS(R)-PUBLIC simulation.</p>
+<div class="line-block">
+<div class="line">3.1 <a class="reference internal" href="#inp-1"><em>LIGGGHTS(R)-PUBLIC input script</em></a></div>
+<div class="line">3.2 <a class="reference internal" href="#inp-2"><em>Parsing rules</em></a></div>
+<div class="line">3.3 <a class="reference internal" href="#inp-3"><em>Input script structure</em></a></div>
+<div class="line">3.4 <em class="xref std std-ref">An example input script</em></div>
+<div class="line"><br /></div>
+</div>
+<div class="section" id="liggghts-r-public-input-script">
+<span id="inp-1"></span><h2>3.1. LIGGGHTS(R)-PUBLIC input script<a class="headerlink" href="#liggghts-r-public-input-script" title="Permalink to this headline">¶</a></h2>
+<p>LIGGGHTS(R)-PUBLIC executes by reading commands from a input script (text file),
+one line at a time.  When the input script ends, LIGGGHTS(R)-PUBLIC exits.  Each
+command causes LIGGGHTS(R)-PUBLIC to take some action.  It may set an internal
+variable, read in a file, or run a simulation.  Most commands have
+default settings, which means you only need to use the command if you
+wish to change the default.</p>
+<p>In many cases, the ordering of commands in an input script is not
+important.  However the following rules apply:</p>
+<p>(1) LIGGGHTS(R)-PUBLIC does not read your entire input script and then perform a
+simulation with all the settings.  Rather, the input script is read
+one line at a time and each command takes effect when it is read.
+Thus this sequence of commands:</p>
+<div class="highlight-python"><pre>timestep 0.5
+run      100
+run      100</pre>
+</div>
+<p>does something different than this sequence:</p>
+<div class="highlight-python"><pre>run      100
+timestep 0.5
+run      100</pre>
+</div>
+<p>In the first case, the specified timestep (0.5 fmsec) is used for two
+simulations of 100 timesteps each.  In the 2nd case, the default
+timestep (1.0 fmsec) is used for the 1st 100 step simulation and a 0.5
+fmsec timestep is used for the 2nd one.</p>
+<p>(2) Some commands are only valid when they follow other commands.  For
+example you cannot set the temperature of a group of atoms until atoms
+have been defined and a group command is used to define which atoms
+belong to the group.</p>
+<p>(3) Sometimes command B will use values that can be set by command A.
+This means command A must precede command B in the input script if it
+is to have the desired effect.  For example, the
+<a class="reference internal" href="read_data.html"><em>read_data</em></a> command initializes the system by setting
+up the simulation box and assigning atoms to processors.  If default
+values are not desired, the <a class="reference internal" href="processors.html"><em>processors</em></a> and
+<a class="reference internal" href="boundary.html"><em>boundary</em></a> commands need to be used before read_data to
+tell LIGGGHTS(R)-PUBLIC how to map processors to the simulation box.</p>
+<p>Many input script errors are detected by LIGGGHTS(R)-PUBLIC and an ERROR or
+WARNING message is printed.  <a class="reference internal" href="Section_errors.html"><em>This section</em></a> gives
+more information on what errors mean.  The documentation for each
+command lists restrictions on how the command can be used.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="parsing-rules">
+<span id="inp-2"></span><h2>3.2. Parsing rules<a class="headerlink" href="#parsing-rules" title="Permalink to this headline">¶</a></h2>
+<p>Each non-blank line in the input script is treated as a command.
+LIGGGHTS(R)-PUBLIC commands are case sensitive.  Command names are lower-case, as
+are specified command arguments.  Upper case letters may be used in
+file names or user-chosen ID strings.</p>
+<p>Here is how each line in the input script is parsed by LIGGGHTS(R)-PUBLIC:</p>
+<p>(1) If the last printable character on the line is a &#8220;&amp;&#8221; character
+(with no surrounding quotes), the command is assumed to continue on
+the next line.  The next line is concatenated to the previous line by
+removing the &#8220;&amp;&#8221; character and newline.  This allows long commands to
+be continued across two or more lines.</p>
+<p>(2) All characters from the first &#8220;#&#8221; character onward are treated as
+comment and discarded.  See an exception in (6).  Note that a
+comment after a trailing &#8220;&amp;&#8221; character will prevent the command from
+continuing on the next line.  Also note that for multi-line commands a
+single leading &#8220;#&#8221; will comment out the entire command.</p>
+<p>(3) The line is searched repeatedly for $ characters, which indicate
+variables that are replaced with a text string.  See an exception in
+(6).</p>
+<p>If the $ is followed by curly brackets, then the variable name is the
+text inside the curly brackets.  If no curly brackets follow the $,
+then the variable name is the single character immediately following
+the $.  Thus ${myTemp} and $x refer to variable names &#8220;myTemp&#8221; and
+&#8220;x&#8221;.</p>
+<p>If the $ is followed by parenthesis, then the text inside the
+parenthesis is treated as an &#8220;immediate&#8221; variable and evaluated as an
+<a class="reference internal" href="variable.html"><em>equal-style variable</em></a>.  This is a way to use numeric
+formulas in an input script without having to assign them to variable
+names.  For example, these 3 input script lines:</p>
+<div class="highlight-python"><pre>variable X equal (xlo+xhi)/2+sqrt(v_area)
+region 1 block $X 2 INF INF EDGE EDGE
+variable X delete</pre>
+</div>
+<p>can be replaced by</p>
+<div class="highlight-python"><pre>region 1 block $((xlo+xhi)/2+sqrt(v_area)) 2 INF INF EDGE EDGE</pre>
+</div>
+<p>so that you do not have to define (or discard) a temporary variable X.</p>
+<p>Note that neither the curly-bracket or immediate form of variables can
+contain nested $ characters for other variables to substitute for.
+Thus you cannot do this:</p>
+<div class="highlight-python"><pre>variable        a equal 2
+variable        b2 equal 4
+print           "B2 = ${b$a}"</pre>
+</div>
+<p>Nor can you specify this $($x-1.0) for an immediate variable, but
+you could use $(v_x-1.0), since the latter is valid syntax for an
+<a class="reference internal" href="variable.html"><em>equal-style variable</em></a>.</p>
+<p>See the <a class="reference internal" href="variable.html"><em>variable</em></a> command for more details of how
+strings are assigned to variables and evaluated, and how they can be
+used in input script commands.</p>
+<p>(4) The line is broken into &#8220;words&#8221; separated by whitespace (tabs,
+spaces).  Note that words can thus contain letters, digits,
+underscores, or punctuation characters.</p>
+<p>(5) The first word is the command name.  All successive words in the
+line are arguments.</p>
+<p>(6) If you want text with spaces to be treated as a single argument,
+it can be enclosed in either double or single quotes.  E.g.</p>
+<div class="highlight-python"><pre>print "Volume = $v"
+print 'Volume = $v'
+if "$*steps* &gt; 1000" then quit</pre>
+</div>
+<p>The quotes are removed when the single argument is stored internally.
+See the <a class="reference internal" href="dump_modify.html"><em>dump modify format</em></a> or <a class="reference internal" href="print.html"><em>print</em></a> or
+<a class="reference internal" href="if.html"><em>if</em></a> commands for examples.  A &#8220;#&#8221; or &#8220;$&#8221; character that is
+between quotes will not be treated as a comment indicator in (2) or
+substituted for as a variable in (3).</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If the argument is itself a command that requires a
+quoted argument (e.g. using a <a class="reference internal" href="print.html"><em>print</em></a> command as part of an
+<a class="reference internal" href="if.html"><em>if</em></a> or <a class="reference internal" href="run.html"><em>run every</em></a> command), then the double and
+single quotes can be nested in the usual manner.  See the doc pages
+for those commands for examples.  Only one of level of nesting is
+allowed, but that should be sufficient for most use cases.</p>
+</div>
+<hr class="docutils" />
+</div>
+<div class="section" id="input-script-structure">
+<span id="inp-3"></span><h2>3.3. Input script structure<a class="headerlink" href="#input-script-structure" title="Permalink to this headline">¶</a></h2>
+<p>This section describes the structure of a typical LIGGGHTS(R)-PUBLIC input script.
+The &#8220;examples&#8221; directory in the LIGGGHTS(R)-PUBLIC distribution contains many
+sample input scripts; the corresponding problems are discussed in
+<tt class="xref doc docutils literal"><span class="pre">Section_example</span></tt>, and animated on the <a class="reference external" href="liws_">LIGGGHTS(R)-PUBLIC WWW Site</a>.</p>
+<p>A LIGGGHTS(R)-PUBLIC input script typically has 4 parts:</p>
+<ol class="arabic simple">
+<li>Initialization</li>
+<li>Atom/particle definition and insertion</li>
+<li>Settings</li>
+<li>Run a simulation</li>
+</ol>
+<p>The last 2 parts can be repeated as many times as desired.  I.e. run a
+simulation, change some settings, run some more, etc.  Each of the 4
+parts is now described in more detail.  Remember that almost all the
+commands need only be used if a non-default value is desired.</p>
+<ol class="arabic simple">
+<li>Initialization</li>
+</ol>
+<p>Set parameters that need to be defined before atoms/particles are created or
+read-in from a file.</p>
+<p>The relevant commands are <a class="reference internal" href="units.html"><em>units</em></a>,
+<a class="reference internal" href="dimension.html"><em>dimension</em></a>, <a class="reference internal" href="newton.html"><em>newton</em></a>,
+<a class="reference internal" href="processors.html"><em>processors</em></a>, <a class="reference internal" href="boundary.html"><em>boundary</em></a>,
+<a class="reference internal" href="atom_style.html"><em>atom_style</em></a>, <a class="reference internal" href="atom_modify.html"><em>atom_modify</em></a>.</p>
+<p>If force-field parameters appear in the files that will be read, these
+commands tell LIGGGHTS(R)-PUBLIC what kinds of force fields are being used:
+<a class="reference internal" href="pair_style.html"><em>pair_style</em></a>, <a class="reference internal" href="bond_style.html"><em>bond_style</em></a>,
+<a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a> .</p>
+<p>Granular walls typically require meshes to be used. See
+<a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> for details.</p>
+<ol class="arabic simple" start="2">
+<li>Atom/particle definition and insertion</li>
+</ol>
+<p>There are 3 ways to define atoms in LIGGGHTS(R)-PUBLIC.  Read them in from a data
+or restart file via the <a class="reference internal" href="read_data.html"><em>read_data</em></a> or
+<a class="reference internal" href="read_restart.html"><em>read_restart</em></a> commands. Or create atoms on a lattice
+using these commands: <a class="reference internal" href="lattice.html"><em>lattice</em></a>,
+<a class="reference internal" href="region.html"><em>region</em></a>, <a class="reference internal" href="create_box.html"><em>create_box</em></a>,
+<a class="reference internal" href="create_atoms.html"><em>create_atoms</em></a>.</p>
+<p>However, the most common way to insert granular particles is
+to use one of the fix insert/* commands: <a class="reference internal" href="fix_insert_pack.html"><em>fix insert/pack</em></a>,
+&#8220;fix insert/stream&#8221;stream.html, <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">insert/rate/region</span></tt></p>
+<p>Before these insertion commands can be used, particle distributions
+(<a class="reference external" href="fix_particledistribution_discrete.hmtl">fix particledistribution/discrete</a>)
+are built up using particle templates. For spherical particles, such
+particle templates are defined using <a class="reference internal" href="fix_particletemplate_sphere.html"><em>fix particletemplate/sphere</em></a>.</p>
+<ol class="arabic simple" start="3">
+<li>Settings</li>
+</ol>
+<p>Once atoms are defined, a variety of settings can be specified:
+simulation parameters, output options, etc.</p>
+<p>Material parameters and force field coefficients are set by these commands
+<a class="reference external" href="fix_property_global.hmtl">fix property/global</a>,
+or <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a>, <a class="reference internal" href="bond_coeff.html"><em>bond_coeff</em></a>.</p>
+<p>Various simulation parameters are set by these commands:
+<a class="reference internal" href="neighbor.html"><em>neighbor</em></a>, <a class="reference internal" href="neigh_modify.html"><em>neigh_modify</em></a>,
+<a class="reference internal" href="group.html"><em>group</em></a>, <a class="reference internal" href="timestep.html"><em>timestep</em></a>, <a class="reference internal" href="region.html"><em>region</em></a>,
+<a class="reference internal" href="reset_timestep.html"><em>reset_timestep</em></a>, <a class="reference internal" href="run_style.html"><em>run_style</em></a>,</p>
+<p>Fixes impose a variety of boundary conditions, time integration, and
+diagnostic options.  The <a class="reference internal" href="fix.html"><em>fix</em></a> command comes in many flavors.</p>
+<p>Various computations can be specified for execution during a
+simulation using the <a class="reference internal" href="compute.html"><em>compute</em></a>,
+<a class="reference internal" href="compute_modify.html"><em>compute_modify</em></a>, and <a class="reference internal" href="variable.html"><em>variable</em></a>
+commands.</p>
+<p>Output options are set by the <a class="reference internal" href="thermo.html"><em>thermo</em></a>, <a class="reference internal" href="dump.html"><em>dump</em></a>,
+and <a class="reference internal" href="restart.html"><em>restart</em></a> commands.</p>
+<ol class="arabic simple" start="4">
+<li>Run a simulation</li>
+</ol>
+<p>A simulation is run using the <a class="reference internal" href="run.html"><em>run</em></a> command.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="an-example-input-script">
+<span id="cmd-4"></span><h2>3.4. An example input script<a class="headerlink" href="#an-example-input-script" title="Permalink to this headline">¶</a></h2>
+<p>This shows an example input script for a LIGGGHTS(R)-PUBLIC simulation.</p>
+<div class="highlight-python"><pre>#Contact model example
+atom_style   granular
+atom_modify  map array
+boundary     m m m
+newton       off
+communicate   single vel yes
+units        si
+region       reg block -0.05 0.05 -0.05 0.05 0. 0.15 units box
+create_box   1 reg
+neighbor     0.002 bin
+neigh_modify delay 0
+#Material properties required for pair style
+fix          m1 all property/global youngsModulus peratomtype 5.e6
+fix          m2 all property/global poissonsRatio peratomtype 0.45
+fix          m3 all property/global coefficientRestitution peratomtypepair 1 0.95
+fix          m4 all property/global coefficientFriction peratomtypepair 1 0.05
+pair_style   gran model hertz tangential history
+pair_coeff    * *
+timestep     0.00001
+fix          gravi all gravity 9.81 vector 0.0 0.0 -1.0
+fix          zwalls1 all wall/gran model hertz tangential history primitive type 1 zplane 0.0
+fix          zwalls2 all wall/gran model hertz tangential history primitive type 1 zplane 0.15
+fix          cylwalls all wall/gran model hertz tangential history primitive type 1 zcylinder 0.05 0. 0.
+#region of insertion
+region       bc cylinder z 0. 0. 0.045 0.00 0.15 units box
+#particle distributions
+fix          pts1 all particletemplate/sphere 12345787 1 density constant 2500 radius constant 0.0025
+fix          pdd1 all particledistribution/discrete 17903  1 pts1 1.0
+fix          ins all insert/pack seed 123457 distributiontemplate pdd1 vel constant 0. 0. -0.5 &amp;
+             insert_every once overlapcheck yes all_in yes particles_in_region 1800 region bc
+#apply nve integration to all particles
+fix          integr all nve/sphere
+#output settings, include total thermal energy
+compute         rke all erotate/sphere
+thermo_style    custom step atoms ke c_rke vol
+thermo          1000
+thermo_modify   lost ignore norm no
+compute_modify  thermo_temp dynamic yes
+dump            dmp all custom 800 post/dump*.newModels id type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+#insert particles and run
+run             5000</pre>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_commands.html" class="btn btn-neutral float-right" title="4. Commands" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Section_start.html" class="btn btn-neutral" title="2. Getting Started" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -11,15 +10,15 @@ fix wall/gran  command :h3
 
 [Syntax:]
 
-fix ID group-ID style model_keyword model_values wallstyle wallstyleargs general_keywords general_values  ... :pre
+fix ID group-ID style model_type model_name wallstyle wallstyleargs general_keywords general_values model_keywords model_values  ... :pre
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 style = {wall/gran} :l
 
-zero or more model_keyword/value pairs may be appended. They must be appended in the following order :l
+zero or more model_type/model_name pairs may be appended. They must be appended in the following order :l
   {model} values = described "here"_Section_gran_models.html
   {tangential} values = described "here"_Section_gran_models.html
-  {rolling_friction} values = described "here"_Section_gran_models.html
   {cohesion} values = described "here"_Section_gran_models.html
+  {rolling_friction} values = described "here"_Section_gran_models.html
   {surface} values = described "here"_Section_gran_models.html :pre
 
 wallstyle = {mesh} or {primitive} :l
@@ -39,28 +38,29 @@ wallstyle args for wallstyle {primitive} = {type} or {xplane} or {yplane} or {zp
     c1,c2 = coordinates of center axis in other 2 dims (distance units) :pre
 
 zero or more general_keyword/value pairs may be appended :l
-general_keyword =  {shear} or {store_force} :l
+general_keyword =  {shear} or {store_force} or {store_force_contact} or {store_force_contact_stress} :l
   {shear} values = dim vshear
     dim = {x} or {y} or {z}
     vshear = magnitude of shear velocity (velocity units)
   {temperature} value = T0
-    T0 = Temperature of the wall (temperature units) 
+    T0 = Temperature of the wall (temperature units)
   {contact_area} values = 'overlap' or 'constant [value]' or 'projection'
   {store_force} value = 'yes' or 'no'
-    yes, no = determines if the wall force exerted on the particles is stored in a "fix property/atom"_fix_property.html with id force_(ID), where (ID) is the id of the fix wall/gran command.  :pre
+    yes, no = determines if the wall force exerted on the particles is stored in a "fix property/atom"_fix_property.html with id force_(ID), where (ID) is the id of the fix wall/gran command.
+  {store_force_contact} value = 'yes' or 'no'
+    yes, no = determines if the force for each particle-wall contact is stored in a "fix property/atom"_fix_property.html with id contactforces_(ID), where (ID) is the id of the fix wall/gran command.  :pre
+  {store_force_contact_stress} value = 'yes' or 'no'
+    yes, no = determines if the force and contact point for each particle-wall contact is stored in a "fix property/atom"_fix_property.html with id contactforces_stress_(ID), where (ID) is the id of the fix wall/gran command. :pre
+
+following the general_keyword/value pairs, zero or more model_keyword/model_value pairs may be appended in arbitrary order :l
+  model_keyword/model_value pairs = described for each model separately "here"_Section_gran_models.html
 :ule
 
 [Examples:]
 
 fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15
+fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15 surface superquadric
 fix meshwalls all wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2  :pre
-
-[LIGGGHTS vs. LAMMPS Info:]
-
-This command has been improved in accordance with the overhauled
-"pair gran"_pair_gran.html styles. Furthermore, it offers the new
-{wallstyle mesh}, which enables fix wall/gran to handle complex
-wall geometries imported from CAD.
 
 [Description:]
 
@@ -73,31 +73,31 @@ touching it is the same as the corresponding equation on the
 
 You must choose the models matching the pair style used, otherwise
 an error is created. As with "pair_style granular"_pair_gran.html, you have
-to define the mechanical properties for each material you are used in the
+to define the mechanical properties for each material you are using in the
 simulation with fix property commands. See "pair_style gran"_pair_gran.html
 for more details and "the model doc page"_Section_gran_models.html for
-details. 
+details.
 
-For wallstyle {mesh}, fix_id1, fix_id2 etc. must be IDs of valid fixes of 
-type "fix mesh/surface"_fix_mesh_surface.html, defining the granular mesh 
-to be used for the wall. Triangle-particle neighbor lists are built to efficiently 
-track particle-triangle contacts. Particle-tri neighbor list build is triggered 
+For wallstyle {mesh}, fix_id1, fix_id2 etc. must be IDs of valid fixes of
+type "fix mesh/surface"_fix_mesh_surface.html, defining the granular mesh
+to be used for the wall. Triangle-particle neighbor lists are built to efficiently
+track particle-triangle contacts. Particle-tri neighbor list build is triggered
 if any particle moves more than half the skin distance or (in case of moving mesh) if the mesh
 itself moves more than half the skin distance since the last build. A warning
 is generated if a dangerous particle-tri neigh list build is detected
 (e.g. if particles are inserted too close to a wall, see section 'Restrictions').
 For style {mesh}, the atom_type (material type) is inherited from the atom style provided
-in the "fix mesh/surface"_fix_mesh_surface.html command. 
+in the "fix mesh/surface"_fix_mesh_surface.html command.
 
 For {wallstyle primitive}, the atom_type (material type) has to be provided via
-keyword {type}. Primitve walls can be {xplane} or {yplane} or {zplane} or {cylindrical}. 
+keyword {type}. Primitve walls can be {xplane} or {yplane} or {zplane} or {cylindrical}.
 The 3 planar options specify a single wall in a dimension.
 Wall positions are given by values for lo and hi. For an {xcylinder}, {ycylinder} or
 {zcylinder}, the radius and the cylinder axis in the other two dims is specified.
 
 :line
 
-Optionally, primitive walls can be moving, if the shear keyword is appended. 
+Optionally, primitive walls can be moving, if the shear keyword is appended.
 
 For the {shear} keyword, the wall moves continuously in the specified dimension
 with velocity vshear. The dimension must be tangential to walls with a planar
@@ -111,7 +111,7 @@ at whatever radius has been defined. The same applies to {xcylinder} and
 
 NOTE: The keywords wiggle or shear can NOT be used for {wallstyle mesh}.
 For a moving a granular wall with {wallstyle mesh}, use the more flexible
-command "fix move/mesh"fix_move_mesh.html, or use the keywords {velocity}
+command "fix move/mesh"_fix_move_mesh.html, or use the keywords {velocity}
 or {angular_velocity} in "fix mesh/surface"_fix_mesh_surface.html.
 
 The keyword {temperature} is used to assign a constant temperature to the wall.
@@ -126,6 +126,14 @@ By specifying {store_force} = 'yes', you can instruct the command to
 store the wall force exerted on the particles in a
 "fix property/atom"_fix_property.html with id force_(ID), where (ID)
 is the id of the fix wall/gran command.
+
+{store_force_contact} does the same for contact forces between particle and wall.
+
+{store_force_contact_stress} does the same for contact forces and contact point 
+between particle and wall. In general this keyword will be set automatically if a 
+"continuum/weighted"_fix_continuum_weighted.html fix is used. It needs to be set 
+explicitly only if a new wall is created after the such a fix is specified.
+This functionality may not be available in your version of LIGGGHTS.
 
 The effect of keyword {rolling_friction}, {cohesion}, {tangential_damping},
 {viscous} and {absolute_damping} is explanted in "pair gran"_pair_gran.html
@@ -148,6 +156,9 @@ There can be only one fix wall/gran command with style {mesh}. Note that
 this is not really a restriction because you can include multiple fixes
 of type "fix mesh/surface"_fix_mesh_surface.html in the fix wall/gran command.
 
+{store_force_contact} is available in selected versions only; it is not available
+in the PUBLIC version.
+
 When using style style {mesh}, you have to use the style {bin} for
 the "neighbor command"_neighbor.html.
 
@@ -160,8 +171,8 @@ defined in the "neighbor command"_neighbor.html. Otherwise, newly inserted
 particles interpenetrate the walls before a triangle neighbor list is built
 the first time.
 
-The keyword shear can NOT be used for style {mesh}. 
-For moving granular wall with style mesh, use "fix move/mesh"fix_move_mesh.html.
+The keyword shear can NOT be used for style {mesh}.
+For moving granular wall with style mesh, use "fix move/mesh"_fix_move_mesh.html.
 
 Any dimension (xyz) that has a planar granular wall must be non-periodic.
 
@@ -170,7 +181,7 @@ Any dimension (xyz) that has a planar granular wall must be non-periodic.
 "fix mesh/surface"_fix_mesh_surface.html, "fix_move_mesh"_fix_move_mesh.html, "pair_style granular"_pair_gran.html
 Models for use with this command are described "here"_Section_gran_models.html
 
-[Default:] 
+[Default:]
 
 {model} = 'hertz'
 {tangential} = 'history'

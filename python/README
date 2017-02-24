@@ -1,8 +1,8 @@
-This directory contains Python code which wraps LAMMPS as a library
-and allows the LAMMPS library interface to be invoked from Python,
+This directory contains Python code which wraps LIGGGHTS as a library
+and allows the LIGGGHTS library interface to be invoked from Python,
 either from a script or interactively.
 
-Details on the Python interface to LAMMPS and how to build LAMMPS as a
+Details on the Python interface to LIGGGHTS and how to build LIGGGHTS as a
 shared library, for use with Python, are given in
 doc/Section_python.html and in doc/Section_start.html#start_5.
 
@@ -17,25 +17,25 @@ script directly to give you more control over where two relevant files
 are installed, or by setting environment variables in your shell
 script.  See doc/Section_python.html for details.
 
-You can then launch Python and instantiate an instance of LAMMPS:
+You can then launch Python and instantiate an instance of LIGGGHTS:
 
 % python
 >>> from lammps import lammps
 >>> lmp = lammps()
 
-If that gives no errors, you have succesfully wrapped LAMMPS with
+If that gives no errors, you have succesfully wrapped LIGGGHTS with
 Python.  See doc/Section_python.html#py_5 for tests you can then use
-to run LAMMPS both in serial or parallel thru Python.
+to run LIGGGHTS both in serial or parallel thru Python.
 
 -------------------------------------------------------------------
 
-Once you have successfully wrapped LAMMPS, you can run the Python
+Once you have successfully wrapped LIGGGHTS, you can run the Python
 scripts in the examples sub-directory:
 
-trivial.py          read/run a LAMMPS input script thru Python
-demo.py	  	    invoke various LAMMPS library interface routines
+trivial.py          read/run a LIGGGHTS input script thru Python
+demo.py	  	    invoke various LIGGGHTS library interface routines
 simple.py	    mimic operation of couple/simple/simple.cpp in Python
-gui.py		    GUI go/stop/temperature-slider to control LAMMPS
+gui.py		    GUI go/stop/temperature-slider to control LIGGGHTS
 plot.py		    real-time temeperature plot with GnuPlot via Pizza.py
 viz_tool.py	    real-time viz via some viz package
 vizplotgui_tool.py  combination of viz.py and plot.py and gui.py
@@ -79,7 +79,7 @@ You can run a particular script in either of the following ways:
 The former assumes that you have changed the first line of the script
 to point to the Python installed on your box.
 
-Run the Python scripts with the following LAMMPS input scripts and
+Run the Python scripts with the following LIGGGHTS input scripts and
 arguments:
 
 trivial.py in.trivial

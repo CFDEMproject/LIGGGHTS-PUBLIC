@@ -1,7 +1,6 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -17,40 +16,40 @@ style = {atom} or {type} or {mol} or {group} or {region} :ulb,l
 ID = atom ID range or type range or mol ID range or group ID or region ID :l
 one or more keyword/value pairs may be appended :l
 keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
-          {charge} or {dipole} or {dipole/random} or {quat} or \
+          {charge} or {quat} or \
 	  {quat/random} or {diameter} or {shape} or \
 	  {length} or {tri} or {theta} or {angmom} or \
 	  {mass} or {density} or {volume} or {image} or
-	  {bond} or {angle} or {dihedral} or {improper} or
-	  {meso_e} or {meso_cv} or {meso_rho} or {property/atom} :l
+	  {bond} or {property/atom} :l
   {type} value = atom type
     value can be an atom-style variable (see below)
   {type/fraction} values = type fraction seed
     type = new atom type
     fraction = fraction of selected atoms to set to new atom type
-    seed = random # seed (positive integer)
+    seed = random # seed (prime number greater 10000)
   {mol} value = molecule ID
     value can be an atom-style variable (see below)
   {x},{y},{z} value = atom coordinate (distance units)
     value can be an atom-style variable (see below)
+  {vx},{vy},{vz} value = atom velocity (velocity units)
+    value can be an atom-style variable (see below)
+  {omegax},{omegay},{omegaz} value = atom rotational velocity (rad / time units)
+    value can be an atom-style variable (see below)
   {charge} value = atomic charge (charge units)
     value can be an atom-style variable (see below)
-  {dipole} values = x y z
-    x,y,z = orientation of dipole moment vector
-    any of x,y,z can be an atom-style variable (see below)
-  {dipole/random} value = seed Dlen
-    seed = random # seed (positive integer) for dipole moment orientations
-    Dlen = magnitude of dipole moment (dipole units)
   {quat} values = a b c theta
     a,b,c = unit vector to rotate particle around via right-hand rule
     theta = rotation angle (degrees)
     any of a,b,c,theta can be an atom-style variable (see below)
   {quat/random} value = seed
-    seed = random # seed (positive integer) for quaternion orientations
+    seed = random # seed (prime number greater 10000) for quaternion orientations
+  {quat_direct} values = q1 q2 q3 q4
+    q1,q2,q3,q4 = components of the unit quaternion, alternative to {quat} a b c theta
+    any of q1,q2,q3,q4 can be an atom-style variable (see below)
   {diameter} value = diameter of spherical particle (distance units)
     value can be an atom-style variable (see below)
   {shape} value = Sx Sy Sz
-    Sx,Sy,Sz = 3 diameters of ellipsoid (distance units)
+    Sx,Sy,Sz = 3 diameters of ellipsoid or semi-axes of superquadric (distance units)
   {length} value = len
     len = length of line segment (distance units)
     len can be an atom-style variable (see below)
@@ -71,42 +70,30 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     value can be an atom-style variable (see below)
   {image} nx ny nz
     nx,ny,nz = which periodic image of the simulation box the atom is in
-  {bond} value = bond type for all bonds between selected atoms
-  {angle} value = angle type for all angles between selected atoms
-  {dihedral} value = dihedral type for all dihedrals between selected atoms
-  {improper} value = improper type for all impropers between selected atoms
-  {meso_e} value = energy of SPH particles (need units)
-    value can be an atom-style variable (see below)
-  {meso_cv} value = heat capacity of SPH particles (need units)
-    value can be an atom-style variable (see below)
-  {meso_rho} value = density of SPH particles (need units) 
-    value can be an atom-style variable (see below)
-  {add} value = yes no 
+  {add} value = yes no
     yes = add per-atom quantities to a region or a group
   {until} value = final timestep
     final timestep = the final timestep value until which the per-atom quantity is to be added
   {property/atom} value = varname var_value[0] var_value[1] ....
     varname = name of the variable to be set
-    var_value[0], var_value[1]... = values of the property to be set :pre
+    var_value[0], var_value[1]... = values of the property to be set.
+    value can be an atom-style variable (see below)
+  {roundness} values = n1 n2
+    n1, n2 = superquadric roundness/blockiness parameters, more or equal 2 :pre
 :ule
 
 [Examples:]
 
 set group solvent type 2
-set group solvent type/fraction 2 0.5 12393
+set group solvent type/fraction 2 0.5 123457
 set group edge bond 4
 set region half charge 0.5
 set type 3 charge 0.5
 set type 1*3 charge 0.5
 set atom 100*200 x 0.5 y 1.0
-set atom 1492 type 3 
-set region reg add yes until 1000 property/atom liqOnParticle 5e-5 
-set property/atom Temp 273.15 :pre
-
-[LIGGGHTS vs. LAMMPS Info:]
-
-This command offers a new keyword property/atom to enable the 
-set command to assign values to properties defined by a "fix property/atom"_fix_property.html
+set atom 1492 type 3
+set property/atom Temp 273.15
+set atom 3 type 2 shape 0.001 0.001 0.001 roundness 10.0 10.0 density 2500 :pre
 
 [Description:]
 
@@ -218,7 +205,8 @@ atom-style variable.
 Keyword {quat} uses the specified values to create a quaternion
 (4-vector) that represents the orientation of the selected atoms.  The
 particles must be ellipsoids as defined by the "atom_style
-ellipsoid"_atom_style.html command or triangles as defined by the
+ellipsoid"_atom_style.html command, triangles as defined by the
+"atom_style tri"_atom_style.html command or superquadric as defined by the
 "atom_style tri"_atom_style.html command.  Note that particles defined
 by "atom_style ellipsoid"_atom_style.html have 3 shape parameters.
 The 3 values must be non-zero for each particle set by this command.
@@ -229,20 +217,25 @@ the right-hand rule) by an angle theta around a unit rotation vector
 (a,b,c), then the quaternion that represents its new orientation is
 given by (cos(theta/2), a*sin(theta/2), b*sin(theta/2),
 c*sin(theta/2)).  The theta and a,b,c values are the arguments to the
-{quat} keyword.  LAMMPS normalizes the quaternion in case (a,b,c) was
+{quat} keyword.  LIGGGHTS(R)-PUBLIC normalizes the quaternion in case (a,b,c) was
 not specified as a unit vector.  For 2d systems, the a,b,c values are
 ignored, since a rotation vector of (0,0,1) is the only valid choice.
 
 Keyword {quat/random} randomizes the orientation of the quaternion of
 the selected atoms.  The particles must be ellipsoids as defined by
-the "atom_style ellipsoid"_atom_style.html command or triangles as
-defined by the "atom_style tri"_atom_style.html command.  Random
+the "atom_style ellipsoid"_atom_style.html command, triangles as
+defined by the "atom_style tri"_atom_style.html command or superquadric as
+defined by the "atom_style superquadric"_atom_style.html command.  Random
 numbers are used in such a way that the orientation of a particular
 atom is the same, regardless of how many processors are being used.
 For 2d systems, only orientations in the xy plane are generated.  As
-with keyword {quat}, for ellipsoidal particles, the 3 shape values
+with keyword {quat}, for ellipsoidal and superquadric particles, the 3 shape values
 must be non-zero for each particle set by this command.  This keyword
 does not allow use of an atom-style variable.
+
+Keyword {quat_direct} simply creates a quaternion from it's values instead of 
+calculting these from a unit rotation vector and rotation angle. These keyword 
+is an alternative to the keyword {quat}.
 
 Keyword {diameter} sets the size of the selected atoms.  The particles
 must be finite-size spheres as defined by the "atom_style
@@ -253,9 +246,11 @@ defined with a density, e.g. via the "read_data"_read_data.html
 command.
 
 Keyword {shape} sets the size and shape of the selected atoms.  The
-particles must be ellipsoids as defined by the "atom_style
-ellipsoid"_atom_style.html command.  The {Sx}, {Sy}, {Sz} settings are
-the 3 diameters of the ellipsoid in each direction.  All 3 can be set
+particles must be ellipsoids or superquadric as defined by the "atom_style
+ellipsoid"_atom_style.html or "atom_style
+superquadric"_atom_style.html command.  The {Sx}, {Sy}, {Sz} settings 
+are the 3 diameters of the ellipsoid or the 3 semi-axes lenghts of the 
+superquadric in each direction.  All 3 can be set
 to the same value, which means the ellipsoid is effectively a sphere.
 They can also all be set to 0.0 which means the particle will be
 treated as a point particle.  Note that this command does not adjust
@@ -290,9 +285,10 @@ orientation angle of the line segments with respect to the x axis.
 
 Keyword {angmom} sets the angular momentum of selected atoms.  The
 particles must be ellipsoids as defined by the "atom_style
-ellipsoid"_atom_style.html command or triangles as defined by the
-"atom_style tri"_atom_style.html command.  The angular momentum vector
-of the particles is set to the 3 specified components.
+ellipsoid"_atom_style.html command, triangles as defined by the
+"atom_style tri"_atom_style.html command or superquadrics as defined 
+by the "atom_style superquadric"_atom_style.html command. The angular 
+momentum vector of the particles is set to the 3 specified components.
 
 Keyword {mass} sets the mass of all selected particles.  The particles
 must have a per-atom mass attribute, as defined by the
@@ -326,7 +322,7 @@ Keyword {image} sets which image of the simulation box the atom is
 considered to be in.  An image of 0 means it is inside the box as
 defined.  A value of 2 means add 2 box lengths to get the true value.
 A value of -1 means subtract 1 box length to get the true value.
-LAMMPS updates these flags as atoms cross periodic boundaries during
+LIGGGHTS(R)-PUBLIC updates these flags as atoms cross periodic boundaries during
 the simulation.  The flags can be output with atom snapshots via the
 "dump"_dump.html command.  If a value of NULL is specified for any of
 nx,ny,nz, then the current image value for that dimension is
@@ -342,38 +338,33 @@ msd"_compute_msd.html command.  Care should be taken not to reset the
 image flags of two atoms in a bond to the same value if the bond
 straddles a periodic boundary (rather they should be different by +/-
 1).  This will not affect the dynamics of a simulation, but may mess
-up analysis of the trajectories if a LAMMPS diagnostic or your own
+up analysis of the trajectories if a LIGGGHTS(R)-PUBLIC diagnostic or your own
 analysis relies on the image flags to unwrap a molecule which
 straddles the periodic box.
 
-Keywords {bond}, {angle}, {dihedral}, and {improper}, set the bond
-type (angle type, etc) of all bonds (angles, etc) of selected atoms to
-the specified value from 1 to nbondtypes (nangletypes, etc).  All
-atoms in a particular bond (angle, etc) must be selected atoms in
-order for the change to be made.  The value of nbondtype (nangletypes,
-etc) was set by the {bond types} ({angle types}, etc) field in the
+Keywords {bond}  set the bond type  of all bonds of selected atoms to
+the specified value from 1 to nbondtypes. All atoms in a particular bond
+must be selected atoms in order for the change to be made.  The value of
+nbondtype  was set by the {bond types} field in the
 header of the data file read by the "read_data"_read_data.html
 command.  These keywords do not allow use of an atom-style variable.
 
-Keywords {meso_e}, {meso_cv}, and {meso_rho} set the energy, heat
-capacity, and density of smmothed particle hydrodynamics (SPH)
-particles.  See "this PDF guide"_USER/sph/SPH_LAMMPS_userguide.pdf to
-using SPH in LAMMPS.
-
-Keyword {property/atom} can update per-particle properties defined by 
-a "fix property/atom"_fix_property.html command. varname is the name of 
-the variable you want to set, it is followed by the values that should 
-be assigned to this variable. The number of values provided as 
-var_value[i] must correspond to the number of values needed for the 
-update, i.e. only var_value[0] if the defined property is a scalar, 
-and the appropriate number if the property is a vector. See 
-"fix property/atom"_fix_property.html for details on how to define 
+Keyword {property/atom} can update per-particle properties defined by
+a "fix property/atom"_fix_property.html command. varname is the name of
+the variable you want to set, it is followed by the values that should
+be assigned to this variable. The number of values provided as
+var_value[i] must correspond to the number of values needed for the
+update, i.e. only var_value[0] if the defined property is a scalar,
+and the appropriate number if the property is a vector. See
+"fix property/atom"_fix_property.html for details on how to define
 such a per-particle property.
 
 Keyword {add} and {until} are used to add a per-atom quantity (or property)
-in addition to the keyword {property/atom}. The {add} keyword is used to turn on 
-the addition of a quantity in a region or a group 
+in addition to the keyword {property/atom}. The {add} keyword is used to turn on
+the addition of a quantity in a region or a group
 until the timestep defined by the {until} keyword.
+
+Keywords {shape} and {roundness} define superquadric shape of a particle.
 
 [Restrictions:]
 
@@ -391,6 +382,8 @@ unpredictable results if there are bonds (angles, etc) that straddle
 periodic boundaries.  This is because the region may only extend up to
 the boundary and partner atoms in the bond (angle, etc) may have
 coordinates outside the simulation box if they are ghost atoms.
+
+Keywords {quat_direct} and {roundness} require "atom_style"_atom_style.html {superquadric}
 
 [Related commands:]
 

@@ -1,22 +1,44 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Arno Mayrhofer (CFDEMresearch GmbH, Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -31,7 +53,7 @@ FixStyle(contacthistory/mesh,FixContactHistoryMesh)
 #include "fix_contact_history.h"
 #include "fix_property_atom.h"
 #include "my_page.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "atom.h"
 #include "update.h"
@@ -55,6 +77,7 @@ class FixContactHistoryMesh : public FixContactHistory {
   void pre_exchange();
 
   void setup_pre_force(int dummy);
+  void setup_pre_neighbor();
   void min_setup_pre_force(int dummy);
   void pre_force(int dummy);
   void min_pre_force(int dummy);
@@ -70,7 +93,7 @@ class FixContactHistoryMesh : public FixContactHistory {
 
   // spefific interface for mesh
 
-  bool handleContact(int iPart, int idTri, double *&history);
+  bool handleContact(int iPart, int idTri, double *&history, bool intersectflag, bool faceflag);
   void markAllContacts();
   void cleanUpContacts();
   void cleanUpContactJumps();
@@ -83,8 +106,11 @@ class FixContactHistoryMesh : public FixContactHistory {
   void reset_history();
 
   // return # of contacts
-  int n_contacts();
-  int n_contacts(int contact_groupbit);
+  int n_contacts(int & nIntersect);
+  int n_contacts(int contact_groupbit, int & nIntersect);
+
+  int get_partner_iTri(const int i, const int j) const
+  { return mesh_->map(partner_[i][j]); }
 
  protected:
 
@@ -93,18 +119,21 @@ class FixContactHistoryMesh : public FixContactHistory {
   MyPage<int> *ipage2_;        // pages of neighbor tri IDs
   MyPage<double> *dpage2_;     // pages of contact history with neighbors
   MyPage<bool> ** keeppage_;   // pages of deletion flags with neighbors
+  MyPage<bool> ** intersectpage_;   // pages of deletion flags with neighbors
 
-  bool **keepflag_;
+  bool **keepflag_;  
+                     
+  bool **intersectflag_; 
 
   void allocate_pages();
 
  private:
 
   // functions specific for mesh - contact management
-  bool haveContact(int indexPart, int idTri, double *&history);
+  bool haveContact(int indexPart, int idTri, double *&history, bool intersectflag);
   bool coplanarContactAlready(int indexPart, int idTri);
   void checkCoplanarContactHistory(int indexPart, int idTri, double *&history);
-  void addNewTriContactToExistingParticle(int indexPart, int idTri, double *&history);
+  void addNewTriContactToExistingParticle(int indexPart, int idTri, double *&history, bool intersectflag);
 
   class TriMesh *mesh_;
   class FixNeighlistMesh *fix_neighlist_mesh_;

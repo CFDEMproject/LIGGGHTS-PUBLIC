@@ -1,27 +1,47 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "atom.h"
 #include "atom_vec.h"
 #include "force.h"
@@ -35,10 +55,15 @@
 #include "fix_multisphere.h"
 #include "fix_particledistribution_discrete.h"
 #include "fix_template_sphere.h"
+#include "fix_property_atom.h"
+#include "irregular.h"
 #include "fix_insert.h"
 #include "math_extra_liggghts.h"
 #include "mpi_liggghts.h"
 #include "vector_liggghts.h"
+
+#include "probability_distribution.h"
+#include "region_neighbor_list.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -51,7 +76,8 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
-  Fix(lmp, narg, arg)
+  Fix(lmp, narg, arg),
+  neighList(*new RegionNeighborList<interpolate_no>(lmp))
 {
   if (narg < 7) error->fix_error(FLERR,this,"not enough arguments");
 
@@ -64,6 +90,8 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   fix_distribution = NULL;
   fix_multisphere = NULL;
   multisphere = NULL;
+
+  compress_flag = false ;
 
   // required args
   iarg = 3;
@@ -78,18 +106,21 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   // set defaults
   init_defaults();
 
-  xnear = NULL;
-
   // parse args
+  
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  check_obb_flag = 1;
+#endif
   
   bool hasargs = true;
   while(iarg < narg && hasargs)
   {
     hasargs = false;
+    
     if(strcmp(arg[iarg],"distributiontemplate") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       int ifix = modify->find_fix(arg[iarg+1]);
-      if(ifix < 0 || strcmp(modify->fix[ifix]->style,"particledistribution/discrete"))
+      if(ifix < 0 || strncmp(modify->fix[ifix]->style,"particledistribution/discrete",29))
         error->fix_error(FLERR,this,"Fix insert requires you to define a valid ID for a fix of type particledistribution/discrete");
       fix_distribution = static_cast<FixParticledistributionDiscrete*>(modify->fix[ifix]);
       iarg += 2;
@@ -123,10 +154,17 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       nflowrate = atof(arg[iarg+1]);
       iarg += 2;
       hasargs = true;
-    } else if (strcmp(arg[iarg],"insert_every") == 0 || strcmp(arg[iarg],"every") == 0) {
+    } else if (strcmp(arg[iarg],"insert_every_time") == 0 || strcmp(arg[iarg],"insert_every") == 0 || strcmp(arg[iarg],"every") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       if(strcmp(arg[iarg+1],"once") == 0) insert_every = 0;
-      else insert_every = atoi(arg[iarg+1]);
+      else if(strcmp(arg[iarg],"insert_every_time") == 0)
+      {
+          if(!update->timestep_set)
+            error->fix_error(FLERR,this,"need so set 'timestep' before");
+          insert_every = static_cast<int>(atof(arg[iarg+1])/update->dt);
+      }
+      else
+          insert_every = atoi(arg[iarg+1]);
       if(insert_every < 0) error->fix_error(FLERR,this,"insert_every must be >= 0");
       iarg += 2;
       hasargs = true;
@@ -151,6 +189,14 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       else error->fix_error(FLERR,this,"");
       iarg += 2;
       hasargs = true;
+    } else if (strcmp(arg[iarg],"set_property") == 0) {
+      if (iarg+3 > narg) error->fix_error(FLERR,this,"");
+      int n = strlen(arg[iarg+1]) + 1;
+      property_name = new char[n];
+      strcpy(property_name,arg[iarg+1]);
+      fix_property_value = force->numeric(FLERR,arg[iarg+2]);
+      iarg += 3;
+      hasargs = true;
     } else if (strcmp(arg[iarg],"random_distribute") == 0) {
       if (iarg+2 > narg) error->fix_error(FLERR,this,"");
       if(strcmp(arg[iarg+1],"uncorrelated")==0) exact_number = 0;
@@ -165,6 +211,16 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       else error->fix_error(FLERR,this,"");
       iarg += 2;
       hasargs = true;
+    } else if (strcmp(arg[iarg],"compress_tags") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"not enough arguments for compress_tags");
+      if(0 == strcmp(arg[iarg+1],"yes"))
+        compress_flag = true;
+      else if(0 == strcmp(arg[iarg+1],"no"))
+        compress_flag = false;
+      else
+        error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'compress_tags'");
+      iarg += 2;
+      hasargs = true;
     } else if (strcmp(arg[iarg],"vel") == 0) {
       if (iarg+5 > narg) error->fix_error(FLERR,this,"not enough keyword for 'vel'");
       if (strcmp(arg[iarg+1],"constant") == 0)  {
@@ -174,7 +230,7 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
           iarg += 5;
       } else if (strcmp(arg[iarg+1],"uniform") == 0) {
           if (iarg+8 > narg) error->fix_error(FLERR,this,"not enough keyword for 'uniform'");
-          v_randomSetting = 1; //switch 1...distribute with equal prop.
+          v_randomSetting = RANDOM_UNIFORM;
           v_insert[0] = atof(arg[iarg+2]);
           v_insert[1] = atof(arg[iarg+3]);
           v_insert[2] = atof(arg[iarg+4]);
@@ -184,7 +240,7 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
           iarg += 8;
       } else if (strcmp(arg[iarg+1],"gaussian") == 0) {
           if (iarg+8 > narg) error->fix_error(FLERR,this,"not enough keyword for 'gaussian'");
-          v_randomSetting = 2; //switch 2...distribute with gaussian distrib.
+          v_randomSetting = RANDOM_GAUSSIAN;
           v_insert[0] = atof(arg[iarg+2]);
           v_insert[1] = atof(arg[iarg+3]);
           v_insert[2] = atof(arg[iarg+4]);
@@ -231,6 +287,17 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
       hasargs = true;
     }
     
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    else if (strcmp(arg[iarg],"check_obb") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"");
+      if(strcmp(arg[iarg+1],"yes")==0) check_obb_flag = 1;
+      else if(strcmp(arg[iarg+1],"no")==0) check_obb_flag = 0;
+      else error->fix_error(FLERR,this,"");
+      if(check_ol_flag==0) check_obb_flag = 0;
+      iarg += 2;
+      hasargs = true;
+    }
+#endif
     else if(strcmp(style,"insert") == 0) error->fix_error(FLERR,this,"unknown keyword");
   }
 
@@ -261,6 +328,8 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
 
   print_stats_start_flag = 1;
 
+  irregular = new Irregular(lmp);
+
   // calc max insertion radius
   int ntypes = atom->ntypes;
   maxrad = 0.;
@@ -279,6 +348,11 @@ FixInsert::~FixInsert()
   delete random;
   delete [] recvcounts;
   delete [] displs;
+  delete &neighList;
+  if(property_name) delete []property_name;
+
+  if(irregular) delete irregular;
+  irregular = 0;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -341,7 +415,7 @@ void FixInsert::init_defaults()
 
   exact_number = 1;
 
-  v_randomSetting = 0;
+  v_randomSetting = RANDOM_CONSTANT;
   vectorZeroize3D(v_insert);
   vectorZeroize3D(v_insertFluct);
   vectorZeroize3D(omega_insert);
@@ -350,19 +424,61 @@ void FixInsert::init_defaults()
   quat_random_ = false;
 
   print_stats_during_flag = 1;
+  warn_boxentent = true;
+
+  property_name = 0;
+  fix_property = 0;
+  fix_property_value = 0.;
 }
 
 /* ---------------------------------------------------------------------- */
 
 void FixInsert::sanity_check()
 {
-    if(fix_distribution == NULL) error->fix_error(FLERR,this,"have to define a 'distributiontemplate'");
-    if(vectorMag4DSquared(quat_insert) != 1.) error->fix_error(FLERR,this,"quaternion not valid");
+    if(fix_distribution == NULL)
+        error->fix_error(FLERR,this,"have to define a 'distributiontemplate'");
 
-    if(ninsert > 0 && massinsert > 0.) error->fix_error(FLERR,this,"must not define both 'nparticles' and 'mass'");
-    if(nflowrate > 0. && massflowrate > 0.) error->fix_error(FLERR,this,"must not define both 'particlerate' and 'massrate'");
+    if(MathExtraLiggghts::abs(vectorMag4DSquared(quat_insert)-1.) > 1e-10)
+        error->fix_error(FLERR,this,"quaternion not valid");
 
-    if(insert_every == 0 && (massflowrate > 0. || nflowrate > 0.)) error->fix_error(FLERR,this,"must not define 'particlerate' or 'massrate' for 'insert_every' = 0");
+    if(ninsert > 0 && massinsert > 0.)
+        error->fix_error(FLERR,this,"must not define both 'nparticles' and 'mass'");
+    if(nflowrate > 0. && massflowrate > 0.)
+        error->fix_error(FLERR,this,"must not define both 'particlerate' and 'massrate'");
+
+    if(insert_every == 0 && (massflowrate > 0. || nflowrate > 0.))
+        error->fix_error(FLERR,this,"must not define 'particlerate' or 'massrate' for 'insert_every' = 0");
+
+    if(0 == comm->me)
+    {
+        
+        std::vector<int> seeds;
+        seeds.push_back(random->state());
+        seeds.push_back(fix_distribution->random_state());
+        for(int itemplate = 0; itemplate < fix_distribution->n_particletemplates(); itemplate++)
+        {
+            
+            seeds.push_back(fix_distribution->particletemplates()[itemplate]->random_insertion_state());
+        }
+
+        std::sort(seeds.begin(),seeds.end());
+
+        if(std::unique(seeds.begin(),seeds.end()) !=seeds.end() )
+        {
+            char errstr[1024];
+            sprintf(errstr,"Fix %s, ID %s: Random number generation: It is required that all the random seeds of this fix insert/*, \n"
+                           "  the random seed of particle distribution fix (id %s) template and all random seeds of the \n"
+                           "  fix particletemplate/* commands used by particle distribution fix (id %s) are different\n"
+                           "  Hint: possible valid (different) seeds would be the following numbers:\n"
+                           "        15485863, 15485867, 32452843, 32452867, 49979687, 49979693, 67867967, 67867979, 86028121, 86028157",
+                           style,id,fix_distribution->id,fix_distribution->id);
+
+            if(input->seed_check_throw_error())
+                error->one(FLERR,errstr);
+            else
+                error->warning(FLERR,errstr);
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -374,23 +490,23 @@ void FixInsert::print_stats_start()
     if(ninsert_exists)
     {
         if (screen)
-            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %f)\n"
-                            "      %d particles (mass %f) within %d steps\n",
+            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %e)\n"
+                            "      %d particles (mass %e) within %d steps\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
 
         if (logfile)
-            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %f)\n"
-                            "      %d particles (mass %f) within %d steps\n",
+            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %e)\n"
+                            "      %d particles (mass %e) within %d steps\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate,ninsert,massinsert,final_ins_step-first_ins_step);
     }
     else if(massflowrate > 0.)
     {
         if (screen)
-            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %f)\n",
+            fprintf(screen ,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f  (mass rate %e)\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate);
 
         if (logfile)
-            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %f)\n",
+            fprintf(logfile,"INFO: Particle insertion %s: %f particles every %d steps - particle rate %f, (mass rate %e)\n",
                 id,ninsert_per,insert_every,nflowrate,massflowrate);
     }
     else
@@ -408,16 +524,18 @@ void FixInsert::print_stats_start()
 
 void FixInsert::print_stats_during(int ninsert_this, double mass_inserted_this)
 {
-  int step = update->ntimestep;
+  bigint step = update->ntimestep;
 
   if (me == 0 && print_stats_during_flag)
   {
     if (screen)
-      fprintf(screen ,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
+      fprintf(screen ,"INFO: Particle insertion %s: inserted %d particle templates (mass %e) at step " BIGINT_FORMAT "\n"
+                      " - a total of %d particle templates (mass %e) inserted so far.\n",
               id,ninsert_this,mass_inserted_this,step,ninserted,massinserted);
 
     if (logfile)
-      fprintf(logfile,"INFO: Particle insertion %s: inserted %d particle templates (mass %f) at step %d\n - a total of %d particle templates (mass %f) inserted so far.\n",
+      fprintf(logfile,"INFO: Particle insertion %s: inserted %d particle templates (mass %e) at step " BIGINT_FORMAT "\n"
+                      " - a total of %d particle templates (mass %e) inserted so far.\n",
               id,ninsert_this,mass_inserted_this,step,ninserted,massinserted);
   }
 }
@@ -450,7 +568,15 @@ void FixInsert::init()
 
     // in case of new fix insert in a restarted simulation, have to add current time-step
     if(next_reneighbor > 0 && next_reneighbor < ntimestep)
+    {
+        
         error->fix_error(FLERR,this,"'start' step can not be before current step");
+    }
+
+    if(property_name)
+    {
+         fix_property = static_cast<FixPropertyAtom*>(modify->find_fix_property(property_name,"property/atom","scalar",1,1,this->style,true));
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -493,6 +619,9 @@ double FixInsert::max_r_bound()
 double FixInsert::extend_cut_ghost()
 {
     
+    if(!fix_multisphere)
+        return 0.;
+
     return 2.*fix_distribution->max_r_bound();
 }
 
@@ -524,7 +653,9 @@ void FixInsert::pre_exchange()
   most_recent_ins_step = update->ntimestep;
 
   // things to be done before inserting new particles
-  pre_insert();
+  
+  if(!pre_insert())
+    return;
 
   // number of particles to insert this timestep
   ninsert_this = calc_ninsert_this();
@@ -567,13 +698,29 @@ void FixInsert::pre_exchange()
       // schedule next insertion
       if (insert_every && (!ninsert_exists || ninserted < ninsert))
         next_reneighbor += insert_every;
+      
+      else if(0 == insert_every)
+        next_reneighbor = -1;
 
       return;
   }
   else if(ninsert_this < 0)
   {
       
-      error->one(FLERR,"Particle insertion: Internal error");
+      error->fix_error(FLERR,this,"Particle insertion: Internal error");
+  }
+
+  double min_subbox_extent;
+  int min_dim;
+  domain->min_subbox_extent(min_subbox_extent,min_dim);
+
+  if(warn_boxentent && min_subbox_extent < 2.2 *max_r_bound())
+  {
+      char msg[256];
+      sprintf(msg,"Particle insertion on proc %d: sub-domain is smaller than the bounding radius of insert particles to insert: \nMax. bounding "
+                  "sphere diameter is %f, sub-domain extent in %s direction is only %f ",
+                  comm->me,2.*max_r_bound(),0==min_dim?"x":(1==min_dim?"y":"z"),min_subbox_extent);
+      error->warning(FLERR,msg);
   }
 
   // warn if max # insertions exceeded by random processes
@@ -585,10 +732,10 @@ void FixInsert::pre_exchange()
   // fill xnear array with particles to check overlap against
   
   // add particles in insertion volume to xnear list
-  nspheres_near = 0;
-  xnear = NULL;
+  neighList.reset();
+
   if(check_ol_flag)
-      nspheres_near = load_xnear(ninsert_this_local);
+    load_xnear(ninsert_this_local);
 
   // insertion counters in this step
   int ninserted_this = 0, ninserted_spheres_this = 0;
@@ -602,6 +749,8 @@ void FixInsert::pre_exchange()
   x_v_omega(ninsert_this_local,ninserted_this_local,ninserted_spheres_this_local,mass_inserted_this_local);
 
   // actual particle insertion
+
+  fix_distribution->pre_insert(ninserted_this_local,fix_property,fix_property_value);
   
   ninserted_spheres_this_local = fix_distribution->insert(ninserted_this_local);
 
@@ -614,9 +763,21 @@ void FixInsert::pre_exchange()
   // set tag # of new particles beyond all previous atoms, reset global natoms
   // if global map exists, reset it now instead of waiting for comm
   // since deleting atoms messes up ghosts
+  int step = update->ntimestep;
 
   if (atom->tag_enable)
   {
+
+    //force all tags to be reset by setting them to zero
+    if(compress_flag)
+    {
+        if(comm->me == 0)
+            printf("FixInsertStream: resetting tags @ step %d. \n", step);
+        int *tag = atom->tag;
+        for (int i = 0; i < atom->nlocal; i++)
+            tag[i] = 0;
+    }
+
     atom->tag_extend();
     atom->natoms += static_cast<double>(ninserted_spheres_this);
     if (atom->map_style)
@@ -645,8 +806,8 @@ void FixInsert::pre_exchange()
   if(ninserted_this < ninsert_this && comm->me == 0)
       error->warning(FLERR,"Particle insertion: Less insertions than requested");
 
-  // free local memory
-  if(xnear) memory->destroy(xnear);
+  if (irregular->migrate_check())
+      irregular->migrate_atoms();
 
   // next timestep to insert
   if (insert_every && (!ninsert_exists || ninserted < ninsert)) next_reneighbor += insert_every;
@@ -758,42 +919,62 @@ int FixInsert::count_nnear()
 }
 
 /* ----------------------------------------------------------------------
-   fill xnear with nearby particles
+   fill neighbor list with nearby particles
 ------------------------------------------------------------------------- */
 
 int FixInsert::load_xnear(int ninsert_this_local)
 {
-  // count nearby spheres
-  // setup for allgatherv
-  int nspheres_near_local = count_nnear();
-
-  // data size per particle: x and radius
-  //int n = 4*nspheres_near;
-
-  // xnear is for my atoms + atoms to be inserted
-  
-  memory->create(xnear,nspheres_near_local + ninsert_this_local*fix_distribution->max_nspheres(), 4, "FixInsert::xnear");
-
-  // load up xnear array with local and ghosts
+  // load up neighbor list with local and ghosts
 
   double **x = atom->x;
   double *radius = atom->radius;
-  int nall = atom->nlocal + atom->nghost;
+  const int nall = atom->nlocal + atom->nghost;
 
-  int ncount = 0;
-  for (int i = 0; i < nall; i++)
+  BoundingBox bb = getBoundingBox();
+  neighList.reset();
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  neighList.set_obb_flag(check_obb_flag);
+#endif
+
+  if(neighList.setBoundingBox(bb, maxrad,true,true))
   {
-    if (is_nearby(i))
+    for (int i = 0; i < nall; ++i)
     {
-      xnear[ncount][0] = x[i][0];
-      xnear[ncount][1] = x[i][1];
-      xnear[ncount][2] = x[i][2];
-      xnear[ncount][3] = radius[i];
-      ncount++;
+      
+      if (is_nearby(i) && neighList.isInBoundingBox(x[i]) )
+      {
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(atom->superquadric_flag and check_obb_flag)
+          neighList.insert_superquadric(x[i], radius[i], atom->quaternion[i], atom->shape[i]);
+        else
+          neighList.insert(x[i], radius[i]);
+#else
+        neighList.insert(x[i], radius[i]);
+#endif
+      }
     }
   }
 
-  return nspheres_near_local;
+  return neighList.count();
+}
+
+/* ----------------------------------------------------------------------
+   generate random velocity based on random setting
+------------------------------------------------------------------------- */
+
+void FixInsert::generate_random_velocity(double * velocity) {
+  switch(v_randomSetting) {
+    case RANDOM_UNIFORM:
+      velocity[0] = v_insert[0] + v_insertFluct[0] * 2.0 * (random->uniform()-0.50);
+      velocity[1] = v_insert[1] + v_insertFluct[1] * 2.0 * (random->uniform()-0.50);
+      velocity[2] = v_insert[2] + v_insertFluct[2] * 2.0 * (random->uniform()-0.50);
+      break;
+
+    case RANDOM_GAUSSIAN:
+      velocity[0] = v_insert[0] + v_insertFluct[0] * random->gaussian();
+      velocity[1] = v_insert[1] + v_insertFluct[1] * random->gaussian();
+      velocity[2] = v_insert[2] + v_insertFluct[2] * random->gaussian();
+  }
 }
 
 /* ----------------------------------------------------------------------

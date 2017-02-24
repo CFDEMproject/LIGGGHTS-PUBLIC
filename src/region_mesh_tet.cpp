@@ -1,36 +1,57 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "region_mesh_tet.h"
 #include "lammps.h"
+#include "bounding_box.h"
+#include "tri_mesh.h"
 #include "memory.h"
 #include "error.h"
 #include "domain.h"
 #include "vector_liggghts.h"
 #include "mpi_liggghts.h"
-#include "math.h"
+#include <math.h>
 #include "math_extra_liggghts.h"
-#include "random_park.h"
 #include "input_mesh_tet.h"
 
 #define DELTA_TET 1000
@@ -41,12 +62,18 @@ using namespace LAMMPS_NS;
 /* ---------------------------------------------------------------------- */
 
 RegTetMesh::RegTetMesh(LAMMPS *lmp, int narg, char **arg) :
-  Region(lmp, narg, arg)
+  Region(lmp, narg, arg),
+  bounding_box_mesh(*new BoundingBox(BIG,-BIG,BIG,-BIG,BIG,-BIG)),
+  neighList(*new RegionNeighborList<interpolate_no>(lmp)),
+  tri_mesh(*new TriMesh(lmp))
 {
   if(narg < 14) error->all(FLERR,"Illegal region mesh/tet command");
   options(narg-14,&arg[14]);
 
   if(scaleflag) error->all(FLERR,"Lattice scaling not implemented for region mesh/tet, please use 'units box'");
+
+  //TODO parse all_in yes
+  //TODO disallow !interior and all_in yes
 
   if(strcmp(arg[2],"file"))
     error->all(FLERR,"Illegal region mesh/tet command, expecting keyword 'scale'");
@@ -67,6 +94,20 @@ RegTetMesh::RegTetMesh(LAMMPS *lmp, int narg, char **arg) :
   rot_angle[2] = atof(arg[13]);
 
   node = NULL;
+  center = NULL;
+  rbound = NULL;
+  rbound_max = 0.;
+
+  n_face_neighs = NULL;
+  face_neighs = NULL;
+  n_face_neighs_node = NULL;
+
+  n_node_neighs = NULL;
+  node_neighs = NULL;
+
+  n_surfaces = NULL;
+  surfaces = NULL;
+
   volume = NULL;
   acc_volume = NULL;
   nTet = 0;
@@ -78,11 +119,17 @@ RegTetMesh::RegTetMesh(LAMMPS *lmp, int narg, char **arg) :
   my_input->meshtetfile(filename,this,true);
   delete my_input;
 
-  // extent of sphere
+  // extent of region and mesh
+
+  set_extent_mesh();
 
   if (interior) {
     bboxflag = 1;
-    set_extent();
+    set_extent_region();
+    tri_mesh.useAsInsertionMesh(false);
+    build_neighs();
+    build_surface();
+    tri_mesh.initalSetup();
   } else bboxflag = 0;
 
   cmax = 1;
@@ -95,7 +142,12 @@ RegTetMesh::~RegTetMesh()
 {
   delete [] contact;
 
+  delete &bounding_box_mesh;
+  delete &neighList;
+  delete &tri_mesh;
+
   memory->destroy(node);
+  memory->destroy(center);
   memory->sfree(volume);
   memory->sfree(acc_volume);
 }
@@ -152,29 +204,122 @@ int RegTetMesh::surface_exterior(double *x, double cutoff)
 
 /* ---------------------------------------------------------------------- */
 
-void RegTetMesh::generate_random(double *pos)
+void RegTetMesh::generate_random(double *pos,bool subdomain_flag)
 {
     if(!interior) error->all(FLERR,"Impossible to generate random points on tet mesh region with side = out");
-    mesh_randpos(pos);
+
+    int ntry = 0;
+
+    do
+    {
+        mesh_randpos(pos);
+        ntry++;
+    }
+    while(ntry < 10000 && (!subdomain_flag || !domain->is_in_subdomain(pos)));
+
+    if(10000 == ntry)
+        error->one(FLERR,"internal error");
 }
 
 /* ---------------------------------------------------------------------- */
 
-void RegTetMesh::generate_random_cut(double *pos,double cut)
+// generates a random point within the region and has a min distance from surface
+// i.e. generate random point in region "shrunk" by cut
+void RegTetMesh::generate_random_shrinkby_cut(double *pos,double cut,bool subdomain_flag)
 {
-    if(!interior) error->all(FLERR,"Impossible to generate random points on tet mesh region with side = out");
-    error->all(FLERR,"This feature is not available for tet mesh regions");
+    int ntry = 0;
+    bool is_near_surface = false;
+    int barysign = -1;
 
+    for(int i = 0; i < nTet; i++)
+    {
+        
+    }
+
+    do
+    {
+       ntry++;
+       
+       int iTetChosen = mesh_randpos(pos);
+       is_near_surface = false;
+       double delta[3];
+
+       // check all surfaces of chosen tet
+       for(int is = 0; is < n_surfaces[iTetChosen]; is++)
+       {
+         int iSurf = surfaces[iTetChosen][is];
+         
+         if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta,barysign) < 0)
+         {
+            is_near_surface = true;
+            break; 
+          }
+          
+       }
+
+       if(is_near_surface)
+        continue; 
+
+       // check all surfaces of face neigh tets
+       for(int iFaceNeigh = 0; iFaceNeigh < n_face_neighs[iTetChosen]; iFaceNeigh++)
+       {
+           for(int is = 0; is < n_surfaces[face_neighs[iTetChosen][iFaceNeigh]]; is++)
+           {
+             int iSurf = surfaces[face_neighs[iTetChosen][iFaceNeigh]][is];
+             
+             if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta,barysign) < 0)
+             {
+                is_near_surface = true;
+                break; 
+              }
+              
+           }
+       }
+       if(is_near_surface)
+        continue; 
+
+       // check all surfaces of node neigh tets
+       for(int iNodeNeigh = 0; iNodeNeigh < n_node_neighs[iTetChosen]; iNodeNeigh++)
+       {
+           
+           for(int is = 0; is < n_surfaces[node_neighs[iTetChosen][iNodeNeigh]]; is++)
+           {
+             int iSurf = surfaces[node_neighs[iTetChosen][iNodeNeigh]][is];
+                
+             if(tri_mesh.resolveTriSphereContact(-1,iSurf,cut,pos,delta,barysign) < 0)
+             {
+                is_near_surface = true;
+                break; 
+             }
+             
+           }
+       }
+    }
+    // pos has to be within region, and within cut of region surface
+    while(ntry < 10000 && (is_near_surface || (!subdomain_flag || !domain->is_in_subdomain(pos))));
+
+    if(10000 == ntry)
+    {
+        error->one(FLERR,"internal error");
+    }
 }
 
 /* ---------------------------------------------------------------------- */
 
 void RegTetMesh::add_tet(double **n)
 {
+    double ctr[3];
+
     if(nTet == nTetMax) grow_arrays();
 
+    vectorZeroize3D(ctr);
     for(int i=0;i<4;i++)
+    {
         vectorCopy3D(n[i],node[nTet][i]);
+        vectorAdd3D(ctr,node[nTet][i],ctr);
+    }
+    vectorScalarDiv3D(ctr,4.);
+    vectorCopy3D(ctr,center[nTet]);
 
     double vol = volume_of_tet(nTet);
     if(vol < 0.)
@@ -198,10 +343,298 @@ void RegTetMesh::add_tet(double **n)
 
 /* ---------------------------------------------------------------------- */
 
+void RegTetMesh::build_neighs()
+{
+    neighList.reset();
+
+    for(int i = 0; i < nTet; i++)
+    {
+        vectorZeroize3D(center[i]);
+
+        for(int j=0;j<4;j++)
+            vectorAdd3D(node[i][j],center[i],center[i]);
+        vectorScalarDiv3D(center[i],4.);
+
+        double rb = 0., vec[3];
+        for(int j = 0; j < 4; j++)
+        {
+            vectorSubtract3D(center[i],node[i][j],vec);
+            rb = MathExtraLiggghts::max(rb,vectorMag3D(vec));
+        }
+        rbound[i] = rb;
+        if(rb > rbound_max)
+            rbound_max = rb;
+
+    }
+
+    neighList.setBoundingBox(bounding_box_mesh, rbound_max);
+
+    for(int i = 0; i < nTet; i++)
+    {
+        n_face_neighs[i] = 0;
+        n_node_neighs[i] = 0;
+        vectorZeroizeN(n_face_neighs_node[i],4);
+    }
+
+    bool badMesh = false;
+    for(int i = 0; i < nTet; i++)
+    {
+        std::vector<int> overlaps;
+        neighList.hasOverlapWith(center[i], rbound[i],overlaps);
+
+        for(size_t icontainer = 0; icontainer < overlaps.size(); icontainer++)
+        {
+            int iOverlap = overlaps[icontainer];
+
+            if(iOverlap < 0 || iOverlap >= nTet)
+               this->error->one(FLERR,"Mesh error: internal error");
+
+            int nNodesEqual = 0;
+            std::vector<int> iNodesInvolved, iOverlapNodesInvolved;
+
+            for(int iNode = 0; iNode < 4; iNode++)
+            {
+                for(int iOverlapNode = 0; iOverlapNode < 4; iOverlapNode++)
+                {
+                    if(nodesAreEqual(node[i][iNode],node[iOverlap][iOverlapNode],1.e-12))
+                    {
+                        iNodesInvolved.push_back(iNode);
+                        iOverlapNodesInvolved.push_back(iOverlapNode);
+                        nNodesEqual++;
+                    }
+                }
+            }
+
+            if(0 == nNodesEqual)
+                continue;
+            
+            else if(3 > nNodesEqual)
+            {
+                
+                if(100 == n_node_neighs[i])
+                    badMesh = true;
+                else
+                {
+                    node_neighs[i][n_node_neighs[i]] = iOverlap;
+                    n_node_neighs[i]++;
+                }
+
+                if(100 == n_node_neighs[iOverlap])
+                    badMesh = true;
+                else
+                {
+                    node_neighs[iOverlap][n_node_neighs[iOverlap]] = i;
+                    n_node_neighs[iOverlap]++;
+                }
+            }
+            
+            else if(3 == nNodesEqual)
+            {
+                
+                face_neighs[i][n_face_neighs[i]++] = iOverlap;
+                face_neighs[iOverlap][n_face_neighs[iOverlap]++] = i;
+
+                n_face_neighs_node[i][iNodesInvolved[0]]++;
+                n_face_neighs_node[i][iNodesInvolved[1]]++;
+                n_face_neighs_node[i][iNodesInvolved[2]]++;
+                n_face_neighs_node[iOverlap][iOverlapNodesInvolved[0]]++;
+                n_face_neighs_node[iOverlap][iOverlapNodesInvolved[1]]++;
+                n_face_neighs_node[iOverlap][iOverlapNodesInvolved[2]]++;
+
+                //TODO: build up the tri mesh here, link the two meshes
+                //TODO: worst case: broad phase (wie auf zettel skizziert)
+            }
+            else
+            {
+                
+                char errstr[256];
+
+                sprintf(errstr,"duplicate elements %d and %d in tet for region %s",i,iOverlap,id);
+                error->one(FLERR,errstr);
+            }
+        }
+
+        neighList.insert(center[i], rbound[i],i);
+    }
+    if (badMesh)
+        error->warningAll(FLERR,"Region mesh/tet: too many node neighbors, mesh is of bad quality; 'all_in yes' might not work correctly");
+
+    for(int i = 0; i < nTet; i++)
+    {
+        
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void RegTetMesh::build_surface()
+{
+    
+    double **nodeTmp = create<double>(nodeTmp,3,3);
+
+    int n_surf_elems = 0;
+    for(int i = 0; i < nTet; i++)
+    {
+        n_surfaces[i] = 0;
+
+        int dummy;
+
+        // 4 neighs
+        if(3 == n_face_neighs_node[i][0] && 3 == n_face_neighs_node[i][1] &&
+           3 == n_face_neighs_node[i][2] && 3 == n_face_neighs_node[i][3])
+        {
+            if(! (4 == n_face_neighs[i]))
+                error->one(FLERR,"assertion failed");
+           continue;
+        }
+
+        // 3 neighs
+        if(3 == n_face_neighs_node[i][0] || 3 == n_face_neighs_node[i][1] ||
+           3 == n_face_neighs_node[i][2] || 3 == n_face_neighs_node[i][3])
+        {
+            if(!(3 == n_face_neighs[i]))
+                error->one(FLERR,"assertion failed");
+            
+            int which;
+            MathExtraLiggghts::max(n_face_neighs_node[i],4,which);
+            for(int k=0;k<3;k++){
+              nodeTmp[0][k] = node[i][(which+1)%4][k];
+              nodeTmp[1][k] = node[i][(which+2)%4][k];
+              nodeTmp[2][k] = node[i][(which+3)%4][k];
+            }
+            tri_mesh.addElement(nodeTmp,-1);
+            surfaces[i][n_surfaces[i]] = n_surf_elems;
+            n_surfaces[i]++;
+            n_surf_elems++;
+        }
+        // 0 neighs
+        else if(0 == MathExtraLiggghts::max(n_face_neighs_node[i],4,dummy))
+        {
+            if(!(0 == n_face_neighs[i]))
+                error->one(FLERR,"assertion failed");
+
+            // add 0 1 2 ,  1 2 3,  2 3 0,  3 0 1
+            for(int iAdd = 0; iAdd < 4; iAdd++)
+            {
+                for(int k=0;k<3;k++){
+                  nodeTmp[0][k] = node[i][(iAdd+0)%4][k];
+                  nodeTmp[1][k] = node[i][(iAdd+1)%4][k];
+                  nodeTmp[2][k] = node[i][(iAdd+2)%4][k];
+                }
+                tri_mesh.addElement(nodeTmp,-1);
+                surfaces[i][n_surfaces[i]] = n_surf_elems;
+                n_surfaces[i]++;
+                n_surf_elems++;
+            }
+        }
+        // 2 neighs
+        else if( (2 == MathExtraLiggghts::max(n_face_neighs_node[i],4,dummy)) &&
+                 (1 == MathExtraLiggghts::min(n_face_neighs_node[i],4,dummy)) &&
+                 (6 == vectorSumN(n_face_neighs_node[i],4))
+                )
+        {
+            if(! (2 == n_face_neighs[i]))
+                error->one(FLERR,"assertion failed");
+
+            int which_hi_1;
+            MathExtraLiggghts::max(n_face_neighs_node[i],4,which_hi_1);
+            int which_lo_1;
+            MathExtraLiggghts::min(n_face_neighs_node[i],4,which_lo_1);
+            int which_2 = (which_hi_1+1)%4;
+            if(which_2 == which_lo_1)
+                which_2 = (which_lo_1+1)%4;
+            int which_3 = 6 - (which_hi_1+which_lo_1+which_2);
+
+            int which_lo_2,which_hi_2;
+            if(n_face_neighs_node[i][which_3] > n_face_neighs_node[i][which_2])
+            {
+                which_hi_2 = which_3;
+                which_lo_2 = which_2;
+            }
+            else
+            {
+                which_hi_2 = which_2;
+                which_lo_2 = which_3;
+            }
+
+            // add lo1 lo2 hi1   and lo1 lo2 hi2
+
+            for(int k=0;k<3;k++){
+              nodeTmp[0][k] = node[i][which_lo_1][k];
+              nodeTmp[1][k] = node[i][which_lo_2][k];
+              nodeTmp[2][k] = node[i][which_hi_1][k];
+            }
+            tri_mesh.addElement(nodeTmp,-1);
+            surfaces[i][n_surfaces[i]] = n_surf_elems;
+            n_surfaces[i]++;
+            n_surf_elems++;
+            for(int k=0;k<3;k++){
+              nodeTmp[0][k] = node[i][which_lo_1][k];
+              nodeTmp[1][k] = node[i][which_lo_2][k];
+              nodeTmp[2][k] = node[i][which_hi_2][k];
+            }
+            tri_mesh.addElement(nodeTmp,-1);
+            surfaces[i][n_surfaces[i]] = n_surf_elems;
+            n_surfaces[i]++;
+            n_surf_elems++;
+        }
+        // 1 neighs
+        else if(0 == MathExtraLiggghts::min(n_face_neighs_node[i],4,dummy))
+        {
+            if(! (1 == n_face_neighs[i]))
+                error->one(FLERR,"assertion failed");
+
+            int which_lo = dummy;
+
+            for(int iAdd = 0; iAdd < 3; iAdd++)
+            {
+                for(int k=0;k<3;k++){
+                  nodeTmp[0][k] = node[i][(4+which_lo-2+iAdd)%4][k];
+                  nodeTmp[1][k] = node[i][(4+which_lo-1+iAdd)%4][k];
+                  nodeTmp[2][k] = node[i][(4+which_lo+0+iAdd)%4][k];
+                }
+                tri_mesh.addElement(nodeTmp,-1);
+                surfaces[i][n_surfaces[i]] = n_surf_elems;
+                n_surfaces[i]++;
+                n_surf_elems++;
+            }
+
+        }
+        else
+            error->one(FLERR,"unrecognized");
+    }
+    destroy<double>(nodeTmp);
+}
+
+/* ---------------------------------------------------------------------- */
+
+bool RegTetMesh::nodesAreEqual(double *nodeToCheck1,double *nodeToCheck2,double precision)
+{
+    for(int i=0;i<3;i++)
+      if(!MathExtraLiggghts::compDouble(nodeToCheck1[i],nodeToCheck2[i],precision))
+        return false;
+    return true;
+}
+
+/* ---------------------------------------------------------------------- */
+
 void RegTetMesh::grow_arrays()
 {
     nTetMax += DELTA_TET;
     node = (double***)(memory->grow(node,nTetMax, 4 , 3, "vtk_tet_node"));
+    center = (double**)(memory->grow(center,nTetMax, 3, "vtk_tet_center"));
+    rbound = (double*)(memory->grow(rbound,nTetMax, "vtk_tet_rbound"));
+
+    n_face_neighs = (int*)(memory->grow(n_face_neighs,nTetMax, "vtk_tet_n_face_neighs"));
+    face_neighs = (int**)(memory->grow(face_neighs,nTetMax,4,"vtk_tet_face_neighs"));
+    n_face_neighs_node = (int**)(memory->grow(n_face_neighs_node,nTetMax,4, "vtk_tet_n_face_neighs_node"));
+
+    n_node_neighs = (int*)(memory->grow(n_node_neighs,nTetMax, "vtk_tet_n_node_neighs"));
+    node_neighs = (int**)(memory->grow(node_neighs,nTetMax,100,"vtk_tet_node_neighs"));
+
+    n_surfaces = (int*)(memory->grow(n_surfaces,nTetMax, "vtk_tet_n_surfaces"));
+    surfaces = (int**)(memory->grow(surfaces,nTetMax,4,"vtk_tet_surfaces"));
+
     volume = (double*)(memory->srealloc(volume,nTetMax*sizeof(double),"vtk_tet_volume"));
     acc_volume = (double*)(memory->srealloc(acc_volume,nTetMax*sizeof(double),"vtk_tet_acc_volume"));
 }
@@ -290,12 +723,22 @@ double RegTetMesh::volume_of_tet(double* v0, double* v1, double* v2, double* v3)
 
 /* ---------------------------------------------------------------------- */
 
-inline void RegTetMesh::set_extent()
+inline void RegTetMesh::set_extent_mesh()
+{
+    for(int i = 0; i < nTet; i++)
+        for(int j=0;j<4;j++)
+            bounding_box_mesh.extendToContain(node[i][j]);
+}
+
+/* ---------------------------------------------------------------------- */
+
+inline void RegTetMesh::set_extent_region()
 {
     extent_xlo = extent_ylo = extent_zlo =  BIG;
     extent_xhi = extent_yhi = extent_zhi = -BIG;
 
     for(int i = 0; i < nTet; i++)
+    {
         for(int j=0;j<4;j++)
         {
             if(node[i][j][0] < extent_xlo) extent_xlo = node[i][j][0];
@@ -306,115 +749,122 @@ inline void RegTetMesh::set_extent()
             if(node[i][j][1] > extent_yhi) extent_yhi = node[i][j][1];
             if(node[i][j][2] > extent_zhi) extent_zhi = node[i][j][2];
         }
-}
-
-/* ---------------------------------------------------------------------- */
-
-void RegTetMesh::volume_mc(int n_test,double &vol_global, double &vol_local)
-{
-    double pos[3],  vol_local_all;
-    int n_in_local = 0, n_in_global = 0, n_in_global_all;
-
-    if(total_volume == 0.) error->all(FLERR,"mesh/tet region has zero volume, cannot continue");
-
-    vol_global = total_volume;
-
-    for(int i = 0; i < n_test; i++)
-    {
-        pos[0] = extent_xlo + random->uniform() * (extent_xhi - extent_xlo);
-        pos[1] = extent_ylo + random->uniform() * (extent_yhi - extent_ylo);
-        pos[2] = extent_zlo + random->uniform() * (extent_zhi - extent_zlo);
-
-        if(!domain->is_in_domain(pos)) continue;
-
-        // point is in region
-        // assume every proc can evaluate this
-        
-        if(match(pos[0],pos[1],pos[2]))
-        {
-            n_in_global++;
-            if(domain->is_in_subdomain(pos))
-                n_in_local++;
-        }
     }
-
-    MPI_Sum_Scalar(n_in_global,n_in_global_all,world);
-    if(n_in_global_all == 0)
-        error->all(FLERR,"Unable to calculate region volume - are you operating on a 2d region?");
-
-    // return calculated values
-    if(n_in_global == 0)
-        vol_local = 0.;
-    else
-        vol_local  = static_cast<double>(n_in_local )/static_cast<double>(n_in_global) * vol_global;
-
-    // sum of local volumes will not be equal to global volume because of
-    // different random generator states - correct this now
-    MPI_Sum_Scalar(vol_local,vol_local_all,world);
-    vol_local *= (vol_global/vol_local_all);
-
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void RegTetMesh::mesh_randpos(double *pos)
+inline int RegTetMesh::mesh_randpos(double *pos)
 {
-    tet_randpos(tet_rand_tri(),pos);
-    if(pos[0] == 0. && pos[1] == 0. && pos[2] == 0.) error->all(FLERR,"illegal RegTetMesh::mesh_randpos");
+    int iTriChosen = tet_rand_tri();
+    tet_randpos(iTriChosen,pos);
+    if(pos[0] == 0. && pos[1] == 0. && pos[2] == 0.)
+        error->one(FLERR,"illegal RegTetMesh::mesh_randpos");
+    
+    return iTriChosen;
 }
 
 /* ---------------------------------------------------------------------- */
 
 inline int RegTetMesh::tet_rand_tri()
 {
-
+    //SIMPLISTIC
+    /*
     double rd = total_volume * random->uniform();
     int chosen = 0;
     while (rd > acc_volume[chosen] && chosen < nTet-1) chosen++;
     return chosen;
+    */
+
+    // FAST
+
+    double rd = total_volume * random->uniform();
+
+    int i = nTet/2;
+    int imin = 0;
+    int imax = nTet -1;
+    int ntry = 0;
+
+    // binary search
+    do
+    {
+        if(rd < acc_volume[i] && ((i == 0) ? true : (rd > acc_volume[i-1])))
+            return i;
+
+        if(imax == imin)
+            error->one(FLERR,"internal error");
+
+        // must go up
+        if(rd > acc_volume[i])
+        {
+            imin = i;
+            i = (imax+imin) / 2;
+            if (i == imin) i++;
+        }
+        // must go down
+        else if (rd < acc_volume[i-1])
+        {
+            imax = i;
+            i = (imax+imin) / 2;
+            if (i == imin) i++;
+            if (i == imax && i > 0) i--;
+        }
+        else
+            error->one(FLERR,"internal error");
+
+        ntry++;
+    }
+    while(ntry < 10000);
+
+    error->one(FLERR,"internal error");
+    return 0;
 }
 
 /* ---------------------------------------------------------------------- */
 
-inline void RegTetMesh::tet_randpos(int iTet,double *pos)
+void RegTetMesh::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,double &vol_local)
 {
+    double pos[3], volume_in_local = 0., vol_in_local_all;
 
-    double bary_coo[4];
+    //error->all(FLERR,"end");
 
-    double s = random->uniform();
-    double t = random->uniform();
-    double u = random->uniform();
+    //NO TODO: implementation for cutflag = true
+    
+    if(total_volume == 0.) error->all(FLERR,"mesh/tet region has zero volume, cannot continue");
 
-    if(s+t > 1.)
+    vol_global = total_volume; 
+
+    for(int iTet = 0; iTet < nTet; iTet++)
     {
-        s = 1.-s;
-        t = 1.-t;
+        
+        for(int iNode = 0; iNode < 5; iNode++)
+        {
+            
+            double weight = (iNode<4) ? (volume[iTet]*0.1) : (volume[iTet]*0.6);
+
+            if(iNode<4)
+                vectorCopy3D(node[iTet][iNode],pos);
+            else
+                vectorCopy3D(center[iTet],pos);
+
+            if(!domain->is_in_domain(pos))
+                error->one(FLERR,"mesh point outside simulation domain");
+
+            // check if point is in subdomain
+            if(domain->is_in_subdomain(pos))
+                volume_in_local += weight;
+        }
     }
-    if(t+u > 1.)
-    {
-        double tmp = u;
-        u = 1.-s-t;
-        t = 1.-tmp;
-    }
-    else if(s+t+u > 1.)
-    {
-        double tmp = u;
-        u = s+t+u-1.;
-        s = 1.-t-tmp;
-    }
-    bary_coo[0] = 1.-s-t-u;
-    bary_coo[1] = s;
-    bary_coo[2] = t;
-    bary_coo[3] = u;
 
-    bary_to_cart(iTet,bary_coo,pos);
+    MPI_Sum_Scalar(volume_in_local,vol_in_local_all,world);
+    if(vol_in_local_all < 1e-13)
+        error->all(FLERR,"Unable to calculate region volume - are you operating on a 2d region?");
 
-}
+    // return calculated values
+    vol_local  = volume_in_local;
 
-/* ---------------------------------------------------------------------- */
+    // sum of local volumes will not be equal to global volume because of
+    // different random generator states - correct this now
+    vol_local *= (vol_global/vol_in_local_all);
 
-inline void RegTetMesh::bary_to_cart(int iTet,double *bary_coo,double *pos)
-{
-    for(int i=0;i<3;i++)
-       pos[i] = bary_coo[0] * node[iTet][0][i] + bary_coo[1] * node[iTet][1][i] + bary_coo[2] * node[iTet][2][i] + bary_coo[3] * node[iTet][3][i];
 }

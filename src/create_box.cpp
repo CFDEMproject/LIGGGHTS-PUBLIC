@@ -1,18 +1,59 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Christoph Kloss (DCS Computing GmbH)
+    Arno Mayrhofer (DCS Computing GmbH)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 #include "create_box.h"
 #include "atom.h"
 #include "force.h"
@@ -34,7 +75,7 @@ CreateBox::CreateBox(LAMMPS *lmp) : Pointers(lmp) {}
 
 void CreateBox::command(int narg, char **arg)
 {
-  if (narg < 2) error->all(FLERR,"Illegal create_box command"); 
+  if (narg < 1) error->all(FLERR,"Illegal create_box command"); 
 
   if (domain->box_exist)
     error->all(FLERR,"Cannot create_box after simulation box is defined");
@@ -45,8 +86,17 @@ void CreateBox::command(int narg, char **arg)
 
   // region check
 
-  int iregion = domain->find_region(arg[1]);
-  if (iregion == -1) error->all(FLERR,"Create_box region ID does not exist");
+  int sim_region = domain->find_region("simulation_domain_region_");
+  int iregion = narg>=2 ? domain->find_region(arg[1]) : sim_region;
+  //if (sim_region != -1 && narg >= 2)
+  //  error->warning(FLERR, "simulation_domain command ignored as a region is specified in the create_box command");
+  if (iregion == -1)
+  {
+    if (narg >= 2)
+      error->all(FLERR,"Create_box region ID does not exist");
+    else
+      error->all(FLERR, "Create_box did not find region created by simulation_domain command. Ensure that the simulation_domain command preceedes the create_box command");
+  }
   if (domain->regions[iregion]->bboxflag == 0)
     error->all(FLERR,"Create_box region does not support a bounding box");
 
@@ -125,7 +175,7 @@ void CreateBox::command(int narg, char **arg)
   comm->set_proc_grid();
   domain->set_local_box();
 
-  if(narg == 2) return;
+  if(narg <= 2) return;
 
   if(strcmp(arg[2],"bonds") == 0)
     error->all(FLERR,"Illegal create_box command, 'bonds' keyword moved to atom_style bond/gran command");

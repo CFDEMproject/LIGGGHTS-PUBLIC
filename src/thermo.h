@@ -1,24 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
 #ifndef LMP_THERMO_H
@@ -77,6 +105,7 @@ class Thermo : protected Pointers {
   bigint last_step;
 
   bigint natoms;
+  bigint last_natoms;   
 
                          // data used by routines that compute single values
   int ivalue;            // integer value to print
@@ -91,9 +120,9 @@ class Thermo : protected Pointers {
                          // index = where they are in computes list
                          // id = ID of Compute objects
                          // Compute * = ptrs to the Compute objects
-  int index_temp,index_press_scalar,index_press_vector,index_pe;
-  char *id_temp,*id_press,*id_pe;
-  class Compute *temperature,*pressure,*pe;
+  int index_kin_eng;          // index of compute that corresponds to the kinetic energy compute
+  char *id_kin_eng;           // id of kinetic energy compute
+  class Compute *kin_eng;     // kinetic energy compute
 
   int ncompute;                // # of Compute objects called by thermo
   char **id_compute;           // their IDs
@@ -143,22 +172,7 @@ class Thermo : protected Pointers {
 
   void compute_atoms();
   void compute_temp();
-  void compute_press();
-  void compute_pe();
   void compute_ke();
-  void compute_etotal();
-  void compute_enthalpy();
-
-  void compute_evdwl();
-  void compute_ecoul();
-  void compute_epair();
-  void compute_ebond();
-  void compute_eangle();
-  void compute_edihed();
-  void compute_eimp();
-  void compute_emol();
-  void compute_elong();
-  void compute_etail();
 
   void compute_vol();
   void compute_density();
@@ -180,13 +194,6 @@ class Thermo : protected Pointers {
   void compute_xlat();
   void compute_ylat();
   void compute_zlat();
-
-  void compute_pxx();
-  void compute_pyy();
-  void compute_pzz();
-  void compute_pxy();
-  void compute_pyz();
-  void compute_pxz();
 
   void compute_fmax();
   void compute_fnorm();
@@ -365,9 +372,9 @@ E: This variable thermo keyword cannot be used between runs
 Keywords that refer to time (such as cpu, elapsed) do not
 make sense in between runs.
 
-E: Thermo keyword in variable requires thermo to use/init temp
+E: Thermo keyword in variable requires thermo to use/init ke
 
-You are using a thermo keyword in a variable that requires temperature
+You are using a thermo keyword in a variable that requires the kinetic energy
 to be calculated, but your thermo output does not use it.  Add it to
 your thermo output.
 

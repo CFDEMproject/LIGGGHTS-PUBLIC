@@ -1,34 +1,52 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
-   Christian Richter (OVGU Magdeburg, linear/variable and rotate/variable)
-   Niels Dallinger (TU Chemnitz, viblin and vibrot)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Philippe Seil (JKU Linz)
+    Niels Dallinger (TU Chemnitz, viblin and vibrot)
+    Christian Richter (OVGU Magdeburg, linear variable and rotate/variable)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+    Copyright 2013-2015 TU Chemnitz
+    Copyroght 2013      OVGU Magdeburg
 ------------------------------------------------------------------------- */
 
 #include "mesh_mover.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "math_extra_liggghts.h"
 #include "input.h"
@@ -48,7 +66,10 @@ MeshMoverLinear::MeshMoverLinear(LAMMPS *lmp,AbstractMesh *_mesh,
     vel_[0] = vx;
     vel_[1] = vy;
     vel_[2] = vz;
+}
 
+void MeshMoverLinear::post_create()
+{
     isFirst_ = mesh_->registerMove(false,true,false);
 }
 
@@ -99,12 +120,12 @@ MeshMoverLinearVariable::MeshMoverLinearVariable(LAMMPS *lmp,AbstractMesh *_mesh
       strcpy(var1str_,&var1[2]);
       myvar1_ = input->variable->find(var1str_);
 
-      n = strlen(&var1[2]) + 1;
+      n = strlen(&var2[2]) + 1;
       var2str_ = new char[n];
       strcpy(var2str_,&var2[2]);
       myvar2_ = input->variable->find(var2str_);
 
-      n = strlen(&var1[2]) + 1;
+      n = strlen(&var3[2]) + 1;
       var3str_ = new char[n];
       strcpy(var3str_,&var3[2]);
       myvar3_ = input->variable->find(var3str_);
@@ -115,11 +136,14 @@ MeshMoverLinearVariable::MeshMoverLinearVariable(LAMMPS *lmp,AbstractMesh *_mesh
 
       vectorZeroize3D(dX_);
 
-      vel_[0] = input->variable->compute_equal(myvar1_);
-      vel_[1] = input->variable->compute_equal(myvar2_);
-      vel_[2] = input->variable->compute_equal(myvar3_);
+      vel_[0] = 0.; //input->variable->compute_equal(myvar1_);
+      vel_[1] = 0.; //input->variable->compute_equal(myvar2_);
+      vel_[2] = 0.; //input->variable->compute_equal(myvar3_);
+}
 
-      isFirst_ = mesh_->registerMove(false,true,false);
+void MeshMoverLinearVariable::post_create()
+{
+    isFirst_ = mesh_->registerMove(false,true,false);
 }
 
 void MeshMoverLinearVariable::pre_delete()
@@ -163,6 +187,19 @@ void MeshMoverLinearVariable::setup()
 {
     
     vectorZeroize3D(dX_);
+
+    // check if variable still exists
+    myvar1_ = input->variable->find(var1str_);
+    myvar2_ = input->variable->find(var2str_);
+    myvar3_ = input->variable->find(var3str_);
+
+    if (myvar1_ < 0) error->all(FLERR,"Variable name 1 for fix move/mesh linear/variable does not exist");
+    if (myvar2_ < 0) error->all(FLERR,"Variable name 2 for fix move/mesh linear/variable does not exist");
+    if (myvar3_ < 0) error->all(FLERR,"Variable name 3 for fix move/mesh linear/variable does not exist");
+
+    vel_[0] = input->variable->compute_equal(myvar1_);
+    vel_[1] = input->variable->compute_equal(myvar2_);
+    vel_[2] = input->variable->compute_equal(myvar3_);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -210,7 +247,10 @@ MeshMoverWiggle::MeshMoverWiggle(LAMMPS *lmp,AbstractMesh *_mesh,
     amplitude_[0] = ax;
     amplitude_[1] = ay;
     amplitude_[2] = az;
+}
 
+void MeshMoverWiggle::post_create()
+{
     isFirst_ = mesh_->registerMove(false,true,false);
 }
 
@@ -276,7 +316,10 @@ MeshMoverRotate::MeshMoverRotate(LAMMPS *lmp,AbstractMesh *_mesh,
     point_[2] = pz;
 
     add_reference_point(point_);
+}
 
+void MeshMoverRotate::post_create()
+{
     isFirst_ = mesh_->registerMove(false,true,true);
 }
 
@@ -356,7 +399,10 @@ MeshMoverRotateVariable::MeshMoverRotateVariable(LAMMPS *lmp,AbstractMesh *_mesh
     point_[2] = pz;
 
     add_reference_point(point_);
+}
 
+void MeshMoverRotateVariable::post_create()
+{
     isFirst_ = mesh_->registerMove(false,true,true);
 }
 
@@ -395,6 +441,11 @@ void MeshMoverRotateVariable::setup()
 {
     
     totalPhi_ = 0.;
+
+    // check if variable still exists
+    myvar1_ = input->variable->find(var1str_);
+    if (myvar1_ < 0)
+        error->all(FLERR,"Variable name 1 for fix move/mesh rotate dynamic does not exist");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -461,7 +512,10 @@ MeshMoverRiggle::MeshMoverRiggle(LAMMPS *lmp,AbstractMesh *_mesh,
     point_[0] = px;
     point_[1] = py;
     point_[2] = pz;
+}
 
+void MeshMoverRiggle::post_create()
+{
     isFirst_ = mesh_->registerMove(false,true,true);
 }
 
@@ -517,9 +571,9 @@ void MeshMoverRiggle::initial_integrate(double dTAbs,double dTSetup,double dt)
 MeshMoverVibLin::MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh,
                                  FixMoveMesh *_fix_move_mesh,
                                  double axisX, double axisY, double axisZ,
-                                 int order, double amplitude[10], double phase[10],
-                                 double T)
-  : MeshMover(lmp,_mesh,_fix_move_mesh), omega_(2.*M_PI/T)
+                                 int order, double amplitude[30], double phase[30],
+                                 double period[30])
+  : MeshMover(lmp,_mesh,_fix_move_mesh)
 {
     axis_[0] = axisX;
     axis_[1] = axisY;
@@ -531,8 +585,12 @@ MeshMoverVibLin::MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh,
     for (int j=0;j<order; j++) {
        phi[j] = phase[j];
        ampl[j] = amplitude[j];
+	   omega[j] = (1/period[j])*2.*M_PI;
      }
+}
 
+void MeshMoverVibLin::post_create()
+{
     isFirst_ = mesh_->registerMove(false,true,false);
 }
 
@@ -559,8 +617,8 @@ void MeshMoverVibLin::initial_integrate(double dTAbs,double dTSetup,double dt)
 
     for (int j=0;j<ord; j++)
     {
-        arg = arg+ampl[j]*(cos(omega_*(j+1)*dTAbs+phi[j]) - cos(omega_*(j+1)*(dTAbs-dTSetup)+phi[j]));
-        vA= vA-ampl[j]*(j+1)*omega_*sin(omega_*(j+1)*dTAbs+phi[j]);
+        arg = arg+ampl[j]*(cos(omega[j]*dTAbs+phi[j]) - cos(omega[j]*(dTAbs-dTSetup)+phi[j]));
+        vA= vA-ampl[j]*omega[j]*sin(omega[j]*dTAbs+phi[j]);
     }
 
     // calculate velocity, same for all nodes
@@ -587,9 +645,9 @@ MeshMoverVibRot::MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh,
                                  FixMoveMesh *_fix_move_mesh,
                                  double px, double py, double pz,
                                  double axisX, double axisY, double axisZ,
-                                 int order, double amplitude[10], double phase[10],
-                                 double T)
-  : MeshMover(lmp,_mesh,_fix_move_mesh), omega_(2.*M_PI/T)
+                                 int order, double amplitude[30], double phase[30],
+                                 double period[30])
+  : MeshMover(lmp,_mesh,_fix_move_mesh)
 {
     axis_[0] = axisX;
     axis_[1] = axisY;
@@ -606,10 +664,15 @@ MeshMoverVibRot::MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh,
     for (int j=0;j<order; j++) {
        phi[j] = phase[j];
        ampl[j] = amplitude[j];
+	   omega[j] = (1/period[j])*2.*M_PI;
      }
+}
 
+void MeshMoverVibRot::post_create()
+{
     isFirst_ = mesh_->registerMove(false,true,true);
 }
+
 void MeshMoverVibRot::pre_delete()
 {
     mesh_->unregisterMove(false,true,true);
@@ -631,8 +694,8 @@ void MeshMoverVibRot::initial_integrate(double dTAbs,double dTSetup,double dt)
 
     for (int j=0;j<ord; j++)
     {
-        arg = arg+ampl[j]* ( cos(omega_*(j+1)*dTAbs+phi[j]) - cos(omega_*(j+1)*(dTAbs-dTSetup)+phi[j]) );
-        vR = vR-ampl[j]*(j+1)*omega_*sin(omega_*(j+1)*dTAbs+phi[j]);
+        arg = arg+ampl[j]* ( cos(omega[j]*dTAbs+phi[j]) - cos(omega[j]*(dTAbs-dTSetup)+phi[j]) );
+        vR = vR-ampl[j]*omega[j]*sin(omega[j]*dTAbs+phi[j]);
     }
 
     int size = mesh_->size();

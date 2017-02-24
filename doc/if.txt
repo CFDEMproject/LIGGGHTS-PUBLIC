@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -14,11 +14,11 @@ if boolean then t1 t2 ... elif boolean f1 f2 ... elif boolean f1 f2 ... else e1 
 
 boolean = a Boolean expression evaluated as TRUE or FALSE (see below)
 then = required word
-t1,t2,...,tN = one or more LAMMPS commands to execute if condition is met, each enclosed in quotes
+t1,t2,...,tN = one or more LIGGGHTS(R)-PUBLIC commands to execute if condition is met, each enclosed in quotes
 elif = optional word, can appear multiple times
-f1,f2,...,fN = one or more LAMMPS commands to execute if elif condition is met, each enclosed in quotes (optional arguments)
+f1,f2,...,fN = one or more LIGGGHTS(R)-PUBLIC commands to execute if elif condition is met, each enclosed in quotes (optional arguments)
 else = optional argument
-e1,e2,...,eN = one or more LAMMPS commands to execute if no condition is met, each enclosed in quotes (optional arguments) :ul
+e1,e2,...,eN = one or more LIGGGHTS(R)-PUBLIC commands to execute if no condition is met, each enclosed in quotes (optional arguments) :ul
 
 [Examples:]
 
@@ -55,7 +55,7 @@ Boolean expression is FALSE, then no commands are executed.
 
 The syntax for Boolean expressions is described below.
 
-Each command (t1, f1, e1, etc) can be any valid LAMMPS input script
+Each command (t1, f1, e1, etc) can be any valid LIGGGHTS(R)-PUBLIC input script
 command, except an "include"_include.html command, which is not
 allowed.  If the command is more than one word, it must enclosed in
 quotes, so it will be treated as a single argument, as in the examples
@@ -74,13 +74,13 @@ can be spread across many lines, though it is still a single command:
 if "$a < $b" then &
   "print 'Minimum value = $a'" &
   "run 1000" &
-else &      
+else &
   'print "Minimum value = $b"' &
   "minimize 0.001 0.001 1000 10000" :pre
 
 Note that if one of the commands to execute is "quit"_quit.html (of an
-invalid LAMMPS command such as "blah"), as in the first example above,
-then executing the command will cause LAMMPS to halt.
+invalid LIGGGHTS(R)-PUBLIC command such as "blah"), as in the first example above,
+then executing the command will cause LIGGGHTS(R)-PUBLIC to halt.
 
 Note that by jumping to a label in the same input script, the if
 command can be used to break out of a loop.  See the "variable

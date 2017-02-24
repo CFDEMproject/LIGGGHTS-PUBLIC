@@ -26,8 +26,8 @@ class System;
 
 class Solver{
 protected:
-  System* system;
 
+  System* system;               //pointer to system to be solved
   
   double time;
   ColMatMap state;

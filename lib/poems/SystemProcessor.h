@@ -20,10 +20,11 @@
 #include "poemslist.h"
 #include "poemstree.h"
 #include "POEMSChain.h"
-
+#include <stdio.h>
+bool mydebug = 1;
 
 struct POEMSNode {
-	List<POEMSNode> links;
+	List<POEMSNode> joints;
 	List<bool> taken;
 	int idNumber;
 	bool visited;
@@ -36,7 +37,7 @@ struct POEMSNode {
 	};	
 };
 
-
+//*************************************************************************
 class SystemProcessor{
 private:
 	Tree nodes;
@@ -59,61 +60,69 @@ public:
 			}
 		}
 	};
-	void processArray(int** links, int numLinks);
+	void processArray(int** joints, int njoint);
 	List<POEMSChain> * getSystemData();
 	int getNumberOfHeadChains();
 };
 
+//*************************************************************************
 SystemProcessor::SystemProcessor(void){
 }
 
-void SystemProcessor::processArray(int** links, int numLinks)
-{
-	bool * false_var;					//holds the value false; needed because a constant cannot be put into a list; the list requires a
-										//reference.
-	for(int i = 0; i < numLinks; i++)	//go through all the links in the input array
+//*************************************************************************
+void SystemProcessor::processArray(int** joints, int njoint)
+{       
+        if (mydebug) printf ("what is here njoint: %d \n", njoint);		
+	bool * false_var; //holds the value false; needed because a constant cannot be put into a list; the list requires a
+	if (mydebug) cout<< "the size of false_var:"<< sizeof(false_var) <<endl;			//reference.
+	for(int i = 0; i < njoint; i++)	//go through all the joint..
 	{
-		if(!nodes.Find(links[i][0]))	//if the first node in the pair is not found in the storage tree
+	        if (mydebug) printf ("what is here joints: %d \n", joints[i][0]); 
+		if(!nodes.Find(joints[i][0]))	//if the first node in the pair is not found in the storage tree
 		{
 			POEMSNode * newNode = new POEMSNode;	//make a new node
 //			forDeletion.Append(newNode);
-			newNode->idNumber = links[i][0];		//set its ID to the value
-			newNode->visited = false;				//set it to be unvisited
-			nodes.Insert(links[i][0], links[i][0], (void *) newNode);	//and add it to the tree storage structure
+			newNode->idNumber = joints[i][0];//set its ID to the value
+			newNode->visited = false;//set it to be unvisited
+			nodes.Insert(joints[i][0], joints[i][0], (void *) newNode);//and add it to the tree storage structure
 		}
-		if(!nodes.Find(links[i][1]))				//repeat process for the other half of each link
+		if(!nodes.Find(joints[i][1])) //repeat process for the other half of each link
 		{
 			POEMSNode * newNode = new POEMSNode;
 //			forDeletion.Append(newNode);
-			newNode->idNumber = links[i][1];
+			newNode->idNumber = joints[i][1];
 			newNode->visited = false;
-			nodes.Insert(links[i][1], links[i][1], (void *) newNode);
+			nodes.Insert(joints[i][1], joints[i][1], (void *) newNode);
 		}
-		POEMSNode * firstNode = (POEMSNode *)nodes.Find(links[i][0]);	//now that we are sure both nodes exist,
-		POEMSNode * secondNode = (POEMSNode *)nodes.Find(links[i][1]);	//we can get both of them out of the tree
-		firstNode->links.Append(secondNode);							//and add the link from the first to the second...
+		POEMSNode * firstNode = (POEMSNode *)nodes.Find(joints[i][0]);	//now that we are sure both nodes exist,
+		POEMSNode * secondNode = (POEMSNode *)nodes.Find(joints[i][1]);	//we can get both of them out of the tree
+		firstNode->joints.Append(secondNode); //and add the link from the first to the second...
 		false_var = new bool;
-		*false_var = false;												//make a new false boolean to note that the link between these two
-		firstNode->taken.Append(false_var);								//has not already been taken, and append it to the taken list
-		secondNode->links.Append(firstNode);							//repeat process for link from second node to first
+		*false_var = false; //make a new false boolean to note that the link between these two
+		firstNode->taken.Append(false_var); //has not already been taken, and append it to the taken list
+		secondNode->joints.Append(firstNode); //repeat process for link from second node to first
 		false_var = new bool;
 		*false_var = false;
 		secondNode->taken.Append(false_var);
 	}	
 	
-	TreeNode * temp = nodes.GetRoot();							//get the root node of the node storage tree
+	TreeNode * temp = nodes.GetRoot(); //get the root node of the node storage tree
+	if (mydebug) cout<< "what is size of TreeNode * temp:"<< sizeof(temp) <<endl;
 	POEMSNode * currentNode;
+	
 	do
 	{
-		currentNode = findSingleLink(temp);						//find the start of the next available chain
+		currentNode = findSingleLink(temp); //find the start of the next available chain go and check!!
+		if (mydebug) cout<< "what is size of currentNode:"<< sizeof(currentNode) <<endl;
 		if(currentNode != NULL)
 		{
-			headsOfSystems.Append(AddNewChain(currentNode));							//and add it to the headsOfSystems list of chains
+			headsOfSystems.Append(AddNewChain(currentNode));//and add it to the headsOfSystems list of chains
 		}
 	} 
-	while(currentNode != NULL);									//repeat this until all chains have been added		
+	while(currentNode != NULL); //repeat this until all chains have been added		
 }
 
+//*************************************************************************
 POEMSChain * SystemProcessor::AddNewChain(POEMSNode * currentNode){
 	if(currentNode == NULL)	//Termination condition; if the currentNode is null, then return null
 	{
@@ -123,7 +132,7 @@ POEMSChain * SystemProcessor::AddNewChain(POEMSNode * currentNode){
 	POEMSNode * nextNode = NULL;	//nextNode stores the proposed next node to add to the chain.  this will be checked to make sure no backtracking is occuring before being assigned as the current node.
 	POEMSChain * newChain = new POEMSChain;	//make a new POEMSChain object.  This will be the object returned
 
-	if(currentNode->links.GetNumElements() == 0)	//if we have no links from this node, then the whole chain is only one node.  Add this node to the chain and return it; mark node as visited for future reference
+	if(currentNode->joints.GetNumElements() == 0)	//if we have no joints from this node, then the whole chain is only one node.  Add this node to the chain and return it; mark node as visited for future reference
 	{
 		currentNode->visited = true;
 		tmp = new int;
@@ -131,27 +140,27 @@ POEMSChain * SystemProcessor::AddNewChain(POEMSNode * currentNode){
 		newChain->listOfNodes.Append(tmp);
 		return newChain;
 	}
-	while(currentNode->links.GetNumElements() <= 2)	//we go until we get to a node that branches, or both branches have already been taken both branches can already be taken if a loop with no spurs is found in the input data
+	while(currentNode->joints.GetNumElements() <= 2)	//we go until we get to a node that branches, or both branches have already been taken both branches can already be taken if a loop with no spurs is found in the input data
 	{
 		currentNode->visited = true;
 		tmp = new int;
 		*tmp = currentNode->idNumber;
 		newChain->listOfNodes.Append(tmp);	//append the current node to the chain & mark as visited
 		//cout << "Appending node " << currentNode->idNumber << " to chain" << endl;
-		nextNode = currentNode->links.GetHeadElement()->value;	//the next node is the first or second value stored in the links array
+		nextNode = currentNode->joints.GetHeadElement()->value;	//the next node is the first or second value stored in the joints array
 																//of the current node.  We get the first value...
-		if(!setLinkVisited(currentNode, nextNode))					//...and see if it points back to where we came from. If it does...
+		if(!setLinkVisited(currentNode, nextNode)) //...and see if it points back to where we came from. If it does...
 		{														//either way, we set this link as visited
-			if(currentNode->links.GetNumElements() == 1)		//if it does, then if that is the only link to this node, we're done with the chain, so append the chain to the list and return the newly created chain
+			if(currentNode->joints.GetNumElements() == 1)		//if it does, then if that is the only link to this node, we're done with the chain, so append the chain to the list and return the newly created chain
 			{
-//				headsOfSystems.Append(newChain);
+                                                                       //headsOfSystems.Append(newChain);
 				return newChain;
 			}
-			nextNode = currentNode->links.GetHeadElement()->next->value;//follow the other link if there is one, so we go down the chain
+			nextNode = currentNode->joints.GetHeadElement()->next->value;//follow the other link if there is one, so we go down the chain
 			if(!setLinkVisited(currentNode, nextNode))				//mark link as followed, so we know not to backtrack			
 			{
 	//			headsOfSystems.Append(newChain);
-				return newChain;								//This condition, where no branches have occurred but both links have already
+				return newChain;								//This condition, where no branches have occurred but both joints have already
 																//been taken can only occur in a loop with no spurs; add this loop to the
 																//system (currently added as a chain for consistency), and return.
 			}
@@ -163,9 +172,9 @@ POEMSChain * SystemProcessor::AddNewChain(POEMSNode * currentNode){
 	*tmp = currentNode->idNumber;
 	newChain->listOfNodes.Append(tmp);		//append the last node before branch (node shared jointly with branch chains)
 																//re-mark as visited, just to make sure
-	ListElement<POEMSNode> * tempNode = currentNode->links.GetHeadElement();	//go through all of the links, one at a time that branch
+	ListElement<POEMSNode> * tempNode = currentNode->joints.GetHeadElement();	//go through all of the joints, one at a time that branch
 	POEMSChain * tempChain = NULL;								//temporary variable to hold data 
-	while(tempNode != NULL)										//when we have followed all links, stop
+	while(tempNode != NULL)										//when we have followed all joints, stop
 	{
 		if(setLinkVisited(tempNode->value, currentNode))		//dont backtrack, or create closed loops
 		{
@@ -179,6 +188,7 @@ POEMSChain * SystemProcessor::AddNewChain(POEMSNode * currentNode){
 	return newChain;	
 }
 
+//*************************************************************************
 POEMSNode * SystemProcessor::findSingleLink(TreeNode * aNode)
 //This function takes the root of a search tree containing POEMSNodes and returns a POEMSNode corresponding to the start of a chain in the
 //system.  It finds a node that has not been visited before, and only has one link; this node will be used as the head of the chain.
@@ -188,30 +198,34 @@ POEMSNode * SystemProcessor::findSingleLink(TreeNode * aNode)
 		return NULL;
 	}
 	POEMSNode * returnVal =  (POEMSNode *)aNode->GetAuxData();	//get the poemsnode data out of the treenode
-	POEMSNode * detectLoneLoops = NULL;							//is used to handle a loop that has no protruding chains
+	if (mydebug) cout<< "what is size of returnVal:"<< sizeof(returnVal) <<endl;
+	POEMSNode * detectLoneLoops = NULL;			//is used to handle a loop that has no protruding chains
 	if(returnVal->visited == false)
 	{
-		detectLoneLoops = returnVal;							//if we find any node that has not been visited yet, save it
+		detectLoneLoops = returnVal;				//if we find any node that has not been visited yet, save it
 	}
-	if(returnVal->links.GetNumElements() == 1 && returnVal->visited == false)	//see if it has one element and hasnt been visited already
+	if(returnVal->joints.GetNumElements() == 1 && returnVal->visited == false)//see if it has one element and hasnt been visited already
 	{
-		return returnVal;														//return the node is it meets this criteria
+		return returnVal;							//return the node is it meets this criteria
 	}
-	returnVal = findSingleLink(aNode->Left());									//otherwise, check the left subtree
-	if(returnVal == NULL)														//and if we find nothing...
+	returnVal = findSingleLink(aNode->Left());					//otherwise, check the left subtree
+	if(returnVal == NULL)								//and if we find nothing...
 	{
-		returnVal = findSingleLink(aNode->Right());								//check the right subtree
+		returnVal = findSingleLink(aNode->Right());				//check the right subtree
 	}
-	if(returnVal == NULL)														//if we could not find any chains
+	if(returnVal == NULL)								//if we could not find any chains
 	{
-		returnVal = detectLoneLoops;											//see if we found any nodes at all that havent been processed
+		returnVal = detectLoneLoops;			//see if we found any nodes at all that havent been processed
 	}
-	return returnVal;															//return what we find (will be NULL if no new chains are 
-																				//found)
+	if (mydebug) cout<< "value returnVal=====:"<< returnVal <<endl; 
+	//currently returnVal is NULL, so no new chain added,means one chain only.
+	return returnVal;//return what we find (will be NULL if no new chains are found)
+	
 }
 
+//*************************************************************************
 bool SystemProcessor::setLinkVisited(POEMSNode * firstNode, POEMSNode * secondNode)
-//setLinkVisited sets the links between these two nodes as visited. If they are already visited, it returns false.  Otherwise, it sets
+//setLinkVisited sets the joints between these two nodes as visited. If they are already visited, it returns false.  Otherwise, it sets
 //them as visited and returns true.  This function is used to see whether a certain path has been taken already in the graph structure.
 //If it has been, then we need to know so we dont follow it again; this prevents infinite recursion when there is a loop, and prevents
 //backtracking up a chain that has already been made.  The list of booleans denoting if a link has been visited is called 'taken' and is
@@ -220,7 +234,7 @@ bool SystemProcessor::setLinkVisited(POEMSNode * firstNode, POEMSNode * secondNo
 //to be set in the event that the link has to be set as visited.
 {
 	//cout << "Checking link between nodes " << firstNode->idNumber << " and " << secondNode->idNumber << "... ";
-	ListElement<POEMSNode> * tmp = firstNode->links.GetHeadElement();	//get the head element of the list of pointers for node 1
+	ListElement<POEMSNode> * tmp = firstNode->joints.GetHeadElement();	//get the head element of the list of pointers for node 1
 	ListElement<bool> * tmp2 = firstNode->taken.GetHeadElement();		//get the head element of the list of bool isVisited flags for node 1
 	while(tmp->value != NULL || tmp2->value != NULL)					//go through untill we reach the end of the lists
 	{
@@ -241,7 +255,7 @@ bool SystemProcessor::setLinkVisited(POEMSNode * firstNode, POEMSNode * secondNo
 		tmp2 = tmp2->next;
 	}
 
-	tmp = secondNode->links.GetHeadElement();			//now, if the link was unvisited, we need to go set the other node's list such that
+	tmp = secondNode->joints.GetHeadElement();			//now, if the link was unvisited, we need to go set the other node's list such that
 														//it also knows this link is being visited
 	tmp2 = secondNode->taken.GetHeadElement();
 	while(tmp->value != NULL || tmp2->value != NULL)	//go through the list
@@ -251,7 +265,7 @@ bool SystemProcessor::setLinkVisited(POEMSNode * firstNode, POEMSNode * secondNo
 			if(*(tmp2->value) == true)					//and it has already been visited, then signal an error; this shouldnt ever happen
 			{
 				cout << "Error in parsing structure! Should never reach this condition! \n" << 
-						"Record of visited links out of synch between two adjacent nodes.\n";
+						"Record of visited joints out of synch between two adjacent nodes.\n";
 				return false;
 			}
 			else
@@ -267,6 +281,7 @@ bool SystemProcessor::setLinkVisited(POEMSNode * firstNode, POEMSNode * secondNo
 	return true;										//return true to indicate that this is the first time the link has been visited
 }
 
+//*************************************************************************
 List<POEMSChain> * SystemProcessor::getSystemData(void)	//Gets the list of POEMSChains that comprise the system.  Might eventually only
 														//return chains linked to the reference plane, but currently returns every chain
 														//in the system.
@@ -274,6 +289,7 @@ List<POEMSChain> * SystemProcessor::getSystemData(void)	//Gets the list of POEMS
 	return &headsOfSystems;
 }
 
+//*************************************************************************
 int SystemProcessor::getNumberOfHeadChains(void) //This function isnt implemented yet, and might be taken out entirely; this was a holdover
 												//from when I intended to return an array of chain pointers, rather than a list of chains
 												//It will probably be deleted once I finish figuring out exactly what needs to be returned

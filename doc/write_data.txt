@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -22,7 +22,6 @@ keyword = {pair} :l
 
 [Examples:]
 
-write_data data.polymer
 write_data data.* :pre
 
 [Description:]
@@ -41,7 +40,7 @@ two respects.  First, most pair styles do not yet write their
 coefficient information into the data file.  This means you will need
 to specify that information in your input script that reads the data
 file, via the "pair_coeff"_pair_coeff.html command.  Second, a few of
-the "atom styles"_atom_style.html (body, ellipsoid, line, tri) that
+the "atom styles"_atom_style.html (ellipsoid, line, tri) that
 store auxiliary "bonus" information about aspherical particles, do not
 yet write the bonus info into the data file.  Both these
 functionalities will be added to the write_data command later.
@@ -49,7 +48,7 @@ functionalities will be added to the write_data command later.
 Because a data file is in text format, if you use a data file written
 out by this command to restart a simulation, the initial state of the
 new run will be slightly different than the final state of the old run
-(when the file was written) which was represented internally by LAMMPS
+(when the file was written) which was represented internally by LIGGGHTS(R)-PUBLIC
 in binary format.  A new simulation which reads the data file will
 thus typically diverge from a simulation that continued in the
 original input script.
@@ -64,12 +63,6 @@ IMPORTANT NOTE: Only limited information about a simulation is stored
 in a data file.  For example, no information about atom
 "groups"_group.html and "fixes"_fix.html are stored.  "Binary restart
 files"_read_restart.html store more information.
-
-Bond interactions (angle, etc) that have been turned off by the "fix
-shake"_fix_shake.html or "delete_bonds"_delete_bonds.html command will
-be written to a data file as if they are turned on.  This means they
-will need to be turned off again in a new run after the data file is
-read.
 
 Bonds that are broken (e.g. by a bond-breaking potential) are not
 written to the data file.  Thus these bonds will not exist when the
@@ -114,4 +107,3 @@ setup, atom masses initialized, etc).
 [Default:]
 
 The option defaults are pair = ii.
-

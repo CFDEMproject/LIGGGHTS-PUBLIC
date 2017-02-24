@@ -1,13 +1,12 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"Previous Section"_Section_commands.html - "LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc - "Next Section"_Section_mesh_modules.html :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
 :line
 
-3. Commands :h3
+5. Contact models :h3
 
 This section describes what granular models can be used along with
 "pair gran"_pair_gran.html and "fix wall/gran"_fix_wall_gran.html :
@@ -18,8 +17,10 @@ cohesion commands :h4
 
 Click on the style itself for a full description:
 
+"easo/capillary/viscous"_gran_cohesion_easo_capillary_viscous.html,
 "sjkr"_gran_cohesion_sjkr.html,
-"sjkr2"_gran_cohesion_sjkr2.html :tb(c=4,ea=c)
+"sjkr2"_gran_cohesion_sjkr2.html,
+"washino/capillary/viscous"_gran_cohesion_washino_capillary_viscous.html :tb(c=4,ea=c)
 
 model commands :h4
 
@@ -36,7 +37,14 @@ Click on the style itself for a full description:
 
 "cdt"_gran_rolling_friction_cdt.html,
 "epsd"_gran_rolling_friction_epsd.html,
-"epsd2"_gran_rolling_friction_epsd2.html :tb(c=4,ea=c)
+"epsd2"_gran_rolling_friction_epsd2.html,
+"epsd3"_gran_rolling_friction_epsd3.html :tb(c=4,ea=c)
+
+surface commands :h4
+
+Click on the style itself for a full description:
+
+"sphere"_gran_surface_sphere.html :tb(c=4,ea=c)
 
 tangential commands :h4
 

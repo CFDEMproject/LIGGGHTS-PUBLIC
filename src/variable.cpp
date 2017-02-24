@@ -1,19 +1,51 @@
 /* ----------------------------------------------------------------------
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    This is the
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   See the README file in the top-level LAMMPS directory.
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
+
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
+
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
+
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include "ctype.h"
 #include "unistd.h"
 #include "variable.h"
@@ -31,6 +63,7 @@
 #include "output.h"
 #include "thermo.h"
 #include "random_mars.h"
+#include "fix_multisphere.h"
 #include "math_const.h"
 #include "atom_masks.h"
 #include "memory.h"
@@ -71,11 +104,6 @@ enum{DONE,ADD,SUBTRACT,MULTIPLY,DIVIDE,CARAT,MODULO,UNARY,
 // customize by adding a special function
 
 enum{SUM,XMIN,XMAX,AVE,TRAP,NEXT};
-
-#define INVOKED_SCALAR 1
-#define INVOKED_VECTOR 2
-#define INVOKED_ARRAY 4
-#define INVOKED_PERATOM 8
 
 #define BIG 1.0e20
 
@@ -175,7 +203,7 @@ void Variable::set(int narg, char **arg)
     if (find(arg[0]) >= 0) return;
     if (nvar == maxvar) grow();
     style[nvar] = LOOP;
-    int nfirst,nlast;
+    int nfirst=0,nlast=0;
     if (narg == 3 || (narg == 4 && strcmp(arg[3],"pad") == 0)) {
       nfirst = 1;
       nlast = force->inumeric(FLERR,arg[2]);
@@ -551,7 +579,7 @@ char *Variable::retrieve(char *name)
   if (ivar == -1) return NULL;
   if (which[ivar] >= num[ivar]) return NULL;
 
-  char *str;
+  char *str = NULL;
   if (style[ivar] == INDEX || style[ivar] == WORLD ||
       style[ivar] == UNIVERSE || style[ivar] == STRING ||
       style[ivar] == SCALARFILE) {
@@ -627,7 +655,7 @@ void Variable::compute_atom(int ivar, int igroup,
                             double *result, int stride, int sumflag)
 {
   Tree *tree;
-  double *vstore;
+  double *vstore = NULL;
 
   if (style[ivar] == ATOM) {
     evaluate(data[ivar][0],&tree); 
@@ -2489,8 +2517,8 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
 
   // evaluate args
 
-  Tree *newtree;
-  double value1,value2,value3; 
+  Tree *newtree = NULL;
+  double value1=0.0,value2=0.0,value3=0.0; 
 
   if (tree) {
     newtree = new Tree();
@@ -2790,13 +2818,19 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
      count(group),mass(group),charge(group),
      xcm(group,dim),vcm(group,dim),fcm(group,dim),
      bound(group,xmin),gyration(group),ke(group),angmom(group,dim),
-     torque(group,dim),inertia(group,dim),omega(group,dim)
+     torque(group,dim),inertia(group,dim),omega(group,dim), countMS(group)
 ------------------------------------------------------------------------- */
 
 int Variable::group_function(char *word, char *contents, Tree **tree,
                              Tree **treestack, int &ntreestack,
                              double *argstack, int &nargstack)
 {
+
+  int n_ms = modify->n_fixes_style("multisphere");
+  if(n_ms > 0 && !static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0))->allow_group_and_set())
+    error->all(FLERR, "By default variable command 'group' may not be used together with fix multisphere\n"
+                      "Use 'allow_group_and_set yes' with fix multisphere.");
+
   // word not a match to any group function
 
   if (strcmp(word,"count") && strcmp(word,"mass") &&
@@ -2805,7 +2839,7 @@ int Variable::group_function(char *word, char *contents, Tree **tree,
       strcmp(word,"bound") && strcmp(word,"gyration") &&
       strcmp(word,"ke") && strcmp(word,"angmom") &&
       strcmp(word,"torque") && strcmp(word,"inertia") &&
-      strcmp(word,"omega"))
+      strcmp(word,"omega") && strcmp(word,"countMS"))
     return 0;
 
   // parse contents for arg1,arg2,arg3 separated by commas
@@ -2846,11 +2880,16 @@ int Variable::group_function(char *word, char *contents, Tree **tree,
 
   // match word to group function
 
-  double value;
+  double value = 0.0;
 
   if (strcmp(word,"count") == 0) {
     if (narg == 1) value = group->count(igroup);
     else if (narg == 2) value = group->count(igroup,region_function(arg2));
+    else error->all(FLERR,"Invalid group function in variable formula");
+
+  } else if (strcmp(word,"countMS") == 0) {
+    if (narg == 1) value = group->count_ms(igroup);
+    else if (narg == 2) value = group->count_ms(igroup,region_function(arg2));
     else error->all(FLERR,"Invalid group function in variable formula");
 
   } else if (strcmp(word,"mass") == 0) {
@@ -3042,6 +3081,11 @@ int Variable::region_function(char *id)
   if (iregion == -1)
     error->all(FLERR,"Region ID in variable formula does not exist");
 
+  int n_ms = modify->n_fixes_style("multisphere");
+  if(n_ms > 0 && !static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0))->allow_group_and_set())
+    error->all(FLERR,"By default variable command 'region' may not be used together with fix multisphere.\n"
+                     "Use 'allow_group_and_set yes' with fix multisphere.");
+
   // init region in case sub-regions have been deleted
 
   domain->regions[iregion]->init();
@@ -3106,7 +3150,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
       strcmp(word,"max") == 0 || strcmp(word,"ave") == 0 ||
       strcmp(word,"trap") == 0) {
 
-    int method;
+    int method = 0;
     if (strcmp(word,"sum") == 0) method = SUM;
     else if (strcmp(word,"min") == 0) method = XMIN;
     else if (strcmp(word,"max") == 0) method = XMAX;
@@ -3118,7 +3162,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
 
     Compute *compute = NULL;
     Fix *fix = NULL;
-    int index,nvec,nstride;
+    int index=0,nvec=0,nstride=0;
 
     if (strstr(arg1,"c_") == arg1) {
       ptr1 = strchr(arg1,'[');
@@ -3395,6 +3439,7 @@ void Variable::peratom2global(int flag, char *word,
       else if ((strcmp(word,"tqx") == 0) && atom->torque_flag) mine = atom->torque[index][0];
       else if ((strcmp(word,"tqy") == 0) && atom->torque_flag) mine = atom->torque[index][1];
       else if ((strcmp(word,"tqz") == 0) && atom->torque_flag) mine = atom->torque[index][2]; 
+      else if ((strcmp(word,"r") == 0) && atom->radius_flag) mine = atom->radius[index];
 
       else error->one(FLERR,"Invalid atom vector in variable formula");
 
@@ -3441,6 +3486,8 @@ int Variable::is_atom_vector(char *word)
   if ((strcmp(word,"tqx") == 0) && atom->torque_flag) return 1;
   if ((strcmp(word,"tqy") == 0) && atom->torque_flag) return 1;
   if ((strcmp(word,"tqz") == 0) && atom->torque_flag) return 1; 
+  if ((strcmp(word,"r") == 0) && atom->radius_flag) return 1;
+  if ((strcmp(word,"density") == 0) && atom->density_flag) return 1;
   return 0;
 }
 
@@ -3497,6 +3544,14 @@ void Variable::atom_vector(char *word, Tree **tree,
   else if ((strcmp(word,"tqx") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][0];
   else if ((strcmp(word,"tqy") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][1];
   else if ((strcmp(word,"tqz") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][2]; 
+  else if ((strcmp(word,"density") == 0) && atom->density_flag) {
+    newtree->nstride = 1;
+    newtree->array = atom->density;
+  }
+  else if ((strcmp(word,"r") == 0) && atom->radius_flag) {
+    newtree->nstride = 1;
+    newtree->array = atom->radius;
+  }
 }
 
 /* ----------------------------------------------------------------------
@@ -3860,7 +3915,7 @@ VarReader::VarReader(LAMMPS *lmp, char *name, char *file, int flag) :
   if (me == 0) {
     fp = fopen(file,"r");
     if (fp == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open file variable file %s",file);
       error->one(FLERR,str);
     }

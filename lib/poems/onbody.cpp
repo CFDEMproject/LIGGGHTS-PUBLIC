@@ -150,12 +150,12 @@ void OnBody::Setup(){
     gamma = system_joint->GetR21();
     pk_C_k = system_joint->Get_kCpk();
   }
-
+   
   // initialize variables and dimensions
 
   // sI
   OnPopulateSI(system_body->inertia, system_body->mass, sI);
-	
+  //cout<<" what is system_body->mass  "<< system_body->mass <<endl; 
   // sP
   if( joint_dir == FORWARD )
     sP = system_joint->GetForward_sP();
@@ -245,9 +245,9 @@ Vect3 OnBody::LocalCart(){
   
 void OnBody::LocalTriangularization(Vect3& Torque, Vect3& Force){	  
 
-	Vect3 Iw,wIw,Ialpha,wIwIalpha,ma,Bforce,Bforce_ma,Btorque,Btorque_wIwIalpha;
+	Vect3 Iw,wIw,Ialpha,wIwIalpha,ma,Bforce,Bforce_ma,Btorque,Btorque_wIwIalpha,BTtorque;
   Iw.Zeros();wIw.Zeros();wIwIalpha.Zeros();ma.Zeros();
-	Bforce.Zeros();Bforce_ma.Zeros();Btorque.Zeros();Btorque_wIwIalpha.Zeros();
+	Bforce.Zeros();Bforce_ma.Zeros();Btorque.Zeros();Btorque_wIwIalpha.Zeros(),BTtorque.Zeros();
      
 	FastMult(system_body->inertia,system_body->omega_k,Iw);  
 	FastCross(Iw,system_body->omega_k,wIw);  
@@ -259,8 +259,10 @@ void OnBody::LocalTriangularization(Vect3& Torque, Vect3& Force){
 	
 	Mat3x3 k_C_n=T(system_body->n_C_k);      
 	Bforce=k_C_n*Force;
-	Btorque=k_C_n*Torque;  
-	
+	Btorque=k_C_n*Torque; 
+	FastAdd(system_body->btorque,system_body->ttorque,BTtorque);//added the body bending and twisting torques here,
+	FastAdd(Btorque,BTtorque,Btorque);//varified and validated by mingqiu already
+	//cout<<" what is Btorque= "<< Btorque <<endl;  
 	FastAdd(Bforce,ma,Bforce_ma);       
 	FastAdd(Btorque,wIwIalpha,Btorque_wIwIalpha);	  
 	OnPopulateSVect(Btorque_wIwIalpha,Bforce_ma,sF);
@@ -308,6 +310,7 @@ void OnBody::LocalForwardSubstitution(){
 	Vect6 sFsIhatsSCTsAhat;
 	Vect6 sPudot;
 	int type = system_joint->GetType();
+		//cout<<" what is type= "<< type <<endl;
 	if(type == 1){
 		FastTMult(sSC,parent->sAhat,sSCTsAhat);
 		FastMult(sIhat,sSCTsAhat,sIhatsSCTsAhat);       

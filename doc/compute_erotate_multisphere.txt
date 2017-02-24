@@ -1,0 +1,55 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+compute erotate/multisphere command :h3
+
+[Syntax:]
+
+compute ID group-ID erotate/multisphere :pre
+
+ID, group-ID are documented in "compute"_compute.html command
+erotate/multisphere = style name of this compute command :ul
+
+[Examples:]
+
+compute 1 all erotate/multisphere :pre
+
+[Description:]
+
+Define a computation that calculates the rotational kinetic energy of
+a collection of multisphere bodies.
+
+The rotational energy of each multisphere body is computed as 1/2 I Wbody^2,
+where I is the inertia tensor for the multisphere body, and Wbody is its
+angular velocity vector.  Both I and Wbody are in the frame of
+reference of the multisphere body, i.e. I is diagonalized.
+
+This compute automatically connects to the "fix multisphere"_fix_multisphere.html
+commands which defines the multisphere bodies.  The group specified in the
+compute command is ignored.  The rotational energy of all the multisphere
+bodies defined by the fix multisphere command in included in the
+calculation.
+
+[Output info:]
+
+This compute calculates a global scalar (the summed rotational energy
+of all the multisphere bodies).  This value can be used by any command that
+uses a global scalar value from a compute as input.  See
+"Section_howto 15"_Section_howto.html#howto_8 for an overview of
+LIGGGHTS(R)-PUBLIC output options.
+
+The scalar value calculated by this compute is "extensive".  The
+scalar value will be in energy "units"_units.html.
+
+[Restrictions:] none
+
+[Related commands:]
+
+"compute ke/multisphere"_compute_erotate_ke_multisphere.html
+
+[Default:] none

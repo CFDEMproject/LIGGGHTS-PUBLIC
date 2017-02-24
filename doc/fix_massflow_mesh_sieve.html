@@ -1,0 +1,268 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fix massflow/mesh/sieve command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix massflow/mesh/sieve command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/fix_massflow_mesh_sieve.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fix-massflow-mesh-sieve-command">
+<span id="index-0"></span><h1>fix massflow/mesh/sieve command<a class="headerlink" href="#fix-massflow-mesh-sieve-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>fix id group massflow/mesh/sieve mesh mesh-ID point_at_outlet pointX pointY pointZ keyword value ...</pre>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>massflow/mesh/sieve = style name of this fix command</li>
+<li>mesh = obligatory keyword</li>
+<li>mesh-ID = ID of a <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> command</li>
+<li>point_at_outlet = obligatory keyword</li>
+<li>pointX pointY pointZ = vector components defining the &#8220;outside&#8221; point of the mesh</li>
+<li>zero or more keyword/value pairs may be appended to args</li>
+<li>keywords = same as for <a class="reference internal" href="fix_massflow_mesh.html"><em>fix massflow/mesh</em></a>, in addition: <em>sieveSize</em> and <em>sieveSpacing</em> and  <em>sieveStiffness</em>, and <em>sieveDampings</em>, or <em>sieveMultiSphereCanPass</em></li>
+</ul>
+<pre class="literal-block">
+<em>sieveSize</em> value = <em>x in meters</em>
+  this is the diameter of the sieve opening. Used to compute the probability of sieve passage.
+<em>sieveSpacing</em> value = <em>x in meters</em>
+  this is the spacing between sieve openings. Used to compute the probability of sieve passage.
+<em>sieveStiffness</em> value = <em>x in Newton per meter</em>
+  value to compute the linear spring part of the normal repulsive force. WARNING: use a reasonable value to avoid popcorn!
+<em>sieveDamping</em> value = <em>x in Newton per meter/s</em>
+  value to compute the dashpot part of the normal repulsive force. ARNING: use a reasonable value to avoid popcorn!
+<em>sieveMultiSphereCanPass</em>
+  add this keyword to also calculate the probability of sieve passage for multisphere particles. If not set, it is impossible for multisphere particles to pass the sieve.
+</pre>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><pre>fix     massFlow1 all massflow/mesh/sieve mesh massFlow1M point_at_outlet 0 0 -1000 count once delete_atoms no file massFlow1.dat sieveSize 2e-3 sieveSpacing 2.5e-3 sieveStiffness 1e5 sieveDamping 1e3</pre>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This fix is an extension of the fix &#8220;massflow/mesh&#8221;, so the reader may wish to consult
+also the documentation of this fix for further details.</p>
+<p>Fix massflow/mesh/sieve models a sieve, and counts the particles that cross the sieve
+(same as in massflow/mesh). The sieve is modeled with circular holes in a the mesh (the holes
+have a certain spacing), and a passage probability is computed based on the particle diameter.
+Thus, a probability is computed based on the relative area that would result into particle passage
+divided by the total cross-sectional area of the sieve, assuming particles move perfectly normal
+to the mesh. This probability is evaluated at the first time step of every collision event, and
+compared with a uniformly-distributed random number. Thus, sliding contacts, or multiple collision
+may not by modelled accurately.</p>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>Currently, this feature does not allow deleting multi-sphere particles when crossing the sieve.
+Also, it is strongly recommended to NOT activate <em>sieveMultiSphereCanPass</em>, since this feature
+is not tested in high detail. For example, it may occur that multisphere particles may get stuck
+when passing the sieve.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="compute_nparticles_tracer_region.html"><em>compute nparticles/tracer/region</em></a>
+<a class="reference internal" href="fix_massflow_mesh.html"><em>fix massflow/mesh</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p><em>sieveDamping</em> = 0; <em>sieveMultiSphereCanPass</em> = false; all other parameters need to be set by the user.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

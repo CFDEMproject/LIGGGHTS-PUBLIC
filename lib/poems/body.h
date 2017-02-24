@@ -49,6 +49,8 @@ public:
   Vect3 a;
   Vect3 a_t;
   Mat3x3 n_C_k;
+  Vect3 btorque;
+  Vect3 ttorque;
   Vect3 omega;
   Vect3 omega_k;
   Vect3 alpha;

@@ -1,26 +1,43 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors for original version: Leo Silbert (SNL), Gary Grest (SNL)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+    Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
 #ifdef PAIR_CLASS
@@ -31,14 +48,19 @@
 #define LMP_PAIR_GRAN_H
 
 #include "pair.h"
+#include "atom.h"
+#include "region.h"
 #include "compute_pair_gran_local.h"
 #include "contact_interface.h"
+#include "fix_relax_contacts.h"
 #include <vector>
 #include <string>
 
 namespace LCM = LIGGGHTS::ContactModels;
 
 namespace LAMMPS_NS {
+
+class ComputePairGranLocal;
 
 class PairGran : public Pair, public LIGGGHTS::IContactHistorySetup {
 public:
@@ -65,6 +87,7 @@ public:
   virtual void read_restart(FILE *);
   virtual void write_restart_settings(FILE *){}
   virtual void read_restart_settings(FILE *){}
+  virtual bool contact_match(const std::string mtype, const std::string model) = 0;
   virtual void reset_dt();
   double memory_usage();
 
@@ -72,19 +95,13 @@ public:
 
   int  cplenable()
   { return cpl_enable; }
+
   void register_compute_pair_local(class ComputePairGranLocal *,int&);
   void unregister_compute_pair_local(class ComputePairGranLocal *ptr);
 
-  inline void cpl_add_pair(LCM::CollisionData & cdata, LCM::ForceData & i_forces)
-  {
-    const double fx = i_forces.delta_F[0];
-    const double fy = i_forces.delta_F[1];
-    const double fz = i_forces.delta_F[2];
-    const double tor1 = i_forces.delta_torque[0];
-    const double tor2 = i_forces.delta_torque[1];
-    const double tor3 = i_forces.delta_torque[2];
-    cpl_->add_pair(cdata.i, cdata.j, fx,fy,fz,tor1,tor2,tor3,cdata.contact_history);
-  }
+  void cpl_add_pair(LCM::SurfacesIntersectData & sidata, LCM::ForceData & i_forces);
+
+  void cpl_pair_finalize();
 
   /* PUBLIC ACCESS FUNCTIONS */
 
@@ -97,45 +114,53 @@ public:
   inline int dnum()
   { return dnum_all; }
 
-  inline class ComputePairGranLocal * cpl() {
-    return cpl_;
-  }
+  inline class ComputePairGranLocal * cpl() const
+  { return cpl_; }
 
-  inline bool storeContactForces() {
-    return store_contact_forces_;
-  }
+  inline bool storeContactForces() const
+  { return store_contact_forces_; }
 
-  inline int freeze_group_bit() const {
-    return freeze_group_bit_;
-  }
+  inline bool storeContactForcesStress()
+  { return store_contact_forces_stress_; }
 
-  inline int computeflag() const {
-    return computeflag_;
-  }
+  inline bool storeSumDelta()
+  { return store_multicontact_data_; }
 
-  inline int shearupdate() const {
-    return shearupdate_;
-  }
+  inline int freeze_group_bit() const
+  { return freeze_group_bit_; }
 
-  class FixContactPropertyAtom * fix_contact_forces() {
-    return fix_contact_forces_;
-  }
+  inline int computeflag() const
+  { return computeflag_; }
 
-  class FixRigid* fr_pair()
+  inline int shearupdate() const
+  { return shearupdate_; }
+
+  class FixContactPropertyAtom * fix_contact_forces() const
+  { return fix_contact_forces_;  }
+
+  class FixContactPropertyAtom * fix_contact_forces_stress()
+  { return fix_contact_forces_stress_; }
+
+  class FixContactPropertyAtom * fix_store_multicontact_delta()
+  { return fix_store_multicontact_data_; }
+
+  class FixRigid* fr_pair() const
   { return fix_rigid; }
 
-  double * mr_pair()
+  double * mr_pair() const
   { return mass_rigid; }
 
-  virtual double stressStrainExponent() = 0;
+  double relax(int i)
+  { return (fix_relax_ ? fix_relax_->factor_relax(i) : 1.); }
 
-  class MechParamGran *mpg;
+  virtual double stressStrainExponent() = 0;
 
   int fix_extra_dnum_index(class Fix *fix);
 
   void *extract(const char *str, int &dim);
 
-  int add_history_value(std::string name, std::string newtonflag) {
+  int add_history_value(std::string name, std::string newtonflag)
+  {
     int offset = history_arg.size();
     history = true;
     history_arg.push_back(HistoryArg(name, newtonflag));
@@ -145,6 +170,15 @@ public:
 
   void do_store_contact_forces()
   { store_contact_forces_ = true; }
+
+  void do_relax_region(FixRelaxContacts *_fr)
+  { fix_relax_ = _fr; }
+
+  void do_store_contact_forces_stress()
+  { store_contact_forces_stress_ = true; }
+
+  void do_store_multicontact_data()
+  { store_multicontact_data_ = true; }
 
  protected:
 
@@ -190,9 +224,16 @@ public:
   int cpl_enable;
   class ComputePairGranLocal *cpl_;
 
-  // storage for per-contact forces
+  // storage for per-contact forces and torque
   bool store_contact_forces_;
   class FixContactPropertyAtom *fix_contact_forces_;
+
+  // storage for per-contact forces and relative position (for goldhirsch stress model)
+  bool store_contact_forces_stress_;
+  class FixContactPropertyAtom *fix_contact_forces_stress_;
+  // storage for per contact delta data (for multicontact models)
+  bool store_multicontact_data_;
+  class FixContactPropertyAtom *fix_store_multicontact_data_;
 
   // storage of rigid body masses for use in granular interactions
 
@@ -226,6 +267,8 @@ public:
   int nfix;
   Fix **fix_dnum;
   int *dnum_index;
+
+  FixRelaxContacts *fix_relax_;
 };
 
 }

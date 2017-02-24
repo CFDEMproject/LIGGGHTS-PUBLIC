@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -58,7 +58,7 @@ details.  If no bracketed integer is appended, the vector calculated
 by the compute is used.  If a bracketed integer is appended, the Ith
 column of the array calculated by the compute is used.  Users can also
 write code for their own compute styles and "add them to
-LAMMPS"_Section_modify.html.
+LIGGGHTS(R)-PUBLIC"_Section_modify.html.
 
 If an input begins with "f_", a fix ID must follow which has been
 previously defined in the input script and which generates per-atom
@@ -69,7 +69,7 @@ the values, else an error results.  If no bracketed integer is
 appended, the vector calculated by the fix is used.  If a bracketed
 integer is appended, the Ith column of the array calculated by the fix
 is used.  Users can also write code for their own fix style and "add
-them to LAMMPS"_Section_modify.html.
+them to LIGGGHTS(R)-PUBLIC"_Section_modify.html.
 
 If an input begins with "v_", a variable name must follow which has
 been previously defined in the input script.  It must be an
@@ -90,7 +90,7 @@ specified, a global vector is produced.  If two or more inputs are
 specified, a global array is produced where the number of columns =
 the number of inputs.  The vector or array can be accessed by any
 command that uses global values from a compute as input.  See "this
-section"_Section_howto.html#howto_15 for an overview of LAMMPS output
+section"_Section_howto.html#howto_8 for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 
 All the vector or array values calculated by this compute are

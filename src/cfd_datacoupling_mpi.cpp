@@ -1,26 +1,46 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "string.h"
-#include "stdlib.h"
+#include <string.h>
+#include <stdlib.h>
 #include "atom.h"
 #include "update.h"
 #include "respa.h"
@@ -28,7 +48,7 @@
 #include "memory.h"
 #include "comm.h"
 #include "modify.h"
-#include "math.h"
+#include <math.h>
 #include "vector_liggghts.h"
 #include "fix_cfd_coupling.h"
 #include "fix_multisphere.h"
@@ -60,7 +80,8 @@ CfdDatacouplingMPI::CfdDatacouplingMPI(LAMMPS *lmp,int iarg, int narg, char **ar
 
 CfdDatacouplingMPI::~CfdDatacouplingMPI()
 {
-    
+    memory->sfree(allred_double);
+    memory->sfree(allred_int);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -113,12 +134,14 @@ void CfdDatacouplingMPI::allocate_external(int **&data, int len2,int len1,int in
 
 void CfdDatacouplingMPI::allocate_external(int    **&data, int len2,char *keyword,int initvalue)
 {
-  int len1;
+  int len1 = 0;
+  Multisphere *ms_data = properties_->ms_data();
+
   if(strcmp(keyword,"nparticles") == 0) len1 = atom->tag_max();
   else if(strcmp(keyword,"nbodies") == 0)
   {
-      if(ms_data_)
-        len1 = ms_data_->tag_max_body();
+      if(ms_data)
+        len1 = ms_data->tag_max_body();
       else error->one(FLERR,"CFD datacoupling keyword 'nbodies' may only be used with multisphere model in LIGGGHTS");
   }
   else error->one(FLERR,"Illegal keyword used in CfdDatacouplingMPI::allocate_external");
@@ -148,12 +171,14 @@ void CfdDatacouplingMPI::allocate_external(double **&data, int len2,int len1,dou
 
 void CfdDatacouplingMPI::allocate_external(double **&data, int len2,char *keyword,double initvalue)
 {
-  int len1;
+  int len1 = 0;
+  Multisphere *ms_data = properties_->ms_data();
+
   if(strcmp(keyword,"nparticles") == 0) len1 = atom->tag_max();
   else if(strcmp(keyword,"nbodies") == 0)
   {
-      if(ms_data_)
-        len1 = ms_data_->tag_max_body();
+      if(ms_data)
+        len1 = ms_data->tag_max_body();
       else error->one(FLERR,"CFD datacoupling keyword 'nbodies' may only be used with multisphere model in LIGGGHTS");
   }
   else error->one(FLERR,"Illegal keyword used in CfdDatacouplingMPI::allocate_external");

@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -54,7 +54,7 @@ command in a consistent way.
 
 Here is an example of how to do this:
 
-compute 1 all property/local batom1 batom2 btype 
+compute 1 all property/local batom1 batom2 btype
 compute 2 all bond/local dist eng
 dump 1 all local 1000 tmp.dump index c_1\[1\] c_1\[2\] c_1\[3\] c_2\[1\] c_2\[2\] :pre
 
@@ -67,7 +67,7 @@ local vector is produced.  If two or more keywords are specified, a
 local array is produced where the number of columns = the number of
 keywords.  The vector or array can be accessed by any command that
 uses local values from a compute as input.  See "this
-section"_Section_howto.html#howto_15 for an overview of LAMMPS output
+section"_Section_howto.html#howto_8 for an overview of LIGGGHTS(R)-PUBLIC output
 options.
 
 The output for {dist} will be in distance "units"_units.html.  The

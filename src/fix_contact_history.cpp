@@ -1,29 +1,57 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "string.h"
-#include "stdio.h"
+#include <mpi.h>
+#include <string.h>
+#include <stdio.h>
 #include "fix_contact_history.h"
 #include "atom.h"
 #include "comm.h"
@@ -36,6 +64,7 @@
 #include "memory.h"
 #include "math_extra_liggghts.h"
 #include "error.h"
+#include <algorithm>
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -73,8 +102,7 @@ FixContactHistory::FixContactHistory(LAMMPS *lmp, int narg, char **arg) :
 
   // initialize npartner to 0 so neighbor list creation is OK the 1st time
 
-  int nlocal = atom->nlocal;
-  for (int i = 0; i < nlocal; i++) npartner_[i] = 0;
+  std::fill_n(npartner_, atom->nmax, 0);
 
   //=====================
   // parse args
@@ -185,10 +213,29 @@ void FixContactHistory::init()
 
   if(0 == strcmp(style,"contacthistory"))
   {
-      if(!force->pair_match("gran", 0))
-          error->fix_error(FLERR,this,"Please use a granular pair style for fix contacthistory");
-      pair_gran_ = static_cast<PairGran*>(force->pair_match("gran", 0));
+      
+      pair_gran_ = static_cast<PairGran*>(force->pair_match("gran", 1));
 
+      if(pair_gran_ && dnum_!=static_cast<PairGran*>(pair_gran_)->dnum())
+      {
+          printf("WARNING: FixContactHistory: Found a PairGran 'gran', but dnum (=%d) and pair_gran->dnum (=%d) is NOT consistent! \n", 
+		         dnum_, static_cast<PairGran*>(pair_gran_)->dnum());
+
+          if(!pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
+              pair_gran_ = static_cast<PairGran*>(force->pair_match("gran_bubble", 1));
+          if(!pair_gran_ || dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
+              pair_gran_ = static_cast<PairGran*>(force->pair_match("bubble", 1));
+
+          if(!pair_gran_)
+              error->fix_error(FLERR,this,"Please use a pair style 'gran', 'gran_bubble' or 'bubble' for fix contacthistory, or check your settings for dnum (they may be inconsistent)");
+
+          if(dnum_ != static_cast<PairGran*>(pair_gran_)->dnum_pair())
+          {
+              printf("FixContactHistory: PairGran 'gran' dnum (=%d) and pair_gran->dnum (=%d) is NOT consistent! \n",
+	             dnum_,  static_cast<PairGran*>(pair_gran_)->dnum());
+              error->fix_error(FLERR,this,"internal error");
+          }
+      }
       int dim;
       computeflag_ = (int *) pair_gran_->extract("computeflag",dim);
   }
@@ -226,7 +273,7 @@ void FixContactHistory::allocate_pages()
 
 /* ----------------------------------------------------------------------
    called by setup of run or minimize
-   called by write_restart as input script command
+   called by write_restart or write_data as input script command
    only invoke pre_exchange() if neigh list stores more current history info
      than npartner/partner arrays in this fix
    that will only be case if pair->compute() has been invoked since
@@ -246,7 +293,7 @@ void FixContactHistory::setup_pre_exchange()
       
       pre_exchange();
   }
-  *computeflag_ = 0;
+  // computeflag is re-set in pre_exchange()
 }
 
 /* ----------------------------------------------------------------------
@@ -258,17 +305,20 @@ void FixContactHistory::pre_exchange()
 {
   int i,j,ii,jj,m,n,inum,jnum;
   int *ilist,*jlist,*numneigh,**firstneigh;
-  int *touch,**firsttouch;
+  int *contact_flag,**first_contact_flag;
   double *hist,*allhist,**firsthist;
+
+  // re-set computeflag: most current info is now in atom arrays
+  *computeflag_ = 0;
 
   // nlocal may include atoms added since last neigh build
 
-  int nlocal = atom->nlocal;
+  int nmax = atom->nmax;
 
   // zero npartner for all current atoms
   // clear 2 page data structures
 
-  for (i = 0; i < nlocal; i++) npartner_[i] = 0;
+  std::fill_n(npartner_, nmax, 0);
 
   ipage_->reset();
   dpage_->reset();
@@ -283,7 +333,7 @@ void FixContactHistory::pre_exchange()
   ilist = list->ilist;
   numneigh = list->numneigh;
   firstneigh = list->firstneigh;
-  firsttouch = list->listgranhistory->firstneigh;
+  first_contact_flag = list->listgranhistory->firstneigh;
   firsthist = list->listgranhistory->firstdouble;
 
   int nlocal_neigh = 0;
@@ -294,10 +344,11 @@ void FixContactHistory::pre_exchange()
     jlist = firstneigh[i];
     jnum = numneigh[i];
     
-    touch = firsttouch[i];
+    contact_flag = first_contact_flag[i];
 
     for (jj = 0; jj < jnum; jj++) {
-      if (touch[jj]) {
+      if (contact_flag[jj]) {
+        
         npartner_[i]++;
         j = jlist[jj];
         j &= NEIGHMASK;
@@ -310,6 +361,7 @@ void FixContactHistory::pre_exchange()
   
   for (ii = 0; ii < inum; ii++) {
     i = ilist[ii];
+    
     n = npartner_[i];
     partner_[i] = ipage_->get(n);
     contacthistory_[i] = dpage_->get(dnum_*n);
@@ -322,17 +374,17 @@ void FixContactHistory::pre_exchange()
   // store atom IDs and shear history for my atoms
   // re-zero npartner to use as counter for all my atoms
 
-  for (i = 0; i < nlocal; i++) npartner_[i] = 0;
+  std::fill_n(npartner_, nmax, 0);
 
   for (ii = 0; ii < inum; ii++) {
     i = ilist[ii];
     jlist = firstneigh[i];
     allhist = firsthist[i];
     jnum = numneigh[i];
-    touch = firsttouch[i];
+    contact_flag = first_contact_flag[i];
 
     for (jj = 0; jj < jnum; jj++) {
-      if (touch[jj]) {
+      if (contact_flag[jj]) {
         hist = &allhist[dnum_*jj];
         j = jlist[jj];
         j &= NEIGHMASK;
@@ -345,7 +397,9 @@ void FixContactHistory::pre_exchange()
         
         npartner_[i]++;
         if (j < nlocal_neigh) {
+          
           m = npartner_[j];
+
           partner_[j][m] = tag[i];
           for (int d = 0; d < dnum_; d++) {
             if(newtonflag_[d])
@@ -362,9 +416,10 @@ void FixContactHistory::pre_exchange()
 
   // set maxtouch = max # of partners of any owned atom
   // bump up comm->maxexchange_fix if necessary
-
   maxtouch_ = 0;
-  for (i = 0; i < nlocal; i++) maxtouch_ = MAX(maxtouch_,npartner_[i]);
+  int nlocal = atom->nlocal;
+  if(nlocal > 0) maxtouch_ = *std::max_element(npartner_, npartner_+nlocal);
+
   comm->maxexchange_fix = MAX(comm->maxexchange_fix,(dnum_+1)*maxtouch_+1);
 }
 
@@ -372,8 +427,9 @@ void FixContactHistory::pre_exchange()
 
 void FixContactHistory::min_setup_pre_exchange()
 {
-  if (*computeflag_) pre_exchange();
-  *computeflag_ = 0;
+  if (*computeflag_)
+    pre_exchange();
+  // computeflag is re-set in pre_exchange()
 }
 
 /* ---------------------------------------------------------------------- */
@@ -572,6 +628,7 @@ void FixContactHistory::unpack_restart(int nlocal, int nth)
 
   for (int n = 0; n < npartner_[nlocal]; n++) {
     partner_[nlocal][n] = ubuf(extra[nlocal][m++]).i;
+    
     for (int d = 0; d < dnum_; d++) {
       contacthistory_[nlocal][n*dnum_+d] = extra[nlocal][m++];
     }

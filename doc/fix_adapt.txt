@@ -1,6 +1,6 @@
-"LAMMPS WWW Site"_lws - "LAMMPS Documentation"_ld - "LAMMPS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
-:link(lws,http://lammps.sandia.gov)
+:link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
@@ -16,14 +16,12 @@ ID, group-ID are documented in "fix"_fix.html command :ulb,l
 adapt = style name of this fix command :l
 N = adapt simulation settings every this many timesteps :l
 one or more attribute/arg pairs may be appended :l
-attribute = {pair} or {kspace} or {atom} :l
+attribute = {pair} or {atom} :l
   {pair} args = pstyle pparam I J v_name
-    pstyle = pair style name, e.g. lj/cut
+    pstyle = pair style name, e.g. soft
     pparam = parameter to adapt over time
     I,J = type pair(s) to set parameter for
     v_name = variable with name that calculates value of pparam
-  {kspace} arg = v_name
-    v_name = variable with name that calculates scale factor on K-space terms
   {atom} args = aparam v_name
     aparam = parameter to adapt over time
     v_name = variable with name that calculates value of aparam :pre
@@ -41,7 +39,6 @@ keyword = {scale} or {reset} :l
 
 fix 1 all adapt 1 pair soft a 1 1 v_prefactor
 fix 1 all adapt 1 pair soft a 2* 3 v_prefactor
-fix 1 all adapt 1 pair lj/cut epsilon * * v_scale1 coul/cut scale 3 3 v_scale2 scale yes reset yes
 fix 1 all adapt 10 atom diameter v_size :pre
 
 [Description:]
@@ -97,15 +94,6 @@ change.  This is the current list of pair styles and parameters that
 can be varied by this fix.  See the doc pages for individual pair
 styles and their energy formulas for the meaning of these parameters:
 
-"born"_pair_born.html: a,b,c: type pairs:
-"buck"_pair_buck.html: a,c: type pairs:
-"coul/cut"_pair_coul.html: scale: type pairs:
-"coul/debye"_pair_coul.html: scale: type pairs:
-"coul/long"_pair_coul.html: scale: type pairs:
-"lj/cut"_pair_lj.html: epsilon,sigma: type pairs:
-"lj/expand"_pair_lj_expand.html: epsilon,sigma,delta: type pairs:
-"lubricate"_pair_lubricate.html: mu: global:
-"gauss"_pair_gauss.html: a: type pairs:
 "soft"_pair_soft.html: a: type pairs :tb(c=3,s=:)
 
 IMPORTANT NOTE: It is easy to add new potentials and their parameters
@@ -117,17 +105,6 @@ viscosity setting "mu" for "pair_style lubricate"_pair_lubricate.html.
 Other parameters apply to atom type pairs within the pair style,
 e.g. the prefactor "a" for "pair_style soft"_pair_soft.html.
 
-Note that for many of the potentials, the parameter that can be varied
-is effectively a prefactor on the entire energy expression for the
-potential, e.g. the lj/cut epsilon.  The parameters listed as "scale"
-are exactly that, since the energy expression for the
-"coul/cut"_pair_coul.html potential (for example) has no labeled
-prefactor in its formula.  To apply an effective prefactor to some
-potentials, multiple parameters need to be altered.  For example, the
-"Buckingham potential"_pair_buck.html needs both the A and C terms
-altered together.  To scale the Buckingham potential, you should thus
-list the pair style twice, once for A and once for C.
-
 If a type pair parameter is specified, the {I} and {J} settings should
 be specified to indicate which type pairs to apply it to.  If a global
 parameter is specified, the {I} and {J} settings still need to be
@@ -135,7 +112,7 @@ specified, but are ignored.
 
 Similar to the "pair_coeff command"_pair_coeff.html, I and J can be
 specified in one of two ways.  Explicit numeric values can be used for
-each, as in the 1st example above.  I <= J is required.  LAMMPS sets
+each, as in the 1st example above.  I <= J is required.  LIGGGHTS(R)-PUBLIC sets
 the coefficients for the symmetric J,I interaction to the same values.
 
 A wild-card asterisk can be used in place of or in conjunction with
@@ -176,16 +153,6 @@ fix 1 all adapt 1 pair soft a * * v_prefactor :pre
 
 :line
 
-The {kspace} keyword used the specified variable as a scale factor on
-the energy, forces, virial calculated by whatever K-Space solver is
-defined by the "kspace_style"_kspace_style.html command.  If the
-variable has a value of 1.0, then the solver is unaltered.
-
-The {kspace} keyword works this way whether the {scale} keyword
-is set to {no} or {yes}.
-
-:line
-
 The {atom} keyword enables various atom properties to be changed.  The
 {aparam} argument is the name of the parameter to change.  This is the
 current list of atom parameters that can be varied by this fix:
@@ -222,7 +189,7 @@ No information about this fix is written to "binary restart
 files"_restart.html.  None of the "fix_modify"_fix_modify.html options
 are relevant to this fix.  No global or per-atom quantities are stored
 by this fix for access by various "output
-commands"_Section_howto.html#howto_15.  No parameter of this fix can
+commands"_Section_howto.html#howto_8.  No parameter of this fix can
 be used with the {start/stop} keywords of the "run"_run.html command.
 This fix is not invoked during "energy minimization"_minimize.html.
 

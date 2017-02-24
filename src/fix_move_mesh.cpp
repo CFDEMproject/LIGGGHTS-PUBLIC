@@ -1,29 +1,45 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
-------------------------------------------------------------------------- */
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
 
-/* ----------------------------------------------------------------------
-   Contributing authors:
-   Christoph Kloss (JKU Linz, DCS Computing GmbH, Linz)
-   Philippe Seil (JKU Linz)
-   Richard Berger (JKU Linz)
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+
+    Christoph Kloss (DCS Computing GmbH, Linz)
+    Christoph Kloss (JKU Linz)
+    Philippe Seil (JKU Linz)
+    Richard Berger (JKU Linz)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
 #include "fix_move_mesh.h"
@@ -59,7 +75,7 @@ FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
     if(strcmp(arg[iarg++],"mesh"))
       error->all(FLERR,"Illegal fix move/mesh command, expecting keyword 'mesh'");
 
-    fix_mesh_ = static_cast<FixMesh*>(modify->find_fix_id(arg[iarg++]));
+    fix_mesh_ = dynamic_cast<FixMesh*>(modify->find_fix_id(arg[iarg++]));
     if(fix_mesh_ == 0)
         error->all(FLERR,"Illegal fix move/mesh command, illegal mesh ID provided");
 
@@ -75,6 +91,14 @@ FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
       error->all(FLERR,"Illegal fix move/mesh command, cannot apply move to a mesh using keywords 'velocity' or 'angular_velocity'");
 
     restart_global = 1;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMoveMesh:: post_create()
+{
+    
+    move_->post_create();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -153,6 +177,14 @@ void FixMoveMesh::setup(int vflag)
     }
 
     move_->setup();
+
+    // do set-up in case velocity is dumped (called via set-up)
+    if(move_->isFirst())
+    {
+        MultiVectorContainer<double,3,3> *v;
+        v = mesh_->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v");
+        v->setAll(0.);
+    }
 }
 
 /* ---------------------------------------------------------------------- */

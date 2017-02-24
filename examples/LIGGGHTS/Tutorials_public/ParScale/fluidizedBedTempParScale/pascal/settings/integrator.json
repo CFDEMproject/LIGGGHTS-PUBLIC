@@ -1,0 +1,18 @@
+{
+    "integrator":       
+    {
+        "type":             "CVODE",
+        "linearSolver":     "CVDiag"
+    },
+    "parameters":
+	{
+      "absTol":     1e-6,
+      "relTol":     1e-6,
+      "mxsteps":    -1,
+      "maxord":     3,
+      "deltaTInit": 1e-10,
+      "deltaTMin":  1e-16,
+      "deltaTMax":  1.0,
+      "maxNonLinearIterations": 2
+    }
+}

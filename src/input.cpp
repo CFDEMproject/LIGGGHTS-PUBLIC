@@ -1,30 +1,58 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   This file was modified with respect to the release in LAMMPS
-   Modifications are Copyright 2009-2012 JKU Linz
-                     Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   Copyright (2003) Sandia Corporation.  Under the terms of Contract
-   DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
-   certain rights in this software.  This software is distributed under
-   the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
+
+    Copyright of original file:
+    LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
+    http://lammps.sandia.gov, Sandia National Laboratories
+    Steve Plimpton, sjplimp@sandia.gov
+
+    Copyright (2003) Sandia Corporation.  Under the terms of Contract
+    DE-AC04-94AL85000 with Sandia Corporation, the U.S. Government retains
+    certain rights in this software.  This software is distributed under
+    the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include "mpi.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "ctype.h"
 #include "unistd.h"
 #include "sys/stat.h"
@@ -124,6 +152,8 @@ Input::Input(LAMMPS *lmp, int argc, char **argv) : Pointers(lmp)
       iarg += 2;
     } else iarg++;
   }
+
+  seed_check_error = true;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -246,7 +276,7 @@ void Input::file(const char *filename)
       error->one(FLERR,"Invalid use of library file() function");
     infile = fopen(filename,"r");
     if (infile == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open input script %s",filename);
       error->one(FLERR,str);
     }
@@ -557,6 +587,7 @@ int Input::execute_command()
   else if (!strcmp(command,"dump_modify")) dump_modify();
   else if (!strcmp(command,"fix")) fix();
   else if (!strcmp(command,"fix_modify")) fix_modify();
+  else if (!strcmp(command,"force_dt_reset")) force_dt_reset();
   else if (!strcmp(command,"group")) group_command();
   else if (!strcmp(command,"improper_coeff")) improper_coeff();
   else if (!strcmp(command,"improper_style")) improper_style();
@@ -566,7 +597,6 @@ int Input::execute_command()
   else if (!strcmp(command,"mass")) mass();
   else if (!strcmp(command,"min_modify")) min_modify();
   else if (!strcmp(command,"min_style")) min_style();
-  else if (!strcmp(command,"neigh_modify")) neigh_modify();
   else if (!strcmp(command,"neighbor")) neighbor_command();
   else if (!strcmp(command,"newton")) newton();
   else if (!strcmp(command,"package")) package();
@@ -579,6 +609,8 @@ int Input::execute_command()
   else if (!strcmp(command,"reset_timestep")) reset_timestep();
   else if (!strcmp(command,"restart")) restart();
   else if (!strcmp(command,"run_style")) run_style();
+  else if (!strcmp(command,"soft_particles")) soft_particles(); 
+  else if (!strcmp(command,"hard_particles")) hard_particles();
   else if (!strcmp(command,"special_bonds")) special_bonds();
   else if (!strcmp(command,"suffix")) suffix();
   else if (!strcmp(command,"thermo")) thermo();
@@ -804,10 +836,12 @@ void Input::include()
       maxfile++;
       infiles = (FILE **)
         memory->srealloc(infiles,maxfile*sizeof(FILE *),"input:infiles");
+      if(!infiles)
+        error->one(FLERR,"overflow in including input scripts");
     }
     infile = fopen(arg[0],"r");
     if (infile == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open input script %s",arg[0]);
       error->one(FLERR,str);
     }
@@ -832,7 +866,7 @@ void Input::jump()
       if (infile != stdin) fclose(infile);
       infile = fopen(arg[0],"r");
       if (infile == NULL) {
-        char str[128];
+        char str[512];
         sprintf(str,"Cannot open input script %s",arg[0]);
         error->one(FLERR,str);
       }
@@ -876,7 +910,7 @@ void Input::log()
       if (appendflag) logfile = fopen(arg[0],"a");
       else logfile = fopen(arg[0],"w");
       if (logfile == NULL) {
-        char str[128];
+        char str[512];
         sprintf(str,"Cannot open logfile %s",arg[0]);
         error->one(FLERR,str);
       }
@@ -904,7 +938,7 @@ void Input::thermo_log()
       if (appendflag) thermofile = fopen(arg[0],"a");
       else thermofile = fopen(arg[0],"w");
       if (thermofile == NULL) {
-        char str[128];
+        char str[512];
         sprintf(str,"Cannot open thermo log file %s",arg[0]);
         error->one(FLERR,str);
       }
@@ -926,7 +960,7 @@ void Input::partition()
 {
   if (narg < 3) error->all(FLERR,"Illegal partition command");
 
-  int yesflag;
+  int yesflag = 0;
   if (strcmp(arg[0],"yes") == 0) yesflag = 1;
   else if (strcmp(arg[0],"no") == 0) yesflag = 0;
   else error->all(FLERR,"Illegal partition command");
@@ -981,7 +1015,7 @@ void Input::print()
         if (strcmp(arg[iarg],"file") == 0) fp = fopen(arg[iarg+1],"w");
         else fp = fopen(arg[iarg+1],"a");
         if (fp == NULL) {
-          char str[128];
+          char str[512];
           sprintf(str,"Cannot open print file %s",arg[iarg+1]);
           error->one(FLERR,str);
         }
@@ -1270,6 +1304,20 @@ void Input::fix_modify()
 
 /* ---------------------------------------------------------------------- */
 
+void Input::force_dt_reset()
+{
+   if(narg != 1)
+      error->all(FLERR,"force_dt_reset expects 'yes' or 'no'");
+   if(0 == strcmp(arg[0],"yes"))
+      update->set_force_dt_reset(true);
+   else if(0 == strcmp(arg[0],"no"))
+      update->set_force_dt_reset(false);
+   else
+      error->all(FLERR,"force_dt_reset expects 'yes' or 'no'");
+}
+
+/* ---------------------------------------------------------------------- */
+
 void Input::group_command()
 {
   group->assign(narg,arg);
@@ -1350,23 +1398,16 @@ void Input::min_style()
 
 /* ---------------------------------------------------------------------- */
 
-void Input::neigh_modify()
-{
-  neighbor->modify_params(narg,arg);
-}
-
-/* ---------------------------------------------------------------------- */
-
 void Input::neighbor_command()
 {
-  neighbor->set(narg,arg);
+  neighbor->set(narg, arg);
 }
 
 /* ---------------------------------------------------------------------- */
 
 void Input::newton()
 {
-  int newton_pair,newton_bond;
+  int newton_pair=1,newton_bond=1;
 
   if (narg == 1) {
     if (strcmp(arg[0],"off") == 0) newton_pair = newton_bond = 0;
@@ -1406,6 +1447,7 @@ void Input::modify_timing()
   if (narg == 1) {
     if (strcmp(arg[0],"off") == 0) timing = 0;
     else if (strcmp(arg[0],"on") == 0) timing = 1;
+    else if (strcmp(arg[0],"verbose") == 0) timing = 2;
     else error->all(FLERR,"Illegal modify_timing command");
   } else error->all(FLERR,"Illegal modify_timing command");
 
@@ -1483,7 +1525,7 @@ void Input::pair_style()
   }*/
   int num_remaining_arg = narg - 1;
   char ** remaining_args = &arg[1];
-  force->create_pair(arg[0], lmp->suffix);
+  force->create_pair(arg[0],lmp->suffix);
   if (force->pair) force->pair->settings(num_remaining_arg,remaining_args);
 }
 
@@ -1533,6 +1575,33 @@ void Input::run_style()
   if (domain->box_exist == 0)
     error->all(FLERR,"Run_style command before simulation box is defined");
   update->create_integrate(narg,arg,lmp->suffix);
+}
+
+/* ---------------------------------------------------------------------- */
+void Input::hard_particles()
+{
+   if(narg != 1)
+      error->all(FLERR,"hard_particles expects 'yes' or 'no'");
+   if(0 == strcmp(arg[0],"yes"))
+      atom->get_properties()->do_allow_hard_particles();
+   else if(0 == strcmp(arg[0],"no"))
+      atom->get_properties()->do_not_allow_hard_particles();
+   else
+      error->all(FLERR,"hard_particles expects 'yes' or 'no'");
+}
+
+/* ---------------------------------------------------------------------- */
+
+void Input::soft_particles()
+{
+   if(narg != 1)
+      error->all(FLERR,"soft_particles expects 'yes' or 'no'");
+   if(0 == strcmp(arg[0],"yes"))
+      atom->get_properties()->do_allow_soft_particles();
+   else if(0 == strcmp(arg[0],"no"))
+      atom->get_properties()->do_not_allow_soft_particles();
+   else
+      error->all(FLERR,"soft_particles expects 'yes' or 'no'");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1610,6 +1679,8 @@ void Input::timestep()
 {
   if (narg != 1) error->all(FLERR,"Illegal timestep command");
   update->dt = force->numeric(FLERR,arg[0]);
+  update->timestep_set = true;
+  
 }
 
 /* ---------------------------------------------------------------------- */

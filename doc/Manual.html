@@ -1,450 +1,381 @@
-<HTML>
-<HEAD>
-<TITLE>LIGGGHTS Users Manual</TITLE>
-<META NAME="docnumber" CONTENT="Large-scale Atomic/Molecular Massively Parallel Simulator">
-<META NAME="author" CONTENT="http://lammps.sandia.gov - Sandia National Laboratories">
-<META NAME="copyright" CONTENT="Copyright 2009 - 2012 JKU Linz, Copyright 2012 - DCS Computing GmbH, Copyright (2003) Sandia Corporation.  This software and manual is distributed under the GNU General Public License.">
-</HEAD>
-
-<BODY>
-
-<CENTER><A HREF = "http://www.cfdem.com">LIGGGHTS WWW Site</A> - <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> - <A HREF = "Manual.html">LIGGGHTS Documentation</A> - <A HREF = "Section_commands.html#comm">LIGGGHTS Commands</A> 
-</CENTER>
 
 
 
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>LIGGGHTS(R)-PUBLIC Documentation, Version 3.X &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/>
+        <link rel="next" title="1. Introduction" href="Section_intro.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
 
 
 
 
-<HR>
-
-<HR><H1></H1>
-
-
-<CENTER><H3>LIGGGHTS Documentation, Version 3.X 
-</H3></CENTER>
-<HR>
-
-<CENTER><IMG SRC = "Portfolio_LIGGGHTS.png">
-</CENTER>
-<HR>
-
-<P>LIGGGHTS stands for LAMMPS Improved for General Granular and Granular 
-Heat Transfer Simulations. It is part of the <A HREF = "http://www.cfdem.com">CFDEMproject</A>, www.cfdem.com
-</P>
-<P>The core developers of LIGGGHTS are Christoph Kloss (DCS Computing GmbH, Linz and JKU Linz)
-and Richard Berger (JKU Linz), with major contributions from Philippe Seil, Andreas Aigner 
-and Stefan Amberger (all JKU Linz) and Christoph Goniva (DCS Computing GmbH, Linz and JKU Linz)
-</P>
-<P><A HREF = "http://www.cfdem.com">CFDEMproject</A> has more information about the code and its uses. 
-For questions about the code, please use the forums at <A HREF = "http://www.cfdem.com">CFDEMproject</A>.
-</P>
-<P>LIGGGHTS is based on LAMMPS (see below), and so is its manual. So if the manual says
-'LAMMPS', you could read 'LIGGGHTS' instead. However, we want to make clear which 
-parts of the code and framework stem from the LAMMPS base.
-</P>
-<H4>LIGGGHTS Version info: 
-</H4>
-<P>All LIGGGHTS versions are based on a specific version of LAMMPS, as printed in 
-the file src/version.h LIGGGHTS version are identidied by a version number (e.g. '3.0'),
-a branch name (e.g. 'LIGGGHTS-PUBLIC' for the public release of LIGGGHTS),
-compilation info (date / time stamp and user name), and a LAMMPS version 
-number (which is the LAMMPS version that the LIGGGHTS release is based on).
-For info on the LAMMPS version, see below.
-</P>
-<H4>LAMMPS Version info: 
-</H4>
-<P>The LAMMPS "version" is the date when it was released, such as 1 May
-2010. LAMMPS is updated continuously.  Whenever we fix a bug or add a
-feature, we release it immediately, and post a notice on <A HREF = "http://lammps.sandia.gov/bug.html">this page of
-the WWW site</A>.  Each dated copy of LAMMPS contains all the
-features and bug-fixes up to and including that version date. The
-version date is printed to the screen and logfile every time you run
-LAMMPS. It is also in the file src/version.h and in the LAMMPS
-directory name created when you unpack a tarball, and at the top of
-the first page of the manual (this page).
-</P>
-<UL><LI>If you browse the HTML doc pages on the LAMMPS WWW site, they always
-describe the most current version of LAMMPS. 
-
-<LI>If you browse the HTML doc pages included in your tarball, they
-describe the version you have. 
-
-<LI>The <A HREF = "Manual.pdf">PDF file</A> on the WWW site or in the tarball is updated
-about once per month.  This is because it is large, and we don't want
-it to be part of every patch. 
-
-<LI>There is also a <A HREF = "Developer.pdf">Developer.pdf</A> file in the doc
-directory, which describes the internal structure and algorithms of
-LAMMPS.  
-</UL>
-<P>LAMMPS stands for Large-scale Atomic/Molecular Massively Parallel
-Simulator.
-</P>
-<P>LAMMPS is a classical molecular dynamics simulation code designed to
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>LIGGGHTS(R)-PUBLIC Documentation, Version 3.X</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/Manual.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_intro.html" class="btn btn-neutral float-right" title="1. Introduction" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <hr class="docutils" />
+<div class="section" id="liggghts-r-public-documentation-version-3-x">
+<h1>LIGGGHTS(R)-PUBLIC Documentation, Version 3.X<a class="headerlink" href="#liggghts-r-public-documentation-version-3-x" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<img alt="_images/LIGGGHTS_logo.png" class="align-center" src="_images/LIGGGHTS_logo.png" />
+</div>
+<hr class="docutils" />
+<div class="section" id="liggghts-r-public-dem-simulation-engine">
+<h1>LIGGGHTS(R)-PUBLIC DEM simulation engine<a class="headerlink" href="#liggghts-r-public-dem-simulation-engine" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="released-by-dcs-computing-gmbh-linz-austria-www-dcs-computing-com-office-dcs-computing-com">
+<h1>released by DCS Computing Gmbh, Linz, Austria, <a class="reference external" href="dcs_">www.dcs-computing.com</a> , <a class="reference external" href="mailto:office&#37;&#52;&#48;dcs-computing&#46;com">office<span>&#64;</span>dcs-computing<span>&#46;</span>com</a><a class="headerlink" href="#released-by-dcs-computing-gmbh-linz-austria-www-dcs-computing-com-office-dcs-computing-com" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
+<p>LIGGGHTS(R)-PUBLIC is open-source, distributed under the terms of the GNU Public License, version 2 or later. LIGGGHTS(R)-PUBLIC is part of CFDEM(R)project: <a class="reference external" href="lig_">www.liggghts.com</a> | <a class="reference external" href="cfd_">www.cfdem.com</a></p>
+<p>Core developer and main author:
+Christoph Kloss, <a class="reference external" href="mailto:christoph&#46;kloss&#37;&#52;&#48;dcs-computing&#46;com">christoph<span>&#46;</span>kloss<span>&#64;</span>dcs-computing<span>&#46;</span>com</a></p>
+<p><strong>LIGGGHTS(R)-PUBLIC is an Open Source Discrete Element Method Particle
+Simulation Software, distributed by DCS Computing GmbH, Linz, Austria.
+LIGGGHTS (R) and CFDEM(R) are registered trade marks of DCS Computing GmbH,
+the producer of the LIGGGHTS (R) software and the CFDEM(R)coupling software
+See http://www.cfdem.com/terms-trademark-policy for details.</strong></p>
+<div class="section" id="liggghts-r-version-info">
+<h2>LIGGGHTS (R) Version info:<a class="headerlink" href="#liggghts-r-version-info" title="Permalink to this headline">¶</a></h2>
+<p>All LIGGGHTS (R) versions are based on a specific version of LIGGGHTS (R), as printed in
+the file src/version.h LIGGGHTS (R) versions are identidied by a version number (e.g. &#8216;3.0&#8217;),
+a branch name (which is &#8216;LIGGGHTS(R)-PUBLIC&#8217; for your release of LIGGGHTS),
+compilation info (date / time stamp and user name), and a LAMMPS version
+number (which is the LAMMPS version that the LIGGGHTS(R)-PUBLIC release is based on).
+The LAMMPS &#8220;version&#8221; is the date when it was released, such as 1 May
+2010.</p>
+<p>If you browse the HTML doc pages on the LIGGGHTS(R)-PUBLIC WWW site, they always
+describe the most current version of LIGGGHTS(R)-PUBLIC. If you browse the HTML doc
+pages included in your tarball, they describe the version you have.</p>
+</div>
+<div class="section" id="liggghts-r-and-its-ancestor-lammps">
+<h2>LIGGGHTS (R) and its ancestor LAMMPS:<a class="headerlink" href="#liggghts-r-and-its-ancestor-lammps" title="Permalink to this headline">¶</a></h2>
+<p>LAMMPS is a classical molecular dynamics simulation code designed to
 run efficiently on parallel computers.  It was developed at Sandia
 National Laboratories, a US Department of Energy facility, with
 funding from the DOE.  It is an open-source code, distributed freely
 under the terms of the GNU Public License (GPL).
-</P>
-<P>The primary developers of LAMMPS are <A HREF = "http://www.sandia.gov/~sjplimp">Steve Plimpton</A>, Aidan
-Thompson, and Paul Crozier who can be contacted at
-sjplimp,athomps,pscrozi at sandia.gov.  The <A HREF = "http://lammps.sandia.gov">LAMMPS WWW Site</A> at
-http://lammps.sandia.gov has more information about the code and its
-uses.
-</P>
-
-
-
-
-<HR>
-
-<P>The LAMMPS documentation is organized into the following sections.  If
+The primary developers of LAMMPS are Steve Plimpton, Aidan
+Thompson, and Paul Crozier.  The LAMMPS WWW Site at
+<a class="reference external" href="http://lammps.sandia.gov">http://lammps.sandia.gov</a> has more information about LAMMPS.</p>
+<hr class="docutils" />
+<p>The LIGGGHTS(R)-PUBLIC documentation is organized into the following sections.  If
 you find errors or omissions in this manual or have suggestions for
 useful information to add, please send an email to the developers so
-we can improve the LAMMPS documentation.
-</P>
-<P>Once you are familiar with LAMMPS, you may want to bookmark <A HREF = "Section_commands.html#comm">this
-page</A> at Section_commands.html#comm since
-it gives quick access to documentation for all LAMMPS commands.
-</P>
-<P><A HREF = "Manual.pdf">PDF file</A> of the entire manual, generated by
-<A HREF = "http://www.easysw.com/htmldoc">htmldoc</A>
-</P>
-<OL><LI><A HREF = "Section_intro.html">Introduction</A> 
-
-<UL>  1.1 <A HREF = "Section_intro.html#intro_1">What is LAMMPS</A> 
-<BR>
-  1.2 <A HREF = "Section_intro.html#intro_2">LAMMPS features</A> 
-<BR>
-  1.3 <A HREF = "Section_intro.html#intro_3">LAMMPS non-features</A> 
-<BR>
-  1.4 <A HREF = "Section_intro.html#intro_4">Open source distribution</A> 
-<BR>
-  1.5 <A HREF = "Section_intro.html#intro_5">Acknowledgments and citations</A> 
-<BR></UL>
-<LI><A HREF = "Section_start.html">Getting started</A> 
-
-<UL>  2.1 <A HREF = "Section_start.html#start_1">What's in the LAMMPS distribution</A> 
-<BR>
-  2.2 <A HREF = "Section_start.html#start_2">Making LAMMPS</A> 
-<BR>
-  2.3 <A HREF = "Section_start.html#start_3">Making LAMMPS with optional packages</A> 
-<BR>
-  2.4 <A HREF = "Section_start.html#start_4">Building LAMMPS via the Make.py script</A> 
-<BR>
-  2.5 <A HREF = "Section_start.html#start_5">Building LAMMPS as a library</A> 
-<BR>
-  2.6 <A HREF = "Section_start.html#start_6">Running LAMMPS</A> 
-<BR>
-  2.7 <A HREF = "Section_start.html#start_7">Command-line options</A> 
-<BR>
-  2.8 <A HREF = "Section_start.html#start_8">Screen output</A> 
-<BR>
-  2.9 <A HREF = "Section_start.html#start_9">Tips for users of previous versions</A> 
-<BR></UL>
-<LI><A HREF = "Section_commands.html">Commands</A> 
-
-<UL>  3.1 <A HREF = "Section_commands.html#cmd_1">LAMMPS input script</A> 
-<BR>
-  3.2 <A HREF = "Section_commands.html#cmd_2">Parsing rules</A> 
-<BR>
-  3.3 <A HREF = "Section_commands.html#cmd_3">Input script structure</A> 
-<BR>
-  3.4 <A HREF = "Section_commands.html#cmd_4">Commands listed by category</A> 
-<BR>
-  3.5 <A HREF = "Section_commands.html#cmd_5">Commands listed alphabetically</A> 
-<BR></UL>
-<LI><A HREF = "Section_packages.html">Packages</A> 
-
-<UL>  4.1 <A HREF = "Section_packages.html#pkg_1">Standard packages</A> 
-<BR>
-  4.2 <A HREF = "Section_packages.html#pkg_2">User packages</A> 
-<BR></UL>
-<LI><A HREF = "Section_accelerate.html">Accelerating LAMMPS performance</A> 
-
-<UL>  5.1 <A HREF = "Section_accelerate.html#acc_1">Measuring performance</A> 
-<BR>
-  5.2 <A HREF = "Section_accelerate.html#acc_2">General strategies</A> 
-<BR>
-  5.3 <A HREF = "Section_accelerate.html#acc_3">Packages with optimized styles</A> 
-<BR>
-  5.4 <A HREF = "Section_accelerate.html#acc_4">OPT package</A> 
-<BR>
-  5.5 <A HREF = "Section_accelerate.html#acc_5">USER-OMP package</A> 
-<BR>
-  5.6 <A HREF = "Section_accelerate.html#acc_6">GPU package</A> 
-<BR>
-  5.7 <A HREF = "Section_accelerate.html#acc_7">USER-CUDA package</A> 
-<BR>
-  5.8 <A HREF = "Section_accelerate.html#acc_8">Comparison of GPU and USER-CUDA packages</A> 
-<BR></UL>
-<LI><A HREF = "Section_howto.html">How-to discussions</A> 
-
-<UL>  6.1 <A HREF = "Section_howto.html#howto_1">Restarting a simulation</A> 
-<BR>
-  6.2 <A HREF = "Section_howto.html#howto_2">2d simulations</A> 
-<BR>
-  6.3 <A HREF = "Section_howto.html#howto_3">CHARMM and AMBER force fields</A> 
-<BR>
-  6.4 <A HREF = "Section_howto.html#howto_4">Running multiple simulations from one input script</A> 
-<BR>
-  6.5 <A HREF = "Section_howto.html#howto_5">Multi-replica simulations</A> 
-<BR>
-  6.6 <A HREF = "Section_howto.html#howto_6">Granular models</A> 
-<BR>
-  6.7 <A HREF = "Section_howto.html#howto_7">TIP3P water model</A> 
-<BR>
-  6.8 <A HREF = "Section_howto.html#howto_8">TIP4P water model</A> 
-<BR>
-  6.9 <A HREF = "Section_howto.html#howto_9">SPC water model</A> 
-<BR>
-  6.10 <A HREF = "Section_howto.html#howto_10">Coupling LAMMPS to other codes</A> 
-<BR>
-  6.11 <A HREF = "Section_howto.html#howto_11">Visualizing LAMMPS snapshots</A> 
-<BR>
-  6.12 <A HREF = "Section_howto.html#howto_12">Triclinic (non-orthogonal) simulation boxes</A> 
-<BR>
-  6.13 <A HREF = "Section_howto.html#howto_13">NEMD simulations</A> 
-<BR>
-  6.14 <A HREF = "Section_howto.html#howto_14">Finite-size spherical and aspherical particles</A> 
-<BR>
-  6.15 <A HREF = "Section_howto.html#howto_15">Output from LAMMPS (thermo, dumps, computes, fixes, variables)</A> 
-<BR>
-  6.16 <A HREF = "Section_howto.html#howto_16">Thermostatting, barostatting, and compute temperature</A> 
-<BR>
-  6.17 <A HREF = "Section_howto.html#howto_17">Walls</A> 
-<BR>
-  6.18 <A HREF = "Section_howto.html#howto_18">Elastic constants</A> 
-<BR>
-  6.19 <A HREF = "Section_howto.html#howto_19">Library interface to LAMMPS</A> 
-<BR>
-  6.20 <A HREF = "Section_howto.html#howto_20">Calculating thermal conductivity</A> 
-<BR>
-  6.21 <A HREF = "Section_howto.html#howto_21">Calculating viscosity</A> 
-<BR></UL>
-<LI><A HREF = "Section_example.html">Example problems</A> 
-
-<LI><A HREF = "Section_perf.html">Performance & scalability</A> 
-
-<LI><A HREF = "Section_tools.html">Additional tools</A> 
-
-<LI><A HREF = "Section_modify.html">Modifying & extending LAMMPS</A> 
-
-<UL>  10.1 <A HREF = "Section_modify.html#mod_1">Atom styles</A> 
-<BR>
-  10.2 <A HREF = "Section_modify.html#mod_2">Bond, angle, dihedral, improper potentials</A> 
-<BR>
-  10.3 <A HREF = "Section_modify.html#mod_3">Compute styles</A> 
-<BR>
-  10.4 <A HREF = "Section_modify.html#mod_4">Dump styles</A> 
-<BR>
-  10.5 <A HREF = "Section_modify.html#mod_5">Dump custom output options</A> 
-<BR>
-  10.6 <A HREF = "Section_modify.html#mod_6">Fix styles</A> 
-<BR>
-  10.7 <A HREF = "Section_modify.html#mod_7">Input script commands</A> 
-<BR>
-  10.8 <A HREF = "Section_modify.html#mod_8">Kspace computations</A> 
-<BR>
-  10.9 <A HREF = "Section_modify.html#mod_9">Minimization styles</A> 
-<BR>
-  10.10 <A HREF = "Section_modify.html#mod_10">Pairwise potentials</A> 
-<BR>
-  10.11 <A HREF = "Section_modify.html#mod_11">Region styles</A> 
-<BR>
-  10.12 <A HREF = "Section_modify.html#mod_12">Body styles</A> 
-<BR>
-  10.13 <A HREF = "Section_modify.html#mod_13">Thermodynamic output options</A> 
-<BR>
-  10.14 <A HREF = "Section_modify.html#mod_14">Variable options</A> 
-<BR>
-  10.15 <A HREF = "Section_modify.html#mod_15">Submitting new features for inclusion in LAMMPS</A> 
-<BR></UL>
-<LI><A HREF = "Section_python.html">Python interface</A> 
-
-<UL>  11.1 <A HREF = "Section_python.html#py_1">Building LAMMPS as a shared library</A> 
-<BR>
-  11.2 <A HREF = "Section_python.html#py_2">Installing the Python wrapper into Python</A> 
-<BR>
-  11.3 <A HREF = "Section_python.html#py_3">Extending Python with MPI to run in parallel</A> 
-<BR>
-  11.4 <A HREF = "Section_python.html#py_4">Testing the Python-LAMMPS interface</A> 
-<BR>
-  11.5 <A HREF = "Section_python.html#py_5">Using LAMMPS from Python</A> 
-<BR>
-  11.6 <A HREF = "Section_python.html#py_6">Example Python scripts that use LAMMPS</A> 
-<BR></UL>
-<LI><A HREF = "Section_errors.html">Errors</A> 
-
-<UL>  12.1 <A HREF = "Section_errors.html#err_1">Common problems</A> 
-<BR>
-  12.2 <A HREF = "Section_errors.html#err_2">Reporting bugs</A> 
-<BR>
-  12.3 <A HREF = "Section_errors.html#err_3">Error & warning messages</A> 
-<BR></UL>
-<LI><A HREF = "Section_history.html">Future and history</A> 
-
-<UL>  13.1 <A HREF = "Section_history.html#hist_1">Coming attractions</A> 
-<BR>
-  13.2 <A HREF = "Section_history.html#hist_2">Past versions</A> 
-<BR></UL>
-
-</OL>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</BODY>
-
-</HTML>
+we can improve the LIGGGHTS(R)-PUBLIC documentation.</p>
+<p>Once you are familiar with LIGGGHTS(R)-PUBLIC, you may want to bookmark <a class="reference internal" href="Section_commands_LAMMPS.html#comm"><em>this page</em></a> since
+it gives quick access to documentation for all LIGGGHTS(R)-PUBLIC commands.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#what-is-liggghts-r-public">1.1. What is LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-public-vs-liggghts-premium">1.2. LIGGGHTS-PUBLIC VS. LIGGGHTS-PREMIUM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#history">1.3. History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-r-public-features">1.4. LIGGGHTS(R)-PUBLIC features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-r-public-general-features">1.5. LIGGGHTS(R)-PUBLIC General features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-r-public-model-features-liggghts-public-features">1.6. LIGGGHTS(R)-PUBLIC Model features: LIGGGHTS-PUBLIC features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#liggghts-r-public-model-features-additional-features-for-liggghts-r-public">1.7. LIGGGHTS(R)-PUBLIC Model features: Additional features for LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#open-source-distribution">1.8. Open source distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_intro.html#acknowledgments-and-citations">1.9. Acknowledgments and citations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#what-s-in-the-liggghts-r-public-distribution">2.1. What&#8217;s in the LIGGGHTS(R)-PUBLIC distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#making-liggghts-r-public">2.2. Making LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#making-liggghts-r-public-with-optional-packages">2.3. Making LIGGGHTS(R)-PUBLIC with optional packages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#building-liggghts-r-public-via-the-make-py-script">2.4. Building LIGGGHTS(R)-PUBLIC via the Make.py script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#building-liggghts-r-public-as-a-library">2.5. Building LIGGGHTS(R)-PUBLIC as a library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#running-liggghts-r-public">2.6. Running LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#command-line-options">2.7. Command-line options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_start.html#liggghts-r-public-screen-output">2.8. LIGGGHTS(R)-PUBLIC screen output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_input_script.html#liggghts-r-public-input-script">3.1. LIGGGHTS(R)-PUBLIC input script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_input_script.html#parsing-rules">3.2. Parsing rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_input_script.html#input-script-structure">3.3. Input script structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_input_script.html#an-example-input-script">3.4. An example input script</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#list-of-all-commands">4.1. List of all commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#bond-style-potentials">4.2. bond_style potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#compute-styles">4.3. compute styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#dump-styles">4.4. dump styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#fix-styles">4.5. fix styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_commands.html#pair-style-potentials">4.6. pair_style potentials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#cohesion-commands">5.1. cohesion commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#model-commands">5.2. model commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#rolling-friction-commands">5.3. rolling_friction commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#surface-commands">5.4. surface commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_gran_models.html#tangential-commands">5.5. tangential commands</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_mesh_modules.html#module-commands">6.1. module commands</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#restarting-a-simulation">8.1. Restarting a simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#d-simulations">8.2. 2d simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#running-multiple-simulations-from-one-input-script">8.3. Running multiple simulations from one input script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#granular-models">8.4. Granular models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#coupling-liggghts-r-public-to-other-codes">8.5. Coupling LIGGGHTS(R)-PUBLIC to other codes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#visualizing-liggghts-r-public-snapshots">8.6. Visualizing LIGGGHTS(R)-PUBLIC snapshots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#triclinic-non-orthogonal-simulation-boxes">8.7. Triclinic (non-orthogonal) simulation boxes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#output-from-liggghts-r-public-thermo-dumps-computes-fixes-variables">8.8. Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#walls">8.9. Walls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_howto.html#library-interface-to-liggghts-r-public">8.10. Library interface to LIGGGHTS(R)-PUBLIC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#atom-styles">9.1. Atom styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#compute-styles">9.2. Compute styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#dump-styles">9.3. Dump styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#dump-custom-output-options">9.4. Dump custom output options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#fix-styles">9.5. Fix styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#input-script-commands">9.6. Input script commands</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#pairwise-potentials">9.7. Pairwise potentials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#region-styles">9.8. Region styles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#thermodynamic-output-options">9.9. Thermodynamic output options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#variable-options">9.10. Variable options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_modify.html#submitting-new-features-for-inclusion-in-liggghts-r-public">9.11. Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#building-liggghts-r-public-as-a-shared-library">10.1. Building LIGGGHTS(R)-PUBLIC as a shared library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#installing-the-python-wrapper-into-python">10.2. Installing the Python wrapper into Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#extending-python-with-mpi-to-run-in-parallel">10.3. Extending Python with MPI to run in parallel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#testing-the-python-liggghts-r-public-interface">10.4. Testing the Python-LIGGGHTS(R)-PUBLIC interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#using-liggghts-r-public-from-python">10.5. Using LIGGGHTS(R)-PUBLIC from Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_python.html#example-python-scripts-that-use-liggghts-r-public">10.6. Example Python scripts that use LIGGGHTS(R)-PUBLIC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Section_errors.html#common-problems">11.1. Common problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_errors.html#reporting-bugs">11.2. Reporting bugs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_errors.html#error-warning-messages">11.3. Error &amp; warning messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_errors.html#error">11.4. Errors:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Section_errors.html#warnings">11.5. Warnings:</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Section_intro.html" class="btn btn-neutral float-right" title="1. Introduction" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

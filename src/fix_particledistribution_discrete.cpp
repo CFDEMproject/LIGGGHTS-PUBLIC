@@ -1,29 +1,50 @@
 /* ----------------------------------------------------------------------
-   LIGGGHTS - LAMMPS Improved for General Granular and Granular Heat
-   Transfer Simulations
+    This is the
 
-   LIGGGHTS is part of the CFDEMproject
-   www.liggghts.com | www.cfdem.com
+    ██╗     ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗████████╗███████╗
+    ██║     ██║██╔════╝ ██╔════╝ ██╔════╝ ██║  ██║╚══██╔══╝██╔════╝
+    ██║     ██║██║  ███╗██║  ███╗██║  ███╗███████║   ██║   ███████╗
+    ██║     ██║██║   ██║██║   ██║██║   ██║██╔══██║   ██║   ╚════██║
+    ███████╗██║╚██████╔╝╚██████╔╝╚██████╔╝██║  ██║   ██║   ███████║
+    ╚══════╝╚═╝ ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝®
 
-   Christoph Kloss, christoph.kloss@cfdem.com
-   Copyright 2009-2012 JKU Linz
-   Copyright 2012-     DCS Computing GmbH, Linz
+    DEM simulation engine, released by
+    DCS Computing Gmbh, Linz, Austria
+    http://www.dcs-computing.com, office@dcs-computing.com
 
-   LIGGGHTS is based on LAMMPS
-   LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
-   http://lammps.sandia.gov, Sandia National Laboratories
-   Steve Plimpton, sjplimp@sandia.gov
+    LIGGGHTS® is part of CFDEM®project:
+    http://www.liggghts.com | http://www.cfdem.com
 
-   This software is distributed under the GNU General Public License.
+    Core developer and main author:
+    Christoph Kloss, christoph.kloss@dcs-computing.com
 
-   See the README file in the top-level directory.
+    LIGGGHTS® is open-source, distributed under the terms of the GNU Public
+    License, version 2 or later. It is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+    of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. You should have
+    received a copy of the GNU General Public License along with LIGGGHTS®.
+    If not, see http://www.gnu.org/licenses . See also top-level README
+    and LICENSE files.
+
+    LIGGGHTS® and CFDEM® are registered trade marks of DCS Computing GmbH,
+    the producer of the LIGGGHTS® software and the CFDEM®coupling software
+    See http://www.cfdem.com/terms-trademark-policy for details.
+
+-------------------------------------------------------------------------
+    Contributing author and copyright for this file:
+    (if not contributing author is listed, this file has been contributed
+    by the core developer)
+
+    Copyright 2012-     DCS Computing GmbH, Linz
+    Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include "math.h"
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "fix_template_sphere.h"
+#include "fix_template_multiplespheres.h"
 #include "fix_particledistribution_discrete.h"
 #include "atom.h"
 #include "atom_vec.h"
@@ -50,15 +71,20 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
 {
   restart_global = 1;
 
+  mass_based = true;
+
+  if(strstr(arg[2],"numberbased"))
+    mass_based = false;
+
   // random number generator, same for all procs
 
   if (narg < 7)
-    error->all(FLERR,"Illegal fix particledistribution/discrete command, not enough arguments");
+    error->fix_error(FLERR,this,"not enough arguments");
   seed = atoi(arg[3]) + comm->me;
   random = new RanPark(lmp,seed);
   ntemplates = atoi(arg[4]);
   if(ntemplates < 1)
-    error->all(FLERR,"Illegal fix particledistribution/discrete command, illegal number of templates");
+    error->fix_error(FLERR,this,"illegal number of templates");
 
   templates = new FixTemplateSphere*[ntemplates];
   distweight = new double[ntemplates];
@@ -71,24 +97,24 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   int itemp=0;
 
   if(narg != iarg+2*ntemplates)
-    error->all(FLERR,"Illegal fix particledistribution/discrete command, # of templates does not match # of arguments");
+    error->fix_error(FLERR,this,"# of templates does not match # of arguments");
 
   // parse further args
   do {
     if(itemp == ntemplates) break;
     if(narg < iarg+1)
-        error->all(FLERR,"Illegal fix particledistribution/discrete command, not enough arguments");
+        error->fix_error(FLERR,this,"not enough arguments");
     int ifix = modify->find_fix(arg[iarg]);
 
     if(ifix < 0)
-        error->all(FLERR,"Illegal fix particledistribution/discrete command, invalid ID for fix particletemplate provided");
+        error->fix_error(FLERR,this,"invalid ID for fix particletemplate provided");
 
     if(strncmp(modify->fix[ifix]->style,"particletemplate/",16))
-        error->all(FLERR,"Illegal fix particledistribution/discrete command, fix is not of type particletemplate");
+        error->fix_error(FLERR,this,"fix is not of type particletemplate");
 
     templates[itemp] = static_cast<FixTemplateSphere*>(modify->fix[ifix]);
     distweight[itemp] = atof(arg[iarg+1]);
-    if (distweight[itemp] < 0) error->all(FLERR,"Illegal fix particledistribution/discrete command, invalid weight");
+    if (distweight[itemp] < 0) error->fix_error(FLERR,this,"invalid weight");
     itemp++;
     iarg += 2;
   } while (iarg < narg);
@@ -97,7 +123,7 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   for(int i = 0; i < ntemplates; i++)
       for(int j = 0; j < i; j++)
         if(templates[i] == templates[j])
-            error->all(FLERR,"Illegal fix particledistribution/discrete command, cannot use the same template twice");
+            error->fix_error(FLERR,this,"cannot use the same template twice");
 
   // normalize distribution
   double weightsum = 0;
@@ -110,7 +136,7 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   for(int i = 0; i < ntemplates; i++)
     distweight[i]/=weightsum;
 
-  if(comm->me == 0 && screen)
+  if(mass_based && comm->me == 0 && screen)
   {
       fprintf(screen,"Fix particledistribution/discrete (id %s): distribution based on mass%%:\n",this->id);
       for(int i = 0; i < ntemplates; i++)
@@ -118,15 +144,19 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   }
 
   // convert distribution from mass% to number%
-  for(int i=0;i<ntemplates; i++)
-    distweight[i]=distweight[i]/templates[i]->massexpect();
+  // do not do if already number-based
+  if(mass_based)
+  {
+      for(int i=0;i<ntemplates; i++)
+        distweight[i]=distweight[i]/templates[i]->massexpect();
 
-  weightsum=0;
-  for(int i=0;i<ntemplates; i++)
-    weightsum+=distweight[i];
+      weightsum=0;
+      for(int i=0;i<ntemplates; i++)
+        weightsum+=distweight[i];
 
-  for(int i=0;i<ntemplates; i++)
-    distweight[i]/=weightsum;
+      for(int i=0;i<ntemplates; i++)
+        distweight[i]/=weightsum;
+  }
 
   if(comm->me == 0 && screen)
   {
@@ -152,10 +182,10 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
   mintype = 10000;
   for(int i = 0; i < ntemplates; i++)
   {
-    if(templates[i]->type() > maxtype)
-      maxtype = templates[i]->type();
-    if(templates[i]->type() < mintype)
-      mintype = templates[i]->type();
+    if(templates[i]->maxtype() > maxtype)
+      maxtype = templates[i]->maxtype();
+    if(templates[i]->mintype() < mintype)
+      mintype = templates[i]->mintype();
   }
 
   // check which template has the most spheres
@@ -326,6 +356,7 @@ void FixParticledistributionDiscrete::random_init_list(int ntotal)
         n_pti_max = n_pti_max_requested;
         if(pti_list) delete []pti_list;
         pti_list = new ParticleToInsert*[n_pti_max];
+        
     }
 
 }
@@ -337,7 +368,7 @@ void FixParticledistributionDiscrete::random_init_list(int ntotal)
 
    for exact_number = 1, truncate distribution so to exactly meet
                                requested # particles
-   for exact_number = 0, use random gen to fulfil distribution
+   for exact_number = 0, use random gen to fulfill distribution
 ------------------------------------------------------------------------- */
 
 int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupbit,int exact_number)
@@ -385,10 +416,10 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
             j = 0;
             rsum = remainder[0];
 
-            while(j < (ntemplates-1) && rsum < r)
+            while(rsum < r && j < (ntemplates-1) )
             {
-                rsum += remainder[j];
                 j++;
+                rsum += remainder[j];
             }
             
             parttogen[j]++;
@@ -402,7 +433,7 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
     for(int i = 0; i < ntemplates; i++)
     {
         ninsert += parttogen[i];
-        templates[i]->randomize_ptilist(parttogen[i],groupbit | insert_groupbit);
+        templates[i]->randomize_ptilist(parttogen[i],groupbit | insert_groupbit,distorder[i]);
     }
 
     // wire lists, make sure in correct order (large to small particles)
@@ -418,10 +449,47 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
         n_pti += parttogen[chosendist];
     }
 
-    if(n_pti != ninsert) error->all(FLERR,"Internal error in FixParticledistributionDiscrete::randomize_list");
+    if(n_pti != ninsert)
+		error->one(FLERR,"Internal error in FixParticledistributionDiscrete::randomize_list");
 
     ninserted = ninsert;
     return ninsert;
+}
+
+/* ----------------------------------------------------------------------
+   preparations before insertion
+------------------------------------------------------------------------- */
+
+void FixParticledistributionDiscrete::pre_insert(int n,class FixPropertyAtom *fp,double val)
+{
+    // allow fixes to e.g. update some pointers before set_arrays is called
+    // set_arrays called in ParticleToInsert::insert()
+
+    int nfix = modify->nfix;
+    Fix **fix = modify->fix;
+
+    for (int j = 0; j < nfix; j++)
+        if (fix[j]->create_attribute) fix[j]->pre_set_arrays();
+
+    // set fix property as desired by fix insert
+    // loop to n, not n_pti
+    if(fp)
+    {
+        
+        for(int i = 0; i < ntemplates; i++)
+        {
+            if( dynamic_cast<FixTemplateMultiplespheres*>(templates[i]) &&
+                dynamic_cast<FixTemplateMultiplespheres*>(templates[i])->is_bonded()
+              )
+              error->one(FLERR,"'bonded' and setting values for a fix property upon insertion can not be used together");
+        }
+
+        for(int i = 0; i < n; i++)
+        {
+            pti_list[i]->fix_property = fp;
+            pti_list[i]->fix_property_value = val;
+        }
+    }
 }
 
 /* ----------------------------------------------------------------------
@@ -471,8 +539,13 @@ double FixParticledistributionDiscrete::min_rad(int type)
     //get minrad
     double minrad_type = 1000.;
     for(int i = 0; i < ntemplates;i++)
-      if( templates[i]->type() == type  && templates[i]->min_rad() < minrad_type)
+    {
+      if(
+            (type >= templates[i]->mintype() && type <= templates[i]->maxtype()) &&
+            (templates[i]->min_rad() < minrad_type)
+        )
         minrad_type = templates[i]->min_rad();
+    }
 
     return minrad_type;
 }
@@ -484,8 +557,17 @@ double FixParticledistributionDiscrete::max_rad(int type)
     //get maxrad
     double maxrad_type = 0.;
     for(int i = 0; i < ntemplates;i++)
-      if( templates[i]->type() == type  && templates[i]->max_rad() > maxrad_type)
+    {
+      
+      if(!templates[i]->use_rad_for_cut_neigh_and_ghost())
+        continue;
+
+      if(
+          (type >= templates[i]->mintype() && type <= templates[i]->maxtype()) &&
+          (templates[i]->max_rad() > maxrad_type)
+        )
         maxrad_type = templates[i]->max_rad();
+    }
 
     return maxrad_type;
 }
