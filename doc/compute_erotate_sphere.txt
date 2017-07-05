@@ -10,10 +10,13 @@ compute erotate/sphere command :h3
 
 [Syntax:]
 
-compute ID group-ID erotate/sphere :pre
+compute ID group-ID erotate/sphere general_keywords general_values halfstep :pre
 
-ID, group-ID are documented in "compute"_compute.html command
-erotate/sphere = style name of this compute command :ul
+ID, group-ID are documented in "compute"_compute.html command :ulb,l
+erotate/sphere = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
+halfstep = optional keyword to compute energy at half step :l
+:ule
 
 [Examples:]
 
@@ -24,8 +27,11 @@ compute 1 all erotate/sphere :pre
 Define a computation that calculates the rotational kinetic energy of
 a group of spherical particles.
 
-The rotational energy is computed as 1/2 I w^2, where I is the moment
-of inertia for a sphere and w is the particle's angular velocity.
+The rotational energy is computed as 1/2 I w^2, where I is the moment of inertia
+for a sphere and w is the particle's angular velocity.  By default the angular
+velocity is taken at the full time step ({w^i}). If the {halfstep} keyword is
+present in the definition of this compute, then the angular velocity is taken at
+the next half time step ({w^(i+1/2)}).
 
 IMPORTANT NOTE: For "2d models"_dimension.html, particles are treated
 as spheres, not disks, meaning their moment of inertia will be the

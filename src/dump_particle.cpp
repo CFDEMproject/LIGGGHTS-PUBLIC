@@ -652,6 +652,14 @@ int DumpParticle::parse_parameters(const int narg, const char *const *const arg,
     if (tensor_detected)
         size_one += 8;
 
+#if defined(NONSPHERICAL_ACTIVE_FLAG) && defined(CONVEX_ACTIVE_FLAG)
+    if(convex_hull_detected)
+    {
+        int ntri_max = static_cast<AtomVecConvexHull*>(atom->avec)->get_ntri_max();
+        size_one += (3*3*ntri_max);
+    }
+#endif
+
     if (filewriter)
         reset_vtk_data_containers();
 
@@ -1282,32 +1290,32 @@ int DumpParticle::count()
                 if (!atom->superquadric_flag)
                     error->all(FLERR,
                         "Threshold for an atom property that isn't allocated");
-                    ptr = &atom->shape[0][0];
-                    nstride = 3;
+                ptr = &atom->shape[0][0];
+                nstride = 3;
             } else if (thresh_array[ithresh] == SHAPEY) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,
                         "Threshold for an atom property that isn't allocated");
-                    ptr = &atom->shape[0][1];
-                    nstride = 3;
+                ptr = &atom->shape[0][1];
+                nstride = 3;
             } else if (thresh_array[ithresh] == SHAPEZ) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,
                         "Threshold for an atom property that isn't allocated");
-                    ptr = &atom->shape[0][2];
-                    nstride = 3;
+                ptr = &atom->shape[0][2];
+                nstride = 3;
             } else if (thresh_array[ithresh] == ROUNDNESS1) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,
                         "Threshold for an atom property that isn't allocated");
-                    ptr = &atom->roundness[0][0];
-                    nstride = 2;
+                ptr = &atom->roundness[0][0];
+                nstride = 2;
             } else if (thresh_array[ithresh] == ROUNDNESS2) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,
                         "Threshold for an atom property that isn't allocated");
-                    ptr = &atom->roundness[0][1];
-                    nstride = 2;
+                ptr = &atom->roundness[0][1];
+                nstride = 2;
             }
 
             // unselect atoms that don't meet threshold criterion
@@ -1488,77 +1496,86 @@ void DumpParticle::buf2arrays(int n, double *mybuf)
         int npoints_extra = 0; 
         if(convex_hull_detected)
         {
-                j += 3*3*ntri_max + 1;
+            j += 3*3*ntri_max + 1;
 
-                // each extra tri has 3 extra points
-                ntri = mybuf[iatom*size_one+3];//(int) ubuf(mybuf[iatom*size_one+3]).i;
-                npoints_extra = 3*mybuf[iatom*size_one+3];//(int) ubuf(mybuf[iatom*size_one+3]).i;
+            // each extra tri has 3 extra points
+            ntri = mybuf[iatom*size_one+3];//(int) ubuf(mybuf[iatom*size_one+3]).i;
+            npoints_extra = 3*mybuf[iatom*size_one+3];//(int) ubuf(mybuf[iatom*size_one+3]).i;
 
-                for(int ipoint = 0; ipoint < npoints_extra; ipoint++)
-                {
-                        if (1+ipoint >= pid_size)
-                                error->all(FLERR,"Internal error: Overflow of pid array");
-                        pid[1+ipoint] = points->InsertNextPoint(mybuf[iatom*size_one+4+ipoint*3],
-                                                                                                        mybuf[iatom*size_one+5+ipoint*3],
-                                                                                                        mybuf[iatom*size_one+6+ipoint*3]);
-                }
+            for(int ipoint = 0; ipoint < npoints_extra; ipoint++)
+            {
+                if (1+ipoint >= pid_size)
+                    error->all(FLERR,"Internal error: Overflow of pid array");
+                pid[1+ipoint] = points->InsertNextPoint(mybuf[iatom*size_one+4+ipoint*3],
+                                                        mybuf[iatom*size_one+5+ipoint*3],
+                                                        mybuf[iatom*size_one+6+ipoint*3]);
+            }
         }
 
-        for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it) {
+        for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it)
+        {
             vtkAbstractArray *paa = it->second;
-            if (it->second->GetNumberOfComponents() == 3) {
-                switch (vtype[it->first]) {
+            if (it->second->GetNumberOfComponents() == 3)
+            {
+                switch (vtype[it->first])
+                {
                     case INT:
-                        {
-                            int iv3[3] = { static_cast<int>(mybuf[iatom*size_one+j  ]),
-                                                         static_cast<int>(mybuf[iatom*size_one+j+1]),
-                                                         static_cast<int>(mybuf[iatom*size_one+j+2]) };
-                            vtkIntArray *pia = static_cast<vtkIntArray*>(paa);
-                            for(int ii = 0; ii < npoints_extra+1; ii++)
-                                pia->InsertNextTupleValue(iv3);
-                            break;
-                        }
+                    {
+                        int iv3[3] = { static_cast<int>(mybuf[iatom*size_one+j  ]),
+                                       static_cast<int>(mybuf[iatom*size_one+j+1]),
+                                       static_cast<int>(mybuf[iatom*size_one+j+2]) };
+                        vtkIntArray *pia = static_cast<vtkIntArray*>(paa);
+                        for(int ii = 0; ii < npoints_extra+1; ii++)
+                            pia->InsertNextTupleValue(iv3);
+                        break;
+                    }
                     case DOUBLE:
-                        {
-                            vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
-                            for(int ii = 0; ii < npoints_extra+1; ii++)
-                                pda->InsertNextTupleValue(&mybuf[iatom*size_one+j]);
-                            break;
-                        }
-                }
-                j+=3;
-            } else if (it->second->GetNumberOfComponents() == 9) {
-                    if(vtype[it->first] == TENSOR_DOUBLE) {
+                    {
                         vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
                         for(int ii = 0; ii < npoints_extra+1; ii++)
                             pda->InsertNextTupleValue(&mybuf[iatom*size_one+j]);
-                    } else {
-                            error->all(FLERR,"Tensors of only double values are implemented!");
+                        break;
                     }
-                    j+=9;
-            } else {
-                switch (vtype[it->first]) {
+                }
+                j+=3;
+            }
+            else if (it->second->GetNumberOfComponents() == 9)
+            {
+                if(vtype[it->first] == TENSOR_DOUBLE)
+                {
+                    vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
+                    for(int ii = 0; ii < npoints_extra+1; ii++)
+                        pda->InsertNextTupleValue(&mybuf[iatom*size_one+j]);
+                }
+                else
+                        error->all(FLERR,"Tensors of only double values are implemented!");
+                j+=9;
+            }
+            else
+            {
+                switch (vtype[it->first])
+                {
                     case INT:
-                        {
+                    {
                             vtkIntArray *pia = static_cast<vtkIntArray*>(paa);
                             for(int ii = 0; ii < npoints_extra+1; ii++)
                                 pia->InsertNextValue(mybuf[iatom*size_one+j]);
                             break;
-                        }
+                    }
                     case DOUBLE:
-                        {
+                    {
                             vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
                             for(int ii = 0; ii < npoints_extra+1; ii++)
                                 pda->InsertNextValue(mybuf[iatom*size_one+j]);
                             break;
-                        }
+                    }
                     case STRING:
-                        {
+                    {
                             vtkStringArray *psa = static_cast<vtkStringArray*>(paa);
                             for(int ii = 0; ii < npoints_extra+1; ii++)
                                 psa->InsertNextValue(typenames[static_cast<int>(mybuf[iatom*size_one+j])]);
                             break;
-                        }
+                    }
                 }
                 ++j;
             }
@@ -1566,31 +1583,29 @@ void DumpParticle::buf2arrays(int n, double *mybuf)
 
         // 1 == npoints, not VTK_VERTEX (cell type), pid is the ID of the point added above
         if(!convex_hull_detected)
-                pointsCells->InsertNextCell(1,pid);
+            pointsCells->InsertNextCell(1,pid);
         else
         {
-                for(int itri = 0; itri < ntri; itri++)
-                {
+            for(int itri = 0; itri < ntri; itri++)
+            {
+                vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
 
-                        vtkSmartPointer<vtkTriangle> triangle =
-                                        vtkSmartPointer<vtkTriangle>::New();
+                triangle->GetPointIds()->SetNumberOfIds(3);
+                for(int ipoint = 0; ipoint < 3; ipoint++)
+                    triangle->GetPointIds()->SetId(ipoint,pid[1+itri*3+ipoint]);
 
-                        triangle->GetPointIds()->SetNumberOfIds(3);
-                        for(int ipoint = 0; ipoint < 3; ipoint++)
-                                triangle->GetPointIds()->SetId(ipoint,pid[1+itri*3+ipoint]);
+                pointsCells->InsertNextCell(triangle);
+            }
 
-                        pointsCells->InsertNextCell(triangle);
-                }
+            /*
+            vtkPolyVertex *polyvertex = vtkPolyVertex::New();
 
-                /*
-                vtkPolyVertex *polyvertex = vtkPolyVertex::New();
+            polyvertex->GetPointIds()->SetNumberOfIds(npoints_extra+1);
+            for(int ipoint = 0; ipoint < npoints_extra+1; ipoint++)
+                    polyvertex->GetPointIds()->SetId(ipoint,pid[ipoint]);
 
-                polyvertex->GetPointIds()->SetNumberOfIds(npoints_extra+1);
-                for(int ipoint = 0; ipoint < npoints_extra+1; ipoint++)
-                        polyvertex->GetPointIds()->SetId(ipoint,pid[ipoint]);
-
-                pointsCells->InsertNextCell(polyvertex);
-                */
+            pointsCells->InsertNextCell(polyvertex);
+            */
         }
     }
 
@@ -1682,9 +1697,8 @@ void DumpParticle::write_data(int n, double *mybuf, vtkSmartPointer<vtkMultiBloc
         else
             polyData->SetPolys(pointsCells);
 
-        for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it) {
+        for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it)
             polyData->GetPointData()->AddArray(it->second);
-        }
 
         mbSet->SetBlock(cur_block++, polyData);
     }
@@ -2364,22 +2378,23 @@ void DumpParticle::pack_points_convexhull(int n)
     AtomVecConvexHull *avec = static_cast<AtomVecConvexHull*>(atom->avec);
     double point[3];
 
-    for (int i = 0; i < nchoose; i++) {
+    for (int i = 0; i < nchoose; i++)
+    {
         int shapetyp = shapetype[clist[i]];
         int ntri = avec->get_ntri(shapetyp);
         buf[n] = ntri; //ubuf(np).d;
         
         for(int itri = 0; itri < ntri; itri++)
         {
-                for(int inode = 0; inode < 3; inode ++)
-                {
-                        avec->get_tri_node(shapetyp,itri,inode,point);
-                        MathExtraLiggghts::vec_quat_rotate(point,quaternion[clist[i]]);
-                        vectorAdd3D(point,x[clist[i]],point);
-                        buf[n+itri*9+inode*3+1] = point[0];
-                        buf[n+itri*9+inode*3+2] = point[1];
-                        buf[n+itri*9+inode*3+3] = point[2];
-                }
+            for(int inode = 0; inode < 3; inode ++)
+            {
+                avec->get_tri_node(shapetyp,itri,inode,point);
+                MathExtraLiggghts::vec_quat_rotate(point,quaternion[clist[i]]);
+                vectorAdd3D(point,x[clist[i]],point);
+                buf[n+itri*9+inode*3+1] = point[0];
+                buf[n+itri*9+inode*3+2] = point[1];
+                buf[n+itri*9+inode*3+3] = point[2];
+            }
         }
         n += size_one;
     }
@@ -3206,4 +3221,5 @@ void DumpParticle::pack_quat4(int n)
         n += size_one;
     }
 }
-#endif
+
+#endif // LAMMPS_VTK

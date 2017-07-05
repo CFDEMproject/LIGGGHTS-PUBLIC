@@ -191,4 +191,13 @@
       return false;
   }
 
+  inline bool ContainerBase::matches_any_id(std::list<std::string> * ids)
+  {
+      std::list<std::string>::iterator _id;
+      for (_id = ids->begin(); _id != ids->end(); _id++)
+          if (matches_id(_id->c_str()))
+              return true;
+      return false;
+  }
+
 #endif

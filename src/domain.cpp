@@ -1463,7 +1463,7 @@ void Domain::set_boundary(int narg, char **arg, int flag)
             if (idim == 0)
             {
                 thisdim = image[i] & IMGMASK;
-                image[i] = image[i] ^ thisdim | IMGMAX;
+                image[i] = (image[i] ^ thisdim) | IMGMAX;
             }
             else if (idim == 1)
             {
@@ -1474,8 +1474,6 @@ void Domain::set_boundary(int narg, char **arg, int flag)
             {
                 thisdim = image[i] >> IMG2BITS;
                 image[i] = (image[i] ^ (thisdim << IMG2BITS)) | (IMGMAX << IMG2BITS);
-                if (image[i])
-                    printf(">>> %d %d\n", i, image[i]);
             }
         }
       }

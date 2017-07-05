@@ -65,7 +65,9 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-Compute::Compute(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
+Compute::Compute(LAMMPS *lmp, int &iarg, int narg, char ** arg) :
+    Pointers(lmp),
+    update_on_run_end_(false)
 {
   if (narg < 3) error->all(FLERR,"Illegal compute command");
 
@@ -88,6 +90,22 @@ Compute::Compute(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   n = strlen(arg[2]) + 1;
   style = new char[n];
   strcpy(style,arg[2]);
+
+  iarg = 3;
+
+  if (narg >= 4)
+  {
+    if (strcmp(arg[iarg], "update_on_run_end") == 0)
+    {
+        if (narg < 5)
+            error->all(FLERR, "Not enough arguments for keyword 'update_on_run_end'");
+        if (strcmp(arg[iarg+1], "yes") == 0)
+            update_on_run_end_ = true;
+        else if (strcmp(arg[iarg+1], "no"))
+            error->all(FLERR, "Value for keyword 'update_on_run_end' must be either 'yes' or 'no'");
+        iarg += 2;
+    }
+  }
 
   // set child class defaults
 

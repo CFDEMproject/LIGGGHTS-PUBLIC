@@ -10,10 +10,11 @@ compute gyration command :h3
 
 [Syntax:]
 
-compute ID group-ID gyration :pre
+compute ID group-ID gyration general_keyword general_values :pre
 
 ID, group-ID are documented in "compute"_compute.html command
-gyration = style name of this compute command :ul
+gyration = style name of this compute command
+general_keywords general_values are documented in "compute"_compute.html" :ul
 
 [Examples:]
 

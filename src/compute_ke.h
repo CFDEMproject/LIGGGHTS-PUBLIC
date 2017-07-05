@@ -58,12 +58,13 @@ namespace LAMMPS_NS {
 
 class ComputeKE : public Compute {
  public:
-  ComputeKE(class LAMMPS *, int, char **);
+  ComputeKE(class LAMMPS *, int &iarg, int, char **);
   void init();
   double compute_scalar();
 
  private:
   double pfactor;
+  bool halfstep;
   class FixMultisphere *fix_ms; 
 };
 

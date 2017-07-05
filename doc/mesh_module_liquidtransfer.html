@@ -173,6 +173,17 @@ which acts as an external liquid source for a certain part of the mesh.</p>
 evolved when bridges break. The <em>wall_thickness</em> parameter asigns a virtual thickness to
 the wall and is responsible for the volume of liquid a wall can store. The other
 parameters for the cohesion model are taken from the global definitions.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">When using this module and periodic boundary conditions the mesh
+needs to fulfill the following properties:
+(i) a triangle is not allowed to be in contact with itself through periodic
+boundaries,
+(ii) if two triangles are in contact inside the domain, they are not
+allowed to be in contact through periodic boundaries.
+Note that these restrictions are not validated by LIGGGHTS(R)-PUBLIC and must be
+ensured by the user.</p>
+</div>
 </div>
 <div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>

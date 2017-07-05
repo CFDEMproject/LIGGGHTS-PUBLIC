@@ -150,16 +150,22 @@
 <h1>fix mesh/surface/planar command<a class="headerlink" href="#fix-mesh-surface-planar-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
-fix ID group-ID mesh/surface/module_list file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values module_keywords module_values
-fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values</pre>
+<div class="highlight-python"><pre>fix ID group-ID mesh/surface data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
+fix ID group-ID mesh/surface/module_list data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values module_keywords module_values
+fix ID group-ID mesh/surface/planar data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values</pre>
 </div>
 <ul class="simple">
 <li>ID, is documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command.</li>
 <li>mesh/surface or mesh/surface/planar = style name of this fix command</li>
 <li>module_list = list of mesh modules separated by /</li>
-<li>file = obligatory keyword</li>
-<li>filename = name of STL or VTK file containing the triangle mesh data</li>
+<li>one data_keyword/data_value pair needs to be appended</li>
+<li>data_keyword = <em>file</em> or <em>fix</em></li>
+</ul>
+<pre class="literal-block">
+<em>file</em> value = name of STL or VTK file containing the triangle mesh data
+<em>fix</em> value = id of a fix that can generate meshes (e.g. this one using the <em>extrude_planar</em> keyword)
+</pre>
+<ul class="simple">
 <li>zero or more premesh_keywords/premesh_value pairs may be appended</li>
 <li>premesh_keyword = <em>type</em> or <em>precision</em> or <em>heal</em> or <em>min_feature_length</em>  or <em>element_exclusion_list</em> or <em>verbose</em></li>
 </ul>
@@ -176,22 +182,24 @@ fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_value
 </pre>
 <ul class="simple">
 <li>zero or more mesh_keywords/mesh_value pairs may be appended</li>
-<li>mesh_keyword = <em>scale</em> or <em>move</em> or <em>rotate</em> or <em>temperature</em> or <em>mass_temperature</em></li>
 </ul>
 <pre class="literal-block">
-<em>scale</em> value = factor
-  factor = factor to scale the mesh in x-, y-, and z-direction (double value)
-<em>move</em> values = mx my mz
-  mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
-<em>rotate</em> values = axis ax ay az angle ang
-  axis = obligatory keyword
-  ax, ay, az = axis vector for rotation (length units)
-  angle = obligatory keyword
-  ang = rotation angle (degrees)
-<em>temperature</em> value = T0
-  T0 = Temperature of the wall (temperature units)
-<em>mass_temperature</em> value = mt0
-  mt0 = mass (mass units) assumed for temperature update in the frame of <tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt>
+mesh_keyword = <em>scale</em> or <em>move</em> or <em>rotate</em> or <em>temperature</em> or <em>mass_temperature</em> or <em>extrude_planar</em>:l
+  <em>scale</em> value = factor
+    factor = factor to scale the mesh in x-, y-, and z-direction (double value)
+  <em>move</em> values = mx my mz
+    mx my mz = move the mesh by this extent in x-, y-, and z-direction (length units)
+  <em>rotate</em> values = axis ax ay az angle ang
+    axis = obligatory keyword
+    ax, ay, az = axis vector for rotation (length units)
+    angle = obligatory keyword
+    ang = rotation angle (degrees)
+  <em>temperature</em> value = T0
+    T0 = Temperature of the wall (temperature units)
+  <em>mass_temperature</em> value = mt0
+    mt0 = mass (mass units) assumed for temperature update in the frame of <tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt>
+  <em>extrude_planar</em> value = length
+    length = length (length units) that a planar mesh is extruded in anti-normal direction
 </pre>
 <ul class="simple">
 <li>zero or more surface_keywords/surface_value pairs may be appended</li>
@@ -221,12 +229,14 @@ fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_value
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>fix cad all mesh/surface file mesh.stl type 1
-fix cad1 all mesh/surface/stress/deform file meshes/plate.stl type 1 scale 1.0 wear finnie</pre>
+fix cad1 all mesh/surface/stress/deform file meshes/plate.stl type 1 scale 1.0 wear finnie
+fix extrude all mesh/surface file plane.stl type 1 extrude_planar 0.1
+fix side_walls all mesh/surface fix extrude type 1</pre>
 </div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p>This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from
+<p>This fix allows the import of triangular surface mesh wall geometry for granular simulations from
 ASCII STL files or legacy ASCII VTK files. Style <em>mesh/surface</em> is a general surface mesh, and
 <em>mesh/surface/planar</em> represents a planar mesh. <em>mesh/surface/planar</em> requires the mesh to
 consist of only 1 planar face.</p>
@@ -234,8 +244,10 @@ consist of only 1 planar face.</p>
 imported if all of its vertices is inside the specified <a class="reference internal" href="region.html"><em>region</em></a>. Please note that
 the geometric extent of this <a class="reference internal" href="region.html"><em>region</em></a> refer to the unscaled, unmoved, and unrotated
 original state of the geometry.</p>
-<p>Generall, you can apply scaling, offset and rotation to the imported mesh via keywords <em>scale</em>,
-<em>move</em>, <em>rotate</em>. Operations are applied in the order as they are specified. The rotation via <em>rotate</em> is performed around the rotation axis that goes through the origin (0,0,0) and in the direction of <em>axis</em>.</p>
+<p>In general, you can apply scaling, offset and rotation to the imported mesh via
+keywords <em>scale</em>, <em>move</em>, <em>rotate</em>. Operations are applied in the order as they
+are specified. The rotation via <em>rotate</em> is performed around the rotation axis
+that goes through the origin (0,0,0) and in the direction of <em>axis</em>.</p>
 <p>The group-ID defines which particles will &#8220;see&#8221; the mesh, in case it is used as a granular wall.</p>
 <p>One fix represents one wall with a specific material, where the material is identified
 via keyword <em>type</em>. If multiple meshes with different materials are desired, the respective
@@ -244,6 +256,10 @@ meshes must be imported with different fix mesh/surface commands.</p>
 conjunction with heat conduction via <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">heat/gran</span></tt>. Note that the
 actual calculation of the heat transfer happens only if you use the mesh in conjunction
 with a granular wall, see <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>.</p>
+<p>The <em>extrude_planar</em> option allows to extrude a planar mesh in direction of the
+anti-normal by a specified length values. After a <em>run 0</em> command this fix will
+hold the generated triangles which can be used in another <em>mesh/surface</em> fix
+that uses the <em>fix</em> instead of <em>file</em> keyword.</p>
 <p>With the optional <em>surface_vel</em> keyword, you can specify the imported mesh as conveyor belt.
 The velocity direction for each mesh face is given by the projection of the conveyor
 belt velocity parallel to the mesh face, the velocity magnitude for each mesh face is
@@ -251,29 +267,31 @@ equal to the conveyor belt velocity. This ensures the model makes sense also in 
 the mesh is curved. Likewise, the optional rotation model activated via keyword
 <em>surface_ang_vel</em> mimics rotational motion of the mesh (e.g. for modeling a shear cell)</p>
 <p><strong>Mesh modules:</strong></p>
-<p>The &#8220;mesh/surface&#8221; fix allows for several mesh modules to be appended.</p>
-<ul class="simple">
-<li><tt class="xref doc docutils literal"><span class="pre">6dof</span></tt></li>
-<li><tt class="xref doc docutils literal"><span class="pre">binning</span></tt></li>
-<li><tt class="xref doc docutils literal"><span class="pre">contact</span></tt></li>
-<li><tt class="xref doc docutils literal"><span class="pre">deform</span></tt></li>
-<li><tt class="xref doc docutils literal"><span class="pre">heattransfer</span></tt></li>
-<li><a class="reference internal" href="mesh_module_liquidtransfer.html"><em>liquidtransfer</em></a></li>
-<li><a class="reference internal" href="mesh_module_servo.html"><em>servo</em></a></li>
-<li><a class="reference internal" href="mesh_module_stress.html"><em>stress</em></a></li>
-</ul>
+<p>The &#8220;mesh/surface&#8221; fix allows for several mesh modules to be appended. A
+complete list of the available mesh modules can be found in <a class="reference internal" href="Section_mesh_modules.html"><em>Section mesh modules</em></a>.</p>
 <p>Note that some of these modules are dependent on each other and some are mutually exclusive.
 The order of the mesh modules is important and the arguments for each mesh module need to
 be appended in the same order as the modules.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">When using the deform, heattransfer or liquidtransfer module and
+periodic boundary conditions the mesh needs to fulfill the following properties:
+(i) a triangle is not allowed to be in contact with itself through periodic
+boundaries,
+(ii) if two triangles are in contact inside the domain, they are not
+allowed to be in contact through periodic boundaries.
+Note that these restrictions are not validated by LIGGGHTS(R)-PUBLIC and must be
+ensured by the user.</p>
+</div>
 <p><strong>Quality checks / error and warning messages:</strong></p>
 <p>LIGGGHTS(R)-PUBLIC checks a couple of quality criteria upon loading a mesh. LIGGGHTS(R)-PUBLIC tries
 to give you as much information about the issue as possible.</p>
 <p>Warning messages:</p>
 <ul class="simple">
 <li>There should be no angle &lt; 0.5 degrees in any element (soft limit for angles)</li>
-<li>All nodes should be within the simlation box</li>
+<li>All nodes should be within the simulation box</li>
 </ul>
-<p>If any of the obove rules is not fulfilled, a warning is generated. Keyword
+<p>If any of the above rules is not fulfilled, a warning is generated. Keyword
 <em>verbose</em> controls if details about the warning are written to the screen.</p>
 <p>Error messages:</p>
 <ul class="simple">

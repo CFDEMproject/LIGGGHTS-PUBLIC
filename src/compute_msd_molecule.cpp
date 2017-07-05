@@ -54,10 +54,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeMSDMolecule::ComputeMSDMolecule(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeMSDMolecule::ComputeMSDMolecule(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute msd/molecule command");
+  if (narg != iarg) error->all(FLERR,"Illegal compute msd/molecule command");
 
   if (atom->molecular == 0)
     error->all(FLERR,"Compute msd/molecule requires molecular atom style");

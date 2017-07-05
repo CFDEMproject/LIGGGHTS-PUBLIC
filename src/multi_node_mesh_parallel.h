@@ -49,19 +49,26 @@
 #include "vector_liggghts.h"
 #include "neighbor.h"
 #include "math_extra_liggghts.h"
+#include "container_base.h"
+#include "domain_wedge.h"
+#include <string>
+#include <list>
 
 namespace LAMMPS_NS
 {
+
   template<int NUM_NODES>
   class MultiNodeMeshParallel : public MultiNodeMesh<NUM_NODES>
   {
       public:
 
-        void initalSetup();
+        void initialSetup();
         void pbcExchangeBorders(int setupFlag);
         void clearReverse();
-        void forwardComm();
-        void reverseComm();
+        void forwardComm(std::string property);
+        void forwardComm(std::list<std::string> * properties = NULL);
+        void reverseComm(std::string property);
+        void reverseComm(std::list<std::string> * properties = NULL);
 
         void writeRestart(FILE *fp);
         void restart(double *list);
@@ -118,12 +125,12 @@ namespace LAMMPS_NS
         // lo-level parallelization also used by derived classes
 
         virtual int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
-        virtual int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
-        virtual int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
-        virtual int pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
-        virtual int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
+        virtual int pushElemListToBuffer(int n, int *list, int *wraplist, double *buf, int operation, std::list<std::string> * properties, double *dlo, double *dhi, bool scale,bool translate, bool rotate);
+        virtual int popElemListFromBuffer(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate);
+        virtual int pushElemListToBufferReverse(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate);
+        virtual int popElemListFromBufferReverse(int n, int *list, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate);
 
-        virtual int elemBufSize(int operation,bool scale,bool translate,bool rotate);
+        virtual int elemBufSize(int operation, std::list<std::string> * properties, bool scale,bool translate,bool rotate);
         virtual int pushElemToBuffer(int i, double *buf,int operation,bool scale,bool translate,bool rotate);
         virtual int popElemFromBuffer(double *buf,int operation,bool scale,bool translate,bool rotate);
 
@@ -145,8 +152,9 @@ namespace LAMMPS_NS
         void borders();
         void clearGhosts();
 
-        bool checkBorderElementLeft(int,int,double,double);
-        bool checkBorderElementRight(int,int,double,double);
+        int checkBorderElement (const int, const int, const int, const double, const double) const;
+        int checkBorderElementLeft (const int, const int, const double, const double) const;
+        int checkBorderElementRight(const int, const int, const double, const double) const;
 
         // lo-level parallelization
         int pushExchange(int dim);
@@ -208,6 +216,7 @@ namespace LAMMPS_NS
 
         double *slablo_,*slabhi_;
         int **sendlist_;             // list of elements to send in each swap
+        int **sendwraplist_;         // whether an element needs to be wrapped or not
         int *maxsendlist_;           // max size of send list for each swap
 
         int *pbc_flag_;              // general flag for sending atoms thru PBC

@@ -50,25 +50,28 @@ FixStyle(contactproperty/atom/wall,FixContactPropertyAtomWall)
 #define LMP_FIX_CONTACT_PROPERTY_ATOM_WALL_H
 
 #include "fix_contact_property_atom.h"
+#include "fix_mesh_surface.h"
 
 namespace LAMMPS_NS {
 
 class FixContactPropertyAtomWall : public FixContactPropertyAtom {
-  friend class Neighbor;
-  friend class PairGran;
+    friend class Neighbor;
+    friend class PairGran;
 
- public:
-  FixContactPropertyAtomWall(class LAMMPS *, int, char **);
-  ~FixContactPropertyAtomWall();
+public:
+    FixContactPropertyAtomWall(class LAMMPS *, int, char **);
+    ~FixContactPropertyAtomWall();
 
     void clear();
-    bool haveContact(const int iP, const int idTri, double *&history);
+    bool haveContact(const int iP, const int idTri, double *&history) const;
 
- private:
+    FixMeshSurface *getMesh() const;
 
-  class FixMeshSurface *fix_mesh_surface_;
-  class FixPropertyAtom *fix_nneighs_;
-  class PrimitiveWall *primitive_wall_;
+private:
+
+    FixMeshSurface *fix_mesh_surface_;
+    class FixPropertyAtom *fix_nneighs_;
+    class PrimitiveWall *primitive_wall_;
 };
 
 }

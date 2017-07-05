@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputePEAtom : public Compute {
  public:
-  ComputePEAtom(class LAMMPS *, int, char **);
+  ComputePEAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputePEAtom();
   void init() {}
   void compute_peratom();

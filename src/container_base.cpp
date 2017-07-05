@@ -67,11 +67,12 @@ using namespace LAMMPS_NS;
     doNotReset_(false),
     container_statistics_raw_data_(0),
     container_statistics_scale_data_(0),
-    container_statistics_reduced_scale_data_(0),
+    container_statistics_scale_average_data_(0),
     statLevel_(0),
     weighting_factor_(0.1),
     scalingContainer_(false),
-    averaging_forget_(false)
+    enable_favre_(false),
+    wrapPeriodic_(false)
   {
   }
 
@@ -85,11 +86,12 @@ using namespace LAMMPS_NS;
     doNotReset_(false),
     container_statistics_raw_data_(0),
     container_statistics_scale_data_(0),
-    container_statistics_reduced_scale_data_(0),
+    container_statistics_scale_average_data_(0),
     statLevel_(0),
     weighting_factor_(0.1),
     scalingContainer_(false),
-    averaging_forget_(false)
+    enable_favre_(false),
+    wrapPeriodic_(false)
   {
       if(_id)
       {
@@ -108,11 +110,12 @@ using namespace LAMMPS_NS;
     doNotReset_(false),
     container_statistics_raw_data_(0),
     container_statistics_scale_data_(0),
-    container_statistics_reduced_scale_data_(0),
+    container_statistics_scale_average_data_(0),
     statLevel_(0),
     weighting_factor_(0.1),
     scalingContainer_(false),
-    averaging_forget_(false)
+    enable_favre_(false),
+    wrapPeriodic_(false)
   {
           setProperties(_id, _comm, _ref,_restart,_scalePower);
   }
@@ -127,11 +130,12 @@ using namespace LAMMPS_NS;
      doNotReset_(false),
      container_statistics_raw_data_(orig.container_statistics_raw_data_),
      container_statistics_scale_data_(orig.container_statistics_scale_data_),
-     container_statistics_reduced_scale_data_(orig.container_statistics_reduced_scale_data_),
+     container_statistics_scale_average_data_(orig.container_statistics_scale_average_data_),
      statLevel_(orig.statLevel_),
      weighting_factor_(orig.weighting_factor_),
      scalingContainer_(orig.scalingContainer_),
-     averaging_forget_(orig.averaging_forget_)
+     enable_favre_(orig.enable_favre_),
+     wrapPeriodic_(orig.wrapPeriodic_)
   {
 
   }
@@ -188,14 +192,14 @@ using namespace LAMMPS_NS;
    set container containing raw data for statistics calc
   ------------------------------------------------------------------------- */
 
-  void ContainerBase::setContainerStatistics(double _weighting_factor, class ContainerBase *_cb_stat,
-                                             class ContainerBase *_cb_scale, class ContainerBase *_cb_red_scale, bool _forget)
+  void ContainerBase::setContainerStatistics(const double _weighting_factor, class ContainerBase * const _cb_stat,
+                                             class ContainerBase * const _cb_scale, class ContainerBase * const _cb_scale_avg, const bool _enable_favre)
   {
       weighting_factor_ = _weighting_factor;
       container_statistics_raw_data_ = _cb_stat;
       container_statistics_scale_data_ = _cb_scale;
-      container_statistics_reduced_scale_data_ = _cb_red_scale;
-      averaging_forget_ = _forget;
+      container_statistics_scale_average_data_ = _cb_scale_avg;
+      enable_favre_ = _enable_favre;
 
       statLevel_ = container_statistics_raw_data_->getStatLevel()+1;
   }
@@ -218,9 +222,4 @@ using namespace LAMMPS_NS;
       if(strEndWith(id_,AVERAGESUFFIX))
           return calcSumFromContainer();
       return false;
-  }
-
-  bool ContainerBase::normalizeStatistics()
-  {
-      return normalizeContainer();
   }

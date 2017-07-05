@@ -53,6 +53,7 @@
 #include "compute_pair_gran_local.h"
 #include "contact_interface.h"
 #include "fix_relax_contacts.h"
+#include "fix_property_atom.h"
 #include <vector>
 #include <string>
 
@@ -120,6 +121,9 @@ public:
   inline bool storeContactForces() const
   { return store_contact_forces_; }
 
+  inline int storeContactForcesEvery() const
+  { return store_contact_forces_every_; }
+
   inline bool storeContactForcesStress()
   { return store_contact_forces_stress_; }
 
@@ -168,8 +172,17 @@ public:
     return offset;
   }
 
+  void add_dissipated_energy(const double e)
+  { dissipated_energy_ += e; }
+
+  double get_dissipated_energy()
+  { return dissipated_energy_; }
+
   void do_store_contact_forces()
   { store_contact_forces_ = true; }
+
+  void do_store_contact_forces_every(int ev)
+  { store_contact_forces_ = true;  store_contact_forces_every_ = ev; }
 
   void do_relax_region(FixRelaxContacts *_fr)
   { fix_relax_ = _fr; }
@@ -179,6 +192,15 @@ public:
 
   void do_store_multicontact_data()
   { store_multicontact_data_ = true; }
+
+  class FixContactHistory* get_fix_history() const
+  { return fix_history; }
+
+  bool store_sum_normal_force() const
+  { return fix_sum_normal_force_ != NULL; }
+
+  double * get_sum_normal_force_ptr(const int i)
+  { return &(fix_sum_normal_force_->vector_atom[i]); }
 
  protected:
 
@@ -226,6 +248,7 @@ public:
 
   // storage for per-contact forces and torque
   bool store_contact_forces_;
+  int store_contact_forces_every_;
   class FixContactPropertyAtom *fix_contact_forces_;
 
   // storage for per-contact forces and relative position (for goldhirsch stress model)
@@ -234,6 +257,8 @@ public:
   // storage for per contact delta data (for multicontact models)
   bool store_multicontact_data_;
   class FixContactPropertyAtom *fix_store_multicontact_data_;
+  // storage for simplistic pressure computation via normal forces
+  class FixPropertyAtom *fix_sum_normal_force_;
 
   // storage of rigid body masses for use in granular interactions
 
@@ -269,6 +294,9 @@ public:
   int *dnum_index;
 
   FixRelaxContacts *fix_relax_;
+
+  // dissipated energy in wall -> particle contacts
+  double dissipated_energy_;
 };
 
 }

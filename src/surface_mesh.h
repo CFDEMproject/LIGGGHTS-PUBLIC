@@ -87,13 +87,13 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         // iEdge, jEdge return indices of first shared edge
         bool shareEdge(int i, int j, int &iEdge, int &jEdge);
 
-        void move(double *vecTotal, double *vecIncremental);
-        void move(double *vecIncremental);
+        void move(const double * const vecTotal, const double * const vecIncremental);
+        void move(const double * const vecIncremental);
         void scale(double factor);
 
         using MultiNodeMesh<NUM_NODES>::rotate;
-        void rotate(double *totalQ, double *dQ,double *origin);
-        void rotate(double *dQ,double *origin);
+        void rotate(const double * const totalQ, const double * const dQ, const double * const origin);
+        void rotate(const double * const dQ, const double * const origin);
 
         virtual int generateRandomOwnedGhost(double *pos) = 0;
         virtual int generateRandomOwnedGhostWithin(double *pos,double delta) = 0;
@@ -105,6 +105,8 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
 
         int n_active_edges(int i);
         int n_active_corners(int i);
+
+        void extrudePlanarMesh(const double length, double * &extrusion_tri_nodes, int &extrusion_tri_count);
 
         // public inline access
 
@@ -216,6 +218,8 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         int searchElementByAreaAcc(double area,int lo, int hi);
 
         void growSurface(int iSrf, double by = 1e-13);
+
+        void extrudeEdge(const int nElem, const int edge, const double * const extrudeVec, int &count, double * extrusion_tri_nodes);
 
         // mesh properties
         double curvature_;

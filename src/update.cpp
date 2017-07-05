@@ -70,6 +70,7 @@ Update::Update(LAMMPS *lmp) : Pointers(lmp)
   char *str;
 
   ntimestep = 0;
+  ntimestep_reset_since_last_run = false;
   timestep_set = false;
   atime = 0.0;
   atimestep = 0;
@@ -144,6 +145,8 @@ void Update::init()
   // only set first_update if a run or minimize is being performed
 
   first_update = 1;
+
+  ntimestep_reset_since_last_run = false;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -448,6 +451,7 @@ void Update::reset_timestep(int narg, char **arg)
 void Update::reset_timestep(bigint newstep)
 {
   
+  ntimestep_reset_since_last_run = true;
   bigint oldtimestep = ntimestep;
 
   ntimestep = newstep;

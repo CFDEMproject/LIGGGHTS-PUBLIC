@@ -260,20 +260,20 @@ int jacobi(double **matrix, double *evalues, double **evectors)
    perform a single Jacobi rotation
 ------------------------------------------------------------------------- */
 
-void rotate(double matrix[3][3], int i, int j, int k, int l,
-            double s, double tau)
+void rotate(double matrix[3][3], const int i, const int j, const int k, const int l,
+            const double s, const double tau)
 {
-  double g = matrix[i][j];
-  double h = matrix[k][l];
+  const double g = matrix[i][j];
+  const double h = matrix[k][l];
   matrix[i][j] = g-s*(h+g*tau);
   matrix[k][l] = h+s*(g-h*tau);
 }
 
-void rotate(double **matrix, int i, int j, int k, int l,
-            double s, double tau)
+void rotate(double * const * const matrix, const int i, const int j, const int k, const int l,
+            const double s, const double tau)
 {
-  double g = matrix[i][j];
-  double h = matrix[k][l];
+  const double g = matrix[i][j];
+  const double h = matrix[k][l];
   matrix[i][j] = g-s*(h+g*tau);
   matrix[k][l] = h+s*(g-h*tau);
 }

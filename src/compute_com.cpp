@@ -52,10 +52,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeCOM::ComputeCOM(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeCOM::ComputeCOM(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute com command");
+  if (narg != iarg) error->all(FLERR,"Illegal compute com command");
 
   vector_flag = 1;
   size_vector = 3;

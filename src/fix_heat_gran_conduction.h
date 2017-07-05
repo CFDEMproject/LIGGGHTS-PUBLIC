@@ -62,7 +62,8 @@ namespace LAMMPS_NS {
 
     int setmask();
     void init();
-    virtual void post_force(int);
+    virtual void pre_force(int vflag);
+    virtual void post_force(int vflag);
 
     virtual void cpl_evaluate(class ComputePairGranLocal *);
     void register_compute_pair_local(ComputePairGranLocal *);
@@ -81,8 +82,12 @@ namespace LAMMPS_NS {
     bool store_contact_data_;
     class FixPropertyAtom* fix_conduction_contact_area_;
     class FixPropertyAtom* fix_n_conduction_contacts_;
+    class FixPropertyAtom* fix_wall_heattransfer_coeff_;
+    class FixPropertyAtom* fix_wall_temperature_;
     double *conduction_contact_area_;
     double *n_conduction_contacts_;
+    double *wall_heattransfer_coeff_;
+    double *wall_temp_;
 
     // model for contact area calculation
     int area_calculation_mode_;

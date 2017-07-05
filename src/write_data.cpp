@@ -146,6 +146,7 @@ void WriteData::command(int narg, char **arg)
   comm->exchange();
   comm->borders();
   if (domain->triclinic) domain->lamda2x(atom->nlocal+atom->nghost);
+  modify->forceMeshExchange(); // call explicit exchange of mesh data
 
   write(file);
 

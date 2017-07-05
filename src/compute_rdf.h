@@ -59,7 +59,7 @@ namespace LAMMPS_NS {
 
 class ComputeRDF : public Compute {
  public:
-  ComputeRDF(class LAMMPS *, int, char **);
+  ComputeRDF(class LAMMPS *, int &iarg, int, char **);
   ~ComputeRDF();
   void init();
   void init_list(int, class NeighList *);

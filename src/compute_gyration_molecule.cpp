@@ -56,18 +56,16 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeGyrationMolecule::ComputeGyrationMolecule(LAMMPS *lmp,
-                                                 int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeGyrationMolecule::ComputeGyrationMolecule(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 3) error->all(FLERR,"Illegal compute gyration/molecule command");
+  if (narg < iarg) error->all(FLERR,"Illegal compute gyration/molecule command");
 
   if (atom->molecular == 0)
     error->all(FLERR,"Compute gyration/molecule requires molecular atom style");
 
   tensor = 0;
 
-  int iarg = 3;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"tensor") == 0) {
       tensor = 1;

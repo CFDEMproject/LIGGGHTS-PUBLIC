@@ -84,6 +84,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "error.h"
+#include "granular_styles.h"
 
 using namespace LAMMPS_NS;
 
@@ -97,6 +98,7 @@ using namespace LAMMPS_NS;
 
 LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
 {
+  regGranStyles = new RegisterGranularStyles();
   memory = new Memory(this);
   error = new Error(this);
   universe = new Universe(this,communicator);
@@ -296,7 +298,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   // set universe screen and logfile
 
   if (universe->me == 0) {
-    if (screenflag == 0)
+	  if (screenflag == 0)
       universe->uscreen = stdout;
     else if (strcmp(arg[screenflag],"none") == 0)
       universe->uscreen = NULL;
@@ -326,7 +328,7 @@ LAMMPS::LAMMPS(int narg, char **arg, MPI_Comm communicator)
   }
 
   if (universe->me > 0) {
-    if (screenflag == 0) universe->uscreen = stdout;
+	if (screenflag == 0) universe->uscreen = stdout;
     else universe->uscreen = NULL;
     universe->ulogfile = NULL;
     universe->uthermofile = NULL; 
@@ -571,6 +573,7 @@ LAMMPS::~LAMMPS()
 {
   destroy();
 
+  delete regGranStyles;
   delete citeme;
 
   if (universe->nworlds == 1) {
@@ -870,3 +873,4 @@ void LAMMPS::print_style(const char *str, int &pos)
     pos += 128;
   }
 }
+

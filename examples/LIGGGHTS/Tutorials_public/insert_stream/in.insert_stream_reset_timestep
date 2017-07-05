@@ -6,16 +6,11 @@ newton		off
 communicate	single vel yes
 #processors	2 1 1
 
-reset_timestep  0
-reset_timestep  50000
-
-
 units		si
 
 region		reg block -1 1 -1 1 -0.05 2.85 units box
 #create_box	1 reg
-read_restart    liggghts.restart
-
+read_restart    post/liggghts.restart
 
 neighbor	0.01 bin
 neigh_modify	delay 0
@@ -59,10 +54,12 @@ thermo_style	custom step atoms ke c_1 vol
 thermo		1000
 thermo_modify	lost ignore norm no
 
+reset_timestep  0
+reset_timestep  50000
+
 #insert the first particles so that dump is not empty
 run		1
-dump		dmp all custom 800 post/dump*.stream id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+dump		dmp all custom/vtk 800 post/stream_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 
 #insert particles
 run             50000
-

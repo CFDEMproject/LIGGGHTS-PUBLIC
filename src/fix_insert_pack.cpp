@@ -130,6 +130,16 @@ FixInsertPack::FixInsertPack(LAMMPS *lmp, int narg, char **arg) :
         error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'warn_region'");
       iarg += 2;
       hasargs = true;
+    } else if (strcmp(arg[iarg],"check_dist_from_subdomain_border") == 0) {
+      if (iarg+2 > narg) error->fix_error(FLERR,this,"");
+      if(strcmp(arg[iarg+1],"yes") == 0)
+        check_dist_from_subdomain_border_ = true;
+      else if(strcmp(arg[iarg+1],"no") == 0)
+        check_dist_from_subdomain_border_ = false;
+      else
+        error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'check_dist_from_subdomain_border'");
+      iarg += 2;
+      hasargs = true;
     } else if(strcmp(style,"insert/pack") == 0)
         error->fix_error(FLERR,this,"unknown keyword");
   }
@@ -162,6 +172,8 @@ void FixInsertPack::init_defaults()
 
       insertion_ratio = 0.;
 
+      check_dist_from_subdomain_border_ = true;
+
       warn_region = true;
 }
 
@@ -192,6 +204,8 @@ void FixInsertPack::calc_insertion_properties()
     ins_region->reset_random(seed + SEED_OFFSET);
 
     calc_region_volume_local();
+    //if(comm->me == 0)
+    //  printf("Total volume of the insertion region: %e\n",region_volume);
     if(region_volume <= 0. || region_volume_local < 0. || (region_volume_local - region_volume)/region_volume > 1e-3 )
         error->one(FLERR,"Fix insert: Region volume calculation with MC failed");
 
@@ -323,6 +337,8 @@ int FixInsertPack::calc_ninsert_this()
       insertion_ratio = mass_region / masstotal_region;
   }
   else error->one(FLERR,"Internal error in FixInsertPack::calc_ninsert_this()");
+  //if(comm->me == 0)
+  //  printf("Target number of particles to be inserted: %d\n", ninsert_this);
 
   // can be < 0 due to overflow, round-off etc
   if(ninsert_this < -200000)
@@ -467,7 +483,7 @@ void FixInsertPack::x_v_omega(int ninsert_this_local,int &ninserted_this_local, 
 
                 }
                 
-                while(ntry < maxtry && domain->dist_subbox_borders(pos) < rbound);
+                while((check_dist_from_subdomain_border_) && (ntry < maxtry && domain->dist_subbox_borders(pos) < rbound));
 
                 if(ntry == maxtry) break;
 

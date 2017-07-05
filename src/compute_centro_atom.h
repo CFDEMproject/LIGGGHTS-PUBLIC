@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeCentroAtom : public Compute {
  public:
-  ComputeCentroAtom(class LAMMPS *, int, char **);
+  ComputeCentroAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputeCentroAtom();
   void init();
   void init_list(int, class NeighList *);

@@ -69,8 +69,8 @@ using namespace voro;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeVoronoi::ComputeVoronoi(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeVoronoi::ComputeVoronoi(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
   int sgroup;
 
@@ -83,7 +83,6 @@ ComputeVoronoi::ComputeVoronoi(LAMMPS *lmp, int narg, char **arg) :
   radstr = NULL;
   onlyGroup = false;
 
-  int iarg = 3;
   while ( iarg<narg ) {
     if (strcmp(arg[iarg], "only_group") == 0) {
       onlyGroup = true;

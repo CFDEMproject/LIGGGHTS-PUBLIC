@@ -170,9 +170,9 @@
   mp = mass of particles to be inserted (positive float)
   INF =  insert as many particles as possible
 <em>particlerate</em> values = pr
-  pr = particle inseration rate (particles/time units)
+  pr = particle insertion rate (particles/time units)
 <em>massrate</em> values = mr
-  mr = mass inseration rate (mass/time units)
+  mr = mass insertion rate (mass/time units)
 <em>insert_every</em> value = ie
   ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
 <em>start</em> value = ts
@@ -206,20 +206,21 @@
   q1 q2 q3 q4 = quaternion values for constant orientation
 <em>omega</em> values = constant omegax omegay omegaz
   constant = obligatory word
-  omegax = x-comonent of angular velocity (1/time units)
-  omegay = y-comonent of angular velocity (1/time units)
-  omegaz = z-comonent of angular velocity (1/time units)
+  omegax = x-component of angular velocity (1/time units)
+  omegay = y-component of angular velocity (1/time units)
+  omegaz = z-component of angular velocity (1/time units)
 <em>set_property</em> values = property-varname val
   property-varname = variable name of a <a class="reference internal" href="fix_property.html"><em>fix property/atom</em></a> holding a scalar value for each particle
   val = value to initialize the property with upon insertion
 </pre>
 <ul class="simple">
 <li>following the general keyword/value section, one or more rate_region keyword/value pairs can be appended for the fix insert/rate/region command</li>
-<li>rate_region keywords = <em>region</em> or <em>ntry_mc</em></li>
+<li>rate_region keywords = <em>region</em> or <em>check_dist_from_subdomain_border</em> or <em>ntry_mc</em></li>
 </ul>
 <pre class="literal-block">
 <em>region</em> value = region-ID
   region-ID = ID of the region where the particles will be generated (positive integer)
+<em>check_dist_from_subdomain_border</em> values = yes or no
 <em>ntry_mc</em> values = n
   n = number of Monte-Carlo steps for calculating the region's volume  (positive integer)
 </pre>
@@ -231,7 +232,7 @@
 <p><strong>General description:</strong></p>
 <p>Insert particles into a granular run every few timesteps
 within a specified region at a specified rate.</p>
-<p>The <em>verbose</em> keyword controlls whether statistics about particle
+<p>The <em>verbose</em> keyword controls whether statistics about particle
 insertion is output to the screen each time particles are inserted.</p>
 <p>This command must use the <em>region</em> keyword to define an insertion
 volume. The specified region must have been previously defined with a
@@ -260,10 +261,14 @@ specified in the fix insert command, as well as the groups specified
 in the <a class="reference internal" href="fix_particledistribution_discrete.html"><em>fix_particledistribution_discrete</em></a> and <a class="reference internal" href="fix_particletemplate_sphere.html"><em>fix_particletemplate_sphere</em></a>
 command (all of which can also be &#8220;all&#8221;).</p>
 <p>The keyword <em>overlapcheck</em> controls if overlap is checked for at insertion,
-both within the inserted particle package and with other existig particles.
+both within the inserted particle package and with other existing particles.
 If this option is turned off, insertion will scale very well in parallel,
 otherwise not. Be aware that in case of no overlap check, highly overlapping
 configurations will be produced, so you will have to relax these configurations.</p>
+<p>With keyword <em>check_dist_from_subdomain_border</em>, the user can specify if
+in case of <em>overlapcheck</em> = yes particles are inserted only at least one
+bounding radius away from processor domain borders to avoid possible
+overlaps with particles inserted on another process.</p>
 <p>If overlapcheck if performed, the number of insertion attempts per
 particle can be specified via the <em>maxattempt</em> keyword. Each timestep
 particles are inserted, the command will make up to a total of M tries
@@ -344,7 +349,7 @@ is a tet mesh region.</p>
 <p>The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
 duration = insert_every, ntry_mc = 100000, random_distribute = exact,
-<em>compress_tags</em> = no</p>
+<em>compress_tags</em> = no, <em>check_dist_from_subdomain_border</em> = yes</p>
 </div>
 </div>
 

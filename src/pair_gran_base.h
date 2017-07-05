@@ -47,6 +47,7 @@
 #ifndef PAIR_GRAN_BASE_H_
 #define PAIR_GRAN_BASE_H_
 
+#include <vector>
 #include "contact_interface.h"
 #include "math_extra_liggghts.h"
 
@@ -60,6 +61,7 @@
 #include "neigh_list.h"
 #include "fix_contact_property_atom.h"
 #include "os_specific.h"
+#include "fix_insert_stream_predefined.h"
 
 #include "granular_pair_style.h"
 
@@ -88,11 +90,12 @@ class Granular : private Pointers, public IGranularPairStyle {
   }
 
 public:
-  Granular(class LAMMPS * lmp, PairGran* parent) : Pointers(lmp),
+  Granular(class LAMMPS * lmp, PairGran* parent, const int64_t hash) : Pointers(lmp),
     aligned_sidata(aligned_malloc<SurfacesIntersectData>(32)),
     aligned_i_forces(aligned_malloc<ForceData>(32)),
     aligned_j_forces(aligned_malloc<ForceData>(32)),
-    cmodel(lmp, parent,false /*is_wall*/) {
+    cmodel(lmp, parent,false /*is_wall*/, hash)
+  {
   }
 
   virtual ~Granular() {
@@ -145,7 +148,7 @@ public:
 
   virtual void write_restart_settings(FILE * fp)
   {
-    int64_t hashcode = ContactModel::STYLE_HASHCODE;
+    int64_t hashcode = cmodel.hashcode();
     fwrite(&hashcode, sizeof(int64_t), 1, fp);
   }
 
@@ -158,10 +161,10 @@ public:
       UNUSED(dummy);
       // sanity check
       if(hashcode != -1) { // backward compability
-          if(hashcode != ContactModel::STYLE_HASHCODE)
+          if(hashcode != cmodel.hashcode())
               error->one(FLERR,"wrong pair style loaded!");
       } else {
-          if(selected != ContactModel::STYLE_HASHCODE)
+          if(selected != cmodel.hashcode())
               error->one(FLERR,"wrong pair style loaded!");
       }
     }
@@ -219,6 +222,18 @@ public:
     const int freeze_group_bit = pg->freeze_group_bit();
 
     const double contactDistanceMultiplier = neighbor->contactDistanceFactor*neighbor->contactDistanceFactor;
+
+    // fix insert/stream/predefined
+    // check if inserted
+    // use most_recent_ins_step of this fix for this
+    std::vector<FixInsertStreamPredefined*> fix_insert;
+    int nfix_insert = modify->n_fixes_style("insert/stream/predefined");
+    for (int i = 0; i < nfix_insert; i++)
+    {
+        FixInsertStreamPredefined * fix = static_cast<FixInsertStreamPredefined*>(modify->find_fix_style("insert/stream/predefined", i));
+        if (fix->has_inserted())
+            fix_insert.push_back(fix);
+    }
 
     // clear data, just to be safe
     memset(aligned_sidata, 0, sizeof(SurfacesIntersectData));
@@ -299,6 +314,15 @@ public:
             }
         #endif
 
+        if (!fix_insert.empty())
+        {
+            std::vector<FixInsertStreamPredefined*>::iterator it = fix_insert.begin();
+            for (; it != fix_insert.end(); it++)
+            {
+                (*it)->copy_history(i, j, sidata.contact_history);
+            }
+        }
+
         i_forces.reset();
         j_forces.reset();
 
@@ -376,7 +400,7 @@ public:
 
           cmodel.surfacesIntersect(sidata, i_forces, j_forces);
 
-          cmodel.endSurfacesIntersect(sidata, 0, i_forces.delta_F);
+          cmodel.endSurfacesIntersect(sidata, 0, i_forces, j_forces);
 
           // if there is a surface touch, there will always be a force
           sidata.has_force_update = true;
@@ -399,6 +423,19 @@ public:
               const double relax_j = pg->relax(j);
               force_update(relax_j,f[j], torque[j], j_forces);
             }
+
+            // summation of f.n to compute a simplistic pressure
+            if (pg->store_sum_normal_force())
+            {
+                double * const iforce = pg->get_sum_normal_force_ptr(i);
+                const double fDotN = vectorDot3D(i_forces.delta_F, sidata.en);
+                *iforce += fDotN;
+                if (j < nlocal || newton_pair)
+                {
+                    double * const jforce = pg->get_sum_normal_force_ptr(j);
+                    *jforce += fDotN;
+                }
+            }
           }
 
           if (pg->cpl() && addflag)
@@ -407,7 +444,7 @@ public:
           if (pg->evflag)
             pg->ev_tally_xyz(i, j, nlocal, newton_pair, 0.0, 0.0,i_forces.delta_F[0],i_forces.delta_F[1],i_forces.delta_F[2],sidata.delta[0],sidata.delta[1],sidata.delta[2]);
 
-          if (store_contact_forces)
+          if (store_contact_forces && 0 == update->ntimestep % pg->storeContactForcesEvery())
           {
             double forces_torques_i[6],forces_torques_j[6];
 

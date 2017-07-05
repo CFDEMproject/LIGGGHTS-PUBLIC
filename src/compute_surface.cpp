@@ -63,8 +63,8 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeSurface::ComputeSurface(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg),
+ComputeSurface::ComputeSurface(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg),
   nmax_(0),
   list_(0),
   is_on_surface_(0),
@@ -79,8 +79,7 @@ ComputeSurface::ComputeSurface(LAMMPS *lmp, int narg, char **arg) :
 
     // parse args
 
-    int iarg = 3;
-    if (narg < 3) error->compute_error(FLERR,this,"not enoguh arguments");
+    if (narg < iarg) error->compute_error(FLERR,this,"not enoguh arguments");
 
     bool hasargs = true;
     while(iarg < narg && hasargs)

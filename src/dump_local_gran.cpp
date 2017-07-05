@@ -85,7 +85,7 @@
 using namespace LAMMPS_NS;
 
 enum{INT,DOUBLE,STRING}; // same as in DumpCFG
-enum{X1,X2,V1,V2,ID1,ID2,F,FN,FT,TORQUE,TORQUEN,TORQUET,AREA,DELTA,HEAT}; // dumps positions, force, normal and tangential forces, torque, normal and tangential torque
+enum{X1,X2,CP,V1,V2,ID1,ID2,F,FN,FT,TORQUE,TORQUEN,TORQUET,AREA,DELTA,HEAT}; // dumps positions, force, normal and tangential forces, torque, normal and tangential torque
 
 /* ---------------------------------------------------------------------- */
 
@@ -319,6 +319,8 @@ void DumpLocalGran::buf2arrays(int n, double *mybuf)
 
         pid[0] = points->InsertNextPoint(mybuf[idata*size_one],mybuf[idata*size_one+1],mybuf[idata*size_one+2]);
         pid[1] = points->InsertNextPoint(mybuf[idata*size_one+3],mybuf[idata*size_one+4],mybuf[idata*size_one+5]);
+        if(cpgl_->offset_contact_point() > 0)
+         points->InsertNextPoint(mybuf[idata*size_one+6],mybuf[idata*size_one+7],mybuf[idata*size_one+8]);
 
         // define the line going from point pid[0] to pid[1]
         vtkSmartPointer<vtkLine> line0 = vtkSmartPointer<vtkLine>::New();
@@ -328,6 +330,8 @@ void DumpLocalGran::buf2arrays(int n, double *mybuf)
         lineCells->InsertNextCell(line0);
 
         int j = 6; // 0,1,2,3,4,5 = 2 * (x,y,z) handled just above
+        if(cpgl_->offset_contact_point() > 0)
+          j += 3;
         for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it) {
 
             vtkAbstractArray *paa = it->second;
@@ -424,6 +428,8 @@ void DumpLocalGran::reset_vtk_data_containers()
 
     ++it;
     ++it;
+    if(cpgl_->offset_contact_point() > 0)
+      ++it;
 
     for (; it!=vtype.end(); ++it) {
 
@@ -465,6 +471,14 @@ void DumpLocalGran::define_properties()
     vtype[X2] = DOUBLE;
     name[X2] = "pos2";
     vector_set.insert(X2);
+
+    if(cpgl_->offset_contact_point() > 0)
+    {
+            pack_choice[CP] = &DumpLocalGran::pack_contact_point;
+            vtype[CP] = DOUBLE;
+            name[CP] = "contact_point";
+            vector_set.insert(CP);
+    }
 
     if(cpgl_->offset_v1() > 0)
     {
@@ -771,6 +785,15 @@ void DumpLocalGran::pack_heat(int n)
 
     for (int i = 0; i < nchoose; i++) {
         buf[n] = cpgl_->get_data()[i][offset];
+        n += size_one;
+    }
+}
+void DumpLocalGran::pack_contact_point(int n)
+{
+    int offset = cpgl_->offset_contact_point();
+
+    for (int i = 0; i < nchoose; i++) {
+      vectorCopy3D(&cpgl_->get_data()[i][offset],&buf[n]);
         n += size_one;
     }
 }

@@ -129,7 +129,7 @@ RegTetMesh::RegTetMesh(LAMMPS *lmp, int narg, char **arg) :
     tri_mesh.useAsInsertionMesh(false);
     build_neighs();
     build_surface();
-    tri_mesh.initalSetup();
+    tri_mesh.initialSetup();
   } else bboxflag = 0;
 
   cmax = 1;

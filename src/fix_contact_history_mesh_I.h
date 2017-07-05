@@ -138,7 +138,7 @@
       
       int idPartnerTri = partner_[iP][i];
 
-      if(idPartnerTri >= 0 && idPartnerTri != idTri && mesh_->map(idPartnerTri) >= 0 && mesh_->areCoplanarNodeNeighs(idPartnerTri,idTri))
+      if(idPartnerTri >= 0 && idPartnerTri != idTri && mesh_->map(idPartnerTri, 0) >= 0 && mesh_->areCoplanarNodeNeighs(idPartnerTri,idTri))
       {
         
         // other coplanar contact handled already - do not handle this contact
@@ -160,7 +160,7 @@
     for(int i = 0; i < nneighs; i++)
     {
       
-      if(tri[i] >= 0 && tri[i] != idTri && mesh_->map(tri[i]) >= 0 && mesh_->areCoplanarNodeNeighs(tri[i],idTri))
+      if(tri[i] >= 0 && tri[i] != idTri && mesh_->map(tri[i], 0) >= 0 && mesh_->areCoplanarNodeNeighs(tri[i],idTri))
       {
           
           // copy contact history

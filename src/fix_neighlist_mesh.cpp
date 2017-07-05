@@ -195,9 +195,7 @@ void FixNeighlistMesh::min_setup_pre_force(int foo)
 void FixNeighlistMesh::pre_delete(bool unfixflag)
 {
     if(unfixflag)
-    {
         modify->delete_fix(fix_nneighs_->id);
-    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -296,9 +294,10 @@ void FixNeighlistMesh::pre_force(int)
       numAllContacts_ += triangle.contacts.size();
     }
 
-    if(globalNumAllContacts_) {
-      MPI_Sum_Scalar(numAllContacts_,world);
-    }
+    if(globalNumAllContacts_)
+        MPI_Sum_Scalar(numAllContacts_,world);
+
+    fix_nneighs_->do_forward_comm();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -330,13 +329,12 @@ void FixNeighlistMesh::checkBin(AtomVecEllipsoid::Bonus *bonus, std::vector<int>
       #ifdef TRI_LINE_ACTIVE_FLAG
       else if(haveNonSpherical) //if non-spherical, check line interaction as well
       {
-          double *lineOrientation; //keep empty, not needed
           double length;
           double cylRadius;
           shape     = bonus[ellipsoid[iAtom]].shape;
           length    = 2.*MathExtraLiggghts::max(shape[0],shape[1],shape[2]);
           cylRadius =    MathExtraLiggghts::min(shape[0],shape[1],shape[2]);
-          if( mesh_->resolveTriSegmentNeighbuild(iTri, lineOrientation ,x[iAtom], length*contactDistanceFactor, cylRadius, skin ) )
+          if( mesh_->resolveTriSegmentNeighbuild(iTri, x[iAtom], length*contactDistanceFactor, cylRadius, skin ) )
           {
             neighbors.push_back(iAtom);
             fix_nneighs_->set_vector_atom_int(iAtom, fix_nneighs_->get_vector_atom_int(iAtom)+1); // num_neigh++

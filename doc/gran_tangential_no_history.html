@@ -158,10 +158,16 @@ tangential no_history [other model_type/model_name pairs as described <a class="
   on = if the <tt class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">bond</span></tt> model is used, then the tangential force is only added if the two particles are not bonded
   of = the normal force is always added if two particles overlap
 </pre>
-<p><strong>LIGGGHTS(R)-PUBLIC vs. LIGGGHTS(R)-PUBLIC Info:</strong></p>
+<pre class="literal-block">
+<em>computeDissipatedEnergy</em> values = 'on' or 'off'
+  on = the tangential model saves the dissipated energy for each contact for the
+  use in <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/dissipated_energy</span></tt>
+  of = no values are saved
+</pre>
+<p><strong>LIGGGHTS(R)-PUBLIC vs. LAMMPS Info:</strong></p>
 <p>This part of <a class="reference internal" href="pair_gran.html"><em>pair gran</em></a> and
 <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>
-is not availabe in LIGGGHTS(R)-PUBLIC.</p>
+is not availabe in LAMMPS.</p>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>

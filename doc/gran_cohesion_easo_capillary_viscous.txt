@@ -123,11 +123,6 @@ If {tangential_reduce} = 'on' then the tangential model will not take the normal
 from this model into account, typically leading to a lower value of tangential force
 (via the Coulomb friction limit)
 
-[Restrictions:]
-
-This model can ONLY be used as part of "pair gran"_pair_gran.html, not as part
-of a "fix wall/gran"_fix_wall_gran.html.
-
 [Output:]
 
 This gran model stores a couple of per-particle properties, for access
@@ -143,6 +138,9 @@ Currently, there is a restriction that these properties can only be accessed
 after a "run 0"_run.html command.
 
 [Restrictions:]
+
+This model can ONLY be used as part of "pair gran"_pair_gran.html, not as part
+of a "fix wall/gran"_fix_wall_gran.html.
 
 The cohesion model is not available for "atom_style"_atom_style.html superquadric
 

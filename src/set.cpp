@@ -92,7 +92,8 @@ enum{TYPE,TYPE_FRACTION,MOLECULE,X,Y,Z,CHARGE,MASS,SHAPE,LENGTH,
      DIPOLE,DIPOLE_RANDOM,QUAT,QUAT_RANDOM, QUAT_DIRECT, THETA,ANGMOM,
      DIAMETER,DENSITY,VOLUME,IMAGE,BOND,ANGLE,DIHEDRAL,IMPROPER,
      MESO_E,MESO_CV,MESO_RHO,INAME,DNAME,
-     VX,VY,VZ,OMEGAX,OMEGAY,OMEGAZ,PROPERTYPERATOM,ROUNDNESS}; 
+     VX,VY,VZ,OMEGAX,OMEGAY,OMEGAZ,PROPERTYPERATOM,ROUNDNESS,
+     ASPECTRATIO, INERTIAX, INERTIAY, INERTIAZ}; 
 
 #define BIG INT_MAX
 
@@ -228,6 +229,30 @@ void Set::command(int narg, char **arg)
       set(OMEGAZ);
       iarg += 2;
 
+    } else if (strcmp(arg[iarg],"inertiax") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
+      if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
+      else dvalue = force->numeric(FLERR,arg[iarg+1]);
+      if(!atom->superquadric_flag)
+        error->all(FLERR,"Cannot set this attribute for this atom style");
+      set(INERTIAX);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"inertiay") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
+      if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
+      else dvalue = force->numeric(FLERR,arg[iarg+1]);
+      if(!atom->superquadric_flag)
+          error->all(FLERR,"Cannot set this attribute for this atom style");
+      set(INERTIAY);
+      iarg += 2;
+    } else if (strcmp(arg[iarg],"inertiaz") == 0) {
+      if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
+      if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
+      else dvalue = force->numeric(FLERR,arg[iarg+1]);
+      if(!atom->superquadric_flag)
+        error->all(FLERR,"Cannot set this attribute for this atom style");
+      set(INERTIAZ);
+      iarg += 2;
     } else if (strcmp(arg[iarg],"charge") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
       if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
@@ -268,6 +293,16 @@ void Set::command(int narg, char **arg)
       if (!atom->superquadric_flag)
         error->all(FLERR,"Cannot set this attribute for this atom style");
       set(ROUNDNESS);
+      iarg += 3;
+    } else if (strcmp(arg[iarg],"aspect_ratio") == 0) {
+      if (iarg+3 > narg) error->all(FLERR,"Illegal set command");
+      if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
+      else xvalue = force->numeric(FLERR,arg[iarg+1]);
+      if (strstr(arg[iarg+2],"v_") == arg[iarg+2]) varparse(arg[iarg+2],2);
+      else yvalue = force->numeric(FLERR,arg[iarg+2]);
+      if (!atom->superquadric_flag)
+        error->all(FLERR,"Cannot set this attribute for this atom style");
+      set(ASPECTRATIO);
       iarg += 3;
     } else if (strcmp(arg[iarg],"length") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
@@ -380,7 +415,7 @@ void Set::command(int narg, char **arg)
       if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
       if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
       else dvalue = force->numeric(FLERR,arg[iarg+1]);
-      if (!atom->vfrac_flag)
+      if (!atom->vfrac_flag && !atom->superquadric_flag)
         error->all(FLERR,"Cannot set this attribute for this atom style");
       if (dvalue <= 0.0) error->all(FLERR,"Invalid volume in set command");
       set(VOLUME);
@@ -744,6 +779,9 @@ void Set::set(int keyword)
     else if (keyword == VY) atom->v[i][1] = dvalue;
     else if (keyword == VZ) atom->v[i][2] = dvalue;
     #ifdef SUPERQUADRIC_ACTIVE_FLAG
+    else if (keyword == INERTIAX) atom->inertia[i][0] = dvalue;
+    else if (keyword == INERTIAY) atom->inertia[i][1] = dvalue;
+    else if (keyword == INERTIAZ) atom->inertia[i][2] = dvalue;
     else if (keyword == OMEGAX && atom->superquadric_flag) {
         atom->omega[i][0] = dvalue;
         MathExtraLiggghtsNonspherical::omega_to_angmom(atom->quaternion[i], atom->omega[i], atom->inertia[i],atom->angmom[i]);
@@ -775,8 +813,10 @@ void Set::set(int keyword)
         
         if(atom->rmass_flag && atom->density_flag && atom->density[i] > 0.)
         {
-          if(atom->superquadric_flag)
-            error->one(FLERR,"Diameter command is incompatible with superquadric atom style!");
+          if(atom->superquadric_flag) {
+            double vol = MY_PI/6.0 * dvalue * dvalue * dvalue;
+            atom->volume[i] = vol;
+          }
           else {
           if (domain->dimension == 2)
             atom->rmass[i] = MY_PI * atom->radius[i]*atom->radius[i] * atom->density[i];
@@ -786,12 +826,15 @@ void Set::set(int keyword)
         }
     }
     else if (keyword == VOLUME) {
+      if (dvalue <= 0.0) error->one(FLERR,"Invalid volume in set command");
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
       if (avec_superquadric)
-        error->one(FLERR,"Cannot set volume for this type of atom");
+        atom->volume[i] = dvalue;
+      else
+        atom->vfrac[i] = dvalue;
+#else
+        atom->vfrac[i] = dvalue;
 #endif
-      if (dvalue <= 0.0) error->one(FLERR,"Invalid volume in set command");
-      atom->vfrac[i] = dvalue;
     }
     else if (keyword == MESO_E) atom->e[i] = dvalue;
     else if (keyword == MESO_CV) atom->cv[i] = dvalue;
@@ -824,6 +867,34 @@ void Set::set(int keyword)
       else
         error->one(FLERR,"Cannot set shape for this type of atom");
     }
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    else if (keyword == ASPECTRATIO) {
+      if(avec_superquadric) {
+        if (xvalue < 0.0 || yvalue < 0.0)
+          error->one(FLERR,"Invalid aspect ratio in set command");
+        if (xvalue > 0.0 || yvalue > 0.0) {
+          if (xvalue == 0.0 || yvalue == 0.0)
+            error->one(FLERR,"Invalid aspect ratio in set command");
+        }
+        double k1 = xvalue;
+        double k2 = yvalue;
+
+        double shape_[3]={1.0, 1.0, 1.0};
+        double f_;
+        double vol = atom->volume[i];
+        MathExtraLiggghtsNonspherical::volume_superquadric(shape_, atom->roundness[i], &f_);
+        atom->shape[i][0] = cbrt(atom->volume[i] / (k1*k2*f_));
+        atom->shape[i][1] = k1*atom->shape[i][0];
+        atom->shape[i][2] = k2*atom->shape[i][0];
+
+        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
+        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->roundness[i], atom->area+i);  //re-calculate surface area
+        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
+      }
+     else
+      error->one(FLERR,"Cannot set shape for this type of atom");
+    }
+#endif // SUPERQUADRIC_ACTIVE_FLAG
    //set roundness parameters for superquadric *
     else if (keyword == ROUNDNESS) {
       if (xvalue < 2.0 || yvalue < 2.0)

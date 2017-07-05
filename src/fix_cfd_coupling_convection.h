@@ -42,6 +42,7 @@
 #ifdef FIX_CLASS
 
 FixStyle(couple/cfd/convection,FixCfdCouplingConvection)
+FixStyle(couple/cfd/radiation,FixCfdCouplingConvection)
 
 #else
 
@@ -65,10 +66,11 @@ class FixCfdCouplingConvection : public Fix {
   virtual void post_force(int);
 
  protected:
-  class FixCfdCoupling* fix_coupling;
-  class FixPropertyAtom* fix_convectiveFlux;
-  class FixPropertyAtom* fix_heatFlux;
-  double T0;
+  bool is_convection_;
+  class FixCfdCoupling* fix_coupling_;
+  class FixPropertyAtom* fix_additionalFlux_; 
+  class FixPropertyAtom* fix_heatFlux_;
+  double T0_;
 };
 
 }

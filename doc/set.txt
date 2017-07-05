@@ -16,11 +16,14 @@ style = {atom} or {type} or {mol} or {group} or {region} :ulb,l
 ID = atom ID range or type range or mol ID range or group ID or region ID :l
 one or more keyword/value pairs may be appended :l
 keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
-          {charge} or {quat} or \
-	  {quat/random} or {diameter} or {shape} or \
-	  {length} or {tri} or {theta} or {angmom} or \
-	  {mass} or {density} or {volume} or {image} or
-	  {bond} or {property/atom} :l
+          {vx} or {vy} or {vz} or \
+          {omegax} or {omegay} or {omegaz} or \
+          {charge} or {quat} or {quat_direct} or \
+          {quat/random} or {diameter} or {shape} or \
+          {length} or {tri} or {theta} or {angmom} or \
+          {mass} or {density} or {volume} or {image} or \
+          {bond} or {add} or {until} or \
+          {property/atom} or {roundness} :l
   {type} value = atom type
     value can be an atom-style variable (see below)
   {type/fraction} values = type fraction seed
@@ -70,6 +73,7 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     value can be an atom-style variable (see below)
   {image} nx ny nz
     nx,ny,nz = which periodic image of the simulation box the atom is in
+  {bond} value = bond type for all bonds between selected atoms
   {add} value = yes no
     yes = add per-atom quantities to a region or a group
   {until} value = final timestep

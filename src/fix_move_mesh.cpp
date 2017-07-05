@@ -51,6 +51,7 @@
 #include "update.h"
 #include "mesh_mover.h"
 #include "container.h"
+#include "style_mesh_mover.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -75,12 +76,25 @@ FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
     if(strcmp(arg[iarg++],"mesh"))
       error->all(FLERR,"Illegal fix move/mesh command, expecting keyword 'mesh'");
 
-    fix_mesh_ = dynamic_cast<FixMesh*>(modify->find_fix_id(arg[iarg++]));
+    fix_mesh_id_ = std::string(arg[iarg++]);
+    fix_mesh_ = dynamic_cast<FixMesh*>(modify->find_fix_id(fix_mesh_id_.c_str()));
     if(fix_mesh_ == 0)
         error->all(FLERR,"Illegal fix move/mesh command, illegal mesh ID provided");
 
     mesh_ = fix_mesh_->mesh();
-    move_ = createMeshMover(lmp,mesh_,this,&arg[iarg],narg-iarg);
+
+    // create mesh movement class
+    if (false)
+        ;
+    #define MESHMOVER_CLASS
+    #define MeshMoverStyle(name, Class) \
+    else if (strcmp(arg[iarg], #name) == 0) \
+        move_ = new Class(lmp, mesh_, this, &arg[iarg], narg-iarg);
+    #include "style_mesh_mover.h"
+    #undef MeshMoverStyle
+    #undef MESHMOVER_CLASS
+    else
+        error->all(FLERR, "Mesh movement type not available");
 
     if(move_ == 0)
       error->all(FLERR,"Illegal fix move/mesh command, illegal arguments");
@@ -90,12 +104,14 @@ FixMoveMesh::FixMoveMesh(LAMMPS *lmp, int narg, char **arg)
     if(fix_mesh_->surfaceVel())
       error->all(FLERR,"Illegal fix move/mesh command, cannot apply move to a mesh using keywords 'velocity' or 'angular_velocity'");
 
+    fix_mesh_->register_move(this);
+
     restart_global = 1;
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixMoveMesh:: post_create()
+void FixMoveMesh::post_create()
 {
     
     move_->post_create();
@@ -140,6 +156,11 @@ void FixMoveMesh::pre_delete(bool unfixflag)
 
     }
 
+    // need to check if the mesh still exists
+    FixMesh * fix_mesh = dynamic_cast<FixMesh*>(modify->find_fix_id(fix_mesh_id_.c_str()));
+    if (fix_mesh)
+        fix_mesh->unregister_move(this);
+
     delete move_;
 }
 
@@ -158,6 +179,14 @@ int FixMoveMesh::setmask()
     mask |= INITIAL_INTEGRATE;
     mask |= FINAL_INTEGRATE;
     return mask;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMoveMesh::init()
+{
+    reset_reference_point();
+    move_->init();
 }
 
 /* ---------------------------------------------------------------------- */
@@ -310,9 +339,26 @@ void FixMoveMesh::reset_reference_point()
         return;
 
     // set value for property
+    double point[3];
+    refpt->get(0,point);
+    
     refpt->set(0,reference_point_);
 
     // set orig value for property
     mesh_->prop().storeGlobalPropOrig(refpt_id);
 
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMoveMesh::move(const double * const dx)
+{
+    move_->move(dx);
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMoveMesh::rotate(const double dphi, const double * const axis, const double * const center)
+{
+    move_->rotate(dphi, axis, center);
 }

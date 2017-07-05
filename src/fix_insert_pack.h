@@ -92,6 +92,9 @@ class FixInsertPack : public FixInsert {
   // ratio how many particles have been inserted
   double insertion_ratio;
 
+  // enforce that
+  bool check_dist_from_subdomain_border_;
+
   // warn if region extends outside box
   bool warn_region;
 

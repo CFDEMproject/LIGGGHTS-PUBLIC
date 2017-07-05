@@ -73,15 +73,16 @@ enum{NCOMMON,NBOND,MAXBOND,MINBOND};
 
 /* ---------------------------------------------------------------------- */
 
-ComputeCNAAtom::ComputeCNAAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeCNAAtom::ComputeCNAAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 4) error->all(FLERR,"Illegal compute cna/atom command");
+  if (narg != iarg+1)
+      error->all(FLERR,"Illegal compute cna/atom command");
 
   peratom_flag = 1;
   size_peratom_cols = 0;
 
-  double cutoff = force->numeric(FLERR,arg[3]);
+  double cutoff = force->numeric(FLERR,arg[iarg++]);
   if (cutoff < 0.0) error->all(FLERR,"Illegal compute cna/atom command");
   cutsq = cutoff*cutoff;
 

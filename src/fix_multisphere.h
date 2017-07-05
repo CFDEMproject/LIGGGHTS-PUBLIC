@@ -58,8 +58,6 @@ FixStyle(multisphere/nointegration,FixMultisphere)
 #include "atom.h"
 #include "comm.h"
 
-using namespace std;
-
 namespace LAMMPS_NS {
 
 enum
@@ -101,7 +99,9 @@ class FixMultisphere : public Fix
 
       void initial_integrate(int);
       virtual void pre_force(int);
+      virtual void pre_final_integrate();
       void final_integrate();
+      void comm_correct_force(bool setupflag);
       virtual void calc_force(bool setupflag);
 
       void add_body_finalize();
@@ -173,6 +173,12 @@ class FixMultisphere : public Fix
       inline double extract_rke()
       { return data().extract_rke(); }
 
+      inline double extract_vave()
+      { return data().extract_vave(); }
+
+      inline double extract_omega_ave()
+      { return data().extract_omega_ave(); }
+
       inline void set_v_body_from_atom_index(int iatom,double *vel)
       {if(body_[iatom] >= 0) multisphere_.set_v_body(body_[iatom],vel); }
 
@@ -203,6 +209,8 @@ class FixMultisphere : public Fix
 
       void scale_displace(int i, double factor)
       { vectorScalarMult3D(displace_[i],factor); }
+
+      void set_v_communicate();
 
       inline void rev_comm_displace()
       {

@@ -60,7 +60,7 @@ class PairGran;
 class ComputePairGranLocal : public Compute {
 
  public:
-  ComputePairGranLocal(class LAMMPS *, int, char **);
+  ComputePairGranLocal(class LAMMPS *, int &iarg, int, char **);
   ~ComputePairGranLocal();
   void post_create();
   void pre_delete(bool uncomputeflag);
@@ -141,6 +141,12 @@ class ComputePairGranLocal : public Compute {
   virtual int offset_heat()
   { return (heatflag > 0 ? posflag*6+velflag*6+idflag*3+fflag*3+fnflag*3+ftflag*3+torqueflag*3+torquenflag*3+torquetflag*3+histflag*dnum+areaflag*1 + deltaflag*1 : -1);}
 
+  virtual int offset_contact_point()
+  {
+    return (cpflag > 0 ?   posflag*6+velflag*6+idflag*3+fflag*3+fnflag*3+ftflag*3+torqueflag*3+torquenflag*3+torquetflag*3+histflag*dnum+areaflag*1 + deltaflag*1 + heatflag*1 : -1);
+    //return offset_history() + get_history_offset("contact_point_offset");
+  }
+
  protected:
 
   int nvalues;      // number of double values per entry
@@ -167,7 +173,7 @@ class ComputePairGranLocal : public Compute {
 
   int ipair;
 
-  int posflag,velflag,idflag,fflag,fnflag,ftflag,torqueflag,torquenflag,torquetflag,histflag,areaflag,deltaflag,heatflag;
+  int posflag,velflag,idflag,fflag,fnflag,ftflag,torqueflag,torquenflag,torquetflag,histflag,areaflag,deltaflag,heatflag,cpflag;
 
   bool   verbose;
 

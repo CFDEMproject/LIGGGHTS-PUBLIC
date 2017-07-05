@@ -44,7 +44,8 @@
 #ifndef LMP_ASSOCIATIVE_POINTER_ARRAY_H
 #define LMP_ASSOCIATIVE_POINTER_ARRAY_H
 
-#include <string.h>
+#include <string>
+#include <list>
 #include <algorithm>
 #include "memory.h"
 
@@ -98,9 +99,9 @@ class AssociativePointerArray
         inline bool reset(class AssociativePointerArray &orig);
         inline bool reset(const char *_id,class AssociativePointerArray &orig);
 
-        void rotate(double *dQ);
-        void move(double *delta);
-        void moveElement(int i,double *delta);
+        void rotate(const double * const dQ);
+        void move(const double * const delta);
+        void moveElement(const int i, const double * const delta);
         void scale(double factor);
 
         inline int bufSize(int operation,bool scale,bool translate,bool rotate) const;
@@ -108,12 +109,12 @@ class AssociativePointerArray
         inline int popFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 
         inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
-        inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int pushElemListToBuffer(int n, int *list, int *wraplist, double *buf, int operation, std::list<std::string> * properties, double *dlo, double *dhi,bool scale,bool translate, bool rotate);
+        inline int popElemListFromBuffer(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate);
+        inline int pushElemListToBufferReverse(int first, int n, double *buf, int operation, std::list<std::string> *properties,bool scale,bool translate, bool rotate);
+        inline int popElemListFromBufferReverse(int n, int *list, double *buf, int operation, std::list<std::string> *properties, bool scale,bool translate, bool rotate);
 
-        inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
+        inline int elemBufSize(int operation, std::list<std::string> * properties, bool scale,bool translate,bool rotate);
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate, bool rotate);
         inline int popElemFromBuffer(double *buf, int operation,bool scale,bool translate, bool rotate);
 

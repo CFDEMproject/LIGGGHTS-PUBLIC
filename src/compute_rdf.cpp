@@ -69,18 +69,18 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeRDF::ComputeRDF(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeRDF::ComputeRDF(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 4 || (narg-4) % 2) error->all(FLERR,"Illegal compute rdf command");
+  if (narg < iarg+1 || (narg-(iarg+1)) % 2) error->all(FLERR,"Illegal compute rdf command");
 
   array_flag = 1;
   extarray = 0;
 
-  nbin = force->inumeric(FLERR,arg[3]);
+  nbin = force->inumeric(FLERR,arg[iarg++]);
   if (nbin < 1) error->all(FLERR,"Illegal compute rdf command");
-  if (narg == 4) npairs = 1;
-  else npairs = (narg-4)/2;
+  if (narg == iarg) npairs = 1;
+  else npairs = (narg-iarg)/2;
 
   size_array_rows = nbin;
   size_array_cols = 1 + 2*npairs;
@@ -93,14 +93,13 @@ ComputeRDF::ComputeRDF(LAMMPS *lmp, int narg, char **arg) :
   jlo = new int[npairs];
   jhi = new int[npairs];
 
-  if (narg == 4) {
+  if (narg == iarg) {
     ilo[0] = 1; ihi[0] = ntypes;
     jlo[0] = 1; jhi[0] = ntypes;
     npairs = 1;
 
   } else {
     npairs = 0;
-    int iarg = 4;
     while (iarg < narg) {
       force->bounds(arg[iarg],atom->ntypes,ilo[npairs],ihi[npairs]);
       force->bounds(arg[iarg+1],atom->ntypes,jlo[npairs],jhi[npairs]);

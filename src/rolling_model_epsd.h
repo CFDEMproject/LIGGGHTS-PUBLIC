@@ -50,6 +50,7 @@ ROLLING_MODEL(ROLLING_EPSD,epsd,2)
 #ifndef ROLLING_MODEL_EPSD_H_
 #define ROLLING_MODEL_EPSD_H_
 #include "contact_models.h"
+#include "rolling_model_base.h"
 #include <algorithm>
 #include <math.h>
 #include "domain.h"
@@ -61,13 +62,11 @@ namespace ContactModels
   using namespace LAMMPS_NS;
 
   template<>
-  class RollingModel<ROLLING_EPSD> : protected Pointers
+  class RollingModel<ROLLING_EPSD> : public RollingModelBase
   {
   public:
-    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
-
-    RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *) :
-        Pointers(lmp), coeffRollFrict(NULL), coeffRollVisc(NULL)
+    RollingModel(class LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase * c) :
+        RollingModelBase(lmp, hsetup, c), coeffRollFrict(NULL), coeffRollVisc(NULL)
     {
       history_offset = hsetup->add_history_value("r_torquex_old", "1");
       hsetup->add_history_value("r_torquey_old", "1");

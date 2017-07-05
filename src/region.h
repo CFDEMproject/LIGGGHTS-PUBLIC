@@ -145,7 +145,7 @@ class Region : protected Pointers {
 
   void forward_transform(double &, double &, double &);
   void inverse_transform(double &, double &, double &);
-  void rotate(double &, double &, double &, double);
+  void rotate(double &, double &, double &, const double);
 };
 
 }

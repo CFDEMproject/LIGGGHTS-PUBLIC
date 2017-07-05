@@ -75,8 +75,10 @@
     stepLastReset_(-1)
   {
     vectorZeroize3D(global_vel);
-    quatUnitize4D(global_quaternion);
-    quatUnitize4D(prev_quaternion);
+    quatIdentity4D(global_quaternion);
+    quatIdentity4D(prev_quaternion);
+    center_.setWrapPeriodic(true);
+    node_.setWrapPeriodic(true);
   }
 
   /* ----------------------------------------------------------------------
@@ -178,6 +180,7 @@
                 
                 node_.del(n);
                 center_.del(n);
+                rBound_.del(n);
                 return false;
             }
         }
@@ -370,6 +373,7 @@
             error->one(FLERR,"Illegal situation in MultiNodeMesh<NUM_NODES>::registerMove");
 
           node_orig_ = new MultiVectorContainer<double,NUM_NODES,3>("node_orig");
+          node_orig_->setWrapPeriodic(true);
           for(int i = 0; i < nall; i++)
           {
             for(int j = 0; j < NUM_NODES; j++)
@@ -456,18 +460,14 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::move(double *vecTotal, double *vecIncremental)
+  void MultiNodeMesh<NUM_NODES>::move(const double * const vecTotal, const double * const vecIncremental)
   {
     if(!isTranslating())
         this->error->all(FLERR,"Illegal call, need to register movement first");
 
-    double displacement_00[3] = {0., 0., 0.};
-    if (store_vel)
-        vectorCopy3D(node_(0)[0], displacement_00);
+    const int n = sizeLocal() + sizeGhost();
 
     resetToOrig();
-
-    int n = sizeLocal() + sizeGhost();
 
     for(int i = 0; i < n; i++)
     {
@@ -488,8 +488,7 @@
             step_store_vel = update->ntimestep;
             vectorZeroize3D(global_vel);
         }
-        vectorSubtract3D(displacement_00, node_(0)[0], displacement_00);
-        vectorAddMultiple3D(global_vel, -1.0/update->dt, displacement_00, global_vel);
+        vectorAddMultiple3D(global_vel, 1.0/update->dt, vecIncremental, global_vel);
     }
 
     updateGlobalBoundingBox();
@@ -500,7 +499,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::move(double *vecIncremental)
+  void MultiNodeMesh<NUM_NODES>::move(const double * const vecIncremental)
   {
     
     int n = sizeLocal() + sizeGhost();
@@ -530,7 +529,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::moveElement(int i,double *vecIncremental)
+  void MultiNodeMesh<NUM_NODES>::moveElement(const int i, const double * const vecIncremental)
   {
     for(int j = 0; j < NUM_NODES; j++)
             vectorAdd3D(node_(i)[j],vecIncremental,node_(i)[j]);
@@ -546,7 +545,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::rotate(double totalAngle, double dAngle, double *axis, double *p)
+  void MultiNodeMesh<NUM_NODES>::rotate(const double totalAngle, const double dAngle, const double * const axis, const double * const p)
   {
     double totalQ[4],dQ[4], axisNorm[3], origin[3];
 
@@ -574,7 +573,7 @@
   }
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::rotate(double *totalQ, double *dQ,double *origin)
+  void MultiNodeMesh<NUM_NODES>::rotate(const double * const totalQ, const double * const dQ, const double * const origin)
   {
     if(!isRotating())
         this->error->all(FLERR,"Illegal call, need to register movement first");
@@ -618,7 +617,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::rotate(double dAngle, double *axis, double *p)
+  void MultiNodeMesh<NUM_NODES>::rotate(const double dAngle, const double * const axis, const double * const p)
   {
     double dQ[4], axisNorm[3], origin[3];
 
@@ -641,7 +640,7 @@
   }
 
   template<int NUM_NODES>
-  void MultiNodeMesh<NUM_NODES>::rotate(double *dQ, double *origin)
+  void MultiNodeMesh<NUM_NODES>::rotate(const double * const dQ, const double * const origin)
   {
     
     int n = sizeLocal() + sizeGhost();

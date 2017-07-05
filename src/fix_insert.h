@@ -49,6 +49,8 @@
 #include "fix.h"
 #include "bounding_box.h"
 #include "region_neighbor_list.h"
+#include "fix_particledistribution_discrete.h"
+#include "update.h"
 
 namespace LAMMPS_NS {
 
@@ -59,6 +61,7 @@ class FixInsert : public Fix {
 
   virtual int setmask();
   virtual void init();
+  void reset_timestep(bigint newstep,bigint oldstep);
   virtual void setup_pre_exchange() {}
   void setup(int vflag);
   virtual double extend_cut_ghost();
@@ -80,6 +83,12 @@ class FixInsert : public Fix {
 
   int ins_every()
   { return insert_every; }
+
+  FixParticledistributionDiscrete * get_distribution()
+  { return fix_distribution; }
+
+  bool has_inserted() const
+  { return most_recent_ins_step == update->ntimestep; }
 
  protected:
 
@@ -193,14 +202,20 @@ class FixInsert : public Fix {
   virtual bool pre_insert() { return true; }
   virtual int calc_ninsert_this();
   virtual int load_xnear(int);
-  virtual int count_nnear();
   virtual int is_nearby(int) = 0;
   virtual BoundingBox getBoundingBox() = 0;
 
+  virtual void init_list(const int ninsert_this_local)
+  { fix_distribution->random_init_list(ninsert_this_local); }
+  virtual int generate_list(const int ninsert_this_local, const int groupbit, const int exact_number)
+  { return fix_distribution->randomize_list(ninsert_this_local, groupbit, exact_number); }
   virtual void x_v_omega(int,int&,int&,double&) = 0;
   virtual double insertion_fraction() = 0;
 
   virtual void finalize_insertion(int){};
+
+  bool has_set_property() const
+  { return property_name != NULL && fix_property != NULL; }
 
  protected:
   void generate_random_velocity(double * velocity);

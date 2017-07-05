@@ -51,8 +51,8 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeERotateMultisphere::ComputeERotateMultisphere(LAMMPS *lmp, int narg, char **arg) :
-  ComputeKEMultisphere(lmp, narg, arg)
+ComputeERotateMultisphere::ComputeERotateMultisphere(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  ComputeKEMultisphere(lmp, iarg, narg, arg)
 {
 }
 
@@ -66,6 +66,8 @@ ComputeERotateMultisphere::~ComputeERotateMultisphere()
 
 double ComputeERotateMultisphere::compute_scalar()
 {
+  if (invoked_scalar == update->ntimestep)
+    return scalar;
   invoked_scalar = update->ntimestep;
   scalar = fix_ms_->extract_rke();
   return scalar;

@@ -49,8 +49,6 @@ FixStyle(massflow/mesh/sieve,FixMassflowMeshSieve)
 #include <vector>
 #define PIOVERFOUR 0.78539816339
 
-using namespace std;
-
 namespace LAMMPS_NS {
 
 class FixMassflowMeshSieve : public FixMassflowMesh {

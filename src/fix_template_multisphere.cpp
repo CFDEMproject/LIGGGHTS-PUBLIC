@@ -144,23 +144,24 @@ FixTemplateMultisphere::FixTemplateMultisphere(LAMMPS *lmp, int narg, char **arg
         } else if(strcmp(arg[iarg],"fflag") == 0) {
             if (iarg+4 > narg)
                 error->fix_error(FLERR,this,"not enough arguments for 'fflag'");
-            if(strcmp(arg[iarg],"on"))
+            iarg++;
+            if(strcmp(arg[iarg],"on") == 0)
                 fflag_[0] = true;
-            else if(strcmp(arg[iarg],"off"))
+            else if(strcmp(arg[iarg],"off") == 0)
                 fflag_[0] = false;
             else
                 error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
             iarg++;
-            if(strcmp(arg[iarg],"on"))
+            if(strcmp(arg[iarg],"on") == 0)
                 fflag_[1] = true;
-            else if(strcmp(arg[iarg],"off"))
+            else if(strcmp(arg[iarg],"off") == 0)
                 fflag_[1] = false;
             else
                 error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
             iarg++;
-            if(strcmp(arg[iarg],"on"))
+            if(strcmp(arg[iarg],"on") == 0)
                 fflag_[2] = true;
-            else if(strcmp(arg[iarg],"off"))
+            else if(strcmp(arg[iarg],"off") == 0)
                 fflag_[2] = false;
             else
                 error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
@@ -169,23 +170,24 @@ FixTemplateMultisphere::FixTemplateMultisphere(LAMMPS *lmp, int narg, char **arg
         } else if(strcmp(arg[iarg],"tflag") == 0) {
             if (iarg+4 > narg)
                 error->fix_error(FLERR,this,"not enough arguments for 'fflag'");
-            if(strcmp(arg[iarg],"on"))
+            iarg++;
+            if(strcmp(arg[iarg],"on") == 0)
                 tflag_[0] = true;
-            else if(strcmp(arg[iarg],"off"))
+            else if(strcmp(arg[iarg],"off") == 0)
                 tflag_[0] = false;
             else
                 error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
             iarg++;
-            if(strcmp(arg[iarg],"on"))
+            if(strcmp(arg[iarg],"on") == 0)
                 tflag_[1] = true;
-            else if(strcmp(arg[iarg],"off"))
+            else if(strcmp(arg[iarg],"off") == 0)
                 tflag_[1] = false;
             else
                 error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
             iarg++;
-            if(strcmp(arg[iarg],"on"))
+            if(strcmp(arg[iarg],"on") == 0)
                 tflag_[2] = true;
-            else if(strcmp(arg[iarg],"off"))
+            else if(strcmp(arg[iarg],"off") == 0)
                 tflag_[2] = false;
             else
                 error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
@@ -229,7 +231,7 @@ void FixTemplateMultisphere::post_create()
   // bounding sphere, center of mass calculations in mother class
   // calculate inertia_ tensor and its eigensystem
 
-  // use density and volume from MC; mass calculated
+  // use density from input script and volume from MC; mass calculated
   if(!mass_set_)
   {
       // bounding sphere and center of mass
@@ -259,7 +261,7 @@ void FixTemplateMultisphere::post_create()
       calc_eigensystem();
       calc_displace_xcm_x_body();
   }
-  // use density specified and mass specified; volume calculated
+  // use density specified in input script  and mass specified in input script ; volume calculated
   else
   {
       calc_bounding_sphere();
@@ -564,7 +566,7 @@ void FixTemplateMultisphere::randomize_single()
   vectorCopy3D(xcm_to_xb_body_,pti_m->xcm_to_xbound);
 
   vectorZeroize3D(pti_m->xcm_ins);
-  quatUnitize4D(pti_m->quat_ins);
+  quatIdentity4D(pti_m->quat_ins);
   vectorZeroize3D(pti_m->v_ins);
   vectorZeroize3D(pti_m->omega_ins);
 
@@ -575,7 +577,7 @@ void FixTemplateMultisphere::randomize_single()
 
 /* ----------------------------------------------------------------------*/
 
-void FixTemplateMultisphere::init_ptilist(int n_random_max)
+void FixTemplateMultisphere::init_ptilist(int n_random_max, const bool enforce_single, FixPropertyAtom * const fix_release)
 {
     n_pti_max = n_random_max;
     pti_list = (ParticleToInsert**) memory->smalloc(n_pti_max*sizeof(ParticleToInsert*),"pti_list");
@@ -636,7 +638,7 @@ void FixTemplateMultisphere::randomize_ptilist(int n_random,int distribution_gro
           vectorCopy3D(xcm_to_xb_body_,pti_m->xcm_to_xbound);
 
           vectorZeroize3D(pti_m->xcm_ins);
-          quatUnitize4D(pti_m->quat_ins);
+          quatIdentity4D(pti_m->quat_ins);
           vectorZeroize3D(pti_m->v_ins);
           vectorZeroize3D(pti_m->omega_ins);
 

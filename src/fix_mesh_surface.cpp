@@ -67,6 +67,7 @@
 #include "comm.h"
 #include "math_extra.h"
 #include "style_mesh_module.h"
+#include "mesh_module_stress.h"
 #include "variable.h"
 
 using namespace LAMMPS_NS;
@@ -99,7 +100,12 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
   omegaStyle_(-1),
   n_dump_active_(0),
   curvature_(0.),
-  curvature_tolerant_(false)
+  curvature_tolerant_(false),
+  extrude_mesh_(false),
+  extrusion_length_(0.0),
+  extrusion_tri_count_(0),
+  extrusion_tri_nodes_(NULL),
+  extrusion_created_(false)
 {
     // check if type has been read
     if(atom_type_mesh_ == -1)
@@ -201,7 +207,15 @@ FixMeshSurface::FixMeshSurface(LAMMPS *lmp, int narg, char **arg)
             error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'curvature_tolerant'");
           iarg_++;
           hasargs = true;
-      } else if(strcmp(style,"mesh/surface") == 0) {
+      } else if (strcmp(arg[iarg_], "extrude_planar") == 0) {
+          if (narg < iarg_+2)
+            error->fix_error(FLERR,this,"not enough arguments for 'extrude_planar'");
+          iarg_++;
+          extrude_mesh_ = true;
+          extrusion_length_ = force->numeric(FLERR,arg[iarg_]);
+          iarg_++;
+          hasargs = true;
+      } else if (strcmp(style,"mesh/surface") == 0) {
           char *errmsg = new char[strlen(arg[iarg_])+50];
           sprintf(errmsg,"unknown keyword or wrong keyword order: %s", arg[iarg_]);
           error->fix_error(FLERR,this,errmsg);
@@ -315,6 +329,8 @@ FixMeshSurface::~FixMeshSurface()
     delete [] vSurfStrY_;
     delete [] vSurfStrZ_;
     delete [] omegaStr_;
+    if (extrusion_tri_nodes_)
+        delete [] extrusion_tri_nodes_;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -461,13 +477,21 @@ void FixMeshSurface::setup_pre_force(int vflag)
 
     // create neigh list for owned and local elements
     
-    if(meshNeighlist()) {
+    if(meshNeighlist())
         meshNeighlist()->initializeNeighlist();
-    }
 
     std::vector<std::string>::iterator it;
     for(it = mesh_module_order.begin(); it != mesh_module_order.end(); it++)
         active_mesh_modules[*it]->setup_pre_force(vflag);
+
+    if (extrude_mesh_ && !extrusion_created_)
+    {
+        if (update->nsteps > 0)
+            error->all(FLERR, "Extrude mesh requires a run 0 after its definition");
+        mesh()->extrudePlanarMesh(extrusion_length_, extrusion_tri_nodes_, extrusion_tri_count_);
+        extrusion_created_ = true;
+        can_create_mesh_ = true;
+    }
 
 }
 

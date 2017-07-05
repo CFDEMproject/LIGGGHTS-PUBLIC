@@ -57,6 +57,7 @@
 #include <stdlib.h>
 #include "contact_models.h"
 #include "granular_wall.h"
+#include "fix_calculate_energy_wall.h"
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
   #include "math_const.h"
@@ -70,12 +71,16 @@ template<typename ContactModel>
 class Granular : private Pointers, public IGranularWall {
   ContactModel cmodel;
   FixWallGran * parent;
+  int dissipation_offset_;
+  FixCalculateWallEnergy *fix_dissipated_energy_;
 
 public:
-  Granular(LAMMPS * lmp, FixWallGran * parent) :
+  Granular(LAMMPS * lmp, FixWallGran * parent, const int64_t hash) :
     Pointers(lmp),
-    cmodel(lmp, parent,true /*is_wall*/),
-    parent(parent)
+    cmodel(lmp, parent,true /*is_wall*/, hash),
+    parent(parent),
+    dissipation_offset_(-1),
+    fix_dissipated_energy_(NULL)
   {
   }
 
@@ -117,6 +122,11 @@ public:
     }
 #endif
 
+    dissipation_offset_ = get_history_offset("dissipation_force");
+    fix_dissipated_energy_ = static_cast<FixCalculateWallEnergy*>(modify->find_fix_style("calculate/wall_dissipated_energy", 0));
+    if (dissipation_offset_ >= 0 && !fix_dissipated_energy_)
+        error->one(FLERR, "Could not find fix calculate/wall_dissipated_energy");
+
     if(!success) {
       error->fix_error(FLERR, parent, settings.error_message.c_str());
     }
@@ -146,6 +156,17 @@ public:
     double *omega = atom->omega[ip];
     double mass = atom->rmass[ip];
     int *type = atom->type;
+
+#ifdef LIGGGHTS_DEBUG
+    if(std::isnan(vectorMag3D(x)))
+      error->one(FLERR,"x is NaN!");
+    if(std::isnan(vectorMag3D(f)))
+      error->one(FLERR,"f is NaN!");
+    if(std::isnan(vectorMag3D(torque)))
+      error->one(FLERR,"torque is NaN!");
+    if(std::isnan(vectorMag3D(omega)))
+      error->one(FLERR,"omega is NaN!");
+#endif
 
     // copy collision data to struct (compiler can figure out a better way to
     // interleave these stores with the double calculations above.
@@ -181,7 +202,7 @@ public:
     double force_old[3]={}, f_pw[3];
 
     // if force should be stored - remember old force
-    if(wg->store_force() || fix_mesh || wg->fix_meshforce_pbc())
+    if(wg->store_force() || fix_mesh)
         vectorCopy3D(f,force_old);
 
     // add to cwl
@@ -189,43 +210,71 @@ public:
     {
       double contactPoint[3];
       vectorSubtract3D(x,sidata.delta,contactPoint);
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(atom->superquadric_flag) {
-        vectorCopy3D(sidata.contact_point, contactPoint);
-      }
-#endif
+      #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(atom->superquadric_flag) {
+          vectorCopy3D(sidata.contact_point, contactPoint);
+        }
+      #endif
       wg->compute_wall_gran_local()->add_wall_1(iMesh,mesh->id(iTri),ip,contactPoint,vwall);
     }
 
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-    double enx, eny, enz;
-    if(atom->superquadric_flag) {
-    const double delta_inv = 1.0 / vectorMag3D(sidata.delta);
-      enx = sidata.delta[0] * delta_inv;
-      eny = sidata.delta[1] * delta_inv;
-      enz = sidata.delta[2] * delta_inv;
-      sidata.radi = cbrt(0.75 * atom->volume[ip] / M_PI);
-      Superquadric particle(atom->x[ip], atom->quaternion[ip], atom->shape[ip], atom->roundness[ip]);
-      sidata.koefi = particle.calc_curvature_coefficient(sidata.contact_point);
-    } else { // sphere case
-      enx = sidata.delta[0] * rinv;
-      eny = sidata.delta[1] * rinv;
-      enz = sidata.delta[2] * rinv;
-    }
-#else // sphere case
-    const double enx = sidata.delta[0] * rinv;
-    const double eny = sidata.delta[1] * rinv;
-    const double enz = sidata.delta[2] * rinv;
-#endif
+    #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        double enx, eny, enz;
+        if(atom->superquadric_flag) {
+        #ifdef LIGGGHTS_DEBUG
+          if(vectorMag3D(sidata.delta) == 0.0)
+            error->one(FLERR, "vectorMag3D(sidata.delta) == 0.0");
+        #endif
+        const double delta_inv = 1.0 / vectorMag3D(sidata.delta);
+          #ifdef LIGGGHTS_DEBUG
+            if(std::isnan(delta_inv))
+              error->one(FLERR, "delta_inv is NaN!");
+          #endif
+          enx = sidata.delta[0] * delta_inv;
+          eny = sidata.delta[1] * delta_inv;
+          enz = sidata.delta[2] * delta_inv;
+          sidata.radi = cbrt(0.75 * atom->volume[ip] / M_PI);
+          #ifdef LIGGGHTS_DEBUG
+            if(std::isnan(sidata.radi))
+              error->one(FLERR, "delta_inv is NaN!");
+          #endif
+          Superquadric particle(atom->x[ip], atom->quaternion[ip], atom->shape[ip], atom->roundness[ip]);
+          sidata.koefi = particle.calc_curvature_coefficient(sidata.contact_point);
+        } else { // sphere case
+          enx = sidata.delta[0] * rinv;
+          eny = sidata.delta[1] * rinv;
+          enz = sidata.delta[2] * rinv;
+        }
+    #else // sphere case
+        const double enx = sidata.delta[0] * rinv;
+        const double eny = sidata.delta[1] * rinv;
+        const double enz = sidata.delta[2] * rinv;
+    #endif
     sidata.radsum = sidata.radi;
     sidata.en[0] = enx;
     sidata.en[1] = eny;
     sidata.en[2] = enz;
 
+    double delta[3];
+    if (dissipation_offset_ >= 0 && sidata.computeflag && sidata.shearupdate)
+    {
+        sidata.fix_mesh->triMesh()->get_global_vel(delta);
+        vectorScalarMult3D(delta, update->dt);
+        // displacement force from the previous time step
+        double * const diss_force = &sidata.contact_history[dissipation_offset_];
+        // in the scalar product with the current mesh delta
+        const double dissipated_energy = vectorDot3D(delta, diss_force)*0.5;
+        fix_dissipated_energy_->dissipate_energy(dissipated_energy, true);
+        // reset the dissipation force
+        diss_force[0] = 0.0;
+        diss_force[1] = 0.0;
+        diss_force[2] = 0.0;
+    }
+
     if (intersectflag)
     {
        cmodel.surfacesIntersect(sidata, i_forces, j_forces);
-       cmodel.endSurfacesIntersect(sidata, mesh, i_forces.delta_F);
+       cmodel.endSurfacesIntersect(sidata, mesh, i_forces, j_forces);
        // if there is a surface touch, there will always be a force
        sidata.has_force_update = true;
     }
@@ -237,11 +286,30 @@ public:
        cmodel.surfacesClose(sidata, i_forces, j_forces);
     }
 
-    if(sidata.computeflag && sidata.has_force_update) {
-          force_update(f, torque, i_forces);
+    if (sidata.is_wall && dissipation_offset_ >= 0 && sidata.computeflag && sidata.shearupdate)
+    {
+        // new displacement force from this time step
+        double * const diss_force = &sidata.contact_history[dissipation_offset_];
+        // in the scalar product with the mesh displacement from earlier on
+        const double dissipated_energy = vectorDot3D(delta, diss_force)*0.5;
+        //printf("pdis %e %e\n", update->get_cur_time(), dissipated_energy);
+        fix_dissipated_energy_->dissipate_energy(dissipated_energy, false);
     }
 
-    if (wg->store_force_contact())
+    if(sidata.computeflag)
+    {
+        if (sidata.has_force_update)
+            force_update(f, torque, i_forces);
+        // summation of f.n to compute a simplistic pressure
+        if (wg->store_sum_normal_force())
+        {
+            double * const iforce = wg->get_sum_normal_force_ptr(ip);
+            const double fDotN = vectorDot3D(i_forces.delta_F, sidata.en);
+            *iforce += fDotN;
+        }
+    }
+
+    if (wg->store_force_contact() && 0 == update->ntimestep % wg->store_force_contact_every())
     {
       wg->add_contactforce_wall(ip,i_forces,mesh?mesh->id(iTri):0);
     }
@@ -250,7 +318,7 @@ public:
       wg->add_contactforce_stress_wall(ip, i_forces, sidata.delta, vwall, mesh?mesh->id(iTri):0);
 
     if(wg->compute_wall_gran_local() && wg->addflag())
-      {
+    {
           const double fx = i_forces.delta_F[0];
           const double fy = i_forces.delta_F[1];
           const double fz = i_forces.delta_F[2];
@@ -269,15 +337,12 @@ public:
        wg->addHeatFlux(mesh,ip,sidata.radi,sidata.deltan,1.);
 
     // if force should be stored or evaluated
-    if(sidata.has_force_update && (wg->store_force() || wg->fix_meshforce_pbc() || (fix_mesh)) )
+    if(sidata.has_force_update && (wg->store_force() || fix_mesh) )
     {
         vectorSubtract3D(f,force_old,f_pw);
 
         if(wg->store_force())
             vectorAdd3D (wg->fix_wallforce()->array_atom[ip], f_pw, wg->fix_wallforce()->array_atom[ip]);
-
-        if(wg->fix_meshforce_pbc() && ip >= atom->nlocal)
-            vectorAdd3D (wg->fix_meshforce_pbc()->array_atom[ip], f_pw, wg->fix_meshforce_pbc()->array_atom[ip]);
 
         if (fix_mesh)
         {

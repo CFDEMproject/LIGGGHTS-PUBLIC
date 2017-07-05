@@ -123,6 +123,9 @@ class Thermo : protected Pointers {
   int index_kin_eng;          // index of compute that corresponds to the kinetic energy compute
   char *id_kin_eng;           // id of kinetic energy compute
   class Compute *kin_eng;     // kinetic energy compute
+  int index_erot;             // index of compute that corresponds to the rotational energy compute
+  char *id_erot;              // id of kinetic rotational energy compute
+  class Compute *erot;        // kinetic rotational energy compute
 
   int ncompute;                // # of Compute objects called by thermo
   char **id_compute;           // their IDs
@@ -173,6 +176,7 @@ class Thermo : protected Pointers {
   void compute_atoms();
   void compute_temp();
   void compute_ke();
+  void compute_erot();
 
   void compute_vol();
   void compute_density();

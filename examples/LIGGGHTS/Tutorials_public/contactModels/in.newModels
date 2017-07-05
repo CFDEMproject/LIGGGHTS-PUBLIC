@@ -55,7 +55,7 @@ compute		rke all erotate/sphere
 thermo_style	custom step atoms ke c_rke vol
 thermo			1000
 thermo_modify	lost ignore norm no
-dump			dmp all custom 800 post/dump*.newModels id type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+dump			dmp all custom/vtk 800 post/newModels_*.vtk id type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 
 
 #insert particles

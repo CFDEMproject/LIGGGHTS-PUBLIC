@@ -246,7 +246,7 @@
   {
       
       bool dummy = false;
-      return elemBufSize(OPERATION_RESTART,dummy,dummy,dummy);
+      return elemBufSize(OPERATION_RESTART, NULL, dummy,dummy,dummy);
   }
 
   /* ----------------------------------------------------------------------
@@ -259,7 +259,7 @@
   template<int NUM_NODES>
   int MultiNodeMeshParallel<NUM_NODES>::elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate)
   {
-      return n*elemBufSize(operation,scale,translate,rotate);
+      return n*elemBufSize(operation, NULL, scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------
@@ -269,7 +269,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBuffer(int n, int *list, double *buf, int operation, bool , bool, bool)
+  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBuffer(int n, int *list, int *wraplist, double *buf, int operation, std::list<std::string> * properties, double *dlo, double *dhi, bool , bool, bool)
   {
       
       int nsend = 0;
@@ -277,11 +277,17 @@
       if(OPERATION_COMM_EXCHANGE == operation || OPERATION_COMM_BORDERS == operation)
       {
           
-          nsend += MultiNodeMesh<NUM_NODES>::center_.pushElemListToBuffer(n,list,&(buf[nsend]),operation);
-          nsend += MultiNodeMesh<NUM_NODES>::node_.pushElemListToBuffer(n,list,&(buf[nsend]),operation);
-          nsend += MultiNodeMesh<NUM_NODES>::rBound_.pushElemListToBuffer(n,list,&(buf[nsend]),operation);
+          if (!properties || MultiNodeMesh<NUM_NODES>::center_.matches_any_id(properties))
+              nsend += MultiNodeMesh<NUM_NODES>::center_.pushElemListToBuffer(n,list, wraplist, &(buf[nsend]),operation, dlo, dhi);
+          if (!properties || MultiNodeMesh<NUM_NODES>::node_.matches_any_id(properties))
+          nsend += MultiNodeMesh<NUM_NODES>::node_.pushElemListToBuffer(n,list, wraplist, &(buf[nsend]),operation, dlo, dhi);
+          if (!properties || MultiNodeMesh<NUM_NODES>::rBound_.matches_any_id(properties))
+          nsend += MultiNodeMesh<NUM_NODES>::rBound_.pushElemListToBuffer(n,list, wraplist, &(buf[nsend]),operation, dlo, dhi);
           if(this->node_orig_)
-              nsend += this->node_orig_->pushElemListToBuffer(n,list,&(buf[nsend]),operation);
+          {
+              if (!properties || MultiNodeMesh<NUM_NODES>::node_orig_->matches_any_id(properties))
+                  nsend += this->node_orig_->pushElemListToBuffer(n,list, wraplist, &(buf[nsend]),operation, dlo, dhi);
+          }
           return nsend;
       }
 
@@ -302,17 +308,23 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBuffer(int first, int n, double *buf, int operation, bool, bool, bool)
+  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBuffer(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool, bool, bool)
   {
       int nrecv = 0;
 
       if(OPERATION_COMM_EXCHANGE == operation || OPERATION_COMM_BORDERS == operation)
       {
-          nrecv += MultiNodeMesh<NUM_NODES>::center_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
-          nrecv += MultiNodeMesh<NUM_NODES>::node_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
-          nrecv += MultiNodeMesh<NUM_NODES>::rBound_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
+          if (!properties || MultiNodeMesh<NUM_NODES>::center_.matches_any_id(properties))
+              nrecv += MultiNodeMesh<NUM_NODES>::center_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
+          if (!properties || MultiNodeMesh<NUM_NODES>::node_.matches_any_id(properties))
+              nrecv += MultiNodeMesh<NUM_NODES>::node_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
+          if (!properties || MultiNodeMesh<NUM_NODES>::rBound_.matches_any_id(properties))
+              nrecv += MultiNodeMesh<NUM_NODES>::rBound_.popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
           if(MultiNodeMesh<NUM_NODES>::node_orig_)
-            nrecv += MultiNodeMesh<NUM_NODES>::node_orig_->popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
+          {
+              if (!properties || MultiNodeMesh<NUM_NODES>::node_orig_->matches_any_id(properties))
+                  nrecv += MultiNodeMesh<NUM_NODES>::node_orig_->popElemListFromBuffer(first,n,&(buf[nrecv]),operation);
+          }
           return nrecv;
       }
 
@@ -334,7 +346,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBufferReverse(int, int, double*, int operation, bool, bool, bool)
+  int MultiNodeMeshParallel<NUM_NODES>::pushElemListToBufferReverse(int, int, double*, int operation, std::list<std::string> * properties, bool, bool, bool)
   {
       int nsend = 0;
 
@@ -355,7 +367,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBufferReverse(int, int*, double*, int operation, bool, bool, bool)
+  int MultiNodeMeshParallel<NUM_NODES>::popElemListFromBufferReverse(int, int*, double*, int operation, std::list<std::string> * properties, bool, bool, bool)
   {
       int nrecv = 0;
 
@@ -377,23 +389,30 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  int MultiNodeMeshParallel<NUM_NODES>::elemBufSize(int operation, bool, bool, bool)
+  int MultiNodeMeshParallel<NUM_NODES>::elemBufSize(int operation, std::list<std::string> * properties, bool, bool, bool)
   {
       int size_buf = 0;
 
       if(OPERATION_RESTART == operation)
       {
-          size_buf += MultiNodeMesh<NUM_NODES>::node_.elemBufSize();
+          if (!properties || MultiNodeMesh<NUM_NODES>::node_.matches_any_id(properties))
+              size_buf += MultiNodeMesh<NUM_NODES>::node_.elemBufSize();
           return size_buf;
       }
 
       if(OPERATION_COMM_EXCHANGE == operation || OPERATION_COMM_BORDERS == operation)
       {
-          size_buf += MultiNodeMesh<NUM_NODES>::center_.elemBufSize();
-          size_buf += MultiNodeMesh<NUM_NODES>::node_.elemBufSize();
-          size_buf += MultiNodeMesh<NUM_NODES>::rBound_.elemBufSize();
+          if (!properties || MultiNodeMesh<NUM_NODES>::center_.matches_any_id(properties))
+              size_buf += MultiNodeMesh<NUM_NODES>::center_.elemBufSize();
+          if (!properties || MultiNodeMesh<NUM_NODES>::node_.matches_any_id(properties))
+              size_buf += MultiNodeMesh<NUM_NODES>::node_.elemBufSize();
+          if (!properties || MultiNodeMesh<NUM_NODES>::rBound_.matches_any_id(properties))
+              size_buf += MultiNodeMesh<NUM_NODES>::rBound_.elemBufSize();
           if(MultiNodeMesh<NUM_NODES>::node_orig_)
-            size_buf += MultiNodeMesh<NUM_NODES>::node_orig_->elemBufSize();
+          {
+              if (!properties || MultiNodeMesh<NUM_NODES>::node_orig_->matches_any_id(properties))
+                  size_buf += MultiNodeMesh<NUM_NODES>::node_orig_->elemBufSize();
+          }
           return size_buf;
       }
 

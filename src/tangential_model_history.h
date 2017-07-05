@@ -47,6 +47,7 @@ TANGENTIAL_MODEL(TANGENTIAL_HISTORY,history,2)
 #ifndef TANGENTIAL_MODEL_HISTORY_H_
 #define TANGENTIAL_MODEL_HISTORY_H_
 #include "contact_models.h"
+#include "tangential_model_base.h"
 #include <math.h>
 #include "update.h"
 #include "global_properties.h"
@@ -56,15 +57,14 @@ namespace LIGGGHTS {
 namespace ContactModels
 {
   template<>
-  class TangentialModel<TANGENTIAL_HISTORY> : protected Pointers
+  class TangentialModel<TANGENTIAL_HISTORY> : public TangentialModelBase
   {
     double ** coeffFrict;
     int history_offset;
 
   public:
-    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
-
-    TangentialModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *c) : Pointers(lmp),
+    TangentialModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *c) :
+      TangentialModelBase(lmp, hsetup, c),
       coeffFrict(NULL),
       heating(false),
       heating_track(false),

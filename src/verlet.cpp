@@ -72,6 +72,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "error.h"
+#include "signal_handling.h"
 
 using namespace LAMMPS_NS;
 
@@ -265,12 +266,13 @@ void Verlet::run(int n)
   bigint ntimestep;
   int nflag,sortflag;
 
-  int n_post_integrate = modify->n_post_integrate;
-  int n_pre_exchange = modify->n_pre_exchange;
-  int n_pre_neighbor = modify->n_pre_neighbor;
-  int n_pre_force = modify->n_pre_force;
-  int n_post_force = modify->n_post_force;
-  int n_end_of_step = modify->n_end_of_step;
+  const int n_post_integrate = modify->n_post_integrate;
+  const int n_pre_exchange = modify->n_pre_exchange;
+  const int n_pre_neighbor = modify->n_pre_neighbor;
+  const int n_pre_force = modify->n_pre_force;
+  const int n_post_force = modify->n_post_force;
+  const int n_pre_final_integrate = modify->n_pre_final_integrate;
+  const int n_end_of_step = modify->n_end_of_step;
 
   if (atom->sortfreq > 0) sortflag = 1;
   else sortflag = 0;
@@ -361,6 +363,8 @@ void Verlet::run(int n)
     
     if (n_post_force) modify->post_force(vflag);
     
+    if (n_pre_final_integrate) modify->pre_final_integrate();
+    
     modify->final_integrate();
     
     if (n_end_of_step) modify->end_of_step();
@@ -373,6 +377,8 @@ void Verlet::run(int n)
       timer->stamp(TIME_OUTPUT);
     }
     
+    if (SignalHandler::request_quit && !SignalHandler::request_write_restart)
+        break;
   }
 }
 

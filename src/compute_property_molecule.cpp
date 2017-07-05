@@ -54,22 +54,22 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputePropertyMolecule::
-ComputePropertyMolecule(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputePropertyMolecule::ComputePropertyMolecule(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 4) error->all(FLERR,"Illegal compute property/molecule command");
+  if (narg < iarg+1) error->all(FLERR,"Illegal compute property/molecule command");
 
   if (atom->molecular == 0)
     error->all(FLERR,"Compute property/molecule requires molecular atom style");
 
-  nvalues = narg - 3;
+  nvalues = narg - iarg;
 
   pack_choice = new FnPtrPack[nvalues];
 
   int i;
-  for (int iarg = 3; iarg < narg; iarg++) {
-    i = iarg-3;
+  const int arg_offset = iarg;
+  for (; iarg < narg; iarg++) {
+    i = iarg-arg_offset;
 
     if (strcmp(arg[iarg],"mol") == 0)
       pack_choice[i] = &ComputePropertyMolecule::pack_mol;

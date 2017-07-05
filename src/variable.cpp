@@ -970,7 +970,7 @@ double Variable::evaluate(char *str, Tree **tree)
           if (update->whichflag == 0) {
             if (compute->invoked_scalar != update->ntimestep)
               error->all(FLERR,"Compute used in variable between runs "
-                         "is not current");
+                         "is not current. Use the update_on_run_end option for computes to avoid this.");
           } else if (!(compute->invoked_flag & INVOKED_SCALAR)) {
             compute->compute_scalar();
             compute->invoked_flag |= INVOKED_SCALAR;
@@ -995,7 +995,7 @@ double Variable::evaluate(char *str, Tree **tree)
           if (update->whichflag == 0) {
             if (compute->invoked_vector != update->ntimestep)
               error->all(FLERR,"Compute used in variable between runs "
-                         "is not current");
+                         "is not current. Use the update_on_run_end option for computes to avoid this.");
           } else if (!(compute->invoked_flag & INVOKED_VECTOR)) {
             compute->compute_vector();
             compute->invoked_flag |= INVOKED_VECTOR;
@@ -1023,7 +1023,7 @@ double Variable::evaluate(char *str, Tree **tree)
           if (update->whichflag == 0) {
             if (compute->invoked_array != update->ntimestep)
               error->all(FLERR,"Compute used in variable between runs "
-                         "is not current");
+                         "is not current. Use the update_on_run_end option for computes to avoid this.");
           } else if (!(compute->invoked_flag & INVOKED_ARRAY)) {
             compute->compute_array();
             compute->invoked_flag |= INVOKED_ARRAY;
@@ -1046,7 +1046,7 @@ double Variable::evaluate(char *str, Tree **tree)
           if (update->whichflag == 0) {
             if (compute->invoked_peratom != update->ntimestep)
               error->all(FLERR,"Compute used in variable between runs "
-                         "is not current");
+                         "is not current. Use the update_on_run_end option for computes to avoid this.");
           } else if (!(compute->invoked_flag & INVOKED_PERATOM)) {
             compute->compute_peratom();
             compute->invoked_flag |= INVOKED_PERATOM;
@@ -1066,7 +1066,7 @@ double Variable::evaluate(char *str, Tree **tree)
           if (update->whichflag == 0) {
             if (compute->invoked_peratom != update->ntimestep)
               error->all(FLERR,"Compute used in variable between runs "
-                         "is not current");
+                         "is not current. Use the update_on_run_end option for computes to avoid this.");
           } else if (!(compute->invoked_flag & INVOKED_PERATOM)) {
             compute->compute_peratom();
             compute->invoked_flag |= INVOKED_PERATOM;
@@ -1092,7 +1092,7 @@ double Variable::evaluate(char *str, Tree **tree)
           if (update->whichflag == 0) {
             if (compute->invoked_peratom != update->ntimestep)
               error->all(FLERR,"Compute used in variable between runs "
-                         "is not current");
+                         "is not current. Use the update_on_run_end option for computes to avoid this.");
           } else if (!(compute->invoked_flag & INVOKED_PERATOM)) {
             compute->compute_peratom();
             compute->invoked_flag |= INVOKED_PERATOM;
@@ -1120,7 +1120,7 @@ double Variable::evaluate(char *str, Tree **tree)
           if (update->whichflag == 0) {
             if (compute->invoked_peratom != update->ntimestep)
               error->all(FLERR,"Compute used in variable between runs "
-                         "is not current");
+                         "is not current. Use the update_on_run_end option for computes to avoid this.");
           } else if (!(compute->invoked_flag & INVOKED_PERATOM)) {
             compute->compute_peratom();
             compute->invoked_flag |= INVOKED_PERATOM;
@@ -3180,7 +3180,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
         if (update->whichflag == 0) {
           if (compute->invoked_vector != update->ntimestep)
             error->all(FLERR,
-                       "Compute used in variable between runs is not current");
+                       "Compute used in variable between runs is not current. Use the update_on_run_end option for computes to avoid this.");
         } else if (!(compute->invoked_flag & INVOKED_VECTOR)) {
           compute->compute_vector();
           compute->invoked_flag |= INVOKED_VECTOR;
@@ -3194,7 +3194,7 @@ int Variable::special_function(char *word, char *contents, Tree **tree,
         if (update->whichflag == 0) {
           if (compute->invoked_array != update->ntimestep)
             error->all(FLERR,
-                       "Compute used in variable between runs is not current");
+                       "Compute used in variable between runs is not current. Use the update_on_run_end option for computes to avoid this.");
         } else if (!(compute->invoked_flag & INVOKED_ARRAY)) {
           compute->compute_array();
           compute->invoked_flag |= INVOKED_ARRAY;

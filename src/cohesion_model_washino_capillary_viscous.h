@@ -46,6 +46,7 @@ COHESION_MODEL(COHESION_WASHINO_CAPILLARY_VISCOUS,washino/capillary/viscous,7)
 #define COHESION_MODEL_WASHINO_CAPILLARY_VISCOUS_H_
 
 #include "contact_models.h"
+#include "cohesion_model_base.h"
 #include <math.h>
 #include "math_extra_liggghts.h"
 #include "global_properties.h"
@@ -96,17 +97,26 @@ namespace LIGGGHTS {
 namespace ContactModels {
 
   template<>
-  class CohesionModel<COHESION_WASHINO_CAPILLARY_VISCOUS> : protected Pointers {
+  class CohesionModel<COHESION_WASHINO_CAPILLARY_VISCOUS> : public CohesionModelBase {
 
   public:
-    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
-
     CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *cmb) :
-      Pointers(lmp), surfaceLiquidContentInitial(0.0), surfaceTension(0.0), contactAngle(0),
-       minSeparationDistanceRatio(0.0), maxSeparationDistanceRatio(0.0), fluidViscosity(0.),
-       ln1overMinSeparationDistanceRatio(0.0), maxLiquidContent(0), volumeFraction(0.05),
-       history_offset(0),fix_surfaceliquidcontent(0),fix_liquidflux(0), fix_ste(0), limit_lqc_flag_(false),
-       mod_lb_vol_flag_(false)
+      CohesionModelBase(lmp, hsetup, cmb),
+      surfaceLiquidContentInitial(0.0),
+      surfaceTension(0.0),
+      contactAngle(0),
+      minSeparationDistanceRatio(0.0),
+      maxSeparationDistanceRatio(0.0),
+      fluidViscosity(0.),
+      ln1overMinSeparationDistanceRatio(0.0),
+      maxLiquidContent(0),
+      volumeFraction(0.05),
+      history_offset(0),
+      fix_surfaceliquidcontent(0),
+      fix_liquidflux(0),
+      fix_ste(0),
+      limit_lqc_flag_(false),
+      mod_lb_vol_flag_(false)
     {
       history_offset = hsetup->add_history_value("contflag", "0");
       
@@ -205,9 +215,11 @@ namespace ContactModels {
               const double distMax = (1. + 0.5*contactAngleI) * cbrt(volBond1000) * 0.1 /* 0.1*cbrt(1000)=1 */;
               max_dist_ratio = fmax(0.5*distMax/min_rad, max_dist_ratio); 
           }
-          fprintf(logfile, "Warning: maxLiquidContent was specified, resulting in maxSeparationDistanceRatio being overwritten by %e (was %e)\n", 1.0 + max_dist_ratio, maxSeparationDistanceRatio);
+          if (screen) fprintf(screen, "Warning: maxLiquidContent was specified, resulting in maxSeparationDistanceRatio being overwritten by %e (was %e)\n", 1.0 + max_dist_ratio, maxSeparationDistanceRatio);
+          if (logfile) fprintf(logfile, "Warning: maxLiquidContent was specified, resulting in maxSeparationDistanceRatio being overwritten by %e (was %e)\n", 1.0 + max_dist_ratio, maxSeparationDistanceRatio);
           maxSeparationDistanceRatio = 1.0 + max_dist_ratio;
       }
+
       const char* neigharg[2];
       neigharg[0] = "contact_distance_factor";
       char arg2[30];
@@ -216,6 +228,7 @@ namespace ContactModels {
       neighbor->modify_params(2,const_cast<char**>(neigharg));
     }
 
+    inline void endSurfacesIntersect(SurfacesIntersectData &sidata, ForceData&, ForceData&) {}
     void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
 

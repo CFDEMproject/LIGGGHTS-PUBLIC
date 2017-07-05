@@ -46,6 +46,7 @@ DumpStyle(atom/vtk,DumpATOMVTK)
 #define LMP_DUMP_ATOM_VTK_H
 
 #include "dump.h"
+#include "dump_vtk.h"
 #include <iostream>
 #include <vector>
 #include <fstream>
@@ -53,9 +54,11 @@ DumpStyle(atom/vtk,DumpATOMVTK)
 
 namespace LAMMPS_NS {
 
-class DumpATOMVTK : public Dump {
+class DumpATOMVTK : public Dump
+{
  public:
   DumpATOMVTK(class LAMMPS *, int, char**);
+  int modify_param(int narg, char **arg);
 
  private:
   void init_style();
@@ -94,20 +97,22 @@ class DumpATOMVTK : public Dump {
       std::string serialize();
   };
 
-  class vtkExportData {
+  class vtkExportData : public DumpVTK
+  {
     private:
       std::vector<DumpATOMVTK::DataVTK> vtkData;
       std::ofstream fileVTK;
       const char * _fileName;
       bool _setFileName;
     public:
-      vtkExportData();
+      vtkExportData(LAMMPS *lmp);
       void add(DumpATOMVTK::DataVTK &);
       int size();
       void writeSER();
       void setFileName(const char *);
       void show();
       void clear();
+      int modify_param(int narg, char **arg);
   };
 
   vtkExportData tmpEXP;

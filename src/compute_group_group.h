@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeGroupGroup : public Compute {
  public:
-  ComputeGroupGroup(class LAMMPS *, int, char **);
+  ComputeGroupGroup(class LAMMPS *, int &iarg, int, char **);
   ~ComputeGroupGroup();
   void init();
   void init_list(int, class NeighList *);

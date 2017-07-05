@@ -25,6 +25,7 @@ rm -r $casePath/log*
 rm -r $casePath/postParticles/*
 rm -r $casePath/postGlobal/*
 rm -r $casePath/post/*.*
+rm -r $casePath/post/restart/*.restart
 rm -r $casePath/log.*
 rm -r $casePath/*Restart*
 rm -r $casePath/*restart*

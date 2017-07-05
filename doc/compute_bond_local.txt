@@ -10,10 +10,11 @@ compute bond/local command :h3
 
 [Syntax:]
 
-compute ID group-ID bond/local input1 input2 ... :pre
+compute ID group-ID bond/local general_keyword general_values input1 input2 ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 bond/local = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
 one or more keywords may be appended :l
 keyword = {dist} or {eng} :l
   {dist} = bond distance

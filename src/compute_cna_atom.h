@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeCNAAtom : public Compute {
  public:
-  ComputeCNAAtom(class LAMMPS *, int, char **);
+  ComputeCNAAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputeCNAAtom();
   void init();
   void init_list(int, class NeighList *);

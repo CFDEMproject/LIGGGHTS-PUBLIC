@@ -64,6 +64,7 @@
 #include "timer.h"
 #include "error.h"
 #include "force.h"
+#include "signal_handling.h"
 
 using namespace LAMMPS_NS;
 
@@ -205,10 +206,16 @@ void Run::command(int narg, char **arg, bigint nsteps_input_ext)
     if (stopflag) update->endstep = stop;
     else update->endstep = update->laststep;
 
-    if (preflag || update->first_update == 0) {
+    if (preflag || update->first_update == 0)
+    {
       lmp->init();
       update->integrate->setup();
-    } else output->setup(0);
+    }
+    else
+    {
+      output->init();
+      output->setup(0);
+    }
 
     timer->init();
     timer->barrier_start(TIME_LOOP);
@@ -243,10 +250,16 @@ void Run::command(int narg, char **arg, bigint nsteps_input_ext)
       if (stopflag) update->endstep = stop;
       else update->endstep = update->laststep;
 
-      if (preflag || iter == 0) {
+      if (preflag || iter == 0)
+      {
         lmp->init();
         update->integrate->setup();
-      } else output->setup(0);
+      }
+      else
+      {
+        output->init();
+        output->setup(0);
+      }
 
       timer->init();
       timer->barrier_start(TIME_LOOP);
@@ -263,13 +276,21 @@ void Run::command(int narg, char **arg, bigint nsteps_input_ext)
       // since a command may invoke computes via variables
 
       if (ncommands) {
-        modify->clearstep_compute();
-        for (int i = 0; i < ncommands; i++) input->one(commands[i]);
-        modify->addstep_compute(update->ntimestep + nevery);
+          modify->clearstep_compute();
+          for (int i = 0; i < ncommands; i++)
+          {
+              input->one(commands[i]);
+              if (SignalHandler::request_quit)
+                  break;
+          }
+          modify->addstep_compute(update->ntimestep + nevery);
       }
 
       nleft -= nsteps;
       iter++;
+
+      if (SignalHandler::request_quit)
+          break;
     }
   }
 

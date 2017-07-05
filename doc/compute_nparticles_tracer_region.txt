@@ -10,10 +10,11 @@ compute nparticles/tracer/region command :h3
 
 [Syntax:]
 
-compute ID group-ID nparticles/tracer/region :pre
+compute ID group-ID nparticles/tracer/region general_keyword general_values :pre
 
 ID, group-ID are documented in "compute"_compute.html command  :l
 nparticles/tracer/region = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
 region_count = obligatory keyword :l
 region-ID = ID of region atoms must be in to be counted :l
 tracer = obligatory keyword :l

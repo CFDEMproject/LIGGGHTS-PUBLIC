@@ -48,7 +48,7 @@
 #include "container_base.h"
 #include "memory_ns.h"
 #include "math_extra_liggghts.h"
-#include <string.h>
+#include "domain.h"
 #include <limits>
 
 inline int GROW_CONTAINER()
@@ -96,7 +96,6 @@ namespace LAMMPS_NS
           bool calcAvgFromContainer();
           bool calcMeanSquareFromContainer();
           bool calcSumFromContainer();
-          bool normalizeContainer();
 
           T max_scalar();
           T min_scalar();
@@ -107,9 +106,9 @@ namespace LAMMPS_NS
           virtual void* begin_slow_dirty();
 
           inline void scale(double factor);
-          inline void move(double *dx);
-          inline void moveElement(int i,double *dx);
-          inline void rotate(double *dQ);
+          inline void move(const double * const dx);
+          inline void moveElement(const int i, const double * const dx);
+          inline void rotate(const double * const dQ);
 
           // all push and pop functions return number of bytes taken from / added to buf
           // all push and pop functions expect buf to point to first element with usable data
@@ -127,7 +126,7 @@ namespace LAMMPS_NS
           
           inline int elemListBufSize(int n, int operation = OPERATION_UNDEFINED,
                             bool scale=false,bool translate=false, bool rotate=false);
-          inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,
+          inline int pushElemListToBuffer(int n, int *list, int *wraplist, double *buf, int operation, double *dlo, double *dhi,
                            bool scale=false,bool translate=false, bool rotate=false);
           inline int popElemListFromBuffer(int first, int n, double *buf, int operation,
                            bool scale=false,bool translate=false, bool rotate=false);

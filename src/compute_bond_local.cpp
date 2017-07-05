@@ -63,10 +63,10 @@ enum{DIST,ENG,FORCE};
 
 /* ---------------------------------------------------------------------- */
 
-ComputeBondLocal::ComputeBondLocal(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeBondLocal::ComputeBondLocal(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 4) error->all(FLERR,"Illegal compute bond/local command");
+  if (narg < iarg+1) error->all(FLERR,"Illegal compute bond/local command");
 
   if (atom->avec->bonds_allow == 0)
     error->all(FLERR,"Compute bond/local used when bonds are not allowed");
@@ -79,11 +79,16 @@ ComputeBondLocal::ComputeBondLocal(LAMMPS *lmp, int narg, char **arg) :
   bstyle = new int[nvalues];
 
   nvalues = 0;
-  for (int iarg = 3; iarg < narg; iarg++) {
-    if (strcmp(arg[iarg],"dist") == 0) bstyle[nvalues++] = DIST;
-    else if (strcmp(arg[iarg],"eng") == 0) bstyle[nvalues++] = ENG;
-    else if (strcmp(arg[iarg],"force") == 0) bstyle[nvalues++] = FORCE;
-    else error->all(FLERR,"Invalid keyword in compute bond/local command");
+  for (; iarg < narg; iarg++)
+  {
+      if (strcmp(arg[iarg],"dist") == 0)
+          bstyle[nvalues++] = DIST;
+      else if (strcmp(arg[iarg],"eng") == 0)
+          bstyle[nvalues++] = ENG;
+      else if (strcmp(arg[iarg],"force") == 0)
+          bstyle[nvalues++] = FORCE;
+      else
+          error->all(FLERR,"Invalid keyword in compute bond/local command");
   }
 
   // set singleflag if need to call bond->single()

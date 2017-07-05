@@ -74,6 +74,7 @@
 #include "neighbor.h"
 #include "contact_interface.h"
 #include "fix_property_global.h"
+#include "domain_wedge.h"
 #include <vector>
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
@@ -98,7 +99,9 @@ const double SMALL = 1e-12;
 /* ---------------------------------------------------------------------- */
 
 FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
-  Fix(lmp, narg, arg)
+  Fix(lmp, narg, arg),
+  impl(NULL),
+  fix_sum_normal_force_(NULL)
 {
     // wall/gran requires gran properties
     // sph not
@@ -108,6 +111,7 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     // defaults
     store_force_ = false;
     store_force_contact_ = false;
+    store_force_contact_every_ = 1;
     store_force_contact_stress_ = false;
     stress_flag_ = false;
     n_FixMesh_ = 0;
@@ -125,7 +129,6 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     fix_wallforce_ = 0;
     fix_wallforce_contact_ = 0;
     fix_wallforce_contact_stress_ = 0;
-    fix_meshforce_pbc_ = 0;
     fix_store_multicontact_data_ = NULL;
     fix_rigid_ = NULL;
     heattransfer_flag_ = false;
@@ -161,23 +164,21 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     int nremaining = narg - 3;
     char ** remaining_args = &arg[3];
 
-    int64_t variant = Factory::instance().selectVariant("gran", nremaining, remaining_args,force->custom_contact_models);
-    impl = Factory::instance().create("gran", variant, lmp, this);
-
-    if(!impl && 0 == strncmp(style,"wall/gran",9))
+    // select model for wall/gran (not for SPH)
+    if (strncmp(style,"wall/gran",9) == 0)
     {
-        printf("ERROR: Detected problem with model '%s' (and possibly subsequent arguments). \n", arg[4]);
-        error->fix_error(FLERR,this, "unknown contact model or model not in whitelist. Possible root causes:\n"
-                       "  (1) it's a typo. Check the documentation of the contact model you are using.\n"
-                       "  (2) the contact model is not available in your installation. Check if a documentation if this\n"
-                       "      contact model is available at all in your version.\n"
-                       "  (3) the model is part of a package which was not installed. Check the documentation for details. \n"
-                       "  (4) the model is available, but was not in the whitelist during compilation. Check if a file \n"
-                       "      src/style_contact_model.whitelist exists. If yes, modify it and re-compile. You can also \n"
-                       "      use script whitelist.sh in the /src directory to create a full whitelist.");
+        int64_t variant = Factory::instance().selectVariant("gran", nremaining, remaining_args,force->custom_contact_models);
+        if (variant == -1)
+            error->fix_error(FLERR, this, "Invalid model specified (check for typos and enable at least one model)");
+        impl = Factory::instance().create("gran", variant, lmp, this);
+
+        if(!impl)
+            error->all(FLERR, "Internal errror");
     }
 
     iarg_ = narg - nremaining;
+
+    bool allow_special_domain_periodic = false;
 
     bool hasargs = true;
     while(iarg_ < narg && hasargs)
@@ -246,6 +247,23 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
            if (strcmp(arg[iarg_+1],"yes") == 0) store_force_contact_ = true;
            else if (strcmp(arg[iarg_+1],"no") == 0) store_force_contact_ = false;
            else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'store_force_contact_'");
+           hasargs = true;
+           iarg_ += 2;
+        } else if (strcmp(arg[iarg_],"store_force_contact_every") == 0) {
+           if (iarg_+2 > narg)
+              error->fix_error(FLERR,this," not enough arguments");
+           store_force_contact_every_ = atoi(arg[iarg_+1]);
+           if(store_force_contact_every_ <= 0)
+                error->fix_error(FLERR,this,"store_force_contact_every must be > 0");
+           store_force_contact_ = true;
+           hasargs = true;
+           iarg_ += 2;
+        } else if (strcmp(arg[iarg_],"allow_special_domain_periodic") == 0) {
+           if (iarg_+2 > narg)
+              error->fix_error(FLERR,this," not enough arguments");
+           if (strcmp(arg[iarg_+1],"yes") == 0) allow_special_domain_periodic = true;
+           else if (strcmp(arg[iarg_+1],"no") == 0) allow_special_domain_periodic = false;
+           else error->fix_error(FLERR,this,"expecting 'yes' or 'no' after keyword 'allow_special_domain_periodic'");
            hasargs = true;
            iarg_ += 2;
         } else if (strcmp(arg[iarg_],"store_force_contact_stress") == 0) {
@@ -353,6 +371,11 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
 
     if (modify->find_fix_style("continuum/weighted", 0))
         store_force_contact_stress_ = true;
+
+    if (!allow_special_domain_periodic                               &&
+        (domain->triclinic || dynamic_cast<DomainWedge*>(domain))     &&
+        (domain->xperiodic || domain->yperiodic || domain->zperiodic) )
+        error->fix_error(FLERR, this, "Triclinic or wedge domain is not allowed with periodic boundary conditions and meshes. This can be overridden by using the allow_special_domain_periodic option of fix wall/gran. In this case the user must ensure that meshes are sufficiently far away from periodic boundaries");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -498,29 +521,6 @@ void FixWallGran::post_create()
           delete []hist_name;
    }
 
-   if((domain->xperiodic || domain->yperiodic || domain->zperiodic) && 1 == meshwall_)
-   {
-          char *wallforce_name = new char[strlen(style)+1+15];
-          strcpy(wallforce_name,"meshforce_pbc_");
-          strcat(wallforce_name,id);
-          char **fixarg = new char*[11];
-          fixarg[0] = wallforce_name;
-          fixarg[1] = (char *) "all";
-          fixarg[2] = (char *) "property/atom";
-          fixarg[3] = wallforce_name;
-          fixarg[4] = (char *) "vector";
-          fixarg[5] = (char *) "no";    // restart
-          fixarg[6] = (char *) "no";    // communicate ghost
-          fixarg[7] = (char *) "yes";    // communicate rev
-          fixarg[8] = (char *) "0.";
-          fixarg[9] = (char *) "0.";
-          fixarg[10] = (char *) "0.";
-          modify->add_fix(11,fixarg);
-          fix_meshforce_pbc_ =
-              static_cast<FixPropertyAtom*>(modify->find_fix_property(wallforce_name,"property/atom","vector",3,0,style));
-          delete []fixarg;
-          delete []wallforce_name;
-   }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -531,9 +531,6 @@ void FixWallGran::pre_delete(bool unfixflag)
         modify->delete_fix(fix_wallforce_->id);
     if(unfixflag && fix_history_primitive_)
         modify->delete_fix(fix_history_primitive_->id);
-
-    if(unfixflag && fix_meshforce_pbc_)
-        modify->delete_fix(fix_meshforce_pbc_->id);
 
     if(unfixflag && store_force_contact_ && 0 == meshwall_)
         modify->delete_fix(fix_wallforce_contact_->id);
@@ -639,6 +636,11 @@ void FixWallGran::init()
         }
     }
     
+    fix_sum_normal_force_ =
+        static_cast<FixPropertyAtom*>
+        (
+            modify->find_fix_property("sum_normal_force_","property/atom","scalar",0,0,style, false)
+        );
 }
 
 void FixWallGran::createMulticontactData()
@@ -799,14 +801,13 @@ void FixWallGran::post_force_wall(int vflag)
   if(nlocal_ && !radius_ && r0_ == 0.)
     error->fix_error(FLERR,this,"need either per-atom radius or r0_ being set");
 
-    if(store_force_)
-    {
-        for(int i = 0; i < nlocal_; i++)
-        {
-            vectorZeroize3D(wallforce_[i]);
-        }
-    }
-
+  if(store_force_)
+  {
+      for(int i = 0; i < nlocal_; i++)
+      {
+          vectorZeroize3D(wallforce_[i]);
+      }
+  }
   if(meshwall_ == 1)
     post_force_mesh(vflag);
   else
@@ -858,9 +859,6 @@ void FixWallGran::post_force_mesh(int vflag)
     SurfacesIntersectData sidata;
     sidata.is_wall = true;
 
-    if(fix_meshforce_pbc_)
-        fix_meshforce_pbc_->set_all(0.,true);
-
     for(int iMesh = 0; iMesh < n_FixMesh_; iMesh++)
     {
       TriMesh *mesh = FixMesh_list_[iMesh]->triMesh();
@@ -900,17 +898,34 @@ void FixWallGran::post_force_mesh(int vflag)
             
             const int iPart = neighborList[iCont];
 
-            // do not handle ghost particles unless periodic
-            
-            if((iPart >= nlocal) && (!domain->is_periodic_ghost(iPart))) continue;
+            // do not handle ghost particles
+            if (iPart >= nlocal) continue;
 
             int idTri = mesh->id(iTri);
 
             #ifdef SUPERQUADRIC_ACTIVE_FLAG
                 if(atom->superquadric_flag) {
+                  #ifdef LIGGGHTS_DEBUG
+                    if(std::isnan(vectorMag3D(x_[iPart])))
+                      error->fix_error(FLERR,this,"x_[iPart] is NaN!");
+                    if(std::isnan(vectorMag4D(quat_[iPart])))
+                      error->fix_error(FLERR,this,"quat_[iPart] is NaN!");
+                  #endif
+
                   Superquadric particle(x_[iPart], quat_[iPart], shape_[iPart], roundness_[iPart]);
+
                   if(mesh->sphereTriangleIntersection(iTri, radius_[iPart], x_[iPart])) //check for Bounding Sphere-triangle intersection
+                  {
                     deltan = mesh->resolveTriSuperquadricContact(iTri, delta, sidata.contact_point, particle, bary);
+                    #ifdef LIGGGHTS_DEBUG
+                        if(std::isnan(deltan))
+                          error->fix_error(FLERR,this,"deltan is NaN!");
+                        if(std::isnan(vectorMag3D(delta)))
+                          error->fix_error(FLERR,this,"delta is NaN!");
+                        if(std::isnan(vectorMag3D(sidata.contact_point)))
+                          error->fix_error(FLERR,this,"sidata.contact_point is NaN!");
+                    #endif
+                  }
                   else
                     deltan = LARGE_TRIMESH;
                   sidata.is_non_spherical = true; //by default it is false
@@ -919,7 +934,7 @@ void FixWallGran::post_force_mesh(int vflag)
                   if (fix_store_multicontact_data_)
                   {
                       double * deltaData = NULL;
-                      const bool contact = fix_store_multicontact_data_->haveContact(iPart, iTri, deltaData);
+                      const bool contact = fix_store_multicontact_data_->haveContact(iPart, idTri, deltaData);
                       if (contact)
                           sidata.radi += deltaData[3];
                   }
@@ -930,7 +945,7 @@ void FixWallGran::post_force_mesh(int vflag)
                 if (fix_store_multicontact_data_)
                 {
                     double * deltaData = NULL;
-                    const bool contact = fix_store_multicontact_data_->haveContact(iPart, iTri, deltaData);
+                    const bool contact = fix_store_multicontact_data_->haveContact(iPart, idTri, deltaData);
                     if (contact)
                         sidata.radi += deltaData[3];
                 }
@@ -944,6 +959,8 @@ void FixWallGran::post_force_mesh(int vflag)
 
             bool intersectflag = (deltan <= 0);
 
+            sidata.mesh = mesh;
+
             if(atom->shapetype_flag)
             {
                 
@@ -953,7 +970,6 @@ void FixWallGran::post_force_mesh(int vflag)
                 
             }
 
-            sidata.mesh = mesh;
             sidata.fix_mesh = FixMesh_list_[iMesh];
 
             if(deltan <= 0 || (radius && deltan < contactDistanceMultiplier*radius[iPart]))
@@ -970,7 +986,7 @@ void FixWallGran::post_force_mesh(int vflag)
                     v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
               }
 
-              if(!sidata.is_non_spherical || atom->superquadric_flag);
+              if(!sidata.is_non_spherical || atom->superquadric_flag)
                 sidata.deltan   = -deltan;
               sidata.delta[0] = -delta[0];
               sidata.delta[1] = -delta[1];
@@ -989,15 +1005,6 @@ void FixWallGran::post_force_mesh(int vflag)
       // clean-up contacts
       
       if(fix_contact) fix_contact->cleanUpContacts();
-    }
-
-    if(fix_meshforce_pbc_)
-    {
-        fix_meshforce_pbc_->do_reverse_comm();
-        double **f = atom->f;
-
-        for(int i = 0; i < nlocal; i++)
-            vectorAdd3D(f[i],fix_meshforce_pbc_->array_atom[i],f[i]);
     }
 }
 
@@ -1057,9 +1064,38 @@ void FixWallGran::post_force_primitive(int vflag)
             double sphere_contact_point[3];
             vectorAdd3D(x_[iPart], delta, sphere_contact_point);
             double closestPoint[3], closestPointProjection[3], point_of_lowest_potential[3];
+            #ifdef LIGGGHTS_DEBUG
+              if(std::isnan(vectorMag3D(x_[iPart])))
+                error->fix_error(FLERR,this,"x_[iPart] is NaN!");
+              if(std::isnan(vectorMag4D(quat_[iPart])))
+                error->fix_error(FLERR,this,"quat_[iPart] is NaN!");
+            #endif
+
             Superquadric particle(x_[iPart], quat_[iPart], shape_[iPart], roundness_[iPart]);
             intersectflag = particle.plane_intersection(delta, sphere_contact_point, closestPoint, point_of_lowest_potential);
+            #ifdef LIGGGHTS_DEBUG
+                if(std::isnan(vectorMag3D(delta)))
+                  error->fix_error(FLERR,this,"delta is NaN!");
+                if(std::isnan(vectorMag3D(sphere_contact_point)))
+                  error->fix_error(FLERR,this,"sphere_contact_point is NaN!");
+                if(std::isnan(vectorMag3D(closestPoint)))
+                  error->fix_error(FLERR,this,"closestPoint is NaN!");
+                if(std::isnan(vectorMag3D(point_of_lowest_potential)))
+                  error->fix_error(FLERR,this,"point_of_lowest_potential is NaN!");
+            #endif
             deltan = -MathExtraLiggghtsNonspherical::point_wall_projection(delta, sphere_contact_point, closestPoint, closestPointProjection);
+
+            #ifdef LIGGGHTS_DEBUG
+                if(std::isnan(deltan))
+                  error->fix_error(FLERR,this,"deltan is NaN!");
+                if(std::isnan(vectorMag3D(delta)))
+                  error->fix_error(FLERR,this,"delta is NaN!");
+                if(std::isnan(vectorMag3D(closestPointProjection)))
+                  error->fix_error(FLERR,this,"closestPointProjection is NaN!");
+                if(std::isnan(vectorMag3D(closestPoint)))
+                  error->fix_error(FLERR,this,"closestPoint is NaN!");
+            #endif
+
             vectorCopy3D(closestPoint, sidata.contact_point);
             sidata.is_non_spherical = true; //by default it is false
       }
@@ -1082,7 +1118,7 @@ void FixWallGran::post_force_primitive(int vflag)
         break;
       }
 
-      if(!sidata.is_non_spherical || atom->superquadric_flag);
+      if(!sidata.is_non_spherical || atom->superquadric_flag)
         sidata.deltan   = -deltan;
       sidata.delta[0] = -delta[0];
       sidata.delta[1] = -delta[1];
@@ -1133,7 +1169,8 @@ int FixWallGran::is_moving()
 
 int FixWallGran::n_contacts_local(int &nIntersect)
 {
-    if (!is_mesh_wall() || dnum() == 0) return 0;
+    
+    if (!is_mesh_wall()) return 0;
 
     int ncontacts = 0;
     for(int i = 0; i < n_FixMesh_; i++)
@@ -1158,7 +1195,8 @@ int FixWallGran::n_contacts_all(int &nIntersect)
 
 int FixWallGran::n_contacts_local(int contact_groupbit, int &nIntersect)
 {
-    if (!is_mesh_wall() || dnum() == 0) return 0;
+    
+    if (!is_mesh_wall()) return 0;
 
     int ncontacts = 0;
     for(int i = 0; i < n_FixMesh_; i++)
@@ -1204,6 +1242,7 @@ void FixWallGran::init_heattransfer()
 {
     fppa_T = NULL;
     fppa_hf = NULL;
+    fppa_htcw = NULL;
     deltan_ratio = NULL;
 
     // decide if heat transfer is to be calculated
@@ -1225,9 +1264,13 @@ void FixWallGran::init_heattransfer()
     // set flag so addHeatFlux function is called
     heattransfer_flag_ = true;
 
+    if(modify->n_fixes_style("heat/gran/conduction/fast") > 0)
+        heattransfer_flag_ = false;
+
     // if(screen && comm->me == 0) fprintf(screen,"Initializing wall/gran heat transfer model\n");
     fppa_T = static_cast<FixPropertyAtom*>(modify->find_fix_property("Temp","property/atom","scalar",1,0,style));
     fppa_hf = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatFlux","property/atom","scalar",1,0,style));
+    fppa_htcw = static_cast<FixPropertyAtom*>(modify->find_fix_property("wallHeattransferCoeff","property/atom","scalar",1,0,style,false));
 
     th_cond = static_cast<FixPropertyGlobal*>(modify->find_fix_property("thermalConductivity","property/global","peratomtype",0,0,style))->get_values();
 
@@ -1242,8 +1285,51 @@ void FixWallGran::init_heattransfer()
 
 /* ---------------------------------------------------------------------- */
 
+void FixWallGran::wall_temperature_unique(bool &has_temp,bool &temp_unique, double &temperature_unique)
+{
+    has_temp = false;
+    temp_unique = true;
+    temperature_unique = 0.;
+
+    if(Temp_wall > 0)
+    {
+        has_temp = true;
+        temp_unique = true;
+        temperature_unique = Temp_wall;
+
+    }
+
+    for(int imesh = 0; imesh < n_FixMesh_; imesh++)
+    {
+        
+        if( (mesh_list()[imesh]->triMesh())->prop().getElementProperty<ScalarContainer<double> >("Temp"))
+        {
+            has_temp = true;
+            temp_unique = false;
+            
+            return;
+        }
+        if( (mesh_list()[imesh]->triMesh())->prop().getGlobalProperty<ScalarContainer<double> >("Temp"))
+        {
+            has_temp = true;
+
+            double Temp_mesh = (*((mesh_list()[imesh]->triMesh())->prop().getGlobalProperty< ScalarContainer<double> >("Temp")))(0);
+
+            if(temperature_unique > 0. && Temp_mesh != temperature_unique)
+            {
+                temp_unique = false;
+                return;
+            }
+            temperature_unique = Temp_mesh;
+        }
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixWallGran::addHeatFlux(TriMesh *mesh,int ip, const double ri, double delta_n, double area_ratio)
 {
+    
     //r is the distance between the sphere center and wall
     double tcop, tcowall, hc, Acont=0.0, r;
     double reff_wall = ri;
@@ -1286,8 +1372,12 @@ void FixWallGran::addHeatFlux(TriMesh *mesh,int ip, const double ri, double delt
 
     if(computeflag_)
     {
-        heatflux[ip] += (Temp_wall-Temp_p[ip]) * hc;
-        Q_add += (Temp_wall-Temp_p[ip]) * hc * update->dt;
+        double hf = (Temp_wall-Temp_p[ip]) * hc;
+        heatflux[ip] += hf;
+        Q_add += hf * update->dt;
+        
+        if(fppa_htcw)
+            fppa_htcw->vector_atom[ip] = hc;
     }
     if(cwl_ && addflag_)
         cwl_->add_heat_wall(ip,(Temp_wall-Temp_p[ip]) * hc);

@@ -57,10 +57,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeMSD::ComputeMSD(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeMSD::ComputeMSD(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 3) error->all(FLERR,"Illegal compute msd command");
+  if (narg < iarg) error->all(FLERR,"Illegal compute msd command");
 
   vector_flag = 1;
   size_vector = 4;
@@ -70,7 +70,6 @@ ComputeMSD::ComputeMSD(LAMMPS *lmp, int narg, char **arg) :
 
   comflag = 0;
 
-  int iarg = 3;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"com") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal compute msd command");

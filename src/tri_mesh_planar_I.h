@@ -52,7 +52,6 @@
 inline int TriMeshPlanar::generateRandomOwnedGhostWithin(double *pos,double delta)
 {
     int i, iSrf, iSrfCheck, iSrfCheckEdge, ntry;
-    double dist;
     bool farEnoughAway;
 
     ntry = 0;
@@ -70,15 +69,20 @@ inline int TriMeshPlanar::generateRandomOwnedGhostWithin(double *pos,double delt
             i = 0;
             while(i < 2*NUM_NODES && nearestActiveEdgeID_(iSrf)[i] >= 0 && farEnoughAway)
             {
-                iSrfCheck = TrackingMesh<NUM_NODES>::map
-                (
-                    nearestActiveEdgeID_(iSrf)[i]
-                );
-                iSrfCheckEdge = nearestActiveEdgeIndex_(iSrf)[i];
+                double min_dist = 2.0*delta;
+                const int nTri_j = TrackingMesh<NUM_NODES>::map_size(nearestActiveEdgeID_(iSrf)[i]);
 
-                dist = edgePointDist(iSrfCheck,iSrfCheckEdge,pos);
+                for (int j = 0; j < nTri_j; j++)
+                {
+                    iSrfCheck = TrackingMesh<NUM_NODES>::map(nearestActiveEdgeID_(iSrf)[i], j);
+                    iSrfCheckEdge = nearestActiveEdgeIndex_(iSrf)[i];
 
-                if(dist < delta)
+                    const double dist = edgePointDist(iSrfCheck,iSrfCheckEdge,pos);
+                    if (dist < min_dist)
+                        min_dist = dist;
+                }
+
+                if(min_dist < delta)
                     farEnoughAway = false;
 
                 i++;
@@ -132,18 +136,18 @@ inline bool TriMeshPlanar::locatePosition(double *pos,int &triID,double *bary,do
 
 inline bool TriMeshPlanar::constructPositionFromBary(int triID,double *bary,double *pos)
 {
-    int itri = TrackingMesh<3>::map(triID);
+    
+    if (TrackingMesh<3>::map_size(triID) > 1)
+        error->one(FLERR, "Internal error - implementation missing");
+
+    int itri = TrackingMesh<3>::map(triID, 0);
 
     if(itri < 0) return false;
 
-    double tmp[3];
     vectorZeroize3D(pos);
 
     for(int i = 0; i < 3; i++)
-    {
-        vectorScalarMult3D(node_(itri)[i],bary[i],tmp);
-        vectorAdd3D(pos,tmp,pos);
-    }
+        vectorAddMultiple3D(pos, bary[i], node_(itri)[i], pos);
 
     return true;
 }

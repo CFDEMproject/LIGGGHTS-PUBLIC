@@ -50,46 +50,54 @@
    add property
   ------------------------------------------------------------------------- */
 
-  template<typename T>
-  T* CustomValueTracker::addElementProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart,
-                                            int _scalePower, int _init_len, const char *_statistics,
-                                            const double _weighting_factor, const char *_id_scale,const bool _forget )
-  {
-     // error if property exists already
-     if(elementProperties_.getPointerById<T>(_id))
-     {
-         char *errmsg = new char[strlen(_id)+200];
-         sprintf(errmsg,"Illegal command, features are incompatible - element property '%s' exists already",_id);
-         error->all(FLERR,errmsg);
-         delete []errmsg;
-     }
+template<typename T>
+T* CustomValueTracker::addElementProperty(const char *_id,
+                                          const char* _comm,
+                                          const char* _ref,
+                                          const char *_restart,
+                                          int _scalePower,
+                                          int _init_len,
+                                          const char *_statistics,
+                                          const double _weighting_factor,
+                                          ScalarContainer<double> * const _scale,
+                                          ScalarContainer<double> * const _scaleAvg,
+                                          const bool _enable_favre)
+{
+    // error if property exists already
+    if(elementProperties_.getPointerById<T>(_id))
+    {
+        char *errmsg = new char[strlen(_id)+200];
+        sprintf(errmsg,"Illegal command, features are incompatible - element property '%s' exists already",_id);
+        error->all(FLERR,errmsg);
+        delete []errmsg;
+    }
 
-     std::vector<std::string> id_list;
-     std::string id_string(_id);
+    std::vector<std::string> id_list;
+    std::string id_string(_id);
 
-     // add property
-     ContainerBase * cb_new = elementProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
-     id_list.push_back(id_string);
+    // add property
+    ContainerBase * cb_new = elementProperties_.add<T>(_id,_comm,_ref,_restart,_scalePower);
+    id_list.push_back(id_string);
 
-     // check if properties were set correctly
-     // error here since ContainerBase not derived from Pointers
-     if(!elementProperties_.getPointerById<T>(_id)->propertiesSetCorrectly())
-     {
-         char *errmsg = new char[strlen(_id)+200];
-         sprintf(errmsg,"Illegal element property, comm or frame property not set correctly for property '%s'",_id);
-         error->all(FLERR,errmsg);
-         delete []errmsg;
-     }
+    // check if properties were set correctly
+    // error here since ContainerBase not derived from Pointers
+    if(!elementProperties_.getPointerById<T>(_id)->propertiesSetCorrectly())
+    {
+        char *errmsg = new char[strlen(_id)+200];
+        sprintf(errmsg,"Illegal element property, comm or frame property not set correctly for property '%s'",_id);
+        error->all(FLERR,errmsg);
+        delete []errmsg;
+    }
 
-     // add to statistics if applicable
-     if(_statistics)
-     {
+    // add to statistics if applicable
+    if(_statistics)
+    {
         if(strstr(_statistics,ContainerBase::AVERAGESUFFIX))
         {
             std::string id_string_ave = id_string;
             id_string_ave.append(ContainerBase::AVERAGESUFFIX);
             T* cb_average = elementProperties_.add<T>(id_string_ave.c_str(),_comm,_ref,_restart,_scalePower);
-            cb_average->setContainerStatistics(_weighting_factor, cb_new,0,0,_forget );
+            cb_average->setContainerStatistics(_weighting_factor, cb_new, _scale, _scaleAvg, _enable_favre);
             id_list.push_back(id_string_ave);
 
             if(strstr(_statistics,"avgVar"))
@@ -98,12 +106,12 @@
                 // TODO: Hard-coded higher weighting factor for second stage statistics
                 std::string id_string_avg_avg = id_string_ave;
                 id_string_avg_avg.append(ContainerBase::AVERAGESUFFIX);
-                elementProperties_.add<T>(id_string_avg_avg.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(5*_weighting_factor, cb_average,0,0,_forget );
+                elementProperties_.add<T>(id_string_avg_avg.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(5*_weighting_factor, cb_average,0,0,_enable_favre );
                 id_list.push_back(id_string_avg_avg);
 
                 std::string id_string_avg_mean_square = id_string_ave;
                 id_string_avg_mean_square.append(ContainerBase::MEANSQUARESUFFIX);
-                elementProperties_.add<T>(id_string_avg_mean_square.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(5*_weighting_factor, cb_average,0,0,_forget );
+                elementProperties_.add<T>(id_string_avg_mean_square.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(5*_weighting_factor, cb_average,0,0,_enable_favre );
                 id_list.push_back(id_string_avg_mean_square);
             }
         }
@@ -111,29 +119,28 @@
         {
             std::string id_string_mean_square = id_string;
             id_string_mean_square.append(ContainerBase::MEANSQUARESUFFIX);
-            elementProperties_.add<T>(id_string_mean_square.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(_weighting_factor, cb_new,0,0,_forget );
+            elementProperties_.add<T>(id_string_mean_square.c_str(),_comm,_ref,_restart,_scalePower)->setContainerStatistics(_weighting_factor, cb_new, _scale, _scaleAvg, _enable_favre );
             id_list.push_back(id_string_mean_square);
         }
-     }
+    }
 
-     // allocate memory and initialize
-     
-     for(size_t inew = 0; inew < id_list.size(); inew++)
-     {
-         if(ownerMesh_)
-         {
-            elementProperties_.getPointerById<T>(id_list[inew].c_str())->addUninitialized(ownerMesh_->sizeLocal()+ownerMesh_->sizeGhost());
-         }
+    // allocate memory and initialize
+    
+    for(size_t inew = 0; inew < id_list.size(); inew++)
+    {
+        T * const idPtr = elementProperties_.getPointerById<T>(id_list[inew].c_str());
+        if(ownerMesh_)
+            idPtr->addUninitialized(ownerMesh_->sizeLocal()+ownerMesh_->sizeGhost());
 
-         if(_init_len > 0)
-            elementProperties_.getPointerById<T>(id_list[inew].c_str())->addUninitialized(_init_len);
+        if(_init_len > 0)
+            idPtr->addUninitialized(_init_len);
 
-         elementProperties_.getPointerById<T>(id_list[inew].c_str())->setAll(0);
-     }
+        idPtr->setAll(0);
+    }
 
-     // return pointer
-     return elementProperties_.getPointerById<T>(_id);
-  }
+    // return pointer
+    return elementProperties_.getPointerById<T>(_id);
+}
 
   template<typename T>
   T* CustomValueTracker::addGlobalProperty(const char *_id, const char* _comm, const char* _ref, const char *_restart, int _scalePower)
@@ -366,7 +373,7 @@
    move element i
   ------------------------------------------------------------------------- */
 
-  void CustomValueTracker::moveElement(int i, double *delta)
+  void CustomValueTracker::moveElement(const int i, const double * const delta)
   {
       elementProperties_.moveElement(i,delta);
   }
@@ -399,34 +406,34 @@
     return elementProperties_.elemListBufSize(n,operation,scale,translate,rotate);
   }
 
-  int CustomValueTracker::pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int CustomValueTracker::pushElemListToBuffer(int n, int *list, int *wraplist, double *buf, int operation, std::list<std::string> * properties, double *dlo, double *dhi, bool scale,bool translate, bool rotate)
   {
-    return elementProperties_.pushElemListToBuffer(n,list,buf,operation,scale,translate,rotate);
+    return elementProperties_.pushElemListToBuffer(n,list, wraplist, buf,operation, properties, dlo, dhi, scale,translate,rotate);
   }
 
-  int CustomValueTracker::popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int CustomValueTracker::popElemListFromBuffer(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate)
   {
-    return elementProperties_.popElemListFromBuffer(first,n,buf,operation,scale,translate,rotate);
+    return elementProperties_.popElemListFromBuffer(first,n,buf,operation, properties, scale,translate,rotate);
   }
 
-  int CustomValueTracker::pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int CustomValueTracker::pushElemListToBufferReverse(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate)
   {
-    return elementProperties_.pushElemListToBufferReverse(first,n,buf,operation,scale,translate,rotate);
+    return elementProperties_.pushElemListToBufferReverse(first,n,buf,operation, properties, scale,translate,rotate);
   }
 
-  int CustomValueTracker::popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int CustomValueTracker::popElemListFromBufferReverse(int n, int *list, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate)
   {
-    return elementProperties_.popElemListFromBufferReverse(n,list,buf,operation,scale,translate,rotate);
+    return elementProperties_.popElemListFromBufferReverse(n,list,buf,operation, properties, scale,translate,rotate);
   }
 
   /* ----------------------------------------------------------------------
    push / pop for element i
   ------------------------------------------------------------------------- */
 
-  int CustomValueTracker::elemBufSize(int operation,bool scale,bool translate,bool rotate)
+  int CustomValueTracker::elemBufSize(int operation, std::list<std::string> * properties, bool scale,bool translate,bool rotate)
   {
     
-    return elementProperties_.elemBufSize(operation,scale,translate,rotate);
+    return elementProperties_.elemBufSize(operation, properties, scale,translate,rotate);
   }
 
   int CustomValueTracker::pushElemToBuffer(int i, double *buf, int operation,bool scale,bool translate, bool rotate)

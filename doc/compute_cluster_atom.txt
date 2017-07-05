@@ -10,10 +10,11 @@ compute cluster/atom command :h3
 
 [Syntax:]
 
-compute ID group-ID cluster/atom cutoff :pre
+compute ID group-ID cluster/atom general_keyword general_values cutoff :pre
 
 ID, group-ID are documented in "compute"_compute.html command
 cluster/atom = style name of this compute command
+general_keywords general_values are documented in "compute"_compute.html"
 cutoff = distance within which to label atoms as part of same cluster (distance units) :ul
 
 [Examples:]

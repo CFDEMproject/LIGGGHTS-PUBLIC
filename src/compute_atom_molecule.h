@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeAtomMolecule : public Compute {
  public:
-  ComputeAtomMolecule(class LAMMPS *, int, char **);
+  ComputeAtomMolecule(class LAMMPS *, int &iarg, int, char **);
   ~ComputeAtomMolecule();
   void init();
   void compute_vector();

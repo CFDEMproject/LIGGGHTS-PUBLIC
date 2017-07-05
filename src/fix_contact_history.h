@@ -106,6 +106,9 @@ class FixContactHistory : public Fix {
   inline double* contacthistory(int i,int j)
   { return &(contacthistory_[i][j*dnum_]); }
 
+  inline int get_dnum()
+  { return dnum_; }
+
  protected:
 
   int iarg_;

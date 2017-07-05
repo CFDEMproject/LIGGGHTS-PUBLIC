@@ -11,7 +11,7 @@
 This section describes how to build and run LIGGGHTS(R)-PUBLIC, for both new and
 experienced users.
 
-2.1 "What's in the LIGGGHTS(R)-PUBLIC distribution"_#start_1
+2.1 "How to obtain LIGGGHTS(R)-PUBLIC"_#start_1
 2.2 "Making LIGGGHTS(R)-PUBLIC"_#start_2
 2.3 "Making LIGGGHTS(R)-PUBLIC with optional packages"_#start_3
 2.4 "Building LIGGGHTS(R)-PUBLIC via the Make.py script"_#start_4
@@ -23,22 +23,48 @@ experienced users.
 :line
 :line
 
-2.1 What's in the LIGGGHTS(R)-PUBLIC distribution :h4,link(start_1)
+2.1 How to obtain LIGGGHTS(R)-PUBLIC :h4,link(start_1)
 
-When you download LIGGGHTS(R)-PUBLIC you will need to unzip and untar the
-downloaded file with the following commands, after placing the file in
-an appropriate directory.
+We recommend to use git to download the LIGGGHTS(R)-PUBLIC package. Make sure that the
+{git} command is available on your system. On a Ubuntu/Debian box this can be
+achieved by
 
-gunzip lammps*.tar.gz
-tar xvf lammps*.tar :pre
+sudo apt-get install git :pre
 
-This will create a LIGGGHTS(R)-PUBLIC directory containing two files and several
-sub-directories:
+NOTE: Users of a LIGGGHTS-PREMIUM version will need to replace the
+LIGGGHTS-PUBLIC strings shown below by their respective version string. This
+string is equal to LIGGGHTS(R)-PUBLIC without the "(R)".
+
+LIGGGHTS(R)-PUBLIC can then be downloaded by typing
+
+git clone git@github.com:CFDEMproject/LIGGGHTS-PUBLIC.git :pre
+
+Under certain circumstances (e.g. company firewall) this might fail and instead
+you can use
+
+git clone https://github.com/CFDEMproject/LIGGGHTS-PUBLIC.git :pre
+
+to obtain LIGGGHTS(R)-PUBLIC. The advantage of using one of these two commands is that
+you can use
+
+git pull :pre
+
+to easily fetch the latest version of the code when we release a new version.
+Note that this command needs to be executed in your LIGGGHTS-PUBLIC folder.
+
+If none of the clone commands work you can download the package
+"here"_https://github.com/CFDEMproject/LIGGGHTS-PUBLIC/archive/master.zip
+without having to use git. Note that {git pull} will not work in this case,
+instead you will have to download the full zip file again.
+
+The LIGGGHTS-PUBLIC directory contains two files and several directories:
 
 README: text file
 LICENSE: the GNU General Public License (GPL)
 doc: documentation
 examples: simple test problems
+lib: libraries LIGGGHTS(R)-PUBLIC can be linked with
+python: Python wrapper on LIGGGHTS(R)-PUBLIC as a library
 src: source files :tb(s=:)
 
 :line
@@ -49,6 +75,7 @@ This section has the following sub-sections:
 
 "Read this first"_#start_2_1
 "Steps to build a LIGGGHTS(R)-PUBLIC executable"_#start_2_2
+"Advanced building using custom makefiles"_#start_2_2_expert
 "Common errors that can occur when making LIGGGHTS(R)-PUBLIC"_#start_2_3
 "Additional build tips"_#start_2_4
 "Building for a Mac"_#start_2_5
@@ -56,7 +83,7 @@ This section has the following sub-sections:
 
 :line
 
-[{Read this first:}] :link(start_2_1)
+[Read this first:] :h5,link(start_2_1)
 
 Building LIGGGHTS(R)-PUBLIC can be non-trivial.  You may need to edit a makefile,
 there are compiler options to consider, additional libraries can be
@@ -84,12 +111,31 @@ that we can improve its performance.
 
 :line
 
-[{Steps to build a LIGGGHTS(R)-PUBLIC executable:}] :link(start_2_2)
+[Steps to build a LIGGGHTS(R)-PUBLIC executable:] :h5,link(start_2_2)
 
-Wth LIGGGHTS version 3.5.1 we have rolled out a all new and magic
+With LIGGGHTS version 3.5.1 we have rolled out a all new and magic
 Makefile.auto which hopefully will make building LIGGGHTS as simple as
 possible. If the following steps do not work for you please see the advanced
 building description "here"_#start_2_2_expert.
+
+Before attempting a build ensure that your system has all required prerequisites
+installed. A solid basis for several popular operating systems are listed below:
+
+Ubuntu 16.04LTS:
+  sudo apt-get install openmpi-bin libopenmpi-dev libvtk6.2 libvtk6-dev
+-----
+Ubuntu 17.10:
+  sudo apt-get install openmpi-bin libopenmpi-dev libvtk6.3 libvtk6-dev
+-----
+Fedora 25:
+  su -
+  dnf install openmpi openmpi-devel paraview-openmpi paraview-openmpi-devel gcc-c++
+  exit
+  echo "export PATH=$PATH:/usr/lib64/openmpi/bin" >> ~/.bashrc
+  echo "export LIBRARY_PATH=$LIBRARY_PATH:/usr/lib64/openmpi/lib:/usr/lib64/openmpi/lib/paraview" >> ~/.bashrc
+  echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64/openmpi/lib:/usr/lib64/openmpi/lib/paraview" >> ~/.bashrc
+  echo "export C_INCLUDE_PATH=$C_INCLUDE_PATH:/usr/lib64/openmpi/include/paraview" >> ~/.bashrc
+  echo "export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/lib64/openmpi/include/paraview" >> ~/.bashrc :pre
 
 [Step 0]
 
@@ -102,15 +148,23 @@ heavy lifting for us. So start by typing
 
 make auto :pre
 
-into the command line. If you are running this for the first time you won't
-achieve much and a message like the following will be shown:
+into the command line. If you are running this for the first time you will see
+the following message:
 
 >>> WARNING <<<
 Created MAKE/Makefile.user for the first time. Please check that the options
 in that file are set correctly and run make again. :pre
 
 That is perfectly normal as *MAKE/Makefile.user* does not exist by default
-and contains your personal, machine specific options.
+and contains some default options. The compilation will continue and if you are
+lucky enough it will actually produce an executable called {lmp_auto} in your
+{src/} folder. If this is the case you are done and can move on to "Running
+LIGGGHTS(R)-PUBLIC"_start_6
+
+Should the compilation interupt please carefully study the error message. The
+following procedure will explain how to set compilation variables for {make
+auto}.
+
 
 [Step 1]
 
@@ -137,9 +191,9 @@ that case have a look at the following lines:
 # VTK specific variables
 #
 # Path that contains the includes (vtkVersion.h)
-#VTK_INC_USR=/path/to/vtk/include
+#VTK_INC_USR=-I/path/to/vtk/include
 # Path that contains the VTK libraries
-#VTK_LIB_USR=/path/to/vtk/lib
+#VTK_LIB_USR=-L/path/to/vtk/lib
 # Additional VTK libraries to include
 #VTK_ADDLIBS_USR= :pre
 
@@ -175,6 +229,7 @@ NOTE: If you change any options in the first part of your
 *MAKE/Makefile.auto* after a first compilation you will be requested to
 perform a *make clean-auto* to do a full recompilation of the code.
 
+
 [Step 2]
 
 After all options are set to your satisfaction. Simply run
@@ -192,44 +247,88 @@ If you want to help us, then please send us your finished Makefile via the
 "forums"_http://www.cfdem.com/forum so that we can improve it for future
 use.
 
-The default compilation routine only compiles a certain subset of all
-possible contact model combinations. This is due to the fact that compiling
-all of them would cause issues nearly all machines (except if you have
-several 100 GB RAM). If your simulation uses a combination that is not
-enabled by default you can create a file called
-*style_contact_model.whitelist* in your LIGGGHTS(R)-PUBLIC source folder and fill
-it with entries such as
+
+[Step 3 (Advanced usage)]
+
+Makefile.auto accepts one variable as additional input which is called
+*postfix* which can be used by typing
+
+make auto postifx=myString :pre
+
+In this case Makefile.auto will not look for the *MAKE/Makefile.user* file,
+but *MAKE/Makefile.user_myString*. If it does not exist it will clone
+*MAKE/Makefile.user* (instead of a default template). The resulting
+executable will be called *lmp_auto_myString* (instead of *lmp_auto*).
+
+The prime use case would be a *MAKE/Makefile.user_debug* that has
+*USE_DEBUG* switched to "ON", whereas the default *MAKE/Makefile.user*
+compiles the optimized version of the code.
+
+NOTE: If you want to clean this particular compilation *make clean-auto*
+also needs to have the *postfix=myString* appended.
+
+All model combination of LIGGGHTS(R)-PUBLIC are automatically available starting with
+version 3.7. However, only a subset of them are compiled in an optimized manner.
+This might give you performance losses between 5 and 20%. In case you are using
+a model combination that is not optimized, LIGGGHTS(R)-PUBLIC will notify you of this.
+In this case you can create a file called *style_contact_model_user.whitelist*
+in your LIGGGHTS(R)-PUBLIC {src/} folder and fill it with entries such as
 
 GRAN_MODEL(HERTZ, TANGENTIAL_OFF, COHESION_OFF, ROLLING_OFF, SURFACE_DEFAULT)
 GRAN_MODEL(HERTZ, TANGENTIAL_HISTORY, COHESION_OFF, ROLLING_EPSD, SURFACE_DEFAULT) :pre
 
-After creating such a file with the appropriate entries you will need to
-recompile LIGGGHTS(R)-PUBLIC and this time it will be built only with the model
+After creating or modifying such a file with the appropriate entries you will need to
+recompile LIGGGHTS(R)-PUBLIC and this time it will be built with optimized model
 combinations specified in this file.
+
+In addition you can automatically scan files or folders recursively for
+LIGGGHTS(R)-PUBLIC input scripts and search them for their used contact model.
+With this list an addition to the whitelist is automatically created.
+Running the following commands within the LIGGGHTS(R)-PUBLIC src directory
+
+./genAutoExamplesWhitelist.sh -h
+./genAutoExamplesWhitelist.sh ../examples :pre
+
+The first will display the help message for genAutoExamplesWhitelist.sh.
+The second will recursively search the examples folder of your LIGGGHTS(R)-PUBLIC
+installation and scan all in.* files for the used contact models. It will
+also create the file *style_contact_model_autoExamples.whitelist* containing
+the unique used models in the whitelist format.
+
+A third whitelist is automatically created during the compilation and is 
+stored in *style_contact_model.whitelist* . If this file exists, the next
+compilation will NOT change this file. You can manually delete it and 
+recreate it with
+
+sh Make.sh models
+sh Make.sh models_full :pre
+
+During every compilation the three whitelist files *style_contact_model_user.whitelist* ,
+*style_contact_model_autoExamples.whitelist* and *style_contact_model.whitelist* are
+automatically merged and only unique entries are kept in the merged file.
 
 :line
 
-[Advanced building using custom makefiles] :link(start_2_2_expert)
+[Advanced building using custom makefiles] :h5,link(start_2_2_expert)
 
 [Step 0]
 
-The src directory contains the C++ source and header files for LIGGGHTS(R)-PUBLIC.
-It also contains a top-level Makefile and a MAKE sub-directory with
-low-level Makefile.* files for many machines.  From within the src
-directory, type "make" or "gmake".  You should see a list of available
-choices.  If one of those is the machine and options you want, you can
-type a command like:
+The src directory contains the C++ source and header files for LIGGGHTS(R)-PUBLIC.  It
+also contains a top-level Makefile and a MAKE sub-directory with low-level
+Makefile.* files for a few selected platforms.  From within the src directory,
+type "make" or "gmake".  You should see a list of available choices.  If one of
+those is the machine and options you want, you can type a command like:
 
-make linux
+make mpi
 or
-gmake mac :pre
+gmake serial :pre
 
-Note that on a multi-processor or multi-core platform you can launch a
-parallel make, by using the "-j" switch with the make command, which
+NOTE On a multi-processor or multi-core platform you can launch a
+parallel make, by using the "-j {nprocessors}" switch with the make command, which
 will build LIGGGHTS(R)-PUBLIC more quickly.
 
-If you get no errors and an executable like lmp_linux or lmp_mac is
-produced, you're done; it's your lucky day.
+If you get no errors and an executable like lmp_mpi or lmp_serial is produced,
+you're done; it's your lucky day.
 
 Note that by default only a few of LIGGGHTS(R)-PUBLIC optional packages are
 installed.  To build LIGGGHTS(R)-PUBLIC with optional packages, see "this
@@ -242,6 +341,9 @@ for your machine, like Makefile.foo.  You should make a copy of an
 existing src/MAKE/Makefile.* as a starting point.  The only portions
 of the file you need to edit are the first line, the "compiler/linker
 settings" section, and the "LIGGGHTS(R)-PUBLIC-specific settings" section.
+
+NOTE: Do not attempt to copy and modify Makefile.auto as this is a rather
+complex file and should only be modified by experts.
 
 [Step 2]
 
@@ -506,7 +608,7 @@ You should get the executable lmp_foo when the build is complete.
 
 :line
 
-[{Errors that can occur when making LIGGGHTS(R)-PUBLIC:}] :link(start_2_3)
+[Errors that can occur when making LIGGGHTS(R)-PUBLIC:] :h5,link(start_2_3)
 
 IMPORTANT NOTE: If an error occurs when building LIGGGHTS(R)-PUBLIC, the compiler
 or linker will state very explicitly what the problem is.  The error
@@ -544,7 +646,7 @@ above in Step 4.
 
 :line
 
-[{Additional build tips:}] :link(start_2_4)
+[Additional build tips:] :h5,link(start_2_4)
 
 (1) Building LIGGGHTS(R)-PUBLIC for multiple platforms.
 
@@ -604,32 +706,32 @@ secs/timestep.
 
 :line
 
-[{Building for a Mac:}] :link(start_2_5)
+[Building for a Mac:] :h5,link(start_2_5)
 
-OS X is BSD Unix, so it should just work.  See the
-src/MAKE/Makefile.mac file.
+OS X is BSD Unix, so it should just work. Try using "make auto" or use "make
+serial" as fallback. This is untested but feel free to give us feedback on
+"cfdem.com"_www.cfdem.com
 
 :line
 
-[{Building for Windows:}] :link(start_2_6)
+[Building for Windows:] :h5,link(start_2_6)
 
-The LIGGGHTS(R)-PUBLIC download page has an option to download both a serial and
-parallel pre-built Windows exeutable.  See the "Running
-LIGGGHTS(R)-PUBLIC"_#start_6 section for instructions for running these
-executables on a Windows box.
+The recommened way to do this is using CMake and Visual Studio. Install
+"CMake"_www.cmake.org and launch the associated GUI. Point the {Where is your
+source code:} input to your {src/} folder and set the {build} folder to some
+folder (recommended: make a {build} folder in your LIGGGHTS(R)-PUBLIC-base directory).
+Press {Configure} to get your system settings. You will most likely have to set
+the {VTK_DIR} option to the folder in which you built the VTK library. Once this
+is done press {Configure} again until all errors are reolved so that you can
+{Generate} the project. After that you should be able to press {Open Project} to
+open Visual Studio where you can build LIGGGHTS(R)-PUBLIC.
 
-The pre-built executables are built with a subset of the available
-pacakges; see the download page for the list.  If you want
-a Windows version with specific packages included and excluded,
-you can build it yourself.
-
-One way to do this is install and use cygwin to build LIGGGHTS(R)-PUBLIC with a
-standard Linus make, just as you would on any Linux box; see
-src/MAKE/Makefile.cygwin.
-
-The other way to do this is using Visual Studio and project files.
-See the src/WINDOWS directory and its README.txt file for instructions
-on both a basic build and a customized build with pacakges you select.
+The other way to do this is install and use "cygwin"_www.cygwin.org to build
+LIGGGHTS(R)-PUBLIC with a standard Linux make, just as you would on any Linux box. Your
+cygwin environment will need several packages such as cmake, g++, gcc, openmpi,
+make. Note that when compiling VTK you need to disable all rendering related VTK
+options as OpenGL won't be available. Note that this is an option that should
+only be used by advanced users.
 
 :line
 
@@ -644,7 +746,7 @@ This section has the following sub-sections:
 
 :line
 
-[{Package basics:}] :link(start_3_1)
+[Package basics:] :link(start_3_1)
 
 The source code for LIGGGHTS(R)-PUBLIC is structured as a set of core files which
 are always included, plus optional packages.  Packages are groups of
@@ -685,7 +787,7 @@ See more details below.
 
 :line
 
-[{Including/excluding packages:}] :link(start_3_2)
+[Including/excluding packages:] :link(start_3_2)
 
 To use or not use a package you must include or exclude it before
 building LIGGGHTS(R)-PUBLIC.  From the src directory, this is typically as simple
@@ -753,7 +855,7 @@ type "make package" to see all of the package-related make options.
 
 :line
 
-[{Packages that require extra libraries:}] :link(start_3_3)
+[Packages that require extra libraries:] :link(start_3_3)
 
 A few of the standard and user packages require additional auxiliary
 libraries.  They must be compiled first, before LIGGGHTS(R)-PUBLIC is built.  If

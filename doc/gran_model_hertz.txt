@@ -24,8 +24,13 @@ zero or more keyword/value pairs may be appended to the end (after all models ar
   {disableNormalWhenBonded} values = 'on' or 'off'
     on = if the "cohesion bond"_gran_cohesion_bond.html model is used, then the normal force is only added if the two particles are not bonded
     of = the normal force is always added if two particles overlap
+  {computeDissipatedEnergy} values = 'on' or 'off'
+    on = the normal model saves the dissipated energy for each contact for the
+    use in "fix calculate/dissipated_energy"_fix_calculate_dissipated_energy.html
+    of = no values are saved
   {computeElasticPotential} values = 'on' or 'off'
-    on = the normal model saves the current elastic potential for each contact for the use in "compute elastic_potential"_compute_elastic_potential.html
+    on = the normal model saves the current elastic potential for each contact
+    for the use in "fix calculate/normal_elastic_energy"_fix_calculate_elastic_energy.html
     of = no values are saved :pre
 
 [Description:]
@@ -85,9 +90,12 @@ This model contributes to surface heating in the frame of
 appropriate flag is activated (only available in the PREMIUM version).
 
 When the "cohesion model bond"_gran_cohesion_bond.html is used the
-{disableNormalWhenBonded} keyword can be used. If this parameter is set to 'on' then the
-normal model will only compute its contribution if the two neighboring particles do not
-have an active bond.
+{disableNormalWhenBonded} keyword can be used. If this parameter is set to 'on'
+then the normal model will only compute its contribution if the two neighboring
+particles do not have an active bond. If a bond breaks and the particles overlap
+the current {delta_n} will be set to zero so that no sudden repulsion takes
+place. This is handled internally by having an offset value that shrinks to zero
+once the particles start drifting apart.
 
 [Force Limiting:]
 
@@ -119,7 +127,9 @@ may not be available in LIGGGHTS(R)-PUBLIC.
 {limitForce} = 'off'
 {heating_normal_hertz} = 'off'
 
-[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525-541 (2004).
+[(Di Renzo)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525-541 (2004). (Note: Wrong definition of G_eq in this paper, corrected in (Di Renzo 2))
+
+[(Di Renzo 2)] Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 60 (5), p 1303-1312 (2005).
 
 [(Ai)] Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).
 

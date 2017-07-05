@@ -26,7 +26,17 @@ zero or more keyword/value pairs may be appended to the end (after all models ar
     off = no modification to the restitution coefficient
   {heating_normal_hooke} values = 'on' or 'off'
     on = model contributes to surface heating in the frame of "surface sphere/heatable"_gran_surface_sphere_heatable.html
-    off = model does not contributes to surface heating :pre
+    off = model does not contributes to surface heating
+  {disableNormalWhenBonded} values = 'on' or 'off'
+    on = if the "cohesion bond"_gran_cohesion_bond.html model is used, then the normal force is only added if the two particles are not bonded
+    of = the normal force is always added if two particles overlap
+  {computeDissipatedEnergy} values = 'on' or 'off'
+    on = the normal model saves the dissipated energy for each contact for the
+    use in "fix calculate/dissipated_energy"_fix_calculate_dissipated_energy.html
+    of = no values are saved
+  {computeElasticPotential} values = 'on' or 'off'
+    on = the normal model saves the current elastic potential for each contact
+    for the use in "fix calculate/normal_elastic_energy"_fix_calculate_elastic_energy.html :pre
 
 [Description:]
 
@@ -86,6 +96,14 @@ fix id all property/global characteristicVelocity scalar value
     (value=value for characteristic impact velocity) :pre
 
 IMPORTANT NOTE: You have to use atom styles beginning from 1, e.g. 1,2,3,...
+
+When the "cohesion model bond"_gran_cohesion_bond.html is used the
+{disableNormalWhenBonded} keyword can be used. If this parameter is set to 'on'
+then the normal model will only compute its contribution if the two neighboring
+particles do not have an active bond. If a bond breaks and the particles overlap
+the current {delta_n} will be set to zero so that no sudden repulsion takes
+place. This is handled internally by having an offset value that shrinks to zero
+once the particles start drifting apart.
 
 [Force Limiting:]
 

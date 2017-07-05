@@ -43,6 +43,7 @@
 
 ComputeStyle(rigid,ComputeRigid)
 ComputeStyle(multisphere,ComputeRigid)
+ComputeStyle(multisphere/single,ComputeRigid)
 
 #else
 
@@ -55,19 +56,22 @@ namespace LAMMPS_NS {
 
 class ComputeRigid : public Compute {
  public:
-  ComputeRigid(class LAMMPS *, int, char **);
+  ComputeRigid(class LAMMPS *, int &iarg, int, char **);
   ~ComputeRigid();
   void init();
+  double compute_scalar();
+  void compute_vector();
   void compute_local();
   double memory_usage();
 
  private:
   void update_pointers();
 
+  bool is_single_;
+  int id_single_;
   class Multisphere* multisphere_;
   class ContainerBase *property_;
   int len_;
-
 };
 
 }

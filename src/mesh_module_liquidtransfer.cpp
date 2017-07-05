@@ -103,8 +103,6 @@ MeshModuleLiquidTransfer::~MeshModuleLiquidTransfer()
 void MeshModuleLiquidTransfer::post_create_pre_restart()
 {
     
-    // AM-TODO check if they already exist and how to deal with overlaping use
-    // probably some base class which allows for such transfer
     mesh->prop().addElementProperty<ScalarContainer<double> >("LiquidContent","comm_forward","frame_invariant","restart_yes");
     mesh->prop().addElementProperty<ScalarContainer<double> >("LiquidFlux","comm_reverse","frame_invariant","restart_no");
 }

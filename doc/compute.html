@@ -147,12 +147,21 @@
 <span id="index-0"></span><h1>compute command<a class="headerlink" href="#compute-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID style args</pre>
+<div class="highlight-python"><pre>compute ID group-ID style general_keywords general_values args</pre>
 </div>
 <ul class="simple">
 <li>ID = user-assigned name for the computation</li>
 <li>group-ID = ID of the group of atoms to perform the computation on</li>
 <li>style = one of a list of possible style names (see below)</li>
+<li>zero or more general_keywords/general_values pair may be appended</li>
+<li>general_keywords = <em>update_on_run_end</em></li>
+</ul>
+<pre class="literal-block">
+<em>update_on_run_end</em> value = 'yes' or 'no'
+  yes = compute is updated at the last step of each run command
+  no = compute is not updated at the end of a run
+</pre>
+<ul class="simple">
 <li>args = arguments used by a particular style</li>
 </ul>
 </div>
@@ -160,7 +169,7 @@
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>compute 1 all temp
 compute newtemp flow temp/partial 1 1 0
-compute 3 all ke/atom</pre>
+compute 3 all ke/atom update_on_run_end yes</pre>
 </div>
 </div>
 <div class="section" id="description">
@@ -254,6 +263,14 @@ If a compute value is accessed in another way, e.g. by a
 <a class="reference internal" href="variable.html"><em>variable</em></a>, you may want to know whether it is an
 intensive or extensive value.  See the doc page for individual
 computes for further info.</p>
+<hr class="docutils" />
+<p>Compute values can also be used after a <a class="reference internal" href="run.html"><em>run</em></a> command to perform
+<a class="reference internal" href="if.html"><em>if</em></a> conditionals or <a class="reference internal" href="print.html"><em>print</em></a> statements. In order to use the
+result of a compute outside of a run it needs to be updated at the end of each
+run. As computes generally update only upon request (e.g. before a dump) this
+needs to be specified explicitly using the <em>update_on_run_end</em> option which is
+available for every compute. If the associated value is set to &#8216;yes&#8217; the compute
+will be updated at the end of each run command and will be available for use.</p>
 <hr class="docutils" />
 <p>Properties of either a default or user-defined compute can be modified
 via the <a class="reference internal" href="compute_modify.html"><em>compute_modify</em></a> command.</p>

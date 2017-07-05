@@ -73,9 +73,9 @@ class CfdDatacouplingMPI : public CfdDatacoupling {
   { return false;}
 
   void allocate_external(int    **&data, int len2,int len1,     int initvalue);
-  void allocate_external(int    **&data, int len2,char *keyword,int initvalue);
+  void allocate_external(int    **&data, int len2,const char *keyword,int initvalue);
   void allocate_external(double **&data, int len2,int len1,     double initvalue);
-  void allocate_external(double **&data, int len2,char *keyword,double initvalue);
+  void allocate_external(double **&data, int len2,const char *keyword,double initvalue);
 
  private:
   template <typename T> T* check_grow(int len);

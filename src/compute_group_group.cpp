@@ -73,19 +73,20 @@ using namespace MathConst;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeGroupGroup::ComputeGroupGroup(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeGroupGroup::ComputeGroupGroup(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 4) error->all(FLERR,"Illegal compute group/group command");
+  if (narg < iarg+1) error->all(FLERR,"Illegal compute group/group command");
 
   scalar_flag = vector_flag = 1;
   size_vector = 3;
   extscalar = 1;
   extvector = 1;
 
-  int n = strlen(arg[3]) + 1;
+  int n = strlen(arg[iarg]) + 1;
   group2 = new char[n];
-  strcpy(group2,arg[3]);
+  strcpy(group2,arg[iarg]);
+  iarg++;
 
   jgroup = group->find(group2);
   if (jgroup == -1)
@@ -96,7 +97,6 @@ ComputeGroupGroup::ComputeGroupGroup(LAMMPS *lmp, int narg, char **arg) :
   kspaceflag = 0;
   boundaryflag = 1;
 
-  int iarg = 4;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"pair") == 0) {
       if (iarg+2 > narg)

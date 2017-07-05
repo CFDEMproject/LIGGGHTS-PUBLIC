@@ -925,4 +925,4 @@ void DumpMesh::prepare_mbSet(vtkSmartPointer<vtkMultiBlockDataSet> mbSet)
     return;
 }
 
-#endif // LAMMPS_VTK
+#endif //LAMMPS_VTK

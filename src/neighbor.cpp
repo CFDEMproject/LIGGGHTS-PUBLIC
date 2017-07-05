@@ -340,9 +340,6 @@ void Neighbor::init()
   // check other classes that can induce reneighboring in decide()
   // don't check if build_once is set
 
-  restart_check = 0;
-  if (output->restart_flag) restart_check = 1;
-
   delete [] fixchecklist;
   fixchecklist = NULL;
   fixchecklist = new int[modify->nfix];
@@ -352,8 +349,9 @@ void Neighbor::init()
     if (modify->fix[i]->force_reneighbor)
       fixchecklist[fix_check++] = i;
 
-  must_check = 0;
-  if (restart_check || fix_check) must_check = 1;
+  // always check whether we need to do reneighboring because we might have
+  // a sudden restart request from the signal handler
+  must_check = 1;
   if (build_once) must_check = 0;
 
   // set special_flag for 1-2, 1-3, 1-4 neighbors
@@ -1359,8 +1357,8 @@ void Neighbor::print_lists_of_lists()
 int Neighbor::decide()
 {
   if (must_check) {
-    int n = update->ntimestep;
-    if (restart_check && n == output->next_restart) return 1;
+    const bigint n = update->ntimestep;
+    if (output->restart_requested(update->ntimestep)) return 1;
     for (int i = 0; i < fix_check; i++)
       if (n == modify->fix[fixchecklist[i]]->next_reneighbor) return 1;
   }

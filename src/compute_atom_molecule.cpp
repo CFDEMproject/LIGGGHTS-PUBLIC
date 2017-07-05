@@ -62,11 +62,10 @@ enum{COMPUTE,FIX,VARIABLE};
 
 /* ---------------------------------------------------------------------- */
 
-ComputeAtomMolecule::
-ComputeAtomMolecule(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeAtomMolecule::ComputeAtomMolecule(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 4) error->all(FLERR,"Illegal compute atom/molecule command");
+  if (narg < iarg+1) error->all(FLERR,"Illegal compute atom/molecule command");
 
   if (atom->molecular == 0)
     error->all(FLERR,"Compute atom/molecule requires molecular atom style");
@@ -79,7 +78,6 @@ ComputeAtomMolecule(LAMMPS *lmp, int narg, char **arg) :
   value2index = new int[narg-3];
   nvalues = 0;
 
-  int iarg = 3;
   while (iarg < narg) {
     if (strncmp(arg[iarg],"c_",2) == 0 ||
         strncmp(arg[iarg],"f_",2) == 0 ||

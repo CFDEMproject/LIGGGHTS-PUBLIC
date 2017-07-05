@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeTemp : public Compute {
  public:
-  ComputeTemp(class LAMMPS *, int, char **);
+  ComputeTemp(class LAMMPS *, int &iarg, int, char **);
   virtual ~ComputeTemp();
   void init() {}
   void setup();

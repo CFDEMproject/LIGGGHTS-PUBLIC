@@ -46,16 +46,18 @@
 #ifndef REGION_NEIGHBOR_LIST_H
 #define REGION_NEIGHBOR_LIST_H
 
-#include <vector>
-#include "vector_liggghts.h"
-#include "pointers.h"
-#include "bounding_box.h"
+#include "region_neighbor_list_base.h"
 #include "region_neighbor_list_definitions.h"
+#include "pointers.h"
+#include "vector_liggghts.h"
+#include "bounding_box.h"
 #include "lmptype.h"
-#include <mpi.h>
 #include "bounding_box.h"
 #include "error.h"
 #include "region.h"
+
+#include <vector>
+#include <mpi.h>
 #include <limits>
 #include <algorithm>
 
@@ -76,9 +78,10 @@ namespace LAMMPS_NS {
  */
 
 template<bool INTERPOLATE>
-class RegionNeighborList : protected LAMMPS_NS::Pointers
+class RegionNeighborList : public IRegionNeighborList, protected Pointers
 {
   friend class FixAddforceSteadystate;
+  friend class FixAddforceSteadystateExperimental;
 
   public:
     RegionNeighborList(LAMMPS_NS::LAMMPS *lmp);
@@ -88,14 +91,17 @@ class RegionNeighborList : protected LAMMPS_NS::Pointers
     bool hasOverlapWith(double * x, double radius, std::vector<int> &overlap_list) const;
     void insert(double * x, double radius,int index = -1);
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-    bool hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape) const;
-    void insert_superquadric(double * x, double radius, double *quaternion, double *shape, int index = -1);
+    bool hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape, double *roundness) const;
+    void insert_superquadric(double * x, double radius, double *quaternion, double *shape, double *roundness, int index = -1);
     void set_obb_flag(int check_obb_flag_) {check_obb_flag = check_obb_flag_;}
 #endif
 
     size_t count() const;
     virtual void clear();
     virtual void reset();
+
+    int getSizeOne() const;
+    int pushBinToBuffer(int i, double *buf) const;
 
     inline void setBoundingBox_calc_interpolation_stencil(Bin<INTERPOLATE> &it,int ibin,int ix,int iy, int iz) const;
 
@@ -125,6 +131,26 @@ class RegionNeighborList : protected LAMMPS_NS::Pointers
 
     inline int mbins() const
     { return mbinx*mbiny*mbinz; }
+
+    inline void getDimensions(int *dims) const
+    { dims[0] = mbinx; dims[1] = mbiny; dims[2] = mbinz; }
+
+    inline void getLocalDimensions(int *dims) const
+    {
+        // NP TODO make this on local subproc
+        dims[0] = 0;
+        dims[1] = mbinx;
+        dims[2] = 0;
+        dims[3] = mbiny;
+        dims[4] = 0;
+        dims[5] = mbinz;
+    }
+
+    inline void getBinSize(double *binsize) const
+    { binsize[0] = binsizex; binsize[1] = binsizey; binsize[2] = binsizez; }
+
+    inline void getOrigin(double *origin) const
+    { vectorCopy3D(bboxlo, origin); }
 
   protected:
 

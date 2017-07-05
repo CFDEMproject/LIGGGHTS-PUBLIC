@@ -47,6 +47,7 @@ NORMAL_MODEL(HOOKE_HYSTERESIS,hooke/hysteresis,2)
 #ifndef NORMAL_MODEL_HOOKE_HYSTERESIS_H_
 #define NORMAL_MODEL_HOOKE_HYSTERESIS_H_
 #include "contact_models.h"
+#include "normal_model_base.h"
 #include <math.h>
 #include "atom.h"
 #include "force.h"
@@ -57,11 +58,9 @@ namespace LIGGGHTS {
 namespace ContactModels
 {
   template<>
-  class NormalModel<HOOKE_HYSTERESIS> : protected NormalModel<HOOKE>
+  class NormalModel<HOOKE_HYSTERESIS> : public NormalModel<HOOKE>
   {
   public:
-    static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT | CM_SURFACES_CLOSE;
-
     NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup,class ContactModelBase *c) :
         NormalModel<HOOKE>(lmp, hsetup,c),
         kn2k2Max(NULL),

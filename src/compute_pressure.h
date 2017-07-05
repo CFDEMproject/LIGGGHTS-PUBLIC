@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputePressure : public Compute {
  public:
-  ComputePressure(class LAMMPS *, int, char **);
+  ComputePressure(class LAMMPS *, int &iarg, int, char **);
   virtual ~ComputePressure();
   void init();
   double compute_scalar();

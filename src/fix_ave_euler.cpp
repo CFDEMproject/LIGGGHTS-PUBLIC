@@ -209,7 +209,7 @@ void FixAveEuler::init()
     error->fix_error(FLERR,this,"requires atom attribute mass");
 
   // does not work with MS
-  FixMultisphere* fix_ms = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
+  FixMultisphere* fix_ms = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
   if(fix_ms)
       error->fix_error(FLERR,this,"does not work with multisphere");
 
@@ -321,7 +321,7 @@ void FixAveEuler::setup_bins()
         memory->grow(center_,ncells_max_,3,"ave/euler:center_");
         memory->grow(v_av_,  ncells_max_,3,"ave/euler:v_av_");
         memory->grow(vol_fr_,ncells_max_,  "ave/euler:vol_fr_");
-        memory->grow(weight_,ncells_max_,  "ave/euler:vol_fr_");
+        memory->grow(weight_,ncells_max_,  "ave/euler:weight_");
         memory->grow(radius_,ncells_max_,  "ave/euler:radius_");
         memory->grow(ncount_,ncells_max_,    "ave/euler:ncount_");
         memory->grow(mass_,ncells_max_,    "ave/euler:mass_");
@@ -425,6 +425,7 @@ void FixAveEuler::end_of_step()
     // performs allreduce if necessary
     calculate_eu();
 }
+
 /* ---------------------------------------------------------------------- */
 
 int FixAveEuler::ncells_pack()
@@ -524,13 +525,17 @@ inline int FixAveEuler::coord2bin(double *x)
 void FixAveEuler::calculate_eu()
 {
     //int ncount;
-    double **v = atom->v;
-    double *radius = atom->radius;
-    double *rmass = atom->rmass;
+    double * const * const v = atom->v;
+    double * const radius = atom->radius;
+    const double * const volume = atom->volume;
+    double * const rmass = atom->rmass;
 
     double prefactor_vol_fr = 4./3.*M_PI/cell_volume_;
     double prefactor_stress = 1./cell_volume_;
     double vel_x_mass[3];
+    #ifdef SUPERQUADRIC_ACTIVE_FLAG
+    const int superquadric_flag = atom->superquadric_flag;
+    #endif
 
     // wrap compute with clear/add
     modify->clearstep_compute();
@@ -574,8 +579,13 @@ void FixAveEuler::calculate_eu()
         {
             vectorScalarMult3D(v[iatom],rmass[iatom],vel_x_mass);
             vectorAdd3D(v_av_[icell],vel_x_mass,v_av_[icell]);
-            vol_fr_[icell] += radius[iatom]*radius[iatom]*radius[iatom];
-            radius_[icell] += radius[iatom];
+            double r = radius[iatom];
+            #ifdef SUPERQUADRIC_ACTIVE_FLAG
+            if(superquadric_flag)
+                r = cbrt(0.75 * volume[iatom] / M_PI);
+            #endif
+            vol_fr_[icell] += r*r*r;
+            radius_[icell] += r;
             mass_[icell] += rmass[iatom];
             ncount_[icell]++;
         }
@@ -659,7 +669,7 @@ double FixAveEuler::compute_array(int i, int j)
   else if(j == 3) return vol_fr_[i];
   else if(j < 7) return v_av_[i][j-4];
   else if(j == 7) return stress_[i][0];
-  else if(j < 14) return stress_[i][j-8];
+  else if(j < 14) return stress_[i][j-7];
   else if(j < 15) return radius_[i];
   else return 0.0;
 }

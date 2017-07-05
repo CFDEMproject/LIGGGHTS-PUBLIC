@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeGyration : public Compute {
  public:
-  ComputeGyration(class LAMMPS *, int, char **);
+  ComputeGyration(class LAMMPS *, int &iarg, int, char **);
   ~ComputeGyration();
   void init();
   double compute_scalar();

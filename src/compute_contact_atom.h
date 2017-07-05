@@ -64,7 +64,7 @@ namespace LAMMPS_NS {
 
 class ComputeContactAtom : public Compute {
  public:
-  ComputeContactAtom(class LAMMPS *, int, char **);
+  ComputeContactAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputeContactAtom();
   virtual void init(); 
   void init_list(int, class NeighList *);

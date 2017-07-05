@@ -233,6 +233,32 @@ int Modify::n_fixes_style_strict(const char *style)
    find a fix property/atom for output
 ------------------------------------------------------------------------- */
 
+int Modify::n_fixes_property_atom()
+{
+    int n_fixes = 0;
+
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixPropertyAtom*>(fix[ifix]))
+          n_fixes++;
+
+    return n_fixes;
+}
+
+FixPropertyAtom* Modify::find_fix_property_atom(int rank)
+{
+    for(int ifix = 0; ifix < nfix; ifix++)
+      if(dynamic_cast<FixPropertyAtom*>(fix[ifix]))
+      {
+          if(rank > 0) rank --;
+          else return dynamic_cast<FixPropertyAtom*>(fix[ifix]);
+      }
+    return NULL;
+}
+
+/* ----------------------------------------------------------------------
+   find a fix property/atom for output
+------------------------------------------------------------------------- */
+
 int Modify::n_fixes_property_atom_not_internal()
 {
     int n_fixes = 0;
@@ -508,4 +534,18 @@ void Modify::max_min_rad(double &maxrad,double &minrad)
 
     MPI_Min_Scalar(minrad,world);
     MPI_Max_Scalar(maxrad,world);
+}
+
+/* ----------------------------------------------------------------------
+   calls the exchange routine for fix mesh/...
+   This is a kind of workaround.
+------------------------------------------------------------------------- */
+
+void Modify::forceMeshExchange()
+{
+    for (int i = 0; i < n_pre_force; ++i) {
+        Fix *cfix = fix[list_pre_force[i]];
+        if( strncmp(cfix->style,"mesh/surface",12) == 0 && dynamic_cast<FixMesh*>(cfix) )
+            static_cast<FixMesh*>(cfix)->setup_pre_force(0);
+    }
 }

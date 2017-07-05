@@ -65,7 +65,6 @@
 #endif
 
 using namespace LAMMPS_NS;
-using namespace std;
 
 /* ---------------------------------------------------------------------- */
 
@@ -249,7 +248,7 @@ void CfdDatacouplingFile::readVectorData(const char *name, double ** field)
     while (stat(file,&st)) sleep(10);
 
     // set file pointer
-    ifstream inputPtr(file);
+    std::ifstream inputPtr(file);
 
     // skip lines starting with #
     while(inputPtr.peek() == '#')  inputPtr.ignore(1000,'\n');
@@ -283,7 +282,7 @@ void CfdDatacouplingFile::readScalarData(const char* name, double *field)
     while (stat(file,&st)) sleep(10);
 
     // set file pointer
-    ifstream inputPtr(file);
+    std::ifstream inputPtr(file);
 
     // skip lines starting with #
     while(inputPtr.peek() == '#')  inputPtr.ignore(1000,'\n');
@@ -318,7 +317,7 @@ void CfdDatacouplingFile::readGlobalArrayData(const char *name, double ** field,
     while (stat(file,&st)) sleep(10);
 
     // set file pointerfrom
-    ifstream inputPtr(file);
+    std::ifstream inputPtr(file);
 
     // skip lines starting with #
     while(inputPtr.peek() == '#')  inputPtr.ignore(1000,'\n');
@@ -360,7 +359,7 @@ void CfdDatacouplingFile::readGlobalVectorData(const char* name, double *field, 
 
     // set file pointer
     int l1;
-    ifstream inputPtr(file);
+    std::ifstream inputPtr(file);
 
     // skip lines starting with #
     while(inputPtr.peek() == '#')  inputPtr.ignore(1000,'\n');
@@ -395,15 +394,15 @@ void CfdDatacouplingFile::writeVectorData(const char *name,  double ** field)
     }
 
     // set file pointer
-    ofstream outputPtr(file);
+    std::ofstream outputPtr(file);
 
     // write data to file
     int numberOfParticles = atom->nlocal;
-    outputPtr << numberOfParticles << endl;
+    outputPtr << numberOfParticles << std::endl;
     for(int index = 0;index < numberOfParticles; ++index)
     {
         for(int i=0;i<3;i++) outputPtr << field[index][i] << " ";
-        outputPtr << endl;
+        outputPtr << std::endl;
     }
 
     // clean up outputStream and rename file
@@ -426,14 +425,14 @@ void CfdDatacouplingFile::writeScalarData(const char* name, double * field)
     }
 
     // set file pointer
-    ofstream outputPtr(file);
+    std::ofstream outputPtr(file);
 
     // write data to file
     int numberOfParticles = atom->nlocal;
-    outputPtr << numberOfParticles << endl;
+    outputPtr << numberOfParticles << std::endl;
     for(int index = 0;index < numberOfParticles; ++index)
     {
-        outputPtr << field[index] << endl;
+        outputPtr << field[index] << std::endl;
     }
 
     // clean up outputStream and rename file
@@ -458,14 +457,14 @@ void CfdDatacouplingFile::writeGlobalVectorData(const char *name,  double *field
     }
 
     // set file pointer
-    ofstream outputPtr(file);
+    std::ofstream outputPtr(file);
 
     // write data to file
-    outputPtr << len << endl;
+    outputPtr << len << std::endl;
     for(int index = 0;index < len; ++index)
     {
         outputPtr << field[index];
-        outputPtr << endl;
+        outputPtr << std::endl;
     }
 
     // clean up outputStream and rename file
@@ -490,15 +489,15 @@ void CfdDatacouplingFile::writeGlobalArrayData(const char* name, double **field,
     }
 
     // set file pointer
-    ofstream outputPtr(file);
+    std::ofstream outputPtr(file);
 
     // write data to file
-    outputPtr << len1 << endl;
-    outputPtr << len2 << endl;
+    outputPtr << len1 << std::endl;
+    outputPtr << len2 << std::endl;
     for(int index = 0;index < len1; ++index)
     {
         for(int i=0;i<len2;i++) outputPtr << field[index][i] << " ";
-        outputPtr << endl;
+        outputPtr << std::endl;
     }
 
     // clean up outputStream and rename file

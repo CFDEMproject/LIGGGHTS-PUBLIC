@@ -11,15 +11,17 @@ fix mesh/surface/planar command :h3
 
 [Syntax:]
 
-fix ID group-ID mesh/surface file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
-fix ID group-ID mesh/surface/module_list file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values module_keywords module_values
-fix ID group-ID mesh/surface/planar file filename premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values :pre
+fix ID group-ID mesh/surface data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
+fix ID group-ID mesh/surface/module_list data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values module_keywords module_values
+fix ID group-ID mesh/surface/planar data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values :pre
 
 ID, is documented in "fix"_fix.html command. :ulb,l
 mesh/surface or mesh/surface/planar = style name of this fix command  :l
 module_list = list of mesh modules separated by / :l
-file = obligatory keyword :l
-filename = name of STL or VTK file containing the triangle mesh data :l
+one data_keyword/data_value pair needs to be appended :l
+data_keyword = {file} or {fix} :l
+  {file} value = name of STL or VTK file containing the triangle mesh data
+  {fix} value = id of a fix that can generate meshes (e.g. this one using the {extrude_planar} keyword) :pre
 zero or more premesh_keywords/premesh_value pairs may be appended :l
 premesh_keyword = {type} or {precision} or {heal} or {min_feature_length}  or {element_exclusion_list} or {verbose} :l
   {type} value = atom type (material type) of the wall imported from the STL file
@@ -32,7 +34,7 @@ premesh_keyword = {type} or {precision} or {heal} or {min_feature_length}  or {e
     element_exlusion_file = name of file containing the elements to be excluded
   {verbose} value = yes or no :pre
 zero or more mesh_keywords/mesh_value pairs may be appended :l
-mesh_keyword = {scale} or {move} or {rotate} or {temperature} or {mass_temperature} :l
+mesh_keyword = {scale} or {move} or {rotate} or {temperature} or {mass_temperature} or {extrude_planar}:l
   {scale} value = factor
     factor = factor to scale the mesh in x-, y-, and z-direction (double value)
   {move} values = mx my mz
@@ -45,7 +47,9 @@ mesh_keyword = {scale} or {move} or {rotate} or {temperature} or {mass_temperatu
   {temperature} value = T0
     T0 = Temperature of the wall (temperature units)
   {mass_temperature} value = mt0
-    mt0 = mass (mass units) assumed for temperature update in the frame of "surface sphere/heatable"_gran_surface_sphere_heatable.html :pre
+    mt0 = mass (mass units) assumed for temperature update in the frame of "surface sphere/heatable"_gran_surface_sphere_heatable.html
+  {extrude_planar} value = length
+    length = length (length units) that a planar mesh is extruded in anti-normal direction :pre
 zero or more surface_keywords/surface_value pairs may be appended :l
 surface_keyword = {surface_vel} or {surface_ang_vel} or {curvature} or {curvature_tolerant} :l
   {surface_vel} values = vx vy vz
@@ -69,11 +73,13 @@ zero or more module_keywords/module_value pairs may be appended if a mesh module
 [Examples:]
 
 fix cad all mesh/surface file mesh.stl type 1
-fix cad1 all mesh/surface/stress/deform file meshes/plate.stl type 1 scale 1.0 wear finnie :pre
+fix cad1 all mesh/surface/stress/deform file meshes/plate.stl type 1 scale 1.0 wear finnie
+fix extrude all mesh/surface file plane.stl type 1 extrude_planar 0.1
+fix side_walls all mesh/surface fix extrude type 1 :pre
 
 [Description:]
 
-This fix allows the import of triangual surfeace mesh wall geometry for granular simulations from
+This fix allows the import of triangular surface mesh wall geometry for granular simulations from
 ASCII STL files or legacy ASCII VTK files. Style {mesh/surface} is a general surface mesh, and
 {mesh/surface/planar} represents a planar mesh. {mesh/surface/planar} requires the mesh to
 consist of only 1 planar face.
@@ -83,8 +89,10 @@ imported if all of its vertices is inside the specified "region"_region.html. Pl
 the geometric extent of this "region"_region.html refer to the unscaled, unmoved, and unrotated
 original state of the geometry.
 
-Generall, you can apply scaling, offset and rotation to the imported mesh via keywords {scale},
-{move}, {rotate}. Operations are applied in the order as they are specified. The rotation via {rotate} is performed around the rotation axis that goes through the origin (0,0,0) and in the direction of {axis}.
+In general, you can apply scaling, offset and rotation to the imported mesh via
+keywords {scale}, {move}, {rotate}. Operations are applied in the order as they
+are specified. The rotation via {rotate} is performed around the rotation axis
+that goes through the origin (0,0,0) and in the direction of {axis}.
 
 The group-ID defines which particles will "see" the mesh, in case it is used as a granular wall.
 
@@ -97,6 +105,11 @@ conjunction with heat conduction via "fix heat/gran"_fix_heat_gran.html. Note th
 actual calculation of the heat transfer happens only if you use the mesh in conjunction
 with a granular wall, see "fix wall/gran"_fix_wall_gran.html.
 
+The {extrude_planar} option allows to extrude a planar mesh in direction of the
+anti-normal by a specified length values. After a {run 0} command this fix will
+hold the generated triangles which can be used in another {mesh/surface} fix
+that uses the {fix} instead of {file} keyword.
+
 With the optional {surface_vel} keyword, you can specify the imported mesh as conveyor belt.
 The velocity direction for each mesh face is given by the projection of the conveyor
 belt velocity parallel to the mesh face, the velocity magnitude for each mesh face is
@@ -106,21 +119,22 @@ the mesh is curved. Likewise, the optional rotation model activated via keyword
 
 [Mesh modules:]
 
-The "mesh/surface" fix allows for several mesh modules to be appended.
-
-"6dof"_mesh_module_6dof.html :ulb,l
-"binning"_mesh_module_binning.html :l
-"contact"_mesh_module_contact.html :l
-"deform"_mesh_module_deform.html :l
-"heattransfer"_mesh_module_heattransfer.html :l
-"liquidtransfer"_mesh_module_liquidtransfer.html :l
-"servo"_mesh_module_servo.html :l
-"stress"_mesh_module_stress.html :l
-:ule
+The "mesh/surface" fix allows for several mesh modules to be appended. A
+complete list of the available mesh modules can be found in "Section mesh
+modules"_Section_mesh_modules.html.
 
 Note that some of these modules are dependent on each other and some are mutually exclusive.
 The order of the mesh modules is important and the arguments for each mesh module need to
 be appended in the same order as the modules.
+
+IMPORTANT NOTE: When using the deform, heattransfer or liquidtransfer module and
+periodic boundary conditions the mesh needs to fulfill the following properties:
+(i) a triangle is not allowed to be in contact with itself through periodic
+boundaries,
+(ii) if two triangles are in contact inside the domain, they are not
+allowed to be in contact through periodic boundaries.
+Note that these restrictions are not validated by LIGGGHTS(R)-PUBLIC and must be
+ensured by the user.
 
 [Quality checks / error and warning messages:]
 
@@ -130,9 +144,9 @@ to give you as much information about the issue as possible.
 Warning messages:
 
 There should be no angle < 0.5 degrees in any element (soft limit for angles) :l
-All nodes should be within the simlation box :l
+All nodes should be within the simulation box :l
 
-If any of the obove rules is not fulfilled, a warning is generated. Keyword
+If any of the above rules is not fulfilled, a warning is generated. Keyword
 {verbose} controls if details about the warning are written to the screen.
 
 Error messages:

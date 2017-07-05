@@ -53,7 +53,7 @@ namespace LAMMPS_NS {
 
 class ComputeERotateMultisphere : public ComputeKEMultisphere {
  public:
-  ComputeERotateMultisphere(class LAMMPS *, int, char **);
+  ComputeERotateMultisphere(class LAMMPS *, int &iarg, int, char **);
   ~ComputeERotateMultisphere();
 
   double compute_scalar();

@@ -74,6 +74,7 @@
     size_reverse_recv_(0),
     slablo_(0),slabhi_(0),
     sendlist_(0),
+    sendwraplist_(0),
     maxsendlist_(0),
     pbc_flag_(0),
     pbc_(0)
@@ -89,10 +90,12 @@
       allocate_swap(maxswap_);
 
       sendlist_ = (int **) this->memory->smalloc(maxswap_*sizeof(int *),"MultiNodeMeshParallel:sendlist");
+      sendwraplist_ = (int **) this->memory->smalloc(maxswap_*sizeof(int *),"MultiNodeMeshParallel:sendlist");
       this->memory->create(maxsendlist_,maxswap_,"MultiNodeMeshParallel:maxsendlist");
       for (int i = 0; i < maxswap_; i++) {
         maxsendlist_[i] = BUFMIN_MNMP;
         this->memory->create(sendlist_[i],BUFMIN_MNMP,"MultiNodeMeshParallel:sendlist[i]");
+        this->memory->create(sendwraplist_[i],BUFMIN_MNMP,"MultiNodeMeshParallel:sendlist[i]");
       }
   }
 
@@ -108,8 +111,12 @@
       if (sendlist_)
         for (int i = 0; i < maxswap_; i++)
             this->memory->destroy(sendlist_[i]);
+      if (sendwraplist_)
+        for (int i = 0; i < maxswap_; i++)
+            this->memory->destroy(sendwraplist_[i]);
 
       this->memory->sfree(sendlist_);
+      this->memory->sfree(sendwraplist_);
       this->memory->destroy(maxsendlist_);
 
       this->memory->destroy(buf_send_);
@@ -268,10 +275,10 @@
        bool translate = this->isTranslating();
        bool rotate = this->isRotating();
 
-       size_exchange_ = elemBufSize(OPERATION_COMM_EXCHANGE,scale,translate,rotate) + 1;
-       size_border_ = elemBufSize(OPERATION_COMM_BORDERS,scale,translate,rotate);
-       size_forward_ = elemBufSize(OPERATION_COMM_FORWARD,scale,translate,rotate);
-       size_reverse_ = elemBufSize(OPERATION_COMM_REVERSE,scale,translate,rotate);
+       size_exchange_ = elemBufSize(OPERATION_COMM_EXCHANGE, NULL, scale,translate,rotate) + 1;
+       size_border_ = elemBufSize(OPERATION_COMM_BORDERS, NULL, scale,translate,rotate);
+       size_forward_ = elemBufSize(OPERATION_COMM_FORWARD, NULL, scale,translate,rotate);
+       size_reverse_ = elemBufSize(OPERATION_COMM_REVERSE, NULL, scale,translate,rotate);
 
        // maxforward = # of datums in largest forward communication
        // maxreverse = # of datums in largest reverse communication
@@ -455,11 +462,14 @@
 
       sendlist_ = (int **)
         this->memory->srealloc(sendlist_,n*sizeof(int *),"MultiNodeMeshParallel:sendlist_");
+      sendwraplist_ = (int **)
+        this->memory->srealloc(sendwraplist_,n*sizeof(int *),"MultiNodeMeshParallel:sendwraplist_");
       this->memory->grow(maxsendlist_,n,"MultiNodeMeshParallel:maxsendlist_");
       for (int i = maxswap_; i < n; i++)
       {
         maxsendlist_[i] = BUFMIN_MNMP;
         this->memory->create(sendlist_[i],BUFMIN_MNMP,"MultiNodeMeshParallel:sendlist_[i]");
+        this->memory->create(sendwraplist_[i],BUFMIN_MNMP,"MultiNodeMeshParallel:sendwraplist_[i]");
       }
       maxswap_ = n;
   }
@@ -536,6 +546,7 @@
   {
     maxsendlist_[iswap] = static_cast<int> (BUFFACTOR_MNMP * n)+1;
     this->memory->grow(sendlist_[iswap],maxsendlist_[iswap],"MultiNodeMeshParallel:sendlist[iswap]");
+    this->memory->grow(sendwraplist_[iswap],maxsendlist_[iswap],"MultiNodeMeshParallel:sendlist[iswap]");
   }
 
   /* ----------------------------------------------------------------------
@@ -544,7 +555,7 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMeshParallel<NUM_NODES>::initalSetup()
+  void MultiNodeMeshParallel<NUM_NODES>::initialSetup()
   {
       nGlobalOrig_ = sizeLocal();
 
@@ -877,12 +888,23 @@
                   // sendflag = 0 if I do not send on this swap
                   
                   sendflag = true;
+                  int wrap = 0;
                   
                   if(ineed % 2 == 0 && this->comm->myloc[dim] == 0)
-                    sendflag = false;
+                  {
+                      if(this->domain->periodicity[dim] && !this->domain->triclinic && !dynamic_cast<DomainWedge*>(this->domain))
+                          wrap = 1;
+                      else
+                          sendflag = false;
+                  }
 
                   if(ineed % 2 == 1 && this->comm->myloc[dim] == this->comm->procgrid[dim]-1)
-                    sendflag = false;
+                  {
+                      if(this->domain->periodicity[dim] && !this->domain->triclinic && !dynamic_cast<DomainWedge*>(this->domain))
+                          wrap = -1;
+                      else
+                          sendflag = false;
+                  }
 
                   // find send elements
                   if(sendflag)
@@ -890,12 +912,44 @@
                       
                       for (int i = nfirst; i < nlast; i++)
                       {
-                          if( ((ineed % 2 == 0) && checkBorderElementLeft(i,dim,lo,hi))  ||
-                              ((ineed % 2 != 0) && checkBorderElementRight(i,dim,lo,hi))  )
+                          int type = checkBorderElement(ineed, i, dim, lo, hi);
+                          if(type != NOT_GHOST)
                           {
                               if (nsend >= maxsendlist_[iswap])
                                   grow_list(iswap,nsend);
-                              sendlist_[iswap][nsend++] = i;
+                              sendlist_[iswap][nsend] = i;
+                              if (wrap == 1)
+                              {
+                                  switch (dim)
+                                  {
+                                  case 0:
+                                      type = IS_GHOST_WRAP_DIM_0_POS;
+                                      break;
+                                  case 1:
+                                      type = IS_GHOST_WRAP_DIM_1_POS;
+                                      break;
+                                  case 2:
+                                      type = IS_GHOST_WRAP_DIM_2_POS;
+                                      break;
+                                  }
+                              }
+                              else if (wrap == -1)
+                              {
+                                  switch (dim)
+                                  {
+                                  case 0:
+                                      type = IS_GHOST_WRAP_DIM_0_NEG;
+                                      break;
+                                  case 1:
+                                      type = IS_GHOST_WRAP_DIM_1_NEG;
+                                      break;
+                                  case 2:
+                                      type = IS_GHOST_WRAP_DIM_2_NEG;
+                                      break;
+                                  }
+                              }
+                              sendwraplist_[iswap][nsend] = type;
+                              nsend++;
 
                           }
                       }
@@ -906,12 +960,14 @@
                   if(nsend*size_border_ > maxsend_)
                     grow_send(nsend*size_border_,0);
 
-                  n = pushElemListToBuffer(nsend, sendlist_[iswap], buf_send_, OPERATION_COMM_BORDERS,dummy,dummy,dummy);
+                  n = pushElemListToBuffer(nsend, sendlist_[iswap], sendwraplist_[iswap], buf_send_, OPERATION_COMM_BORDERS, NULL, this->domain->boxlo, this->domain->boxhi,dummy,dummy,dummy);
 
                   // swap atoms with other proc
                   // no MPI calls except SendRecv if nsend/nrecv = 0
                   // put incoming ghosts at end of my atom arrays
                   // if swapping with self, simply copy, no messages
+
+                  double *buf = NULL;
 
                   if (sendproc_[iswap] != this->comm->me)
                   {
@@ -927,17 +983,17 @@
                       if (nrecv)
                           MPI_Wait(&request,&status);
 
-                      //buf = buf_recv_;
+                      buf = buf_recv_;
                   }
                   else
                   {
                       nrecv = nsend;
-                      //buf = buf_send_;
+                      buf = buf_send_;
                   }
 
                   // unpack buffer
 
-                  n = popElemListFromBuffer(nLocal_+nGhost_,nrecv,buf_recv_,OPERATION_COMM_BORDERS,dummy,dummy,dummy);
+                  n = popElemListFromBuffer(nLocal_+nGhost_, nrecv, buf, OPERATION_COMM_BORDERS, NULL, dummy,dummy,dummy);
 
                   // set pointers & counters
 
@@ -969,26 +1025,41 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  inline bool MultiNodeMeshParallel<NUM_NODES>::checkBorderElementLeft(int i,int dim,double lo, double hi)
+  inline int MultiNodeMeshParallel<NUM_NODES>::checkBorderElement(const int ineed, const int i, const int dim, const double lo, const double hi) const
+  {
+      if (ineed % 2 == 0)
+          return checkBorderElementLeft(i,dim,lo,hi);
+      else
+          return checkBorderElementRight(i,dim,lo,hi);
+  }
+  
+  template<int NUM_NODES>
+  inline int MultiNodeMeshParallel<NUM_NODES>::checkBorderElementLeft(const int i, const int dim, const double lo, const double hi) const
   {
       
-      if (this->center_(i)[dim] >= lo                     &&
-          this->center_(i)[dim] <= hi + this->rBound_(i)     )
-        return true;
+      // center of triangle
+      const double pos = this->center_(i)[dim];
+      // hi is extended by the bounding radius
+      const double hi_extended = hi + this->rBound_(i);
+      // check whether center is inside interval
+      if (pos >= lo && pos <= hi_extended)
+        return IS_GHOST;
 
-      return false;
-
+      return NOT_GHOST;
   }
 
   template<int NUM_NODES>
-  inline bool MultiNodeMeshParallel<NUM_NODES>::checkBorderElementRight(int i,int dim,double lo, double hi)
+  inline int MultiNodeMeshParallel<NUM_NODES>::checkBorderElementRight(const int i, const int dim, const double lo, const double hi) const
   {
-      if (this->center_(i)[dim] >= lo - this->rBound_(i) &&
-          this->center_(i)[dim] <= hi                       )
-        return true;
+      // center of triangle
+      const double pos = this->center_(i)[dim];
+      // lo is extended by the bounding radius
+      const double lo_extended = lo - this->rBound_(i);
+      // check whether center is inside interval
+      if (pos >= lo_extended && pos <= hi)
+        return IS_GHOST;
 
-      return false;
-
+      return NOT_GHOST;
   }
 
   /* ----------------------------------------------------------------------
@@ -996,7 +1067,14 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMeshParallel<NUM_NODES>::forwardComm()
+  void MultiNodeMeshParallel<NUM_NODES>::forwardComm(std::string property)
+  {
+      std::list<std::string> properties (1, property);
+      forwardComm(&properties);
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::forwardComm(std::list<std::string> * properties)
   {
       int n;
       MPI_Request request;
@@ -1012,6 +1090,8 @@
       if(size_forward_ == 0)
         return;
 
+      const int size_this = properties ? elemBufSize(OPERATION_COMM_REVERSE, properties, scale, translate, rotate) : 1;
+
       // exchange data with another proc
       // if other proc is self, just copy
 
@@ -1019,25 +1099,36 @@
       {
           if (sendproc_[iswap] != me)
           {
-                if (size_forward_recv_[iswap])
-                    MPI_Irecv(buf_recv_,size_forward_recv_[iswap],MPI_DOUBLE,recvproc_[iswap],0,this->world,&request);
+                if (size_forward_recv_[iswap] && size_this)
+                {
+                    int nrecv = size_forward_recv_[iswap];
+                    if (properties)
+                    {
+                        // size forward is the size of all forward buffers
+                        nrecv /= size_forward_;
+                        // size_this is the size of the buffers listed in properties
+                        nrecv *= size_this;
+                    }
+                    MPI_Irecv(buf_recv_, nrecv, MPI_DOUBLE,recvproc_[iswap],0,this->world,&request);
+                }
 
-                n = pushElemListToBuffer(sendnum_[iswap],sendlist_[iswap],buf_send_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+                n = pushElemListToBuffer(sendnum_[iswap],sendlist_[iswap], sendwraplist_[iswap],buf_send_,OPERATION_COMM_FORWARD, properties, this->domain->boxlo, this->domain->boxhi,scale,translate,rotate);
                 
                 if (n)
                     MPI_Send(buf_send_,n,MPI_DOUBLE,sendproc_[iswap],0,this->world);
 
-                if (size_forward_recv_[iswap])
+                if (size_forward_recv_[iswap] && size_this)
                     MPI_Wait(&request,&status);
 
-                n = popElemListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+                n = popElemListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD, properties, scale,translate,rotate);
                 
           }
           else
           {
-              n = pushElemListToBuffer(sendnum_[iswap],sendlist_[iswap],buf_send_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+              n = pushElemListToBuffer(sendnum_[iswap], sendlist_[iswap], sendwraplist_[iswap], buf_send_, OPERATION_COMM_FORWARD, properties, this->domain->boxlo, this->domain->boxhi, scale, translate, rotate);
 
-              n = popElemListFromBuffer(firstrecv_[iswap],recvnum_[iswap],buf_recv_,OPERATION_COMM_FORWARD,scale,translate,rotate);
+              // note buf_recv_ not used in this case (just use buf_send_ as receive buffer
+              n = popElemListFromBuffer(firstrecv_[iswap], recvnum_[iswap], buf_send_, OPERATION_COMM_FORWARD, properties, scale, translate, rotate);
           }
       }
   }
@@ -1047,7 +1138,14 @@
   ------------------------------------------------------------------------- */
 
   template<int NUM_NODES>
-  void MultiNodeMeshParallel<NUM_NODES>::reverseComm()
+  void MultiNodeMeshParallel<NUM_NODES>::reverseComm(std::string property)
+  {
+      std::list<std::string> properties (1, property);
+      reverseComm(&properties);
+  }
+
+  template<int NUM_NODES>
+  void MultiNodeMeshParallel<NUM_NODES>::reverseComm(std::list<std::string> * properties)
   {
       int n;
       MPI_Request request;
@@ -1058,6 +1156,8 @@
       bool translate = this->isTranslating();
       bool rotate = this->isRotating();
 
+      const int size_this = properties ? elemBufSize(OPERATION_COMM_REVERSE, properties, scale, translate, rotate) : 1;
+
       // exchange data with another proc
       // if other proc is self, just copy
 
@@ -1065,20 +1165,34 @@
       {
           if (sendproc_[iswap] != me)
           {
-              if (size_reverse_recv_[iswap])
-                  MPI_Irecv(buf_recv_,size_reverse_recv_[iswap],MPI_DOUBLE,sendproc_[iswap],0,this->world,&request);
+              if (size_reverse_recv_[iswap] && size_this)
+              {
+                  int nrecv = size_reverse_recv_[iswap];
+                  if (properties)
+                  {
+                      // size reverse is the size of all reverse buffers
+                      nrecv /= size_reverse_;
+                      // size_this is the size of the buffers listed in properties
+                      nrecv *= size_this;
+                  }
+                  MPI_Irecv(buf_recv_, nrecv, MPI_DOUBLE, sendproc_[iswap], 0, this->world, &request);
+              }
 
-              n = pushElemListToBufferReverse(firstrecv_[iswap],recvnum_[iswap],buf_send_,OPERATION_COMM_REVERSE,scale,translate,rotate);
+              n = pushElemListToBufferReverse(firstrecv_[iswap], recvnum_[iswap], buf_send_, OPERATION_COMM_REVERSE, properties, scale, translate, rotate);
 
-              if (n) MPI_Send(buf_send_,n,MPI_DOUBLE,recvproc_[iswap],0,this->world);
-              if (size_reverse_recv_[iswap]) MPI_Wait(&request,&status);
+              if (n)
+                  MPI_Send(buf_send_,n,MPI_DOUBLE,recvproc_[iswap],0,this->world);
 
-              n = popElemListFromBufferReverse(sendnum_[iswap],sendlist_[iswap],buf_recv_,OPERATION_COMM_REVERSE,scale,translate,rotate);
+              if (size_reverse_recv_[iswap] && size_this)
+                  MPI_Wait(&request,&status);
+
+              n = popElemListFromBufferReverse(sendnum_[iswap], sendlist_[iswap], buf_recv_, OPERATION_COMM_REVERSE, properties, scale, translate, rotate);
           }
           else
           {
-              n = pushElemListToBufferReverse(firstrecv_[iswap],recvnum_[iswap],buf_send_,OPERATION_COMM_REVERSE,scale,translate,rotate);
-              n = popElemListFromBufferReverse(sendnum_[iswap],sendlist_[iswap],buf_recv_,OPERATION_COMM_REVERSE,scale,translate,rotate);
+              n = pushElemListToBufferReverse(firstrecv_[iswap], recvnum_[iswap], buf_send_, OPERATION_COMM_REVERSE, properties, scale, translate, rotate);
+              // note buf_recv_ not used in this case (just use buf_send_ as receive buffer
+              n = popElemListFromBufferReverse(sendnum_[iswap], sendlist_[iswap], buf_send_, OPERATION_COMM_REVERSE, properties, scale, translate, rotate);
           }
       }
   }

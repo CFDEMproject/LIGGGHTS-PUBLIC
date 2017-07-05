@@ -65,10 +65,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputePressure::ComputePressure(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputePressure::ComputePressure(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 4) error->all(FLERR,"Illegal compute pressure command");
+  if (narg < iarg+1) error->all(FLERR,"Illegal compute pressure command");
   if (igroup) error->all(FLERR,"Compute pressure must use group all");
 
   scalar_flag = vector_flag = 1;
@@ -81,9 +81,10 @@ ComputePressure::ComputePressure(LAMMPS *lmp, int narg, char **arg) :
   // store temperature ID used by pressure computation
   // insure it is valid for temperature computation
 
-  int n = strlen(arg[3]) + 1;
+  int n = strlen(arg[iarg]) + 1;
   id_temp = new char[n];
-  strcpy(id_temp,arg[3]);
+  strcpy(id_temp,arg[iarg]);
+  iarg++;
 
   int icompute = modify->find_compute(id_temp);
   if (icompute < 0)
@@ -94,7 +95,7 @@ ComputePressure::ComputePressure(LAMMPS *lmp, int narg, char **arg) :
 
   // process optional args
 
-  if (narg == 4) {
+  if (narg == iarg) {
     keflag = 1;
     pairflag = 1;
     bondflag = angleflag = dihedralflag = improperflag = 1;
@@ -104,7 +105,6 @@ ComputePressure::ComputePressure(LAMMPS *lmp, int narg, char **arg) :
     pairflag = 0;
     bondflag = angleflag = dihedralflag = improperflag = 0;
     kspaceflag = fixflag = 0;
-    int iarg = 4;
     while (iarg < narg) {
       if (strcmp(arg[iarg],"ke") == 0) keflag = 1;
       else if (strcmp(arg[iarg],"pair") == 0) pairflag = 1;

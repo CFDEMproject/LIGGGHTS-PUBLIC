@@ -11,11 +11,12 @@ compute wall/gran/local command :h3
 
 [Syntax:]
 
-compute ID group-ID pair/gran/local keywords ...
-compute ID group-ID wall/gran/local keywords ... :pre
+compute ID group-ID pair/gran/local general_keywords general_values keywords ...
+compute ID group-ID wall/gran/local general_keywords general_values keywords ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 pair/gran/local or wall/gran/local = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
 zero or more keywords may be appended :l
 keyword = {pos} or {vel} or {id} or {force} or {torque} or {history} or {contactArea} or {delta}:l
   {pos} = positions of particles in contact (6 values)

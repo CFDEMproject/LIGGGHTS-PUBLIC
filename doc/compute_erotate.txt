@@ -1,0 +1,53 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+compute erotate command :h3
+
+[Syntax:]
+
+compute ID group-ID erotate general_keywords general_values :pre
+
+ID, group-ID are documented in "compute"_compute.html command :ulb,l
+erotate = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
+:ule
+
+[Examples:]
+
+compute 1 all erotate :pre
+
+[Description:]
+
+Define a computation that calculates the rotational kinetic energy of all
+particles. This compute sums the rotational kinetic energy of spherical,
+superquadric and multisphere particles.
+
+The detailed way of how these energies of computed can be found in the
+respective child computes.
+
+[Output info:]
+
+This compute calculates a global scalar (the rotational kinetic energy).  This
+value can be used by any command that uses a global scalar value from a compute
+as input.  See "Section_howto 15"_Section_howto.html#howto_8 for an overview of
+LIGGGHTS(R)-PUBLIC output options.
+
+The scalar value calculated by this compute is "extensive".  The
+scalar value will be in energy "units"_units.html.
+
+[Restrictions:]
+
+Those of the child computes.
+
+[Related commands:]
+
+"compute erotate/sphere"_compute_erotate_sphere.html
+"compute erotate/mulitsphere"_compute_erotate_multisphere.html
+"compute erotate/superquadric"_compute_erotate_superquadric.html
+
+[Default:] none

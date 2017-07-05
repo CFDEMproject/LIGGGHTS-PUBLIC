@@ -14,7 +14,9 @@ atom_style style args :pre
 
 style = {bond} or {charge} or \
         {ellipsoid} or {full} or {line} or \
-	{molecular} or {sphere} or {granular} or {bond/gran} or {tri} or {hybrid} or {superquadric} or {convexhull} {sph} :ul
+	{molecular} or {tri} or {hybrid} or \
+        {sphere} or {granular} or {bond/gran} or \
+        {superquadric} or {convexhull} or {sph} :ul
   args = none for any style except {body} and {hybrid}
   {body} args = bstyle bstyle-args
     bstyle = style of body particles

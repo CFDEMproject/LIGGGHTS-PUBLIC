@@ -56,9 +56,10 @@ thermo_style	custom step atoms ke c_1 f_ts[1] f_ts[2] vol
 thermo		1000
 thermo_modify	lost ignore norm no
 
+run 1
 
 #insert the first particles so that dump is not empty
-dump		dmp all custom 200 post/dump*.multi id type mol x y z vx vy vz fx fy fz omegax omegay omegaz radius
+dump		dmp all custom/vtk 200 post/multi_*.vtk id type mol x y z vx vy vz fx fy fz omegax omegay omegaz radius
 
 #insert particles
 run		40000 upto

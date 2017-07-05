@@ -109,8 +109,8 @@ class FixContactHistoryMesh : public FixContactHistory {
   int n_contacts(int & nIntersect);
   int n_contacts(int contact_groupbit, int & nIntersect);
 
-  int get_partner_iTri(const int i, const int j) const
-  { return mesh_->map(partner_[i][j]); }
+  int get_partner_idTri(const int i, const int j) const
+  { return partner_[i][j]; }
 
  protected:
 

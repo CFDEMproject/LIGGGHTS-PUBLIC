@@ -31,6 +31,10 @@ USE_FPIC = "ON"
 #  "ON"    : optimized debug mode (-Og and -g)
 #  "NOOPT" : non-optimized debug mode (-O0 and -g)
 USE_DEBUG = "OFF"
+# PROFILE:
+#  "OFF"   : no profiling code generated
+#  "ON"    : profiling code generated (-pg)
+USE_PROFILE = "OFF"
 # CONVEX: "ON" or "OFF"
 # Decription: Enable polyhedral particles (premium only)
 USE_CONVEX = "OFF"
@@ -46,6 +50,10 @@ USE_XDR = "OFF"
 
 ################################################################################################
 #
+# ADVANCED SETTINGS
+#
+# Set and uncomment the variables in the following for a more fine grained control.
+#
 # WARNING:
 # All variables that follow are overridden if their corresponding non-"_USR" variables are set.
 # E.g. if MPICXX is set, then setting MPICXX_USR will have no effect.
@@ -57,8 +65,10 @@ USE_XDR = "OFF"
 # MPI compiler
 #MPICXX_USR=/path/to/mpicxx
 # Path that contains the includes (mpi.h)
+# Warning: this is the only *_INC_USR that does not use -I
 #MPI_INC_USR=/path/to/mpi/include
 # Path that contains the MPI libraries
+# Warning: this is the only *_LIB_USR that does not use -L
 #MPI_LIB_USR=/path/to/mpi/lib
 # Additional MPI libraries
 #MPI_ADDLIBS_USR=-lmpi
@@ -72,7 +82,7 @@ USE_XDR = "OFF"
 # C++ Compiler specific variables (only required if USE_MPI is "OFF")
 #
 # C++ compiler
-#CC_USR=/usr/bin/g++
+#CXX_USR=/usr/bin/g++
 # Additional flags for compilation
 #CCFLAGS_USR=-funroll-loops -fstrict-aliasing -Wall -Wno-unused-result
 # Additional flags for linking
@@ -100,32 +110,38 @@ USE_XDR = "OFF"
 # VTK specific variables
 #
 # Path that contains the includes (vtkVersion.h)
-#VTK_INC_USR=/path/to/vtk/include
+#VTK_INC_USR=-I/path/to/vtk/include
 # Path that contains the VTK libraries
-#VTK_LIB_USR=/path/to/vtk/lib
+#VTK_LIB_USR=-L/path/to/vtk/lib
 # Additional VTK libraries to include
 #VTK_ADDLIBS_USR=
+# Appendix to the library names
+# In general this is going to be dependent on the version of VTK that you have
+# installed. In this case it is going to be detected automatically. In case of
+# using a VTK version from a ParaView compilation, the appendix will be equal
+# to pv-X.Y where X.Y is the ParaView version.
+#VTK_APPENDIX_USR=pv-5.3
 
 # SUPERQUADRICS specific variables
 #
 # Boost include path
-#BOOST_INC_USR=/path/to/boost/include
+#BOOST_INC_USR=-I/path/to/boost/include
 
 # JPG specific variables
 #
 # Path that contains the includes (libjpeg.h)
-#JPG_INC_USR=/path/to/jpeg/include
+#JPG_INC_USR=-I/path/to/jpeg/include
 # Path that contains the JPG libraries
-#JPG_LIB_USR=/path/to/jpeg/lib
+#JPG_LIB_USR=-L/path/to/jpeg/lib
 # Additional JPG libraries to include (-ljpeg added by default)
 #JPG_ADDLIBS_USR=
 
 # CONVEX specific variables
 #
 # Path that contains the includes (ccd/ccd.h)
-#CONVEX_INC_USR=/path/to/libccd/include
+#CONVEX_INC_USR=-I/path/to/libccd/include
 # Path that contains the CONVEX libraries
-#CONVEX_LIB_USR=/path/to/libccd/lib
+#CONVEX_LIB_USR=-L/path/to/libccd/lib
 # Additional CONVEX libraries to include (-lccd added by default)
 #CONVEX_ADDLIBS_USR=
 
@@ -134,4 +150,4 @@ USE_XDR = "OFF"
 #LMP_INC=
 
 # Version of Makefile.user (do not delete the following line)
-MAKEFILE_USER_VERSION = "1.0"
+MAKEFILE_USER_VERSION = "1.1"

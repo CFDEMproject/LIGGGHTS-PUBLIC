@@ -36,6 +36,7 @@
     Richard Berger (JKU Linz)
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
+    Arno Mayrhofer  (DCS Computing GmbH, Linz)
 
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2012 JKU Linz
@@ -49,7 +50,6 @@
 #include "contact_models.h"
 
 using namespace LAMMPS_NS;
-using namespace LIGGGHTS::PairStyles;
 
 PairGranProxy::PairGranProxy(LAMMPS * lmp) : PairGran(lmp), impl(NULL)
 {
@@ -65,21 +65,16 @@ void PairGranProxy::settings(int nargs, char ** args)
   delete impl;
 
   //TODO add additional map here which maps tangential "custom" to "history"
-  int64_t variant = Factory::instance().selectVariant("gran", nargs, args,force->custom_contact_models);
-  impl = Factory::instance().create("gran", variant, lmp, this);
+  int64_t variant = LIGGGHTS::PairStyles::Factory::instance().selectVariant("gran", nargs, args,force->custom_contact_models);
+  if (variant == -1)
+      error->all(FLERR, "Invalid model specified (check for typos and enable at least one model)");
+  impl = LIGGGHTS::PairStyles::Factory::instance().create("gran", variant, lmp, this);
 
   if(impl) {
     impl->settings(nargs, args, this);
   } else {
     
-    error->all(FLERR, "unknown contact model or model not in whitelist. Possible root causes:\n"
-                       "  (1) it's a typo. Check the documentation of the contact model you are using.\n"
-                       "  (2) the contact model is not available in your installation. Check if a documentation for this.\n"
-                       "      contact model is available at all in your version.\n"
-                       "  (3) the model is part of a package which was not installed. Check the documentation for details. \n"
-                       "  (4) the model is available, but was not in the whitelist during compilation. Check if a file \n"
-                       "      src/style_contact_model.whitelist exists. If yes, modify it and re-compile. You can also \n"
-                       "      use script whitelist.sh in the /src directory to create a full whitelist.");
+    error->all(FLERR, "Internal errror");
   }
 }
 
@@ -106,7 +101,7 @@ void PairGranProxy::read_restart_settings(FILE * fp)
   }
   MPI_Bcast(&selected,8,MPI_CHAR,0,world);
 
-  impl = Factory::instance().create("gran", selected, lmp, this);
+  impl = LIGGGHTS::PairStyles::Factory::instance().create("gran", selected, lmp, this);
 
   // convert if not found
   if(!impl) {
@@ -120,8 +115,8 @@ void PairGranProxy::read_restart_settings(FILE * fp)
           fprintf(screen,"         original hashcode = %zd \n",selected);
           fprintf(screen,"         M = %d, T = %d, C = %d, R = %d, S = %d \n",M,T,C,R,S);
       }
-      used = ::LIGGGHTS::ContactModels::generate_gran_hashcode(M,T,C,R,S);
-      impl = Factory::instance().create("gran", used, lmp, this);
+      used = ::LIGGGHTS::Utils::generate_gran_hashcode(M,T,C,R,S);
+      impl = LIGGGHTS::PairStyles::Factory::instance().create("gran", used, lmp, this);
   }
 
   if(impl) {

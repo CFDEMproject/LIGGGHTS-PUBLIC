@@ -299,10 +299,15 @@ when running on large numbers of processors.</p>
 processor 0 does write files.</p>
 <p>Note that using the &#8220;*&#8221; and &#8220;%&#8221; characters together can produce a
 large number of small dump files!</p>
-<p>If <em>dump_modify binary</em> is used, the dump file (or files, if &#8220;*&#8221; or
-&#8220;%&#8221; is also used) is written in binary format.  A binary dump file
-will be about the same size as a text version, but will typically
-write out much faster.</p>
+<p>If <em>dump_modify binary</em> is used, the dump file (or files, if &#8220;*&#8221; or &#8220;%&#8221; is also
+used) is written in binary format.  A binary dump file will be about the same
+size as a text version, but will typically write out much faster. Additionally,
+<em>dump_modify compressor</em> can be used to specify the writing of compressed binary
+data. Options for compressors include:</p>
+<div class="highlight-python"><pre>none: No compression
+zlib: Zlib compression
+lz4: Lz4 compression (VTK &gt;= 8.0 required)</pre>
+</div>
 <hr class="docutils" />
 <p>This section explains the atom attributes that can be specified as
 part of the <em>custom/vtk</em> style.</p>

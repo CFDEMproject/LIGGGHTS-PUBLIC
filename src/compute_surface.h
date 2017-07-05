@@ -55,7 +55,7 @@ class ComputeSurface : public Compute {
 
  public:
 
-  ComputeSurface(class LAMMPS *, int, char **);
+  ComputeSurface(class LAMMPS *, int &iarg, int, char **);
   ~ComputeSurface();
   void init();
   void init_list(int, class NeighList *);

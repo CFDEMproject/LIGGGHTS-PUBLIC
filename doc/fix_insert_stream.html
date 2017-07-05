@@ -170,9 +170,9 @@
   mp = mass of particles to be inserted (positive float)
   INF =  insert as many particles as possible
 <em>particlerate</em> values = pr
-  pr = particle inseration rate (particles/time units)
+  pr = particle insertion rate (particles/time units)
 <em>massrate</em> values = mr
-  mr = mass inseration rate (mass/time units)
+  mr = mass insertion rate (mass/time units)
 <em>insert_every</em> value = ie
   ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
 <em>start</em> value = ts
@@ -206,9 +206,9 @@
   q1 q2 q3 q4 = quaternion values for constant orientation
 <em>omega</em> values = constant omegax omegay omegaz
   constant = obligatory word
-  omegax = x-comonent of angular velocity (1/time units)
-  omegay = y-comonent of angular velocity (1/time units)
-  omegaz = z-comonent of angular velocity (1/time units)
+  omegax = x-component of angular velocity (1/time units)
+  omegay = y-component of angular velocity (1/time units)
+  omegaz = z-component of angular velocity (1/time units)
 <em>set_property</em> values = property-varname val
   property-varname = variable name of a <a class="reference internal" href="fix_property.html"><em>fix property/atom</em></a> holding a scalar value for each particle
   val = value to initialize the property with upon insertion
@@ -237,7 +237,7 @@
 <p>Insert particles into a granular run either once or every few timesteps
 within a specified region until either np particles have been inserted
 or the desired particle mass (mp) has been reached.</p>
-<p>The <em>verbose</em> keyword controlls whether statistics about particle
+<p>The <em>verbose</em> keyword controls whether statistics about particle
 insertion is output to the screen each time particles are inserted.</p>
 <p>Each timestep particles are inserted, they are placed randomly inside
 the insertion volume so as to mimic a stream of poured particles. The
@@ -306,7 +306,7 @@ in the <a class="reference internal" href="fix_particledistribution_discrete.htm
 and <a class="reference internal" href="fix_particletemplate_sphere.html"><em>fix_particletemplate_sphere</em></a>
 command (all of which can also be &#8220;all&#8221;).</p>
 <p>The keyword <em>overlapcheck</em> controls if overlap is checked for at insertion,
-both within the inserted particle package and with other existig particles.
+both within the inserted particle package and with other existing particles.
 If this option is turned off, insertion will scale very well in parallel,
 otherwise not. Be aware that in case of no overlap check, highly overlapping
 configurations will be produced, so you will have to relax these configurations.</p>

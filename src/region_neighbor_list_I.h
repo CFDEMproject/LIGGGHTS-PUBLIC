@@ -51,6 +51,7 @@ static const double BIG_REGION_NEIGHBOR_LIST = 1.0e20;
  */
 template<bool INTERPOLATE>
 RegionNeighborList<INTERPOLATE>::RegionNeighborList(LAMMPS *lmp) :
+    IRegionNeighborList(),
     Pointers(lmp),
     ncount(0),
     bbox_set(false)
@@ -94,7 +95,7 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap(double * x, double radius) cons
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
 template<bool INTERPOLATE>
-bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape) const
+bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape, double *roundness) const
 {
   int ibin = coord2bin(x);
 
@@ -107,7 +108,6 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double
     }
     const std::vector<Particle<INTERPOLATE> > & plist = bins[ibin+offset].particles;
 
-    double roundness[2] = {2.0, 2.0};
     Superquadric particle1(x, quaternion, shape, roundness);
     for(typename std::vector<Particle<INTERPOLATE> >::const_iterator pit = plist.begin(); pit != plist.end(); ++pit) {
       const Particle<INTERPOLATE> & p = *pit;
@@ -116,13 +116,18 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double
       const double rsq = vectorMag3DSquared(del);
       const double radsum = radius + p.radius;
       if(check_obb_flag) {
-        double x_copy[3], quaternion_copy[4], shape_copy[3];
+        double x_copy[3], quaternion_copy[4], shape_copy[3], roundness_copy[2];
         vectorCopy3D(p.x, x_copy);
         vectorCopy4D(p.quaternion, quaternion_copy);
         vectorCopy3D(p.shape, shape_copy);
-        Superquadric particle2(x_copy, quaternion_copy, shape_copy, roundness);
+        vectorCopy2D(p.roundness, roundness_copy);
+        Superquadric particle2(x_copy, quaternion_copy, shape_copy, roundness_copy);
+        double contact_point[3];
 
-        if (rsq <= radsum*radsum and MathExtraLiggghtsNonspherical::obb_intersect(&particle1, &particle2)) return true;
+        if (rsq <= radsum*radsum and (MathExtraLiggghtsNonspherical::capsules_intersect(&particle1, &particle2, contact_point) and
+                                      MathExtraLiggghtsNonspherical::obb_intersect(&particle1, &particle2))) {
+            return true;
+        }
       } else
         if (rsq <= radsum*radsum) return true;
     }
@@ -199,7 +204,7 @@ void RegionNeighborList<INTERPOLATE>::insert(double * x, double radius,int index
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
 template<bool INTERPOLATE>
-void RegionNeighborList<INTERPOLATE>::insert_superquadric(double * x, double radius, double *quaternion, double *shape, int index) {
+void RegionNeighborList<INTERPOLATE>::insert_superquadric(double * x, double radius, double *quaternion, double *shape, double *roundness, int index) {
   int quadrant;
   double wx,wy,wz;
   int ibin = coord2bin(x,quadrant,wx,wy,wz);
@@ -209,7 +214,7 @@ void RegionNeighborList<INTERPOLATE>::insert_superquadric(double * x, double rad
       error->one(FLERR,"assertion failed");
   }
 
-  bins[ibin].particles.push_back(Particle<INTERPOLATE>(index,x,radius,quaternion, shape, ibin,quadrant,wx,wy,wz));
+  bins[ibin].particles.push_back(Particle<INTERPOLATE>(index,x,radius,quaternion, shape, roundness, ibin,quadrant,wx,wy,wz));
   ++ncount;
 }
 #endif
@@ -232,6 +237,33 @@ void RegionNeighborList<INTERPOLATE>::reset()
 
   // reset particle counter
   ncount = 0;
+}
+
+/**
+ * @brief Return size of buffer for one bin
+ *
+ * \sa pushBinToBuffer
+ */
+template<bool INTERPOLATE>
+int RegionNeighborList<INTERPOLATE>::getSizeOne() const
+{
+    return 4;
+}
+
+/**
+ * @brief Push bin information to buffer
+ *
+ * \sa getSizeOne
+ */
+template<bool INTERPOLATE>
+int RegionNeighborList<INTERPOLATE>::pushBinToBuffer(int i, double *buf) const
+{
+    int m = 0;
+    buf[m++] = this->bins[i].center[0];
+    buf[m++] = this->bins[i].center[1];
+    buf[m++] = this->bins[i].center[2];
+    buf[m++] = this->bins[i].id;
+    return m;
 }
 
 /**
@@ -391,9 +423,9 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
   do
   {
     // create actual bins
-    nbinx = static_cast<int>(extent[0]*binsizeinv);
-    nbiny = static_cast<int>(extent[1]*binsizeinv);
-    nbinz = static_cast<int>(extent[2]*binsizeinv);
+    nbinx = static_cast<int>((extent[0]+binsize_optimal*1e-10)*binsizeinv);
+    nbiny = static_cast<int>((extent[1]+binsize_optimal*1e-10)*binsizeinv);
+    nbinz = static_cast<int>((extent[2]+binsize_optimal*1e-10)*binsizeinv);
 
     if (nbinx == 0) nbinx = 1;
     if (nbiny == 0) nbiny = 1;
@@ -448,15 +480,6 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
       mbiny = mbinyhi - mbinylo + 1;
       mbinz = mbinzhi - mbinzlo + 1;
 
-#ifdef LIGGGHTS_DEBUG
-      printf("setting region neighlist bounding box: maxrad %g [%g, %g] x [%g, %g] x [%g, %g]\n", maxrad, bsubboxlo[0], bsubboxhi[0], bsubboxlo[1], bsubboxhi[1], bsubboxlo[2], bsubboxhi[2]);
-      printf("nbinx %d nbiny %d, nbinz %d\n",nbinx,nbiny,nbinz);
-      printf("mbinxlo: %d, mbinxhi: %d\n", mbinxlo, mbinxhi);
-      printf("mbinylo: %d, mbinyhi: %d\n", mbinylo, mbinyhi);
-      printf("mbinzlo: %d, mbinzhi: %d\n", mbinzlo, mbinzhi);
-      printf("mbinx %d mbiny %d, mbinz %d\n",mbinx,mbiny,mbinz);
-#endif
-
     }
     else
     {
@@ -464,15 +487,6 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
       mbinx = nbinx;
       mbiny = nbiny;
       mbinz = nbinz;
-
-#ifdef LIGGGHTS_DEBUG
-      printf("setting reduced! insertion bounding box: [%g, %g] x [%g, %g] x [%g, %g]\n", bsubboxlo[0], bsubboxhi[0], bsubboxlo[1], bsubboxhi[1], bsubboxlo[2], bsubboxhi[2]);
-      printf("nbinx %d nbiny %d, nbinz %d\n",nbinx,nbiny,nbinz);
-      printf("mbinxlo: %d\n", mbinxlo);
-      printf("mbinylo: %d\n", mbinylo);
-      printf("mbinzlo: %d\n", mbinzlo);
-      printf("mbinx %d mbiny %d, mbinz %d\n",mbinx,mbiny,mbinz);
-#endif
 
     }
 
@@ -499,6 +513,7 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
   bins.resize(bbin);
 
   // set cell center and stencils for each bin
+  int cId = 0;
   for(typename std::vector<Bin<INTERPOLATE> >::iterator it = bins.begin(); it != bins.end(); ++it)
   {
     const int ibin = it - bins.begin();
@@ -508,6 +523,7 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
     const int iy = itmp/mbinx;
     itmp -= iy*mbinx;
     const int ix = itmp;
+    it->id = cId++;
     it->center[0] = bsubboxlo[0] + binsizex*((double)(ix+mbinxlo)+0.5);
     it->center[1] = bsubboxlo[1] + binsizey*((double)(iy+mbinylo)+0.5);
     it->center[2] = bsubboxlo[2] + binsizez*((double)(iz+mbinzlo)+0.5);

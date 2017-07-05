@@ -66,7 +66,7 @@ class Modify : protected Pointers {
   int nfix,maxfix;
   int n_initial_integrate,n_post_integrate,n_pre_exchange,n_pre_neighbor;
   int n_pre_force,n_post_force;
-  int n_iterate_implicitly; 
+  int n_iterate_implicitly, n_pre_final_integrate; 
   int n_final_integrate,n_end_of_step,n_thermo_energy;
   int n_initial_integrate_respa,n_post_integrate_respa;
   int n_pre_force_respa,n_post_force_respa,n_final_integrate_respa;
@@ -99,6 +99,7 @@ class Modify : protected Pointers {
   virtual void pre_neighbor();
   virtual void pre_force(int);
   virtual void post_force(int);
+  virtual void pre_final_integrate();
   virtual void final_integrate();
   virtual bool iterate_implicitly();  
   virtual void end_of_step();
@@ -145,6 +146,8 @@ class Modify : protected Pointers {
   int n_fixes_style(const char *style); 
   int n_computes_style(const char *style); 
   int n_fixes_style_strict(const char *style); 
+  int n_fixes_property_atom();
+  class FixPropertyAtom* find_fix_property_atom(int rank);
   int n_fixes_property_atom_not_internal();
   int dump_size_fixes_property_atom_not_internal();
   class FixPropertyAtom* find_fix_property_atom_not_internal(int rank);
@@ -178,6 +181,11 @@ class Modify : protected Pointers {
   char* id_restart_data_global_style(const char* _style,int _rank);
   void max_min_rad(double &maxrad,double &minrad); 
 
+  void forceMeshExchange();
+
+  // updates all computes at the end of a run
+  void update_computes_on_run_end();
+
  protected:
 
   // lists of fixes to apply at different stages of timestep
@@ -185,7 +193,7 @@ class Modify : protected Pointers {
   int *list_initial_integrate,*list_post_integrate;
   int *list_pre_exchange,*list_pre_neighbor;
   int *list_pre_force,*list_post_force;
-  int *list_iterate_implicitly; 
+  int *list_iterate_implicitly, *list_pre_final_integrate; 
   int *list_final_integrate,*list_end_of_step,*list_thermo_energy;
   int *list_initial_integrate_respa,*list_post_integrate_respa;
   int *list_pre_force_respa,*list_post_force_respa;
@@ -223,13 +231,13 @@ private:
   inline void call_respa_method_on_fixes(FixMethodRESPA2 method, int arg1, int arg2, int *& ilist, int & inum);
   inline void call_respa_method_on_fixes(FixMethodRESPA3 method, int arg1, int arg2, int arg3, int *& ilist, int & inum);
 
-  typedef Compute *(*ComputeCreator)(LAMMPS *, int, char **);
+  typedef Compute *(*ComputeCreator)(LAMMPS *, int, int, char **);
   std::map<std::string,ComputeCreator> *compute_map;
 
   typedef Fix *(*FixCreator)(LAMMPS *, int, char **);
   std::map<std::string,FixCreator> *fix_map;
 
-  template <typename T> static Compute *compute_creator(LAMMPS *, int, char **);
+  template <typename T> static Compute *compute_creator(LAMMPS *, int, int, char **);
   template <typename T> static Fix *fix_creator(LAMMPS *, int, char **);
 };
 

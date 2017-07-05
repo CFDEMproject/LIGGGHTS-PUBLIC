@@ -573,13 +573,13 @@ void FixTemplateMultiplespheres::randomize_single()
 
 /* ----------------------------------------------------------------------*/
 
-void FixTemplateMultiplespheres::init_ptilist(int n_random_max)
+void FixTemplateMultiplespheres::init_ptilist(int n_random_max, const bool enforce_single, FixPropertyAtom * const fix_release)
 {
     if(pti_list) error->all(FLERR,"invalid FixTemplateSphere::init_list()");
     n_pti_max = n_random_max;
     pti_list = (ParticleToInsert**) memory->smalloc(n_pti_max*sizeof(ParticleToInsert*),"pti_list");
     for(int i = 0; i < n_pti_max; i++)
-       pti_list[i] = new ParticleToInsert(lmp,nspheres);
+       pti_list[i] = new ParticleToInsert(lmp, enforce_single ? 1 : nspheres, fix_release);
 }
 
 /* ----------------------------------------------------------------------*/
@@ -618,9 +618,116 @@ void FixTemplateMultiplespheres::randomize_ptilist(int n_random,int distribution
 
           if(bonded)
           {
-            pti_list[i]->fix_property = fix_bond_random_id;
+            if (!pti_list[i]->fix_property)
+            {
+                pti_list[i]->fix_property = new FixPropertyAtom*[1];
+                if (pti_list[i]->fix_property_value)
+                    error->one(FLERR, "Internal error (fix property pti list)");
+                pti_list[i]->fix_property_value = new double*[1];
+                pti_list[i]->fix_property_value[0] = new double[1];
+                if (pti_list[i]->fix_property_nentry)
+                    error->one(FLERR, "Internal error (fix property pti list)");
+                pti_list[i]->fix_property_nentry = new int[1];
+            }
+            pti_list[i]->fix_property[0] = fix_bond_random_id;
             
-            pti_list[i]->fix_property_value = static_cast<double>(update->ntimestep)+random_insertion->uniform();
+            pti_list[i]->fix_property_value[0][0] = static_cast<double>(update->ntimestep)+random_insertion->uniform();
+            pti_list[i]->n_fix_property = 1;
+            pti_list[i]->fix_property_nentry[0] = 1;
           }
     }
+}
+
+/* ----------------------------------------------------------------------*/
+
+void FixTemplateMultiplespheres::direct_set_ptlist(const int i, const void * const data, const int distribution_groupbit, const int distorder)
+{
+    const PARTICLE_PACKING::MultipleSphere * const ms = static_cast<const PARTICLE_PACKING::MultipleSphere * const>(data);
+    pti_list[i]->atom_type = ms->get_type();
+    const double radius = ms->get_radius();
+    
+    pti_list[i]->radius_ins[0] = radius;
+    pti_list[i]->density_ins = ms->get_density();
+    pti_list[i]->volume_ins = radius*radius*radius*4.1887902047863909;
+    pti_list[i]->mass_ins = pti_list[i]->density_ins*pti_list[i]->volume_ins;
+    pti_list[i]->id_ins = ms->get_id();
+
+    // set fix_property_atom
+    if (pti_list[i]->fix_property && ms->n_fix_properties() != (unsigned int)pti_list[i]->n_fix_property)
+        error->one(FLERR, "Inconsistent fix_property count");
+    if (pti_list[i]->fix_property_value)
+    {
+        if (!pti_list[i]->fix_property_nentry)
+            error->one(FLERR, "Nentry not available");
+        for (int j = 0; j < pti_list[i]->n_fix_property; j++)
+        {
+            if (ms->fix_property_nentries(j) != (unsigned int)pti_list[i]->fix_property_nentry[j])
+                error->one(FLERR, "Inconsistent fix property entries");
+        }
+    }
+
+    if (ms->n_fix_properties() > 0)
+    {
+        const int n = ms->n_fix_properties();
+        pti_list[i]->n_fix_property = n;
+        if (!pti_list[i]->fix_property)
+            pti_list[i]->fix_property = new FixPropertyAtom*[n];
+        const bool create_fpv = !pti_list[i]->fix_property_value;
+        if (create_fpv)
+            pti_list[i]->fix_property_value = new double*[n];
+        if (!pti_list[i]->fix_property_nentry)
+            pti_list[i]->fix_property_nentry = new int[n];
+        bool found_bonded = false;
+        for (int j = 0; j < n; j++)
+        {
+            pti_list[i]->fix_property[j] = ms->get_fix_property(j);
+            const int m = ms->fix_property_nentries(j);
+            if (create_fpv)
+                pti_list[i]->fix_property_value[j] = new double[m];
+            pti_list[i]->fix_property_nentry[j] = m;
+            for (int k = 0; k < m; k++)
+                pti_list[i]->fix_property_value[j][k] = ms->fix_property_value(j, k);
+            if (pti_list[i]->fix_property[j] == fix_bond_random_id)
+            {
+                found_bonded = true;
+                
+                pti_list[i]->fix_property_value[j][0] += static_cast<double>(update->ntimestep);
+            }
+        }
+        if (bonded && !found_bonded)
+            error->one(FLERR, "Bond random id could not be found");
+    }
+
+    // init insertion position
+    vectorZeroize3D(pti_list[i]->x_ins[0]);
+    vectorZeroize3D(pti_list[i]->v_ins);
+    vectorZeroize3D(pti_list[i]->omega_ins);
+
+    pti_list[i]->groupbit = groupbit | distribution_groupbit; 
+
+    pti_list[i]->distorder = distorder;
+    pti_list[i]->distorder = distorder;
+}
+
+/* ----------------------------------------------------------------------*/
+
+unsigned int FixTemplateMultiplespheres::generate_hash()
+{
+    unsigned int hash = 0;
+    unsigned int start = seed_insertion*123457; // it's magic
+    if (atom_type_sphere)
+    {
+        for (int i = 0; i < nspheres; i++)
+            add_hash_value(atom_type_sphere[i], start, hash);
+    }
+    else
+        add_hash_value(atom_type, start, hash);
+    add_hash_value(nspheres, start, hash);
+    for (int i = 0; i < nspheres; i++)
+        add_hash_value(r_sphere[i], start, hash);
+    add_hash_value(pdf_density->rand_style(), start, hash);
+    add_hash_value(expectancy(pdf_density), start, hash);
+    add_hash_value(cubic_expectancy(pdf_density), start, hash);
+    add_hash_value(bonded ? 1 : 0, start, hash);
+    return hash;
 }

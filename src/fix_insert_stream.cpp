@@ -59,7 +59,6 @@
 #include "fix_property_atom_tracer_stream.h"
 #include "fix_particledistribution_discrete.h"
 #include "fix_multisphere.h"
-#include "multisphere.h"
 #include "fix_template_sphere.h"
 #include "particleToInsert.h"
 #include "tri_mesh_planar.h"
@@ -77,7 +76,9 @@ using namespace FixConst;
 FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
   FixInsert(lmp, narg, arg),
   recalc_release_ms(false),
-  dt_ratio(0.)
+  dt_ratio(0.),
+  save_template_(false),
+  fix_template_(NULL)
 {
   // set defaults first, then parse args
   init_defaults();
@@ -130,7 +131,22 @@ FixInsertStream::FixInsertStream(LAMMPS *lmp, int narg, char **arg) :
       if(ntry_mc < 1000) error->fix_error(FLERR,this,"ntry_mc must be > 1000");
       iarg += 2;
       hasargs = true;
-    } else if (0 == strcmp(style,"insert/stream")) 
+    }
+    else if (strcmp(arg[iarg], "save_template") == 0)
+    {
+        if (iarg+2 > narg)
+            error->fix_error(FLERR,this,"not enough arguments");
+
+        if(strcmp("yes",arg[iarg+1]) == 0)
+            save_template_ = true;
+        else if(strcmp("no",arg[iarg+1]) == 0)
+            save_template_ = false;
+        else
+            error->fix_error(FLERR,this,"expecting 'yes' or 'no' for 'save_template'");
+        iarg += 2;
+        hasargs = true;
+    }
+    else if (0 == strcmp(style,"insert/stream")) 
       error->fix_error(FLERR,this,"unknown keyword or wrong keyword order");
   }
 
@@ -157,12 +173,12 @@ FixInsertStream::~FixInsertStream()
 
 void FixInsertStream::post_create()
 {
-  FixInsert::post_create();
+    FixInsert::post_create();
 
-  // only register property if I am the first fix/insert/stream in the simulation
-  
-  if(modify->n_fixes_style(style) == 1)
-  {
+    // only register property if I am the first fix/insert/stream in the simulation
+    
+    if(modify->n_fixes_style(style) == 1)
+    {
         const char* fixarg[22];
         fixarg[0]="release_fix_insert_stream";
         fixarg[1]="all";
@@ -188,12 +204,32 @@ void FixInsertStream::post_create()
         fixarg[21]="0.";
         modify->add_fix_property_atom(22,const_cast<char**>(fixarg),style);
 
-        fix_release = static_cast<FixPropertyAtom*>(modify->find_fix_property("release_fix_insert_stream","property/atom","vector",5,0,style));
+        fix_release = static_cast<FixPropertyAtom*>(modify->find_fix_property("release_fix_insert_stream","property/atom","vector",14,0,style));
         if(!fix_release) error->fix_error(FLERR,this,"Internal error in fix insert/stream");
 
         if( modify->fix_restart_in_progress())
             recalc_release_restart();
-  }
+    }
+
+    if (save_template_)
+    {
+        fix_template_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("insertion_template_", "property/atom", "scalar", 1, 0, style, false));
+        if (!fix_template_)
+        {
+            const char *fixarg[9];
+            fixarg[0] = "insertion_template_";
+            fixarg[1] = "all";
+            fixarg[2] = "property/atom";
+            fixarg[3] = "insertion_template_";
+            fixarg[4] = "scalar";
+            fixarg[5] = "yes"; // restart
+            fixarg[6] = "yes"; // ghost
+            fixarg[7] = "no";  // reverse
+            fixarg[8] = "-1.0";
+            fix_template_ = modify->add_fix_property_atom(9, const_cast<char**>(fixarg), style);
+        }
+        fix_distribution->save_templates(fix_template_);
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -882,6 +918,7 @@ void FixInsertStream::end_of_step()
 
 void FixInsertStream::reset_timestep(bigint newstep,bigint oldstep)
 {
+    FixInsert::reset_timestep(newstep,oldstep);
     
     reset_releasedata(newstep,oldstep);
 }

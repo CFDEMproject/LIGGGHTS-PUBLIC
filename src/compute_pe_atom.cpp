@@ -62,10 +62,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputePEAtom::ComputePEAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputePEAtom::ComputePEAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 3) error->all(FLERR,"Illegal compute pe/atom command");
+  if (narg < iarg) error->all(FLERR,"Illegal compute pe/atom command");
 
   peratom_flag = 1;
   size_peratom_cols = 0;
@@ -73,7 +73,7 @@ ComputePEAtom::ComputePEAtom(LAMMPS *lmp, int narg, char **arg) :
   timeflag = 1;
   comm_reverse = 1;
 
-  if (narg == 3) {
+  if (narg == iarg) {
     pairflag = 1;
     bondflag = angleflag = dihedralflag = improperflag = 1;
     kspaceflag = 1;
@@ -81,7 +81,6 @@ ComputePEAtom::ComputePEAtom(LAMMPS *lmp, int narg, char **arg) :
     pairflag = 0;
     bondflag = angleflag = dihedralflag = improperflag = 0;
     kspaceflag = 0;
-    int iarg = 3;
     while (iarg < narg) {
       if (strcmp(arg[iarg],"pair") == 0) pairflag = 1;
       else if (strcmp(arg[iarg],"bond") == 0) bondflag = 1;

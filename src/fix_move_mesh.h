@@ -45,6 +45,7 @@
 
 FixStyle(move/mesh,FixMoveMesh)
 FixStyle(move/mesh/gran,FixMoveMesh) // for backward compatibility
+FixStyle(move/mesh/file,FixMoveMesh) 
 
 #else
 
@@ -53,6 +54,7 @@ FixStyle(move/mesh/gran,FixMoveMesh) // for backward compatibility
 
 #include "fix.h"
 #include "container.h"
+#include <string>
 
 namespace LAMMPS_NS
 {
@@ -69,6 +71,7 @@ namespace LAMMPS_NS
         void setup(int vflag);
         void pre_delete(bool unfixflag);
         int setmask();
+        void init();
 
         void initial_integrate(int);
         void final_integrate();
@@ -79,6 +82,10 @@ namespace LAMMPS_NS
         void add_reference_point(double *point);
         void get_reference_point(double *point);
         void reset_reference_point();
+        void resetNodePosOrig();
+
+        void move(const double * const dx);
+        void rotate(const double dphi, const double * const axis, const double * const center);
 
         class AbstractMesh * mesh()
         { return mesh_; }
@@ -86,14 +93,13 @@ namespace LAMMPS_NS
         bool fixMeshCompare(const class FixMesh* fixMeshToCompare) const
         { return fixMeshToCompare == fix_mesh_; }
 
-     protected:
-
         class FixMesh* fixMesh()
         { return fix_mesh_; }
 
       private:
 
         class FixMesh *fix_mesh_;
+        std::string fix_mesh_id_;
         class MeshMover *move_;
         class AbstractMesh *mesh_;
 

@@ -79,11 +79,17 @@ fix         heatAv          all property/atom heatAv    scalar no yes no none  #
 fix         TempMin         all property/atom TempMin   scalar no yes no none #minimum particle 
 
 
-#------------------------------CFD Coupling-----------------------------------------------------------
+#------------------------------CFD Coupling (needed for ParScale fixes)-------------------------------
 
 fix     cfd all couple/cfd couple_every 9999999 mpi
-fix     cfd2 all couple/cfd/force/integrateImp CrankNicolson 0.5 CAddRhoFluid 0 0	
-fix     cfd3 all couple/cfd/convectiveImpl
+#fix     cfd2 all couple/cfd/force/integrateImp CrankNicolson 0.5 CAddRhoFluid 0 0	
+
+#Option 1: heat/cool with implicit coupling
+#fix     cfd3 all couple/cfd/convectiveImpl #this is an IMPLICIT coupling
+
+#Option 2: heat/cool with explicit setting of flux
+fix     cfd3 all couple/cfd/convection T0 400
+fix     heatTransCoeffDummy all property/atom heatTransCoeff scalar yes no no 66 #NOT USED, but pulled from ParScale!
 
 #--------------------------Average Particle Temperature-----------------------------------------------
 
@@ -115,9 +121,14 @@ fix      TotalHeatFlux all print ${dumpStep} "time ${Time} total_heat_flux ${Tot
 
 run 1
 
-#dump        dmp all custom ${dumpStep} post/dump*.liggghts id type x y z vx vy vz fx fy fz omegax omegay omegaz radius  f_Temp f_heatFlux f_TempMin f_heatAv  f_heatFluid
+dump        dmp all custom ${dumpStep} post/dump*.liggghts id type x y z vx vy vz fx fy fz omegax omegay omegaz radius f_Temp f_heatFlux f_TempMin f_heatAv  # f_heatFluid
 
-#run         50000
+
+#Set fluxes, and run
+run 0
+set     group all property/atom heatTransCoeff 50        #must specify convectiveHeatFlux, since this overwrites
+set     group all property/atom convectiveHeatFlux 1.111 #must specify convectiveHeatFlux, since this overwrites heatFlux!! Positive flux -> heating
+
 
 reset_timestep 1
 label       infrontofloop

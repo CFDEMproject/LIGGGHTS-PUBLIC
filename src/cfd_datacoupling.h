@@ -62,8 +62,8 @@ class CfdDatacoupling : protected Pointers {
 
   virtual void allocate_external(int    **&data, int len2,int len1,int    initvalue);
   virtual void allocate_external(double **&data, int len2,int len1,double initvalue);
-  virtual void allocate_external(int    **&data, int len2,char *keyword,int initvalue);
-  virtual void allocate_external(double **&data, int len2,char *keyword,double initvalue);
+  virtual void allocate_external(int    **&data, int len2,const char *keyword,int initvalue);
+  virtual void allocate_external(double **&data, int len2,const char *keyword,double initvalue);
 
   void init();
   virtual void post_create() {}

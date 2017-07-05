@@ -1,4 +1,4 @@
-# serial = RedHat Linux box, g++4, no MPI, no FFTs
+# serial = g++, no MPI, no VTK (minimal installation, run "make stubs" before!)
 
 SHELL = /bin/sh
 
@@ -7,17 +7,17 @@ SHELL = /bin/sh
 # specify flags and libraries needed for your compiler
 
 CC =		g++
-CCFLAGS =	-O
+CCFLAGS =	-O2 -fPIC
 SHFLAGS =	-fPIC
 DEPFLAGS =	-M
 
 LINK =		g++
-LINKFLAGS =	-O
-LIB =           
+LINKFLAGS =	-O2 -fPIC
+LIB =
 SIZE =		size
 
-ARCHIVE =	ar
-ARFLAGS =	-rc
+ARCHIVE =		ar
+ARFLAGS =		-rc
 SHLIBFLAGS =	-shared
 
 # ---------------------------------------------------------------------
@@ -28,7 +28,7 @@ SHLIBFLAGS =	-shared
 # LAMMPS ifdef settings, OPTIONAL
 # see possible settings in doc/Section_start.html#2_2 (step 4)
 
-LMP_INC =	-DLAMMPS_GZIP
+LMP_INC =
 
 # MPI library, REQUIRED
 # see discussion in doc/Section_start.html#2_2 (step 5)
@@ -37,8 +37,8 @@ LMP_INC =	-DLAMMPS_GZIP
 # PATH = path for MPI library
 # LIB = name of MPI library
 
-MPI_INC =       -I../STUBS
-MPI_PATH =      -L../STUBS
+MPI_INC =	-I../STUBS
+MPI_PATH =	-L../STUBS
 MPI_LIB =	-lmpi_stubs
 
 # FFT library, OPTIONAL
@@ -49,7 +49,7 @@ MPI_LIB =	-lmpi_stubs
 # LIB = name of FFT library
 
 FFT_INC =
-FFT_PATH = 
+FFT_PATH =
 FFT_LIB =
 
 # JPEG and/or PNG library, OPTIONAL
@@ -59,9 +59,18 @@ FFT_LIB =
 # PATH = path(s) for JPEG library and/or PNG library
 # LIB = name(s) of JPEG library and/or PNG library
 
-JPG_INC =       
-JPG_PATH = 	
-JPG_LIB =	
+JPG_INC =
+JPG_PATH =
+JPG_LIB =
+
+# VTK library, OPTIONAL
+# INC = path for VTK header files
+# PATH = path for VTK library
+# LIB = name of VTK library
+
+VTK_INC =	#-I/usr/include/vtk-6.2
+VTK_PATH =	#-L/usr/lib/x86_64-linux-gnu
+VTK_LIB =	#-lvtkCommonCore-6.2 -lvtkIOCore-6.2 -lvtkIOXML-6.2 -lvtkIOLegacy-6.2 -lvtkCommonDataModel-6.2 -lvtkIOParallel-6.2 -lvtkParallelCore-6.2 -lvtkParallelMPI-6.2 -lvtkIOImage-6.2 -lvtkCommonExecutionModel-6.2 -lvtkFiltersCore-6.2 -lvtkIOParallelXML-6.2
 
 # ---------------------------------------------------------------------
 # build rules and dependencies

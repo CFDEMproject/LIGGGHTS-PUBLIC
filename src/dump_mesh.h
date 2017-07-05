@@ -39,7 +39,7 @@
     Copyright 2016-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#if defined(LAMMPS_VTK) //NP do not use #ifdef here (VS C++ bug)
+#if defined(LAMMPS_VTK) 
 
 #ifndef LMP_DUMP_MESH_H
 #define LMP_DUMP_MESH_H

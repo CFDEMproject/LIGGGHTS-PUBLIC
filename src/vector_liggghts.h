@@ -51,14 +51,8 @@ namespace LAMMPS_NS {
 //SOME VERY SIMPLE VECTOR OPERATIONS
 //================================================
 
-inline void vectorConstruct3D(double *v,double x, double y, double z)
-{
-  v[0] = x;
-  v[1] = y;
-  v[2] = z;
-}
-
-inline void vectorConstruct3D(int *v,int x, int y, int z)
+template<typename T>
+inline void vectorConstruct3D(T *v,T x, T y, T z)
 {
   v[0] = x;
   v[1] = y;
@@ -117,17 +111,11 @@ inline double vectorDot2D(const double *v1, const double *v2)
   return (v1[0]*v2[0]+v1[1]*v2[1]);
 }
 
-inline void vectorCopy2D(const double *from, double *to)
+template<typename T>
+inline void vectorCopy2D(const T *from, T *to)
 {
   to[0]=from[0];
   to[1]=from[1];
-}
-
-inline void vectorCopy3D(const double *from, double *to)
-{
-  to[0]=from[0];
-  to[1]=from[1];
-  to[2]=from[2];
 }
 
 inline void vectorFlip3D(double *v)
@@ -137,26 +125,15 @@ inline void vectorFlip3D(double *v)
   v[2]=-v[2];
 }
 
-inline void vectorCopyN(const int *from, int *to, int N)
+template<typename T>
+inline void vectorCopyN(const T *from, T *to, int N)
 {
-    for(int i = 0; i < N; i++)
+    for(int i = 0; i < N; ++i)
        to[i] = from[i];
 }
 
-inline void vectorCopyN(const double *from, double *to, int N)
-{
-    for(int i = 0; i < N; i++)
-       to[i] = from[i];
-}
-
-inline void vectorCopy3D(const int *from, int *to)
-{
-  to[0]=from[0];
-  to[1]=from[1];
-  to[2]=from[2];
-}
-
-inline void vectorCopy3D(const bool *from, bool *to)
+template<typename T>
+inline void vectorCopy3D(const T *from, T *to)
 {
   to[0]=from[0];
   to[1]=from[1];
@@ -165,7 +142,7 @@ inline void vectorCopy3D(const bool *from, bool *to)
 
 inline void vectorRoundN(double *vec, int N)
 {
-    for(int i = 0; i < N; i++)
+    for(int i = 0; i < N; ++i)
        vec[i] = static_cast<double>(round(vec[i]));
 }
 
@@ -176,7 +153,8 @@ inline void vectorAbs3D(double *v)
     if(v[2] < 0) v[2] = -v[2];
 }
 
-inline double vectorMin3D(double *v,int &dim)
+template<typename T>
+inline T vectorMin3D(const T *v,int &dim)
 {
     if(v[0] < v[1] && v[0] < v[2])
     {
@@ -194,7 +172,8 @@ inline double vectorMin3D(double *v,int &dim)
     return v[2];
 }
 
-inline double vectorMin3D(double *v)
+template<typename T>
+inline T vectorMin3D(const T *v)
 {
     if(v[0] < v[1] && v[0] < v[2])
     return v[0];
@@ -205,18 +184,8 @@ inline double vectorMin3D(double *v)
     return v[2];
 }
 
-inline int vectorMin3D(int *v)
-{
-    if(v[0] < v[1] && v[0] < v[2])
-    return v[0];
-
-    if(v[1] < v[2])
-    return v[1];
-
-    return v[2];
-}
-
-inline double vectorMax3D(double *v)
+template<typename T>
+inline T vectorMax3D(const T *v)
 {
     if(v[0] > v[1] && v[0] > v[2])
     return v[0];
@@ -227,91 +196,22 @@ inline double vectorMax3D(double *v)
     return v[2];
 }
 
-inline int vectorMax3D(int *v)
+template<typename T>
+inline T vectorMaxN(const T *v, const int n)
 {
-    if(v[0] > v[1] && v[0] > v[2])
-    return v[0];
-
-    if(v[1] > v[2])
-    return v[1];
-
-    return v[2];
-}
-
-inline int vectorMaxN(const int *v, const int n)
-{
-    int max = v[0];
-    for (int i=1;i<n;i++)
+    T max = v[0];
+    for (int i=1;i<n;++i)
         max = max > v[i] ? max : v[i];
     return max;
 }
 
-inline double vectorMaxN(const double *v, const int n)
+template<typename T>
+inline T vectorMinN(const T *v, const int n)
 {
-    double max = v[0];
-    for (int i=1;i<n;i++)
-        max = max > v[i] ? max : v[i];
-    return max;
-}
-
-inline int vectorMinN(const int *v, const int n)
-{
-    int min = v[0];
-    for (int i=1;i<n;i++)
+    T min = v[0];
+    for (int i=1;i<n;++i)
         min = min < v[i] ? min : v[i];
     return min;
-}
-
-inline double vectorMinN(const double *v, const int n)
-{
-    double min = v[0];
-    for (int i=1;i<n;i++)
-        min = min < v[i] ? min : v[i];
-    return min;
-}
-
-inline void vectorComponentAbs3D(double *v)
-{
-    if(v[0] < 0.)
-        v[0] = -v[0];
-    if(v[1] < 0.)
-        v[1] = -v[1];
-    if(v[2] < 0.)
-        v[2] = -v[2];
-}
-
-inline double vectorComponentAbsSum3D(double const*v)
-{
-    double sum = 0.;
-    if(v[0] < 0.)
-        sum -= v[0];
-    else
-        sum += v[0];
-    if(v[1] < 0.)
-        sum -= v[1];
-    else
-        sum += v[1];
-    if(v[2] < 0.)
-        sum -= v[2];
-    else
-        sum += v[2];
-    return sum;
-}
-
-inline void vectorComponentAbs3D(double const*v,double *result)
-{
-    if(v[0] < 0.)
-        result[0] = -v[0];
-    else
-        result[0] = v[0];
-    if(v[1] < 0.)
-        result[1] = -v[1];
-    else
-        result[1] = v[1];
-    if(v[2] < 0.)
-        result[2] = -v[2];
-    else
-        result[2] = v[2];
 }
 
 inline void vectorComponentMin3D(double const*v1,double const*v2,double *min)
@@ -360,13 +260,13 @@ inline void vectorCopy4D(const double *from, double *to)
 
 inline void vectorScalarMultN(int n,double *v, double s)
 {
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < n; ++i)
         v[i] = s*v[i];
 }
 
 inline void vectorScalarMultN(int n,int *v, double s)
 {
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < n; ++i)
         v[i] = static_cast<int>(static_cast<double>(s)*v[i]);
 }
 
@@ -413,14 +313,14 @@ inline void vectorScalarSubtract3D(double *v, double s)
   v[2]-=s;
 }
 
-inline void vectorNegate3D(double *v, double *result)
+inline void vectorNegate3D(const double * const v, double * const result)
 {
   result[0]=-v[0];
   result[1]=-v[1];
   result[2]=-v[2];
 }
 
-inline void vectorNegate3D(double *v)
+inline void vectorNegate3D(double * const v)
 {
   v[0]=-v[0];
   v[1]=-v[1];
@@ -450,15 +350,10 @@ inline void vectorAdd4D(double *v1, const double *v2)
   v1[3]+=v2[3];
 }
 
-inline void vectorAddN(double *v1, const double *v2, int n)
+template<typename T>
+inline void vectorAddN(T *v1, const T *v2, int n)
 {
-  for(int i = 0; i < n; i++)
-    v1[i] += v2[i];
-}
-
-inline void vectorAddN(int *v1, const int *v2, int n)
-{
-  for(int i = 0; i < n; i++)
+  for(int i = 0; i < n; ++i)
     v1[i] += v2[i];
 }
 
@@ -490,22 +385,17 @@ inline void vectorSubtract2D(const double *v1,const double *v2, double *result)
   result[1]=v1[1]-v2[1];
 }
 
-inline void vectorMultiN(const double *v1, const double *v2, double *result, const int n)
+template<typename T>
+inline void vectorMultiN(const T *v1, const T *v2, T *result, const int n)
 {
-  for(int i = 0; i < n; i++)
-    result[i] = v1[i] * v2[i];
-}
-
-inline void vectorMultiN(const int *v1, const int *v2, int *result, const int n)
-{
-  for(int i = 0; i < n; i++)
+  for(int i = 0; i < n; ++i)
     result[i] = v1[i] * v2[i];
 }
 
 template<typename T>
 inline void vectorComponentDivN(const T *v1, const T *v2, T *result, const int n)
 {
-  for(int i = 0; i < n; i++)
+  for(int i = 0; i < n; ++i)
     result[i] = v1[i] / v2[i];
 }
 
@@ -533,81 +423,55 @@ inline void vectorProject3D(const T *v, const T *on, T *result)
   vectorScalarMult3D(norm,vectorDot3D(v,norm),result);
 }
 
-inline void vectorZeroize3D(double *v)
-{
-  v[0]=0.;
-  v[1]=0.;
-  v[2]=0.;
-}
-
-inline void vectorZeroize3D(int *v)
+template<typename T>
+inline void vectorZeroize3D(T *v)
 {
   v[0]=0;
   v[1]=0;
   v[2]=0;
 }
 
-inline void vectorZeroize4D(double *v)
+template<typename T>
+inline void vectorZeroize4D(T *v)
 {
-  v[0]=0.;
-  v[1]=0.;
-  v[2]=0.;
-  v[3]=0.;
+  v[0]=0;
+  v[1]=0;
+  v[2]=0;
+  v[3]=0;
 }
 
-inline void vectorZeroizeN(double *v,int n)
+template<typename T>
+inline void vectorZeroizeN(T *v,const int n)
 {
-  for(int i = 0; i < n; i++)
-     v[i]=0.;
-}
-
-inline void vectorZeroizeN(int *v,int n)
-{
-  for(int i = 0; i < n; i++)
+  for(int i = 0; i < n; ++i)
      v[i]=0;
 }
 
-inline void vectorInitialize3D(double *v,double init)
+template<typename T>
+inline void vectorInitialize3D(T *v,T init)
 {
   v[0]=init;
   v[1]=init;
   v[2]=init;
 }
 
-inline void vectorInitializeN(int *v,int n,int init)
+template<typename T>
+inline void vectorInitializeN(T *v,const int n,const T init)
 {
-  for(int i = 0; i < n; i++)
+  for(int i = 0; i < n; ++i)
      v[i]=init;
 }
 
-inline void vectorInitializeN(double *v,int n,double init)
+template<typename T>
+inline T vectorSumN(T *v,int n)
 {
-  for(int i = 0; i < n; i++)
-     v[i]=init;
-}
-
-inline void vectorInitializeN(bool *v,int n,bool init)
-{
-  for(int i = 0; i < n; i++)
-     v[i]=init;
-}
-
-inline double vectorSumN(double *v,int n)
-{
-  double sum = 0.;
-  for(int i = 0; i < n; i++)
-     sum+=v[i];
-  return sum;
-}
-inline int vectorSumN(int *v,int n)
-{
-  int sum = 0.;
-  for(int i = 0; i < n; i++)
-     sum+=v[i];
+  T sum = 0;
+  for (int i = 0; i < n; ++i)
+    sum += v[i];
   return sum;
 }
 
-inline void quatUnitize4D(double *q)
+inline void quatIdentity4D(double *q)
 {
   q[0]=1.;
   q[1]=0.;
@@ -615,7 +479,17 @@ inline void quatUnitize4D(double *q)
   q[3]=0.;
 }
 
-inline bool isUnitQuat4D(double *q)
+inline void quatNormalize4D(double *q)
+{
+    const double norm = vectorMag4D(q);
+    const double invnorm = (norm == 0.) ? 0. : 1./norm;
+    q[0] *= invnorm;
+    q[1] *= invnorm;
+    q[2] *= invnorm;
+    q[3] *= invnorm;
+}
+
+inline bool isIdentityQuat4D(const double *q)
 {
     return
     (
@@ -626,7 +500,7 @@ inline bool isUnitQuat4D(double *q)
     );
 }
 
-inline void quatMult4D(double *q, double *p, double *result)
+inline void quatMult4D(const double * const q, const double * const p, double * const result)
 {
     result[0] = q[0]*p[0] - q[1]*p[1] - q[2]*p[2] - q[3]*p[3];
     result[1] = q[0]*p[1] + q[1]*p[0] + q[2]*p[3] - q[3]*p[2];
@@ -634,7 +508,7 @@ inline void quatMult4D(double *q, double *p, double *result)
     result[3] = q[0]*p[3] + q[1]*p[2] - q[2]*p[1] + q[3]*p[0];
 }
 
-inline void quatMult4D(double *q, double *p)
+inline void quatMult4D(double * const q, const double * const p)
 {
     double tmp[4];
     quatMult4D(q, p, tmp);
@@ -648,6 +522,15 @@ inline void quatInverse4D(double *q, double *result)
     result[1] = -q[1]*invNorm;
     result[2] = -q[2]*invNorm;
     result[3] = -q[3]*invNorm;
+}
+
+inline void phiToQuat(const double phi, const double * const axis, double * const q)
+{
+    q[0] = ::cos(phi*0.5);
+    const double sinPhi = ::sin(phi*0.5);
+    q[1] = axis[0]*sinPhi;
+    q[2] = axis[1]*sinPhi;
+    q[3] = axis[2]*sinPhi;
 }
 
 inline void normalize_bary(double *v)
@@ -690,13 +573,13 @@ inline void bufToVector4D(double *vec,double const*buf,int &m)
 
 inline void vectorToBufN(double const*vec,double *buf,int &m, int nvalues)
 {
-  for(int i = 0; i < nvalues; i++)
+  for(int i = 0; i < nvalues; ++i)
     buf[m++] = vec[i];
 }
 
 inline void bufToVectorN(double *vec,double const*buf,int &m, int nvalues)
 {
-  for(int i = 0; i < nvalues; i++)
+  for(int i = 0; i < nvalues; ++i)
     vec[i] = buf[m++];
 }
 
@@ -723,7 +606,7 @@ inline void printVec4D(FILE *out, const char *name, double *vec)
 inline void printVecN(FILE *out, const char *name, double *vec, int n)
 {
     if(name) fprintf(out," vector %s:",name);
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < n; ++i)
         fprintf(out,"%f ",vec[i]);
     fprintf(out,"\n");
 }
@@ -731,7 +614,7 @@ inline void printVecN(FILE *out, const char *name, double *vec, int n)
 inline void printVecN(FILE *out, const char *name, int *vec, int n)
 {
     if(name) fprintf(out," vector %s:",name);
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < n; ++i)
         fprintf(out,"%d ",vec[i]);
     fprintf(out,"\n");
 }

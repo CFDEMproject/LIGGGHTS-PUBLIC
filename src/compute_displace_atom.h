@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeDisplaceAtom : public Compute {
  public:
-  ComputeDisplaceAtom(class LAMMPS *, int, char **);
+  ComputeDisplaceAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputeDisplaceAtom();
   void init();
   void compute_peratom();

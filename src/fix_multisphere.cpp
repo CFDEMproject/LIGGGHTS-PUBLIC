@@ -298,6 +298,7 @@ int FixMultisphere::setmask()
     mask |= PRE_EXCHANGE;
     mask |= PRE_NEIGHBOR;
     mask |= PRE_FORCE;
+    mask |= PRE_FINAL_INTEGRATE;
     mask |= FINAL_INTEGRATE;
     return mask;
 }
@@ -375,19 +376,6 @@ void FixMultisphere::init()
   dtv = update->dt;
   dtf = 0.5 * update->dt * force->ftm2v;
   dtq = 0.5 * update->dt;
-
-  // calc MS comm properties
-  ntypes_ = modify->n_fixes_style("particletemplate/multisphere");
-  if(Vclump_) delete []Vclump_;
-  Vclump_ = new double [ntypes_+1];
-
-  for(int ifix = 0; ifix < ntypes_; ifix++)
-  {
-      FixTemplateMultisphere *ftm =  static_cast<FixTemplateMultisphere*>(modify->find_fix_style("particletemplate/multisphere",ifix));
-      int itype = ftm->type();
-      Vclump_[itype] = ftm->volexpect();
-      
-  }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -401,7 +389,29 @@ void FixMultisphere::add_remove_callback(FixRemove *ptr)
 
 void FixMultisphere::setup(int vflag)
 {
-  
+  // calc MS comm properties
+  ntypes_ = modify->n_fixes_style("particletemplate/multisphere");
+
+  ScalarContainer<int> *clumptypes = data().prop().getElementProperty<ScalarContainer<int> >("clumptype");
+  int ntypes_existing = clumptypes->max();
+
+  int nfmscfd = modify->n_fixes_style("couple/cfd/force/multisphere");
+
+  if(ntypes_existing > ntypes_ && nfmscfd > 0)
+    error->fix_error(FLERR,this,"for cfd coupling with multisphere drag force, you need to specify all "
+                                "fix particletemplate/multisphere commands in case of restart that you had in the original set-up");
+
+  if(Vclump_) delete []Vclump_;
+  Vclump_ = new double [ntypes_+1];
+
+  for(int ifix = 0; ifix < ntypes_; ifix++)
+  {
+      FixTemplateMultisphere *ftm =  static_cast<FixTemplateMultisphere*>(modify->find_fix_style("particletemplate/multisphere",ifix));
+      int itype = ftm->type();
+      Vclump_[itype] = ftm->volexpect();
+      
+  }
+
   int i,n;
   int nlocal = atom->nlocal;
 
@@ -439,7 +449,8 @@ void FixMultisphere::setup(int vflag)
       }
   }
 
-  calc_force(true);
+  comm_correct_force(true);
+  calc_force(true); 
 
 }
 
@@ -629,6 +640,13 @@ void FixMultisphere::pre_force(int)
 
 /* ---------------------------------------------------------------------- */
 
+void FixMultisphere::pre_final_integrate()
+{
+    comm_correct_force(false);
+}
+
+/* ---------------------------------------------------------------------- */
+
 void FixMultisphere::final_integrate()
 {
   double dtfm;
@@ -695,6 +713,41 @@ void FixMultisphere::final_integrate()
 }
 
 /* ----------------------------------------------------------------------
+   call to set_v, plus according fwd communication
+------------------------------------------------------------------------- */
+
+void FixMultisphere::set_v_communicate()
+{
+  
+  set_v();
+
+  rev_comm_flag_ = MS_COMM_REV_V_OMEGA;
+  reverse_comm();
+
+  fw_comm_flag_ = MS_COMM_FW_V_OMEGA;
+  forward_comm();
+}
+
+/* ----------------------------------------------------------------------
+   communicate and correct forces for multisphere bodies
+------------------------------------------------------------------------- */
+
+void FixMultisphere::comm_correct_force(bool setupflag)
+{
+    // communication and correction before real integration
+    
+    fw_comm_flag_ = MS_COMM_FW_F_TORQUE;
+    forward_comm();
+    
+    if(setupflag)
+        fix_volumeweight_ms_->do_forward_comm();
+
+    // correct forces if necessary
+    if(do_modify_body_forces_torques_)
+        modify_body_forces_torques();
+}
+
+/* ----------------------------------------------------------------------
    set space-frame coords and velocity of each atom in each rigid body
    set orientation and rotation of extended particles
    x = Q displace + Xcm, mapped back to periodic box
@@ -716,21 +769,13 @@ void FixMultisphere::calc_force(bool setupflag)
   double *masstotal = multisphere_.masstotal_.begin();
   double **fcm = multisphere_.fcm_.begin();
   double **dragforce_cm = multisphere_.dragforce_cm_.begin();
+  double **hdtorque_cm = multisphere_.hdtorque_cm_.begin();
   double **torquecm = multisphere_.torquecm_.begin();
   double *temp = multisphere_.temp_.begin();
   double *temp_old = multisphere_.temp_old_.begin();
   int nbody = multisphere_.n_body();
 
-  fw_comm_flag_ = MS_COMM_FW_F_TORQUE;
-  forward_comm();
-  
-  if(setupflag)
-    fix_volumeweight_ms_->do_forward_comm();
-
   double unwrap[3],dx,dy,dz;
-
-  if(do_modify_body_forces_torques_)
-        modify_body_forces_torques();
 
   // calculate forces and torques of bodies
   for (int i = 0; i < nlocal+nghost; i++)
@@ -842,6 +887,7 @@ void FixMultisphere::calc_force(bool setupflag)
   for (ibody = 0; ibody < nbody; ibody++)
   {
       vectorAdd3D(fcm[ibody],dragforce_cm[ibody],fcm[ibody]);
+      vectorAdd3D(torquecm[ibody],hdtorque_cm[ibody],torquecm[ibody]);
       
   }
 }
@@ -1087,7 +1133,7 @@ void FixMultisphere::pre_exchange()
     while(i < atom->nlocal)
     {
         
-        if(MathExtraLiggghts::compDouble(delflag[i],1.,1e-6))
+        if(MathExtraLiggghts::compDouble(delflag[i],1.))
         {
             
             avec->copy(atom->nlocal-1,i,1);
@@ -1163,10 +1209,17 @@ void FixMultisphere::pre_neighbor()
     int nlocal = atom->nlocal;
     delflag =   fix_delflag_->vector_atom;
     existflag = fix_existflag_->vector_atom;
+    int forceNeighbour = 0; // use int instead of bool for MPI
     for(int i = 0; i < nlocal; i++)
     {
-            delflag[i] = (MathExtraLiggghts::compDouble(existflag[i],0.,1e-6)) ? 1. : delflag[i];
+        //fprintf(screen,"On proc %d: For ilocal = %d is existflag = %g and delflag = %g \n",comm->me,i,existflag[i],delflag[i]);
+        delflag[i] = (MathExtraLiggghts::compDouble(existflag[i],0.)) ? 1. : delflag[i];
+        if (MathExtraLiggghts::compDouble(delflag[i],1.0))
+            forceNeighbour = 1;
     }
+    MPI_Max_Scalar(forceNeighbour,world);
+    if (forceNeighbour)
+        next_reneighbor = update->ntimestep + 5;
 }
 
 /* ----------------------------------------------------------------------

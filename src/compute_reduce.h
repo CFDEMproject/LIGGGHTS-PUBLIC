@@ -66,7 +66,7 @@ namespace LAMMPS_NS {
 
 class ComputeReduce : public Compute {
  public:
-  ComputeReduce(class LAMMPS *, int, char **);
+  ComputeReduce(class LAMMPS *, int &iarg, int, char **);
   virtual ~ComputeReduce();
   void init();
   double compute_scalar();

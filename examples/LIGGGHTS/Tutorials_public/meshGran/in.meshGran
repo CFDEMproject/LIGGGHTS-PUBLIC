@@ -57,7 +57,7 @@ thermo		1000
 thermo_modify	lost ignore norm no
 
 #dump commands
-dump		dmp all custom 300 post/dump*.meshGran id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+dump		dmp all custom/vtk 300 post/meshGran_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 dump 		dmpstl all mesh/stl 300 post/dump*.stl
 
 #insert particles

@@ -97,6 +97,7 @@ inline void Multisphere::reset_forces(bool extflag)
     fcm_.setAll(nbody_,0.);
     torquecm_.setAll(nbody_,0.);
     if(extflag) dragforce_cm_.setAll(nbody_,0.);
+    if(extflag) hdtorque_cm_.setAll(nbody_,0.);
 }
 
 /* ---------------------------------------------------------------------- */

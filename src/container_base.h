@@ -44,6 +44,8 @@
 #ifndef LMP_CONTAINER_BASE_H
 #define LMP_CONTAINER_BASE_H
 
+#include <string>
+#include <list>
 #include <string.h>
 
 namespace LAMMPS_NS
@@ -104,6 +106,21 @@ namespace LAMMPS_NS
         RESTART_TYPE_YES,
         RESTART_TYPE_NO};
 
+    // return status of checkBorderElement{Left,Right} in multi_node_mesh_parallel
+    // also enables container properties to be wrapped around periodic boundaries
+    // e.g. node positions of triangles
+    enum
+    {
+        NOT_GHOST               = 0,
+        IS_GHOST                = 1<<0,
+        IS_GHOST_WRAP_DIM_0_NEG = 1<<1,
+        IS_GHOST_WRAP_DIM_0_POS = 1<<2,
+        IS_GHOST_WRAP_DIM_1_NEG = 1<<3,
+        IS_GHOST_WRAP_DIM_1_POS = 1<<4,
+        IS_GHOST_WRAP_DIM_2_NEG = 1<<5,
+        IS_GHOST_WRAP_DIM_2_POS = 1<<6
+    };
+
   /* ----------------------------------------------------------------------
    class definitions
   ------------------------------------------------------------------------- */
@@ -119,8 +136,8 @@ namespace LAMMPS_NS
           void setProperties(const char *_id, const char* _comm, const char* _ref, const char *_restart,int _scalePower = 1);
           bool propertiesSetCorrectly();
 
-          void setContainerStatistics(double _weighting_factor, class ContainerBase *_cb_stat, class ContainerBase *_cb_scale,
-                                      class ContainerBase *_cb_red_scale = 0, bool _forget = true);
+          void setContainerStatistics(const double _weighting_factor, class ContainerBase *_cb_stat, class ContainerBase * const _cb_scale,
+                                      class ContainerBase * const _cb_scale_avg = 0, const bool _enable_favre = false);
 
           inline const char* id()
           {return id_; }
@@ -131,8 +148,15 @@ namespace LAMMPS_NS
           inline bool doNotReset()
           { return doNotReset_; }
 
+          inline void setWrapPeriodic(bool wrap)
+          { wrapPeriodic_ = wrap; }
+
+          inline bool wrapPeriodic()
+          { return wrapPeriodic_; }
+
           inline void id(char *_id);
           inline bool matches_id(const char *_id);
+          inline bool matches_any_id(std::list<std::string> * ids);
 
           virtual bool isDoubleData() = 0;
           virtual bool isIntData() = 0;
@@ -160,16 +184,14 @@ namespace LAMMPS_NS
           { return (container_statistics_raw_data_!=0); }
           bool calcStatistics();
           bool updateScalingContainer();
-          bool normalizeStatistics();
           virtual bool calcAvgFromContainer() = 0;
           virtual bool calcMeanSquareFromContainer() = 0;
           virtual bool calcSumFromContainer() = 0;
-          virtual bool normalizeContainer() = 0;
 
           virtual void scale(double factor) = 0;
-          virtual void move(double *dx) = 0;
-          virtual void moveElement(int i,double *dx) = 0;
-          virtual void rotate(double *dQ) = 0;
+          virtual void move(const double * const dx) = 0;
+          virtual void moveElement(const int i, const double * const dx) = 0;
+          virtual void rotate(const double * const dQ) = 0;
 
           virtual void setToDefault(int n) = 0;
           virtual void setAllToZero() = 0;
@@ -189,9 +211,6 @@ namespace LAMMPS_NS
           inline void setWeightingFactor(double _value)
           { weighting_factor_ = _value; }
 
-          inline void setAveragingForget(bool _value)
-          {  averaging_forget_ = _value; }
-
           inline int communicationType() const
           { return communicationType_; }
 
@@ -206,7 +225,7 @@ namespace LAMMPS_NS
 
           virtual int elemListBufSize(int n, int operation = OPERATION_UNDEFINED,
                             bool scale=false,bool translate=false, bool rotate=false) = 0;
-          virtual int pushElemListToBuffer(int n, int *list, double *buf, int operation,
+          virtual int pushElemListToBuffer(int n, int *list, int *wraplist, double *buf, int operation, double *dlo, double *dhi,
                            bool scale=false,bool translate=false, bool rotate=false) = 0;
           virtual int popElemListFromBuffer(int first, int n, double *buf, int operation,
                            bool scale=false,bool translate=false, bool rotate=false) = 0;
@@ -254,14 +273,22 @@ namespace LAMMPS_NS
           class ContainerBase *container_statistics_raw_data_;
 
           class ContainerBase *container_statistics_scale_data_;
-          class ContainerBase *container_statistics_reduced_scale_data_;
+          class ContainerBase *container_statistics_scale_average_data_;
 
           int statLevel_;
           double weighting_factor_;
 
           bool scalingContainer_;
 
-          bool averaging_forget_;
+          // Enable favre averaged time averaging
+          bool enable_favre_;
+
+          // ignore zero values for averaging
+          // default is false
+
+          // Decides whether a property is shifted when a periodic boundary is encountered
+          // in pushElemListToBuffer
+          bool wrapPeriodic_;
 
      private:
 

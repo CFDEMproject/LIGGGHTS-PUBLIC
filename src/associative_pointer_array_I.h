@@ -313,16 +313,15 @@
 
       for(int j=1;j<=maxLevel;j++)
       {
-          for(int i=0;i<numElem_;i++)
-              if( (content_[i]->getStatLevel() == j) && (content_[i]->isStatisticsContainer() && !(content_[i]->isScalingContainer())))
-                  ret = ret && content_[i]->calcStatistics();
-
+          // update scaling containers first by calculating their average
           for(int i=0;i<numElem_;i++)
               if( (content_[i]->getStatLevel() == j) && (content_[i]->isStatisticsContainer() && content_[i]->isScalingContainer()))
                   ret = ret && content_[i]->updateScalingContainer();
+
+          // compute statistics for variables
           for(int i=0;i<numElem_;i++)
-              if( (content_[i]->getStatLevel() == j) && (content_[i]->isStatisticsContainer() && (!content_[i]->isScalingContainer())))
-                  ret = ret && content_[i]->normalizeStatistics();
+              if( (content_[i]->getStatLevel() == j) && (content_[i]->isStatisticsContainer() && !(content_[i]->isScalingContainer())))
+                  ret = ret && content_[i]->calcStatistics();
       }
 
       // return false if any returns false
@@ -409,7 +408,7 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  void AssociativePointerArray<T>::rotate(double *dQ)
+  void AssociativePointerArray<T>::rotate(const double * const dQ)
   {
       for(int i = 0; i < numElem_; i++)
         content_[i]->rotate(dQ);
@@ -423,14 +422,14 @@
   }
 
   template<typename T>
-  void AssociativePointerArray<T>::move(double *delta)
+  void AssociativePointerArray<T>::move(const double * const delta)
   {
       for(int i = 0; i < numElem_;i++)
         content_[i]->move(delta);
   }
 
   template<typename T>
-  void AssociativePointerArray<T>::moveElement(int n,double *delta)
+  void AssociativePointerArray<T>::moveElement(const int n, const double * const delta)
   {
       for(int i = 0; i < numElem_;i++)
         content_[i]->moveElement(n,delta);
@@ -481,39 +480,49 @@
   }
 
   template<typename T>
-  int AssociativePointerArray<T>::pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int AssociativePointerArray<T>::pushElemListToBuffer(int n, int *list, int *wraplist, double *buf, int operation, std::list<std::string> * properties, double *dlo, double *dhi,bool scale,bool translate, bool rotate)
   {
-    int nsend = 0;
-    for(int i=0;i<numElem_;i++)
-      nsend += getBasePointerByIndex(i)->pushElemListToBuffer(n,list,&buf[nsend],operation,scale,translate,rotate);
-    return nsend;
+      int nsend = 0;
+      for(int i=0;i<numElem_;i++)
+      {
+          if (!properties || getBasePointerByIndex(i)->matches_any_id(properties))
+              nsend += getBasePointerByIndex(i)->pushElemListToBuffer(n,list, wraplist, &buf[nsend],operation, dlo, dhi, scale,translate,rotate);
+      }
+      return nsend;
   }
 
   template<typename T>
-  int AssociativePointerArray<T>::popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int AssociativePointerArray<T>::popElemListFromBuffer(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate)
   {
-    int nrecv = 0;
-    for(int i=0;i<numElem_;i++)
-      nrecv += getBasePointerByIndex(i)->popElemListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
-    return nrecv;
+      int nrecv = 0;
+      for(int i=0;i<numElem_;i++)
+          if (!properties || getBasePointerByIndex(i)->matches_any_id(properties))
+              nrecv += getBasePointerByIndex(i)->popElemListFromBuffer(first,n,&buf[nrecv],operation,scale,translate,rotate);
+      return nrecv;
   }
 
   template<typename T>
-  int AssociativePointerArray<T>::pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int AssociativePointerArray<T>::pushElemListToBufferReverse(int first, int n, double *buf, int operation, std::list<std::string> * properties,bool scale,bool translate, bool rotate)
   {
-    int nrecv = 0;
-    for(int i=0;i<numElem_;i++)
-      nrecv += getBasePointerByIndex(i)->pushElemListToBufferReverse(first,n,&buf[nrecv],operation,scale,translate,rotate);
-    return nrecv;
+      int nsend = 0;
+      for(int i=0;i<numElem_;i++)
+      {
+          if (!properties || getBasePointerByIndex(i)->matches_any_id(properties))
+              nsend += getBasePointerByIndex(i)->pushElemListToBufferReverse(first,n,&buf[nsend],operation,scale,translate,rotate);
+      }
+      return nsend;
   }
 
   template<typename T>
-  int AssociativePointerArray<T>::popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate)
+  int AssociativePointerArray<T>::popElemListFromBufferReverse(int n, int *list, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate)
   {
-    int nsend = 0;
-    for(int i=0;i<numElem_;i++)
-      nsend += getBasePointerByIndex(i)->popElemListFromBufferReverse(n,list,&buf[nsend],operation,scale,translate,rotate);
-    return nsend;
+      int nrecv = 0;
+      for(int i=0;i<numElem_;i++)
+      {
+          if (!properties || getBasePointerByIndex(i)->matches_any_id(properties))
+              nrecv += getBasePointerByIndex(i)->popElemListFromBufferReverse(n,list,&buf[nrecv],operation,scale,translate,rotate);
+      }
+      return nrecv;
   }
 
   /* ----------------------------------------------------------------------
@@ -521,11 +530,14 @@
   ------------------------------------------------------------------------- */
 
   template<typename T>
-  int AssociativePointerArray<T>::elemBufSize(int operation,bool scale,bool translate,bool rotate)
+  int AssociativePointerArray<T>::elemBufSize(int operation, std::list<std::string> * properties, bool scale,bool translate,bool rotate)
   {
     int buf_size = 0;
     for(int i=0;i<numElem_;i++)
-      buf_size += getBasePointerByIndex(i)->elemBufSize(operation,scale,translate,rotate);
+    {
+        if (!properties || getBasePointerByIndex(i)->matches_any_id(properties))
+            buf_size += getBasePointerByIndex(i)->elemBufSize(operation,scale,translate,rotate);
+    }
     return buf_size;
   }
 

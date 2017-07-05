@@ -66,10 +66,12 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-DumpATOMVTK::DumpATOMVTK(LAMMPS *lmp, int narg, char **arg) : Dump(lmp, narg, arg)
+DumpATOMVTK::DumpATOMVTK(LAMMPS *lmp, int narg, char **arg) :
+    Dump(lmp, narg, arg),
+    tmpEXP(lmp)
 {
   if (narg != 5) error->all(FLERR,"Illegal dump command");
-  if (binary || multiproc) error->all(FLERR,"Invalid dump filename");
+  if (multiproc) error->all(FLERR,"Invalid dump filename");
 
   sortBuffer = new SortBuffer(lmp, true);
 
@@ -237,7 +239,9 @@ void DumpATOMVTK::vtkExportData::setFileName(const char * fileName) {
 
 /* ---------------------------------------------------------------------- */
 
-DumpATOMVTK::vtkExportData::vtkExportData() {
+DumpATOMVTK::vtkExportData::vtkExportData(LAMMPS *lmp) :
+    DumpVTK(lmp)
+{
   _setFileName=false;
 }
 /* ---------------------------------------------------------------------- */
@@ -322,7 +326,7 @@ void DumpATOMVTK::vtkExportData::writeSER() {
   spheresUg->GetPointData()->AddArray(spheresForce);
 
   vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
-  writer->SetDataModeToAscii();
+  setVtkWriterOptions(vtkXMLWriter::SafeDownCast(writer));
 #if VTK_MAJOR_VERSION < 6
   writer->SetInput(spheresUg);
 #else
@@ -366,4 +370,23 @@ void DumpATOMVTK::setFileCurrent() {
     *ptr = '*';
   }
 }
+
+/* ---------------------------------------------------------------------- */
+
+int DumpATOMVTK::vtkExportData::modify_param(int narg, char **arg)
+{
+    const int mvtk = DumpVTK::modify_param(narg, arg);
+    if (mvtk > 0)
+        return mvtk;
+
+    return 0;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int DumpATOMVTK::modify_param(int narg, char **arg)
+{
+    return tmpEXP.modify_param(narg, arg);
+}
+
 #endif

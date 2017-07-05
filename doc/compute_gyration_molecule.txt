@@ -10,10 +10,11 @@ compute gyration/molecule command :h3
 
 [Syntax:]
 
-compute ID group-ID gyration/molecule keyword value ... :pre
+compute ID group-ID gyration/molecule general_keyword general_values keyword value ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 gyration/molecule = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
 zero or more keyword/value pairs may be appended :l
 keyword = {tensor} :l
   {tensor} value = none :pre

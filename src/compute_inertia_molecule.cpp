@@ -54,11 +54,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeInertiaMolecule::
-ComputeInertiaMolecule(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeInertiaMolecule::ComputeInertiaMolecule(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute inertia/molecule command");
+  if (narg != iarg) error->all(FLERR,"Illegal compute inertia/molecule command");
 
   if (atom->molecular == 0)
     error->all(FLERR,"Compute inertia/molecule requires molecular atom style");

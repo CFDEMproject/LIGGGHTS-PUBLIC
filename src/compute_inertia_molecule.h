@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeInertiaMolecule : public Compute {
  public:
-  ComputeInertiaMolecule(class LAMMPS *, int, char **);
+  ComputeInertiaMolecule(class LAMMPS *, int &iarg, int, char **);
   ~ComputeInertiaMolecule();
   void init();
   void compute_array();

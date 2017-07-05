@@ -83,6 +83,7 @@
 #include "accelerator_cuda.h"
 #include "error.h"
 #include "memory.h"
+#include "signal_handling.h"
 
 #ifdef _OPENMP
 #include "omp.h"
@@ -257,6 +258,9 @@ void Input::file()
       sprintf(str,"Unknown command: %s",line);
       error->all(FLERR,str);
     }
+
+    if (SignalHandler::request_quit)
+        return;
   }
 }
 
@@ -611,6 +615,7 @@ int Input::execute_command()
   else if (!strcmp(command,"run_style")) run_style();
   else if (!strcmp(command,"soft_particles")) soft_particles(); 
   else if (!strcmp(command,"hard_particles")) hard_particles();
+  else if (!strcmp(command,"write_restart_on_signal")) write_restart_on_signal();
   else if (!strcmp(command,"special_bonds")) special_bonds();
   else if (!strcmp(command,"suffix")) suffix();
   else if (!strcmp(command,"thermo")) thermo();
@@ -751,7 +756,12 @@ void Input::ifthenelse()
     }
 
     ifthenelse_flag = 1;
-    for (int i = 0; i < ncommands; i++) one(commands[i]);
+    for (int i = 0; i < ncommands; i++)
+    {
+        one(commands[i]);
+        if (SignalHandler::request_quit)
+            break;
+    }
     ifthenelse_flag = 0;
 
     for (int i = 0; i < ncommands; i++) delete [] commands[i];
@@ -861,7 +871,12 @@ void Input::jump()
   }
 
   if (me == 0) {
-    if (strcmp(arg[0],"SELF") == 0) rewind(infile);
+    if (strcmp(arg[0],"SELF") == 0)
+    {
+        if (infile == stdin)
+            error->one(FLERR, "jump SELF is not allowed when using stdin, use -in instead");
+        rewind(infile);
+    }
     else {
       if (infile != stdin) fclose(infile);
       infile = fopen(arg[0],"r");
@@ -1575,6 +1590,19 @@ void Input::run_style()
   if (domain->box_exist == 0)
     error->all(FLERR,"Run_style command before simulation box is defined");
   update->create_integrate(narg,arg,lmp->suffix);
+}
+
+/* ---------------------------------------------------------------------- */
+void Input::write_restart_on_signal()
+{
+   if(narg != 1)
+      error->all(FLERR,"write_restart_on_signal expects 'yes' or 'no'");
+   if(0 == strcmp(arg[0],"yes"))
+      SignalHandler::enable_restart_writing = true;
+   else if(0 == strcmp(arg[0],"no"))
+      SignalHandler::enable_restart_writing = false;
+   else
+      error->all(FLERR,"write_restart_on_signal expects 'yes' or 'no'");
 }
 
 /* ---------------------------------------------------------------------- */

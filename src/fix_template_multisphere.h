@@ -65,7 +65,7 @@ class FixTemplateMultisphere : public FixTemplateMultiplespheres {
   virtual void randomize_single();
 
   // called at multi insertion
-  void init_ptilist(int);
+  void init_ptilist(int n_random_max, const bool enforce_single = false, FixPropertyAtom * const fix_release = NULL);
   void delete_ptilist();
   void randomize_ptilist(int ,int ,int);
 

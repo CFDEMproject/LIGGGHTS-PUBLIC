@@ -106,10 +106,10 @@ namespace MathExtra {
   int mldivide3(const double mat[3][3], const double *vec, double *ans);
   int jacobi(double matrix[3][3], double *evalues, double evectors[3][3]);
   int jacobi(double **matrix, double *evalues, double **evectors);
-  void rotate(double matrix[3][3], int i, int j, int k, int l,
-              double s, double tau);
-  void rotate(double **matrix, int i, int j, int k, int l,
-              double s, double tau);
+  void rotate(double matrix[3][3], const int i, const int j, const int k, const int l,
+              const double s, const double tau);
+  void rotate(double * const * const matrix, const int i, const int j, const int k, const int l,
+              const double s, const double tau);
   void richardson(double *q, double *m, double *w, double *moments, double dtq);
 
   // shape matrix operations
@@ -124,7 +124,7 @@ namespace MathExtra {
   inline void qconjugate(double *q, double *qc);
   inline void vecquat(double *a, double *b, double *c);
   inline void quatvec(double *a, double *b, double *c);
-  inline void quatquat(double *a, double *b, double *c);
+  inline void quatquat(const double * const a, const double * const b, double * const c);
   inline void invquatvec(double *a, double *b, double *c);
   inline void axisangle_to_quat(const double *v, const double angle,
                                 double *quat);
@@ -593,7 +593,7 @@ void MathExtra::quatvec(double *a, double *b, double *c)
    quaternion-quaternion multiply: c = a*b
 ------------------------------------------------------------------------- */
 
-void MathExtra::quatquat(double *a, double *b, double *c)
+void MathExtra::quatquat(const double * const a, const double * const b, double * const c)
 {
   c[0] = a[0]*b[0] - a[1]*b[1] - a[2]*b[2] - a[3]*b[3];
   c[1] = a[0]*b[1] + b[0]*a[1] + a[2]*b[3] - a[3]*b[2];

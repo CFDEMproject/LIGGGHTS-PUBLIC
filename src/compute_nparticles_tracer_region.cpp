@@ -57,8 +57,8 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeNparticlesTracerRegion::ComputeNparticlesTracerRegion(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg),
+ComputeNparticlesTracerRegion::ComputeNparticlesTracerRegion(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg),
   image_dim_(-1),       // turned off
   image_no_(-1),
   reset_marker_(true),
@@ -66,10 +66,7 @@ ComputeNparticlesTracerRegion::ComputeNparticlesTracerRegion(LAMMPS *lmp, int na
   idregion_count_(0),
   fix_tracer_(0)
 {
-    int iarg = 3;
-
     // parse args
-
     bool hasargs = true;
     while(iarg < narg && hasargs)
     {

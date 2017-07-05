@@ -56,6 +56,7 @@ DumpStyle(custom/vtk,DumpCustomVTK)
 #define LMP_DUMP_CUSTOM_VTK_H
 
 #include "dump.h"
+#include "dump_vtk.h"
 #include "dump_particle.h"
 #include <map>
 #include <set>
@@ -85,7 +86,8 @@ namespace LAMMPS_NS {
  * This dump command does not support compressed files, buffering or custom format strings,
  * multiproc is only supported by the xml formats, multifile option has to be used.
  */
-class DumpCustomVTK : public Dump {
+class DumpCustomVTK : public Dump, public DumpVTK
+{
  public:
   DumpCustomVTK(class LAMMPS *, int, char **);
   virtual ~DumpCustomVTK();

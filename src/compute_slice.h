@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeSlice : public Compute {
  public:
-  ComputeSlice(class LAMMPS *, int, char **);
+  ComputeSlice(class LAMMPS *, int &iarg, int, char **);
   virtual ~ComputeSlice();
   void init();
   void compute_vector();

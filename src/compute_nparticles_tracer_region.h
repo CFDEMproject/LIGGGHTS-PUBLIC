@@ -56,7 +56,7 @@ class ComputeNparticlesTracerRegion : public Compute {
 
  public:
 
-  ComputeNparticlesTracerRegion(class LAMMPS *, int, char **);
+  ComputeNparticlesTracerRegion(class LAMMPS *, int &iarg, int, char **);
   ~ComputeNparticlesTracerRegion();
 
   void init();

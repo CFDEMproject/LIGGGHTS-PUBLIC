@@ -104,6 +104,7 @@ using namespace LAMMPS_NS;
 
 DumpCustomVTM::DumpCustomVTM(LAMMPS *lmp, int narg, char **arg) :
     Dump(lmp, narg, arg),
+    DumpVTK(lmp),
     nevery(0),
     filecurrent(NULL),
     parallelfilecurrent(NULL),
@@ -472,6 +473,7 @@ void DumpCustomVTM::write()
     if (multiproc)
     {
         vtkSmartPointer<vtkXMLPMultiBlockDataWriter> pwriter = vtkSmartPointer<vtkXMLPMultiBlockDataWriter>::New();
+        setVtkWriterOptions(vtkXMLWriter::SafeDownCast(pwriter));
         pwriter->SetFileName(parallelfilecurrent);
 
 #if VTK_MAJOR_VERSION < 6
@@ -485,6 +487,7 @@ void DumpCustomVTM::write()
     else if (comm->me == 0 || comm->nprocs == 1)
     {
         vtkSmartPointer<vtkXMLMultiBlockDataWriter> mbWriter = vtkXMLMultiBlockDataWriter::New();
+        setVtkWriterOptions(vtkXMLWriter::SafeDownCast(mbWriter));
         mbWriter->SetFileName(filecurrent);
 #if VTK_MAJOR_VERSION < 6
         mbWriter->SetInput(mbSet);
@@ -573,6 +576,10 @@ void DumpCustomVTM::write()
 
 int DumpCustomVTM::modify_param(int narg, char **arg)
 {
+    const int mvtk = DumpVTK::modify_param(narg, arg);
+    if (mvtk > 0)
+        return mvtk;
+
     return dumpParticle->modify_param(narg, arg);
 }
 

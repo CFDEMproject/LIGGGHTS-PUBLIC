@@ -74,8 +74,8 @@ enum{PERATOM,LOCAL};
 
 /* ---------------------------------------------------------------------- */
 
-ComputeReduceRegion::ComputeReduceRegion(LAMMPS *lmp, int narg, char **arg) :
-  ComputeReduce(lmp, narg, arg) {}
+ComputeReduceRegion::ComputeReduceRegion(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  ComputeReduce(lmp, iarg, narg, arg) {}
 
 /* ----------------------------------------------------------------------
    calculate reduced value for one input M and return it

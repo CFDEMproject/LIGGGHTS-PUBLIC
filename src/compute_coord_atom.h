@@ -64,7 +64,7 @@ namespace LAMMPS_NS {
 
 class ComputeCoordAtom : public Compute {
  public:
-  ComputeCoordAtom(class LAMMPS *, int, char **);
+  ComputeCoordAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputeCoordAtom();
   void init();
   void init_list(int, class NeighList *);

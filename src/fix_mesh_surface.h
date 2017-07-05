@@ -174,6 +174,12 @@ namespace LAMMPS_NS
 
       protected:
 
+        int getCreateMeshTriCount()
+        { return extrusion_tri_count_; }
+
+        double * getCreateMeshTriNode(const int i)
+        { return &(extrusion_tri_nodes_[i*3]); }
+
         class FixContactHistoryMesh *fix_contact_history_mesh_;
         class FixNeighlistMesh *fix_mesh_neighlist_;
         class FixContactPropertyAtomWall *fix_meshforce_contact_;
@@ -211,6 +217,13 @@ namespace LAMMPS_NS
         // mesh curvature
         double curvature_;
         bool curvature_tolerant_;
+
+        // extrude mesh
+        bool extrude_mesh_;
+        double extrusion_length_;
+        int extrusion_tri_count_;
+        double *extrusion_tri_nodes_;
+        bool extrusion_created_;
 
         // active mesh modules
         typedef MeshModule *(*MeshModuleCreator)(LAMMPS *lmp, int &iarg_, int narg, char **arg, FixMeshSurface *fix_mesh);

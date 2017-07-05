@@ -116,7 +116,7 @@ void lammps_close(void *ptr)
    process an input script in filename str
 ------------------------------------------------------------------------- */
 
-void lammps_file(void *ptr, char *str)
+void lammps_file(void *ptr, const char *str)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;
   lmp->input->file(str);
@@ -126,7 +126,7 @@ void lammps_file(void *ptr, char *str)
    process a single input command in str
 ------------------------------------------------------------------------- */
 
-char *lammps_command(void *ptr, char *str)
+char *lammps_command(void *ptr, const char *str)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;
   return lmp->input->one(str);
@@ -156,7 +156,7 @@ void lammps_free(void *ptr)
    customize by adding names
 ------------------------------------------------------------------------- */
 
-void *lammps_extract_global(void *ptr, char *name)
+void *lammps_extract_global(void *ptr, const char *name)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;
 
@@ -203,7 +203,7 @@ void *lammps_extract_global(void *ptr, char *name)
    customize by adding names to Atom::extract()
 ------------------------------------------------------------------------- */
 
-void *lammps_extract_atom(void *ptr, char *name)
+void *lammps_extract_atom(void *ptr, const char *name)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;
   return lmp->atom->extract(name);
@@ -230,7 +230,7 @@ void *lammps_extract_atom(void *ptr, char *name)
      so caller must insure that it is OK
 ------------------------------------------------------------------------- */
 
-void *lammps_extract_compute(void *ptr, char *id, int style, int type)
+void *lammps_extract_compute(void *ptr, const char *id, int style, int type)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;
 
@@ -314,7 +314,7 @@ void *lammps_extract_compute(void *ptr, char *id, int style, int type)
      the fix is valid, so caller must insure that it is OK
 ------------------------------------------------------------------------- */
 
-void *lammps_extract_fix(void *ptr, char *id, int style, int type,
+void *lammps_extract_fix(void *ptr, const char *id, int style, int type,
                          int i, int j)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;
@@ -432,7 +432,7 @@ int lammps_get_natoms(void *ptr)
    data must be pre-allocated by caller to correct length
 ------------------------------------------------------------------------- */
 
-void lammps_gather_atoms(void *ptr, char *name,
+void lammps_gather_atoms(void *ptr, const char *name,
                          int type, int count, void *data)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;
@@ -520,7 +520,7 @@ void lammps_gather_atoms(void *ptr, char *name,
      e.g. x[0][0],x[0][1],x[0][2],x[1][0],x[1][1],x[1][2],x[2][0],...
 ------------------------------------------------------------------------- */
 
-void lammps_scatter_atoms(void *ptr, char *name,
+void lammps_scatter_atoms(void *ptr, const char *name,
                           int type, int count, void *data)
 {
   LAMMPS *lmp = (LAMMPS *) ptr;

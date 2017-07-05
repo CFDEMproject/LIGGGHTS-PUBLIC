@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputePE : public Compute {
  public:
-  ComputePE(class LAMMPS *, int, char **);
+  ComputePE(class LAMMPS *, int &iarg, int, char **);
   ~ComputePE() {}
   void init() {}
   double compute_scalar();

@@ -97,7 +97,7 @@ namespace LAMMPS_NS
                                             double *delta, double &segmentParameter,int &barysign);
         double resolveTriSegmentContactBary(int iPart, int nTri, double *line, double *cLine, double length, double cylRadius,
                                             double *delta, double  &segmentParameter, double *bary,int &barysign);
-        bool resolveTriSegmentNeighbuild(int nTri, double *line, double *cLine, double length, double cylRadius, double treshold);
+        bool resolveTriSegmentNeighbuild(int nTri, double *cLine, double length, double cylRadius, double treshold);
         // Extra for Line Contact Calculation ********
         #endif
 

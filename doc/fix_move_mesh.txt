@@ -16,7 +16,7 @@ ID is documented in "fix"_fix.html command, group-ID is ignored :ulb,l
 move/mesh = style name of this fix command :l
 mesh = obligatory keyword :l
 mesh-ID = ID for the fix mesh that the fix move/mesh is applied to :l
-style = {linear} or {linear/variable} or {wiggle} or {riggle} or {rotate} or {rotate/variable} or {viblin} or {vibrot} :l
+style = {linear} or {linear/variable} or {wiggle} or {riggle} or {rotate} or {rotate/variable} or {viblin} or {vibrot} or {file} :l
   {linear} args = Vx Vy Vz
     Vx,Vy,Vz = components of velocity vector (velocity units)
   {linear/variable} args = var_Vx var_Vy var_Vz
@@ -73,6 +73,8 @@ style = {linear} or {linear/variable} or {wiggle} or {riggle} or {rotate} or {ro
     p1, ...,pn = phase of functionterm (rad) (number of terms is equivalent to order n)
     period = obligatory keyword
     per_1, ..., per_n = period of rotation (time units) :pre
+
+  {file} args = discussed on "fix move/mesh file"_fix_move_mesh_file.html doc page (might not be available) :pre
 :ule
 
 [Examples:]
@@ -184,6 +186,10 @@ Example: A mesh should rotate around a central axis and additionally
 revolve around its center of mass. The first move command should be
 the rotation around the central axis, the second move command the
 revolution around the center of mass of the mesh.
+
+Note, because of this the order of these fixes is important. A rotate mover that
+comes before a linear mover would have a fixed center of rotation, whereas in
+the opposite case the center of rotation would move linearly with the object.
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 

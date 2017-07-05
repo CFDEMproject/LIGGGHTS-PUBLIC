@@ -468,8 +468,8 @@ void HistoryData::save_contact_property_atom(const int i, const int jj, const in
         cpa->add_partner(j, tag[i], surfPos_ji);
     } else if (type == 'm') {
         const FixContactHistoryMesh * const fix_history = static_cast<FixContactHistoryMesh*>(fix_ptr);
-        const int iTri = fix_history->get_partner_iTri(i, jj);
-        cpa->add_partner(i, iTri, surfPos_ij);
+        const int idTri = fix_history->get_partner_idTri(i, jj);
+        cpa->add_partner(i, idTri, surfPos_ij);
     } else {
         // only add if we have a surfpos != 0
         const double lenSurfPos = vectorMag3DSquared(surfPos_ij);

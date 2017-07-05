@@ -58,14 +58,24 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeKE::ComputeKE(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeKE::ComputeKE(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+    Compute(lmp, iarg, narg, arg),
+    pfactor(1.0),
+    halfstep(false),
+    fix_ms(NULL)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute ke command");
+    if (narg < iarg || narg > iarg+1) error->all(FLERR,"Illegal compute ke command");
 
-  scalar_flag = 1;
-  extscalar = 1;
-  fix_ms = NULL; 
+    if (narg == iarg+1)
+    {
+        if (strcmp(arg[iarg++], "halfstep") == 0)
+            halfstep = true;
+        else
+            error->all(FLERR,"Illegal compute ke option");
+    }
+
+    scalar_flag = 1;
+    extscalar = 1;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -80,34 +90,45 @@ void ComputeKE::init()
 
 double ComputeKE::compute_scalar()
 {
-  invoked_scalar = update->ntimestep;
+    invoked_scalar = update->ntimestep;
 
-  double **v = atom->v;
-  double *rmass = atom->rmass;
-  double *mass = atom->mass;
-  int *mask = atom->mask;
-  int *type = atom->type;
-  int nlocal = atom->nlocal;
+    double **v = atom->v;
+    double **f = atom->f;
+    double *rmass = atom->rmass;
+    double *mass = atom->mass;
+    int *mask = atom->mask;
+    int *type = atom->type;
+    int nlocal = atom->nlocal;
 
-  double ke = 0.0;
+    double ke = 0.0;
 
-  if (rmass) {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit && (!fix_ms || fix_ms->belongs_to(i) < 0))
-        ke += rmass[i] * (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
-  } else {
-    for (int i = 0; i < nlocal; i++)
-      if (mask[i] & groupbit)
-        ke += mass[type[i]] *
-          (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
-  }
+    if (rmass) {
+        for (int i = 0; i < nlocal; i++)
+        {
+            if (mask[i] & groupbit && (!fix_ms || fix_ms->belongs_to(i) < 0))
+            {
+                const double mult = halfstep ? update->dt*0.5/rmass[i] : 0.0;
+                const double v0 = v[i][0] + mult*f[i][0];
+                const double v1 = v[i][1] + mult*f[i][1];
+                const double v2 = v[i][2] + mult*f[i][2];
+                ke += rmass[i] * (v0*v0 + v1*v1 + v2*v2);
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < nlocal; i++)
+            if (mask[i] & groupbit)
+                ke += mass[type[i]] *
+                      (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]);
+    }
 
-  MPI_Allreduce(&ke,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
-  scalar *= pfactor;
+    MPI_Allreduce(&ke,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
+    scalar *= pfactor;
 
-  // for multispheres we need to get the kinetic energy from the multisphere fix
-  if (fix_ms)
-    scalar += fix_ms->extract_ke();
+    // for multispheres we need to get the kinetic energy from the multisphere fix
+    if (fix_ms)
+        scalar += fix_ms->extract_ke();
 
-  return scalar;
+    return scalar;
 }

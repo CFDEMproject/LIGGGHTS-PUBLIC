@@ -87,7 +87,6 @@ namespace MODEL_PARAMS
   static const char * ROUGHNESS_RELATIVE = "roughnessRelative";
   static const char * ROLLING_STIFFNESS = "rollingStiffness";
   static const char * NORMAL_DAMPING_COEFFICIENT = "normalDampingCoefficient";
-  static const char * TANGENTIAL_DAMPING_COEFFICIENT = "tangentialDampingCoefficient";
   static const char * TANGENTIAL_STIFFNESS = "tangentialStiffness";
   static const char * INITIAL_COHESIVE_STRESS = "initialCohesiveStress";
   static const char * MAX_COHESIVE_STRESS = "maxCohesiveStress";
@@ -999,15 +998,93 @@ namespace MODEL_PARAMS
     {
       return createPerTypePairProperty(registry, LOADING_STIFFNESS, caller);
     }
-  MatrixProperty* createMaxCohesiveStress(PropertyRegistry & registry, const char * caller, bool)
-  {
-    return createPerTypePairProperty(registry, MAX_COHESIVE_STRESS, caller);
-  }
-  /* ---------------------------------------------------------------------- */
 
-  MatrixProperty* createCohesionStrength(PropertyRegistry & registry, const char * caller, bool)
-  {
-    return createPerTypePairProperty(registry, COHESION_STRENGTH, caller);
-  }
-  /* ---------------------------------------------------------------------- */
+    MatrixProperty* createMaxCohesiveStress(PropertyRegistry & registry, const char * caller, bool)
+    {
+      return createPerTypePairProperty(registry, MAX_COHESIVE_STRESS, caller);
+    }
+
+    /* ---------------------------------------------------------------------- */
+
+    MatrixProperty* createCohesionStrength(PropertyRegistry & registry, const char * caller, bool)
+    {
+      return createPerTypePairProperty(registry, COHESION_STRENGTH, caller);
+    }
+
+    /* ---------------------------------------------------------------------- */
+
+    // Dissipation matrix creation (fiber & bond model) (1/timeScale)
+
+    MatrixProperty* createDissipationMatrix(PropertyRegistry & registry, const char * name, const char * caller, bool sanity_checks)
+    {
+        LAMMPS * lmp = registry.getLAMMPS();
+        const int max_type = registry.max_type();
+
+        MatrixProperty * matrix = new MatrixProperty(max_type+1, max_type+1);
+        FixPropertyGlobal * property = registry.getGlobalProperty(name,"property/global","peratomtypepair",max_type,max_type,caller);
+
+        for(int i=1;i< max_type+1; i++)
+        {
+            for(int j=1;j<max_type+1;j++)
+            {
+                const double gamma_one = property->compute_array(i-1,j-1);
+
+                if(sanity_checks)
+                {
+                    if(gamma_one < lmp->update->dt)
+                    {
+                        char buffer [100];
+                        sprintf(buffer,"%s > time-step size required",name);
+                        lmp->error->all(FLERR,buffer);
+                    }
+                }
+
+                matrix->data[i][j] = 1./gamma_one; //save already inverted parameter
+            }
+        }
+
+        return matrix;
+    }
+
+    /* ---------------------------------------------------------------------- */
+
+    // Attrition properties
+    MatrixProperty* createAbrasiveWearSeverity(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+    {
+        MatrixProperty* wearSeverityMatrix = MODEL_PARAMS::createPerTypePairProperty(registry, "abrasiveWearSeverity", caller);
+        return wearSeverityMatrix;
+    }
+
+    MatrixProperty* createErosiveWearSeverity(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+    {
+        MatrixProperty* wearSeverityMatrix = MODEL_PARAMS::createPerTypePairProperty(registry, "erosiveWearSeverity", caller);
+        return wearSeverityMatrix;
+    }
+
+    MatrixProperty* createVelocityLimit(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+    {
+        MatrixProperty* velocityLimitMatrix = MODEL_PARAMS::createPerTypePairProperty(registry, "velocityLimit", caller);
+        return velocityLimitMatrix;
+    }
+
+    MatrixProperty* createForceLimit(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+    {
+        MatrixProperty* forceLimitMatrix = MODEL_PARAMS::createPerTypePairProperty(registry, "forceLimit", caller);
+        return forceLimitMatrix;
+    }
+
+    VectorProperty* createAttritionLimit(PropertyRegistry & registry, const char * caller, bool sanity_checks)
+    {
+        VectorProperty* attritionLimit = MODEL_PARAMS::createPerTypeProperty(registry, "attritionLimit", caller);
+        LAMMPS *lmp = registry.getLAMMPS();
+        for (int i = 1; i < registry.max_type()+1; i++)
+        {
+            const double limit = attritionLimit->data[i];
+            if (limit < 0 || limit > 1)
+                lmp->error->all(FLERR, "Attrition limit needs to be between 0 and 1");
+        }
+        return attritionLimit;
+    }
+
+    /* ---------------------------------------------------------------------- */
 }

@@ -217,7 +217,7 @@ void MultisphereParallel::writeRestart(FILE *fp)
     bool dummy = false;
     double nba = static_cast<double>(n_body_all());
 
-    int sizeLocal = n_body() * (customValues_.elemBufSize(OPERATION_RESTART,dummy,dummy,dummy) + 4);
+    int sizeLocal = n_body() * (customValues_.elemBufSize(OPERATION_RESTART, NULL, dummy,dummy,dummy) + 4);
     int sizeGlobal = 0, sizeOne = 0;
 
     // allocate send buffer and pack element data

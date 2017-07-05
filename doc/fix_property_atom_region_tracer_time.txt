@@ -1,0 +1,74 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix property/atom/regiontracer/time command :h3
+
+[Syntax:]
+
+fix id group property/atom/regiontracer/time keyword value ... :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+property/atom/regiontracer/time = style name of this fix command   :l
+zero or more keyword/value pairs may be appended to args :l
+keyword = {add_region} or {check_region_every} :l
+  {add_region} value = {region-ID}
+    region-ID = ID of region to be added to list of regions where residence time is evaluated
+  {check_region_every} value = n
+    n = check every that many time-step if atom are in region :pre
+
+:ule
+
+[Examples:]
+
+fix tracer all property/atom/regiontracer/time add_region tracereg :pre
+
+[Description:]
+
+Fix property/atom/regiontracer/time computes the residence time of particles in
+the simulation domain and (optionally) a list of regions. 
+
+Since the look-up if a particle is in a specific region can be compuationally
+costly, keyword {check_region_every} can be used to control how often the
+region is checked. Every {check_region_every} time-steps, the lookup is
+performed and the residence time contribution for each lookup is
+dt*{check_region_every}, where dt is the time-step size. However, be careful
+not to choose this value too large, in this case you could skip particles
+passing through a region.
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+Information about this fix is written to "binary restart files"_restart.html .
+
+In case no regions are specified, this fix computes a per-atom vector 
+(the residence time of particles in the simulation domain) which can be 
+accessed by various "output commands"_Section_howto.html#howto_8.
+In case one or more optional regions are specified, this fix computes
+a per-atom array, where the first value for each particle is the residence 
+time in the simulation domain and the following values are the residence
+time in the specified regions (in the order in which the regions are
+specified).
+
+This fix computes a N-vector of residence times, where N=1+number of
+regions specified, which can be accessed by various "output
+commands"_Section_howto.html#howto_8. The vector components are the
+average residence time in the fix group for the whole simulation domain
+(first value) and for each region (following values). The order
+is following the order in which the regions are specified.
+
+[Restrictions:]
+
+Currently, this feature does not support multi-sphere particles.
+
+[Related commands:]
+
+"compute nparticles/tracer/region"_compute_nparticles_tracer_region.html
+"fix property/atom/regiontracer/distance"_fix_property_atom_region_tracer_distance.html
+
+[Default:]
+
+check_region_every = 10

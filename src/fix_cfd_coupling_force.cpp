@@ -200,7 +200,7 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
 
     // flags for vector output
     vector_flag = 1;
-    size_vector = 3;
+    size_vector = 6;
     global_freq = 1;
     extvector = 1;
 }
@@ -377,6 +377,7 @@ void FixCfdCouplingForce::init()
     }
 
     vectorZeroize3D(dragforce_total);
+    vectorZeroize3D(hdtorque_total);
 
     if (strcmp(update->integrate_style,"respa") == 0)
        error->fix_error(FLERR,this,"'run_style respa' not supported.");
@@ -405,6 +406,7 @@ void FixCfdCouplingForce::post_force(int)
   double **hdtorque = fix_hdtorque_->array_atom;
 
   vectorZeroize3D(dragforce_total);
+  vectorZeroize3D(hdtorque_total);
 
   // add dragforce to force vector
   
@@ -412,9 +414,16 @@ void FixCfdCouplingForce::post_force(int)
   {
     if (mask[i] & groupbit)
     {
-        if(use_force_) vectorAdd3D(f[i],dragforce[i],f[i]);
-        if(use_torque_) vectorAdd3D(torque[i],hdtorque[i],torque[i]);
-        vectorAdd3D(dragforce_total,dragforce[i],dragforce_total);
+        if(use_force_)
+        {
+            vectorAdd3D(f[i],dragforce[i],f[i]);
+            vectorAdd3D(dragforce_total,dragforce[i],dragforce_total);
+        }
+        if(use_torque_)
+        {
+            vectorAdd3D(torque[i],hdtorque[i],torque[i]);
+            vectorAdd3D(hdtorque_total,hdtorque[i],hdtorque_total);
+        }
     }
   }
 }
@@ -425,6 +434,14 @@ void FixCfdCouplingForce::post_force(int)
 
 double FixCfdCouplingForce::compute_vector(int n)
 {
-  MPI_Sum_Vector(dragforce_total,3,world);
-  return dragforce_total[n];
+  if(n < 3)
+  {
+    double dragtotal = dragforce_total[n];
+    MPI_Sum_Scalar(dragtotal,world);
+    return dragforce_total[n];
+  }
+
+  double hdtorque = hdtorque_total[n-3];
+  MPI_Sum_Scalar(hdtorque,world);
+  return hdtorque;
 }

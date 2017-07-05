@@ -47,6 +47,7 @@ ROLLING_MODEL(ROLLING_CDT,cdt,1)
 #ifndef ROLLING_MODEL_CDT_H_
 #define ROLLING_MODEL_CDT_H_
 #include "contact_models.h"
+#include "rolling_model_base.h"
 #include <algorithm>
 #include <math.h>
 #include "math_extra_liggghts.h"
@@ -57,12 +58,10 @@ namespace ContactModels
   using namespace LAMMPS_NS;
 
   template<>
-  class RollingModel<ROLLING_CDT> : protected Pointers {
+  class RollingModel<ROLLING_CDT> : public RollingModelBase {
   public:
-    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
-
-    RollingModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) :
-        Pointers(lmp), coeffRollFrict(NULL)
+    RollingModel(LAMMPS * lmp, IContactHistorySetup * hsetup, class ContactModelBase * c) :
+        RollingModelBase(lmp, hsetup, c), coeffRollFrict(NULL)
     {
       
     }

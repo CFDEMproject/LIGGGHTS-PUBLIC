@@ -76,7 +76,7 @@ int liggghts_get_maxtag_ms(void *ptr)
   // so just return # of bodies
 
   LAMMPS *lmp = (LAMMPS *) ptr;
-  FixMultisphere *fix_ms = static_cast<FixMultisphere*>(lmp->modify->find_fix_style_strict("multisphere",0));
+  FixMultisphere *fix_ms = static_cast<FixMultisphere*>(lmp->modify->find_fix_style("multisphere",0));
   if(!fix_ms) return 0;
   return fix_ms->tag_max_body();
 }
@@ -89,7 +89,7 @@ int liggghts_get_ntypes_ms(void *ptr)
   // so just return # of bodies
 
   LAMMPS *lmp = (LAMMPS *) ptr;
-  FixMultisphere *fix_ms = static_cast<FixMultisphere*>(lmp->modify->find_fix_style_strict("multisphere",0));
+  FixMultisphere *fix_ms = static_cast<FixMultisphere*>(lmp->modify->find_fix_style("multisphere",0));
   if(!fix_ms) return 0;
   return fix_ms->ntypes();
 }
@@ -102,7 +102,7 @@ double* liggghts_get_vclump_ms(void *ptr)
   // so just return # of bodies
 
   LAMMPS *lmp = (LAMMPS *) ptr;
-  FixMultisphere *fix_ms = static_cast<FixMultisphere*>(lmp->modify->find_fix_style_strict("multisphere",0));
+  FixMultisphere *fix_ms = static_cast<FixMultisphere*>(lmp->modify->find_fix_style("multisphere",0));
   if(!fix_ms) return 0;
   return fix_ms->vclump();
 }
@@ -124,7 +124,7 @@ void* locate_coupling_fix(void *ptr)
 
 /* ---------------------------------------------------------------------- */
 
-void data_liggghts_to_of(char *name,char *type,void *ptr,void *&data,char* datatype)
+void data_liggghts_to_of(const char *name,const char *type,void *ptr,void *&data,const char* datatype)
 {
     //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
@@ -133,7 +133,7 @@ void data_liggghts_to_of(char *name,char *type,void *ptr,void *&data,char* datat
 
 /* ---------------------------------------------------------------------- */
 
-void data_of_to_liggghts(char *name,char *type,void *ptr,void *data,char* datatype)
+void data_of_to_liggghts(const char *name,const char *type,void *ptr,void *data,const char* datatype)
 {
     //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
@@ -163,7 +163,7 @@ void allocate_external_int(int    **&data, int len2,int len1,int    initvalue,vo
 }
 /* ---------------------------------------------------------------------- */
 
-void allocate_external_int(int    **&data, int len2,char *keyword,int    initvalue,void *ptr)
+void allocate_external_int(int    **&data, int len2,const char *keyword,int    initvalue,void *ptr)
 {
     //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);
@@ -181,7 +181,7 @@ void allocate_external_double(double **&data, int len2,int len1,double initvalue
 
 /* ---------------------------------------------------------------------- */
 
-void allocate_external_double(double **&data, int len2,char* keyword,double initvalue,void *ptr)
+void allocate_external_double(double **&data, int len2,const char* keyword,double initvalue,void *ptr)
 {
     //LAMMPS *lmp = (LAMMPS *) ptr;
     FixCfdCoupling* fcfd = (FixCfdCoupling*)locate_coupling_fix(ptr);

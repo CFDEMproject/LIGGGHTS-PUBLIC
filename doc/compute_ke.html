@@ -147,11 +147,13 @@
 <span id="index-0"></span><h1>compute ke command<a class="headerlink" href="#compute-ke-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID ke</pre>
+<div class="highlight-python"><pre>compute ID group-ID ke general_keyword general_values halfstep</pre>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
 <li>ke = style name of this compute command</li>
+<li>general_keywords general_values are documented in <a class="reference external" href="compute.html&quot;">compute</a></li>
+<li>halfstep = optional keyword to save kinetic energy at half step</li>
 </ul>
 </div>
 <div class="section" id="examples">
@@ -163,8 +165,11 @@
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Define a computation that calculates the translational kinetic energy
 of a group of particles.</p>
-<p>The kinetic energy of each particle is computed as 1/2 m v^2, where m
-and v are the mass and velocity of the particle.</p>
+<p>The kinetic energy of each particle is computed as 1/2 m v^2, where m and v are
+the mass and velocity of the particle. By default the velocity is taken at the
+full time step (<em>v^i</em>). If the <em>halfstep</em> keyword is present in the definition
+of this compute, then the velocity is taken at the next half time step
+(<em>v^(i+1/2)</em>).</p>
 <p>There is a subtle difference between the quantity calculated by this
 compute and the kinetic energy calculated by the <em>ke</em>
 keyword used in thermodynamic output, as specified by the

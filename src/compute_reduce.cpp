@@ -76,23 +76,21 @@ enum{PERATOM,LOCAL};
 
 /* ---------------------------------------------------------------------- */
 
-ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeReduce::ComputeReduce(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  int iarg = 0;
   if (strcmp(style,"reduce") == 0) {
-    if (narg < 5) error->all(FLERR,"Illegal compute reduce command");
+    if (narg < iarg+2) error->all(FLERR,"Illegal compute reduce command");
     idregion = NULL;
-    iarg = 3;
   } else if (strcmp(style,"reduce/region") == 0) {
-    if (narg < 6) error->all(FLERR,"Illegal compute reduce/region command");
-    iregion = domain->find_region(arg[3]);
+    if (narg < iarg+3) error->all(FLERR,"Illegal compute reduce/region command");
+    iregion = domain->find_region(arg[iarg]);
     if (iregion == -1)
       error->all(FLERR,"Region ID for compute reduce/region does not exist");
-    int n = strlen(arg[3]) + 1;
+    int n = strlen(arg[iarg]) + 1;
     idregion = new char[n];
-    strcpy(idregion,arg[3]);
-    iarg = 4;
+    strcpy(idregion,arg[iarg]);
+    iarg++;
   } else error->all(FLERR,"Illegal compute reduce command: invalid style");
 
   if (strcmp(arg[iarg],"sum") == 0) mode = SUM;
@@ -106,11 +104,11 @@ ComputeReduce::ComputeReduce(LAMMPS *lmp, int narg, char **arg) :
 
   // parse remaining values until one isn't recognized
 
-  which = new int[narg-4];
-  argindex = new int[narg-4];
-  flavor = new int[narg-4];
-  ids = new char*[narg-4];
-  value2index = new int[narg-4];
+  which = new int[narg-iarg];
+  argindex = new int[narg-iarg];
+  flavor = new int[narg-iarg];
+  ids = new char*[narg-iarg];
+  value2index = new int[narg-iarg];
   nvalues = 0;
 
   while (iarg < narg) {

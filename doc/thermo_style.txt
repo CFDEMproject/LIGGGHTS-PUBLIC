@@ -19,7 +19,7 @@ args = list of arguments for a particular style :l
   {custom} args = list of attributes
     possible attributes = step, elapsed, elaplong, dt, time,
                           cpu, tpcpu, spcpu, cpuremain, part, cu
-                          atoms, ke,
+                          atoms, ke, erotate,
                           vol, lx, ly, lz, xlo, xhi, ylo, yhi, zlo, zhi,
 			  xy, xz, yz, xlat, ylat, zlat,
 			  pxx, pyy, pzz, pxy, pxz, pyz,
@@ -82,7 +82,7 @@ Style {custom} is the most general setting and allows you to specify
 which of the keywords listed above you want printed on each
 thermodynamic timestep.  Note that the keywords c_ID, f_ID, v_name are
 references to "computes"_compute.html, "fixes"_fix.html, and
-equal-style "variables"_variable.html" that have been defined
+equal-style "variables"_variable.html that have been defined
 elsewhere in the input script or can even be new styles which users
 have added to LIGGGHTS(R)-PUBLIC (see the "Section_modify"_Section_modify.html
 section of the documentation).  Thus the {custom} style provides a

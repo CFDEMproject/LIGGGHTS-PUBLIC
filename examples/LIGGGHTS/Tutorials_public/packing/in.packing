@@ -69,7 +69,7 @@ thermo_modify	lost ignore norm no
 
 #insert the first particles
 run		1
-dump		dmp all custom 350 post/dump*.packing id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius 
+dump		dmp all custom/vtk 350 post/packing_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius 
 unfix		ins
 
 #calculate grow rate

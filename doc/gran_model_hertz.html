@@ -166,8 +166,13 @@ model hertz [other model_type/model_name pairs as described <a class="reference 
 <em>disableNormalWhenBonded</em> values = 'on' or 'off'
   on = if the <tt class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">bond</span></tt> model is used, then the normal force is only added if the two particles are not bonded
   of = the normal force is always added if two particles overlap
+<em>computeDissipatedEnergy</em> values = 'on' or 'off'
+  on = the normal model saves the dissipated energy for each contact for the
+  use in <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/dissipated_energy</span></tt>
+  of = no values are saved
 <em>computeElasticPotential</em> values = 'on' or 'off'
-  on = the normal model saves the current elastic potential for each contact for the use in <tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">elastic_potential</span></tt>
+  on = the normal model saves the current elastic potential for each contact
+  for the use in <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/normal_elastic_energy</span></tt>
   of = no values are saved
 </pre>
 </div>
@@ -221,9 +226,12 @@ fix id all property/global coefficientFriction peratomtypepair n_atomtypes value
 <tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt> if the
 appropriate flag is activated (only available in the PREMIUM version).</p>
 <p>When the <tt class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">model</span> <span class="pre">bond</span></tt> is used the
-<em>disableNormalWhenBonded</em> keyword can be used. If this parameter is set to &#8216;on&#8217; then the
-normal model will only compute its contribution if the two neighboring particles do not
-have an active bond.</p>
+<em>disableNormalWhenBonded</em> keyword can be used. If this parameter is set to &#8216;on&#8217;
+then the normal model will only compute its contribution if the two neighboring
+particles do not have an active bond. If a bond breaks and the particles overlap
+the current <em>delta_n</em> will be set to zero so that no sudden repulsion takes
+place. This is handled internally by having an offset value that shrinks to zero
+once the particles start drifting apart.</p>
 <p><strong>Force Limiting:</strong></p>
 <p>Note, that not using limitForce might lead to attractive forces between particles and walls,
 especially in case the coefficient of restitution is small. Be sure you include this key word
@@ -251,7 +259,8 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 <p><em>tangential_damping</em> = &#8216;on&#8217;
 <em>limitForce</em> = &#8216;off&#8217;
 <em>heating_normal_hertz</em> = &#8216;off&#8217;</p>
-<p><strong>(Di Renzo)</strong> Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525-541 (2004).</p>
+<p><strong>(Di Renzo)</strong> Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 59 (3), p 525-541 (2004). (Note: Wrong definition of G_eq in this paper, corrected in (Di Renzo 2))</p>
+<p><strong>(Di Renzo 2)</strong> Alberto Di Renzo, Francesco Paolo Di Maio, Chemical Engineering Science, 60 (5), p 1303-1312 (2005).</p>
 <p><strong>(Ai)</strong> Jun Ai, Jian-Fei Chen, J. Michael Rotter, Jin Y. Ooi, Powder Technology, 206 (3), p 269-282 (2011).</p>
 <p><strong>(Brilliantov)</strong> Brilliantov, Spahn, Hertzsch, Poschel, Phys Rev E, 53, p 5382-5392 (1996).</p>
 <p><strong>(Schwager)</strong> Schwager, Poschel, Gran Matt, 9, p 465-469 (2007).</p>

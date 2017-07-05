@@ -59,11 +59,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeERotateAsphere::
-ComputeERotateAsphere(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeERotateAsphere::ComputeERotateAsphere(LAMMPS *lmp, int & iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute erotate/asphere command");
+  if (narg != iarg) error->all(FLERR,"Illegal compute erotate/asphere command");
 
   scalar_flag = 1;
   extscalar = 1;

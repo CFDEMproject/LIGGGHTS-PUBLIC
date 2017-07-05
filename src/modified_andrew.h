@@ -45,8 +45,6 @@
 #include <vector>
 #include "pointers.h"
 
-using namespace std;
-
 namespace MODIFIED_ANDREW_AUX{
 
 struct Point {
@@ -83,18 +81,18 @@ public:
 
 private:
 
-  double area(vector<Point> H);
+  double area(std::vector<Point> H);
   double area(Point &p, Point &m, Point &q);
   double cross(Point O, Point A, Point B);
 
-  Point mean_point(vector<Point> P);
+  Point mean_point(std::vector<Point> P);
 
-  vector<Point> convex_hull(vector<Point> P);
-  vector<Point> construct_hull_c_all(double *data0, int ndata0);
-  int construct_data(vector<Point> hull_c, double *&data);
+  std::vector<Point> convex_hull(std::vector<Point> P);
+  std::vector<Point> construct_hull_c_all(double *data0, int ndata0);
+  int construct_data(std::vector<Point> hull_c, double *&data);
 
   // container for contacts: x, y
-  vector<Point> contacts_;
+  std::vector<Point> contacts_;
 
   int npoints_per_circle_;
   double **directions_;

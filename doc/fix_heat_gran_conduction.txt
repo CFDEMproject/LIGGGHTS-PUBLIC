@@ -19,17 +19,18 @@ heat/gran/conduction or fix heat/gran = style name of this fix command :l
 initial_temperature = obligatory keyword :l
 T0 = initial (default) temperature for the particles :l
 zero or more keyword/value pairs may be appended :l
-keyword = {contact_area} or {area_correction} :l
+keyword = {contact_area} or {area_correction} or {store_contact_data} :l
   {contact_area} values = {overlap} or {constant areavalue} or {projection}
-  {area_correction} values = {yes} or {no} :pre
+  {area_correction} values = {yes} or {no}
+  {store_contact_data} values = {yes} or {no} :pre
 
 [Examples:]
 
 fix 3 hg heat/gran/conduction initial_temperature 273.15 :pre
 
-[LIGGGHTS(R)-PUBLIC vs. LIGGGHTS(R)-PUBLIC info:]
+[LIGGGHTS(R)-PUBLIC vs. LAMMPS info:]
 
-This command is not available in LIGGGHTS(R)-PUBLIC.
+This command is not available in LAMMPS.
 
 [Description:]
 
@@ -112,6 +113,17 @@ half the value is stored in each atom participating in the contact.
 With f_Temp\[0\] you can access the per-particle
 temperature. You can also access the total thermal energy of the fix group
 (useful for the thermo command) with f_id .
+
+In case the {store_contact_data} option is set to {yes}, additional output of
+per-atom properties is available. The property ids are nContactsConduction,
+contactAreaConduction and wallHeatFlux which represent the number of contacts a
+particle has, the combined contact area with other particles and the wall heat
+flux, respectively. These ids can be used as usual to output them in a dump
+command or to calculate atom properties.
+
+NOTE: {store_contact_data yes} is required any heat conduction properties are
+used in the steady state detection through "fix
+ave/euler/custom"_fix_ave_euler_custom.html.
 
 [Restart, fix_modify, run start/stop, minimize info:]
 

@@ -64,7 +64,7 @@ namespace LAMMPS_NS {
 
 class ComputeReduceRegion : public ComputeReduce {
  public:
-  ComputeReduceRegion(class LAMMPS *, int, char **);
+  ComputeReduceRegion(class LAMMPS *, int &iarg, int, char **);
   ~ComputeReduceRegion() {}
 
  private:

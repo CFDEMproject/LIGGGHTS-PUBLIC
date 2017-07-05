@@ -90,6 +90,12 @@ class FixInsertStream : public FixInsert {
   void vel_normal(double *vn)
   { return vectorCopy3D(v_normal,vn); }
 
+  bool templates_saved()
+  { return save_template_; }
+
+  FixPropertyAtom * get_fix_template()
+  { return fix_template_; }
+
  protected:
 
   virtual void calc_insertion_properties();
@@ -148,6 +154,9 @@ class FixInsertStream : public FixInsert {
 
   bool recalc_release_ms;
   double dt_ratio;
+
+  bool save_template_;
+  FixPropertyAtom *fix_template_;
 };
 
 }

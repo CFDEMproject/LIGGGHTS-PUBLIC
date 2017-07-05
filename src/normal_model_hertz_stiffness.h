@@ -47,6 +47,7 @@ NORMAL_MODEL(HERTZ_STIFFNESS,hertz/stiffness,4)
 #ifndef NORMAL_MODEL_HERTZ_STIFFNESS_H_
 #define NORMAL_MODEL_HERTZ_STIFFNESS_H_
 #include "contact_models.h"
+#include "normal_model_base.h"
 #include "global_properties.h"
 #include <math.h>
 
@@ -54,12 +55,11 @@ namespace LIGGGHTS {
 namespace ContactModels
 {
   template<>
-  class NormalModel<HERTZ_STIFFNESS> : protected Pointers
+  class NormalModel<HERTZ_STIFFNESS> : public NormalModelBase
   {
   public:
-    static const int MASK = CM_REGISTER_SETTINGS | CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
-
-    NormalModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) : Pointers(lmp),
+    NormalModel(LAMMPS * lmp, IContactHistorySetup * hsetup, class ContactModelBase * c) :
+      NormalModelBase(lmp, hsetup, c),
       k_n(NULL),
       k_t(NULL),
       gamma_n(NULL),

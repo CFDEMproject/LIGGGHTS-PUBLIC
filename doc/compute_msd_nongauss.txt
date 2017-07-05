@@ -10,10 +10,11 @@ compute msd/nongauss command :h3
 
 [Syntax:]
 
-compute ID group-ID msd/nongauss keyword values ... :pre
+compute ID group-ID msd/nongauss general_keyword general_values keyword values ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 msd/nongauss = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
 zero or more keyword/value pairs may be appended :l
 keyword = {com} :l
   {com} value = {yes} or {no} :pre

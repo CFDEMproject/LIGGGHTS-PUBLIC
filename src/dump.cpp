@@ -324,24 +324,33 @@ void Dump::write()
 
   // comm and output buf of doubles
 
-  if (buffer_flag == 0 || binary) {
-  if (filewriter) {
-    for (int iproc = 0; iproc < nclusterprocs; iproc++) {
-        if (iproc) {
-	      MPI_Irecv(buf,maxbuf*size_one,MPI_DOUBLE,me+iproc,0,world,&request);
-	      MPI_Send(&tmp,0,MPI_INT,me+iproc,0,world);
-          MPI_Wait(&request,&status);
-          MPI_Get_count(&status,MPI_DOUBLE,&nlines);
-          nlines /= size_one;
-        } else nlines = nme;
+  if (buffer_flag == 0 || binary)
+  {
+    if (filewriter)
+    {
+        for (int iproc = 0; iproc < nclusterprocs; iproc++)
+        {
+            if (iproc)
+            {
+                MPI_Irecv(buf,maxbuf*size_one,MPI_DOUBLE,me+iproc,0,world,&request);
+                MPI_Send(&tmp,0,MPI_INT,me+iproc,0,world);
+                MPI_Wait(&request,&status);
+                MPI_Get_count(&status,MPI_DOUBLE,&nlines);
+                nlines /= size_one;
+            }
+            else
+                nlines = nme;
 
-        write_data(nlines,buf);
-      }
-      if (flush_flag) fflush(fp);
+            write_data(nlines,buf);
+        }
+        if (flush_flag)
+            fflush(fp);
 
-    } else {
-    MPI_Recv(&tmp,0,MPI_INT,fileproc,0,world,&status);
-    MPI_Rsend(buf,nme*size_one,MPI_DOUBLE,fileproc,0,world);
+    }
+    else
+    {
+        MPI_Recv(&tmp,0,MPI_INT,fileproc,0,world,&status);
+        MPI_Rsend(buf,nme*size_one,MPI_DOUBLE,fileproc,0,world);
     }
 
   // comm and output sbuf = one big string of formatted values per proc

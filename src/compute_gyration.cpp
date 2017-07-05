@@ -55,10 +55,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeGyration::ComputeGyration(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeGyration::ComputeGyration(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute gyration command");
+  if (narg != iarg) error->all(FLERR,"Illegal compute gyration command");
 
   scalar_flag = vector_flag = 1;
   size_vector = 6;

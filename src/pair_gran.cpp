@@ -116,6 +116,7 @@ PairGran::PairGran(LAMMPS *lmp) : Pair(lmp)
 
   fix_contact_forces_ = NULL;
   store_contact_forces_ = false;
+  store_contact_forces_every_ = 1;
   fix_contact_forces_stress_ = NULL;
   store_contact_forces_stress_ = false;
   fix_store_multicontact_data_ = NULL;
@@ -497,6 +498,12 @@ void PairGran::init_style()
         fix_store_multicontact_data_ = static_cast<FixContactPropertyAtom*>(modify->find_fix_id("multicontactData_"));
     delete []fixarg;
   }
+
+  fix_sum_normal_force_ =
+      static_cast<FixPropertyAtom*>
+      (
+          modify->find_fix_property("sum_normal_force_","property/atom","scalar",0,0, "pair/gran", false)
+      );
 
   // need a gran neigh list and optionally a granular history neigh list
 

@@ -405,13 +405,13 @@ bool VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::isInside(double *p)
 ------------------------------------------------------------------------- */
 
 template<int NUM_NODES,int NUM_FACES,int NUM_NODES_PER_FACE>
-void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::move(double *vecTotal, double *vecIncremental)
+void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::move(const double * const vecTotal, const double * const vecIncremental)
 {
     TrackingMesh<NUM_NODES>::move(vecTotal,vecIncremental);
 }
 
 template<int NUM_NODES,int NUM_FACES,int NUM_NODES_PER_FACE>
-void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::move(double *vecIncremental)
+void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::move(const double * const vecIncremental)
 {
     TrackingMesh<NUM_NODES>::move(vecIncremental);
 }
@@ -423,14 +423,14 @@ void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::scale(double factor)
 }
 
 template<int NUM_NODES,int NUM_FACES,int NUM_NODES_PER_FACE>
-void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::rotate(double *totalQ, double *dQ,double *totalDispl, double *dDisp)
+void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::rotate(const double * const totalQ, const double * const dQ, const double * const totalDispl, const double * const dDisp)
 {
     TrackingMesh<NUM_NODES>::rotate(totalQ,dQ,totalDispl,dDisp);
 
 }
 
 template<int NUM_NODES,int NUM_FACES,int NUM_NODES_PER_FACE>
-void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::rotate(double *dQ,double *dDispl)
+void VolumeMesh<NUM_NODES,NUM_FACES,NUM_NODES_PER_FACE>::rotate(const double * const dQ, const double * const dDispl)
 {
     TrackingMesh<NUM_NODES>::rotate(dQ,dDispl);
 }

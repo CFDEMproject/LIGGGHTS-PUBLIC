@@ -277,7 +277,7 @@ void FixContactHistoryMesh::pre_exchange()
    // set maxtouch = max # of partners of any owned atom
    // bump up comm->maxexchange_fix if necessary
 
-   int nlocal = atom->nlocal;
+   const int nlocal = atom->nlocal;
 
    maxtouch_ = 0;
    for (int i = 0; i < nlocal; i++) maxtouch_ = MAX(maxtouch_,npartner_[i]);
@@ -317,11 +317,7 @@ void FixContactHistoryMesh::pre_force(int dummy)
         return;
     build_neighlist_ = false;
 
-    int nall = atom->nlocal+atom->nghost;
-    int nlocal = atom->nlocal;
-
-    for(int i = nlocal; i < nall; i++)
-        npartner_[i] = 0;
+    const int nlocal = atom->nlocal;
 
     cleanUpContactJumps();
 
@@ -335,7 +331,7 @@ void FixContactHistoryMesh::pre_force(int dummy)
     ipage_next->reset();
     dpage_next->reset();
 
-    for (int i = 0; i < nall; i++)
+    for (int i = 0; i < nlocal; i++)
     {
         nneighs_next = fix_nneighs_->get_vector_atom_int(i);
 
@@ -377,7 +373,7 @@ void FixContactHistoryMesh::pre_force(int dummy)
 
 void FixContactHistoryMesh::sort_contacts()
 {
-    int nlocal = atom->nlocal;
+    const int nlocal = atom->nlocal;
     int nneighs, first_empty, last_filled;
 
     for(int i = 0; i < nlocal; i++)
@@ -413,11 +409,11 @@ void FixContactHistoryMesh::sort_contacts()
 
 void FixContactHistoryMesh::markAllContacts()
 {
-    int nall = atom->nlocal+atom->nghost;
+    const int nlocal = atom->nlocal;
     keeppage_[0]->reset(true);
     intersectpage_[0]->reset(false);
 
-    for(int i = 0; i < nall; i++)
+    for(int i = 0; i < nlocal; i++)
     {
       const int nneighs = fix_nneighs_->get_vector_atom_int(i);
       keepflag_[i] = keeppage_[0]->get(nneighs);
@@ -458,7 +454,7 @@ void FixContactHistoryMesh::markForDeletion(int tid, int ifrom, int ito)
 
 void FixContactHistoryMesh::cleanUpContacts()
 {
-    cleanUpContacts(0, atom->nlocal+atom->nghost);
+    cleanUpContacts(0, atom->nlocal);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -494,10 +490,9 @@ void FixContactHistoryMesh::cleanUpContacts(int ifrom, int ito)
 
 void FixContactHistoryMesh::cleanUpContactJumps()
 {
-    int nall = atom->nlocal+atom->nghost;
-    int iTri;
+    const int nlocal = atom->nlocal;
 
-    for(int i = 0; i < nall; i++)
+    for(int i = 0; i < nlocal; i++)
     {
         int ipartner = 0;
         while (ipartner < npartner_[i])
@@ -509,9 +504,18 @@ void FixContactHistoryMesh::cleanUpContactJumps()
                 error->one(FLERR,"internal error");
             }
 
-            iTri = mesh_->map(partner_[i][ipartner]);
-            
-            if(iTri == -1 || (iTri > -1 && !fix_neighlist_mesh_->contactInList(iTri,i)))
+            int iTri = -1;
+            const int nTri_id = mesh_->map_size(partner_[i][ipartner]);
+            for (int j = 0; j < nTri_id; j++)
+            {
+                iTri = mesh_->map(partner_[i][ipartner], j);
+                if (iTri != -1 && fix_neighlist_mesh_->contactInList(iTri,i))
+                    break;
+                else
+                    iTri = -1;
+            }
+
+            if(iTri == -1)
             {
                 
                 partner_[i][ipartner] = -1;
@@ -531,9 +535,9 @@ void FixContactHistoryMesh::cleanUpContactJumps()
 
 void FixContactHistoryMesh::reset_history()
 {
-    int nall = atom->nlocal+atom->nghost;
+    const int nlocal = atom->nlocal;
 
-    for(int i = 0; i < nall; i++)
+    for(int i = 0; i < nlocal; i++)
     {
         const int nneighs = fix_nneighs_->get_vector_atom_int(i);
 

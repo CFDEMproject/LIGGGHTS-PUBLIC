@@ -11,10 +11,11 @@ compute reduce/region command :h3
 
 [Syntax:]
 
-compute ID group-ID style arg mode input1 input2 ... keyword args ... :pre
+compute ID group-ID style general_keyword general_values arg mode input1 input2 ... keyword args ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 style = {reduce} or {reduce/region} :l
+general_keywords general_values are documented in "compute"_compute.html" :l
   {reduce} arg = none
   {reduce/region} arg = region-ID
     region-ID = ID of region to use for choosing atoms :pre

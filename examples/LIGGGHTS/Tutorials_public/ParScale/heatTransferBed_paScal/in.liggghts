@@ -96,7 +96,7 @@ variable totKE  equal ke
 variable step   equal step
 
 fix         myPrint all print 100 "${step} ${nAtoms} ${totKE}" file atomStatistics.dat
-dump		dmp all custom ${fOutput} post/dump*.liggghts id type x y z vx vy vz radius f_heatFlux[0]  f_TempMin[0] f_heatAv[0]  f_Temp[0]
+dump		dmp all custom/vtk ${fOutput} post/liggghts_*.vtk id type x y z vx vy vz radius f_heatFlux[0]  f_TempMin[0] f_heatAv[0]  f_Temp[0]
 unfix		ins
 
 

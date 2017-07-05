@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeCOM : public Compute {
  public:
-  ComputeCOM(class LAMMPS *, int, char **);
+  ComputeCOM(class LAMMPS *, int &iarg, int, char **);
   ~ComputeCOM();
   void init();
   void compute_vector();

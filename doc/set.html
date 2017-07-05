@@ -149,19 +149,11 @@
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>set style ID keyword values ...</pre>
 </div>
-<ul>
-<li><p class="first">style = <em>atom</em> or <em>type</em> or <em>mol</em> or <em>group</em> or <em>region</em></p>
-</li>
-<li><p class="first">ID = atom ID range or type range or mol ID range or group ID or region ID</p>
-</li>
-<li><p class="first">one or more keyword/value pairs may be appended</p>
-</li>
-<li><dl class="first docutils">
-<dt>keyword = <em>type</em> or <em>type/fraction</em> or <em>mol</em> or <em>x</em> or <em>y</em> or <em>z</em> or           <em>charge</em> or <em>quat</em> or    <em>quat/random</em> or <em>diameter</em> or <em>shape</em> or       <em>length</em> or <em>tri</em> or <em>theta</em> or <em>angmom</em> or     <em>mass</em> or <em>density</em> or <em>volume</em> or <em>image</em> or</dt>
-<dd><p class="first last"><em>bond</em> or <em>property/atom</em></p>
-</dd>
-</dl>
-</li>
+<ul class="simple">
+<li>style = <em>atom</em> or <em>type</em> or <em>mol</em> or <em>group</em> or <em>region</em></li>
+<li>ID = atom ID range or type range or mol ID range or group ID or region ID</li>
+<li>one or more keyword/value pairs may be appended</li>
+<li>keyword = <em>type</em> or <em>type/fraction</em> or <em>mol</em> or <em>x</em> or <em>y</em> or <em>z</em> or           <em>vx</em> or <em>vy</em> or <em>vz</em> or           <em>omegax</em> or <em>omegay</em> or <em>omegaz</em> or           <em>charge</em> or <em>quat</em> or <em>quat_direct</em> or           <em>quat/random</em> or <em>diameter</em> or <em>shape</em> or           <em>length</em> or <em>tri</em> or <em>theta</em> or <em>angmom</em> or           <em>mass</em> or <em>density</em> or <em>volume</em> or <em>image</em> or           <em>bond</em> or <em>add</em> or <em>until</em> or           <em>property/atom</em> or <em>roundness</em></li>
 </ul>
 <pre class="literal-block">
 <em>type</em> value = atom type
@@ -213,6 +205,7 @@
   value can be an atom-style variable (see below)
 <em>image</em> nx ny nz
   nx,ny,nz = which periodic image of the simulation box the atom is in
+<em>bond</em> value = bond type for all bonds between selected atoms
 <em>add</em> value = yes no
   yes = add per-atom quantities to a region or a group
 <em>until</em> value = final timestep

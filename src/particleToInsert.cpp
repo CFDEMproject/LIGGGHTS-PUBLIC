@@ -53,22 +53,30 @@
 
 using namespace LAMMPS_NS;
 
-ParticleToInsert::ParticleToInsert(LAMMPS* lmp,int ns) : Pointers(lmp)
+ParticleToInsert::ParticleToInsert(LAMMPS* lmp, int ns, FixPropertyAtom * const _fix_release) :
+    Pointers(lmp),
+    id_ins(-1),
+    fix_release(_fix_release),
+    fix_property(NULL),
+    n_fix_property(0),
+    fix_property_nentry(NULL),
+    fix_property_value(NULL),
+    fix_template_(NULL)
 {
-        groupbit = 0;
+    groupbit = 0;
 
-        distorder = -1;
+    distorder = -1;
 
-        nspheres = ns;
+    nspheres = ns;
 
-        memory->create(x_ins,nspheres,3,"x_ins");
-        radius_ins = new double[nspheres];
+    memory->create(x_ins,nspheres,3,"x_ins");
+    radius_ins = new double[nspheres];
 
-        atom_type_vector = new int[nspheres];
-        atom_type_vector_flag = false;
+    atom_type_vector = new int[nspheres];
+    atom_type_vector_flag = false;
 
-        fix_property = 0;
-        fix_property_value = 0.;
+    if (fix_release && fix_release->get_nvalues() <= 14)
+        error->all(FLERR, "Invalid fix_release, more than 14 entries required");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -78,6 +86,14 @@ ParticleToInsert::~ParticleToInsert()
         memory->destroy(x_ins);
         delete []radius_ins;
         delete []atom_type_vector;
+        if (fix_property_value)
+        {
+            for (int i = 0; i < n_fix_property; i++)
+                delete [] fix_property_value[i];
+            delete [] fix_property_value;
+        }
+        if (fix_property)
+            delete [] fix_property;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -119,7 +135,22 @@ int ParticleToInsert::insert()
                 // apply fix property setting coming from fix insert
                 // this overrides the set_arrays call above
                 if(fix_property)
-                    fix_property->vector_atom[m] = fix_property_value;
+                {
+                    for (int j = 0; j < n_fix_property; j++)
+                    {
+                        if (fix_property_nentry[j] == 1)
+                            fix_property[j]->vector_atom[m] = fix_property_value[j][0];
+                        else
+                        {
+                            for (int k = 0; k < fix_property_nentry[j]; k++)
+                                fix_property[j]->array_atom[m][k] = fix_property_value[j][k];
+                        }
+                    }
+                }
+                if (fix_template_)
+                    fix_template_->vector_atom[m] = (double)distorder;
+                if (fix_release)
+                    fix_release->array_atom[m][14] = (double) id_ins;
         //}
     }
     

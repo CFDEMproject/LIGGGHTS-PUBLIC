@@ -143,7 +143,7 @@ class Fix : protected Pointers {
   virtual void pre_delete(bool) {} 
   virtual void box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double &zlo,double &zhi) {
     UNUSED(xlo); UNUSED(xhi); UNUSED(ylo); UNUSED(yhi); UNUSED(zlo); UNUSED(zhi); 
-  } 
+  }
   virtual void init() {}
   virtual void init_list(int, class NeighList *) {}
   virtual void setup(int) {}
@@ -157,11 +157,12 @@ class Fix : protected Pointers {
   virtual void pre_neighbor() {}
   virtual void pre_force(int) {}
   virtual void post_force(int) {}
+  virtual void pre_final_integrate() {}
   virtual void final_integrate() {}
   virtual bool iterate_implicitly() {return false;} 
   virtual void end_of_step() {}
   virtual void post_run() {}
-  virtual void write_restart(FILE *) {}
+  virtual void write_restart(FILE *);
   virtual void write_restart_file(char *) {}
   virtual void restart(char *) {}
 
@@ -251,10 +252,21 @@ class Fix : protected Pointers {
   virtual int n_history_extra() {return 0;} 
   virtual bool history_args(char** args) { UNUSED(args); return false; } 
 
+  // Mesh creation routines
+  virtual int getCreateMeshTriCount()
+  { return 0; }
+
+  virtual double * getCreateMeshTriNode(const int i)
+  { return NULL; }
+
+  bool can_create_mesh()
+  { return can_create_mesh_; }
+
  protected:
   int evflag;
   int vflag_global,vflag_atom;
   int maxvatom;
+  bool can_create_mesh_;
 
   void v_setup(int);
   void v_tally(int, int *, double, double *);
@@ -311,22 +323,23 @@ namespace FixConst {
   static const int PRE_NEIGHBOR =            1<<3;
   static const int PRE_FORCE =               1<<4;
   static const int POST_FORCE =              1<<5;
-  static const int FINAL_INTEGRATE =         1<<6;
-  static const int END_OF_STEP =             1<<7;
-  static const int THERMO_ENERGY =           1<<8;
-  static const int INITIAL_INTEGRATE_RESPA = 1<<9;
-  static const int POST_INTEGRATE_RESPA =    1<<10;
-  static const int PRE_FORCE_RESPA =         1<<11;
-  static const int POST_FORCE_RESPA =        1<<12;
-  static const int FINAL_INTEGRATE_RESPA =   1<<13;
-  static const int MIN_PRE_EXCHANGE =        1<<14;
-  static const int MIN_PRE_NEIGHBOR =        1<<15;
-  static const int MIN_PRE_FORCE =           1<<16;
-  static const int MIN_POST_FORCE =          1<<17;
-  static const int MIN_ENERGY =              1<<18;
-  static const int POST_RUN =                1<<19;
-  static const int ITERATE_IMPLICITLY =      1<<20; 
-  static const int FIX_CONST_LAST =          1<<21; 
+  static const int PRE_FINAL_INTEGRATE =     1<<6;
+  static const int FINAL_INTEGRATE =         1<<7;
+  static const int END_OF_STEP =             1<<8;
+  static const int THERMO_ENERGY =           1<<9;
+  static const int INITIAL_INTEGRATE_RESPA = 1<<10;
+  static const int POST_INTEGRATE_RESPA =    1<<11;
+  static const int PRE_FORCE_RESPA =         1<<12;
+  static const int POST_FORCE_RESPA =        1<<13;
+  static const int FINAL_INTEGRATE_RESPA =   1<<14;
+  static const int MIN_PRE_EXCHANGE =        1<<15;
+  static const int MIN_PRE_NEIGHBOR =        1<<16;
+  static const int MIN_PRE_FORCE =           1<<17;
+  static const int MIN_POST_FORCE =          1<<18;
+  static const int MIN_ENERGY =              1<<19;
+  static const int POST_RUN =                1<<20;
+  static const int ITERATE_IMPLICITLY =      1<<21; 
+  static const int FIX_CONST_LAST =          1<<22; 
 }
 
 }

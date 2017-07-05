@@ -799,22 +799,34 @@ void FixAveSpatial::end_of_step()
   double repeat = nrepeat;
   double mv2d = force->mv2d;
 
-  if (normflag == ALL) {
+  if (normflag == ALL)
+  {
     MPI_Allreduce(count_many,count_sum,nbins,MPI_DOUBLE,MPI_SUM,world);
     MPI_Allreduce(&values_many[0][0],&values_sum[0][0],nbins*nvalues,
                   MPI_DOUBLE,MPI_SUM,world);
-    for (m = 0; m < nbins; m++) {
+    for (m = 0; m < nbins; m++)
+    {
       if (count_sum[m] > 0.0)
+      {
         for (j = 0; j < nvalues; j++)
-          if (which[j] == DENSITY_NUMBER) values_sum[m][j] /= repeat;
-          else if (which[j] == DENSITY_MASS) values_sum[m][j] *= mv2d/repeat;
-          else values_sum[m][j] /= count_sum[m];
+        {
+          if (which[j] == DENSITY_NUMBER)
+            values_sum[m][j] /= repeat;
+          else if (which[j] == DENSITY_MASS)
+            values_sum[m][j] *= mv2d/repeat;
+          else
+            values_sum[m][j] /= count_sum[m];
+        }
+      }
       count_sum[m] /= repeat;
     }
-  } else {
+  }
+  else
+  {
     MPI_Allreduce(&values_many[0][0],&values_sum[0][0],nbins*nvalues,
                   MPI_DOUBLE,MPI_SUM,world);
-    for (m = 0; m < nbins; m++) {
+    for (m = 0; m < nbins; m++)
+    {
       for (j = 0; j < nvalues; j++)
         values_sum[m][j] /= repeat;
       count_sum[m] /= repeat;

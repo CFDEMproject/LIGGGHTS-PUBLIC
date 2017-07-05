@@ -64,14 +64,15 @@ namespace LAMMPS_NS {
 
 class ComputeERotateSphere : public Compute {
  public:
-  ComputeERotateSphere(class LAMMPS *, int, char **);
+  ComputeERotateSphere(class LAMMPS *, int &iarg, int, char **);
   ~ComputeERotateSphere() {}
   void init();
   double compute_scalar();
 
  private:
   double pfactor;
-  class FixMultisphere *fix_ms; 
+  bool halfstep;
+  class FixMultisphere *fix_ms;
 };
 
 }

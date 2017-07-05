@@ -94,9 +94,6 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   inline int store_force() const
   { return store_force_; }
 
-  inline FixPropertyAtom* fix_meshforce_pbc() const
-  { return fix_meshforce_pbc_; }
-
   inline FixPropertyAtom* fix_wallforce() const
   { return fix_wallforce_; }
 
@@ -141,6 +138,9 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   inline bool store_force_contact() const
   { return store_force_contact_; }
+
+  inline int store_force_contact_every() const
+  { return store_force_contact_every_; }
 
   inline bool store_force_contact_stress() const
   { return store_force_contact_stress_; }
@@ -190,6 +190,12 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
     }
   }
 
+  bool store_sum_normal_force() const
+  { return fix_sum_normal_force_ != NULL; }
+
+  double * get_sum_normal_force_ptr(const int i)
+  { return &(fix_sum_normal_force_->vector_atom[i]); }
+
   class PrimitiveWall* primitiveWall();
 
   int n_contacts_all(int &nIntersect);
@@ -201,6 +207,7 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   void register_compute_wall_local(ComputePairGranLocal *,int&);
   void unregister_compute_wall_local(ComputePairGranLocal *ptr);
 
+  void wall_temperature_unique(bool &has_temp,bool &temp_unique, double &temperature_unique);
   void addHeatFlux(class TriMesh *mesh,int i,const double ri,double rsq,double area_ratio);
 
  protected:
@@ -259,6 +266,7 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   // heat transfer
   class FixPropertyAtom *fppa_T;
   class FixPropertyAtom *fppa_hf;
+  class FixPropertyAtom *fppa_htcw; 
 
   double Temp_wall;
   double fixed_contact_area_;
@@ -271,6 +279,7 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
 
   // per-contact force storage
   bool store_force_contact_;
+  int store_force_contact_every_;
   class FixContactPropertyAtomWall *fix_wallforce_contact_;
 
   // for stress computation
@@ -313,7 +322,8 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   bool store_force_;
   class FixPropertyAtom *fix_wallforce_;
 
-  class FixPropertyAtom *fix_meshforce_pbc_;
+  // storage for simplistic pressure computation via normal forces
+  class FixPropertyAtom *fix_sum_normal_force_;
 
   // max neigh cutoff - as in Neighbor
   double cutneighmax_;

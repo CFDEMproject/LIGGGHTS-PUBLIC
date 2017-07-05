@@ -69,8 +69,8 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg),
+ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg),
   nmax(0),
   ncol(0),
   cutsq(0.0),
@@ -81,36 +81,36 @@ ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int narg, char **arg) :
   cvec(NULL),
   carray(NULL)
 {
-  if (narg < 4 )
+  if (narg < iarg+1)
     error->compute_error(FLERR,this,"Illegal # of arguments"); 
 
-  double cutoff = force->numeric(FLERR,arg[3]);
+  double cutoff = force->numeric(FLERR,arg[iarg++]);
   cutsq = cutoff*cutoff;
 
-  ncol = narg-4 + 1;
+  ncol = narg - iarg + 1;
   int ntypes = atom->ntypes;
   typelo = new int[ncol];
   typehi = new int[ncol];
 
-  if (narg == 4) {
+  if (narg == iarg) {
     ncol = 1;
     typelo[0] = 1;
     typehi[0] = ntypes;
 
-  } else if(narg == 6 && strcmp(arg[4],"mix") == 0) { 
+  } else if(narg == iarg+2 && strcmp(arg[iarg++],"mix") == 0) { 
     ncol = 1;
     typelo[0] = 1;
     typehi[0] = ntypes;
-    if (strcmp(arg[5],"yes") == 0)
+    if (strcmp(arg[iarg+1],"yes") == 0)
       mix = true;
-    else if (strcmp(arg[5],"no") == 0)
+    else if (strcmp(arg[iarg+1],"no") == 0)
       mix = false;
     else
       error->compute_error(FLERR,this,"valid arguments for 'mix' are 'yes' or 'no'");
+    iarg++;
 
   } else {
     ncol = 0;
-    int iarg = 4;
     while (iarg < narg) {
       force->bounds(arg[iarg],ntypes,typelo[ncol],typehi[ncol]);
       if (typelo[ncol] > typehi[ncol])

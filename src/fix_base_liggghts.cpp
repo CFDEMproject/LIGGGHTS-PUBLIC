@@ -54,7 +54,7 @@
 #include "atom_vec.h"
 #include "comm.h"
 #include "fix_multisphere.h"
-#include "multisphere_parallel.h"
+#include "mpi_liggghts.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -119,7 +119,7 @@ void FixBaseLiggghts::init()
 
     // multisphere support
 
-    fix_ms_ = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
+    fix_ms_ = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
     if(modify->n_fixes_style("multisphere") > 1)
       error->fix_error(FLERR,this,"does not support more than one fix multisphere.");
     if(fix_ms_)

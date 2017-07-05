@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeGyrationMolecule : public Compute {
  public:
-  ComputeGyrationMolecule(class LAMMPS *, int, char **);
+  ComputeGyrationMolecule(class LAMMPS *, int &iarg, int, char **);
   ~ComputeGyrationMolecule();
   void init();
   void compute_vector();

@@ -81,8 +81,6 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
 {
   if (narg < 7) error->fix_error(FLERR,this,"not enough arguments");
 
-  time_depend = 1;
-
   restart_global = 1;
 
   setup_flag = false;
@@ -420,7 +418,7 @@ void FixInsert::init_defaults()
   vectorZeroize3D(v_insertFluct);
   vectorZeroize3D(omega_insert);
 
-  quatUnitize4D(quat_insert);
+  quatIdentity4D(quat_insert);
   quat_random_ = false;
 
   print_stats_during_flag = 1;
@@ -581,6 +579,15 @@ void FixInsert::init()
 
 /* ---------------------------------------------------------------------- */
 
+void FixInsert::reset_timestep(bigint newstep,bigint oldstep)
+{
+    
+    next_reneighbor += (newstep-oldstep);
+    
+}
+
+/* ---------------------------------------------------------------------- */
+
 int FixInsert::min_type()
 {
     return type_min;
@@ -678,14 +685,14 @@ void FixInsert::pre_exchange()
   
   if(ninsert_this_local > ninsert_this_max_local)
   {
-      fix_distribution->random_init_list(ninsert_this_local);
+      init_list(ninsert_this_local);
       ninsert_this_max_local = ninsert_this_local;
   }
 
   // generate list of insertions
   // number of inserted particles can change if exact_number = 0
   
-  ninsert_this_local = fix_distribution->randomize_list(ninsert_this_local,groupbit,exact_number);
+  ninsert_this_local = generate_list(ninsert_this_local,groupbit,exact_number);
   
   MPI_Sum_Scalar(ninsert_this_local,ninsert_this,world);
 
@@ -903,22 +910,6 @@ int FixInsert::distribute_ninsert_this(int ninsert_this)
 }
 
 /* ----------------------------------------------------------------------
-   count # of particles that could overlap
-   must loop local + ghost particles
-------------------------------------------------------------------------- */
-
-int FixInsert::count_nnear()
-{
-    int nall = atom->nlocal + atom->nghost;
-    int ncount = 0;
-
-    for(int i = 0; i < nall; i++)
-        ncount += is_nearby(i);
-
-    return ncount;
-}
-
-/* ----------------------------------------------------------------------
    fill neighbor list with nearby particles
 ------------------------------------------------------------------------- */
 
@@ -945,7 +936,7 @@ int FixInsert::load_xnear(int ninsert_this_local)
       {
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
         if(atom->superquadric_flag and check_obb_flag)
-          neighList.insert_superquadric(x[i], radius[i], atom->quaternion[i], atom->shape[i]);
+          neighList.insert_superquadric(x[i], radius[i], atom->quaternion[i], atom->shape[i], atom->roundness[i]);
         else
           neighList.insert(x[i], radius[i]);
 #else

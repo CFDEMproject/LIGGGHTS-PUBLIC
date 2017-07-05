@@ -238,7 +238,10 @@ void MeshModuleStress::init()
 
 int MeshModuleStress::setmask()
 {
-    return 0;
+    int mask = 0;
+    mask |= PRE_FORCE;
+    mask |= FINAL_INTEGRATE;
+    return mask;
 }
 
 /* ---------------------------------------------------------------------- */

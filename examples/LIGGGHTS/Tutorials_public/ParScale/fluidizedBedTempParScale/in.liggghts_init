@@ -2,7 +2,7 @@
 
 #--------------------------Input Parameters---------------------------------------------------------
 
-include ../DEM/in.DEM
+include in.DEM
 
 #------------------General Settings for Granular Systems--------------------------------------------
 

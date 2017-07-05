@@ -47,6 +47,12 @@
 #include "lammps.h"
 #include "input.h"
 #include <string.h>
+#include <signal.h>
+#include "signal_handling.h"
+
+#ifdef LIGGGHTS_DEBUG
+#include "fenv.h"
+#endif
 
 using namespace LAMMPS_NS;
 
@@ -56,7 +62,29 @@ using namespace LAMMPS_NS;
 
 int main(int argc, char **argv)
 {
+  #ifndef  _WINDOWS
+  struct sigaction int_action, usr1_action, term_action;
+  memset(&int_action, 0, sizeof(struct sigaction));
+  memset(&usr1_action, 0, sizeof(struct sigaction));
+  memset(&term_action, 0, sizeof(struct sigaction));
+
+  int_action.sa_handler = SignalHandler::int_handler;
+  sigaction(SIGINT, &int_action, NULL);
+  // SIGTERM is handled the same way as sigint. Note that OpenMPI (and possibly other flavours)
+  // convert a SIGINT to mpirun to a SIGTERM to its children. That's why we need to catch it too.
+  sigaction(SIGTERM, &int_action, NULL);
+  usr1_action.sa_handler = SignalHandler::usr1_handler;
+  sigaction(SIGUSR1, &usr1_action, NULL);
+  #else  // _WINDOWS
+  signal(SIGINT, SignalHandler::int_handler);
+  signal(SIGTERM, SignalHandler::int_handler);
+  // no SIGUSR1 treatment because Windows
+  #endif // _WINDOWS
+
   MPI_Init(&argc,&argv);
+  #ifdef LIGGGHTS_DEBUG
+  feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
+  #endif
 
   LAMMPS *lammps = new LAMMPS(argc,argv,MPI_COMM_WORLD);
   lammps->input->file();

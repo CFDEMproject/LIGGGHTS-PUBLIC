@@ -10,18 +10,25 @@ compute command :h3
 
 [Syntax:]
 
-compute ID group-ID style args :pre
+compute ID group-ID style general_keywords general_values args :pre
 
-ID = user-assigned name for the computation
-group-ID = ID of the group of atoms to perform the computation on
-style = one of a list of possible style names (see below)
-args = arguments used by a particular style :ul
+ID = user-assigned name for the computation :ulb,l
+group-ID = ID of the group of atoms to perform the computation on :l
+style = one of a list of possible style names (see below) :l
+zero or more general_keywords/general_values pair may be appended :l
+general_keywords = {update_on_run_end} :l
+  {update_on_run_end} value = 'yes' or 'no'
+    yes = compute is updated at the last step of each run command
+    no = compute is not updated at the end of a run :pre
+args = arguments used by a particular style :l
+
+:ule
 
 [Examples:]
 
 compute 1 all temp
 compute newtemp flow temp/partial 1 1 0
-compute 3 all ke/atom :pre
+compute 3 all ke/atom update_on_run_end yes :pre
 
 [Description:]
 
@@ -121,6 +128,16 @@ If a compute value is accessed in another way, e.g. by a
 "variable"_variable.html, you may want to know whether it is an
 intensive or extensive value.  See the doc page for individual
 computes for further info.
+
+:line
+
+Compute values can also be used after a "run"_run.html command to perform
+"if"_if.html conditionals or "print"_print.html statements. In order to use the
+result of a compute outside of a run it needs to be updated at the end of each
+run. As computes generally update only upon request (e.g. before a dump) this
+needs to be specified explicitly using the {update_on_run_end} option which is
+available for every compute. If the associated value is set to 'yes' the compute
+will be updated at the end of each run command and will be available for use.
 
 :line
 

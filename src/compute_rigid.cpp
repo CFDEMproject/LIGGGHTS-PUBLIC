@@ -56,34 +56,68 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeRigid::ComputeRigid(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg),
-  multisphere_(0),
+ComputeRigid::ComputeRigid(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg),
+  is_single_(false),
+  id_single_(-1),
+  multisphere_(NULL),
+  property_(NULL),
   len_(0)
 {
-  if (narg != 5) error->compute_error(FLERR,this,"Illegal compute rigid command, expecting 5 arguments");
+  if (narg < iarg+2)
+      error->compute_error(FLERR,this,"expecting at least 2 arguments");
 
   if(strcmp("all",group->names[igroup]))
-    error->compute_error(FLERR,this,"must use group 'all'");
+      error->compute_error(FLERR,this,"must use group 'all'");
 
-  local_flag = 1;
-
-  array_local = 0;
-  vector_local = 0;
+  if(strstr(style,"single"))
+  {
+      is_single_ = true;
+      if(strcmp(arg[iarg++],"id"))
+          error->compute_error(FLERR,this,"expecting 'id'");
+      id_single_ = atoi(arg[iarg++]);
+  }
+  
+  else
+  {
+      local_flag = 1;
+      array_local = 0;
+      vector_local = 0;
+  }
 
   if(modify->n_fixes_style("multisphere") != 1)
-    error->compute_error(FLERR,this,"defining exactly one fix multisphere is required");
+      error->compute_error(FLERR,this,"defining exactly one fix multisphere is required");
   multisphere_ = & (static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0))->data());
 
-  // parse args
-
-  int iarg = 3;
+  // parse property
   if(strcmp(arg[iarg++],"property"))
-    error->compute_error(FLERR,this,"expecting keyword 'property'");
+      error->compute_error(FLERR,this,"expecting keyword 'property'");
   property_ = multisphere_->prop().getElementPropertyBase(arg[iarg++]);
 
-  // check arg validity
+  // set sizes for single
+  vector = 0;
+  if(is_single_)
+  {
+      if(0 == property_->lenVec())
+        error->compute_error(FLERR,this,"property has length of 0");
+      
+      else if(1 == property_->lenVec())
+      {
+          scalar_flag = 1;
+      }
+      
+      else
+      {
+          vector_flag = 1;
+          size_vector = property_->lenVec();
+          vector = new double [size_vector];
 
+          if(property_->isIntData())
+            error->compute_error(FLERR,this,"int vectors currently not supported");
+      }
+  }
+
+  // check arg validity
   if(!property_)
     error->compute_error(FLERR,this,"illegal property name used");
 
@@ -93,61 +127,94 @@ ComputeRigid::ComputeRigid(LAMMPS *lmp, int narg, char **arg) :
 /* ---------------------------------------------------------------------- */
 
 ComputeRigid::~ComputeRigid()
-{}
+{
+    if(vector) delete []vector;
+}
 
 /* ---------------------------------------------------------------------- */
 
 void ComputeRigid::update_pointers()
 {
     
-    size_local_rows = multisphere_->n_body();
-
-    if(property_->lenVec() > 1)
+    if(is_single_)
     {
-        size_local_cols = property_->lenVec();
-
-        if(len_ < size_local_rows)
+        int ibody = multisphere_->map(id_single_);
+        if(vector_flag)
         {
-            len_ = size_local_rows;
-            memory->grow(array_local,len_,size_local_cols,"compute/rigid:array_local");
-        }
-
-        if(property_->isDoubleData())
-        {
+            vectorZeroizeN(vector,size_vector);
             double **ptr = (double**) property_->begin_slow_dirty();
-            for(int i = 0; i < size_local_rows; i++)
-                for(int j = 0; j < size_local_cols; j++)
-                    array_local[i][j] = static_cast<double>(ptr[i][j]);
+            if(ibody >= 0 && property_->isDoubleData())
+                vectorAddN(vector,ptr[ibody],size_vector);
+            MPI_Sum_Vector(vector,size_vector,world);
         }
-        else if(property_->isIntData())
+        
+        else
         {
-            int **ptr = (int**) property_->begin_slow_dirty();
-            for(int i = 0; i < size_local_rows; i++)
-                for(int j = 0; j < size_local_cols; j++)
-                    array_local[i][j] = static_cast<double>(ptr[i][j]);
+            scalar = 0.;
+            if(ibody >= 0 && property_->isDoubleData())
+            {
+                double *ptr = (double*) property_->begin_slow_dirty();
+                scalar += ptr[ibody];
+            }
+            else if(property_->isIntData())
+            {
+                int *ptr = (int*) property_->begin_slow_dirty();
+                scalar += static_cast<double>(ptr[ibody]);
+            }
+            MPI_Sum_Scalar(scalar,world);
         }
     }
     else
     {
-        size_local_cols  = 0;
+        size_local_rows = multisphere_->n_body();
 
-        if(len_ < size_local_rows)
+        if(property_->lenVec() > 1)
         {
-            len_ = size_local_rows;
-            memory->grow(vector_local,len_,"compute/rigid:vector_local");
-        }
+            size_local_cols = property_->lenVec();
 
-        if(property_->isDoubleData())
-        {
-            double *ptr = (double*) property_->begin_slow_dirty();
-            for(int i = 0; i < size_local_rows; i++)
-                vector_local[i] = static_cast<double>(ptr[i]);
+            if(len_ < size_local_rows)
+            {
+                len_ = size_local_rows;
+                memory->grow(array_local,len_,size_local_cols,"compute/rigid:array_local");
+            }
+
+            if(property_->isDoubleData())
+            {
+                double **ptr = (double**) property_->begin_slow_dirty();
+                for(int i = 0; i < size_local_rows; i++)
+                    for(int j = 0; j < size_local_cols; j++)
+                        array_local[i][j] = static_cast<double>(ptr[i][j]);
+            }
+            else if(property_->isIntData())
+            {
+                int **ptr = (int**) property_->begin_slow_dirty();
+                for(int i = 0; i < size_local_rows; i++)
+                    for(int j = 0; j < size_local_cols; j++)
+                        array_local[i][j] = static_cast<double>(ptr[i][j]);
+            }
         }
-        else if(property_->isIntData())
+        else
         {
-            int *ptr = (int*) property_->begin_slow_dirty();
-            for(int i = 0; i < size_local_rows; i++)
-                vector_local[i] = static_cast<double>(ptr[i]);
+            size_local_cols  = 0;
+
+            if(len_ < size_local_rows)
+            {
+                len_ = size_local_rows;
+                memory->grow(vector_local,len_,"compute/rigid:vector_local");
+            }
+
+            if(property_->isDoubleData())
+            {
+                double *ptr = (double*) property_->begin_slow_dirty();
+                for(int i = 0; i < size_local_rows; i++)
+                    vector_local[i] = static_cast<double>(ptr[i]);
+            }
+            else if(property_->isIntData())
+            {
+                int *ptr = (int*) property_->begin_slow_dirty();
+                for(int i = 0; i < size_local_rows; i++)
+                    vector_local[i] = static_cast<double>(ptr[i]);
+            }
         }
     }
 }
@@ -157,6 +224,26 @@ void ComputeRigid::update_pointers()
 void ComputeRigid::init()
 {
   
+  update_pointers();
+}
+
+/* ---------------------------------------------------------------------- */
+
+double ComputeRigid::compute_scalar()
+{
+  invoked_scalar = update->ntimestep;
+
+  update_pointers();
+
+  return scalar;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void ComputeRigid::compute_vector()
+{
+  invoked_vector = update->ntimestep;
+
   update_pointers();
 }
 

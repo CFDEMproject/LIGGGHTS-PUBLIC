@@ -120,8 +120,6 @@ void FixContactPropertyAtomWall::clear()
     ipage_->reset();
     dpage_->reset();
 
-    if(fix_nneighs_) fix_nneighs_->do_forward_comm();
-
     // allocate for owned and ghost
     for (int i = 0; i < nall; i++)
     {
@@ -138,7 +136,9 @@ void FixContactPropertyAtomWall::clear()
    }
 }
 
-bool FixContactPropertyAtomWall::haveContact(const int iP, const int idTri, double *&history)
+/* ---------------------------------------------------------------------- */
+
+bool FixContactPropertyAtomWall::haveContact(const int iP, const int idTri, double *&history) const
 {
     int *tri = partner_[iP];
     const double half_skin = neighbor->skin * 0.5;
@@ -153,5 +153,10 @@ bool FixContactPropertyAtomWall::haveContact(const int iP, const int idTri, doub
         }
     }
     return false;
+}
+
+FixMeshSurface *FixContactPropertyAtomWall::getMesh() const
+{
+    return fix_mesh_surface_;
 }
 

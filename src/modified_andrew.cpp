@@ -81,7 +81,7 @@ ModifiedAndrew::~ModifiedAndrew(){
 double ModifiedAndrew::area()
 {
     double A;
-    vector<Point> hull_c = convex_hull(contacts_);
+    std::vector<Point> hull_c = convex_hull(contacts_);
 
     // multi-proc case
     if(1 < comm->nprocs) //(1)//
@@ -101,8 +101,8 @@ double ModifiedAndrew::area()
         // proc0 calculates convex hull
         if(0 == comm->me) {
 
-            vector<Point> hull_c_allreduced = construct_hull_c_all(data0,ndata0);
-            vector<Point> hull_c_global = convex_hull(hull_c_allreduced);
+            std::vector<Point> hull_c_allreduced = construct_hull_c_all(data0,ndata0);
+            std::vector<Point> hull_c_global = convex_hull(hull_c_allreduced);
 
             if (hull_c_global.size() < 3)
                 A = 0.;
@@ -146,7 +146,7 @@ void ModifiedAndrew::add_contact(Circle c){
 
 /* ---------------------------------------------------------------------- */
 
-int ModifiedAndrew::construct_data(vector<Point> hull_c, double *&data)
+int ModifiedAndrew::construct_data(std::vector<Point> hull_c, double *&data)
 {
     int size = hull_c.size();
     int datasize = 2*size;
@@ -163,9 +163,9 @@ int ModifiedAndrew::construct_data(vector<Point> hull_c, double *&data)
 
 /* ---------------------------------------------------------------------- */
 
-vector<Point> ModifiedAndrew::construct_hull_c_all(double *data0, int ndata0)
+std::vector<Point> ModifiedAndrew::construct_hull_c_all(double *data0, int ndata0)
 {
-    vector<Point> result;
+    std::vector<Point> result;
 
     Point c;
 
@@ -191,7 +191,7 @@ return 0.5*(-(m.y*p.x) + m.x*p.y +
 /* ---------------------------------------------------------------------- */
 
 // area of convex hull
-double ModifiedAndrew::area(vector<Point> H){
+double ModifiedAndrew::area(std::vector<Point> H){
   double a = 0.0;
   Point m = mean_point(H);
 
@@ -215,7 +215,7 @@ double ModifiedAndrew::cross(Point O, Point A, Point B)
 /* ---------------------------------------------------------------------- */
 
 // find the mean of a vector of points (excluding the first)
-Point ModifiedAndrew::mean_point(vector<Point> P){
+Point ModifiedAndrew::mean_point(std::vector<Point> P){
   Point mean;
 
   double x_accum = 0.0, y_accum = 0.0;
@@ -235,10 +235,10 @@ Point ModifiedAndrew::mean_point(vector<Point> P){
 
 // Returns a list of points on the convex hull in counter-clockwise order.
 // Note: the last circle in the returned list is the same as the first one.
-vector<Point> ModifiedAndrew::convex_hull(vector<Point> P)
+std::vector<Point> ModifiedAndrew::convex_hull(std::vector<Point> P)
 {
     int n = P.size(), k = 0;
-    vector<Point> H(2*n);
+    std::vector<Point> H(2*n);
 
     // Sort points lexicographically
     sort(P.begin(), P.end());

@@ -1,0 +1,13 @@
+Obj*/*
+style_*
+lmp_*
+version_liggghts.h
+.*.sw?
+debug_make_auto
+liblmp_*
+liblammps*
+MAKE/Makefile.user*
+!MAKE/Makefile.user_default
+MAKE/Makefile.auto.options*
+STUBS/libmpi_stubs.a
+STUBS/mpi.o

@@ -54,7 +54,7 @@ namespace LAMMPS_NS {
     {
      public:
 
-        ParticleToInsert(LAMMPS* lmp,int ns = 1);
+        ParticleToInsert(LAMMPS* lmp, int ns = 1, class FixPropertyAtom *_fix_release = NULL);
 
         virtual ~ParticleToInsert();
 
@@ -86,9 +86,16 @@ namespace LAMMPS_NS {
         double v_ins[3];
         double omega_ins[3];
 
-        // value of a fix property/atom at insertion
-        class FixPropertyAtom *fix_property;
-        double fix_property_value;
+        // a custom id for the history writing
+        // in fix insert/stream/predefined
+        int id_ins;
+        class FixPropertyAtom * const fix_release;
+
+        // value of a fix property/atoms at insertion
+        class FixPropertyAtom **fix_property;
+        int n_fix_property;
+        int *fix_property_nentry;
+        double **fix_property_value;
 
         virtual int insert();
         virtual int check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList<interpolate_no> & neighList);
@@ -99,6 +106,14 @@ namespace LAMMPS_NS {
         virtual int set_x_v_omega(double *,double *,double *,double *);
 
         virtual void scale_pti(double r_scale);
+
+        void setFixTemplate(FixPropertyAtom* fix_template)
+        { fix_template_ = fix_template; }
+
+    private:
+
+        // Fix property atom that identifies the template
+        FixPropertyAtom *fix_template_;
     };
 
 }

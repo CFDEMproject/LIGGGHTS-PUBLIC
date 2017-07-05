@@ -259,6 +259,7 @@ void FixCfdCouplingForceImplicit::post_force(int)
   double frc[3];
 
   vectorZeroize3D(dragforce_total);
+  vectorZeroize3D(hdtorque_total);
 
   // add dragforce to force vector
   for (int i = 0; i < nlocal; i++)

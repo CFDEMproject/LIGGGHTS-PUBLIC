@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeMSD : public Compute {
  public:
-  ComputeMSD(class LAMMPS *, int, char **);
+  ComputeMSD(class LAMMPS *, int &iarg, int, char **);
   virtual ~ComputeMSD();
   void init();
   virtual void compute_vector();

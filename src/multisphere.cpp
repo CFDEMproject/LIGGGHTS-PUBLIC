@@ -69,6 +69,7 @@ Multisphere::Multisphere(LAMMPS *lmp) :
   fcm_          (*customValues_.addElementProperty< VectorContainer<double,3> >("fcm","comm_none","frame_invariant", "restart_no")),
   torquecm_     (*customValues_.addElementProperty< VectorContainer<double,3> >("torque","comm_none","frame_invariant", "restart_no")),
   dragforce_cm_ (*customValues_.addElementProperty< VectorContainer<double,3> >("dragforce_cm","comm_none","frame_invariant", "restart_no")),
+  hdtorque_cm_  (*customValues_.addElementProperty< VectorContainer<double,3> >("hdtorque_cm","comm_none","frame_invariant", "restart_no")),
 
   angmom_ (*customValues_.addElementProperty< VectorContainer<double,3> >("angmom","comm_exchange_borders","frame_invariant", "restart_yes")),
   omega_  (*customValues_.addElementProperty< VectorContainer<double,3> >("omega","comm_exchange_borders","frame_invariant", "restart_yes")),
@@ -140,6 +141,7 @@ void Multisphere::add_body(int nspheres, double *xcm_ins, double *xcm_to_xbound_
     fcm_.set(n,zerovec);
     torquecm_.set(n,zerovec);
     dragforce_cm_.set(n,zerovec);
+    hdtorque_cm_.set(n,zerovec);
 
     angmom_.set(n,zerovec);
     omega_.set(n,omega_ins);
@@ -451,7 +453,7 @@ bool Multisphere::check_lost_atoms(int *body, double *atom_delflag, double *body
             
             body_existflag[i] = 1.;
         }
-        else if (-1 == body_tag)
+        else if (body_tag == -1)
             body_existflag[i] = 1.;
     }
 
@@ -609,6 +611,16 @@ double Multisphere::extract_ke()
   return 0.5*mvv2e*ke;
 }
 
+double Multisphere::extract_vave()
+{
+  double vave = 0.0;
+  for (int i = 0; i < nbody_; i++)
+    vave += vectorMag3D(vcm_(i));
+
+  MPI_Sum_Scalar(vave,world);
+  return vave/nbody_all_;
+}
+
 /* ----------------------------------------------------------------------
    return rotational KE for all rigid bodies
    Erotational = 1/2 I wbody^2
@@ -639,4 +651,14 @@ double Multisphere::extract_rke()
   MPI_Sum_Scalar(rke,world);
 
   return 0.5*rke;
+}
+
+double Multisphere::extract_omega_ave()
+{
+  double omega_ave = 0.0;
+  for (int i = 0; i < nbody_; i++)
+    omega_ave += vectorMag3D(omega_(i));
+
+  MPI_Sum_Scalar(omega_ave,world);
+  return omega_ave/nbody_all_;
 }

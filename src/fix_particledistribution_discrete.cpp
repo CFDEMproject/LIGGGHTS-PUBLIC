@@ -67,7 +67,8 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, int narg, char **arg) :
-  Fix(lmp, narg, arg)
+  Fix(lmp, narg, arg),
+  fix_template_(NULL)
 {
   restart_global = 1;
 
@@ -361,6 +362,29 @@ void FixParticledistributionDiscrete::random_init_list(int ntotal)
 
 }
 
+void FixParticledistributionDiscrete::direct_init_list(const int * const parttogen, FixPropertyAtom * const fix_release)
+{
+    int n_pti_max_requested = 0;
+    for (int i = 0; i < ntemplates; i++)
+    {
+        if (parttogen[i] > templates[i]->n_pti_max)
+        {
+            templates[i]->delete_ptilist();
+            templates[i]->init_ptilist(parttogen[i], true, fix_release);
+        }
+        n_pti_max_requested += parttogen[i];
+    }
+
+    // re-allocate if need more total ptis in distribution than allocated so far
+    if(n_pti_max_requested > n_pti_max)
+    {
+        n_pti_max = n_pti_max_requested;
+        if(pti_list) delete []pti_list;
+        pti_list = new ParticleToInsert*[n_pti_max];
+        
+    }
+}
+
 /* ----------------------------------------------------------------------
    tell all templates to generate their pti_list, wire their pti_list to
    the list in this fix. returns number of particles to be inserted.
@@ -450,7 +474,39 @@ int FixParticledistributionDiscrete::randomize_list(int ntotal,int insert_groupb
     }
 
     if(n_pti != ninsert)
-		error->one(FLERR,"Internal error in FixParticledistributionDiscrete::randomize_list");
+        error->one(FLERR,"Internal error in FixParticledistributionDiscrete::randomize_list");
+
+    ninserted = ninsert;
+    return ninsert;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixParticledistributionDiscrete::direct_set_ptlist(const int itemplate, const int i, const void * const data, const int distribution_groupbit)
+{
+    templates[itemplate]->direct_set_ptlist(i, data, distribution_groupbit | groupbit, distorder[itemplate]);
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixParticledistributionDiscrete::update_ptlist_pointer(const int * ext_parttogen)
+{
+    n_pti = 0;
+    ninsert = 0;
+    for (int i = 0; i < ntemplates; i++)
+    {
+        ninsert += ext_parttogen[i];
+        int chosendist = distorder[i];
+        parttogen[chosendist] = ext_parttogen[chosendist];
+        for (int j = 0; j < parttogen[chosendist]; j++)
+        {
+            pti_list[n_pti + j] = templates[chosendist]->pti_list[j];
+        }
+        n_pti += parttogen[chosendist];
+    }
+
+    if(n_pti != ninsert)
+        error->one(FLERR,"Internal error in FixParticledistributionDiscrete::update_ptlist_ptr");
 
     ninserted = ninsert;
     return ninsert;
@@ -486,10 +542,26 @@ void FixParticledistributionDiscrete::pre_insert(int n,class FixPropertyAtom *fp
 
         for(int i = 0; i < n; i++)
         {
-            pti_list[i]->fix_property = fp;
-            pti_list[i]->fix_property_value = val;
+            if (!pti_list[i]->fix_property)
+            {
+                pti_list[i]->fix_property = new FixPropertyAtom*[1];
+                if (pti_list[i]->fix_property_value)
+                    error->one(FLERR, "Internal error (fix property pti list)");
+                pti_list[i]->fix_property_value = new double*[1];
+                pti_list[i]->fix_property_value[0] = new double[1];
+                if (pti_list[i]->fix_property_nentry)
+                    error->one(FLERR, "Internal error (fix property pti list)");
+                pti_list[i]->fix_property_nentry = new int[1];
+            }
+            pti_list[i]->fix_property[0] = fp;
+            pti_list[i]->fix_property_value[0][0] = val;
+            pti_list[i]->n_fix_property = 1;
+            pti_list[i]->fix_property_nentry[0] = 1;
         }
     }
+
+    for(int i = 0; i < n; i++)
+        pti_list[i]->setFixTemplate(fix_template_);
 }
 
 /* ----------------------------------------------------------------------
@@ -622,4 +694,55 @@ void FixParticledistributionDiscrete::restart(char *buf)
   seed = static_cast<int> (list[n++]) + comm->me;
 
   random->reset(seed);
+}
+
+/* ----------------------------------------------------------------------
+   generate a hash for unique identification
+------------------------------------------------------------------------- */
+unsigned int FixParticledistributionDiscrete::generate_hash()
+{
+    unsigned int hash = 0;
+    unsigned int start = seed*420001; // it's magic
+    add_hash_value(ntemplates, start, hash);
+    for (int i=0; i<ntemplates; i++)
+    {
+        add_hash_value(distweight[i], start, hash);
+        add_hash_value(distorder[i], start, hash);
+        add_hash_value((int)templates[i]->generate_hash(), start, hash);
+    }
+    add_hash_value(maxtype, start, hash);
+    add_hash_value(mintype, start, hash);
+    add_hash_value(volexpect, start, hash);
+    add_hash_value(massexpect, start, hash);
+    add_hash_value(maxnspheres, start, hash);
+    return hash;
+}
+
+void FixParticledistributionDiscrete::add_hash_value(const int value, unsigned int &start, unsigned int &hash)
+{
+    if (value >= 0)
+        hash = hash*start + (unsigned int)value;
+    else
+        hash = hash*start + (unsigned int)(-value) + INT_MAX;
+    start = start*seed;
+}
+
+void FixParticledistributionDiscrete::add_hash_value(double value, unsigned int &start, unsigned int &hash)
+{
+    int ivalue = 0;
+    if (value < 0)
+        value *= -1.0;
+    if (value > 1e-50)
+    {
+        while (value > 1e6)
+            value *= 1e-6;
+
+        while (value < 1e0)
+            value *= 1e6;
+        int high = (int) value;
+        double remainder = (value - (double)high)*1e6;
+        int low = (int) remainder;
+        ivalue = high + low;
+    }
+    add_hash_value(ivalue, start, hash);
 }

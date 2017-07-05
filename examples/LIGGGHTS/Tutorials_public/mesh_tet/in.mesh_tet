@@ -53,7 +53,7 @@ thermo_modify	lost ignore norm no
 
 #insert the first particles so that dump is not empty
 run		1
-dump		dmp all custom 800 post/dump*.tetmesh id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
+dump		dmp all custom/vtk 800 post/tetmesh_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius
 
 #insert particles
 run		1000

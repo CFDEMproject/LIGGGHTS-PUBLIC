@@ -66,17 +66,20 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeCentroAtom::ComputeCentroAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeCentroAtom::ComputeCentroAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 4) error->all(FLERR,"Illegal compute centro/atom command");
+  if (narg != iarg+1) error->all(FLERR,"Illegal compute centro/atom command");
 
-  if (strcmp(arg[3],"fcc") == 0) nnn = 12;
-  else if (strcmp(arg[3],"bcc") == 0) nnn = 8;
-  else nnn = force->inumeric(FLERR,arg[3]);
+  if (strcmp(arg[iarg],"fcc") == 0)
+      nnn = 12;
+  else if (strcmp(arg[iarg],"bcc") == 0)
+      nnn = 8;
+  else
+      nnn = force->inumeric(FLERR,arg[iarg]);
 
   if (nnn <= 0 || nnn % 2)
-    error->all(FLERR,"Illegal neighbor value for compute centro/atom command");
+      error->all(FLERR,"Illegal neighbor value for compute centro/atom command");
 
   peratom_flag = 1;
   size_peratom_cols = 0;

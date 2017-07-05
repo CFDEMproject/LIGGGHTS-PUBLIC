@@ -59,23 +59,28 @@ class Region;
  * @brief A small particle structure
  */
 
-template<bool INTERPOLATION>
-class Particle
-{};
-
-template<>
-class Particle<false /*interpolation*/>
+class ParticleBase
 {
- public:
-  int index;
-  double x[3];
-  double radius;
+public:
+    int index;
+    double x[3];
+    double radius;
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
   double shape[3];
   double quaternion[4];
+  double roundness[2];
 #endif
+};
 
+template<bool INTERPOLATION>
+class Particle : public ParticleBase
+{};
+
+template<>
+class Particle<false /*interpolation*/> : public ParticleBase
+{
+ public:
   Particle(int _i,double * _pos, double _rad, int,int,double,double,double) {
     index = _i;
     LAMMPS_NS::vectorCopy3D(_pos, x);
@@ -85,36 +90,30 @@ class Particle<false /*interpolation*/>
     quaternion[0] = 1.0;
     quaternion[1] = quaternion[2] = quaternion[3] = 0.0;
     shape[0] = shape[1] = shape[2] = radius;
+    roundness[0] = roundness[1] = 2.0;
 #endif
   }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  Particle(int _i,double * pos, double rad, double *quaternion_, double *shape_,int,int,double,double,double) {
+  Particle(int _i,double * pos, double rad, double *quaternion_, double *shape_, double *roundness_, int,int,double,double,double) {
       index = _i;
       LAMMPS_NS::vectorCopy3D(pos, x);
       radius = rad;
       LAMMPS_NS::vectorCopy4D(quaternion_, quaternion);
       LAMMPS_NS::vectorCopy3D(shape_, shape);
+      LAMMPS_NS::vectorCopy2D(roundness_, roundness);
     }
 #endif
 };
 
 template<>
-class Particle<true /*interpolation*/>
+class Particle<true /*interpolation*/> : public ParticleBase
 {
  public:
-  int index;
-  double x[3];
-  double radius;
-
+  
   int ibin;
   int quadrant_bitfield;
   double wx, wy, wz;
-
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-  double shape[3];
-  double quaternion[4];
-#endif
 
   Particle(int _i,double * _pos, double _rad,int _ibin,int _quadrant,double _wx = -1.,double _wy = -1.,double _wz = -1.) {
     index = _i;
@@ -129,16 +128,19 @@ class Particle<true /*interpolation*/>
     quaternion[0] = 1.0;
     quaternion[1] = quaternion[2] = quaternion[3] = 0.0;
     shape[0] = shape[1] = shape[2] = radius;
+    roundness[0] = roundness[1] = 2.0;
 #endif
   }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  Particle(int _i, double * pos, double rad, double *quaternion_, double *shape_, int _ibin,int _quadrant,double _wx = -1.,double _wy = -1.,double _wz = -1.) {
+  Particle(int _i, double * pos, double rad, double *quaternion_, double *shape_, double *roundness_, int _ibin,int _quadrant,double _wx = -1.,double _wy = -1.,double _wz = -1.) {
       index = _i;
       LAMMPS_NS::vectorCopy3D(pos, x);
       radius = rad;
       LAMMPS_NS::vectorCopy4D(quaternion_, quaternion);
       LAMMPS_NS::vectorCopy3D(shape_, shape);
+      LAMMPS_NS::vectorCopy2D(roundness_, roundness);
+
       ibin = _ibin;
       quadrant_bitfield = _quadrant;
       wx = _wx;
@@ -168,25 +170,28 @@ const static bool interpolate_no  = false;
  * variant stores lists with offsets
  */
 
+class BinBase
+{
+public:
+    int id;
+    double center[3];
+};
+
 template<bool INTERPOLATION>
-class Bin
+class Bin : public BinBase
 {};
 
 template<>
-class Bin<false>
+class Bin<false> : public BinBase
 {
   public:
-    double center[3];
-
     ParticleListNoInterpolate particles;
 };
 
 template<>
-class Bin<true>
+class Bin<true> : public BinBase
 {
   public:
-    double center[3];
-
     ParticleListInterpolate particles;
 
     std::vector<Stencil> stencils;

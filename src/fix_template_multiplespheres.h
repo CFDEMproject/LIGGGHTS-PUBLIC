@@ -50,6 +50,38 @@ FixStyle(particletemplate/multiplespheres,FixTemplateMultiplespheres)
 
 #include "fix.h"
 #include "fix_template_sphere.h"
+#include "fix_property_atom.h"
+
+namespace PARTICLE_PACKING
+{
+
+class MultipleSphere : public Sphere
+{
+public:
+    MultipleSphere() :
+        Sphere(),
+        type(0),
+        bond_random_id(0.0)
+    {}
+
+    MultipleSphere(const double * const _x, const double _radius, const double _density, const int _id, const int _type, const double _bond_random_id) :
+        Sphere(_x, _radius, _density, _id),
+        type(_type),
+        bond_random_id(_bond_random_id)
+    {}
+
+    int get_type() const
+    { return type; }
+
+    double get_bond_random_id() const
+    { return bond_random_id; }
+
+private:
+    int type;
+    double bond_random_id;
+};
+
+}
 
 namespace LAMMPS_NS {
 
@@ -73,16 +105,22 @@ class FixTemplateMultiplespheres : public FixTemplateSphere {
   virtual void randomize_single();
 
   // multi insertion
-  virtual void init_ptilist(int);
+  virtual void init_ptilist(int n_random_max, const bool enforce_single = false, FixPropertyAtom * const fix_release = NULL);
   void randomize_ptilist(int ,int ,int);
+  void direct_set_ptlist(const int i, const void * const data, const int distribution_groupbit, const int distorder);
 
   virtual void finalize_insertion() {}
+
+  virtual unsigned int generate_hash();
 
   inline bool all_overlap_none()
   { return no_overlap; }
 
   inline bool all_overlap_atleast_one_slightly()
   { return overlap_slightly; }
+
+  inline double get_bond_id(const int i) const
+  { return fix_bond_random_id ? fix_bond_random_id->vector_atom[i] : 0.0; }
 
  protected:
 

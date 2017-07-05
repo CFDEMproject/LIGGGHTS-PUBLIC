@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeBondLocal : public Compute {
  public:
-  ComputeBondLocal(class LAMMPS *, int, char **);
+  ComputeBondLocal(class LAMMPS *, int &iarg, int, char **);
   ~ComputeBondLocal();
   void init();
   void compute_local();

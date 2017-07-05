@@ -1,6 +1,6 @@
 {
-   "version"   : "Version: master-1.1.1-beta, compiled 2017-01-15-15:08:32 by sradl", 
-   "git_remote": "https://sradl1981@github.com/CFDEMproject/PaScal", 
+   "version"   : "Version: master-1.2.1-beta, compiled 2017-01-27-22:05:09 by sradl", 
+   "git_remote": "https://github.com/CFDEMproject/ParScale-PUBLIC", 
    "git_branch": "master", 
-   "git_commit": "v1.1.1-beta-34-ge78ccc63-dirty"  
+   "git_commit": "v1.2.1-beta-2-g577fdcee-dirty"  
 }

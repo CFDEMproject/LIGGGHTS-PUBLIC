@@ -63,10 +63,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputePE::ComputePE(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputePE::ComputePE(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 3) error->all(FLERR,"Illegal compute pe command");
+  if (narg < iarg) error->all(FLERR,"Illegal compute pe command");
   if (igroup) error->all(FLERR,"Compute pe must use group all");
 
   scalar_flag = 1;
@@ -74,7 +74,7 @@ ComputePE::ComputePE(LAMMPS *lmp, int narg, char **arg) :
   peflag = 1;
   timeflag = 1;
 
-  if (narg == 3) {
+  if (narg == iarg) {
     pairflag = 1;
     bondflag = angleflag = dihedralflag = improperflag = 1;
     kspaceflag = 1;
@@ -84,7 +84,6 @@ ComputePE::ComputePE(LAMMPS *lmp, int narg, char **arg) :
     bondflag = angleflag = dihedralflag = improperflag = 0;
     kspaceflag = 0;
     thermoflag = 0;
-    int iarg = 3;
     while (iarg < narg) {
       if (strcmp(arg[iarg],"pair") == 0) pairflag = 1;
       else if (strcmp(arg[iarg],"bond") == 0) bondflag = 1;

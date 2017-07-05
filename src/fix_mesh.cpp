@@ -63,6 +63,7 @@
 #include "modify.h"
 #include "comm.h"
 #include "math_extra.h"
+#include "string_liggghts.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -72,6 +73,7 @@ using namespace FixConst;
 FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
 : FixBaseLiggghts(lmp, narg, arg),
   atom_type_mesh_(-1),
+  temperature_mesh_(0.),
   mass_temperature_(0.),
   trackPerElementTemp_(false),
   mesh_(NULL),
@@ -105,8 +107,10 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
     iarg_ = 3;
 
     char mesh_fname[256];
-    if(strcmp(arg[iarg_++],"file"))
-        error->fix_error(FLERR,this,"expecting keyword 'file'");
+    bool is_fix = strcmp(arg[iarg_], "fix") == 0;
+    if(!(strcmp(arg[iarg_],"file")==0 || is_fix))
+        error->fix_error(FLERR,this,"expecting keyword 'file' or 'fix'");
+    iarg_++;
     strcpy(mesh_fname,arg[iarg_++]);
 
     // parse args
@@ -161,9 +165,9 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
         } else if (strcmp(arg[iarg_],"element_exclusion_list") == 0) {
             if (narg < iarg_+3) error->fix_error(FLERR,this,"not enough arguments");
             iarg_++;
-            if(0 == strcmp("read",arg[iarg_]))
+            if(strcmp("read",arg[iarg_]) == 0)
                 read_exclusion_list_ = true;
-            else if(0 == strcmp("write",arg[iarg_]))
+            else if(strcmp("write",arg[iarg_]) == 0)
                 read_exclusion_list_ = false;
             else error->fix_error(FLERR,this,"expecing 'read' or 'write' after 'element_exclusion_list'");
             iarg_++;
@@ -200,8 +204,8 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
     // construct a mesh - can be surface or volume mesh
     // just create object and return if reading data from restart file
     
-    if(modify->have_restart_data(this)) create_mesh_restart();
-    else create_mesh(mesh_fname);
+    if(modify->have_restart_data(this)) create_mesh_restart(mesh_fname);
+    else create_mesh(mesh_fname, is_fix);
 
     // parse further args
 
@@ -235,9 +239,9 @@ FixMesh::FixMesh(LAMMPS *lmp, int narg, char **arg)
           hasargs = true;
       } else if (strcmp(arg[iarg_],"temperature") == 0) {
           iarg_++;
-          double Temp_mesh = atof(arg[iarg_++]);
+          temperature_mesh_ = atof(arg[iarg_++]);
           mesh_->prop().addGlobalProperty< ScalarContainer<double> >("Temp","comm_none","frame_invariant","restart_yes");
-          mesh_->prop().setGlobalProperty< ScalarContainer<double> >("Temp",Temp_mesh);
+          mesh_->prop().setGlobalProperty< ScalarContainer<double> >("Temp",temperature_mesh_);
           mesh_->prop().addGlobalProperty< ScalarContainer<double> >("heatFlux","comm_none","frame_invariant","restart_no");
           mesh_->prop().setGlobalProperty< ScalarContainer<double> >("heatFlux",0.);
           mesh_->prop().addGlobalProperty< ScalarContainer<double> >("heatFluxTotal","comm_none","frame_invariant","restart_yes");
@@ -265,13 +269,12 @@ void FixMesh::handle_exclusion_list()
         if(element_exclusion_list_)
         {
             char read_string[200];
-
             while(fgets(read_string,200,element_exclusion_list_ ) != 0)
             {
                 // remove trailing newline
-                char *pos;
-                if ((pos=strchr(read_string,'\n')) != NULL)
-                    *pos = '\0';
+                read_string[strcspn(read_string, "\r\n")] = 0; // works for LF, CR, CRLF, LFCR, ...
+                // trim string
+                strtrim(read_string);
                 
                 int line = force->inumeric(FLERR,read_string);
                 memory->grow(exclusion_list_, size_exclusion_list_+1, "exclusion_list");
@@ -325,7 +328,7 @@ void FixMesh::post_create()
 
 /* ---------------------------------------------------------------------- */
 
-void FixMesh::create_mesh(char *mesh_fname)
+void FixMesh::create_mesh(char *mesh_fname, bool is_fix)
 {
     
     if(strncmp(style,"mesh/surface",12) == 0)
@@ -344,25 +347,48 @@ void FixMesh::create_mesh(char *mesh_fname)
         if(precision_ > 0.) mesh_->setPrecision(precision_);
         if(min_feature_length_ > 0.) mesh_->setMinFeatureLength(min_feature_length_);
 
-        // read file
-        // can be from STL file or VTK file
-        InputMeshTri *mesh_input = new InputMeshTri(lmp,0,NULL);
+        if (is_fix)
+        {
+            Fix *fix_base = modify->find_fix_id(mesh_fname);
+            if (!fix_base)
+                error->all(FLERR, "Could not find appropriate fix to read mesh data from");
+            if (!fix_base->can_create_mesh())
+                error->all(FLERR, "Supplied fix does not provide a mesh");
+            const int tri_count = fix_base->getCreateMeshTriCount();
+            if (tri_count == 0)
+                error->all(FLERR, "Extruded triangle count is zero. Are you sure your fix mesh/surface has extrude_planar set");
+            double **node;
+            node = new double*[3];
+            for (int i=0; i < tri_count*3; i++)
+            {
+                node[i%3] = fix_base->getCreateMeshTriNode(i);
+                if (i%3 == 2)
+                    static_cast<TriMesh*>(mesh_)->addElement(node, -1);
+            }
+            delete [] node;
+        }
+        else
+        {
+            // read file
+            // can be from STL file or VTK file
+            InputMeshTri *mesh_input = new InputMeshTri(lmp,0,NULL);
 
-        // case write exlusion list
-        if(!read_exclusion_list_ && element_exclusion_list_)
-            mesh_->setElementExclusionList(element_exclusion_list_);
+            // case write exlusion list
+            if(!read_exclusion_list_ && element_exclusion_list_)
+                mesh_->setElementExclusionList(element_exclusion_list_);
 
-        mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_,
-                                size_exclusion_list_,exclusion_list_,region_);
-        
-        delete mesh_input;
+            mesh_input->meshtrifile(mesh_fname,static_cast<TriMesh*>(mesh_),verbose_,
+                                    size_exclusion_list_,exclusion_list_,region_);
+            
+            delete mesh_input;
+        }
     }
     else error->one(FLERR,"Illegal implementation of create_mesh();");
 }
 
 /* ---------------------------------------------------------------------- */
 
-void FixMesh::create_mesh_restart()
+void FixMesh::create_mesh_restart(char *mesh_fname)
 {
     
     if(strcmp(style,"mesh/surface/stress/deform") == 0)
@@ -372,6 +398,25 @@ void FixMesh::create_mesh_restart()
     else if(strncmp(style,"mesh/surface",12) == 0)
         mesh_ = new TriMesh(lmp);
     else error->one(FLERR,"Illegal implementation of create_mesh();");
+
+    // test if file exists
+    if (0 == comm->me)
+    {
+       char str[512];
+       FILE * test = fopen(mesh_fname,"r");
+       if(!test)
+       {
+
+          sprintf(str,"Cannot open mesh file %s. FYI: This file is required, but data will be taken from restart file",mesh_fname);
+          error->one(FLERR,str);
+       }
+       else
+       {
+          sprintf(str,"INFO: mesh file (%s) is required, but data will be taken from restart file",mesh_fname);
+          error->message(FLERR,str);
+          fclose(test);
+       }
+    }
 
     // set properties that are important for reading
     mesh_->setMeshID(id);
@@ -467,7 +512,9 @@ void FixMesh::setup_pre_force(int vflag)
 
 void FixMesh::setup(int vflag)
 {
-    
+    if(temperature_mesh_ > 1e-12)
+        mesh_->prop().setGlobalProperty< ScalarContainer<double> >("Temp",temperature_mesh_);
+
     mesh_->reverseComm();
 }
 
@@ -476,7 +523,7 @@ void FixMesh::setup(int vflag)
 void FixMesh::initialSetup()
 {
     
-    mesh_->initalSetup();
+    mesh_->initialSetup();
 
     // warn if there are elements that extend outside box
     if(!mesh_->allNodesInsideSimulationBox() && 0 == comm->me)
@@ -581,7 +628,7 @@ void FixMesh::moveMesh(double const dx, double const dy, double const dz)
       //fprintf(screen,"%f %f %f\n", dx,dy,dz);
     }
 
-    double arg[3] = {dx,dy,dz};
+    const double arg[3] = {dx,dy,dz};
     mesh_->move(arg);
 }
 
@@ -665,5 +712,37 @@ void FixMesh::box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double 
             zlo = MathExtraLiggghts::min(zlo,node[2]);
             zhi = MathExtraLiggghts::max(zhi,node[2]);
         }
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMesh::move(const double * const dx, const FixMoveMesh * const caller)
+{
+    mesh_->move(dx);
+    std::list<FixMoveMesh *>::iterator it;
+    bool found = false;
+    for (it = fixMoveMeshes_.begin(); it != fixMoveMeshes_.end(); it++)
+    {
+        if (*it == caller)
+            found = true;
+        if (found)
+            (*it)->move(dx);
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixMesh::rotate(const double dphi, const double * const axis, const double * const center, const FixMoveMesh * const caller)
+{
+    mesh_->rotate(dphi, axis, center);
+    std::list<FixMoveMesh *>::iterator it;
+    bool found = false;
+    for (it = fixMoveMeshes_.begin(); it != fixMoveMeshes_.end(); it++)
+    {
+        if (*it == caller)
+            found = true;
+        if (found)
+            (*it)->rotate(dphi, axis, center);
     }
 }

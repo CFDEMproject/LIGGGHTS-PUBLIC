@@ -168,6 +168,7 @@ class Input : protected Pointers {
   void run_style();
   void soft_particles(); 
   void hard_particles();
+  void write_restart_on_signal();
   void special_bonds();
   void suffix();
   void thermo();

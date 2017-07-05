@@ -59,13 +59,13 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputePropertyAtom::ComputePropertyAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputePropertyAtom::ComputePropertyAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 4) error->all(FLERR,"Illegal compute property/atom command");
+  if (narg < iarg+1) error->all(FLERR,"Illegal compute property/atom command");
 
   peratom_flag = 1;
-  nvalues = narg - 3;
+  nvalues = narg - iarg;
   if (nvalues == 1) size_peratom_cols = 0;
   else size_peratom_cols = nvalues;
 
@@ -76,8 +76,9 @@ ComputePropertyAtom::ComputePropertyAtom(LAMMPS *lmp, int narg, char **arg) :
   index = new int[nvalues];
 
   int i;
-  for (int iarg = 3; iarg < narg; iarg++) {
-    i = iarg-3;
+  const int arg_offset = iarg;
+  for (; iarg < narg; iarg++) {
+    i = iarg-arg_offset;
 
     if (strcmp(arg[iarg],"id") == 0) {
       pack_choice[i] = &ComputePropertyAtom::pack_id;
@@ -91,6 +92,10 @@ ComputePropertyAtom::ComputePropertyAtom(LAMMPS *lmp, int narg, char **arg) :
     } else if (strcmp(arg[iarg],"mass") == 0) {
       pack_choice[i] = &ComputePropertyAtom::pack_mass;
 
+    } else if (strcmp(arg[iarg],"volume") == 0) {
+      pack_choice[i] = &ComputePropertyAtom::pack_vol;
+    } else if (strcmp(arg[iarg],"eqradius") == 0) {
+      pack_choice[i] = &ComputePropertyAtom::pack_eq_radius;
     } else if (strcmp(arg[iarg],"x") == 0) {
       pack_choice[i] = &ComputePropertyAtom::pack_x;
     } else if (strcmp(arg[iarg],"y") == 0) {
@@ -436,6 +441,35 @@ void ComputePropertyAtom::pack_type(int n)
   }
 }
 
+/* ---------------------------------------------------------------------- */
+
+void ComputePropertyAtom::pack_vol(int n)
+{
+  double *vol = atom->volume;
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+
+  for (int i = 0; i < nlocal; i++) {
+    if (mask[i] & groupbit) buf[n] = vol[i];
+    else buf[n] = 0.0;
+    n += nvalues;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void ComputePropertyAtom::pack_eq_radius(int n)
+{
+  double *vol = atom->volume;
+  int *mask = atom->mask;
+  int nlocal = atom->nlocal;
+
+  for (int i = 0; i < nlocal; i++) {
+    if (mask[i] & groupbit) buf[n] = cbrt(3.0*vol[i]/(4.0*M_PI));
+    else buf[n] = 0.0;
+    n += nvalues;
+  }
+}
 /* ---------------------------------------------------------------------- */
 
 void ComputePropertyAtom::pack_mass(int n)

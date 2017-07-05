@@ -150,7 +150,7 @@ void FixPropertyAtomTracerStream::init()
     if(0 == atom->map_style)
       error->fix_error(FLERR,this,"requires an 'atom_modify map' command to allocate an atom map");
 
-    Fix *fix_ms = modify->find_fix_style_strict("multisphere",0);
+    Fix *fix_ms = modify->find_fix_style("multisphere",0);
     if (fix_ms)
         error->warning(FLERR,"calculates the wrong mass in case of multisphere particles!");
 }
@@ -215,7 +215,7 @@ void FixPropertyAtomTracerStream::add_remove_packets()
 
 void FixPropertyAtomTracerStream::mark_tracers(int ilo, int ihi)
 {
-    vector<Releasedata> releasedata_local, releasedata_global;
+    std::vector<Releasedata> releasedata_local, releasedata_global;
     Releasedata one;
     FixPropertyAtom *fix_release = fix_ins_stream_->fix_prop_release();
     double **release_data = fix_release->array_atom;
@@ -294,7 +294,7 @@ void FixPropertyAtomTracerStream::mark_tracers(int ilo, int ihi)
 
 /* ---------------------------------------------------------------------- */
 
-int FixPropertyAtomTracerStream::construct_data(vector<Releasedata> data_c, int *&data)
+int FixPropertyAtomTracerStream::construct_data(std::vector<Releasedata> data_c, int *&data)
 {
     int size = data_c.size();
     int datasize = 2*size;
@@ -310,9 +310,9 @@ int FixPropertyAtomTracerStream::construct_data(vector<Releasedata> data_c, int 
 
 /* ---------------------------------------------------------------------- */
 
-vector<Releasedata> FixPropertyAtomTracerStream::construct_releasedata_all(int *data, int ndata)
+std::vector<Releasedata> FixPropertyAtomTracerStream::construct_releasedata_all(int *data, int ndata)
 {
-    vector<Releasedata> result;
+    std::vector<Releasedata> result;
     Releasedata r;
 
     for(int i = 0; i < ndata/2; i++)

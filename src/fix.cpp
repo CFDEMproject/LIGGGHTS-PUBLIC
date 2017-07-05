@@ -57,6 +57,7 @@
 #include "atom_masks.h"
 #include "memory.h"
 #include "error.h"
+#include "comm.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -68,7 +69,8 @@ Fix::Fix(LAMMPS *lmp, int narg, char **arg) :
     size_vector(0),
     size_array_rows(0),
     size_array_cols(0),
-    global_freq(0)
+    global_freq(0),
+    can_create_mesh_(false)
 {
   // fix ID, group, and style
   // ID must be all alphanumeric chars or underscores
@@ -240,4 +242,12 @@ void Fix::v_tally(int n, int *list, double total, double *v)
       vatom[m][5] += fraction*v[5];
     }
   }
+}
+
+// write out a buffer of size 0
+void Fix::write_restart(FILE *fp)
+{
+    int n = 0;
+    if (comm->me == 0)
+        fwrite(&n, sizeof(int), 1, fp);
 }

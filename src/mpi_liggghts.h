@@ -79,7 +79,7 @@ inline MPI_Datatype mpi_type<int>()
 template<>
 inline MPI_Datatype mpi_type<uint64_t>()
 {
-  return MPI_UNSIGNED_LONG ;
+  return MPI_LONG_LONG ;
 }
 
 /* ---------------------------------------------------------------------- */

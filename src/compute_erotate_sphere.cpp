@@ -67,20 +67,29 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeERotateSphere::ComputeERotateSphere(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeERotateSphere::ComputeERotateSphere(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+    Compute(lmp, iarg, narg, arg),
+    pfactor(1.0),
+    halfstep(false),
+    fix_ms(NULL)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute erotate/sphere command");
+    if (narg < iarg || narg > iarg+1) error->all(FLERR,"Illegal compute erotate/sphere command");
 
-  scalar_flag = 1;
-  extscalar = 1;
+    if (narg == iarg+1)
+    {
+        if (strcmp(arg[iarg++], "halfstep") == 0)
+            halfstep = true;
+        else
+            error->all(FLERR,"Illegal compute erotate/sphere option");
+    }
 
-  // error check
+    scalar_flag = 1;
+    extscalar = 1;
 
-  if (!atom->sphere_flag)
-    error->all(FLERR,"Compute erotate/sphere requires atom style sphere");
+    // error check
 
-  fix_ms = 0; 
+    if (!atom->sphere_flag)
+      error->all(FLERR,"Compute erotate/sphere requires atom style sphere");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -96,25 +105,35 @@ void ComputeERotateSphere::init()
 
 double ComputeERotateSphere::compute_scalar()
 {
-  invoked_scalar = update->ntimestep;
+    if (invoked_scalar == update->ntimestep)
+        return scalar;
+    invoked_scalar = update->ntimestep;
 
-  double **omega = atom->omega;
-  double *radius = atom->radius;
-  double *rmass = atom->rmass;
-  int *mask = atom->mask;
-  int nlocal = atom->nlocal;
+    double **omega = atom->omega;
+    double **torque = atom->torque;
+    double *radius = atom->radius;
+    double *rmass = atom->rmass;
+    int *mask = atom->mask;
+    int nlocal = atom->nlocal;
 
-  // sum rotational energy for each particle
-  // point particles will not contribute, due to radius = 0.0
+    // sum rotational energy for each particle
+    // point particles will not contribute, due to radius = 0.0
 
-  double erotate = 0.0;
-  for (int i = 0; i < nlocal; i++)
-    if (mask[i] & groupbit && (!fix_ms || fix_ms->belongs_to(i) < 0)) 
-      erotate += (omega[i][0]*omega[i][0] + omega[i][1]*omega[i][1] +
-                  omega[i][2]*omega[i][2]) * radius[i]*radius[i]*rmass[i];
+    double erotate = 0.0;
+    for (int i = 0; i < nlocal; i++)
+    {
+        if (mask[i] & groupbit && (!fix_ms || fix_ms->belongs_to(i) < 0)) 
+        {
+            const double mult = halfstep ? update->dt*0.5/(INERTIA*radius[i]*radius[i]*rmass[i]) : 0.0;
+            const double omega0 = omega[i][0] + mult*torque[i][0];
+            const double omega1 = omega[i][1] + mult*torque[i][1];
+            const double omega2 = omega[i][2] + mult*torque[i][2];
+            erotate += (omega0*omega0 + omega1*omega1 + omega2*omega2) * radius[i]*radius[i]*rmass[i];
+        }
+    }
 
-  MPI_Allreduce(&erotate,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
-  scalar *= pfactor;
-  
-  return scalar;
+    MPI_Allreduce(&erotate,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
+    scalar *= pfactor;
+    
+    return scalar;
 }

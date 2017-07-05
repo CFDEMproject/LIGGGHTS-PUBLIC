@@ -147,11 +147,13 @@
 <span id="index-0"></span><h1>compute erotate/sphere command<a class="headerlink" href="#compute-erotate-sphere-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID erotate/sphere</pre>
+<div class="highlight-python"><pre>compute ID group-ID erotate/sphere general_keywords general_values halfstep</pre>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
 <li>erotate/sphere = style name of this compute command</li>
+<li>general_keywords general_values are documented in <a class="reference external" href="compute.html&quot;">compute</a></li>
+<li>halfstep = optional keyword to compute energy at half step</li>
 </ul>
 </div>
 <div class="section" id="examples">
@@ -163,8 +165,11 @@
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Define a computation that calculates the rotational kinetic energy of
 a group of spherical particles.</p>
-<p>The rotational energy is computed as 1/2 I w^2, where I is the moment
-of inertia for a sphere and w is the particle&#8217;s angular velocity.</p>
+<p>The rotational energy is computed as 1/2 I w^2, where I is the moment of inertia
+for a sphere and w is the particle&#8217;s angular velocity.  By default the angular
+velocity is taken at the full time step (<em>w^i</em>). If the <em>halfstep</em> keyword is
+present in the definition of this compute, then the angular velocity is taken at
+the next half time step (<em>w^(i+1/2)</em>).</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">For <a class="reference internal" href="dimension.html"><em>2d models</em></a>, particles are treated

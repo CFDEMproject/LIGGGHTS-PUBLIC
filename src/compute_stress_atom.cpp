@@ -71,10 +71,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeStressAtom::ComputeStressAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeStressAtom::ComputeStressAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 3) error->all(FLERR,"Illegal compute stress/atom command");
+  if (narg < iarg) error->all(FLERR,"Illegal compute stress/atom command");
 
   peratom_flag = 1;
   size_peratom_cols = 6;
@@ -83,7 +83,7 @@ ComputeStressAtom::ComputeStressAtom(LAMMPS *lmp, int narg, char **arg) :
   comm_forward = 6; 
   comm_reverse = 6;
 
-  if (narg == 3) {
+  if (narg == iarg) {
     keflag = 1;
     pairflag = 1;
     bondflag = angleflag = dihedralflag = improperflag = 1;
@@ -95,7 +95,6 @@ ComputeStressAtom::ComputeStressAtom(LAMMPS *lmp, int narg, char **arg) :
     bondflag = angleflag = dihedralflag = improperflag = 0;
     kspaceflag = 0;
     fixflag = 0;
-    int iarg = 3;
     while (iarg < narg) {
       if (strcmp(arg[iarg],"ke") == 0) keflag = 1;
       else if (strcmp(arg[iarg],"pair") == 0) pairflag = 1;

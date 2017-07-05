@@ -24,7 +24,7 @@ general_keywords = {verbose} or {maxattempt} or {insert_every} or {overlapcheck}
   {maxattempt} value = ma
     ma = max # of insertion attempts per atom (positive integer)
   {insert_every} value = once or ie
-    once = value to signalise that isertion takes place only once (the step after the fix is issued)
+    once = value to signalise that insertion takes place only once (the step after the fix is issued)
     ie = every how many time-steps particles are inserted - insertion happens periodically (positive integer)
   {start} value = ts
     ts = time-step at which insertion should start (positive integer larger than current time-step)
@@ -57,15 +57,15 @@ general_keywords = {verbose} or {maxattempt} or {insert_every} or {overlapcheck}
     q1 q2 q3 q4 = quaternion values for constant orientation
   {omega} values = constant omegax omegay omegaz
     constant = obligatory word
-    omegax = x-comonent of angular velocity (1/time units)
-    omegay = y-comonent of angular velocity (1/time units)
-    omegaz = z-comonent of angular velocity (1/time units)
+    omegax = x-component of angular velocity (1/time units)
+    omegay = y-component of angular velocity (1/time units)
+    omegaz = z-component of angular velocity (1/time units)
   {set_property} values = property-varname val
     property-varname = variable name of a "fix property/atom"_fix_property.html holding a scalar value for each particle
     val = value to initialize the property with upon insertion  :pre
 
 following the general keyword/value section, one or more pack keyword/value pairs can be appended for the fix insert/pack command :l
-pack_keywords = {region} or {volumefraction_region} or {particles_in_region} or {mass_in_region} or {ntry_mc} :l
+pack_keywords = {region} or {volumefraction_region} or {particles_in_region} or {mass_in_region} or {check_dist_from_subdomain_border} or {ntry_mc} :l
 pack_keywords = where exactly one out of {volumefraction_region} or {particles_in_region} or {mass_in_region} has to be defined:l
   {region} value = region-ID
     region-ID = ID of the "region"_region.html where the particles will be generated 
@@ -75,6 +75,7 @@ pack_keywords = where exactly one out of {volumefraction_region} or {particles_i
     np =  desired number of particles in the region (positive integer)
   {mass_in_region} values = m
     m =  desired mass in the region (positive float, m > 0)
+  {check_dist_from_subdomain_border} values = yes or no
   {ntry_mc} values = n
     n = number of Monte-Carlo steps for calculating the region's volume  (positive integer) :pre
 :ule
@@ -88,7 +89,7 @@ fix ins all insert/pack seed 123457 distributiontemplate pdd1 insert_every once 
 Insert particles into a granular run either once or every few timesteps
 within the specified region, as defined via the {region} keyword.
 
-The {verbose} keyword controlls whether statistics about particle
+The {verbose} keyword controls whether statistics about particle
 insertion is output to the screen each time particles are inserted.
 
 This command must use the distributiontemplate keyword to refer to a
@@ -119,10 +120,15 @@ in the "fix_particledistribution_discrete"_fix_particledistribution_discrete.htm
 command (all of which can also be "all").
 
 The keyword {overlapcheck} controls if overlap is checked for at insertion,
-both within the inserted particle package and with other existig particles.
+both within the inserted particle package and with other existing particles.
 If this option is turned off, insertion will scale very well in parallel,
 otherwise not. Be aware that in case of no overlap check, highly overlapping
 configurations will be produced, so you will have to relax these configurations.
+
+With keyword {check_dist_from_subdomain_border}, the user can specify if
+in case of {overlapcheck} = yes particles are inserted only at least one
+bounding radius away from processor domain borders to avoid possible
+overlaps with particles inserted on another process.
 
 If overlapcheck if performed, the number of insertion attempts per
 particle can be specified via the {maxattempt} keyword. Each timestep
@@ -234,5 +240,5 @@ Dynamic regions are not supported as insertion region.
 The defaults are maxattempt = 50, all_in = no, overlapcheck = yes
 vel = 0.0 0.0 0.0, omega = 0.0 0.0 0.0, start = next time-step,
 duration = insert_every, ntry_mc = 100000, random_distribute = exact,
-{compress_tags} = no
+{compress_tags} = no, {check_dist_from_subdomain_border} = yes
 

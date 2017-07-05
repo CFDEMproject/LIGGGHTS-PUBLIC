@@ -10,10 +10,11 @@ compute rdf command :h3
 
 [Syntax:]
 
-compute ID group-ID rdf Nbin itype1 jtype1 itype2 jtype2 ... :pre
+compute ID group-ID rdf general_keyword general_values Nbin itype1 jtype1 itype2 jtype2 ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command
 rdf = style name of this compute command
+general_keywords general_values are documented in "compute"_compute.html"
 Nbin = number of RDF bins
 itypeN = central atom type for Nth RDF histogram (see asterisk form below)
 jtypeN = distribution atom type for Nth RDF histogram (see asterisk form below) :ul

@@ -1,5 +1,0 @@
-#include "normal_model_hertz.h"
-#include "normal_model_hertz_stiffness.h"
-#include "normal_model_hooke.h"
-#include "normal_model_hooke_hysteresis.h"
-#include "normal_model_hooke_stiffness.h"

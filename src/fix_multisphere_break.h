@@ -49,8 +49,6 @@ FixStyle(multisphere/break,FixMultisphereBreak)
 
 #include "fix_multisphere.h"
 
-using namespace std;
-
 namespace LAMMPS_NS {
 
 class FixMultisphereBreak : public FixMultisphere

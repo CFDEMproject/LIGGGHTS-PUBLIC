@@ -10,10 +10,11 @@ compute pressure command :h3
 
 [Syntax:]
 
-compute ID group-ID pressure temp-ID keyword ... :pre
+compute ID group-ID pressure general_keyword general_values temp-ID keyword ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command
 pressure = style name of this compute command
+general_keywords general_values are documented in "compute"_compute.html"
 temp-ID = ID of compute that calculates temperature
 zero or more keywords may be appended
 keyword = {ke} or {pair} or {bond} or {angle} or {dihedral} or {improper} or {kspace} or {fix} or {virial} :ul

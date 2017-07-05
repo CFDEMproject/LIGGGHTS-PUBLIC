@@ -237,6 +237,15 @@ int MPI_Get_count(MPI_Status *status, MPI_Datatype datatype, int *count)
 
 /* ---------------------------------------------------------------------- */
 
+int MPI_Get_version(int *version, int *subversion)
+{
+  *version = -1;
+  *subversion = -1;
+  return 0;
+}
+
+/* ---------------------------------------------------------------------- */
+
 int MPI_Comm_split(MPI_Comm comm, int color, int key, MPI_Comm *comm_out)
 {
   *comm_out = comm;

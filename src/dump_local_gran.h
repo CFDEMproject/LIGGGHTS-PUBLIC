@@ -153,6 +153,7 @@ class DumpLocalGran : public Pointers {
     void pack_area(int);
     void pack_delta(int);
     void pack_heat(int);
+    void pack_contact_point(int);
 };
 
 }

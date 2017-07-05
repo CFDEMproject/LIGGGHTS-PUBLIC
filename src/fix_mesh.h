@@ -49,11 +49,14 @@
 #define LMP_FIX_MESH_H
 
 #include "fix_base_liggghts.h"
+#include "fix_move_mesh.h"
+#include "abstract_mesh.h"
+#include <list>
 
 namespace LAMMPS_NS
 {
-  class FixMesh : public FixBaseLiggghts
-  {
+    class FixMesh : public FixBaseLiggghts
+    {
       public:
 
         FixMesh(LAMMPS *lmp, int narg, char **arg);
@@ -80,6 +83,10 @@ namespace LAMMPS_NS
         int min_type();
         int max_type();
 
+        void resetNodePosOrig(const FixMoveMesh * const caller);
+        void move(const double * const dx, const FixMoveMesh * const caller);
+        void rotate(const double dphi, const double * const axis, const double * const center, const FixMoveMesh * const caller);
+
         class AbstractMesh* mesh()
         { return mesh_; }
 
@@ -95,6 +102,22 @@ namespace LAMMPS_NS
         bool verbose()
         { return verbose_; }
 
+        void register_move(FixMoveMesh * toInsert)
+        { fixMoveMeshes_.push_back(toInsert); }
+
+        void unregister_move(const FixMoveMesh * const toDelete)
+        {
+            std::list<FixMoveMesh *>::iterator it;
+            for (it = fixMoveMeshes_.begin(); it != fixMoveMeshes_.end(); it++)
+            {
+                if (*it == toDelete)
+                {
+                    fixMoveMeshes_.erase(it);
+                    return;
+                }
+            }
+        }
+
       protected:
 
         // mesh manipulation upon creation
@@ -103,13 +126,14 @@ namespace LAMMPS_NS
         virtual void rotateMesh(double const axisX, double const axisY, double const axisZ, double const phi);
         virtual void scaleMesh(double const factor);
 
-        void create_mesh(char *mesh_fname);
-        void create_mesh_restart();
+        void create_mesh(char *mesh_fname, bool is_fix);
+        void create_mesh_restart(char *mesh_fname);
 
         int iarg_;
 
         int atom_type_mesh_;
 
+        double temperature_mesh_;
         double mass_temperature_;
 
         bool trackPerElementTemp_;
@@ -149,9 +173,12 @@ namespace LAMMPS_NS
 
         class FixPropertyGlobal *fix_capacity_;
 
+        std::list<FixMoveMesh *> fixMoveMeshes_;
+
         // this friend class needs access to the moveMesh function
         friend class MeshModuleStress6DOF;
-  };
+        friend class MeshModuleStress6DOFexternal;
+    };
 
 } /* namespace LAMMPS_NS */
 

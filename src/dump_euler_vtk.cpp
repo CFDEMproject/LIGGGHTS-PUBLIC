@@ -82,7 +82,7 @@ DumpEulerVTK::~DumpEulerVTK()
 
 void DumpEulerVTK::init_style()
 {
-  fix_euler_ = static_cast<FixAveEuler*>(modify->find_fix_style("ave/euler",0));
+  fix_euler_ = static_cast<FixAveEuler*>(modify->find_fix_style_strict("ave/euler",0));
   if(!fix_euler_)
     error->all(FLERR,"Illegal dump euler/vtk command, need a fix ave/euler");
 

@@ -158,7 +158,7 @@
 <ul class="simple">
 <li>ID = user-assigned name for the dump</li>
 <li>group-ID = ID of the group of atoms to be dumped</li>
-<li>style = <em>atom</em> or <em>atom/vtk</em> or <em>xyz</em> or <em>image</em> or <em>local</em> or <em>custom</em> or <em>mesh/stl</em> or <em>mesh/vtk</em> or <em>mesh/vtm</em> or <em>decomposition/vtk</em> or <em>euler/vtk</em></li>
+<li>style = <em>atom</em> or <em>atom/vtk</em> or <em>xyz</em> or <em>image</em> or <em>local</em> or <em>custom</em> or <em>mesh/stl</em> or <em>mesh/vtk</em> or <em>mesh/vtm</em> or <em>decomposition/vtk</em></li>
 <li>N = dump every this many timesteps</li>
 <li>file = name of file to write dump info to</li>
 <li>args = list of arguments for a particular style</li>
@@ -185,7 +185,6 @@
     mesh-ids = either keyword 'all' or a list of IDs of <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>
     <em>mesh_properties</em> value(s) = one or more dump-identifier
     dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs'
-<em>euler/vtk</em> args = none
 <em>decomposition/vtk</em> args = none
 </pre>
 <pre class="literal-block">
@@ -241,12 +240,12 @@ v_name = per-atom vector calculated by an atom-style variable with name
 <div class="highlight-python"><pre>dump myDump all atom 100 dump.atom
 dump 2 subgroup atom 50 dump.run.bin
 dump 4a all custom 100 dump.myforce.* id type x y vx fx
-dump 4b flow custom 100 dump.%.myforce id type c_myF[3] v_ke</pre>
-</div>
-<p>dump dmpMyMesh mesh/vtk 100 mesh*.vtk vel area meshes my_mesh_id
+dump 4b flow custom 100 dump.%.myforce id type c_myF[3] v_ke
+dump dmpMyMesh mesh/vtk 100 mesh*.vtk vel area meshes my_mesh_id
 dump dmpAllMeshes mesh/vtk 100 mesh*.vtk stress wear
 dump dmpMyMeshVTM mesh/vtm 100 mesh*.vtm meshes my_mesh_id mesh_properties vel area
-dump dmpAllMeshesVTM mesh/vtm 100 mesh*.vtm meshes all mesh_properties stress wear</p>
+dump dmpAllMeshesVTM mesh/vtm 100 mesh*.vtm meshes all mesh_properties stress wear</pre>
+</div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
@@ -420,7 +419,7 @@ with the stl style, all active meshes are dumped if you do not supply the
 optional list of mesh IDs. By specifying list of mesh IDs you can explicitly
 choose which meshes to dump. The group-ID is ignored. Again, a series of files
 can be post-processed in Paraview , www.paraview.org Most keywords as used for
-the <em>mesh/vtk</em> style are self-explanatory.  Keyword <em>output</em> controlls if the
+the <em>mesh/vtk</em> style are self-explanatory.  Keyword <em>output</em> controls if the
 data is written in a per-face manner or as interpolated values to VTK. Keywords
 <em>aedges</em> and <em>acorners</em> dump the number of active edges/corners per face.
 Keyword <em>nneighs</em> dumps the number of face neighbors LIGGGHTS(R)-PUBLIC has recognized
@@ -434,10 +433,17 @@ identifiers. The list of such identifiers is identical to <em>mesh/vtk</em>.</p>
 <p>By providing the &#8216;meshes&#8217; keyword and any ID (or a list of IDs) of
 <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a> commands, you can specify which meshes to dump.
 If no meshes are specified, all meshes used in the simulation are dumped.</p>
-<p>The <em>euler/vtk</em> style dumps the output of a <a class="reference internal" href="fix_ave_euler.html"><em>fix ave/euler</em></a>
-command into a series of VTK files. No further args are expected.</p>
 <p>The <em>decomposition/vtk</em> style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.</p>
+<p>For all vkt outputs if <em>dump_modify binary</em> is used, the dump file (or files, if
+&#8220;*&#8221; or &#8220;%&#8221; is also used) is written in binary format.  A binary dump file will
+be about the same size as a text version, but will typically write out much
+faster. Additionally, <em>dump_modify compressor</em> can be used to specify the
+writing of compressed binary data. Options for compressors include:</p>
+<div class="highlight-python"><pre>none: No compression
+zlib: Zlib compression
+lz4: Lz4 compression (VTK &gt;= 8.0 required)</pre>
+</div>
 <hr class="docutils" />
 <p>Dumps are performed on timesteps that are a multiple of N (including
 timestep 0) and on the last timestep of a minimization if the

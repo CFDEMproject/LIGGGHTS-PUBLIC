@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputePropertyAtom : public Compute {
  public:
-  ComputePropertyAtom(class LAMMPS *, int, char **);
+  ComputePropertyAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputePropertyAtom();
   void init();
   void compute_peratom();
@@ -82,6 +82,8 @@ class ComputePropertyAtom : public Compute {
   void pack_id(int);
   void pack_molecule(int);
   void pack_type(int);
+  void pack_vol(int);
+  void pack_eq_radius(int n);
   void pack_mass(int);
 
   void pack_x(int);

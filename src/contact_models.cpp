@@ -65,6 +65,7 @@
 #include "atom_masks.h"
 #include "memory.h"
 #include "error.h"
+#include "utils.h"
 
 #include <string>
 #include <iostream>
@@ -72,15 +73,6 @@
 
 namespace LIGGGHTS {
 namespace ContactModels {
-
-int64_t generate_gran_hashcode(int model, int tangential, int cohesion, int rolling, int surface)
-{
-   return (((int64_t)model)) |
-       (((int64_t)tangential) << 6) |
-       (((int64_t)cohesion) << 12) |
-       (((int64_t)rolling) << 18) |
-       (((int64_t)surface) << 24);
- }
 
 Factory::Factory() {
   // register contact model string to contact mappings
@@ -165,102 +157,119 @@ int64_t Factory::select(int & narg, char ** & args,Custom_contact_models ccm) {
 
 int64_t Factory::select_model(int & narg, char ** & args, Custom_contact_models ccm)
 {
-  // this method will consume arguments to determine which granular contact model is active
+    // this method will consume arguments to determine which granular contact model is active
 
-  // default configuration
-  int model = NORMAL_OFF;
-  int tangential = TANGENTIAL_OFF;
-  int cohesion = COHESION_OFF;
-  int rolling = ROLLING_OFF;
-  int surface = SURFACE_DEFAULT;
+    // default configuration
+    int model = NORMAL_OFF;
+    int tangential = TANGENTIAL_OFF;
+    int cohesion = COHESION_OFF;
+    int rolling = ROLLING_OFF;
+    int surface = SURFACE_DEFAULT;
 
-  // select normal model
-  if (narg > 1 && strcmp(args[0], "model") == 0) {
-    if (normal_models.find(args[1]) != normal_models.end()) {
-      model = normal_models[args[1]];
-    } else if (0 == strcmp(args[1],"custom")) {
-      if (normal_models.find(ccm.custom_normal_model) != normal_models.end())
-         model = normal_models[ccm.custom_normal_model];
-      else
-         model = -1;
+    // select normal model
+    if (narg > 1 && strcmp(args[0], "model") == 0)
+    {
+        if (normal_models.find(args[1]) != normal_models.end())
+            model = normal_models[args[1]];
+        else if (0 == strcmp(args[1],"custom"))
+        {
+            if (normal_models.find(ccm.custom_normal_model) != normal_models.end())
+               model = normal_models[ccm.custom_normal_model];
+            else
+               model = -1;
+        }
+        else
+            model = -1;
+
+        if(narg > 2)
+            args = &args[2];
+        narg -= 2;
     }
 
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
+    // OPTIONAL: select tangential model
+    if (narg > 1 && strcmp(args[0], "tangential") == 0)
+    {
+        if (tangential_models.find(args[1]) != tangential_models.end())
+            tangential = tangential_models[args[1]];
+        else if (0 == strcmp(args[1],"custom"))
+        {
+            if (tangential_models.find(ccm.custom_tangential_model) != tangential_models.end())
+               tangential = tangential_models[ccm.custom_tangential_model];
+            else
+               tangential = -1;
+        }
+        else
+            tangential = -1;
 
-  // OPTIONAL: select tangential model
-  if (narg > 1 && strcmp(args[0], "tangential") == 0) {
-    if (tangential_models.find(args[1]) != tangential_models.end()) {
-      tangential = tangential_models[args[1]];
-    } else if (0 == strcmp(args[1],"custom")) {
-      if (tangential_models.find(ccm.custom_tangential_model) != tangential_models.end())
-         tangential = tangential_models[ccm.custom_tangential_model];
-      else
-         tangential = -1;
-    } else {
-      tangential = -1;
+        if(narg > 2)
+            args = &args[2];
+        narg -= 2;
     }
 
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
+    // OPTIONAL: select cohesion model
+    if (narg > 1 && strcmp(args[0], "cohesion") == 0)
+    {
+        if (cohesion_models.find(args[1]) != cohesion_models.end())
+            cohesion = cohesion_models[args[1]];
+        else if (0 == strcmp(args[1],"custom"))
+        {
+            if (cohesion_models.find(ccm.custom_cohesion_model) != cohesion_models.end())
+               cohesion = cohesion_models[ccm.custom_cohesion_model];
+            else
+               cohesion = -1;
+        }
+        else
+            cohesion = -1;
 
-  // OPTIONAL: select cohesion model
-  if (narg > 1 && strcmp(args[0], "cohesion") == 0) {
-    if (cohesion_models.find(args[1]) != cohesion_models.end()) {
-      cohesion = cohesion_models[args[1]];
-    } else if (0 == strcmp(args[1],"custom")) {
-      if (cohesion_models.find(ccm.custom_cohesion_model) != cohesion_models.end())
-         cohesion = cohesion_models[ccm.custom_cohesion_model];
-      else
-         cohesion = -1;
-    } else {
-      cohesion = -1;
+        if(narg > 2)
+            args = &args[2];
+        narg -= 2;
     }
 
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
+    // OPTIONAL: select rolling model
+    if (narg > 1 && strcmp(args[0], "rolling_friction") == 0)
+    {
+        if (rolling_models.find(args[1]) != rolling_models.end())
+            rolling = rolling_models[args[1]];
+        else if (0 == strcmp(args[1],"custom"))
+        {
+            if (rolling_models.find(ccm.custom_rolling_model) != rolling_models.end())
+               rolling = rolling_models[ccm.custom_rolling_model];
+            else
+               rolling = -1;
+        }
+        else
+          rolling = -1;
 
-  // OPTIONAL: select rolling model
-  if (narg > 1 && strcmp(args[0], "rolling_friction") == 0) {
-    if (rolling_models.find(args[1]) != rolling_models.end()) {
-      rolling = rolling_models[args[1]];
-    } else if (0 == strcmp(args[1],"custom")) {
-      if (rolling_models.find(ccm.custom_rolling_model) != rolling_models.end())
-         rolling = rolling_models[ccm.custom_rolling_model];
-      else
-         rolling = -1;
-    } else {
-      rolling = -1;
+        if(narg > 2)
+            args = &args[2];
+        narg -= 2;
     }
 
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
+    // OPTIONAL: select surface model
+    if (narg > 1 && strcmp(args[0], "surface") == 0)
+    {
+        if (surface_models.find(args[1]) != surface_models.end())
+            surface = surface_models[args[1]];
+        else if (0 == strcmp(args[1],"custom"))
+        {
+            if (surface_models.find(ccm.custom_surface_model) != surface_models.end())
+               surface = surface_models[ccm.custom_surface_model];
+            else
+               surface = -1;
+        }
+        else
+          surface = -1;
 
-  // OPTIONAL: select surface model
-  if (narg > 1 && strcmp(args[0], "surface") == 0) {
-    if (surface_models.find(args[1]) != surface_models.end()) {
-      surface = surface_models[args[1]];
-    } else if (0 == strcmp(args[1],"custom")) {
-      if (surface_models.find(ccm.custom_surface_model) != surface_models.end())
-         surface = surface_models[ccm.custom_surface_model];
-      else
-         surface = -1;
-    } else {
-      surface = -1;
+        if(narg > 2)
+            args = &args[2];
+        narg -= 2;
     }
 
-    if(narg > 2) args = &args[2];
-    narg -= 2;
-  }
-
-  if(model != -1 && tangential != -1 && cohesion != -1 && rolling != -1 && surface != -1) {
-    return generate_gran_hashcode(model, tangential, cohesion, rolling, surface);
-  }
-  return -1;
+    if((model != -1 && tangential != -1 && cohesion != -1 && rolling != -1 && surface != -1) &&
+       !(model == NORMAL_OFF && tangential == TANGENTIAL_OFF && cohesion == COHESION_OFF && rolling == ROLLING_OFF))
+        return Utils::generate_gran_hashcode(model, tangential, cohesion, rolling, surface);
+    return -1;
 }
 
 int ContactModelBase::get_history_offset(const string hname)

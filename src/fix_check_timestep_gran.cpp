@@ -252,15 +252,21 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
   {
     if (mask[i] & groupbit)
     {
+        double rad = r[i];
+        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(atom->superquadric_flag)
+            rad=std::min(std::min(atom->shape[i][0],atom->shape[i][1]),atom->shape[i][2]);        
+        #endif
+
         double shear_mod = Y->get_values()[type[i]-1]/(2.*(nu->get_values()[type[i]-1]+1.));
-        rayleigh_time_i = M_PI*r[i]*sqrt(density[i]/shear_mod)/(0.1631*nu->get_values()[type[i]-1]+0.8766);
+        rayleigh_time_i = M_PI*rad*sqrt(density[i]/shear_mod)/(0.1631*nu->get_values()[type[i]-1]+0.8766);
         if(rayleigh_time_i < rayleigh_time) rayleigh_time = rayleigh_time_i;
 
         vmag_sqr = vectorMag3DSquared(v[i]);
         if(vmag_sqr > vmax_sqr)
             vmax_sqr = vmag_sqr;
 
-        if(r[i] < r_min) r_min = r[i];
+        if(rad < r_min) r_min = rad;
     }
   }
 
@@ -319,23 +325,31 @@ void FixCheckTimestepGran::calc_rayleigh_hertz_estims()
   double hertz_time_min = 1000000.;
   double hertz_time_i,meff,reff;
 
-  for(int ti = 1; ti < max_type+1; ti++)
-  {
-      for(int tj =  ti; tj < max_type+1; tj++)
+  if ( !MathExtraLiggghts::compDouble(v_rel_max_simulation,0.0) ) {
+      for(int ti = 1; ti < max_type+1; ti++)
       {
-          const double Eeff = Yeff[ti][tj];
-
-          for(int i = 0; i < nlocal; i++)
+          for(int tj =  ti; tj < max_type+1; tj++)
           {
-            if (mask[i] & groupbit)
-            {
-                if(type[i]!=ti || type[i]!=tj) continue;
-                meff = 4.*r[i]*r[i]*r[i]*M_PI/3.*density[i];
-                reff = r[i]/2.;
-                hertz_time_i = 2.87*pow(meff*meff/(reff*Eeff*Eeff*v_rel_max_simulation),0.2);
-                if(hertz_time_i<hertz_time_min)
-                    hertz_time_min=hertz_time_i;
-            }
+              const double Eeff = Yeff[ti][tj];
+
+              for(int i = 0; i < nlocal; i++)
+              {
+                if (mask[i] & groupbit)
+                {
+                    if(type[i]!=ti || type[i]!=tj) continue;
+                    meff = 4.*r[i]*r[i]*r[i]*M_PI/3.*density[i];
+                    reff = r[i]/2.;
+                    #ifdef SUPERQUADRIC_ACTIVE_FLAG
+                    if(atom->superquadric_flag) {
+                        meff = atom->volume[i]*density[i];
+                        reff = std::max(std::max(atom->shape[i][0],atom->shape[i][1]),atom->shape[i][2])/2.0;
+                    }    
+                    #endif
+                    hertz_time_i = 2.87*pow(meff*meff/(reff*Eeff*Eeff*v_rel_max_simulation),0.2);
+                    if(hertz_time_i<hertz_time_min)
+                        hertz_time_min=hertz_time_i;
+                }
+              }
           }
       }
   }

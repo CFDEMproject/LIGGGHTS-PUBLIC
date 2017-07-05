@@ -48,12 +48,22 @@
 #include <map>
 #include <iostream>
 #include "contact_interface.h"
+#include "contact_model_constants.h"
 #include <sstream>
 
 namespace LIGGGHTS {
 using namespace LAMMPS_NS;
 
 namespace Utils {
+
+  inline int64_t generate_gran_hashcode(int model, int tangential, int cohesion, int rolling, int surface)
+  {
+    return (((int64_t)model)           ) |
+           (((int64_t)tangential) <<  6) |
+           (((int64_t)cohesion)   << 12) |
+           (((int64_t)rolling)    << 18) |
+           (((int64_t)surface)    << 24) ;
+  }
 
   inline std::string int_to_string(int a)
   {
@@ -83,7 +93,7 @@ namespace Utils {
   template<typename Interface>
   class AbstractFactory {
     typedef typename Interface::ParentType ParentType;
-    typedef Interface * (*Creator)(class LAMMPS * lmp, ParentType* parent);
+    typedef Interface * (*Creator)(class LAMMPS * lmp, ParentType* parent, int64_t hash);
     typedef int64_t (*VariantSelector)(int & argc, char ** & argv, Custom_contact_models ccm);
     typedef std::map<std::pair<std::string, int>, Creator> StyleTable;
     typedef std::map<std::string, VariantSelector> VariantSelectorTable;
@@ -99,7 +109,12 @@ namespace Utils {
     Interface * create(const std::string & name, int64_t variant, class LAMMPS * lmp, ParentType* parent) {
       std::pair<std::string, int> key(name, variant);
       if(styleTable.find(key) != styleTable.end()) {
-        return styleTable[key](lmp, parent);
+        return styleTable[key](lmp, parent, variant);
+      }
+      int64_t default_variant = generate_gran_hashcode(ContactModels::NORMAL_OFF, ContactModels::TANGENTIAL_OFF, ContactModels::COHESION_OFF, ContactModels::ROLLING_OFF, 0);
+      std::pair<std::string, int> default_key(name, default_variant);
+      if(styleTable.find(default_key) != styleTable.end()) {
+        return styleTable[default_key](lmp, parent, variant);
       }
       return NULL;
     }

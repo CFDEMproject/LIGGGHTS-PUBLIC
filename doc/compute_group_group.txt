@@ -10,10 +10,11 @@ compute group/group command :h3
 
 [Syntax:]
 
-compute ID group-ID group/group group2-ID keyword value ... :pre
+compute ID group-ID group/group general_keyword general_values group2-ID keyword value ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 group/group = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
 group2-ID = group ID of second (or same) group :l
 zero or more keyword/value pairs may be appended :l
 keyword = {pair} or {boundary} :l

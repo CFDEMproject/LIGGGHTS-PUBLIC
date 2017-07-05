@@ -49,6 +49,7 @@ COHESION_MODEL(COHESION_SJKR,sjkr,1)
 #define COHESION_MODEL_SJKR_H_
 
 #include "contact_models.h"
+#include "cohesion_model_base.h"
 #include <math.h>
 
 namespace LIGGGHTS {
@@ -57,14 +58,13 @@ namespace ContactModels {
   using namespace LAMMPS_NS;
 
   template<>
-  class CohesionModel<COHESION_SJKR> : protected Pointers {
+  class CohesionModel<COHESION_SJKR> : public CohesionModelBase {
   public:
-    static const int MASK = CM_CONNECT_TO_PROPERTIES | CM_SURFACES_INTERSECT;
-
-    CohesionModel(LAMMPS * lmp, IContactHistorySetup*,class ContactModelBase *) :
-        Pointers(lmp), cohEnergyDens(NULL)
+    CohesionModel(LAMMPS * lmp, IContactHistorySetup * hsetup, class ContactModelBase * c) :
+        CohesionModelBase(lmp, hsetup, c),
+        cohEnergyDens(NULL)
     {
-      
+        
     }
 
     void registerSettings(Settings& settings) 
@@ -74,13 +74,14 @@ namespace ContactModels {
 
     inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
 
-    void connectToProperties(PropertyRegistry & registry) {
-      registry.registerProperty("cohEnergyDens", &MODEL_PARAMS::createCohesionEnergyDensity);
-      registry.connect("cohEnergyDens", cohEnergyDens,"cohesion_model sjkr");
+    void connectToProperties(PropertyRegistry & registry)
+    {
+        registry.registerProperty("cohEnergyDens", &MODEL_PARAMS::createCohesionEnergyDensity);
+        registry.connect("cohEnergyDens", cohEnergyDens,"cohesion_model sjkr");
 
-      // error checks on coarsegraining
-      if(force->cg_active())
-        error->cg(FLERR,"cohesion model sjkr");
+        // error checks on coarsegraining
+        if(force->cg_active())
+            error->cg(FLERR,"cohesion model sjkr");
     }
 
     void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
@@ -121,6 +122,7 @@ namespace ContactModels {
       }
     }
 
+    inline void endSurfacesIntersect(SurfacesIntersectData &sidata, ForceData&, ForceData&) {}
     void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
 

@@ -88,7 +88,7 @@ int ParticleToInsertMultisphere::set_x_v_omega(double *x, double *v, double *ome
     vectorCopy3D(v,v_ins);
     vectorCopy3D(omega,omega_ins);
 
-    //if(!isUnitQuat4D(quat_ins)) error->warning(FLERR,"quaternion rotation untested in ParticleToInsertMultisphere");
+    //if(!isIdentityQuat4D(quat_ins)) error->warning(FLERR,"quaternion rotation untested in ParticleToInsertMultisphere");
 
     MathExtraLiggghts::vec_quat_rotate(ex_space,quat);
     MathExtraLiggghts::vec_quat_rotate(ey_space,quat);
@@ -117,7 +117,7 @@ int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, d
     // calculate x_ins for this quaternion
     // do this in a "try" step since we do not know if we will succeed
 
-    //if(!isUnitQuat4D(quat_ins)) error->one(FLERR,"quaternion rotation untested in ParticleToInsertMultisphere");
+    //if(!isIdentityQuat4D(quat_ins)) error->one(FLERR,"quaternion rotation untested in ParticleToInsertMultisphere");
     MathExtraLiggghts::vec_quat_rotate(ex_space,quat,ex_space_try);
     MathExtraLiggghts::vec_quat_rotate(ey_space,quat,ey_space_try);
     MathExtraLiggghts::vec_quat_rotate(ez_space,quat,ez_space_try);
@@ -144,7 +144,6 @@ int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, d
            rsq = vectorMag3DSquared(del);
            radsum = radius_ins[j] + xnear[i][3];
 
-   /*
            // no success in overlap
            if (rsq <= radsum*radsum) return 0;
         }

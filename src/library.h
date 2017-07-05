@@ -59,19 +59,19 @@ extern "C" {
 void lammps_open(int, char **, MPI_Comm, void **);
 void lammps_open_no_mpi(int, char **, void **);
 void lammps_close(void *);
-void lammps_file(void *, char *);
-char *lammps_command(void *, char *);
+void lammps_file(void *, const char *);
+char *lammps_command(void *, const char *);
 void lammps_free(void *);
 
-void *lammps_extract_global(void *, char *);
-void *lammps_extract_atom(void *, char *);
-void *lammps_extract_compute(void *, char *, int, int);
-void *lammps_extract_fix(void *, char *, int, int, int, int);
+void *lammps_extract_global(void *, const char *);
+void *lammps_extract_atom(void *, const char *);
+void *lammps_extract_compute(void *, const char *, int, int);
+void *lammps_extract_fix(void *, const char *, int, int, int, int);
 void *lammps_extract_variable(void *, char *, char *);
 
 int lammps_get_natoms(void *);
-void lammps_gather_atoms(void *, char *, int, int, void *);
-void lammps_scatter_atoms(void *, char *, int, int, void *);
+void lammps_gather_atoms(void *, const char *, int, int, void *);
+void lammps_scatter_atoms(void *, const char *, int, int, void *);
 
 #ifdef __cplusplus
 }

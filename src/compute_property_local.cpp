@@ -64,13 +64,13 @@ enum{NONE,NEIGH,PAIR,BOND,ANGLE,DIHEDRAL,IMPROPER};
 
 /* ---------------------------------------------------------------------- */
 
-ComputePropertyLocal::ComputePropertyLocal(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputePropertyLocal::ComputePropertyLocal(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 4) error->all(FLERR,"Illegal compute property/local command");
+  if (narg < iarg+1) error->all(FLERR,"Illegal compute property/local command");
 
   local_flag = 1;
-  nvalues = narg - 3;
+  nvalues = narg - iarg;
   if (nvalues == 1) size_local_cols = 0;
   else size_local_cols = nvalues;
 
@@ -79,8 +79,9 @@ ComputePropertyLocal::ComputePropertyLocal(LAMMPS *lmp, int narg, char **arg) :
   kindflag = NONE;
 
   int i;
-  for (int iarg = 3; iarg < narg; iarg++) {
-    i = iarg-3;
+  const int arg_offset = iarg;
+  for (; iarg < narg; iarg++) {
+    i = iarg-arg_offset;
 
     if (strcmp(arg[iarg],"natom1") == 0) {
       pack_choice[i] = &ComputePropertyLocal::pack_patom1;

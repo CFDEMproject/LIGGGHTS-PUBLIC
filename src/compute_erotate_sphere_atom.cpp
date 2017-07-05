@@ -66,11 +66,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeErotateSphereAtom::
-ComputeErotateSphereAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeErotateSphereAtom::ComputeErotateSphereAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 3)
+  if (narg != iarg)
     error->all(FLERR,"Illegal compute erotate/sphere//atom command");
 
   peratom_flag = 1;

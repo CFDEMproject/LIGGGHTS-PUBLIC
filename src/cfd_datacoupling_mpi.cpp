@@ -132,7 +132,7 @@ void CfdDatacouplingMPI::allocate_external(int **&data, int len2,int len1,int in
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingMPI::allocate_external(int    **&data, int len2,char *keyword,int initvalue)
+void CfdDatacouplingMPI::allocate_external(int    **&data, int len2,const char *keyword,int initvalue)
 {
   int len1 = 0;
   Multisphere *ms_data = properties_->ms_data();
@@ -169,7 +169,7 @@ void CfdDatacouplingMPI::allocate_external(double **&data, int len2,int len1,dou
 
 /* ---------------------------------------------------------------------- */
 
-void CfdDatacouplingMPI::allocate_external(double **&data, int len2,char *keyword,double initvalue)
+void CfdDatacouplingMPI::allocate_external(double **&data, int len2,const char *keyword,double initvalue)
 {
   int len1 = 0;
   Multisphere *ms_data = properties_->ms_data();

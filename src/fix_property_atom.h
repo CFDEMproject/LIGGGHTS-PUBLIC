@@ -81,7 +81,7 @@ class FixPropertyAtom : public Fix {
   void pre_set_arrays();
   virtual void set_arrays(int);
 
-  void set_all(double value,bool ghost = false);
+  void set_all(double value,bool ghost = true);
 
   void write_restart(FILE *);
   virtual void restart(char *);

@@ -72,6 +72,7 @@ class FixCfdCouplingForce : public Fix  {
   { use_force_ = false; }
 
   double dragforce_total[3];
+  double hdtorque_total[3];
   class FixCfdCoupling* fix_coupling_;
   class FixPropertyAtom* fix_dragforce_;
   class FixPropertyAtom* fix_hdtorque_; // hdtorque = hydrodynamic torque

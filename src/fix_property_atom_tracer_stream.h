@@ -61,7 +61,6 @@ namespace FixPropertyAtomTracerStreamAux {
     };
 }
 
-using namespace std;
 using FixPropertyAtomTracerStreamAux::Releasedata;
 
 namespace LAMMPS_NS {
@@ -81,14 +80,14 @@ class FixPropertyAtomTracerStream : public FixPropertyAtomTracer {
 
  private:
 
-  int construct_data(vector<Releasedata> data_c, int *&data);
-  vector<Releasedata> construct_releasedata_all(int *data, int ndata);
+  int construct_data(std::vector<Releasedata> data_c, int *&data);
+  std::vector<Releasedata> construct_releasedata_all(int *data, int ndata);
 
   int n_marker_per_;
   int every_;
 
-  vector<int> n_to_mark_;
-  vector<int> mark_steps_;
+  std::vector<int> n_to_mark_;
+  std::vector<int> mark_steps_;
 
   class FixInsertStream *fix_ins_stream_;
 

@@ -69,6 +69,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "error.h"
+#include "signal_handling.h"
 
 using namespace LAMMPS_NS;
 
@@ -512,6 +513,9 @@ void Respa::run(int n)
       output->write(update->ntimestep);
       timer->stamp(TIME_OUTPUT);
     }
+
+    if (SignalHandler::request_quit && !SignalHandler::request_write_restart)
+        break;
   }
 }
 

@@ -60,32 +60,42 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-FixCfdCouplingConvection::FixCfdCouplingConvection(LAMMPS *lmp, int narg, char **arg) :  Fix(lmp, narg, arg)
+FixCfdCouplingConvection::FixCfdCouplingConvection(LAMMPS *lmp, int narg, char **arg) :
+   Fix(lmp, narg, arg),
+   is_convection_(true),
+   fix_coupling_(0),
+   fix_additionalFlux_(0),
+   fix_heatFlux_(0)
 {
-    fix_coupling = NULL;
-    fix_convectiveFlux  = fix_heatFlux = NULL;
-
     int iarg = 3;
 
-    if(narg < iarg + 2) error->all(FLERR,"Fix couple/cfd/convection: Wrong number of arguments");
-    if(strcmp(arg[iarg++],"T0") != 0) error->all(FLERR,"Fix couple/cfd/convection: Expecting keyword 'T0'");
-    T0 = atof(arg[iarg++]);
+    if(strstr(style,"radiation"))
+        is_convection_ = false;
 
-    if(T0 < 0.) error->all(FLERR,"Fix couple/cfd/convection: T0 must be >= 0");
+    if(narg < iarg + 2)
+        error->fix_error(FLERR,this,"wrong number of arguments");
+    if(strcmp(arg[iarg++],"T0") != 0)
+        error->fix_error(FLERR,this,"expecting keyword 'T0'");
+    T0_ = atof(arg[iarg++]);
+
+    if(T0_ < 0.)
+        error->fix_error(FLERR,this,"T0 must be >= 0");
 }
 
 /* ---------------------------------------------------------------------- */
 
 FixCfdCouplingConvection::~FixCfdCouplingConvection()
 {
-
 }
 
 /* ---------------------------------------------------------------------- */
 
 void FixCfdCouplingConvection::pre_delete(bool unfixflag)
 {
-    if(fix_convectiveFlux) modify->delete_fix("convectiveHeatFlux");
+    if(fix_additionalFlux_ && is_convection_)
+        modify->delete_fix("convectiveHeatFlux");
+    if(fix_additionalFlux_ && !is_convection_)
+        modify->delete_fix("radiativeHeatFlux");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -101,20 +111,20 @@ int FixCfdCouplingConvection::setmask()
 
 void FixCfdCouplingConvection::post_create()
 {
-  //  register convective flux
-  if(!fix_convectiveFlux)
+  //  register convective/radiative flux
+  if(!fix_additionalFlux_)
   {
         const char* fixarg[11];
-        fixarg[0]="convectiveHeatFlux";
+        fixarg[0]=is_convection_?"convectiveHeatFlux":"radiativeHeatFlux";
         fixarg[1]="all";
         fixarg[2]="property/atom";
-        fixarg[3]="convectiveHeatFlux";
+        fixarg[3]=is_convection_?"convectiveHeatFlux":"radiativeHeatFlux";
         fixarg[4]="scalar"; 
         fixarg[5]="no";    
         fixarg[6]="yes";    
         fixarg[7]="no";    
         fixarg[8]="0.";
-        fix_convectiveFlux = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+        fix_additionalFlux_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
   }
 
   //  add heat transfer model if not yet active
@@ -131,7 +141,7 @@ void FixCfdCouplingConvection::post_create()
         newarg[6] = "Temp";
         newarg[7] = "default_value";
         char arg8[30];
-        sprintf(arg8,"%f",T0);
+        sprintf(arg8,"%f",T0_);
         newarg[8] = arg8;
         newarg[9] = "flux_quantity";
         newarg[10] = "heatFlux";
@@ -152,20 +162,26 @@ void FixCfdCouplingConvection::init()
       error->fix_error(FLERR,this,"More than one fix of this style is not allowed");
 
     // find coupling fix
-    fix_coupling = static_cast<FixCfdCoupling*>(modify->find_fix_style_strict("couple/cfd",0));
-    if(!fix_coupling)
+    fix_coupling_ = static_cast<FixCfdCoupling*>(modify->find_fix_style_strict("couple/cfd",0));
+    if(!fix_coupling_)
       error->fix_error(FLERR,this,"needs a fix of type couple/cfd");
 
     //values to send to OF
-    fix_coupling->add_push_property("Temp","scalar-atom");
+    fix_coupling_->add_push_property("Temp","scalar-atom");
 
     //values to come from OF
-    fix_coupling->add_pull_property("convectiveHeatFlux","scalar-atom");
+    if(is_convection_)
+        fix_coupling_->add_pull_property("convectiveHeatFlux","scalar-atom");
+    else
+        fix_coupling_->add_pull_property("radiativeHeatFlux","scalar-atom");
 
     // heat transfer added heatFlux, get reference to it
-    fix_heatFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatFlux","property/atom","scalar",0,0,style));
+    fix_heatFlux_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("heatFlux","property/atom","scalar",0,0,style));
 
-    fix_convectiveFlux = static_cast<FixPropertyAtom*>(modify->find_fix_property("convectiveHeatFlux","property/atom","scalar",0,0,style));
+    if(is_convection_)
+        fix_additionalFlux_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("convectiveHeatFlux","property/atom","scalar",0,0,style));
+    else
+        fix_additionalFlux_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("radiativeHeatFlux","property/atom","scalar",0,0,style));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -175,15 +191,15 @@ void FixCfdCouplingConvection::post_force(int)
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
-  // communicate convective flux to ghosts, there might be new data
+  // communicate convective/radiative flux to ghosts, there might be new data
   
   if(0 == neighbor->ago)
-        fix_convectiveFlux->do_forward_comm();
+        fix_additionalFlux_->do_forward_comm();
 
-  double *heatFlux = fix_heatFlux->vector_atom;
-  double *convectiveFlux = fix_convectiveFlux->vector_atom;
+  double *heatFlux = fix_heatFlux_->vector_atom;
+  double *additionalFlux = fix_additionalFlux_->vector_atom;
 
   for (int i = 0; i < nlocal; i++)
     if (mask[i] & groupbit)
-      heatFlux[i] += convectiveFlux[i];
+      heatFlux[i] += additionalFlux[i];
 }

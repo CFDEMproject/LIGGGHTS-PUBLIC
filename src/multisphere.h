@@ -99,6 +99,8 @@ namespace LAMMPS_NS {
 
       double extract_ke();
       double extract_rke();
+      double extract_vave();
+      double extract_omega_ave();
 
       // inline access functions
 
@@ -201,6 +203,7 @@ namespace LAMMPS_NS {
       VectorContainer<double,3> &fcm_;
       VectorContainer<double,3> &torquecm_;
       VectorContainer<double,3> &dragforce_cm_;
+      VectorContainer<double,3> &hdtorque_cm_;
 
       // angular momentum of each in space coords
       // angular velocity of each in space coords
@@ -212,8 +215,8 @@ namespace LAMMPS_NS {
       // density and total mass of each rigid body
       // 3 principal components of inertia of each
       // principal axes of each in space coords
-      ScalarContainer<int> &atomtype_;
-      ScalarContainer<int> &type_;
+      ScalarContainer<int> &atomtype_; 
+      ScalarContainer<int> &type_;     
       ScalarContainer<double> &density_;
       ScalarContainer<double> &masstotal_;
       VectorContainer<double,3> &inertia_;

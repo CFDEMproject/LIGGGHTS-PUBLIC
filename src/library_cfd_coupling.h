@@ -57,16 +57,16 @@ int liggghts_get_maxtag_ms(void *ptr);
 int liggghts_get_ntypes_ms(void *ptr);
 double* liggghts_get_vclump_ms(void *ptr);
 void* locate_coupling_fix(void *ptr);
-void data_liggghts_to_of(char *name,char *type,void *ptr,void *&data,char *datatype);
-void data_of_to_liggghts(char *name,char *type,void *ptr,void *data,char *datatype);
+void data_liggghts_to_of(const char *name,const char *type,void *ptr,void *&data,const char *datatype);
+void data_of_to_liggghts(const char *name,const char *type,void *ptr,void *data,const char *datatype);
 void update_rm(void *ptr);
 void check_datatransfer(void *ptr);
 
 void allocate_external_int(int    **&data, int len2,int len1,int    initvalue,void *ptr);
-void allocate_external_int(int    **&data, int len2,char *,  int    initvalue,void *ptr);
+void allocate_external_int(int    **&data, int len2,const char *,  int    initvalue,void *ptr);
 
 void allocate_external_double(double **&data, int len2,int len1,double initvalue,void *ptr);
-void allocate_external_double(double **&data, int len2,char *,  double initvalue,void *ptr);
+void allocate_external_double(double **&data, int len2,const char *,  double initvalue,void *ptr);
 
 #ifdef __cplusplus
 //}

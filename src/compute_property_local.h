@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputePropertyLocal : public Compute {
  public:
-  ComputePropertyLocal(class LAMMPS *, int, char **);
+  ComputePropertyLocal(class LAMMPS *, int &iarg, int, char **);
   ~ComputePropertyLocal();
   void init();
   void init_list(int, class NeighList *);

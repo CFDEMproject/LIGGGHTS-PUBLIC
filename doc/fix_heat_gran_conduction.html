@@ -160,19 +160,20 @@
 <li>initial_temperature = obligatory keyword</li>
 <li>T0 = initial (default) temperature for the particles</li>
 <li>zero or more keyword/value pairs may be appended</li>
-<li>keyword = <em>contact_area</em> or <em>area_correction</em></li>
+<li>keyword = <em>contact_area</em> or <em>area_correction</em> or <em>store_contact_data</em></li>
 </ul>
 <pre class="literal-block">
 <em>contact_area</em> values = <em>overlap</em> or <em>constant areavalue</em> or <em>projection</em>
 <em>area_correction</em> values = <em>yes</em> or <em>no</em>
+<em>store_contact_data</em> values = <em>yes</em> or <em>no</em>
 </pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><pre>fix 3 hg heat/gran/conduction initial_temperature 273.15</pre>
 </div>
-<p><strong>LIGGGHTS(R)-PUBLIC vs. LIGGGHTS(R)-PUBLIC info:</strong></p>
-<p>This command is not available in LIGGGHTS(R)-PUBLIC.</p>
+<p><strong>LIGGGHTS(R)-PUBLIC vs. LAMMPS info:</strong></p>
+<p>This command is not available in LAMMPS.</p>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
@@ -244,6 +245,17 @@ half the value is stored in each atom participating in the contact.
 With f_Temp[0] you can access the per-particle
 temperature. You can also access the total thermal energy of the fix group
 (useful for the thermo command) with f_id .</p>
+<p>In case the <em>store_contact_data</em> option is set to <em>yes</em>, additional output of
+per-atom properties is available. The property ids are nContactsConduction,
+contactAreaConduction and wallHeatFlux which represent the number of contacts a
+particle has, the combined contact area with other particles and the wall heat
+flux, respectively. These ids can be used as usual to output them in a dump
+command or to calculate atom properties.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><em>store_contact_data yes</em> is required any heat conduction properties are
+used in the steady state detection through <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">ave/euler/custom</span></tt>.</p>
+</div>
 <p><strong>Restart, fix_modify, run start/stop, minimize info:</strong></p>
 <p>The particle temperature and heat source is written is written to
 <a class="reference internal" href="restart.html"><em>binary restart files</em></a> so simulations can continue properly.

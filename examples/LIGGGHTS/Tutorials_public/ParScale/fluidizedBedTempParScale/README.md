@@ -5,6 +5,7 @@ This case is to test correct inter-process communication when using LIGGGHTS and
 
 To start, use
 
+  mpirun -np 2 liggghts < in.liggghts_init
 > mpirun -np 2 liggghts < in.liggghts_run
 
 Clean with

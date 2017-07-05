@@ -44,6 +44,8 @@
 #ifndef LMP_PRIMITIVE_WALL_DEFINITIONS
 #define LMP_PRIMITIVE_WALL_DEFINITIONS
 
+#include "math_extra_liggghts.h"
+
 /*
  * Necessary steps to add new primitive walls:
  * (1) add an enum for your primitive to WallType, but insert it before NUM_WTYPE
@@ -170,7 +172,14 @@ namespace LAMMPS_NS
       static double resolveContact(double *pos, double r, double *delta, double *param)
       {
         double dx, dy,dz, fact;
-        double dist = calcRadialDistance(pos,param,dy,dz);
+
+        const double dist = calcRadialDistance(pos,param,dy,dz);
+        if (MathExtraLiggghts::compDouble(dist, 0.0)) {
+            delta[d::x] = 0.; delta[d::y] = 0.; delta[d::z] = 0.;
+            dx = 0.0;
+            return dx; // break for zero dist (avoid devide-by-zero)
+        }
+
         if(dist > *param){
           dx = dist - *param - r;
           fact = (dist - *param) / dist;

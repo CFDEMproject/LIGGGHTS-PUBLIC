@@ -10,10 +10,13 @@ compute ke command :h3
 
 [Syntax:]
 
-compute ID group-ID ke :pre
+compute ID group-ID ke general_keyword general_values halfstep :pre
 
-ID, group-ID are documented in "compute"_compute.html command
-ke = style name of this compute command :ul
+ID, group-ID are documented in "compute"_compute.html command :ulb,l
+ke = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
+halfstep = optional keyword to save kinetic energy at half step :l
+:ule
 
 [Examples:]
 
@@ -24,8 +27,11 @@ compute 1 all ke :pre
 Define a computation that calculates the translational kinetic energy
 of a group of particles.
 
-The kinetic energy of each particle is computed as 1/2 m v^2, where m
-and v are the mass and velocity of the particle.
+The kinetic energy of each particle is computed as 1/2 m v^2, where m and v are
+the mass and velocity of the particle. By default the velocity is taken at the
+full time step ({v^i}). If the {halfstep} keyword is present in the definition
+of this compute, then the velocity is taken at the next half time step
+({v^(i+1/2)}).
 
 There is a subtle difference between the quantity calculated by this
 compute and the kinetic energy calculated by the {ke}

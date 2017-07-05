@@ -93,6 +93,9 @@ class FixContactPropertyAtom : public FixContactHistory {
 
   void do_forward_comm();
 
+  virtual class FixMeshSurface* getMesh() const
+  { return NULL; }
+
   // inline access
 
   inline int has_partner(int i,int partner_id)

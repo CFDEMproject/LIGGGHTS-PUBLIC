@@ -63,12 +63,12 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeClusterAtom::ComputeClusterAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeClusterAtom::ComputeClusterAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 4) error->all(FLERR,"Illegal compute cluster/atom command");
+  if (narg != iarg+1) error->all(FLERR,"Illegal compute cluster/atom command");
 
-  double cutoff = force->numeric(FLERR,arg[3]);
+  double cutoff = force->numeric(FLERR,arg[iarg++]);
   cutsq = cutoff*cutoff;
 
   peratom_flag = 1;

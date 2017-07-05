@@ -47,6 +47,7 @@
 #define LMP_LAMMPS_H
 
 #include <stdio.h>
+#include "mpi.h"
 
 namespace LAMMPS_NS {
 
@@ -97,6 +98,8 @@ class LAMMPS {
  private:
   void help();
   void print_style(const char *, int &);
+
+  class RegisterGranularStyles *regGranStyles;
 };
 
 }

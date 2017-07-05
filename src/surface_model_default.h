@@ -51,33 +51,90 @@ SURFACE_MODEL(SURFACE_DEFAULT,default,0)
 #include "atom.h"
 #include "force.h"
 #include "update.h"
+#include "modify.h"
+#include "fix_property_atom.h"
+#include "surface_model_base.h"
 
 namespace LIGGGHTS {
 namespace ContactModels
 {
   template<>
-  class SurfaceModel<SURFACE_DEFAULT> : protected Pointers
+  class SurfaceModel<SURFACE_DEFAULT> : public SurfaceModelBase
   {
   public:
-    static const int MASK = CM_SURFACES_INTERSECT;
-
-    SurfaceModel(LAMMPS * lmp, IContactHistorySetup*, class ContactModelBase *) :
-        Pointers(lmp)
+    SurfaceModel(LAMMPS * lmp, IContactHistorySetup * hsetup, class ContactModelBase * cmb) :
+        SurfaceModelBase(lmp, hsetup, cmb),
+        elasticpotflag_(false),
+        dissipatedflag_(false),
+        delta_offset_(-1),
+        dissipation_offset_(-1),
+        fix_dissipated_(NULL)
     {
       
     }
 
-    inline void registerSettings(Settings&) {}
-    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb) {}
+    inline void registerSettings(Settings& settings)
+    {
+        settings.registerOnOff("computeElasticPotential", elasticpotflag_, false);
+        settings.registerOnOff("computeDissipatedEnergy", dissipatedflag_, false);
+    }
+
+    inline void postSettings(IContactHistorySetup * hsetup, ContactModelBase *cmb)
+    {
+        if (dissipatedflag_)
+        {
+            if (cmb->is_wall())
+            {
+                fix_dissipated_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("dissipated_energy_wall", "property/atom", "vector", 0, 0, "dissipated energy"));
+                if (!fix_dissipated_)
+                    error->one(FLERR, "Could not find dissipated_energy_wall atom property. Ensure that fix calculate/wall_dissipated_energy is before fix wall/gran");
+            }
+            else
+            {
+                char * fixarg[15];
+                fixarg[0]  = (char*)"dissipated_energy_";
+                fixarg[1]  = (char*)"all";
+                fixarg[2]  = (char*)"property/atom";
+                fixarg[3]  = (char*)"dissipated_energy";
+                fixarg[4]  = (char*)"vector";
+                fixarg[5]  = (char*)"yes";
+                fixarg[6]  = (char*)"yes";
+                fixarg[7]  = (char*)"no";
+                fixarg[8]  = (char*)"0.0"; // energy
+                fixarg[9]  = (char*)"0.0"; // fx
+                fixarg[10] = (char*)"0.0"; // fy
+                fixarg[11] = (char*)"0.0"; // fz
+                fixarg[12] = (char*)"0.0"; // tx
+                fixarg[13] = (char*)"0.0"; // ty
+                fixarg[14] = (char*)"0.0"; // tz
+                fix_dissipated_ = modify->add_fix_property_atom(15, static_cast<char**>(fixarg), "dissipated energy");
+            }
+        }
+        if (cmb->is_wall() && (dissipatedflag_ || elasticpotflag_))
+        {
+            delta_offset_ = hsetup->add_history_value("delta_0", "1");
+            hsetup->add_history_value("delta_1", "1");
+            hsetup->add_history_value("delta_2", "1");
+            cmb->add_history_offset("delta", delta_offset_);
+            if (dissipatedflag_)
+            {
+                dissipation_offset_ = hsetup->add_history_value("diss_f_0", "1");
+                hsetup->add_history_value("diss_f_1", "1");
+                hsetup->add_history_value("diss_f_2", "1");
+                cmb->add_history_offset("dissipation_force", dissipation_offset_);
+            }
+        }
+    }
+
     inline void connectToProperties(PropertyRegistry&) {}
 
     inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata)
     {
-      #ifdef SUPERQUADRIC_ACTIVE_FLAG
-          sidata.is_non_spherical = false;
-      #endif
-      
-      return true;
+        #ifdef SUPERQUADRIC_ACTIVE_FLAG
+            sidata.is_non_spherical = false;
+        #endif
+        
+        return true;
     }
 
     inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData&, ForceData&)
@@ -147,12 +204,19 @@ namespace ContactModels
       sidata.P_diss = 0.;
     }
 
-    inline void endSurfacesIntersect(SurfacesIntersectData&,TriMesh *, double * const) {}
-    inline void surfacesClose(SurfacesCloseData&, ForceData&, ForceData&){}
+    inline void endSurfacesIntersect(SurfacesIntersectData &sidata,TriMesh *, double * const) {}
+    inline void surfacesClose(SurfacesCloseData &scdata, ForceData&, ForceData&) {}
     void beginPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     void endPass(SurfacesIntersectData&, ForceData&, ForceData&){}
     inline void tally_pp(double,int,int,int) {}
     inline void tally_pw(double,int,int,int) {}
+
+  private:
+    bool elasticpotflag_;
+    bool dissipatedflag_;
+    int delta_offset_;
+    int dissipation_offset_;
+    FixPropertyAtom *fix_dissipated_;
   };
 }
 }

@@ -10,10 +10,11 @@ compute property/molecule command :h3
 
 [Syntax:]
 
-compute ID group-ID property/molecule input1 input2 ... :pre
+compute ID group-ID property/molecule general_keyword general_values input1 input2 ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 property/molecule = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
 input = one or more attributes :l
   possible attributes = mol cout
     mol = molecule ID

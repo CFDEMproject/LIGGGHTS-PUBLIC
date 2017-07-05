@@ -154,7 +154,7 @@
 <li>move/mesh = style name of this fix command</li>
 <li>mesh = obligatory keyword</li>
 <li>mesh-ID = ID for the fix mesh that the fix move/mesh is applied to</li>
-<li>style = <em>linear</em> or <em>linear/variable</em> or <em>wiggle</em> or <em>riggle</em> or <em>rotate</em> or <em>rotate/variable</em> or <em>viblin</em> or <em>vibrot</em></li>
+<li>style = <em>linear</em> or <em>linear/variable</em> or <em>wiggle</em> or <em>riggle</em> or <em>rotate</em> or <em>rotate/variable</em> or <em>viblin</em> or <em>vibrot</em> or <em>file</em></li>
 </ul>
 <pre class="literal-block">
 <em>linear</em> args = Vx Vy Vz
@@ -213,6 +213,9 @@
   p1, ...,pn = phase of functionterm (rad) (number of terms is equivalent to order n)
   period = obligatory keyword
   per_1, ..., per_n = period of rotation (time units)
+</pre>
+<pre class="literal-block">
+<em>file</em> args = discussed on <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">move/mesh</span> <span class="pre">file</span></tt> doc page (might not be available)
 </pre>
 </div>
 <div class="section" id="examples">
@@ -312,6 +315,9 @@ the origin of the rotation axis would be in local reference frame.</p>
 revolve around its center of mass. The first move command should be
 the rotation around the central axis, the second move command the
 revolution around the center of mass of the mesh.</p>
+<p>Note, because of this the order of these fixes is important. A rotate mover that
+comes before a linear mover would have a fixed center of rotation, whereas in
+the opposite case the center of rotation would move linearly with the object.</p>
 </div>
 <div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>

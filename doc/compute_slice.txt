@@ -10,10 +10,11 @@ compute slice command :h3
 
 [Syntax:]
 
-compute ID group-ID slice Nstart Nstop Nskip input1 input2 ... :pre
+compute ID group-ID slice general_keyword general_values Nstart Nstop Nskip input1 input2 ... :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
 slice = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
 Nstart = starting index within input vector(s) :l
 Nstop = stopping index within input vector(s) :l
 Nskip = extract every Nskip elements from input vector(s) :l

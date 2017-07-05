@@ -1,0 +1,3 @@
+If you are using any makefiles in this folder please leave us a short message on www.cfdem.com and tell us which Makefile you are using. Please also tell us why you use one of these makefiles so that we can improve the automatic makefile (make auto).
+
+Note that the makefiles in this directory will be deleted with the next release of LIGGGHTS which is to happen in November 2017.

@@ -49,6 +49,7 @@ DumpStyle(local/gran/vtk,DumpLocalGranVTK)
 #define LMP_DUMP_LOCAL_GRAN_VTK_H
 
 #include "dump.h"
+#include "dump_vtk.h"
 #include "dump_local_gran.h"
 #include <map>
 #include <set>
@@ -74,7 +75,8 @@ namespace LAMMPS_NS {
  * This dump command does not support compressed files, buffering or custom format strings,
  * multiproc is only supported by the xml formats, multifile option has to be used.
  */
-class DumpLocalGranVTK : public Dump {
+class DumpLocalGranVTK : public Dump, public DumpVTK
+{
  public:
   DumpLocalGranVTK(class LAMMPS *, int, char **);
   virtual ~DumpLocalGranVTK();

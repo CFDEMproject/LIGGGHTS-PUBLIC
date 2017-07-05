@@ -49,7 +49,6 @@
 #include <stdlib.h>
 
 using namespace LAMMPS_NS;
-using namespace std;
 
 template<typename T>
 class ValuePropagator {
@@ -64,7 +63,7 @@ public:
   {
     currentValue = value;
 
-    for(typename set<T*>::iterator it = targets.begin(); it != targets.end(); ++it) {
+    for(typename std::set<T*>::iterator it = targets.begin(); it != targets.end(); ++it) {
       *(*it) = value;
     }
   }
@@ -75,12 +74,12 @@ public:
 
 private:
   T currentValue;
-  set<T*> targets;
+  std::set<T*> targets;
 };
 
 class Setting {
 public:
-  Setting(string name, int num_params) : name(name), num_params(num_params)
+  Setting(std::string name, int num_params) : name(name), num_params(num_params)
   {
   }
   virtual ~Setting(){}
@@ -91,9 +90,9 @@ public:
 
   virtual void print_value(FILE * out) = 0;
 
-  string name;
+  std::string name;
   int num_params;
-  string error_message;
+  std::string error_message;
 };
 
 template<typename T>
@@ -102,18 +101,18 @@ class EnumSetting : public Setting
 public:
   typedef T value_type;
 
-  EnumSetting(string name) : Setting(name, 1)
+  EnumSetting(std::string name) : Setting(name, 1)
   {
   }
 
   virtual ~EnumSetting(){}
 
-  void addOption(string option, T value)
+  void addOption(std::string option, T value)
   {
     options[option] = value;
   }
 
-  void setDefault(string option){
+  void setDefault(std::string option){
     current.setValue(options[option]);
   }
 
@@ -123,12 +122,12 @@ public:
 
   int parseArguments(char ** args) {
     if(name != args[0]) return 0; // argument not consumed
-    string selected(args[1]);
+    std::string selected(args[1]);
     if(options.find(selected) != options.end()){
       current.setValue(options[selected]);
       return 2; // argument consumed
     } else {
-      stringstream ss;
+      std::stringstream ss;
       ss << "while parsing '" << name << "' argument: ";
       ss << "unknown option or wrong keyword order: '" << args[1] << "'";
       error_message = ss.str();
@@ -138,7 +137,7 @@ public:
 
   virtual void print_value(FILE* out) {
     T value = current.getValue();
-    for(typename map<string, T>::iterator it = options.begin(); it != options.end(); ++it) {
+    for(typename std::map<std::string, T>::iterator it = options.begin(); it != options.end(); ++it) {
       if(it->second == value) {
         fprintf(out, "%s", it->first.c_str());
         return;
@@ -149,7 +148,7 @@ public:
 
 private:
   ValuePropagator<T> current;
-  map<string, T> options;
+  std::map<std::string, T> options;
 };
 
 class DoubleSetting : public Setting
@@ -157,7 +156,7 @@ class DoubleSetting : public Setting
 public:
   typedef double value_type;
 
-  DoubleSetting(string name, double default_value) : Setting(name, 1)
+  DoubleSetting(std::string name, double default_value) : Setting(name, 1)
   {
     setDefault(default_value);
   }
@@ -188,7 +187,7 @@ private:
 
 class OnOffSetting : public EnumSetting<bool> {
 public:
-  OnOffSetting(string name, bool default_value) : EnumSetting<bool>(name)
+  OnOffSetting(std::string name, bool default_value) : EnumSetting<bool>(name)
   {
     addOption("off", false);
     addOption("on", true);
@@ -201,7 +200,7 @@ public:
 
 class YesNoSetting : public EnumSetting<bool> {
 public:
-  YesNoSetting(string name, bool default_value) : EnumSetting<bool>(name)
+  YesNoSetting(std::string name, bool default_value) : EnumSetting<bool>(name)
   {
     addOption("no", false);
     addOption("yes", true);
@@ -213,11 +212,11 @@ public:
 
 class Settings : protected Pointers
 {
-  typedef map<string, Setting*> SettingMap;
+  typedef std::map<std::string, Setting*> SettingMap;
   SettingMap settings;
 
   template<typename SettingType>
-  void registerSetting(string name, typename SettingType::value_type & variable, typename SettingType::value_type default_value) {
+  void registerSetting(std::string name, typename SettingType::value_type & variable, typename SettingType::value_type default_value) {
     if(settings.find(name) == settings.end()) {
       settings[name] = new SettingType(name, default_value);
     }
@@ -235,16 +234,16 @@ public:
     }
   }
 
-  void registerOnOff(string name, bool & variable, bool default_value = false)
+  void registerOnOff(std::string name, bool & variable, bool default_value = false)
   {
     registerSetting<OnOffSetting>(name, variable, default_value);
   }
 
-  void registerYesNo(string name, bool & variable, bool default_value = false) {
+  void registerYesNo(std::string name, bool & variable, bool default_value = false) {
     registerSetting<YesNoSetting>(name, variable, default_value);
   }
 
-  void registerDoubleSetting(string name, double & variable, double default_value = 0.0)
+  void registerDoubleSetting(std::string name, double & variable, double default_value = 0.0)
   {
     registerSetting<DoubleSetting>(name, variable, default_value);
   }
@@ -273,7 +272,7 @@ public:
         remaining -= consumed;
         remaining_args = &remaining_args[consumed];
       } else {
-        stringstream ss;
+        std::stringstream ss;
         ss << "Unknown argument or wrong keyword order: '" << remaining_args[0] << "'";
         error_message = ss.str();
         return false;

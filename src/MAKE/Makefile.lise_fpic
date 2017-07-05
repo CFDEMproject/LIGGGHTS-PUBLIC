@@ -1,4 +1,4 @@
-# openmpi = Fedora, mpic++, OpenMPI-1.6
+# lise_fpic = Fedora, mpic++, OpenMPI-1.6 (Lise cluster at JKU)
 
 SHELL = /bin/sh
 
@@ -71,7 +71,7 @@ JPG_LIB =
 
 VTK_INC = -I/home/k6dcs/k6dcs00/software/vtk-5.8/include/vtk-5.8
 VTK_PATH = 
-VTK_LIB = -lvtkCommon -lvtkFiltering -lvtkIO -lvtkParallel
+VTK_LIB = -lvtkCommon -lvtkFiltering -lvtkIO -lvtkParallel -lvtkGraphics
 
 # ---------------------------------------------------------------------
 # build rules and dependencies

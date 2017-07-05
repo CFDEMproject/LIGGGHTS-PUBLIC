@@ -52,6 +52,7 @@ FixStyle(particledistribution/discrete/massbased,FixParticledistributionDiscrete
 #define LMP_FIX_PARTICLEDISTRIBUTION_DISCRETE_H
 
 #include "fix.h"
+#include "fix_property_atom.h"
 #include "random_park.h"
 
 enum{RAN_STYLE_CONSTANT_FPD,RAN_STYLE_UNIFORM_FPD,RAN_STYLE_GAUSSIAN_FPD};
@@ -90,7 +91,10 @@ class FixParticledistributionDiscrete : public Fix {
   class Region* randomize_single();    
 
   void random_init_list(int);
+  void direct_init_list(const int * const parttogen, FixPropertyAtom * const fix_release);
   int randomize_list(int,int,int);     
+  void direct_set_ptlist(const int itemplate, const int i, const void * const data, const int distribution_groupbit);
+  int update_ptlist_pointer(const int * ext_parttogen);
 
   class ParticleToInsert *pti;
   class ParticleToInsert **pti_list;
@@ -99,6 +103,8 @@ class FixParticledistributionDiscrete : public Fix {
   void pre_insert(int n,class FixPropertyAtom *fp = 0,double val = 0.);
   int insert(int n);
   void finalize_insertion();
+
+  unsigned int generate_hash();
 
   inline int n_particletemplates()
   { return ntemplates; }
@@ -111,6 +117,12 @@ class FixParticledistributionDiscrete : public Fix {
 
   inline int random_state()
   { return random->state(); }
+
+  void save_templates(FixPropertyAtom *fix_template)
+  { fix_template_ = fix_template; }
+
+  FixTemplateSphere * get_template(const int i)
+  { return i < ntemplates ? templates[i] : NULL; }
 
  protected:
 
@@ -145,6 +157,12 @@ class FixParticledistributionDiscrete : public Fix {
 
   // maximum radius and bounding sphere radius of all templates
   double minrad,maxrad,maxrbound;
+
+  // save templates
+  FixPropertyAtom *fix_template_;
+
+  void add_hash_value(const int value, unsigned int &start, unsigned int &hash);
+  void add_hash_value(double value, unsigned int &start, unsigned int &hash);
 };
 
 }

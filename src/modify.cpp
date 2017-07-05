@@ -88,7 +88,7 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
   n_initial_integrate = n_post_integrate = 0;
   n_pre_exchange = n_pre_neighbor = 0;
   n_pre_force = n_post_force = 0;
-  n_iterate_implicitly = 0; 
+  n_iterate_implicitly = n_pre_final_integrate = 0; 
   n_final_integrate = n_end_of_step = n_thermo_energy = 0;
   n_initial_integrate_respa = n_post_integrate_respa = 0;
   n_pre_force_respa = n_post_force_respa = n_final_integrate_respa = 0;
@@ -100,7 +100,7 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
   list_initial_integrate = list_post_integrate = NULL;
   list_pre_exchange = list_pre_neighbor = NULL;
   list_pre_force = list_post_force = NULL;
-  list_iterate_implicitly = NULL; 
+  list_iterate_implicitly = list_pre_final_integrate = NULL; 
   list_final_integrate = list_end_of_step = NULL;
   list_thermo_energy = NULL;
   list_initial_integrate_respa = list_post_integrate_respa = NULL;
@@ -161,7 +161,7 @@ Modify::~Modify()
 
   // delete all computes
 
-  for (int i = 0; i < ncompute; i++) delete compute[i];
+  for (int i = ncompute-1; i >= 0; i--) delete compute[i];
   memory->sfree(compute);
 
   delete [] list_initial_integrate;
@@ -170,6 +170,7 @@ Modify::~Modify()
   delete [] list_pre_neighbor;
   delete [] list_pre_force;
   delete [] list_post_force;
+  delete [] list_pre_final_integrate;
   delete [] list_final_integrate;
   delete [] list_iterate_implicitly; 
   delete [] list_end_of_step;
@@ -213,6 +214,7 @@ void Modify::init()
   list_init(PRE_NEIGHBOR,n_pre_neighbor,list_pre_neighbor);
   list_init(PRE_FORCE,n_pre_force,list_pre_force);
   list_init(POST_FORCE,n_post_force,list_post_force);
+  list_init(PRE_FINAL_INTEGRATE,n_pre_final_integrate,list_pre_final_integrate);
   list_init(FINAL_INTEGRATE,n_final_integrate,list_final_integrate);
   list_init(ITERATE_IMPLICITLY,n_iterate_implicitly,list_iterate_implicitly); 
   list_init_end_of_step(END_OF_STEP,n_end_of_step,list_end_of_step);
@@ -443,6 +445,15 @@ bool Modify::iterate_implicitly()
         return true;
 
   return false;
+}
+
+/* ----------------------------------------------------------------------
+   pre_final_integrate call, only for relevant fixes
+------------------------------------------------------------------------- */
+
+void Modify::pre_final_integrate()
+{
+  call_method_on_fixes(&Fix::pre_final_integrate, list_pre_final_integrate, n_pre_final_integrate);
 }
 
 /* ----------------------------------------------------------------------
@@ -729,6 +740,9 @@ int Modify::min_reset_ref()
 void Modify::add_fix(int narg, char **arg, char *suffix)
 {
   
+  if(update->ntimestep_reset_since_last_run && fix_restart_in_progress())
+    error->all(FLERR,"In case of restart, command 'reset_timestep' must come immediately before 'run'");
+
   if (narg < 3) error->all(FLERR,"Illegal fix command");
 
   // cannot define fix before box exists unless style is in exception list
@@ -782,8 +796,6 @@ void Modify::add_fix(int narg, char **arg, char *suffix)
     
     fix[ifix]->pre_delete(true);
     delete fix[ifix];
-    
-    atom->update_callback(ifix);
     fix[ifix] = NULL;
   } else {
     newflag = 1;
@@ -977,19 +989,24 @@ void Modify::add_compute(int narg, char **arg, char *suffix)
 
   compute[ncompute] = NULL;
 
-  if (suffix && lmp->suffix_enable) {
-    char estyle[256];
-    sprintf(estyle,"%s/%s",arg[2],suffix);
-    if (compute_map->find(estyle) != compute_map->end()) {
-      ComputeCreator compute_creator = (*compute_map)[estyle];
-      compute[ncompute] = compute_creator(lmp,narg,arg);
-    }
+  if (suffix && lmp->suffix_enable)
+  {
+      char estyle[256];
+      sprintf(estyle,"%s/%s",arg[2],suffix);
+      if (compute_map->find(estyle) != compute_map->end())
+      {
+          ComputeCreator compute_creator = (*compute_map)[estyle];
+          int iarg = 0;
+          compute[ncompute] = compute_creator(lmp, iarg, narg, arg);
+      }
   }
 
   if (compute[ncompute] == NULL &&
-      compute_map->find(arg[2]) != compute_map->end()) {
-    ComputeCreator compute_creator = (*compute_map)[arg[2]];
-    compute[ncompute] = compute_creator(lmp,narg,arg);
+      compute_map->find(arg[2]) != compute_map->end())
+  {
+      int iarg = 0;
+      ComputeCreator compute_creator = (*compute_map)[arg[2]];
+      compute[ncompute] = compute_creator(lmp, iarg, narg, arg);
   }
 
   if (compute[ncompute] == NULL) error->all(FLERR,"Invalid compute style");
@@ -1004,9 +1021,9 @@ void Modify::add_compute(int narg, char **arg, char *suffix)
 ------------------------------------------------------------------------- */
 
 template <typename T>
-Compute *Modify::compute_creator(LAMMPS *lmp, int narg, char **arg)
+Compute *Modify::compute_creator(LAMMPS *lmp, int iarg, int narg, char **arg)
 {
-  return new T(lmp,narg,arg);
+  return new T(lmp, iarg, narg,arg);
 }
 
 /* ----------------------------------------------------------------------
@@ -1507,4 +1524,42 @@ void Modify::call_respa_method_on_fixes(FixMethodRESPA3 method, int arg1,
       (fix[ilist[i]]->*method)(arg1, arg2, arg3);
     }
   }
+}
+
+/* ----------------------------------------------------------------------
+   Updates all computes that requested it at the end of a run
+------------------------------------------------------------------------- */
+
+void Modify::update_computes_on_run_end()
+{
+    for (int i = 0; i < ncompute; i++)
+    {
+        if (compute[i]->update_on_run_end())
+        {
+            if (compute[i]->scalar_flag)
+            {
+                if (!(compute[i]->invoked_flag & INVOKED_SCALAR))
+                {
+                  compute[i]->compute_scalar();
+                  compute[i]->invoked_flag |= INVOKED_SCALAR;
+                }
+            }
+            if (compute[i]->vector_flag)
+            {
+                if (!(compute[i]->invoked_flag & INVOKED_VECTOR))
+                {
+                  compute[i]->compute_vector();
+                  compute[i]->invoked_flag |= INVOKED_VECTOR;
+                }
+            }
+            if (compute[i]->array_flag)
+            {
+                if (!(compute[i]->invoked_flag & INVOKED_ARRAY))
+                {
+                  compute[i]->compute_array();
+                  compute[i]->invoked_flag |= INVOKED_ARRAY;
+                }
+            }
+        }
+    }
 }

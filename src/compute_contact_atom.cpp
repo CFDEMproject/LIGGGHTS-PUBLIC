@@ -69,19 +69,21 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeContactAtom::ComputeContactAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeContactAtom::ComputeContactAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
   
-  if (narg < 3) error->all(FLERR,"Illegal compute contact/atom command");
+  if (narg < iarg) error->all(FLERR,"Illegal compute contact/atom command");
 
   skin = 0.;
 
-  if(narg > 3)
+  if(narg > iarg)
   {
-      if (narg < 5) error->all(FLERR,"Illegal compute contact/atom command");
-      if(strcmp("skin",arg[3])) error->all(FLERR,"Illegal compute contact/atom command, expecting keyword 'skin'");
-      skin = atof(arg[4]);
+      if (narg < iarg+2)
+          error->all(FLERR,"Illegal compute contact/atom command");
+      if(strcmp("skin",arg[iarg++]))
+          error->all(FLERR,"Illegal compute contact/atom command, expecting keyword 'skin'");
+      skin = atof(arg[iarg++]);
   }
   
   peratom_flag = 1;
@@ -93,8 +95,8 @@ ComputeContactAtom::ComputeContactAtom(LAMMPS *lmp, int narg, char **arg) :
 
   // error checks
 
-  if (!atom->sphere_flag)
-    error->all(FLERR,"Compute contact/atom requires atom style sphere");
+  if (!atom->sphere_flag && !atom->superquadric_flag)
+    error->all(FLERR,"Compute contact/atom requires atom style sphere or atom style superquadric!");
 }
 
 /* ---------------------------------------------------------------------- */

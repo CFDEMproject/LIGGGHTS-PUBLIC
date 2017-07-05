@@ -10,11 +10,12 @@ compute coord/atom command :h3
 
 [Syntax:]
 
-compute ID group-ID coord/atom cutoff keyword value :pre
+compute ID group-ID coord/atom general_keyword general_values cutoff keyword value :pre
 
 ID, group-ID are documented in "compute"_compute.html command :ulb,l
-coord/atom = style name of this compute command
-cutoff = distance within which to count coordination neighbors (distance units)
+coord/atom = style name of this compute command :l
+general_keywords general_values are documented in "compute"_compute.html" :l
+cutoff = distance within which to count coordination neighbors (distance units) :l
 zero or more keyword/value pairs may be appended to args :l
 keyword = {mix} or {type1}, {type2}, ...  :l
   {mix} value = yes or no
@@ -39,6 +40,14 @@ A coordination number is defined as the number of neighbor atoms with
 specified atom type(s) that are within the specified cutoff distance
 from the central atom.  Atoms not in the group are included in a
 coordination number of atoms in the group.
+
+This compute is one of the three different ways to compute a coordination
+number. The following table gives an overview over the different options:
+
+[style] | [contact counted condition] | [formula]
+"compute contact/atom"_compute_contact_atom.html | particles touch each other | {r} < {r_i} + {r_j}
+"compute contact/atom/gran"_compute_contact_atom.html | particles interact with each other | {f_ij} > 0
+"compute coord/atom"_compute_coord_atom.html | particles are in the vicinity of each other | {r} < {cutoff} :tb(s=|)
 
 The {typeN} keywords allow you to specify which atom types contribute
 to each coordination number.  One coordination number is computed for

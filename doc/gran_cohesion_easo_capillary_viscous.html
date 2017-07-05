@@ -247,11 +247,6 @@ then the tangential force model will be able to transmit a larger amount of tang
 If <em>tangential_reduce</em> = &#8216;on&#8217; then the tangential model will not take the normal force
 from this model into account, typically leading to a lower value of tangential force
 (via the Coulomb friction limit)</p>
-</div>
-<div class="section" id="restrictions">
-<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
-<p>This model can ONLY be used as part of <a class="reference internal" href="pair_gran.html"><em>pair gran</em></a>, not as part
-of a <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>.</p>
 <p><strong>Output:</strong></p>
 <p>This gran model stores a couple of per-particle properties, for access
 by various <em class="xref std std-ref">output commands</em>.</p>
@@ -263,8 +258,10 @@ surface liquid source via the <a class="reference internal" href="set.html"><em>
 <p>Currently, there is a restriction that these properties can only be accessed
 after a <a class="reference internal" href="run.html"><em>run 0</em></a> command.</p>
 </div>
-<div class="section" id="id1">
-<h2>Restrictions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>This model can ONLY be used as part of <a class="reference internal" href="pair_gran.html"><em>pair gran</em></a>, not as part
+of a <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>.</p>
 <p>The cohesion model is not available for <a class="reference internal" href="atom_style.html"><em>atom_style</em></a> superquadric</p>
 <p><strong>References:</strong></p>
 <p id="easo"><strong>(Easo)</strong> Easo, Wassgreen, Comparison of Liquid Bridge Volume Models in DEM Simulations, AIChE Annual Conference (2013).</p>

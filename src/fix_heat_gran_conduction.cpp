@@ -72,8 +72,12 @@ FixHeatGranCond::FixHeatGranCond(class LAMMPS *lmp, int narg, char **arg) :
   store_contact_data_(false),
   fix_conduction_contact_area_(0),
   fix_n_conduction_contacts_(0),
+  fix_wall_heattransfer_coeff_(0),
+  fix_wall_temperature_(0),
   conduction_contact_area_(0),
   n_conduction_contacts_(0),
+  wall_heattransfer_coeff_(0),
+  wall_temp_(0),
   area_calculation_mode_(CONDUCTION_CONTACT_AREA_OVERLAP),
   fixed_contact_area_(0.),
   area_correction_flag_(0),
@@ -178,7 +182,39 @@ void FixHeatGranCond::post_create()
     fix_n_conduction_contacts_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
   }
 
-  if(store_contact_data_ && (!fix_conduction_contact_area_ || !fix_n_conduction_contacts_))
+  fix_wall_heattransfer_coeff_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("wallHeattransferCoeff","property/atom","scalar",0,0,this->style,false));
+  if(!fix_wall_heattransfer_coeff_ && store_contact_data_)
+  {
+    const char* fixarg[10];
+    fixarg[0]="wallHeattransferCoeff";
+    fixarg[1]="all";
+    fixarg[2]="property/atom";
+    fixarg[3]="wallHeattransferCoeff";
+    fixarg[4]="scalar";
+    fixarg[5]="no";
+    fixarg[6]="yes";
+    fixarg[7]="no";
+    fixarg[8]="0.";
+    fix_wall_heattransfer_coeff_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+  }
+
+  fix_wall_temperature_ = static_cast<FixPropertyAtom*>(modify->find_fix_property("wallTemp","property/atom","scalar",0,0,this->style,false));
+  if(!fix_wall_temperature_ && store_contact_data_)
+  {
+    const char* fixarg[10];
+    fixarg[0]="wallTemp";
+    fixarg[1]="all";
+    fixarg[2]="property/atom";
+    fixarg[3]="wallTemp";
+    fixarg[4]="scalar";
+    fixarg[5]="no";
+    fixarg[6]="yes";
+    fixarg[7]="no";
+    fixarg[8]="0.";
+    fix_wall_temperature_ = modify->add_fix_property_atom(9,const_cast<char**>(fixarg),style);
+  }
+
+  if(store_contact_data_ && (!fix_conduction_contact_area_ || !fix_n_conduction_contacts_ || !fix_wall_heattransfer_coeff_ || !fix_wall_temperature_))
     error->one(FLERR,"internal error");
 }
 
@@ -197,6 +233,7 @@ void FixHeatGranCond::pre_delete(bool unfixflag)
 int FixHeatGranCond::setmask()
 {
   int mask = FixHeatGran::setmask();
+  mask |= PRE_FORCE;
   mask |= POST_FORCE;
   return mask;
 }
@@ -211,6 +248,8 @@ void FixHeatGranCond::updatePtrs()
   {
     conduction_contact_area_ = fix_conduction_contact_area_->vector_atom;
     n_conduction_contacts_ = fix_n_conduction_contacts_->vector_atom;
+    wall_heattransfer_coeff_ = fix_wall_heattransfer_coeff_->vector_atom;
+    wall_temp_ = fix_wall_temperature_->vector_atom;
   }
 }
 
@@ -276,6 +315,18 @@ void FixHeatGranCond::init()
 
   // error checks on coarsegraining
   
+}
+
+/* ---------------------------------------------------------------------- */
+
+void FixHeatGranCond::pre_force(int vflag)
+{
+    
+    if(store_contact_data_)
+    {
+        fix_wall_heattransfer_coeff_->set_all(0.);
+        fix_wall_temperature_->set_all(0.);
+    }
 }
 
 /* ---------------------------------------------------------------------- */

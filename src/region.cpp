@@ -311,7 +311,7 @@ void Region::inverse_transform(double &x, double &y, double &z)
    new x,y,z = P + C + A cos(angle) + B sin(angle)
 ------------------------------------------------------------------------- */
 
-void Region::rotate(double &x, double &y, double &z, double angle)
+void Region::rotate(double &x, double &y, double &z, const double angle)
 {
   double a[3],b[3],c[3],d[3],disp[3];
 
@@ -662,7 +662,7 @@ void Region::volume_mc(int n_test,bool cutflag,double cut,double &vol_global,dou
 
     if(vol_local_all < volume_limit_)
         error->all(FLERR,"Unable to calculate region volume. Possible sources of error: \n"
-                         "   (a) region volume is too small or out of domain (you may want to increase the 'volume_limit' in the input script)\n"
+                         "   (a) region volume is too small or out of domain (you may want to decrease the 'volume_limit' in the input script)\n"
                          "   (b) particles for insertion are too large when using all_in yes\n"
                          "   (c) region is 2d, but should be 3d\n");
 

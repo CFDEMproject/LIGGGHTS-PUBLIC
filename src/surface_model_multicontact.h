@@ -43,6 +43,7 @@ SURFACE_MODEL(SURFACE_MULTICONTACT,multicontact,2)
 #ifndef SURFACE_MODEL_MULTICONTACT_H_
 #define SURFACE_MODEL_MULTICONTACT_H_
 #include "contact_models.h"
+#include "surface_model_base.h"
 #include <math.h>
 #include "atom.h"
 #include "force.h"
@@ -53,17 +54,15 @@ namespace LIGGGHTS {
 namespace ContactModels
 {
     template<>
-    class SurfaceModel<SURFACE_MULTICONTACT> : protected Pointers
+    class SurfaceModel<SURFACE_MULTICONTACT> : public SurfaceModelBase
     {
       private:
         int delta_offset;
         class ContactModelBase *cmb;
 
       public:
-        static const int MASK = CM_SURFACES_INTERSECT;
-
         SurfaceModel(LAMMPS * lmp, IContactHistorySetup* hsetup, class ContactModelBase *c) :
-            Pointers(lmp),
+            SurfaceModelBase(lmp, hsetup, c),
             cmb(c)
         {
             if (cmb->is_wall()) {

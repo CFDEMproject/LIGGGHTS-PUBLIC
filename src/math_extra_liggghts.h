@@ -86,19 +86,20 @@ namespace MathExtraLiggghts {
   inline void transpose3(const double m[3][3], double ans[3][3]);
   inline int is_inside_tet(double *pos,double invmatrix[4][4]);
 
-  inline void local_coosys_to_cartesian(double *global,double *local, double *ex_local, double *ey_local, double *ez_local);
+  inline void local_coosys_to_cartesian(double * const global, const double * const local, const double * const ex_local, const double * const ey_local, const double * const ez_local);
   inline void cartesian_coosys_to_local(double *local,double *global, double *ex_local, double *ey_local, double *ez_local,LAMMPS_NS::Error *error);
   inline void cartesian_coosys_to_local_orthogonal(double *local,double *global, double *ex_local, double *ey_local, double *ez_local,LAMMPS_NS::Error *error);
 
   // quaternion operations
+  inline bool is_unit_quat(const double *q);
   inline void quat_normalize(double *q);
-  inline void qconjugate(double *q, double *qc);
+  inline void qconjugate(const double * const q, double * const qc);
   inline void quat_from_vec(const double *v, double *q);
-  inline void vec_from_quat(const double *q, double *v);
-  inline void vec_quat_rotate(double *vec, double *quat, double *result);
-  inline void vec_quat_rotate(double *vec, double *quat);
-  inline void vec_quat_rotate(int *vec, double *quat) { UNUSED(vec); UNUSED(quat); }
-  inline void vec_quat_rotate(bool *vec, double *quat) { UNUSED(vec); UNUSED(quat); }
+  inline void vec_from_quat(const double *q, double * const v);
+  inline void vec_quat_rotate(const double * const vec, const double * const quat, double *result);
+  inline void vec_quat_rotate(double * const vec, const double * const quat);
+  inline void vec_quat_rotate(int * const vec, const double * const quat) { UNUSED(vec); UNUSED(quat); }
+  inline void vec_quat_rotate(bool * const vec, const double * const quat) { UNUSED(vec); UNUSED(quat); }
   inline void quat_diff(double *q_new, double *q_old, double *q_diff);
   inline void angmom_from_omega(double *w,
                                   double *ex, double *ey, double *ez,
@@ -378,7 +379,7 @@ inline int MathExtraLiggghts::is_inside_tet(double *pos,double invmatrix[4][4])
    transform from local to global coords
 ------------------------------------------------------------------------- */
 
-void MathExtraLiggghts::local_coosys_to_cartesian(double *global,double *local, double *ex_local, double *ey_local, double *ez_local)
+void MathExtraLiggghts::local_coosys_to_cartesian(double * const global, const double * const local, const double * const ex_local, const double * const ey_local, const double * const ez_local)
 {
     global[0] = local[0]*ex_local[0] + local[1]*ey_local[0] + local[2]*ez_local[0];
     global[1] = local[0]*ex_local[1] + local[1]*ey_local[1] + local[2]*ez_local[1];
@@ -430,7 +431,7 @@ void MathExtraLiggghts::cartesian_coosys_to_local_orthogonal(double *local,doubl
    assume q is of unit length
 ------------------------------------------------------------------------- */
 
-void MathExtraLiggghts::qconjugate(double *q, double *qc)
+void MathExtraLiggghts::qconjugate(const double * const q, double * const qc)
 {
   qc[0] = q[0];
   qc[1] = -q[1];
@@ -454,7 +455,7 @@ void MathExtraLiggghts::quat_from_vec(const double *v, double *q)
    construct vector3 from quaternion4
 ------------------------------------------------------------------------- */
 
-void MathExtraLiggghts::vec_from_quat(const double *q, double *v)
+void MathExtraLiggghts::vec_from_quat(const double *q, double * const v)
 {
   v[0] = q[1];
   v[1] = q[2];
@@ -465,7 +466,7 @@ void MathExtraLiggghts::vec_from_quat(const double *q, double *v)
    rotoate vector by quaternion
 ------------------------------------------------------------------------- */
 
-void MathExtraLiggghts::vec_quat_rotate(double *vec, double *quat, double *result)
+void MathExtraLiggghts::vec_quat_rotate(const double * const vec, const double * const quat, double * const result)
 {
     double vecQ[4], resultQ[4], quatC[4], temp[4];
 
@@ -487,7 +488,7 @@ void MathExtraLiggghts::vec_quat_rotate(double *vec, double *quat, double *resul
    rotoate vector by quaternion
 ------------------------------------------------------------------------- */
 
-void MathExtraLiggghts::vec_quat_rotate(double *vec, double *quat)
+void MathExtraLiggghts::vec_quat_rotate(double * const vec, const double * const quat)
 {
     double vecQ[4], resultQ[4], quatC[4], temp[4], result[3];
 
@@ -528,6 +529,15 @@ inline void MathExtraLiggghts::angmom_from_omega(double *w,
   m[0] = mbody[0]*ex[0] + mbody[1]*ey[0] + mbody[2]*ez[0];
   m[1] = mbody[0]*ex[1] + mbody[1]*ey[1] + mbody[2]*ez[1];
   m[2] = mbody[0]*ex[2] + mbody[1]*ey[2] + mbody[2]*ez[2];
+}
+
+/* ----------------------------------------------------------------------
+   Check if is unit quaternion
+------------------------------------------------------------------------- */
+
+inline bool MathExtraLiggghts::is_unit_quat(const double *q)
+{
+    return MathExtraLiggghts::compDouble(LAMMPS_NS::vectorMag4DSquared(q),1.0,1e-6);
 }
 
 /* ----------------------------------------------------------------------
@@ -638,9 +648,9 @@ void MathExtraLiggghts::random_unit_quat(LAMMPS_NS::RanPark *random,double *quat
 
 bool MathExtraLiggghts::is_int(char *str)
 {
-    int n = strlen(str);
-    for (int i = 0; i < n; i++)
-      if (0 == isdigit(str[i]))
+    size_t n = strlen(str);
+    for (size_t i = 0; i < n; ++i)
+      if (isdigit(str[i]) == 0)
         return false;
 
     return true;

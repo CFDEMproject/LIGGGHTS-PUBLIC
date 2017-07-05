@@ -67,10 +67,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 3) error->all(FLERR,"Illegal compute pair/gran/local or wall/gran/local command");
+  if (narg < iarg) error->all(FLERR,"Illegal compute pair/gran/local or wall/gran/local command");
 
   local_flag = 1;
   nmax = 0;
@@ -80,16 +80,16 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
   posflag = velflag = idflag = fflag = torqueflag = histflag = areaflag = 1;
 
   // do not store fn, ft, heat flux, delta by default
-  fnflag = ftflag  = torquenflag = torquetflag = deltaflag = heatflag = 0;
+  fnflag = ftflag  = torquenflag = torquetflag = deltaflag = heatflag = cpflag = 0;
 
   //no extra distance for building the list of pairs
   verbose = false;
 
   // if further args, store only the properties that are listed
-  if(narg > 3)
-     posflag = velflag = idflag = fflag = fnflag = ftflag = torqueflag = torquenflag = torquetflag = histflag = areaflag = deltaflag = heatflag = 0;
+  if(narg > iarg)
+     posflag = velflag = idflag = fflag = fnflag = ftflag = torqueflag = torquenflag = torquetflag = histflag = areaflag = deltaflag = heatflag = cpflag  = 0;
 
-  for (int iarg = 3; iarg < narg; iarg++)
+  for (; iarg < narg; iarg++)
   {
     //int i = iarg-3;
     if (strcmp(arg[iarg],"pos") == 0) posflag = 1;
@@ -105,6 +105,7 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int narg, char **arg) :
     else if (strcmp(arg[iarg],"contactArea") == 0) areaflag = 1;
     else if (strcmp(arg[iarg],"delta") == 0) deltaflag = 1;
     else if (strcmp(arg[iarg],"heatFlux") == 0) heatflag = 1;
+    else if (strcmp(arg[iarg],"contactPoint") == 0) cpflag = 1;
     else if (strcmp(arg[iarg],"verbose") == 0) verbose = true;
     else if (strcmp(arg[iarg],"extraSurfDistance") == 0) error->all(FLERR,"this keyword is deprecated; neighbor->contactDistanceFactor is now used directly");
     else if(0 == strcmp(style,"wall/gran/local") || 0 == strcmp(style,"pair/gran/local"))
@@ -271,7 +272,7 @@ void ComputePairGranLocal::init_cpgl(bool requestflag)
   if(histflag && dnum == 0) error->all(FLERR,"Compute pair/gran/local or wall/gran/local can not calculate history values since pair or wall style does not compute them");
   // standard values: pos1,pos2,id1,id2,extra id for mesh wall,force,torque,contact area
 
-  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + fnflag*3 + ftflag*3 + torqueflag*3 + torquenflag*3 + torquetflag*3 + histflag*dnum + areaflag + deltaflag + heatflag;
+  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + fnflag*3 + ftflag*3 + torqueflag*3 + torquenflag*3 + torquetflag*3 + histflag*dnum + areaflag + deltaflag + heatflag + cpflag*3;
   size_local_cols = nvalues;
 
 }
@@ -557,11 +558,39 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
     }
     if(deltaflag)
     {
+        if(atom->superquadric_flag)
+        {
+          int alpha1_offset = get_history_offset("alpha1_offset");
+          int alpha2_offset = get_history_offset("alpha2_offset");
+          array[ipair][n++] = hist[alpha1_offset]+hist[alpha2_offset];
+        } else {
+          radi = atom->radius[i];
+          radj = atom->radius[j];
+          vectorSubtract3D(atom->x[i],atom->x[j],del);
+          array[ipair][n++] = radi+radj-vectorMag3D(del);
+          
+        }
+    }
+
+    if(cpflag)
+    {
+      double cp[3];
+      if(atom->superquadric_flag)
+      {
+        int contact_point_offset = get_history_offset("contact_point_offset");
+        cp[0] = hist[contact_point_offset];
+        cp[1] = hist[contact_point_offset + 1];
+        cp[2] = hist[contact_point_offset + 2];
+      } else {
         radi = atom->radius[i];
         radj = atom->radius[j];
-        vectorSubtract3D(atom->x[i],atom->x[j],del);
-        array[ipair][n++] = radi+radj-vectorMag3D(del);
-        
+        for(int dim = 0; dim < 3; dim++)
+          cp[dim] = (atom->x[i][dim]*radj + atom->x[j][dim]*radi)/(radi+radj);
+      }
+
+      array[ipair][n++] = cp[0];
+      array[ipair][n++] = cp[1];
+      array[ipair][n++] = cp[2];
     }
 
     ipair++;

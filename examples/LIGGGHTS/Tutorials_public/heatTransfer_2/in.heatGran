@@ -62,7 +62,7 @@ thermo_modify	lost ignore norm no
 
 #insert the first particles so that dump is not empty
 run		1
-dump	dmp all custom 800 post/dump*.heatGran id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius f_Temp[0] f_heatSource[0]
+dump	dmp all custom/vtk 800 post/heatGran_*.vtk id type type x y z ix iy iz vx vy vz fx fy fz omegax omegay omegaz radius f_Temp[0] f_heatSource[0]
 
 #run more timesteps to insert large particles
 run		10000 upto

@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputePropertyMolecule : public Compute {
  public:
-  ComputePropertyMolecule(class LAMMPS *, int, char **);
+  ComputePropertyMolecule(class LAMMPS *, int &iarg, int, char **);
   ~ComputePropertyMolecule();
   void init();
   void compute_vector();

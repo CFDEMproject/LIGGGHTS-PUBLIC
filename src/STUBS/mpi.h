@@ -67,6 +67,7 @@ extern "C" {
 #define MPI_BYTE 5
 #define MPI_LONG_LONG 6
 #define MPI_DOUBLE_INT 7
+#define MPI_UNSIGNED 8
 
 #define MPI_SUM 1
 #define MPI_MAX 2
@@ -129,6 +130,7 @@ int MPI_Sendrecv(void *sbuf, int scount, MPI_Datatype sdatatype,
                   MPI_Datatype rdatatype, int source, int rtag,
                   MPI_Comm comm, MPI_Status *status);
 int MPI_Get_count(MPI_Status *status, MPI_Datatype datatype, int *count);
+int MPI_Get_version(int *version, int *subversion);
 
 int MPI_Comm_split(MPI_Comm comm, int color, int key, MPI_Comm *comm_out);
 int MPI_Comm_dup(MPI_Comm comm, MPI_Comm *comm_out);

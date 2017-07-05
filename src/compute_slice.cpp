@@ -60,29 +60,29 @@ enum{COMPUTE,FIX};
 
 /* ---------------------------------------------------------------------- */
 
-ComputeSlice::ComputeSlice(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeSlice::ComputeSlice(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg < 7) error->all(FLERR,"Illegal compute slice command");
+  if (narg < iarg+4) error->all(FLERR,"Illegal compute slice command");
 
   MPI_Comm_rank(world,&me);
 
-  nstart = force->inumeric(FLERR,arg[3]);
-  nstop = force->inumeric(FLERR,arg[4]);
-  nskip = force->inumeric(FLERR,arg[5]);
+  nstart = force->inumeric(FLERR,arg[iarg++]);
+  nstop = force->inumeric(FLERR,arg[iarg++]);
+  nskip = force->inumeric(FLERR,arg[iarg++]);
 
   if (nstart < 1 || nstop < nstart || nskip < 1)
     error->all(FLERR,"Illegal compute slice command");
 
   // parse remaining values until one isn't recognized
 
-  which = new int[narg-6];
-  argindex = new int[narg-6];
-  ids = new char*[narg-6];
-  value2index = new int[narg-6];
+  which = new int[narg-iarg];
+  argindex = new int[narg-iarg];
+  ids = new char*[narg-iarg];
+  value2index = new int[narg-iarg];
   nvalues = 0;
 
-  for (int iarg = 6; iarg < narg; iarg++) {
+  for (; iarg < narg; iarg++) {
     if (strncmp(arg[iarg],"c_",2) == 0 ||
         strncmp(arg[iarg],"f_",2) == 0) {
       if (arg[iarg][0] == 'c') which[nvalues] = COMPUTE;

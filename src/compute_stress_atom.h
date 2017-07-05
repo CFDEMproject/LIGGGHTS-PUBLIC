@@ -64,7 +64,7 @@ namespace LAMMPS_NS {
 
 class ComputeStressAtom : public Compute {
  public:
-  ComputeStressAtom(class LAMMPS *, int, char **);
+  ComputeStressAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputeStressAtom();
   void init() {}
   void compute_peratom();

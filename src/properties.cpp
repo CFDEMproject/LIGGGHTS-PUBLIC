@@ -47,7 +47,6 @@
 #include "error.h"
 #include "memory.h"
 #include "fix_multisphere.h"
-#include "multisphere.h"
 #include "fix_property_atom.h"
 #include "fix_property_global.h"
 
@@ -265,7 +264,7 @@ void* Properties::find_property(const char *name, const char *type, int &len1, i
     // may come from a fix multisphere
     // also handles scalar-multisphere and vector-multisphere
 
-    ms_ = static_cast<FixMultisphere*>(modify->find_fix_style_strict("multisphere",0));
+    ms_ = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
     if(ms_) ms_data_ = &ms_->data();
 
     if(ms_)

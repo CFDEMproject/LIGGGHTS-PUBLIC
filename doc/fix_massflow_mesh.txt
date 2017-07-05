@@ -51,7 +51,7 @@ It counts the total number of particles and the associated mass. Only particles
 part of {group} are eligible for counting.
 
 Particles are counted if they cross from the inner side of the mesh to the outer
-side of the mesh. The outer side can be defined by using the keyword {vec_side},
+side of the mesh. The outer side can be defined either by using the keyword {vec_side} or 
 by specifying a point at the outlet side of the mesh (keyword {point_at_outlet}). Note
 that the vector defined by {vec_side} does not necessarily have to be
 perpendicular to the mesh face.

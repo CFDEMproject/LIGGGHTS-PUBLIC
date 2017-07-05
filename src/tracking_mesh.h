@@ -52,6 +52,9 @@
 #include "custom_value_tracker.h"
 #include "container.h"
 #include "memory.h"
+#include <map>
+#include <vector>
+#include <list>
 
 namespace LAMMPS_NS{
 
@@ -66,8 +69,8 @@ namespace LAMMPS_NS{
 
         virtual void buildNeighbours() = 0;
 
-        virtual void move(double *vecTotal, double *vecIncremental);
-        virtual void move(double *vecIncremental);
+        virtual void move(const double * const vecTotal, const double * const vecIncremental);
+        virtual void move(const double * const vecIncremental);
 
         virtual void scale(double factor);
 
@@ -81,9 +84,28 @@ namespace LAMMPS_NS{
         {return customValues_;}
 
         // global to local ID mapping
-        inline int map(int global)
-        { return (mapArray_ ? mapArray_[global] : -1);}
+        inline int map(const int global, const int j)
+        {
+            if (mapArray_.empty() || mapArray_.find(global) == mapArray_.end())
+                return -1;
+            else
+            {
+                if (j < (int)mapArray_[global].size())
+                    return mapArray_[global][j];
+                else
+                    return -1;
+            }
+        }
 
+        inline int map_size(const int global)
+        {
+            if (mapArray_.empty() || mapArray_.find(global) == mapArray_.end())
+                return 0;
+            else
+                return mapArray_[global].size();
+        }
+
+        //AM-TODO check if still in use
         inline int tag_max()
         { return mapTagMax_; }
 
@@ -123,20 +145,20 @@ namespace LAMMPS_NS{
         void clearMap();
         void generateMap();
 
-        virtual void moveElement(int i,double *vecIncremental);
+        virtual void moveElement(const int i, const double * const vecIncremental);
 
-        virtual void rotate(double *totalQ, double *dQ,double *origin);
-        virtual void rotate(double *dQ,double *origin);
+        virtual void rotate(const double * const totalQ, const double * const dQ, const double * const origin);
+        virtual void rotate(const double * const dQ, const double * const origin);
 
         // buffer operations
 
         inline int elemListBufSize(int n,int operation,bool scale,bool translate,bool rotate);
-        inline int pushElemListToBuffer(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int popElemListFromBuffer(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int pushElemListToBufferReverse(int first, int n, double *buf, int operation,bool scale,bool translate, bool rotate);
-        inline int popElemListFromBufferReverse(int n, int *list, double *buf, int operation,bool scale,bool translate, bool rotate);
+        inline int pushElemListToBuffer(int n, int *list, int *wraplist, double *buf, int operation, std::list<std::string> * properties, double *dlo, double *dhi, bool scale,bool translate, bool rotate);
+        inline int popElemListFromBuffer(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate);
+        inline int pushElemListToBufferReverse(int first, int n, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate);
+        inline int popElemListFromBufferReverse(int n, int *list, double *buf, int operation, std::list<std::string> * properties, bool scale,bool translate, bool rotate);
 
-        inline int elemBufSize(int operation,bool scale,bool translate,bool rotate);
+        inline int elemBufSize(int operation, std::list<std::string> * properties, bool scale,bool translate,bool rotate);
         inline int pushElemToBuffer(int n, double *buf, int operation,bool scale,bool translate,bool rotate);
         inline int popElemFromBuffer(double *buf, int operation,bool scale,bool translate,bool rotate);
 
@@ -158,7 +180,7 @@ namespace LAMMPS_NS{
 
         // global-local lookup
         int mapTagMax_;
-        int *mapArray_;
+        std::map<int, std::vector<int> > mapArray_;
 
         bool verbose_;
 

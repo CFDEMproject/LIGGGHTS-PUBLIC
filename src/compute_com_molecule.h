@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeCOMMolecule : public Compute {
  public:
-  ComputeCOMMolecule(class LAMMPS *, int, char **);
+  ComputeCOMMolecule(class LAMMPS *, int &iarg, int, char **);
   ~ComputeCOMMolecule();
   void init();
   void compute_array();

@@ -71,9 +71,33 @@ class Output : protected Pointers {
   int *ivar_dump;              // variable index for dump frequency
   class Dump **dump;           // list of defined Dumps
 
-  int restart_flag;            // 1 if any restart files are written
-  int restart_flag_single;     // 1 if single restart files are written
-  int restart_flag_double;     // 1 if double restart files are written
+  Output(class LAMMPS *);
+  ~Output();
+  void init();
+  void setup(int memflag = 1);          // initial output before run/min
+  void write(bigint);                   // output for current timestep
+  void write_dump(bigint);              // force output of dump snapshots
+  void write_restart(bigint);           // force output of a restart file
+  void reset_timestep(bigint);          // reset next timestep for all output
+
+  void add_dump(int, char **);          // add a Dump to Dump list
+  void modify_dump(int, char **);       // modify a Dump
+  void delete_dump(char *);             // delete a Dump from Dump list
+
+  void set_thermo(int, char **);        // set thermo output freqquency
+  void create_thermo(int, char **);     // create a thermo style
+  void create_restart(int, char **);    // create Restart and restart files
+
+  void memory_usage();                  // print out memory usage
+
+  bool restart_requested(const bigint); // returns if a restart is requested (called by Neighbor::decide)
+
+  void request_restart(const bigint);   // requests a restart write in the next step (for use in Min)
+
+ private:
+  bool restart_flag;           // true if any restart files are written
+  bool restart_flag_single;    // true if single restart files are written
+  bool restart_flag_double;    // true if double restart files are written
   bigint next_restart;         // next timestep to write any restart file
   bigint next_restart_single;  // next timestep to write a single restart file
   bigint next_restart_double;  // next timestep to write a double restart file
@@ -88,25 +112,6 @@ class Output : protected Pointers {
   char *restart1;              // name single restart file
   char *restart2a,*restart2b;  // names of double restart files
   class WriteRestart *restart; // class for writing restart files
-
-  Output(class LAMMPS *);
-  ~Output();
-  void init();
-  void setup(int memflag = 1);       // initial output before run/min
-  void write(bigint);                // output for current timestep
-  void write_dump(bigint);           // force output of dump snapshots
-  void write_restart(bigint);        // force output of a restart file
-  void reset_timestep(bigint);       // reset next timestep for all output
-
-  void add_dump(int, char **);       // add a Dump to Dump list
-  void modify_dump(int, char **);    // modify a Dump
-  void delete_dump(char *);          // delete a Dump from Dump list
-
-  void set_thermo(int, char **);     // set thermo output freqquency
-  void create_thermo(int, char **);  // create a thermo style
-  void create_restart(int, char **); // create Restart and restart files
-
-  void memory_usage();               // print out memory usage
 };
 
 }

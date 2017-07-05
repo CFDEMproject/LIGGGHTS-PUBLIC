@@ -60,10 +60,10 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-ComputeDisplaceAtom::ComputeDisplaceAtom(LAMMPS *lmp, int narg, char **arg) :
-  Compute(lmp, narg, arg)
+ComputeDisplaceAtom::ComputeDisplaceAtom(LAMMPS *lmp, int &iarg, int narg, char **arg) :
+  Compute(lmp, iarg, narg, arg)
 {
-  if (narg != 3) error->all(FLERR,"Illegal compute displace/atom command");
+  if (narg != iarg) error->all(FLERR,"Illegal compute displace/atom command");
 
   peratom_flag = 1;
   size_peratom_cols = 4;

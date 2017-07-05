@@ -64,7 +64,7 @@ namespace LAMMPS_NS {
 
 class ComputeErotateSphereAtom : public Compute {
  public:
-  ComputeErotateSphereAtom(class LAMMPS *, int, char **);
+  ComputeErotateSphereAtom(class LAMMPS *, int &iarg, int, char **);
   ~ComputeErotateSphereAtom();
   void init();
   void compute_peratom();

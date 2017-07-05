@@ -65,6 +65,7 @@
 #include "accelerator_cuda.h"
 #include "memory.h"
 #include "error.h"
+#include "signal_handling.h"
 
 using namespace LAMMPS_NS;
 
@@ -74,7 +75,26 @@ using namespace LAMMPS_NS;
    initialize all output
 ------------------------------------------------------------------------- */
 
-Output::Output(LAMMPS *lmp) : Pointers(lmp)
+Output::Output(LAMMPS *lmp) :
+    Pointers(lmp),
+    restart_flag(false),
+    restart_flag_single(false),
+    restart_flag_double(false),
+    next_restart(0),
+    next_restart_single(0),
+    next_restart_double(0),
+    restart_every_single(0),
+    restart_every_double(0),
+    last_restart(0),
+    restart_toggle(0),
+    var_restart_single(NULL),
+    var_restart_double(NULL),
+    ivar_restart_single(0),
+    ivar_restart_double(0),
+    restart1(NULL),
+    restart2a(NULL),
+    restart2b(NULL),
+    restart(NULL)
 {
   char **newarg = new char*[4];
   // create a default compute that calculates the temperature of the system
@@ -107,13 +127,6 @@ Output::Output(LAMMPS *lmp) : Pointers(lmp)
   var_dump = NULL;
   ivar_dump = NULL;
   dump = NULL;
-
-  restart_flag = restart_flag_single = restart_flag_double = 0;
-  restart_every_single = restart_every_double = 0;
-  last_restart = -1;
-  restart1 = restart2a = restart2b = NULL;
-  var_restart_single = var_restart_double = NULL;
-  restart = NULL;
 }
 
 /* ----------------------------------------------------------------------
@@ -122,24 +135,27 @@ Output::Output(LAMMPS *lmp) : Pointers(lmp)
 
 Output::~Output()
 {
-  if (thermo) delete thermo;
-  delete [] var_thermo;
+    if (thermo)
+        delete thermo;
+    delete [] var_thermo;
 
-  memory->destroy(every_dump);
-  memory->destroy(next_dump);
-  memory->destroy(last_dump);
-  for (int i = 0; i < ndump; i++) delete [] var_dump[i];
-  memory->sfree(var_dump);
-  memory->destroy(ivar_dump);
-  for (int i = 0; i < ndump; i++) delete dump[i];
-  memory->sfree(dump);
+    memory->destroy(every_dump);
+    memory->destroy(next_dump);
+    memory->destroy(last_dump);
+    for (int i = 0; i < ndump; i++)
+        delete [] var_dump[i];
+    memory->sfree(var_dump);
+    memory->destroy(ivar_dump);
+    for (int i = 0; i < ndump; i++)
+        delete dump[i];
+    memory->sfree(dump);
 
-  delete [] restart1;
-  delete [] restart2a;
-  delete [] restart2b;
-  delete [] var_restart_single;
-  delete [] var_restart_double;
-  delete restart;
+    delete [] restart1;
+    delete [] restart2a;
+    delete [] restart2b;
+    delete [] var_restart_single;
+    delete [] var_restart_double;
+    delete restart;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -393,6 +409,23 @@ void Output::write(bigint ntimestep)
     }
     last_restart = ntimestep;
     next_restart = MIN(next_restart_single,next_restart_double);
+
+    if (SignalHandler::request_write_restart) {
+        char *file = new char[24 + 16 + 5];
+        sprintf(file,"restart_forced_liggghts_" BIGINT_FORMAT ".data",ntimestep);
+        bool has_restart = restart != NULL;
+        if (!has_restart)
+            restart = new WriteRestart(lmp);
+        restart->write(file);
+        if (!has_restart)
+        {
+            delete restart;
+            restart = NULL;
+        }
+        delete [] file;
+        SignalHandler::request_write_restart = false;
+        error->warning(FLERR, "Forced restart written");
+    }
   }
 
   // insure next_thermo forces output on last step of run
@@ -400,6 +433,9 @@ void Output::write(bigint ntimestep)
 
   if (next_thermo == ntimestep) {
     modify->clearstep_compute();
+    // check all computes and those with update_on_run_end activated will be updated
+    if (ntimestep == update->laststep)
+        modify->update_computes_on_run_end();
     if (last_thermo != ntimestep) thermo->compute(1);
     last_thermo = ntimestep;
     if (var_thermo) {
@@ -714,7 +750,7 @@ void Output::create_restart(int narg, char **arg)
   if (!varflag && every == 0) {
     if (narg != 1) error->all(FLERR,"Illegal restart command");
 
-    restart_flag = restart_flag_single = restart_flag_double = 0;
+    restart_flag = restart_flag_single = restart_flag_double = false;
     last_restart = -1;
 
     delete restart;
@@ -733,7 +769,7 @@ void Output::create_restart(int narg, char **arg)
   if (narg != 2 && narg != 3) error->all(FLERR,"Illegal restart command");
 
   if (narg == 2) {
-    restart_flag = restart_flag_single = 1;
+    restart_flag = restart_flag_single = true;
 
     if (varflag) {
       delete [] var_restart_single;
@@ -750,7 +786,7 @@ void Output::create_restart(int narg, char **arg)
   }
 
   if (narg == 3) {
-    restart_flag = restart_flag_double = 1;
+    restart_flag = restart_flag_double = true;
 
     if (varflag) {
       delete [] var_restart_double;
@@ -796,4 +832,42 @@ void Output::memory_usage()
     if (logfile)
       fprintf(logfile,"Memory usage per processor = %g Mbytes\n",mbytes);
   }
+}
+
+/* ----------------------------------------------------------------------
+   identifies when the next restart will be written
+   also handles signals to force writing of a restart
+   this function is called by Neighbor::decide
+------------------------------------------------------------------------- */
+
+bool Output::restart_requested(const bigint ntimestep)
+{
+    if (SignalHandler::request_write_restart || SignalHandler::request_quit)
+    {
+        // we have something to write now
+        next = ntimestep;
+        // if quit is request write thermo
+        if (SignalHandler::request_quit)
+            next_thermo = ntimestep;
+        // if restart writing is request do it
+        if (SignalHandler::request_write_restart)
+            next_restart = ntimestep;
+    }
+    return next_restart == ntimestep;
+}
+
+/* ----------------------------------------------------------------------
+   request a restart for a certain timestep
+------------------------------------------------------------------------- */
+
+void Output::request_restart(const bigint ntimestep)
+{
+    if (restart_flag)
+    {
+        next_restart = ntimestep;
+        if (restart_every_single)
+            next_restart_single = ntimestep;
+        if (restart_every_double)
+            next_restart_double = ntimestep;
+    }
 }

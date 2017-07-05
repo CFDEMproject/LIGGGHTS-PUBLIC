@@ -59,7 +59,7 @@ namespace LAMMPS_NS {
 
 class ComputeVoronoi : public Compute {
  public:
-  ComputeVoronoi(class LAMMPS *, int, char **);
+  ComputeVoronoi(class LAMMPS *, int &iarg, int, char **);
   ~ComputeVoronoi();
   void init();
   void compute_peratom();

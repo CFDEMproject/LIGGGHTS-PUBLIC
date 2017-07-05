@@ -58,7 +58,7 @@ namespace LAMMPS_NS {
 
 class ComputeERotateAsphere : public Compute {
  public:
-  ComputeERotateAsphere(class LAMMPS *, int, char **);
+  ComputeERotateAsphere(class LAMMPS *, int &iarg, int, char **);
   void init();
   double compute_scalar();
 

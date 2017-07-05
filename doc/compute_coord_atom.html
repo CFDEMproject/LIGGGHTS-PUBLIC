@@ -147,13 +147,14 @@
 <span id="index-0"></span><h1>compute coord/atom command<a class="headerlink" href="#compute-coord-atom-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID coord/atom cutoff keyword value</pre>
+<div class="highlight-python"><pre>compute ID group-ID coord/atom general_keyword general_values cutoff keyword value</pre>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
-<li>coord/atom = style name of this compute command
-cutoff = distance within which to count coordination neighbors (distance units)
-zero or more keyword/value pairs may be appended to args</li>
+<li>coord/atom = style name of this compute command</li>
+<li>general_keywords general_values are documented in <a class="reference external" href="compute.html&quot;">compute</a></li>
+<li>cutoff = distance within which to count coordination neighbors (distance units)</li>
+<li>zero or more keyword/value pairs may be appended to args</li>
 <li>keyword = <em>mix</em> or <em>type1</em>, <em>type2</em>, ...</li>
 </ul>
 <pre class="literal-block">
@@ -181,6 +182,33 @@ for each atom in a group.</p>
 specified atom type(s) that are within the specified cutoff distance
 from the central atom.  Atoms not in the group are included in a
 coordination number of atoms in the group.</p>
+<p>This compute is one of the three different ways to compute a coordination
+number. The following table gives an overview over the different options:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="46%" />
+<col width="37%" />
+<col width="17%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><strong>style</strong></td>
+<td><strong>contact counted condition</strong></td>
+<td><strong>formula</strong></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="compute_contact_atom.html"><em>compute contact/atom</em></a></td>
+<td>particles touch each other</td>
+<td><em>r</em> &lt; <em>r_i</em> + <em>r_j</em></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="compute_contact_atom.html"><em>compute contact/atom/gran</em></a></td>
+<td>particles interact with each other</td>
+<td><em>f_ij</em> &gt; 0</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href=""><em>compute coord/atom</em></a></td>
+<td>particles are in the vicinity of each other</td>
+<td><em>r</em> &lt; <em>cutoff</em></td>
+</tr>
+</tbody>
+</table>
 <p>The <em>typeN</em> keywords allow you to specify which atom types contribute
 to each coordination number.  One coordination number is computed for
 each of the <em>typeN</em> keywords listed.  If no <em>typeN</em> keywords are

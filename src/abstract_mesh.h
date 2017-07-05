@@ -43,6 +43,8 @@
 #define LMP_ABSTRACT_MESH_H
 
 #include "pointers.h"
+#include <list>
+#include <string>
 
 namespace LAMMPS_NS
 {
@@ -68,21 +70,21 @@ namespace LAMMPS_NS
         virtual void scale(double factor) = 0;
 
         // linear move w/ total and incremental displacement
-        virtual void move(double *vecTotal, double *vecIncremental) = 0;
+        virtual void move(const double *vecTotal, const double *vecIncremental) = 0;
 
         // linear move w/ incremental displacement
-        virtual void move(double *vecIncremental) = 0;
+        virtual void move(const double *vecIncremental) = 0;
 
         // rotation w/ total and incremental displacement
         //   calls rotate(double *totalQuat,double *dQuat,double *displacement)
-        virtual void rotate(double totalAngle, double dAngle, double *axis, double *p) = 0;
+        virtual void rotate(const double totalAngle, const double dAngle, const double * const axis, const double * const p) = 0;
 
         // rotation w/ incremental displacement
         //   calls rotate(double *dQuat,double *displacement)
-        virtual void rotate(double dAngle, double *axis, double *p) = 0;
+        virtual void rotate(const double dAngle, const double * const axis, const double * const p) = 0;
 
         // rotation using quaternions
-        virtual void rotate(double *totalQ, double *dQ,double *origin) = 0;
+        virtual void rotate(const double * const totalQ, const double * const dQ, const double * const origin) = 0;
 
         // initialize movement
         virtual bool registerMove(bool _scale, bool _translate, bool _rotate) = 0;
@@ -98,11 +100,16 @@ namespace LAMMPS_NS
         // neigh list stuff for moving mesh
         virtual bool decideRebuild() = 0;
 
-        virtual void initalSetup() = 0;
+        // reset node positions
+        virtual void storeNodePosOrig(int ilo, int ihi) = 0;
+
+        virtual void initialSetup() = 0;
         virtual void pbcExchangeBorders(int setupFlag) = 0;
         virtual void clearReverse() = 0;
-        virtual void forwardComm() = 0;
-        virtual void reverseComm() = 0;
+        virtual void forwardComm(std::list<std::string> * properties = NULL) = 0;
+        virtual void forwardComm(std::string) = 0;
+        virtual void reverseComm(std::list<std::string> * properties = NULL) = 0;
+        virtual void reverseComm(std::string) = 0;
 
         virtual void writeRestart(FILE *fp) = 0;
         virtual void restart(double *list) = 0;
@@ -124,7 +131,7 @@ namespace LAMMPS_NS
 
         virtual void check_element_property_consistency() = 0;
 
-        /*none*/
+        virtual void extrudePlanarMesh(const double length, double * &extrusion_tri_nodes, int &extrusion_tri_count) = 0;
 
         // size includes owned and ghost elements
         inline int size()

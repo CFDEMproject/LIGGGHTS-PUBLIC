@@ -165,10 +165,6 @@ inconsistancies.
 NOTE: "Coarsegraining"_coarsegraining.html may or 
 may not be available in LIGGGHTS(R)-PUBLIC.
 
-[Default:]
-
-lbVolumeFraction = 0.05
-
 [References:]
 
 :link(Lian)
@@ -183,4 +179,4 @@ lbVolumeFraction = 0.05
 
 [Default:]
 
-{tangential_reduce} = 'off'
+{tangential_reduce} = 'off', lbVolumeFraction = 0.05
