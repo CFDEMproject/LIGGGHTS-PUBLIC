@@ -1,0 +1,389 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>dump local/gran/vtk command &mdash; LIGGGHTS v3.X documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="LIGGGHTS v3.X documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="Manual.html" class="icon icon-home"> LIGGGHTS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v3.X
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_gran_models.html">5. Contact models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_mesh_modules.html">6. Mesh modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_packages.html">7. Packages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_howto.html">8. How-to discussions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_modify.html">9. Modifying &amp; extending LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_python.html">10. Python interface to LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Section_errors.html">11. Errors</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>dump local/gran/vtk command</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="_sources/dump_local_gran_vtk.txt" rel="nofollow"> View page source</a> 
+        
+          <a href="http://www.cfdem.com"> Website</a>
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+        
+      
+    </li>
+  </ul>
+  <hr/>
+  
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dump-local-gran-vtk-command">
+<span id="index-0"></span><h1>dump local/gran/vtk command<a class="headerlink" href="#dump-local-gran-vtk-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>dump ID group-ID style N file ID
+</pre></div>
+</div>
+<ul class="simple">
+<li>ID = user-assigned name for the dump</li>
+<li>group-ID = ID of the group of atoms to be dumped</li>
+<li>style = <em>local/gran/vtk</em></li>
+<li>N = dump every this many timesteps</li>
+<li>file = name of file to write dump info to</li>
+</ul>
+<pre class="literal-block">
+ID = ID of a <a class="reference internal" href="compute_pair_gran_local.html"><em>compute pair/gran/local or wall/gran/local</em></a>
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>compute cpgl all pair/gran/local pos vel force
+dump dmp2 all local/gran/vtk 100 post/forcechain*.vtk cpgl
+</pre></div>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>Dump a snapshot of granular or granular bond quantities to one or more files every N
+timesteps. <em>ID</em> refers to a <a class="reference internal" href="compute_pair_gran_local.html"><em>compute pair/gran/local or wall/gran/local</em></a>
+which is providing the data to be dumped.</p>
+<p>The timesteps on which dump output is written can be controlled by a variable; see the <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify every</em></a> command for details.
+Only information for atoms in the specified group is dumped.  The
+<a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify thresh and region</em></a> commands can also
+alter what atoms are included; see details below.
+As described below, special characters (&#8220;*&#8221;, &#8220;%&#8221;) in the filename determine the kind of output.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In Paraview, the &#8220;Tube&#8221; filter can be used for viz of the VTK line data.</p>
+</div>
+<p><strong>Description for dumping bond data:</strong></p>
+<p>Optionally, for dumping bond quantities, this command requires a <code class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">bond</span></code>
+granular pair style interaction to be active and a compute pair/gran/local/bond instead of
+a a <a class="reference internal" href="compute_pair_gran_local.html"><em>compute pair/gran/local or wall/gran/local</em></a> command, such as</p>
+<div class="highlight-python"><div class="highlight"><pre>compute bonds all pair/gran/local/bond
+</pre></div>
+</div>
+<p>For the bond dump, the values that are output to VTK are hard-coded as follows:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="69%" />
+<col width="15%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><em>x1</em></td>
+<td>position of particle i in bond</td>
+<td>3 values (vector)</td>
+</tr>
+<tr class="row-even"><td><em>x2</em></td>
+<td>position of particle j in bond</td>
+<td>3 values (vector)</td>
+</tr>
+<tr class="row-odd"><td><em>id1</em></td>
+<td>ID of particle i</td>
+<td>1 value (scalar)</td>
+</tr>
+<tr class="row-even"><td><em>id2</em></td>
+<td>ID of particle 2</td>
+<td>1 value (scalar)</td>
+</tr>
+<tr class="row-odd"><td><em>force</em></td>
+<td>total force between bonded particles, including bond and pair contributions</td>
+<td>3 values (vector)</td>
+</tr>
+<tr class="row-even"><td><em>torque</em></td>
+<td>total torque between bonded particles, including bond and pair contributions</td>
+<td>3 values (vector)</td>
+</tr>
+<tr class="row-odd"><td><em>force_normal</em></td>
+<td>normal total force between bonded particles, including bond and pair contributions</td>
+<td>3 values (vector)</td>
+</tr>
+<tr class="row-even"><td><em>force_tangential</em></td>
+<td>tangential total force between bonded particles, including bond and pair contributions</td>
+<td>3 values (vector)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Only data of particles which have an actual active bond
+via <code class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">bond</span></code> are included in the output.
+However, <em>F</em>, <em>T</em>, etc. are the total forces and torques, including other
+contributions such as Hertz normal forces etc.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Because periodic boundary conditions are enforced only
+on timesteps when neighbor lists are rebuilt, the coordinates of an
+atom written to a dump file may be slightly outside the simulation
+box.</p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The output data does not contain any information
+about bonds stretching over periodic boundary conditions. Typically,
+your visz engine will thus not detect bonds stretching over periodic
+boundary conditions.</p>
+</div>
+<hr class="docutils" />
+<p>The VTK format uses a single snapshot of the system per file, thus
+a wildcard &#8220;*&#8221; must be included in the filename, as discussed below.
+Otherwise the dump files will get overwritten with the new snapshot
+each time.</p>
+<hr class="docutils" />
+<p>Dumps are performed on timesteps that are a multiple of N (including
+timestep 0) and on the last timestep of a minimization if the
+minimization converges.  Note that this means a dump will not be
+performed on the initial timestep after the dump command is invoked,
+if the current timestep is not a multiple of N.  This behavior can be
+changed via the <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify first</em></a> command, which
+can also be useful if the dump command is invoked after a minimization
+ended on an arbitrary timestep.  N can be changed between runs by
+using the <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify every</em></a> command.
+The <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify every</em></a> command
+also allows a variable to be used to determine the sequence of
+timesteps on which dump files are written.  In this mode a dump on the
+first timestep of a run will also not be written unless the
+<a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify first</em></a> command is used.</p>
+<p>Dump filenames can contain two wildcard characters.  If a &#8220;*&#8221;
+character appears in the filename, then one file per snapshot is
+written and the &#8220;*&#8221; character is replaced with the timestep value.
+For example, tmp.dump*.vtk becomes tmp.dump0.vtk, tmp.dump10000.vtk,
+tmp.dump20000.vtk, etc.  Note that the <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify pad</em></a>
+command can be used to insure all timestep numbers are the same length
+(e.g. 00010), which can make it easier to read a series of dump files
+in order with some post-processing tools.</p>
+<p>If a &#8220;%&#8221; character appears in the filename, then each of P processors
+writes a portion of the dump file, and the &#8220;%&#8221; character is replaced
+with the processor ID from 0 to P-1 preceded by an underscore character.
+For example, tmp.dump%.vtp becomes tmp.dump_0.vtp, tmp.dump_1.vtp, ...
+tmp.dump_P-1.vtp, etc.  This creates smaller files and can be a fast
+mode of output on parallel machines that support parallel I/O for output.</p>
+<p>By default, P = the number of processors meaning one file per
+processor, but P can be set to a smaller value via the <em>nfile</em> or
+<em>fileper</em> keywords of the <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify</em></a> command.
+These options can be the most efficient way of writing out dump files
+when running on large numbers of processors.</p>
+<p>For the legacy VTK format &#8220;%&#8221; is ignored and P = 1, i.e., only
+processor 0 does write files.</p>
+<p>Note that using the &#8220;*&#8221; and &#8220;%&#8221; characters together can produce a
+large number of small dump files!</p>
+<p>If <em>dump_modify binary</em> is used, the dump file (or files, if &#8220;*&#8221; or &#8220;%&#8221; is also
+used) is written in binary format.  A binary dump file will be about the same
+size as a text version, but will typically write out much faster. Additionally,
+<em>dump_modify compressor</em> can be used to specify the writing of compressed binary
+data. Options for compressors include:</p>
+<div class="highlight-python"><div class="highlight"><pre>none: No compression
+zlib: Zlib compression
+lz4: Lz4 compression (VTK &gt;= 8.0 required)
+</pre></div>
+</div>
+</div>
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>The <em>local/gran/vtk</em> style does not support writing of gzipped dump files,
+and does not support triclinic simulation boxes.</p>
+<p>To be able to use <em>local/gran/vtk</em>, you have to link to the VTK library,
+please adapt your Makefile accordingly. You must compile LIGGGHTS(R)-PUBLIC with the
+-DLAMMPS_VTK option - see the <a class="reference internal" href="Section_start.html#start-2"><span>Making LIGGGHTS(R)-PUBLIC</span></a>
+section of the documentation.</p>
+<p>The <em>local/gran/vtk</em> dump style neither supports buffering nor custom format strings.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="dump.html"><em>dump</em></a>, <a class="reference internal" href="dump_image.html"><em>dump image</em></a>, <a class="reference internal" href="dump_modify.html"><em>dump_modify</em></a>,
+<a class="reference internal" href="undump.html"><em>undump</em></a></p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p>By default, files are written in ASCII format. If the file extension is not
+one of .vtk, .vtp or .vtu, the legacy VTK file format is used.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, DCS Computing GmbH, JKU Linz and Sandia Corporation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'v3.X',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+:line
+
+dump local/gran/vtk command :h3
+
+[Syntax:]
+
+dump ID group-ID style N file ID :pre
+
+ID = user-assigned name for the dump :ulb,l
+group-ID = ID of the group of atoms to be dumped :l
+style = {local/gran/vtk} :l
+N = dump every this many timesteps :l
+file = name of file to write dump info to :l
+ID = ID of a "compute pair/gran/local or wall/gran/local"_compute_pair_gran_local.html  :pre
+:ule
+
+[Examples:]
+
+compute cpgl all pair/gran/local pos vel force
+dump dmp2 all local/gran/vtk 100 post/forcechain*.vtk cpgl :pre
+
+[Description:]
+
+Dump a snapshot of granular or granular bond quantities to one or more files every N
+timesteps. {ID} refers to a "compute pair/gran/local or wall/gran/local"_compute_pair_gran_local.html
+which is providing the data to be dumped. 
+
+The timesteps on which dump output is written can be controlled by a variable; see the "dump_modify
+every"_dump_modify_vtk.html command for details.
+Only information for atoms in the specified group is dumped.  The
+"dump_modify thresh and region"_dump_modify_vtk.html commands can also
+alter what atoms are included; see details below.
+As described below, special characters ("*", "%") in the filename determine the kind of output.
+
+NOTE: In Paraview, the "Tube" filter can be used for viz of the VTK line data.
+
+[Description for dumping bond data:]
+
+Optionally, for dumping bond quantities, this command requires a "cohesion bond"_gran_cohesion_bond.html 
+granular pair style interaction to be active and a compute pair/gran/local/bond instead of
+a a "compute pair/gran/local or wall/gran/local"_compute_pair_gran_local.html command, such as
+
+compute bonds all pair/gran/local/bond :pre
+
+For the bond dump, the values that are output to VTK are hard-coded as follows:
+
+{x1} | position of particle i in bond | 3 values (vector) |
+{x2} | position of particle j in bond | 3 values (vector) |
+{id1} | ID of particle i | 1 value (scalar) |
+{id2} | ID of particle 2 | 1 value (scalar) |
+{force} | total force between bonded particles, including bond and pair contributions | 3 values (vector) |
+{torque} | total torque between bonded particles, including bond and pair contributions | 3 values (vector) |
+{force_normal} | normal total force between bonded particles, including bond and pair contributions | 3 values (vector) |
+{force_tangential} | tangential total force between bonded particles, including bond and pair contributions | 3 values (vector)  :tb(c=3,s=|)
+
+IMPORTANT NOTE: Only data of particles which have an actual active bond
+via "cohesion bond"_gran_cohesion_bond.html are included in the output.
+However, {F}, {T}, etc. are the total forces and torques, including other
+contributions such as Hertz normal forces etc. 
+
+IMPORTANT NOTE: Because periodic boundary conditions are enforced only
+on timesteps when neighbor lists are rebuilt, the coordinates of an
+atom written to a dump file may be slightly outside the simulation
+box.
+
+IMPORTANT NOTE: The output data does not contain any information
+about bonds stretching over periodic boundary conditions. Typically,
+your visz engine will thus not detect bonds stretching over periodic 
+boundary conditions.
+
+:line
+
+The VTK format uses a single snapshot of the system per file, thus
+a wildcard "*" must be included in the filename, as discussed below.
+Otherwise the dump files will get overwritten with the new snapshot
+each time.
+
+:line
+
+Dumps are performed on timesteps that are a multiple of N (including
+timestep 0) and on the last timestep of a minimization if the
+minimization converges.  Note that this means a dump will not be
+performed on the initial timestep after the dump command is invoked,
+if the current timestep is not a multiple of N.  This behavior can be
+changed via the "dump_modify first"_dump_modify_vtk.html command, which
+can also be useful if the dump command is invoked after a minimization
+ended on an arbitrary timestep.  N can be changed between runs by
+using the "dump_modify every"_dump_modify_vtk.html command.
+The "dump_modify every"_dump_modify_vtk.html command
+also allows a variable to be used to determine the sequence of
+timesteps on which dump files are written.  In this mode a dump on the
+first timestep of a run will also not be written unless the
+"dump_modify first"_dump_modify_vtk.html command is used.
+
+Dump filenames can contain two wildcard characters.  If a "*"
+character appears in the filename, then one file per snapshot is
+written and the "*" character is replaced with the timestep value.
+For example, tmp.dump*.vtk becomes tmp.dump0.vtk, tmp.dump10000.vtk,
+tmp.dump20000.vtk, etc.  Note that the "dump_modify pad"_dump_modify_vtk.html
+command can be used to insure all timestep numbers are the same length
+(e.g. 00010), which can make it easier to read a series of dump files
+in order with some post-processing tools.
+
+If a "%" character appears in the filename, then each of P processors
+writes a portion of the dump file, and the "%" character is replaced
+with the processor ID from 0 to P-1 preceded by an underscore character.
+For example, tmp.dump%.vtp becomes tmp.dump_0.vtp, tmp.dump_1.vtp, ...
+tmp.dump_P-1.vtp, etc.  This creates smaller files and can be a fast
+mode of output on parallel machines that support parallel I/O for output.
+
+By default, P = the number of processors meaning one file per
+processor, but P can be set to a smaller value via the {nfile} or
+{fileper} keywords of the "dump_modify"_dump_modify_vtk.html command.
+These options can be the most efficient way of writing out dump files
+when running on large numbers of processors.
+
+For the legacy VTK format "%" is ignored and P = 1, i.e., only
+processor 0 does write files.
+
+Note that using the "*" and "%" characters together can produce a
+large number of small dump files!
+
+If {dump_modify binary} is used, the dump file (or files, if "*" or "%" is also
+used) is written in binary format.  A binary dump file will be about the same
+size as a text version, but will typically write out much faster. Additionally,
+{dump_modify compressor} can be used to specify the writing of compressed binary
+data. Options for compressors include:
+
+none: No compression
+zlib: Zlib compression
+lz4: Lz4 compression (VTK >= 8.0 required) :pre
+
+[Restrictions:]
+
+The {local/gran/vtk} style does not support writing of gzipped dump files,
+and does not support triclinic simulation boxes.
+
+To be able to use {local/gran/vtk}, you have to link to the VTK library,
+please adapt your Makefile accordingly. You must compile LIGGGHTS(R)-PUBLIC with the
+-DLAMMPS_VTK option - see the "Making LIGGGHTS(R)-PUBLIC"_Section_start.html#start_2
+section of the documentation.
+
+The {local/gran/vtk} dump style neither supports buffering nor custom format strings.
+
+[Related commands:]
+
+"dump"_dump.html, "dump image"_dump_image.html, "dump_modify"_dump_modify.html,
+"undump"_undump.html
+
+[Default:]
+
+By default, files are written in ASCII format. If the file extension is not
+one of .vtk, .vtp or .vtu, the legacy VTK file format is used.
+
