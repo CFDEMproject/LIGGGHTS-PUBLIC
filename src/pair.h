@@ -183,9 +183,9 @@ class Pair : protected Pointers {
   virtual void free_disp_tables();
 
   virtual void write_restart(FILE *) {}
-  virtual void read_restart(FILE *) {}
+  virtual void read_restart(FILE *, const int major, const int minor) {}
   virtual void write_restart_settings(FILE *) {}
-  virtual void read_restart_settings(FILE *) {}
+  virtual void read_restart_settings(FILE *, const int major, const int minor) {}
   virtual void write_data(FILE *) {}
   virtual void write_data_all(FILE *) {}
 

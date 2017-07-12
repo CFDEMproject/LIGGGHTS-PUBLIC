@@ -654,7 +654,7 @@ void PairHybrid::write_restart(FILE *fp)
    proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairHybrid::read_restart(FILE *fp)
+void PairHybrid::read_restart(FILE *fp, const int major, const int minor)
 {
   int me = comm->me;
   if (me == 0) fread(&nstyles,sizeof(int),1,fp);
@@ -677,7 +677,7 @@ void PairHybrid::read_restart(FILE *fp)
     if (me == 0) fread(keywords[m],sizeof(char),n,fp);
     MPI_Bcast(keywords[m],n,MPI_CHAR,0,world);
     styles[m] = force->new_pair_from_restart(fp, keywords[m],lmp->suffix,dummy);
-    styles[m]->read_restart_settings(fp);
+    styles[m]->read_restart_settings(fp, major, minor);
   }
 
   // multiple[i] = 1 to M if sub-style used multiple times, else 0

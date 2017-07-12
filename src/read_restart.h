@@ -67,6 +67,8 @@ class ReadRestart : protected Pointers {
   FILE *fp;
   int nfix_restart_global,nfix_restart_peratom;
   int swapflag;
+  int restart_major;
+  int restart_minor;
 
   void file_search(char *, char *);
   void header();

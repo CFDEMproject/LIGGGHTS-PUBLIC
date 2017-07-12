@@ -70,9 +70,9 @@ class PairSph : public Pair {
   virtual void init_list(int, class NeighList *);
   virtual double init_one(int, int);
   virtual void write_restart(FILE *){}
-  virtual void read_restart(FILE *){}
+  virtual void read_restart(FILE *, const int major, const int minor){}
   virtual void write_restart_settings(FILE *){}
-  virtual void read_restart_settings(FILE *){}
+  virtual void read_restart_settings(FILE *, const int major, const int minor){}
   //virtual void reset_dt();
 
   /* PUBLIC ACCESS FUNCTIONS */

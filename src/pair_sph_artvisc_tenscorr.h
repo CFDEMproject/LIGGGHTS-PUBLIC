@@ -64,9 +64,9 @@ class PairSphArtviscTenscorr : public PairSph {
   void coeff(int, char **);
   void init_substyle();
   void write_restart(FILE *);
-  void read_restart(FILE *);
+  void read_restart(FILE *, const int major, const int minor);
   void write_restart_settings(FILE *);
-  void read_restart_settings(FILE *);
+  void read_restart_settings(FILE *, const int major, const int minor);
 
  protected:
   void allocate();

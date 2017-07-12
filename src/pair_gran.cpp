@@ -751,9 +751,9 @@ void PairGran::write_restart(FILE *fp)
   proc 0 reads from restart file, bcasts
 ------------------------------------------------------------------------- */
 
-void PairGran::read_restart(FILE *fp)
+void PairGran::read_restart(FILE *fp, const int major, const int minor)
 {
-  read_restart_settings(fp);
+  read_restart_settings(fp, major, minor);
   allocate();
 
   int i,j;

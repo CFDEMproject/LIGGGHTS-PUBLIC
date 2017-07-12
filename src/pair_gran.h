@@ -85,9 +85,9 @@ public:
   int pack_comm(int n, int *list,double *buf, int pbc_flag, int *pbc);
   void unpack_comm(int n, int first, double *buf);
   virtual void write_restart(FILE *);
-  virtual void read_restart(FILE *);
+  virtual void read_restart(FILE *, const int major, const int minor);
   virtual void write_restart_settings(FILE *){}
-  virtual void read_restart_settings(FILE *){}
+  virtual void read_restart_settings(FILE *, const int major, const int minor){}
   virtual bool contact_match(const std::string mtype, const std::string model) = 0;
   virtual void reset_dt();
   double memory_usage();

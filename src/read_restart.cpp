@@ -46,6 +46,7 @@
 #include "lmptype.h"
 #include <mpi.h>
 #include <string.h>
+#include <string>
 #include <stdlib.h>
 //#include "sys/types.h"
 #include "dirent.h"
@@ -95,7 +96,11 @@ enum{PAIR,BOND,ANGLE,DIHEDRAL,IMPROPER};
 
 /* ---------------------------------------------------------------------- */
 
-ReadRestart::ReadRestart(LAMMPS *lmp) : Pointers(lmp) {}
+ReadRestart::ReadRestart(LAMMPS *lmp) :
+    Pointers(lmp),
+    restart_major(0),
+    restart_minor(0)
+{}
 
 /* ---------------------------------------------------------------------- */
 
@@ -504,6 +509,26 @@ void ReadRestart::header()
         if (screen) fprintf(screen,"   --> restart file = %s\n   --> LIGGGHTS = %s\n", 
                             version,universe->version);
       }
+        // parse version number
+        // version format is:
+        // Version LIGGGHTS-REPOSITORY-NAME MAJOR.MINOR.[....]
+        // MAJOR and MINOR are integers
+        std::string ver = std::string(version);
+        std::size_t space1 = ver.find(' ');
+        std::size_t space2 = ver.find(' ', space1+1);
+        std::size_t dot1 = ver.find('.', space2+1);
+        std::size_t dot2 = ver.find('.', dot1+1);
+        if (space1 != std::string::npos &&
+            space2 != std::string::npos &&
+            dot1 != std::string::npos &&
+            dot2 != std::string::npos)
+        {
+            std::string ver_major = ver.substr(space2+1, dot1-space2-1);
+            std::string ver_minor = ver.substr(dot1+1, dot2-dot1-1);
+            restart_major = atoi(ver_major.c_str());
+            restart_minor = atoi(ver_minor.c_str());
+            printf("version %d %d\n", restart_major, restart_minor);
+        }
       delete [] version;
 
       // check lmptype.h sizes, error if different
@@ -775,7 +800,7 @@ void ReadRestart::force_fields()
 
       force->create_pair_from_restart(fp, style);
       delete [] style;
-      if (force->pair->restartinfo) force->pair->read_restart(fp);
+      if (force->pair->restartinfo) force->pair->read_restart(fp, restart_major, restart_minor);
       else {
         delete force->pair;
         force->pair = NULL;

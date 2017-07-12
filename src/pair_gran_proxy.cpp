@@ -88,11 +88,11 @@ void PairGranProxy::write_restart_settings(FILE * fp)
   impl->write_restart_settings(fp);
 }
 
-void PairGranProxy::read_restart_settings(FILE * fp)
+void PairGranProxy::read_restart_settings(FILE * fp, const int major, const int minor)
 {
   int me = comm->me;
 
-  int64_t selected = -1, used = -1;
+  int64_t selected = -1;
   if(me == 0){
     // read model hashcode, but reset file pointer afterwards.
     // this way read_restart_settings can still read the hashcode (sanity check)
@@ -101,10 +101,11 @@ void PairGranProxy::read_restart_settings(FILE * fp)
   }
   MPI_Bcast(&selected,8,MPI_CHAR,0,world);
 
-  impl = LIGGGHTS::PairStyles::Factory::instance().create("gran", selected, lmp, this);
-
-  // convert if not found
-  if(!impl) {
+  if (major < 3)
+      error->all(FLERR, "LIGGGHTS major version < 3 not supported");
+  else if (major == 3 && minor < 4)
+  {
+      // use old style hash table
       const int M = (15) & selected;
       const int T = (15) & selected >> 4;
       const int C = (15) & selected >> 8;
@@ -115,12 +116,13 @@ void PairGranProxy::read_restart_settings(FILE * fp)
           fprintf(screen,"         original hashcode = %zd \n",selected);
           fprintf(screen,"         M = %d, T = %d, C = %d, R = %d, S = %d \n",M,T,C,R,S);
       }
-      used = ::LIGGGHTS::Utils::generate_gran_hashcode(M,T,C,R,S);
-      impl = LIGGGHTS::PairStyles::Factory::instance().create("gran", used, lmp, this);
+      selected = ::LIGGGHTS::Utils::generate_gran_hashcode(M,T,C,R,S);
   }
 
+  impl = LIGGGHTS::PairStyles::Factory::instance().create("gran", selected, lmp, this);
+
   if(impl) {
-    impl->read_restart_settings(fp, used);
+    impl->read_restart_settings(fp, selected);
   } else {
     error->one(FLERR, "unknown contact model");
   }

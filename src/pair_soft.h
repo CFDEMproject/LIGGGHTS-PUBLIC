@@ -68,9 +68,9 @@ class PairSoft : public Pair {
   void coeff(int, char **);
   double init_one(int, int);
   void write_restart(FILE *);
-  void read_restart(FILE *);
+  void read_restart(FILE *, const int major, const int minor);
   void write_restart_settings(FILE *);
-  void read_restart_settings(FILE *);
+  void read_restart_settings(FILE *, const int major, const int minor);
   void write_data(FILE *);
   void write_data_all(FILE *);
   double single(int, int, int, int, double, double, double, double &);
