@@ -7,13 +7,11 @@
 
 currDir=$PWD
 cp *pascal* PASCAL
+make no-PASCAL
 
 cp Makefile.package.empty Makefile.package
 
-make no-PASCAL
 
 rm lmp_*
-rm *.a
+rm *.so *.a
 
-#remove all whitelists, e.g., for contact models
-rm *.whitelist

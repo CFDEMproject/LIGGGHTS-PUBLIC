@@ -46,7 +46,9 @@
 #include "custom_value_tracker.h"
 #include "mpi_liggghts.h"
 #include "update.h"
+#include "math_extra.h"
 #include <vector>
+#include <cmath>
 
 namespace LAMMPS_NS {
 
@@ -134,6 +136,12 @@ namespace LAMMPS_NS {
       inline void vcm(double *v_cm,int ibody_local)
       { vectorCopy3D(vcm_(ibody_local),v_cm); }
 
+      inline void omega(double * const omega, const int ibody_local)
+      { vectorCopy3D(omega_(ibody_local), omega); }
+
+      inline void angmom(double * const angmom, const int ibody_local)
+      { vectorCopy3D(angmom_(ibody_local), angmom); }
+
       inline void quat(double *quat,int ibody_local)
       { vectorCopy4D(quat_(ibody_local),quat); }
 
@@ -165,6 +173,23 @@ namespace LAMMPS_NS {
 
       inline void set_omega_body(int ibody_local,double *omega)
       { omega_.set(ibody_local,omega); }
+
+      inline void set_angmom_via_omega_body(int ibody_local,double *omega)
+      {
+        double angmom[3];
+        MathExtra::omega_to_angmom(omega, ex_space_(ibody_local), ey_space_(ibody_local), ez_space_(ibody_local), inertia_(ibody_local), angmom);
+        omega_.set(ibody_local,omega);
+        angmom_.set(ibody_local,angmom);
+      }
+
+      inline void set_angmom_body(int ibody_local,double *angmom)
+      { angmom_.set(ibody_local,angmom); }
+
+      void set_fflag(int ibody_local,bool *fflag)
+      { fflag_.set(ibody_local, fflag); }
+
+      void set_tflag(int ibody_local,bool *tflag)
+      { tflag_.set(ibody_local, tflag); }
 
       inline class CustomValueTracker& prop()
       { return customValues_; }

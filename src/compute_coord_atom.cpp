@@ -49,7 +49,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include <stdlib.h>
 #include "compute_coord_atom.h"
@@ -97,7 +97,7 @@ ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int &iarg, int narg, char **arg)
     typelo[0] = 1;
     typehi[0] = ntypes;
 
-  } else if(narg == iarg+2 && strcmp(arg[iarg++],"mix") == 0) { 
+  } else if(narg == iarg+2 && strcmp(arg[iarg],"mix") == 0) { 
     ncol = 1;
     typelo[0] = 1;
     typehi[0] = ntypes;
@@ -107,7 +107,7 @@ ComputeCoordAtom::ComputeCoordAtom(LAMMPS *lmp, int &iarg, int narg, char **arg)
       mix = false;
     else
       error->compute_error(FLERR,this,"valid arguments for 'mix' are 'yes' or 'no'");
-    iarg++;
+    iarg+=2;
 
   } else {
     ncol = 0;

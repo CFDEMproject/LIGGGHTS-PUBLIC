@@ -46,7 +46,7 @@
 // Marsaglia random number generator
 // see RANMAR in F James, Comp Phys Comm, 60, 329 (1990)
 
-#include <math.h>
+#include <cmath>
 #include "random_mars.h"
 #include "error.h"
 
@@ -54,7 +54,8 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-RanMars::RanMars(LAMMPS *lmp, int seed) : Random(lmp,seed)
+RanMars::RanMars(LAMMPS *lmp, const char * seed_char, bool proc_shift, int multiplier) :
+    Random(lmp, seed_char, proc_shift, multiplier)
 {
   int ij,kl,i,j,k,l,ii,jj,m;
   double s,t;

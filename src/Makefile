@@ -4,16 +4,35 @@ SHELL = /bin/bash
 #.IGNORE:
 
 # Subtargets for makefile auto
-SUBTARGET = $@
-OPTIONSPOSTFIX =
+SUBTARGET_PRE_DEBUG = $(@)
+OPTIONSPOSTFIX_PRE_DEBUG =
 ifneq ($(origin postfix), undefined)
     ifneq (${postfix}, )
         ifneq (,$(filter $(MAKECMDGOALS), auto clean-auto))
             ifeq (${postfix}, default)
                 $(error A postfix value of "default" is not allowed)
             endif
-            SUBTARGET = $@"_"${postfix}
-            OPTIONSPOSTFIX = _${postfix}
+            SUBTARGET_PRE_DEBUG = $@_${postfix}
+            OPTIONSPOSTFIX_PRE_DEBUG = _${postfix}
+        endif
+    endif
+endif
+SUBTARGET = $(SUBTARGET_PRE_DEBUG)
+OPTIONSPOSTFIX = $(OPTIONSPOSTFIX_PRE_DEBUG)
+ifneq ($(origin debug), undefined)
+    ifneq (${debug}, )
+        ifneq (,$(filter $(MAKECMDGOALS), auto clean-auto))
+            ifeq (,$(filter $(debug), ON FULL))
+                $(error Only values for debug are "ON" and "FULL")
+            endif
+            ifeq (${debug},ON)
+                SUBTARGET = $(SUBTARGET_PRE_DEBUG)-debug
+                OPTIONSPOSTFIX = $(OPTIONSPOSTFIX_PRE_DEBUG)-debug
+            endif
+            ifeq (${debug},FULL)
+                SUBTARGET = $(SUBTARGET_PRE_DEBUG)-fulldebug
+                OPTIONSPOSTFIX = $(OPTIONSPOSTFIX_PRE_DEBUG)-fulldebug
+            endif
         endif
     endif
 endif

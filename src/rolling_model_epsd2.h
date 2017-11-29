@@ -33,6 +33,8 @@
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
 
+    Alexander Podlozhnyuk (DCS Computing GmbH, Linz)
+    Andreas Aigner (DCS Computing GmbH, Linz)
     Andreas Aigner (JKU Linz)
     Christoph Kloss (DCS Computing GmbH, Linz)
     Christoph Kloss (JKU Linz)
@@ -54,7 +56,7 @@ ROLLING_MODEL(ROLLING_EPSD2,epsd2,3)
 #include "contact_models.h"
 #include "rolling_model_base.h"
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include "domain.h"
 #include "math_extra_liggghts.h"
 
@@ -105,12 +107,8 @@ namespace ContactModels
       double reff=sidata.is_wall ? radi : (radi*radj/(radi+radj));
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(sidata.is_non_spherical) {
-        if(sidata.is_wall)
-          reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
-        else
-          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
-      }
+      if(sidata.is_non_spherical && atom->superquadric_flag)
+        reff = sidata.reff;
 #endif
 
       if(sidata.is_wall) {

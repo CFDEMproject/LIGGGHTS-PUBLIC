@@ -37,7 +37,7 @@
     Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <mpi.h>
 #include <string.h>
 #include <stdlib.h>

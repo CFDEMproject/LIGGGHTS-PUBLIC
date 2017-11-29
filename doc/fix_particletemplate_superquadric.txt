@@ -1,0 +1,63 @@
+"LIGGGHTS(R)-PUBLIC-SUPERQUADRIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC-SUPERQUADRIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC-SUPERQUADRIC Commands"_lc :c
+
+:link(liws,http://www.cfdem.com)
+:link(ld,Manual.html)
+:link(lc,Section_commands.html#comm)
+
+:line
+
+fix particletemplate/superquadric command :h3
+
+[Syntax:]
+
+fix ID group-ID particletemplate/superquadric seed keyword values ...  :pre
+
+ID, group-ID are documented in "fix"_fix.html command :ulb,l
+particletemplate/superquadric = style name of this fix command  :l
+seed = random number generator seed (prime number greater 10000) :l
+zero or more keyword/value pairs can be appended :l
+keyword = {atom_type} or {density} or {volume_limit} or {shape} or {blockiness} :l
+{atom_type} value = atom type assigned to this particle template
+{density} values = constant param1
+  param1 = constant density of particle material
+{volume_limit} value = lowest particle volume allowed in simulation
+{shape} values = constant a b c
+  a, b, c = superquadric semi-axes
+{blockiness} values = constant n1 n2
+  n1, n2 = superquadric blockiness parameters :pre
+:ule
+
+[Examples:]
+
+fix pts1 all particletemplate/superquadric 123457 atom_type 1 density constant 2500 shape constant 0.0015 0.0025 0.0035 blockiness 4.0 4.0  :pre
+
+[Description:]
+
+Define a particle that is used as input for a 
+"fix_particledistribution_discrete"_fix_particledistribution_discrete.html command. 
+You can choose the atom type, density and radius of the particles. 
+
+LIGGGHTS(R)-PUBLIC will throw an error if the particle volume is too small compared to machine precision.
+If you are sure you know what you are doing you can override the default limit of 1e-12.
+
+This model is used in the framework of SUPERQUADRIC simulations. For more information see also the "SUPERQUADRIC guide"_superquadric_simulations.html.
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+Information about the random state in this fix is written to "binary restart files"_restart.html 
+so you can restart a simulation with the same particles being chosen for insertion. None of the 
+"fix_modify"_fix_modify.html options are relevant to this fix. No global scalar or vector or 
+per-atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15. 
+No parameter of this fix can be used with the {start}/{stop} keywords of the "run"_run.html command. 
+This fix is not invoked during "energy minimization"_minimize.html.
+
+[Restrictions:] 
+This fix requires "atom_style"_atom_style.html superquadric. The {blockiness} values should be more or equal 2.
+
+[Related commands:]
+
+"fix_particletemplate_sphere"_fix_particletemplate_sphere.html
+
+[Default:] 
+
+a=1.0, b=1.0, c=1.0, n1=2.0, n2=2.0, atom_type = 1, volume_limit = 1e-12

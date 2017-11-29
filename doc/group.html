@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>group command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>group command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/group.txt" rel="nofollow"> View page source</a> 
+      <li>group command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/group.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>group command<a class="headerlink" href="#group-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>group ID style args</pre>
+<div class="highlight-python"><div class="highlight"><pre>group ID style args
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID = user-defined name of the group</li>
@@ -176,7 +200,7 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>group edge region regstrip
+<div class="highlight-python"><div class="highlight"><pre>group edge region regstrip
 group water type 3 4
 group sub id 10 25 50
 group sub id 10 25 50 500:1000
@@ -187,7 +211,8 @@ group hienergy variable eng
 group boundary subtract all a2 a3
 group boundary union lower upper
 group boundary intersect upper flow
-group boundary delete</pre>
+group boundary delete
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -245,18 +270,21 @@ or exclude from a group.</p>
 <p>For example, these lines define a variable &#8220;eatom&#8221; that calculates the
 potential energy of each atom and includes it in the group if its
 potential energy is above the threshhold value -3.0.</p>
-<div class="highlight-python"><pre>compute         1 all pe/atom
+<div class="highlight-python"><div class="highlight"><pre>compute         1 all pe/atom
 compute         2 all reduce sum c_1
 thermo_style    custom step temp pe c_2
-run             0</pre>
+run             0
+</pre></div>
 </div>
-<div class="highlight-python"><pre>variable        eatom atom "c_1 &gt; -3.0"
-group           hienergy variable eatom</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable        eatom atom &quot;c_1 &gt; -3.0&quot;
+group           hienergy variable eatom
+</pre></div>
 </div>
 <p>Note that these lines</p>
-<div class="highlight-python"><pre>compute         2 all reduce sum c_1
+<div class="highlight-python"><div class="highlight"><pre>compute         2 all reduce sum c_1
 thermo_style    custom step temp pe c_2
-run             0</pre>
+run             0
+</pre></div>
 </div>
 <p>are necessary to insure that the &#8220;eatom&#8221; variable is current when the
 group command invokes it.  Because the eatom variable computes the
@@ -302,6 +330,9 @@ group.  This group cannot be deleted.</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -331,11 +362,13 @@ group.  This group cannot be deleted.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

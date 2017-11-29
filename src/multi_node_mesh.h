@@ -53,6 +53,8 @@
 #include "bounding_box.h"
 #include "random_park.h"
 #include <stdio.h>
+#include <cmath>
+#include <algorithm>
 
 #define EPSILON_PRECISION 1e-8
 

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -9,9 +8,11 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>compute multisphere/single command &mdash; LIGGGHTS v3.X documentation</title>
+  <title>compute rigid command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,48 +125,68 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute multisphere/single command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_rigid.txt" rel="nofollow"> View page source</a> 
+      <li>compute rigid command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_rigid.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <p>compute multisphere, compute multisphere/single</p>
-<p>compute rigid command
-compute multisphere command
-=================================================</p>
+  <div class="section" id="compute-rigid-command">
+<span id="index-0"></span><h1>compute rigid command<a class="headerlink" href="#compute-rigid-command" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="compute-multisphere-command">
+<h1>compute multisphere command<a class="headerlink" href="#compute-multisphere-command" title="Permalink to this headline">¶</a></h1>
+</div>
 <div class="section" id="compute-multisphere-single-command">
 <h1>compute multisphere/single command<a class="headerlink" href="#compute-multisphere-single-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID multisphere general_keyword general_values (or multisphere) property property_name
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID multisphere general_keyword general_values (or multisphere) property property_name
 compute ID group-ID multisphere/single id id_ms general_keyword general_values (or multisphere) property property_name
-compute ID group-ID rigid general_keyword general_values (or multisphere) property property_name</pre>
+compute ID group-ID rigid general_keyword general_values (or multisphere) property property_name
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
 <li>id = obligatory keyword for style multisphere/single</li>
 <li>id_ms = multisphere id which command applies to for style multisphere/single</li>
 <li>property = obligatory keyword</li>
-<li>general_keywords general_values are documented in <a class="reference external" href="compute.html&quot;">compute</a></li>
+<li>general_keywords general_values are documented in <a class="reference internal" href="compute.html"><em>compute</em></a></li>
 <li>property_name = <em>xcm</em> or <em>vcm</em> or <em>fcm</em> or <em>torque</em> or <em>quat</em> or <em>angmom</em> or <em>omega</em> or <em>density</em> or <em>type</em> or <em>id</em> or <em>masstotal</em> or <em>inertia</em> or <em>ex_space</em> or <em>ey_space</em> or <em>ez_space</em></li>
 </ul>
 <pre class="literal-block">
@@ -182,7 +208,8 @@ compute ID group-ID rigid general_keyword general_values (or multisphere) proper
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute xcm all multisphere property xcm</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute xcm all multisphere property xcm
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -200,11 +227,13 @@ ID is generated.</p>
 <p class="last">the group-ID is ignored for this command, as
 group data is atom-based, not clump-based.</p>
 </div>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>For style multisphere, this compute calculates a local vector or local array depending
 on the length of the data (see above).
 The vector or array can be accessed by any command that
-uses local values from a compute as input.  See <em class="xref std std-ref">this section</em> for an overview of LIGGGHTS(R)-PUBLIC output
+uses local values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>Likewise, for style multisphere/single, this compute calculates a global
 scalar or vector depending on the length of the data (see above).</p>
@@ -222,6 +251,9 @@ For accessing particle-wall contact data, only mesh walls can be used.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -252,11 +284,13 @@ For accessing particle-wall contact data, only mesh walls can be used.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>write_dump command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>write_dump command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/write_dump.txt" rel="nofollow"> View page source</a> 
+      <li>write_dump command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/write_dump.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>write_dump command<a class="headerlink" href="#write-dump-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>write_dump group-ID style file dump-args modify dump_modify-args</pre>
+<div class="highlight-python"><div class="highlight"><pre>write_dump group-ID style file dump-args modify dump_modify-args
+</pre></div>
 </div>
 <ul class="simple">
 <li>group-ID = ID of the group of atoms to be dumped</li>
@@ -160,7 +184,7 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>write_dump all atom dump.atom
+<div class="highlight-python"><div class="highlight"><pre>write_dump all atom dump.atom
 write_dump subgroup atom dump.run.bin
 write_dump all custom dump.myforce.* id type x y vx fx
 write_dump flow custom dump.%.myforce id type c_myF[3] v_ke modify sort id
@@ -168,7 +192,8 @@ write_dump all xyz system.xyz modify sort id elements O H
 write_dump all image snap*.jpg type type size 960 960 modify backcolor white
 write_dump all image snap*.jpg element element &amp;
    bond atom 0.3 shiny 0.1 ssao yes 6345 0.2 size 1600 1600  &amp;
-   modify backcolor white element C C O H N C C C O H H S O H</pre>
+   modify backcolor white element C C O H N C C C O H H S O H
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -202,7 +227,7 @@ wildcard &#8220;*&#8221; character is necessary.</p>
 <a class="reference internal" href="dump_modify.html"><em>dump_modify</em></a> commands apply to this command as well,
 with the exception of the <a class="reference internal" href="dump_image.html"><em>dump image</em></a> filename not
 requiring a wildcard &#8220;*&#8221; character, as noted above.</p>
-<p>Since dumps are normally written during a <a class="reference internal" href="run.html"><em>run</em></a> or <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>, the simulation has to be ready to run
+<p>Since dumps are normally written during a <a class="reference internal" href="run.html"><em>run</em></a> or <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>, the simulation has to be ready to run
 before this command can be used.  Similarly, if the dump requires
 information from a compute, fix, or variable, the information needs to
 have been calculated for the current timestep (e.g. by a prior run),
@@ -226,6 +251,9 @@ commands.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -256,11 +284,13 @@ commands.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

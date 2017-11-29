@@ -267,7 +267,10 @@ public:
       #ifdef SUPERQUADRIC_ACTIVE_FLAG
           if(superquadric_flag) {
             sidata.radi = cbrt(0.75 * atom->volume[i] / M_PI);
-          }
+          } else
+            sidata.radi = radi;
+      #else
+          sidata.radi = radi;
       #endif
 
       for (int jj = 0; jj < jnum; jj++) {
@@ -296,6 +299,15 @@ public:
                 radj += dataJ[3];
             }
         }
+
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+        if(superquadric_flag) {
+          sidata.radj = cbrt(0.75 * atom->volume[j] / M_PI);
+        } else
+          sidata.radj = radj;
+#else
+        sidata.radj = radj;
+#endif
         const double radsum = radi + radj;
 
         sidata.j = j;
@@ -303,16 +315,9 @@ public:
         sidata.delta[1] = dely;
         sidata.delta[2] = delz;
         sidata.rsq = rsq;
-        sidata.radi = radi;
-        sidata.radj = radj;
         sidata.radsum = radsum;
         sidata.contact_flags = contact_flags ? &contact_flags[jj] : NULL;
         sidata.contact_history = all_contact_hist ? &all_contact_hist[dnum*jj] : NULL;
-        #ifdef SUPERQUADRIC_ACTIVE_FLAG
-            if(superquadric_flag) {
-              sidata.radj = cbrt(0.75 * atom->volume[j] / M_PI);
-            }
-        #endif
 
         if (!fix_insert.empty())
         {
@@ -390,7 +395,7 @@ public:
           sidata.mi = mi;
           sidata.mj = mj;
           
-          if(atom->sphere_flag || atom->shapetype_flag ) {
+          if(atom->sphere_flag) {
               sidata.en[0]   = enx_sphere;
               sidata.en[1]   = eny_sphere;
               sidata.en[2]   = enz_sphere;

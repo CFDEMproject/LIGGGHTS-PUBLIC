@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix multisphere command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix multisphere command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_multisphere.txt" rel="nofollow"> View page source</a> 
+      <li>fix multisphere command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_multisphere.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,15 +170,29 @@
 <span id="index-0"></span><h1>fix multisphere command<a class="headerlink" href="#fix-multisphere-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID multisphere</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID multisphere
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>multisphere = style name of this fix command</li>
+<li>zero or more keyword/value pairs may be appended</li>
+<li>keyword = <em>allow_group_and_set</em> or <em>allow_heatsource</em> or <em>CAddRhoFluid</em></li>
 </ul>
+<pre class="literal-block">
+<em>allow_group_and_set</em> value = 'yes' or 'no'
+  yes, no = determines if group and set command are allowed in the current simulation.
+<em>allow_heatsource</em> value = 'yes' or 'no'
+  yes, no = determines if heatsources are allowed in the current simulation.
+<em>CAddRhoFluid</em> value = CAdd RhoFluid
+  CAdd = Coefficient for additional mass term. (Usually 0.5)
+  RhoFluid = Fluid density
+</pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ms all multisphere</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ms all multisphere
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -190,17 +227,28 @@ from the neighborlist build.</p>
 other time-integration fixes (e.g. nve, nvt, npt), or you will be
 integrating their motion more than once each timestep.</p>
 </div>
+<p>The option <em>CAddRhoFluid</em> enables additional mass terms for the integration of
+multisphere particles. These model the influence of displaced fluid on the
+particle motion.</p>
 </div>
 <hr class="docutils" />
 <div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
-<p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  This means you can currently not restart a simulation
+<p>Information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  This means you can restart a simulation
 using multisphere particles.</p>
-<p>None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this
-fix.  No global scalar or vector or per-atom quantities are stored by
-this fix for access by various <em class="xref std std-ref">output commands</em>.  No parameter of this fix can be
+<dl class="docutils">
+<dt><a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> can be used to manipulate the fflag and tflag switches</dt>
+<dd>of multispheres. They can be initially defined in the</dd>
+</dl>
+<p><a class="reference internal" href="fix_particletemplate_multisphere.html"><em>fix_particletemplate_multisphere</em></a> command.
+The fix_modify manipulates all multispheres, not only the initially defined f/tflags from the template.</p>
+<div class="highlight-python"><div class="highlight"><pre>E.g. fix_modify ms fflag on on off tflag on on off
+</pre></div>
+</div>
+<p>No global scalar or vector or per-atom quantities are stored by
+this fix for access by various <span class="xref std std-ref">output commands</span>.  No parameter of this fix can be
 used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.
-This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -208,8 +256,6 @@ This fix is not invoked during <tt class="xref doc docutils literal"><span class
 <p>Only one fix multisphere at a time is allowed.
 Heat transfer simulations are not possible when using this fix
 (e.g. <a class="reference internal" href="fix_heat_gran_conduction.html"><em>fix heat/gran/conduction</em></a>)</p>
-<p>The PUBLIC version does not support (i) parallel computation, (ii)
-restart of multisphere simulations</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">All fixes or computes gathering statistical output
@@ -222,13 +268,20 @@ operate on a per-sphere rather than on a per-body basis.</p>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="fix_rigid.html"><em>fix_rigid</em></a>
-<a class="reference internal" href="fix_particletemplate_sphere.html"><em>fix_particletemplate_sphere</em></a>
+<a class="reference internal" href="fix_particletemplate_multisphere.html"><em>fix_particletemplate_multisphere</em></a>
 <a class="reference internal" href="neigh_modify.html"><em>neigh_modify</em></a></p>
-<p><strong>Default:</strong> none</p>
+</div>
+<div class="section" id="default">
+<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
+<p><em>allow_group_and_set</em> = &#8216;no&#8217;
+<em>allow_heatsource</em> = &#8216;no&#8217;</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -259,11 +312,13 @@ operate on a per-sphere rather than on a per-body basis.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

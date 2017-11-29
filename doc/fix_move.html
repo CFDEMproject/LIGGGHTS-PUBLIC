@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix move command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix move command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_move.txt" rel="nofollow"> View page source</a> 
+      <li>fix move command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_move.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix move command<a class="headerlink" href="#fix-move-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID move style args keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID move style args keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -178,9 +202,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 boundary move wiggle 3.0 0.0 0.0 1.0 units box
+<div class="highlight-python"><div class="highlight"><pre>fix 1 boundary move wiggle 3.0 0.0 0.0 1.0 units box
 fix 2 boundary move rotate 0.0 0.0 0.0 0.0 0.0 1.0 5.0
-fix 2 boundary move variable v_myx v_myy NULL v_VX v_VY NULL</pre>
+fix 2 boundary move variable v_myx v_myy NULL v_VX v_VY NULL
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -192,7 +217,7 @@ whose movement can influence nearby atoms.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">The atoms affected by this fix should not normally be
-time integrated by other fixes (e.g. <a class="reference internal" href="fix_nve.html"><em>fix nve</em></a>, <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></tt>), since that will change their positions and
+time integrated by other fixes (e.g. <a class="reference internal" href="fix_nve.html"><em>fix nve</em></a>, <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></code>), since that will change their positions and
 velocities twice.</p>
 </div>
 <div class="admonition warning">
@@ -233,14 +258,16 @@ the corresponding force component on the atom.</p>
 <p>Note that the <em>linear</em> style is identical to using the <em>variable</em>
 style with an <a class="reference internal" href="variable.html"><em>equal-style variable</em></a> that uses the
 vdisplace() function.  E.g.</p>
-<div class="highlight-python"><pre>variable V equal 10.0
+<div class="highlight-python"><div class="highlight"><pre>variable V equal 10.0
 variable x equal vdisplace(0.0,$V)
-fix 1 boundary move variable v_x NULL NULL v_V NULL NULL</pre>
+fix 1 boundary move variable v_x NULL NULL v_V NULL NULL
+</pre></div>
 </div>
 <p>The <em>wiggle</em> style moves atoms in an oscillatory fashion, so that
 their position <em>X</em> = (x,y,z) as a function of time is given in vector
 notation as</p>
-<div class="highlight-python"><pre>X(t) = X0 + A sin(omega*delta)</pre>
+<div class="highlight-python"><div class="highlight"><pre>X(t) = X0 + A sin(omega*delta)
+</pre></div>
 </div>
 <p>where <em>X0</em> = (x0,y0,z0) is their position at the time the fix is
 specified, <em>A</em> is the specified amplitude vector with components
@@ -254,12 +281,13 @@ corresponding force component on the atom.</p>
 <p>Note that the <em>wiggle</em> style is identical to using the <em>variable</em>
 style with <a class="reference internal" href="variable.html"><em>equal-style variables</em></a> that use the
 swiggle() and cwiggle() functions.  E.g.</p>
-<div class="highlight-python"><pre>variable A equal 10.0
+<div class="highlight-python"><div class="highlight"><pre>variable A equal 10.0
 variable T equal 5.0
 variable omega equal 2.0*PI/$T
 variable x equal swiggle(0.0,$A,$T)
 variable v equal v_omega*($A-cwiggle(0.0,$A,$T))
-fix 1 boundary move variable v_x NULL NULL v_v NULL NULL</pre>
+fix 1 boundary move variable v_x NULL NULL v_v NULL NULL
+</pre></div>
 </div>
 <p>The <em>rotate</em> style rotates atoms around a rotation axis <em>R</em> =
 (Rx,Ry,Rz) that goes thru a point <em>P</em> = (Px,Py,Pz).  The <em>period</em> of
@@ -333,12 +361,12 @@ expect a fix move command to work in an uninterrupted fashion.</p>
 <p>None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this
 fix.</p>
 <p>This fix produces a per-atom array which can be accessed by various
-<a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The number of columns
+<span class="xref std std-ref">output commands</span>.  The number of columns
 for each atom is 3, and the columns store the original unwrapped x,y,z
 coords of each atom.  The per-atom values can be accessed on any
 timestep.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -354,6 +382,9 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -384,11 +415,13 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

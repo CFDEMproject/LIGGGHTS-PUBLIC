@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>lattice command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>lattice command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/lattice.txt" rel="nofollow"> View page source</a> 
+      <li>lattice command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/lattice.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,14 +170,16 @@
 <span id="index-0"></span><h1>lattice command<a class="headerlink" href="#lattice-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>lattice style scale keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>lattice style scale keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>style = <em>none</em> or <em>sc</em> or <em>bcc</em> or <em>fcc</em> or <em>hcp</em> or <em>diamond</em> or         <em>sq</em> or <em>sq2</em> or <em>hex</em> or <em>custom</em></li>
 <li>scale = scale factor between lattice and simulation box</li>
 </ul>
-<div class="highlight-python"><pre>scale = reduced density rho* (for LJ units)
-scale = lattice constant in distance units (for all other units)</pre>
+<div class="highlight-python"><div class="highlight"><pre>scale = reduced density rho* (for LJ units)
+scale = lattice constant in distance units (for all other units)
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more keyword/value pairs may be appended</li>
@@ -176,12 +201,13 @@ scale = lattice constant in distance units (for all other units)</pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>lattice fcc 3.52
+<div class="highlight-python"><div class="highlight"><pre>lattice fcc 3.52
 lattice hex 0.85
 lattice sq 0.8 origin 0.0 0.5 0.0 orient x 1 1 0 orient y -1 1 0
 lattice custom 3.52 a1 1.0 0.0 0.0 a2 0.5 1.0 0.0 a3 0.0 0.0 0.5 &amp;
                     basis 0.0 0.0 0.0 basis 0.5 0.5 0.5
-lattice none 2.0</pre>
+lattice none 2.0
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -350,7 +376,8 @@ spacings should be decipherable.</p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>lattice none 1.0</pre>
+<div class="highlight-python"><div class="highlight"><pre>lattice none 1.0
+</pre></div>
 </div>
 <p>For other lattice styles, the option defaults are origin = 0.0 0.0
 0.0, orient = x 1 0 0, orient = y 0 1 0, orient = z 0 0 1, a1 = 1 0 0,
@@ -359,6 +386,9 @@ a2 = 0 1 0, and a3 = 0 0 1.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -389,11 +419,13 @@ a2 = 0 1 0, and a3 = 0 0 1.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

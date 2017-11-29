@@ -17,6 +17,7 @@ Nstep = snapshot timestep to read from file :l
 one or more fields may be appended :l
 field = {x} or {y} or {z} or {vx} or {vy} or {vz} or {q} or {ix} or {iy} or {iz}
   {x},{y},{z} = atom coordinates
+  {radius} = atom radii
   {vx},{vy},{vz} = velocity components
   {q} = charge
   {ix},{iy},{iz} = image flags in each dimension :pre
@@ -39,11 +40,11 @@ keyword = {box} or {replace} or {purge} or {trim} or {add} or {label} or {scaled
 
 [Examples:]
 
-read_dump dump.file 5000 x y z
-read_dump dump.xyz 5 x y z format xyz box no
-read_dump dump.file 5000 x y vx vy trim yes
-read_dump ../run7/dump.file.gz 10000 x y z box yes
-read_dump dump.xyz 5 x y z box no format xyz  :pre
+read_dump dump.file 5000 x y z radius
+read_dump dump.xyz 5 x y z radius format xyz box no
+read_dump dump.file 5000 x y vx vy radius trim yes
+read_dump ../run7/dump.file.gz 10000 x y z radius box yes
+read_dump dump.xyz 5 x y z radius box no format xyz  :pre
 
 [Description:]
 
@@ -62,8 +63,11 @@ read_dump command.  This can be done by the
 "read_restart"_read_restart.html commands.  The read_dump command can
 reset the simulation box dimensions, as explained below.
 
+Since LIGGGHTS(R)-PUBLIC needs valid radii, the radius field is mandatory
+to be read.
+
 Also note that reading per-atom information from a dump snapshot is
-limited to the atom coordinates, velocities and image flags, as
+limited to the atom coordinates, radii, velocities and image flags, as
 explained below.  Other atom properties, which may be necessary to run
 a valid simulation, such as atom charge, or bond topology information
 for a molecular system, are not read from (or even contained in) dump

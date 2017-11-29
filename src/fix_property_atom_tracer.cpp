@@ -38,7 +38,7 @@
     Copyright 2013-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "atom.h"

@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include "compute_property_atom.h"
 #include "math_extra.h"
@@ -446,11 +446,21 @@ void ComputePropertyAtom::pack_type(int n)
 void ComputePropertyAtom::pack_vol(int n)
 {
   double *vol = atom->volume;
+  double *rad = atom->radius;
   int *mask = atom->mask;
   int nlocal = atom->nlocal;
 
   for (int i = 0; i < nlocal; i++) {
-    if (mask[i] & groupbit) buf[n] = vol[i];
+    double volume = 0.0;
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    if(atom->superquadric_flag)
+      volume = vol[i];
+    else
+      volume = 4.0*M_PI*rad[i]*rad[i]*rad[i]/3.0;
+#else
+    volume = 4.0*M_PI*rad[i]*rad[i]*rad[i]/3.0;
+#endif
+    if (mask[i] & groupbit) buf[n] = volume;
     else buf[n] = 0.0;
     n += nvalues;
   }
@@ -465,7 +475,12 @@ void ComputePropertyAtom::pack_eq_radius(int n)
   int nlocal = atom->nlocal;
 
   for (int i = 0; i < nlocal; i++) {
-    if (mask[i] & groupbit) buf[n] = cbrt(3.0*vol[i]/(4.0*M_PI));
+    double req = atom->radius[i];
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    if(atom->superquadric_flag)
+      req = cbrt(3.0*vol[i]/(4.0*M_PI));
+#endif
+    if (mask[i] & groupbit) buf[n] = req;
     else buf[n] = 0.0;
     n += nvalues;
   }

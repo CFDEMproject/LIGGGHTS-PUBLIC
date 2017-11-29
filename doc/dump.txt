@@ -28,9 +28,9 @@ args = list of arguments for a particular style :l
 
   {mesh/stl} args = 'local' or 'ghost' or 'all' or 'region' or any ID of a "fix mesh/surface"_fix_mesh_surface.html
       {region} values = ID for region threshold
-  {mesh/vtk} args =  zero or more keyword/ value pairs followed by one or more dump-identifiers followed optionally by keyword 'meshes' and one or more mesh ids
+  {mesh/vtk} args =  zero or more keyword/ value pairs followed by one or more dump-identifiers followed by one or more mesh ids
       keywords = {output}
-      {output} values = face or interpolate
+      {output} values = 'face' or 'interpolate' or 'original'
       dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs'
       mesh-ids = any ID of a "fix mesh/surface"_fix_mesh_surface.html
   {mesh/vtm} args =  one or two keyword/ value(s) pairs
@@ -92,7 +92,7 @@ dump myDump all atom 100 dump.atom
 dump 2 subgroup atom 50 dump.run.bin
 dump 4a all custom 100 dump.myforce.* id type x y vx fx
 dump 4b flow custom 100 dump.%.myforce id type c_myF\[3\] v_ke
-dump dmpMyMesh mesh/vtk 100 mesh*.vtk vel area meshes my_mesh_id
+dump dmpMyMesh mesh/vtk 100 mesh*.vtk vel area my_mesh_id
 dump dmpAllMeshes mesh/vtk 100 mesh*.vtk stress wear
 dump dmpMyMeshVTM mesh/vtm 100 mesh*.vtm meshes my_mesh_id mesh_properties vel area
 dump dmpAllMeshesVTM mesh/vtm 100 mesh*.vtm meshes all mesh_properties stress wear :pre
@@ -283,22 +283,28 @@ commands, you can specify which meshes to dump. If no meshes are specified,
 all meshes used in the simulation are dumped.
 
 The {mesh/vtk} or the {mesh/vtm} (new) style can be used to dump active mesh
-geometries defined via "fix mesh"_fix_mesh.html commands to a series of VTK or
-VTM files, respectively.  Different keywords can be used to dump the
+geometries defined via "fix mesh"_fix_mesh.html commands to a series of VTK
+files. The {mesh/vtk} style allows the file endings .vtk, .vtp and .pvtp. The
+first two write the data only on one processor, the latter writes several files
+in parallel. The {mesh/vtm} style currently only allows the .vtm file ending
+and writes in serial only. Different keywords can be used to dump the
 per-triangle averaged stress in normal and shear direction, id, velocity, wear,
 stress components (fx / element area, fy / element area, fz / element area),
 area (area of each element) or the process which owns the element
 (visulatisation of the parallel decomposition) into the specified file using a
-VTK file format. The 'meshes' keyword and the list of mesh IDs is optional.  As
-with the stl style, all active meshes are dumped if you do not supply the
-optional list of mesh IDs. By specifying list of mesh IDs you can explicitly
-choose which meshes to dump. The group-ID is ignored. Again, a series of files
-can be post-processed in Paraview , www.paraview.org Most keywords as used for
-the {mesh/vtk} style are self-explanatory.  Keyword {output} controls if the
-data is written in a per-face manner or as interpolated values to VTK. Keywords
-{aedges} and {acorners} dump the number of active edges/corners per face.
-Keyword {nneighs} dumps the number of face neighbors LIGGGHTS(R)-PUBLIC has recognized
-for each face.
+VTK file format. The 'meshes' keyword (only for {mesh/vtm}) and the list of
+mesh IDs is optional.  As with the stl style, all active meshes are dumped if
+you do not supply the optional list of mesh IDs. By specifying list of mesh IDs
+you can explicitly choose which meshes to dump. The group-ID is ignored. Again,
+a series of files can be post-processed in Paraview , www.paraview.org Most
+keywords as used for the {mesh/vtk} style are self-explanatory. Keyword
+{output} controls how the data is written. If {face} (default) is selected then
+all point variables will be interpolated to the triangle faces. For the value
+{interpolated} all cell values will be interpolated to the respective points
+and finally for {original} no interpolation will take place and cell and point
+variables are written to cells and points, respectively. Keywords {aedges} and
+{acorners} dump the number of active edges/corners per face.  Keyword {nneighs}
+dumps the number of face neighbors LIGGGHTS(R)-PUBLIC has recognized for each face.
 
 {mesh/vtm} is similar to {mesh/vtk} but only the arguments are different. The
 former requires the use of the keyword {meshes} which has to be followed either
@@ -315,7 +321,7 @@ The {decomposition/vtk} style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.
 
 For all vkt outputs if {dump_modify binary} is used, the dump file (or files, if
-"*" or "%" is also used) is written in binary format.  A binary dump file will
+"*" is also used) is written in binary format.  A binary dump file will
 be about the same size as a text version, but will typically write out much
 faster. Additionally, {dump_modify compressor} can be used to specify the
 writing of compressed binary data. Options for compressors include:

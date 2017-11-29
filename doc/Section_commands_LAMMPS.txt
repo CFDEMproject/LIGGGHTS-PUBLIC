@@ -11,7 +11,13 @@
 This section describes how a LIGGGHTS(R)-PUBLIC input script is formatted and the
 input script commands used to define a LIGGGHTS(R)-PUBLIC simulation.
 
-4.1 "List of all commands"_#cmd_1 :all(b)
+<!-- RST
+
+.. contents:: 
+		:local:
+		:depth: 1
+   
+END_RST -->
 
 :line
 :line

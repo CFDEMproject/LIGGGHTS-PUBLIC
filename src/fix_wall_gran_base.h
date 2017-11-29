@@ -238,8 +238,6 @@ public:
             if(std::isnan(sidata.radi))
               error->one(FLERR, "delta_inv is NaN!");
           #endif
-          Superquadric particle(atom->x[ip], atom->quaternion[ip], atom->shape[ip], atom->roundness[ip]);
-          sidata.koefi = particle.calc_curvature_coefficient(sidata.contact_point);
         } else { // sphere case
           enx = sidata.delta[0] * rinv;
           eny = sidata.delta[1] * rinv;
@@ -250,10 +248,17 @@ public:
         const double eny = sidata.delta[1] * rinv;
         const double enz = sidata.delta[2] * rinv;
     #endif
+
     sidata.radsum = sidata.radi;
-    sidata.en[0] = enx;
-    sidata.en[1] = eny;
-    sidata.en[2] = enz;
+
+#ifdef CONVEX_ACTIVE_FLAG
+    if (!atom->shapetype_flag)
+#endif
+    {
+        sidata.en[0] = enx;
+        sidata.en[1] = eny;
+        sidata.en[2] = enz;
+    }
 
     double delta[3];
     if (dissipation_offset_ >= 0 && sidata.computeflag && sidata.shearupdate)

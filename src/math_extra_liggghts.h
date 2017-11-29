@@ -43,7 +43,8 @@
 #define LMP_MATH_EXTRA_LIGGGHTS_H
 
 #include "pointers.h"
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 #include <stdio.h>
 #include <string.h>
 #include "error.h"
@@ -68,19 +69,16 @@ namespace MathExtraLiggghts {
   //exp aproximation
   inline double exp_fast(double x);
 
-  inline int min(int a,int b);
-  inline int max(int a,int b);
-  inline int abs(int a);
-  inline double min(double a,double b);
-  inline double max(double a,double b);
-  inline double min(double a,double b,double c);
-  inline double max(double a,double b,double c);
-  inline double min(double a,double b,double c,double d);
-  inline double min(double *input, int n,int &which);
-  inline double max(double *input, int n,int &which);
-  inline double min(int *input, int n,int &which);
-  inline double max(int *input, int n,int &which);
-  inline double abs(double a);
+  inline double min(const double a, const double b, const double c);
+  inline double max(const double a, const double b, const double c);
+  inline double min(const double a, const double b, const double c, const double d);
+  inline double max(const double a, const double b, const double c, const double d);
+  template <typename T>
+  inline T min(const T * const input, const unsigned int n, int &which);
+  template <typename T>
+  inline T max(const T * const input, const unsigned int n, int &which);
+  template <typename T>
+  inline T abs(const T a);
 
   inline void matrix_invert_4x4_special(double matrix[4][4]);
   inline void transpose3(const double m[3][3], double ans[3][3]);
@@ -105,10 +103,10 @@ namespace MathExtraLiggghts {
                                   double *ex, double *ey, double *ez,
                                   double *idiag, double *m);
 
-  // double comparison, added by P.S.
+  // double comparison
   inline bool compDouble(double const a, double const b, double const prec = 1e-13);
 
-  // calculate barycentrc coordinates of p w.r.t node, added by P.S.
+  // calculate barycentrc coordinates of p w.r.t node
   inline void calcBaryTriCoords(double *p, double **edgeVec, double *edgeLen, double *bary);
   inline void calcBaryTriCoords(double *p, double *edgeVec0, double *edgeVec1, double *edgeVec2, double *edgeLen, double *bary);
 
@@ -117,18 +115,18 @@ namespace MathExtraLiggghts {
   inline bool is_int(char *str);
   inline void generateComplementBasis(double *uVec, double *vVec, double *direction);
 
-  // template signum function, added by A.A.
+  // template signum function
   template <typename T>
   int sgn(T val) {
       return (T(0) < val) - (val < T(0));
   }
 
-  // prime number test, JoKer
+  // prime number test
   inline bool isPrime(int val);
 };
 
 /* ----------------------------------------------------------------------
-   matrix  times col vector 
+   matrix  times col vector
 ------------------------------------------------------------------------- */
 
 void MathExtraLiggghts::col_times3(const double m[3][3],const double *v, double *ans)
@@ -139,7 +137,6 @@ void MathExtraLiggghts::col_times3(const double m[3][3],const double *v, double 
 }
 
 /* ----------------------------------------------------------------------
-
 Matrix determinant
 ------------------------------------------------------------------------- */
 
@@ -151,7 +148,7 @@ double MathExtraLiggghts::mdet(const double m[3][3],LAMMPS_NS::Error *error)
 }
 
 /* ----------------------------------------------------------------------
-   Cubic root approx. 
+   Cubic root approx.
 ------------------------------------------------------------------------- */
 
 inline double MathExtraLiggghts::cbrt_5d(double d)
@@ -194,97 +191,62 @@ inline double MathExtraLiggghts::exp_fast(double x)
    min max stuff
 ------------------------------------------------------------------------- */
 
-  int MathExtraLiggghts::min(int a,int b) { if (a<b) return a; return b;}
-  int MathExtraLiggghts::max(int a,int b) { if (a>b) return a; return b;}
+double MathExtraLiggghts::min(const double a, const double b, const double c)
+{
+    return std::min(std::min(a,b),c);
+}
 
-  double MathExtraLiggghts::min(double a,double b) { if (a<b) return a; return b;}
-  double MathExtraLiggghts::max(double a,double b) { if (a>b) return a; return b;}
+double MathExtraLiggghts::max(const double a, const double b, const double c)
+{
+    return std::max(std::max(a,b),c);
+}
 
-  double MathExtraLiggghts::min(double a,double b,double c)
-  {
-      double ab = MathExtraLiggghts::min(a,b);
-      if (ab<c) return ab;
-      return c;
-  }
-  double MathExtraLiggghts::max(double a,double b,double c)
-  {
-      double ab = MathExtraLiggghts::max(a,b);
-      if (ab<c) return c;
-      return ab;
-  }
+double MathExtraLiggghts::min(const double a, const double b, const double c, const double d)
+{
+    return std::min(std::min(a,b),std::min(c,d));
+}
 
-  double MathExtraLiggghts::min(double a,double b,double c,double d)
-  {
-      double ab = MathExtraLiggghts::min(a,b);
-      double cd = MathExtraLiggghts::min(c,d);
-      if (ab<cd) return ab;
-      return cd;
-  }
+double MathExtraLiggghts::max(const double a, const double b, const double c, const double d)
+{
+    return std::max(std::max(a,b),std::max(c,d));
+}
 
-  double MathExtraLiggghts::min(double *input, int n,int &which)
-  {
-      double min = input[0];
-      which = 0;
+template <typename T>
+T MathExtraLiggghts::min(const T * const input, const unsigned int n, int &which)
+{
+    T min = input[0];
+    which = 0;
 
-      for(int i = 1; i < n; i++)
-      {
-          if(input[i] < min)
-          {
-              which = i;
-              min = input[i];
-          }
-      }
-      return min;
-  }
-  double MathExtraLiggghts::max(double *input, int n,int &which)
-  {
-      double max = input[0];
-      which = 0;
+    for(unsigned int i = 1; i < n; i++)
+    {
+        if(input[i] < min)
+        {
+            which = i;
+            min = input[i];
+        }
+    }
+    return min;
+}
 
-      for(int i = 1; i < n; i++)
-      {
-          if(input[i] > max)
-          {
-              which = i;
-              max = input[i];
-          }
-      }
-      return max;
-  }
+template <typename T>
+T MathExtraLiggghts::max(const T * const input, const unsigned int n, int &which)
+{
+    T max = input[0];
+    which = 0;
 
-  double MathExtraLiggghts::min(int *input, int n,int &which)
-  {
-      double min = input[0];
-      which = 0;
+    for(unsigned int i = 1; i < n; i++)
+    {
+        if(input[i] > max)
+        {
+            which = i;
+            max = input[i];
+        }
+    }
+    return max;
+}
 
-      for(int i = 1; i < n; i++)
-      {
-          if(input[i] < min)
-          {
-              which = i;
-              min = input[i];
-          }
-      }
-      return min;
-  }
-  double MathExtraLiggghts::max(int *input, int n,int &which)
-  {
-      double max = input[0];
-      which = 0;
-
-      for(int i = 1; i < n; i++)
-      {
-          if(input[i] > max)
-          {
-              which = i;
-              max = input[i];
-          }
-      }
-      return max;
-  }
-
-  int MathExtraLiggghts::abs(int a) { if (a>0) return a; return -a;}
-  double MathExtraLiggghts::abs(double a) { if (a>0.) return a; return -a;}
+template <typename T>
+T MathExtraLiggghts::abs(const T a) { return a < static_cast<T>(0) ? -a : a; }
 
 /*----------------------------------------------------------------------
    inverts a special 4x4 matrix that looks like this
@@ -371,7 +333,7 @@ inline int MathExtraLiggghts::is_inside_tet(double *pos,double invmatrix[4][4])
     result[2] = invmatrix[2][0] * pos[0] + invmatrix[2][1] * pos[1] + invmatrix[2][2] * pos[2] + invmatrix[2][3];
     result[3] = invmatrix[3][0] * pos[0] + invmatrix[3][1] * pos[1] + invmatrix[3][2] * pos[2] + invmatrix[3][3];
 
-    if(max(result[0],max(result[1],max(result[2],result[3]))) > 1.0) return 0;
+    if(max(result[0],result[1],result[2],result[3]) > 1.0) return 0;
     return 1;
 }
 

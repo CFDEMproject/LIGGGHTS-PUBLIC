@@ -50,6 +50,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
+#include <cmath>
 #include "error.h"
 #include "force.h"
 #include "bounding_box.h"
@@ -705,12 +706,12 @@ void FixMesh::box_extent(double &xlo,double &xhi,double &ylo,double &yhi,double 
         for(int j = 0; j < numNodes; j++)
         {
             mesh()->node_slow(i,j,node);
-            xlo = MathExtraLiggghts::min(xlo,node[0]);
-            xhi = MathExtraLiggghts::max(xhi,node[0]);
-            ylo = MathExtraLiggghts::min(ylo,node[1]);
-            yhi = MathExtraLiggghts::max(yhi,node[1]);
-            zlo = MathExtraLiggghts::min(zlo,node[2]);
-            zhi = MathExtraLiggghts::max(zhi,node[2]);
+            xlo = std::min(xlo,node[0]);
+            xhi = std::max(xhi,node[0]);
+            ylo = std::min(ylo,node[1]);
+            yhi = std::max(yhi,node[1]);
+            zlo = std::min(zlo,node[2]);
+            zhi = std::max(zhi,node[2]);
         }
     }
 }

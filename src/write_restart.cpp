@@ -75,6 +75,9 @@
 #include "thermo.h"
 #include "memory.h"
 #include "error.h"
+#if !defined(WINDOWS) && !defined(__MINGW32__)
+#include <sys/stat.h>
+#endif
 
 using namespace LAMMPS_NS;
 
@@ -124,10 +127,30 @@ void WriteRestart::command(int narg, char **arg)
   int n = strlen(arg[0]) + 16;
   char *file = new char[n];
 
-  if ((ptr = strchr(arg[0],'*'))) { 
+  if ((ptr = strchr(arg[0],'*'))){
     *ptr = '\0';
     sprintf(file,"%s" BIGINT_FORMAT "%s",arg[0],update->ntimestep,ptr+1);
   } else strcpy(file,arg[0]);
+
+  // check whether the folder is accessible, not available on windows
+#if !defined(_WINDOWS) && !defined(__MINGW32__)
+    std::string fname(file);
+    std::size_t last_slash = fname.rfind("/");
+    // check if we use directories at all
+    if (last_slash != std::string::npos)
+    {
+        std::size_t next_slash = fname.find("/", 1);
+        while (next_slash != std::string::npos)
+        {
+            std::string curdir = fname.substr(0, next_slash);
+            struct stat statbuf;
+            const bool exists = (stat(curdir.c_str(), &statbuf) != -1) && S_ISDIR(statbuf.st_mode);
+            if (!exists)
+                mkdir(curdir.c_str(), S_IRWXU | S_IRGRP | S_IXGRP);
+            next_slash = fname.find("/", next_slash+1);
+        }
+    }
+#endif
 
   int iregion;
   if(narg == 3 && strcmp(arg[1],"region"))
@@ -247,8 +270,10 @@ void WriteRestart::write(char *file)
   MPI_Allreduce(&send_size,&max_size,1,MPI_INT,MPI_MAX,world);
 
   double *buf;
+  
   if (me == 0) memory->create(buf,max_size,"write_restart:buf");
   else memory->create(buf,send_size,"write_restart:buf");
+  //vectorZeroizeN(buf,send_size);
 
   // pack my atom data into buf
 
@@ -340,6 +365,7 @@ void WriteRestart::write(char *file)
         } else recv_size = send_size;
 
         fwrite(&recv_size,sizeof(int),1,fp);
+        
         fwrite(buf,sizeof(double),recv_size,fp);
       }
       fclose(fp);

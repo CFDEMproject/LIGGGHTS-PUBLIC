@@ -127,6 +127,7 @@ Compute::Compute(LAMMPS *lmp, int &iarg, int narg, char ** arg) :
 
   extra_dof = domain->dimension;
   dynamic = 0;
+  dynamic_group_allow = 1;
 
   // setup list of timesteps
 
@@ -156,7 +157,8 @@ Compute::~Compute()
 void Compute::modify_params(int narg, char **arg)
 {
   if (narg == 0) error->all(FLERR,"Illegal compute_modify command");
-  if (!lmp->wb && strcmp(id, "thermo_temp") == 0) error->warning(FLERR,"Changing thermo_temp compute object. This object is deprecated and will be removed in the future.");
+  if (!lmp->wb && strcmp(id, "thermo_temp") == 0 && comm->me == 0)
+    error->warning(FLERR,"Changing thermo_temp compute object. This object is deprecated and will be removed in the future.");
 
   int iarg = 0;
   while (iarg < narg) {

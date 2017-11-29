@@ -6,19 +6,29 @@
 
 :line
 
-9. Python interface to LIGGGHTS(R)-PUBLIC :h3
+10. Python interface to LIGGGHTS(R)-PUBLIC :h3
 
 This section describes how to build and use LIGGGHTS(R)-PUBLIC via a Python
 interface.
 
-9.1 "Building LIGGGHTS(R)-PUBLIC as a shared library"_#py_1
-9.2 "Installing the Python wrapper into Python"_#py_2
-9.3 "Extending Python with MPI to run in parallel"_#py_3
-9.4 "Testing the Python-LIGGGHTS(R)-PUBLIC interface"_#py_4
-9.5 "Using LIGGGHTS(R)-PUBLIC from Python"_#py_5
-9.6 "Example Python scripts that use LIGGGHTS(R)-PUBLIC"_#py_6 :ul
+<!-- RST
 
-The LIGGGHTS(R)-PUBLIC distribution includes the file python/lammps.py which wraps
+.. contents:: 
+		:local:
+		:depth: 1
+   
+END_RST -->
+
+<!-- HTML_ONLY -->
+10.1 "Building LIGGGHTS(R)-PUBLIC as a shared library"_#py_1
+10.2 "Installing the Python wrapper into Python"_#py_2
+10.3 "Extending Python with MPI to run in parallel"_#py_3
+10.4 "Testing the Python-LIGGGHTS(R)-PUBLIC interface"_#py_4
+10.5 "Using LIGGGHTS(R)-PUBLIC from Python"_#py_5
+10.6 "Example Python scripts that use LIGGGHTS(R)-PUBLIC"_#py_6 :ul
+<!--END_HTML_ONLY -->
+
+The LIGGGHTS(R)-PUBLIC distribution includes the file python/liggghts.py which wraps
 the library interface to LIGGGHTS(R)-PUBLIC.  This file makes it is possible to
 run LIGGGHTS(R)-PUBLIC, invoke LIGGGHTS(R)-PUBLIC commands or give it an input script, extract
 LIGGGHTS(R)-PUBLIC results, an modify internal LIGGGHTS(R)-PUBLIC variables, either from a
@@ -58,7 +68,7 @@ LIGGGHTS(R)-PUBLIC thru Python will be negligible.
 Before using LIGGGHTS(R)-PUBLIC from a Python script, you need to do two things.
 You need to build LIGGGHTS(R)-PUBLIC as a dynamic shared library, so it can be
 loaded by Python.  And you need to tell Python how to find the library
-and the Python wrapper file python/lammps.py.  Both these steps are
+and the Python wrapper file python/liggghts.py.  Both these steps are
 discussed below.  If you wish to run LIGGGHTS(R)-PUBLIC in parallel from Python,
 you also need to extend your Python with MPI.  This is also discussed
 below.
@@ -73,7 +83,7 @@ check which version of Python you have installed, by simply typing
 :line
 :line
 
-9.1 Building LIGGGHTS(R)-PUBLIC as a shared library :link(py_1),h4
+10.1 Building LIGGGHTS(R)-PUBLIC as a shared library :link(py_1),h4
 
 Instructions on how to build LIGGGHTS(R)-PUBLIC as a shared library are given in
 "Section_start 5"_Section_start.html#start_5.  A shared library is one
@@ -85,9 +95,9 @@ From the src directory, type
 make makeshlib
 make -f Makefile.shlib foo :pre
 
-where foo is the machine target name, such as linux or g++ or serial.
-This should create the file liblammps_foo.so in the src directory, as
-well as a soft link liblammps.so, which is what the Python wrapper will
+where foo is the machine target name, such as auto or mpi or serial.
+This should create the file liblmp_foo.so in the src directory, as
+well as a soft link libliggghts.so, which is what the Python wrapper will
 load by default.  Note that if you are building multiple machine
 versions of the shared library, the soft link is always set to the
 most recently built version.
@@ -99,15 +109,15 @@ system.
 
 :line
 
-9.2 Installing the Python wrapper into Python :link(py_2),h4
+10.2 Installing the Python wrapper into Python :link(py_2),h4
 
 For Python to invoke LIGGGHTS(R)-PUBLIC, there are 2 files it needs to know about:
 
-python/lammps.py
-src/liblammps.so :ul
+python/liggghts.py
+src/libliggghts.so :ul
 
 Lammps.py is the Python wrapper on the LIGGGHTS(R)-PUBLIC library interface.
-Liblammps.so is the shared LIGGGHTS(R)-PUBLIC library that Python loads, as
+Libliggghts.so is the shared LIGGGHTS(R)-PUBLIC library that Python loads, as
 described above.
 
 You can insure Python can find these files in one of two ways:
@@ -119,12 +129,12 @@ If you set the paths to these files as environment variables, you only
 have to do it once.  For the csh or tcsh shells, add something like
 this to your ~/.cshrc file, one line for each of the two files:
 
-setenv PYTHONPATH ${PYTHONPATH}:/home/sjplimp/lammps/python
-setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/sjplimp/lammps/src :pre
+setenv PYTHONPATH ${PYTHONPATH}:/home/sjplimp/liggghts/python
+setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/sjplimp/liggghts/src :pre
 
 If you use the python/install.py script, you need to invoke it every
 time you rebuild LIGGGHTS(R)-PUBLIC (as a shared library) or make changes to the
-python/lammps.py file.
+python/liggghts.py file.
 
 You can invoke install.py from the python directory as
 
@@ -132,7 +142,7 @@ You can invoke install.py from the python directory as
 
 The optional libdir is where to copy the LIGGGHTS(R)-PUBLIC shared library to; the
 default is /usr/local/lib.  The optional pydir is where to copy the
-lammps.py file to; the default is the site-packages directory of the
+liggghts.py file to; the default is the site-packages directory of the
 version of Python that is running the install script.
 
 Note that libdir must be a location that is in your default
@@ -161,13 +171,13 @@ which Python is invoked by root.
 
 Note that if you want Python to be able to load different versions of
 the LIGGGHTS(R)-PUBLIC shared library (see "this section"_#py_5 below), you will
-need to manually copy files like liblammps_g++.so into the appropriate
+need to manually copy files like liblmp_auto.so into the appropriate
 system directory.  This is not needed if you set the LD_LIBRARY_PATH
 environment variable as described above.
 
 :line
 
-9.3 Extending Python with MPI to run in parallel :link(py_3),h4
+10.3 Extending Python with MPI to run in parallel :link(py_3),h4
 
 If you wish to run LIGGGHTS(R)-PUBLIC in parallel from Python, you need to extend
 your Python with an interface to MPI.  This also allows you to
@@ -258,13 +268,13 @@ the right one.
 
 :line
 
-9.4 Testing the Python-LIGGGHTS(R)-PUBLIC interface :link(py_4),h4
+10.4 Testing the Python-LIGGGHTS(R)-PUBLIC interface :link(py_4),h4
 
 To test if LIGGGHTS(R)-PUBLIC is callable from Python, launch Python interactively
 and type:
 
->>> from lammps import lammps
->>> lmp = lammps() :pre
+>>> from liggghts import liggghts
+>>> lig = liggghts() :pre
 
 If you get no errors, you're ready to use LIGGGHTS(R)-PUBLIC from Python.  If the
 2nd command fails, the most common error to see is
@@ -278,10 +288,10 @@ about the library is incompatible with your Python.  The error message
 should give you an indication of what went wrong.
 
 You can also test the load directly in Python as follows, without
-first importing from the lammps.py file:
+first importing from the liggghts.py file:
 
 >>> from ctypes import CDLL
->>> CDLL("liblammps.so") :pre
+>>> CDLL("libliggghts.so") :pre
 
 If an error occurs, carefully go thru the steps in "Section_start
 5"_Section_start.html#start_5 and above about building a shared
@@ -293,9 +303,9 @@ it needs.
 To run a LIGGGHTS(R)-PUBLIC test in serial, type these lines into Python
 interactively from the bench directory:
 
->>> from lammps import lammps
->>> lmp = lammps()
->>> lmp.file("in.lj") :pre
+>>> from liggghts import liggghts
+>>> lig = liggghts()
+>>> lig.file("in.lj") :pre
 
 Or put the same lines in the file test.py and run it as
 
@@ -305,7 +315,7 @@ Either way, you should see the results of running the in.lj benchmark
 on a single processor appear on the screen, the same as if you had
 typed something like:
 
-lmp_g++ < in.lj :pre
+lmp_auto < in.lj :pre
 
 [Test LIGGGHTS(R)-PUBLIC and Python in parallel:] :h5
 
@@ -314,10 +324,10 @@ To run LIGGGHTS(R)-PUBLIC in parallel, assuming you have installed the
 above, create a test.py file containing these lines:
 
 import pypar
-from lammps import lammps
-lmp = lammps()
-lmp.file("in.lj")
-print "Proc %d out of %d procs has" % (pypar.rank(),pypar.size()),lmp
+from liggghts import liggghts
+lig = liggghts()
+lig.file("in.lj")
+print "Proc %d out of %d procs has" % (pypar.rank(),pypar.size()),lig
 pypar.finalize() :pre
 
 You can then run it in parallel as:
@@ -326,7 +336,7 @@ You can then run it in parallel as:
 
 and you should see the same output as if you had typed
 
-% mpirun -np 4 lmp_g++ < in.lj :pre
+% mpirun -np 4 lmp_auto < in.lj :pre
 
 Note that if you leave out the 3 lines from test.py that specify Pypar
 commands you will instantiate and run LIGGGHTS(R)-PUBLIC independently on each of
@@ -371,45 +381,45 @@ Python on a single processor, not in parallel.
 :line
 :line
 
-9.5 Using LIGGGHTS(R)-PUBLIC from Python :link(py_5),h4
+10.5 Using LIGGGHTS(R)-PUBLIC from Python :link(py_5),h4
 
-The Python interface to LIGGGHTS(R)-PUBLIC consists of a Python "lammps" module,
-the source code for which is in python/lammps.py, which creates a
-"lammps" object, with a set of methods that can be invoked on that
+The Python interface to LIGGGHTS(R)-PUBLIC consists of a Python "liggghts" module,
+the source code for which is in python/liggghts.py, which creates a
+"liggghts" object, with a set of methods that can be invoked on that
 object.  The sample Python code below assumes you have first imported
-the "lammps" module in your Python script, as follows:
+the "liggghts" module in your Python script, as follows:
 
-from lammps import lammps :pre
+from liggghts import liggghts :pre
 
-These are the methods defined by the lammps module.  If you look
+These are the methods defined by the liggghts module.  If you look
 at the file src/library.cpp you will see that they correspond
 one-to-one with calls you can make to the LIGGGHTS(R)-PUBLIC library from a C++ or
 C or Fortran program.
 
-lmp = lammps()           # create a LIGGGHTS(R)-PUBLIC object using the default liblammps.so library
-lmp = lammps("g++")      # create a LIGGGHTS(R)-PUBLIC object using the liblammps_g++.so library
-lmp = lammps("",list)    # ditto, with command-line args, e.g. list = \["-echo","screen"\]
-lmp = lammps("g++",list) :pre
+lig = liggghts()           # create a LIGGGHTS(R)-PUBLIC object using the default libliggghts.so library
+lig = liggghts("auto")     # create a LIGGGHTS(R)-PUBLIC object using the liblmp_auto.so library
+lig = liggghts("",list)    # ditto, with command-line args, e.g. list = \["-echo","screen"\]
+lig = liggghts("auto",list) :pre
 
-lmp.close()              # destroy a LIGGGHTS(R)-PUBLIC object :pre
+lig.close()              # destroy a LIGGGHTS(R)-PUBLIC object :pre
 
-lmp.file(file)           # run an entire input script, file = "in.lj"
-lmp.command(cmd)         # invoke a single LIGGGHTS(R)-PUBLIC command, cmd = "run 100" :pre
+lig.file(file)           # run an entire input script, file = "in.lj"
+lig.command(cmd)         # invoke a single LIGGGHTS(R)-PUBLIC command, cmd = "run 100" :pre
 
-xlo = lmp.extract_global(name,type)  # extract a global quantity
+xlo = lig.extract_global(name,type)  # extract a global quantity
                                      # name = "boxxlo", "nlocal", etc
 				     # type = 0 = int
 				     #        1 = double :pre
 
-coords = lmp.extract_atom(name,type)      # extract a per-atom quantity
+coords = lig.extract_atom(name,type)      # extract a per-atom quantity
                                           # name = "x", "type", etc
 				          # type = 0 = vector of ints
 				          #        1 = array of ints
 				          #        2 = vector of doubles
 				          #        3 = array of doubles :pre
 
-eng = lmp.extract_compute(id,style,type)  # extract value(s) from a compute
-v3 = lmp.extract_fix(id,style,type,i,j)   # extract value(s) from a fix
+eng = lig.extract_compute(id,style,type)  # extract value(s) from a compute
+v3 = lig.extract_fix(id,style,type,i,j)   # extract value(s) from a fix
                                           # id = ID of compute or fix
 					  # style = 0 = global data
 					  #	    1 = per-atom data
@@ -419,24 +429,24 @@ v3 = lmp.extract_fix(id,style,type,i,j)   # extract value(s) from a fix
 					  #        2 = array
 					  # i,j = indices of value in global vector or array :pre
 
-var = lmp.extract_variable(name,group,flag)  # extract value(s) from a variable
+var = lig.extract_variable(name,group,flag)  # extract value(s) from a variable
 	                                     # name = name of variable
 					     # group = group ID (ignored for equal-style variables)
 					     # flag = 0 = equal-style variable
 					     #        1 = atom-style variable :pre
 
-natoms = lmp.get_natoms()                 # total # of atoms as int
-data = lmp.gather_atoms(name,type,count)  # return atom attribute of all atoms gathered into data, ordered by atom ID
+natoms = lig.get_natoms()                 # total # of atoms as int
+data = lig.gather_atoms(name,type,count)  # return atom attribute of all atoms gathered into data, ordered by atom ID
                                           # name = "x", "charge", "type", etc
                                           # count = # of per-atom values, 1 or 3, etc
-lmp.scatter_atoms(name,type,count,data)   # scatter atom attribute of all atoms from data, ordered by atom ID
+lig.scatter_atoms(name,type,count,data)   # scatter atom attribute of all atoms from data, ordered by atom ID
                                           # name = "x", "charge", "type", etc
                                           # count = # of per-atom values, 1 or 3, etc :pre
 
 :line
 
 IMPORTANT NOTE: Currently, the creation of a LIGGGHTS(R)-PUBLIC object from within
-lammps.py does not take an MPI communicator as an argument.  There
+liggghts.py does not take an MPI communicator as an argument.  There
 should be a way to do this, so that the LIGGGHTS(R)-PUBLIC instance runs on a
 subset of processors if desired, but I don't know how to do it from
 Pypar.  So for now, it runs with MPI_COMM_WORLD, which is all the
@@ -447,11 +457,11 @@ will amend these doc pages.
 Note that you can create multiple LIGGGHTS(R)-PUBLIC objects in your Python
 script, and coordinate and run multiple simulations, e.g.
 
-from lammps import lammps
-lmp1 = lammps()
-lmp2 = lammps()
-lmp1.file("in.file1")
-lmp2.file("in.file2") :pre
+from liggghts import liggghts
+lig1 = liggghts()
+lig2 = liggghts()
+lig1.file("in.file1")
+lig2.file("in.file2") :pre
 
 The file() and command() methods allow an input script or single
 commands to be invoked.
@@ -537,7 +547,7 @@ vector of ints or doubles, allocated and initialized something like
 this:
 
 from ctypes import *
-natoms = lmp.get_natoms()
+natoms = lig.get_natoms()
 n3 = 3*natoms
 x = (n3*c_double)()
 x[0] = x coord of atom with ID 1
@@ -546,7 +556,7 @@ x[2] = z coord of atom with ID 1
 x[3] = x coord of atom with ID 2
 ...
 x[n3-1] = z coord of atom with ID natoms
-lmp.scatter_coords("x",1,3,x) :pre
+lig.scatter_coords("x",1,3,x) :pre
 
 Alternatively, you can just change values in the vector returned by
 gather_atoms("x",1,3), since it is a ctypes vector of doubles.
@@ -563,7 +573,7 @@ src/library.h. :ulb,l
 
 Rebuild LIGGGHTS(R)-PUBLIC as a shared library. :l
 
-Add a wrapper method to python/lammps.py for this interface
+Add a wrapper method to python/liggghts.py for this interface
 function. :l
 
 You should now be able to invoke the new interface function from a
@@ -572,7 +582,7 @@ Python script.  Isn't ctypes amazing? :l,ule
 :line
 :line
 
-9.6 Example Python scripts that use LIGGGHTS(R)-PUBLIC :link(py_6),h4
+10.6 Example Python scripts that use LIGGGHTS(R)-PUBLIC :link(py_6),h4
 
 These are the Python scripts included as demos in the python/examples
 directory of the LIGGGHTS(R)-PUBLIC distribution, to illustrate the kinds of

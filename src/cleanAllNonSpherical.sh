@@ -17,13 +17,15 @@ cp fix_*asphere.* ASPHERE
 cp fix_*Asphere.* ASPHERE
 cp pair_gayberne* ASPHERE
 cp *pascal* PASCAL
+cp *_smd_* smd_* USER-SMD
 
-cp Makefile.package.empty Makefile.package
 make no-POEMS
 make no-DIPOLE
 make no-ASPHERE
 make no-PASCAL
+make no-USER-SMD
 rm make.log
 
-#remove all whitelists, e.g., for contact models
-rm *.whitelist
+cp Makefile.package.empty Makefile.package
+rm lmp_*
+rm *.so *.a

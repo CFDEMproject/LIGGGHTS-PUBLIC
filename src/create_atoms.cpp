@@ -49,7 +49,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "create_atoms.h"
@@ -65,16 +65,21 @@
 #include "error.h"
 #include "force.h"
 
+// include last to ensure correct macros
+#include "domain_definitions.h"
+
 using namespace LAMMPS_NS;
 
-#define BIG      1.0e30
 #define EPSILON  1.0e-6
 
 enum{BOX,REGION,SINGLE,RANDOM};
 
 /* ---------------------------------------------------------------------- */
 
-CreateAtoms::CreateAtoms(LAMMPS *lmp) : Pointers(lmp) {}
+CreateAtoms::CreateAtoms(LAMMPS *lmp) :
+    Pointers(lmp),
+    seed_char(NULL)
+{}
 
 /* ---------------------------------------------------------------------- */
 
@@ -119,7 +124,10 @@ void CreateAtoms::command(int narg, char **arg)
     style = RANDOM;
     if (narg < 5) error->all(FLERR,"Illegal create_atoms command");
     nrandom = force->inumeric(FLERR,arg[2]);
-    seed = force->inumeric(FLERR,arg[3]);
+    if (seed_char)
+        delete [] seed_char;
+    seed_char = new char [strlen(arg[2])+1];
+    strcpy(seed_char, arg[2]);
     if (strcmp(arg[4],"NULL") == 0) nregion = -1;
     else {
       nregion = domain->find_region(arg[4]);
@@ -175,7 +183,6 @@ void CreateAtoms::command(int narg, char **arg)
 
   if (style == RANDOM) {
     if (nrandom < 0) error->all(FLERR,"Illegal create_atoms command");
-    if (seed <= 0) error->all(FLERR,"Illegal create_atoms command");
   }
 
   if(all_in && ! (REGION==style))
@@ -376,7 +383,7 @@ void CreateAtoms::add_random()
 
   // random number generator, same for all procs
 
-  RanPark *random = new RanPark(lmp,seed);
+  RanPark *random = new RanPark(lmp,seed_char);
 
   // bounding box for atom creation
   // in real units, even if triclinic

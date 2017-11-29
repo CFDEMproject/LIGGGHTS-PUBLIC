@@ -155,7 +155,7 @@ MeshModuleStressServo::MeshModuleStressServo(LAMMPS *lmp, int &iarg_, int narg, 
             iarg_ = iarg_ + 2;
             hasargs = true;
         } else if(strcmp(arg[iarg_],"vel_max") == 0) {
-            if (narg < iarg_+2) error->one(FLERR,"not enough arguments for 'vel'");
+            if (narg < iarg_+2) error->one(FLERR,"not enough arguments for 'vel_max'");
             ++iarg_;
             vel_max_ = force->numeric(FLERR,arg[iarg_++]);
             if(vel_max_ <= 0.)
@@ -234,8 +234,6 @@ MeshModuleStressServo::~MeshModuleStressServo()
 void MeshModuleStressServo::post_create_pre_restart()
 {
     
-    //Np -->register properties and set values for non-restart properties here
-
     mesh->prop().addElementProperty< MultiVectorContainer<double,3,3> > ("v","comm_exchange_borders","frame_invariant","restart_no");
 }
 
@@ -250,8 +248,6 @@ void MeshModuleStressServo::post_create()
         mesh->registerMove(false,false,true);
     else
         error->one(FLERR,"Bad registration of upcoming move.");
-
-    //Np --> set values for no-restart properties here
 
     mesh->prop().getElementProperty<MultiVectorContainer<double,3,3> >("v")->setAll(0.);
 }
@@ -680,6 +676,13 @@ int MeshModuleStressServo::modify_param(int narg, char **arg)
             int_flag_ = false;
         } else
             error->one(FLERR,"wrong argument for fix_modify 'integrate'");
+
+        return 2;
+    } else if (command.compare("vel_max") == 0) {
+        if (narg < 2) error->one(FLERR,"not enough arguments for 'vel_max'");
+        vel_max_ = force->numeric(FLERR,arg[1]);
+        if(vel_max_ <= 0.)
+            error->one(FLERR,"vel_max > 0 required");
 
         return 2;
     } else if (command.compare("target_val") == 0) {

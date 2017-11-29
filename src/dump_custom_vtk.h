@@ -138,8 +138,6 @@ class DumpCustomVTK : public Dump, public DumpVTK
 
   char *filecurrent;
   char *domainfilecurrent;
-  char *parallelfilecurrent;
-  char *multiname_ex;
 
   void setFileCurrent();
 };

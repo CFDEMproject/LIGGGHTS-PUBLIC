@@ -23,7 +23,7 @@ v.clear()		       delete all visualizations
 
 v.rep(style)		       set default representation style. One of
 			       (Lines|VDW|Licorice|DynamicBonds|Points|CPK) 
-v.new(file[,type])   	       load new file (default file type 'lammpstrj')
+v.new(file[,type])   	       load new file (default file type 'liggghtstrj')
 v.data(file[,atomstyle])       load new data file (default atom style 'full')
 v.replace(file[,type])	       replace current frames with new file
 v.append(file[,type]) 	       append file to current frame(s)
@@ -176,7 +176,7 @@ class vmd:
 
   # --------------------------------------------------------------------
   # load a new molecule from a file supported by a molfile plugin
-  def new(self,filename,filetype='lammpstrj'):
+  def new(self,filename,filetype='liggghtstrj'):
     self.__call__('mol new ' + filename + ' type ' + filetype + ' waitfor all')
     self.flush()
 
@@ -184,12 +184,12 @@ class vmd:
   # load a new molecule from a data file via the topotools plugin
   def data(self,filename,atomstyle='full'):
     self.__call__('package require topotools 1.0')
-    self.__call__('topo readlammpsdata ' + filename + ' ' + atomstyle)
+    self.__call__('topo readliggghtsdata ' + filename + ' ' + atomstyle)
     self.flush()
 
   # --------------------------------------------------------------------
   # append all frames from a given file to the current molecule
-  def append(self,filename,filetype='lammpstrj'):
+  def append(self,filename,filetype='liggghtstrj'):
     self.__call__('set tmol [molinfo top]')
     self.__call__('array set viewpoints {}')
     self.__call__('foreach mol [molinfo list] { set viewpoints($mol) [molinfo $mol get { center_matrix rotate_matrix scale_matrix global_matrix}]}')
@@ -199,7 +199,7 @@ class vmd:
     
   # --------------------------------------------------------------------
   # replace all frames of a molecule with those from a given file
-  def update(self,filename,filetype='lammpstrj'):
+  def update(self,filename,filetype='liggghtstrj'):
     self.__call__('set tmol [molinfo top]')
     self.__call__('array set viewpoints {}')
     self.__call__('foreach mol [molinfo list] {set viewpoints($mol) [molinfo $mol get { center_matrix rotate_matrix scale_matrix global_matrix}]}')

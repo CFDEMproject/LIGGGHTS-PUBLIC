@@ -13,10 +13,20 @@ describes what it means for LIGGGHTS(R)-PUBLIC to be an open-source code, and
 acknowledges the funding and people who have contributed to LIGGGHTS(R)-PUBLIC
 over the years.
 
+<!-- RST
+
+.. contents:: 
+		:local:
+		:depth: 1
+   
+END_RST -->
+
+<!-- HTML_ONLY -->
 1.1 "What is LIGGGHTS(R)-PUBLIC"_#intro_1
 1.2 "LIGGGHTS(R)-PUBLIC features"_#intro_2
 1.3 "Open source distribution"_#intro_3
 1.4 "Acknowledgments and citations"_#intro_4 :all(b)
+<!--END_HTML_ONLY -->
 
 :line
 :line

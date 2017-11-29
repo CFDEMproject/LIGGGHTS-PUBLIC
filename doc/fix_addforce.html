@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix addforce command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix addforce command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_addforce.txt" rel="nofollow"> View page source</a> 
+      <li>fix addforce command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_addforce.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,14 +170,16 @@
 <span id="index-0"></span><h1>fix addforce command<a class="headerlink" href="#fix-addforce-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID addforce fx fy fz keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID addforce fx fy fz keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
 <li>addforce = style name of this fix command</li>
 <li>fx,fy,fz = force component values (force units)</li>
 </ul>
-<div class="highlight-python"><pre>any of fx,fy,fz can be a variable (see below)</pre>
+<div class="highlight-python"><div class="highlight"><pre>any of fx,fy,fz can be a variable (see below)
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more keyword/value pairs may be appended to args</li>
@@ -169,9 +194,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix kick flow addforce 1.0 0.0 0.0
+<div class="highlight-python"><div class="highlight"><pre>fix kick flow addforce 1.0 0.0 0.0
 fix kick flow addforce 1.0 0.0 v_oscillate
-fix ff boundary addforce 0.0 0.0 v_push energy v_espace</pre>
+fix ff boundary addforce 0.0 0.0 v_push energy v_espace
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -235,19 +261,19 @@ converge properly.</p>
 <p>The <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> <em>energy</em> option is supported by this
 fix to add the potential &#8220;energy&#8221; inferred by the added force to the
 system&#8217;s potential energy as part of <a class="reference internal" href="thermo_style.html"><em>thermodynamic output</em></a>.  This is a fictitious quantity but is
-needed so that the <tt class="xref doc docutils literal"><span class="pre">minimize</span></tt> command can include the
+needed so that the <code class="xref doc docutils literal"><span class="pre">minimize</span></code> command can include the
 forces added by this fix in a consistent manner.  I.e. there is a
 decrease in potential energy when atoms move in the direction of the
 added force.</p>
 <p>This fix computes a global scalar and a global 3-vector of forces,
-which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The scalar is the potential
+which can be accessed by various <span class="xref std std-ref">output commands</span>.  The scalar is the potential
 energy discussed above.  The vector is the total force on the group of
 atoms before the forces on individual atoms are changed by the fix.
 The scalar and vector values calculated by this fix are &#8220;extensive&#8221;.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
 the <a class="reference internal" href="run.html"><em>run</em></a> command.</p>
 <p>The forces due to this fix are imposed during an energy minimization,
-invoked by the <tt class="xref doc docutils literal"><span class="pre">minimize</span></tt> command.  You should not
+invoked by the <code class="xref doc docutils literal"><span class="pre">minimize</span></code> command.  You should not
 specify force components with a variable that has time-dependence for
 use with a minimizer, since the minimizer increments the timestep as
 the iteration count during the minimization.</p>
@@ -264,13 +290,13 @@ the system (the quantity being minimized), you MUST enable the
 <blockquote>
 <div>none</div></blockquote>
 <p><strong>Coarse-graining information:</strong></p>
-<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
 combination with this command might lead to
 different dynamics or system state and thus to
 inconsistancies.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 </div>
@@ -282,6 +308,9 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -312,11 +341,13 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

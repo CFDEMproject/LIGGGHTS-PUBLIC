@@ -235,6 +235,7 @@ class FixTemplateSphere : public Fix {
   class RanPark *random_mc;
   int seed_insertion;
   int seed_mc;
+  int seed_orig;
 
   // properties of particle template
   int atom_type;

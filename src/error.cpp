@@ -191,6 +191,11 @@ void Error::all(const char *file, int line, const char *str)
 
 void Error::fix_error(const char *file, int line, Fix *fix,const char *str)
 {
+  fix_error(file, line, fix, fix->style,str);
+}
+
+void Error::fix_error(const char *file, int line, Fix *fix, const char *fixstylestr,const char *str)
+{
   MPI_Barrier(world);
 
   int me;
@@ -200,13 +205,13 @@ void Error::fix_error(const char *file, int line, Fix *fix,const char *str)
   {
     if(strlen(str) > 2)
     {
-        if (screen) fprintf(screen,"ERROR: Fix %s (id %s): %s (%s:%d)\n",fix->style,fix->id,str,file,line);
-        if (logfile) fprintf(logfile,"ERROR: Fix %s (id %s): %s (%s:%d)\n",fix->style,fix->id,str,file,line);
+        if (screen) fprintf(screen,"ERROR: Fix %s (id %s): %s (%s:%d)\n",fixstylestr,fix->id,str,file,line);
+        if (logfile) fprintf(logfile,"ERROR: Fix %s (id %s): %s (%s:%d)\n",fixstylestr,fix->id,str,file,line);
     }
     else
     {
-        if (screen) fprintf(screen,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fix->style,fix->id,file,line);
-        if (logfile) fprintf(logfile,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fix->style,fix->id,file,line);
+        if (screen) fprintf(screen,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fixstylestr,fix->id,file,line);
+        if (logfile) fprintf(logfile,"ERROR: Illegal fix %s (id %s) command (%s:%d)\n",fixstylestr,fix->id,file,line);
     }
 
     const char * special_msg = specialMessages_.generate_message();
@@ -274,7 +279,7 @@ void Error::cg(const char *file, int line, const char *str)
     strcat(catstr,str);
     if(force->error_cg())
       all(file,line,catstr);
-    else
+    else if(force->warn_cg())
       warningAll(file,line,catstr,1);
     delete []catstr;
 }

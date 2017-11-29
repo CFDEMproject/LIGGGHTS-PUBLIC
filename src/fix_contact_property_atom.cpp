@@ -113,17 +113,17 @@ void FixContactPropertyAtom::post_create()
     fix_nneighs_full_ = static_cast<FixPropertyAtom*>(modify->find_fix_id("nneighs_full"));
     if (!fix_nneighs_full_)
     {
-        char **fixarg = new char*[9];
-        fixarg[0]=(char *) "nneighs_full";
-        fixarg[1]=(char *) "all";
-        fixarg[2]=(char *) "property/atom";
-        fixarg[3]=(char *) "nneighs_full";
-        fixarg[4]=(char *) "scalar";
-        fixarg[5]=(char *) "no"; // restart
-        fixarg[6]=(char *) "yes"; // fw comm
-        fixarg[7]=(char *) "no"; //rev comm
-        fixarg[8]=(char *) "0.0";
-        modify->add_fix(9,fixarg);
+        const char **fixarg = new const char*[9];
+        fixarg[0]="nneighs_full";
+        fixarg[1]="all";
+        fixarg[2]="property/atom";
+        fixarg[3]="nneighs_full";
+        fixarg[4]="scalar";
+        fixarg[5]="no"; // restart
+        fixarg[6]="yes"; // fw comm
+        fixarg[7]="no"; //rev comm
+        fixarg[8]="0.0";
+        modify->add_fix(9,const_cast<char**>(fixarg));
         fix_nneighs_full_ = static_cast<FixPropertyAtom*>(modify->find_fix_id("nneighs_full"));
         delete []fixarg;
     }

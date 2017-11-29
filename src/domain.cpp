@@ -57,7 +57,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <math.h>
+#include <cmath>
 #include "domain.h"
 #include "style_region.h"
 #include "atom.h"
@@ -76,10 +76,12 @@
 #include "error.h"
 #include "neighbor.h"
 
+// include last to ensure correct macros
+#include "domain_definitions.h"
+
 using namespace LAMMPS_NS;
 using namespace MathConst;
 
-#define BIG   1.0e20
 #define SMALL 1.0e-4
 #define DELTAREGION 4
 #define BONDSTRETCH 1.1

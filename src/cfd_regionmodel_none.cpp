@@ -45,7 +45,7 @@
 #include "error.h"
 #include "memory.h"
 #include "modify.h"
-#include <math.h>
+#include <cmath>
 #include "fix_property_atom.h"
 #include "fix_property_global.h"
 #include "fix_cfd_coupling.h"

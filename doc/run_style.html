@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>run_style command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>run_style command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/run_style.txt" rel="nofollow"> View page source</a> 
+      <li>run_style command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/run_style.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>run_style command<a class="headerlink" href="#run-style-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>run_style style args</pre>
+<div class="highlight-python"><div class="highlight"><pre>run_style style args
+</pre></div>
 </div>
 <ul class="simple">
 <li>style = <em>verlet</em> or or <em>respa</em> or</li>
@@ -180,9 +204,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>run_style verlet
+<div class="highlight-python"><div class="highlight"><pre>run_style verlet
 run_style respa 4 2 2 2 bond 1 dihedral 2 pair 3 kspace 4
-run_style respa 4 2 2 2 bond 1 dihedral 2 inner 3 5.0 6.0 outer 4 kspace 4</pre>
+run_style respa 4 2 2 2 bond 1 dihedral 2 inner 3 5.0 6.0 outer 4 kspace 4
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -192,7 +217,7 @@ simulations performed by LIGGGHTS(R)-PUBLIC.</p>
 <p>The <em>verlet</em> style is a standard velocity-Verlet integrator.</p>
 <hr class="docutils" />
 <p>The <em>respa</em> style implements the rRESPA multi-timescale integrator
-<a class="reference internal" href="#tuckerman"><em>(Tuckerman)</em></a> with N hierarchical levels, where level 1 is
+<a class="reference internal" href="#tuckerman"><span>(Tuckerman)</span></a> with N hierarchical levels, where level 1 is
 the innermost loop (shortest timestep) and level N is the outermost
 loop (largest timestep).  The loop factor arguments specify what the
 looping factor is between levels.  N1 specifies the number of
@@ -249,8 +274,9 @@ angstrom &#8220;healing distance&#8221; (the distance between the outer and inne
 cutoffs) works reasonably well.  We thus recommend the following
 settings for use of the <em>respa</em> style without SHAKE in biomolecular
 simulations:</p>
-<div class="highlight-python"><pre>timestep  4.0
-run_style respa 4 2 2 2 inner 2 4.5 6.0 middle 3 8.0 10.0 outer 4</pre>
+<div class="highlight-python"><div class="highlight"><pre>timestep  4.0
+run_style respa 4 2 2 2 inner 2 4.5 6.0 middle 3 8.0 10.0 outer 4
+</pre></div>
 </div>
 <p>With these settings, users can expect good energy conservation and
 roughly a 2.5 fold speedup over the <em>verlet</em> style with a 0.5 fmsec
@@ -268,7 +294,8 @@ conserving energy to adequate precision.</p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>run_style verlet</pre>
+<div class="highlight-python"><div class="highlight"><pre>run_style verlet
+</pre></div>
 </div>
 <hr class="docutils" />
 <p id="tuckerman"><strong>(Tuckerman)</strong> Tuckerman, Berne and Martyna, J Chem Phys, 97, p 1990
@@ -277,6 +304,9 @@ conserving energy to adequate precision.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -307,11 +337,13 @@ conserving energy to adequate precision.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

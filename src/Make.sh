@@ -251,8 +251,8 @@ elif (test "$1" = "models" -o "$1" = "models_full") then
               # if nCombination is smaller than nLimit make a full list
               # otherwise:
               #    skip tangential = off (=1) for non-full list
-              #    skip combinations where the combined values (res) is bigger than 60
-              if (test \( $1 = "models" \) -a \( \( $res -lt 60 -a $v3 -gt 1 \) -o $nCombination -le $nLimit \) ) then
+              #    skip combinations where the combined values (res) is bigger than 30
+              if (test \( $1 = "models" \) -a \( \( $res -lt 30 -a $v3 -gt 1 \) -o $nCombination -le $nLimit \) ) then
                 echo "GRAN_MODEL($norm, $tang, $coh, $roll, $surf)" >> $filteredfile
               fi          
             done

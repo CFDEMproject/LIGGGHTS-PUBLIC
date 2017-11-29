@@ -32,7 +32,15 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
-    This file is from LAMMPS
+
+    Arno Mayrhofer (DCS Computing GmbH, Linz)
+
+    This file is from LAMMPS, but has been modified. Copyright for
+    modification:
+
+    Copyright 2017-     DCS Computing GmbH, Linz
+
+    Copyright of original file:
     LAMMPS - Large-scale Atomic/Molecular Massively Parallel Simulator
     http://lammps.sandia.gov, Sandia National Laboratories
     Steve Plimpton, sjplimp@sandia.gov
@@ -42,6 +50,8 @@
     certain rights in this software.  This software is distributed under
     the GNU General Public License.
 ------------------------------------------------------------------------- */
+
+#define __STDCPP_WANT_MATH_SPEC_FUNCS__ 1
 
 #include <mpi.h>
 #include "lammps.h"
@@ -62,7 +72,7 @@ using namespace LAMMPS_NS;
 
 int main(int argc, char **argv)
 {
-  #ifndef  _WINDOWS
+  #if !defined(_WINDOWS) && !defined(__MINGW32__)
   struct sigaction int_action, usr1_action, term_action;
   memset(&int_action, 0, sizeof(struct sigaction));
   memset(&usr1_action, 0, sizeof(struct sigaction));
@@ -75,7 +85,7 @@ int main(int argc, char **argv)
   sigaction(SIGTERM, &int_action, NULL);
   usr1_action.sa_handler = SignalHandler::usr1_handler;
   sigaction(SIGUSR1, &usr1_action, NULL);
-  #else  // _WINDOWS
+  #else  // _WINDOWS or __MINGW32__
   signal(SIGINT, SignalHandler::int_handler);
   signal(SIGTERM, SignalHandler::int_handler);
   // no SIGUSR1 treatment because Windows

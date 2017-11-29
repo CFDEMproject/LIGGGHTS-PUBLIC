@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>delete_atoms command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>delete_atoms command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/delete_atoms.txt" rel="nofollow"> View page source</a> 
+      <li>delete_atoms command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/delete_atoms.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>delete_atoms command<a class="headerlink" href="#delete-atoms-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>delete_atoms style args keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>delete_atoms style args keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>style = <em>group</em> or <em>region</em> or <em>overlap</em> or <em>porosity</em></li>
@@ -175,11 +199,12 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>delete_atoms group edge
+<div class="highlight-python"><div class="highlight"><pre>delete_atoms group edge
 delete_atoms region sphere compress no
 delete_atoms overlap 0.3 all all
 delete_atoms overlap 0.5 solvent colloid
-delete_atoms porosity cube 0.1 123457</pre>
+delete_atoms porosity cube 0.1 123457
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -235,7 +260,7 @@ find overlapping atom pairs, it also means that you must define a
 <a class="reference internal" href="pair_style.html"><em>pair style</em></a> with force cutoffs greater than or equal
 to the desired overlap cutoff between pairs of relevant atom types,
 even though the pair potential will not be evaluated.</p>
-<p>If the <tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt> command is used with a
+<p>If the <code class="xref doc docutils literal"><span class="pre">special_bonds</span></code> command is used with a
 setting of 0, then a pair of bonded atoms (1-2, 1-3, or 1-4) will not
 appear in the neighbor list, and thus will not be considered for
 deletion by the <em>overlap</em> styles.  You probably don&#8217;t want to be
@@ -252,6 +277,9 @@ deleting one atom in a bonded pair anyway.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -282,11 +310,13 @@ deleting one atom in a bonded pair anyway.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

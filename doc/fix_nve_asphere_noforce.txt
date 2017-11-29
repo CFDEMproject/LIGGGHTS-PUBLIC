@@ -41,10 +41,6 @@ This fix is not invoked during "energy minimization"_minimize.html.
 
 [Restrictions:]
 
-This fix is part of the ASPHERE package.  It is only enabled if LIGGGHTS(R)-PUBLIC
-was built with that package.  See the "Making
-LIGGGHTS(R)-PUBLIC"_Section_start.html#start_3 section for more info.
-
 This fix requires that atoms store torque and angular momementum and a
 quaternion as defined by the "atom_style ellipsoid"_atom_style.html
 command.

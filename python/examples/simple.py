@@ -3,8 +3,8 @@
 
 # simple.py
 # Purpose: mimic operation of couple/simple/simple.cpp via Python
-# Syntax:  simple.py in.lammps
-#          in.lammps = LAMMPS input script
+# Syntax:  simple.py in.liggghts
+#          in.liggghts = LIGGGHTS input script
 
 import sys
 
@@ -12,7 +12,7 @@ import sys
 
 argv = sys.argv
 if len(argv) != 2:
-  print "Syntax: simple.py in.lammps"
+  print "Syntax: simple.py in.liggghts"
   sys.exit()
 
 infile = sys.argv[1]
@@ -24,8 +24,8 @@ me = 0
 #me = pypar.rank()
 #nprocs = pypar.size()
 
-from lammps import lammps
-lmp = lammps()
+from liggghts import liggghts
+lmp = liggghts()
 
 # run infile one line at a time
 
@@ -33,9 +33,9 @@ lines = open(infile,'r').readlines()
 for line in lines: lmp.command(line)
 
 # run 10 more steps
-# get coords from LAMMPS
+# get coords from LIGGGHTS
 # change coords of 1st atom
-# put coords back into LAMMPS
+# put coords back into LIGGGHTS
 # run a single step with changed coords
 
 lmp.command("run 10")

@@ -48,7 +48,7 @@ NORMAL_MODEL(HOOKE_HYSTERESIS,hooke/hysteresis,2)
 #define NORMAL_MODEL_HOOKE_HYSTERESIS_H_
 #include "contact_models.h"
 #include "normal_model_base.h"
-#include <math.h>
+#include <cmath>
 #include "atom.h"
 #include "force.h"
 #include "update.h"
@@ -116,12 +116,8 @@ namespace ContactModels
       const double radj = sidata.radj;
       double reff=sidata.is_wall ? radi : (radi*radj/(radi+radj));
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(sidata.is_non_spherical) {
-        if(sidata.is_wall)
-          reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
-        else
-          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
-      }
+      if(sidata.is_non_spherical && atom->superquadric_flag)
+        reff = sidata.reff;
 #endif
       double meff=sidata.meff;
       double coeffRestLogChosen;

@@ -730,6 +730,8 @@ int ReadDump::fields_and_keywords(int narg, char **arg)
   fieldtype[nfield++] = ID;
   /*if (iarg < narg)*/ fieldtype[nfield++] = TYPE; 
 
+  bool radius_present = false;
+
   // parse fields
 
   iarg = 0;
@@ -764,6 +766,7 @@ int ReadDump::fields_and_keywords(int narg, char **arg)
       if (!atom->radius_flag)
         error->all(FLERR,"Read dump of atom property that isn't allocated");
       fieldtype[nfield++] = RADIUS;
+      radius_present = true;
     }
     else if (strcmp(arg[iarg],"mass") == 0) {
       if (!atom->rmass_flag)
@@ -784,6 +787,8 @@ int ReadDump::fields_and_keywords(int narg, char **arg)
     else break;
     iarg++;
   }
+
+  if (!radius_present) error->all(FLERR,"read_dump: the radius field is required to be read");
 
   // check for no fields
 

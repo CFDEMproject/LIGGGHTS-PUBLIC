@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include <stdlib.h>
 #include "lattice.h"
@@ -54,9 +54,10 @@
 #include "memory.h"
 #include "error.h"
 
-using namespace LAMMPS_NS;
+// include last to ensure correct macros
+#include "domain_definitions.h"
 
-#define BIG 1.0e30
+using namespace LAMMPS_NS;
 
 enum{NONE,SC,BCC,FCC,HCP,DIAMOND,SQ,SQ2,HEX,CUSTOM};
 

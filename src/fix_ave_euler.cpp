@@ -41,7 +41,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <cmath>
 #include "mpi_liggghts.h"
 #include "fix_ave_euler.h"
 #include "fix_multisphere.h"
@@ -100,7 +100,7 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   triclinic_ = domain->triclinic;  
 
   // random number generator, seed is hardcoded
-  random_ = new RanPark(lmp,15485863);
+  random_ = new RanPark(lmp,"15485863");
 
   // parse args
   if (narg < 6) error->all(FLERR,"Illegal fix ave/pic command");
@@ -116,8 +116,8 @@ FixAveEuler::FixAveEuler(LAMMPS *lmp, int narg, char **arg) :
   if(strcmp(arg[iarg++],"cell_size_relative"))
     error->fix_error(FLERR,this,"expecting keyword 'cell_size_relative'");
   cell_size_ideal_rel_ = force->numeric(FLERR,arg[iarg++]);
-  if(cell_size_ideal_rel_ < 3.)
-    error->fix_error(FLERR,this,"'cell_size_relative' > 3 required");
+  if(cell_size_ideal_rel_ < 1.)
+    error->fix_error(FLERR,this,"'cell_size_relative' > 1 required");
 
   if(strcmp(arg[iarg++],"parallel"))
     error->fix_error(FLERR,this,"expecting keyword 'parallel'");
@@ -527,13 +527,13 @@ void FixAveEuler::calculate_eu()
     //int ncount;
     double * const * const v = atom->v;
     double * const radius = atom->radius;
-    const double * const volume = atom->volume;
     double * const rmass = atom->rmass;
 
     double prefactor_vol_fr = 4./3.*M_PI/cell_volume_;
     double prefactor_stress = 1./cell_volume_;
     double vel_x_mass[3];
     #ifdef SUPERQUADRIC_ACTIVE_FLAG
+    const double * const volume = atom->volume;
     const int superquadric_flag = atom->superquadric_flag;
     #endif
 

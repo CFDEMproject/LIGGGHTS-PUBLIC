@@ -23,7 +23,7 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
           {length} or {tri} or {theta} or {angmom} or \
           {mass} or {density} or {volume} or {image} or \
           {bond} or {add} or {until} or \
-          {property/atom} or {roundness} :l
+          {property/atom} or {blockiness} :l
   {type} value = atom type
     value can be an atom-style variable (see below)
   {type/fraction} values = type fraction seed
@@ -38,6 +38,8 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     value can be an atom-style variable (see below)
   {omegax},{omegay},{omegaz} value = atom rotational velocity (rad / time units)
     value can be an atom-style variable (see below)
+  {inertiax},{inertiay},{inertiaz} value = atom principal moments of inertia for superquadric particles (distance^2 mass units)
+    value can be an atom-style variable (see below)  
   {charge} value = atomic charge (charge units)
     value can be an atom-style variable (see below)
   {quat} values = a b c theta
@@ -82,8 +84,11 @@ keyword = {type} or {type/fraction} or {mol} or {x} or {y} or {z} or \
     varname = name of the variable to be set
     var_value[0], var_value[1]... = values of the property to be set.
     value can be an atom-style variable (see below)
-  {roundness} values = n1 n2
-    n1, n2 = superquadric roundness/blockiness parameters, more or equal 2 :pre
+  {blockiness} values = n1 n2
+    n1, n2 = superquadric blockiness parameters, more or equal 2 
+  {aspect_ratio} values = ky kz
+    ky, kz = aspect ratio of a superquadric particle in y and z directions with respect to that in x direction (in principal coordinates). Particle blockiness and volume equivalent diameter must be set first :pre
+
 :ule
 
 [Examples:]
@@ -97,7 +102,7 @@ set type 1*3 charge 0.5
 set atom 100*200 x 0.5 y 1.0
 set atom 1492 type 3
 set property/atom Temp 273.15
-set atom 3 type 2 shape 0.001 0.001 0.001 roundness 10.0 10.0 density 2500 :pre
+set atom 3 type 2 shape 0.001 0.001 0.001 blockiness 10.0 10.0 density 2500 :pre
 
 [Description:]
 
@@ -368,7 +373,7 @@ in addition to the keyword {property/atom}. The {add} keyword is used to turn on
 the addition of a quantity in a region or a group
 until the timestep defined by the {until} keyword.
 
-Keywords {shape} and {roundness} define superquadric shape of a particle.
+Keywords {shape} and {blockiness} define superquadric shape of a particle.
 
 [Restrictions:]
 
@@ -387,7 +392,7 @@ periodic boundaries.  This is because the region may only extend up to
 the boundary and partner atoms in the bond (angle, etc) may have
 coordinates outside the simulation box if they are ghost atoms.
 
-Keywords {quat_direct} and {roundness} require "atom_style"_atom_style.html {superquadric}
+Keywords {quat_direct} and {blockiness} require "atom_style"_atom_style.html {superquadric}
 
 [Related commands:]
 

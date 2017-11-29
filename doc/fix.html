@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix.txt" rel="nofollow"> View page source</a> 
+      <li>fix command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix command<a class="headerlink" href="#fix-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID style args</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID style args
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID = user-assigned name for the fix</li>
@@ -158,9 +182,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all nve
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all nve
 fix 3 all nvt temp 300.0 300.0 0.01
-fix mine top setforce 0.0 NULL 0.0</pre>
+fix mine top setforce 0.0 NULL 0.0
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -172,7 +197,7 @@ positions and velocities due to time integration, controlling
 temperature, applying constraint forces to atoms, enforcing boundary
 conditions, computing diagnostics, etc.  There are dozens of fixes
 defined in LIGGGHTS(R)-PUBLIC and new ones can be added; see <a class="reference internal" href="Section_modify.html"><em>this section</em></a> for a discussion.</p>
-<p>The full list of fixes defined in LIGGGHTS(R)-PUBLIC is on <em class="xref std std-ref">this page</em>.</p>
+<p>The full list of fixes defined in LIGGGHTS(R)-PUBLIC is on <span class="xref std std-ref">this page</span>.</p>
 <p>Fixes perform their operations at different stages of the timestep.
 If 2 or more fixes operate at the same stage of the timestep, they are
 invoked in the order they were specified in the input script.</p>
@@ -185,7 +210,7 @@ underscores.</p>
 off a fix; simply specifying a new fix with a similar style will not
 turn off the first one.  This is especially important to realize for
 integration fixes.  For example, using a <a class="reference internal" href="fix_nve.html"><em>fix nve</em></a>
-command for a second run after using a <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></tt> command
+command for a second run after using a <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></code> command
 for the first run, will not cancel out the NVT time integration
 invoked by the &#8220;fix nvt&#8221; command.  Thus two time integrators would be
 in place!</p>
@@ -267,7 +292,7 @@ reduced by the <a class="reference internal" href="compute_reduce.html"><em>comp
 per-atom values can be referenced in an <a class="reference internal" href="variable.html"><em>atom-style variable</em></a>.</li>
 <li>Local values can be reduced by the <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a> command, or histogrammed by the <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a> command.</li>
 </ul>
-<p>See this <a class="reference internal" href="Section_howto.html#howto-8"><em>howto section</em></a> for a summary of
+<p>See this <span class="xref std std-ref">howto section</span> for a summary of
 various LIGGGHTS(R)-PUBLIC output options, many of which involve fixes.</p>
 <p>The results of fixes that calculate global quantities can be either
 &#8220;intensive&#8221; or &#8220;extensive&#8221; values.  Intensive means the value is
@@ -284,12 +309,12 @@ for further info.</p>
 <hr class="docutils" />
 <p>Each fix style has its own documentation page which describes its
 arguments and what it does, as listed below.</p>
-<p>The full list of fixes defined in LIGGGHTS(R)-PUBLIC is on <em class="xref std std-ref">this page</em>.</p>
+<p>The full list of fixes defined in LIGGGHTS(R)-PUBLIC is on <span class="xref std std-ref">this page</span>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
 <p>Some fix styles are part of specific packages.  They are only enabled
-if LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info on packages.
+if LIGGGHTS(R)-PUBLIC was built with that package.  See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section for more info on packages.
 The doc pages for individual fixes tell if it is part of a package.</p>
 </div>
 <div class="section" id="related-commands">
@@ -300,6 +325,9 @@ The doc pages for individual fixes tell if it is part of a package.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -330,11 +358,13 @@ The doc pages for individual fixes tell if it is part of a package.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

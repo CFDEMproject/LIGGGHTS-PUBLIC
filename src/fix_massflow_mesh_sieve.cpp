@@ -36,7 +36,7 @@
     Copyright 2016 - TU Graz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "atom.h"
@@ -81,7 +81,7 @@ FixMassflowMeshSieve::FixMassflowMeshSieve(LAMMPS *lmp, int narg, char **arg) :
 {
 
     // random number generator, seed is hardcoded
-    random_ = new RanPark(lmp,15485863);
+    random_ = new RanPark(lmp,"15485863");
 
     bool hasargs = true;
 

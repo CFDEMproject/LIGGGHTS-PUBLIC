@@ -61,7 +61,7 @@
 #include "group.h"
 #include "kspace.h"
 #include "error.h"
-#include <math.h>
+#include <cmath>
 #include "comm.h"
 #include "domain.h"
 #include "math_const.h"

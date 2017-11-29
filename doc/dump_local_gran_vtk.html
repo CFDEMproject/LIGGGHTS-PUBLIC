@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -80,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -104,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -114,28 +121,45 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>dump local/gran/vtk command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/dump_local_gran_vtk.txt" rel="nofollow"> View page source</a> 
+      <li>dump local/gran/vtk command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/dump_local_gran_vtk.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -163,7 +187,8 @@ ID = ID of a <a class="reference internal" href="compute_pair_gran_local.html"><
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre>compute cpgl all pair/gran/local pos vel force
-dump dmp2 all local/gran/vtk 100 post/forcechain*.vtk cpgl
+dump dmp2 all local/gran/vtk 100 post/forcechain*.vtp cpgl
+dump dmp3 all local/gran/vtk 200 post/forcechain*.pvtu cpgl
 </pre></div>
 </div>
 </div>
@@ -172,11 +197,11 @@ dump dmp2 all local/gran/vtk 100 post/forcechain*.vtk cpgl
 <p>Dump a snapshot of granular or granular bond quantities to one or more files every N
 timesteps. <em>ID</em> refers to a <a class="reference internal" href="compute_pair_gran_local.html"><em>compute pair/gran/local or wall/gran/local</em></a>
 which is providing the data to be dumped.</p>
-<p>The timesteps on which dump output is written can be controlled by a variable; see the <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify every</em></a> command for details.
-Only information for atoms in the specified group is dumped.  The
-<a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify thresh and region</em></a> commands can also
-alter what atoms are included; see details below.
-As described below, special characters (&#8220;*&#8221;, &#8220;%&#8221;) in the filename determine the kind of output.</p>
+<p>The timesteps on which dump output is written can be controlled by a variable;
+see the <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify every</em></a> command for details.  Only
+information for atoms in the specified group is dumped.  The <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify thresh and region</em></a> commands can also alter what atoms are
+included; see details below. As described below, the special character &#8220;*&#8221; and
+the suffix in the filename determine the kind of output.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">In Paraview, the &#8220;Tube&#8221; filter can be used for viz of the VTK line data.</p>
@@ -279,26 +304,30 @@ tmp.dump20000.vtk, etc.  Note that the <a class="reference internal" href="dump_
 command can be used to insure all timestep numbers are the same length
 (e.g. 00010), which can make it easier to read a series of dump files
 in order with some post-processing tools.</p>
-<p>If a &#8220;%&#8221; character appears in the filename, then each of P processors
-writes a portion of the dump file, and the &#8220;%&#8221; character is replaced
-with the processor ID from 0 to P-1 preceded by an underscore character.
-For example, tmp.dump%.vtp becomes tmp.dump_0.vtp, tmp.dump_1.vtp, ...
-tmp.dump_P-1.vtp, etc.  This creates smaller files and can be a fast
-mode of output on parallel machines that support parallel I/O for output.</p>
+<p>To write the output file in parallel the filename must end with either &#8221;.pvtu&#8221;
+or &#8221;.pvtp&#8221;. If we assume that the filename is &#8220;data.pvtu&#8221; then one file with
+exactly this name is written. This contains the link to the processor data which
+is written in &#8220;data_X.vtu&#8221; files, where X (= 0,...,P-1) is the ID of the
+processor that wrote the file. Thus, in order to visualize all the data in
+ParaView one would open the &#8220;data.pvtu&#8221; file. Writing output in a parallel
+fashion can be particularly important on distributed HPC clusters and can
+significantly reduce runtime.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The legacy &#8221;.vtk&#8221; file type does not support parallel writing.</p>
+</div>
 <p>By default, P = the number of processors meaning one file per
 processor, but P can be set to a smaller value via the <em>nfile</em> or
 <em>fileper</em> keywords of the <a class="reference internal" href="dump_modify_vtk.html"><em>dump_modify</em></a> command.
 These options can be the most efficient way of writing out dump files
 when running on large numbers of processors.</p>
-<p>For the legacy VTK format &#8220;%&#8221; is ignored and P = 1, i.e., only
-processor 0 does write files.</p>
-<p>Note that using the &#8220;*&#8221; and &#8220;%&#8221; characters together can produce a
+<p>Note that using the &#8220;*&#8221; character and parallel file types together can produce a
 large number of small dump files!</p>
-<p>If <em>dump_modify binary</em> is used, the dump file (or files, if &#8220;*&#8221; or &#8220;%&#8221; is also
-used) is written in binary format.  A binary dump file will be about the same
-size as a text version, but will typically write out much faster. Additionally,
-<em>dump_modify compressor</em> can be used to specify the writing of compressed binary
-data. Options for compressors include:</p>
+<p>If <em>dump_modify binary</em> is used, the dump file(s) is/are written in binary
+format. A binary dump file will be about the same size as a text version, but
+will typically write out much faster. Additionally, <em>dump_modify compressor</em> can
+be used to specify the writing of compressed binary data. Options for
+compressors include:</p>
 <div class="highlight-python"><div class="highlight"><pre>none: No compression
 zlib: Zlib compression
 lz4: Lz4 compression (VTK &gt;= 8.0 required)
@@ -311,7 +340,7 @@ lz4: Lz4 compression (VTK &gt;= 8.0 required)
 and does not support triclinic simulation boxes.</p>
 <p>To be able to use <em>local/gran/vtk</em>, you have to link to the VTK library,
 please adapt your Makefile accordingly. You must compile LIGGGHTS(R)-PUBLIC with the
--DLAMMPS_VTK option - see the <a class="reference internal" href="Section_start.html#start-2"><span>Making LIGGGHTS(R)-PUBLIC</span></a>
+-DLAMMPS_VTK option - see the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span>
 section of the documentation.</p>
 <p>The <em>local/gran/vtk</em> dump style neither supports buffering nor custom format strings.</p>
 </div>
@@ -328,6 +357,9 @@ one of .vtk, .vtp or .vtu, the legacy VTK file format is used.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -360,9 +392,11 @@ one of .vtk, .vtp or .vtu, the legacy VTK file format is used.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

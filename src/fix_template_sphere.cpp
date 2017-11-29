@@ -39,7 +39,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -70,7 +70,22 @@ using namespace FixConst;
 /* ---------------------------------------------------------------------- */
 
 FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
-  Fix(lmp, narg, arg)
+    Fix(lmp, narg, arg),
+    iarg(0),
+    reg(NULL),
+    reg_var(NULL),
+    random_insertion(NULL),
+    random_mc(NULL),
+    seed_insertion(0),
+    seed_mc(0),
+    seed_orig(0),
+    atom_type(0),
+    pdf_radius(NULL),
+    pdf_density(NULL),
+    volume_expect(0.0),
+    mass_expect(0.0),
+    vol_limit(0.0),
+    relative(false)
 {
   if (domain->dimension != 3)
     error->fix_error(FLERR,this,"this fix is for 3D simulations only");
@@ -79,10 +94,11 @@ FixTemplateSphere::FixTemplateSphere(LAMMPS *lmp, int narg, char **arg) :
 
   // random number generator, same for all procs
   if (narg < 4) error->fix_error(FLERR,this,"not enough arguments");
-  seed_insertion = atoi(arg[3]) + comm->me;
-  seed_mc = atoi(arg[3]);
-  random_insertion = new RanPark(lmp,seed_insertion);
-  random_mc = new RanPark(lmp,seed_mc);
+  random_insertion = new RanPark(lmp, arg[3], true);
+  random_mc = new RanPark(lmp, arg[3], false);
+  seed_insertion = random_insertion->getSeed();
+  seed_mc = random_mc->getSeed();
+  seed_orig = seed_insertion;
 
   iarg = 4;
 
@@ -519,7 +535,7 @@ void FixTemplateSphere::restart(char *buf)
 unsigned int FixTemplateSphere::generate_hash()
 {
     unsigned int hash = 0;
-    unsigned int start = seed_insertion*420001; // it's magic
+    unsigned int start = seed_orig*420001; // it's magic
     add_hash_value(atom_type, start, hash);
     add_hash_value(pdf_radius->rand_style(), start, hash);
     add_hash_value(expectancy(pdf_radius), start, hash);
@@ -536,7 +552,7 @@ void FixTemplateSphere::add_hash_value(const int value, unsigned int &start, uns
         hash = hash*start + (unsigned int)value;
     else
         hash = hash*start + (unsigned int)(-value) + INT_MAX;
-    start = start*seed_insertion;
+    start = start*seed_orig;
 }
 
 void FixTemplateSphere::add_hash_value(double value, unsigned int &start, unsigned int &hash)

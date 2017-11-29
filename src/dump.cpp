@@ -46,7 +46,7 @@
 #include "lmptype.h"
 #include <mpi.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <stdio.h>
 #include "dump.h"
 #include "atom.h"
@@ -57,6 +57,9 @@
 #include "memory.h"
 #include "error.h"
 #include "force.h"
+#if !defined(_WINDOWS) && !defined(__MINGW32__)
+#include <sys/stat.h>
+#endif
 
 using namespace LAMMPS_NS;
 
@@ -83,6 +86,26 @@ Dump::Dump(LAMMPS *lmp, int narg, char **arg) :
   n = strlen(arg[4]) + 1;
   filename = new char[n];
   strcpy(filename,arg[4]);
+
+  // check whether the folder is accessible, not available on windows
+#if !defined(_WINDOWS) && !defined(__MINGW32__)
+    std::string fname(filename);
+    std::size_t last_slash = fname.rfind("/");
+    // check if we use directories at all
+    if (last_slash != std::string::npos)
+    {
+        std::size_t next_slash = fname.find("/", 1);
+        while (next_slash != std::string::npos)
+        {
+            std::string curdir = fname.substr(0, next_slash);
+            struct stat statbuf;
+            const bool exists = (stat(curdir.c_str(), &statbuf) != -1) && S_ISDIR(statbuf.st_mode);
+            if (!exists)
+                mkdir(curdir.c_str(), S_IRWXU | S_IRGRP | S_IXGRP);
+            next_slash = fname.find("/", next_slash+1);
+        }
+    }
+#endif
 
   comm_forward = comm_reverse = 0;
 
@@ -510,7 +533,7 @@ void Dump::modify_params(int narg, char **arg)
     } else if (strcmp(arg[iarg],"fileper") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal dump_modify command");
       if (!multiproc)
-	    error->all(FLERR,"Cannot use dump_modify fileper "
+        error->all(FLERR,"Cannot use dump_modify fileper "
                    "without % in dump file name");
       int nper = force->inumeric(FLERR,arg[iarg+1]);
       if (nper <= 0) error->all(FLERR,"Illegal dump_modify command");
@@ -530,9 +553,12 @@ void Dump::modify_params(int narg, char **arg)
       delete [] multiname;
       multiname = new char[strlen(filename) + 16];
       char *ptr = strchr(filename,'%');
-      *ptr = '\0';
-      sprintf(multiname,"%s%d%s",filename,icluster,ptr+1);
-      *ptr = '%';
+      if (ptr)
+      {
+          *ptr = '\0';
+          sprintf(multiname,"%s%d%s",filename,icluster,ptr+1);
+          *ptr = '%';
+      }
       iarg += 2;
 
     } else if (strcmp(arg[iarg],"flush") == 0) {
@@ -556,7 +582,7 @@ void Dump::modify_params(int narg, char **arg)
     } else if (strcmp(arg[iarg],"nfile") == 0) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal dump_modify command");
       if (!multiproc)
-	error->all(FLERR,"Cannot use dump_modify nfile "
+        error->all(FLERR,"Cannot use dump_modify nfile "
                    "without % in dump file name");
       int nfile = force->inumeric(FLERR,arg[iarg+1]);
       if (nfile <= 0) error->all(FLERR,"Illegal dump_modify command");
@@ -581,9 +607,12 @@ void Dump::modify_params(int narg, char **arg)
       delete [] multiname;
       multiname = new char[strlen(filename) + 16];
       char *ptr = strchr(filename,'%');
-      *ptr = '\0';
-      sprintf(multiname,"%s%d%s",filename,icluster,ptr+1);
-      *ptr = '%';
+      if (ptr)
+      {
+          *ptr = '\0';
+          sprintf(multiname,"%s%d%s",filename,icluster,ptr+1);
+          *ptr = '%';
+      }
       iarg += 2;
 
     } else if (strcmp(arg[iarg],"pad") == 0) {

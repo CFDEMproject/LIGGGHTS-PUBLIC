@@ -41,7 +41,7 @@
 #include <string.h>
 #include "atom.h"
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include "modify.h"
 #include "properties.h"
 #include "error.h"

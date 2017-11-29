@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix particletemplate/multisphere command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix particletemplate/multisphere command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_particletemplate_multisphere.txt" rel="nofollow"> View page source</a> 
+      <li>fix particletemplate/multisphere command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_particletemplate_multisphere.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix particletemplate/multisphere command<a class="headerlink" href="#fix-particletemplate-multisphere-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID particletemplate/multisphere seed keyword values nspheres nspheresvalue  ntry ntryvalue spheres values_spheres type mt opt_keyword opt_values</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID particletemplate/multisphere seed keyword values nspheres nspheresvalue  ntry ntryvalue spheres values_spheres type mt opt_keyword opt_values
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -190,8 +214,9 @@ option 3 = <em>x1 y1 z1 r1 x2 y2 r2...</em> where x/y/z are sphere positions and
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix pts1 all particletemplate/multisphere 123457 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres file data/stone1.multisphere scale 0.001 type 1
-fix pts2 all particletemplate/multisphere 17903 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres 0. 0. 0. 0.005   0.005 0. 0. 0.005   0.01 0. 0. 0.005 scale 0.001 type 1</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix pts1 all particletemplate/multisphere 123457 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres file data/stone1.multisphere scale 0.001 type 1
+fix pts2 all particletemplate/multisphere 17903 atom_type 1 density constant 2500 nspheres 50 ntry 1000000 spheres 0. 0. 0. 0.005   0.005 0. 0. 0.005   0.01 0. 0. 0.005 scale 0.001 type 1
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -201,9 +226,10 @@ fix pts2 all particletemplate/multisphere 17903 atom_type 1 density constant 250
 command. The particle parameters (positions, radii) are either defined
 manually as arguments to this command or via a text file, via the keyword
 <em>file</em>. The format of this text file is</p>
-<div class="highlight-python"><pre>x1 y1 z1 r1
+<div class="highlight-python"><div class="highlight"><pre>x1 y1 z1 r1
 x2 y2 z2 r2
-...</pre>
+...
+</pre></div>
 </div>
 <p>and the number of lines in this file has to be equal to n_spheres as
 defined in this command. Comments can be made in this file via the &#8216;#&#8217;
@@ -255,9 +281,9 @@ distribution based on mass-% for the radius distribution (as does
 the same particles being chosen for insertion. None of the
 <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix. No global
 scalar or vector or per-atom quantities are stored by this fix for access
-by various <em class="xref std std-ref">output commands</em>. No parameter of this
+by various <span class="xref std std-ref">output commands</span>. No parameter of this
 fix can be used with the <em>start</em>/<em>stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a>
-command. This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+command. This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -275,6 +301,9 @@ command. This fix is not invoked during <tt class="xref doc docutils literal"><s
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -305,11 +334,13 @@ command. This fix is not invoked during <tt class="xref doc docutils literal"><s
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

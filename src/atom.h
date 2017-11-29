@@ -98,10 +98,26 @@ class Atom : protected Pointers {
   double *cv;
 
 //Superquadric bonus-----------------------------------
-  double **shape, **roundness; //half axes and roundness parameters
+  double **shape, **blockiness; //half axes and blockiness parameters
   double **inertia, *volume, *area; //components Ix, Iy, Iz
   double **quaternion; //quaternion of current orientation
 //------------------------------------------------------
+
+  // USR-SMD
+  double *contact_radius;
+  double **smd_data_9;
+  double **smd_stress;
+  double *eff_plastic_strain;
+  double *eff_plastic_strain_rate;
+  double *damage;
+  int smd_flag;
+  int contact_radius_flag;
+  int smd_data_9_flag;
+  int smd_stress_flag;
+  int x0_flag;
+  int eff_plastic_strain_flag;
+  int eff_plastic_strain_rate_flag;
+  int damage_flag;
 
   int *shapetype;
 

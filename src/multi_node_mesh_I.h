@@ -58,7 +58,7 @@
     nodesLastRe_("nodesLastRe"),
     center_("center"),
     rBound_("rBound"),
-    random_(new RanPark(lmp,179424799)), // big prime #
+    random_(new RanPark(lmp,"179424799")), // big prime #
     mesh_id_(0),
     precision_(EPSILON_PRECISION),
     min_feature_length_(-1.),
@@ -166,7 +166,7 @@
     for(int i = 0; i < NUM_NODES; i++)
     {
         vectorSubtract3D(center_(n),node_(n)[i],vec);
-        rb = MathExtraLiggghts::max(rb,vectorMag3D(vec));
+        rb = std::max(rb,vectorMag3D(vec));
     }
     rBound_.add(rb);
 
@@ -703,7 +703,7 @@
       for(int j = 0; j < NUM_NODES; j++)
       {
          vectorSubtract3D(center_(i),node_(i)[j],vec);
-         rb = MathExtraLiggghts::max(rb,vectorMag3D(vec));
+         rb = std::max(rb,vectorMag3D(vec));
       }
       rBound_(i) = rb;
     }
@@ -731,7 +731,7 @@
       for(int j = 0; j < NUM_NODES; j++)
       {
          vectorSubtract3D(center_(i),node_(i)[j],vec);
-         rb = MathExtraLiggghts::max(rb,vectorMag3D(vec));
+         rb = std::max(rb,vectorMag3D(vec));
       }
       rBound_(i) = rb;
     }

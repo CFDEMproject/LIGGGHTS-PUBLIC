@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute nparticles/tracer/region command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute nparticles/tracer/region command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_nparticles_tracer_region.txt" rel="nofollow"> View page source</a> 
+      <li>compute nparticles/tracer/region command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_nparticles_tracer_region.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute nparticles/tracer/region command<a class="headerlink" href="#compute-nparticles-tracer-region-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID nparticles/tracer/region general_keyword general_values</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID nparticles/tracer/region general_keyword general_values
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -171,7 +195,8 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute nparticles all nparticles/tracer/region region_count count tracer tr periodic z -1</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute nparticles all nparticles/tracer/region region_count count tracer tr periodic z -1
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -195,7 +220,8 @@ compute will not count them.</p>
 <p>With the <em>periodic</em> keyword, you can restrict counting/unmarking to
 particles which are in a specified image in a periodic simulation.
 For example, using</p>
-<div class="highlight-python"><pre>periodic z +2</pre>
+<div class="highlight-python"><div class="highlight"><pre>periodic z +2
+</pre></div>
 </div>
 <p>means that particles are only counted if they are in z-image #2.
 By default, all particles are counted/unmarked regardless in which
@@ -206,7 +232,9 @@ periodic image they are.</p>
 boundary restriction via the <em>periodic</em> keyword. If keyword <em>periodic</em>
 is used multiple times, the last setting will be applied.</p>
 </div>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This this compute calculates a global vector containing the following information
 (the number in brackets corresponds to the vector id):</p>
 <ul class="simple">
@@ -215,7 +243,7 @@ is used multiple times, the last setting will be applied.</p>
 <li><strong>(3)</strong> total mass of (marked + un-marked) particles in region</li>
 <li><strong>(4)</strong> mass of marked particles in region</li>
 </ul>
-<p>See <a class="reference internal" href="Section_howto.html#howto-8"><em>this section</em></a> for an overview of LIGGGHTS(R)-PUBLIC output
+<p>See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 </div>
 <div class="section" id="restrictions">
@@ -234,6 +262,9 @@ can be used.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -264,11 +295,13 @@ can be used.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

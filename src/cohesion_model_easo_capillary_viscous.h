@@ -47,7 +47,8 @@ COHESION_MODEL(COHESION_EASO_CAPILLARY_VISCOUS,easo/capillary/viscous,8)
 
 #include "contact_models.h"
 #include "cohesion_model_base.h"
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 #include "math_extra_liggghts.h"
 #include "global_properties.h"
 #include "fix_property_atom.h"
@@ -170,12 +171,7 @@ namespace ContactModels {
       if(force->cg_active())
         error->cg(FLERR,"cohesion model easo/capillary/viscous");
 
-      const char* neigharg[2];
-      neigharg[0] = "contact_distance_factor";
-      char arg2[30];
-      sprintf(arg2,"%e",maxSeparationDistanceRatio*1.1); 
-      neigharg[1] = arg2;
-      neighbor->modify_params(2,const_cast<char**>(neigharg));
+      neighbor->register_contact_dist_factor(maxSeparationDistanceRatio*1.1); 
       if(maxSeparationDistanceRatio < 1.0)
             error->one(FLERR,"\n\ncohesion model easo/capillary/viscous requires maxSeparationDistanceRatio >= 1.0. Please increase this value.\n");
     }
@@ -399,8 +395,8 @@ namespace ContactModels {
           // viscous force
           // this is from Nase et al as cited in Shi and McCarthy, Powder Technology, 184 (2008), 65-75, Eqns 40,41
           const double stokesPreFactor = -6.*M_PI*fluidViscosity*rEff;
-          const double FviscN = stokesPreFactor*vn/MathExtraLiggghts::max(minSeparationDistanceRatio,dist/rEff);
-          const double FviscT_over_vt = (/* 8/15 */ 0.5333333*log(1./MathExtraLiggghts::max(minSeparationDistanceRatio,dist/rEff)) + 0.9588) * stokesPreFactor;
+          const double FviscN = stokesPreFactor*vn/std::max(minSeparationDistanceRatio,dist/rEff);
+          const double FviscT_over_vt = (/* 8/15 */ 0.5333333*log(1./std::max(minSeparationDistanceRatio,dist/rEff)) + 0.9588) * stokesPreFactor;
 
           // tangential force components
           const double Ft1 = FviscT_over_vt*vtr1;

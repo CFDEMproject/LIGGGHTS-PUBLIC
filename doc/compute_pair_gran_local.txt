@@ -28,8 +28,10 @@ keyword = {pos} or {vel} or {id} or {force} or {torque} or {history} or {contact
   {torque} = torque divided by particle diameter (3 values)
   {history} = contact history (# depends on pair style, e.g. 3 shear history values)
   {contactArea} = area of the contact (1 value)
+  {contactPoint} = contact point (3 value)
   {delta} = overlap of the contact (1 value)
-  {heatFlux} = conductive heat flux of the contact (1 value) :pre
+  {heatFlux} = conductive heat flux of the contact (1 value)
+  {ms_id} = multisphere IDs of clumps where of particles in contact belong to (in case of wall, second value will be -1) (2 values) :pre
 :ule
 
 [Examples:]
@@ -84,7 +86,8 @@ pair style used. The output {contactArea} will output the contact area,
 in distance^2 "units"_units.html. Note that {contactArea} is based on
 an analytic geometric calculation of sphere-sphere or sphere-plane intersection
 rather than a calculation based on mechanics. This is to ensure that
-{contactArea} works with all types of contact models. 
+{contactArea} works with all types of contact models. The {contactPoint} output
+will store the point at which contact forces are computed.
 
 The output {delta} will output the
 overlap (sum of radii - distance between particle centers) in distance
@@ -96,8 +99,9 @@ energy/time "units"_units.html.
 IMPORTANT NOTE:
 The data associated to the different keywords is output in the
 following order: {pos}, {vel}, {id}, {force}, {force_normal},
-{force_tangential}, {torque}, {history}, {contactArea}, {heatFlux}. 
-This is independant of the order in which the keywords are specified.
+{force_tangential}, {torque}, {history}, {contactArea}, {heatFlux},
+{contactPoint}. This is independant of the order in which the keywords are
+specified.
 
 Note that as atoms migrate from processor to processor, there will be
 no consistent ordering of the entries within the local vector or array

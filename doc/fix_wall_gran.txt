@@ -44,11 +44,11 @@ general_keyword =  {shear} or {store_force} or {store_force_contact} or {store_f
     vshear = magnitude of shear velocity (velocity units)
   {temperature} value = T0
     T0 = Temperature of the wall (temperature units)
-  {contact_area} values = 'overlap' or 'constant [value]' or 'projection'
+  {contact_area} values = 'overlap' or 'constant \[value\]' or 'projection'
   {store_force} value = 'yes' or 'no'
     yes, no = determines if the wall force exerted on the particles is stored in a "fix property/atom"_fix_property.html with id force_(ID), where (ID) is the id of the fix wall/gran command.
   {store_force_contact} value = 'yes' or 'no'
-    yes, no = determines if the force for each particle-wall contact is stored in a "fix property/atom"_fix_property.html with id contactforces_(ID), where (ID) is the id of the fix wall/gran command.  :pre
+    yes, no = determines if the force for each particle-wall contact is stored in a "fix property/atom"_fix_property.html with id contactforces_(ID), where (ID) is the id of the fix wall/gran command.
   {store_force_contact_stress} value = 'yes' or 'no'
     yes, no = determines if the force and contact point for each particle-wall contact is stored in a "fix property/atom"_fix_property.html with id contactforces_stress_(ID), where (ID) is the id of the fix wall/gran command. :pre
 

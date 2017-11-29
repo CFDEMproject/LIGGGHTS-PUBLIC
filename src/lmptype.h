@@ -107,6 +107,7 @@ namespace LAMMPS_NS {
 #ifdef LAMMPS_SMALLBIG
 
 typedef int smallint;
+typedef int imageint;
 typedef int tagint;
 typedef int64_t bigint;
 
@@ -115,6 +116,7 @@ typedef int64_t bigint;
 #define MAXBIGINT INT64_MAX
 
 #define MPI_LMP_TAGINT MPI_INT
+#define MPI_LMP_IMAGEINT MPI_INT
 #define MPI_LMP_BIGINT MPI_LL
 
 #define TAGINT_FORMAT "%d"
@@ -137,6 +139,7 @@ typedef int64_t bigint;
 #ifdef LAMMPS_BIGBIG
 
 typedef int smallint;
+typedef int64_t imageint;
 typedef int64_t tagint;
 typedef int64_t bigint;
 
@@ -145,6 +148,7 @@ typedef int64_t bigint;
 #define MAXBIGINT INT64_MAX
 
 #define MPI_LMP_TAGINT MPI_LL
+#define MPI_LMP_IMAGEINT MPI_LL
 #define MPI_LMP_BIGINT MPI_LL
 
 #define TAGINT_FORMAT "%" PRId64
@@ -166,6 +170,7 @@ typedef int64_t bigint;
 #ifdef LAMMPS_SMALLSMALL
 
 typedef int smallint;
+typedef int imageint;
 typedef int tagint;
 typedef int bigint;
 
@@ -174,6 +179,7 @@ typedef int bigint;
 #define MAXBIGINT INT_MAX
 
 #define MPI_LMP_TAGINT MPI_INT
+#define MPI_LMP_IMAGEINT MPI_INT
 #define MPI_LMP_BIGINT MPI_INT
 
 #define TAGINT_FORMAT "%d"

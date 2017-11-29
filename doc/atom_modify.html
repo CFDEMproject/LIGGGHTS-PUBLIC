@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>atom_modify command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>atom_modify command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/atom_modify.txt" rel="nofollow"> View page source</a> 
+      <li>atom_modify command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/atom_modify.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>atom_modify command<a class="headerlink" href="#atom-modify-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>atom_modify keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>atom_modify keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>one or more keyword/value pairs may be appended</li>
@@ -163,9 +187,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>atom_modify map hash
+<div class="highlight-python"><div class="highlight"><pre>atom_modify map hash
 atom_modify map array sort 10000 2.0
-atom_modify first colloid</pre>
+atom_modify first colloid
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -203,7 +228,7 @@ is run.</p>
 within each processor&#8217;s sub-domain every <em>Nfreq</em> timesteps.  If
 <em>Nfreq</em> is set to 0, then sorting is turned off.  Sorting can improve
 cache performance and thus speed-up a LIGGGHTS(R)-PUBLIC simulation, as discussed
-in a paper by <a class="reference internal" href="#meloni"><em>(Meloni)</em></a>.  Its efficiency depends on the problem
+in a paper by <a class="reference internal" href="#meloni"><span>(Meloni)</span></a>.  Its efficiency depends on the problem
 size (atoms/processor), how quickly the system becomes disordered, and
 various other factors.  As a general rule, sorting is typically more
 effective at speeding up simulations of liquids as opposed to solids.
@@ -262,6 +287,9 @@ cutoff will be used to set the bin size.</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -291,11 +319,13 @@ cutoff will be used to set the bin size.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

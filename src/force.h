@@ -212,6 +212,9 @@ class Force : protected Pointers {
   inline bool error_cg() 
   { return error_coarsegraining_; }
 
+  inline bool warn_cg() 
+  { return warn_coarsegraining_; }
+
   PropertyRegistry registry;
 
   void set_custom_surface_model(std::string param)
@@ -245,6 +248,7 @@ class Force : protected Pointers {
   double    coarsegraining_;
   std::vector<double> coarsegrainingTypeBased_;
   bool      error_coarsegraining_;
+  bool      warn_coarsegraining_;
 };
 
 }

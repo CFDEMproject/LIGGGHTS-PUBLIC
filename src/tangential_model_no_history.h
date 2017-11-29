@@ -49,7 +49,7 @@ TANGENTIAL_MODEL(TANGENTIAL_NO_HISTORY,no_history,1)
 #include "contact_models.h"
 #include "tangential_model_base.h"
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include "global_properties.h"
 #include "fix_property_atom.h"
 

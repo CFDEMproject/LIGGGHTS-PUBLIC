@@ -14,16 +14,17 @@ print string keyword value:pre
 
 string = text string to print, which may contain variables :ulb,l
 zero or more keyword/value pairs may be appended :l
-keyword = {file} or {append} or {screen} :l
+keyword = {file} or {append} or {screen} or {newline}:l
   {file} value = filename
   {append} value = filename
-  {screen} value = {yes} or {no} :pre
+  {screen} value = {yes} or {no}
+  {newline} value = {yes} or {no} :pre
 :ule
 
 [Examples:]
 
 print "Done with equilibration" file info.dat
-print Vol=$v append info.dat screen no
+print Vol=${volume} append info.dat screen no newline no
 print "The system volume is now $v"
 print 'The system volume is now $v' :pre
 
@@ -42,6 +43,10 @@ it does not exist.
 
 If the {screen} keyword is used, output to the screen and logfile can
 be turned on or off as desired.
+
+If the {newline} keyword is used and its value set to {no} then no newline
+character will be printed at the end of the string. This can be useful if a
+string should be concatenated.
 
 If you want the print command to be executed multiple times (with
 changing variable values), there are 3 options.  First, consider using
@@ -68,5 +73,4 @@ thermodynamic properties, global values calculated by a
 
 [Default:]
 
-The option defaults are no file output and screen = yes.
-
+The option defaults are no file output, screen = yes and newline = yes.

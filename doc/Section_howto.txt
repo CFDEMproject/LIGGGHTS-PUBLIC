@@ -6,20 +6,30 @@
 
 :line
 
-7. How-to discussions :h3
+8. How-to discussions :h3
 
 This section describes how to perform common tasks using LIGGGHTS(R)-PUBLIC.
 
-7.1 "Restarting a simulation"_#howto_1
-7.2 "2d simulations"_#howto_2
-7.3 "Running multiple simulations from one input script"_#howto_3
-7.4 "Granular models"_#howto_4
-7.5 "Coupling LIGGGHTS(R)-PUBLIC to other codes"_#howto_5
-7.6 "Visualizing LIGGGHTS(R)-PUBLIC snapshots"_#howto_6
-7.7 "Triclinic (non-orthogonal) simulation boxes"_#howto_7
-7.8 "Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)"_#howto_8
-7.9 "Walls"_#howto_9
-7.10 "Library interface to LIGGGHTS(R)-PUBLIC"_#howto_10 :all(b)
+<!-- RST
+
+.. contents:: 
+		:local:
+		:depth: 1
+   
+END_RST -->
+
+<!-- HTML_ONLY -->
+8.1 "Restarting a simulation"_#howto_1
+8.2 "2d simulations"_#howto_2
+8.3 "Running multiple simulations from one input script"_#howto_3
+8.4 "Granular models"_#howto_4
+8.5 "Coupling LIGGGHTS(R)-PUBLIC to other codes"_#howto_5
+8.6 "Visualizing LIGGGHTS(R)-PUBLIC snapshots"_#howto_6
+8.7 "Triclinic (non-orthogonal) simulation boxes"_#howto_7
+8.8 "Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)"_#howto_8
+8.9 "Walls"_#howto_9
+8.10 "Library interface to LIGGGHTS(R)-PUBLIC"_#howto_10 :all(b)
+<!--END_HTML_ONLY -->
 
 The example input scripts included in the LIGGGHTS(R)-PUBLIC distribution and
 highlighted in "Section_example"_Section_example.html also show how to
@@ -28,7 +38,7 @@ setup and run various kinds of simulations.
 :line
 :line
 
-7.1 Restarting a simulation :link(howto_1),h4
+8.1 Restarting a simulation :link(howto_1),h4
 
 There are 3 ways to continue a long LIGGGHTS(R)-PUBLIC simulation.  Multiple
 "run"_run.html commands can be used in the same input script.  Each
@@ -65,7 +75,7 @@ LIGGGHTS(R)-PUBLIC the current timestep.
 
 :line
 
-7.2 2d simulations :link(howto_2),h4
+8.2 2d simulations :link(howto_2),h4
 
 Use the "dimension"_dimension.html command to specify a 2d simulation.
 
@@ -100,7 +110,7 @@ the same as in 3d.
 
 :line
 
-7.3 Running multiple simulations from one input script :link(howto_3),h4
+8.3 Running multiple simulations from one input script :link(howto_3),h4
 
 This can be done in several ways.  See the documentation for
 individual commands for more details on how these examples work.
@@ -188,7 +198,7 @@ the 4th simulation, and so forth, until all 8 were completed.
 
 :line
 
-7.4 Granular models :link(howto_4),h4
+8.4 Granular models :link(howto_4),h4
 
 Granular system are composed of spherical particles with a diameter,
 as opposed to point particles.  This means they have an angular
@@ -238,7 +248,7 @@ computations between frozen atoms by using this command:
 
 :line
 
-7.5 Coupling LIGGGHTS(R)-PUBLIC to other codes :link(howto_5),h4
+8.5 Coupling LIGGGHTS(R)-PUBLIC to other codes :link(howto_5),h4
 
 LIGGGHTS(R)-PUBLIC is designed to allow it to be coupled to other codes.  For
 example, a quantum mechanics code might compute forces on a subset of
@@ -337,7 +347,7 @@ instances of LIGGGHTS(R)-PUBLIC to perform different calculations.
 
 :line
 
-7.6 Visualizing LIGGGHTS(R)-PUBLIC snapshots :link(howto_6),h4
+8.6 Visualizing LIGGGHTS(R)-PUBLIC snapshots :link(howto_6),h4
 
 LIGGGHTS(R)-PUBLIC itself does not do visualization, but snapshots from LIGGGHTS(R)-PUBLIC
 simulations can be visualized (and analyzed) in a variety of ways.
@@ -356,7 +366,7 @@ VTK natively.
 
 :line
 
-7.7 Triclinic (non-orthogonal) simulation boxes :link(howto_7),h4
+8.7 Triclinic (non-orthogonal) simulation boxes :link(howto_7),h4
 
 By default, LIGGGHTS(R)-PUBLIC uses an orthogonal simulation box to encompass the
 particles.  The "boundary"_boundary.html command sets the boundary
@@ -542,7 +552,7 @@ MIN(0.0,xy,xz,xy+xz).
 
 :line
 
-7.8 Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables) :link(howto_8),h4
+8.8 Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables) :link(howto_8),h4
 
 There are four basic kinds of LIGGGHTS(R)-PUBLIC output:
 
@@ -843,7 +853,7 @@ Command: Input: Output:
 
 :line
 
-7.9 Walls :link(howto_9),h4
+8.9 Walls :link(howto_9),h4
 
 Walls are typically used to bound particle motion,
 i.e. to serve as a boundary condition.
@@ -904,7 +914,7 @@ rotate.
 
 :line
 
-7.10 Library interface to LIGGGHTS(R)-PUBLIC :link(howto_10),h4
+8.10 Library interface to LIGGGHTS(R)-PUBLIC :link(howto_10),h4
 
 As described in "Section_start 5"_Section_start.html#start_5, LIGGGHTS(R)-PUBLIC
 can be built as a library, so that it can be called by another code,

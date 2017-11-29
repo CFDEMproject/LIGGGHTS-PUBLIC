@@ -254,8 +254,8 @@ class DumpParticle : public Pointers {
     void pack_shapex(int); 
     void pack_shapey(int);
     void pack_shapez(int);
-    void pack_roundness1(int);
-    void pack_roundness2(int);
+    void pack_blockiness1(int);
+    void pack_blockiness2(int);
     void pack_quat1(int);
     void pack_quat2(int);
     void pack_quat3(int);

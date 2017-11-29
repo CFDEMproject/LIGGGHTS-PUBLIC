@@ -2,9 +2,9 @@
 # preceeding line should have path for Python on your machine
 
 # plot.py
-# Purpose: plot Temp of running LAMMPS simulation via GnuPlot in Pizza.py
-# Syntax:  plot.py in.lammps Nfreq Nsteps compute-ID
-#          in.lammps = LAMMPS input script
+# Purpose: plot Temp of running LIGGGHTS simulation via GnuPlot in Pizza.py
+# Syntax:  plot.py in.liggghts Nfreq Nsteps compute-ID
+#          in.liggghts = LIGGGHTS input script
 #          Nfreq = plot data point every this many steps
 #          Nsteps = run for this many steps
 #          compute-ID = ID of compute that calculates temperature
@@ -18,7 +18,7 @@ from gnu import gnu
 
 argv = sys.argv
 if len(argv) != 5:
-  print "Syntax: plot.py in.lammps Nfreq Nsteps compute-ID"
+  print "Syntax: plot.py in.liggghts Nfreq Nsteps compute-ID"
   sys.exit()
 
 infile = sys.argv[1]
@@ -32,8 +32,8 @@ me = 0
 #me = pypar.rank()
 #nprocs = pypar.size()
 
-from lammps import lammps
-lmp = lammps()
+from liggghts import liggghts
+lmp = liggghts()
 
 # run infile all at once
 # assumed to have no run command in it

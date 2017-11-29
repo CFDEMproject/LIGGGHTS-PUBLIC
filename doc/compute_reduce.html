@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute reduce command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute reduce command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_reduce.txt" rel="nofollow"> View page source</a> 
+      <li>compute reduce command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_reduce.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -150,7 +173,8 @@
 <h1>compute reduce/region command<a class="headerlink" href="#compute-reduce-region-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID style general_keyword general_values arg mode input1 input2 ... keyword args ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID style general_keyword general_values arg mode input1 input2 ... keyword args ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -167,12 +191,13 @@
 <li>one or more inputs can be listed</li>
 <li>input = x, y, z, vx, vy, vz, fx, fy, fz, c_ID, c_ID[N], f_ID, f_ID[N], v_name</li>
 </ul>
-<div class="highlight-python"><pre>x,y,z,vx,vy,vz,fx,fy,fz = atom attribute (position, velocity, force component)
+<div class="highlight-python"><div class="highlight"><pre>x,y,z,vx,vy,vz,fx,fy,fz = atom attribute (position, velocity, force component)
 c_ID = per-atom or local vector calculated by a compute with ID
 c_ID[I] = Ith column of per-atom or local array calculated by a compute with ID
 f_ID = per-atom or local vector calculated by a fix with ID
 f_ID[I] = Ith column of per-atom or local array calculated by a fix with ID
-v_name = per-atom vector calculated by an atom-style variable with name</pre>
+v_name = per-atom vector calculated by an atom-style variable with name
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more keyword/args pairs may be appended</li>
@@ -186,10 +211,11 @@ v_name = per-atom vector calculated by an atom-style variable with name</pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all reduce sum c_force
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all reduce sum c_force
 compute 1 all reduce/region subbox sum c_force
 compute 2 all reduce min c_press**2** f_ave v_myKE
-compute 3 fluid reduce max c_index**1** c_index**2** c_dist replace 1 3 replace 2 3</pre>
+compute 3 fluid reduce max c_index**1** c_index**2** c_dist replace 1 3 replace 2 3
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -258,10 +284,11 @@ Then, instead of performing a min/max on the <em>vec1</em> input vector, the
 stored index is used to select the Nth element of the <em>vec1</em> vector.</p>
 <p>Thus, for example, if you wish to use this compute to find the bond
 with maximum stretch, you can do it as follows:</p>
-<div class="highlight-python"><pre>compute 1 all property/local batom1 batom2
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all property/local batom1 batom2
 compute      2 all bond/local dist
 compute      3 all reduce max c_1[1] c_1[2] c_2 replace 1 3 replace 2 3
-thermo_style custom step temp c_3[1] c_3[2] c_3[3]</pre>
+thermo_style custom step temp c_3[1] c_3[2] c_3[3]
+</pre></div>
 </div>
 <p>The first two input values in the compute reduce command are vectors
 with the IDs of the 2 atoms in each bond, using the <a class="reference internal" href="compute_property_local.html"><em>compute property/local</em></a> command.  The last input
@@ -282,13 +309,15 @@ compute can be accessed by the <a class="reference internal" href="thermo_style.
 command with <a class="reference internal" href="thermo_modify.html"><em>thermo_modify norm yes</em></a> set as an
 option.  Or it can be accessed by a <a class="reference internal" href="variable.html"><em>variable</em></a> that
 divides by the appropriate atom count.</p>
+</div>
 <hr class="docutils" />
-<p><strong>Output info:</strong></p>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This compute calculates a global scalar if a single input value is
 specified or a global vector of length N where N is the number of
 inputs, and which can be accessed by indices 1 to N.  These values can
 be used by any command that uses global scalar or vector values from a
-compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><em>Section_howto 15</em></a>
+compute as input.  See <span class="xref std std-ref">Section_howto 15</span>
 for an overview of LIGGGHTS(R)-PUBLIC output options.</p>
 <p>All the scalar or vector values calculated by this compute are
 &#8220;intensive&#8221;, except when the <em>sum</em> mode is used on per-atom or local
@@ -309,6 +338,9 @@ quantities being reduced are in.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -339,11 +371,13 @@ quantities being reduced are in.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

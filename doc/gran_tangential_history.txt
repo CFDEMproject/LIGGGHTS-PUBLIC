@@ -21,11 +21,11 @@ zero or more keyword/value pairs may be appended to the end (after all models ar
 This granular model is based on the general description of granular
 force interaction as described in "pair gran"_pair_gran.html.
 
-The spring part of the tangential force (k_t) is a "history" effect
-that accounts for the tangential displacement ("tangential overlap")
-between the particles for the duration of the time they are in contact.
-It is calculated by adding up the releative tangential velocity at the
-contact point times the time-step size. 
+The spring part of the tangential force (F_t = k_t * u_t) is a "history" effect
+that accounts for the tangential displacement ("tangential overlap") between the
+particles for the duration of the time they are in contact.  The tangential
+overlap (u_t) is calculated by integrating the releative tangential velocity at
+the contact point over time.
 
 If this model is chosen, then this "tangential overlap" spring force is
 actually calculated / taken into account.

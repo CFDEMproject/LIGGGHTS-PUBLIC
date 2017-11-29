@@ -76,6 +76,7 @@ This mesh module supports "fix_modify"_fix_modify.html with option {servo/integr
 to start or stop the servo wall integration inbetween two runs.
 This module also supports "fix_modify"_fix_modify.html with option {servo/target_val} = val to
 change the target value inbetween two runs.
+This module also supports "fix_modify"_fix_modify_html with option {servo/vel_max} = val to change the the target value inbetween two runs.
 This module also supports "fix_modify"_fix_modify.html with option {servo/ctrlParam} = kp ki kd
 to change the controller params inbetween two runs.
 

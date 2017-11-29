@@ -38,19 +38,43 @@
     Copyright 2016-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include "random.h"
 #include "error.h"
 #include "comm.h"
 #include "input.h"
 #include "math_extra_liggghts.h"
+#include <stdlib.h>
+#include <string>
+#include <climits>
 
 using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-Random::Random(LAMMPS *lmp, int seed) : Pointers(lmp)
+Random::Random(LAMMPS *lmp, const char * seed_char, bool proc_shift, int multiplier) : Pointers(lmp)
 {
+    if (!seed_char)
+        error->all(FLERR, "Internal error: NULL seed_char");
+    long seedl = atol(seed_char);
+    seed = atoi(seed_char);
+    if ((long)seed != seedl)
+    {
+        char errstr[1024];
+
+        sprintf(errstr,"Seed %ld is larger than INT_MAX (%d)\n", seedl, INT_MAX);
+        error->all(FLERR, errstr);
+    }
+
+    const int offset = proc_shift ? multiplier*comm->me : 0;
+    if (seedl + (long)offset > (long)INT_MAX)
+    {
+        char errstr[1024];
+
+        sprintf(errstr,"Seed %ld + %d (offset) is larger than INT_MAX (%d)\n", seedl, offset, INT_MAX);
+        error->all(FLERR, errstr);
+    }
+    seed += offset;
 
     if(0 == comm->me)
     {

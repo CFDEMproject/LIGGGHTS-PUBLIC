@@ -39,7 +39,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include "compute_rigid.h"
 #include "atom.h"

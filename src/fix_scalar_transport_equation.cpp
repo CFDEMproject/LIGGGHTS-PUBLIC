@@ -43,7 +43,7 @@
     Copyright 2016      DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "fix_scalar_transport_equation.h"

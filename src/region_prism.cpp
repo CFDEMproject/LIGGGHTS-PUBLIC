@@ -47,7 +47,7 @@
    Contributing author: Pieter in 't Veld (SNL)
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "region_prism.h"
@@ -55,9 +55,10 @@
 #include "force.h"
 #include "error.h"
 
-using namespace LAMMPS_NS;
+// include last to ensure correct macros
+#include "domain_definitions.h"
 
-#define BIG 1.0e20
+using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 

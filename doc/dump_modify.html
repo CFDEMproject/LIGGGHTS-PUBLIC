@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>dump_modify command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>dump_modify command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/dump_modify.txt" rel="nofollow"> View page source</a> 
+      <li>dump_modify command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/dump_modify.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,17 +170,20 @@
 <span id="index-0"></span><h1>dump_modify command<a class="headerlink" href="#dump-modify-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>dump_modify dump-ID keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>dump_modify dump-ID keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>dump-ID = ID of dump to modify</li>
 <li>one or more keyword/value pairs may be appended</li>
 <li>these keywords apply to various dump styles</li>
-<li>keyword = <em>append</em> or <em>buffer</em> or <em>element</em> or <em>every</em> or <em>fileper</em> or <em>first</em> or <em>flush</em> or <em>format</em> or <em>image</em> or <em>label</em> or <em>nfile</em> or <em>pad</em> or <em>precision</em> or <em>region</em> or <em>scale</em> or <em>sort</em> or <em>thresh</em> or <em>unwrap</em></li>
+<li>keyword = <em>append</em> or <em>buffer</em> or <em>element</em> or <em>every</em> or <em>fileper</em> or <em>first</em> or <em>flush</em> or <em>format</em> or <em>image</em> or <em>label</em> or <em>nfile</em> or <em>pad</em> or <em>precision</em> or <em>region</em> or <em>scale</em> or <em>sort</em> or <em>thresh</em> or <em>unwrap</em>  or <em>binary</em> or <em>compressor</em></li>
 </ul>
 <pre class="literal-block">
 <em>append</em> arg = <em>yes</em> or <em>no</em>
 <em>buffer</em> arg = <em>yes</em> or <em>no</em>
+<em>binary</em> arg = <em>yes</em> or <em>no</em> (VTK dumps only)
+<em>compressor</em> arg = <em>none</em> or <em>zlib</em> or <em>lz4</em> (VTK dumps only)
 <em>element</em> args = E1 E2 ... EN, where N = # of atom types
   E1,...,EN = element name, e.g. C or Fe or Ga
 <em>every</em> arg = N
@@ -241,13 +267,14 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>dump_modify 1 format "%d %d %20.15g %g %g" scale yes
+<div class="highlight-python"><div class="highlight"><pre>dump_modify 1 format &quot;%d %d %20.15g %g %g&quot; scale yes
 dump_modify myDump image yes scale no flush yes
 dump_modify 1 region mySphere thresh x &lt; 0.0 thresh epair &gt;= 3.2
 dump_modify xtcdump precision 10000
 dump_modify 1 every 1000 nfile 20
 dump_modify 1 every v_myVar
-dump_modify 1 amap min max cf 0.0 3 min green 0.5 yellow max blue boxcolor red</pre>
+dump_modify 1 amap min max cf 0.0 3 min green 0.5 yellow max blue boxcolor red
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -266,7 +293,7 @@ overwrite an existing file with the same name.  This keyword can only
 take effect if the dump_modify command is used after the
 <a class="reference internal" href="dump.html"><em>dump</em></a> command, but before the first command that causes
 dump snapshots to be output, e.g. a <a class="reference internal" href="run.html"><em>run</em></a> or
-<tt class="xref doc docutils literal"><span class="pre">minimize</span></tt> command.  Once the dump file has been opened,
+<code class="xref doc docutils literal"><span class="pre">minimize</span></code> command.  Once the dump file has been opened,
 this keyword has no further effect.</p>
 <hr class="docutils" />
 <p>The <em>buffer</em> keyword applies only to dump styles <em>atom</em>, <em>custom</em>,
@@ -283,15 +310,36 @@ relatively expensive task of formatting the output for its own atoms.
 However it requires about twice the memory (per processor) for the
 extra buffering.</p>
 <hr class="docutils" />
+<p>If <em>dump_modify binary</em> is used, the dump file (or files, if &#8220;*&#8221; or &#8220;%&#8221; is also
+used) is written in binary format.  A binary dump file will be about the same
+size as a text version, but will typically write out much faster.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This modifier is only available for VTK style dumps</p>
+</div>
+<hr class="docutils" />
+<p><em>dump_modify compressor</em> can be used to specify the writing of compressed binary
+data (automatically sets <em>dump_modify binary yes</em>). Options for compressors
+include:</p>
+<div class="highlight-python"><div class="highlight"><pre>none: No compression
+zlib: Zlib compression
+lz4: Lz4 compression (VTK &gt;= 8.0 required)
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This modifier is only available for VTK style dumps</p>
+</div>
+<hr class="docutils" />
 <p>The <em>element</em> keyword applies only to the the dump <em>cfg</em>, <em>xyz</em>, and
 <em>image</em> styles.  It associates element names (e.g. H, C, Fe) with
 LIGGGHTS(R)-PUBLIC atom types.  See the list of element names at the bottom of
 this page.</p>
-<p>In the case of dump <em>cfg</em>, this allows the <a class="reference external" href="atomeye_">AtomEye</a>
+<p>In the case of dump <em>cfg</em>, this allows the <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A">AtomEye</a>
 visualization package to read the dump file and render atoms with the
 appropriate size and color.</p>
 <p>In the case of dump <em>image</em>, the output images will follow the same
-<a class="reference external" href="atomeye_">AtomEye</a> convention.  An element name is specified for each
+<a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A">AtomEye</a> convention.  An element name is specified for each
 atom type (1 to Ntype) in the simulation.  The same element name can
 be given to multiple atom types.</p>
 <p>In the case of <em>xyz</em> format dumps, there are no restrictions to what
@@ -321,16 +369,18 @@ to the dump file.  The <em>every</em> keyword cannot be used with the dump
 <em>dcd</em> style.</p>
 <p>For example, the following commands will
 write snapshots at timesteps 0,10,20,30,100,200,300,1000,2000,etc:</p>
-<div class="highlight-python"><pre>variable     s equal logfreq(10,3,10)
+<div class="highlight-python"><div class="highlight"><pre>variable     s equal logfreq(10,3,10)
 dump         1 all atom 100 tmp.dump
-dump_modify  1 every v_s first yes</pre>
+dump_modify  1 every v_s first yes
+</pre></div>
 </div>
 <p>The following commands would write snapshots at the timesteps listed
 in file tmp.times:</p>
-<div class="highlight-python"><pre>variable        f file tmp.times
+<div class="highlight-python"><div class="highlight"><pre>variable        f file tmp.times
 variable     s equal next(f)
 dump         1 all atom 100 tmp.dump
-dump_modify  1 every v_s</pre>
+dump_modify  1 every v_s
+</pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -385,8 +435,9 @@ attributes in the dump command itself.</p>
 it writes local information, such as bond or angle topology
 to a dump file, it will use the specified <em>label</em> to format
 the header.  By default this includes 2 lines:</p>
-<div class="highlight-python"><pre>ITEM: NUMBER OF ENTRIES
-ITEM: ENTRIES ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>ITEM: NUMBER OF ENTRIES
+ITEM: ENTRIES ...
+</pre></div>
 </div>
 <p>The word &#8220;ENTRIES&#8221; will be replaced with the string specified,
 e.g. BONDS or ANGLES.</p>
@@ -645,7 +696,7 @@ the <em>type</em> argument to specify a range of bond types.  The specified
 <em>diam</em> is the size in whatever distance <a class="reference internal" href="units.html"><em>units</em></a> you are
 using, e.g. Angstroms.</p>
 <hr class="docutils" />
-<p>The <em>bitrate</em> keyword can be used with the <tt class="xref doc docutils literal"><span class="pre">dump</span> <span class="pre">movie</span></tt> command to define the size of the resulting
+<p>The <em>bitrate</em> keyword can be used with the <code class="xref doc docutils literal"><span class="pre">dump</span> <span class="pre">movie</span></code> command to define the size of the resulting
 movie file and its quality via setting how many kbits per second are
 to be used for the movie file. Higher bitrates require less
 compression and will result in higher quality movies.  The quality is
@@ -675,7 +726,7 @@ names are searched first, then the 140 pre-defined color names.  This
 means you can also use the <em>color</em> keyword to overwrite one of the
 pre-defined color names with new RBG values.</p>
 <hr class="docutils" />
-<p>The <em>framerate</em> keyword can be used with the <tt class="xref doc docutils literal"><span class="pre">dump</span> <span class="pre">movie</span></tt> command to define the duration of the resulting
+<p>The <em>framerate</em> keyword can be used with the <code class="xref doc docutils literal"><span class="pre">dump</span> <span class="pre">movie</span></code> command to define the duration of the resulting
 movie file.  Movie files written by the dump <em>movie</em> command have a
 default frame rate of 24 frames per second and the images generated
 will be converted at that rate.  Thus a sequence of 1000 dump images
@@ -935,6 +986,9 @@ Divide each value by 255 to get the equivalent 0.0 to 1.0 value.</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -964,11 +1018,13 @@ Divide each value by 255 to get the equivalent 0.0 to 1.0 value.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

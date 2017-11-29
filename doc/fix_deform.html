@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix deform command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix deform command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_deform.txt" rel="nofollow"> View page source</a> 
+      <li>fix deform command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_deform.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix deform command<a class="headerlink" href="#fix-deform-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID deform N parameter args ... keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID deform N parameter args ... keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -217,10 +241,11 @@ parameter = <em>x</em> or <em>y</em> or <em>z</em> or <em>xy</em> or <em>xz</em>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all deform 1 x final 0.0 9.0 z final 0.0 5.0 units box
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all deform 1 x final 0.0 9.0 z final 0.0 5.0 units box
 fix 1 all deform 1 x trate 0.1 y volume z volume
 fix 1 all deform 1 xy erate 0.001 remap v
-fix 1 all deform 10 y delta -0.5 0.5 xz vel 1.0</pre>
+fix 1 all deform 10 y delta -0.5 0.5 xz vel 1.0
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -234,7 +259,7 @@ adjusted independently and simultaneously by this command.</p>
 shrink-wrapped.  For the <em>xy</em>, <em>yz</em>, <em>xz</em> parameters, the associated
 2nd dimension cannot be shrink-wrapped.  Dimensions not varied by this
 command can be periodic or non-periodic.  Dimensions corresponding to
-unspecified parameters can also be controlled by a <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></tt> or <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nph</span></tt> command.</p>
+unspecified parameters can also be controlled by a <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></code> or <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nph</span></code> command.</p>
 <p>The size and shape of the simulation box at the beginning of the
 simulation run were either specified by the
 <a class="reference internal" href="create_box.html"><em>create_box</em></a> or <a class="reference internal" href="read_data.html"><em>read_data</em></a> or
@@ -307,7 +332,8 @@ e.g. picoseconds for &#8220;metal&#8221; units).  Tensile strain is unitless and
 is defined as delta/L0, where L0 is the original box length and delta
 is the change relative to the original length.</p>
 <p>The box length L as a function of time will change as</p>
-<div class="highlight-python"><pre>L(t) = L0 exp(trate*dt)</pre>
+<div class="highlight-python"><div class="highlight"><pre>L(t) = L0 exp(trate*dt)
+</pre></div>
 </div>
 <p>where dt is the elapsed time (in time units).  Thus if <em>trate</em> R is
 specified as ln(1.1) and time units are picoseconds, this means the
@@ -347,12 +373,13 @@ fix deform) since that implies a density change.  Using the <em>volume</em>
 style for those 2 dimensions to keep the box volume constant may make
 more physical sense, but may also not be correct for materials and
 potentials whose Poisson ratio is not 0.5.  An alternative is to use
-<tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span> <span class="pre">aniso</span></tt> with zero applied pressure on those 2
+<code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span> <span class="pre">aniso</span></code> with zero applied pressure on those 2
 dimensions, so that they respond to the tensile strain dynamically.</p>
 <p>The <em>wiggle</em> style oscillates the specified box length dimension
 sinusoidally with the specified amplitude and period.  I.e. the box
 length L as a function of time is given by</p>
-<div class="highlight-python"><pre>L(t) = L0 + A sin(2*pi t/Tp)</pre>
+<div class="highlight-python"><div class="highlight"><pre>L(t) = L0 + A sin(2*pi t/Tp)
+</pre></div>
 </div>
 <p>where L0 is its initial length.  If the amplitude A is a positive
 number the box initially expands, then contracts, etc.  If A is
@@ -380,11 +407,12 @@ arbitrary variable.</p>
 <p>Here is an example of using the <em>variable</em> style to perform the same
 box deformation as the <em>wiggle</em> style formula listed above, where we
 assume that the current timestep = 0.</p>
-<div class="highlight-python"><pre>variable A equal 5.0
+<div class="highlight-python"><div class="highlight"><pre>variable A equal 5.0
 variable Tp equal 10.0
-variable displace equal "v_A * sin(2*PI * step*dt/v_Tp)"
-variable rate equal "2*PI*v_A/v_Tp * cos(2*PI * step*dt/v_Tp)"
-fix 2 all deform 1 x variable v_displace v_rate remap v</pre>
+variable displace equal &quot;v_A * sin(2*PI * step*dt/v_Tp)&quot;
+variable rate equal &quot;2*PI*v_A/v_Tp * cos(2*PI * step*dt/v_Tp)&quot;
+fix 2 all deform 1 x variable v_displace v_rate remap v
+</pre></div>
 </div>
 <p>For the <em>scale</em>, <em>vel</em>, <em>erate</em>, <em>trate</em>, <em>volume</em>, <em>wiggle</em>, and
 <em>variable</em> styles, the box length is expanded or compressed around its
@@ -450,7 +478,8 @@ where length is the box length perpendicular to the shear direction
 distance in the shear direction (e.g. x direction for xy deformation)
 from the unstrained orientation.</p>
 <p>The tilt factor T as a function of time will change as</p>
-<div class="highlight-python"><pre>T(t) = T0 exp(trate*dt)</pre>
+<div class="highlight-python"><div class="highlight"><pre>T(t) = T0 exp(trate*dt)
+</pre></div>
 </div>
 <p>where T0 is the initial tilt factor and dt is the elapsed time (in
 time units).  Thus if <em>trate</em> R is specified as ln(1.1) and time units
@@ -472,7 +501,8 @@ parameter), then this effect on the shear strain is ignored.</p>
 <p>The <em>wiggle</em> style oscillates the specified tilt factor sinusoidally
 with the specified amplitude and period.  I.e. the tilt factor T as a
 function of time is given by</p>
-<div class="highlight-python"><pre>T(t) = T0 + A sin(2*pi t/Tp)</pre>
+<div class="highlight-python"><div class="highlight"><pre>T(t) = T0 + A sin(2*pi t/Tp)
+</pre></div>
 </div>
 <p>where T0 is its initial value.  If the amplitude A is a positive
 number the tilt factor initially becomes more positive, then more
@@ -499,11 +529,12 @@ arbitrary variable.</p>
 <p>Here is an example of using the <em>variable</em> style to perform the same
 box deformation as the <em>wiggle</em> style formula listed above, where we
 assume that the current timestep = 0.</p>
-<div class="highlight-python"><pre>variable A equal 5.0
+<div class="highlight-python"><div class="highlight"><pre>variable A equal 5.0
 variable Tp equal 10.0
-variable displace equal "v_A * sin(2*PI * step*dt/v_Tp)"
-variable rate equal "2*PI*v_A/v_Tp * cos(2*PI * step*dt/v_Tp)"
-fix 2 all deform 1 xy variable v_displace v_rate remap v</pre>
+variable displace equal &quot;v_A * sin(2*PI * step*dt/v_Tp)&quot;
+variable rate equal &quot;2*PI*v_A/v_Tp * cos(2*PI * step*dt/v_Tp)&quot;
+fix 2 all deform 1 xy variable v_displace v_rate remap v
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>All of the tilt styles change the xy, xz, yz tilt factors during a
@@ -563,7 +594,7 @@ box without explicit remapping of their coordinates.</p>
 <p class="first admonition-title">Warning</p>
 <p class="last">When non-equilibrium MD (NEMD) simulations are
 performed using this fix, the option &#8220;remap v&#8221; should normally be
-used.  This is because <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt/sllod</span></tt> adjusts the
+used.  This is because <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt/sllod</span></code> adjusts the
 atom positions and velocities to induce a velocity profile that
 matches the changing box size/shape.  Thus atom coordinates should NOT
 be remapped by fix deform, but velocities SHOULD be when atoms cross
@@ -577,13 +608,13 @@ you if the <em>remap</em> setting is not consistent with fix nvt/sllod.</p>
 v&#8221; it is usually desirable that the fluid (or flowing material,
 e.g. granular particles) stream with a velocity profile consistent
 with the deforming box.  As mentioned above, using a thermostat such
-as <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt/sllod</span></tt> or <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">lavgevin</span></tt> (with a bias provided by <tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/deform</span></tt>), will typically accomplish
+as <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt/sllod</span></code> or <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">lavgevin</span></code> (with a bias provided by <code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/deform</span></code>), will typically accomplish
 that.  If you do not use a thermostat, then there is no driving force
 pushing the atoms to flow in a manner consistent with the deforming
 box.  E.g. for a shearing system the box deformation velocity may vary
 from 0 at the bottom to 10 at the top of the box.  But the stream
 velocity profile of the atoms may vary from -5 at the bottom to +5 at
-the top.  You can monitor these effects using the <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>, <tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/deform</span></tt>, and <tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/profile</span></tt> commands.  One way to induce
+the top.  You can monitor these effects using the <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>, <code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/deform</span></code>, and <code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/profile</span></code> commands.  One way to induce
 atoms to stream consistent with the box deformation is to give them an
 initial velocity profile, via the <a class="reference internal" href="velocity.html"><em>velocity ramp</em></a>
 command, that matches the box deformation rate.  This also typically
@@ -597,10 +628,10 @@ bodies, and <em>remap</em> is set to <em>x</em>, then the center-of-mass coordin
 of rigid bodies will be remapped to the changing simulation box.  This
 will be done regardless of whether atoms in the rigid bodies are in
 the fix deform group or not.  The velocity of the centers of mass are
-not remapped even if <em>remap</em> is set to <em>v</em>, since <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt/sllod</span></tt> does not currently do anything special
+not remapped even if <em>remap</em> is set to <em>v</em>, since <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt/sllod</span></code> does not currently do anything special
 for rigid particles.  If you wish to perform a NEMD simulation of
 rigid particles, you can either thermostat them independently or
-include a background fluid and thermostat the fluid via <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt/sllod</span></tt>.</p>
+include a background fluid and thermostat the fluid via <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt/sllod</span></code>.</p>
 </div>
 <p>The <em>flip</em> keyword allows the tilt factors for a triclinic box to
 exceed half the distance of the parallel box length, as discussed
@@ -628,11 +659,11 @@ command if you want to include lattice spacings in a variable formula.</p>
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.  No global or per-atom quantities are stored
-by this fix for access by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.</p>
+by this fix for access by various <span class="xref std std-ref">output commands</span>.</p>
 <p>This fix can perform deformation over multiple runs, using the <em>start</em>
 and <em>stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.  See the
 <a class="reference internal" href="run.html"><em>run</em></a> command for details of how to do this.</p>
-<p>This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+<p>This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -653,6 +684,9 @@ xy) that is shrink-wrapped via the <a class="reference internal" href="boundary.
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -683,11 +717,13 @@ xy) that is shrink-wrapped via the <a class="reference internal" href="boundary.
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

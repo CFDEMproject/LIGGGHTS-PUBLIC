@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix ave/atom command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix ave/atom command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_ave_atom.txt" rel="nofollow"> View page source</a> 
+      <li>fix ave/atom command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_ave_atom.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix ave/atom command<a class="headerlink" href="#fix-ave-atom-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID ave/atom Nevery Nrepeat Nfreq value1 value2 ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID ave/atom Nevery Nrepeat Nfreq value1 value2 ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -158,25 +182,27 @@
 one or more input values can be listed</li>
 <li>value = x, y, z, vx, vy, vz, fx, fy, fz, c_ID, c_ID[i], f_ID, f_ID[i], v_name</li>
 </ul>
-<div class="highlight-python"><pre>x,y,z,vx,vy,vz,fx,fy,fz = atom attribute (position, velocity, force component)
+<div class="highlight-python"><div class="highlight"><pre>x,y,z,vx,vy,vz,fx,fy,fz = atom attribute (position, velocity, force component)
 c_ID = per-atom vector calculated by a compute with ID
 c_ID[I] = Ith column of per-atom array calculated by a compute with ID
 f_ID = per-atom vector calculated by a fix with ID
 f_ID[I] = Ith column of per-atom array calculated by a fix with ID
-v_name = per-atom vector calculated by an atom-style variable with name</pre>
+v_name = per-atom vector calculated by an atom-style variable with name
+</pre></div>
 </div>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all ave/atom 1 100 100 vx vy vz
-fix 1 all ave/atom 10 20 1000 c_my_stress[1]</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all ave/atom 1 100 100 vx vy vz
+fix 1 all ave/atom 10 20 1000 c_my_stress[1]
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Use one or more per-atom vectors as inputs every few timesteps, and
 average them atom by atom over longer timescales.  The resulting
-per-atom averages can be used by other <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a> such as the <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a> or <a class="reference internal" href="dump.html"><em>dump custom</em></a> commands.</p>
+per-atom averages can be used by other <span class="xref std std-ref">output commands</span> such as the <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a> or <a class="reference internal" href="dump.html"><em>dump custom</em></a> commands.</p>
 <p>The group specified with the command means only atoms within the group
 have their averages computed.  Results are set to 0.0 for atoms not in
 the group.</p>
@@ -248,15 +274,15 @@ per-atom quantities to time average.</p>
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.  No global scalar or vector quantities are
-stored by this fix for access by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.</p>
+stored by this fix for access by various <span class="xref std std-ref">output commands</span>.</p>
 <p>This fix produces a per-atom vector or array which can be accessed by
-various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  A vector is
+various <span class="xref std std-ref">output commands</span>.  A vector is
 produced if only a single quantity is averaged by this fix.  If two or
 more quantities are averaged, then an array of values is produced.
 The per-atom values can only be accessed on timesteps that are
 multiples of <em>Nfreq</em> since that is when averaging is performed.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -272,6 +298,9 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -302,11 +331,13 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

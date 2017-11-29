@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>region command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>region command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/region.txt" rel="nofollow"> View page source</a> 
+      <li>region command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/region.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>region command<a class="headerlink" href="#region-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>region ID style args keyword arg ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>region ID style args keyword arg ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID = user-assigned name for the region</li>
@@ -240,13 +264,14 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>region 1 block -3.0 5.0 INF 10.0 INF INF
+<div class="highlight-python"><div class="highlight"><pre>region 1 block -3.0 5.0 INF 10.0 INF INF
 region 2 sphere 0.0 0.0 0.0 5 side out
 region void cylinder y 2 3 5 -5.0 EDGE units box
 region 1 prism 0 10 0 10 0 10 2 0 0
 region outside union 4 side1 side2 side3 side4
 region 2 sphere 0.0 0.0 0.0 5 side out move v_left v_up NULL
-region 1 wedge axis y  center 0 0  radius 10 bounds 0 10 angle0 -22.5 angle 45 units box side in</pre>
+region 1 wedge axis y  center 0 0  radius 10 bounds 0 10 angle0 -22.5 angle 45 units box side in
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -348,7 +373,7 @@ its value used to determine the radius of the region.</p>
 functions, and include <a class="reference internal" href="thermo_style.html"><em>thermo_style</em></a> command
 keywords for the simulation box parameters and timestep and elapsed
 time.  Thus it is easy to specify a time-dependent radius.</p>
-<p>See <a class="reference internal" href="Section_howto.html#howto-7"><em>Section_howto 12</em></a> of the doc pages
+<p>See <span class="xref std std-ref">Section_howto 12</span> of the doc pages
 for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.</p>
@@ -439,15 +464,17 @@ fashion.  For the latter, see the <em>start</em> and <em>stop</em> keywords of t
 <p>For example, these commands would displace a region from its initial
 position, in the positive x direction, effectively at a constant
 velocity:</p>
-<div class="highlight-python"><pre>variable dx equal ramp(0,10)
-region 2 sphere 10.0 10.0 0.0 5 move v_dx NULL NULL</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable dx equal ramp(0,10)
+region 2 sphere 10.0 10.0 0.0 5 move v_dx NULL NULL
+</pre></div>
 </div>
 <p>Note that the initial displacemet is 0.0, though that is not required.</p>
 <p>Either of these varaibles would &#8220;wiggle&#8221; the region back and forth in
 the y direction:</p>
-<div class="highlight-python"><pre>variable dy equal swiggle(0,5,100)
+<div class="highlight-python"><div class="highlight"><pre>variable dy equal swiggle(0,5,100)
 variable dysame equal 5*sin(2*PI*elaplong*dt/100)
-region 2 sphere 10.0 10.0 0.0 5 move NULL v_dy NULL</pre>
+region 2 sphere 10.0 10.0 0.0 5 move NULL v_dy NULL
+</pre></div>
 </div>
 <p>The <em>rotate</em> keyword rotates the region around a rotation axis <em>R</em> =
 (Rx,Ry,Rz) that goes thru a point <em>P</em> = (Px,Py,Pz).  The rotation
@@ -481,6 +508,9 @@ rotation.</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -510,11 +540,13 @@ rotation.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

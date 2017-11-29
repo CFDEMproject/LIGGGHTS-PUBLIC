@@ -69,7 +69,7 @@ By default the relative, normal rotation (torsion) is subtracted and does not co
 Using "coarsegraining"_coarsegraining.html in
 combination with this command might lead to
 different dynamics or system state and thus to 
-inconsistancies.
+inconsistencies.
 
 NOTE: "Coarsegraining"_coarsegraining.html may or 
 may not be available in LIGGGHTS(R)-PUBLIC.

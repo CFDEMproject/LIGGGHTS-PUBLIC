@@ -49,7 +49,7 @@
 #include "memory.h"
 #include "modify.h"
 #include "comm.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "mpi_liggghts.h"
 #include "fix_cfd_coupling_force_implicit.h"
@@ -73,7 +73,6 @@ FixCfdCouplingForceImplicit::FixCfdCouplingForceImplicit(LAMMPS *lmp, int narg, 
     fix_ex_(0),
     fix_KslExtra_(0)
 {
-    int iarg = 3;
 
     bool hasargs = true;
     while(iarg < narg && hasargs)

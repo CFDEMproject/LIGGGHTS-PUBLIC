@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>pair_style sph/artVisc/tensCorr command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>pair_style sph/artVisc/tensCorr command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/pair_sph_artvisc_tenscorr.txt" rel="nofollow"> View page source</a> 
+      <li>pair_style sph/artVisc/tensCorr command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/pair_sph_artvisc_tenscorr.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>pair_style sph/artVisc/tensCorr command<a class="headerlink" href="#pair-style-sph-artvisc-tenscorr-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style sph/artVisc/tensCorr kernelstyle args keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style sph/artVisc/tensCorr kernelstyle args keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>sph/artVisc/tensCorr = name of this pair_style command</li>
@@ -174,37 +198,40 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style sph/artVisc/tensCorr wendland 0.001 artVisc 1e-4 0 1e-8
-pair_style sph/artVisc/tensCorr cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0.2 1e-2</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style sph/artVisc/tensCorr wendland 0.001 artVisc 1e-4 0 1e-8
+pair_style sph/artVisc/tensCorr cubicspline 0.001 artVisc 1e-4 0 1e-8 tensCorr 0.2 1e-2
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p>The <em>sph/artVisc/tensCorr</em> style uses the smoothed particle hydrodynamics (SPH) method according to Monaghan <a class="reference internal" href="#monaghan1992"><em>(1992)</em></a>. The acting force is calculated from the acceleration as stated in the equation:</p>
+<p>The <em>sph/artVisc/tensCorr</em> style uses the smoothed particle hydrodynamics (SPH) method according to Monaghan <a class="reference internal" href="#monaghan1992"><span>(1992)</span></a>. The acting force is calculated from the acceleration as stated in the equation:</p>
 <img alt="_images/pair_sph_artvisc_tenscorr_eq1.jpg" class="align-center" src="_images/pair_sph_artvisc_tenscorr_eq1.jpg" />
 <p>Whereas the indices a and b stand for particles, P&lt;sub&gt;j&lt;/sub&gt; stands for pressure and &amp;#961;&lt;sub&gt;j&lt;/sub&gt; for the density. W&lt;sub&gt;ab&lt;/sub&gt; represents the kernel, which is defined by the kernelstyle.</p>
 <p>For kernelstyle cubicspline a piecewise defined, 3-order kernel is used:</p>
 <img alt="_images/pair_sph_artvisc_tenscorr_eq2.jpg" class="align-center" src="_images/pair_sph_artvisc_tenscorr_eq2.jpg" />
 <p>The wendland kernel (Wendland,1995) is defined as</p>
 <img alt="_images/pair_sph_artvisc_tenscorr_eq3.jpg" class="align-center" src="_images/pair_sph_artvisc_tenscorr_eq3.jpg" />
-<p>The smoothing length h is the most important parameter for SPH-calculations. It depends on initial particle spacing, initial density &amp;#961;&lt;sub&gt;0&lt;/sub&gt; and mass per particle m&lt;sub&gt;j&lt;/sub&gt;. In case that the smoothing length is about 1.2 times the initial particle spacing and it is a 3-dimensional cubic lattice (therefore the summation is over 57 particles), you can use the following equation <a class="reference internal" href="#liuliu2003"><em>(Liu and Liu, 2003, p. 211-213)</em></a>:</p>
+<p>The smoothing length h is the most important parameter for SPH-calculations. It depends on initial particle spacing, initial density &amp;#961;&lt;sub&gt;0&lt;/sub&gt; and mass per particle m&lt;sub&gt;j&lt;/sub&gt;. In case that the smoothing length is about 1.2 times the initial particle spacing and it is a 3-dimensional cubic lattice (therefore the summation is over 57 particles), you can use the following equation <a class="reference internal" href="#liuliu2003"><span>(Liu and Liu, 2003, p. 211-213)</span></a>:</p>
 <img alt="_images/pair_sph_artvisc_tenscorr_eq4.jpg" class="align-center" src="_images/pair_sph_artvisc_tenscorr_eq4.jpg" />
 <p>The atom style <em>sph/var</em> uses the input argument h as initial smoothing length for all particles. In case the atom style <em>sph</em> (per-type smoothing length) is used an additional per-type property <em>sl</em> must be defined, e.g.,</p>
-<div class="highlight-python"><pre>fix           m2 all property/global sl peratomtype 0.0012</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix           m2 all property/global sl peratomtype 0.0012
+</pre></div>
 </div>
-<p>For further details on the basics of the SPH-method we recommend the papers from Monaghan <a class="reference internal" href="#monaghan1992"><em>(1992)</em></a>, <a class="reference internal" href="#monaghan1994"><em>(1994)</em></a>, etc.</p>
+<p>For further details on the basics of the SPH-method we recommend the papers from Monaghan <a class="reference internal" href="#monaghan1992"><span>(1992)</span></a>, <a class="reference internal" href="#monaghan1994"><span>(1994)</span></a>, etc.</p>
 <p>Optionally, this pairstyle can take into account the artificial viscosity proposed my Monaghan (1985), if the artVisc keyword is appended. In this case, &amp;#928;&lt;sub&gt;ab&lt;/sub&gt; is added to the bracket term in the above acceleration equation, where &amp;#928;&lt;sub&gt;ab&lt;/sub&gt; is given by</p>
 <img alt="_images/pair_sph_artvisc_tenscorr_eq5.jpg" class="align-center" src="_images/pair_sph_artvisc_tenscorr_eq5.jpg" />
 <p>and</p>
 <img alt="_images/pair_sph_artvisc_tenscorr_eq6.jpg" class="align-center" src="_images/pair_sph_artvisc_tenscorr_eq6.jpg" />
 <p>This expression produces a shear and bulk viscosity. The quadratic term enables simulation of high Mach number shocks. The parameter &amp;#951;&lt;sup&gt;2&lt;/sup&gt; prevents singularities. A good choice is normally &amp;#951;&lt;sup&gt;2&lt;/sup&gt;=0.01h&lt;sup&gt;2&lt;/sup&gt;.
 The choice of &amp;#945; and &amp;#946; should not be critical, although there are some aspects which you should take into account:</p>
-<p>&#8220;In the present case, with negligible changes in the density [weakly compressible SPH], the viscosity is almost entirely shear viscosity with a viscosity coefficient approximately &amp;#945;hc.&#8221; <a class="reference internal" href="#monaghan1994"><em>(Monaghan, 1994)</em></a></p>
+<p>&#8220;In the present case, with negligible changes in the density [weakly compressible SPH], the viscosity is almost entirely shear viscosity with a viscosity coefficient approximately &amp;#945;hc.&#8221; <a class="reference internal" href="#monaghan1994"><span>(Monaghan, 1994)</span></a></p>
 <p>Bar-parameters like c&lt;sub&gt;ab&lt;/sub&gt; and &amp;#961;&lt;sub&gt;ab&lt;/sub&gt; are mean values of particle a and b.
 NOTE: &amp;#961;&lt;sub&gt;ab&lt;/sub&gt; is calculated, and for the calculation of c&lt;sub&gt;ab&lt;/sub&gt; the per-type property <em>speedOfSound</em> has to be defined, e.g.,</p>
-<div class="highlight-python"><pre>fix                m1 all property/global speedOfSound peratomtype 20.</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix                m1 all property/global speedOfSound peratomtype 20.
+</pre></div>
 </div>
-<p>By appending the keyword <em>tensCorr</em> you enable the tensile correction algorithm <a class="reference internal" href="#monaghan2000"><em>(Monaghan, 2000)</em></a> which improves results in combination with negative pressures (e.g. EOS like Tait&#8217;s equation). This method adds R*(f&lt;sub&gt;ab&lt;/sub&gt;)&lt;sup&gt;n&lt;/sup&gt; to the bracket term, where the factor R is related to the pressure and can be calculated by R=R&lt;sub&gt;a&lt;/sub&gt; + R&lt;sub&gt;b&lt;/sub&gt;. In case of negative pressures (P&lt;sub&gt;a&lt;/sub&gt; &lt; 0) we use the rule</p>
+<p>By appending the keyword <em>tensCorr</em> you enable the tensile correction algorithm <a class="reference internal" href="#monaghan2000"><span>(Monaghan, 2000)</span></a> which improves results in combination with negative pressures (e.g. EOS like Tait&#8217;s equation). This method adds R*(f&lt;sub&gt;ab&lt;/sub&gt;)&lt;sup&gt;n&lt;/sup&gt; to the bracket term, where the factor R is related to the pressure and can be calculated by R=R&lt;sub&gt;a&lt;/sub&gt; + R&lt;sub&gt;b&lt;/sub&gt;. In case of negative pressures (P&lt;sub&gt;a&lt;/sub&gt; &lt; 0) we use the rule</p>
 <img alt="_images/pair_sph_artvisc_tenscorr_eq7.jpg" class="align-center" src="_images/pair_sph_artvisc_tenscorr_eq7.jpg" />
 <p>otherwise R&lt;sub&gt;a&lt;/sub&gt; is zero. Typical values of <em>epsilon</em> are about 0.2.
 fab is calculated by</p>
@@ -213,7 +240,7 @@ fab is calculated by</p>
 NOTE: In a next version this calculation should be improved too.</p>
 <hr class="docutils" />
 <p><strong>Mixing, shift, table, tail correction, restart, rRESPA info</strong>:</p>
-<p>The <tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt> mix, shift, table, and tail options
+<p>The <code class="xref doc docutils literal"><span class="pre">pair_modify</span></code> mix, shift, table, and tail options
 are not relevant for sph pair styles.</p>
 <p>These pair styles write their information to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>, so a pair_style command does not need to be
 specified in an input script that reads a restart file.</p>
@@ -239,6 +266,9 @@ specified in an input script that reads a restart file.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -269,11 +299,13 @@ specified in an input script that reads a restart file.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

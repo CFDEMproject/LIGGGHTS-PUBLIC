@@ -44,7 +44,7 @@ SURFACE_MODEL(SURFACE_MULTICONTACT,multicontact,2)
 #define SURFACE_MODEL_MULTICONTACT_H_
 #include "contact_models.h"
 #include "surface_model_base.h"
-#include <math.h>
+#include <cmath>
 #include "atom.h"
 #include "force.h"
 #include "update.h"
@@ -86,10 +86,7 @@ namespace ContactModels
                 error->one(FLERR, "No suitable multicontact fix found.");
 
             //set neighbor contact_distance_factor here, assume it's at most one radius away
-            const char* neigharg[2];
-            neigharg[0] = "contact_distance_factor";
-            neigharg[1] = "2.0";
-            neighbor->modify_params(2,const_cast<char**>(neigharg));
+            neighbor->register_contact_dist_factor(2.0);
         }
 
         inline bool checkSurfaceIntersect(SurfacesIntersectData & sidata)

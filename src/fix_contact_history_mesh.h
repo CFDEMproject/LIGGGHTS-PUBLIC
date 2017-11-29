@@ -53,7 +53,7 @@ FixStyle(contacthistory/mesh,FixContactHistoryMesh)
 #include "fix_contact_history.h"
 #include "fix_property_atom.h"
 #include "my_page.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "atom.h"
 #include "update.h"
@@ -99,10 +99,7 @@ class FixContactHistoryMesh : public FixContactHistory {
   void cleanUpContactJumps();
   
   // OMP interface
-  void resetDeletionPage(int tid);
-  void markForDeletion(int tid, int ifrom, int ito);
   void cleanUpContacts(int ifrom, int ito);
-
   void reset_history();
 
   // return # of contacts
@@ -111,6 +108,11 @@ class FixContactHistoryMesh : public FixContactHistory {
 
   int get_partner_idTri(const int i, const int j) const
   { return partner_[i][j]; }
+
+  int nneighs(const int iP) const
+  { return fix_nneighs_->get_vector_atom_int(iP); }
+
+  int get_contact(const int i, const int j);
 
  protected:
 

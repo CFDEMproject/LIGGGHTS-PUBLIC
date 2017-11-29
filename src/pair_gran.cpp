@@ -50,7 +50,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -803,7 +803,13 @@ void PairGran::cpl_add_pair(LCM::SurfacesIntersectData & sidata, LCM::ForceData 
     const double tor1 = i_forces.delta_torque[0];
     const double tor2 = i_forces.delta_torque[1];
     const double tor3 = i_forces.delta_torque[2];
-    cpl_->add_pair(sidata.i, sidata.j, fx,fy,fz,tor1,tor2,tor3,sidata.contact_history);
+    const double * const contact_point =
+#ifdef NONSPHERICAL_ACTIVE_FLAG
+        atom->shapetype_flag ? sidata.contact_point : NULL;
+#else
+        NULL;
+#endif
+    cpl_->add_pair(sidata.i, sidata.j, fx,fy,fz,tor1,tor2,tor3,sidata.contact_history, contact_point);
 }
 
 void PairGran::cpl_pair_finalize()

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute bond/local command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute bond/local command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_bond_local.txt" rel="nofollow"> View page source</a> 
+      <li>compute bond/local command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_bond_local.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute bond/local command<a class="headerlink" href="#compute-bond-local-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID bond/local general_keyword general_values input1 input2 ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID bond/local general_keyword general_values input1 input2 ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -164,8 +188,9 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all bond/local eng
-compute 1 all bond/local dist eng force</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all bond/local eng
+compute 1 all bond/local dist eng force
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -179,7 +204,7 @@ the atoms owned on a processor and their bonds.  A bond will only be
 included if both atoms in the bond are in the specified compute group.
 Any bonds that have been broken (see the <a class="reference internal" href="bond_style.html"><em>bond_style</em></a>
 command) by setting their bond type to 0 are not included.  Bonds that
-have been turned off (see the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">shake</span></tt> or
+have been turned off (see the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">shake</span></code> or
 <a class="reference internal" href="delete_bonds.html"><em>delete_bonds</em></a> commands) by setting their bond type
 negative are written into the file, but their energy will be 0.0.</p>
 <p>Note that as atoms migrate from processor to processor, there will be
@@ -191,18 +216,21 @@ For example, bond output from the <a class="reference internal" href="compute_pr
 with data from this command and output by the <a class="reference internal" href="dump.html"><em>dump local</em></a>
 command in a consistent way.</p>
 <p>Here is an example of how to do this:</p>
-<div class="highlight-python"><pre>compute 1 all property/local batom1 batom2 btype
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all property/local batom1 batom2 btype
 compute 2 all bond/local dist eng
-dump 1 all local 1000 tmp.dump index c_1[1] c_1[2] c_1[3] c_2[1] c_2[2]</pre>
+dump 1 all local 1000 tmp.dump index c_1[1] c_1[2] c_1[3] c_2[1] c_2[2]
+</pre></div>
 </div>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This compute calculates a local vector or local array depending on the
 number of keywords.  The length of the vector or number of rows in the
 array is the number of bonds.  If a single keyword is specified, a
 local vector is produced.  If two or more keywords are specified, a
 local array is produced where the number of columns = the number of
 keywords.  The vector or array can be accessed by any command that
-uses local values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><em>this section</em></a> for an overview of LIGGGHTS(R)-PUBLIC output
+uses local values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>The output for <em>dist</em> will be in distance <a class="reference internal" href="units.html"><em>units</em></a>.  The
 output for <em>eng</em> will be in energy <a class="reference internal" href="units.html"><em>units</em></a>.  The output for
@@ -221,6 +249,9 @@ output for <em>eng</em> will be in energy <a class="reference internal" href="un
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -251,11 +282,13 @@ output for <em>eng</em> will be in energy <a class="reference internal" href="un
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

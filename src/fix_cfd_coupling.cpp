@@ -47,7 +47,7 @@
 #include "error.h"
 #include "memory.h"
 #include "modify.h"
-#include <math.h>
+#include <cmath>
 #include "comm.h"
 #include "vector_liggghts.h"
 #include "fix_cfd_coupling.h"
@@ -76,19 +76,27 @@ FixCfdCoupling::FixCfdCoupling(LAMMPS *lmp, int narg, char **arg) :
   // end_of_step is executed each ts
   nevery = 1;
 
+  ts_create_ = update->ntimestep;
+
+  couple_this_ = 0;
+  couple_nevery_ = 0;
+
   // parse args
 
-  if (narg < 5)
+  if (narg < 4)
     error->fix_error(FLERR,this,"");
 
-  if(strcmp(arg[iarg_],"every") && strcmp(arg[iarg_],"couple_every"))
-    error->fix_error(FLERR,this,"expecting keyword 'every'");
-  iarg_++;
+  if(0 == strcmp(arg[iarg_],"every") || 0 == strcmp(arg[iarg_],"couple_every"))
+  {
+    iarg_++;
 
-  couple_nevery_ = atoi(arg[iarg_++]);
-  if(couple_nevery_ < 0)
-    error->fix_error(FLERR,this,"'every' value must be >=0");
+    if (narg < 6)
+        error->fix_error(FLERR,this,"not enough arguments");
 
+    couple_nevery_ = atoi(arg[iarg_++]);
+    if(couple_nevery_ < 0)
+        error->fix_error(FLERR,this,"'every' value must be >=0");
+  }
   // construct data coupling submodel and parse its args
 
   if (0) return;
@@ -98,6 +106,13 @@ FixCfdCoupling::FixCfdCoupling(LAMMPS *lmp, int narg, char **arg) :
   #include "style_cfd_datacoupling.h"
   #undef CFD_DATACOUPLING_CLASS
   else error->fix_error(FLERR,this,"Unknown data coupling style - expecting 'file' or 'MPI'");
+
+  if(!dynamic_cast<CfdDatacouplingMPI*>(dc_) && 0 == couple_nevery_)
+    error->fix_error(FLERR,this,"expecting keyword 'couple_every' ");
+  else if(dynamic_cast<CfdDatacouplingMPI*>(dc_) && 0 != couple_nevery_)
+  {
+    if(comm->me == 0) error->message(FLERR,"couple_every as specified in LIGGGHTS is overriden by calling external program",1);
+  }
 
   iarg_ = dc_->get_iarg();
 
@@ -120,9 +135,6 @@ FixCfdCoupling::FixCfdCoupling(LAMMPS *lmp, int narg, char **arg) :
       }
   }
 
-  ts_create_ = update->ntimestep;
-
-  couple_this_ = 0;
 }
 
 /* ---------------------------------------------------------------------- */

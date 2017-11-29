@@ -1,0 +1,29 @@
+42a43,56
+> #MFEM: "ON" or "OFF"
+> # Description: Enables coupling with Finite Element code MFEM (premium only)
+> USE_MFEM = "OFF"
+> # If you want to use the coupling with MFEM feature and did not install MFEM yourself
+> # then set the following to "ON" and uncomment it to allow for an automatic download and compilation
+> #AUTOINSTALL_MFEM = "OFF"
+> # BUILD_LIBRARIES:
+> #  "ALL"    : Builds both shared and static libraries if the executable is built
+> #  "SHARED" : Builds the shared library if the executable is built
+> #  "STATIC" : Builds the static library if the executable is built
+> #  "NONE"   : Only builds the executable
+> # Description: Flag to decide whether (if building the executable) the libraries of LIGGGHTS will be built as well.
+> #              Note that when calling a library makefile (Makefile.shlib or Makefile.lib) only the library of this makefile will be built (i.e. also no executable) and this flag will be ignored.
+> BUILD_LIBRARIES = "NONE"
+143a158,166
+> # MFEM specific variables
+> #
+> # Path that contains the includes (mfem.hpp)
+> #MFEM_INC_USR=-I/path/to/mfem/include
+> # Path that contains the MFEM libraries (libmfem.a)
+> #MFEM_LIB_USR=-L/path/to/mfem/lib
+> # Additional MFEM libraries to include (-lmfem added by default)
+> #MFEM_ADDLIBS_USR=
+> 
+149c172
+< MAKEFILE_USER_VERSION = "1.2"
+---
+> MAKEFILE_USER_VERSION = "1.3"

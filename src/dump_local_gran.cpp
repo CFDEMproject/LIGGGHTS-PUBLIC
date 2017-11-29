@@ -42,7 +42,7 @@
 
 #ifdef LAMMPS_VTK
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "dump_local_gran.h"
@@ -85,7 +85,7 @@
 using namespace LAMMPS_NS;
 
 enum{INT,DOUBLE,STRING}; // same as in DumpCFG
-enum{X1,X2,CP,V1,V2,ID1,ID2,F,FN,FT,TORQUE,TORQUEN,TORQUET,AREA,DELTA,HEAT}; // dumps positions, force, normal and tangential forces, torque, normal and tangential torque
+enum{X1,X2,CP,V1,V2,ID1,ID2,F,FN,FT,TORQUE,TORQUEN,TORQUET,AREA,DELTA,HEAT,MSID1,MSID2}; // dumps positions, force, normal and tangential forces, torque, normal and tangential torque
 
 /* ---------------------------------------------------------------------- */
 
@@ -312,6 +312,8 @@ void DumpLocalGran::pack(int *ids)
 void DumpLocalGran::buf2arrays(int n, double *mybuf)
 {
     
+    const bool have_cp = cpgl_->offset_contact_point() >= 0;
+
     for (int idata=0; idata < n; ++idata) {
 
         // stores the ID of newly added points
@@ -319,8 +321,6 @@ void DumpLocalGran::buf2arrays(int n, double *mybuf)
 
         pid[0] = points->InsertNextPoint(mybuf[idata*size_one],mybuf[idata*size_one+1],mybuf[idata*size_one+2]);
         pid[1] = points->InsertNextPoint(mybuf[idata*size_one+3],mybuf[idata*size_one+4],mybuf[idata*size_one+5]);
-        if(cpgl_->offset_contact_point() > 0)
-         points->InsertNextPoint(mybuf[idata*size_one+6],mybuf[idata*size_one+7],mybuf[idata*size_one+8]);
 
         // define the line going from point pid[0] to pid[1]
         vtkSmartPointer<vtkLine> line0 = vtkSmartPointer<vtkLine>::New();
@@ -328,10 +328,21 @@ void DumpLocalGran::buf2arrays(int n, double *mybuf)
         line0->GetPointIds()->SetId(1,pid[1]);
 
         lineCells->InsertNextCell(line0);
+        if(have_cp)
+        {
+            vtkIdType pidCP[1];
+            pidCP[0] = points->InsertNextPoint(mybuf[idata*size_one+6],mybuf[idata*size_one+7],mybuf[idata*size_one+8]);
+            line0->GetPointIds()->SetId(0,pid[0]);
+            line0->GetPointIds()->SetId(1,pidCP[0]);
+            lineCells->InsertNextCell(line0);
+            line0->GetPointIds()->SetId(0,pid[1]);
+            line0->GetPointIds()->SetId(1,pidCP[0]);
+            lineCells->InsertNextCell(line0);
+        }
 
         int j = 6; // 0,1,2,3,4,5 = 2 * (x,y,z) handled just above
-        if(cpgl_->offset_contact_point() > 0)
-          j += 3;
+        if(have_cp)
+            j += 3;
         for (std::map<int, vtkSmartPointer<vtkAbstractArray> >::iterator it=myarrays.begin(); it!=myarrays.end(); ++it) {
 
             vtkAbstractArray *paa = it->second;
@@ -344,12 +355,22 @@ void DumpLocalGran::buf2arrays(int n, double *mybuf)
                                                          static_cast<int>(mybuf[idata*size_one+j+2]) };
                             vtkIntArray *pia = static_cast<vtkIntArray*>(paa);
                             pia->InsertNextTupleValue(iv3);
+                            if (have_cp)
+                            {
+                                pia->InsertNextTupleValue(iv3);
+                                pia->InsertNextTupleValue(iv3);
+                            }
                             break;
                         }
                     case DOUBLE:
                         {
                             vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
                             pda->InsertNextTupleValue(&mybuf[idata*size_one+j]);
+                            if (have_cp)
+                            {
+                                pda->InsertNextTupleValue(&mybuf[idata*size_one+j]);
+                                pda->InsertNextTupleValue(&mybuf[idata*size_one+j]);
+                            }
                             break;
                         }
                 }
@@ -360,12 +381,22 @@ void DumpLocalGran::buf2arrays(int n, double *mybuf)
                         {
                             vtkIntArray *pia = static_cast<vtkIntArray*>(paa);
                             pia->InsertNextValue(mybuf[idata*size_one+j]);
+                            if (have_cp)
+                            {
+                                pia->InsertNextValue(mybuf[idata*size_one+j]);
+                                pia->InsertNextValue(mybuf[idata*size_one+j]);
+                            }
                             break;
                         }
                     case DOUBLE:
                         {
                             vtkDoubleArray *pda = static_cast<vtkDoubleArray*>(paa);
                             pda->InsertNextValue(mybuf[idata*size_one+j]);
+                            if (have_cp)
+                            {
+                                pda->InsertNextValue(mybuf[idata*size_one+j]);
+                                pda->InsertNextValue(mybuf[idata*size_one+j]);
+                            }
                             break;
                         }
                 }
@@ -428,7 +459,7 @@ void DumpLocalGran::reset_vtk_data_containers()
 
     ++it;
     ++it;
-    if(cpgl_->offset_contact_point() > 0)
+    if(cpgl_->offset_contact_point() >= 0)
       ++it;
 
     for (; it!=vtype.end(); ++it) {
@@ -472,7 +503,7 @@ void DumpLocalGran::define_properties()
     name[X2] = "pos2";
     vector_set.insert(X2);
 
-    if(cpgl_->offset_contact_point() > 0)
+    if(cpgl_->offset_contact_point() >= 0)
     {
             pack_choice[CP] = &DumpLocalGran::pack_contact_point;
             vtype[CP] = DOUBLE;
@@ -480,7 +511,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(CP);
     }
 
-    if(cpgl_->offset_v1() > 0)
+    if(cpgl_->offset_v1() >= 0)
     {
             pack_choice[V1] = &DumpLocalGran::pack_v1;
             vtype[V1] = DOUBLE;
@@ -488,7 +519,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(V1);
     }
 
-    if(cpgl_->offset_v2() > 0)
+    if(cpgl_->offset_v2() >= 0)
     {
             pack_choice[V2] = &DumpLocalGran::pack_v2;
             vtype[V2] = DOUBLE;
@@ -496,7 +527,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(V2);
     }
 
-    if(cpgl_->offset_id1() > 0)
+    if(cpgl_->offset_id1() >= 0)
     {
             pack_choice[ID1] = &DumpLocalGran::pack_id1;
             vtype[ID1] = DOUBLE;
@@ -504,7 +535,7 @@ void DumpLocalGran::define_properties()
             //scalar
     }
 
-    if(cpgl_->offset_id2() > 0)
+    if(cpgl_->offset_id2() >= 0)
     {
             pack_choice[ID2] = &DumpLocalGran::pack_id2;
             vtype[ID2] = DOUBLE;
@@ -512,7 +543,7 @@ void DumpLocalGran::define_properties()
             //scalar
     }
 
-    if(cpgl_->offset_f() > 0)
+    if(cpgl_->offset_f() >= 0)
     {
             pack_choice[F] = &DumpLocalGran::pack_f;
             vtype[F] = DOUBLE;
@@ -520,7 +551,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(F);
     }
 
-    if(cpgl_->offset_fn() > 0)
+    if(cpgl_->offset_fn() >= 0)
     {
             pack_choice[FN] = &DumpLocalGran::pack_fn;
             vtype[FN] = DOUBLE;
@@ -528,7 +559,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(FN);
     }
 
-    if(cpgl_->offset_ft() > 0)
+    if(cpgl_->offset_ft() >= 0)
     {
             pack_choice[FT] = &DumpLocalGran::pack_ft;
             vtype[FT] = DOUBLE;
@@ -536,7 +567,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(FT);
     }
 
-    if(cpgl_->offset_torque() > 0)
+    if(cpgl_->offset_torque() >= 0)
     {
             pack_choice[TORQUE] = &DumpLocalGran::pack_torque;
             vtype[TORQUE] = DOUBLE;
@@ -544,7 +575,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(TORQUE);
     }
 
-    if(cpgl_->offset_torquen() > 0)
+    if(cpgl_->offset_torquen() >= 0)
     {
             pack_choice[TORQUEN] = &DumpLocalGran::pack_torquen;
             vtype[TORQUEN] = DOUBLE;
@@ -552,7 +583,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(TORQUEN);
     }
 
-    if(cpgl_->offset_torquet() > 0)
+    if(cpgl_->offset_torquet() >= 0)
     {
             pack_choice[TORQUET] = &DumpLocalGran::pack_torquet;
             vtype[TORQUET] = DOUBLE;
@@ -560,7 +591,7 @@ void DumpLocalGran::define_properties()
             vector_set.insert(TORQUET);
     }
 
-    if(cpgl_->offset_area() > 0)
+    if(cpgl_->offset_area() >= 0)
     {
             
             pack_choice[AREA] = &DumpLocalGran::pack_area;
@@ -569,7 +600,7 @@ void DumpLocalGran::define_properties()
             //scalar
     }
 
-    if(cpgl_->offset_delta() > 0)
+    if(cpgl_->offset_delta() >= 0)
     {
             pack_choice[DELTA] = &DumpLocalGran::pack_delta;
             vtype[DELTA] = DOUBLE;
@@ -577,11 +608,27 @@ void DumpLocalGran::define_properties()
             //scalar
     }
 
-    if(cpgl_->offset_heat() > 0)
+    if(cpgl_->offset_heat() >= 0)
     {
             pack_choice[HEAT] = &DumpLocalGran::pack_heat;
             vtype[HEAT] = DOUBLE;
             name[HEAT] = "heat_flux";
+            //scalar
+    }
+
+    if(cpgl_->offset_ms_id1() >= 0)
+    {
+            pack_choice[MSID1] = &DumpLocalGran::pack_ms_id1;
+            vtype[MSID1] = DOUBLE;
+            name[MSID1] = "ms_id1";
+            //scalar
+    }
+
+    if(cpgl_->offset_ms_id2() >= 0)
+    {
+            pack_choice[MSID2] = &DumpLocalGran::pack_ms_id2;
+            vtype[MSID2] = DOUBLE;
+            name[MSID2] = "ms_id2";
             //scalar
     }
 }
@@ -794,6 +841,26 @@ void DumpLocalGran::pack_contact_point(int n)
 
     for (int i = 0; i < nchoose; i++) {
       vectorCopy3D(&cpgl_->get_data()[i][offset],&buf[n]);
+        n += size_one;
+    }
+}
+
+void DumpLocalGran::pack_ms_id1(int n)
+{
+    int offset = cpgl_->offset_ms_id1();
+
+    for (int i = 0; i < nchoose; i++) {
+        buf[n] = cpgl_->get_data()[i][offset];
+        n += size_one;
+    }
+}
+
+void DumpLocalGran::pack_ms_id2(int n)
+{
+    int offset = cpgl_->offset_ms_id2();
+
+    for (int i = 0; i < nchoose; i++) {
+        buf[n] = cpgl_->get_data()[i][offset];
         n += size_one;
     }
 }

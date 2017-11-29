@@ -2,9 +2,9 @@
 # preceeding line should have path for Python on your machine
 
 # gui.py
-# Purpose: control a continuously running LAMMPS simulation via a Tkinter GUI
-# Syntax:  gui.py in.lammps Nfreq
-#          in.lammps = LAMMPS input script
+# Purpose: control a continuously running LIGGGHTS simulation via a Tkinter GUI
+# Syntax:  gui.py in.liggghts Nfreq
+#          in.liggghts = LIGGGHTS input script
 #          Nfreq = query GUI every this many steps
 
 # IMPORTANT: this script cannot yet be run in parallel via Pypar,
@@ -31,7 +31,7 @@ def quit():
 
 argv = sys.argv
 if len(argv) != 3:
-  print "Syntax: gui.py in.lammps Nfreq"
+  print "Syntax: gui.py in.liggghts Nfreq"
   sys.exit()
 
 infile = sys.argv[1]
@@ -43,8 +43,8 @@ me = 0
 #me = pypar.rank()
 #nprocs = pypar.size()
 
-from lammps import lammps
-lmp = lammps()
+from liggghts import liggghts
+lmp = liggghts()
 
 # run infile all at once
 # assumed to have no run command in it
@@ -64,7 +64,7 @@ if me == 0:
   tkroot = Tk()
   tkroot.withdraw()
   root = Toplevel(tkroot)
-  root.title("LAMMPS GUI")
+  root.title("LIGGGHTS GUI")
 
   frame = Frame(root)
   Button(frame,text="Go",command=go).pack(side=LEFT)

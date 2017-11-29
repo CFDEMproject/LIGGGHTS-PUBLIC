@@ -64,7 +64,7 @@ class Modify : protected Pointers {
   friend class Info;
  public:
   int nfix,maxfix;
-  int n_initial_integrate,n_post_integrate,n_pre_exchange,n_pre_neighbor;
+  int n_pre_initial_integrate, n_initial_integrate,n_post_integrate,n_pre_exchange,n_pre_neighbor;
   int n_pre_force,n_post_force;
   int n_iterate_implicitly, n_pre_final_integrate; 
   int n_final_integrate,n_end_of_step,n_thermo_energy;
@@ -92,6 +92,7 @@ class Modify : protected Pointers {
   virtual void setup_pre_exchange();
   virtual void setup_pre_neighbor();
   virtual void setup_pre_force(int);
+  virtual void pre_initial_integrate();
   virtual void initial_integrate(int);
   virtual void post_integrate();
   void pre_decide();
@@ -190,7 +191,7 @@ class Modify : protected Pointers {
 
   // lists of fixes to apply at different stages of timestep
 
-  int *list_initial_integrate,*list_post_integrate;
+  int *list_pre_initial_integrate, *list_initial_integrate,*list_post_integrate;
   int *list_pre_exchange,*list_pre_neighbor;
   int *list_pre_force,*list_post_force;
   int *list_iterate_implicitly, *list_pre_final_integrate; 
@@ -218,6 +219,7 @@ class Modify : protected Pointers {
   int index_permanent;        // fix/compute index returned to library call
 
   void list_init(int, int &, int *&);
+  void list_init_pre_exchange(int, int &, int *&);
   void list_init_end_of_step(int, int &, int *&);
   void list_init_thermo_energy(int, int &, int *&);
   void list_init_compute();

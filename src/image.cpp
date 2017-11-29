@@ -48,7 +48,7 @@
 ------------------------------------------------------------------------- */
 
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include "ctype.h"
 #include <stdlib.h>
 #include <string.h>
@@ -282,7 +282,6 @@ void Image::view_params(double boxxlo, double boxxhi, double boxylo,
   // adjust strength of the SSAO
 
   if (ssao) {
-    if (!random) random = new RanMars(lmp,seed+me);
     SSAORadius = maxdel * 0.05 * ssaoint;
     SSAOSamples = static_cast<int> (8.0 + 32.0*ssaoint);
     SSAOJitter = MY_PI / 12;
@@ -1914,4 +1913,10 @@ double *ColorMap::value2color(double value)
   }
 
   return NULL;
+}
+
+void Image::setSeed(char * seed_char)
+{
+    if (!random)
+        random = new RanMars(lmp, seed_char, true);
 }

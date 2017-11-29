@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>boundary command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>boundary command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/boundary.txt" rel="nofollow"> View page source</a> 
+      <li>boundary command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/boundary.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>boundary command<a class="headerlink" href="#boundary-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>boundary x y z</pre>
+<div class="highlight-python"><div class="highlight"><pre>boundary x y z
+</pre></div>
 </div>
 <ul class="simple">
 <li>x,y,z = <em>p</em> or <em>s</em> or <em>f</em> or <em>m</em>, one or two letters</li>
@@ -161,9 +185,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>boundary p p f
+<div class="highlight-python"><div class="highlight"><pre>boundary p p f
 boundary p fs p
-boundary s f fm</pre>
+boundary s f fm
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -178,7 +203,7 @@ commands.</p>
 <p>The style <em>p</em> means the box is periodic, so that particles interact
 across the boundary, and they can exit one end of the box and re-enter
 the other end.  A periodic dimension can change in size due to
-constant pressure boundary conditions or box deformation (see the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></tt> and <a class="reference internal" href="fix_deform.html"><em>fix deform</em></a> commands).  The <em>p</em>
+constant pressure boundary conditions or box deformation (see the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></code> and <a class="reference internal" href="fix_deform.html"><em>fix deform</em></a> commands).  The <em>p</em>
 style must be applied to both faces of a dimension.</p>
 <p>The styles <em>f</em>, <em>s</em>, and <em>m</em> mean the box is non-periodic, so that
 particles do not interact across the boundary and do not move from one
@@ -200,7 +225,7 @@ face, to encompass the atoms.  E.g. for a positive xy tilt, the xlo
 and xhi faces of the box are planes tilting in the +y direction as y
 increases.  These tilted planes are shrink-wrapped around the atoms to
 determine the x extent of the box.</p>
-<p>See <a class="reference internal" href="Section_howto.html#howto-7"><em>Section_howto 12</em></a> of the doc pages
+<p>See <span class="xref std std-ref">Section_howto 12</span> of the doc pages
 for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.</p>
@@ -227,12 +252,16 @@ of lost atoms.</p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>boundary p p p</pre>
+<div class="highlight-python"><div class="highlight"><pre>boundary p p p
+</pre></div>
 </div>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -263,11 +292,13 @@ of lost atoms.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

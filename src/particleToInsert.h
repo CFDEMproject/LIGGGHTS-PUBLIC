@@ -59,7 +59,7 @@ namespace LAMMPS_NS {
         virtual ~ParticleToInsert();
 
         // insertion properties
-        int nspheres;
+        int nparticles; 
         int groupbit;
         int atom_type;
         double density_ins;

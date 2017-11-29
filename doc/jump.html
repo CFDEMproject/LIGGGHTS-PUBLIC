@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>jump command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>jump command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/jump.txt" rel="nofollow"> View page source</a> 
+      <li>jump command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/jump.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>jump command<a class="headerlink" href="#jump-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>jump file label</pre>
+<div class="highlight-python"><div class="highlight"><pre>jump file label
+</pre></div>
 </div>
 <ul class="simple">
 <li>file = filename of new input script to switch to</li>
@@ -156,9 +180,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>jump newfile
+<div class="highlight-python"><div class="highlight"><pre>jump newfile
 jump in.run2 runloop
-jump SELF runloop</pre>
+jump SELF runloop
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -176,18 +201,21 @@ script is re-opened and read again.</p>
 current input script is being read through stdin (standard input),
 e.g.</p>
 </div>
-<div class="highlight-python"><pre>lmp_g++ &lt; in.script</pre>
+<div class="highlight-python"><div class="highlight"><pre>lmp_g++ &lt; in.script
+</pre></div>
 </div>
 <p>since the SELF option invokes the C-library rewind() call, which may
 not be supported for stdin on some systems.  This can be worked around
-by using the <a class="reference internal" href="Section_start.html#start-7"><em>-in command-line argument</em></a> or
-the <a class="reference internal" href="Section_start.html#start-7"><em>-var command-line argument</em></a> to pass
+by using the <span class="xref std std-ref">-in command-line argument</span> or
+the <span class="xref std std-ref">-var command-line argument</span> to pass
 the script name as a variable to the input script In the latter case,
 the &#8220;fname&#8221; <a class="reference internal" href="variable.html"><em>variable</em></a> could be used in place of SELF.
 E.g.</p>
-<div class="highlight-python"><pre>lmp_g++ -in in.script</pre>
+<div class="highlight-python"><div class="highlight"><pre>lmp_g++ -in in.script
+</pre></div>
 </div>
-<div class="highlight-python"><pre>lmp_g++ -var fname n.script &lt; in.script</pre>
+<div class="highlight-python"><div class="highlight"><pre>lmp_g++ -var fname n.script &lt; in.script
+</pre></div>
 </div>
 <p>The 2nd argument to the jump command is optional.  If specified, it is
 treated as a label and the new file is scanned (without executing
@@ -198,13 +226,14 @@ each of 10000 steps, and create 10 dump files named file.1, file.2,
 etc.  The <a class="reference internal" href="next.html"><em>next</em></a> command is used to exit the loop after 10
 iterations.  When the &#8220;a&#8221; variable has been incremented for the tenth
 time, it will cause the next jump command to be skipped.</p>
-<div class="highlight-python"><pre>variable a loop 10
+<div class="highlight-python"><div class="highlight"><pre>variable a loop 10
 label loop
 dump 1 all atom 100 file.$a
 run 10000
 undump 1
 next a
-jump in.lj loop</pre>
+jump in.lj loop
+</pre></div>
 </div>
 <p>If the jump <em>file</em> argument is a variable, the jump command can be
 used to cause different processor partitions to run different input
@@ -212,28 +241,32 @@ scripts.  In this example, LIGGGHTS(R)-PUBLIC is run on 40 processors, with 4
 partitions of 10 procs each.  An in.file containing the example
 variable and jump command will cause each partition to run a different
 simulation.</p>
-<div class="highlight-python"><pre>mpirun -np 40 lmp_ibm -partition 4x10 -in in.file</pre>
+<div class="highlight-python"><div class="highlight"><pre>mpirun -np 40 lmp_ibm -partition 4x10 -in in.file
+</pre></div>
 </div>
-<div class="highlight-python"><pre>variable f world script.1 script.2 script.3 script.4
-jump $f</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable f world script.1 script.2 script.3 script.4
+jump $f
+</pre></div>
 </div>
 <p>Here is an example of a double loop which uses the <a class="reference internal" href="if.html"><em>if</em></a> and
 jump commands to break out of the inner loop when a condition is met,
 then continues iterating thru the outer loop.</p>
-<div class="highlight-python"><pre>label            loopa
+<div class="highlight-python"><div class="highlight"><pre>label            loopa
 variable    a loop 5
   label          loopb
   variable  b loop 5
-  print          "A,B = $a,$b"
+  print          &quot;A,B = $a,$b&quot;
   run       10000
-  if     $b &gt; 2 then "jump in.script break"
+  if     $b &gt; 2 then &quot;jump in.script break&quot;
   next           b
   jump           in.script loopb
 label            break
-variable    b delete</pre>
+variable    b delete
+</pre></div>
 </div>
-<div class="highlight-python"><pre>next     a
-jump     in.script loopa</pre>
+<div class="highlight-python"><div class="highlight"><pre>next     a
+jump     in.script loopa
+</pre></div>
 </div>
 </div>
 <div class="section" id="restrictions">
@@ -250,6 +283,9 @@ LIGGGHTS(R)-PUBLIC will come to the end of the file and exit.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -280,11 +316,13 @@ LIGGGHTS(R)-PUBLIC will come to the end of the file and exit.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

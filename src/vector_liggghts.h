@@ -42,7 +42,7 @@
 #ifndef LMP_VECTOR_LIGGGHTS_H
 #define LMP_VECTOR_LIGGGHTS_H
 
-#include <math.h>
+#include <cmath>
 #include "lammps.h"
 
 namespace LAMMPS_NS {
@@ -83,17 +83,17 @@ inline double vectorMag4D(const double *v)
   return (  ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]+v[3]*v[3])  );
 }
 
-inline double pointDistance(const double *point1, const double *point2)
+inline double pointDistanceSquared(const double *point1, const double *point2)
 {
   return
-  (
-     ::sqrt
-     (
-          (point1[0]-point2[0]) * (point1[0]-point2[0]) +
-          (point1[1]-point2[1]) * (point1[1]-point2[1]) +
-          (point1[2]-point2[2]) * (point1[2]-point2[2])
-     )
-  );
+      (point1[0]-point2[0]) * (point1[0]-point2[0]) +
+      (point1[1]-point2[1]) * (point1[1]-point2[1]) +
+      (point1[2]-point2[2]) * (point1[2]-point2[2]);
+}
+
+inline double pointDistance(const double *point1, const double *point2)
+{
+  return ::sqrt(pointDistanceSquared(point1, point2));
 }
 
 inline double vectorMag4DSquared(const double *v)
@@ -415,6 +415,16 @@ inline double vectorCrossMag3D(const double *v1,const double *v2)
   return vectorMag3D(res);
 }
 
+inline double triangleArea(const double * const v1, const double * const v2, const double * const v3, const double * const n)
+{
+  // formula: |((v1-v3) x (v2 - v3)).n|
+  return fabs(0.5*(
+    ((v1[1]-v3[1])*(v2[2]-v3[2])-(v1[2]-v3[2])*(v2[1]-v3[1]))*n[0] +
+    ((v1[2]-v3[2])*(v2[0]-v3[0])-(v1[0]-v3[0])*(v2[2]-v3[2]))*n[1] +
+    ((v1[0]-v3[0])*(v2[1]-v3[1])-(v1[1]-v3[1])*(v2[0]-v3[0]))*n[2]
+  ));
+}
+
 template<typename T>
 inline void vectorProject3D(const T *v, const T *on, T *result)
 {
@@ -463,10 +473,10 @@ inline void vectorInitializeN(T *v,const int n,const T init)
 }
 
 template<typename T>
-inline T vectorSumN(T *v,int n)
+inline T vectorSumN(const T * const v, const unsigned int n)
 {
   T sum = 0;
-  for (int i = 0; i < n; ++i)
+  for (unsigned int i = 0; i < n; ++i)
     sum += v[i];
   return sum;
 }
@@ -583,27 +593,27 @@ inline void bufToVectorN(double *vec,double const*buf,int &m, int nvalues)
     vec[i] = buf[m++];
 }
 
-inline void printVec2D(FILE *out, const char *name, double *vec)
+inline void printVec2D(FILE *out, const char *name, double const *vec)
 {
     fprintf(out," vector %s: %e %e\n",name,vec[0],vec[1]);
 }
 
-inline void printVec3D(FILE *out, const char *name, double *vec)
+inline void printVec3D(FILE *out, const char *name, double const*vec)
 {
     fprintf(out," vector %s: %e %e %e\n",name,vec[0],vec[1],vec[2]);
 }
 
-inline void printVec3D(FILE *out, const char *name, int *vec)
+inline void printVec3D(FILE *out, const char *name, int const*vec)
 {
     fprintf(out," vector %s: %d %d %d\n",name,vec[0],vec[1],vec[2]);
 }
 
-inline void printVec4D(FILE *out, const char *name, double *vec)
+inline void printVec4D(FILE *out, const char *name, double const*vec)
 {
     fprintf(out," vector %s: %e %e %e %e\n",name,vec[0],vec[1],vec[2],vec[3]);
 }
 
-inline void printVecN(FILE *out, const char *name, double *vec, int n)
+inline void printVecN(FILE *out, const char *name, double const *vec, int n)
 {
     if(name) fprintf(out," vector %s:",name);
     for(int i = 0; i < n; ++i)
@@ -611,7 +621,7 @@ inline void printVecN(FILE *out, const char *name, double *vec, int n)
     fprintf(out,"\n");
 }
 
-inline void printVecN(FILE *out, const char *name, int *vec, int n)
+inline void printVecN(FILE *out, const char *name, int const *vec, int n)
 {
     if(name) fprintf(out," vector %s:",name);
     for(int i = 0; i < n; ++i)
@@ -619,7 +629,7 @@ inline void printVecN(FILE *out, const char *name, int *vec, int n)
     fprintf(out,"\n");
 }
 
-inline void printMat33(FILE *out, const char *name, double **mat)
+inline void printMat33(FILE *out, const char *name, double const* const* mat)
 {
     fprintf(out," matrix %s: %f %f %f\n",name,mat[0][0],mat[0][1],mat[0][2]);
     fprintf(out,"        %s: %f %f %f\n",name,mat[1][0],mat[1][1],mat[1][2]);

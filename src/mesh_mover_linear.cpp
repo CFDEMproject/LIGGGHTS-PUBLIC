@@ -45,7 +45,7 @@
     Copyright 2013      OVGU Magdeburg
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -69,6 +69,8 @@ MeshMoverLinear::MeshMoverLinear(LAMMPS *lmp, AbstractMesh *_mesh, FixMoveMesh *
 {
     if (narg < 4)
         error->all(FLERR, "Not enough arguments for movement type linear");
+    if (narg > 4)
+        error->warning(FLERR, "Movement type linear requires only 4 arguments, excess arguments will be ignored");
     vel_[0] = force->numeric(FLERR, arg[1]);
     vel_[1] = force->numeric(FLERR, arg[2]);
     vel_[2] = force->numeric(FLERR, arg[3]);
@@ -119,6 +121,8 @@ MeshMoverLinearVariable::MeshMoverLinearVariable(LAMMPS *lmp,AbstractMesh *_mesh
 {
     if (narg < 4)
         error->all(FLERR, "Not enough arguments for movement type linear/variable");
+    if (narg > 4)
+        error->warning(FLERR, "Movement type linear/variable requires only 4 arguments, excess arguments will be ignored");
 
     int n;
     n = strlen(&arg[1][2]) + 1;
@@ -228,6 +232,8 @@ MeshMoverWiggle::MeshMoverWiggle(LAMMPS *lmp,AbstractMesh *_mesh, FixMoveMesh *_
 {
     if (narg < 7)
         error->all(FLERR, "Not enough arguments for movement type wiggle");
+    if (narg > 7)
+        error->warning(FLERR, "Movement type wiggle requires only 7 arguments, excess arguments will be ignored");
     if (strcmp(arg[1], "amplitude"))
         error->all(FLERR, "Expected keyword 'amplitude'");
     amplitude_[0] = force->numeric(FLERR, arg[2]);
@@ -293,6 +299,8 @@ MeshMoverVibLin::MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh, FixMoveMesh *_
     ord = force->inumeric(FLERR, arg[6]);
     if (narg < 10+2*ord)
         error->all(FLERR, "Not enough arguments for movement type viblin");
+    if (narg > 10+2*ord)
+        error->warning(FLERR, "Movement type wiggle requires only (10 + 2*$order) arguments, excess arguments will be ignored");
     if (ord > 30 || ord < 1)
         error->all(FLERR, "order can be at most 30 and must be greater 0");
 
@@ -312,8 +320,8 @@ MeshMoverVibLin::MeshMoverVibLin(LAMMPS *lmp,AbstractMesh *_mesh, FixMoveMesh *_
     //array transfer
     for (int j=0;j<ord; j++)
     {
-       phi[j]   = force->numeric(FLERR, arg[8+j]);
-       ampl[j]  = force->numeric(FLERR, arg[9+ord+j]);
+       ampl[j]   = force->numeric(FLERR, arg[8+j]);
+       phi[j]  = force->numeric(FLERR, arg[9+ord+j]);
        omega[j] = 2.*M_PI/force->numeric(FLERR, arg[10+2*ord+j]);
     }
 }

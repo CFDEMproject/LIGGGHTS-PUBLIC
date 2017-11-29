@@ -54,14 +54,14 @@ args = list of arguments for a particular style :l
       f_ID\[N\] = Nth column of per-atom array calculated by a fix with ID
       v_name = per-atom vector calculated by an atom-style variable with name
       shapex, shapey, shapez = semi-axes for superquadric particles
-      roundness1, roundness2 = roundness/blockiness parameters for superquadric particles
+      blockiness1, blockiness2 = blockiness parameters for superquadric particles
       quat1, quat2, quat3, quat4 = quaternion components for superquadric paricles :pre
 :ule
 
 [Examples:]
 
-dump dmpvtk all custom/vtk 100 dump*.myforce.vtk id type vx fx
-dump dmpvtp flow custom/vtk 100 dump*.%.displace.vtp id type c_myD\[1\] c_myD\[2\] c_myD\[3\] v_ke  :pre
+dump dmpvtk all custom/vtk 100 dump*.myforce.vtu id type vx fx
+dump dmpvtp flow custom/vtk 100 dump*.displace.pvtp id type c_myD\[1\] c_myD\[2\] c_myD\[3\] v_ke  :pre
 
 [Description:]
 
@@ -74,7 +74,8 @@ Only information for atoms in the specified group is dumped.  The
 "dump_modify thresh and region"_dump_modify_vtk.html commands can also
 alter what atoms are included; see details below.
 
-As described below, special characters ("*", "%") in the filename determine the kind of output.
+As described below, the special character "*" and the suffix in the filename
+determine the kind of output.
 
 IMPORTANT NOTE: Because periodic boundary conditions are enforced only
 on timesteps when neighbor lists are rebuilt, the coordinates of an
@@ -153,12 +154,16 @@ command can be used to insure all timestep numbers are the same length
 (e.g. 00010), which can make it easier to read a series of dump files
 in order with some post-processing tools.
 
-If a "%" character appears in the filename, then each of P processors
-writes a portion of the dump file, and the "%" character is replaced
-with the processor ID from 0 to P-1 preceded by an underscore character.
-For example, tmp.dump%.vtp becomes tmp.dump_0.vtp, tmp.dump_1.vtp, ...
-tmp.dump_P-1.vtp, etc.  This creates smaller files and can be a fast
-mode of output on parallel machines that support parallel I/O for output.
+To write the output file in parallel the filename must end with either ".pvtu"
+or ".pvtp". If we assume that the filename is "data.pvtu" then one file with
+exactly this name is written. This contains the link to the processor data which
+is written in "data_X.vtu" files, where X (= 0,...,P-1) is the ID of the
+processor that wrote the file. Thus, in order to visualize all the data in
+ParaView one would open the "data.pvtu" file. Writing output in a parallel
+fashion can be particularly important on distributed HPC clusters and can
+significantly reduce runtime.
+
+NOTE: The legacy ".vtk" file type does not support parallel writing.
 
 By default, P = the number of processors meaning one file per
 processor, but P can be set to a smaller value via the {nfile} or
@@ -166,17 +171,14 @@ processor, but P can be set to a smaller value via the {nfile} or
 These options can be the most efficient way of writing out dump files
 when running on large numbers of processors.
 
-For the legacy VTK format "%" is ignored and P = 1, i.e., only
-processor 0 does write files.
-
-Note that using the "*" and "%" characters together can produce a
+Note that using the "*" character and parallel file types together can produce a
 large number of small dump files!
 
-If {dump_modify binary} is used, the dump file (or files, if "*" or "%" is also
-used) is written in binary format.  A binary dump file will be about the same
-size as a text version, but will typically write out much faster. Additionally,
-{dump_modify compressor} can be used to specify the writing of compressed binary
-data. Options for compressors include:
+If {dump_modify binary} is used, the dump file(s) is/are written in binary
+format. A binary dump file will be about the same size as a text version, but
+will typically write out much faster. Additionally, {dump_modify compressor} can
+be used to specify the writing of compressed binary data. Options for
+compressors include:
 
 none: No compression
 zlib: Zlib compression
@@ -293,7 +295,7 @@ invoke other computes, fixes, or variables when they are evaluated, so
 this is a very general means of creating quantities to output to a
 dump file.
 
-The {shapex, shapey, shapez, roundness1, roundness2, quat1, quat2, quat3, quat4} 
+The {shapex, shapey, shapez, blockiness1, blockiness2, quat1, quat2, quat3, quat4} 
 attributes are available only for {superquadric} particles and hence require this 
 "atom_style"_atom_style.html
 

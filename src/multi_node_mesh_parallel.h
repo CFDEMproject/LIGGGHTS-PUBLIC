@@ -53,6 +53,8 @@
 #include "domain_wedge.h"
 #include <string>
 #include <list>
+#include <cmath>
+#include <algorithm>
 
 namespace LAMMPS_NS
 {

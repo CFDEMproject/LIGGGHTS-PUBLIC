@@ -40,7 +40,7 @@
     Copyright 2013-     TU Graz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <mpi.h>
 #include <string.h>
 #include <stdlib.h>

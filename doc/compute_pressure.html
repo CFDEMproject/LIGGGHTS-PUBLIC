@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute pressure command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute pressure command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_pressure.txt" rel="nofollow"> View page source</a> 
+      <li>compute pressure command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_pressure.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute pressure command<a class="headerlink" href="#compute-pressure-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID pressure general_keyword general_values temp-ID keyword ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID pressure general_keyword general_values temp-ID keyword ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -160,8 +184,9 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all pressure myTemp
-compute 1 all pressure thermo_temp pair bond</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all pressure myTemp
+compute 1 all pressure thermo_temp pair bond
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -178,7 +203,7 @@ dimensionality of the system (2 or 3 for 2d/3d), V is the system
 volume (or area in 2d), and the second term is the virial, computed
 within LIGGGHTS(R)-PUBLIC for all pairwise as well as 2-body, 3-body, and 4-body,
 and long-range interactions.  <a class="reference internal" href="fix.html"><em>Fixes</em></a> that impose constraints
-(e.g. the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">shake</span></tt> command) also contribute to the
+(e.g. the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">shake</span></code> command) also contribute to the
 virial term.</p>
 <p>A symmetric pressure tensor, stored as a 6-element vector, is also
 calculated by this compute.  The 6 components of the vector are
@@ -205,16 +230,19 @@ degrees-of-freedom divided by d = dimensionality, where the DOF value
 is calcluated by the temperature compute.  See the various <a class="reference internal" href="compute.html"><em>compute temperature</em></a> styles for details.</p>
 <p>A compute of this style with the ID of &#8220;thermo_press&#8221; is created when
 LIGGGHTS(R)-PUBLIC starts up, as if this command were in the input script:</p>
-<div class="highlight-python"><pre>compute thermo_press all pressure thermo_temp</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute thermo_press all pressure thermo_temp
+</pre></div>
 </div>
 <p>where &#8220;thermo_temp&#8221; is the ID of a similarly defined compute of style
 &#8220;temp&#8221;.  See the &#8220;thermo_style&#8221; command for more details.</p>
+</div>
 <hr class="docutils" />
-<p><strong>Output info:</strong></p>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This compute calculates a global scalar (the pressure) and a global
 vector of length 6 (pressure tensor), which can be accessed by indices
 1-6.  These values can be used by any command that uses global scalar
-or vector values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><em>this section</em></a> for an overview of LIGGGHTS(R)-PUBLIC output
+or vector values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>The scalar and vector values calculated by this compute are
 &#8220;intensive&#8221;.  The scalar and vector values will be in pressure
@@ -227,13 +255,16 @@ options.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
-<p><tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp</span></tt>, <a class="reference internal" href="compute_stress_atom.html"><em>compute stress/atom</em></a>,
+<p><code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp</span></code>, <a class="reference internal" href="compute_stress_atom.html"><em>compute stress/atom</em></a>,
 <a class="reference internal" href="thermo_style.html"><em>thermo_style</em></a>,</p>
 <p><strong>Default:</strong> none</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -264,11 +295,13 @@ options.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

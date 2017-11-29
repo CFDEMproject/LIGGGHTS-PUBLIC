@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix ave/euler command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix ave/euler command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_ave_euler.txt" rel="nofollow"> View page source</a> 
+      <li>fix ave/euler command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_ave_euler.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix ave/euler command<a class="headerlink" href="#fix-ave-euler-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID ave/euler nevery N cell_size_relative c parallel par keywords values</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID ave/euler nevery N cell_size_relative c parallel par keywords values
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -168,7 +192,8 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all ave/euler nevery 100 cell_size_relative 4.5</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all ave/euler nevery 100 cell_size_relative 4.5
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -218,7 +243,7 @@ are relevant to this fix.</p>
 only be accessed on timesteps that are multiples of <em>nevery</em> since that
 is when calculations are performed.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -227,7 +252,7 @@ of a structured (equidistant regular) grid, so volume fractions and
 stresses near walls that are not alligned with the grid will be
 incorrect.</p>
 <p><strong>Coarse-graining information:</strong></p>
-<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
 combination with this command might lead to
 different dynamics or system state and thus to
 inconsistancies. However, the influence of this
@@ -237,7 +262,7 @@ This has to be reviewed by a specialist on a
 case-by-case basis.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 </div>
@@ -251,6 +276,9 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -281,11 +309,13 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

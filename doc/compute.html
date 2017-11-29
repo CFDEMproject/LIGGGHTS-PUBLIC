@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute.txt" rel="nofollow"> View page source</a> 
+      <li>compute command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute command<a class="headerlink" href="#compute-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID style general_keywords general_values args</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID style general_keywords general_values args
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID = user-assigned name for the computation</li>
@@ -167,9 +191,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all temp
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all temp
 compute newtemp flow temp/partial 1 1 0
-compute 3 all ke/atom update_on_run_end yes</pre>
+compute 3 all ke/atom update_on_run_end yes
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -181,9 +206,9 @@ timestep or iteration, though a compute may internally store some
 information about a previous state of the system.  Defining a compute
 does not perform a computation.  Instead computes are invoked by other
 LIGGGHTS(R)-PUBLIC commands as needed, e.g. to calculate  dump file output.
-See this <a class="reference internal" href="Section_howto.html#howto-8"><em>howto section</em></a> for a summary of
+See this <span class="xref std std-ref">howto section</span> for a summary of
 various LIGGGHTS(R)-PUBLIC output options, many of which involve computes.</p>
-<p>The full list of fixes defined in LIGGGHTS(R)-PUBLIC is on <em class="xref std std-ref">this page</em>.</p>
+<p>The full list of fixes defined in LIGGGHTS(R)-PUBLIC is on <span class="xref std std-ref">this page</span>.</p>
 <p>The ID of a compute can only contain alphanumeric characters and
 underscores.</p>
 <hr class="docutils" />
@@ -280,7 +305,7 @@ calculations accessed in the various ways described above.</p>
 <hr class="docutils" />
 <p>Each compute style has its own doc page which describes its arguments
 and what it does. The full list of computes defined in LIGGGHTS(R)-PUBLIC is on
-<em class="xref std std-ref">this page</em>.</p>
+<span class="xref std std-ref">this page</span>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -296,6 +321,9 @@ and what it does. The full list of computes defined in LIGGGHTS(R)-PUBLIC is on
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -326,11 +354,13 @@ and what it does. The full list of computes defined in LIGGGHTS(R)-PUBLIC is on
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

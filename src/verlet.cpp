@@ -266,6 +266,7 @@ void Verlet::run(int n)
   bigint ntimestep;
   int nflag,sortflag;
 
+  const int n_pre_initial_integrate = modify->n_pre_initial_integrate;
   const int n_post_integrate = modify->n_post_integrate;
   const int n_pre_exchange = modify->n_pre_exchange;
   const int n_pre_neighbor = modify->n_pre_neighbor;
@@ -282,6 +283,10 @@ void Verlet::run(int n)
     ntimestep = ++update->ntimestep;
     
     ev_set(ntimestep);
+
+    // pre-integration step
+
+    if (n_pre_initial_integrate) modify->pre_initial_integrate();
 
     // initial time integration
 

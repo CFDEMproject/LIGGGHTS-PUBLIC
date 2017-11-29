@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>gran rolling_friction epsd3 model &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>gran rolling_friction epsd3 model</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/gran_rolling_friction_epsd3.txt" rel="nofollow"> View page source</a> 
+      <li>gran rolling_friction epsd3 model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/gran_rolling_friction_epsd3.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -183,16 +206,19 @@ k_r = coeffRollingStiffness*k_n*rmu*rmu*reff*reff.</p>
 <p>Here I_i/j is the moment of inertia and m_i/j is the mass of the particles i and j,
 respectively.</p>
 <p>The coefficient of rolling friction (rmu) must be defined as</p>
-<div class="highlight-python"><pre>fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global coefficientRollingFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+</pre></div>
 </div>
 <p>This coefficient rmu is equal to the rmu as defined in the <a class="reference internal" href="gran_rolling_friction_cdt.html"><em>CDT model</em></a>.
 In addition to rmu, eta_r is the required material property that must be defined as</p>
-<div class="highlight-python"><pre>fix id all property/global coefficientRollingViscousDamping peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global coefficientRollingViscousDamping peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+    (value_ij=value for the coefficient of rolling friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+</pre></div>
 </div>
 <p>The &#8220;coeffRollingStiffness&#8221; prefactor needs to be defined by the user as</p>
-<div class="highlight-python"><pre>fix     id all property/global coeffRollingStiffness scalar value</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix     id all property/global coeffRollingStiffness scalar value
+</pre></div>
 </div>
 <p>Please see Ai et al., 2011 for discussion.</p>
 <div class="admonition warning">
@@ -202,13 +228,13 @@ In addition to rmu, eta_r is the required material property that must be defined
 <p><strong>Torque information:</strong></p>
 <p>By default the relative, normal rotation (torsion) is subtracted and does not contribute to the resulting torque. By setting the <em>torsionTorque</em> keyword to &#8216;on&#8217;, the full relative rotation contributes to the rolling friciton torque.</p>
 <p><strong>Coarse-graining information:</strong></p>
-<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
 combination with this command might lead to
 different dynamics or system state and thus to
 inconsistancies.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 </div>
@@ -220,6 +246,9 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -250,11 +279,13 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -44,7 +44,7 @@ Thanks to Chris Stoltz (P&G) for providing
 a Fortran version of the MC integrator
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -546,7 +546,7 @@ int FixTemplateMultiplespheres::number_spheres()
 void FixTemplateMultiplespheres::randomize_single()
 {
   
-  pti->nspheres = nspheres;
+  pti->nparticles = nspheres;
   pti->density_ins = expectancy(pdf_density);
   pti->volume_ins = volume_expect;
   pti->mass_ins = mass_expect;
@@ -714,7 +714,7 @@ void FixTemplateMultiplespheres::direct_set_ptlist(const int i, const void * con
 unsigned int FixTemplateMultiplespheres::generate_hash()
 {
     unsigned int hash = 0;
-    unsigned int start = seed_insertion*123457; // it's magic
+    unsigned int start = seed_orig*123457; // it's magic
     if (atom_type_sphere)
     {
         for (int i = 0; i < nspheres; i++)

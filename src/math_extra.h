@@ -50,7 +50,7 @@
 #ifndef LMP_MATH_EXTRA_H
 #define LMP_MATH_EXTRA_H
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <string.h>
 #include "error.h"

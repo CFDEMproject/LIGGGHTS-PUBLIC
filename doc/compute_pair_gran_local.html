@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute pair/gran/local command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute pair/gran/local command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_pair_gran_local.txt" rel="nofollow"> View page source</a> 
+      <li>compute pair/gran/local command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_pair_gran_local.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -150,8 +173,9 @@
 <h1>compute wall/gran/local command<a class="headerlink" href="#compute-wall-gran-local-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID pair/gran/local general_keywords general_values keywords ...
-compute ID group-ID wall/gran/local general_keywords general_values keywords ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID pair/gran/local general_keywords general_values keywords ...
+compute ID group-ID wall/gran/local general_keywords general_values keywords ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -170,15 +194,18 @@ keyword = <em>pos</em> or <em>vel</em> or <em>id</em> or <em>force</em> or <em>t
   <em>torque</em> = torque divided by particle diameter (3 values)
   <em>history</em> = contact history (# depends on pair style, e.g. 3 shear history values)
   <em>contactArea</em> = area of the contact (1 value)
+  <em>contactPoint</em> = contact point (3 value)
   <em>delta</em> = overlap of the contact (1 value)
   <em>heatFlux</em> = conductive heat flux of the contact (1 value)
+  <em>ms_id</em> = multisphere IDs of clumps where of particles in contact belong to (in case of wall, second value will be -1) (2 values)
 </pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all pair/gran/local
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all pair/gran/local
 compute 1 all pair/gran/local pos force
-compute 1 all wall/gran/local</pre>
+compute 1 all wall/gran/local
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -197,7 +224,7 @@ commands.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">For accessing particle-wall contact data, only mesh
-walls (see <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></tt>) can be used.
+walls (see <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></code>) can be used.
 For computing particle-wall (compute wall/gran/local), the code will
 automatically look for a <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a> command
 that uses mesh walls. The order of the meshes in the fix wall/gran
@@ -227,19 +254,21 @@ pair style used. The output <em>contactArea</em> will output the contact area,
 in distance^2 <a class="reference internal" href="units.html"><em>units</em></a>. Note that <em>contactArea</em> is based on
 an analytic geometric calculation of sphere-sphere or sphere-plane intersection
 rather than a calculation based on mechanics. This is to ensure that
-<em>contactArea</em> works with all types of contact models.</p>
+<em>contactArea</em> works with all types of contact models. The <em>contactPoint</em> output
+will store the point at which contact forces are computed.</p>
 <p>The output <em>delta</em> will output the
 overlap (sum of radii - distance between particle centers) in distance
 <a class="reference internal" href="units.html"><em>units</em></a> .The output <em>heatFlux</em> (available only
-if a <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">heat/gran</span></tt> is used to compute  heat
+if a <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">heat/gran</span></code> is used to compute  heat
 fluxes) will output the per-contact conductive heat flux area, in
 energy/time <a class="reference internal" href="units.html"><em>units</em></a>.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">The data associated to the different keywords is output in the
 following order: <em>pos</em>, <em>vel</em>, <em>id</em>, <em>force</em>, <em>force_normal</em>,
-<em>force_tangential</em>, <em>torque</em>, <em>history</em>, <em>contactArea</em>, <em>heatFlux</em>.
-This is independant of the order in which the keywords are specified.</p>
+<em>force_tangential</em>, <em>torque</em>, <em>history</em>, <em>contactArea</em>, <em>heatFlux</em>,
+<em>contactPoint</em>. This is independant of the order in which the keywords are
+specified.</p>
 </div>
 <p>Note that as atoms migrate from processor to processor, there will be
 no consistent ordering of the entries within the local vector or array
@@ -258,14 +287,16 @@ forces given the current positions, velocities etc</p>
 <p>Since this compute is typically done when output is created (at the end of
 the time-step), this is not necessarily exactly equal to (with machine precision)
 the p-p or p-w forces which were calculated within one time-step.</p>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This compute calculates a local vector or local array depending on the
 number of keywords.  The length of the vector or number of rows in the
 array is the number of pairs.  If a single keyword is specified, a
 local vector is produced.  If two or more keywords are specified, a
 local array is produced where the number of columns = the number of
 keywords.  The vector or array can be accessed by any command that
-uses local values from a compute as input.  See <em class="xref std std-ref">this section</em> for an overview of LIGGGHTS(R)-PUBLIC output
+uses local values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>For information on the <a class="reference internal" href="units.html"><em>units</em></a> of the output, see above.</p>
 </div>
@@ -290,6 +321,9 @@ and contact area are output.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -320,11 +354,13 @@ and contact area are output.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

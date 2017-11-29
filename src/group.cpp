@@ -44,7 +44,7 @@
 ------------------------------------------------------------------------- */
 
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -64,14 +64,15 @@
 #include "error.h"
 #include "fix_multisphere.h"
 
+// include last to ensure correct macros
+#include "domain_definitions.h"
+
 using namespace LAMMPS_NS;
 
 #define MAX_GROUP 32
 
 enum{TYPE,MOLECULE,ID};
 enum{LT,LE,GT,GE,EQ,NEQ,BETWEEN};
-
-#define BIG 1.0e20
 
 /* ----------------------------------------------------------------------
    initialize group memory

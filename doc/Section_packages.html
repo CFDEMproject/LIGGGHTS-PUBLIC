@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>7. Packages &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -83,7 +84,10 @@
           
             
             
-                <ul class="current">
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -107,8 +111,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -121,24 +127,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>7. Packages</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/Section_packages.txt" rel="nofollow"> View page source</a> 
+      <li>7. Packages</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/Section_packages.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
@@ -163,7 +186,7 @@ enable a specific set of features.  For example, force fields for
 molecular systems or granular systems are in packages.  You can see
 the list of all packages by typing &#8220;make package&#8221; from within the src
 directory of the LIGGGHTS(R)-PUBLIC distribution.</p>
-<p>See <a class="reference internal" href="Section_start.html#start-3"><em>Section_start 3</em></a> of the manual for
+<p>See <span class="xref std std-ref">Section_start 3</span> of the manual for
 details on how to include/exclude specific packages as part of the
 LIGGGHTS(R)-PUBLIC build process, and for more details about the differences
 between standard packages and user packages in LIGGGHTS(R)-PUBLIC.</p>
@@ -186,20 +209,7 @@ standard packages, just a one-line description is given:</p>
 <td>Example</td>
 <td>Library</td>
 </tr>
-<tr class="row-even"><td>ASPHERE</td>
-<td>aspherical particles</td>
-<td><ul class="first last simple">
-<li></li>
-</ul>
-</td>
-<td><em class="xref std std-ref">Section_howto</em></td>
-<td>ellipse</td>
-<td><ul class="first last simple">
-<li></li>
-</ul>
-</td>
-</tr>
-<tr class="row-odd"><td>MOLECULE</td>
+<tr class="row-even"><td>MOLECULE</td>
 <td>molecular system force fields</td>
 <td><ul class="first last simple">
 <li></li>
@@ -218,25 +228,12 @@ standard packages, just a one-line description is given:</p>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td>POEMS</td>
+<tr class="row-odd"><td>POEMS</td>
 <td>coupled rigid body motion</td>
 <td>Rudra Mukherjee (JPL)</td>
 <td><a class="reference internal" href="fix_poems.html"><em>fix poems</em></a></td>
 <td>rigid</td>
 <td>lib/poems</td>
-</tr>
-<tr class="row-odd"><td>RIGID</td>
-<td>rigid bodies</td>
-<td><ul class="first last simple">
-<li></li>
-</ul>
-</td>
-<td><a class="reference internal" href="fix_rigid.html"><em>fix rigid</em></a></td>
-<td>rigid</td>
-<td><ul class="first last simple">
-<li></li>
-</ul>
-</td>
 </tr>
 <tr class="row-even"><td>VORONOI</td>
 <td>Voronoi tesselations</td>
@@ -270,21 +267,24 @@ of the LIGGGHTS(R)-PUBLIC distribution.  See the lib/package/README file for inf
 on how to build the library.  If it is not listed as lib/package, then
 it is a third-party library not included in the LIGGGHTS(R)-PUBLIC distribution.
 See the src/package/README or src/package/Makefile.lammps file for
-info on where to download the library.  <a class="reference internal" href="Section_start.html#start-3-3"><em>Section start</em></a> of the manual also gives details
+info on where to download the library.  <span class="xref std std-ref">Section start</span> of the manual also gives details
 on how to build LIGGGHTS(R)-PUBLIC with both kinds of auxiliary libraries.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Section_howto.html" class="btn btn-neutral float-right" title="8. How-to discussions" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="Section_howto.html" class="btn btn-neutral float-right" title="8. How-to discussions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="Section_mesh_modules.html" class="btn btn-neutral" title="6. Mesh modules" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="Section_mesh_modules.html" class="btn btn-neutral" title="6. Mesh modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -314,11 +314,13 @@ on how to build LIGGGHTS(R)-PUBLIC with both kinds of auxiliary libraries.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

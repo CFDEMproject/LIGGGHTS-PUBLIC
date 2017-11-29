@@ -41,9 +41,10 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <cmath>
+#include <algorithm>
 #include "atom.h"
 #include "update.h"
-#include <math.h>
 #include "error.h"
 #include "fix_check_timestep_gran.h"
 #include "pair_gran.h"
@@ -58,7 +59,6 @@
 #include "mpi_liggghts.h"
 #include "property_registry.h"
 #include "global_properties.h"
-#include <algorithm>
 
 using namespace LAMMPS_NS;
 using namespace FixConst;

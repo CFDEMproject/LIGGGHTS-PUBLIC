@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix ave/time command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix ave/time command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_ave_time.txt" rel="nofollow"> View page source</a> 
+      <li>fix ave/time command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_ave_time.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix ave/time command<a class="headerlink" href="#fix-ave-time-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID ave/time Nevery Nrepeat Nfreq value1 value2 ... keyword args ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID ave/time Nevery Nrepeat Nfreq value1 value2 ... keyword args ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -158,11 +182,12 @@
 <li>one or more input values can be listed</li>
 <li>value = c_ID, c_ID[N], f_ID, f_ID[N], v_name</li>
 </ul>
-<div class="highlight-python"><pre>c_ID = global scalar or vector calculated by a compute with ID
+<div class="highlight-python"><div class="highlight"><pre>c_ID = global scalar or vector calculated by a compute with ID
 c_ID[I] = Ith component of global vector or Ith column of global array calculated by a compute with ID
 f_ID = global scalar or vector calculated by a fix with ID
 f_ID[I] = Ith component of global vector or Ith column of global array calculated by a fix with ID
-v_name = global value calculated by an equal-style variable with name</pre>
+v_name = global value calculated by an equal-style variable with name
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more keyword/arg pairs may be appended</li>
@@ -193,17 +218,18 @@ v_name = global value calculated by an equal-style variable with name</pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all ave/time 100 5 1000 c_myTemp c_myTemp2 file temp.profile
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all ave/time 100 5 1000 c_myTemp c_myTemp2 file temp.profile
 fix 1 all ave/time 100 5 1000 c_myArray[2] ave window 20 &amp;
-                              title1 "My output values"
-fix 1 all ave/time 1 100 1000 f_indent f_indent[1] file temp.indent off 1</pre>
+                              title1 &quot;My output values&quot;
+fix 1 all ave/time 1 100 1000 f_indent f_indent[1] file temp.indent off 1
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Use one or more global values as inputs every few timesteps, and
 average them over longer timescales.  The resulting averages can be
-used by other <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a> such as
+used by other <span class="xref std std-ref">output commands</span> such as
 <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a
 file.  Note that if no time averaging is done, this command can be
 used as a convenient way to simply output one or more global values to
@@ -238,9 +264,10 @@ then it is the same as if the individual columns of the array had been
 listed one by one.  E.g. these 2 fix ave/time commands are equivalent,
 since the <a class="reference internal" href="compute_rdf.html"><em>compute rdf</em></a> command creates, in this
 case, a global array with 3 columns, each of length 50:</p>
-<div class="highlight-python"><pre>compute myRDF all rdf 50 1 2
+<div class="highlight-python"><div class="highlight"><pre>compute myRDF all rdf 50 1 2
 fix 1 all ave/time 100 1 100 c_myRDF file tmp1.rdf mode vector
-fix 2 all ave/time 100 1 100 c_myRDF[1] c_myRDF[2] c_myRDF[3] file tmp2.rdf mode vector</pre>
+fix 2 all ave/time 100 1 100 c_myRDF[1] c_myRDF[2] c_myRDF[3] file tmp2.rdf mode vector
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>The <em>Nevery</em>, <em>Nrepeat</em>, and <em>Nfreq</em> arguments specify on what
@@ -273,7 +300,7 @@ calculated by the compute is used.</p>
 <p>Note that there is a <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a> command
 which can sum per-atom quantities into a global scalar or vector which
 can thus be accessed by fix ave/time.  Or it can be a compute defined
-not in your input script, but by <a class="reference internal" href="thermo_style.html"><em>thermodynamic output</em></a> or other fixes such as <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></tt> or <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">temp/rescale</span></tt>.  See
+not in your input script, but by <a class="reference internal" href="thermo_style.html"><em>thermodynamic output</em></a> or other fixes such as <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></code> or <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">temp/rescale</span></code>.  See
 the doc pages for these commands which give the IDs of these computes.
 Users can also write code for their own compute styles and <a class="reference internal" href="Section_modify.html"><em>add them to LIGGGHTS(R)-PUBLIC</em></a>.</p>
 <p>If a value begins with &#8220;<a href="#id3"><span class="problematic" id="id4">f_</span></a>&#8221;, a fix ID must follow which has been
@@ -356,8 +383,8 @@ the strings that will be printed as the first 2 or 3 lines of the
 output file, assuming the <em>file</em> keyword was used.  LIGGGHTS(R)-PUBLIC uses
 default values for each of these, so they do not need to be specified.</p>
 <p>By default, these header lines are as follows for <em>mode</em> = scalar:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Time-averaged data for fix ID</span>
-<span class="c"># TimeStep value1 value2 ...</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Time-averaged data for fix ID</span>
+<span class="c1"># TimeStep value1 value2 ...</span>
 </pre></div>
 </div>
 <p>In the first line, ID is replaced with the fix-ID.  In the second line
@@ -365,9 +392,9 @@ the values are replaced with the appropriate fields from the fix
 ave/time command.  There is no third line in the header of the file,
 so the <em>title3</em> setting is ignored when <em>mode</em> = scalar.</p>
 <p>By default, these header lines are as follows for <em>mode</em> = vector:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Time-averaged data for fix ID</span>
-<span class="c"># TimeStep Number-of-rows</span>
-<span class="c"># Row value1 value2 ...</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Time-averaged data for fix ID</span>
+<span class="c1"># TimeStep Number-of-rows</span>
+<span class="c1"># Row value1 value2 ...</span>
 </pre></div>
 </div>
 <p>In the first line, ID is replaced with the fix-ID.  The second line
@@ -381,7 +408,7 @@ appropriate fields from the fix ave/time command.</p>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix produces a global scalar or global vector or global array
-which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The values can only be
+which can be accessed by various <span class="xref std std-ref">output commands</span>.  The values can only be
 accessed on timesteps that are multiples of <em>Nfreq</em> since that is when
 averaging is performed.</p>
 <p>A scalar is produced if only a single input value is averaged and
@@ -402,7 +429,7 @@ whether the value is intensive or extensive; see the doc page for that
 compute or fix for further info.  Values produced by a variable are
 treated as intensive.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -421,6 +448,9 @@ for any input values.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -451,11 +481,13 @@ for any input values.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix poems command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix poems command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_poems.txt" rel="nofollow"> View page source</a> 
+      <li>fix poems command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_poems.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -146,7 +169,8 @@
   <div class="section" id="fix-poems-command">
 <span id="index-0"></span><h1>fix poems command<a class="headerlink" href="#fix-poems-command" title="Permalink to this headline">¶</a></h1>
 <p>Syntax:</p>
-<div class="highlight-python"><pre>fix ID group-ID poems keyword values modelType keyword</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID poems keyword values modelType keyword
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -168,9 +192,10 @@
 </pre>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 3 fluid poems group clump1 clump2 clump3
+<div class="highlight-python"><div class="highlight"><pre>fix 3 fluid poems group clump1 clump2 clump3
 fix 3 fluid poems file cluster.list
-fix 1 all poems file data/segments_joints.poems modelType SFJ</pre>
+fix 1 all poems file data/segments_joints.poems modelType SFJ
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -184,9 +209,9 @@ so that the collection of segments move as a coupled set.  This can be
 useful for treating a large biomolecule as a collection of connected,
 coarse-grained particles.</p>
 <p>The coupling, associated motion constraints, and time integration is
-performed by the software package <a class="reference external" href="poems_">Parallelizable Open source Efficient Multibody Software (POEMS)</a> which computes the
+performed by the software package <a class="reference external" href="http://www.rpi.edu/~anderk5/lab">Parallelizable Open source Efficient Multibody Software (POEMS)</a> which computes the
 constrained rigid-segment motion of articulated (jointed) multibody
-systems <a class="reference internal" href="#anderson"><em>(Anderson)</em></a>.  POEMS was written and is distributed
+systems <a class="reference internal" href="#anderson"><span>(Anderson)</span></a>.  POEMS was written and is distributed
 by Prof Kurt Anderson, his graduate student Rudranarayan Mukherjee,
 and other members of his group at Rensselaer Polytechnic Institute
 (RPI).  Rudranarayan developed the original POEMS interface.  For
@@ -242,15 +267,15 @@ off, and there is only a single fix poems defined.</p>
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.  No global or per-atom quantities are stored
-by this fix for access by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  No parameter of this fix can
+by this fix for access by various <span class="xref std std-ref">output commands</span>.  No parameter of this fix can
 be used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.
-This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
 <p>This fix is part of the POEMS package.  It is only enabled if LIGGGHTS(R)-PUBLIC
 was built with that package, which also requires the POEMS library be
-built and linked with LIGGGHTS(R)-PUBLIC.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info.</p>
+built and linked with LIGGGHTS(R)-PUBLIC.  See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section for more info.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
@@ -265,6 +290,9 @@ Engineering With Computers (2006). (<a class="reference external" href="http://d
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -295,11 +323,13 @@ Engineering With Computers (2006). (<a class="reference external" href="http://d
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

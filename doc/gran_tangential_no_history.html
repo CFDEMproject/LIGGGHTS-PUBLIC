@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>gran tangential no_history model &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>gran tangential no_history model</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/gran_tangential_no_history.txt" rel="nofollow"> View page source</a> 
+      <li>gran tangential no_history model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/gran_tangential_no_history.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -155,13 +178,13 @@ tangential no_history [other model_type/model_name pairs as described <a class="
 </ul>
 <pre class="literal-block">
 <em>disableTangentialWhenBonded</em> values = 'on' or 'off'
-  on = if the <tt class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">bond</span></tt> model is used, then the tangential force is only added if the two particles are not bonded
+  on = if the <code class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">bond</span></code> model is used, then the tangential force is only added if the two particles are not bonded
   of = the normal force is always added if two particles overlap
 </pre>
 <pre class="literal-block">
 <em>computeDissipatedEnergy</em> values = 'on' or 'off'
   on = the tangential model saves the dissipated energy for each contact for the
-  use in <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/dissipated_energy</span></tt>
+  use in <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/dissipated_energy</span></code>
   of = no values are saved
 </pre>
 <p><strong>LIGGGHTS(R)-PUBLIC vs. LAMMPS Info:</strong></p>
@@ -178,23 +201,26 @@ NOT calculated / taken into account, i.e. k_t = 0.</p>
 <p>The coefficient of friction cof is the upper limit of the tangential force through
 the Coulomb criterion Ft = cof*Fn, where Ft and Fn are the tangential spring and normal
 force components in the formulas above.</p>
-<p>When the <tt class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">model</span> <span class="pre">bond</span></tt> is used the
+<p>When the <code class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">model</span> <span class="pre">bond</span></code> is used the
 <em>disableTangentialWhenBonded</em> keyword can be used. If this parameter is set to &#8216;on&#8217; then
 the tangential model will only compute its contribution if the two neighboring particles
 do not have an active bond.</p>
 <p><strong>Coarse-graining information:</strong></p>
-<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
 combination with this command should lead to
 statistically equivalent dynamics in the system.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -225,11 +251,13 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -1,0 +1,12 @@
+9a10,12
+> # If you want to use the vtk output feature and did not install vtk yourself
+> # then set the following to "ON" and uncomment it to allow for an automatic download and compilation
+> #AUTOINSTALL_VTK = "OFF"
+117a121,123
+> # Note: Boost only needs to be included if your standard library does not
+> # support beta functions. Makefile.auto will check if your system has this
+> # capability
+143c149
+< MAKEFILE_USER_VERSION = "1.1"
+---
+> MAKEFILE_USER_VERSION = "1.2"

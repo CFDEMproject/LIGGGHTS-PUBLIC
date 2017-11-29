@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix property/global command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix property/global command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_property.txt" rel="nofollow"> View page source</a> 
+      <li>fix property/global command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_property.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -150,8 +173,9 @@
 <h1>fix property/atom command<a class="headerlink" href="#fix-property-atom-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix id group property/atom variablename style restartvalue comm_ghost_value comm_reverse_ghost_value defaultvalue(s)...
-fix id group property/global variablename style stylearg defaultvalue(s)...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id group property/atom variablename style restartvalue comm_ghost_value comm_reverse_ghost_value defaultvalue(s)...
+fix id group property/global variablename style stylearg defaultvalue(s)...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -165,8 +189,9 @@ fix id group property/global variablename style stylearg defaultvalue(s)...</pre
 <ul class="simple">
 <li>style = scalar or vector or atomtype or matrix or atomtypepair</li>
 </ul>
-<div class="highlight-python"><pre>stylearg for scalar/vector: none
-stylearg for matrix/atomtypepair: nCols</pre>
+<div class="highlight-python"><div class="highlight"><pre>stylearg for scalar/vector: none
+stylearg for matrix/atomtypepair: nCols
+</pre></div>
 </div>
 <p>fix property/atom:</p>
 <ul class="simple">
@@ -178,9 +203,10 @@ stylearg for matrix/atomtypepair: nCols</pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
+<div class="highlight-python"><div class="highlight"><pre>fix m3 all property/global coefficientRestitution peratomtypepair 1 0.3
 fix m5 all property/global characteristicVelocity scalar 2.
-fix uf all property/atom uf vector yes no no  0. 0. 0.</pre>
+fix uf all property/atom uf vector yes no no  0. 0. 0.
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -231,6 +257,9 @@ Note that <em>matrix</em> and <em>atomtypepair</em> both refer to a matrix of gl
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -260,11 +289,13 @@ Note that <em>matrix</em> and <em>atomtypepair</em> both refer to a matrix of gl
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

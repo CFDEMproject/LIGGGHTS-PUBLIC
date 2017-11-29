@@ -8,7 +8,7 @@
 
 # pdb tool
 
-oneline = "Read, write PDB files in combo with LAMMPS snapshots"
+oneline = "Read, write PDB files in combo with LIGGGHTS snapshots"
 
 docstr = """
 p = pdbfile("3CRO")         create pdb object from PDB file or WWW

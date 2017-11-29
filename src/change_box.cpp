@@ -45,7 +45,7 @@
 
 #include "lmptype.h"
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "change_box.h"

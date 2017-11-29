@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>pair_style command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>pair_style command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/pair_style.txt" rel="nofollow"> View page source</a> 
+      <li>pair_style command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/pair_style.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,17 +170,19 @@
 <span id="index-0"></span><h1>pair_style command<a class="headerlink" href="#pair-style-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style style args</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style style args
+</pre></div>
 </div>
 <ul class="simple">
-<li>style = one of the styles from the list <em class="xref std std-ref">here</em></li>
+<li>style = one of the styles from the list <span class="xref std std-ref">here</span></li>
 <li>args = arguments used by a particular style</li>
 </ul>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style gran model hertz tangential history
-pair_style none</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style gran model hertz tangential history
+pair_style none
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -168,7 +193,7 @@ within a cutoff distance and the set of active interactions typically
 changes over time.  See the <a class="reference internal" href="bond_style.html"><em>bond_style</em></a> command to
 define potentials between pairs of bonded atoms, which typically
 remain in place for the duration of a simulation.</p>
-<p>The full list of pair styles defined in LIGGGHTS(R)-PUBLIC is on <em class="xref std std-ref">this page</em>.</p>
+<p>The full list of pair styles defined in LIGGGHTS(R)-PUBLIC is on <span class="xref std std-ref">this page</span>.</p>
 <p>Hybrid models where specified pairs of atom types interact via
 different pair potentials can be setup using the <em>hybrid</em> pair style.</p>
 <p>The coefficients associated with a pair style are typically set for
@@ -176,7 +201,7 @@ each pair of atom types, and are specified by the
 <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> command or read from a file by the
 <a class="reference internal" href="read_data.html"><em>read_data</em></a> or <a class="reference internal" href="read_restart.html"><em>read_restart</em></a>
 commands.</p>
-<p>The <tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt> command sets options for mixing of
+<p>The <code class="xref doc docutils literal"><span class="pre">pair_modify</span></code> command sets options for mixing of
 type I-J interaction coefficients.</p>
 <p>If the pair_style command has a cutoff argument, it sets global
 cutoffs for all pairs of atom types.  The distance(s) can be smaller
@@ -191,7 +216,7 @@ to this are that pair_style <em>table</em> and <em>hybrid</em> settings cannot b
 reset.  A new pair_style command for these styles will wipe out all
 previously specified pair_coeff values.</p>
 <hr class="docutils" />
-<p>The full list of pair styles defined in LIGGGHTS(R)-PUBLIC is on <em class="xref std std-ref">this page</em>.</p>
+<p>The full list of pair styles defined in LIGGGHTS(R)-PUBLIC is on <span class="xref std std-ref">this page</span>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -199,23 +224,27 @@ previously specified pair_coeff values.</p>
 <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a>, <a class="reference internal" href="read_data.html"><em>read_data</em></a>, or
 <a class="reference internal" href="read_restart.html"><em>read_restart</em></a> commands.</p>
 <p>Some pair styles are part of specific packages.  They are only enabled
-if LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info on packages.
+if LIGGGHTS(R)-PUBLIC was built with that package.  See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section for more info on packages.
 The doc pages for individual pair potentials tell if it is part of a
 package.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a>, <a class="reference internal" href="read_data.html"><em>read_data</em></a>,
-<tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt>, <a class="reference internal" href="dielectric.html"><em>dielectric</em></a>,</p>
+<code class="xref doc docutils literal"><span class="pre">pair_modify</span></code>, <a class="reference internal" href="dielectric.html"><em>dielectric</em></a>,</p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style none</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style none
+</pre></div>
 </div>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -246,11 +275,13 @@ package.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

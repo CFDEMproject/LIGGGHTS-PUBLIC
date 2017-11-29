@@ -6,8 +6,11 @@ version_liggghts.h
 debug_make_auto
 liblmp_*
 liblammps*
+libliggghts.so
 MAKE/Makefile.user*
 !MAKE/Makefile.user_default
+!MAKE/Makefile.user_default_patch_*
 MAKE/Makefile.auto.options*
 STUBS/libmpi_stubs.a
 STUBS/mpi.o
+MAKE/auto_backup/*

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix adapt command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix adapt command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_adapt.txt" rel="nofollow"> View page source</a> 
+      <li>fix adapt command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_adapt.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix adapt command<a class="headerlink" href="#fix-adapt-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID adapt N attribute args ... keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID adapt N attribute args ... keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -181,9 +205,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all adapt 1 pair soft a 1 1 v_prefactor
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all adapt 1 pair soft a 1 1 v_prefactor
 fix 1 all adapt 1 pair soft a 2* 3 v_prefactor
-fix 1 all adapt 10 atom diameter v_size</pre>
+fix 1 all adapt 10 atom diameter v_size
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -251,7 +276,7 @@ to this list.  All it typically takes is adding an extract() method to
 the pair_*.cpp file associated with the potential.</p>
 </div>
 <p>Some parameters are global settings for the pair style, e.g. the
-viscosity setting &#8220;mu&#8221; for <tt class="xref doc docutils literal"><span class="pre">pair_style</span> <span class="pre">lubricate</span></tt>.
+viscosity setting &#8220;mu&#8221; for <code class="xref doc docutils literal"><span class="pre">pair_style</span> <span class="pre">lubricate</span></code>.
 Other parameters apply to atom type pairs within the pair style,
 e.g. the prefactor &#8220;a&#8221; for <a class="reference internal" href="pair_soft.html"><em>pair_style soft</em></a>.</p>
 <p>If a type pair parameter is specified, the <em>I</em> and <em>J</em> settings should
@@ -290,8 +315,9 @@ details.</p>
 <p>For example, these commands would change the prefactor coefficient of
 the <a class="reference internal" href="pair_soft.html"><em>pair_style soft</em></a> potential from 10.0 to 30.0 in a
 linear fashion over the course of a simulation:</p>
-<div class="highlight-python"><pre>variable prefactor equal ramp(10,30)
-fix 1 all adapt 1 pair soft a * * v_prefactor</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable prefactor equal ramp(10,30)
+fix 1 all adapt 1 pair soft a * * v_prefactor
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>The <em>atom</em> keyword enables various atom properties to be changed.  The
@@ -315,8 +341,9 @@ constant).</p>
 <p>For example, these commands would shrink the diameter of all granular
 particles in the &#8220;center&#8221; group from 1.0 to 0.1 in a linear fashion
 over the course of a 1000-step simulation:</p>
-<div class="highlight-python"><pre>variable size equal ramp(1.0,0.1)
-fix 1 center adapt 10 atom diameter v_size</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable size equal ramp(1.0,0.1)
+fix 1 center adapt 10 atom diameter v_size
+</pre></div>
 </div>
 </div>
 <hr class="docutils" />
@@ -324,9 +351,9 @@ fix 1 center adapt 10 atom diameter v_size</pre>
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.  No global or per-atom quantities are stored
-by this fix for access by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  No parameter of this fix can
+by this fix for access by various <span class="xref std std-ref">output commands</span>.  No parameter of this fix can
 be used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.
-This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -335,7 +362,7 @@ This fix is not invoked during <tt class="xref doc docutils literal"><span class
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
-<p><tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">ti</span></tt></p>
+<p><code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">ti</span></code></p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
@@ -344,6 +371,9 @@ This fix is not invoked during <tt class="xref doc docutils literal"><span class
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -374,11 +404,13 @@ This fix is not invoked during <tt class="xref doc docutils literal"><span class
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

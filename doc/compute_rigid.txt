@@ -6,7 +6,7 @@
 
 :line
 
-compute rigid command
+compute rigid command :h3
 compute multisphere command :h3
 compute multisphere/single command :h3
 
@@ -20,7 +20,7 @@ ID, group-ID are documented in "compute"_compute.html command :ulb,l
 id = obligatory keyword for style multisphere/single :l
 id_ms = multisphere id which command applies to for style multisphere/single :l
 property = obligatory keyword :l
-general_keywords general_values are documented in "compute"_compute.html" :l
+general_keywords general_values are documented in "compute"_compute.html :l
 property_name = {xcm} or {vcm} or {fcm} or {torque} or {quat} or {angmom} or {omega} or {density} or {type} or {id} or {masstotal} or {inertia} or {ex_space} or {ey_space} or {ez_space} :l
   {xcm} = body position (based on center of mass) (3 values)
   {vcm} = body velocity (based on center of mass) (3 values)

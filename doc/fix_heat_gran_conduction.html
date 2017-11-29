@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix heat/gran command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix heat/gran command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_heat_gran_conduction.txt" rel="nofollow"> View page source</a> 
+      <li>fix heat/gran command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_heat_gran_conduction.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -150,9 +173,11 @@
 <h1>fix heat/gran/conduction command<a class="headerlink" href="#fix-heat-gran-conduction-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID heat/gran initial_temperature T0 keyword values</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID heat/gran initial_temperature T0 keyword values
+</pre></div>
 </div>
-<div class="highlight-python"><pre>fix ID group-ID heat/gran/conduction initial_temperature T0 keyword values</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID heat/gran/conduction initial_temperature T0 keyword values
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -170,7 +195,8 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 3 hg heat/gran/conduction initial_temperature 273.15</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix 3 hg heat/gran/conduction initial_temperature 273.15
+</pre></div>
 </div>
 <p><strong>LIGGGHTS(R)-PUBLIC vs. LAMMPS info:</strong></p>
 <p>This command is not available in LAMMPS.</p>
@@ -178,7 +204,7 @@
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Calculates heat conduction between particles in contact and temperature
-update (see <a class="reference internal" href="#chaudhuri"><em>(Chaudhuri)</em></a>) according to</p>
+update (see <a class="reference internal" href="#chaudhuri"><span>(Chaudhuri)</span></a>) according to</p>
 <img alt="_images/heat_gran.png" class="align-center" src="_images/heat_gran.png" />
 <p>It is assumed that the temperature within the particles is uniform.
 To make particles adiabatic (so they do not change the temperature),
@@ -188,11 +214,13 @@ temperature update is not performed for particles not in the group).
 Thermal conductivity and specific thermal capacity must be defined for
 each atom type used in the simulation by means of
 <a class="reference internal" href="fix_property.html"><em>fix property/global</em></a> commands:</p>
-<div class="highlight-python"><pre>fix id all property/global thermalConductivity peratomtype value_1 value_2 ...
-(value_i=value for thermal conductivity of atom type i)</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global thermalConductivity peratomtype value_1 value_2 ...
+(value_i=value for thermal conductivity of atom type i)
+</pre></div>
 </div>
-<div class="highlight-python"><pre>fix id all property/global thermalCapacity peratomtype value_1 value_2 ...
-(value_i=value for thermal capacity of atom type i)</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global thermalCapacity peratomtype value_1 value_2 ...
+(value_i=value for thermal capacity of atom type i)
+</pre></div>
 </div>
 <p>To set the temperature for a group of particles, you can use the set command
 with keyword <em>property/atom</em> and values <em>Temp T</em>. <em>T</em> is the
@@ -201,8 +229,9 @@ temperature value you want the particles to have. To set heat sources
 with the set keyword: <em>property/atom</em> and the set values: <em>heatSource h</em>
 where <em>h</em> is the heat source value you want the particles to have (in Energy/time
 units). A negative value means it is a heat sink. Examples would be:</p>
-<div class="highlight-python"><pre>set region halfbed property/peratom Temp 800.
-set region srcreg property/peratom heatSource 0.5</pre>
+<div class="highlight-python"><div class="highlight"><pre>set region halfbed property/peratom Temp 800.
+set region srcreg property/peratom heatSource 0.5
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>Contact area calculation:</p>
@@ -219,8 +248,9 @@ the Young&#8217;s modulus might have been decreased in order to speed-up the
 simulation, thus artificially increasing the overlap. In this case, you have
 to specify the original Young&#8217;s modulus of each material by means of a
 <a class="reference internal" href="fix_property.html"><em>fix property/global</em></a> command:</p>
-<div class="highlight-python"><pre>fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
-(value_i=value for original Young's modulus of atom type i)</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global youngsModulusOriginal peratomtype value_1 value_2 ...
+(value_i=value for original Young&#39;s modulus of atom type i)
+</pre></div>
 </div>
 <p>This area correction is performed by scaling the contact area with
 (Y*/Y*,orig)^a, where Y* and Y*,orig are calculated as defined in
@@ -228,15 +258,17 @@ to specify the original Young&#8217;s modulus of each material by means of a
 The scaling factor is given as e.g. a=1 for a Hooke and a=2/3 for a Hertz
 interaction.</p>
 <p><strong>Coarse-graining information:</strong></p>
-<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
 combination with this command should lead to
 statistically equivalent dynamics and system state.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>You can visualize the heat sources by accessing f_heatSource[0], and the
 heatFluxes by f_heatFlux[0] . With f_directionalHeatFlux[0], f_directionalHeatFlux[1]
 and f_directionalHeatFlux[2] you can access the conductive heat fluxes in x,y,z directions.
@@ -254,16 +286,18 @@ command or to calculate atom properties.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last"><em>store_contact_data yes</em> is required any heat conduction properties are
-used in the steady state detection through <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">ave/euler/custom</span></tt>.</p>
+used in the steady state detection through <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">ave/euler/custom</span></code>.</p>
 </div>
-<p><strong>Restart, fix_modify, run start/stop, minimize info:</strong></p>
+</div>
+<div class="section" id="restart-fix-modify-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>The particle temperature and heat source is written is written to
 <a class="reference internal" href="restart.html"><em>binary restart files</em></a> so simulations can continue properly.
 None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix.</p>
-<p>This fix computes a scalar which can be accessed by various <em class="xref std std-ref">output commands</em>.  This scalar is the total thermal energy
+<p>This fix computes a scalar which can be accessed by various <span class="xref std std-ref">output commands</span>.  This scalar is the total thermal energy
 of the fix group</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -271,7 +305,7 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
-<p><tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp</span></tt>, <tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/region</span></tt></p>
+<p><code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp</span></code>, <code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/region</span></code></p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
@@ -282,6 +316,9 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -312,11 +349,13 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

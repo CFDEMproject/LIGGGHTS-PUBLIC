@@ -49,7 +49,7 @@
 #include "modify.h"
 #include "group.h"
 #include "comm.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "fix_cfd_coupling_convection_species.h"
 #include "fix_property_atom.h"

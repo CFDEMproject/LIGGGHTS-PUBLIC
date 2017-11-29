@@ -17,9 +17,12 @@ USE_CATALYST = "OFF"
 # VTK: "ON" or "OFF"
 # Description: Allow the use of VTK output that can be read directly with ParaView
 USE_VTK = "ON"
+# If you want to use the vtk output feature and did not install vtk yourself
+# then set the following to "ON" and uncomment it to allow for an automatic download and compilation
+#AUTOINSTALL_VTK = "OFF"
 # SUPERQUADRICS: "ON" or "OFF"
 # Description: Enable superquadric particles (Note: requires boost)
-USE_SUPERQUADRICS = "OFF"
+USE_SUPERQUADRICS = "ON"
 # JPG: "ON" or "OFF"
 # Description: Allow the output of jpg files of the simulation (only sphere rendering available)
 USE_JPG = "OFF"
@@ -27,9 +30,9 @@ USE_JPG = "OFF"
 # Description: Generate position independent code
 USE_FPIC = "ON"
 # DEBUG:
-#  "OFF"   : optimized code for production (-O2 optimization, no -g)
-#  "ON"    : optimized debug mode (-Og and -g)
-#  "NOOPT" : non-optimized debug mode (-O0 and -g)
+#  "OFF"  : optimized code for production (-O2 optimization, no -g)
+#  "ON"   : optimized debug mode (-Og and -g)
+#  "FULL" : non-optimized debug mode (-O0 and -g)
 USE_DEBUG = "OFF"
 # PROFILE:
 #  "OFF"   : no profiling code generated
@@ -47,6 +50,20 @@ USE_GZIP = "OFF"
 # XDR: "ON" or "OFF"
 # Description: Allows dumping of particles in XTC format. This is only necessary if the platform does not have its own XDR files available.
 USE_XDR = "OFF"
+#MFEM: "ON" or "OFF"
+# Description: Enables coupling with Finite Element code MFEM (premium only)
+USE_MFEM = "OFF"
+# If you want to use the coupling with MFEM feature and did not install MFEM yourself
+# then set the following to "ON" and uncomment it to allow for an automatic download and compilation
+#AUTOINSTALL_MFEM = "OFF"
+# BUILD_LIBRARIES:
+#  "ALL"    : Builds both shared and static libraries if the executable is built
+#  "SHARED" : Builds the shared library if the executable is built
+#  "STATIC" : Builds the static library if the executable is built
+#  "NONE"   : Only builds the executable
+# Description: Flag to decide whether (if building the executable) the libraries of LIGGGHTS will be built as well.
+#              Note that when calling a library makefile (Makefile.shlib or Makefile.lib) only the library of this makefile will be built (i.e. also no executable) and this flag will be ignored.
+BUILD_LIBRARIES = "NONE"
 
 ################################################################################################
 #
@@ -125,6 +142,9 @@ USE_XDR = "OFF"
 # SUPERQUADRICS specific variables
 #
 # Boost include path
+# Note: Boost only needs to be included if your standard library does not
+# support beta functions. Makefile.auto will check if your system has this
+# capability
 #BOOST_INC_USR=-I/path/to/boost/include
 
 # JPG specific variables
@@ -145,9 +165,18 @@ USE_XDR = "OFF"
 # Additional CONVEX libraries to include (-lccd added by default)
 #CONVEX_ADDLIBS_USR=
 
+# MFEM specific variables
+#
+# Path that contains the includes (mfem.hpp)
+#MFEM_INC_USR=-I/path/to/mfem/include
+# Path that contains the MFEM libraries (libmfem.a)
+#MFEM_LIB_USR=-L/path/to/mfem/lib
+# Additional MFEM libraries to include (-lmfem added by default)
+#MFEM_ADDLIBS_USR=
+
 # LIGGGHTS pre-processor flags
 # Note: Most of these flags can be set by one of the USE_* variables at the top of this file
 #LMP_INC=
 
 # Version of Makefile.user (do not delete the following line)
-MAKEFILE_USER_VERSION = "1.1"
+MAKEFILE_USER_VERSION = "1.4"

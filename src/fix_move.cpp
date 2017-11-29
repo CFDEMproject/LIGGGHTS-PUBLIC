@@ -45,7 +45,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 #include "fix_move.h"
 #include "atom.h"
 #include "group.h"

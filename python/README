@@ -20,8 +20,8 @@ script.  See doc/Section_python.html for details.
 You can then launch Python and instantiate an instance of LIGGGHTS:
 
 % python
->>> from lammps import lammps
->>> lmp = lammps()
+>>> from liggghts import liggghts
+>>> lmp = liggghts()
 
 If that gives no errors, you have succesfully wrapped LIGGGHTS with
 Python.  See doc/Section_python.html#py_5 for tests you can then use

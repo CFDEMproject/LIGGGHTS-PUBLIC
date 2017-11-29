@@ -45,7 +45,7 @@
     Copyright 2013      OVGU Magdeburg
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -69,6 +69,8 @@ MeshMoverRotate::MeshMoverRotate(LAMMPS *lmp,AbstractMesh *_mesh, FixMoveMesh *_
 {
     if (narg < 11)
         error->all(FLERR, "Not enough arguments for movement type rotate");
+    if (narg > 11)
+        error->warning(FLERR, "Movement type rotate requires only 11 arguments, excess arguments will be ignored");
 
     if (strcmp(arg[1], "origin"))
         error->all(FLERR, "Expected keyword 'origin'");
@@ -145,6 +147,8 @@ MeshMoverRotateVariable::MeshMoverRotateVariable(LAMMPS *lmp,AbstractMesh *_mesh
 {
     if (narg < 11)
         error->all(FLERR, "Not enough arguments for movement type rotate/variable");
+    if (narg > 11)
+        error->warning(FLERR, "Movement type rotate/variable requires only 11 arguments, excess arguments will be ignored");
 
     if (strcmp(arg[1], "origin"))
         error->all(FLERR, "Expected keyword 'origin'");
@@ -251,6 +255,8 @@ MeshMoverRiggle::MeshMoverRiggle(LAMMPS *lmp,AbstractMesh *_mesh, FixMoveMesh *_
 {
     if (narg < 13)
         error->all(FLERR, "Not enough arguments for movement type riggle");
+    if (narg > 13)
+        error->warning(FLERR, "Movement type riggle requires only 13 arguments, excess arguments will be ignored");
 
     if (strcmp(arg[1], "origin"))
         error->all(FLERR, "Expected keyword 'origin'");
@@ -337,6 +343,8 @@ MeshMoverVibRot::MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh, FixMoveMesh *_
         error->all(FLERR, "order can be at most 30 and must be greater 0");
     if (narg < 14+2*ord)
         error->all(FLERR, "Not enough arguments for movement type vibrot");
+    if (narg > 14+2*ord)
+        error->warning(FLERR, "Movement type vibrot requires only (14 + 2*$order) arguments, excess arguments will be ignored");
 
     if (strcmp(arg[1], "origin"))
         error->all(FLERR, "Expected keyword 'origin'");
@@ -360,8 +368,8 @@ MeshMoverVibRot::MeshMoverVibRot(LAMMPS *lmp,AbstractMesh *_mesh, FixMoveMesh *_
     //array transfer
     for (int j=0;j<ord; j++)
     {
-       phi[j] = force->numeric(FLERR, arg[12+j]);
-       ampl[j] = force->numeric(FLERR, arg[13+ord+j]);
+       ampl[j] = force->numeric(FLERR, arg[12+j]);
+       phi[j] = force->numeric(FLERR, arg[13+ord+j]);
        omega[j] = 2.*M_PI/force->numeric(FLERR, arg[14+2*ord+j]);
     }
 }

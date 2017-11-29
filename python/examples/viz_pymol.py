@@ -2,9 +2,9 @@
 # preceeding line should have path for Python on your machine
 
 # viz_pymol.py
-# Purpose: viz running LAMMPS simulation via PyMol
-# Syntax:  viz_pymol.py in.lammps Nfreq Nsteps
-#          in.lammps = LAMMPS input script
+# Purpose: viz running LIGGGHTS simulation via PyMol
+# Syntax:  viz_pymol.py in.liggghts Nfreq Nsteps
+#          in.liggghts = LIGGGHTS input script
 #          Nfreq = dump and viz shapshot every this many steps
 #          Nsteps = run for this many steps
 
@@ -15,7 +15,7 @@ sys.path.append("./pizza")
 
 argv = sys.argv
 if len(argv) != 4:
-  print "Syntax: viz_pymol.py in.lammps Nfreq Nsteps"
+  print "Syntax: viz_pymol.py in.liggghts Nfreq Nsteps"
   sys.exit()
 
 infile = sys.argv[1]
@@ -28,12 +28,12 @@ me = 0
 #me = pypar.rank()
 #nprocs = pypar.size()
 
-from lammps import lammps
-lmp = lammps()
+from liggghts import liggghts
+lmp = liggghts()
 
 # run infile all at once
 # assumed to have no run command in it
-# dump a file in native LAMMPS dump format for Pizza.py dump tool
+# dump a file in native LIGGGHTS dump format for Pizza.py dump tool
 
 lmp.file(infile)
 lmp.command("thermo %d" % nfreq)

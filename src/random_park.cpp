@@ -45,7 +45,7 @@
 
 // Park/Miller RNG
 
-#include <math.h>
+#include <cmath>
 #include "random_park.h"
 #include "error.h"
 
@@ -59,11 +59,11 @@ using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 
-RanPark::RanPark(LAMMPS *lmp, int seed_init) : Random(lmp,seed_init)
+RanPark::RanPark(LAMMPS *lmp, const char * seed_char, bool proc_shift, int multiplier) :
+    Random(lmp, seed_char, proc_shift, multiplier)
 {
-  if (seed_init <= 0)
+  if (seed <= 0)
     error->one(FLERR,"Invalid seed for Park random # generator");
-  seed = seed_init;
   save = 0;
 }
 

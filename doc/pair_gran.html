@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>pair_style gran command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>pair_style gran command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/pair_gran.txt" rel="nofollow"> View page source</a> 
+      <li>pair_style gran command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/pair_gran.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -153,11 +176,14 @@
 <h1>pair_style gran_bubble bubble command<a class="headerlink" href="#pair-style-gran-bubble-bubble-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style gran model_type model_name model_keyword model_value</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style gran model_type model_name model_keyword model_value
+</pre></div>
 </div>
-<div class="highlight-python"><pre>pair_style bubble model_type model_name model_keyword model_value</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style bubble model_type model_name model_keyword model_value
+</pre></div>
 </div>
-<div class="highlight-python"><pre>pair_style gran_bubble model_type model_name model_keyword model_value</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style gran_bubble model_type model_name model_keyword model_value
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more model_type/model_name pairs may be appended. They must be appended in the following order (!)</li>
@@ -178,9 +204,10 @@ model_type/model_name pairs = described for each model separately <a class="refe
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style gran model hooke tangential history
+<div class="highlight-python"><div class="highlight"><pre>pair_style gran model hooke tangential history
 pair_style gran model hertz tangential history rolling_friction cdt
-pair_style gran model hertz tangential no_history cohesion sjkr</pre>
+pair_style gran model hertz tangential no_history cohesion sjkr
+</pre></div>
 </div>
 <p><strong>General description:</strong></p>
 <p>The <em>gran</em> styles imposes a force between two neighboring particles. Typically, there is
@@ -213,9 +240,10 @@ doc pages <a class="reference internal" href="Section_gran_models.html"><em>here
 <p>The styles <em>bubble</em> and <em>gran_bubble</em> are aliases for <em>gran</em>, which can e.g. be used
 for the modelling of systems with different phases using <a class="reference internal" href="pair_hybrid.html"><em>pair hybrid</em></a>, where a
 different set of interaction laws is used for each phase. An example would be</p>
-<div class="highlight-python"><pre>pair_style hybrid gran        model hertz     tangential history &amp;
+<div class="highlight-python"><div class="highlight"><pre>pair_style hybrid gran        model hertz     tangential history &amp;
                   bubble      model hertz     tangential off &amp;
-                  gran_bubble model hertz     tangential off</pre>
+                  gran_bubble model hertz     tangential off
+</pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -227,14 +255,15 @@ to the order as outlined in the &#8220;Syntax&#8221; section of this doc page.</
 via the <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> command. All settings are global and are made via the
 pair_style command. However you must still use the <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> for all pairs
 of granular atom types. For example the command</p>
-<div class="highlight-python"><pre>pair_coeff * *</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_coeff * *
+</pre></div>
 </div>
 <p>should be used if all atoms in the simulation interact via a granular potential
 (i.e. one of the pair styles above is used). If a granular potential is used as a sub-style
 of <a class="reference internal" href="pair_hybrid.html"><em>pair_style hybrid</em></a>, then specific atom types can be used in the pair_coeff
 command to determine which atoms interact via a granular potential.</p>
 <p><strong>Mixing, shift, table, tail correction, restart, rRESPA info:</strong></p>
-<p>The <tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt> mix, shift, table, and tail options are not
+<p>The <code class="xref doc docutils literal"><span class="pre">pair_modify</span></code> mix, shift, table, and tail options are not
 relevant for granular pair styles.</p>
 <p>These pair styles write their information to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>,
 so a pair_style command does not need to be specified in an input script that reads a restart file.</p>
@@ -272,6 +301,9 @@ Models for use with this command are described <a class="reference internal" hre
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -301,11 +333,13 @@ Models for use with this command are described <a class="reference internal" hre
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

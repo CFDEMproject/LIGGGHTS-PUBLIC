@@ -38,7 +38,7 @@
     Copyright 2015-     DCS Computing GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include <stdlib.h>
 #include "fix_base_liggghts.h"

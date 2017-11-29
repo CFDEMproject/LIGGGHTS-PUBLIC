@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>change_box command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>change_box command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/change_box.txt" rel="nofollow"> View page source</a> 
+      <li>change_box command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/change_box.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>change_box command<a class="headerlink" href="#change-box-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>change_box group-ID parameter args ... keyword args ... force</pre>
+<div class="highlight-python"><div class="highlight"><pre>change_box group-ID parameter args ... keyword args ... force
+</pre></div>
 </div>
 <ul class="simple">
 <li>group-ID = ID of group of atoms to (optionally) displace</li>
@@ -196,8 +220,9 @@ parameter = <em>x</em> or <em>y</em> or <em>z</em> or <em>xy</em> or <em>xz</em>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>change_box all xy final -2.0 z final 0.0 5.0 boundary p p f remap units box
-change_box all x scale 1.1 y volume z volume remap</pre>
+<div class="highlight-python"><div class="highlight"><pre>change_box all xy final -2.0 z final 0.0 5.0 boundary p p f remap units box
+change_box all x scale 1.1 y volume z volume remap
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -215,12 +240,12 @@ conditions for the simulation box, similar to the
 <a class="reference internal" href="create_box.html"><em>create_box</em></a> or <a class="reference internal" href="read_data.html"><em>read_data</em></a> or
 <a class="reference internal" href="read_restart.html"><em>read_restart</em></a> command used to setup the simulation.
 The size and shape may be altered by subsequent runs, e.g. by use of
-the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></tt> or <a class="reference internal" href="fix_deform.html"><em>fix deform</em></a> commands.
+the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></code> or <a class="reference internal" href="fix_deform.html"><em>fix deform</em></a> commands.
 The <a class="reference internal" href="create_box.html"><em>create_box</em></a>, <a class="reference internal" href="read_data.html"><em>read data</em></a>, and
 <a class="reference internal" href="read_restart.html"><em>read_restart</em></a> commands also determine whether the
 simulation box is orthogonal or triclinic and their doc pages explain
 the meaning of the xy,xz,yz tilt factors.</p>
-<p>See <a class="reference internal" href="Section_howto.html#howto-7"><em>Section_howto 12</em></a> of the doc pages
+<p>See <span class="xref std std-ref">Section_howto 12</span> of the doc pages
 for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.</p>
@@ -275,7 +300,7 @@ each transformation in the sequence.  If skew is exceeded before the
 final transformation this can be avoided by changing the order of the
 sequence, or breaking the transformation into two or more smaller
 transformations.  For more information on the allowed limits for box
-skew see the discussion on triclinic boxes on <a class="reference internal" href="Section_howto.html#howto-7"><em>this page</em></a>.</p>
+skew see the discussion on triclinic boxes on <span class="xref std std-ref">this page</span>.</p>
 </div>
 <hr class="docutils" />
 <p>For the <em>x</em>, <em>y</em>, and <em>z</em> parameters, this is the meaning of their
@@ -297,25 +322,29 @@ used following a keyword that changed the volume, which is any of the
 <em>x</em>, <em>y</em>, <em>z</em> keywords.  If the preceding keyword &#8220;key&#8221; had a <em>volume</em>
 style, then both it and the current keyword apply to the keyword
 preceding &#8220;key&#8221;.  I.e. this sequence of keywords is allowed:</p>
-<div class="highlight-python"><pre>change_box all x scale 1.1 y volume z volume</pre>
+<div class="highlight-python"><div class="highlight"><pre>change_box all x scale 1.1 y volume z volume
+</pre></div>
 </div>
 <p>The <em>volume</em> style changes the associated dimension so that the
 overall box volume is unchanged relative to its value before the
 preceding keyword was invoked.</p>
 <p>If the following command is used, then the z box length will shrink by
 the same 1.1 factor the x box length was increased by:</p>
-<div class="highlight-python"><pre>change_box all x scale 1.1 z volume</pre>
+<div class="highlight-python"><div class="highlight"><pre>change_box all x scale 1.1 z volume
+</pre></div>
 </div>
 <p>If the following command is used, then the y,z box lengths will each
 shrink by sqrt(1.1) to keep the volume constant.  In this case, the
 y,z box lengths shrink so as to keep their relative aspect ratio
 constant:</p>
-<div class="highlight-python"><pre>change_box all"x scale 1.1 y volume z volume</pre>
+<div class="highlight-python"><div class="highlight"><pre>change_box all&quot;x scale 1.1 y volume z volume
+</pre></div>
 </div>
 <p>If the following command is used, then the final box will be a factor
 of 10% larger in x and y, and a factor of 21% smaller in z, so as to
 keep the volume constant:</p>
-<div class="highlight-python"><pre>change_box all x scale 1.1 z volume y scale 1.1 z volume</pre>
+<div class="highlight-python"><div class="highlight"><pre>change_box all x scale 1.1 z volume y scale 1.1 z volume
+</pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -373,7 +402,7 @@ them, you should use the change_box command after the read_restart
 command.</p>
 <hr class="docutils" />
 <p>The <em>ortho</em> and <em>triclinic</em> keywords convert the simulation box to be
-orthogonal or triclinic (non-orthongonal).  See <em class="xref std std-ref">this section</em> for a discussion of how non-orthongal
+orthogonal or triclinic (non-orthongonal).  See <span class="xref std std-ref">this section</span> for a discussion of how non-orthongal
 boxes are represented in LIGGGHTS(R)-PUBLIC.</p>
 <p>The simulation box is defined as either orthogonal or triclinic when
 it is created via the <a class="reference internal" href="create_box.html"><em>create_box</em></a>,
@@ -437,6 +466,9 @@ change_box command is issued, so long as an <a class="reference internal" href="
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -466,11 +498,13 @@ change_box command is issued, so long as an <a class="reference internal" href="
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>neigh_modify command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>neigh_modify command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/neigh_modify.txt" rel="nofollow"> View page source</a> 
+      <li>neigh_modify command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/neigh_modify.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -150,7 +173,8 @@
 <h1>neigh_settings command<a class="headerlink" href="#neigh-settings-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>neigh_modify keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>neigh_modify keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>one or more keyword/value pairs may be listed</li>
@@ -187,7 +211,8 @@ keyword = <em>delay</em> or <em>every</em> or <em>check</em> or <em>once</em> or
   <em>binsize</em> value = size
     size = bin size for neighbor list construction (distance units)
 </pre>
-<div class="highlight-python"><pre>neigh_settings binsize_value</pre>
+<div class="highlight-python"><div class="highlight"><pre>neigh_settings binsize_value
+</pre></div>
 </div>
 <ul class="simple">
 <li>binsize_value = bin size for neighbor list constrution (distance units)</li>
@@ -195,14 +220,15 @@ keyword = <em>delay</em> or <em>every</em> or <em>check</em> or <em>once</em> or
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>neigh_modify every 2 delay 10 check yes page 100000
+<div class="highlight-python"><div class="highlight"><pre>neigh_modify every 2 delay 10 check yes page 100000
 neigh_modify exclude type 2 3
 neigh_modify exclude group frozen frozen check no
 neigh_modify exclude group residue1 chain3
 neigh_modify exclude molecule rigid
 neigh_modify delay 0 contact_distance_factor 1.5
 neigh_settings
-neigh_settings 0.1</pre>
+neigh_settings 0.1
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -327,6 +353,9 @@ include = all, exclude = none, page = 100000, one =
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -356,11 +385,13 @@ include = all, exclude = none, page = 100000, one =
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

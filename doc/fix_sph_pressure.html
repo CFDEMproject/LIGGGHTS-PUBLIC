@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix sph/pressure command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix sph/pressure command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_sph_pressure.txt" rel="nofollow"> View page source</a> 
+      <li>fix sph/pressure command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_sph_pressure.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -145,9 +168,82 @@
             
   <div class="section" id="fix-sph-pressure-command">
 <span id="index-0"></span><h1>fix sph/pressure command<a class="headerlink" href="#fix-sph-pressure-command" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID sph/pressure style args
+</pre></div>
+</div>
+<ul class="simple">
+<li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
+<li>sph/pressure = style name of this fix command</li>
+<li>style = <em>absolut</em> or <em>relativ</em> or <em>Tait</em></li>
+<li>args = list of arguments for a particular style</li>
+</ul>
+<pre class="literal-block">
+<em>absolut</em> args = B
+  B = coefficient
+<em>relativ</em> args = B density0
+  B = coefficient
+  density0 = reference density
+<em>Tait</em> args = B density0 gamma
+  B = coefficient
+  density0 = reference density
+  gamma = isentropic exponent
+</pre>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre>fix pressure all sph/pressure absolut
+fix pressure all sph/pressure Tait 60000. 1000. 7.
+</pre></div>
+</div>
+</div>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>The equation of state (EOS) for the SPH calculation is the link between the density field and the pressure field. A lot of different equations can be found in the literature.</p>
+<p>The <em>absolut</em> style was the first implemented EOS. The calculation rule is</p>
+<img alt="_images/fix_sph_pressure_abs.jpg" class="align-center" src="_images/fix_sph_pressure_abs.jpg" />
+<p>where &amp;#961;&lt;sub&gt;a&lt;/sub&gt; is the density of particle a and B is the pressure prefactor.</p>
+<p>The <em>relativ</em> style uses the rule</p>
+<img alt="_images/fix_sph_pressure_rel.jpg" class="align-center" src="_images/fix_sph_pressure_rel.jpg" />
+<p>as EOS. B denotes the pressure prefactor and &amp;#961;&lt;sub&gt;0&lt;/sub&gt; is the reference density.</p>
+<p>In case of <em>Tait</em> style the rule</p>
+<img alt="_images/fix_sph_pressure_tait_eq1.jpg" class="align-center" src="_images/fix_sph_pressure_tait_eq1.jpg" />
+<p>is applied. B denotes the pressure prefactor which is calculated by</p>
+<img alt="_images/fix_sph_pressure_tait_eq2.jpg" class="align-center" src="_images/fix_sph_pressure_tait_eq2.jpg" />
+<p>where c&lt;sub&gt;0&lt;/sub&gt; is the speed of sound of the material. &amp;#961;&lt;sub&gt;0&lt;/sub&gt; is the reference density and &amp;gamma; is the isentropic exponent defined as cp/cv.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Monaghan has found that the speed of sound could be artificially reduced. (Monaghan, 1994) Therefore, we can choose a greater time step. He argues that the minimum sound speed should be about ten times greater than the maximum expected flow speed. (&amp;Delta;&amp;#961; &amp;lt; 1%)</p>
+</div>
+</div>
+<hr class="docutils" />
+<div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
+<h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p>No informatino about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.</p>
+<p>None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix.</p>
+<p>No global scalar or vector or per_atom quantities are stored by this fix for access by various <span class="xref std std-ref">output commands</span>.</p>
+<p>No parameter of this fix can be used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.</p>
+<p>This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="restrictions">
+<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
+<p>One fix sph/density/summation (only dev-version) or sph/denstiy/continuity has to exist.</p>
+</div>
+<div class="section" id="related-commands">
+<h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="pair_sph_artvisc_tenscorr.html"><em>pair_style sph/artVisc/tensCorr</em></a>, <a class="reference internal" href="fix_sph_density_continuity.html"><em>fix sph/density/continuity</em></a></p>
+<p><strong>Default:</strong> none</p>
+<hr class="docutils" />
+<p id="liuliu2003"><strong>(Liu and Liu, 2003)</strong> &#8220;Smoothed Particle Hydrodynamics: A Meshfree Particle Method&#8221;, G. R. Liu and M. B. Liu, World Scientific, p. 449 (2003).</p>
+</div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -178,11 +274,13 @@
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

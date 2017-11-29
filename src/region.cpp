@@ -49,7 +49,8 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 #include <stdlib.h>
 #include <string.h>
 #include "region.h"
@@ -87,7 +88,7 @@ Region::Region(LAMMPS *lmp, int narg, char **arg) : Pointers(lmp)
   dx = dy = dz = 0.0;
   lastshape = lastdynamic = -1;
 
-  random = NULL; 
+  random = NULL;
 
   volume_limit_ = 1.e-10;
 }
@@ -149,6 +150,20 @@ void Region::init()
 int Region::dynamic_check()
 {
   return dynamic;
+}
+
+/* ----------------------------------------------------------------------
+   called before looping over atoms with match() or surface()
+   this insures any variables used by region are invoked once per timestep
+     also insures variables are invoked by all procs even those w/out atoms
+     necessary if equal-style variable invokes global operation
+   with MPI_Allreduce, e.g. xcm() or count()
+------------------------------------------------------------------------- */
+
+void Region::prematch()
+{
+  if (varshape) shape_update();
+  if (dynamic) pretransform();
 }
 
 /* ----------------------------------------------------------------------
@@ -239,6 +254,21 @@ void Region::add_contact(int n, double *x, double xp, double yp, double zp)
   contact[n].delx = delx;
   contact[n].dely = dely;
   contact[n].delz = delz;
+}
+
+/* ----------------------------------------------------------------------
+   pre-compute dx,dy,dz and theta for a moving/rotating region
+   called once for the region before per-atom loop, via prematch()
+------------------------------------------------------------------------- */
+
+void Region::pretransform()
+{
+  if (moveflag) {
+    if (xstr) dx = input->variable->compute_equal(xvar);
+    if (ystr) dy = input->variable->compute_equal(yvar);
+    if (zstr) dz = input->variable->compute_equal(zvar);
+  }
+  if (rotateflag) theta = input->variable->compute_equal(tvar);
 }
 
 /* ----------------------------------------------------------------------
@@ -353,8 +383,6 @@ void Region::options(int narg, char **arg)
   scaleflag = 0; 
   moveflag = rotateflag = 0;
 
-  seed = 3012211;
-
   int iarg = 0;
   while (iarg < narg) {
     if (strcmp(arg[iarg],"units") == 0) {
@@ -415,7 +443,7 @@ void Region::options(int narg, char **arg)
     } else if (strcmp(arg[iarg],"seed") == 0) {
       if (iarg+2 > narg)
         error->all(FLERR,"Illegal region command");
-      seed = force->numeric(FLERR,arg[iarg+1]);
+      random = new RanPark(lmp, arg[iarg+1], true);
       iarg += 2;
     } else if (strcmp(arg[iarg],"volume_limit") == 0) {
       if (iarg+2 > narg)
@@ -426,8 +454,10 @@ void Region::options(int narg, char **arg)
      else error->all(FLERR,"Illegal region command");
   }
 
-  random = new RanPark(lmp,seed+comm->me);
-
+  if (!random)
+      random = new RanPark(lmp, "3012211", true);
+  seed = random->getSeed();
+  
   // error check
 
   if ((moveflag || rotateflag) &&
@@ -479,12 +509,12 @@ inline void Region::rand_bounds(bool subdomain_flag, double *lo, double *hi)
     if(!bboxflag) error->one(FLERR,"Impossible to generate random points on region with incomputable bounding box");
     if(subdomain_flag)
     {
-        lo[0] = MathExtraLiggghts::max(extent_xlo,domain->sublo[0]);
-        lo[1] = MathExtraLiggghts::max(extent_ylo,domain->sublo[1]);
-        lo[2] = MathExtraLiggghts::max(extent_zlo,domain->sublo[2]);
-        hi[0] = MathExtraLiggghts::min(extent_xhi,domain->subhi[0]);
-        hi[1] = MathExtraLiggghts::min(extent_yhi,domain->subhi[1]);
-        hi[2] = MathExtraLiggghts::min(extent_zhi,domain->subhi[2]);
+        lo[0] = std::max(extent_xlo,domain->sublo[0]);
+        lo[1] = std::max(extent_ylo,domain->sublo[1]);
+        lo[2] = std::max(extent_zlo,domain->sublo[2]);
+        hi[0] = std::min(extent_xhi,domain->subhi[0]);
+        hi[1] = std::min(extent_yhi,domain->subhi[1]);
+        hi[2] = std::min(extent_zhi,domain->subhi[2]);
         if(lo[0] >= hi[0] || lo[1] >= hi[1] ||lo[2] >= hi[2])
             error->one(FLERR,"Impossible to generate random points on wrong sub-domain");
     }

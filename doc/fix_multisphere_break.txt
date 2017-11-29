@@ -15,26 +15,32 @@ fix ID group-ID multisphere/break keyword value ... :pre
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
 multisphere/break = style name of this fix command   :l
 
-keywords = same as for "fix multisphere"_fix_multisphere.html, in addition: {trigger_threshold} and {trigger_timeStep} and  {trigger_fixName} :l
+keywords = same as for "fix multisphere"_fix_multisphere.html, in addition: {trigger_threshold} and {trigger_timeStep} and {trigger_name} (or the deprecated:{trigger_fixName}) :l
   {trigger_threshold} value = {x in units matching that of trigger_fixName}
     this allows the user the specify a threshold value that will be compared with the per-atom value provided by trigger_fixName, e.g., the residence time in a region (e.g., computed via a fix property/atom/tracer/residencetime). if the threshold is exceeded, the multisphere particle will break.
   {trigger_timeStep} value = {x in steps}
     this allows the user to activate the fix after a predefined number of steps.
-  {trigger_fixName}
-    the user must specify the name of the fix that specified per-atom information that is used as the trigger value. The user can freely chose the fix, allowing a flexible use of this fix. :pre
+  {trigger_name}
+    the user must specify a reference to a fix property/atom or variable of style atom that is used as the trigger value. :pre
+  {trigger_fixName} (deprecated!)
+    the user must specify the name of the fix that specified per-atom information that is used as the trigger value. :pre
 
 :ule
 
 [Examples:]
 
-fix integr  grpMulti  multisphere/break allow_group_and_set yes trigger_threshold 0.1 trigger_timeStep 0 trigger_fixName resTimeMill 
+fix integr  grpMulti1  multisphere/break allow_group_and_set yes trigger_threshold 0.1 trigger_timeStep 0 trigger_name f_resTimeMill
+fix integr  grpMulti2  multisphere/break allow_group_and_set yes trigger_threshold 1 trigger_timeStep 0 trigger_name f_pressure[1]
+fix integr  grpMulti3  multisphere/break allow_group_and_set yes trigger_threshold 50 trigger_timeStep 10 trigger_name v_myAtomVariable :pre
 
 [Description:]
 
 The integration that is performed by this command is
 euqivalent to "fix_multisphere"_fix_multisphere.html. However, the user can trigger breakage events, which will destroy the "body" the atoms are in. The trigger is imiplemented such that in case the trigger value of one atom in a body exceeds the threshold value, the whole body will break. There are no fragments: all atoms that constitutea body will be released upon breakage.
 
-WARNING: the atoms in a body MUST NOT overlap, since the atoms are simply released from the body without adjusting their size or their position.
+NOTE: the atoms in a body MUST NOT overlap, since the atoms are simply released from the body without adjusting their size or their position.
+
+NOTE: A integrator for the spheres needs to be available (e.g. "fix nve/sphere"_fix_nve_sphere.html) otherwise the multisphere will fragment but no futher integration of the particles will occur
 
 :line
 

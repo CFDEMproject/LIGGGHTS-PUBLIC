@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix box/relax command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix box/relax command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_box_relax.txt" rel="nofollow"> View page source</a> 
+      <li>fix box/relax command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_box_relax.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix box/relax command<a class="headerlink" href="#fix-box-relax-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID box/relax keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID box/relax keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -171,15 +195,16 @@ keyword = <em>iso</em> or <em>aniso</em> or <em>tri</em> or <em>x</em> or <em>y<
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all box/relax iso 0.0 vmax 0.001
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all box/relax iso 0.0 vmax 0.001
 fix 2 water box/relax aniso 0.0 dilate partial
-fix 2 ice box/relax tri 0.0 couple xy nreset 100</pre>
+fix 2 ice box/relax tri 0.0 couple xy nreset 100
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Apply an external pressure or stress tensor to the simulation box
-during an <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.  This allows the box
+during an <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.  This allows the box
 size and shape to vary during the iterations of the minimizer so that
 the final configuration will be both an energy minimum for the
 potential energy of the atoms, and the system pressure tensor will be
@@ -269,33 +294,36 @@ equivalent to specifying several other keywords together.</p>
 pressure is computed (hydrostatic pressure), and dilate/contract the
 dimensions together.  Using &#8220;iso Ptarget&#8221; is the same as specifying
 these 4 keywords:</p>
-<div class="highlight-python"><pre>x Ptarget
+<div class="highlight-python"><div class="highlight"><pre>x Ptarget
 y Ptarget
 z Ptarget
-couple xyz</pre>
+couple xyz
+</pre></div>
 </div>
 <p>The keyword <em>aniso</em> means <em>x</em>, <em>y</em>, and <em>z</em> dimensions are controlled
 independently using the <em>Pxx</em>, <em>Pyy</em>, and <em>Pzz</em> components of the
 stress tensor as the driving forces, and the specified scalar external
 pressure.  Using &#8220;aniso Ptarget&#8221; is the same as specifying these 4
 keywords:</p>
-<div class="highlight-python"><pre>x Ptarget
+<div class="highlight-python"><div class="highlight"><pre>x Ptarget
 y Ptarget
 z Ptarget
-couple none</pre>
+couple none
+</pre></div>
 </div>
 <p>The keyword <em>tri</em> means <em>x</em>, <em>y</em>, <em>z</em>, <em>xy</em>, <em>xz</em>, and <em>yz</em> dimensions
 are controlled independently using their individual stress components
 as the driving forces, and the specified scalar pressure as the
 external normal stress.  Using &#8220;tri Ptarget&#8221; is the same as specifying
 these 7 keywords:</p>
-<div class="highlight-python"><pre>x Ptarget
+<div class="highlight-python"><div class="highlight"><pre>x Ptarget
 y Ptarget
 z Ptarget
 xy 0.0
 yz 0.0
 xz 0.0
-couple none</pre>
+couple none
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>The <em>vmax</em> keyword can be used to limit the fractional change in the
@@ -315,7 +343,7 @@ function then is:</p>
 <p>where <em>U</em> is the system potential energy, <em>P*_t is the desired
 hydrostatic pressure, *V</em> and <em>V*_0 are the system and reference
 volumes, respectively.  *E*_*strain</em> is the strain energy expression
-proposed by Parrinello and Rahman <a class="reference internal" href="#parrinello1981"><em>(Parrinello1981)</em></a>.
+proposed by Parrinello and Rahman <a class="reference internal" href="#parrinello1981"><span>(Parrinello1981)</span></a>.
 Taking derivatives of <em>E</em> w.r.t. the box dimensions, and setting these
 to zero, we find that at the minimum of the objective function, the
 global system stress tensor <strong>P</strong> will satisfy the relation:</p>
@@ -372,10 +400,11 @@ temperature is used to compute the kinetic contribution to the
 pressure, even though this is subsequently ignored by default.  To do
 this, the fix creates its own computes of style &#8220;temp&#8221; and &#8220;pressure&#8221;,
 as if these commands had been issued:</p>
-<div class="highlight-python"><pre>compute fix-ID_temp group-ID temp
-compute fix-ID_press group-ID pressure fix-ID_temp virial</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute fix-ID_temp group-ID temp
+compute fix-ID_press group-ID pressure fix-ID_temp virial
+</pre></div>
 </div>
-<p>See the <tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp</span></tt> and <a class="reference internal" href="compute_pressure.html"><em>compute pressure</em></a> commands for details.  Note that the
+<p>See the <code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp</span></code> and <a class="reference internal" href="compute_pressure.html"><em>compute pressure</em></a> commands for details.  Note that the
 IDs of the new computes are the fix-ID + underscore + &#8220;temp&#8221; or fix_ID
 + underscore + &#8220;press&#8221;, and the group for the new computes is the same
 as the fix group.  Also note that the pressure compute does not
@@ -409,11 +438,11 @@ compute specified by the <em>press</em> keyword will be unaffected by the
 <em>temp</em> setting.</p>
 </div>
 <p>This fix computes a global scalar which can be accessed by various
-<a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The scalar is the
+<span class="xref std std-ref">output commands</span>.  The scalar is the
 pressure-volume energy, plus the strain energy, if it exists.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
 the <a class="reference internal" href="run.html"><em>run</em></a> command.</p>
-<p>This fix is invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>, but
+<p>This fix is invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>, but
 not for the purpose of adding a contribution to the energy or forces
 being minimized.  Instead it alters the simulation box geometry as
 described above.</p>
@@ -436,7 +465,7 @@ and if the tilt factor is not coupled to the barostat via keywords
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
-<p><tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></tt>, <tt class="xref doc docutils literal"><span class="pre">minimize</span></tt></p>
+<p><code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">npt</span></code>, <code class="xref doc docutils literal"><span class="pre">minimize</span></code></p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
@@ -447,6 +476,9 @@ and if the tilt factor is not coupled to the barostat via keywords
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -477,11 +509,13 @@ and if the tilt factor is not coupled to the barostat via keywords
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

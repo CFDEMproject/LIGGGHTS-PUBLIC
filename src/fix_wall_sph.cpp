@@ -37,7 +37,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "atom.h"
@@ -52,12 +52,13 @@
 #include "sph_kernels.h"
 #include "fix_wall_sph.h"
 
+// include last to ensure correct macros
+#include "domain_definitions.h"
+
 using namespace LAMMPS_NS;
 using namespace FixConst;
 
 enum{XPLANE,YPLANE,ZPLANE,ZCYLINDER};    // XYZ PLANE need to be 0,1,2
-
-#define BIG 1.0e20
 
 /* ---------------------------------------------------------------------- */
 

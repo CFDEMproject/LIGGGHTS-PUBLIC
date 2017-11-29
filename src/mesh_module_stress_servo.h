@@ -55,7 +55,7 @@ MeshModuleStyle(servo,MeshModuleStressServo)
 
 #include "fix.h"
 #include "input.h"
-#include <math.h>
+#include <cmath>
 #include "mesh_module_stress.h"
 #include "mesh_module.h"
 

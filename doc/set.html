@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>set command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>set command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/set.txt" rel="nofollow"> View page source</a> 
+      <li>set command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/set.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,13 +170,14 @@
 <span id="index-0"></span><h1>set command<a class="headerlink" href="#set-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>set style ID keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>set style ID keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>style = <em>atom</em> or <em>type</em> or <em>mol</em> or <em>group</em> or <em>region</em></li>
 <li>ID = atom ID range or type range or mol ID range or group ID or region ID</li>
 <li>one or more keyword/value pairs may be appended</li>
-<li>keyword = <em>type</em> or <em>type/fraction</em> or <em>mol</em> or <em>x</em> or <em>y</em> or <em>z</em> or           <em>vx</em> or <em>vy</em> or <em>vz</em> or           <em>omegax</em> or <em>omegay</em> or <em>omegaz</em> or           <em>charge</em> or <em>quat</em> or <em>quat_direct</em> or           <em>quat/random</em> or <em>diameter</em> or <em>shape</em> or           <em>length</em> or <em>tri</em> or <em>theta</em> or <em>angmom</em> or           <em>mass</em> or <em>density</em> or <em>volume</em> or <em>image</em> or           <em>bond</em> or <em>add</em> or <em>until</em> or           <em>property/atom</em> or <em>roundness</em></li>
+<li>keyword = <em>type</em> or <em>type/fraction</em> or <em>mol</em> or <em>x</em> or <em>y</em> or <em>z</em> or           <em>vx</em> or <em>vy</em> or <em>vz</em> or           <em>omegax</em> or <em>omegay</em> or <em>omegaz</em> or           <em>charge</em> or <em>quat</em> or <em>quat_direct</em> or           <em>quat/random</em> or <em>diameter</em> or <em>shape</em> or           <em>length</em> or <em>tri</em> or <em>theta</em> or <em>angmom</em> or           <em>mass</em> or <em>density</em> or <em>volume</em> or <em>image</em> or           <em>bond</em> or <em>add</em> or <em>until</em> or           <em>property/atom</em> or <em>blockiness</em></li>
 </ul>
 <pre class="literal-block">
 <em>type</em> value = atom type
@@ -169,6 +193,8 @@
 <em>vx</em>,*vy*,*vz* value = atom velocity (velocity units)
   value can be an atom-style variable (see below)
 <em>omegax</em>,*omegay*,*omegaz* value = atom rotational velocity (rad / time units)
+  value can be an atom-style variable (see below)
+<em>inertiax</em>,*inertiay*,*inertiaz* value = atom principal moments of inertia for superquadric particles (distance^2 mass units)
   value can be an atom-style variable (see below)
 <em>charge</em> value = atomic charge (charge units)
   value can be an atom-style variable (see below)
@@ -214,13 +240,15 @@
   varname = name of the variable to be set
   var_value**0**, var_value**1**... = values of the property to be set.
   value can be an atom-style variable (see below)
-<em>roundness</em> values = n1 n2
-  n1, n2 = superquadric roundness/blockiness parameters, more or equal 2
+<em>blockiness</em> values = n1 n2
+  n1, n2 = superquadric blockiness parameters, more or equal 2
+<em>aspect_ratio</em> values = ky kz
+  ky, kz = aspect ratio of a superquadric particle in y and z directions with respect to that in x direction (in principal coordinates). Particle blockiness and volume equivalent diameter must be set first
 </pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>set group solvent type 2
+<div class="highlight-python"><div class="highlight"><pre>set group solvent type 2
 set group solvent type/fraction 2 0.5 123457
 set group edge bond 4
 set region half charge 0.5
@@ -229,7 +257,8 @@ set type 1*3 charge 0.5
 set atom 100*200 x 0.5 y 1.0
 set atom 1492 type 3
 set property/atom Temp 273.15
-set atom 3 type 2 shape 0.001 0.001 0.001 roundness 10.0 10.0 density 2500</pre>
+set atom 3 type 2 shape 0.001 0.001 0.001 blockiness 10.0 10.0 density 2500
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -459,7 +488,7 @@ such a per-particle property.</p>
 in addition to the keyword <em>property/atom</em>. The <em>add</em> keyword is used to turn on
 the addition of a quantity in a region or a group
 until the timestep defined by the <em>until</em> keyword.</p>
-<p>Keywords <em>shape</em> and <em>roundness</em> define superquadric shape of a particle.</p>
+<p>Keywords <em>shape</em> and <em>blockiness</em> define superquadric shape of a particle.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -475,7 +504,7 @@ unpredictable results if there are bonds (angles, etc) that straddle
 periodic boundaries.  This is because the region may only extend up to
 the boundary and partner atoms in the bond (angle, etc) may have
 coordinates outside the simulation box if they are ghost atoms.</p>
-<p>Keywords <em>quat_direct</em> and <em>roundness</em> require <a class="reference internal" href="atom_style.html"><em>atom_style</em></a> <em>superquadric</em></p>
+<p>Keywords <em>quat_direct</em> and <em>blockiness</em> require <a class="reference internal" href="atom_style.html"><em>atom_style</em></a> <em>superquadric</em></p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
@@ -486,6 +515,9 @@ coordinates outside the simulation box if they are ghost atoms.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -516,11 +548,13 @@ coordinates outside the simulation box if they are ghost atoms.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

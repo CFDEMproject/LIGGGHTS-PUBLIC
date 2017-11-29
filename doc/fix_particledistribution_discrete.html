@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix particledistribution/discrete command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix particledistribution/discrete command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_particledistribution_discrete.txt" rel="nofollow"> View page source</a> 
+      <li>fix particledistribution/discrete command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_particledistribution_discrete.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -153,7 +176,8 @@
 <h1>fix particledistribution/discrete/numberbased command<a class="headerlink" href="#fix-particledistribution-discrete-numberbased-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID particledistribution/discrete seed ntemp t_id t_weight ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID particledistribution/discrete seed ntemp t_id t_weight ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -169,8 +193,9 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix pdd1 all particledistribution/discrete 123457  1 pts1 1.0
-fix pdd1 all particledistribution/discrete 17903  2 pts1 0.3 pts2 0.7</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix pdd1 all particledistribution/discrete 123457  1 pts1 1.0
+fix pdd1 all particledistribution/discrete 17903  2 pts1 0.3 pts2 0.7
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -200,9 +225,9 @@ distribution is not accurately reproduced.</p>
 <a class="reference internal" href="restart.html"><em>binary restart files</em></a> so you can restart a simulation with the same
 particles being chosen for insertion. None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix. No global scalar or vector or per-atom quantities are stored
-by this fix for access by various <em class="xref std std-ref">output commands</em>.
+by this fix for access by various <span class="xref std std-ref">output commands</span>.
 No parameter of this fix can be used with the <em>start</em>/<em>stop</em> keywords of the
-<a class="reference internal" href="run.html"><em>run</em></a> command. This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+<a class="reference internal" href="run.html"><em>run</em></a> command. This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -219,6 +244,9 @@ No parameter of this fix can be used with the <em>start</em>/<em>stop</em> keywo
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -249,11 +277,13 @@ No parameter of this fix can be used with the <em>start</em>/<em>stop</em> keywo
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -54,9 +54,9 @@
 #include "region_neighbor_list.h"
 #include "mpi_liggghts.h"
 #include "comm.h"
-#include <cmath>
-#include <math.h>
 #include "math_extra_liggghts.h"
+#include <cmath>
+#include <algorithm>
 
 #define EPSILON_CURVATURE 0.00001
 
@@ -161,7 +161,8 @@ class SurfaceMesh : public TrackingMesh<NUM_NODES>
         void qualityCheck();
 
         void buildNeighbours();
-        virtual void parallelCorrection();
+        virtual void parallelCorrectionActiveInactive();
+        virtual void parallelCorrectionNeighs();
 
         bool edgeVecsColinear(double *v,double *w);
         bool coplanarNeighsOverlap(int iSrf,int iEdge,int jSrf,int jEdge);

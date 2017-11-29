@@ -47,7 +47,7 @@
    Contributing author: Christina Payne (Vanderbilt U)
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include <stdlib.h>
 #include "fix_efield.h"

@@ -178,7 +178,7 @@ namespace LAMMPS_NS{
         
         ScalarContainer<int> *lineNo_;
 
-        // global-local lookup
+        // global-local lookup from ID to local index
         int mapTagMax_;
         std::map<int, std::vector<int> > mapArray_;
 

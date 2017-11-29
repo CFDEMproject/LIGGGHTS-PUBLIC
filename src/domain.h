@@ -52,7 +52,7 @@
 #ifndef LMP_DOMAIN_H
 #define LMP_DOMAIN_H
 
-#include <math.h>
+#include <cmath>
 #include "pointers.h"
 #include "error.h" 
 #include "comm.h" 

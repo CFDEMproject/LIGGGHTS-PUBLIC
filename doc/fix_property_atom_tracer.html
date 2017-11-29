@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix property/atom/tracer command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix property/atom/tracer command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_property_atom_tracer.txt" rel="nofollow"> View page source</a> 
+      <li>fix property/atom/tracer command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_property_atom_tracer.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix property/atom/tracer command<a class="headerlink" href="#fix-property-atom-tracer-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix id group property/atom/tracer region_mark region-ID mark_step s keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id group property/atom/tracer region_mark region-ID mark_step s keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -169,7 +193,8 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix tracer all property/atom/tracer region_mark mark mark_step 10000 marker_style dirac check_mark_every 10</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix tracer all property/atom/tracer region_mark mark mark_step 10000 marker_style dirac check_mark_every 10
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -199,11 +224,11 @@ can change the tracer value (keyword <strong>reset_marker</strong>.)</p>
 <div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>Information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a> .</p>
-<p>This fix computes a per-atom vector (the marker) which can be accessed by
-various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>. .
-This fix also computes a global scalar indicating how many particles were
-marked since the last time the global scalar was computed. This scalar
-can also be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>. .</p>
+<p>This fix computes a per-atom scalar (the marker) which can be accessed by
+various <span class="xref std std-ref">output commands</span>. This scalar is equal to 1
+if a particle has been marked and 0 otherwise.  This fix also computes a global
+scalar indicating how many particles were marked since the last time the global
+scalar was computed. This scalar can also be accessed by various <span class="xref std std-ref">output commands</span>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -220,6 +245,9 @@ can also be accessed by various <a class="reference internal" href="Section_howt
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -250,11 +278,13 @@ can also be accessed by various <a class="reference internal" href="Section_howt
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

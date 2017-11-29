@@ -49,7 +49,7 @@ inline double Multisphere::max_r_bound()
     double max_r_bound = 0.;
 
     for(int i = 0; i < nbody_; i++)
-        max_r_bound = MathExtraLiggghts::max(max_r_bound,r_bound_(i));
+        max_r_bound = std::max(max_r_bound,r_bound_(i));
 
     MPI_Max_Scalar(max_r_bound,world);
 

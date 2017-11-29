@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>gran cohesion easo/capillary/viscous model &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>gran cohesion easo/capillary/viscous model</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/gran_cohesion_easo_capillary_viscous.txt" rel="nofollow"> View page source</a> 
+      <li>gran cohesion easo/capillary/viscous model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/gran_cohesion_easo_capillary_viscous.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>gran cohesion easo/capillary/viscous model<a class="headerlink" href="#gran-cohesion-easo-capillary-viscous-model" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>cohesion easo/capillary/viscous</pre>
+<div class="highlight-python"><div class="highlight"><pre>cohesion easo/capillary/viscous
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more keyword/value pairs may be appended to the end (after all models are specified)</li>
@@ -168,7 +192,7 @@ transfer of surface liquid from one particle to the other as the bridge breaks u
 The model uses a parameter, <em>maxSeparationDistanceRatio</em>, to apply a cut-off
 to the liquid bridge force, i.e. <em>radius***maxSeparationDistanceRatio</em> is
 the effective contact radius of the particles. The model follows a composition
-of models suggested by <a class="reference internal" href="#easo"><em>(Easo)</em></a></p>
+of models suggested by <a class="reference internal" href="#easo"><span>(Easo)</span></a></p>
 <hr class="docutils" />
 <p>Bridge formation and break-up, surface liquid transfer:</p>
 <p><em>Vbond</em>, the volume of surface liquid involved in the bridge, is given by</p>
@@ -177,7 +201,7 @@ of models suggested by <a class="reference internal" href="#easo"><em>(Easo)</em
 </div>
 <p>where <em>surfaceLiquidVolI/J</em> is the surface liquid volume attached to particle i/j.
 This model assumes that bridge formation occurs upon contact and
-the rupture distance is given as follows by <a class="reference internal" href="gran_cohesion_washino_capillary_viscous.html#lian"><em>(Lian)</em></a> :</p>
+the rupture distance is given as follows by <a class="reference internal" href="gran_cohesion_washino_capillary_viscous.html#lian"><span>(Lian)</span></a> :</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">dist0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">contactAngleEff</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">Vbond</span><span class="o">^</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -185,7 +209,7 @@ the rupture distance is given as follows by <a class="reference internal" href="
 distributes evenly to the two particles.</p>
 <hr class="docutils" />
 <p>Capilary force:</p>
-<p>The capilary force is given by <a class="reference internal" href="#soulie"><em>(Soulie)</em></a> as:</p>
+<p>The capilary force is given by <a class="reference internal" href="#soulie"><span>(Soulie)</span></a> as:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">Fcapilary</span> <span class="o">=</span> <span class="o">-</span> <span class="n">pi</span><span class="o">*</span><span class="n">surfaceTension</span><span class="o">*</span><span class="n">sqrt</span><span class="p">(</span><span class="n">radi</span><span class="o">*</span><span class="n">radj</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="n">A</span><span class="o">*</span><span class="n">dist</span><span class="o">/</span><span class="n">R2</span><span class="o">+</span><span class="n">B</span><span class="p">)</span><span class="o">+</span><span class="n">C</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -202,7 +226,7 @@ of the fluid, <em>contactAngleI/J</em> are the contact angles for particle i/j a
 radius of the larger of the two particles in contact.</p>
 <hr class="docutils" />
 <p>Viscous force:</p>
-<p>the normal and tangential parts of the viscous force are calculated as given by <a class="reference internal" href="gran_cohesion_washino_capillary_viscous.html#nase"><em>(Nase)</em></a> :</p>
+<p>the normal and tangential parts of the viscous force are calculated as given by <a class="reference internal" href="gran_cohesion_washino_capillary_viscous.html#nase"><span>(Nase)</span></a> :</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">rEff</span> <span class="o">=</span> <span class="n">radi</span><span class="o">*</span><span class="n">radj</span><span class="o">/</span><span class="p">(</span><span class="n">radi</span><span class="o">+</span><span class="n">radj</span><span class="p">)</span>
 <span class="n">stokesPreFactor</span> <span class="o">=</span> <span class="mi">6</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">fluidViscosity</span><span class="o">*</span><span class="n">rEff</span>
 <span class="n">FviscN</span> <span class="o">=</span> <span class="n">stokesPreFactor</span><span class="o">*</span><span class="n">vn</span><span class="o">*</span><span class="n">rEff</span><span class="o">/</span><span class="n">dist</span>
@@ -223,11 +247,11 @@ the surface liquid content of each particles, expressed in volume % of solid vol
 to have no effect on the particle mass, diameter and density.</p>
 <p>The user can override the default behavior by explicity specifing a fix that solves
 for the surface liquid transport between particles. Such fixes are
-<tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">liquidtransport/porous</span></tt> or
-<tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">liquidtransport/sponge</span></tt></p>
+<code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">liquidtransport/porous</span></code> or
+<code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">liquidtransport/sponge</span></code></p>
 <hr class="docutils" />
-<p>Intialization:</p>
-<div class="highlight-python"><pre>If you are using the this model model, you must define the following properties:
+<p>Initialization:</p>
+<div class="highlight-python"><div class="highlight"><pre>If you are using the this model model, you must define the following properties:
 fix id all property/global minSeparationDistanceRatio scalar value
     (value=value for the minimum separation distance, recommended as 1.01)
 fix id all property/global maxSeparationDistanceRatio scalar value
@@ -239,7 +263,8 @@ fix id all property/global surfaceTension scalar value
 fix id all property/global fluidViscosity scalar value
     (value=value for the fluidViscosity (SI units Pas))
 fix id all property/global contactAngle peratomtype value_1 value_2 ...
-    (value_i=value for contact angle of atom type i and fluid)</pre>
+    (value_i=value for contact angle of atom type i and fluid)
+</pre></div>
 </div>
 <p>The optional keyword <em>tangential_reduce</em> defines if the tangential force model should
 &#8220;see&#8221; the additional normal force excerted by this model. If it is &#8216;off&#8217; (which is default)
@@ -249,7 +274,7 @@ from this model into account, typically leading to a lower value of tangential f
 (via the Coulomb friction limit)</p>
 <p><strong>Output:</strong></p>
 <p>This gran model stores a couple of per-particle properties, for access
-by various <em class="xref std std-ref">output commands</em>.</p>
+by various <span class="xref std std-ref">output commands</span>.</p>
 <p>You can access the property surfaceLiquidContent by f_surfaceLiquidContent[0]
 (units % of solid particle volume), liquidFlux (units % of solid particle volume/time)
 by accessing f_liquidFlux[0] and liquidSource (units % of solid particle volume/time)
@@ -270,13 +295,13 @@ of a <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</
 <p id="shi"><strong>(Shi)</strong> Shi, McCarthy, PowderTechnology, p64, 184 (2008)</p>
 <p id="soulie"><strong>(Soulie)</strong> Soulie, Cherblanc, Youssoufi, Saix, Intl. J Numerical and Analytical Methods in Geomechanics, p213, 30 (2006)</p>
 <p><strong>Coarse-graining information:</strong></p>
-<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
 combination with this command might lead to
 different dynamics or system state and thus to
 inconsistancies.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 </div>
@@ -287,6 +312,9 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -317,11 +345,13 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

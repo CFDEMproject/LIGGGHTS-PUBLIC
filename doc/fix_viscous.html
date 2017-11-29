@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix viscous command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix viscous command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_viscous.txt" rel="nofollow"> View page source</a> 
+      <li>fix viscous command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_viscous.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix viscous command<a class="headerlink" href="#fix-viscous-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID viscous gamma keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID viscous gamma keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -164,8 +188,9 @@ keyword = <em>scale</em>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 flow viscous 0.1
-fix 1 damp viscous 0.5 scale 3 2.5</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix 1 flow viscous 0.1
+fix 1 damp viscous 0.5 scale 3 2.5
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -202,13 +227,13 @@ viscosity, gamma is specified directly in force/velocity units.  If
 needed, gamma can be adjusted for atoms of different sizes
 (i.e. sigma) by using the <em>scale</em> keyword.</p>
 <p>Note that Brownian dynamics models also typically include a randomized
-force term to thermostat the system at a chosen temperature.  The <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">langevin</span></tt> command does this.  It has the same
+force term to thermostat the system at a chosen temperature.  The <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">langevin</span></code> command does this.  It has the same
 viscous damping term as fix viscous and adds a random force to each
 atom.  The random force term is proportional to the sqrt of the chosen
 thermostatting temperature.  Thus if you use fix langevin with a
 target T = 0, its random force term is zero, and you are essentially
 performing the same operation as fix viscous.  Also note that the
-gamma of fix viscous is related to the damping parameter of <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">langevin</span></tt>, however the former is specified in units
+gamma of fix viscous is related to the damping parameter of <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">langevin</span></code>, however the former is specified in units
 of force/velocity and the latter in units of time, so that it can more
 easily be used as a thermostat.</p>
 </div>
@@ -217,12 +242,12 @@ easily be used as a thermostat.</p>
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.  No global or per-atom quantities are stored
-by this fix for access by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  No parameter of this fix can
+by this fix for access by various <span class="xref std std-ref">output commands</span>.  No parameter of this fix can
 be used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.</p>
 <p>The forces due to this fix are imposed during an energy minimization,
-invoked by the <tt class="xref doc docutils literal"><span class="pre">minimize</span></tt> command.  This fix should only
+invoked by the <code class="xref doc docutils literal"><span class="pre">minimize</span></code> command.  This fix should only
 be used with damped dynamics minimizers that allow for
-non-conservative forces.  See the <tt class="xref doc docutils literal"><span class="pre">min_style</span></tt> command
+non-conservative forces.  See the <code class="xref doc docutils literal"><span class="pre">min_style</span></code> command
 for details.</p>
 </div>
 <div class="section" id="restrictions">
@@ -232,12 +257,15 @@ for details.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
-<p><tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">langevin</span></tt></p>
+<p><code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">langevin</span></code></p>
 <p><strong>Default:</strong> none</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -268,11 +296,13 @@ for details.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

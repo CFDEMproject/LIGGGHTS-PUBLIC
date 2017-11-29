@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>LIGGGHTS(R)-PUBLIC 3.X vs. LIGGGHTS(R)-PUBLIC 2.X - syntax changes &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>LIGGGHTS(R)-PUBLIC 3.X vs. LIGGGHTS(R)-PUBLIC 2.X - syntax changes</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/liggghts_3.X_tutorial.txt" rel="nofollow"> View page source</a> 
+      <li>LIGGGHTS(R)-PUBLIC 3.X vs. LIGGGHTS(R)-PUBLIC 2.X - syntax changes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/liggghts_3.X_tutorial.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -163,8 +186,9 @@ to modelling approaches.</p>
 <div class="section" id="changes-in-syntax-for-each-command">
 <h2>Changes in syntax for each command:<a class="headerlink" href="#changes-in-syntax-for-each-command" title="Permalink to this headline">¶</a></h2>
 <p>Changes are indicated as follows</p>
-<div class="highlight-python"><pre>OLD: old_syntax
-NEW: new_syntax</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: old_syntax
+NEW: new_syntax
+</pre></div>
 </div>
 <p>where <em>old_syntax</em> refers to the syntax used in LIGGGHTS(R)-PUBLIC 2.X and before,
 and <em>new_syntax</em> refers to the syntax used in LIGGGHTS(R)-PUBLIC 3.X.</p>
@@ -200,20 +224,25 @@ NEW: fix ID group-ID wall/gran <em>MODEL-SELECTION</em> <em>WALL-OPTIONS</em> <e
 </div>
 <div class="section" id="examples">
 <h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2
-NEW: fix ID group-ID wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2
+NEW: fix ID group-ID wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID1 group-ID wall/gran/hooke/history type 1 xplane -0.5
-NEW: fix ID1 group-ID wall/gran model hooke tangential history type 1 xplane -0.5</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID1 group-ID wall/gran/hooke/history type 1 xplane -0.5
+NEW: fix ID1 group-ID wall/gran model hooke tangential history type 1 xplane -0.5
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID1 group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 rolling_friction cdt
-NEW: fix ID1 group-ID wall/gran model hertz tangential history rolling_friction cdt primitive type 1 xplane -0.5</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID1 group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 rolling_friction cdt
+NEW: fix ID1 group-ID wall/gran model hertz tangential history rolling_friction cdt primitive type 1 xplane -0.5
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 0.5 cohesion sjkr
-NEW: fix ID group-ID wall/gran model hertz tangential history cohesion sjkr primitive type 1 xplane -0.5 0.5</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 0.5 cohesion sjkr
+NEW: fix ID group-ID wall/gran model hertz tangential history cohesion sjkr primitive type 1 xplane -0.5 0.5
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off
-NEW: fix ID group-ID wall/gran model hertz tangential history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off
+NEW: fix ID group-ID wall/gran model hertz tangential history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off
+</pre></div>
 </div>
 <hr class="docutils" />
 <p><strong>pair_style gran/*:</strong></p>
@@ -232,23 +261,30 @@ NEW: pair_style gran  <strong>MODEL-SELECTION</strong> <strong>MODEL-SETTINGS</s
 </div>
 <div class="section" id="id3">
 <h3>Examples<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history
-NEW: pair_style gran model hertz tangential history</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: pair_style gran/hertz/history
+NEW: pair_style gran model hertz tangential history
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history rolling_friction cdt
-NEW: pair_style gran model hertz tangential history rolling_friction cdt</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: pair_style gran/hertz/history rolling_friction cdt
+NEW: pair_style gran model hertz tangential history rolling_friction cdt
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history cohesion sjkr
-NEW: pair_style gran model hertz tangential history cohesion sjkr</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: pair_style gran/hertz/history cohesion sjkr
+NEW: pair_style gran model hertz tangential history cohesion sjkr
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history tangential_damping off
-OLD: pair_style gran model hertz tangential history tangential_damping off</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: pair_style gran/hertz/history tangential_damping off
+OLD: pair_style gran model hertz tangential history tangential_damping off
+</pre></div>
 </div>
 </div>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -279,11 +315,13 @@ OLD: pair_style gran model hertz tangential history tangential_damping off</pre>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

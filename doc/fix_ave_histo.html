@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix ave/histo command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix ave/histo command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_ave_histo.txt" rel="nofollow"> View page source</a> 
+      <li>fix ave/histo command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_ave_histo.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix ave/histo command<a class="headerlink" href="#fix-ave-histo-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID ave/histo Nevery Nrepeat Nfreq lo hi Nbin value1 value2 ... keyword args ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID ave/histo Nevery Nrepeat Nfreq lo hi Nbin value1 value2 ... keyword args ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -160,12 +184,13 @@
 <li>one or more input values can be listed</li>
 <li>value = x, y, z, vx, vy, vz, fx, fy, fz, c_ID, c_ID[N], f_ID, f_ID[N], v_name</li>
 </ul>
-<div class="highlight-python"><pre>x,y,z,vx,vy,vz,fx,fy,fz = atom attribute (position, velocity, force component)
+<div class="highlight-python"><div class="highlight"><pre>x,y,z,vx,vy,vz,fx,fy,fz = atom attribute (position, velocity, force component)
 c_ID = scalar or vector calculated by a compute with ID
 c_ID[I] = Ith component of vector or Ith column of array calculated by a compute with ID
 f_ID = scalar or vector calculated by a fix with ID
 f_ID[I] = Ith component of vector or Ith column of array calculated by a fix with ID
-v_name = value(s) calculated by an equal-style or atom-style variable with name</pre>
+v_name = value(s) calculated by an equal-style or atom-style variable with name
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more keyword/arg pairs may be appended</li>
@@ -198,16 +223,17 @@ v_name = value(s) calculated by an equal-style or atom-style variable with name<
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all ave/histo 100 5 1000 0.5 1.5 50 c_myTemp file temp.histo ave running
-fix 1 all ave/histo 100 5 1000 -5 5 100 c_myArray[2] c_myArray[3] title1 "My output values"
-fix 1 all ave/histo 1 100 1000 -2.0 2.0 18 vx vy vz mode vector ave running beyond extra</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all ave/histo 100 5 1000 0.5 1.5 50 c_myTemp file temp.histo ave running
+fix 1 all ave/histo 100 5 1000 -5 5 100 c_myArray[2] c_myArray[3] title1 &quot;My output values&quot;
+fix 1 all ave/histo 1 100 1000 -2.0 2.0 18 vx vy vz mode vector ave running beyond extra
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Use one or more values as inputs every few timesteps, histogram them,
 and average the histogram over longer timescales.  The resulting
-histogram can be used by other <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>, and can also be written to a
+histogram can be used by other <span class="xref std std-ref">output commands</span>, and can also be written to a
 file.</p>
 <p>The group specified with this command is ignored for global and local
 input values.  For per-atom input values, only atoms in the group
@@ -233,9 +259,10 @@ arrays.  If a global array is listed, then it is the same as if the
 individual columns of the array had been listed one by one.
 E.g. these 2 fix ave/histo commands are equivalent, since the <a class="reference internal" href="compute_com_molecule.html"><em>compute com/molecule</em></a> command creates a global array
 with 3 columns:</p>
-<div class="highlight-python"><pre>compute myCOM all com/molecule
+<div class="highlight-python"><div class="highlight"><pre>compute myCOM all com/molecule
 fix 1 all ave/histo 100 1 100 c_myCOM file tmp1.com mode vector
-fix 2 all ave/histo 100 1 100 c_myCOM[1] c_myCOM[2] c_myCOM[3] file tmp2.com mode vector</pre>
+fix 2 all ave/histo 100 1 100 c_myCOM[1] c_myCOM[2] c_myCOM[3] file tmp2.com mode vector
+</pre></div>
 </div>
 <p>The output of this command is a single histogram for all input values
 combined together, not one histogram per input value.  See below for
@@ -275,7 +302,7 @@ per-atom or local array calculated by the compute is used.</p>
 <p>Note that there is a <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a> command
 which can sum per-atom quantities into a global scalar or vector which
 can thus be accessed by fix ave/histo.  Or it can be a compute defined
-not in your input script, but by <a class="reference internal" href="thermo_style.html"><em>thermodynamic output</em></a> or other fixes such as <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></tt> or <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">temp/rescale</span></tt>.  See
+not in your input script, but by <a class="reference internal" href="thermo_style.html"><em>thermodynamic output</em></a> or other fixes such as <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></code> or <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">temp/rescale</span></code>.  See
 the doc pages for these commands which give the IDs of these computes.
 Users can also write code for their own compute styles and <a class="reference internal" href="Section_modify.html"><em>add them to LIGGGHTS(R)-PUBLIC</em></a>.</p>
 <p>If a value begins with &#8220;<a href="#id3"><span class="problematic" id="id4">f_</span></a>&#8221;, a fix ID must follow which has been
@@ -369,9 +396,9 @@ the strings that will be printed as the first 3 lines of the output
 file, assuming the <em>file</em> keyword was used.  LIGGGHTS(R)-PUBLIC uses default
 values for each of these, so they do not need to be specified.</p>
 <p>By default, these header lines are as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Histogram for fix ID</span>
-<span class="c"># TimeStep Number-of-bins Total-counts Missing-counts Min-value Max-value</span>
-<span class="c"># Bin Coord Count Count/Total</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Histogram for fix ID</span>
+<span class="c1"># TimeStep Number-of-bins Total-counts Missing-counts Min-value Max-value</span>
+<span class="c1"># Bin Coord Count Count/Total</span>
 </pre></div>
 </div>
 <p>In the first line, ID is replaced with the fix-ID.  The second line
@@ -385,7 +412,7 @@ the histogram.</p>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix produces a global vector and global array which can be
-accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.
+accessed by various <span class="xref std std-ref">output commands</span>.
 The values can only be accessed on timesteps that are multiples of
 <em>Nfreq</em> since that is when a histogram is generated.  The global
 vector has 4 values:</p>
@@ -405,7 +432,7 @@ values in the 3rd column sum to 1.0.</p>
 per-atom input values, then you will need to account for that when
 interpreting the values produced by this fix.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -423,6 +450,9 @@ output, beyond = ignore, and title 1,2,3 = strings as described above.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -453,11 +483,13 @@ output, beyond = ignore, and title 1,2,3 = strings as described above.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

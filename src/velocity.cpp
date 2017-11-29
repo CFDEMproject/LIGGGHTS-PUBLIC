@@ -51,7 +51,7 @@
 
 #include "lmptype.h"
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -49,7 +49,7 @@
 #include "error.h"
 #include "memory.h"
 #include "modify.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "fix_property_atom.h"
 #include "fix_property_global.h"

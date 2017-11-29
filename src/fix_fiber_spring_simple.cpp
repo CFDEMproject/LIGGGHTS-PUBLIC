@@ -48,7 +48,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include "force.h"
 #include <stdlib.h>
 #include <string.h>

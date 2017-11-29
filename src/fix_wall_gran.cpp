@@ -44,7 +44,7 @@
     Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "fix_wall_gran.h"
@@ -366,6 +366,9 @@ FixWallGran::FixWallGran(LAMMPS *lmp, int narg, char **arg) :
     if(meshwall_ == -1 && primitiveWall_ == 0)
         error->fix_error(FLERR,this,"Need to use define style 'mesh' or 'primitive'");
 
+    if(primitiveWall_ && (modify->n_fixes_style("particletemplate/convexhull") > 0 || modify->n_fixes_style("particletemplate/concave") > 0))
+        error->fix_error(FLERR,this,"style 'primitive' is not compatible with convex or concave particles");
+
     if(meshwall_ == 1 && !FixMesh_list_)
         error->fix_error(FLERR,this,"Need to provide the number and a list of meshes by using 'n_meshes' and 'meshes'");
 
@@ -394,89 +397,86 @@ void FixWallGran::post_create()
           char *wallforce_name = new char[strlen(style)+1+6];
           strcpy(wallforce_name,"force_");
           strcat(wallforce_name,id);
-          char **fixarg = new char*[11];
+          const char *fixarg[11];
           fixarg[0] = wallforce_name;
-          fixarg[1] = (char *) "all";
-          fixarg[2] = (char *) "property/atom";
+          fixarg[1] = "all";
+          fixarg[2] = "property/atom";
           fixarg[3] = wallforce_name;
-          fixarg[4] = (char *) "vector";
-          fixarg[5] = (char *) "no";    // restart
-          fixarg[6] = (char *) "no";    // communicate ghost
-          fixarg[7] = (char *) "no";    // communicate rev
-          fixarg[8] = (char *) "0.";
-          fixarg[9] = (char *) "0.";
-          fixarg[10] = (char *) "0.";
-          modify->add_fix(11,fixarg);
+          fixarg[4] = "vector";
+          fixarg[5] = "no";    // restart
+          fixarg[6] = "no";    // communicate ghost
+          fixarg[7] = "no";    // communicate rev
+          fixarg[8] = "0.";
+          fixarg[9] = "0.";
+          fixarg[10] = "0.";
+          modify->add_fix(11,const_cast<char**>(fixarg));
           fix_wallforce_ =
               static_cast<FixPropertyAtom*>(modify->find_fix_property(wallforce_name,"property/atom","vector",3,0,style));
-          delete []fixarg;
           delete []wallforce_name;
    }
 
    if(store_force_contact_ && 0 == meshwall_)
    {
-        char **fixarg = new char*[19];
+        const char *fixarg[19];
         char fixid[200],ownid[200];
         sprintf(fixid,"contactforces_%s",id);
         sprintf(ownid,"%s",id);
         fixarg[0]=fixid;
-        fixarg[1]=(char *) "all";
-        fixarg[2]=(char *) "contactproperty/atom/wall";
+        fixarg[1]="all";
+        fixarg[2]="contactproperty/atom/wall";
         fixarg[3]=fixid;
-        fixarg[4]=(char *) "6";
-        fixarg[5]=(char *) "fx";
-        fixarg[6]=(char *) "0";
-        fixarg[7]=(char *) "fy";
-        fixarg[8]=(char *) "0";
-        fixarg[9]=(char *) "fz";
-        fixarg[10]=(char *) "0";
-        fixarg[11]=(char *) "tx";
-        fixarg[12]=(char *) "0";
-        fixarg[13]=(char *) "ty";
-        fixarg[14]=(char *) "0";
-        fixarg[15]=(char *) "tz";
-        fixarg[16]=(char *) "0";
-        fixarg[17]=(char *) "primitive";
+        fixarg[4]="6";
+        fixarg[5]="fx";
+        fixarg[6]="0";
+        fixarg[7]="fy";
+        fixarg[8]="0";
+        fixarg[9]="fz";
+        fixarg[10]="0";
+        fixarg[11]="tx";
+        fixarg[12]="0";
+        fixarg[13]="ty";
+        fixarg[14]="0";
+        fixarg[15]="tz";
+        fixarg[16]="0";
+        fixarg[17]="primitive";
         fixarg[18]=ownid;
-        modify->add_fix(19,fixarg);
+        modify->add_fix(19,const_cast<char**>(fixarg));
         fix_wallforce_contact_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
-        delete []fixarg;
    }
 
    if(store_force_contact_stress_ && 0 == meshwall_)
    {
-        char **fixarg = new char*[25];
+        const char *fixarg[25];
         char fixid[200],ownid[200];
         sprintf(fixid,"contactforces_stress_%s",id);
         sprintf(ownid,"%s",id);
         fixarg[0]=fixid;
-        fixarg[1]=(char *) "all";
-        fixarg[2]=(char *) "contactproperty/atom/wall";
+        fixarg[1]="all";
+        fixarg[2]="contactproperty/atom/wall";
         fixarg[3]=fixid;
-        fixarg[4]=(char *) "9";
-        fixarg[5]=(char *) "fx";
-        fixarg[6]=(char *) "0";
-        fixarg[7]=(char *) "fy";
-        fixarg[8]=(char *) "0";
-        fixarg[9]=(char *) "fz";
-        fixarg[10]=(char *) "0";
-        fixarg[11]=(char *) "deltax";
-        fixarg[12]=(char *) "0";
-        fixarg[13]=(char *) "deltay";
-        fixarg[14]=(char *) "0";
-        fixarg[15]=(char *) "deltaz";
-        fixarg[16]=(char *) "0";
-        fixarg[17]=(char *) "vx";
-        fixarg[18]=(char *) "0";
-        fixarg[19]=(char *) "vy";
-        fixarg[20]=(char *) "0";
-        fixarg[21]=(char *) "vz";
-        fixarg[22]=(char *) "0";
-        fixarg[23]=(char *) "primitive";
+        fixarg[4]="9";
+        fixarg[5]="fx";
+        fixarg[6]="0";
+        fixarg[7]="fy";
+        fixarg[8]="0";
+        fixarg[9]="fz";
+        fixarg[10]="0";
+        fixarg[11]="deltax";
+        fixarg[12]="0";
+        fixarg[13]="deltay";
+        fixarg[14]="0";
+        fixarg[15]="deltaz";
+        fixarg[16]="0";
+        fixarg[17]="vx";
+        fixarg[18]="0";
+        fixarg[19]="vy";
+        fixarg[20]="0";
+        fixarg[21]="vz";
+        fixarg[22]="0";
+        fixarg[23]="primitive";
         fixarg[24]=ownid;
-        modify->add_fix(25,fixarg);
+        modify->add_fix(25,const_cast<char**>(fixarg));
         fix_wallforce_contact_stress_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
-        delete []fixarg;
    }
 
    // create neighbor list for each mesh
@@ -500,21 +500,21 @@ void FixWallGran::post_create()
           char *hist_name = new char[strlen(id)+1+10];
           strcpy(hist_name,"history_");
           strcat(hist_name,id);
-          char **fixarg = new char*[8+dnum_];
+          const char **fixarg = new const char*[8+dnum_];
           fixarg[0] = hist_name;
-          fixarg[1] = (char *) "all";
-          fixarg[2] = (char *) "property/atom";
+          fixarg[1] = "all";
+          fixarg[2] = "property/atom";
           fixarg[3] = hist_name;
           if (dnum_ > 1)
-              fixarg[4] = (char *) "vector";
+              fixarg[4] = "vector";
           else
-              fixarg[4] = (char *) "vector_one_entry";
-          fixarg[5] = (char *) "yes";    // restart
-          fixarg[6] = (char *) "no";    // communicate ghost
-          fixarg[7] = (char *) "no";    // communicate rev
+              fixarg[4] = "vector_one_entry";
+          fixarg[5] = "yes";    // restart
+          fixarg[6] = "no";    // communicate ghost
+          fixarg[7] = "no";    // communicate rev
           for(int i = 8; i < 8+dnum_; i++)
-              fixarg[i] = (char *) "0.";
-          modify->add_fix(8+dnum_,fixarg);
+              fixarg[i] = "0.";
+          modify->add_fix(8+dnum_,const_cast<char**>(fixarg));
           fix_history_primitive_ =
               static_cast<FixPropertyAtom*>(modify->find_fix_property(hist_name,"property/atom","vector",dnum_,0,style));
           delete []fixarg;
@@ -650,30 +650,29 @@ void FixWallGran::createMulticontactData()
         // create a new per contact property which will contain the data for the computation according to Brodu et. al. 2016
         // surfPosIJ will contain the position of the contact surface ij, realtive to position i
         // normalForce will contain the normal component of the contact force
-        char **fixarg = new char*[17];
+        const char *fixarg[17];
         char fixid[200], ownid[200];
         sprintf(fixid,"multicontactData_%s",id);
         sprintf(ownid,"%s",id);
         fixarg[0]=fixid;
-        fixarg[1]=(char *) "all";
-        fixarg[2]=(char *) "contactproperty/atom/wall";
+        fixarg[1]="all";
+        fixarg[2]="contactproperty/atom/wall";
         fixarg[3]=fixid;
-        fixarg[4]=(char *) "4";
-        fixarg[5]=(char *) "surfPosIJ_x";
-        fixarg[6]=(char *) "0";
-        fixarg[7]=(char *) "surfPosIJ_y";
-        fixarg[8]=(char *) "0";
-        fixarg[9]=(char *) "surfPosIJ_z";
-        fixarg[10]=(char *) "0";
-        fixarg[11]=(char *) "normalForce";
-        fixarg[12]=(char *) "0";
-        fixarg[13]=(char *) "primitive";
+        fixarg[4]="4";
+        fixarg[5]="surfPosIJ_x";
+        fixarg[6]="0";
+        fixarg[7]="surfPosIJ_y";
+        fixarg[8]="0";
+        fixarg[9]="surfPosIJ_z";
+        fixarg[10]="0";
+        fixarg[11]="normalForce";
+        fixarg[12]="0";
+        fixarg[13]="primitive";
         fixarg[14]=ownid;
-        fixarg[15]=(char *) "reset";
-        fixarg[16]=(char *) "no";
-        modify->add_fix(17,fixarg);
+        fixarg[15]="reset";
+        fixarg[16]="no";
+        modify->add_fix(17,const_cast<char**>(fixarg));
         fix_store_multicontact_data_ = static_cast<FixContactPropertyAtomWall*>(modify->find_fix_id(fixid));
-        delete []fixarg;
     }
 }
 
@@ -717,7 +716,7 @@ void FixWallGran::pre_force(int vflag)
     if(atom->superquadric_flag) {
         quat_ = atom->quaternion;
         shape_ = atom->shape;
-        roundness_ = atom->roundness;
+        blockiness_ = atom->blockiness;
     }
 #endif
 
@@ -783,7 +782,7 @@ void FixWallGran::post_force_wall(int vflag)
   if(atom->superquadric_flag) {
     quat_ = atom->quaternion;
     shape_ = atom->shape;
-    roundness_ = atom->roundness;
+    blockiness_ = atom->blockiness;
   }
 #endif
 
@@ -912,7 +911,7 @@ void FixWallGran::post_force_mesh(int vflag)
                       error->fix_error(FLERR,this,"quat_[iPart] is NaN!");
                   #endif
 
-                  Superquadric particle(x_[iPart], quat_[iPart], shape_[iPart], roundness_[iPart]);
+                  Superquadric particle(x_[iPart], quat_[iPart], shape_[iPart], blockiness_[iPart]);
 
                   if(mesh->sphereTriangleIntersection(iTri, radius_[iPart], x_[iPart])) //check for Bounding Sphere-triangle intersection
                   {
@@ -965,6 +964,19 @@ void FixWallGran::post_force_mesh(int vflag)
             {
                 
                 sidata.j = iTri;
+                fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,false);
+                if(vMeshC)
+                {
+                    for(int i = 0; i < 3; i++)
+                        v_wall[i] = (bary[0]*vMesh[iTri][0][i] +
+                                     bary[1]*vMesh[iTri][1][i] +
+                                     bary[2]*vMesh[iTri][2][i] );
+                }
+                sidata.v_i = atom->v[iPart];
+                sidata.omega_i = atom->omega[iPart];
+                sidata.v_j = v_wall;
+                sidata.shearupdate = shearupdate_;
+                sidata.computeflag = computeflag_;
                 intersectflag = impl->checkSurfaceIntersect(sidata);
                 deltan = -sidata.deltan;
                 
@@ -975,12 +987,9 @@ void FixWallGran::post_force_mesh(int vflag)
             if(deltan <= 0 || (radius && deltan < contactDistanceMultiplier*radius[iPart]))
             {
               
-              if(atom->shapetype_flag)
-                  fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,false);
-              else
-                  if(fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,7 == barysign)) continue;
+              if(!atom->shapetype_flag && fix_contact && ! fix_contact->handleContact(iPart,idTri,sidata.contact_history,intersectflag,7 == barysign)) continue;
 
-              if(vMeshC)
+              if(vMeshC && !atom->shapetype_flag)
               {
                 for(int i = 0; i < 3; i++)
                     v_wall[i] = (bary[0]*vMesh[iTri][0][i] + bary[1]*vMesh[iTri][1][i] + bary[2]*vMesh[iTri][2][i]);
@@ -1071,7 +1080,7 @@ void FixWallGran::post_force_primitive(int vflag)
                 error->fix_error(FLERR,this,"quat_[iPart] is NaN!");
             #endif
 
-            Superquadric particle(x_[iPart], quat_[iPart], shape_[iPart], roundness_[iPart]);
+            Superquadric particle(x_[iPart], quat_[iPart], shape_[iPart], blockiness_[iPart]);
             intersectflag = particle.plane_intersection(delta, sphere_contact_point, closestPoint, point_of_lowest_potential);
             #ifdef LIGGGHTS_DEBUG
                 if(std::isnan(vectorMag3D(delta)))

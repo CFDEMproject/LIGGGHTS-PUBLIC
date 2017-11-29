@@ -39,7 +39,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "atom.h"
@@ -396,11 +396,11 @@ void FixPropertyGlobal::write()
     fprintf(file,"fix %s %s %s %s ",id,grpname,style,variablename);
 
     // datatype
-    char *datatyp;
-    if(0 == data_style) datatyp = (char*) "scalar";
-    if(1 == data_style) datatyp = (char*) "vector";
-    if(2 == data_style && is_symmetric) datatyp = (char*) "atomtypepair";
-    else if(2 == data_style) datatyp            = (char*) "matrix";
+    const char *datatyp;
+    if(0 == data_style) datatyp = "scalar";
+    if(1 == data_style) datatyp = "vector";
+    if(2 == data_style && is_symmetric) datatyp = "atomtypepair";
+    else if(2 == data_style) datatyp            = "matrix";
     fprintf(file,"%s ",datatyp);
 
     // size_array_cols if required

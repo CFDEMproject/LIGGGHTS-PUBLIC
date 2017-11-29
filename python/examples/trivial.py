@@ -2,9 +2,9 @@
 # preceeding line should have path for Python on your machine
 
 # trivial.py
-# Purpose: run a LAMMPS input script via Python
-# Syntax:  trivial.py in.lammps
-#          in.lammps = LAMMPS input script
+# Purpose: run a LIGGGHTS input script via Python
+# Syntax:  trivial.py in.liggghts
+#          in.liggghts = LIGGGHTS input script
 
 import sys
 
@@ -12,7 +12,7 @@ import sys
 
 argv = sys.argv
 if len(argv) != 2:
-  print "Syntax: trivial.py in.lammps"
+  print "Syntax: trivial.py in.liggghts"
   sys.exit()
 
 infile = sys.argv[1]
@@ -23,8 +23,8 @@ me = 0
 #me = pypar.rank()
 #nprocs = pypar.size()
 
-from lammps import lammps
-lmp = lammps()
+from liggghts import liggghts
+lmp = liggghts()
 
 # run infile all at once
 

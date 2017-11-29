@@ -65,7 +65,7 @@ quantities.
 {molecular} | bonds, angles, dihedrals, impropers | uncharged molecules |
 {sph}  | q(pressure), density | SPH particles |
 {sphere or granular} | diameter, mass, angular velocity | granular models |
-{superquadric} | semi-axes, roundness/blockiness parameters, mass, angular velocity, quaternion | granular models |
+{superquadric} | semi-axes, blockiness parameters, mass, angular velocity, quaternion | granular models |
 {tri} | corner points, angular momentum | rigid bodies  AWPMD :tb(c=3,s=|)
 
 IMPORTANT NOTE: It is possible to add some attributes, such as a

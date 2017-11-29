@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>gran model hooke model &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>gran model hooke model</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/gran_model_hooke.txt" rel="nofollow"> View page source</a> 
+      <li>gran model hooke model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/gran_model_hooke.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -167,18 +190,18 @@ model hooke [other model_type/model_name pairs as described <a class="reference 
   on = restitution coefficient varies with a local Stokes number of the particle. Requires additional global properties to be specified
   off = no modification to the restitution coefficient
 <em>heating_normal_hooke</em> values = 'on' or 'off'
-  on = model contributes to surface heating in the frame of <tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt>
+  on = model contributes to surface heating in the frame of <code class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></code>
   off = model does not contributes to surface heating
 <em>disableNormalWhenBonded</em> values = 'on' or 'off'
-  on = if the <tt class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">bond</span></tt> model is used, then the normal force is only added if the two particles are not bonded
+  on = if the <code class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">bond</span></code> model is used, then the normal force is only added if the two particles are not bonded
   of = the normal force is always added if two particles overlap
 <em>computeDissipatedEnergy</em> values = 'on' or 'off'
   on = the normal model saves the dissipated energy for each contact for the
-  use in <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/dissipated_energy</span></tt>
+  use in <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/dissipated_energy</span></code>
   of = no values are saved
 <em>computeElasticPotential</em> values = 'on' or 'off'
   on = the normal model saves the current elastic potential for each contact
-  for the use in <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/normal_elastic_energy</span></tt>
+  for the use in <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">calculate/normal_elastic_energy</span></code>
 </pre>
 </div>
 <div class="section" id="description">
@@ -213,28 +236,30 @@ tangential direction.</p>
 <img alt="_images/pair_gran_html_147eaf38.png" class="align-center" src="_images/pair_gran_html_147eaf38.png" />
 <img alt="_images/pair_gran_html_m225ba7de.png" class="align-center" src="_images/pair_gran_html_m225ba7de.png" />
 <p>To define those material properties, it is mandatory to use multiple <a class="reference internal" href="fix_property.html"><em>fix property/global</em></a> commands:</p>
-<div class="highlight-python"><pre>fix id all property/global youngsModulus peratomtype value_1 value_2 ...
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global youngsModulus peratomtype value_1 value_2 ...
     (value_i=value for Youngs Modulus of atom type i)
 fix id all property/global poissonsRatio peratomtype value_1 value_2 ...
     (value_i=value for Poisson ratio of atom type i)
 fix id all property/global coefficientRestitution peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
     (value_ij=value for the coefficient of restitution between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
 fix id all property/global coefficientFriction peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the (static) coefficient of friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)</pre>
+    (value_ij=value for the (static) coefficient of friction between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+</pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">You have to use atom styles beginning from 1, e.g. 1,2,3,...</p>
 </div>
 <p>The &#8220;characteristic impact velocity&#8221; is additionally used for hooke:</p>
-<div class="highlight-python"><pre>fix id all property/global characteristicVelocity scalar value
-    (value=value for characteristic impact velocity)</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global characteristicVelocity scalar value
+    (value=value for characteristic impact velocity)
+</pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">You have to use atom styles beginning from 1, e.g. 1,2,3,...</p>
 </div>
-<p>When the <tt class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">model</span> <span class="pre">bond</span></tt> is used the
+<p>When the <code class="xref doc docutils literal"><span class="pre">cohesion</span> <span class="pre">model</span> <span class="pre">bond</span></code> is used the
 <em>disableNormalWhenBonded</em> keyword can be used. If this parameter is set to &#8216;on&#8217;
 then the normal model will only compute its contribution if the two neighboring
 particles do not have an active bond. If a bond breaks and the particles overlap
@@ -247,22 +272,23 @@ especially in case the coefficient of restitution is small. Be sure you include 
 for the pair style and the wall model if you like to avoid this.</p>
 <p><strong>Viscous model:</strong></p>
 <p>Using option <em>viscous</em> = stokes adapts the coefficient of restitution as proposed by
-<a class="reference internal" href="#legendre"><em>(Legendre)</em></a>, <em>viscous</em> = off performs no modification.</p>
+<a class="reference internal" href="#legendre"><span>(Legendre)</span></a>, <em>viscous</em> = off performs no modification.</p>
 <p>One has to provide the 3 peratomtypepair parameters via a <a class="reference internal" href="fix_property.html"><em>fix property/global</em></a>
 command needed for the viscous damping:</p>
-<div class="highlight-python"><pre>fix id all property/global FluidViscosity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global FluidViscosity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
     (value_ij=value for fluid viscosity between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
 fix id all property/global CriticalStokes peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
     (value_ij=value for critical Stokes number between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
 fix id all property/global MaximumRestitution peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for maximum coefficient of restitution between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)</pre>
+    (value_ij=value for maximum coefficient of restitution between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+</pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">You have to use atom styles beginning from 1, e.g. 1,2,3,...</p>
 </div>
 <p>This model contributes to surface heating in the frame of
-<tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt> if the
+<code class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></code> if the
 appropriate flag is activated  (only available in the PREMIUM version).</p>
 </div>
 <div class="section" id="restrictions">
@@ -274,12 +300,12 @@ When using the limitForce, the specified coefficient of restitution is only appr
 become problematic for low coefficients of resitution as showin in Schwager and Poschel.</p>
 <p><em>heating_normal_hertz</em> may not be available in your version of the software.</p>
 <p><strong>Coarse-graining information:</strong></p>
-<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
 combination with this command should lead to
 statistically equivalent dynamics and system state.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 </div>
@@ -301,6 +327,9 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -331,11 +360,13 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -53,6 +53,7 @@
 #include <string>
 #include <vtkSmartPointer.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkMPIController.h>
 
 namespace LAMMPS_NS
 {
@@ -62,7 +63,7 @@ class DumpMesh : public Pointers
 
   public:
 
-    DumpMesh(LAMMPS *, int _nclusterprocs, int _multiproc, int _filewriter, int _fileproc);
+    DumpMesh(LAMMPS *, int _nclusterprocs, int _multiproc, int _filewriter, int _fileproc, vtkMPIController *controller);
     virtual ~DumpMesh();
     int parse_parameters(const int narg, const char *const *const arg, std::list<std::string> keyword_list = std::list<std::string>());
     int init_style();
@@ -77,6 +78,7 @@ class DumpMesh : public Pointers
     std::list<TriMesh*> meshList_;
     int dump_what_;
     vtkSmartPointer<vtkMultiBlockDataSet> mbSet;
+    vtkMPIController * localController;
 
     int n_calls_;
     int nclusterprocs;

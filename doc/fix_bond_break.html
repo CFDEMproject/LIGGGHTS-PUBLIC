@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix bond/break command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix bond/break command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_bond_break.txt" rel="nofollow"> View page source</a> 
+      <li>fix bond/break command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_bond_break.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix bond/break command<a class="headerlink" href="#fix-bond-break-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID bond/break Nevery bondtype Rmax keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID bond/break Nevery bondtype Rmax keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -166,8 +190,9 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 5 all bond/break 10 2 1.2
-fix 5 polymer bond/break 1 1 2.0 prob 0.5 123457</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix 5 all bond/break 10 2 1.2
+fix 5 polymer bond/break 1 1 2.0 prob 0.5 123457
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -234,7 +259,7 @@ resulting from broken bonds.</p>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix computes two statistics which it stores in a global vector of
-length 2, which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The vector values calculated
+length 2, which can be accessed by various <span class="xref std std-ref">output commands</span>.  The vector values calculated
 by this fix are &#8220;intensive&#8221;.</p>
 <p>These are the 2 quantities:</p>
 <ul class="simple">
@@ -248,22 +273,22 @@ by this fix are &#8220;intensive&#8221;.</p>
 </li>
 </ul>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
 <p>This fix is part of the MC package.  It is only enabled if LIGGGHTS(R)-PUBLIC was
-built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info.</p>
+built with that package.  See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section for more info.</p>
 <p>Currently, there are 2 restrictions for using this fix.  We may relax
 these in the future if there are new models that would be enabled by
 it.</p>
 <p>When a bond is broken, you might wish to turn off angle and dihedral
 interactions that include that bond.  However, LIGGGHTS(R)-PUBLIC does not check
 for these angles and dihedrals, even if your simulation defines an
-<tt class="xref doc docutils literal"><span class="pre">angle_style</span></tt> or
-<tt class="xref doc docutils literal"><span class="pre">dihedral_style</span></tt>.</p>
+<code class="xref doc docutils literal"><span class="pre">angle_style</span></code> or
+<code class="xref doc docutils literal"><span class="pre">dihedral_style</span></code>.</p>
 <p>This fix requires that the pairwise weightings defined by the
-<tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt> command be 0,1,1 for 1-2, 1-3, and
+<code class="xref doc docutils literal"><span class="pre">special_bonds</span></code> command be 0,1,1 for 1-2, 1-3, and
 1-4 neighbors within the bond topology.  This effectively means that
 the pairwise interaction between atoms I and J is turned off when a
 bond between them exists and will be turned on when the bond is
@@ -272,8 +297,8 @@ other bond partners is unaffected by the existence of the bond.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="fix_bond_create.html"><em>fix bond/create</em></a>, <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">bond/swap</span></tt>, <a class="reference internal" href="dump.html"><em>dump local</em></a>,
-<tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt></p>
+<p><a class="reference internal" href="fix_bond_create.html"><em>fix bond/create</em></a>, <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">bond/swap</span></code>, <a class="reference internal" href="dump.html"><em>dump local</em></a>,
+<code class="xref doc docutils literal"><span class="pre">special_bonds</span></code></p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
@@ -282,6 +307,9 @@ other bond partners is unaffected by the existence of the bond.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -312,11 +340,13 @@ other bond partners is unaffected by the existence of the bond.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

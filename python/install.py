@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-# copy LAMMPS src/liblammps.so and lammps.py to system dirs
+# copy LAMMPS src/libliggghts.so and liggghts.py to system dirs
 
 instructions = """
 Syntax: python install.py [-h] [libdir] [pydir]
-        libdir = target dir for src/liblammps.so, default = /usr/local/lib
-        pydir = target dir for lammps.py, default = Python site-packages dir
+        libdir = target dir for src/libliggghts.so, default = /usr/local/lib
+        pydir = target dir for liggghts.py, default = Python site-packages dir
 """
 
 import sys,os,commands
@@ -34,34 +34,34 @@ else:
   if libdir not in libpaths:
     print "WARNING: libdir %s not in LD_LIBRARY_PATH" % libdir
 
-str = "cp ../src/liblammps.so %s" % libdir
+str = "cp ../src/libliggghts.so %s" % libdir
 print str
 outstr = commands.getoutput(str)
 if len(outstr.strip()): print outstr
 
-# copy lammps.py to pydir if it exists
+# copy liggghts.py to pydir if it exists
 # if pydir not specified, install in site-packages via distutils setup()
 
 if pydir:
   if not os.path.isdir(pydir):
     print "ERROR: pydir %s does not exist" % pydir
     sys.exit()
-  str = "cp ../python/lammps.py %s" % pydir
+  str = "cp ../python/liggghts.py %s" % pydir
   print str
   outstr = commands.getoutput(str)
   if len(outstr.strip()): print outstr
   sys.exit()
   
-print "installing lammps.py in Python site-packages dir"
+print "installing liggghts.py in Python site-packages dir"
 
 os.chdir('../python')                # in case invoked via make in src dir
 
 from distutils.core import setup
 sys.argv = ["setup.py","install"]    # as if had run "python setup.py install"
-setup(name = "lammps",
-      version = "15Aug12",
-      author = "Steve Plimpton",
-      author_email = "sjplimp@sandia.gov",
-      url = "http://lammps.sandia.gov",
-      description = "LAMMPS molecular dynamics library",
-      py_modules = ["lammps"])
+setup(name = "liggghts",
+      version = "3.8.0",
+      author = "Christoph Kloss",
+      author_email = "office@dcs-computing.com",
+      url = "http://www.cfdem.com",
+      description = "LIGGGHTS - LAMMPS improved for general granular and granular heat transfer simulations",
+      py_modules = ["liggghts"])

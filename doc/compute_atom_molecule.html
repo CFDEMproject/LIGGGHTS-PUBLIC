@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute atom/molecule command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute atom/molecule command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_atom_molecule.txt" rel="nofollow"> View page source</a> 
+      <li>compute atom/molecule command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_atom_molecule.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute atom/molecule command<a class="headerlink" href="#compute-atom-molecule-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID atom/molecule general_keywords general_values input1 input2 ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID atom/molecule general_keywords general_values input1 input2 ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -156,17 +180,19 @@
 <li>one or more inputs can be listed</li>
 <li>input = c_ID, c_ID[N], f_ID, f_ID[N], v_name</li>
 </ul>
-<div class="highlight-python"><pre>c_ID = per-atom vector calculated by a compute with ID
+<div class="highlight-python"><div class="highlight"><pre>c_ID = per-atom vector calculated by a compute with ID
 c_ID[I] = Ith column of per-atom array calculated by a compute with ID
 f_ID = per-atom vector calculated by a fix with ID
 f_ID[I] = Ith column of per-atom array calculated by a fix with ID
-v_name = per-atom vector calculated by an atom-style variable with name</pre>
+v_name = per-atom vector calculated by an atom-style variable with name
+</pre></div>
 </div>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all atom/molecule c_ke c_pe
-compute 1 top atom/molecule v_myFormula c_stress**3**</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all atom/molecule c_ke c_pe
+compute 1 top atom/molecule v_myFormula c_stress**3**
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -212,15 +238,17 @@ reference thermodynamic keywords and various per-atom attributes, or
 invoke other computes, fixes, or variables when they are evaluated, so
 this is a very general means of generating per-atom quantities to sum
 on a per-molecule basis.</p>
+</div>
 <hr class="docutils" />
-<p><strong>Output info:</strong></p>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This compute calculates a global vector or global array depending on
 the number of input values.  The length of the vector or number of
 rows in the array is the number of molecules.  If a single input is
 specified, a global vector is produced.  If two or more inputs are
 specified, a global array is produced where the number of columns =
 the number of inputs.  The vector or array can be accessed by any
-command that uses global values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><em>this section</em></a> for an overview of LIGGGHTS(R)-PUBLIC output
+command that uses global values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>All the vector or array values calculated by this compute are
 &#8220;extensive&#8221;.</p>
@@ -240,6 +268,9 @@ input quantities are in.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -270,11 +301,13 @@ input quantities are in.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

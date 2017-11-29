@@ -59,7 +59,6 @@ k_t = elastic constant for tangential contact :l
 gamma_n = viscoelastic damping constant for normal contact :l
 gamma_t = viscoelastic damping constant for tangential contact :l
 delta_t = tangential displacement vector between 2 spherical particles which is truncated to satisfy a frictional yield criterion :l
-rmu = coefficient of rolling friction :l
 contactradius = contact radius, equal to particle radius - 0.5 * delta_n :l
 v_n = normal component of the relative velocity of the 2 particles :l
 v_t = tangential component of the relative velocity of the 2 particles :l
@@ -108,7 +107,7 @@ for the pair style and the wall model if you like to avoid this.
 If using SI units, youngsModulus must be > 5e6
 If using CGS units, youngsModulus must be > 5e5
 When using the limitForce, the specified coefficient of restitution is only approximate. This might 
-become problematic for low coefficients of resitution as showin in Schwager and Poschel.
+become problematic for low coefficients of restitution as shown in Schwager and Poschel.
 
 {heating_normal_hertz} may not be available in your version of the software.
 

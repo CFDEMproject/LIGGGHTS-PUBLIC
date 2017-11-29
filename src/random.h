@@ -45,10 +45,15 @@
 
 namespace LAMMPS_NS {
 
-class Random : protected Pointers {
+class Random : protected Pointers
+{
+public:
+    Random(class LAMMPS *lmp, const char * seed_char, bool proc_shift = false, int multiplier = 1);
 
- public:
-  Random(class LAMMPS *lmp, int seed);
+    int getSeed() const
+    { return seed; }
+protected:
+    int seed;
 };
 
 }

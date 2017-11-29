@@ -68,10 +68,11 @@ class CreateAtoms : protected Pointers {
   void command(int, char **);
 
  private:
-  int itype,style,nregion,nbasis,nrandom,seed;
+  int itype,style,nregion,nbasis,nrandom;
   bool all_in; 
   double all_in_dist; 
   int *basistype;
+  char * seed_char;
   double xone[3];
   int remapflag;
 

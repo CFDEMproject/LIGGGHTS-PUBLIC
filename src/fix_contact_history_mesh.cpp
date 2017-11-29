@@ -42,6 +42,8 @@
 #include <mpi.h>
 #include <string.h>
 #include <stdio.h>
+#include <cmath>
+#include <algorithm>
 #include "fix_contact_history_mesh.h"
 #include "atom.h"
 #include "fix_mesh_surface.h"
@@ -53,7 +55,6 @@
 #include "update.h"
 #include "modify.h"
 #include "memory.h"
-#include "math_extra_liggghts.h"
 #include "error.h"
 
 #if defined(_OPENMP)
@@ -207,9 +208,9 @@ void FixContactHistoryMesh::allocate_pages()
     intersectpage_ = new MyPage<bool>*[numpages_];
     for (int i = 0; i < numpages_; i++) {
       ipage1_[i].init(oneatom_,pgsize_);
-      dpage1_[i].init(oneatom_*MathExtraLiggghts::max(1,dnum_),pgsize_);
+      dpage1_[i].init(oneatom_*std::max(1,dnum_),pgsize_);
       ipage2_[i].init(oneatom_,pgsize_);
-      dpage2_[i].init(oneatom_*MathExtraLiggghts::max(1,dnum_),pgsize_);
+      dpage2_[i].init(oneatom_*std::max(1,dnum_),pgsize_);
     }
 
 #if defined(_OPENMP)
@@ -410,6 +411,7 @@ void FixContactHistoryMesh::sort_contacts()
 void FixContactHistoryMesh::markAllContacts()
 {
     const int nlocal = atom->nlocal;
+    
     keeppage_[0]->reset(true);
     intersectpage_[0]->reset(false);
 
@@ -418,33 +420,6 @@ void FixContactHistoryMesh::markAllContacts()
       const int nneighs = fix_nneighs_->get_vector_atom_int(i);
       keepflag_[i] = keeppage_[0]->get(nneighs);
       intersectflag_[i] = intersectpage_[0]->get(nneighs);
-      if (!keepflag_[i] || !intersectflag_[i])
-        error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
-    }
-}
-
-/* ----------------------------------------------------------------------
-     mark all contacts for deletion
-------------------------------------------------------------------------- */
-
-void FixContactHistoryMesh::resetDeletionPage(int tid)
-{
-    // keep pages are initalized with 0 (= false)
-    keeppage_[tid]->reset(true);
-    intersectpage_[tid]->reset(false);
-}
-
-/* ----------------------------------------------------------------------
-     mark all contacts for deletion
-------------------------------------------------------------------------- */
-
-void FixContactHistoryMesh::markForDeletion(int tid, int ifrom, int ito)
-{
-    for(int i = ifrom; i < ito; i++)
-    {
-      const int nneighs = fix_nneighs_->get_vector_atom_int(i);
-      keepflag_[i] = keeppage_[tid]->get(nneighs);
-      intersectflag_[i] = intersectpage_[tid]->get(nneighs);
       if (!keepflag_[i] || !intersectflag_[i])
         error->one(FLERR,"mesh contact history overflow, boost neigh_modify one");
     }
@@ -519,7 +494,6 @@ void FixContactHistoryMesh::cleanUpContactJumps()
             {
                 
                 partner_[i][ipartner] = -1;
-                intersectflag_[i][ipartner] = false;
                 vectorZeroizeN(&(contacthistory_[i][ipartner*dnum_]),dnum_);
                 swap(i,ipartner,npartner_[i]-1,false);
                 npartner_[i]--;
@@ -605,7 +579,7 @@ int FixContactHistoryMesh::unpack_exchange(int nlocal, double *buf)
 
   npartner_[nlocal] = ubuf(buf[m++]).i;
   maxtouch_ = MAX(maxtouch_,npartner_[nlocal]);
-  int nalloc = MathExtraLiggghts::max(nneighs,npartner_[nlocal]);
+  int nalloc = std::max(nneighs,npartner_[nlocal]);
   partner_[nlocal] = ipage_->get(nalloc);
   contacthistory_[nlocal] = dpage_->get(dnum_*nalloc);
 
@@ -704,4 +678,25 @@ double FixContactHistoryMesh::memory_usage()
   }
 
   return bytes;
+}
+
+int FixContactHistoryMesh::get_contact(const int i, const int j)
+{
+    int count = -1;
+    int offset = 0;
+    for (; offset < nneighs(i); offset++)
+    {
+        // check whether real partner
+        if (partner_[i][offset] != -1)
+        {
+            count++;
+            if (j == count) // found j-th real contact partner
+                break;
+        }
+    }
+
+    if (j != count)
+        error->fix_error(FLERR, this, "could not find suitable partner");
+
+    return offset;
 }

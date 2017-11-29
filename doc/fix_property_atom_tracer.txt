@@ -60,11 +60,12 @@ can change the tracer value (keyword [reset_marker].)
 
 Information about this fix is written to "binary restart files"_restart.html .
 
-This fix computes a per-atom vector (the marker) which can be accessed by
-various "output commands"_Section_howto.html#howto_8. .
-This fix also computes a global scalar indicating how many particles were
-marked since the last time the global scalar was computed. This scalar
-can also be accessed by various "output commands"_Section_howto.html#howto_8. .
+This fix computes a per-atom scalar (the marker) which can be accessed by
+various "output commands"_Section_howto.html#howto_8. This scalar is equal to 1
+if a particle has been marked and 0 otherwise.  This fix also computes a global
+scalar indicating how many particles were marked since the last time the global
+scalar was computed. This scalar can also be accessed by various "output
+commands"_Section_howto.html#howto_8.
 
 [Restrictions:]
 

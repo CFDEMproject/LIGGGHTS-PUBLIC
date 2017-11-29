@@ -2,9 +2,9 @@
 # preceeding line should have path for Python on your machine
 
 # vizplotgui_atomeye.py
-# Purpose: viz running LAMMPS simulation via AtomEye with plot and GUI
-# Syntax:  vizplotgui_atomeye.py in.lammps Nfreq compute-ID
-#          in.lammps = LAMMPS input script
+# Purpose: viz running LIGGGHTS simulation via AtomEye with plot and GUI
+# Syntax:  vizplotgui_atomeye.py in.liggghts Nfreq compute-ID
+#          in.liggghts = LIGGGHTS input script
 #          Nfreq = plot data point and viz shapshot every this many steps
 #          compute-ID = ID of compute that calculates temperature
 #                       (or any other scalar quantity)
@@ -50,7 +50,7 @@ def update(ntimestep):
 
 argv = sys.argv
 if len(argv) != 4:
-  print "Syntax: vizplotgui_atomeye.py in.lammps Nfreq compute-ID"
+  print "Syntax: vizplotgui_atomeye.py in.liggghts Nfreq compute-ID"
   sys.exit()
 
 infile = sys.argv[1]
@@ -63,8 +63,8 @@ me = 0
 #me = pypar.rank()
 #nprocs = pypar.size()
 
-from lammps import lammps
-lmp = lammps()
+from liggghts import liggghts
+lmp = liggghts()
 
 # run infile all at once
 # assumed to have no run command in it
@@ -101,7 +101,7 @@ if me == 0:
   tkroot = Tk()
   tkroot.withdraw()
   root = Toplevel(tkroot)
-  root.title("LAMMPS GUI")
+  root.title("LIGGGHTS GUI")
 
   frame = Frame(root)
   Button(frame,text="Run",command=run).pack(side=LEFT)

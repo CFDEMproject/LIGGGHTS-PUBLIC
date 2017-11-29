@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>mesh module stress &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>mesh module stress</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/mesh_module_stress.txt" rel="nofollow"> View page source</a> 
+      <li>mesh module stress</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/mesh_module_stress.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <h1>mesh module stress<a class="headerlink" href="#mesh-module-stress" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>stress stress_keywords stress_values</pre>
+<div class="highlight-python"><div class="highlight"><pre>stress stress_keywords stress_values
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more stress_keyword/value pairs may be appended</li>
@@ -162,7 +186,8 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix cad all mesh/surface/stress file mesh.stl type 1 wear finnie</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix cad all mesh/surface/stress file mesh.stl type 1 wear finnie
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -177,16 +202,18 @@ keyword. The optional <em>wear</em> keyword can activates a simple qualitative w
 (<em>finnie</em>) - for details on the model, see the seperate /doc/finnie-wear.pdf. The wear coefficient
 is divided by the mesh element area, therefore it is independent of mesh size.
 The finnie constant k in Eqn. (4.23) has to be specified as follows:</p>
-<div class="highlight-python"><pre>fix id all property/global k_finnie peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix id all property/global k_finnie peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
+</pre></div>
 </div>
-<div class="highlight-python"><pre>(value_ij=value for the finnie constant between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)</pre>
+<div class="highlight-python"><div class="highlight"><pre>(value_ij=value for the finnie constant between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+</pre></div>
 </div>
 <p>This mesh module is a prerequisite for the following mesh modules</p>
 <ul class="simple">
-<li><tt class="xref doc docutils literal"><span class="pre">6dof</span></tt></li>
-<li><tt class="xref doc docutils literal"><span class="pre">binning</span></tt></li>
-<li><tt class="xref doc docutils literal"><span class="pre">contact</span></tt></li>
-<li><tt class="xref doc docutils literal"><span class="pre">deform</span></tt></li>
+<li><code class="xref doc docutils literal"><span class="pre">6dof</span></code></li>
+<li><code class="xref doc docutils literal"><span class="pre">binning</span></code></li>
+<li><code class="xref doc docutils literal"><span class="pre">contact</span></code></li>
+<li><code class="xref doc docutils literal"><span class="pre">deform</span></code></li>
 <li><a class="reference internal" href="mesh_module_servo.html"><em>servo</em></a></li>
 <li><a class="reference internal" href=""><em>stress</em></a></li>
 </ul>
@@ -194,9 +221,9 @@ The finnie constant k in Eqn. (4.23) has to be specified as follows:</p>
 <div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>This mesh module stores a global vector with 9 components for access by various
-<em class="xref std std-ref">output commands</em>. The first 3 components are equal to the
+<span class="xref std std-ref">output commands</span>. The first 3 components are equal to the
 total force on the mesh, the next 3 components store the total torque on the body
-exerted by the particles. Finally, the last 3 components are the coordinates (moved, scaled, rotated) of the reference point. Other info see <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></tt>.</p>
+exerted by the particles. Finally, the last 3 components are the coordinates (moved, scaled, rotated) of the reference point. Other info see <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></code>.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
@@ -212,6 +239,9 @@ wear = off</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -242,11 +272,13 @@ wear = off</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

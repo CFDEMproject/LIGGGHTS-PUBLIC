@@ -39,7 +39,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include "compute_pair_gran_local.h"
 #include "atom.h"
@@ -58,6 +58,7 @@
 #include "pair_gran.h"
 #include "domain.h"
 #include "fix_heat_gran_conduction.h"
+#include "fix_multisphere.h"
 #include "fix_wall_gran.h"
 #include "vector_liggghts.h"
 
@@ -80,14 +81,14 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int &iarg, int narg, cha
   posflag = velflag = idflag = fflag = torqueflag = histflag = areaflag = 1;
 
   // do not store fn, ft, heat flux, delta by default
-  fnflag = ftflag  = torquenflag = torquetflag = deltaflag = heatflag = cpflag = 0;
+  fnflag = ftflag  = torquenflag = torquetflag = deltaflag = heatflag = cpflag = msidflag = 0;
 
   //no extra distance for building the list of pairs
   verbose = false;
 
   // if further args, store only the properties that are listed
   if(narg > iarg)
-     posflag = velflag = idflag = fflag = fnflag = ftflag = torqueflag = torquenflag = torquetflag = histflag = areaflag = deltaflag = heatflag = cpflag  = 0;
+     posflag = velflag = idflag = fflag = fnflag = ftflag = torqueflag = torquenflag = torquetflag = histflag = areaflag = deltaflag = heatflag = cpflag = msidflag = 0;
 
   for (; iarg < narg; iarg++)
   {
@@ -106,6 +107,7 @@ ComputePairGranLocal::ComputePairGranLocal(LAMMPS *lmp, int &iarg, int narg, cha
     else if (strcmp(arg[iarg],"delta") == 0) deltaflag = 1;
     else if (strcmp(arg[iarg],"heatFlux") == 0) heatflag = 1;
     else if (strcmp(arg[iarg],"contactPoint") == 0) cpflag = 1;
+    else if (strcmp(arg[iarg],"ms_id") == 0) msidflag = 1;
     else if (strcmp(arg[iarg],"verbose") == 0) verbose = true;
     else if (strcmp(arg[iarg],"extraSurfDistance") == 0) error->all(FLERR,"this keyword is deprecated; neighbor->contactDistanceFactor is now used directly");
     else if(0 == strcmp(style,"wall/gran/local") || 0 == strcmp(style,"pair/gran/local"))
@@ -165,6 +167,7 @@ void ComputePairGranLocal::init()
 {
     init_cpgl(false); 
     
+    fix_ms = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
 }
 
 /* ---------------------------------------------------------------------- */
@@ -272,7 +275,7 @@ void ComputePairGranLocal::init_cpgl(bool requestflag)
   if(histflag && dnum == 0) error->all(FLERR,"Compute pair/gran/local or wall/gran/local can not calculate history values since pair or wall style does not compute them");
   // standard values: pos1,pos2,id1,id2,extra id for mesh wall,force,torque,contact area
 
-  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + fnflag*3 + ftflag*3 + torqueflag*3 + torquenflag*3 + torquetflag*3 + histflag*dnum + areaflag + deltaflag + heatflag + cpflag*3;
+  nvalues = posflag*6 + velflag*6 + idflag*3 + fflag*3 + fnflag*3 + ftflag*3 + torqueflag*3 + torquenflag*3 + torquetflag*3 + histflag*dnum + areaflag + deltaflag + heatflag + cpflag*3 + msidflag*2;
   size_local_cols = nvalues;
 
 }
@@ -411,7 +414,7 @@ int ComputePairGranLocal::count_wallcontacts(int & nCountWithOverlap)
    add data from particle-particle contact on this proc
 ------------------------------------------------------------------------- */
 
-void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist)
+void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,double tor1,double tor2,double tor3,double *hist, const double * const contact_point)
 {
     
     double del[3],r,rsq,radi,radj,contactArea;
@@ -581,7 +584,13 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
         cp[0] = hist[contact_point_offset];
         cp[1] = hist[contact_point_offset + 1];
         cp[2] = hist[contact_point_offset + 2];
-      } else {
+      }
+      else if (atom->shapetype_flag)
+      {
+        vectorCopy3D(contact_point, cp);
+      }
+      else
+      {
         radi = atom->radius[i];
         radj = atom->radius[j];
         for(int dim = 0; dim < 3; dim++)
@@ -591,6 +600,11 @@ void ComputePairGranLocal::add_pair(int i,int j,double fx,double fy,double fz,do
       array[ipair][n++] = cp[0];
       array[ipair][n++] = cp[1];
       array[ipair][n++] = cp[2];
+    }
+    if(msidflag)
+    {
+        array[ipair][n++] = static_cast<double>(fix_ms->belongs_to(i));
+        array[ipair][n++] = static_cast<double>(fix_ms->belongs_to(j));
     }
 
     ipair++;
@@ -718,6 +732,10 @@ void ComputePairGranLocal::add_wall_1(int iFMG,int idTri,int iP,double *contact_
         n++;
     }
 
+    if(msidflag)
+    {
+        n+=2;
+    }
 }
 
 /* ---------------------------------------------------------------------- */
@@ -840,7 +858,11 @@ void ComputePairGranLocal::add_wall_2(int i,double fx,double fy,double fz,double
         array[ipair][n++] = atom->radius[i]-sqrt(rsq);
 
     }
-
+    if(msidflag)
+    {
+        n++;
+        array[ipair][n++] = static_cast<double>(fix_ms->belongs_to(i));
+    }
     // wall_1 and wall_2 are always called
 
     ipair++;

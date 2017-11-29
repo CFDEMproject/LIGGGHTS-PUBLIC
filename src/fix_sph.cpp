@@ -37,7 +37,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <mpi.h>
 #include <string.h>
 #include <stdlib.h>

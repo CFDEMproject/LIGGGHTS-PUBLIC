@@ -48,6 +48,8 @@
 #include "atom_vec.h"
 #include "vector_liggghts.h"
 #include "fix_heat_gran.h"
+#include <cmath>
+#include <algorithm>
 
 /* ----------------------------------------------------------------------
    constructor / destructor
@@ -122,6 +124,7 @@ void Multisphere::add_body(int nspheres, double *xcm_ins, double *xcm_to_xbound_
                double *ex_space_ins, double *ey_space_ins, double *ez_space_ins,
                double **displace_ins, bool *fflag, bool *tflag, int start_step_ins,double *v_integrate_ins)
 {
+    
     int n = nbody_;
 
     customValues_.addUninitializedElement();
@@ -131,7 +134,6 @@ void Multisphere::add_body(int nspheres, double *xcm_ins, double *xcm_to_xbound_
     
     id_.set(n,-1);
 
-    bool flags[3] = {true,true,true};
     double zerovec[3] = {0.,0.,0.};
     double zerovec4[4] = {0.,0.,0.,0.};
     int zerovec4int[4] = {0,0,0,0};
@@ -160,8 +162,8 @@ void Multisphere::add_body(int nspheres, double *xcm_ins, double *xcm_to_xbound_
     imagebody_.set(n,(IMGMAX << IMG2BITS) | (IMGMAX << IMGBITS) | IMGMAX);
     remapflag_.set(n,zerovec4int);
 
-    fflag_.set(n,flags);
-    tflag_.set(n,flags);
+    fflag_.set(n,fflag);
+    tflag_.set(n,tflag);
 
     start_step_.set(n,start_step_ins);
     if(v_integrate_ins)
@@ -179,6 +181,11 @@ void Multisphere::add_body(int nspheres, double *xcm_ins, double *xcm_to_xbound_
         temp_.set(n,fix_heat->T0);
         temp_old_.set(n,fix_heat->T0);
     }
+    else
+    {
+        temp_.set(n,0.);
+        temp_old_.set(n,0.);
+    }
 
     // calculate q and ang momentum
 
@@ -187,7 +194,7 @@ void Multisphere::add_body(int nspheres, double *xcm_ins, double *xcm_to_xbound_
         ex_space_(n),ey_space_(n),ez_space_(n),
         quat_(n)
     );
-
+    
     MathExtraLiggghts::angmom_from_omega
     (
         omega_(n),
@@ -316,7 +323,7 @@ void Multisphere::id_extend_body_extend(int *body)
 
   // mapTagMax_ cannot get smaller - so ensure IDs are given only once
   
-  mapTagMax_ = MathExtraLiggghts::max(mapTagMax_,idmax_all);
+  mapTagMax_ = std::max(mapTagMax_,idmax_all);
 
   // noid = # of bodies I own with no id (id = -1)
   // noid_sum = # of total bodies on procs <= me with no tag
@@ -409,7 +416,7 @@ void Multisphere::generate_map()
     // get max ID of all proc
     idmax = id_.max();
     MPI_Max_Scalar(idmax,idmax_all,world);
-    mapTagMax_ = MathExtraLiggghts::max(mapTagMax_,idmax_all);
+    mapTagMax_ = std::max(mapTagMax_,idmax_all);
 
     // alocate and initialize new array
     // IDs start at 1, have to go up to (inclusive) mapTagMax_

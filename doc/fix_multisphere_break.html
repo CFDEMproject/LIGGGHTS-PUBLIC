@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix multisphere/break command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix multisphere/break command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_multisphere_break.txt" rel="nofollow"> View page source</a> 
+      <li>fix multisphere/break command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_multisphere_break.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,31 +170,47 @@
 <span id="index-0"></span><h1>fix multisphere/break command<a class="headerlink" href="#fix-multisphere-break-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID multisphere/break keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID multisphere/break keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
 <li>multisphere/break = style name of this fix command</li>
-<li>keywords = same as for <a class="reference internal" href="fix_multisphere.html"><em>fix multisphere</em></a>, in addition: <em>trigger_threshold</em> and <em>trigger_timeStep</em> and  <em>trigger_fixName</em></li>
+<li>keywords = same as for <a class="reference internal" href="fix_multisphere.html"><em>fix multisphere</em></a>, in addition: <em>trigger_threshold</em> and <em>trigger_timeStep</em> and <em>trigger_name</em> (or the deprecated:<em>trigger_fixName</em>)</li>
 </ul>
 <pre class="literal-block">
 <em>trigger_threshold</em> value = <em>x in units matching that of trigger_fixName</em>
   this allows the user the specify a threshold value that will be compared with the per-atom value provided by trigger_fixName, e.g., the residence time in a region (e.g., computed via a fix property/atom/tracer/residencetime). if the threshold is exceeded, the multisphere particle will break.
 <em>trigger_timeStep</em> value = <em>x in steps</em>
   this allows the user to activate the fix after a predefined number of steps.
-<em>trigger_fixName</em>
-  the user must specify the name of the fix that specified per-atom information that is used as the trigger value. The user can freely chose the fix, allowing a flexible use of this fix.
+<em>trigger_name</em>
+  the user must specify a reference to a fix property/atom or variable of style atom that is used as the trigger value.
+</pre>
+<pre class="literal-block">
+<em>trigger_fixName</em> (deprecated!)
+  the user must specify the name of the fix that specified per-atom information that is used as the trigger value.
 </pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<p>fix integr  grpMulti  multisphere/break allow_group_and_set yes trigger_threshold 0.1 trigger_timeStep 0 trigger_fixName resTimeMill</p>
+<div class="highlight-python"><div class="highlight"><pre>fix integr  grpMulti1  multisphere/break allow_group_and_set yes trigger_threshold 0.1 trigger_timeStep 0 trigger_name f_resTimeMill
+fix integr  grpMulti2  multisphere/break allow_group_and_set yes trigger_threshold 1 trigger_timeStep 0 trigger_name f_pressure**1**
+fix integr  grpMulti3  multisphere/break allow_group_and_set yes trigger_threshold 50 trigger_timeStep 10 trigger_name v_myAtomVariable
+</pre></div>
+</div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>The integration that is performed by this command is
 euqivalent to <a class="reference internal" href="fix_multisphere.html"><em>fix_multisphere</em></a>. However, the user can trigger breakage events, which will destroy the &#8220;body&#8221; the atoms are in. The trigger is imiplemented such that in case the trigger value of one atom in a body exceeds the threshold value, the whole body will break. There are no fragments: all atoms that constitutea body will be released upon breakage.</p>
-<p>WARNING: the atoms in a body MUST NOT overlap, since the atoms are simply released from the body without adjusting their size or their position.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">the atoms in a body MUST NOT overlap, since the atoms are simply released from the body without adjusting their size or their position.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">A integrator for the spheres needs to be available (e.g. <a class="reference internal" href="fix_nve_sphere.html"><em>fix nve/sphere</em></a>) otherwise the multisphere will fragment but no futher integration of the particles will occur</p>
+</div>
 </div>
 <hr class="docutils" />
 <div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
@@ -190,6 +229,9 @@ euqivalent to <a class="reference internal" href="fix_multisphere.html"><em>fix_
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -220,11 +262,13 @@ euqivalent to <a class="reference internal" href="fix_multisphere.html"><em>fix_
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

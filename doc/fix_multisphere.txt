@@ -13,7 +13,16 @@ fix multisphere command :h3
 fix ID group-ID multisphere :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
-
+multisphere = style name of this fix command :l
+zero or more keyword/value pairs may be appended :l
+keyword = {allow_group_and_set} or {allow_heatsource} or {CAddRhoFluid} :l
+  {allow_group_and_set} value = 'yes' or 'no'
+    yes, no = determines if group and set command are allowed in the current simulation.
+  {allow_heatsource} value = 'yes' or 'no'
+    yes, no = determines if heatsources are allowed in the current simulation.
+  {CAddRhoFluid} value = CAdd RhoFluid
+    CAdd = Coefficient for additional mass term. (Usually 0.5)
+    RhoFluid = Fluid density :pre
 :ule
 
 [Examples:]
@@ -56,16 +65,26 @@ IMPORTANT NOTE: You should not update the atoms in rigid bodies via
 other time-integration fixes (e.g. nve, nvt, npt), or you will be
 integrating their motion more than once each timestep.
 
+The option {CAddRhoFluid} enables additional mass terms for the integration of
+multisphere particles. These model the influence of displaced fluid on the 
+particle motion.
+
 :line
 
 [Restart, fix_modify, output, run start/stop, minimize info:]
 
-No information about this fix is written to "binary restart
-files"_restart.html.  This means you can currently not restart a simulation
+Information about this fix is written to "binary restart
+files"_restart.html.  This means you can restart a simulation
 using multisphere particles.
 
-None of the "fix_modify"_fix_modify.html options are relevant to this
-fix.  No global scalar or vector or per-atom quantities are stored by
+"fix_modify"_fix_modify.html can be used to manipulate the fflag and tflag switches
+ of multispheres. They can be initially defined in the 
+"fix_particletemplate_multisphere"_fix_particletemplate_multisphere.html command.
+The fix_modify manipulates all multispheres, not only the initially defined f/tflags from the template.
+
+E.g. fix_modify ms fflag on on off tflag on on off :pre
+
+No global scalar or vector or per-atom quantities are stored by
 this fix for access by various "output
 commands"_Section_howto.html#4_15.  No parameter of this fix can be
 used with the {start/stop} keywords of the "run"_run.html command.
@@ -79,9 +98,6 @@ Only one fix multisphere at a time is allowed.
 Heat transfer simulations are not possible when using this fix
 (e.g. "fix heat/gran/conduction"_fix_heat_gran_conduction.html)
 
-The PUBLIC version does not support (i) parallel computation, (ii)
-restart of multisphere simulations
-
 IMPORTANT NOTE: All fixes or computes gathering statistical output
 (such as e.g. "compute com"_compute_com.html or "fix ave/time"_fix_ave_time.html
 operate on a per-sphere rather than on a per-body basis.
@@ -92,9 +108,12 @@ Currently, using fix multisphere requires "newton"_newton.html = off and
 [Related commands:]
 
 "fix_rigid"_fix_rigid.html
-"fix_particletemplate_sphere"_fix_particletemplate_sphere.html
+"fix_particletemplate_multisphere"_fix_particletemplate_multisphere.html
 "neigh_modify"_neigh_modify.html
 
 
-[Default:] none
+[Default:]
+
+{allow_group_and_set} = 'no'
+{allow_heatsource} = 'no'
 

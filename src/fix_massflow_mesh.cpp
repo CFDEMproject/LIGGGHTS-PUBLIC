@@ -39,7 +39,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "atom.h"
@@ -250,11 +250,10 @@ FixMassflowMesh::FixMassflowMesh(LAMMPS *lmp, int narg, char **arg) :
 
 FixMassflowMesh::~FixMassflowMesh()
 {
-   if(fp_) fclose(fp_);
-   if(fix_neighlist_) {
-     fix_mesh_->deleteOtherNeighList(id);
-     fix_neighlist_ = NULL;
-   }
+    if(fp_)
+        fclose(fp_);
+    // do not delete fix_neighlist_, this will be handled by fix mesh/surface itself
+    fix_neighlist_ = NULL;
 }
 
 /* ---------------------------------------------------------------------- */

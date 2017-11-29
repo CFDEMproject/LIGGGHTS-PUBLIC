@@ -53,7 +53,7 @@
 #include "error.h"
 #include "region.h"
 #include "domain.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "input_mesh_tri.h"
 #include "tri_mesh.h"
@@ -378,9 +378,12 @@ void InputMeshTri::meshtrifile_stl(class TriMesh *mesh,class Region *region, con
 
     if (strcmp(arg[0],"solid") != 0 && nLines == 1)
     {
-        if (me == 0 && verbose_)
-            fprintf(screen,"Note: solid keyword not found, assuming binary stl file\n");
-        fclose(nonlammps_file);
+        if (me == 0)
+        {
+            fclose(nonlammps_file);
+            if (verbose_)
+                fprintf(screen,"Note: solid keyword not found, assuming binary stl file\n");
+        }
         nonlammps_file = NULL;
         meshtrifile_stl_binary(mesh, region, filename);
         break;
@@ -540,11 +543,11 @@ void InputMeshTri::meshtrifile_stl_binary(class TriMesh *mesh, class Region *reg
             // error handling
             if (!stl_file)
                 error->one(FLERR,"Corrupt STL file: Error in reading binary STL file.");
-            // increase triangle counter
-            count++;
         }
         // communicate triangle data
         MPI_Bcast(&tri_data,12,MPI_FLOAT,0,world);
+        // increase triangle counter
+        count++;
         if(size_exclusion_list_ > 0 && count == (unsigned int)exclusion_list_[i_exclusion_list_]) {
             if(i_exclusion_list_ < size_exclusion_list_-1)
                 i_exclusion_list_++;

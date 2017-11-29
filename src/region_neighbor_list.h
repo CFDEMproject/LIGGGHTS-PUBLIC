@@ -91,8 +91,8 @@ class RegionNeighborList : public IRegionNeighborList, protected Pointers
     bool hasOverlapWith(double * x, double radius, std::vector<int> &overlap_list) const;
     void insert(double * x, double radius,int index = -1);
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-    bool hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape, double *roundness) const;
-    void insert_superquadric(double * x, double radius, double *quaternion, double *shape, double *roundness, int index = -1);
+    bool hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape, double *blockiness) const;
+    void insert_superquadric(double * x, double radius, double *quaternion, double *shape, double *blockiness, int index = -1);
     void set_obb_flag(int check_obb_flag_) {check_obb_flag = check_obb_flag_;}
 #endif
 

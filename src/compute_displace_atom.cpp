@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include "compute_displace_atom.h"
 #include "atom.h"
@@ -76,15 +76,14 @@ ComputeDisplaceAtom::ComputeDisplaceAtom(LAMMPS *lmp, int &iarg, int narg, char 
   strcpy(id_fix,id);
   strcat(id_fix,"_COMPUTE_STORE");
 
-  char **newarg = new char*[5];
+  const char *newarg[5];
   newarg[0] = id_fix;
   newarg[1] = group->names[igroup];
-  newarg[2] = (char *) "STORE";
-  newarg[3] = (char *) "1";
-  newarg[4] = (char *) "3";
-  modify->add_fix(5,newarg);
+  newarg[2] = "STORE";
+  newarg[3] = "1";
+  newarg[4] = "3";
+  modify->add_fix(5,const_cast<char**>(newarg));
   fix = (FixStore *) modify->fix[modify->nfix-1];
-  delete [] newarg;
 
   // calculate xu,yu,zu for fix store array
   // skip if reset from restart file

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>restart command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>restart command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/restart.txt" rel="nofollow"> View page source</a> 
+      <li>restart command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/restart.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,9 +170,10 @@
 <span id="index-0"></span><h1>restart command<a class="headerlink" href="#restart-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>restart 0
+<div class="highlight-python"><div class="highlight"><pre>restart 0
 restart N root keyword value ...
-restart N file1 file2 keyword value ...</pre>
+restart N file1 file2 keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>N = write a restart file every this many timesteps</li>
@@ -168,11 +192,12 @@ restart N file1 file2 keyword value ...</pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>restart 0
+<div class="highlight-python"><div class="highlight"><pre>restart 0
 restart 1000 poly.restart
 restart 1000 restart.*.equil
 restart 10000 poly.%.1 poly.%.2
-restart v_mystep poly.restart</pre>
+restart v_mystep poly.restart
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -229,8 +254,9 @@ options for <a class="reference internal" href="variable.html"><em>equal-style v
 <p>For example, the following commands will write restart files
 every step from 1100 to 1200, and could be useful for debugging
 a simulation where something goes wrong at step 1163:</p>
-<div class="highlight-python"><pre>variable     s equal stride(1100,1200,1)
-restart              v_s tmp.restart</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable     s equal stride(1100,1200,1)
+restart              v_s tmp.restart
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>See the <a class="reference internal" href="read_restart.html"><em>read_restart</em></a> command for information about
@@ -238,7 +264,7 @@ what is stored in a restart file.</p>
 <p>Restart files can be read by a <a class="reference internal" href="read_restart.html"><em>read_restart</em></a>
 command to restart a simulation from a particular state.  Because the
 file is binary (to enable exact restarts), it may not be readable on
-another machine.  In this case, you can use the <a class="reference internal" href="Section_start.html#start-7"><em>-r command-line switch</em></a> to convert a restart file to a data
+another machine.  In this case, you can use the <span class="xref std std-ref">-r command-line switch</span> to convert a restart file to a data
 file.</p>
 <hr class="docutils" />
 <p>The optional <em>nfile</em> or <em>fileper</em> keywords can be used in conjunction
@@ -269,12 +295,16 @@ next 3 processors and write it to a restart file.</p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>restart 0</pre>
+<div class="highlight-python"><div class="highlight"><pre>restart 0
+</pre></div>
 </div>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -305,11 +335,13 @@ next 3 processors and write it to a restart file.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

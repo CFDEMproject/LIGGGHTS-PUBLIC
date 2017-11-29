@@ -392,11 +392,7 @@ of the "run"_run.html command.  These fixes are not invoked during
 
 :line
 
-[Restrictions:]
-
-These fixes are all part of the RIGID package.  It is only enabled if
-LIGGGHTS(R)-PUBLIC was built with that package.  See the "Making
-LIGGGHTS(R)-PUBLIC"_Section_start.html#start_3 section for more info.
+[Restrictions:] none
 
 [Related commands:]
 

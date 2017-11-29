@@ -3,13 +3,14 @@
 :link(liws,http://www.cfdem.com)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
-:link(cfdemdoc,https://www.cfdem.com/media/CFDEM/docu/fix_couple_cfd.html)
 
 :line
 
 fix couple/cfd command :h3
 
 [Description:]
+
+:link(cfdemdoc,https://www.cfdem.com/media/CFDEM/docu/fix_couple_cfd.html)
 
 Descriptions of fix couple/cfd and fix couple/cfd/force commands are contained in your local copy of the CFDEMcoupling(R) documentation. The public version is accessible here "www.cfdem.com"_cfdemdoc
 These commands are used to couple necessary forces and data with CFDEMcoupling(R) solvers.

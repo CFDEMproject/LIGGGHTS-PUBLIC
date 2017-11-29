@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>variable command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>variable command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/variable.txt" rel="nofollow"> View page source</a> 
+      <li>variable command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/variable.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>variable command<a class="headerlink" href="#variable-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>variable name style args ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable name style args ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>name = name of variable to define</li>
@@ -207,11 +231,11 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>variable x index run1 run2 run3 run4 run5 run6 run7 run8
+<div class="highlight-python"><div class="highlight"><pre>variable x index run1 run2 run3 run4 run5 run6 run7 run8
 variable LoopVar loop $n
 variable beta equal temp/3.0
 variable b1 equal x[234]+0.5*vol
-variable b1 equal "x[234] + 0.5*vol"
+variable b1 equal &quot;x[234] + 0.5*vol&quot;
 variable b equal xcm(mol1,x)/2.0
 variable b equal c_myTemp
 variable b atom x*y/vol
@@ -220,7 +244,8 @@ variable f file values.txt
 variable temp world 300.0 310.0 320.0 ${Tfinal}
 variable x universe 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 variable x uloop 15 pad
-variable x delete</pre>
+variable x delete
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -268,7 +293,7 @@ is ignored.  This means variables can NOT be re-defined in an input
 script (with 2 exceptions, read further).  This is to allow an input
 script to be processed multiple times without resetting the variables;
 see the <a class="reference internal" href="jump.html"><em>jump</em></a> or <a class="reference internal" href="include.html"><em>include</em></a> commands.  It also
-means that using the <a class="reference internal" href="Section_start.html#start-7"><em>command-line switch</em></a>
+means that using the <span class="xref std std-ref">command-line switch</span>
 -var will override a corresponding index variable setting in the input
 script.</p>
 </div>
@@ -284,7 +309,7 @@ from the list of active variables, and is thus available to be
 re-defined in a subsequent variable command.  The <em>delete</em> style does
 the same thing.</p>
 <hr class="docutils" />
-<p><em class="xref std std-ref">This section</em> of the manual explains how
+<p><span class="xref std std-ref">This section</span> of the manual explains how
 occurrences of a variable name in an input script line are replaced by
 the variable&#8217;s string.  The variable name can be referenced as $x if
 the name &#8220;x&#8221; is a single character, or as ${LoopVar} if the name
@@ -302,14 +327,15 @@ it were exhausted, allowing it to be redefined later in the input
 script or when the input script is looped over.  This can be useful
 when breaking out of a loop via the <a class="reference internal" href="if.html"><em>if</em></a> and <a class="reference internal" href="jump.html"><em>jump</em></a>
 commands before the variable would become exhausted.  For example,</p>
-<div class="highlight-python"><pre>label            loop
+<div class="highlight-python"><div class="highlight"><pre>label            loop
 variable    a loop 5
-print            "A = $a"
-if       "$a &gt; 2" then "jump in.script break"
+print            &quot;A = $a&quot;
+if       &quot;$a &gt; 2&quot; then &quot;jump in.script break&quot;
 next     a
 jump     in.script loop
 label            break
-variable    a delete</pre>
+variable    a delete
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>For the <em>index</em> style, one or more strings are specified.  Initially,
@@ -318,7 +344,7 @@ the 1st string is assigned to the variable.  Each time a
 string is assigned.  All processors assign the same string to the
 variable.</p>
 <p><em>Index</em> style variables with a single string value can also be set by
-using the command-line switch -var; see <a class="reference internal" href="Section_start.html#start-7"><em>this section</em></a> for details.</p>
+using the command-line switch -var; see <span class="xref std std-ref">this section</span> for details.</p>
 <p>The <em>loop</em> style is identical to the <em>index</em> style except that the
 strings are the integers from 1 to N inclusive, if only one argument N
 is specified.  This allows generation of a long list of runs
@@ -331,7 +357,7 @@ two arguments N1 and N2.  In this case the loop runs from N1 to N2
 inclusive, and the string N1 is initially assigned to the variable.
 N1 &lt;= N2 and N2 &gt;= 0 is required.</p>
 <p>For the <em>world</em> style, one or more strings are specified.  There must
-be one string for each processor partition or &#8220;world&#8221;.  See <a class="reference internal" href="Section_start.html#start-7"><em>this section</em></a> of the manual for information on
+be one string for each processor partition or &#8220;world&#8221;.  See <span class="xref std std-ref">this section</span> of the manual for information on
 running LIGGGHTS(R)-PUBLIC with multiple partitions via the &#8220;-partition&#8221;
 command-line switch.  This variable command assigns one string to each
 world.  All processors in the world are assigned the same string.  The
@@ -339,11 +365,11 @@ next command cannot be used with <em>equal</em> style variables, since there
 is only one value per world.  This style of variable is useful when
 you wish to run different simulations on different partitions, or when
 performing a parallel tempering simulation (see the
-<tt class="xref doc docutils literal"><span class="pre">temper</span></tt> command), to assign different temperatures to
+<code class="xref doc docutils literal"><span class="pre">temper</span></code> command), to assign different temperatures to
 different partitions.</p>
 <p>For the <em>universe</em> style, one or more strings are specified.  There
 must be at least as many strings as there are processor partitions or
-&#8220;worlds&#8221;.  See <a class="reference internal" href="Section_start.html#start-7"><em>this page</em></a> for information
+&#8220;worlds&#8221;.  See <span class="xref std std-ref">this page</span> for information
 on running LIGGGHTS(R)-PUBLIC with multiple partitions via the &#8220;-partition&#8221;
 command-line switch.  This variable command initially assigns one
 string to each world.  When a <a class="reference internal" href="next.html"><em>next</em></a> command is encountered
@@ -408,7 +434,8 @@ first &#8220;word&#8221; of a non-blank line, delimited by white space, is read 
 the count N of per-atom lines to immediately follow.  N can be be the
 total number of atoms in the system, or only a subset.  The next N
 lines have the following format</p>
-<div class="highlight-python"><pre>ID value</pre>
+<div class="highlight-python"><div class="highlight"><pre>ID value
+</pre></div>
 </div>
 <p>where ID is an atom ID and value is the per-atom numeric value that
 will be assigned to that atom.  IDs can be listed in any order.</p>
@@ -441,7 +468,8 @@ of quantities.  The syntax for each kind of quantity is simple, but
 multiple quantities can be nested and combined in various ways to
 build up formulas of arbitrary complexity.  For example, this is a
 valid (though strange) variable formula:</p>
-<div class="highlight-python"><pre>variable x equal "pe + c_MyTemp / vol^(1/3)"</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable x equal &quot;pe + c_MyTemp / vol^(1/3)&quot;
+</pre></div>
 </div>
 <p>Specifically, an formula can contain numbers, thermo keywords, math
 operators, math functions, group functions, region functions, atom
@@ -862,7 +890,7 @@ sign (e.g. $x or ${abc}) versus with a leading &#8220;<a href="#id5"><span class
 v_abc).  The former can be used in any input script command, including
 a variable command.  The input script parser evaluates the reference
 variable immediately and substitutes its value into the command.  As
-explained in <em class="xref std std-ref">Section commands 3.2</em> for
+explained in <span class="xref std std-ref">Section commands 3.2</span> for
 &#8220;Parsing rules&#8221;, you can also use un-named &#8220;immediate&#8221; variables for
 this purpose.  An variable reference such as
 $((xlo+xhi)/2+sqrt(v_area)) evaluates the string between the
@@ -876,7 +904,8 @@ second variable will be evaluated whenever the first variable is
 evaluated.</p>
 <p>As an example, suppose you use this command in your input script to
 define the variable &#8220;v&#8221; as</p>
-<div class="highlight-python"><pre>variable v equal vol</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable v equal vol
+</pre></div>
 </div>
 <p>before a run where the simulation box size changes.  You might think
 this will assign the initial volume to the variable &#8220;v&#8221;.  That is not
@@ -886,21 +915,24 @@ use the variable &#8220;v&#8221; in some other command like <a class="reference 
 evaluated continuously during the run.</p>
 <p>If you want to store the initial volume of the system, you can do it
 this way:</p>
-<div class="highlight-python"><pre>variable v equal vol
-variable v0 equal $v</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable v equal vol
+variable v0 equal $v
+</pre></div>
 </div>
 <p>The second command will force &#8220;v&#8221; to be evaluated (yielding the
 initial volume) and assign that value to the variable &#8220;v0&#8221;.  Thus the
 command</p>
-<div class="highlight-python"><pre>thermo_style custom step v_v v_v0</pre>
+<div class="highlight-python"><div class="highlight"><pre>thermo_style custom step v_v v_v0
+</pre></div>
 </div>
 <p>would print out both the current and initial volume periodically
 during the run.</p>
 <p>Note that it is a mistake to enclose a variable formula in double
 quotes if it contains variables preceeded by $ signs.  For example,</p>
-<div class="highlight-python"><pre>variable vratio equal "${vfinal}/${v0}"</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable vratio equal &quot;${vfinal}/${v0}&quot;
+</pre></div>
 </div>
-<p>This is because the quotes prevent variable substitution (see <em class="xref std std-ref">this section</em> on parsing input script
+<p>This is because the quotes prevent variable substitution (see <span class="xref std std-ref">this section</span> on parsing input script
 commands), and thus an error will occur when the formula for &#8220;vratio&#8221;
 is evaluated later.</p>
 <hr class="docutils" />
@@ -915,7 +947,7 @@ and stored by a <a class="reference internal" href="fix.html"><em>fix</em></a>. 
 the pressure or energy of the system, then these quantities need to be
 tallied during the evaluation of the interatomic potentials (pair,
 bond, etc) on timesteps that the variable will need the values.</p>
-<p>LIGGGHTS(R)-PUBLIC keeps track of all of this during a <a class="reference internal" href="run.html"><em>run</em></a> or <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.  An error will be generated if you
+<p>LIGGGHTS(R)-PUBLIC keeps track of all of this during a <a class="reference internal" href="run.html"><em>run</em></a> or <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.  An error will be generated if you
 attempt to evaluate a variable on timesteps when it cannot produce
 accurate values.  For example, if a <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a> command prints a variable which accesses
 values stored by a <a class="reference internal" href="fix_ave_time.html"><em>fix ave/time</em></a> command and the
@@ -943,18 +975,20 @@ evaluated on the last timestep of the preceding run, e.g. by
 thermodynamic output.</p>
 <p>One way to get around this problem is to perform a 0-timestep run
 before using the variable.  For example, these commands</p>
-<div class="highlight-python"><pre>variable t equal temp
-print "Initial temperature = $t"
-run 1000</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable t equal temp
+print &quot;Initial temperature = $t&quot;
+run 1000
+</pre></div>
 </div>
 <p>will generate an error if the run is the first run specified in the
 input script, because generating a value for the &#8220;t&#8221; variable requires
 a compute for calculating the temperature to be invoked.</p>
 <p>However, this sequence of commands would be fine:</p>
-<div class="highlight-python"><pre>run 0
+<div class="highlight-python"><div class="highlight"><pre>run 0
 variable t equal temp
-print "Initial temperature = $t"
-run 1000</pre>
+print &quot;Initial temperature = $t&quot;
+run 1000
+</pre></div>
 </div>
 <p>The 0-timestep run initializes and invokes various computes, including
 the one for temperature, so that the value it stores is current and
@@ -972,7 +1006,7 @@ thermodynamic output.</p>
 their values are accessed by a variable in between runs.  They always
 return some value to the variable.  However, the value may not be what
 you expect if the fix has not yet calculated the quantity of interest
-or it is not current.  For example, the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">indent</span></tt>
+or it is not current.  For example, the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">indent</span></code>
 command stores the force on the indenter.  But this is not computed
 until a run is performed.  Thus if a variable attempts to print this
 value before the first run, zeroes will be output.  Again, performing
@@ -980,11 +1014,12 @@ a 0-timestep run before printing the variable has the desired effect.</p>
 <p>(3) The variable may be evaluated incorrectly and LIGGGHTS(R)-PUBLIC may have no
 way to detect this has occurred.  Consider the following sequence of
 commands:</p>
-<div class="highlight-python"><pre>pair_coeff 1 1 1.0 1.0
+<div class="highlight-python"><div class="highlight"><pre>pair_coeff 1 1 1.0 1.0
 run 1000
 pair_coeff 1 1 1.5 1.0
 variable e equal pe
-print "Final potential energy = $e"</pre>
+print &quot;Final potential energy = $e&quot;
+</pre></div>
 </div>
 <p>The first run is performed using one setting for the pairwise
 potential defined by the <a class="reference internal" href="pair_style.html"><em>pair_style</em></a> and
@@ -1002,12 +1037,13 @@ perform a 0-timestep run before the variable is evaluated to insure
 the system is up-to-date.  For example, this sequence of commands
 would print a potential energy that reflected the changed pairwise
 coefficient:</p>
-<div class="highlight-python"><pre>pair_coeff 1 1 1.0 1.0
+<div class="highlight-python"><div class="highlight"><pre>pair_coeff 1 1 1.0 1.0
 run 1000
 pair_coeff 1 1 1.5 1.0
 run 0
 variable e equal pe
-print "Final potential energy = $e"</pre>
+print &quot;Final potential energy = $e&quot;
+</pre></div>
 </div>
 </div>
 </div>
@@ -1024,12 +1060,15 @@ must have the same number of values.</p>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="next.html"><em>next</em></a>, <a class="reference internal" href="jump.html"><em>jump</em></a>, <a class="reference internal" href="include.html"><em>include</em></a>,
-<tt class="xref doc docutils literal"><span class="pre">temper</span></tt>, <a class="reference internal" href="fix_print.html"><em>fix print</em></a>, <a class="reference internal" href="print.html"><em>print</em></a></p>
+<code class="xref doc docutils literal"><span class="pre">temper</span></code>, <a class="reference internal" href="fix_print.html"><em>fix print</em></a>, <a class="reference internal" href="print.html"><em>print</em></a></p>
 <p><strong>Default:</strong> none</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -1060,11 +1099,13 @@ must have the same number of values.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

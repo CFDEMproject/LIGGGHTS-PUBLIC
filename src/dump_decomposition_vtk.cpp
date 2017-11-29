@@ -50,9 +50,10 @@
 #include "modify.h"
 #include "comm.h"
 
-using namespace LAMMPS_NS;
+// include last to ensure correct macros
+#include "domain_definitions.h"
 
-#define BIG      1.0e30
+using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 

@@ -46,7 +46,7 @@
 #ifndef LMP_IMAGE_H
 #define LMP_IMAGE_H
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include "pointers.h"
 
@@ -62,7 +62,6 @@ class Image : protected Pointers {
   double persp;                 // perspective factor
   double shiny;                 // shininess of objects
   int ssao;                     // SSAO on or off
-  int seed;                     // RN seed for SSAO
   double ssaoint;               // strength of shading from 0 to 1
   double *boxcolor;             // color to draw box outline with
   int background[3];            // RGB values of background
@@ -94,6 +93,8 @@ class Image : protected Pointers {
   double element2diam(char *);
   double *color2rgb(const char *, int index=0);
   int default_colors();
+
+  void setSeed(char *);
 
  private:
   int me,nprocs;

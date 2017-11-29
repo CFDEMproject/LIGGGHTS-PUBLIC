@@ -48,7 +48,7 @@
 #include "memory.h"
 #include "comm.h"
 #include "modify.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "fix_cfd_coupling.h"
 #include "fix_multisphere.h"
@@ -73,8 +73,6 @@ CfdDatacouplingMPI::CfdDatacouplingMPI(LAMMPS *lmp,int iarg, int narg, char **ar
   allred_double = NULL;
   len_allred_int = 0;
   allred_int = NULL;
-
-  if(comm->me == 0) error->message(FLERR,"nevery as specified in LIGGGHTS is overriden by calling external program",1);
 
 }
 

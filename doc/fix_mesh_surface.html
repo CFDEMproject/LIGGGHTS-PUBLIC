@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix mesh/surface command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix mesh/surface command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_mesh_surface.txt" rel="nofollow"> View page source</a> 
+      <li>fix mesh/surface command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_mesh_surface.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -150,9 +173,10 @@
 <h1>fix mesh/surface/planar command<a class="headerlink" href="#fix-mesh-surface-planar-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID mesh/surface data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID mesh/surface data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
 fix ID group-ID mesh/surface/module_list data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values module_keywords module_values
-fix ID group-ID mesh/surface/planar data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values</pre>
+fix ID group-ID mesh/surface/planar data_keyword data_value premesh_keywords premesh_values mesh_keywords mesh_values surface_keywords surface_values
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, is documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command.</li>
@@ -197,7 +221,7 @@ mesh_keyword = <em>scale</em> or <em>move</em> or <em>rotate</em> or <em>tempera
   <em>temperature</em> value = T0
     T0 = Temperature of the wall (temperature units)
   <em>mass_temperature</em> value = mt0
-    mt0 = mass (mass units) assumed for temperature update in the frame of <tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt>
+    mt0 = mass (mass units) assumed for temperature update in the frame of <code class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></code>
   <em>extrude_planar</em> value = length
     length = length (length units) that a planar mesh is extruded in anti-normal direction
 </pre>
@@ -223,15 +247,17 @@ mesh_keyword = <em>scale</em> or <em>move</em> or <em>rotate</em> or <em>tempera
 <ul class="simple">
 <li>zero or more module_keywords/module_value pairs may be appended if a mesh module is used</li>
 </ul>
-<div class="highlight-python"><pre>see the respective mesh module parameter list for details</pre>
+<div class="highlight-python"><div class="highlight"><pre>see the respective mesh module parameter list for details
+</pre></div>
 </div>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix cad all mesh/surface file mesh.stl type 1
+<div class="highlight-python"><div class="highlight"><pre>fix cad all mesh/surface file mesh.stl type 1
 fix cad1 all mesh/surface/stress/deform file meshes/plate.stl type 1 scale 1.0 wear finnie
 fix extrude all mesh/surface file plane.stl type 1 extrude_planar 0.1
-fix side_walls all mesh/surface fix extrude type 1</pre>
+fix side_walls all mesh/surface fix extrude type 1
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -253,7 +279,7 @@ that goes through the origin (0,0,0) and in the direction of <em>axis</em>.</p>
 via keyword <em>type</em>. If multiple meshes with different materials are desired, the respective
 meshes must be imported with different fix mesh/surface commands.</p>
 <p>With the <em>temperature</em> keyword, you can define a constant temperature for a mesh in
-conjunction with heat conduction via <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">heat/gran</span></tt>. Note that the
+conjunction with heat conduction via <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">heat/gran</span></code>. Note that the
 actual calculation of the heat transfer happens only if you use the mesh in conjunction
 with a granular wall, see <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>.</p>
 <p>The <em>extrude_planar</em> option allows to extrude a planar mesh in direction of the
@@ -369,9 +395,9 @@ correctly resume the simulation in case the mesh is moved. None of the
 some mesh modules do have fix_modify options, please refer to the respective module
 for further information.</p>
 <p>No global scalar or vector or per-atom quantities are stored by this fix for access by
-various <em class="xref std std-ref">output commands</em>. No parameter of this fix
+various <span class="xref std std-ref">output commands</span>. No parameter of this fix
 can be used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.
-This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -388,6 +414,9 @@ It is not supported to use both the moving mesh and the conveyor belt feature.</
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -418,11 +447,13 @@ It is not supported to use both the moving mesh and the conveyor belt feature.</
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

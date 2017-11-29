@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>dump command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>dump command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/dump.txt" rel="nofollow"> View page source</a> 
+      <li>dump command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/dump.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -153,7 +176,8 @@
 <h1><a class="reference internal" href="dump_image.html"><em>dump movie</em></a> command<a class="headerlink" href="#dump-movie-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>dump ID group-ID style N file args</pre>
+<div class="highlight-python"><div class="highlight"><pre>dump ID group-ID style N file args
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID = user-assigned name for the dump</li>
@@ -174,9 +198,9 @@
 <pre class="literal-block">
 <em>mesh/stl</em> args = 'local' or 'ghost' or 'all' or 'region' or any ID of a <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>
     <em>region</em> values = ID for region threshold
-<em>mesh/vtk</em> args =  zero or more keyword/ value pairs followed by one or more dump-identifiers followed optionally by keyword 'meshes' and one or more mesh ids
+<em>mesh/vtk</em> args =  zero or more keyword/ value pairs followed by one or more dump-identifiers followed by one or more mesh ids
     keywords = <em>output</em>
-    <em>output</em> values = face or interpolate
+    <em>output</em> values = 'face' or 'interpolate' or 'original'
     dump-identifier = 'stress' or 'id' or 'wear' or 'vel' or 'stresscomponents' or 'owner' or 'area' or 'aedges' or 'acorners' or 'nneigs'
     mesh-ids = any ID of a <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>
 <em>mesh/vtm</em> args =  one or two keyword/ value(s) pairs
@@ -237,14 +261,15 @@ v_name = per-atom vector calculated by an atom-style variable with name
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>dump myDump all atom 100 dump.atom
+<div class="highlight-python"><div class="highlight"><pre>dump myDump all atom 100 dump.atom
 dump 2 subgroup atom 50 dump.run.bin
 dump 4a all custom 100 dump.myforce.* id type x y vx fx
 dump 4b flow custom 100 dump.%.myforce id type c_myF[3] v_ke
-dump dmpMyMesh mesh/vtk 100 mesh*.vtk vel area meshes my_mesh_id
+dump dmpMyMesh mesh/vtk 100 mesh*.vtk vel area my_mesh_id
 dump dmpAllMeshes mesh/vtk 100 mesh*.vtk stress wear
 dump dmpMyMeshVTM mesh/vtm 100 mesh*.vtm meshes my_mesh_id mesh_properties vel area
-dump dmpAllMeshesVTM mesh/vtm 100 mesh*.vtm meshes all mesh_properties stress wear</pre>
+dump dmpAllMeshesVTM mesh/vtm 100 mesh*.vtm meshes all mesh_properties stress wear
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -295,10 +320,11 @@ format that is self-explanatory when viewing a dump file.</p>
 files are self-describing in the following sense.</p>
 <p>The dimensions of the simulation box are included in each snapshot.
 For an orthogonal simulation box this information is is formatted as:</p>
-<div class="highlight-python"><pre>ITEM: BOX BOUNDS xx yy zz
+<div class="highlight-python"><div class="highlight"><pre>ITEM: BOX BOUNDS xx yy zz
 xlo xhi
 ylo yhi
-zlo zhi</pre>
+zlo zhi
+</pre></div>
 </div>
 <p>where xlo,xhi are the maximum extents of the simulation box in the
 x-dimension, and similarly for y and z.  The &#8220;xx yy zz&#8221; represent 6
@@ -311,17 +337,18 @@ or m = shrink wrapped with a minimum value.  See the
 bounding box which encloses the triclinic simulation box is output,
 along with the 3 tilt factors (xy, xz, yz) of the triclinic box,
 formatted as follows:</p>
-<div class="highlight-python"><pre>ITEM: BOX BOUNDS xy xz yz xx yy zz
+<div class="highlight-python"><div class="highlight"><pre>ITEM: BOX BOUNDS xy xz yz xx yy zz
 xlo_bound xhi_bound xy
 ylo_bound yhi_bound xz
-zlo_bound zhi_bound yz</pre>
+zlo_bound zhi_bound yz
+</pre></div>
 </div>
 <p>The presence of the text &#8220;xy xz yz&#8221; in the ITEM line indicates that
 the 3 tilt factors will be included on each of the 3 following lines.
 This bounding box is convenient for many visualization programs.  The
 meaning of the 6 character flags for &#8220;xx yy zz&#8221; is the same as above.</p>
 <p>Note that the first two numbers on each line are now xlo_bound instead
-of xlo, etc, since they repesent a bounding box.  See <a class="reference internal" href="Section_howto.html#howto-7"><em>this section</em></a> of the doc pages for a geometric
+of xlo, etc, since they repesent a bounding box.  See <span class="xref std std-ref">this section</span> of the doc pages for a geometric
 description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC, simple formulas
 for how the 6 bounding box extents (xlo_bound,xhi_bound,etc) are
 calculated from the triclinic parameters, and how to transform those
@@ -370,7 +397,7 @@ from using the (numerical) atom type to an element name (or some
 other label). This will help many visualization programs to guess
 bonds and colors.</p>
 <p>The <em>mesh/stl</em> style dumps active STL geometries defined via
-<tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></tt> commands into the specified file.
+<code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></code> commands into the specified file.
 If you do not supply the optional list of mesh IDs, all meshes are dumped,
 irrespective of whether they are used in a <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>
 command or not. By specifying a list of mesh IDs you can explicitly
@@ -382,10 +409,11 @@ multiprocessor option is not used (no &#8216;%&#8217; in filename), data is gath
 from all processors, so using the default will output the whole mesh
 data across all processors.</p>
 <p>Examples:</p>
-<div class="highlight-python"><pre>dump stl1 all mesh/stl 300 post/dump*.stl
+<div class="highlight-python"><div class="highlight"><pre>dump stl1 all mesh/stl 300 post/dump*.stl
 dump stl2 all mesh/stl 300 post/dump_proc%_local*.stl local
 dump stl3 all mesh/stl 300 post/dump_proc%_ghost*.stl ghost
-dump stl4 all mesh/stl 300 post/dump_proc_all_ghost*.stl ghost</pre>
+dump stl4 all mesh/stl 300 post/dump_proc_all_ghost*.stl ghost
+</pre></div>
 </div>
 <p>The first command will write one file per time-step containing the complete
 mesh. The second command will output one file per time-step per processor
@@ -408,22 +436,28 @@ Paraview , www.paraview.org</p>
 commands, you can specify which meshes to dump. If no meshes are specified,
 all meshes used in the simulation are dumped.</p>
 <p>The <em>mesh/vtk</em> or the <em>mesh/vtm</em> (new) style can be used to dump active mesh
-geometries defined via <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></tt> commands to a series of VTK or
-VTM files, respectively.  Different keywords can be used to dump the
+geometries defined via <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh</span></code> commands to a series of VTK
+files. The <em>mesh/vtk</em> style allows the file endings .vtk, .vtp and .pvtp. The
+first two write the data only on one processor, the latter writes several files
+in parallel. The <em>mesh/vtm</em> style currently only allows the .vtm file ending
+and writes in serial only. Different keywords can be used to dump the
 per-triangle averaged stress in normal and shear direction, id, velocity, wear,
 stress components (fx / element area, fy / element area, fz / element area),
 area (area of each element) or the process which owns the element
 (visulatisation of the parallel decomposition) into the specified file using a
-VTK file format. The &#8216;meshes&#8217; keyword and the list of mesh IDs is optional.  As
-with the stl style, all active meshes are dumped if you do not supply the
-optional list of mesh IDs. By specifying list of mesh IDs you can explicitly
-choose which meshes to dump. The group-ID is ignored. Again, a series of files
-can be post-processed in Paraview , www.paraview.org Most keywords as used for
-the <em>mesh/vtk</em> style are self-explanatory.  Keyword <em>output</em> controls if the
-data is written in a per-face manner or as interpolated values to VTK. Keywords
-<em>aedges</em> and <em>acorners</em> dump the number of active edges/corners per face.
-Keyword <em>nneighs</em> dumps the number of face neighbors LIGGGHTS(R)-PUBLIC has recognized
-for each face.</p>
+VTK file format. The &#8216;meshes&#8217; keyword (only for <em>mesh/vtm</em>) and the list of
+mesh IDs is optional.  As with the stl style, all active meshes are dumped if
+you do not supply the optional list of mesh IDs. By specifying list of mesh IDs
+you can explicitly choose which meshes to dump. The group-ID is ignored. Again,
+a series of files can be post-processed in Paraview , www.paraview.org Most
+keywords as used for the <em>mesh/vtk</em> style are self-explanatory. Keyword
+<em>output</em> controls how the data is written. If <em>face</em> (default) is selected then
+all point variables will be interpolated to the triangle faces. For the value
+<em>interpolated</em> all cell values will be interpolated to the respective points
+and finally for <em>original</em> no interpolation will take place and cell and point
+variables are written to cells and points, respectively. Keywords <em>aedges</em> and
+<em>acorners</em> dump the number of active edges/corners per face.  Keyword <em>nneighs</em>
+dumps the number of face neighbors LIGGGHTS(R)-PUBLIC has recognized for each face.</p>
 <p><em>mesh/vtm</em> is similar to <em>mesh/vtk</em> but only the arguments are different. The
 former requires the use of the keyword <em>meshes</em> which has to be followed either
 by a list of mesh-ids or the keyword &#8216;all&#8217;. The latter will cause all meshes to
@@ -436,13 +470,14 @@ If no meshes are specified, all meshes used in the simulation are dumped.</p>
 <p>The <em>decomposition/vtk</em> style dumps the processor grid decomposition
 into a series of VTK files. No further args are expected.</p>
 <p>For all vkt outputs if <em>dump_modify binary</em> is used, the dump file (or files, if
-&#8220;*&#8221; or &#8220;%&#8221; is also used) is written in binary format.  A binary dump file will
+&#8220;*&#8221; is also used) is written in binary format.  A binary dump file will
 be about the same size as a text version, but will typically write out much
 faster. Additionally, <em>dump_modify compressor</em> can be used to specify the
 writing of compressed binary data. Options for compressors include:</p>
-<div class="highlight-python"><pre>none: No compression
+<div class="highlight-python"><div class="highlight"><pre>none: No compression
 zlib: Zlib compression
-lz4: Lz4 compression (VTK &gt;= 8.0 required)</pre>
+lz4: Lz4 compression (VTK &gt;= 8.0 required)
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>Dumps are performed on timesteps that are a multiple of N (including
@@ -531,9 +566,10 @@ range from 1-M, which will print the Nth column of the M-length local
 array calculated by the fix.</p>
 <p>Here is an example of how to dump bond info for a system,
 including the distance and energy of each bond:</p>
-<div class="highlight-python"><pre>compute 1 all property/local batom1 batom2 btype
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all property/local batom1 batom2 btype
 compute 2 all bond/local dist eng
-dump 1 all local 1000 tmp.dump index c_1[1] c_1[2] c_1[3] c_2[1] c_2[2]</pre>
+dump 1 all local 1000 tmp.dump index c_1[1] c_1[2] c_1[3] c_2[1] c_2[2]
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>This section explains the atom attributes that can be specified as
@@ -635,7 +671,7 @@ per-atom quantities which could then be output into dump files.</p>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
 <p>To write gzipped dump files, you must compile LIGGGHTS(R)-PUBLIC with the
--DLAMMPS_GZIP option - see the <a class="reference internal" href="Section_start.html#start-2"><em>Making LAMMPS</em></a> section of the documentation.</p>
+-DLAMMPS_GZIP option - see the <span class="xref std std-ref">Making LAMMPS</span> section of the documentation.</p>
 <p>To be able to use <em>atom/vtk</em>, you have to link to VTK libraries,
 please adapt your Makefile accordingly.</p>
 </div>
@@ -651,6 +687,9 @@ please adapt your Makefile accordingly.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -681,11 +720,13 @@ please adapt your Makefile accordingly.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

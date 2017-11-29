@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>bond_style hybrid command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>bond_style hybrid command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/bond_hybrid.txt" rel="nofollow"> View page source</a> 
+      <li>bond_style hybrid command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/bond_hybrid.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>bond_style hybrid command<a class="headerlink" href="#bond-style-hybrid-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>bond_style hybrid style1 style2 ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>bond_style hybrid style1 style2 ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>style1,style2 = list of one or more bond styles</li>
@@ -155,9 +179,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>bond_style hybrid harmonic fene
+<div class="highlight-python"><div class="highlight"><pre>bond_style hybrid harmonic fene
 bond_coeff 1 harmonic 80.0 1.2
-bond_coeff 2* fene 30.0 1.5 1.0 1.0</pre>
+bond_coeff 2* fene 30.0 1.5 1.0 1.0
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -180,11 +205,13 @@ potential with coefficients 80.0, 1.2 for K, r0.  All other bond types
 <a class="reference internal" href="read_data.html"><em>read_data</em></a> command, then the same rule applies.
 E.g. &#8220;harmonic&#8221; or &#8220;fene&#8221; must be added after the bond type, for each
 line in the &#8220;Bond Coeffs&#8221; section, e.g.</p>
-<div class="highlight-python"><pre>Bond Coeffs</pre>
+<div class="highlight-python"><div class="highlight"><pre>Bond Coeffs
+</pre></div>
 </div>
-<div class="highlight-python"><pre>1 harmonic 80.0 1.2
+<div class="highlight-python"><div class="highlight"><pre>1 harmonic 80.0 1.2
 2 fene 30.0 1.5 1.0 1.0
-...</pre>
+...
+</pre></div>
 </div>
 <p>A bond style of <em>none</em> with no additional coefficients can be used in
 place of a bond style, either in a input script bond_coeff command or
@@ -195,7 +222,7 @@ bond types.</p>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
 <p>This bond style can only be used if LIGGGHTS(R)-PUBLIC was built with the
-MOLECULAR package (which it is by default).  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info on packages.</p>
+MOLECULAR package (which it is by default).  See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section for more info on packages.</p>
 <p>Unlike other bond styles, the hybrid bond style does not store bond
 coefficient info for individual sub-styles in a <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  Thus when retarting a simulation from a restart
 file, you need to re-specify bond_coeff commands.</p>
@@ -208,6 +235,9 @@ file, you need to re-specify bond_coeff commands.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -238,11 +268,13 @@ file, you need to re-specify bond_coeff commands.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>gran tangential history model &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>gran tangential history model</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/gran_tangential_history.txt" rel="nofollow"> View page source</a> 
+      <li>gran tangential history model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/gran_tangential_history.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -155,7 +178,7 @@ tangential history [other model_type/model_name pairs as described <a class="ref
 </ul>
 <pre class="literal-block">
 <em>heating_tangential_history</em> values = 'on' or 'off'
-  on = model contributes to surface heating in the frame of <tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt>
+  on = model contributes to surface heating in the frame of <code class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></code>
   off = model does not contributes to surface heating
 </pre>
 </div>
@@ -163,11 +186,11 @@ tangential history [other model_type/model_name pairs as described <a class="ref
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>This granular model is based on the general description of granular
 force interaction as described in <a class="reference internal" href="pair_gran.html"><em>pair gran</em></a>.</p>
-<p>The spring part of the tangential force (k_t) is a &#8220;history&#8221; effect
-that accounts for the tangential displacement (&#8220;tangential overlap&#8221;)
-between the particles for the duration of the time they are in contact.
-It is calculated by adding up the releative tangential velocity at the
-contact point times the time-step size.</p>
+<p>The spring part of the tangential force (F_t = k_t * u_t) is a &#8220;history&#8221; effect
+that accounts for the tangential displacement (&#8220;tangential overlap&#8221;) between the
+particles for the duration of the time they are in contact.  The tangential
+overlap (u_t) is calculated by integrating the releative tangential velocity at
+the contact point over time.</p>
 <p>If this model is chosen, then this &#8220;tangential overlap&#8221; spring force is
 actually calculated / taken into account.</p>
 <p>The coefficient of friction cof is the upper limit of the tangential force through
@@ -180,10 +203,10 @@ spring is no longer linear.</p>
 <p>The damping contribution is only added in time-steps where there is no slip,
 i.e. the Coulomb criterion is not met.</p>
 <p>This model contributes to surface heating in the frame of
-<tt class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></tt> if the
+<code class="xref doc docutils literal"><span class="pre">surface</span> <span class="pre">sphere/heatable</span></code> if the
 appropriate flag is activated (only available in the PREMIUM version).</p>
 <p><strong>Coarse-graining information:</strong></p>
-<p>Using <tt class="xref doc docutils literal"><span class="pre">coarsegraining</span></tt> in
+<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
 combination with this command might lead to
 different dynamics or system state and thus to
 inconsistancies. However, the influence of this
@@ -193,7 +216,7 @@ This has to be reviewed by a specialist on a
 case-by-case basis.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><tt class="xref doc docutils literal"><span class="pre">Coarsegraining</span></tt> may or
+<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 </div>
@@ -204,6 +227,9 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -234,11 +260,13 @@ may not be available in LIGGGHTS(R)-PUBLIC.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

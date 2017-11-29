@@ -50,7 +50,7 @@ NORMAL_MODEL(HOOKE,hooke,0)
 #define NORMAL_MODEL_HOOKE_H_
 
 #include "contact_models.h"
-#include <math.h>
+#include <cmath>
 #include "atom.h"
 #include "force.h"
 #include "update.h"
@@ -116,6 +116,14 @@ namespace ContactModels
                 hsetup->add_history_value("elastic_force_normal_0", "1");
                 hsetup->add_history_value("elastic_force_normal_1", "1");
                 hsetup->add_history_value("elastic_force_normal_2", "1");
+                hsetup->add_history_value("elastic_torque_normal_i_0", "0");
+                hsetup->add_history_value("elastic_torque_normal_i_1", "0");
+                hsetup->add_history_value("elastic_torque_normal_i_2", "0");
+                hsetup->add_history_value("elastic_torque_normal_j_0", "0");
+                hsetup->add_history_value("elastic_torque_normal_j_1", "0");
+                hsetup->add_history_value("elastic_torque_normal_j_2", "0");
+                if (cmb->is_wall())
+                    hsetup->add_history_value("elastic_potential_wall", "0");
                 cmb->add_history_offset("elastic_potential_normal", elastic_potential_offset_);
             }
         }
@@ -173,13 +181,8 @@ namespace ContactModels
       // enlarge contact distance flag in case of elastic energy computation
       // to ensure that surfaceClose is called after a contact
       if (elasticpotflag_)
-      {
           //set neighbor contact_distance_factor here
-          const char* neigharg[2];
-          neigharg[0] = "contact_distance_factor";
-          neigharg[1] = "1.01";
-          neighbor->modify_params(2,const_cast<char**>(neigharg));
-      }
+          neighbor->register_contact_dist_factor(1.01);
     }
 
     // effective exponent for stress-strain relationship
@@ -204,16 +207,27 @@ namespace ContactModels
                 // no *dt as delta is v*dt of the contact position
                 elastic_energy[0] -= (delta[0]*(elastic_energy[1]) +
                                       delta[1]*(elastic_energy[2]) +
-                                      delta[2]*(elastic_energy[3]))*0.5;
+                                      delta[2]*(elastic_energy[3]))*0.5
+                                     // from previous half step
+                                     + elastic_energy[10];
+                elastic_energy[10] = 0.0;
             }
             elastic_energy[1] = 0.0;
             elastic_energy[2] = 0.0;
             elastic_energy[3] = 0.0;
+            elastic_energy[4] = 0.0;
+            elastic_energy[5] = 0.0;
+            elastic_energy[6] = 0.0;
+            elastic_energy[7] = 0.0;
+            elastic_energy[8] = 0.0;
+            elastic_energy[9] = 0.0;
         }
     }
 
     inline void surfacesIntersect(SurfacesIntersectData & sidata, ForceData & i_forces, ForceData & j_forces)
     {
+      if (sidata.contact_flags)
+        *sidata.contact_flags |= CONTACT_NORMAL_MODEL;
       const bool update_history = sidata.computeflag && sidata.shearupdate;
       const int itype = sidata.itype;
       const int jtype = sidata.jtype;
@@ -221,12 +235,8 @@ namespace ContactModels
       const double radj = sidata.radj;
       double reff=sidata.is_wall ? radi : (radi*radj/(radi+radj));
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(sidata.is_non_spherical) {
-        if(sidata.is_wall)
-          reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
-        else
-          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
-      }
+      if(sidata.is_non_spherical && atom->superquadric_flag)
+        reff = sidata.reff;
 #endif
       const double meff=sidata.meff;
       double coeffRestLogChosen;
@@ -303,7 +313,7 @@ namespace ContactModels
 
         if(heating)
         {
-          sidata.P_diss += fabs(Fn_damping*sidata.vn); //fprintf(screen,"  contrib %f\n",fabs(Fn_damping*sidata.vn));}
+          sidata.P_diss += fabs(Fn_damping*sidata.vn); //fprintf(screen,"  contrib %f\n",fabs(Fn_damping*sidata.vn));
           if(heating_track && sidata.is_wall) cmb->tally_pw(fabs(Fn_damping*sidata.vn),sidata.i,jtype,0);
           if(heating_track && !sidata.is_wall) cmb->tally_pp(fabs(Fn_damping*sidata.vn),sidata.i,sidata.j,0);
         }
@@ -323,13 +333,25 @@ namespace ContactModels
                     vectorScalarMult3D(delta, update->dt);
                     // -= because force is in opposite direction
                     // no *dt as delta is v*dt of the contact position
-                    elastic_energy[0] -= (delta[0]*(elastic_energy[1]-Fn_contact*sidata.en[0]) +
-                                          delta[1]*(elastic_energy[2]-Fn_contact*sidata.en[1]) +
-                                          delta[2]*(elastic_energy[3]-Fn_contact*sidata.en[2]))*0.5;
+                      //printf("pela %e %e %e %e\n",  update->get_cur_time()-update->dt, deb, -sidata.radj, deb-sidata.radj);
+                    elastic_energy[0] -= (delta[0]*elastic_energy[1] +
+                                          delta[1]*elastic_energy[2] +
+                                          delta[2]*elastic_energy[3])*0.5
+                                         // from previous half step
+                                         + elastic_energy[10];
+                    elastic_energy[10] = -(delta[0]*Fn_contact*sidata.en[0] +
+                                           delta[1]*Fn_contact*sidata.en[1] +
+                                           delta[2]*Fn_contact*sidata.en[2])*0.5;
                 }
                 elastic_energy[1] = -Fn_contact*sidata.en[0];
                 elastic_energy[2] = -Fn_contact*sidata.en[1];
                 elastic_energy[3] = -Fn_contact*sidata.en[2];
+                elastic_energy[4] = 0.0;
+                elastic_energy[5] = 0.0;
+                elastic_energy[6] = 0.0;
+                elastic_energy[7] = 0.0;
+                elastic_energy[8] = 0.0;
+                elastic_energy[9] = 0.0;
             }
             // compute increment in dissipated energy
             if (dissipatedflag_)
@@ -415,6 +437,8 @@ namespace ContactModels
 
     void surfacesClose(SurfacesCloseData &scdata, ForceData&, ForceData&)
     {
+        if (scdata.contact_flags)
+            *scdata.contact_flags |= CONTACT_NORMAL_MODEL;
         dissipateElasticPotential(scdata);
     }
 

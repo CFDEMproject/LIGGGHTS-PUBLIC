@@ -143,7 +143,6 @@ class DumpLocalGran : public Pointers {
     void pack_v2(int);
     void pack_id1(int);
     void pack_id2(int);
-    void pack_id3(int);
     void pack_f(int);
     void pack_fn(int);
     void pack_ft(int);
@@ -154,6 +153,8 @@ class DumpLocalGran : public Pointers {
     void pack_delta(int);
     void pack_heat(int);
     void pack_contact_point(int);
+    void pack_ms_id1(int);
+    void pack_ms_id2(int);
 };
 
 }

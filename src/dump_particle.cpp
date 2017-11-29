@@ -42,7 +42,7 @@
 
 #ifdef LAMMPS_VTK
 
-#include <math.h>
+#include <cmath>
 #include "math_extra_liggghts.h"
 #include <stdlib.h>
 #include <string.h>
@@ -113,7 +113,7 @@ enum{X,Y,Z, // required for vtk, must come first
      SHAPEX, SHAPEY, SHAPEZ,
      QUAT1, QUAT2, QUAT3, QUAT4,
      EXTRA1, EXTRA2, TENSOR,
-     ROUNDNESS1, ROUNDNESS2, 
+     BLOCKINESS1, BLOCKINESS2, 
      ATTRIBUTES}; // must come last
 enum{LT,LE,GT,GE,EQ,NEQ};
 enum{INT,DOUBLE,STRING,TENSOR_DOUBLE};      // same as in DumpCFG
@@ -495,18 +495,22 @@ int DumpParticle::parse_parameters(const int narg, const char *const *const arg,
                 pack_choice[SHAPEZ] = &DumpParticle::pack_shapez;
                 vtype[SHAPEZ] = DOUBLE;
                 name[SHAPEZ] = arg[iarg];
-            } else if (strcmp(arg[iarg],"roundness1") == 0) {
+            } else if (strcmp(arg[iarg],"blockiness1") == 0 or strcmp(arg[iarg],"roundness1") == 0) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,"Dumping an atom quantity that isn't allocated");
-                pack_choice[ROUNDNESS1] = &DumpParticle::pack_roundness1;
-                vtype[ROUNDNESS1] = DOUBLE;
-                name[ROUNDNESS1] = arg[iarg];
-            } else if (strcmp(arg[iarg],"roundness2") == 0) {
+                if(strcmp(arg[iarg],"roundness1") == 0)
+                    error->warning(FLERR,"Keyword 'roundness1' will be deprecated in future, please use 'blockiness1' istead");
+                pack_choice[BLOCKINESS1] = &DumpParticle::pack_blockiness1;
+                vtype[BLOCKINESS1] = DOUBLE;
+                name[BLOCKINESS1] = arg[iarg];
+            } else if (strcmp(arg[iarg],"blockiness2") == 0 or strcmp(arg[iarg],"roundness2") == 0) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,"Dumping an atom quantity that isn't allocated");
-                pack_choice[ROUNDNESS2] = &DumpParticle::pack_roundness2;
-                vtype[ROUNDNESS2] = DOUBLE;
-                name[ROUNDNESS2] = arg[iarg];
+                if(strcmp(arg[iarg],"roundness2") == 0)
+                    error->warning(FLERR,"Keyword 'roundness2' will be deprecated in future, please use 'blockiness2' istead");
+                pack_choice[BLOCKINESS2] = &DumpParticle::pack_blockiness2;
+                vtype[BLOCKINESS2] = DOUBLE;
+                name[BLOCKINESS2] = arg[iarg];
             } else if (strcmp(arg[iarg],"quat1") == 0) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,"Dumping an atom quantity that isn't allocated");
@@ -693,6 +697,7 @@ DumpParticle::~DumpParticle()
     memory->destroy(choose);
     memory->destroy(dchoose);
     memory->destroy(clist);
+    memory->destroy(buf);
 
     if (typenames) {
         for (int i = 1; i <= ntypes; i++) delete [] typenames[i];
@@ -1304,17 +1309,17 @@ int DumpParticle::count()
                         "Threshold for an atom property that isn't allocated");
                 ptr = &atom->shape[0][2];
                 nstride = 3;
-            } else if (thresh_array[ithresh] == ROUNDNESS1) {
+            } else if (thresh_array[ithresh] == BLOCKINESS1) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,
                         "Threshold for an atom property that isn't allocated");
-                ptr = &atom->roundness[0][0];
+                ptr = &atom->blockiness[0][0];
                 nstride = 2;
-            } else if (thresh_array[ithresh] == ROUNDNESS2) {
+            } else if (thresh_array[ithresh] == BLOCKINESS2) {
                 if (!atom->superquadric_flag)
                     error->all(FLERR,
                         "Threshold for an atom property that isn't allocated");
-                ptr = &atom->roundness[0][1];
+                ptr = &atom->blockiness[0][1];
                 nstride = 2;
             }
 
@@ -1472,10 +1477,10 @@ void DumpParticle::pack(int *ids)
 
 void DumpParticle::buf2arrays(int n, double *mybuf)
 {
-#ifdef CONVEX_ACTIVE_FLAG
-    int ntri_max = static_cast<AtomVecConvexHull*>(atom->avec)->get_ntri_max();
-#else
     int ntri_max = 0;
+#ifdef CONVEX_ACTIVE_FLAG
+    if (convex_hull_detected)
+        ntri_max = static_cast<AtomVecConvexHull*>(atom->avec)->get_ntri_max();
 #endif
     // pid stores the ID(s) of the newly added point
     vtkIdType *pid;
@@ -1506,6 +1511,7 @@ void DumpParticle::buf2arrays(int n, double *mybuf)
             {
                 if (1+ipoint >= pid_size)
                     error->all(FLERR,"Internal error: Overflow of pid array");
+
                 pid[1+ipoint] = points->InsertNextPoint(mybuf[iatom*size_one+4+ipoint*3],
                                                         mybuf[iatom*size_one+5+ipoint*3],
                                                         mybuf[iatom*size_one+6+ipoint*3]);
@@ -2071,8 +2077,8 @@ int DumpParticle::modify_param(int narg, char **arg)
         else if (strcmp(arg[1],"shapex") == 0) thresh_array[nthresh] = SHAPEX;
         else if (strcmp(arg[1],"shapey") == 0) thresh_array[nthresh] = SHAPEY;
         else if (strcmp(arg[1],"shapez") == 0) thresh_array[nthresh] = SHAPEZ;
-        else if (strcmp(arg[1],"roundness1") == 0) thresh_array[nthresh] = ROUNDNESS1;
-        else if (strcmp(arg[1],"roundness2") == 0) thresh_array[nthresh] = ROUNDNESS2;
+        else if (strcmp(arg[1],"blockiness1") == 0) thresh_array[nthresh] = BLOCKINESS1;
+        else if (strcmp(arg[1],"blockiness2") == 0) thresh_array[nthresh] = BLOCKINESS2;
         else if (strcmp(arg[1],"quat1") == 0) thresh_array[nthresh] = QUAT1;
         else if (strcmp(arg[1],"quat2") == 0) thresh_array[nthresh] = QUAT2;
         else if (strcmp(arg[1],"quat3") == 0) thresh_array[nthresh] = QUAT3;
@@ -3140,23 +3146,23 @@ void DumpParticle::pack_shapez(int n)
 
 /* ---------------------------------------------------------------------- */
 
-void DumpParticle::pack_roundness1(int n)
+void DumpParticle::pack_blockiness1(int n)
 {
-    double **roundness = atom->roundness;
+    double **blockiness = atom->blockiness;
 
     for (int i = 0; i < nchoose; i++) {
-        buf[n] = roundness[clist[i]][0];
+        buf[n] = blockiness[clist[i]][0];
         n += size_one;
     }
 }
 /* ---------------------------------------------------------------------- */
 
-void DumpParticle::pack_roundness2(int n)
+void DumpParticle::pack_blockiness2(int n)
 {
-    double **roundness = atom->roundness;
+    double **blockiness = atom->blockiness;
 
     for (int i = 0; i < nchoose; i++) {
-        buf[n] = roundness[clist[i]][1];
+        buf[n] = blockiness[clist[i]][1];
         n += size_one;
     }
 }

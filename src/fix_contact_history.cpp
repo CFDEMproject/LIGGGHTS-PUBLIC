@@ -52,6 +52,8 @@
 #include <mpi.h>
 #include <string.h>
 #include <stdio.h>
+#include <cmath>
+#include <algorithm>
 #include "fix_contact_history.h"
 #include "atom.h"
 #include "comm.h"
@@ -64,7 +66,6 @@
 #include "memory.h"
 #include "math_extra_liggghts.h"
 #include "error.h"
-#include <algorithm>
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -266,7 +267,7 @@ void FixContactHistory::allocate_pages()
     dpage_ = new MyPage<double>[nmypage];
     for (int i = 0; i < nmypage; i++) {
       ipage_[i].init(oneatom_,pgsize_);
-      dpage_[i].init(oneatom_*MathExtraLiggghts::max(1,dnum_),pgsize_);
+      dpage_[i].init(oneatom_*std::max(1,dnum_),pgsize_);
     }
   }
 }

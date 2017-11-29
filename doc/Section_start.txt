@@ -11,6 +11,15 @@
 This section describes how to build and run LIGGGHTS(R)-PUBLIC, for both new and
 experienced users.
 
+<!-- RST
+
+.. contents:: 
+		:local:
+		:depth: 1
+   
+END_RST -->
+
+<!-- HTML_ONLY -->
 2.1 "How to obtain LIGGGHTS(R)-PUBLIC"_#start_1
 2.2 "Making LIGGGHTS(R)-PUBLIC"_#start_2
 2.3 "Making LIGGGHTS(R)-PUBLIC with optional packages"_#start_3
@@ -19,6 +28,7 @@ experienced users.
 2.6 "Running LIGGGHTS(R)-PUBLIC"_#start_6
 2.7 "Command-line options"_#start_7
 2.8 "Screen output"_#start_8 :all(b)
+<!--END_HTML_ONLY -->
 
 :line
 :line
@@ -247,11 +257,45 @@ If you want to help us, then please send us your finished Makefile via the
 "forums"_http://www.cfdem.com/forum so that we can improve it for future
 use.
 
+:line
+
+For most users it will be convenient if they are able to run LIGGGHTS(R)-PUBLIC by
+simply typing {liggghts} on the command line. To make this possible we need to
+create a symbolic link. So after the compilation is complete and your lmp_auto
+executable was created you can run the following command to create a system-wide
+link:
+
+sudo ln -s lmp_auto /usr/local/bin :pre
+
+Since {sudo} is not available on all systems (e.g. Fedora) you can alternatively
+try:
+
+su -c "ln -s lmp_auto /usr/local/bin" :pre
+
+NOTE: You need administrator access to run the two commands listed above.
 
 [Step 3 (Advanced usage)]
 
-Makefile.auto accepts one variable as additional input which is called
-*postfix* which can be used by typing
+Makefile.auto accepts up to two variables as additional input which are called
+*debug* and *postfix*. The former variable can be useful when debugging
+LIGGGHTS(R)-PUBLIC and can be used by typing
+
+make auto debug=ON :pre
+
+The arguments that can be passed to the debug variable are "ON" and "FULL".
+This has the same effect as changing the *USE_DEBUG* variable inside your
+*Makefile.user* to "ON" and "FULL", respectively. I.e. with "ON" a optimized
+debug version of the code is produced, whereas with "FULL" a unoptimized
+version of the is compiled. The latter can be quite useful when using a debugger
+to look at the local variables inside a code fragment.
+
+When using a debug variable the executables will be called either
+*lmp_auto-debug* or *lmp_auto-fulldebug* for "ON" and "FULL", respectively.
+
+NOTE: If you want to clean this particular compilation *make clean-auto*
+also needs to have *debug=ON* or *debug=FULL* appended.
+
+The latter variable *postfix* can be used by typing
 
 make auto postifx=myString :pre
 
@@ -260,12 +304,12 @@ but *MAKE/Makefile.user_myString*. If it does not exist it will clone
 *MAKE/Makefile.user* (instead of a default template). The resulting
 executable will be called *lmp_auto_myString* (instead of *lmp_auto*).
 
-The prime use case would be a *MAKE/Makefile.user_debug* that has
-*USE_DEBUG* switched to "ON", whereas the default *MAKE/Makefile.user*
-compiles the optimized version of the code.
+The use of the postfix variable should not be required under normal development.
+It allows advanced developers to have executables with different features
+enabled or disabled and based upon the default *Makefile.user*.
 
 NOTE: If you want to clean this particular compilation *make clean-auto*
-also needs to have the *postfix=myString* appended.
+also needs to have *postfix=myString* appended.
 
 All model combination of LIGGGHTS(R)-PUBLIC are automatically available starting with
 version 3.7. However, only a subset of them are compiled in an optimized manner.
@@ -793,12 +837,12 @@ To use or not use a package you must include or exclude it before
 building LIGGGHTS(R)-PUBLIC.  From the src directory, this is typically as simple
 as:
 
-make yes-asphere
+make yes-[package-name]
 make g++ :pre
 
 or
 
-make no-asphere
+make no-[package-name]
 make g++ :pre
 
 IMPORTANT NOTE: You should NOT include/exclude packages and build
@@ -824,8 +868,8 @@ LIGGGHTS(R)-PUBLIC source files from the SVN or Git repositories, no packages ar
 pre-installed.
 
 Packages are included or excluded by typing "make yes-name" or "make
-no-name", where "name" is the name of the package in lower-case, e.g.
-name = asphere for the ASPHERE package. You can also type "make yes-all"
+no-name", where "name" is the name of the package in lower-case. 
+You can also type "make yes-all"
 or "make no-all" to include/exclude various sets of packages.  Type "make
 package" to see the all of the package-related make options.
 
@@ -1098,14 +1142,14 @@ examples or bench directory.  Input scripts are named in.* and sample
 outputs are named log.*.name.P where name is a machine and P is the
 number of processors it was run on.
 
-Here is how you might run a standard Lennard-Jones benchmark on a
+Here is how you might run a standard chute wear benchmark on a
 Linux box, using mpirun to launch a parallel job:
 
 cd src
-make linux
-cp lmp_auto ../bench
-cd ../bench
-mpirun -np 4 lmp_auto < in.lj :pre
+make auto
+cp lmp_auto ../examples/LIGGGHTS/Tutorials_public/chute_wear
+cd ../examples/LIGGGHTS/Tutorials_public/chute_wear
+mpirun -np 4 lmp_auto < in.chute_wear :pre
 
 :line
 

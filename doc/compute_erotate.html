@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute erotate command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute erotate command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_erotate.txt" rel="nofollow"> View page source</a> 
+      <li>compute erotate command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_erotate.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute erotate command<a class="headerlink" href="#compute-erotate-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID erotate general_keywords general_values</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID erotate general_keywords general_values
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -157,7 +181,8 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all erotate</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all erotate
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -167,10 +192,12 @@ particles. This compute sums the rotational kinetic energy of spherical,
 superquadric and multisphere particles.</p>
 <p>The detailed way of how these energies of computed can be found in the
 respective child computes.</p>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This compute calculates a global scalar (the rotational kinetic energy).  This
 value can be used by any command that uses a global scalar value from a compute
-as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><em>Section_howto 15</em></a> for an overview of
+as input.  See <span class="xref std std-ref">Section_howto 15</span> for an overview of
 LIGGGHTS(R)-PUBLIC output options.</p>
 <p>The scalar value calculated by this compute is &#8220;extensive&#8221;.  The
 scalar value will be in energy <a class="reference internal" href="units.html"><em>units</em></a>.</p>
@@ -183,12 +210,15 @@ scalar value will be in energy <a class="reference internal" href="units.html"><
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="compute_erotate_sphere.html"><em>compute erotate/sphere</em></a>
 <a class="reference internal" href="compute_erotate_multisphere.html"><em>compute erotate/mulitsphere</em></a>
-<tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">erotate/superquadric</span></tt></p>
+<a class="reference internal" href="compute_erotate_superquadric.html"><em>compute erotate/superquadric</em></a></p>
 <p><strong>Default:</strong> none</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -219,11 +249,13 @@ scalar value will be in energy <a class="reference internal" href="units.html"><
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

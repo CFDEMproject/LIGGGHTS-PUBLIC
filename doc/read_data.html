@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>read_data command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>read_data command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/read_data.txt" rel="nofollow"> View page source</a> 
+      <li>read_data command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/read_data.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>read_data command<a class="headerlink" href="#read-data-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>read_data file keyword args ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>read_data file keyword args ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>file = name of data file to read in</li>
@@ -163,9 +187,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>read_data data.lj
+<div class="highlight-python"><div class="highlight"><pre>read_data data.lj
 read_data ../run7/data.polymer.gz
-read_data data.protein fix mycmap crossterm CMAP</pre>
+read_data data.protein fix mycmap crossterm CMAP
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -196,7 +221,7 @@ with a few exceptions as noted below.</p>
 a fix that will be used to process a specific portion of the data
 file.  Any header line containing <em>header-string</em> and any section with
 a name containing <em>section-string</em> will be passed to the specified
-fix.  See the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> command for
+fix.  See the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></code> command for
 an example of a fix that operates in this manner.  The doc page for
 the fix defines the syntax of the header line(s) and section(s) that
 it reads from the data file.  Note that the <em>header-string</em> can be
@@ -252,7 +277,7 @@ between -(xhi-xlo)/2 and +(yhi-ylo)/2.  Note that this is not a
 limitation, since if the maximum tilt factor is 5 (as in this
 example), then configurations with tilt = ..., -15, -5, 5, 15, 25,
 ... are all geometrically equivalent.</p>
-<p>See <a class="reference internal" href="Section_howto.html#howto-7"><em>Section_howto 12</em></a> of the doc pages
+<p>See <span class="xref std std-ref">Section_howto 12</span> of the doc pages
 for a geometric description of triclinic boxes, as defined by LIGGGHTS(R)-PUBLIC,
 and how to transform these parameters to and from other commonly used
 triclinic representations.</p>
@@ -309,7 +334,8 @@ rules (if any) for where it can appear in the data file.</p>
 <p>Any individual line in the various sections can have a trailing
 comment starting with &#8220;#&#8221; for annotation purposes.  E.g. in the
 Atoms section:</p>
-<div class="highlight-python"><pre>10 1 17 -1.0 10.0 5.0 6.0   # salt ion</pre>
+<div class="highlight-python"><div class="highlight"><pre>10 1 17 -1.0 10.0 5.0 6.0   # salt ion
+</pre></div>
 </div>
 <hr class="docutils" />
 <p><em>Atoms</em> section:</p>
@@ -410,15 +436,18 @@ are those that are not the 5 standard ones (ID,type,x,y,z).  For
 example, for the &#8220;charge&#8221; sub-style, a &#8220;q&#8221; value would appear.  For
 the &#8220;full&#8221; sub-style, a &#8220;molecule-ID&#8221; and &#8220;q&#8221; would appear.  These are
 listed in the same order they appear as listed above.  Thus if</p>
-<div class="highlight-python"><pre>atom_style hybrid charge sphere</pre>
+<div class="highlight-python"><div class="highlight"><pre>atom_style hybrid charge sphere
+</pre></div>
 </div>
 <p>were used in the input script, each atom line would have these fields:</p>
-<div class="highlight-python"><pre>atom-ID atom-type x y z q diameter density</pre>
+<div class="highlight-python"><div class="highlight"><pre>atom-ID atom-type x y z q diameter density
+</pre></div>
 </div>
 <p>Note that if a non-standard value is defined by multiple sub-styles,
 it must appear mutliple times in the atom line.  E.g. the atom line
 for atom_style hybrid dipole full would list &#8220;q&#8221; twice:</p>
-<div class="highlight-python"><pre>atom-ID atom-type x y z q mux muy myz molecule-ID q</pre>
+<div class="highlight-python"><div class="highlight"><pre>atom-ID atom-type x y z q mux muy myz molecule-ID q
+</pre></div>
 </div>
 <p>Atom lines (all lines or none of them) can optionally list 3 trailing
 integer values: nx,ny,nz.  For periodic dimensions, they specify which
@@ -447,13 +476,15 @@ script.</p>
 <li>one line per bond type</li>
 <li>line syntax: ID coeffs</li>
 </ul>
-<div class="highlight-python"><pre>ID = bond type (1-N)
-coeffs = list of coeffs</pre>
+<div class="highlight-python"><div class="highlight"><pre>ID = bond type (1-N)
+coeffs = list of coeffs
+</pre></div>
 </div>
 <ul class="simple">
 <li>example:</li>
 </ul>
-<div class="highlight-python"><pre>4 250 1.49</pre>
+<div class="highlight-python"><div class="highlight"><pre>4 250 1.49
+</pre></div>
 </div>
 <p>The number and meaning of the coefficients are specific to the defined
 bond style.  See the <a class="reference internal" href="bond_style.html"><em>bond_style</em></a> and
@@ -468,7 +499,7 @@ script.</p>
 </ul>
 <pre class="literal-block">
 ID = angle type (1-N)
-coeffs = list of coeffs (see class 2 section of <tt class="xref doc docutils literal"><span class="pre">angle_coeff</span></tt>)
+coeffs = list of coeffs (see class 2 section of <code class="xref doc docutils literal"><span class="pre">angle_coeff</span></code>)
 </pre>
 <hr class="docutils" />
 <p><em>BondBond13 Coeffs</em> section:</p>
@@ -478,7 +509,7 @@ coeffs = list of coeffs (see class 2 section of <tt class="xref doc docutils lit
 </ul>
 <pre class="literal-block">
 ID = dihedral type (1-N)
-coeffs = list of coeffs (see class 2 section of <tt class="xref doc docutils literal"><span class="pre">dihedral_coeff</span></tt>)
+coeffs = list of coeffs (see class 2 section of <code class="xref doc docutils literal"><span class="pre">dihedral_coeff</span></code>)
 </pre>
 <hr class="docutils" />
 <p><em>Bonds</em> section:</p>
@@ -486,14 +517,16 @@ coeffs = list of coeffs (see class 2 section of <tt class="xref doc docutils lit
 <li>one line per bond</li>
 <li>line syntax: ID type atom1 atom2</li>
 </ul>
-<div class="highlight-python"><pre>ID = bond number (1-Nbonds)
+<div class="highlight-python"><div class="highlight"><pre>ID = bond number (1-Nbonds)
 type = bond type (1-Nbondtype)
-atom1,atom2 = IDs of 1st,2nd atoms in bond</pre>
+atom1,atom2 = IDs of 1st,2nd atoms in bond
+</pre></div>
 </div>
 <ul class="simple">
 <li>example:</li>
 </ul>
-<div class="highlight-python"><pre>12 3 17 29</pre>
+<div class="highlight-python"><div class="highlight"><pre>12 3 17 29
+</pre></div>
 </div>
 <p>The <em>Bonds</em> section must appear after the <em>Atoms</em> section.  All values
 in this section must be integers (1, not 1.0).</p>
@@ -503,14 +536,16 @@ in this section must be integers (1, not 1.0).</p>
 <li>one line per ellipsoid</li>
 <li>line syntax: atom-ID shapex shapey shapez quatw quati quatj quatk</li>
 </ul>
-<div class="highlight-python"><pre>atom-ID = ID of atom which is an ellipsoid
+<div class="highlight-python"><div class="highlight"><pre>atom-ID = ID of atom which is an ellipsoid
 shapex,shapey,shapez = 3 diameters of ellipsoid (distance units)
-quatw,quati,quatj,quatk = quaternion components for orientation of atom</pre>
+quatw,quati,quatj,quatk = quaternion components for orientation of atom
+</pre></div>
 </div>
 <ul class="simple">
 <li>example:</li>
 </ul>
-<div class="highlight-python"><pre>12 1 2 1 1 0 0 0</pre>
+<div class="highlight-python"><div class="highlight"><pre>12 1 2 1 1 0 0 0
+</pre></div>
 </div>
 <p>The <em>Ellipsoids</em> section must appear if <a class="reference internal" href="atom_style.html"><em>atom_style ellipsoid</em></a> is used and any atoms are listed in the
 <em>Atoms</em> section with an ellipsoidflag = 1.  The number of ellipsoids
@@ -539,7 +574,7 @@ specified as a unit vector.</p>
 </ul>
 <pre class="literal-block">
 ID = dihedral type (1-N)
-coeffs = list of coeffs (see class 2 section of <tt class="xref doc docutils literal"><span class="pre">dihedral_coeff</span></tt>)
+coeffs = list of coeffs (see class 2 section of <code class="xref doc docutils literal"><span class="pre">dihedral_coeff</span></code>)
 </pre>
 <hr class="docutils" />
 <p><em>Lines</em> section:</p>
@@ -547,14 +582,16 @@ coeffs = list of coeffs (see class 2 section of <tt class="xref doc docutils lit
 <li>one line per line segment</li>
 <li>line syntax: atom-ID x1 y1 x2 y2</li>
 </ul>
-<div class="highlight-python"><pre>atom-ID = ID of atom which is a line segment
+<div class="highlight-python"><div class="highlight"><pre>atom-ID = ID of atom which is a line segment
 x1,y1 = 1st end point
-x2,y2 = 2nd end point</pre>
+x2,y2 = 2nd end point
+</pre></div>
 </div>
 <ul class="simple">
 <li>example:</li>
 </ul>
-<div class="highlight-python"><pre>12 1.0 0.0 2.0 0.0</pre>
+<div class="highlight-python"><div class="highlight"><pre>12 1.0 0.0 2.0 0.0
+</pre></div>
 </div>
 <p>The <em>Lines</em> section must appear if <a class="reference internal" href="atom_style.html"><em>atom_style line</em></a>
 is used and any atoms are listed in the <em>Atoms</em> section with a
@@ -573,13 +610,15 @@ for defining some interactions.</p>
 <li>one line per atom type</li>
 <li>line syntax: ID mass</li>
 </ul>
-<div class="highlight-python"><pre>ID = atom type (1-N)
-mass = mass value</pre>
+<div class="highlight-python"><div class="highlight"><pre>ID = atom type (1-N)
+mass = mass value
+</pre></div>
 </div>
 <ul class="simple">
 <li>example:</li>
 </ul>
-<div class="highlight-python"><pre>3 1.01</pre>
+<div class="highlight-python"><div class="highlight"><pre>3 1.01
+</pre></div>
 </div>
 <p>This defines the mass of each atom type.  This can also be set via the
 <a class="reference internal" href="mass.html"><em>mass</em></a> command in the input script.  This section cannot be
@@ -593,7 +632,7 @@ e.g. <a class="reference internal" href="atom_style.html"><em>atom_style sphere<
 </ul>
 <pre class="literal-block">
 ID = dihedral type (1-N)
-coeffs = list of coeffs (see class 2 section of <tt class="xref doc docutils literal"><span class="pre">dihedral_coeff</span></tt>)
+coeffs = list of coeffs (see class 2 section of <code class="xref doc docutils literal"><span class="pre">dihedral_coeff</span></code>)
 </pre>
 <hr class="docutils" />
 <p><em>Pair Coeffs</em> section:</p>
@@ -601,20 +640,22 @@ coeffs = list of coeffs (see class 2 section of <tt class="xref doc docutils lit
 <li>one line per atom type</li>
 <li>line syntax: ID coeffs</li>
 </ul>
-<div class="highlight-python"><pre>ID = atom type (1-N)
-coeffs = list of coeffs</pre>
+<div class="highlight-python"><div class="highlight"><pre>ID = atom type (1-N)
+coeffs = list of coeffs
+</pre></div>
 </div>
 <ul class="simple">
 <li>example:</li>
 </ul>
-<div class="highlight-python"><pre>3 0.022 2.35197 0.022 2.35197</pre>
+<div class="highlight-python"><div class="highlight"><pre>3 0.022 2.35197 0.022 2.35197
+</pre></div>
 </div>
 <p>The number and meaning of the coefficients are specific to the defined
 pair style.  See the <a class="reference internal" href="pair_style.html"><em>pair_style</em></a> and
 <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> commands for details.  Since pair
 coefficients for types I != J are not specified, these will be
 generated automatically by the pair style&#8217;s mixing rule.  See the
-individual pair_style doc pages and the <tt class="xref doc docutils literal"><span class="pre">pair_modify</span> <span class="pre">mix</span></tt> command for details.  Pair coefficients can also
+individual pair_style doc pages and the <code class="xref doc docutils literal"><span class="pre">pair_modify</span> <span class="pre">mix</span></code> command for details.  Pair coefficients can also
 be set via the <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> command in the input
 script.</p>
 <hr class="docutils" />
@@ -623,15 +664,17 @@ script.</p>
 <li>one line per pair of atom types for all I,J with I &lt;= J</li>
 <li>line syntax: ID1 ID2 coeffs</li>
 </ul>
-<div class="highlight-python"><pre>ID1 = atom type I = 1-N
+<div class="highlight-python"><div class="highlight"><pre>ID1 = atom type I = 1-N
 ID2 = atom type J = I-N, with I &lt;= J
-coeffs = list of coeffs</pre>
+coeffs = list of coeffs
+</pre></div>
 </div>
 <ul class="simple">
 <li>examples:</li>
 </ul>
-<div class="highlight-python"><pre>3 3 0.022 2.35197 0.022 2.35197
-3 5 0.022 2.35197 0.022 2.35197</pre>
+<div class="highlight-python"><div class="highlight"><pre>3 3 0.022 2.35197 0.022 2.35197
+3 5 0.022 2.35197 0.022 2.35197
+</pre></div>
 </div>
 <p>This section must have N*(N+1)/2 lines where N = # of atom types.  The
 number and meaning of the coefficients are specific to the defined
@@ -639,7 +682,7 @@ pair style.  See the <a class="reference internal" href="pair_style.html"><em>pa
 <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> commands for details.  Since pair
 coefficients for types I != J are all specified, these values will
 turn off the default mixing rule defined by the pair style.  See the
-individual pair_style doc pages and the <tt class="xref doc docutils literal"><span class="pre">pair_modify</span> <span class="pre">mix</span></tt> command for details.  Pair coefficients can also
+individual pair_style doc pages and the <code class="xref doc docutils literal"><span class="pre">pair_modify</span> <span class="pre">mix</span></code> command for details.  Pair coefficients can also
 be set via the <a class="reference internal" href="pair_coeff.html"><em>pair_coeff</em></a> command in the input
 script.</p>
 <hr class="docutils" />
@@ -648,15 +691,17 @@ script.</p>
 <li>one line per triangle</li>
 <li>line syntax: atom-ID x1 y1 x2 y2</li>
 </ul>
-<div class="highlight-python"><pre>atom-ID = ID of atom which is a line segment
+<div class="highlight-python"><div class="highlight"><pre>atom-ID = ID of atom which is a line segment
 x1,y1,z1 = 1st corner point
 x2,y2,z2 = 2nd corner point
-x3,y3,z3 = 3rd corner point</pre>
+x3,y3,z3 = 3rd corner point
+</pre></div>
 </div>
 <ul class="simple">
 <li>example:</li>
 </ul>
-<div class="highlight-python"><pre>12 0.0 0.0 0.0 2.0 0.0 1.0 0.0 2.0 1.0</pre>
+<div class="highlight-python"><div class="highlight"><pre>12 0.0 0.0 0.0 2.0 0.0 1.0 0.0 2.0 1.0
+</pre></div>
 </div>
 <p>The <em>Triangles</em> section must appear if <a class="reference internal" href="atom_style.html"><em>atom_style tri</em></a> is used and any atoms are listed in the <em>Atoms</em>
 section with a triangleflag = 1.  The number of lines should be
@@ -716,11 +761,13 @@ are those that are not the 5 standard ones (ID,vx,vy,vz).  For
 example, for the &#8220;sphere&#8221; sub-style, &#8220;wx&#8221;, &#8220;wy&#8221;, &#8220;wz&#8221; values would
 appear.  These are listed in the same order they appear as listed
 above.  Thus if</p>
-<div class="highlight-python"><pre>atom_style hybrid electron sphere</pre>
+<div class="highlight-python"><div class="highlight"><pre>atom_style hybrid electron sphere
+</pre></div>
 </div>
 <p>were used in the input script, each velocity line would have these
 fields:</p>
-<div class="highlight-python"><pre>atom-ID vx vy vz ervel wx wy wz</pre>
+<div class="highlight-python"><div class="highlight"><pre>atom-ID vx vy vz ervel wx wy wz
+</pre></div>
 </div>
 <p>Translational velocities can also be set by the
 <a class="reference internal" href="velocity.html"><em>velocity</em></a> command in the input script.</p>
@@ -729,7 +776,7 @@ fields:</p>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
 <p>To read gzipped data files, you must compile LIGGGHTS(R)-PUBLIC with the
--DLAMMPS_GZIP option - see the <a class="reference internal" href="Section_start.html#start-2"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section of the documentation.</p>
+-DLAMMPS_GZIP option - see the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section of the documentation.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
@@ -740,6 +787,9 @@ fields:</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -770,11 +820,13 @@ fields:</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

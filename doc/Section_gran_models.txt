@@ -44,7 +44,8 @@ surface commands :h4
 
 Click on the style itself for a full description:
 
-"sphere"_gran_surface_sphere.html :tb(c=4,ea=c)
+"sphere"_gran_surface_sphere.html,
+"superquadric"_gran_surface_superquadric.html :tb(c=4,ea=c)
 
 tangential commands :h4
 

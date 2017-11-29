@@ -46,7 +46,7 @@
 #ifndef LMP_MATH_SPECIAL_H
 #define LMP_MATH_SPECIAL_H
 
-#include <math.h>
+#include <cmath>
 
 namespace LAMMPS_NS {
 

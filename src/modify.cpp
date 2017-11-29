@@ -85,7 +85,7 @@ using namespace FixConst;
 Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
 {
   nfix = maxfix = 0;
-  n_initial_integrate = n_post_integrate = 0;
+  n_pre_initial_integrate = n_initial_integrate = n_post_integrate = 0;
   n_pre_exchange = n_pre_neighbor = 0;
   n_pre_force = n_post_force = 0;
   n_iterate_implicitly = n_pre_final_integrate = 0; 
@@ -97,7 +97,7 @@ Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
 
   fix = NULL;
   fmask = NULL;
-  list_initial_integrate = list_post_integrate = NULL;
+  list_pre_initial_integrate = list_initial_integrate = list_post_integrate = NULL;
   list_pre_exchange = list_pre_neighbor = NULL;
   list_pre_force = list_post_force = NULL;
   list_iterate_implicitly = list_pre_final_integrate = NULL; 
@@ -164,6 +164,7 @@ Modify::~Modify()
   for (int i = ncompute-1; i >= 0; i--) delete compute[i];
   memory->sfree(compute);
 
+  delete [] list_pre_initial_integrate;
   delete [] list_initial_integrate;
   delete [] list_post_integrate;
   delete [] list_pre_exchange;
@@ -208,9 +209,11 @@ void Modify::init()
 
   // create lists of fixes to call at each stage of run
 
+  list_init(PRE_INITIAL_INTEGRATE,n_pre_initial_integrate,list_pre_initial_integrate);
   list_init(INITIAL_INTEGRATE,n_initial_integrate,list_initial_integrate);
   list_init(POST_INTEGRATE,n_post_integrate,list_post_integrate);
-  list_init(PRE_EXCHANGE,n_pre_exchange,list_pre_exchange);
+  list_init_pre_exchange(PRE_EXCHANGE,n_pre_exchange,list_pre_exchange);
+  //list_init(PRE_EXCHANGE,n_pre_exchange,list_pre_exchange);
   list_init(PRE_NEIGHBOR,n_pre_neighbor,list_pre_neighbor);
   list_init(PRE_FORCE,n_pre_force,list_pre_force);
   list_init(POST_FORCE,n_post_force,list_post_force);
@@ -373,6 +376,15 @@ void Modify::setup_pre_force(int vflag)
   } else if (update->whichflag == 2) {
     call_method_on_fixes(&Fix::min_setup_pre_force, vflag, list_min_pre_force, n_min_pre_force);
   }
+}
+
+/* ----------------------------------------------------------------------
+   pre_intial_integrate call, only for relevant fixes
+------------------------------------------------------------------------- */
+
+void Modify::pre_initial_integrate()
+{
+  call_method_on_fixes(&Fix::pre_initial_integrate, list_pre_initial_integrate, n_pre_initial_integrate);
 }
 
 /* ----------------------------------------------------------------------
@@ -1316,6 +1328,38 @@ void Modify::list_init(int mask, int &n, int *&list)
 
   n = 0;
   for (int i = 0; i < nfix; i++) if (fmask[i] & mask) list[n++] = i;
+}
+
+/* ----------------------------------------------------------------------
+   create list of fix indices for for pre_exchange fixes
+   have contacthistory fixes always come first so it can copy the data
+------------------------------------------------------------------------- */
+
+void Modify::list_init_pre_exchange(int mask, int &n, int *&list)
+{
+  delete [] list;
+
+  n = 0;
+  for (int i = 0; i < nfix; i++) if (fmask[i] & mask) n++;
+  list = new int[n];
+
+  n = 0;
+
+  for (int i = 0; i < nfix; i++) if (fmask[i] & mask)
+  {
+    if(0 == strncmp(fix[i]->style,"contacthistory",14))
+    //if(0 == strcmp(fix[i]->style,"contacthistory"))
+        list[n++] = i;
+  }
+
+  for (int i = 0; i < nfix; i++)
+  {
+      if(0 == strncmp(fix[i]->style,"contacthistory",14))
+      //if(0 == strcmp(fix[i]->style,"contacthistory"))
+        continue;
+
+      if (fmask[i] & mask) list[n++] = i;
+  }
 }
 
 /* ----------------------------------------------------------------------

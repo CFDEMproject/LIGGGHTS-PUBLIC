@@ -39,7 +39,8 @@
     Copyright 2012-     DCS Computing GmbH, Linz
     Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 #include <stdlib.h>
 #include <string.h>
 #include "fix_insert_stream.h"
@@ -531,8 +532,8 @@ void FixInsertStream::calc_ins_fraction()
                     
                     if(dot > 0. && dot < extrude_length)
                     {
-                        extrude_length_max = MathExtraLiggghts::max(extrude_length_max,dot);
-                        extrude_length_min = MathExtraLiggghts::min(extrude_length_min,dot);
+                        extrude_length_max = std::max(extrude_length_max,dot);
+                        extrude_length_min = std::min(extrude_length_min,dot);
                     }
                     else if(dot < 0.)
                         extrude_length_min = 0.;

@@ -32,12 +32,14 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
+    Arno Mayrhofer (DCS Computing GmbH, Linz)
+    Stefan Radl (TU Graz)
 
-    Stefan Radl, TU Graz
+    Copyright 2017 - DCS Computing GmbH, Linz
     Copyright 2016 - TU Graz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,29 +66,40 @@
 #include "atom_vec.h"
 #include "math_extra_liggghts.h"
 #include "math_const.h"
+#include "variable.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
 using namespace MathConst;
 
 enum {LOOP_LOCAL,LOOP_ALL};
+enum {NONE, VARIABLE, FIX};
 
 /* ---------------------------------------------------------------------- */
 
 FixMultisphereBreak::FixMultisphereBreak(LAMMPS *lmp, int narg, char **arg) :
   FixMultisphere(lmp, narg, arg),
+  triggerFixName_(NULL),
   triggerFix_(NULL),
+  triggerIdx_(-1),
+  triggerArray_(NULL),
+  maxatom_(0),
+  triggerType_(NONE),
+  triggerName_(NULL),
+  triggerIndex_(-1),
   triggerThreshold_(0),
   triggerTimeStep_(0)
 {
     int iarg=3;
     bool trigger_fixNameSet = false;
+    bool trigger_nameSet = false;
     bool hasargs = true;
     while(iarg < narg && hasargs)
     {
         hasargs = false;
         printf("iarg:%d \n", iarg);
-        if(strcmp(arg[iarg],"trigger_threshold") == 0) {
+        if(strcmp(arg[iarg],"trigger_threshold") == 0)
+        {
             if(narg < iarg+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'trigger_threshold'");
             iarg++;
@@ -95,7 +108,8 @@ FixMultisphereBreak::FixMultisphereBreak(LAMMPS *lmp, int narg, char **arg) :
                     triggerThreshold_);
             hasargs = true;
         }
-        else if(strcmp(arg[iarg],"trigger_timeStep") == 0) {
+        else if(strcmp(arg[iarg],"trigger_timeStep") == 0)
+        {
             if(narg < iarg+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'trigger_timeStep'");
             iarg++;
@@ -104,34 +118,79 @@ FixMultisphereBreak::FixMultisphereBreak(LAMMPS *lmp, int narg, char **arg) :
                     triggerTimeStep_);
             hasargs = true;
         }
-        else if(strcmp(arg[iarg],"trigger_fixName") == 0) {
+        else if(strcmp(arg[iarg],"trigger_name") == 0)
+        {
+            if(narg < iarg+2)
+                error->fix_error(FLERR, this, "not enough arguments for 'trigger_name'");
+            iarg++;
+            if (arg[iarg][0] == 'f')
+                triggerType_ = FIX;
+            else if (arg[iarg][0] == 'v')
+                triggerType_ = VARIABLE;
+            else
+                error->fix_error(FLERR, this, "Require a fix with f_ or variable with v_");
+            int n = strlen(arg[iarg]);
+            char *suffix = new char[n];
+            strcpy(suffix, &arg[iarg][2]);
+
+            char *ptr = strchr(suffix,'[');
+            if (ptr)
+            {
+                if (suffix[strlen(suffix)-1] != ']')
+                    error->all(FLERR,"Illegal fix multisphere/break command");
+                triggerIndex_ = atoi(ptr+1);
+                *ptr = '\0';
+            }
+            else
+                triggerIndex_ = 0;
+
+            n = strlen(suffix) + 1;
+            triggerName_ = new char[n];
+            strcpy(triggerName_, suffix);
+            delete [] suffix;
+            printf("FixMultisphereBreak will use '%s' (length: %d) as trigger. \n",
+                    triggerName_, n);
+            trigger_nameSet = true;
+            iarg++;
+            hasargs = true;
+        }
+        else if(strcmp(arg[iarg],"trigger_fixName") == 0)
+        {
             if(narg < iarg+2)
                 error->fix_error(FLERR,this,"not enough arguments for 'trigger_fixName'");
             iarg++;
             int n = strlen(arg[iarg++]);
-            triggerFixName_ = new char[n];
+            triggerFixName_ = new char[n+1];
             strcpy(triggerFixName_,arg[iarg-1]);
             printf("FixMultisphereBreak will use fixPropertyAtom with name '%s' (length: %d) as trigger. \n",
                     triggerFixName_, n);
             trigger_fixNameSet = true;
             hasargs = true;
-      } else {
-          printf("WARNING from FixMultisphereBreak: Unknown keyword '%s'. This might be unproblematic in case the derived class handles the keyword correctly. \n", arg[iarg]);
-          iarg++;
-          hasargs = true;
-      }
+            error->warning(FLERR, "trigger_fixName is a deprecated argument and will be removed in future version, use trigger_name instead");
+        }
+        else
+        {
+            printf("WARNING from FixMultisphereBreak: Unknown keyword '%s'. This might be unproblematic in case the derived class handles the keyword correctly. \n", arg[iarg]);
+            iarg++;
+            hasargs = true;
+        }
     }
 
-    if(!trigger_fixNameSet)
-        error->fix_error(FLERR,this,"No setting made for 'trigger_fixName'. You must make this setting!");
-    printf("...initialized FixMultisphereBreak with trigger_fixName: %s! \n", triggerFixName_);
-
+    if(!trigger_fixNameSet && !trigger_nameSet)
+        error->fix_error(FLERR,this,"No setting made for 'trigger_name'. You must make this setting!");
+    if(trigger_fixNameSet && trigger_nameSet)
+        error->fix_error(FLERR,this,"Setting made for 'trigger_name' and 'trigger_fixName' only one is allowed (preferably the former).");
 }
 
 /* ---------------------------------------------------------------------- */
 
 FixMultisphereBreak::~FixMultisphereBreak()
 {
+    if (triggerName_ && triggerType_ == VARIABLE)
+        memory->destroy(triggerArray_);
+    if (triggerName_)
+        delete[] triggerName_;
+
     if (triggerFixName_)
         delete[] triggerFixName_;
 }
@@ -141,8 +200,35 @@ void FixMultisphereBreak::init()
 {
     FixMultisphere::init();
 
-    triggerFix_ = static_cast<FixPropertyAtom*>(modify->find_fix_property(triggerFixName_,"property/atom","scalar",1,0,style));
-    if(!triggerFix_) error->fix_error(FLERR,this,"triggerFix not found by FixMultisphereBreak! Ensure a fix with the proper name is available!");
+    if (triggerName_)
+    {
+        if (triggerType_ == FIX)
+        {
+            triggerIdx_ = modify->find_fix(triggerName_);
+            if (triggerIdx_ < 0)
+                error->fix_error(FLERR,this,"fix with name set as trigger_name not found by fix multisphere/break. Ensure a fix with the proper name is available");
+            if (triggerIndex_ == 0)
+                triggerFix_ = static_cast<FixPropertyAtom*>(modify->find_fix_property(triggerName_,"property/atom","scalar",1,0,style));
+            else
+                triggerFix_ = static_cast<FixPropertyAtom*>(modify->find_fix_property(triggerName_,"property/atom","vector",triggerIndex_,0,style));
+            if(!triggerFix_)
+                error->fix_error(FLERR,this,"fix property/atom with name set as trigger_name not found by fix multisphere/break. Ensure a fix of style property/atom with the proper name is available");
+        }
+        else if (triggerType_ == VARIABLE)
+        {
+            triggerIdx_ = input->variable->find(triggerName_);
+            if (triggerIdx_ < 0)
+                error->fix_error(FLERR, this, "variable with name set as trigger_name not found by fix multisphere/break. Ensure a variable with the proper name is available");
+            if (input->variable->atomstyle(triggerIdx_) == 0)
+                error->fix_error(FLERR, this, "variable with name set as trigger_name is not of atom style in fix multisphere/break");
+        }
+    }
+    else if (triggerFixName_)
+    {
+        triggerFix_ = static_cast<FixPropertyAtom*>(modify->find_fix_property(triggerFixName_,"property/atom","scalar",1,0,style));
+        if(!triggerFix_)
+            error->fix_error(FLERR,this,"triggerFix not found by FixMultisphereBreak! Ensure a fix with the proper name is available!");
+    }
 
 }
 
@@ -204,9 +290,8 @@ void FixMultisphereBreak::final_integrate()
     int ghostflag = LOOP_ALL;
 
     int step = update->ntimestep;
-    int nlocal = atom->nlocal;
+    const int nlocal = atom->nlocal;
     int nghost = atom->nghost;
-    double  *trigger = triggerFix_->vector_atom;
     double *existflag = fix_existflag_->vector_atom;
 
     double *density = atom->density;
@@ -218,58 +303,92 @@ void FixMultisphereBreak::final_integrate()
     int haveRemovedAtomsDirectSelect = 0;
     double fourOverThreePi = 4.18879020479;
 
-    if(ghostflag == LOOP_ALL) nloop = nlocal+nghost;
-    else if(ghostflag == LOOP_LOCAL) nloop = nlocal;
-    else error->all(FLERR,"Illegal call to FixMultisphereBreak::final_integrate()");
+    if(ghostflag == LOOP_ALL)
+        nloop = nlocal+nghost;
+    else if(ghostflag == LOOP_LOCAL)
+        nloop = nlocal;
+    else
+        error->all(FLERR,"Illegal call to FixMultisphereBreak::final_integrate()");
+
+    if (triggerName_ && update->ntimestep % modify->fix[triggerIdx_]->peratom_freq)
+        error->all(FLERR,"Fix used in fix multisphere/break not computed at compatible time");
+
+    if (triggerName_ && triggerType_ == VARIABLE)
+    {
+        if (nlocal > maxatom_)
+        {
+            maxatom_ = atom->nmax;
+            memory->destroy(triggerArray_);
+            memory->create(triggerArray_, maxatom_, "multisphere/break:triggerArray_");
+        }
+        input->variable->compute_atom(triggerIdx_, igroup, triggerArray_, 1, 0);
+    }
+    else if ((triggerName_ && triggerType_ == FIX && triggerIndex_ == 0) || triggerFixName_)
+        triggerArray_ = triggerFix_->vector_atom;
+    const bool fixArray = (triggerName_ && triggerType_  == FIX && triggerIndex_ > 0);
 
     if(step > triggerTimeStep_)
     {
-      for (int i = 0; i < nloop; i++)
-      {
-        if (body_[i] < 0 || trigger[i]<triggerThreshold_) continue;
-        int ibody = map(body_[i]);
-        if (ibody < 0) continue;
-        if(data().nrigid(ibody) < 2) continue;
-
-//        printf("FixMultisphereBreak checks nrigid now for body %d/ibody: %d (n_body()/all: %d, %d) \n",
-//              body_[i], ibody, data().n_body(), data().n_body_all());
-
-//        printf("FixMultisphereBreak resets body index for local atom-id %d with trigger %g, threshold: %g \n",
-//              i, trigger[i],triggerThreshold_);
-        data().tagReset(ibody); //re-sets the tag of the body
-        haveRemovedAtomsDirectSelect++;
-      }
-
-      //loop through atoms and mark for removal of body
-      for (int i = 0; i < nloop; i++)
-      {
-        if (body_[i] < 0) continue;
-        int ibody = map(body_[i]);
-        if (ibody < 0) continue;
-        if(data().nrigid(ibody) < 2) continue; //disregard bodies with only one or no atom
-
-        if (tag(ibody) == -1)
-            existflag[i] = 0; //mark for un-marking of body body_[i]   = -2;
-      }
-
-      //loop through atoms and ensure they have -2 in body if body is negatively tagged
-      for (int i = 0; i < nloop; i++)
-      {
-        if (body_[i] < 0) continue;
-        int ibody = map(body_[i]);
-        if (ibody < 0) continue;
-        if (tag(ibody) == -1 && existflag[i]==0)
+        for (int i = 0; i < nloop; i++)
         {
-            body_[i]   = -1;
-            if(data().nrigid(ibody)>1) //set zero --> removes the body!
-                data().nrigidReset(ibody, 0);
+            double trigger = 0.;
+            if (fixArray)
+                trigger = triggerFix_->array_atom[i][triggerIndex_-1];
+            else
+                trigger = triggerArray_[i];
 
-            if (rmass)
-                rmass[i] = r[i] * r[i] * r[i] * fourOverThreePi * density[i];
+            if (body_[i] < 0 || trigger < triggerThreshold_)
+                continue;
+            int ibody = map(body_[i]);
+            if (ibody < 0)
+                continue;
+            if(data().nrigid(ibody) < 2)
+                continue;
 
-            haveRemovedAtoms++;
+//            printf("FixMultisphereBreak checks nrigid now for body %d/ibody: %d (n_body()/all: %d, %d) \n",
+//                  body_[i], ibody, data().n_body(), data().n_body_all());
+
+//            printf("FixMultisphereBreak resets body index for local atom-id %d with trigger %g, threshold: %g \n",
+//                  i, trigger,triggerThreshold_);
+            data().tagReset(ibody); //re-sets the tag of the body
+            haveRemovedAtomsDirectSelect++;
         }
-      }
+
+        //loop through atoms and mark for removal of body
+        for (int i = 0; i < nloop; i++)
+        {
+            if (body_[i] < 0)
+                continue;
+            int ibody = map(body_[i]);
+            if (ibody < 0)
+                continue;
+            if(data().nrigid(ibody) < 2)
+                continue; //disregard bodies with only one or no atom
+
+            if (tag(ibody) == -1)
+                existflag[i] = 0; //mark for un-marking of body body_[i]   = -2;
+        }
+
+        //loop through atoms and ensure they have -2 in body if body is negatively tagged
+        for (int i = 0; i < nloop; i++)
+        {
+            if (body_[i] < 0)
+                continue;
+            int ibody = map(body_[i]);
+            if (ibody < 0)
+                continue;
+            if (tag(ibody) == -1 && existflag[i]==0)
+            {
+                body_[i]   = -1;
+                if(data().nrigid(ibody)>1) //set zero --> removes the body!
+                    data().nrigidReset(ibody, 0);
+
+                if (rmass)
+                    rmass[i] = r[i] * r[i] * r[i] * fourOverThreePi * density[i];
+
+                haveRemovedAtoms++;
+            }
+        }
 
     }
     if(haveRemovedAtoms>0)

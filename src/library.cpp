@@ -161,6 +161,7 @@ void *lammps_extract_global(void *ptr, const char *name)
   LAMMPS *lmp = (LAMMPS *) ptr;
 
   if (strcmp(name,"dt") == 0) return (void *) &lmp->update->dt;
+  if (strcmp(name,"atime") == 0) return (void *)&lmp->update->atime;
   if (strcmp(name,"boxxlo") == 0) return (void *) &lmp->domain->boxlo[0];
   if (strcmp(name,"boxxhi") == 0) return (void *) &lmp->domain->boxhi[0];
   if (strcmp(name,"boxylo") == 0) return (void *) &lmp->domain->boxlo[1];

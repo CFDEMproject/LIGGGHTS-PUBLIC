@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>if command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>if command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/if.txt" rel="nofollow"> View page source</a> 
+      <li>if command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/if.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>if command<a class="headerlink" href="#if-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>if boolean then t1 t2 ... elif boolean f1 f2 ... elif boolean f1 f2 ... else e1 e2 ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>if boolean then t1 t2 ... elif boolean f1 f2 ... elif boolean f1 f2 ... else e1 e2 ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>boolean = a Boolean expression evaluated as TRUE or FALSE (see below)</li>
@@ -161,16 +185,17 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>if "${steps} &gt; 1000" then quit
-if "$x &lt;= $y" then "print X is smaller = $x" else "print Y is smaller = $y"
-if "(${eng} &gt; 0.0) || ($n &lt; 1000)" then &amp;
-  "timestep 0.005" &amp;
+<div class="highlight-python"><div class="highlight"><pre>if &quot;${steps} &gt; 1000&quot; then quit
+if &quot;$x &lt;= $y&quot; then &quot;print X is smaller = $x&quot; else &quot;print Y is smaller = $y&quot;
+if &quot;(${eng} &gt; 0.0) || ($n &lt; 1000)&quot; then &amp;
+  &quot;timestep 0.005&quot; &amp;
 elif $n&lt;10000 &amp;
-  "timestep 0.01" &amp;
+  &quot;timestep 0.01&quot; &amp;
 else &amp;
-  "timestep 0.02" &amp;
-  "print 'Max step reached'"
-if "${eng} &gt; ${eng_previous}" then "jump file1" else "jump file2"</pre>
+  &quot;timestep 0.02&quot; &amp;
+  &quot;print &#39;Max step reached&#39;&quot;
+if &quot;${eng} &gt; ${eng_previous}&quot; then &quot;jump file1&quot; else &quot;jump file2&quot;
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -202,18 +227,19 @@ above.</p>
 <p class="last">If a command itself requires a quoted argument (e.g. a
 <a class="reference internal" href="print.html"><em>print</em></a> command), then double and single quotes can be used
 and nested in the usual manner, as in the examples above and below.
-See <em class="xref std std-ref">Section_commands 2</em> of the manual for
+See <span class="xref std std-ref">Section_commands 2</span> of the manual for
 more details on using quotes in arguments.  Only one of level of
 nesting is allowed, but that should be sufficient for most use cases.</p>
 </div>
 <p>Note that by using the line continuation character &#8220;&amp;&#8221;, the if command
 can be spread across many lines, though it is still a single command:</p>
-<div class="highlight-python"><pre>if "$a &lt; $b" then &amp;
-  "print 'Minimum value = $a'" &amp;
-  "run 1000" &amp;
+<div class="highlight-python"><div class="highlight"><pre>if &quot;$a &lt; $b&quot; then &amp;
+  &quot;print &#39;Minimum value = $a&#39;&quot; &amp;
+  &quot;run 1000&quot; &amp;
 else &amp;
-  'print "Minimum value = $b"' &amp;
-  "minimize 0.001 0.001 1000 10000"</pre>
+  &#39;print &quot;Minimum value = $b&quot;&#39; &amp;
+  &quot;minimize 0.001 0.001 1000 10000&quot;
+</pre></div>
 </div>
 <p>Note that if one of the commands to execute is <a class="reference internal" href="quit.html"><em>quit</em></a> (of an
 invalid LIGGGHTS(R)-PUBLIC command such as &#8220;blah&#8221;), as in the first example above,
@@ -224,20 +250,22 @@ loop variable, so that it can be re-used later in the input script.</p>
 <p>Here is an example of a double loop which uses the if and
 <a class="reference internal" href="jump.html"><em>jump</em></a> commands to break out of the inner loop when a
 condition is met, then continues iterating thru the outer loop.</p>
-<div class="highlight-python"><pre>label            loopa
+<div class="highlight-python"><div class="highlight"><pre>label            loopa
 variable    a loop 5
   label          loopb
   variable  b loop 5
-  print          "A,B = $a,$b"
+  print          &quot;A,B = $a,$b&quot;
   run       10000
-  if     '$b &gt; 2' then "print 'Jumping to another script'" "jump in.script break"
+  if     &#39;$b &gt; 2&#39; then &quot;print &#39;Jumping to another script&#39;&quot; &quot;jump in.script break&quot;
   next           b
   jump           in.script loopb
 label            break
-variable    b delete</pre>
+variable    b delete
+</pre></div>
 </div>
-<div class="highlight-python"><pre>next     a
-jump     in.script loopa</pre>
+<div class="highlight-python"><div class="highlight"><pre>next     a
+jump     in.script loopa
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>The Boolean expressions for the if and elif keywords have a C-like
@@ -249,7 +277,8 @@ clarity, you must enclose the entire expression in quotes.</p>
 </pre></div>
 </div>
 <p>and Boolean operators:</p>
-<div class="highlight-python"><pre>A == B, A != B, A &lt; B, A &lt;= B, A &gt; B, A &gt;= B, A &amp;&amp; B, A || B, !A</pre>
+<div class="highlight-python"><div class="highlight"><pre>A == B, A != B, A &lt; B, A &lt;= B, A &gt; B, A &gt;= B, A &amp;&amp; B, A || B, !A
+</pre></div>
 </div>
 <p>Each A and B is a number or a variable reference like $a or ${abc},
 or another Boolean expression.</p>
@@ -288,6 +317,9 @@ non-zero.  If the result is zero, the expression result is FALSE.</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -317,11 +349,13 @@ non-zero.  If the result is zero, the expression result is FALSE.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>atom_style command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>atom_style command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/atom_style.txt" rel="nofollow"> View page source</a> 
+      <li>atom_style command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/atom_style.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>atom_style command<a class="headerlink" href="#atom-style-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>atom_style style args</pre>
+<div class="highlight-python"><div class="highlight"><pre>atom_style style args
+</pre></div>
 </div>
 <ul class="simple">
 <li>style = <em>bond</em> or <em>charge</em> or         <em>ellipsoid</em> or <em>full</em> or <em>line</em> or      <em>molecular</em> or <em>tri</em> or <em>hybrid</em> or         <em>sphere</em> or <em>granular</em> or <em>bond/gran</em> or         <em>superquadric</em> or <em>convexhull</em> or <em>sph</em></li>
@@ -157,16 +181,17 @@ args = none for any style except <em>body</em> and <em>hybrid</em>
 <em>body</em> args = bstyle bstyle-args
   bstyle = style of body particles
   bstyle-args = additional arguments specific to the bstyle
-                see the <tt class="xref doc docutils literal"><span class="pre">body</span></tt> doc page for details
+                see the <code class="xref doc docutils literal"><span class="pre">body</span></code> doc page for details
 <em>hybrid</em> args = list of one or more sub-styles, each with their args
 </pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>atom_style bond
+<div class="highlight-python"><div class="highlight"><pre>atom_style bond
 atom_style sphere
 atom_style superquadric (not available yet in the PUBLIC version)
-atom_style hybrid sphere bond</pre>
+atom_style hybrid sphere bond
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -192,9 +217,9 @@ coordinates, velocities, atom IDs and types.  See the
 quantities.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="17%" />
-<col width="62%" />
-<col width="22%" />
+<col width="18%" />
+<col width="58%" />
+<col width="23%" />
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><em>bond</em></td>
@@ -234,7 +259,7 @@ quantities.</p>
 <td>granular models</td>
 </tr>
 <tr class="row-even"><td><em>superquadric</em></td>
-<td>semi-axes, roundness/blockiness parameters, mass, angular velocity, quaternion</td>
+<td>semi-axes, blockiness parameters, mass, angular velocity, quaternion</td>
 <td>granular models</td>
 </tr>
 <tr class="row-odd"><td><em>tri</em></td>
@@ -246,9 +271,9 @@ quantities.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">It is possible to add some attributes, such as a
-molecule ID, to atom styles that do not have them via the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> command.  This command also
+molecule ID, to atom styles that do not have them via the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></code> command.  This command also
 allows new custom attributes consisting of extra integer or
-floating-point values to be added to atoms.  See the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> doc page for examples of cases
+floating-point values to be added to atoms.  See the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></code> doc page for examples of cases
 where this is useful and details on how to initialize, access, and
 output the custom values.</p>
 </div>
@@ -267,13 +292,14 @@ the ID of the bonded partner atom and the so-called bond history.
 The bond history is similar to the contact history for granular
 interaction, it stores the internal state of the bond. What exactly
 is stored in this internal state is defined by the granular
-<tt class="xref doc docutils literal"><span class="pre">bond</span> <span class="pre">style</span></tt> used. There are 2 parameters: The number
+<code class="xref doc docutils literal"><span class="pre">bond</span> <span class="pre">style</span></code> used. There are 2 parameters: The number
 of bond types, and the maximum number of bonds that each atom can
 have. For each bond type, the parameters have to be specified via the
-<a class="reference internal" href="bond_coeff.html"><em>bond_coeff</em></a> command (see example <tt class="xref doc docutils literal"><span class="pre">here</span></tt> )
+<a class="reference internal" href="bond_coeff.html"><em>bond_coeff</em></a> command (see example <code class="xref doc docutils literal"><span class="pre">here</span></code> )
 Note that <em>bond/gran</em> is an experimental code which is may not be
 available in your release of LIGGGHTS. An example for the sytnax is given below:</p>
-<div class="highlight-python"><pre>atom_style bond/gran n_bondtypes 1 bonds_per_atom 6</pre>
+<div class="highlight-python"><div class="highlight"><pre>atom_style bond/gran n_bondtypes 1 bonds_per_atom 6
+</pre></div>
 </div>
 <p>For the <em>ellipsoid</em> style, the particles are ellipsoids and each
 stores a flag which indicates whether it is a finite-size ellipsoid or
@@ -311,7 +337,7 @@ The <em>convexhull</em> style is not yet available in the PUBLIC version</p>
 <p>The <em>bond</em>, <em>molecular</em> styles are part of the
 MOLECULAR package.  The <em>line</em> and <em>tri</em> styles are part of the
 ASPHERE package.  They are
-only enabled if LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info.</p>
+only enabled if LIGGGHTS(R)-PUBLIC was built with that package.  See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section for more info.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
@@ -321,6 +347,9 @@ only enabled if LIGGGHTS(R)-PUBLIC was built with that package.  See the <a clas
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -351,11 +380,13 @@ only enabled if LIGGGHTS(R)-PUBLIC was built with that package.  See the <a clas
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -39,7 +39,7 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,8 +81,8 @@ FixParticledistributionDiscrete::FixParticledistributionDiscrete(LAMMPS *lmp, in
 
   if (narg < 7)
     error->fix_error(FLERR,this,"not enough arguments");
-  seed = atoi(arg[3]) + comm->me;
-  random = new RanPark(lmp,seed);
+  random = new RanPark(lmp, arg[3], true);
+  seed = random->getSeed();
   ntemplates = atoi(arg[4]);
   if(ntemplates < 1)
     error->fix_error(FLERR,this,"illegal number of templates");

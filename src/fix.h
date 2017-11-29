@@ -83,6 +83,7 @@ class Fix : protected Pointers {
                                  //      so write_restart must remap to PBC
   int wd_header;                 // # of header values fix writes to data file
   int wd_section;                // # of sections fix writes to data file
+  int dynamic_group_allow;       // 1 if can be used with dynamic group, else 0
   int cudable_comm;              // 1 if fix has CUDA-enabled communication
 
   int rad_mass_vary_flag;        // 1 if particle radius or mass varied by fix 
@@ -151,6 +152,7 @@ class Fix : protected Pointers {
   virtual void setup_pre_neighbor() {}
   virtual void setup_pre_force(int) {}
   virtual void min_setup(int) {}
+  virtual void pre_initial_integrate() {}
   virtual void initial_integrate(int) {}
   virtual void post_integrate() {}
   virtual void pre_exchange() {}
@@ -262,6 +264,9 @@ class Fix : protected Pointers {
   bool can_create_mesh()
   { return can_create_mesh_; }
 
+  virtual class IRegionNeighborFieldList* getFieldList() const
+  { return NULL; }
+
  protected:
   int evflag;
   int vflag_global,vflag_atom;
@@ -317,6 +322,7 @@ typedef void (Fix::*FixMethodRESPA2)(int,int);
 typedef void (Fix::*FixMethodRESPA3)(int,int,int);
 
 namespace FixConst {
+  // PRE_INITIAL_INTEGRATE added at end of list
   static const int INITIAL_INTEGRATE =       1<<0;
   static const int POST_INTEGRATE =          1<<1;
   static const int PRE_EXCHANGE =            1<<2;
@@ -340,6 +346,7 @@ namespace FixConst {
   static const int POST_RUN =                1<<20;
   static const int ITERATE_IMPLICITLY =      1<<21; 
   static const int FIX_CONST_LAST =          1<<22; 
+  static const int PRE_INITIAL_INTEGRATE =   1<<23;
 }
 
 }

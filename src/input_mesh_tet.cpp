@@ -51,7 +51,7 @@
 #include "domain.h"
 #include "comm.h"
 #include "memory.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "input_mesh_tet.h"
 #include "region_mesh_tet.h"
@@ -129,6 +129,9 @@ void InputMeshTet::meshtetfile_vtk(class RegTetMesh *mesh)
 
   bool allPointsRead = false, allCellsRead = false;
   int lastPointLine = 0, lastCellLine = 0;
+
+  if (!domain->box_exist)
+      error->all(FLERR,"Cannot load mesh before simulation box is defined.");
 
   while (1) {
 

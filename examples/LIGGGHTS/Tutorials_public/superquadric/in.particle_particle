@@ -1,0 +1,115 @@
+# to run the script you have to define the variables via '-var' option
+#  - blockiness1
+#  - blockiness2
+#  - angle
+
+echo both
+
+atom_style	superquadric
+
+atom_modify	map array
+
+boundary	f f f
+newton		off
+communicate	single vel yes
+units		si
+
+region		reg block -0.05 0.05 -0.05 0.05 0.0 0.1 units box
+create_box	2 reg
+
+neighbor	0.002 bin
+neigh_modify	delay 0
+
+variable dt equal 1e-5
+variable nStepsRun    equal 1.0/${dt}
+variable writeOutEvery equal 0.005/${dt}
+variable thermofreq   equal 0.01/${dt}
+
+variable cf_ww equal 1.0
+variable cf_pw equal 0.5
+variable cf_pp equal 0.5
+
+variable cof_ww equal 0.5
+variable cof_pw equal 0.5
+variable cof_pp equal 0.5
+
+variable corf_ww equal 0.
+variable corf_pw equal 0.05
+variable corf_pp equal 0.05
+
+#variable coefficientRollingViscousDamping_ww equal 0.0
+#variable coefficientRollingViscousDamping_pw equal 0.0
+#variable coefficientRollingViscousDamping_pp equal 0.0
+
+variable Yw equal 1e+7
+variable Yp equal 1e+7
+
+#Material properties required for new pair styles
+fix 		m1 all property/global youngsModulus peratomtype ${Yw} ${Yp}
+fix 		m2 all property/global poissonsRatio peratomtype 0.3 0.3
+fix 		m3 all property/global coefficientRestitution peratomtypepair 2 ${cf_ww} ${cf_pw} ${cf_pw} ${cf_pp}
+fix         m4 all property/global coefficientFriction peratomtypepair 2 ${cof_ww} ${cof_pw} ${cof_pw} ${cof_pp}
+fix         m5 all property/global coefficientRollingFriction peratomtypepair 2 ${corf_ww} ${corf_pw} ${corf_pw} ${corf_pp}
+fix         m6 all property/global characteristicVelocity scalar 1.0
+fix         m7 all property/global coefficientRollingViscousDamping peratomtypepair 2 0.0 0.0 0.0 0.0
+
+
+#New pair style
+pair_style gran model hertz tangential history rolling_friction epsd2 surface superquadric #Hertzian without cohesion
+pair_coeff	* *
+timestep ${dt}
+
+variable totaltime equal step*${dt}
+
+#fix		cad all mesh/surface/stress file meshes/simple_chute.stl type 1 wear finnie
+#fix		inface all mesh/surface file meshes/insertion_face.stl type 1
+#fix granwalls all wall/gran model hertz tangential history surface superquadric mesh n_meshes 1 meshes cad
+
+fix xwalls1 all wall/gran model hertz tangential history rolling_friction epsd2 surface superquadric primitive type 1 xplane -0.05
+fix xwalls2 all wall/gran model hertz tangential history rolling_friction epsd2 surface superquadric primitive type 1 xplane 0.05
+fix ywalls1 all wall/gran model hertz tangential history rolling_friction epsd2 surface superquadric primitive type 1 yplane -0.05
+fix ywalls2 all wall/gran model hertz tangential history rolling_friction epsd2 surface superquadric primitive type 1 yplane 0.05
+fix zwalls1 all wall/gran model hertz tangential history rolling_friction epsd2 surface superquadric primitive type 1 zplane 0.0
+fix zwalls2 all wall/gran model hertz tangential history rolling_friction epsd2 surface superquadric primitive type 1 zplane 0.1
+
+
+create_atoms 1 single 0.0 0.0 0.01
+set atom 1 type 2 shape 0.002 0.002 0.004 blockiness ${blockiness1} ${blockiness2} density 2500 vz 0.1 quat 1 0 0 ${angle} #omegaz 10
+
+create_atoms 1 single 0.0 0.0 0.09
+set atom 2 type 2 shape 0.002 0.002 0.004 blockiness ${blockiness1} ${blockiness2} density 2500 vz -0.1 quat 1 0 0 -${angle} #omegaz 10
+
+group		nve_group region reg
+
+#apply nve integration to all particles that are inserted as single particles
+fix		integr all nve/superquadric integration_scheme 1
+
+variable time equal step*${dt}
+
+#output settings, include total thermal energy
+
+compute		rke all erotate/superquadric
+compute		kin_e all ke
+#variable rot_en equal c_rke
+#variable kin_en equal c_kin_e
+
+variable vel atom sqrt(vx*vx+vy*vy+vz*vz)
+compute vmax all reduce max v_vel
+variable vmax equal c_vmax
+
+thermo_style	custom step atoms c_rke c_kin_e c_vmax cpu time
+thermo		${thermofreq}
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+#insert the first particles so that dump is not empty
+
+#fix write_m1 all print ${writeOutEvery} "${time} ${rot_en}" file rotational_energy_.txt screen no
+#fix write_m2 all print ${writeOutEvery} "${time} ${kin_en}" file kinetic_energy_.txt screen no
+
+run		1
+shell mkdir post
+dump		dmp all custom/vtk ${writeOutEvery} post/dump*.superq.vtk type mass x y z id vx vy vz fx fy fz omegax omegay omegaz radius shapex shapey shapez quat1 quat2 quat3 quat4 blockiness1 blockiness2 tqx tqy tqz angmomx angmomy angmomz
+#dump 		dumpstress all mesh/gran/VTK ${writeOutEvery} post/dump*.vtk id
+
+run		${nStepsRun} upto

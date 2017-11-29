@@ -38,10 +38,14 @@
     Richard Berger (JKU Linz)
     Christoph Kloss (DCS Computing GmbH)
     Alexander Podlozhnyuk (DCS Computing GmbH)
+    Josef Kerbl (DCS Computing GmbH)
 
     Copyright 2014-2015 JKU Linz
     Copyright 2015-     DCS Computing GmbH
 ------------------------------------------------------------------------- */
+
+// include last to ensure correct macros
+#include "domain_definitions.h"
 
 static const double SMALL_REGION_NEIGHBOR_LIST = 1.0e-6;
 static const double BIG_REGION_NEIGHBOR_LIST = 1.0e20;
@@ -95,7 +99,7 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap(double * x, double radius) cons
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
 template<bool INTERPOLATE>
-bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape, double *roundness) const
+bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double radius, double *quaternion, double *shape, double *blockiness) const
 {
   int ibin = coord2bin(x);
 
@@ -108,7 +112,7 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double
     }
     const std::vector<Particle<INTERPOLATE> > & plist = bins[ibin+offset].particles;
 
-    Superquadric particle1(x, quaternion, shape, roundness);
+    Superquadric particle1(x, quaternion, shape, blockiness);
     for(typename std::vector<Particle<INTERPOLATE> >::const_iterator pit = plist.begin(); pit != plist.end(); ++pit) {
       const Particle<INTERPOLATE> & p = *pit;
       double del[3];
@@ -116,12 +120,12 @@ bool RegionNeighborList<INTERPOLATE>::hasOverlap_superquadric(double * x, double
       const double rsq = vectorMag3DSquared(del);
       const double radsum = radius + p.radius;
       if(check_obb_flag) {
-        double x_copy[3], quaternion_copy[4], shape_copy[3], roundness_copy[2];
+        double x_copy[3], quaternion_copy[4], shape_copy[3], blockiness_copy[2];
         vectorCopy3D(p.x, x_copy);
         vectorCopy4D(p.quaternion, quaternion_copy);
         vectorCopy3D(p.shape, shape_copy);
-        vectorCopy2D(p.roundness, roundness_copy);
-        Superquadric particle2(x_copy, quaternion_copy, shape_copy, roundness_copy);
+        vectorCopy2D(p.blockiness, blockiness_copy);
+        Superquadric particle2(x_copy, quaternion_copy, shape_copy, blockiness_copy);
         double contact_point[3];
 
         if (rsq <= radsum*radsum and (MathExtraLiggghtsNonspherical::capsules_intersect(&particle1, &particle2, contact_point) and
@@ -204,7 +208,7 @@ void RegionNeighborList<INTERPOLATE>::insert(double * x, double radius,int index
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
 template<bool INTERPOLATE>
-void RegionNeighborList<INTERPOLATE>::insert_superquadric(double * x, double radius, double *quaternion, double *shape, double *roundness, int index) {
+void RegionNeighborList<INTERPOLATE>::insert_superquadric(double * x, double radius, double *quaternion, double *shape, double *blockiness, int index) {
   int quadrant;
   double wx,wy,wz;
   int ibin = coord2bin(x,quadrant,wx,wy,wz);
@@ -214,7 +218,7 @@ void RegionNeighborList<INTERPOLATE>::insert_superquadric(double * x, double rad
       error->one(FLERR,"assertion failed");
   }
 
-  bins[ibin].particles.push_back(Particle<INTERPOLATE>(index,x,radius,quaternion, shape, roundness, ibin,quadrant,wx,wy,wz));
+  bins[ibin].particles.push_back(Particle<INTERPOLATE>(index,x,radius,quaternion, shape, blockiness, ibin,quadrant,wx,wy,wz));
   ++ncount;
 }
 #endif
@@ -410,12 +414,20 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
 
   bb.getBoxBounds(bboxlo, bboxhi);
 
+  // direct comparison of doubles to detect INF
+  if ( bboxlo[0] == -BIG || bboxlo[1] == -BIG || bboxlo[2] == -BIG ||
+       bboxhi[0] == BIG || bboxhi[1] == BIG || bboxhi[2] == BIG )
+  {
+      error->one(FLERR,"'INF' not allowed for definiton of region used for RegionNeighborList.\n"
+                       "You may want to use 'EDGE' instead.");
+  }
+
   // testing code
   double binsize_optimal = 4*maxrad;
   double binsizeinv = 1.0/binsize_optimal;
 
   // test for too many global bins in any dimension due to huge global domain or small maxrad
-  const int max_small_int = std::numeric_limits<int>::max();
+  const int max_bins = 8000000;
   // we may repeat this calculation in case of failsafe
   bool repeat = false;
   bigint bbin = -1; // final number of bins
@@ -493,7 +505,7 @@ bool RegionNeighborList<INTERPOLATE>::setBoundingBox(BoundingBox & bb, double ma
     // final check of number of bins
     bbin = ((bigint) mbinx) * ((bigint) mbiny) * ((bigint) mbinz);
 
-    if (bbin > max_small_int) { // too many bins
+    if (bbin > max_bins) { // too many bins
       // check for failsafe mode
       // check for repeat - ensure that we run the loop only once!
       if(failsafe && !repeat)

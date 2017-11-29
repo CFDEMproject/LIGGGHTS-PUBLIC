@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute pe/atom command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute pe/atom command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_pe_atom.txt" rel="nofollow"> View page source</a> 
+      <li>compute pe/atom command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_pe_atom.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute pe/atom command<a class="headerlink" href="#compute-pe-atom-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID pe/atom general_keyword general_values keyword ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID pe/atom general_keyword general_values keyword ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -159,9 +183,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all pe/atom
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all pe/atom
 compute 1 all pe/atom pair
-compute 1 all pe/atom pair bond</pre>
+compute 1 all pe/atom pair bond
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -181,32 +206,35 @@ other atoms in the simulation, not just with other atoms in the group.</p>
 atoms in a dihedral or 3 atoms in a Tersoff 3-body interaction), that
 energy is assigned in equal portions to each atom in the set.
 E.g. 1/4 of the dihedral energy to each of the 4 atoms.</p>
-<p>The <tt class="xref doc docutils literal"><span class="pre">dihedral_style</span> <span class="pre">charmm</span></tt> style calculates
+<p>The <code class="xref doc docutils literal"><span class="pre">dihedral_style</span> <span class="pre">charmm</span></code> style calculates
 pairwise interactions between 1-4 atoms.  The energy contribution of
 these terms is included in the pair energy, not the dihedral energy.</p>
 <p>The KSpace contribution is calculated using the method in
-<a class="reference internal" href="compute_stress_atom.html#heyes"><em>(Heyes)</em></a> for the Ewald method and a related method for PPPM,
-as specified by the <tt class="xref doc docutils literal"><span class="pre">kspace_style</span> <span class="pre">pppm</span></tt> command.
+<a class="reference internal" href="compute_stress_atom.html#heyes"><span>(Heyes)</span></a> for the Ewald method and a related method for PPPM,
+as specified by the <code class="xref doc docutils literal"><span class="pre">kspace_style</span> <span class="pre">pppm</span></code> command.
 For PPPM, the calcluation requires 1 extra FFT each timestep that
 per-atom energy is calculated.  Thie <a class="reference external" href="PDF/kspace.pdf">document</a>
 describes how the long-range per-atom energy calculation is performed.</p>
 <p>As an example of per-atom potential energy compared to total potential
 energy, these lines in an input script should yield the same result
 in the last 2 columns of thermo output:</p>
-<div class="highlight-python"><pre>compute              peratom all pe/atom
+<div class="highlight-python"><div class="highlight"><pre>compute              peratom all pe/atom
 compute              pe all reduce sum c_peratom
-thermo_style custom step temp etotal press pe c_pe</pre>
+thermo_style custom step temp etotal press pe c_pe
+</pre></div>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">The per-atom energy does not any Lennard-Jones tail
-corrections invoked by the <tt class="xref doc docutils literal"><span class="pre">pair_modify</span> <span class="pre">tail</span> <span class="pre">yes</span></tt>
+corrections invoked by the <code class="xref doc docutils literal"><span class="pre">pair_modify</span> <span class="pre">tail</span> <span class="pre">yes</span></code>
 command, since those are global contributions to the system energy.</p>
 </div>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This compute calculates a per-atom vector, which can be accessed by
 any command that uses per-atom values from a compute as input.  See
-<a class="reference internal" href="Section_howto.html#howto-8"><em>Section_howto 15</em></a> for an overview of
+<span class="xref std std-ref">Section_howto 15</span> for an overview of
 LIGGGHTS(R)-PUBLIC output options.</p>
 <p>The per-atom vector values will be in energy <a class="reference internal" href="units.html"><em>units</em></a>.</p>
 </div>
@@ -225,6 +253,9 @@ energy due to the overlap of granular particles.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -255,11 +286,13 @@ energy due to the overlap of granular particles.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

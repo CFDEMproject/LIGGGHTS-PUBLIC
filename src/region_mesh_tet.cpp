@@ -41,6 +41,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <cmath>
+#include <algorithm>
 #include "region_mesh_tet.h"
 #include "lammps.h"
 #include "bounding_box.h"
@@ -50,12 +52,13 @@
 #include "domain.h"
 #include "vector_liggghts.h"
 #include "mpi_liggghts.h"
-#include <math.h>
 #include "math_extra_liggghts.h"
 #include "input_mesh_tet.h"
 
+// include last to ensure correct macros
+#include "domain_definitions.h"
+
 #define DELTA_TET 1000
-#define BIG 1.e20
 
 using namespace LAMMPS_NS;
 
@@ -359,7 +362,7 @@ void RegTetMesh::build_neighs()
         for(int j = 0; j < 4; j++)
         {
             vectorSubtract3D(center[i],node[i][j],vec);
-            rb = MathExtraLiggghts::max(rb,vectorMag3D(vec));
+            rb = std::max(rb,vectorMag3D(vec));
         }
         rbound[i] = rb;
         if(rb > rbound_max)

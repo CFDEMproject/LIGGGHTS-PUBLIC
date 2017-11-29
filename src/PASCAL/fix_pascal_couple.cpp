@@ -173,6 +173,7 @@ FixParScaleCouple::FixParScaleCouple(LAMMPS *lmp, int narg, char **arg) :
 FixParScaleCouple::~FixParScaleCouple()
 {
   delete pasc_;
+  delete dc_;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -348,7 +349,6 @@ void FixParScaleCouple::end_of_step()
              torque[currAtom][0],torque[currAtom][1],torque[currAtom][2],
              fcm[currAtom][0],fcm[currAtom][1],fcm[currAtom][2]);
 #endif
-
 }
 
 //////////////////////////////////////////////////////////////

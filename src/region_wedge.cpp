@@ -44,16 +44,17 @@
 #include "region_wedge.h"
 #include "error.h"
 #include "domain.h"
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "math_extra.h"
 #include "update.h"
 #include "vector_liggghts.h"
 
-using namespace LAMMPS_NS;
+// include last to ensure correct macros
+#include "domain_definitions.h"
 
-#define BIG 1.0e20
+using namespace LAMMPS_NS;
 
 /* -----------------------------------------------------------------------------
  OVERVIEW:

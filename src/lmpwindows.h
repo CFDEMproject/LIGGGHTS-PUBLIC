@@ -3,7 +3,7 @@
 #include "erf.h"
 #endif
 #include "direct.h"
-#include <math.h>
+#include <cmath>
 // LAMMPS uses usleep with 100 ms arguments, no microsecond precision needed
 #if !defined(__MINGW32__) && !defined(_WINDOWS)
 #include "sleep.h"

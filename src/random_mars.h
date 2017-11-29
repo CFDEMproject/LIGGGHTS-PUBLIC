@@ -52,13 +52,13 @@ namespace LAMMPS_NS {
 
 class RanMars : public Random {
  public:
-  RanMars(class LAMMPS *, int);
+  RanMars(LAMMPS *lmp, const char * seed_char, bool proc_shift = false, int multiplier = 1);
   ~RanMars();
   double uniform();
   double gaussian();
 
  private:
-  int seed,save;
+  int save;
   double second;
   double *u;
   int i97,j97;

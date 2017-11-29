@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>bond_style command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>bond_style command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/bond_style.txt" rel="nofollow"> View page source</a> 
+      <li>bond_style command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/bond_style.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>bond_style command<a class="headerlink" href="#bond-style-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>bond_style style args</pre>
+<div class="highlight-python"><div class="highlight"><pre>bond_style style args
+</pre></div>
 </div>
 <ul class="simple">
 <li>style = <em>none</em> or <em>hybrid</em> or <em>class2</em> or <em>fene</em> or <em>fene/expand</em> or         <em>harmonic</em> or <em>morse</em> or <em>nonlinear</em> or <em>quartic</em></li>
@@ -159,9 +183,10 @@ args = none for any style except <em>hybrid</em>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>bond_style harmonic
+<div class="highlight-python"><div class="highlight"><pre>bond_style harmonic
 bond_style fene
-bond_style hybrid harmonic fene</pre>
+bond_style hybrid harmonic fene
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -191,7 +216,7 @@ coefficients need to be re-specified.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">When both a bond and pair style is defined, the
-<tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt> command often needs to be used to
+<code class="xref doc docutils literal"><span class="pre">special_bonds</span></code> command often needs to be used to
 turn off (or weight) the pairwise interaction that would otherwise
 exist between 2 bonded atoms.</p>
 </div>
@@ -203,7 +228,7 @@ the style to display the formula it computes and coefficients
 specified by the associated <a class="reference internal" href="bond_coeff.html"><em>bond_coeff</em></a> command.</p>
 <p>Note that there are also additional bond styles submitted by users
 which are included in the LIGGGHTS(R)-PUBLIC distribution.  The list of these with
-links to the individual styles are given in the bond section of <em class="xref std std-ref">this page</em>.</p>
+links to the individual styles are given in the bond section of <span class="xref std std-ref">this page</span>.</p>
 <ul class="simple">
 <li><a class="reference internal" href="bond_none.html"><em>bond_style none</em></a> - turn off bonded interactions</li>
 <li><a class="reference internal" href="bond_hybrid.html"><em>bond_style hybrid</em></a> - define multiple styles of bond interactions</li>
@@ -216,7 +241,7 @@ links to the individual styles are given in the bond section of <em class="xref 
 <p>Bond styles can only be set for atom styles that allow bonds to be
 defined.</p>
 <p>Most bond styles are part of the MOLECULAR package.  They are only
-enabled if LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info on packages.
+enabled if LIGGGHTS(R)-PUBLIC was built with that package.  See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section for more info on packages.
 The doc pages for individual bond potentials tell if it is part of a
 package.</p>
 </div>
@@ -231,6 +256,9 @@ package.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -261,11 +289,13 @@ package.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

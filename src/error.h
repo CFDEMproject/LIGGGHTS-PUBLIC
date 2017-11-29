@@ -67,6 +67,7 @@ class Error : protected Pointers {
 
   void all(const char *, int, const char *);
   void fix_error(const char *, int, class Fix*,const char *); 
+  void fix_error(const char *, int, class Fix*,const char *,const char *); 
   void compute_error(const char *, int, class Compute*,const char *); 
   void cg(const char *, int, const char *); 
   void one(const char *, int, const char *);

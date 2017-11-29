@@ -6,7 +6,7 @@
 
 :line
 
-6. Packages :h3
+7. Packages :h3
 
 This section gives a quick overview of the add-on packages that extend
 LIGGGHTS(R)-PUBLIC functionality.
@@ -26,10 +26,8 @@ Below, the packages currently availabe in LIGGGHTS(R)-PUBLIC are listed.  For
 standard packages, just a one-line description is given:
 
 Package, Description, Author(s), Doc page, Example, Library
-ASPHERE, aspherical particles, -, "Section_howto"_Section_howto.html#howto_14, ellipse, -
 MOLECULE, molecular system force fields, -, -, -, -
 POEMS, coupled rigid body motion, Rudra Mukherjee (JPL), "fix poems"_fix_poems.html, rigid, lib/poems
-RIGID, rigid bodies, -, "fix rigid"_fix_rigid.html, rigid, -
 VORONOI, Voronoi tesselations, Daniel Schwen (LANL), "compute voronoi/atom"_compute_voronoi_atom.html, -, Voro++
 :tb(ea=c)
 

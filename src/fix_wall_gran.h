@@ -228,7 +228,7 @@ class FixWallGran : public Fix, public LIGGGHTS::IContactHistorySetup {
   double **x_, **f_, *radius_, *rmass_, **wallforce_, r0_;
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  double **quat_, **shape_, **roundness_;
+  double **quat_, **shape_, **blockiness_;
 #endif
 
   void set_r0(double _r0)

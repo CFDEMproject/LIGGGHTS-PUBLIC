@@ -6,24 +6,34 @@
 
 :line
 
-8. Modifying & extending LIGGGHTS(R)-PUBLIC :h3
+9. Modifying & extending LIGGGHTS(R)-PUBLIC :h3
 
 This section describes how to customize LIGGGHTS(R)-PUBLIC by modifying
 and extending its source code.
 
-8.1 "Atom styles"_#mod_1
-8.2 "Compute styles"_#mod_2
-8.4 "Dump styles"_#mod_3
-8.5 "Dump custom output options"_#mod_4
-8.6 "Fix styles"_#mod_5 which include integrators, \
+<!-- RST
+
+.. contents:: 
+		:local:
+		:depth: 1
+   
+END_RST -->
+
+<!-- HTML_ONLY -->
+9.1 "Atom styles"_#mod_1
+9.2 "Compute styles"_#mod_2
+9.4 "Dump styles"_#mod_3
+9.5 "Dump custom output options"_#mod_4
+9.6 "Fix styles"_#mod_5 which include integrators, \
      temperature and pressure control, force constraints, \
      boundary conditions, diagnostic output, etc
-8.6 "Input script commands"_#mod_6
-8.7 "Pairwise potentials"_#mod_7
-8.8 "Region styles"_#mod_8
-8.9 "Thermodynamic output options"_#mod_9
-8.10 "Variable options"_#mod_10
-8.11 "Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC"_#mod_11 :all(b)
+9.6 "Input script commands"_#mod_6
+9.7 "Pairwise potentials"_#mod_7
+9.8 "Region styles"_#mod_8
+9.9 "Thermodynamic output options"_#mod_9
+9.10 "Variable options"_#mod_10
+9.11 "Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC"_#mod_11 :all(b)
+<!--END_HTML_ONLY -->
 
 LIGGGHTS(R)-PUBLIC is designed in a modular fashion so as to be easy to modify and
 extend with new functionality.  In fact, about 75% of its source code
@@ -129,7 +139,7 @@ details on this at the bottom of this page. :l,ule
 :line
 :line
 
-8.1 Atom styles :link(mod_1),h4
+9.1 Atom styles :link(mod_1),h4
 
 Classes that define an "atom style"_atom_style.html are derived from
 the AtomVec class and managed by the Atom class.  The atom style
@@ -213,7 +223,7 @@ which store the attributes of individual atoms.
 
 :line
 
-8.2 Compute styles :link(mod_2),h4
+9.2 Compute styles :link(mod_2),h4
 
 Classes that compute scalar and vector quantities like temperature
 and the pressure tensor, as well as classes that compute per-atom
@@ -246,8 +256,8 @@ memory_usage: tally memory usage (optional) :tb(s=:)
 
 :line
 
-8.3 Dump styles :link(mod_3),h4
-8.4 Dump custom output options :link(mod_4),h4
+9.3 Dump styles :link(mod_3),h4
+9.4 Dump custom output options :link(mod_4),h4
 
 Classes that dump per-atom info to files are derived from the Dump
 class.  To dump new quantities or in a new format, a new derived dump
@@ -276,7 +286,7 @@ half-dozen or so locations where code will need to be added.
 
 :line
 
-8.5 Fix styles :link(mod_5),h4
+9.5 Fix styles :link(mod_5),h4
 
 In LIGGGHTS(R)-PUBLIC, a "fix" is any operation that is computed during
 timestepping that alters some property of the system.  Essentially
@@ -377,7 +387,7 @@ quantities and/or to be summed to the potential energy of the system.
 
 :line
 
-8.6 Input script commands :link(mod_6),h4
+9.6 Input script commands :link(mod_6),h4
 
 New commands can be added to LIGGGHTS(R)-PUBLIC input scripts by adding new
 classes that have a "command" method.  For example, the create_atoms,
@@ -397,7 +407,7 @@ needed.
 
 :line
 
-8.7 Pairwise potentials :link(mod_7),h4
+9.7 Pairwise potentials :link(mod_7),h4
 
 Classes that compute pairwise interactions are derived from the Pair
 class.  In LIGGGHTS(R)-PUBLIC, pairwise calculation include manybody potentials
@@ -422,7 +432,7 @@ The inner/middle/outer routines are optional.
 
 :line
 
-8.8 Region styles :link(mod_8),h4
+9.8 Region styles :link(mod_8),h4
 
 Classes that define geometric regions are derived from the Region
 class.  Regions are used elsewhere in LIGGGHTS(R)-PUBLIC to group atoms, delete
@@ -438,7 +448,7 @@ match: determine whether a point is in the region :tb(s=:)
 
 :line
 
-8.9 Thermodynamic output options :link(mod_9),h4
+9.9 Thermodynamic output options :link(mod_9),h4
 
 There is one class that computes and prints thermodynamic information
 to the screen and log file; see the file thermo.cpp.
@@ -467,7 +477,7 @@ by adding a new keyword to the thermo command.
 
 :line
 
-8.10 Variable options :link(mod_10),h4
+9.10 Variable options :link(mod_10),h4
 
 There is one class that computes and stores "variable"_variable.html
 information in LIGGGHTS(R)-PUBLIC; see the file variable.cpp.  The value
@@ -508,7 +518,7 @@ then be accessed by variables) was discussed
 :line
 :line
 
-8.11 Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC :link(mod_11),h4
+9.11 Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC :link(mod_11),h4
 
 We encourage users to submit new features that they add to LIGGGHTS(R)-PUBLIC, especially if
 you think the features will be of interest to other users.  If they

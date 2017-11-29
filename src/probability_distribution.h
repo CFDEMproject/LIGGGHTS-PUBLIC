@@ -42,7 +42,7 @@
 #ifndef LMP_PROBABILITY_DISTRIBUTION_H
 #define LMP_PROBABILITY_DISTRIBUTION_H
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <string.h>
 #include "random_park.h"

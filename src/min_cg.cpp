@@ -45,7 +45,7 @@
 
 #include "lmptype.h"
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include "min_cg.h"
 #include "atom.h"

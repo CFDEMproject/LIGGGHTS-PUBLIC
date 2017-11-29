@@ -58,6 +58,7 @@ class AtomVec : protected Pointers {
   int dihedrals_allow,impropers_allow; // 1 if dihedrals, impropers used
   int mass_type;                       // 1 if per-type masses
   int dipole_type;                     // 1 if per-type dipole moments
+  int forceclearflag;                  // 1 if has forceclear() method
 
   int comm_x_only;                     // 1 if only exchange x in forward comm
   int comm_f_only;                     // 1 if only exchange f in reverse comm
@@ -167,6 +168,8 @@ class AtomVec : protected Pointers {
     ubuf(int64_t arg) : i(arg) {}
     ubuf(int arg) : i(arg) {}
   };
+  void grow_nmax();
+  int grow_nmax_bonus(int);
 };
 
 }

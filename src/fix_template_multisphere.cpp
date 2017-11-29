@@ -44,7 +44,7 @@ Thanks to Chris Stoltz (P&G) for providing
 a Fortran version of the MC integrator
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,12 +75,8 @@ using namespace LAMMPS_NS;
 using namespace LMP_PROBABILITY_NS;
 using namespace FixConst;
 
-#define LARGE 1e8
 #define EPSILON 1.0e-7
 #define TOLERANCE 1.0e-6
-
-#define MAXJACOBI 50
-#define BIG 1.e20
 
 /* ---------------------------------------------------------------------- */
 
@@ -169,28 +165,28 @@ FixTemplateMultisphere::FixTemplateMultisphere(LAMMPS *lmp, int narg, char **arg
             hasargs = true;
         } else if(strcmp(arg[iarg],"tflag") == 0) {
             if (iarg+4 > narg)
-                error->fix_error(FLERR,this,"not enough arguments for 'fflag'");
+                error->fix_error(FLERR,this,"not enough arguments for 'tflag'");
             iarg++;
             if(strcmp(arg[iarg],"on") == 0)
                 tflag_[0] = true;
             else if(strcmp(arg[iarg],"off") == 0)
                 tflag_[0] = false;
             else
-                error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
+                error->fix_error(FLERR,this,"expecting 'on or 'off' after 'tflag'");
             iarg++;
             if(strcmp(arg[iarg],"on") == 0)
                 tflag_[1] = true;
             else if(strcmp(arg[iarg],"off") == 0)
                 tflag_[1] = false;
             else
-                error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
+                error->fix_error(FLERR,this,"expecting 'on or 'off' after 'tflag'");
             iarg++;
             if(strcmp(arg[iarg],"on") == 0)
                 tflag_[2] = true;
             else if(strcmp(arg[iarg],"off") == 0)
                 tflag_[2] = false;
             else
-                error->fix_error(FLERR,this,"expecting 'on or 'off' after 'fflag'");
+                error->fix_error(FLERR,this,"expecting 'on or 'off' after 'tflag'");
             iarg++;
             hasargs = true;
         } else if(strcmp(arg[iarg],"inertia_tensor") == 0) {
@@ -537,7 +533,7 @@ FixTemplateMultisphere::~FixTemplateMultisphere()
 void FixTemplateMultisphere::randomize_single()
 {
   
-  pti->nspheres = nspheres;
+  pti->nparticles = nspheres;
   pti->density_ins = expectancy(pdf_density);;
   pti->volume_ins = volume_expect;
   pti->mass_ins = mass_expect;
@@ -612,7 +608,7 @@ void FixTemplateMultisphere::randomize_ptilist(int n_random,int distribution_gro
           
           ParticleToInsertMultisphere *pti_m = static_cast<ParticleToInsertMultisphere*>(pti_list[i]);
 
-          pti_m->nspheres = nspheres;
+          pti_m->nparticles = nspheres;
           pti_m->density_ins = expectancy(pdf_density);
           pti_m->type_ms = type_;
           pti_m->volume_ins = volume_expect;

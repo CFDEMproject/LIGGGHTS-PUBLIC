@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>replicate command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>replicate command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/replicate.txt" rel="nofollow"> View page source</a> 
+      <li>replicate command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/replicate.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,24 +170,28 @@
 <span id="index-0"></span><h1>replicate command<a class="headerlink" href="#replicate-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>replicate nx ny nz offset ox oy oz shift sx sy sz</pre>
+<div class="highlight-python"><div class="highlight"><pre>replicate nx ny nz offset ox oy oz shift sx sy sz
+</pre></div>
 </div>
 <ul class="simple">
 <li>nx,ny,nz = replication factors (integers) in each dimension</li>
 <li><em>offset</em> ox oy oz: required keyword with values</li>
 </ul>
-<div class="highlight-python"><pre>ox, oy, oz = offset of each replication in box units</pre>
+<div class="highlight-python"><div class="highlight"><pre>ox, oy, oz = offset of each replication in box units
+</pre></div>
 </div>
 <ul class="simple">
 <li><em>shift</em> sx sy sz: optional keyword with values</li>
 </ul>
-<div class="highlight-python"><pre>sx, sy, sz = shift all particles by these values in box units</pre>
+<div class="highlight-python"><div class="highlight"><pre>sx, sy, sz = shift all particles by these values in box units
+</pre></div>
 </div>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>replicate 2 3 2 offset 1.0 1.0 2.0
-replicate 1 2 2 offset 2.0 2.0 2.0 shift -0.1 0.2 0.0</pre>
+<div class="highlight-python"><div class="highlight"><pre>replicate 2 3 2 offset 1.0 1.0 2.0
+replicate 1 2 2 offset 2.0 2.0 2.0 shift -0.1 0.2 0.0
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -213,6 +240,9 @@ this scenario.</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -242,11 +272,13 @@ this scenario.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

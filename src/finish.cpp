@@ -44,7 +44,7 @@
 ------------------------------------------------------------------------- */
 
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include <stdio.h>
 #include <time.h>

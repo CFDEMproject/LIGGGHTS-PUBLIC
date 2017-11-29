@@ -445,7 +445,8 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
   int i,n,paren_count;
   char immediate[256];
   char *var,*value,*beyond;
-  char quote = '\0';
+  bool in_double_quote = false;
+  bool in_single_quote = false;
   char *ptr = str;
 
   n = strlen(str) + 1;
@@ -455,7 +456,7 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
 
   while (*ptr) {
     // variable substitution
-    if (*ptr == '$' && !quote) {
+    if (*ptr == '$' && !in_double_quote && !in_single_quote) {
 
       // value = ptr to expanded variable
       // variable name between curly braces, e.g. ${a}
@@ -520,8 +521,10 @@ void Input::substitute(char *&str, char *&str2, int &max, int &max2, int flag)
       }
       continue;
     }
-    if (*ptr == quote) quote = '\0';
-    else if (*ptr == '"' || *ptr == '\'') quote = *ptr;
+    if (*ptr == '"')
+        in_double_quote = !in_double_quote;
+    else if (*ptr == '\'')
+        in_single_quote = !in_single_quote;
     // copy current character into str2
 
     *ptr2++ = *ptr++;
@@ -1006,53 +1009,100 @@ void Input::partition()
 
 void Input::print()
 {
-  if (narg < 1) error->all(FLERR,"Illegal print command");
+    if (narg < 1)
+        error->all(FLERR,"Illegal print command");
 
-  // copy 1st arg back into line (copy is being used)
-  // check maxline since arg[0] could have been exanded by variables
-  // substitute for $ variables (no printing) and print arg
+    // copy 1st arg back into line (copy is being used)
+    // check maxline since arg[0] could have been exanded by variables
+    // substitute for $ variables (no printing) and print arg
 
-  int n = strlen(arg[0]) + 1;
-  if (n > maxline) reallocate(line,maxline,n);
-  strcpy(line,arg[0]);
-  substitute(line,work,maxline,maxwork,0);
+    int n = strlen(arg[0]) + 1;
+    if (n > maxline)
+        reallocate(line,maxline,n);
+    strcpy(line,arg[0]);
+    substitute(line,work,maxline,maxwork,0);
 
-  // parse optional args
+    // parse optional args
 
-  FILE *fp = NULL;
-  int screenflag = 1;
+    FILE *fp = NULL;
+    int screenflag = 1;
+    bool newline = true;
 
-  int iarg = 1;
-  while (iarg < narg) {
-    if (strcmp(arg[iarg],"file") == 0 || strcmp(arg[iarg],"append") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal print command");
-  if (me == 0) {
-        if (strcmp(arg[iarg],"file") == 0) fp = fopen(arg[iarg+1],"w");
-        else fp = fopen(arg[iarg+1],"a");
-        if (fp == NULL) {
-          char str[512];
-          sprintf(str,"Cannot open print file %s",arg[iarg+1]);
-          error->one(FLERR,str);
+    int iarg = 1;
+    while (iarg < narg)
+    {
+        if (strcmp(arg[iarg],"file") == 0 || strcmp(arg[iarg],"append") == 0)
+        {
+            if (iarg+2 > narg)
+                error->all(FLERR,"Illegal print command");
+                if (me == 0)
+                {
+                    if (strcmp(arg[iarg],"file") == 0)
+                        fp = fopen(arg[iarg+1],"w");
+                    else
+                        fp = fopen(arg[iarg+1],"a");
+                    if (fp == NULL)
+                    {
+                        char str[512];
+                        sprintf(str,"Cannot open print file %s",arg[iarg+1]);
+                        error->one(FLERR,str);
+                    }
+                }
+                iarg += 2;
         }
-      }
-      iarg += 2;
-    } else if (strcmp(arg[iarg],"screen") == 0) {
-      if (iarg+2 > narg) error->all(FLERR,"Illegal print command");
-      if (strcmp(arg[iarg+1],"yes") == 0) screenflag = 1;
-      else if (strcmp(arg[iarg+1],"no") == 0) screenflag = 0;
-      else error->all(FLERR,"Illegal print command");
-      iarg += 2;
-    } else error->all(FLERR,"Illegal print command");
-  }
-
-  if (me == 0) {
-    if (screenflag && screen) fprintf(screen,"%s\n",line);
-    if (screenflag && logfile) fprintf(logfile,"%s\n",line);
-    if (fp) {
-      fprintf(fp,"%s\n",line);
-      fclose(fp);
+        else if (strcmp(arg[iarg],"screen") == 0)
+        {
+            if (iarg+2 > narg)
+                error->all(FLERR,"Illegal print command");
+            if (strcmp(arg[iarg+1],"yes") == 0)
+                screenflag = 1;
+            else if (strcmp(arg[iarg+1],"no") == 0)
+                screenflag = 0;
+            else
+                error->all(FLERR,"Illegal print command");
+            iarg += 2;
+        }
+        else if (strcmp(arg[iarg], "newline") == 0)
+        {
+            if (iarg+2 > narg)
+                error->all(FLERR,"Illegal print command");
+            if (strcmp(arg[iarg+1],"yes") == 0)
+                newline = true;
+            else if (strcmp(arg[iarg+1],"no") == 0)
+                newline = false;
+            else
+                error->all(FLERR,"Illegal print command");
+            iarg += 2;
+        }
+        else
+            error->all(FLERR,"Illegal print command");
     }
-  }
+
+    if (me == 0)
+    {
+        if (screenflag && screen)
+        {
+            if (newline)
+                fprintf(screen, "%s\n", line);
+            else
+                fprintf(screen, "%s", line);
+        }
+        if (screenflag && logfile)
+        {
+            if (newline)
+                fprintf(logfile, "%s\n", line);
+            else
+                fprintf(logfile, "%s", line);
+        }
+        if (fp)
+        {
+            if (newline)
+                fprintf(fp, "%s\n", line);
+            else
+                fprintf(fp, "%s", line);
+            fclose(fp);
+        }
+    }
 }
 
 /* ---------------------------------------------------------------------- */

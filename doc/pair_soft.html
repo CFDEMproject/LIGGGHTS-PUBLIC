@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>pair_style soft command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>pair_style soft command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/pair_soft.txt" rel="nofollow"> View page source</a> 
+      <li>pair_style soft command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/pair_soft.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>pair_style soft command<a class="headerlink" href="#pair-style-soft-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style soft cutoff</pre>
+<div class="highlight-python"><div class="highlight"><pre>pair_style soft cutoff
+</pre></div>
 </div>
 <ul class="simple">
 <li>cutoff = global cutoff for soft interactions (distance units)</li>
@@ -155,14 +179,16 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>pair_style soft 2.5
+<div class="highlight-python"><div class="highlight"><pre>pair_style soft 2.5
 pair_coeff * * 10.0
-pair_coeff 1 1 10.0 3.0</pre>
+pair_coeff 1 1 10.0 3.0
+</pre></div>
 </div>
-<div class="highlight-python"><pre>pair_style soft 2.5
+<div class="highlight-python"><div class="highlight"><pre>pair_style soft 2.5
 pair_coeff * * 0.0
 variable prefactor equal ramp(0,30)
-fix 1 all adapt 1 pair soft a * * v_prefactor</pre>
+fix 1 all adapt 1 pair soft a * * v_prefactor
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -203,8 +229,9 @@ pair_coeff settings for A must still be specified, but will be
 overridden.  For example these commands will vary the prefactor A for
 all pairwise interactions from 0.0 at the beginning to 30.0 at the end
 of a run:</p>
-<div class="highlight-python"><pre>variable prefactor equal ramp(0,30)
-fix 1 all adapt 1 pair soft a * * v_prefactor</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable prefactor equal ramp(0,30)
+fix 1 all adapt 1 pair soft a * * v_prefactor
+</pre></div>
 </div>
 <p>Note that a formula defined by an <a class="reference internal" href="variable.html"><em>equal-style variable</em></a>
 can use the current timestep, elapsed time in the current run, elapsed
@@ -217,9 +244,9 @@ distance for this pair style can be mixed.  A is always mixed via a
 <em>geometric</em> rule.  The cutoff is mixed according to the pair_modify
 mix value.  The default mix value is <em>geometric</em>.  See the
 &#8220;pair_modify&#8221; command for details.</p>
-<p>This pair style does not support the <tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt>
+<p>This pair style does not support the <code class="xref doc docutils literal"><span class="pre">pair_modify</span></code>
 shift option, since the pair interaction goes to 0.0 at the cutoff.</p>
-<p>The <tt class="xref doc docutils literal"><span class="pre">pair_modify</span></tt> table and tail options are not
+<p>The <code class="xref doc docutils literal"><span class="pre">pair_modify</span></code> table and tail options are not
 relevant for this pair style.</p>
 <p>This pair style writes its information to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>, so pair_style and pair_coeff commands do not need
 to be specified in an input script that reads a restart file.</p>
@@ -241,6 +268,9 @@ to be specified in an input script that reads a restart file.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -271,11 +301,13 @@ to be specified in an input script that reads a restart file.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

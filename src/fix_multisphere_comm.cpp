@@ -333,6 +333,7 @@ int FixMultisphere::pack_reverse_comm_x_v_omega(int n, int first, double *buf)
     int i,m,last,tag,flag;
 
     double **x = atom->x;
+    double **quaternion = atom->quaternion;
     double **v = atom->v;
     double **omega = atom->omega;
     double *corner_ghost = fix_corner_ghost_->vector_atom;
@@ -352,8 +353,11 @@ int FixMultisphere::pack_reverse_comm_x_v_omega(int n, int first, double *buf)
         vectorToBuf3D(x[i],buf,m);
         vectorToBuf3D(v[i],buf,m);
         vectorToBuf3D(omega[i],buf,m);
+        if(quaternion)
+            vectorToBuf4D(quaternion[i],buf,m);
+
     }
-    return 10;
+    return 10+(quaternion?4:0);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -490,6 +494,7 @@ void FixMultisphere::unpack_reverse_comm_x_v_omega(int n, int *list, double *buf
 
     int nlocal = atom->nlocal;
     double **x = atom->x;
+    double **quaternion = atom->quaternion;
     double **v = atom->v;
     double **omega = atom->omega;
     double *corner_ghost = fix_corner_ghost_->vector_atom;
@@ -503,11 +508,13 @@ void FixMultisphere::unpack_reverse_comm_x_v_omega(int n, int *list, double *buf
             bufToVector3D(x[j],buf,m);
             bufToVector3D(v[j],buf,m);
             bufToVector3D(omega[j],buf,m);
+            if(quaternion)
+                bufToVector4D(quaternion[j],buf,m);
             
             if(j >= nlocal)
                 corner_ghost[j] = 1.;
         }
-        else m += 9;
+        else m += (9+(quaternion?4:0));
     }
 }
 

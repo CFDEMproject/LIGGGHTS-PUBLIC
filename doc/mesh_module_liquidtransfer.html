@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>mesh module liquidtransfer &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>mesh module liquidtransfer</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/mesh_module_liquidtransfer.txt" rel="nofollow"> View page source</a> 
+      <li>mesh module liquidtransfer</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/mesh_module_liquidtransfer.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <h1>mesh module liquidtransfer<a class="headerlink" href="#mesh-module-liquidtransfer" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>liquidtransfer liquidtransfer_keywords liquidtransfer_values</pre>
+<div class="highlight-python"><div class="highlight"><pre>liquidtransfer liquidtransfer_keywords liquidtransfer_values
+</pre></div>
 </div>
 <ul class="simple">
 <li>two liquidtransfer_keyword/value pairs need to be appended</li>
@@ -167,7 +191,7 @@
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>This module allows the use of a liquid bridge cohesion model that exchanges liquid with the wall.
-Additionally, it also allows the use of the <tt class="xref doc docutils literal"><span class="pre">fix_addliquid_wall</span></tt>
+Additionally, it also allows the use of the <code class="xref doc docutils literal"><span class="pre">fix_addliquid_wall</span></code>
 which acts as an external liquid source for a certain part of the mesh.</p>
 <p>The initial liquid content is given by the <em>initial_liquid_content</em> parameter and is then
 evolved when bridges break. The <em>wall_thickness</em> parameter asigns a virtual thickness to
@@ -191,9 +215,9 @@ ensured by the user.</p>
 able to continue correctly after restart.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a>
 options are relevant to this module.</p>
 <p>This mesh module stores per-mesh-element properties (&#8220;liquid&#8221;: liquid vol%)
-which can be accessed via <tt class="xref doc docutils literal"><span class="pre">dump</span> <span class="pre">mesh/vtk</span></tt></p>
+which can be accessed via <code class="xref doc docutils literal"><span class="pre">dump</span> <span class="pre">mesh/vtk</span></code></p>
 <p>No parameter of this mesh module can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This mesh module is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This mesh module is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -203,7 +227,7 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>
 <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>
-<tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh/surface/heattransfer</span></tt></p>
+<code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh/surface/heattransfer</span></code></p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
@@ -212,6 +236,9 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -242,11 +269,13 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

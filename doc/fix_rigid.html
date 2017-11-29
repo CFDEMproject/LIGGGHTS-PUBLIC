@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix rigid command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix rigid command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_rigid.txt" rel="nofollow"> View page source</a> 
+      <li>fix rigid command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_rigid.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -162,7 +185,8 @@
 <h1>fix rigid/small command<a class="headerlink" href="#fix-rigid-small-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID style bodystyle args keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID style bodystyle args keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -215,8 +239,9 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 clump rigid single
-fix 2 fluid rigid group 3 clump1 clump2 clump3 torque * off off off</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix 1 clump rigid single
+fix 2 fluid rigid group 3 clump1 clump2 clump3 torque * off off off
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -230,12 +255,12 @@ single entity.</p>
 <p>Examples of large rigid bodies are a large colloidal particle, or
 portions of a large biomolecule such as a protein.</p>
 <p>Example of small rigid bodies are patchy nanoparticles, such as those
-modeled in <a class="reference internal" href="#zhang"><em>this paper</em></a> by Sharon Glotzer&#8217;s group, clumps of
+modeled in <a class="reference internal" href="#zhang"><span>this paper</span></a> by Sharon Glotzer&#8217;s group, clumps of
 granular particles, lipid molecules consiting of one or more point
 dipoles connected to other spheroids or ellipsoids, irregular
 particles built from line segments (2d) or triangles (3d), and
 coarse-grain models of nano or colloidal particles consisting of a
-small number of constituent particles.  Note that the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">shake</span></tt> command can also be used to rigidify small
+small number of constituent particles.  Note that the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">shake</span></code> command can also be used to rigidify small
 molecules of 2, 3, or 4 atoms, e.g. water molecules.  That fix treats
 the constituent atoms as point masses.</p>
 <p>These fixes also update the positions and velocities of the atoms in
@@ -390,10 +415,11 @@ attributes overridden.  The file can contain initial blank lines or
 comment lines starting with &#8220;#&#8221; which are ignored.  The first
 non-blank, non-comment line should list N = the number of lines to
 follow.  The N successive lines contain the following information:</p>
-<div class="highlight-python"><pre>ID1 masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz
+<div class="highlight-python"><div class="highlight"><pre>ID1 masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz
 ID2 masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz
 ...
-IDN masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz</pre>
+IDN masstotal xcm ycm zcm ixx iyy izz ixy ixz iyz
+</pre></div>
 </div>
 <p>The rigid body IDs are all positive integers.  For the <em>single</em>
 bodystyle, only an ID of 1 can be used.  For the <em>group</em> bodystyle,
@@ -477,7 +503,7 @@ supported by the rigid/npt and rigid/nph fixes to change the computes used
 to calculate the instantaneous pressure tensor. Note that the rigid/nvt fix
 does not use any external compute to compute instantaneous temperature.</p>
 <p>The  fixes compute a global
-scalar which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The scalar value calculated by
+scalar which can be accessed by various <span class="xref std std-ref">output commands</span>.  The scalar value calculated by
 these fixes is &#8220;intensive&#8221;.  The scalar is the current temperature of
 the collection of rigid bodies.  This is averaged over all rigid
 bodies and their translational and rotational degrees of freedom.  The
@@ -489,7 +515,7 @@ of freedom constrained by the <em>force</em> and <em>torque</em> keywords are
 removed from this calculation, but only for the <em>rigid</em> and
 <em>rigid/nve</em> fixes.</p>
 <p>This fix computes a global array
-of values which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The number of rows in the
+of values which can be accessed by various <span class="xref std std-ref">output commands</span>.  The number of rows in the
 array is equal to the number of rigid bodies.  The number of columns
 is 15.  Thus for each rigid body, 15 values are stored: the xyz coords
 of the center of mass (COM), the xyz components of the COM velocity,
@@ -509,13 +535,13 @@ of bodies.</p>
 they are independent of the number of atoms in the simulation.</p>
 <p>No parameter of these fixes can be used with the <em>start/stop</em> keywords
 of the <a class="reference internal" href="run.html"><em>run</em></a> command.  These fixes are not invoked during
-<tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+<code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <hr class="docutils" />
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
-<p>These fixes are all part of the RIGID package.  It is only enabled if
-LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section for more info.</p>
+<blockquote>
+<div>none</div></blockquote>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
@@ -539,6 +565,9 @@ J Chem Phys, 116, 8649 (2002).</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -569,11 +598,13 @@ J Chem Phys, 116, 8649 (2002).</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

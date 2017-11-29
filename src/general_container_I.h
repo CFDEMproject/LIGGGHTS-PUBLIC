@@ -536,7 +536,7 @@ void GeneralContainer<T,NUM_VEC,LEN_VEC>::setAll(T def)
 template<typename T, int NUM_VEC, int LEN_VEC>
 void GeneralContainer<T,NUM_VEC,LEN_VEC>::setAll(int to,T def)
 {
-    int len = MathExtraLiggghts::min(to,size());
+    int len = std::min(to,size());
     for(int n = 0; n < len; n++)
         for(int i = 0; i < NUM_VEC; i++)
             for(int j = 0; j < LEN_VEC; j++)

@@ -1,10 +1,95 @@
-"LIGGGHTS WWW Site"_liws - "LAMMPS WWW Site"_lws - "LIGGGHTS Documentation"_ld - "LIGGGHTS Commands"_lc :c
+"LIGGGHTS(R)-PUBLIC WWW Site"_liws - "LIGGGHTS(R)-PUBLIC Documentation"_ld - "LIGGGHTS(R)-PUBLIC Commands"_lc :c
 
 :link(liws,http://www.cfdem.com)
-:link(lws,http://lammps.sandia.gov)
 :link(ld,Manual.html)
 :link(lc,Section_commands.html#comm)
 
 :line
 
 fix sph/pressure command :h3
+
+[Syntax:]
+
+fix ID group-ID sph/pressure style args :pre
+
+ID, group-ID are documented in "fix"_fix.html command
+sph/pressure = style name of this fix command
+style = {absolut} or {relativ} or {Tait}
+args = list of arguments for a particular style :ul
+
+  {absolut} args = B
+    B = coefficient
+  {relativ} args = B density0
+    B = coefficient
+    density0 = reference density
+  {Tait} args = B density0 gamma
+    B = coefficient
+    density0 = reference density
+    gamma = isentropic exponent :pre
+
+[Examples:]
+
+fix pressure all sph/pressure absolut
+fix pressure all sph/pressure Tait 60000. 1000. 7. :pre
+
+
+
+[Description:]
+
+The equation of state (EOS) for the SPH calculation is the link between the density field and the pressure field. A lot of different equations can be found in the literature.
+
+The {absolut} style was the first implemented EOS. The calculation rule is
+
+:c,image(Eqs/fix_sph_pressure_abs.jpg)
+
+where &#961;<sub>a</sub> is the density of particle a and B is the pressure prefactor.
+
+The {relativ} style uses the rule
+
+:c,image(Eqs/fix_sph_pressure_rel.jpg)
+
+as EOS. B denotes the pressure prefactor and &#961;<sub>0</sub> is the reference density.
+
+In case of {Tait} style the rule
+
+:c,image(Eqs/fix_sph_pressure_tait_eq1.jpg)
+
+is applied. B denotes the pressure prefactor which is calculated by
+
+:c,image(Eqs/fix_sph_pressure_tait_eq2.jpg)
+
+where c<sub>0</sub> is the speed of sound of the material. &#961;<sub>0</sub> is the reference density and &gamma; is the isentropic exponent defined as cp/cv.
+
+NOTE: Monaghan has found that the speed of sound could be artificially reduced. (Monaghan, 1994) Therefore, we can choose a greater time step. He argues that the minimum sound speed should be about ten times greater than the maximum expected flow speed. (&Delta;&#961; &lt; 1%)
+
+:line
+
+[Restart, fix_modify, output, run start/stop, minimize info:]
+
+No informatino about this fix is written to "binary restart files"_restart.html.
+
+None of the "fix_modify"_fix_modify.html options are relevant to this fix.
+
+No global scalar or vector or per_atom quantities are stored by this fix for access by various "output commands"_Section_howto.html#4_15.
+
+No parameter of this fix can be used with the {start/stop} keywords of the "run"_run.html command.
+
+This fix is not invoked during "energy minimization"_minimize.html.
+
+:line
+
+[Restrictions:]
+
+One fix sph/density/summation (only dev-version) or sph/denstiy/continuity has to exist.
+
+[Related commands:]
+
+"pair_style sph/artVisc/tensCorr"_pair_sph_artvisc_tenscorr.html, "fix sph/density/continuity"_fix_sph_density_continuity.html
+
+[Default:] none
+
+:line
+
+:link(LiuLiu2003)
+[(Liu and Liu, 2003)] "Smoothed Particle Hydrodynamics: A Meshfree Particle Method", G. R. Liu and M. B. Liu, World Scientific, p. 449 (2003).
+

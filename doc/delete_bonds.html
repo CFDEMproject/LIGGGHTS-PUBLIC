@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>delete_bonds command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>delete_bonds command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/delete_bonds.txt" rel="nofollow"> View page source</a> 
+      <li>delete_bonds command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/delete_bonds.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>delete_bonds command<a class="headerlink" href="#delete-bonds-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>delete_bonds group-ID style args keyword ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>delete_bonds group-ID style args keyword ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>group-ID = group ID</li>
@@ -166,9 +190,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>delete_bonds frozen multi remove
+<div class="highlight-python"><div class="highlight"><pre>delete_bonds frozen multi remove
 delete_bonds all atom 4 special
-delete_bonds all stats</pre>
+delete_bonds all stats
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -199,7 +224,7 @@ permanently remove the interaction.  E.g. a bond_type of 2 is set to
 -2.  The neighbor list creation routines will not include such an
 interaction in their interaction lists.  The default is also to not
 alter the list of 1-2, 1-3, 1-4 neighbors computed by the
-<tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt> command and used to weight pairwise
+<code class="xref doc docutils literal"><span class="pre">special_bonds</span></code> command and used to weight pairwise
 force and energy calculations.  This means that pairwise computations
 will proceed as if the bond were still turned on.</p>
 <p>Several keywords can be appended to the argument list to alter the
@@ -237,12 +262,15 @@ atom masses set, etc).</p>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="neigh_modify.html"><em>neigh_modify</em></a> exclude,
-<tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt></p>
+<code class="xref doc docutils literal"><span class="pre">special_bonds</span></code></p>
 <p><strong>Default:</strong> none</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -273,11 +301,13 @@ atom masses set, etc).</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

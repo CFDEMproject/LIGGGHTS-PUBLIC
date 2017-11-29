@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix continuum/weighted command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix continuum/weighted command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_continuum_weighted.txt" rel="nofollow"> View page source</a> 
+      <li>fix continuum/weighted command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_continuum_weighted.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -165,17 +188,19 @@ keyword = {kernel_radius, kernel_type, compute}
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all continuum/weighted kernel_radius 0.01 compute stress
-fix 1 all continuum/weighted kernel_radius 0.2 kernel_type Wendland compute stress_strain</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all continuum/weighted kernel_radius 0.01 compute stress
+fix 1 all continuum/weighted kernel_radius 0.2 kernel_type Wendland compute stress_strain
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>If the <em>compute</em> keyword is set to either stress or stress_strain this fix calculates the complete stress tensor at
-each particle according to <a class="reference internal" href="#goldhirsch"><em>Goldhirsch</em></a>. The formula is given by:</p>
-<div class="highlight-python"><pre>sigma_{i,ab} = -1/2 sum_{j,k} f_{jk,a} r_{jk,b} integral_0^1 phi(**r**_i - **r**_j + s **r**_{jk}) ds
-             - sum_j m_j v'_{ij,a} v'_{ij,b} phi(r_i - r_j)
-             + sigma_wall_{i,ab}</pre>
+each particle according to <a class="reference internal" href="#goldhirsch"><span>Goldhirsch</span></a>. The formula is given by:</p>
+<div class="highlight-python"><div class="highlight"><pre>sigma_{i,ab} = -1/2 sum_{j,k} f_{jk,a} r_{jk,b} integral_0^1 phi(**r**_i - **r**_j + s **r**_{jk}) ds
+             - sum_j m_j v&#39;_{ij,a} v&#39;_{ij,b} phi(r_i - r_j)
+             + sigma_wall_{i,ab}
+</pre></div>
 </div>
 <p>where</p>
 <pre class="literal-block">
@@ -194,38 +219,45 @@ Omega(radius) = 4/3 pi radius^3
 m_i mass of particle i
 H is the Heavyside function
 </pre>
-<p>In case solid boundaries are present the last term is given according to <a class="reference internal" href="#weinhart"><em>Weinhart et al.</em></a> by</p>
-<div class="highlight-python"><pre>sigma_wall_{i,ab} = - sum_{j,k} f_{jk,a} a_{jk,b} integral_0^1 phi(**r**_i - **r**_j + s **a**_{jk}) ds</pre>
+<p>In case solid boundaries are present the last term is given according to <a class="reference internal" href="#weinhart"><span>Weinhart et al.</span></a> by</p>
+<div class="highlight-python"><div class="highlight"><pre>sigma_wall_{i,ab} = - sum_{j,k} f_{jk,a} a_{jk,b} integral_0^1 phi(**r**_i - **r**_j + s **a**_{jk}) ds
+</pre></div>
 </div>
 <p>where</p>
-<div class="highlight-python"><pre>**a**_{jk} = **r**_j - c_{jk}</pre>
+<div class="highlight-python"><div class="highlight"><pre>**a**_{jk} = **r**_j - c_{jk}
+</pre></div>
 </div>
 <p>and <a href="#id21"><span class="problematic" id="id22">**</span></a>c**_{jk} is the contact point of particle <em>j</em> with wall <em>k</em> and the sum runs over all particles <em>j</em> and walls <em>k</em>.</p>
 <p>If the <em>compute</em> keyword is set to either strain or stress_strain this fix calculates the incremental strain tensor at
-each particle according to <a class="reference internal" href="fix_rigid.html#zhang"><em>Zhang et al.</em></a> The formula is given by</p>
-<div class="highlight-python"><pre>epsilon_*i,ab* = 1/(2 rho_i) sum_*j,k* m_j m_k phi(**r**_{ij}) dt (**v**_{jk,a} grad_phi(**r**_{ik},b) + **v**_{jk,b} grad_phi(**r**_{ik},a))</pre>
+each particle according to <a class="reference internal" href="fix_rigid.html#zhang"><span>Zhang et al.</span></a> The formula is given by</p>
+<div class="highlight-python"><div class="highlight"><pre>epsilon_*i,ab* = 1/(2 rho_i) sum_*j,k* m_j m_k phi(**r**_{ij}) dt (**v**_{jk,a} grad_phi(**r**_{ik},b) + **v**_{jk,b} grad_phi(**r**_{ik},a))
+</pre></div>
 </div>
 <p>where most of the variables are given as above and additionally</p>
-<div class="highlight-python"><pre>**v**_{ij,a} is the a-th component of the velocity difference between i and j
+<div class="highlight-python"><div class="highlight"><pre>**v**_{ij,a} is the a-th component of the velocity difference between i and j
 grad_phi(**r**_{ij},a) is the a-th component of the gradient of phi with respect to **r**_i
-dt is the time-step size</pre>
+dt is the time-step size
+</pre></div>
 </div>
 <p>The following three kernel types are implemented at the moment:</p>
 <ul class="simple">
 <li><em>Top_Hat</em> - Top hat kernel</li>
 </ul>
-<div class="highlight-python"><pre>w(r) = a_t * 1 if q &lt; 1 (q = r / kernel_radius)
-     = 0 otherwise</pre>
+<div class="highlight-python"><div class="highlight"><pre>w(r) = a_t * 1 if q &lt; 1 (q = r / kernel_radius)
+     = 0 otherwise
+</pre></div>
 </div>
 <ul class="simple">
 <li><em>Gaussian</em> - Gaussian kernel</li>
 </ul>
-<div class="highlight-python"><pre>w(r) = a_g * exp(-q^2) (q = 3 r / kernel_radius)</pre>
+<div class="highlight-python"><div class="highlight"><pre>w(r) = a_g * exp(-q^2) (q = 3 r / kernel_radius)
+</pre></div>
 </div>
 <ul class="simple">
 <li><em>Wendland</em> - Quinitic radial polynomial</li>
 </ul>
-<div class="highlight-python"><pre>w(r) = a_w * (1-q/2)^4 (1+2q) (q = 2 r / kernel_radius)</pre>
+<div class="highlight-python"><div class="highlight"><pre>w(r) = a_w * (1-q/2)^4 (1+2q) (q = 2 r / kernel_radius)
+</pre></div>
 </div>
 <p>Note that all kernels are equal to zero if <em>r &gt; kernel_radius</em> (this implies a cut-off for the Gaussian). The constants <em>a</em> (different for each kernel) are chosen such that the integral of <em>w</em> over the ball of radius <em>kernel_radius</em> is equal to one. In case of the top hat kernel <em>a_t</em> is equal to the volume of this sphere.</p>
 </div>
@@ -236,7 +268,7 @@ dt is the time-step size</pre>
 are relevant to this fix.</p>
 <p>The values can be dumped by using the <em>f_stressTensor_[i]</em> and/or <em>f_strainTensor_[i]</em> (0 &lt;= i &lt;= 8) values in <a class="reference internal" href="dump.html"><em>dump</em></a> commands</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -262,6 +294,9 @@ command. In particular the <em>contact_distance_factor</em> which should be set 
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -292,11 +327,13 @@ command. In particular the <em>contact_distance_factor</em> which should be set 
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

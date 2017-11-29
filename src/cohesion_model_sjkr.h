@@ -50,7 +50,7 @@ COHESION_MODEL(COHESION_SJKR,sjkr,1)
 
 #include "contact_models.h"
 #include "cohesion_model_base.h"
-#include <math.h>
+#include <cmath>
 
 namespace LIGGGHTS {
 namespace ContactModels {

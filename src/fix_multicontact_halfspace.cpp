@@ -37,7 +37,7 @@
     Copyright 2016-     CFDEMresearch GmbH, Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <mpi.h>
 #include <string.h>
 #include <stdlib.h>
@@ -406,7 +406,8 @@ double * const HistoryData::get_data_ptr(const int i, const int jj)
         double * const all_contact_list = list->listgranhistory->firstdouble[i];
         return &all_contact_list[jj*list->listgranhistory->dnum + offset];
     } else if (type == 'm') {
-        return static_cast<FixContactHistoryMesh*>(fix_ptr)->contacthistory(i,jj) + sizeof(double)*offset;
+        const int j = static_cast<FixContactHistoryMesh*>(fix_ptr)->get_contact(i, jj);
+        return static_cast<FixContactHistoryMesh*>(fix_ptr)->contacthistory(i,j) + sizeof(double)*offset;
     } else { // == 'w'
         return static_cast<FixPropertyAtom*>(fix_ptr)->array_atom[i] + sizeof(double)*offset;
     }

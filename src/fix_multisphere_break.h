@@ -32,10 +32,11 @@
 
 -------------------------------------------------------------------------
     Contributing author and copyright for this file:
+    Arno Mayrhofer (DCS Computing GmbH, Linz)
+    Stefan Radl (TU Graz)
 
-    Stefan Radl, TU Graz
+    Copyright 2017 - DCS Computing GmbH, Linz
     Copyright 2016 - TU Graz
-
 ------------------------------------------------------------------------- */
 
 #ifdef FIX_CLASS
@@ -49,26 +50,33 @@ FixStyle(multisphere/break,FixMultisphereBreak)
 
 #include "fix_multisphere.h"
 
-namespace LAMMPS_NS {
+namespace LAMMPS_NS
+{
 
 class FixMultisphereBreak : public FixMultisphere
 {
-    public:
+public:
 
-      FixMultisphereBreak(class LAMMPS *, int, char **);
-      virtual ~FixMultisphereBreak();
+    FixMultisphereBreak(class LAMMPS *, int, char **);
+    virtual ~FixMultisphereBreak();
 
-      void init();
-      void final_integrate();
-      void pre_neighbor();
-      void calc_force(bool setupflag);
+    void init();
+    void final_integrate();
+    void pre_neighbor();
+    void calc_force(bool setupflag);
 
-    protected:
+protected:
 
-      char*               triggerFixName_;
-      FixPropertyAtom*    triggerFix_;
-      double              triggerThreshold_;
-      int                 triggerTimeStep_;
+    char*               triggerFixName_;
+    FixPropertyAtom*    triggerFix_;
+    int                 triggerIdx_;
+    double *            triggerArray_;
+    int                 maxatom_;
+    int                 triggerType_;
+    char*               triggerName_;
+    int                 triggerIndex_;
+    double              triggerThreshold_;
+    int                 triggerTimeStep_;
 };
 
 }

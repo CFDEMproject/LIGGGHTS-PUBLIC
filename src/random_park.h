@@ -53,7 +53,7 @@ namespace LAMMPS_NS {
 class RanPark : public Random {
   friend class Set;
  public:
-  RanPark(class LAMMPS *, int);
+  RanPark(class LAMMPS * lmp, const char * seed_char, bool proc_shift = false, int multiplier = 1);
   double uniform();
   double gaussian();
   void reset(int);
@@ -61,7 +61,7 @@ class RanPark : public Random {
   int state();
 
  private:
-  int seed,save;
+  int save;
   double second;
 };
 

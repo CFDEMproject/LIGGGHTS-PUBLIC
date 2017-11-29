@@ -40,7 +40,7 @@
     Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "fix_insert_pack.h"

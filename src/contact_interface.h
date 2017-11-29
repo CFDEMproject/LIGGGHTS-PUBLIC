@@ -48,7 +48,7 @@
 #include <string>
 
 // forward declaration
-namespace LAMMPS_NS 
+namespace LAMMPS_NS
 {
 class TriMesh;
 class FixMeshSurface;
@@ -84,38 +84,49 @@ struct SurfacesCloseData {
   double * v_i;
   double * v_j;
 
+  double * omega_i;
+  double * omega_j;
+
   bool is_non_spherical;
+
+#ifdef NONSPHERICAL_ACTIVE_FLAG
+  double contact_point[3];
+#endif
+
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+  double reff;
+#endif
 
   int computeflag;
   int shearupdate;
 
-#ifdef SUPERQUADRIC_ACTIVE_FLAG
-  double contact_point[3];
-  double koefi;
-  double koefj;
-
   SurfacesCloseData() :
+    radi(0.0),
+    radj(0.0),
+    radsum(0.0),
+    rsq(0.0),
     area_ratio(1.0),
-    mesh(0),
+    contact_flags(NULL),
+    contact_history(NULL),
+    mesh(NULL),
+    fix_mesh(NULL),
+    i(0),
+    j(0),
+    itype(0),
+    jtype(0),
+    is_wall(false),
+    has_force_update(false),
+    v_i(NULL),
+    v_j(NULL),
+    omega_i(NULL),
+    omega_j(NULL),
     is_non_spherical(false),
-    koefi(0.0),
-    koefj(0.0)
-  {}
-#elif defined CONVEX_ACTIVE_FLAG
-  double contact_point[3];
-
-  SurfacesCloseData() :
-    area_ratio(1.0),
-    mesh(0),
-    is_non_spherical(false)
-  {}
-#else
-  SurfacesCloseData() :
-    area_ratio(1.0),
-    mesh(0),
-    is_non_spherical(false)
-  {}
+#ifdef SUPERQUADRIC_ACTIVE_FLAG
+    reff(0.0),
 #endif
+    computeflag(0),
+    shearupdate(0)
+  {}
 };
 
 // data available in collision() only
@@ -125,9 +136,6 @@ struct SurfacesIntersectData : SurfacesCloseData {
   double r;         
   double rinv;      
   double en[3];     
-
-  double * omega_i;
-  double * omega_j;
 
   double kt;
   double kn;

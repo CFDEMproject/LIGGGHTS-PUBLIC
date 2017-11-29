@@ -50,7 +50,7 @@
 ------------------------------------------------------------------------- */
 
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,9 +129,9 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   vest = NULL;
 
 //Superquadric bonus-----------------------------------
-  shape = NULL; //half axes and roundness parameters
+  shape = NULL; //half axes and blockiness parameters
   inertia = NULL; //components Ix, Iy, Iz
-  roundness = NULL;
+  blockiness = NULL;
   volume = NULL; area = NULL;
   quaternion = NULL; //quaternion of current orientation and angular moment
 //------------------------------------------------------
@@ -212,10 +212,28 @@ Atom::Atom(LAMMPS *lmp) : Pointers(lmp)
   atom_style = NULL;
   avec = NULL;
 
+  // USER-SMD
+  contact_radius = NULL;
+  smd_data_9 = NULL;
+  smd_stress = NULL;
+  eff_plastic_strain = NULL;
+  eff_plastic_strain_rate = NULL;
+  damage = NULL;
+
   datamask = ALL_MASK;
   datamask_ext = ALL_MASK;
 
   radvary_flag = 0;
+
+  // USER-SMD
+  smd_flag = 0;
+  contact_radius_flag = 0;
+  smd_data_9_flag = 0;
+  smd_stress_flag = 0;
+  x0_flag = 0;
+  eff_plastic_strain_flag = 0;
+  eff_plastic_strain_rate_flag = 0;
+  damage_flag = 0;
 
   properties = new Properties(lmp); 
 }
@@ -300,9 +318,9 @@ Atom::~Atom()
   memory->destroy(improper_atom4);
 
 //Superquadric bonus-----------------------------------
-  memory->destroy(shape); //half axes and roundness parameters
+  memory->destroy(shape); //half axes and blockiness parameters
   memory->destroy(inertia); //components Ix, Iy, Iz
-  memory->destroy(roundness);
+  memory->destroy(blockiness);
   memory->destroy(volume);
   memory->destroy(area);
   memory->destroy(quaternion); //quaternion of current orientation
@@ -1711,7 +1729,7 @@ void *Atom::extract(const char *name,int &len)
   if (strcmp(name,"area") == 0) return (void *) area;
 
   len = 2;
-  if (strcmp(name,"roundness") == 0) return (void *) roundness; 
+  if (strcmp(name,"blockiness") == 0) return (void *) blockiness; 
 
   len = 3; 
   if (strcmp(name,"x") == 0) return (void *) x;

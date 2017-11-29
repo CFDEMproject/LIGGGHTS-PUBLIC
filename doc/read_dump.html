@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>read_dump command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>read_dump command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/read_dump.txt" rel="nofollow"> View page source</a> 
+      <li>read_dump command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/read_dump.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>read_dump command<a class="headerlink" href="#read-dump-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>read_dump file Nstep field1 field2 ... keyword values ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>read_dump file Nstep field1 field2 ... keyword values ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>file = name of dump file to read</li>
@@ -157,6 +181,7 @@
 <pre class="literal-block">
 field = <em>x</em> or <em>y</em> or <em>z</em> or <em>vx</em> or <em>vy</em> or <em>vz</em> or <em>q</em> or <em>ix</em> or <em>iy</em> or <em>iz</em>
   <em>x</em>,*y*,*z* = atom coordinates
+  <em>radius</em> = atom radii
   <em>vx</em>,*vy*,*vz* = velocity components
   <em>q</em> = charge
   <em>ix</em>,*iy*,*iz* = image flags in each dimension
@@ -183,11 +208,12 @@ field = <em>x</em> or <em>y</em> or <em>z</em> or <em>vx</em> or <em>vy</em> or 
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>read_dump dump.file 5000 x y z
-read_dump dump.xyz 5 x y z format xyz box no
-read_dump dump.file 5000 x y vx vy trim yes
-read_dump ../run7/dump.file.gz 10000 x y z box yes
-read_dump dump.xyz 5 x y z box no format xyz</pre>
+<div class="highlight-python"><div class="highlight"><pre>read_dump dump.file 5000 x y z radius
+read_dump dump.xyz 5 x y z radius format xyz box no
+read_dump dump.file 5000 x y vx vy radius trim yes
+read_dump ../run7/dump.file.gz 10000 x y z radius box yes
+read_dump dump.xyz 5 x y z radius box no format xyz
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -198,15 +224,17 @@ the simluation box dimensions.  This is useful for restarting a run
 from a particular snapshot in a dump file.  See the
 <a class="reference internal" href="read_restart.html"><em>read_restart</em></a> and <a class="reference internal" href="read_data.html"><em>read_data</em></a>
 commands for alternative methods to do this.  Also see the
-<tt class="xref doc docutils literal"><span class="pre">rerun</span></tt> command for a means of reading multiple snapshots
+<code class="xref doc docutils literal"><span class="pre">rerun</span></code> command for a means of reading multiple snapshots
 from a dump file.</p>
 <p>Note that a simulation box must already be defined before using the
 read_dump command.  This can be done by the
 <a class="reference internal" href="create_box.html"><em>create_box</em></a>, <a class="reference internal" href="read_data.html"><em>read_data</em></a>, or
 <a class="reference internal" href="read_restart.html"><em>read_restart</em></a> commands.  The read_dump command can
 reset the simulation box dimensions, as explained below.</p>
+<p>Since LIGGGHTS(R)-PUBLIC needs valid radii, the radius field is mandatory
+to be read.</p>
 <p>Also note that reading per-atom information from a dump snapshot is
-limited to the atom coordinates, velocities and image flags, as
+limited to the atom coordinates, radii, velocities and image flags, as
 explained below.  Other atom properties, which may be necessary to run
 a valid simulation, such as atom charge, or bond topology information
 for a molecular system, are not read from (or even contained in) dump
@@ -373,13 +401,13 @@ needed to generate absolute, unscaled coordinates.</p>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
 <p>To read gzipped dump files, you must compile LIGGGHTS(R)-PUBLIC with the
--DLAMMPS_GZIP option - see the <a class="reference internal" href="Section_start.html#start-2"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section of the documentation.</p>
+-DLAMMPS_GZIP option - see the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section of the documentation.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="dump.html"><em>dump</em></a>,
 <a class="reference internal" href="read_data.html"><em>read_data</em></a>, <a class="reference internal" href="read_restart.html"><em>read_restart</em></a>,
-<tt class="xref doc docutils literal"><span class="pre">rerun</span></tt></p>
+<code class="xref doc docutils literal"><span class="pre">rerun</span></code></p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
@@ -389,6 +417,9 @@ no, add = no, scaled = no, wrapped = yes, and format = native.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -419,11 +450,13 @@ no, add = no, scaled = no, wrapped = yes, and format = native.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -49,7 +49,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -93,7 +93,8 @@ enum{ISO,ANISO,TRICLINIC};
 /* ---------------------------------------------------------------------- */
 
 FixRigid::FixRigid(LAMMPS *lmp, int narg, char **arg) :
-  Fix(lmp, narg, arg)
+  Fix(lmp, narg, arg),
+  random(NULL)
 {
   //not working correctly for 2d
   if(domain->dimension == 2) error->warning(FLERR,"Fix rigid should not be used for 2d simulations - inertia is for 3d systems");
@@ -294,7 +295,6 @@ FixRigid::FixRigid(LAMMPS *lmp, int narg, char **arg) :
 
   // parse optional args
 
-  int seed;
   langflag = 0;
   tstat_flag = 0;
   pstat_flag = 0;
@@ -386,10 +386,9 @@ FixRigid::FixRigid(LAMMPS *lmp, int narg, char **arg) :
       t_start = force->numeric(FLERR,arg[iarg+1]);
       t_stop = force->numeric(FLERR,arg[iarg+2]);
       t_period = force->numeric(FLERR,arg[iarg+3]);
-      seed = force->inumeric(FLERR,arg[iarg+4]);
+      random = new RanMars(lmp, arg[iarg+4], true);
       if (t_period <= 0.0)
         error->all(FLERR,"Fix rigid langevin period must be > 0.0");
-      if (seed <= 0) error->all(FLERR,"Illegal fix rigid command");
       iarg += 5;
 
     } else if (strcmp(arg[iarg],"temp") == 0) {
@@ -518,11 +517,6 @@ FixRigid::FixRigid(LAMMPS *lmp, int narg, char **arg) :
 
   if (pcouple == XYZ || (dimension == 2 && pcouple == XY)) pstyle = ISO;
   else pstyle = ANISO;
-
-  // initialize Marsaglia RNG with processor-unique seed
-
-  if (langflag) random = new RanMars(lmp,seed + me);
-  else random = NULL;
 
   // initialize vector output quantities in case accessed before run
 
@@ -1257,7 +1251,7 @@ void FixRigid::set_xv()
 {
   int ibody;
   int xbox,ybox,zbox;
-  double x0,x1,x2,v0,v1,v2,fc0,fc1,fc2,massone;
+  double x0=0.0,x1=0.0,x2=0.0,v0=0.0,v1=0.0,v2=0.0,massone;
   double xy=0.0,xz=0.0,yz=0.0;
   double ione[3],exone[3],eyone[3],ezone[3],vr[6],p[3][3];
 
@@ -1343,9 +1337,9 @@ void FixRigid::set_xv()
     if (evflag) {
       if (rmass) massone = rmass[i];
       else massone = mass[type[i]];
-      fc0 = massone*(v[i][0] - v0)/dtf - f[i][0];
-      fc1 = massone*(v[i][1] - v1)/dtf - f[i][1];
-      fc2 = massone*(v[i][2] - v2)/dtf - f[i][2];
+      const double fc0 = massone*(v[i][0] - v0)/dtf - f[i][0];
+      const double fc1 = massone*(v[i][1] - v1)/dtf - f[i][1];
+      const double fc2 = massone*(v[i][2] - v2)/dtf - f[i][2];
 
       vr[0] = 0.5*x0*fc0;
       vr[1] = 0.5*x1*fc1;
@@ -1362,7 +1356,7 @@ void FixRigid::set_xv()
 
   if (extended) {
     double theta_body,theta;
-    double *shape,*quatatom,*inertiaatom;
+    double *shape,*quatatom;
 
     AtomVecEllipsoid::Bonus *ebonus = NULL;
     if (avec_ellipsoid) ebonus = avec_ellipsoid->bonus;
@@ -1373,7 +1367,6 @@ void FixRigid::set_xv()
     double **mu = atom->mu;
     int *ellipsoid = atom->ellipsoid;
     int *line = atom->line;
-    int *tri = atom->tri;
 
     for (int i = 0; i < nlocal; i++) {
       if (body[i] < 0) continue;
@@ -1510,7 +1503,7 @@ void FixRigid::set_v()
   // set omega, angmom of each extended particle
 
   if (extended) {
-    double *shape,*quatatom,*inertiaatom;
+    double *shape,*quatatom;
 
     AtomVecEllipsoid::Bonus *ebonus = NULL;
     if (avec_ellipsoid) ebonus = avec_ellipsoid->bonus;
@@ -1570,7 +1563,6 @@ void FixRigid::setup_bodies_static()
   double *mass = atom->mass;
   int *ellipsoid = atom->ellipsoid;
   int *line = atom->line;
-  int *tri = atom->tri;
   int *type = atom->type;
   int nlocal = atom->nlocal;
 
@@ -1750,7 +1742,7 @@ void FixRigid::setup_bodies_static()
 
   if (extended) {
     double ivec[6];
-    double *shape,*quatatom,*inertiaatom;
+    double *shape,*quatatom;
     double length,theta;
 
     for (i = 0; i < nlocal; i++) {
@@ -1937,7 +1929,7 @@ void FixRigid::setup_bodies_static()
 
   if (extended) {
     double ivec[6];
-    double *shape,*inertiaatom;
+    double *shape;
     double length;
 
     for (i = 0; i < nlocal; i++) {
@@ -2129,7 +2121,7 @@ void FixRigid::readfile(int which, double *vec, double **array, int *inbody)
   if (me == 0) {
     fp = fopen(infile,"r");
     if (fp == NULL) {
-      char str[128];
+      char str[512];
       sprintf(str,"Cannot open fix rigid infile %s",infile);
       error->one(FLERR,str);
     }
@@ -2230,7 +2222,7 @@ void FixRigid::write_restart_file(char *file)
   sprintf(outfile,"%s.rigid",file);
   FILE *fp = fopen(outfile,"w");
   if (fp == NULL) {
-    char str[128];
+    char str[512];
     sprintf(str,"Cannot open fix rigid restart file %s",outfile);
     error->one(FLERR,str);
   }

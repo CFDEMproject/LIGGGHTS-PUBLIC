@@ -52,6 +52,7 @@
 #include "fix_mesh_surface.h"
 #include "modify.h"
 #include "comm.h"
+#include "dump_vtk.h"
 #include <stdint.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
@@ -91,10 +92,11 @@ enum
 
 /* ---------------------------------------------------------------------- */
 
-DumpMesh::DumpMesh(LAMMPS *lmp, int _nclusterprocs, int _multiproc, int _filewriter, int _fileproc) :
+DumpMesh::DumpMesh(LAMMPS *lmp, int _nclusterprocs, int _multiproc, int _filewriter, int _fileproc, vtkMPIController *controller) :
     Pointers(lmp),
     dump_what_(0),
     mbSet(NULL),
+    localController(controller),
     n_calls_(0),
     nclusterprocs(_nclusterprocs),
     multiproc(_multiproc),
@@ -608,8 +610,7 @@ void DumpMesh::write_data(int n, double *mybuf)
 
 void DumpMesh::prepare_mbSet(vtkSmartPointer<vtkMultiBlockDataSet> mbSet)
 {
-    vtkMPIController *vtkController = static_cast<vtkMPIController*>(vtkMultiProcessController::GetGlobalController());
-    if (!vtkController)
+    if (!localController)
         error->all(FLERR, "VTK MPI Controller not found");
 
     count();
@@ -624,7 +625,7 @@ void DumpMesh::prepare_mbSet(vtkSmartPointer<vtkMultiBlockDataSet> mbSet)
         {
             // empty mesh
             vtkSmartPointer<vtkPolyData> poly_data = vtkSmartPointer<vtkPolyData>::New();
-            int status = vtkController->Send(poly_data.GetPointer(), fileproc, comm->me-fileproc);
+            int status = localController->Send(poly_data.GetPointer(), fileproc, comm->me-fileproc);
             if (status != 1)
             {
                 
@@ -891,7 +892,7 @@ void DumpMesh::prepare_mbSet(vtkSmartPointer<vtkMultiBlockDataSet> mbSet)
                 {
                     all_poly_data.push_back(vtkSmartPointer<vtkPolyData>::New());
                     vtkSmartPointer<vtkPolyData> remote_poly_data = vtkSmartPointer<vtkPolyData>::New();
-                    int status = vtkController->Receive(all_poly_data.back().GetPointer(), comm->me+iproc, iproc);
+                    int status = localController->Receive(all_poly_data.back().GetPointer(), comm->me+iproc, iproc);
                     if (status != 1)
                     {
                         
@@ -909,7 +910,7 @@ void DumpMesh::prepare_mbSet(vtkSmartPointer<vtkMultiBlockDataSet> mbSet)
             }
             else
             {
-                int status = vtkController->Send(poly_data.GetPointer(), fileproc, comm->me-fileproc);
+                int status = localController->Send(poly_data.GetPointer(), fileproc, comm->me-fileproc);
                 if (status != 1)
                 {
                     

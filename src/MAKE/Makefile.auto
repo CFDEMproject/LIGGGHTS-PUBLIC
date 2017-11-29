@@ -11,14 +11,20 @@
 # Should you have any issues with this makefile please send us a bug report on www.cfdem.com so
 # that we can improve it.
 
+ifneq (,$(shell which bash))
+    SHELL := bash
+else
+    $(info Could not find bash. Using default shell instead. This might cause issues (e.g. in the debug output))
+endif
 # Subtargets
 EMPTY=
 SUBTARGET=
 ifneq (${postfix}, ${EMPTY})
     SUBTARGET = _${postfix}
 endif
+MAKEUSER = MAKE/Makefile.user${SUBTARGET}
 
-TMP := $(shell ls ../MAKE/Makefile.user${SUBTARGET} 2> /dev/null 1> /dev/null && echo 1 || echo 0)
+TMP := $(shell ls ../$(MAKEUSER) 2> /dev/null 1> /dev/null && echo 1 || echo 0)
 ifeq ($(TMP), 0)
     # Use default Makefile.user
     ifeq (${postfix}, ${EMPTY})
@@ -28,42 +34,51 @@ ifeq ($(TMP), 0)
         # Check if Makefile.user exists, if yes clone this one, otherwise Makefile.user_default
         TMP := $(shell ls ../MAKE/Makefile.user 2> /dev/null 1> /dev/null && echo 1 || echo 0)
         ifneq ($(TMP), 0)
-            TMP := $(shell tail -n +11 ../MAKE/Makefile.user > ../MAKE/Makefile.user${SUBTARGET} || echo -1)
+            $(info Creating new $(MAKEUSER) from Makefile.user)
+            TMP := $(shell tail -n +11 ../MAKE/Makefile.user > ../$(MAKEUSER) || echo -1)
         else
-            TMP := $(shell tail -n +11 ../MAKE/Makefile.user_default > ../MAKE/Makefile.user${SUBTARGET} || echo -1)
+            $(info Creating new $(MAKEUSER) from Makefile.user_default)
+            TMP := $(shell tail -n +11 ../MAKE/Makefile.user_default > ../$(MAKEUSER) || echo -1)
         endif
     endif
     ifeq ($(TMP), -1)
-        $(error Could not create Makefile.user${SUBTARGET})
+        $(error Could not create $(MAKEUSER))
     else
         $(info )
         $(info >>> WARNING <<<)
-        $(info Created MAKE/Makefile.user${SUBTARGET} for the first time. Please check that the options in that file are set correctly.)
+        $(info Created $(MAKEUSER) for the first time. Please check that the options in that file are set correctly.)
         $(info )
     endif
 endif
 
-sinclude ../MAKE/Makefile.user${SUBTARGET}
+sinclude ../$(MAKEUSER)
 
-# Version consistency check
-# The following line needs to be identical in Makefile.user_default
-MAKEFILE_USER_DEFAULT_VERSION = "1.1"
-ifeq ($(origin MAKEFILE_USER_VERSION), undefined)
-    $(info Could not find MAKEFILE_USER_VERSION in MAKE/Makefile.user${SUBTARGET}. No version consistency check will be performed and there might be errors. Please remove [backup] this file and run "make auto" again to generate a new one.)
-else
-    ifneq ($(MAKEFILE_USER_VERSION), $(MAKEFILE_USER_DEFAULT_VERSION))
-        $(info $(MAKEFILE_USER_VERSION) $(MAKEFILE_USER_DEFAULT_VERSION))
-        $(error Makefile.auto has detected an outdated MAKE/Makefile.user${SUBTARGET}. Please remove [backup] this file and run "make auto" again to generate a new one.)
+SUBTARGETDEBUG=$(SUBTARGET)
+ifneq (${debug}, ${EMPTY})
+    ifeq (${debug},ON)
+        SUBTARGETDEBUG := $(SUBTARGET)-debug
+        USE_DEBUG = "ON"
+    endif
+    ifeq (${debug},FULL)
+        SUBTARGETDEBUG := $(SUBTARGET)-fulldebug
+        USE_DEBUG = "FULL"
     endif
 endif
 
-# OS detection
-ifeq ($(OS),Windows_NT)
-    MINGW := 1
+AUTO_DEBUG ?= ${auto_debug}
+ifeq ($(AUTO_DEBUG),0)
+    AUTO_LOG_FILE = /dev/null
 else
-    MINGW := 0
+    AUTO_LOG_FILE ?= make_auto.log
 endif
 
+# To have $n available as newline
+define n
+
+
+endef
+
+# Output check with echo
 ECHO := echo
 TMPFILE = /tmp/liggghtscompile.tmp
 TMP = $(shell $(ECHO) "\n" > $(TMPFILE) && cat $(TMPFILE))
@@ -75,8 +90,101 @@ ifneq ($(TMP), $(EMPTY))
         $(error Could not create empty file with \n entry using echo and echo -e)
     endif
 endif
+ifeq ($(AUTO_DEBUG),1)
+    $(shell $(ECHO) "#Compilation of LIGGGHTS\nMakefile auto logfile\n" > $(AUTO_LOG_FILE))
+    ifneq (, $(shell which date))
+        DATE = $(shell date)
+        $(shell $(ECHO) "#Time of writing: $(DATE)\n" >> $(AUTO_LOG_FILE))
+    endif
+    $(shell $(ECHO) "#echo: $(ECHO)" >> $(AUTO_LOG_FILE))
+    $(shell $(ECHO) "#subtarget: $(SUBTARGET)" >> $(AUTO_LOG_FILE))
+endif
 
-# Default settings should ../Makefile.user${SUBTARGET} not exist for some reason or not contain the minimum
+
+# Version consistency check
+# The following line needs to be identical in Makefile.user_default
+MAKEFILE_USER_DEFAULT_VERSION = "1.4"
+# These are all versions that ever existed in the history of the universe
+ALL_VERSIONS := 1.0 1.1 1.2 1.3 1.4
+
+ifeq ($(AUTO_DEBUG),1)
+    $(shell $(ECHO) "#makefile_user_default_version: $(MAKEFILE_USER_DEFAULT_VERSION)" >> $(AUTO_LOG_FILE))
+    $(shell $(ECHO) "#makefile_user_version: $(MAKEFILE_USER_VERSION)" >> $(AUTO_LOG_FILE))
+endif
+ifeq ($(origin MAKEFILE_USER_VERSION), undefined)
+    $(info Could not find MAKEFILE_USER_VERSION in $(MAKEUSER). No version consistency check will be performed and there might be errors. Please remove [backup] this file and run "make auto" again to generate a new one.)
+else
+    ifneq ($(MAKEFILE_USER_VERSION), $(MAKEFILE_USER_DEFAULT_VERSION))
+        $(info Makefile.auto has detected a version inconsistency in $(MAKEUSER). Its version is $(MAKEFILE_USER_VERSION) whereas the default Makefile.user has version $(MAKEFILE_USER_DEFAULT_VERSION).)
+        $(info Attempting to auto patch your Makefiles)
+        ifneq (${postfix}, ${EMPTY})
+            MAKECMD = "make auto postfix=${postfix}"
+        else
+            MAKECMD = "make auto"
+        endif
+        # Default error text if patching fails
+        GUIDE = $nManual updating of your $(MAKEUSER) is required. Follow one of the steps below:$n1.) Backup your $(MAKEUSER) to a save location and run $(MAKECMD) to generate a new one with default entries (Note: Makefile.user needs to be update first in any case).$n2.) Use a diff program (e.g. meld, vimdiff, etc.) to compare your $(MAKEUSER) with Makefile.user_default and update the new lines accordingly.$n
+        # Test if patch is available
+        ifeq (, $(shell which patch))
+            $(error Could not find patch in your environment. ${GUIDE})
+        endif
+        # Make backup directory
+        TMP := $(shell mkdir -p ../MAKE/auto_backup && echo 1 || echo 0)
+        ifeq ($(TMP), 0)
+            $(error Could not create folder MAKE/auto_backup to save your $(MAKEUSER). ${GUIDE})
+        endif
+        # Warning if backup directory is not empty
+        TMP := $(shell ls ../MAKE/auto_backup | wc -l)
+        ifneq ($(TMP), 0)
+            $(info Warning: All contents in MAKE/auto_backup will be overwritten)
+        endif
+        # Copy the current Makefile.user to the backup directory
+        TMP := $(shell cp ../$(MAKEUSER) ../MAKE/auto_backup && echo 1 || echo 0)
+        ifeq ($(TMP), 0)
+            $(error Could not create backup of your $(MAKEUSER). ${GUIDE})
+        endif
+        # Remove quotation marks from the version number
+        VERSION_NR = $(subst ",,${MAKEFILE_USER_VERSION})
+        # " Close quotation mark from previous line to avoid syntax highlighting issues
+        # Remove quotation marks from the version number of the Makefile.user_default
+        VERSION_NR_DEFAULT = $(subst ",,${MAKEFILE_USER_DEFAULT_VERSION})
+        # " Close quotation mark from previous line to avoid syntax highlighting issues
+        # This awesome command removes the latest version from the list of all versions and
+        # also removes those that are older than the one in Makefile.user
+        NEWER_VERSIONS := $(filter-out ${VERSION_NR_DEFAULT},$(shell $(ECHO) ${ALL_VERSIONS} | grep -o '${VERSION_NR}.*'))
+        ifeq (${NEWER_VERSIONS},${EMPTY})
+            $(error Unkown version of $(MAKEUSER), version was ${VERSION_NR})
+        endif
+        # Loop over all versions that have been identified above
+        #   Check if there is a patch file for the corresponding version
+        #   Patch the file
+        $(foreach v,${NEWER_VERSIONS}, \
+            $(if $(filter 0,$(shell ls ../MAKE/Makefile.user_default_patch_${v} 2> /dev/null 1> /dev/null && echo 1 || echo 0)), $(error Could not find a patch file that corresponds to Makefile.user version ${v}. ${GUIDE})) ; \
+            $(if $(filter 0,$(shell patch -d ../MAKE Makefile.user${SUBTARGET} -i Makefile.user_default_patch_${v} --force && echo 1 || echo 0)), $(error Could not apply patch to $(MAKEUSER) wihut errors. Please see $(MAKEUSER).rej for the failed parts and compare $(MAKEUSER) with the backup available in your MAKE/auto_backup folder. With a bit of luck everything is fine and you simply need to run the compilation again. ${GUIDE})) ; \
+        )
+        MAKEFILE_USER_OLD_VERSION := ${MAKEFILE_USER_VERSION}
+        # Include the file again with the new values
+        include ../$(MAKEUSER)
+        ifneq (${debug}, ${EMPTY})
+            ifeq (${debug},1)
+                USE_DEBUG = "ON"
+            endif
+            ifeq (${debug},2)
+                USE_DEBUG = "FULL"
+            endif
+        endif
+        $(info Successfully patched $(MAKEUSER) from version ${MAKEFILE_USER_OLD_VERSION} to ${MAKEFILE_USER_VERSION})
+    endif
+endif
+
+# OS detection
+ifeq ($(OS),Windows_NT)
+    MINGW := 1
+else
+    MINGW := 0
+endif
+
+# Default settings should ../$(MAKEUSER) not exist for some reason or not contain the minimum
 # variables
 USE_MPI ?= "ON"
 USE_VTK ?= "ON"
@@ -90,6 +198,10 @@ USE_CONVEX ?= "OFF"
 USE_GZIP ?= "OFF"
 USE_XDR ?= "OFF"
 AUTOINSTALL_CONVEX ?= "OFF"
+AUTOINSTALL_VTK ?= "OFF"
+USE_MFEM ?= "OFF"
+AUTOINSTALL_MFEM ?= "OFF"
+BUILD_LIBRARIES ?= "NONE"
 
 # Default variables
 ifeq ($(MINGW), 0)
@@ -164,7 +276,7 @@ ifeq ($(USE_CATALYST), "ON")
 endif
 
 # Read previously used variables
-OPTIONS_FILE=../MAKE/Makefile.auto.options${SUBTARGET}
+OPTIONS_FILE=../MAKE/Makefile.auto.options${SUBTARGETDEBUG}
 sinclude $(OPTIONS_FILE)
 # Set them to be equal the current variables if they have not been set
 OPTIONS_USE_MPI           ?= $(USE_MPI)
@@ -178,6 +290,7 @@ OPTIONS_USE_PROFILE       ?= $(USE_PROFILE)
 OPTIONS_USE_CONVEX        ?= $(USE_CONVEX)
 OPTIONS_USE_GZIP          ?= $(USE_GZIP)
 OPTIONS_USE_XDR           ?= $(USE_XDR)
+OPTIONS_USE_MFEM          ?= $(USE_MFEM)
 # Check if they have changed
 ifneq ($(OPTIONS_USE_MPI), $(USE_MPI))
     $(error variable USE_MPI has changed. Please run "make clean-all" or "make clean-auto" before compiling again.)
@@ -212,23 +325,33 @@ endif
 ifneq ($(OPTIONS_USE_XDR), $(USE_XDR))
     $(error variable USE_XDR has changed. Please run "make clean-all" or "make clean-auto" before compiling again.)
 endif
+ifneq ($(OPTIONS_USE_MFEM), $(USE_MFEM))
+    $(error variable USE_MFEM has changed. Please run "make clean-all" or "make clean-auto" before compiling again.)
+endif
 # Write out current variables
-$(shell echo '# Automatically generated file from Makefile.auto.\n' > $(OPTIONS_FILE))
-$(shell echo '# DO NO EDIT THIS FILE\n' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_MPI = $(USE_MPI)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_VTK = $(USE_VTK)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_SUPERQUADRICS = $(USE_SUPERQUADRICS)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_CATALYST = $(USE_CATALYST)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_JPG = $(USE_JPG)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_FPIC = $(USE_FPIC)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_PROFILE = $(USE_PROFILE)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_CONVEX = $(USE_CONVEX)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_GZIP = $(USE_GZIP)' >> $(OPTIONS_FILE))
-$(shell echo 'OPTIONS_USE_XDR = $(USE_XDR)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) '# Automatically generated file from Makefile.auto.\n' > $(OPTIONS_FILE))
+$(shell $(ECHO) '# DO NO EDIT THIS FILE\n' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_MPI = $(USE_MPI)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_VTK = $(USE_VTK)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_SUPERQUADRICS = $(USE_SUPERQUADRICS)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_CATALYST = $(USE_CATALYST)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_JPG = $(USE_JPG)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_FPIC = $(USE_FPIC)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_PROFILE = $(USE_PROFILE)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_CONVEX = $(USE_CONVEX)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_GZIP = $(USE_GZIP)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_XDR = $(USE_XDR)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'OPTIONS_USE_MFEM = $(USE_MFEM)' >> $(OPTIONS_FILE))
 
 # Sources
 LIBCCD_GIT ?= https://github.com/danfis/libccd.git
 LIBCCD_ZIP ?= https://github.com/danfis/libccd/archive/master.zip
+VTK_GIT ?= https://gitlab.kitware.com/vtk/vtk.git
+VTK_ZIP ?= http://www.vtk.org/files/release/8.0/VTK-8.0.1.zip
+VTK_VERSION_TAG ?= v8.0.1
+MFEM_VERSION_TAG ?= 3.3
+MFEM_GIT ?= https://github.com/mfem/mfem
+MFEM_ZIP ?= http://mfem.github.io/releases/mfem-$(MFEM_VERSION_TAG).tgz
 
 # Lib path in which 3rd party libraries are installed
 LIB_PATH ?= ../../lib
@@ -247,18 +370,24 @@ ifeq ($(USE_DEBUG), "ON")
     OPT_LVL = -Og -g
     LMP_INC += -DLIGGGHTS_DEBUG
 else
-    ifeq ($(USE_DEBUG), "NOOPT")
+    ifeq ($(USE_DEBUG), "FULL")
         OPT_LVL = -O0 -g
         LMP_INC += -DLIGGGHTS_DEBUG
     else
-        ifeq ($(USE_DEBUG), "OFF")
-            ifeq ($(MINGW), 0)
-                OPT_LVL = -O2
-            else
-                OPT_LVL = # for mingw the optimization is already set in CCFLAGS_USR
-            endif
+        ifeq ($(USE_DEBUG), "NOOPT")
+            OPT_LVL = -O0 -g
+            LMP_INC += -DLIGGGHTS_DEBUG
+            $(info 'WARNING: USE_DEBUG option NOOPT is deprecated. Please use FULL instead')
         else
-            $(error 'USE_DEBUG needs to be either "ON", "NOOPT" or "OFF"')
+            ifeq ($(USE_DEBUG), "OFF")
+                ifeq ($(MINGW), 0)
+                    OPT_LVL = -O2
+                else
+                    OPT_LVL = # for mingw the optimization is already set in CCFLAGS_USR
+                endif
+            else
+                $(error 'USE_DEBUG needs to be either "ON", "FULL" or "OFF"')
+            endif
         endif
     endif
 endif
@@ -293,7 +422,7 @@ ifeq ($(USE_MPI), "ON")
         else
             ifeq (, $(shell which mpicxx))
                 ifeq (, $(shell which mpic++))
-                    $(error 'Could not find a suitable mpi compiler (mpicxx or mpic++). Please specify one in the Makefile.user${SUBTARGET} using the MPICXX_USR variable or set USE_MPI to "OFF"')
+                    $(error 'Could not find a suitable mpi compiler (mpicxx or mpic++). Please specify one in the $(MAKEUSER) using the MPICXX_USR variable or set USE_MPI to "OFF"')
                 else
                     MPICXX = mpic++
                 endif
@@ -327,7 +456,7 @@ ifeq ($(USE_MPI), "ON")
             $(error 'Could not compile a simple MPI example. Test was done with MPI_INC="$(TMP_INC)" and MPICXX="$(MPICXX)"')
         endif
     endif
-    MPI_TYPE := $(word $(words $(TMP)), $(TMP))
+    MPI_TYPE := $(patsubst "%",%,$(word $(words $(TMP)), $(TMP)))
     ifeq ($(MPI_TYPE), MPICH)
         ifneq ($(origin MPI_ADDLIBS), undefined)
             MPI_ADDLIBS += -lmpich -lmpichcxx
@@ -338,9 +467,18 @@ ifeq ($(USE_MPI), "ON")
                 MPI_ADDLIBS = -lmpich -lmpichcxx
             endif
         endif
+        TMP := $(shell $(MPICXX) -show)
+        ifneq ($(word 1,$(TMP)), $(CXX))
+            $(info Warning: MPICXX compiler is $(word 1,$(TMP)) but $(CXX). Thus, setting the MPICH cxx compiler to $(CXX).)
+            MPICXX := $(MPICXX) -cxx $(CXX)
+        endif
     else
         ifeq ($(MPI_TYPE), OpenMPI)
-            # Here we could do some OpenMPI related stuff
+            TMP := $(shell $(MPICXX) -show)
+            ifneq ($(word 1,$(TMP)), $(CXX))
+                $(info Warning: MPICXX compiler is $(word 1,$(TMP)) but CXX=$(CXX). Thus, setting OMPI_CXX to $(CXX).)
+                MPICXX := OMPI_CXX=$(CXX) $(MPICXX)
+            endif
         endif
     endif
 
@@ -356,7 +494,7 @@ ifeq ($(USE_MPI), "ON")
     MPI_CCFLAGS += $(OPT_LVL) $(PROF_FLAG)
     MPI_LDFLAGS += $(OPT_LVL) $(PROF_FLAG)
     # Linking test
-    TMP := $(shell $(ECHO) 'main(){}' > $(TMPFILE) && $(MPICXX) -xc++ $(MPI_LDFLAGS) -L$(MPI_LIB) $(MPI_ADDLIBS) -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    TMP := $(shell $(ECHO) 'int main(){}' > $(TMPFILE) && $(MPICXX) -xc++ $(MPI_LDFLAGS) -L$(MPI_LIB) $(MPI_ADDLIBS) -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
     ifeq ($(TMP), -1)
         $(error 'Could not compile and link a simple MPI example. Test was done with MPI_LIB=$(MPI_LIB)')
     endif
@@ -375,10 +513,15 @@ ifeq ($(USE_MPI), "ON")
 
 # If USE_MPI is not set, check that we have a C++ compiler available
 else
-    # Test if MPICXX is set and if yes, then check if this executable exists
+    # Test if CXX is set and if yes, then check if this executable exists
     ifneq (, $(CXX))
         ifeq (, $(shell which $(CXX)))
             $(error "Could not find executable set in variable CXX")
+        endif
+        ifeq (, $(CXX_USR))
+            ifneq ($(CXX), $(CXX_USR))
+                $(info "Warning: both CXX and CXX_USR are set, precedence is given to CXX = $(CXX) (CXX_USR = $(CXX_USR))")
+            endif
         endif
     # CXX is not set
     else
@@ -387,20 +530,20 @@ else
             ifeq (, $(shell which $(CXX_USR)))
                 $(error "Could not find executable set in CXX_USR")
             else
-                # found it, so set MPICXX accordingly
+                # found it, so set CXX accordingly
                 CXX = $(CXX_USR)
             endif
         else
             # if CXX is not set then try to find g++ on linux
             ifeq ($(MINGW), 0)
                 ifeq (, $(shell which g++))
-                    $(error 'Could not find a suitable c++ compiler (g++). Please specify one in the Makefile.user${SUBTARGET} using the CXX_USR variable')
+                    $(error 'Could not find a suitable c++ compiler (g++). Please specify one in the $(MAKEUSER) using the CXX_USR variable')
                 else
                     CXX = g++
                 endif
             else # or the appropriate mingw compiler
                 ifeq (, $(shell which i686-pc-mingw32-g++))
-                    $(error 'Could not find a suitable c++ compiler (i686-pc-mingw32-g++). Please specify one in the Makefile.user${SUBTARGET} using the CXX_USR variable')
+                    $(error 'Could not find a suitable c++ compiler (i686-pc-mingw32-g++). Please specify one in the $(MAKEUSER) using the CXX_USR variable')
                 else
                     CXX = i686-pc-mingw32-g++
                 endif
@@ -419,17 +562,61 @@ else
     EXTRA_LIB += -L../STUBS
     EXTRA_ADDLIBS += -lmpi_stubs
     # 1.) Attempt compilation
-    TMP := $(shell $(ECHO) '\#include <mpi.h> \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    ifeq ($(AUTO_DEBUG),1)
+        $(shell $(ECHO) "#Compiling with mpi stubs" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#Command: $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -o /dev/null $(TMPFILE)")
+    endif
+    TMP := $(shell $(ECHO) '\#include <mpi.h> \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -o /dev/null $(TMPFILE) 2>> $(AUTO_LOG_FILE) && echo 0 || echo -1)
     ifeq ($(TMP), -1)
         $(error 'Could not compile a simple c++ example. Please make sure that you have run "make stubs" before compiling LIGGGHTS itself. Test was done with CXX=$(CXX), EXTRA_INC=$(EXTRA_INC), EXTRA_LIB=$(EXTRA_LIB) and EXTRA_ADDLIBS=$(EXTRA_ADDLIBS).')
     endif
 endif
 
-# Check for c++11 support
-C11SUPPORT = 0
-TMP := $(shell $(ECHO) 'main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -std=c++11 -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+# Check for c++17 or c++11 support
+CXXVERSION = 0
+TMP := $(shell $(ECHO) 'int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -std=c++17 -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+ifeq ($(AUTO_DEBUG),1)
+    $(shell $(ECHO) "#cmd for c++17 check: $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -std=c++17 -o /dev/null $(TMPFILE) 2> /dev/null" >> $(AUTO_LOG_FILE))
+    $(shell $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -std=c++17 -o /dev/null $(TMPFILE) &>> $(AUTO_LOG_FILE))
+    $(shell $(ECHO) '#tmp: $(TMP)' >> $(AUTO_LOG_FILE))
+endif
 ifeq ($(TMP),0)
-    C11SUPPORT = 1
+    CXXVERSION = 17
+    CCFLAGS += -std=c++17
+else
+    TMP := $(shell $(ECHO) 'int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -std=c++11 -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    ifeq ($(TMP),0)
+        CXXVERSION = 11
+        CCFLAGS += -std=c++11
+    endif
+endif
+
+# Check for special functions support
+HAVE_MATH_SPECIAL_FUNCS = 0
+# For c++17 this is included without any further defines
+ifeq ($(CXXVERSION),17)
+    TMP := $(shell $(ECHO) '\#include <cmath> \n int main(){ std::beta(1,1); }' > $(TMPFILE) && $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    ifeq ($(TMP),0)
+        HAVE_MATH_SPECIAL_FUNCS = 1
+    endif
+    # Check for tr1 support, in particular tr1/cmath (and the beta function)
+    # But only if math special functions have not been found
+else
+    # For c++11 we need to check if ISO 29124:2010 is supported
+    ifeq ($(CXXVERSION),11)
+        TMP := $(shell $(ECHO) '\#define __STDCPP_WANT_MATH_SPEC_FUNCS__ 1 \n \#include <cmath> \n \#if !defined(__STDCPP_MATH_SPEC_FUNCS__) || __STDCPP_MATH_SPEC_FUNCS__ < 201003L \n \#error "STOP" \n \#endif \n int main(){ std::beta(1,1); }' > $(TMPFILE) && $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+        ifeq ($(TMP),0)
+            HAVE_MATH_SPECIAL_FUNCS = 1
+        endif
+    endif
+endif
+ifeq ($(HAVE_MATH_SPECIAL_FUNCS),0)
+    TMP := $(shell $(ECHO) '\#include <tr1/cmath> \n int main(){ std::tr1::beta(1,1); }' > $(TMPFILE) && $(CXX) $(EXTRA_INC) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -xc++ $(LDFLAGS) $(CCFLAGS) -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    HAVE_TR1_CMATH = 0
+    ifeq ($(TMP),0)
+        HAVE_TR1_CMATH = 1
+        CCFLAGS += -DHAVE_TR1_CMATH
+    endif
 endif
 
 # Position independent code
@@ -527,22 +714,128 @@ ifeq ($(USE_VTK), "ON")
     ifneq ($(origin VTK_LIB_USR), undefined)
         VTK_LIB ?= $(VTK_LIB_USR)
     endif
+    VTK_BASE_PATH ?= /usr
     VTK_ADDLIBS ?= $(VTK_ADDLIBS_USR)
-    VTK_INC ?= -I$(shell ls -d /usr/include/vtk* 2> /dev/null | tail -n 1)
+    VTK_INC ?= -I$(shell ls -d $(VTK_BASE_PATH)/include/vtk* 2> /dev/null | tail -n 1)
     ifeq ($(VTK_INC),-I)
         VTK_INC =
     endif
-    # note we assume here that our compiler supports #pragma message
-    VTK_TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n \#define XSTR(x) STR(x) \n \#define STR(x) \#x \n \#pragma message XSTR(VTK_MAJOR_VERSION)' > $(TMPFILE) && $(CXX) -Wno-deprecated -E $(VTK_INC) -xc++ $(TMPFILE) 2> /dev/null | grep "pragma" | grep "message" || echo -1)
-    ifeq ($(VTK_TMP), -1)
-        $(error Could not obtain VTK_MAJOR_VERSION)
+    ifeq ($(AUTO_DEBUG),1)
+        $(shell $(ECHO) "#vtk_base_path: $(VTK_BASE_PATH)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#vtk_inc: $(VTK_INC)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#vtk_inc_usr: $(VTK_INC_USR)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#vtk_lib: $(VTK_LIB)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#vtk_lib_usr: $(VTK_LIB_USR)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#vtk major version detection" >> $(AUTO_LOG_FILE))
     endif
+    # note we assume here that our compiler supports #pragma message
+    VTK_TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n \#define XSTR(x) STR(x) \n \#define STR(x) \#x \n \#pragma message XSTR(VTK_MAJOR_VERSION)' > $(TMPFILE) && $(CXX) -Wno-deprecated -E $(VTK_INC) -xc++ $(TMPFILE) 2>> $(AUTO_LOG_FILE) | tee -a $(AUTO_LOG_FILE) | grep "pragma" | grep "message" || echo -1)
+    ifeq ($(AUTO_DEBUG),1)
+        $(shell $(ECHO) "#vtk major version detection result: $(VTK_TMP)" >> $(AUTO_LOG_FILE))
+    endif
+    ifeq ($(VTK_TMP),-1)
+        # Test if it is in the $(LIB_PATH)/vtk/install location
+        VTK_BASE_PATH = $(LIB_PATH)/vtk/install
+        ifeq ($(AUTO_DEBUG),1)
+            $(shell $(ECHO) "#lib_path: $(LIB_PATH)" >> $(AUTO_LOG_FILE))
+            $(shell $(ECHO) "#vtk major version detection (lib)" >> $(AUTO_LOG_FILE))
+        endif
+        VTK_INC = -I$(shell ls -d $(VTK_BASE_PATH)/include/vtk* 2> /dev/null | tail -n 1)
+        ifeq ($(VTK_INC),-I)
+            VTK_INC =
+        endif
+        VTK_TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n \#define XSTR(x) STR(x) \n \#define STR(x) \#x \n \#pragma message XSTR(VTK_MAJOR_VERSION)' > $(TMPFILE) && $(CXX) -Wno-deprecated -E $(VTK_INC) -xc++ $(TMPFILE) 2>> $(AUTO_LOG_FILE) | tee -a $(AUTO_LOG_FILE) | grep "pragma" | grep "message" || echo -1)
+        ifeq ($(AUTO_DEBUG),1)
+            $(shell $(ECHO) "#vtk major version detection result (lib): $(VTK_TMP)" >> $(AUTO_LOG_FILE))
+        endif
+        ifeq ($(VTK_TMP), -1)
+            ifeq ($(AUTOINSTALL_VTK), "ON")
+                # Check if sources provide the convex surface model
+                $(info 'Could not compile VTK example. As AUTOINSTALL_VTK is set to "ON". VTK will now be automatically downloaded to $(LIB_PATH)')
+                # Check if $(LIB_PATH)/vtk/src folder is available
+                TMP := $(shell ls "$(LIB_PATH)/vtk/src" 2> /dev/null && echo 0 || echo -1)
+                # If not download vtk
+                ifeq ($(TMP), -1)
+                    # Create $(LIB_PATH) folder
+                    TMP := $(shell mkdir -p "$(LIB_PATH)" && echo 0 || echo -1)
+                    ifeq ($(TMP), -1)
+                        $(error 'Could not create $(LIB_PATH) directory')
+                    endif
+                    TMP := $(shell mkdir -p "$(LIB_PATH)/vtk" && echo 0 || echo -1)
+                    ifeq ($(TMP), -1)
+                        $(error 'Could not create $(LIB_PATH)/vtk directory')
+                    endif
+                    # Check for git
+                    ifneq (, $(shell which git))
+                        # Download git repository
+                        TMP := $(shell git clone $(VTK_GIT) $(LIB_PATH)/vtk/src && echo 0 || echo -1)
+                        ifeq ($(TMP), -1)
+                            $(error 'Could not perform "git clone" of $(VTK_GIT) into $(LIB_PATH)/vtk/src')
+                        endif
+                    # Git not available
+                    else
+                        # Check for wget
+                        ifeq (,$(shell which wget))
+                            $(error "Could not find either git or wget to download VTK. Please install either of the two in order to allow the auto-installation of VTK.")
+                        endif
+                        # Download zip file
+                        TMP := $(shell wget $(VTK_ZIP) -P $(LIB_PATH)/vtk &> /dev/null && echo 0 || echo -1)
+                        ifeq ($(TMP), -1)
+                            $(error 'Failed to download VTK using wget. Please install VTK manually')
+                        endif
+                        # Check if unzip is available
+                        ifeq (, $(shell which unzip))
+                            $(error 'Could not find unzip. Please install it to allow the auto-installation of VTK.')
+                        endif
+                        # Unzip file
+                        TMP := $(shell unzip $(LIB_PATH)/vtk/$(notdir $(VTK_ZIP)) -d $(LIB_PATH)/vtk/src && mv $(LIB_PATH)/vtk/src/VTK*/* $(LIB_PATH)/vtk/src/ && echo 0 || echo -1)
+                        ifeq ($(TMP), -1)
+                            $(error 'Could not unzip $(notdir $(VTK_ZIP)) in $(LIB_PATH)/vtk')
+                        endif
+                    endif
+                endif
+                # At this stage we now have VTK downloaded. Next we need to compile it
+                $(info VTK has been downloaded and will be compiled now. This can take several minutes.)
+                OBJDIR := $(PWD)
+                TMP := $(shell $(ECHO) '\#!/bin/bash \n cd "$(OBJDIR)/$(LIB_PATH)/vtk" \n mkdir -p build \n cd src \n git checkout $(VTK_VERSION_TAG) &>> $(AUTO_LOG_FILE) \n cd ../build \n cmake -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX=../install -DModule_vtkIOMPIParallel:BOOL=ON -DVTK_Group_MPI:BOOL=ON -DVTK_Group_Rendering:BOOL=OFF -DVTK_RENDERING_BACKEND:STRING=None -DVTK_USE_X:BOOL=OFF -DModule_vtkIOMPIImage:BOOL=ON -DModule_vtkParallelMPI:BOOL=ON ../src &>> $(AUTO_LOG_FILE) \n make &>> $(AUTO_LOG_FILE) \n make install &>> $(AUTO_LOG_FILE)' > $(TMPFILE))
+                TMP := $(shell bash $(TMPFILE) && echo 0 || echo -1)
+                ifeq ($(TMP), -1)
+                    $(error 'Compilation of vtk failed. Please install it manually')
+                endif
+                # Attempt to find vtk major version again after compilation
+                VTK_INC = -I$(shell ls -d $(VTK_BASE_PATH)/include/vtk* 2> /dev/null | tail -n 1)
+                ifeq ($(VTK_INC),-I)
+                    VTK_INC =
+                endif
+                VTK_TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n \#define XSTR(x) STR(x) \n \#define STR(x) \#x \n \#pragma message XSTR(VTK_MAJOR_VERSION)' > $(TMPFILE) && $(CXX) -Wno-deprecated -E $(VTK_INC) -xc++ $(TMPFILE) 2>> $(AUTO_LOG_FILE) | tee -a $(AUTO_LOG_FILE) | grep "pragma" | grep "message" || echo -1)
+                ifeq ($(AUTO_DEBUG),1)
+                    $(shell $(ECHO) "#vtk major version detection result (lib): $(VTK_TMP)" >> $(AUTO_LOG_FILE))
+                endif
+            else
+                $(error 'Could not obtain VTK_MAJOR_VERSION. As AUTOINSTALL_VTK is not set to "ON" we cannot continue'))
+            endif
+        endif
+    endif
+    open_bracket := (
+    close_bracket := )
+    space :=
+    space +=
+    VTK_TMP := $(subst $(open_bracket),$(space),$(VTK_TMP))
+    VTK_TMP := $(subst $(close_bracket),$(space),$(VTK_TMP))
     VTK_MAJOR_VERSION := $(patsubst "%",%,$(word $(words $(VTK_TMP)),$(VTK_TMP)))
-    VTK_TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n \#define XSTR(x) STR(x) \n \#define STR(x) \#x \n \#pragma message XSTR(VTK_MINOR_VERSION)' > $(TMPFILE) && $(CXX) -Wno-deprecated -E $(VTK_INC) -xc++ $(TMPFILE) 2> /dev/null | grep "pragma" | grep "message" || echo -1)
+    ifeq ($(AUTO_DEBUG),1)
+        $(shell $(ECHO) "#vtk_major_version: $(VTK_MAJOR_VERSION)" >> $(AUTO_LOG_FILE))
+    endif
+    VTK_TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n \#define XSTR(x) STR(x) \n \#define STR(x) \#x \n \#pragma message XSTR(VTK_MINOR_VERSION)' > $(TMPFILE) && $(CXX) -Wno-deprecated -E $(VTK_INC) -xc++ $(TMPFILE) 2>> $(AUTO_LOG_FILE) | tee -a $(AUTO_LOG_FILE) | grep "pragma" | grep "message" || echo -1)
     ifeq ($(VTK_TMP), -1)
         $(error Could not obtain VTK_MINOR_VERSION)
     endif
+    VTK_TMP := $(subst $(open_bracket),$(space),$(VTK_TMP))
+    VTK_TMP := $(subst $(close_bracket),$(space),$(VTK_TMP))
     VTK_MINOR_VERSION := $(patsubst "%",%,$(word $(words $(VTK_TMP)),$(VTK_TMP)))
+    ifeq ($(AUTO_DEBUG),1)
+        $(shell $(ECHO) "#vtk_minor_version: $(VTK_MINOR_VERSION)" >> $(AUTO_LOG_FILE))
+    endif
     VTK_VERSION=$(VTK_MAJOR_VERSION).$(VTK_MINOR_VERSION)
 
     # check if the vtk compiled with ParaView is going to be used
@@ -587,20 +880,20 @@ ifeq ($(USE_VTK), "ON")
         ifneq ($(origin VTK_LIB), undefined)
             VTK_LIB_SET = 1
         else
-            VTK_LIB := -L$(dir $(shell find /usr/lib* -name 'libvtkCommon$(VTK_APPENDIX_5).so' | tail -n 1))
+            VTK_LIB := -L$(dir $(shell find $(VTK_BASE_PATH)/lib* -name 'libvtkCommon$(VTK_APPENDIX_5).so' | tail -n 1))
             ifeq ($(VTK_LIB),-L)
                 VTK_LIB =
             endif
         endif
-        TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtkCommon$(VTK_APPENDIX_5) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+        TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtkCommon$(VTK_APPENDIX_5) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
         ifeq ($(TMP), -1)
             ifeq ($(VTK_LIB_SET), 0)
-                VTK_LIB := -L$(dir $(shell find /usr/lib* -name 'libvtkCommon.so' | tail -n 1))
+                VTK_LIB := -L$(dir $(shell find $(VTK_BASE_PATH)/lib* -name 'libvtkCommon.so' | tail -n 1))
                 ifeq ($(VTK_LIB),-L)
                     VTK_LIB =
                 endif
             endif
-            TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtkCommon $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+            TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtkCommon $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
             ifeq ($(TMP), -1)
                 $(error 'Could not determine suitable appendix of VTK library with VTK_INC="$(VTK_INC)", VTK_LIB="$(VTK_LIB)" and VTK_APPENDIX="$(VTK_APPENDIX)"')
             else
@@ -613,26 +906,36 @@ ifeq ($(USE_VTK), "ON")
                         -lvtkIO$(VTK_APPENDIX_5) \
                         -lvtkParallel$(VTK_APPENDIX_5) \
                         -lvtkGraphics$(VTK_APPENDIX_5)
+        # in this case we need to disable c++11 or c++17
+        CCFLAGS_STD = -std=c++11 -std=c++17
+        CCFLAGS := $(filter-out $(CCFLAGS_STD),$(CCFLAGS))
     else
         VTK_APPENDIX := -$(VTK_APPENDIX)
         VTK_LIB_SET = 0
         ifneq ($(origin VTK_LIB), undefined)
             VTK_LIB_SET = 1
         else
-            VTK_LIB := -L$(dir $(shell find /usr/lib* -name 'libvtkParallelMPI$(VTK_APPENDIX).so' 2> /dev/null | tail -n 1))
+            VTK_LIB := -L$(dir $(shell find $(VTK_BASE_PATH)/lib* -name 'libvtkParallelMPI$(VTK_APPENDIX).so' 2> /dev/null | tail -n 1))
             ifeq ($(VTK_LIB),-L)
                 VTK_LIB =
             endif
         endif
-        TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtksys$(VTK_APPENDIX) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+        ifeq ($(AUTO_DEBUG),1)
+            $(shell $(ECHO) "#vtk_lib: $(VTK_LIB)" >> $(AUTO_LOG_FILE))
+            $(shell $(ECHO) "#appendix command: $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtksys$(VTK_APPENDIX) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE)" >> $(AUTO_LOG_FILE))
+        endif
+        TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtksys$(VTK_APPENDIX) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2>> $(AUTO_LOG_FILE) && echo 0 || echo -1)
         ifeq ($(TMP), -1)
+            ifeq ($(AUTO_DEBUG),1)
+                $(shell $(ECHO) "#attempting without appendix" >> $(AUTO_LOG_FILE))
+            endif
             ifeq ($(VTK_LIB_SET), 0)
-                VTK_LIB := -L$(dir $(shell find /usr/lib* -name 'libvtkParallelMPI.so' 2> /dev/null | tail -n 1))
+                VTK_LIB := -L$(dir $(shell find $(VTK_BASE_PATH)/lib* -name 'libvtkParallelMPI.so' 2> /dev/null | tail -n 1))
                 ifeq ($(VTK_LIB),-L)
                     VTK_LIB =
                 endif
             endif
-            TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtksys $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+            TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) -lvtksys $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2>> $(AUTO_LOG_FILE) && echo 0 || echo -1)
             ifeq ($(TMP), -1)
                 $(error 'Could not determine suitable appendix of VTK library with VTK_INC="$(VTK_INC)", VTK_LIB="$(VTK_LIB)" and VTK_APPENDIX="$(VTK_APPENDIX)"')
             else
@@ -667,9 +970,12 @@ ifeq ($(USE_VTK), "ON")
                 VTK_ADDLIBS += -lvtkIOParallelXML$(VTK_APPENDIX)
             else
                 VTK_ADDLIBS += -lvtkIOParallel$(VTK_APPENDIX)
+                # in this case we need to disable c++11 or c++17
+                CCFLAGS_STD = -std=c++11 -std=c++17
+                CCFLAGS := $(filter-out $(CCFLAGS_STD),$(CCFLAGS))
             endif
             ifeq ($(VTK_LIB_SET), 0)
-                VTK_LIB := -L$(dir $(shell find /usr/lib* -name 'libvtkParallelMPI$(VTK_APPENDIX).so' 2> /dev/null | tail -n 1))
+                VTK_LIB := -L$(dir $(shell find $(VTK_BASE_PATH)/lib* -name 'libvtkParallelMPI$(VTK_APPENDIX).so' 2> /dev/null | tail -n 1))
                 ifeq ($(VTK_LIB),-L)
                     VTK_LIB =
                 endif
@@ -697,16 +1003,14 @@ ifeq ($(USE_VTK), "ON")
                             -lvtkDICOMParser$(VTK_APPENDIX) \
                             -lvtkmetaio$(VTK_APPENDIX)
             ifeq ($(VTK_LIB_SET), 0)
-                VTK_LIB := -L$(dir $(shell find /usr/lib* -name 'libvtkParallelMPI$(VTK_APPENDIX).so' 2> /dev/null | tail -n 1))
+                VTK_LIB := -L$(dir $(shell find $(VTK_BASE_PATH)/lib* -name 'libvtkParallelMPI$(VTK_APPENDIX).so' 2> /dev/null | tail -n 1))
                 ifeq ($(VTK_LIB),-L)
                     VTK_LIB =
                 endif
             endif
             ifeq ($(VTK_MAJOR_VERSION),8)
-                ifeq ($(C11SUPPORT),1)
-                    CCFLAGS += -std=c++11
-                else
-                    $(error VTK version $(VTK_VERSION) requires support for -std=c++11 in the compiler flags)
+                ifeq (, $(filter $(CXXVERSION),11 17))
+                    $(error VTK version $(VTK_VERSION) requires support for -std=c++11 or -std=c++17 in the compiler flags)
                 endif
             endif
         endif
@@ -716,7 +1020,14 @@ ifeq ($(USE_VTK), "ON")
     endif
 
     # Test the settings
-    TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) $(VTK_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    VTK_RPATH = -Wl,$(shell $(ECHO) $(VTK_LIB) | grep -oe '\-L[^ ]*' | sed 's/-L/-rpath,/g' | tr '\n' ',' | sed 's/,$$//')
+    ifeq ($(AUTO_DEBUG),1)
+        $(shell $(ECHO) "#vtk_addlibs: $(VTK_ADDLIBS)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#vtk_rpath: $(VTK_RPATH)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#vtk compile test:" >> $(AUTO_LOG_FILE))
+        TMP := $(shell $(ECHO) "\#include <vtkVersion.h> \n int main(){}" > $(TMPFILE) && $(CXX) $(VTK_RPATH) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) $(VTK_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) &>> $(AUTO_LOG_FILE))
+    endif
+    TMP := $(shell $(ECHO) '\#include <vtkVersion.h> \n int main(){}' > $(TMPFILE) && $(CXX) $(VTK_RPATH) $(EXTRA_LIB) $(VTK_LIB) $(VTK_INC) $(EXTRA_ADDLIBS) $(VTK_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
     ifeq ($(TMP), -1)
         $(error 'Could not compile VTK example with VTK_INC="$(VTK_INC)", VTK_LIB="$(VTK_LIB)" and VTK_ADDLIBS="$(VTK_ADDLIBS)"')
     endif
@@ -727,23 +1038,34 @@ ifeq ($(USE_VTK), "ON")
     EXTRA_INC += $(VTK_INC)
 
     # Write out VTK Data so that it can be used by CFDEMcoupling without detecting it again
-    $(shell echo 'OPTIONS_VTK_ADDLIBS = $(VTK_ADDLIBS)' >> $(OPTIONS_FILE))
-    $(shell echo 'OPTIONS_VTK_LIB = $(VTK_LIB)' >> $(OPTIONS_FILE))
-    $(shell echo 'OPTIONS_VTK_INC = $(VTK_INC)' >> $(OPTIONS_FILE))
+    $(shell $(ECHO) 'OPTIONS_VTK_ADDLIBS = $(VTK_ADDLIBS)' >> $(OPTIONS_FILE))
+    $(shell $(ECHO) 'OPTIONS_VTK_LIB = $(VTK_LIB)' >> $(OPTIONS_FILE))
+    $(shell $(ECHO) 'OPTIONS_VTK_INC = $(VTK_INC)' >> $(OPTIONS_FILE))
 endif
 
 # Superquadric particles
 #
 ifeq ($(USE_SUPERQUADRICS), "ON")
-    BOOST_INC ?= $(BOOST_INC_USR)
-    # Include test
-    TMP := $(shell $(ECHO) '\#include "boost/math/special_functions/beta.hpp" \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(BOOST_INC) $(EXTRA_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
-    ifeq ($(TMP), -1)
-        $(error 'Could not compile boost example with BOOST_INC="$(BOOST_INC)" as boost/math/special_functions/beta.hpp could not be found')
+    REQUIRE_BOOST = 1
+    ifeq ($(HAVE_MATH_SPECIAL_FUNCS),1)
+        REQUIRE_BOOST = 0
+    endif
+    ifeq ($(HAVE_TR1_CMATH),1)
+        REQUIRE_BOOST = 0
+    endif
+    # if we don't have beta from the standard library we need boost
+    ifeq ($(REQUIRE_BOOST),1)
+        BOOST_INC ?= $(BOOST_INC_USR)
+        # Include test
+        TMP := $(shell $(ECHO) '\#include "boost/math/special_functions/beta.hpp" \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(BOOST_INC) $(EXTRA_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+        ifeq ($(TMP), -1)
+            $(error 'Could not compile boost example with BOOST_INC="$(BOOST_INC)" as boost/math/special_functions/beta.hpp could not be found')
+        endif
+        CCFLAGS += -DBOOST_INCLUDED
+        EXTRA_INC += $(BOOST_INC)
     endif
     # Prepare environment
     LMP_INC += -DSUPERQUADRIC_ACTIVE_FLAG -DNONSPHERICAL_ACTIVE_FLAG
-    EXTRA_INC += $(BOOST_INC)
 endif
 
 # JPG output for sphere renderings
@@ -754,12 +1076,21 @@ ifeq ($(USE_JPG), "ON")
     JPG_ADDLIBS += -ljpeg
     # Test settings
     # Include test
-    TMP := $(shell $(ECHO) '\#include <libjpeg.h> \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(JPG_INC) $(EXTRA_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    ifeq ($(AUTO_DEBUG),1)
+        $(shell $(ECHO) "#JPG_INC: $(JPG_INC)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#JPG_LIB: $(JPG_LIB)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "#JPG_ADDLIBS: $(JPG_ADDLIBS)" >> $(AUTO_LOG_FILE))
+        $(shell $(ECHO) "jpg compile test:" >> $(AUTO_LOG_FILE))
+    endif
+    TMP := $(shell $(ECHO) '\#include <cstdlib> \n \#include <cstdio> \n \#include <jpeglib.h> \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(JPG_INC) $(EXTRA_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2>> $(AUTO_LOG_FILE) && echo 0 || echo -1)
     ifeq ($(TMP), -1)
         $(error 'Could not compile jpg example with JPG_INC="$(JPG_INC)"')
     endif
+    ifeq ($(AUTO_DEBUG),1)
+        $(shell $(ECHO) "jpg link test:" >> $(AUTO_LOG_FILE))
+    endif
     # Linking test
-    TMP := $(shell $(ECHO) '\#include <libjpeg.h> \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(JPG_LIB) $(JPG_INC) $(EXTRA_ADDLIBS) $(JPG_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    TMP := $(shell $(ECHO) '\#include <cstdlib> \n \#include <cstdio> \n \#include <jpeglib.h> \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(JPG_LIB) $(JPG_INC) $(EXTRA_ADDLIBS) $(JPG_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2>> $(AUTO_LOG_FILE) && echo 0 || echo -1)
     ifeq ($(TMP), -1)
         $(error 'Could not compile and link jpg example with JPG_INC="$(JPG_INC)", JPG_LIB="$(JPG_LIB)" and JPG_ADDLIBS="$(JPG_ADDLIBS)"')
     endif
@@ -788,8 +1119,7 @@ ifeq ($(USE_CONVEX), "ON")
     CONVEX_ADDLIBS += -lccd
     # Test settings
     # Link test
-    $(info $(CXX) $(EXTRA_LIB) $(CONVEX_LIB) $(CONVEX_INC) $(EXTRA_ADDLIBS) $(CONVEX_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE))
-    TMP := $(shell $(ECHO) '\#include "ccd/ccd.h" \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(CONVEX_LIB) $(CONVEX_INC) $(EXTRA_ADDLIBS) $(CONVEX_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    TMP := $(shell $(ECHO) '\#include "ccd/ccd.h" \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(CONVEX_LIB) $(CONVEX_INC) $(EXTRA_ADDLIBS) $(CONVEX_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
     # Automatic download and compilation if AUTODOWNLOAD_CONVEX is set
     ifeq ($(TMP), -1)
         ifeq ($(AUTOINSTALL_CONVEX), "ON")
@@ -797,13 +1127,13 @@ ifeq ($(USE_CONVEX), "ON")
             ifneq ($(wildcard ../surface_model_convex.h),)
                 $(error 'It appears that you do not posses the source files for the convex hull surface model. Note that this is available only in the premium version of LIGGGHTS.')
             endif
-            $(info 'Could not compile Convex (libccd) example. As AUTOINSTALL_CONVEX is set to "ON". libccd will now be automatically downloaded to ../lib/libccd')
+            $(info 'Could not compile Convex (libccd) example. As AUTOINSTALL_CONVEX is set to "ON". libccd will now be automatically downloaded to $(LIB_PATH)')
             # Check if $(LIB_PATH)/libccd/src folder is available
-            TMP := $(shell ls $(LIB_PATH)/libccd/src && echo 0 || echo -1)
+            TMP := $(shell ls "$(LIB_PATH)/libccd/src" && echo 0 || echo -1)
             # If not download libccd
             ifeq ($(TMP), -1)
                 # Create $(LIB_PATH) folder
-                TMP := $(shell mkdir -p $(LIB_PATH) && echo 0 || echo -1)
+                TMP := $(shell mkdir -p "$(LIB_PATH)" && echo 0 || echo -1)
                 ifeq ($(TMP), -1)
                     $(error 'Could not create $(LIB_PATH) directory')
                 endif
@@ -838,22 +1168,22 @@ ifeq ($(USE_CONVEX), "ON")
             endif
             # At this stage we now have libccd downloaded. Next we need to compile it
             OBJDIR := $(PWD)
-            TMP := $(shell $(ECHO) '\#!/bin/bash \n cd $(OBJDIR)/$(LIB_PATH)/libccd/src \n make PREFIX=$(PWD)/../../ USE_DOUBLE=yes &> /dev/null' > $(TMPFILE))
+            TMP := $(shell $(ECHO) '\#!/bin/bash \n cd "$(OBJDIR)/$(LIB_PATH)/libccd/src" \n make PREFIX="$(PWD)/../../" USE_DOUBLE=yes &> /dev/null' > $(TMPFILE))
             TMP := $(shell bash $(TMPFILE) && echo 0 || echo -1)
             ifeq ($(TMP), -1)
                 $(error 'Compilation of libccd failed. Please install it manually')
             endif
         else
-            $(error 'Could not compile Convex (libccd) example with CONVEX_INC="$(CONVEX_INC)"')
+            $(error 'Could not compile and link Convex (libccd) example with CONVEX_INC="$(CONVEX_INC)", CONVEX_LIB="$(CONVEX_LIB)" and CONVEX_ADDLIBS="$(CONVEX_ADDLIBS)". AUTOINSTALL_CONVEX is not set to "ON" and thus we cannot continue.')
         endif
     endif
     # Include test
-    TMP := $(shell $(ECHO) '\#include "ccd/ccd.h" \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(CONVEX_INC) $(EXTRA_ADDLIBS) $(CCFLAGS) -xc++ -E $(TMPFILE) &> /dev/null && echo 0 || echo -1)
+    TMP := $(shell $(ECHO) '\#include "ccd/ccd.h" \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(CONVEX_INC) $(EXTRA_ADDLIBS) $(CCFLAGS) -xc++ -E $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
     ifeq ($(TMP), -1)
         $(error 'Could not compile Convex (libccd) example with CONVEX_INC="$(CONVEX_INC)"')
     endif
     # Link test
-    TMP := $(shell $(ECHO) '\#include "ccd/ccd.h" \n main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(CONVEX_LIB) $(CONVEX_INC) $(EXTRA_ADDLIBS) $(CONVEX_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    TMP := $(shell $(ECHO) '\#include "ccd/ccd.h" \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(CONVEX_LIB) $(CONVEX_INC) $(EXTRA_ADDLIBS) $(CONVEX_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
     ifeq ($(TMP), -1)
         $(error 'Could not compile and link Convex (libccd) example with CONVEX_INC="$(CONVEX_INC)", CONVEX_LIB="$(CONVEX_LIB)" and CONVEX_ADDLIBS="$(CONVEX_ADDLIBS)"')
     endif
@@ -862,6 +1192,97 @@ ifeq ($(USE_CONVEX), "ON")
     EXTRA_INC += $(CONVEX_INC)
     EXTRA_LIB += $(CONVEX_LIB)
     EXTRA_ADDLIBS += $(CONVEX_ADDLIBS)
+endif
+
+# MFEM support
+ifeq ($(USE_MFEM), "ON")
+    ifneq ($(origin MFEM_INC_USR), undefined)
+        MFEM_INC ?= $(MFEM_INC_USR)
+    endif
+    ifneq ($(origin MFEM_LIB_USR), undefined)
+        MFEM_LIB ?= $(MFEM_LIB_USR)
+    endif
+    ifneq ($(origin MFEM_ADDLIBS_USR), undefined)
+        MFEM_ADDLIBS ?= $(MFEM_ADDLIBS_USR)
+    endif
+    # Defaults
+    MFEM_INC ?= -I$(LIB_PATH)/mfem
+    MFEM_LIB ?= -L$(LIB_PATH)/mfem
+    MFEM_ADDLIBS += -lmfem
+    # Link test
+    TMP := $(shell $(ECHO) '\#include "mfem.hpp" \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(MFEM_INC) $(MFEM_LIB) $(EXTRA_ADDLIBS) $(MFEM_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    ifeq ($(TMP), -1)
+        ifeq ($(AUTOINSTALL_MFEM), "ON")
+            $(info 'Could not compile MFEM example. As AUTOINSTALL_MFEM is set to "ON". MFEM will now be automatically downloaded to ../lib/mfem')
+            # Check if $(LIB_PATH)/mfem folder is available
+            TMP := $(shell ls $(LIB_PATH)/mfem && echo 0 || echo -1)
+            # If not download MFEM
+            ifeq ($(TMP), -1)
+                # Create $(LIB_PATH) folder
+                TMP := $(shell mkdir -p $(LIB_PATH) && echo 0 || echo -1)
+                ifeq ($(TMP), -1)
+                    $(error 'Could not create $(LIB_PATH) directory')
+                endif
+                # Check for git
+                ifneq (, $(shell which git))
+                    # Download git repository
+                    TMP := $(shell git clone $(MFEM_GIT) $(LIB_PATH)/mfem && echo 0 || echo -1)
+                    ifeq ($(TMP), -1)
+                        $(error 'Could not perform "git clone" of $(MFEM_GIT) into $(LIB_PATH)/mfem')
+                    endif
+                else                 # Git not available
+                    ifeq (,$(shell which wget))
+                        $(error "Could not find either git or wget to download MFEM. Please install either of the two in order to allow the auto-installation of libccd.")
+                    endif
+                    # Download zip file
+                    TMP := $(shell wget -N $(MFEM_ZIP) -P $(LIB_PATH) &> /dev/null && echo 0 || echo -1)
+                    ifeq ($(TMP), -1)
+                        $(error 'Failed to download MFEM using wget. Please install MFEM manually')
+                    endif
+                    # Check if tar is available
+                    ifeq (, $(shell which tar))
+                        $(error 'Could not find tar. Please install it to allow the auto-installation of MFEM.')
+                    endif
+                    # Untar file
+                    TMP := $(shell tar zxvf $(LIB_PATH)/$(notdir $(MFEM_ZIP)) -C $(LIB_PATH) && echo 0 || echo -1)
+                    ifeq ($(TMP), -1)
+                        $(error 'Could not unzip $(notdir $(MFEM_ZIP)) in $(LIB_PATH)')
+                    endif
+                    ifeq ($(TMP), 0)
+                        $(error 'Untar $(notdir $(MFEM_ZIP)) in $(LIB_PATH)')
+                    endif
+                    $(shell mv $(LIB_PATH)/mfem-$(MFEM_VERSION_TAG) $(LIB_PATH)/mfem)
+                endif
+            endif
+            # At this stage we now have MFEM downloaded. Next we need to compile it
+            TMP := $(shell ls $(LIB_PATH)/mfem/libmfem.a && echo 0 || echo -1)
+            ifeq ($(TMP), -1)
+                TMP := $(shell $(ECHO) '\#!/bin/bash \n cd $(LIB_PATH)/mfem \n make config \n make all -j 4' > $(TMPFILE))
+                TMP := $(shell bash $(TMPFILE) && echo 0 || echo -1)
+                ifeq ($(TMP), -1)
+                    $(error 'Compilation of MFEM failed. Please install it manually')
+                endif
+            endif
+        else
+            $(error 'Could not compile MFEM example with MFEM_INC="$(MFEM_INC)"')
+        endif
+    endif
+
+
+    # Include test
+    TMP := $(shell $(ECHO) '\#include "mfem.hpp" \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(MFEM_INC) $(EXTRA_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    ifeq ($(TMP), -1)
+        $(error 'Could not compile MFEM example with MFEM_INC="$(MFEM_INC)"')
+    endif
+    # Link test
+    TMP := $(shell $(ECHO) '\#include "mfem.hpp" \n int main(){}' > $(TMPFILE) && $(CXX) $(EXTRA_LIB) $(MFEM_INC) $(MFEM_LIB) $(EXTRA_ADDLIBS) $(MFEM_ADDLIBS) $(CCFLAGS) -xc++ -o /dev/null $(TMPFILE) 2> /dev/null && echo 0 || echo -1)
+    ifeq ($(TMP), -1)
+        $(error 'Could not compile and link MFEM example. Test was done with MFEM_INC="$(MFEM_INC)", MFEM_LIB="$(MFEM_LIB)" and MFEM_ADDLIBS="$(MFEM_ADDLIBS)"')
+    endif
+    # Prepare environment
+    EXTRA_INC += $(MFEM_INC)
+    EXTRA_LIB += $(MFEM_LIB)
+    EXTRA_ADDLIBS += $(MFEM_ADDLIBS)
 endif
 
 # Add pre-processor defines to includes
@@ -888,6 +1309,15 @@ EXTRA_LIB += $(PKG_LIB) $(PKG_SYSLIB)
 EXTRA_PATH += $(PKG_PATH) $(PKG_SYSPATH)
 EXTRA_ADDLIBS += $(PKG_ADDLIBS) $(PKG_SYSADDLIBS)
 
+# convert extra_lib -L to a list of -rpath
+# magic happens here:
+# -Wl, is prepended to the string
+# grep -oe finds all substrings that start with -L and end with a whitespace
+# sed replaces -L with -rpath,
+# tr replaces the \n from the grep output to ,
+# sed removes the last , that is followed by EOL
+EXTRA_RPATH = -Wl,$(shell $(ECHO) $(EXTRA_LIB) | grep -oe '\-L[^ ]*' | sed 's/-L/-rpath,/g' | tr '\n' ',' | sed 's/,$$//')
+
 # Path to src files
 
 ifeq ($(MINGW), 0)
@@ -904,18 +1334,51 @@ $(EXE): $(TARGET) ../MAKE/mingw_cross.nsis
 	touch $(EXE)
 endif
 
-$(TARGET):	$(OBJ)
-	$(LINK) $(LDFLAGS) $(OBJ) $(EXTRA_PATH) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -o $(EXE)
+LIBTARGETS=
+LIBEXE=$(EXE)
+SHLIBEXE=$(EXE)
+# Only build if we come from the default makefile
+# this implies that our EXE variable will not be ../lib*.{so,a}
+ifeq ($(filter ../lib%,$(filter %.a %.so, $(EXE))),)
+    # switch through different BUILD_LIBRARIES flags
+    ifeq ($(BUILD_LIBRARIES), "SHARED")
+        LIBTARGETS += shlib
+        SHLIBEXE=$(dir $(EXE))lib$(notdir $(EXE)).so
+    endif
+    ifeq ($(BUILD_LIBRARIES), "STATIC")
+        LIBTARGETS += lib
+        LIBEXE=$(dir $(EXE))lib$(notdir $(EXE)).a
+    endif
+    ifeq ($(BUILD_LIBRARIES), "ALL")
+        LIBTARGETS += shlib lib
+        SHLIBEXE=$(dir $(EXE))lib$(notdir $(EXE)).so
+        LIBEXE=$(dir $(EXE))lib$(notdir $(EXE)).a
+    endif
+endif
+
+# Write variables for M2M in coupling
+$(shell $(ECHO) 'ifeq ($$(READ_M2M_VARS),1)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) '    ARCHIVE = $(ARCHIVE)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) '    ARFLAGS = $(ARFLAGS)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) '    CXX = $(CXX)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) '    CCFLAGS = $(CCFLAGS)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) '    DEPFLAGS = $(DEPFLAGS)' >> $(OPTIONS_FILE))
+$(shell $(ECHO) 'endif' >> $(OPTIONS_FILE))
+
+$(TARGET):	$(OBJ) $(LIBTARGETS)
+	$(LINK) $(LDFLAGS) $(OBJ) $(EXTRA_PATH) $(EXTRA_RPATH) $(EXTRA_LIB) $(EXTRA_ADDLIBS) -o $(EXE)
 	$(SIZE) $(EXE)
 
 # Library targets
 
 lib:	$(OBJ)
-	$(ARCHIVE) $(ARFLAGS) $(EXE) $(OBJ)
+	$(ARCHIVE) $(ARFLAGS) $(LIBEXE) $(OBJ)
 
 shlib:	$(OBJ)
-	$(CXX) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(EXE) \
-        $(OBJ) $(EXTRA_ADDLIBS) $(EXTRA_LIB)
+	$(CXX) $(CCFLAGS) $(SHFLAGS) $(SHLIBFLAGS) $(EXTRA_PATH) -o $(SHLIBEXE) \
+        $(OBJ) $(EXTRA_ADDLIBS) $(EXTRA_RPATH) $(EXTRA_LIB)
+	@rm -rf ../libliggghts.so
+	@ln -s $(notdir $(SHLIBEXE)) ../libliggghts.so
 
 # Compilation rules
 

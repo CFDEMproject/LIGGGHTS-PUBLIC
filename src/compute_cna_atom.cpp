@@ -61,7 +61,7 @@
 #include "comm.h"
 #include "memory.h"
 #include "error.h"
-#include <math.h>
+#include <cmath>
 
 using namespace LAMMPS_NS;
 

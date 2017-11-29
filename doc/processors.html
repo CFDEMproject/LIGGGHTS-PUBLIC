@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>processors command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>processors command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/processors.txt" rel="nofollow"> View page source</a> 
+      <li>processors command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/processors.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>processors command<a class="headerlink" href="#processors-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>processors Px Py Pz keyword args ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>processors Px Py Pz keyword args ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>Px,Py,Pz = # of processors in each dimension of 3d grid overlaying the simulation domain</li>
@@ -180,13 +204,14 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>processors * * 5
+<div class="highlight-python"><div class="highlight"><pre>processors * * 5
 processors 2 4 4
 processors * * 8 map xyz
 processors * * * grid numa
 processors * * * grid twolevel 4 * * 1
 processors 4 8 16 grid custom myfile
-processors * * * part 1 2 multiple</pre>
+processors * * * part 1 2 multiple
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -218,14 +243,15 @@ such as 1 x P x 1 will be required, which may incur extra
 communication costs due to the high surface area of each processor&#8217;s
 sub-domain.</p>
 <p>Also note that if multiple partitions are being used then P is the
-number of processors in this partition; see <a class="reference internal" href="Section_start.html#start-7"><em>this section</em></a> for an explanation of the
+number of processors in this partition; see <span class="xref std std-ref">this section</span> for an explanation of the
 -partition command-line switch.  Also note that you can prefix the
 processors command with the <a class="reference internal" href="partition.html"><em>partition</em></a> command to
 easily specify different Px,Py,Pz values for different partitions.</p>
 <p>You can use the <a class="reference internal" href="partition.html"><em>partition</em></a> command to specify
 different processor grids for different partitions, e.g.</p>
-<div class="highlight-python"><pre>partition yes 1 processors 4 4 4
-partition yes 2 processors 2 3 2</pre>
+<div class="highlight-python"><div class="highlight"><pre>partition yes 1 processors 4 4 4
+partition yes 2 processors 2 3 2
+</pre></div>
 </div>
 <hr class="docutils" />
 <p>The <em>grid</em> keyword affects the factorization of P into Px,Py,Pz and it
@@ -285,13 +311,15 @@ factorization and the mapping of processors to the grid.</p>
 blank or comment lines (starting with a &#8220;#&#8221; character) can be present.
 The first non-blank, non-comment line should have
 3 values:</p>
-<div class="highlight-python"><pre>Px Py Py</pre>
+<div class="highlight-python"><div class="highlight"><pre>Px Py Py
+</pre></div>
 </div>
 <p>These must be compatible with the total number of processors
 and the Px, Py, Pz settings of the processors commmand.</p>
 <p>This line should be immediately followed by
 P = Px*Py*Pz lines of the form:</p>
-<div class="highlight-python"><pre>ID I J K</pre>
+<div class="highlight-python"><div class="highlight"><pre>ID I J K
+</pre></div>
 </div>
 <p>where ID is a processor ID (from 0 to P-1) and I,J,K are the
 processors location in the 3d grid.  I must be a number from 1 to Px
@@ -316,14 +344,15 @@ processor ID in the J direction varies next fastest, and the processor
 ID in the K direction varies slowest.  For example, if you select
 style <em>xyz</em> and you have a 2x2x2 grid of 8 processors, the assignments
 of the 8 octants of the simulation domain will be:</p>
-<div class="highlight-python"><pre>proc 0 = lo x, lo y, lo z octant
+<div class="highlight-python"><div class="highlight"><pre>proc 0 = lo x, lo y, lo z octant
 proc 1 = hi x, lo y, lo z octant
 proc 2 = lo x, hi y, lo z octant
 proc 3 = hi x, hi y, lo z octant
 proc 4 = lo x, lo y, hi z octant
 proc 5 = hi x, lo y, hi z octant
 proc 6 = lo x, hi y, hi z octant
-proc 7 = hi x, hi y, hi z octant</pre>
+proc 7 = hi x, hi y, hi z octant
+</pre></div>
 </div>
 <p>Note that, in principle, an MPI implementation on a particular machine
 should be aware of both the machine&#8217;s network topology and the
@@ -345,7 +374,7 @@ dependency bewteen a sending partition <em>Psend</em> and a receiving
 partition <em>Precv</em> which is enforced when each is setting up their own
 mapping of their processors to the simulation box.  Each of <em>Psend</em>
 and <em>Precv</em> must be integers from 1 to Np, where Np is the number of
-partitions you have defined via the <a class="reference internal" href="Section_start.html#start-7"><em>-partition command-line switch</em></a>.</p>
+partitions you have defined via the <span class="xref std std-ref">-partition command-line switch</span>.</p>
 <p>A &#8220;dependency&#8221; means that the sending partition will create its 3d
 logical grid as Px by Py by Pz and after it has done this, it will
 send the Px,Py,Pz values to the receiving partition.  The receiving
@@ -379,7 +408,7 @@ processors and their mapping to the 3d grid to the specified file
 processors in the manner you desired, which can be tricky to figure
 out, especially when running on multiple partitions or on, a multicore
 machine or when the processor ranks were reordered by use of the
-<a class="reference internal" href="Section_start.html#start-7"><em>-reorder command-line switch</em></a> or due to
+<span class="xref std std-ref">-reorder command-line switch</span> or due to
 use of MPI-specific launch options such as a config file.</p>
 <p>If you have multiple partitions you should insure that each one writes
 to a different file, e.g. using a <a class="reference internal" href="variable.html"><em>world-style variable</em></a>
@@ -390,9 +419,9 @@ one-line per processor in this format:</p>
 universe (of multiple simulations), and the original MPI communicator
 used to instantiate LIGGGHTS(R)-PUBLIC, respectively.  The world and universe IDs
 will only be different if you are running on more than one partition;
-see the <a class="reference internal" href="Section_start.html#start-7"><em>-partition command-line switch</em></a>.
+see the <span class="xref std std-ref">-partition command-line switch</span>.
 The universe and original IDs will only be different if you used the
-<a class="reference internal" href="Section_start.html#start-7"><em>-reorder command-line switch</em></a> to reorder
+<span class="xref std std-ref">-reorder command-line switch</span> to reorder
 the processors differently than their rank in the original
 communicator LIGGGHTS(R)-PUBLIC was instantiated with.</p>
 <p>I,J,K are the indices of the processor in the 3d logical grid, each
@@ -417,7 +446,7 @@ option.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="partition.html"><em>partition</em></a>, <a class="reference internal" href="Section_start.html#start-7"><em>-reorder command-line switch</em></a></p>
+<p><a class="reference internal" href="partition.html"><em>partition</em></a>, <span class="xref std std-ref">-reorder command-line switch</span></p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
@@ -427,6 +456,9 @@ cart.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -457,11 +489,13 @@ cart.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>LIGGGHTS(R)-PUBLIC 2.X vs. LIGGGHTS(R)-PUBLIC 1.- syntax changes &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>LIGGGHTS(R)-PUBLIC 2.X vs. LIGGGHTS(R)-PUBLIC 1.- syntax changes</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/liggghts_2.X_tutorial.txt" rel="nofollow"> View page source</a> 
+      <li>LIGGGHTS(R)-PUBLIC 2.X vs. LIGGGHTS(R)-PUBLIC 1.- syntax changes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/liggghts_2.X_tutorial.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -170,15 +193,17 @@ to modelling approaches.</p>
 <div class="section" id="changes-in-syntax-for-each-command">
 <h2>Changes in syntax for each command:<a class="headerlink" href="#changes-in-syntax-for-each-command" title="Permalink to this headline">¶</a></h2>
 <p>Changes are indicated as follows</p>
-<div class="highlight-python"><pre>OLD: old_syntax
-NEW: new_syntax</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: old_syntax
+NEW: new_syntax
+</pre></div>
 </div>
 <p>where <em>old_syntax</em> refers to the syntax used in LIGGGHTS(R)-PUBLIC 1.5.3 and before,
 and <em>new_syntax</em> refers to the syntax used in LIGGGHTS(R)-PUBLIC 2.X</p>
 <hr class="docutils" />
 <p><strong>atom_style sphere (formerly atom_style granular):</strong></p>
-<div class="highlight-python"><pre>OLD: atom_style granular
-NEW: atom_style sphere</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: atom_style granular
+NEW: atom_style sphere
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -187,8 +212,9 @@ NEW: atom_style sphere</pre>
 <p>For details, see <a class="reference internal" href="atom_style.html"><em>atom_style sphere</em></a>.</p>
 <hr class="docutils" />
 <p><strong>dump mesh/stl:</strong></p>
-<div class="highlight-python"><pre>OLD: dmpstl all stl 300 post/dump*.stl
-NEW: dmpstl all mesh/stl 300 post/dump*.stl</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: dmpstl all stl 300 post/dump*.stl
+NEW: dmpstl all mesh/stl 300 post/dump*.stl
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -196,8 +222,9 @@ NEW: dmpstl all mesh/stl 300 post/dump*.stl</pre>
 </div>
 <hr class="docutils" />
 <p><strong>dump mesh/vtk:</strong></p>
-<div class="highlight-python"><pre>OLD: dmpstl all mesh/gran/VTK 300 post/dump*.stl id
-NEW: dmpstl all mesh/vtk 300 post/dump*.stl id</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: dmpstl all mesh/gran/VTK 300 post/dump*.stl id
+NEW: dmpstl all mesh/vtk 300 post/dump*.stl id
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -205,46 +232,57 @@ NEW: dmpstl all mesh/vtk 300 post/dump*.stl id</pre>
 </div>
 <hr class="docutils" />
 <p><strong>fix heat/gran:</strong></p>
-<div class="highlight-python"><pre>OLD: fix ID group-ID heat/gran 273.15
-NEW: fix ID group-ID heat/gran initial_temperature 273.15</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID heat/gran 273.15
+NEW: fix ID group-ID heat/gran initial_temperature 273.15
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID heat/gran 273.15 + activate area correction via fix property/global
-NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction yes</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID heat/gran 273.15 + activate area correction via fix property/global
+NEW: fix ID group-ID heat/gran initial_temperature 273.15 area_correction yes
+</pre></div>
 </div>
 <hr class="docutils" />
 <p><strong>fix mesh/surface (formerly fix mesh/gran):</strong></p>
-<div class="highlight-python"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0.
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0.
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 0.001 0. 0. 0. -90. 0. 0.
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90.</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 0.001 0. 0. 0. -90. 0. 0.
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 scale 0.001 rotate axis 1. 0. 0. angle -90.
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0.
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 move 1. 2. 3</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 1. 2. 3. 0. 0. 0.
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 move 1. 2. 3
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. conveyor 5. 0. 0.
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_vel 5. 0. 0.</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. conveyor 5. 0. 0.
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_vel 5. 0. 0.
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5.
-NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5.</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID mesh/gran mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. rotate 0. 0. 0. 1. 0. 0. 5.
+NEW: fix ID group-ID mesh/surface file mesh.stl type 1 surface_ang_vel origin 0. 0. 0. axis  1. 0. 0. omega 5.
+</pre></div>
 </div>
 <p>For details, see <a class="reference internal" href="fix_mesh_surface.html"><em>fix mesh/surface</em></a>.</p>
 <hr class="docutils" />
 <p><strong>fix mesh/surface/stress (formerly fix mesh/gran/stressanalysis):</strong></p>
-<div class="highlight-python"><pre>OLD: fix ID group-ID mesh/gran/stressanalysis mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. finnie yes
-NEW: fix ID group-ID fix mesh/surface/stress file mesh.stl type 1 wear finnie</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID mesh/gran/stressanalysis mesh.stl 1 1.0 0. 0. 0. 0. 0. 0. finnie yes
+NEW: fix ID group-ID fix mesh/surface/stress file mesh.stl type 1 wear finnie
+</pre></div>
 </div>
-<p>For details, see <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh/surface/stress</span></tt>.</p>
+<p>For details, see <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">mesh/surface/stress</span></code>.</p>
 <hr class="docutils" />
 <p><strong>fix move/mesh (formerly fix move/mesh/gran):</strong></p>
-<div class="highlight-python"><pre>OLD: fix ID group-ID move/mesh/gran wiggle -0.1 0. 0. 0.02 cad1 1
-NEW: fix ID group-ID move/mesh mesh cad1 wiggle amplitude -0.1 0. 0. period 0.02</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID move/mesh/gran wiggle -0.1 0. 0. 0.02 cad1 1
+NEW: fix ID group-ID move/mesh mesh cad1 wiggle amplitude -0.1 0. 0. period 0.02
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID move/mesh/gran rotate 0. 0. 0. 0. 0. 1. 0.05 cad1 1
-NEW: fix ID group-ID move/mesh mesh cad1 rotate origin 0. 0. 0. axis  0. 0. 1. period 0.05</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID move/mesh/gran rotate 0. 0. 0. 0. 0. 1. 0.05 cad1 1
+NEW: fix ID group-ID move/mesh mesh cad1 rotate origin 0. 0. 0. axis  0. 0. 1. period 0.05
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID move/mesh/gran linear 20. 20. 0. cad1 1
-NEW: fix ID group-ID move/mesh mesh cad1 linear 20. 20. 0.</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID move/mesh/gran linear 20. 20. 0. cad1 1
+NEW: fix ID group-ID move/mesh mesh cad1 linear 20. 20. 0.
+</pre></div>
 </div>
 <p>NOTES:</p>
 <ul class="simple">
@@ -255,22 +293,27 @@ used in LIGGGHTS(R)-PUBLIC 2.0. However, the syntax has to follow the LIGGGHTS(R
 <p>For details, see <a class="reference internal" href="fix_move_mesh.html"><em>fix move/mesh</em></a>.</p>
 <hr class="docutils" />
 <p><strong>fix wall/gran/*:</strong></p>
-<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history 1 0 mesh/gran 2 cad1 cad2
-NEW: fix ID group-ID wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID wall/gran/hertz/history 1 0 mesh/gran 2 cad1 cad2
+NEW: fix ID group-ID wall/gran/hertz/history mesh n_meshes 2 meshes cad1 cad2
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history 1 0 xplane -0.5 0.5 1
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID wall/gran/hertz/history 1 0 xplane -0.5 0.5 1
 NEW: fix ID1 group-ID wall/gran/hertz/history type 1 xplane -0.5
-     fix ID2 group-ID wall/gran/hertz/history type 1 xplane 0.5</pre>
+     fix ID2 group-ID wall/gran/hertz/history type 1 xplane 0.5
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history 3 0 xplane -0.5 0.5 1
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID wall/gran/hertz/history 3 0 xplane -0.5 0.5 1
 NEW: fix ID1 group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 rolling_friction cdt
-     fix ID2 group-ID wall/gran/hertz/history primitive type 1 xplane  0.5 rolling_friction cdt</pre>
+     fix ID2 group-ID wall/gran/hertz/history primitive type 1 xplane  0.5 rolling_friction cdt
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history 1 1 xplane -0.5 0.5 1
-NEW: fix ID group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 0.5 cohesion sjkr</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID wall/gran/hertz/history 1 1 xplane -0.5 0.5 1
+NEW: fix ID group-ID wall/gran/hertz/history primitive type 1 xplane -0.5 0.5 cohesion sjkr
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: fix ID group-ID wall/gran/hertz/history 0 0 zcylinder 0.05 1
-NEW: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: fix ID group-ID wall/gran/hertz/history 0 0 zcylinder 0.05 1
+NEW: fix ID group-ID wall/gran/hertz/history primitive type 1 zcylinder 0.05 0. 0. tangential_damping off
+</pre></div>
 </div>
 <p>NOTES:</p>
 <ul class="simple">
@@ -287,17 +330,21 @@ the location of the axis in the other two dimensions</li>
 <p>For details, see <a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a>.</p>
 <hr class="docutils" />
 <p><strong>pair_style gran/*:</strong></p>
-<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history 1 0
-NEW: pair_style gran/hertz/history</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: pair_style gran/hertz/history 1 0
+NEW: pair_style gran/hertz/history
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history 3 0
-NEW: pair_style gran/hertz/history rolling_friction cdt</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: pair_style gran/hertz/history 3 0
+NEW: pair_style gran/hertz/history rolling_friction cdt
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history 1 1
-NEW: pair_style gran/hertz/history cohesion sjkr</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: pair_style gran/hertz/history 1 1
+NEW: pair_style gran/hertz/history cohesion sjkr
+</pre></div>
 </div>
-<div class="highlight-python"><pre>OLD: pair_style gran/hertz/history 0 0
-NEW: pair_style gran/hertz/history tangential_damping off</pre>
+<div class="highlight-python"><div class="highlight"><pre>OLD: pair_style gran/hertz/history 0 0
+NEW: pair_style gran/hertz/history tangential_damping off
+</pre></div>
 </div>
 <p>NOTES:</p>
 <ul class="simple">
@@ -309,6 +356,9 @@ NEW: pair_style gran/hertz/history tangential_damping off</pre>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -339,11 +389,13 @@ NEW: pair_style gran/hertz/history tangential_damping off</pre>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

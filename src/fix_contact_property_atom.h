@@ -52,7 +52,7 @@ FixStyle(contactproperty/atom,FixContactPropertyAtom)
 #include "fix_contact_history.h"
 #include "fix_property_atom.h"
 #include "my_page.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "atom.h"
 #include "update.h"

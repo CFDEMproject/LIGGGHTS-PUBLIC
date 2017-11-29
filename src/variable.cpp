@@ -43,7 +43,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "ctype.h"
@@ -1953,7 +1953,10 @@ double Variable::collapse_tree(Tree *tree)
       int seed = static_cast<int> (collapse_tree(tree->right));
       if (seed <= 0)
         error->one(FLERR,"Invalid math function in variable formula");
-      randomatom = new RanMars(lmp,seed+me);
+      char * seed_char = new char[50];
+      sprintf(seed_char, "%d", seed);
+      randomatom = new RanMars(lmp, seed_char, true);
+      delete [] seed_char;
     }
     return 0.0;
   }
@@ -1967,7 +1970,10 @@ double Variable::collapse_tree(Tree *tree)
       int seed = static_cast<int> (collapse_tree(tree->right));
       if (seed <= 0)
         error->one(FLERR,"Invalid math function in variable formula");
-      randomatom = new RanMars(lmp,seed+me);
+      char * seed_char = new char[50];
+      sprintf(seed_char, "%d", seed);
+      randomatom = new RanMars(lmp, seed_char, true);
+      delete [] seed_char;
     }
     return 0.0;
   }
@@ -2244,7 +2250,10 @@ double Variable::eval_tree(Tree *tree, int i)
       int seed = static_cast<int> (eval_tree(tree->right,i));
       if (seed <= 0)
         error->one(FLERR,"Invalid math function in variable formula");
-      randomatom = new RanMars(lmp,seed+me);
+      char * seed_char = new char[50];
+      sprintf(seed_char, "%d", seed);
+      randomatom = new RanMars(lmp, seed_char, true);
+      delete [] seed_char;
     }
     return randomatom->uniform()*(upper-lower)+lower;
   }
@@ -2257,7 +2266,10 @@ double Variable::eval_tree(Tree *tree, int i)
       int seed = static_cast<int> (eval_tree(tree->right,i));
       if (seed <= 0)
         error->one(FLERR,"Invalid math function in variable formula");
-      randomatom = new RanMars(lmp,seed+me);
+      char * seed_char = new char[50];
+      sprintf(seed_char, "%d", seed);
+      randomatom = new RanMars(lmp, seed_char, true);
+      delete [] seed_char;
     }
     return mu + sigma*randomatom->gaussian();
   }
@@ -2648,7 +2660,10 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
         int seed = static_cast<int> (value3);
         if (seed <= 0)
           error->all(FLERR,"Invalid math function in variable formula");
-        randomequal = new RanMars(lmp,seed);
+        char * seed_char = new char[50];
+        sprintf(seed_char, "%d", seed);
+        randomequal = new RanMars(lmp, seed_char);
+        delete [] seed_char;
       }
       argstack[nargstack++] = randomequal->uniform()*(value2-value1) + value1;
     }
@@ -2663,7 +2678,10 @@ int Variable::math_function(char *word, char *contents, Tree **tree,
         int seed = static_cast<int> (value3);
         if (seed <= 0)
           error->all(FLERR,"Invalid math function in variable formula");
-        randomequal = new RanMars(lmp,seed);
+        char * seed_char = new char[50];
+        sprintf(seed_char, "%d", seed);
+        randomequal = new RanMars(lmp, seed_char);
+        delete [] seed_char;
       }
       argstack[nargstack++] = value1 + value2*randomequal->gaussian();
     }

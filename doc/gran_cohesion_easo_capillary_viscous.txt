@@ -100,7 +100,7 @@ for the surface liquid transport between particles. Such fixes are
 
 :line
 
-Intialization:
+Initialization:
 
 If you are using the this model model, you must define the following properties:
 fix id all property/global minSeparationDistanceRatio scalar value

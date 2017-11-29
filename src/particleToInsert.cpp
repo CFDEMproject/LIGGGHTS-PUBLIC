@@ -40,7 +40,7 @@
 ------------------------------------------------------------------------- */
 
 #include "particleToInsert.h"
-#include <math.h>
+#include <cmath>
 #include "error.h"
 #include "update.h"
 #include "domain.h"
@@ -67,12 +67,12 @@ ParticleToInsert::ParticleToInsert(LAMMPS* lmp, int ns, FixPropertyAtom * const 
 
     distorder = -1;
 
-    nspheres = ns;
+    nparticles = ns;
 
-    memory->create(x_ins,nspheres,3,"x_ins");
-    radius_ins = new double[nspheres];
+    memory->create(x_ins,nparticles,3,"x_ins");
+    radius_ins = new double[nparticles];
 
-    atom_type_vector = new int[nspheres];
+    atom_type_vector = new int[nparticles];
     atom_type_vector_flag = false;
 
     if (fix_release && fix_release->get_nvalues() <= 14)
@@ -108,7 +108,7 @@ int ParticleToInsert::insert()
     int nfix = modify->nfix;
     Fix **fix = modify->fix;
 
-    for(int i = 0; i < nspheres; i++)
+    for(int i = 0; i < nparticles; i++)
     {
         
         //if (domain->is_in_extended_subdomain(x_ins[i]))
@@ -126,7 +126,7 @@ int ParticleToInsert::insert()
                 atom->radius[m] = radius_ins[i];
                 atom->density[m] = density_ins;
                 
-                atom->rmass[m] = (1==nspheres)? (mass_ins) : (4.18879020479/*4//3*pi*/*radius_ins[i]*radius_ins[i]*radius_ins[i]*density_ins);
+                atom->rmass[m] = (1==nparticles)? (mass_ins) : (4.18879020479/*4//3*pi*/*radius_ins[i]*radius_ins[i]*radius_ins[i]*density_ins);
 
                 //pre_set_arrays() called via FixParticleDistribution
                 for (int j = 0; j < nfix; j++)
@@ -162,7 +162,7 @@ int ParticleToInsert::insert()
 /*
 int ParticleToInsert::check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, double **xnear, int &nnear)
 {
-    if(nspheres > 1)
+    if(nparticles > 1)
         return check_near_set_x_v_omega_ms(x,v, omega,quat,xnear,nnear);
 
     // check sphere against all others in xnear
@@ -248,14 +248,14 @@ int ParticleToInsert::check_near_set_x_v_omega_ms(double *x,double *v, double *o
         nnear++;
     }
 
-    return nspheres;
+    return nparticles;
 }*/
 
 /* ---------------------------------------------------------------------- */
 
 int ParticleToInsert::check_near_set_x_v_omega(double *x,double *v, double *omega, double *quat, RegionNeighborList<interpolate_no> & neighList)
 {
-    if(nspheres > 1)
+    if(nparticles > 1)
         return check_near_set_x_v_omega_ms(x,v, omega,quat,neighList);
 
     vectorCopy3D(x,x_ins[0]);
@@ -286,7 +286,7 @@ int ParticleToInsert::check_near_set_x_v_omega_ms(double *x,double *v, double *o
     // check insertion position, take quat into account
     // relative position of spheres to each other already stored at this point
     // check sphere against all others in xnear
-    for(int j = 0; j < nspheres; j++)
+    for(int j = 0; j < nparticles; j++)
     {
         // take orientation into account; x_bound_ins is in the global coordinate system
         // calculate xins_j_try for every sphere and check if would work
@@ -301,7 +301,7 @@ int ParticleToInsert::check_near_set_x_v_omega_ms(double *x,double *v, double *o
 
     // no overlap with any other - success
     // set x_ins, v_ins and omega_ins
-    for(int j = 0; j < nspheres; j++)
+    for(int j = 0; j < nparticles; j++)
     {
         vectorSubtract3D(x_ins[j],x_bound_ins,rel);
         MathExtraLiggghts::vec_quat_rotate(rel,quat);
@@ -311,12 +311,12 @@ int ParticleToInsert::check_near_set_x_v_omega_ms(double *x,double *v, double *o
     vectorCopy3D(omega,omega_ins);
 
     // add to xnear for future checks
-    for(int j = 0; j < nspheres; j++)
+    for(int j = 0; j < nparticles; j++)
     {
         neighList.insert(x_ins[j], radius_ins[j]);
     }
 
-    return nspheres;
+    return nparticles;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -331,11 +331,11 @@ int ParticleToInsert::set_x_v_omega(double *x, double *v, double *omega, double 
     // add insertion position
     // relative position of spheres to each other already stored at this point
     // also take quat into account
-    for(int j = 0; j < nspheres; j++)
+    for(int j = 0; j < nparticles; j++)
     {
         // if only one sphere, then x_bound = x_ins and there is
         // no relevant orientation
-        if(1 == nspheres)
+        if(1 == nparticles)
             vectorAdd3D(x_ins[j],x,x_ins[j]);
         // if > 1 sphere, take orientation into account
         // x_bound_ins is in the global coordinate system
@@ -351,7 +351,7 @@ int ParticleToInsert::set_x_v_omega(double *x, double *v, double *omega, double 
     vectorCopy3D(v,v_ins);
     vectorCopy3D(omega,omega_ins);
 
-    return nspheres;
+    return nparticles;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -360,7 +360,7 @@ void ParticleToInsert::scale_pti(double r_scale)
 {
     double r_scale3 = r_scale*r_scale*r_scale;
 
-    for(int i = 0; i < nspheres; i++)
+    for(int i = 0; i < nparticles; i++)
     {
         radius_ins[i] *= r_scale;
         vectorScalarMult3D(x_ins[i],r_scale);

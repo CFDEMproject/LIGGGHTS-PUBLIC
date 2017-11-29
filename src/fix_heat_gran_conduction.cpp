@@ -47,11 +47,12 @@
 #include "fix_property_global.h"
 #include "force.h"
 #include "math_extra.h"
-#include "math_extra_liggghts.h"
 #include "properties.h"
 #include "modify.h"
 #include "neigh_list.h"
 #include "pair_gran.h"
+#include <cmath>
+#include <algorithm>
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -477,7 +478,7 @@ void FixHeatGranCond::post_force_eval(int vflag,int cpl_flag)
             contactArea = fixed_contact_area_;
         else if (CONTACTAREA == CONDUCTION_CONTACT_AREA_PROJECTION)
         {
-            double rmax = MathExtraLiggghts::max(radi,radj);
+            double rmax = std::max(radi,radj);
             contactArea = M_PI*rmax*rmax;
         }
 

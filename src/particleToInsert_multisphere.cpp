@@ -40,7 +40,7 @@
 ------------------------------------------------------------------------- */
 
 #include "particleToInsert_multisphere.h"
-#include <math.h>
+#include <cmath>
 #include "error.h"
 #include "vector_liggghts.h"
 #include "atom.h"
@@ -59,10 +59,10 @@ using namespace LAMMPS_NS;
 
 ParticleToInsertMultisphere::ParticleToInsertMultisphere(LAMMPS* lmp,int ns) : ParticleToInsert(lmp,ns)
 {
-    memory->create(displace,nspheres,3,"displace");
-    memory->create(volumeweight,nspheres,"displace");
+    memory->create(displace,nparticles,3,"displace");
+    memory->create(volumeweight,nparticles,"displace");
 
-    for(int i = 0; i < nspheres; i++)
+    for(int i = 0; i < nparticles; i++)
        vectorZeroize3D(displace[i]);
 
     fflag[0] = fflag[1] = fflag[2] = true;
@@ -94,13 +94,13 @@ int ParticleToInsertMultisphere::set_x_v_omega(double *x, double *v, double *ome
     MathExtraLiggghts::vec_quat_rotate(ey_space,quat);
     MathExtraLiggghts::vec_quat_rotate(ez_space,quat);
 
-    for(int j = 0; j < nspheres; j++)
+    for(int j = 0; j < nparticles; j++)
     {
         MathExtraLiggghts::local_coosys_to_cartesian(disp_glob,displace[j],ex_space,ey_space,ez_space);
         vectorAdd3D(x,disp_glob,x_ins[j]);
     }
 
-    return nspheres;
+    return nparticles;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -121,14 +121,14 @@ int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, d
     MathExtraLiggghts::vec_quat_rotate(ex_space,quat,ex_space_try);
     MathExtraLiggghts::vec_quat_rotate(ey_space,quat,ey_space_try);
     MathExtraLiggghts::vec_quat_rotate(ez_space,quat,ez_space_try);
-    for(int j = 0; j < nspheres; j++)
+    for(int j = 0; j < nparticles; j++)
     {
         MathExtraLiggghts::local_coosys_to_cartesian(disp_glob,displace[j],ex_space_try,ey_space_try,ez_space_try);
         vectorAdd3D(x,disp_glob,x_ins[j]);
     }
 
     // check for overlap with nearby particles
-    for(int j = 0; j < nspheres; j++)
+    for(int j = 0; j < nparticles; j++)
     {
         if(neighList.hasOverlap(x_ins[j], radius_ins[j])) {
             return 0;
@@ -138,7 +138,7 @@ int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, d
     /*
     for(int i = 0; i < nnear; i++)
     {
-        for(int j = 0; j < nspheres; j++)
+        for(int j = 0; j < nparticles; j++)
         {
            vectorSubtract3D(x_ins[j],xnear[i],del);
            rsq = vectorMag3DSquared(del);
@@ -162,7 +162,7 @@ int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, d
     vectorCopy3D(ez_space_try,ez_space);
 
     // add to xnear
-    for(int j = 0; j < nspheres; j++)
+    for(int j = 0; j < nparticles; j++)
     {
         neighList.insert(x_ins[j], radius_ins[j]);
         /*
@@ -172,7 +172,7 @@ int ParticleToInsertMultisphere::check_near_set_x_v_omega(double *x,double *v, d
         */
     }
 
-    return nspheres;
+    return nparticles;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -187,7 +187,7 @@ int ParticleToInsertMultisphere::insert()
     // add particles, set coordinate and radius
     // set group mask to "all" plus fix groups
     
-    for(int i = 0; i < nspheres; i++)
+    for(int i = 0; i < nparticles; i++)
     {
         
         //if (domain->is_in_extended_subdomain(xcm_ins))
@@ -225,13 +225,13 @@ int ParticleToInsertMultisphere::insert()
 
     FixMultisphere *fix_multisphere = static_cast<FixMultisphere*>(modify->find_fix_style("multisphere",0));
 
-    fix_multisphere->data().add_body(nspheres,xcm_ins,xcm_to_xbound,r_bound_ins, v_ins, omega_ins, mass_ins,
+    fix_multisphere->data().add_body(nparticles,xcm_ins,xcm_to_xbound,r_bound_ins, v_ins, omega_ins, mass_ins,
                                 density_ins,atom_type,type_ms,inertia,ex_space,ey_space,ez_space,displace,fflag,tflag);
 
     // set displace correctly, set body to -2
     
     int i = 0;
-    for(int isphere = nlocal-nspheres; isphere < nlocal; isphere++)
+    for(int isphere = nlocal-nparticles; isphere < nlocal; isphere++)
     {
         
         fix_multisphere->set_body_displace(isphere,displace[i],-2,volumeweight[i]);
@@ -253,7 +253,7 @@ void ParticleToInsertMultisphere::scale_pti(double r_scale)
 void ParticleToInsertMultisphere::random_rotate(double rn1,double rn2, double rn3)
 {
     
-    if(nspheres==1)return;
+    if(nparticles==1)return;
 
     double *vert_before_rot;
     double vert_after_rot[3]={0.0,0.0,0.0};
@@ -284,7 +284,7 @@ void ParticleToInsertMultisphere::random_rotate(double rn1,double rn2, double rn
         else if(i==2) for(int j=0;j<3;j++) ez_space[j]=vert_after_rot[j];
     }
 
-    for(int i=0;i<nspheres;i++)
+    for(int i=0;i<nparticles;i++)
     {
         x_ins[i][0] = xcm_ins[0] + ex_space[0]*displace[i][0] +   ey_space[0]*displace[i][1] +   ez_space[0]*displace[i][2];
         x_ins[i][1] = xcm_ins[1] + ex_space[1]*displace[i][0] +   ey_space[1]*displace[i][1] +   ez_space[1]*displace[i][2];

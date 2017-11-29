@@ -50,9 +50,10 @@
 #include "error.h"
 #include "force.h"
 
-using namespace LAMMPS_NS;
+// include last to ensure correct macros
+#include "domain_definitions.h"
 
-#define BIG 1.0e20
+using namespace LAMMPS_NS;
 
 /* ---------------------------------------------------------------------- */
 

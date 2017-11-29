@@ -48,7 +48,7 @@
 #include "memory.h"
 #include "modify.h"
 #include "comm.h"
-#include <math.h>
+#include <cmath>
 #include "vector_liggghts.h"
 #include "mpi_liggghts.h"
 #include "fix_cfd_coupling_force.h"
@@ -73,12 +73,13 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
     use_stochastic_(false),
     use_virtualMass_(false),
     use_superquadric_(false),
+    use_id_(false),
     use_property_(false),
     use_fiber_topo_(false),
     fix_fiber_axis_(0),
     fix_fiber_ends_(0)
 {
-    int iarg = 3;
+    iarg = 3;
 
     bool hasargs = true;
     while(iarg < narg && hasargs)
@@ -123,6 +124,20 @@ FixCfdCouplingForce::FixCfdCouplingForce(LAMMPS *lmp, int narg, char **arg) : Fi
                 use_type_ = false;
             else
                 error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_type'");
+            iarg++;
+            hasargs = true;
+        }
+        else if(strcmp(arg[iarg],"transfer_id") == 0)
+        {
+            if(narg < iarg+2)
+                error->fix_error(FLERR,this,"not enough arguments for 'transfer_type'");
+            iarg++;
+            if(strcmp(arg[iarg],"yes") == 0)
+                use_id_ = true;
+            else if(strcmp(arg[iarg],"no") == 0)
+                use_id_ = false;
+            else
+                error->fix_error(FLERR,this,"expecting 'yes' or 'no' after 'transfer_id'");
             iarg++;
             hasargs = true;
         }
@@ -351,12 +366,13 @@ void FixCfdCouplingForce::init()
       fix_coupling_->add_push_property("volume","scalar-atom");
       fix_coupling_->add_push_property("area","scalar-atom");
       fix_coupling_->add_push_property("shape","vector-atom");
-      fix_coupling_->add_push_property("roundness","vector2D-atom");
+      fix_coupling_->add_push_property("blockiness","vector2D-atom");
       fix_coupling_->add_push_property("quaternion","quaternion-atom");
     }
     if(use_type_) fix_coupling_->add_push_property("type","scalar-atom");
     if(use_dens_) fix_coupling_->add_push_property("density","scalar-atom");
     if(use_torque_) fix_coupling_->add_push_property("omega","vector-atom");
+    if(use_id_) fix_coupling_->add_push_property("id","scalar-atom");
 
     if(use_property_) fix_coupling_->add_push_property(property_name,property_type);
 
@@ -438,7 +454,7 @@ double FixCfdCouplingForce::compute_vector(int n)
   {
     double dragtotal = dragforce_total[n];
     MPI_Sum_Scalar(dragtotal,world);
-    return dragforce_total[n];
+    return dragtotal;
   }
 
   double hdtorque = hdtorque_total[n-3];

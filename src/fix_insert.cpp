@@ -39,7 +39,8 @@
     Copyright 2009-2015 JKU Linz
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 #include <stdlib.h>
 #include <string.h>
 #include "atom.h"
@@ -95,11 +96,10 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   iarg = 3;
 
   if(strcmp(arg[iarg++],"seed")) error->fix_error(FLERR,this,"expecting keyword 'seed'");
-  seed = atoi(arg[iarg++]) + comm->me;
-  if (seed <= 0) error->fix_error(FLERR,this,"illegal seed");
-
   // random number generator, seed depends on proc
-  random = new RanPark(lmp,seed);
+  random = new RanPark(lmp, arg[iarg++], true);
+  seed = random->getSeed();
+  if (seed <= 0) error->fix_error(FLERR,this,"illegal seed");
 
   // set defaults
   init_defaults();
@@ -334,8 +334,8 @@ FixInsert::FixInsert(LAMMPS *lmp, int narg, char **arg) :
   minrad = 1000.;
   for(int i = 1; i <= ntypes; i++)
   {
-     maxrad = MathExtraLiggghts::max(maxrad,max_rad(i));
-     minrad = MathExtraLiggghts::min(minrad,min_rad(i));
+     maxrad = std::max(maxrad,max_rad(i));
+     minrad = std::min(minrad,min_rad(i));
   }
 }
 
@@ -936,7 +936,7 @@ int FixInsert::load_xnear(int ninsert_this_local)
       {
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
         if(atom->superquadric_flag and check_obb_flag)
-          neighList.insert_superquadric(x[i], radius[i], atom->quaternion[i], atom->shape[i], atom->roundness[i]);
+          neighList.insert_superquadric(x[i], radius[i], atom->quaternion[i], atom->shape[i], atom->blockiness[i]);
         else
           neighList.insert(x[i], radius[i]);
 #else

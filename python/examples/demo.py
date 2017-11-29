@@ -4,7 +4,7 @@
 # demo.py
 # Purpose: illustrate use of many library interface commands
 # Syntax:  demo.py
-#          uses in.demo as LAMMPS input script
+#          uses in.demo as LIGGGHTS input script
 
 import sys
 
@@ -21,9 +21,9 @@ me = 0
 #me = pypar.rank()
 #nprocs = pypar.size()
 
-from lammps import lammps
+from liggghts import liggghts
 
-lmp = lammps()
+lmp = liggghts()
 
 # test out various library functions after running in.demo
 

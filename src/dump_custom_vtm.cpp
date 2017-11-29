@@ -42,7 +42,7 @@
 
 #ifdef LAMMPS_VTK
 
-#include <math.h>
+#include <cmath>
 #include "math_extra_liggghts.h"
 #include <stdlib.h>
 #include <string>
@@ -130,6 +130,14 @@ DumpCustomVTM::DumpCustomVTM(LAMMPS *lmp, int narg, char **arg) :
     nclusterprocs = nprocs;
     // TODO end remove
 
+    if (!vtkMultiProcessController::GetGlobalController())
+    {
+        vtkMPIController *vtkController = vtkMPIController::New();
+        vtkController->Initialize();
+        vtkMultiProcessController::SetGlobalController(vtkController);
+    }
+    vtkMPIController * controller = getLocalController();
+
     bool hasargs = true;
     int iarg = 5;
     // all keywords that start a new dump class
@@ -154,7 +162,7 @@ DumpCustomVTM::DumpCustomVTM(LAMMPS *lmp, int narg, char **arg) :
         else if (strcmp(arg[iarg], "meshes") == 0)
         {
             if (!dumpMesh)
-                dumpMesh = new DumpMesh(lmp, nclusterprocs, multiproc, filewriter, fileproc);
+                dumpMesh = new DumpMesh(lmp, nclusterprocs, multiproc, filewriter, fileproc, controller);
             else
                 error->all(FLERR, "Internal error (multiple meshes keywords?)");
             iarg += dumpMesh->parse_parameters(narg-iarg, &(arg[iarg]), keyword_list);
@@ -214,13 +222,6 @@ DumpCustomVTM::DumpCustomVTM(LAMMPS *lmp, int narg, char **arg) :
     {
         if (strcmp(output->dump[i]->style, "custom/vtm") == 0)
             error->all(FLERR, "Only one dump custom/vtm is allowed");
-    }
-
-    if (!vtkMultiProcessController::GetGlobalController())
-    {
-        vtkMPIController *vtkController = vtkMPIController::New();
-        vtkController->Initialize();
-        vtkMultiProcessController::SetGlobalController(vtkController);
     }
 
     if (write_pvd_file && comm->me == 0)

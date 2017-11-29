@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix wall/reflect command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix wall/reflect command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_wall_reflect.txt" rel="nofollow"> View page source</a> 
+      <li>fix wall/reflect command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_wall_reflect.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix wall/reflect command<a class="headerlink" href="#fix-wall-reflect-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID wall/reflect face arg ... keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID wall/reflect face arg ... keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -177,9 +201,10 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix xwalls all wall/reflect xlo EDGE xhi EDGE
+<div class="highlight-python"><div class="highlight"><pre>fix xwalls all wall/reflect xlo EDGE xhi EDGE
 fix walls all wall/reflect xlo 0.0 ylo 10.0 units box
-fix top all wall/reflect zhi v_pressdown</pre>
+fix top all wall/reflect zhi v_pressdown
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -192,7 +217,7 @@ put back inside the face by the same delta, and the sign of the
 corresponding component of its velocity is flipped.</p>
 <p>When used in conjunction with <a class="reference internal" href="fix_nve.html"><em>fix nve</em></a> and <a class="reference internal" href="run_style.html"><em>run_style verlet</em></a>, the resultant time-integration algorithm is
 equivalent to the primitive splitting algorithm (PSA) described by
-<a class="reference internal" href="#bond"><em>Bond</em></a>.  Because each reflection event divides
+<a class="reference internal" href="#bond"><span>Bond</span></a>.  Because each reflection event divides
 the corresponding timestep asymmetrically, energy conservation is only
 satisfied to O(dt), rather than to O(dt^2) as it would be for
 velocity-Verlet integration without reflective walls.</p>
@@ -229,17 +254,21 @@ define the lattice spacings.</p>
 <p>Here are examples of variable definitions that move the wall position
 in a time-dependent fashion using equal-style
 <a class="reference internal" href="variable.html"><em>variables</em></a>.</p>
-<div class="highlight-python"><pre>variable ramp equal ramp(0,10)
-fix 1 all wall/reflect xlo v_ramp</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable ramp equal ramp(0,10)
+fix 1 all wall/reflect xlo v_ramp
+</pre></div>
 </div>
-<div class="highlight-python"><pre>variable linear equal vdisplace(0,20)
-fix 1 all wall/reflect xlo v_linear</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable linear equal vdisplace(0,20)
+fix 1 all wall/reflect xlo v_linear
+</pre></div>
 </div>
-<div class="highlight-python"><pre>variable wiggle equal swiggle(0.0,5.0,3.0)
-fix 1 all wall/reflect xlo v_wiggle</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable wiggle equal swiggle(0.0,5.0,3.0)
+fix 1 all wall/reflect xlo v_wiggle
+</pre></div>
 </div>
-<div class="highlight-python"><pre>variable wiggle equal cwiggle(0.0,5.0,3.0)
-fix 1 all wall/reflect xlo v_wiggle</pre>
+<div class="highlight-python"><div class="highlight"><pre>variable wiggle equal cwiggle(0.0,5.0,3.0)
+fix 1 all wall/reflect xlo v_wiggle
+</pre></div>
 </div>
 <p>The ramp(lo,hi) function adjusts the wall position linearly from lo to
 hi over the course of a run.  The vdisplace(c0,velocity) function does
@@ -248,7 +277,8 @@ where delta is the elapsed time.</p>
 <p>The swiggle(c0,A,period) function causes the wall position to
 oscillate sinusoidally according to this equation, where omega = 2 PI
 / period:</p>
-<div class="highlight-python"><pre>position = c0 + A sin(omega*delta)</pre>
+<div class="highlight-python"><div class="highlight"><pre>position = c0 + A sin(omega*delta)
+</pre></div>
 </div>
 <p>The cwiggle(c0,A,period) function causes the wall position to
 oscillate sinusoidally according to this equation, which will have an
@@ -263,9 +293,9 @@ perturbation on the particles:</p>
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.  No global or per-atom quantities are stored
-by this fix for access by various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  No parameter of this fix can
+by this fix for access by various <span class="xref std std-ref">output commands</span>.  No parameter of this fix can
 be used with the <em>start/stop</em> keywords of the <a class="reference internal" href="run.html"><em>run</em></a> command.
-This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -273,13 +303,13 @@ This fix is not invoked during <tt class="xref doc docutils literal"><span class
 <p>A reflecting wall should not be used with rigid bodies such as those
 defined by a &#8220;fix rigid&#8221; command.  This is because the wall/reflect
 displaces atoms directly rather than exerts a force on them.  For
-rigid bodies, use a soft wall instead, such as <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">wall/lj93</span></tt>.  LIGGGHTS(R)-PUBLIC will flag the use of a rigid
+rigid bodies, use a soft wall instead, such as <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">wall/lj93</span></code>.  LIGGGHTS(R)-PUBLIC will flag the use of a rigid
 fix with fix wall/reflect with a warning, but will not generate an
 error.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
-<p><tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">wall/lj93</span></tt> command</p>
+<p><code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">wall/lj93</span></code> command</p>
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
@@ -290,6 +320,9 @@ error.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -320,11 +353,13 @@ error.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

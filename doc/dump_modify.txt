@@ -15,9 +15,11 @@ dump_modify dump-ID keyword values ... :pre
 dump-ID = ID of dump to modify :ulb,l
 one or more keyword/value pairs may be appended :l
 these keywords apply to various dump styles :l
-keyword = {append} or {buffer} or {element} or {every} or {fileper} or {first} or {flush} or {format} or {image} or {label} or {nfile} or {pad} or {precision} or {region} or {scale} or {sort} or {thresh} or {unwrap} :l
+keyword = {append} or {buffer} or {element} or {every} or {fileper} or {first} or {flush} or {format} or {image} or {label} or {nfile} or {pad} or {precision} or {region} or {scale} or {sort} or {thresh} or {unwrap}  or {binary} or {compressor} :l
   {append} arg = {yes} or {no}
   {buffer} arg = {yes} or {no}
+  {binary} arg = {yes} or {no} (VTK dumps only)
+  {compressor} arg = {none} or {zlib} or {lz4} (VTK dumps only)
   {element} args = E1 E2 ... EN, where N = # of atom types
     E1,...,EN = element name, e.g. C or Fe or Ga
   {every} arg = N
@@ -147,6 +149,26 @@ The buffering mode is typically faster since each processor does the
 relatively expensive task of formatting the output for its own atoms.
 However it requires about twice the memory (per processor) for the
 extra buffering.
+
+:line
+
+If {dump_modify binary} is used, the dump file (or files, if "*" or "%" is also
+used) is written in binary format.  A binary dump file will be about the same
+size as a text version, but will typically write out much faster.
+
+NOTE: This modifier is only available for VTK style dumps
+
+:line
+
+{dump_modify compressor} can be used to specify the writing of compressed binary
+data (automatically sets {dump_modify binary yes}). Options for compressors
+include:
+
+none: No compression
+zlib: Zlib compression
+lz4: Lz4 compression (VTK >= 8.0 required) :pre
+
+NOTE: This modifier is only available for VTK style dumps
 
 :line
 

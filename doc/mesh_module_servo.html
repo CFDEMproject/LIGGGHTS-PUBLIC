@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>mesh module servo &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>mesh module servo</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/mesh_module_servo.txt" rel="nofollow"> View page source</a> 
+      <li>mesh module servo</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/mesh_module_servo.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <h1>mesh module servo<a class="headerlink" href="#mesh-module-servo" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>servo servo_keywords servo_values</pre>
+<div class="highlight-python"><div class="highlight"><pre>servo servo_keywords servo_values
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more servo_keyword/value pairs may be appended</li>
@@ -180,8 +204,9 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
-fix servo all mesh/surface/stress/servo file stirrer.stl type 1 com 0. 0. 0. ctrlPV torque axis 0. 0. 1. target_val 10 vel_max 1. ratio 0.01 mode auto</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix servo all mesh/surface/stress/servo file plate.stl type 1 com 0. 0. 0. ctrlPV force axis 0. 0. 1. target_val 10 vel_max 1. kp 5.
+fix servo all mesh/surface/stress/servo file stirrer.stl type 1 com 0. 0. 0. ctrlPV torque axis 0. 0. 1. target_val 10 vel_max 1. ratio 0.01 mode auto
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -205,7 +230,7 @@ by the integral part due to unavoidable long-lasting deviations.</p>
 </div>
 <div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
-<p>This mesh module stores a global vector with 3 components for access by various <em class="xref std std-ref">output commands</em>.
+<p>This mesh module stores a global vector with 3 components for access by various <span class="xref std std-ref">output commands</span>.
 The 3 components output the wall position.
 Furthermore, this mesh module writes the state of the servo wall to binary restart files so
 that a simulation can continue correctly.
@@ -213,6 +238,7 @@ This mesh module supports <a class="reference internal" href="fix_modify.html"><
 to start or stop the servo wall integration inbetween two runs.
 This module also supports <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> with option <em>servo/target_val</em> = val to
 change the target value inbetween two runs.
+This module also supports <a class="reference external" href="fix_modify_html">fix_modify</a> with option <em>servo/vel_max</em> = val to change the the target value inbetween two runs.
 This module also supports <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> with option <em>servo/ctrlParam</em> = kp ki kd
 to change the controller params inbetween two runs.</p>
 </div>
@@ -225,7 +251,7 @@ the state after scaling/rotation.
 Mesh elements may not be deleted in case due to leaving the simulation box for a fixed boundary.
 In this case, an error is generated. See <a class="reference internal" href="boundary.html"><em>boundary</em></a> command for details.
 This mesh module can not be used in conjunction with another fix that manipulates mesh geometry,
-such as a <a class="reference internal" href="fix_move_mesh.html"><em>fix move/mesh</em></a> or the <tt class="xref doc docutils literal"><span class="pre">mesh</span> <span class="pre">module</span> <span class="pre">6dof</span></tt></p>
+such as a <a class="reference internal" href="fix_move_mesh.html"><em>fix move/mesh</em></a> or the <code class="xref doc docutils literal"><span class="pre">mesh</span> <span class="pre">module</span> <span class="pre">6dof</span></code></p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
@@ -238,6 +264,9 @@ such as a <a class="reference internal" href="fix_move_mesh.html"><em>fix move/m
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -268,11 +297,13 @@ such as a <a class="reference internal" href="fix_move_mesh.html"><em>fix move/m
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

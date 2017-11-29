@@ -43,6 +43,8 @@
 #include "modify.h"
 #include "math_extra_liggghts.h"
 #include "fix_particledistribution_discrete.h"
+#include <cmath>
+#include <algorithm>
 
 using namespace LAMMPS_NS;
 using namespace MathExtraLiggghts;
@@ -61,7 +63,7 @@ FixDiamMax::FixDiamMax(LAMMPS *lmp, int narg, char **arg) :
   for(int i = 0; i < nfix; i++)
   {
       fpdd = static_cast<FixParticledistributionDiscrete*>(modify->find_fix_style("particledistribution/discrete",0));
-      maxrbound_ = max(maxrbound_,fpdd->max_r_bound());
+      maxrbound_ = std::max(maxrbound_,fpdd->max_r_bound());
   }
 }
 
@@ -91,7 +93,7 @@ void FixDiamMax::init()
   for(int i = 0; i < nfix; i++)
   {
       fpdd = static_cast<FixParticledistributionDiscrete*>(modify->find_fix_style("particledistribution/discrete",0));
-      maxrbound_ = max(maxrbound_,fpdd->max_r_bound());
+      maxrbound_ = std::max(maxrbound_,fpdd->max_r_bound());
   }
 }
 

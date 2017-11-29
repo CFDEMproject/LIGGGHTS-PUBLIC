@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix ave/correlate command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix ave/correlate command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_ave_correlate.txt" rel="nofollow"> View page source</a> 
+      <li>fix ave/correlate command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_ave_correlate.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix ave/correlate command<a class="headerlink" href="#fix-ave-correlate-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID ave/correlate Nevery Nrepeat Nfreq value1 value2 ... keyword args ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID ave/correlate Nevery Nrepeat Nfreq value1 value2 ... keyword args ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -158,11 +182,12 @@
 <li>one or more input values can be listed</li>
 <li>value = c_ID, c_ID[N], f_ID, f_ID[N], v_name</li>
 </ul>
-<div class="highlight-python"><pre>c_ID = global scalar calculated by a compute with ID
+<div class="highlight-python"><div class="highlight"><pre>c_ID = global scalar calculated by a compute with ID
 c_ID[I] = Ith component of global vector calculated by a compute with ID
 f_ID = global scalar calculated by a fix with ID
 f_ID[I] = Ith component of global vector calculated by a fix with ID
-v_name = global value calculated by an equal-style variable with name</pre>
+v_name = global value calculated by an equal-style variable with name
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more keyword/arg pairs may be appended</li>
@@ -196,10 +221,11 @@ v_name = global value calculated by an equal-style variable with name</pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all ave/correlate 5 100 1000 c_myTemp file temp.correlate
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all ave/correlate 5 100 1000 c_myTemp file temp.correlate
 fix 1 all ave/correlate 1 50 10000 &amp;
           c_myArray[1] c_myArray[2] c_myArray[3] &amp;
-       type upper ave running title1 "My correlation data"</pre>
+       type upper ave running title1 &quot;My correlation data&quot;
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -208,7 +234,7 @@ fix 1 all ave/correlate 1 50 10000 &amp;
 calculate time correlations bewteen them at varying time intervals,
 and average the correlation data over longer timescales.  The
 resulting correlation values can be time integrated by
-<a class="reference internal" href="variable.html"><em>variables</em></a> or used by other <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a> such as <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a file.</p>
+<a class="reference internal" href="variable.html"><em>variables</em></a> or used by other <span class="xref std std-ref">output commands</span> such as <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a file.</p>
 <p>The group specified with this command is ignored.  However, note that
 specified values may represent calculations performed by computes and
 fixes which store their own &#8220;group&#8221; definitions.</p>
@@ -271,8 +297,8 @@ calculated by the compute is used.</p>
 <p>Note that there is a <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a> command
 which can sum per-atom quantities into a global scalar or vector which
 can thus be accessed by fix ave/correlate.  Or it can be a compute
-defined not in your input script, but by <a class="reference internal" href="thermo_style.html"><em>thermodynamic output</em></a> or other fixes such as <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></tt>
-or <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">temp/rescale</span></tt>.  See the doc pages for
+defined not in your input script, but by <a class="reference internal" href="thermo_style.html"><em>thermodynamic output</em></a> or other fixes such as <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">nvt</span></code>
+or <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">temp/rescale</span></code>.  See the doc pages for
 these commands which give the IDs of these computes.  Users can also
 write code for their own compute styles and <a class="reference internal" href="Section_modify.html"><em>add them to LIGGGHTS(R)-PUBLIC</em></a>.</p>
 <p>If a value begins with &#8220;<a href="#id5"><span class="problematic" id="id6">f_</span></a>&#8221;, a fix ID must follow which has been
@@ -351,9 +377,9 @@ the strings that will be printed as the first 3 lines of the output
 file, assuming the <em>file</em> keyword was used.  LIGGGHTS(R)-PUBLIC uses default
 values for each of these, so they do not need to be specified.</p>
 <p>By default, these header lines are as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Time-correlated data for fix ID</span>
-<span class="c"># TimeStep Number-of-time-windows</span>
-<span class="c"># Index TimeDelta Ncount valueI*valueJ valueI*valueJ ...</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Time-correlated data for fix ID</span>
+<span class="c1"># TimeStep Number-of-time-windows</span>
+<span class="c1"># Index TimeDelta Ncount valueI*valueJ valueI*valueJ ...</span>
 </pre></div>
 </div>
 <p>In the first line, ID is replaced with the fix-ID.  The second line
@@ -363,7 +389,8 @@ appropriate fields from the fix ave/correlate command.</p>
 <hr class="docutils" />
 <p>Let Sij = a set of time correlation data for input values I and J,
 namely the <em>Nrepeat</em> values:</p>
-<div class="highlight-python"><pre>Sij = Cij(0), Cij(Nevery), Cij(2*Nevery), ..., Cij(*Nrepeat-1)*Nevery)</pre>
+<div class="highlight-python"><div class="highlight"><pre>Sij = Cij(0), Cij(Nevery), Cij(2*Nevery), ..., Cij(*Nrepeat-1)*Nevery)
+</pre></div>
 </div>
 <p>As explained below, these datums are output as one column of a global
 array, which is effectively the correlation matrix.</p>
@@ -380,7 +407,7 @@ included in the variable formula or via the <em>prefactor</em> keyword.</p>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix computes a global array of values which can be accessed by
-various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The values can
+various <span class="xref std std-ref">output commands</span>.  The values can
 only be accessed on timesteps that are multiples of <em>Nfreq</em> since that
 is when averaging is performed.  The global array has # of rows =
 <em>Nrepeat</em> and # of columns = Npair+2.  The first column has the time
@@ -412,7 +439,7 @@ If you need to divide them by the number of atoms, you must do this in
 a later processing step, e.g. when using them in a
 <a class="reference internal" href="variable.html"><em>variable</em></a>.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -430,6 +457,9 @@ output, title 1,2,3 = strings as described above, and prefactor = 1.0.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -460,11 +490,13 @@ output, title 1,2,3 = strings as described above, and prefactor = 1.0.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

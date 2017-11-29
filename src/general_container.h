@@ -50,6 +50,8 @@
 #include "math_extra_liggghts.h"
 #include "domain.h"
 #include <limits>
+#include <cmath>
+#include <algorithm>
 
 inline int GROW_CONTAINER()
 { return 10000; }

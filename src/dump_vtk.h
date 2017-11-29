@@ -48,9 +48,37 @@
 #include <vtkSmartPointer.h>
 #include <vtkXMLWriter.h>
 #include <vtkDataWriter.h>
+#include <vtkDataObject.h>
+#include <vtkAlgorithmOutput.h>
+#include <vtkMPIController.h>
+#include <list>
+#include <string>
 
 namespace LAMMPS_NS
 {
+
+namespace VTK_FILE_FORMATS
+{
+// file formats
+// serial need to come first
+enum
+{
+    VTK,
+    VTP,
+    VTU,
+    VTI,
+    VTR,
+    VTM,
+    PVTP,
+    PVTU,
+    PVTI,
+    PVTR,
+    VTK_INVALID
+};
+
+// number of serial vtk file types
+const int vtk_serial_file_types = 6;
+}; // namespace VTK_FILE_FORMATS
 
 class DumpVTK
 {
@@ -62,7 +90,25 @@ public:
     void setVtkWriterOptions(vtkSmartPointer<vtkXMLWriter> writer);
     void setVtkWriterOptions(vtkSmartPointer<vtkDataWriter> writer);
 
+    void write_vtp(vtkSmartPointer<vtkDataObject> data, const int vtk_file_format, const char * const filename);
+    void write_vtu(vtkSmartPointer<vtkDataObject> data, const int vtk_file_format, const char * const filename);
+    void write_vti(vtkSmartPointer<vtkAlgorithmOutput> data, const int vtk_file_format, const char * const filename);
+    void write_vtr(vtkSmartPointer<vtkDataObject> data, const int vtk_file_format, const char * const filename);
+
+    void write_vtk_poly(vtkSmartPointer<vtkDataObject> data, const int vtk_file_format, const char * const filename, char * const label = NULL);
+    void write_vtk_unstructured_grid(vtkSmartPointer<vtkDataObject> data, const int vtk_file_format, const char * const filename, char * const label = NULL);
+    void write_vtk_rectilinear_grid(vtkSmartPointer<vtkDataObject> data, const int vtk_file_format, const char * const filename, char * const label = NULL);
+
+    vtkMPIController *getLocalController();
+
+    void setFileCurrent(char * &filecurrent, char * const filename, const int multifile, const int padflag);
+    int identify_file_type(char * const filename, std::list<int> &allowed_extensions, char * const style, int &multiproc, int &nclusterprocs, int &filewriter, int &fileproc, MPI_Comm &world, MPI_Comm &clustercomm);
+
 private:
+
+    void type_error(std::string msg, char * const style, std::list<int> &allowed_extensions);
+
+    // compressors
     enum
     {
         VTK_COMP_ZLIB,
@@ -75,6 +121,8 @@ private:
     LAMMPS *lmp_;
     int vtk_compressor_;
     bool binary_;
+
+    char * filesuffixes[VTK_FILE_FORMATS::VTK_INVALID];
 };
 
 }; // namespace

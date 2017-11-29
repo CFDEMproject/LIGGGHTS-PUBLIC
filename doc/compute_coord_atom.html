@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute coord/atom command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute coord/atom command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_coord_atom.txt" rel="nofollow"> View page source</a> 
+      <li>compute coord/atom command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_coord_atom.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute coord/atom command<a class="headerlink" href="#compute-coord-atom-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID coord/atom general_keyword general_values cutoff keyword value</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID coord/atom general_keyword general_values cutoff keyword value
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -168,10 +192,11 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all coord/atom 0.003 mix yes
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all coord/atom 0.003 mix yes
 compute 1 all coord/atom 2.0
 compute 1 all coord/atom 6.0 1 2
-compute 1 all coord/atom 6.0 2*4 5*8 *</pre>
+compute 1 all coord/atom 6.0 2*4 5*8 *
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -235,25 +260,27 @@ mixture of different species.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">If you have a bonded system, then the settings of
-<tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt> command can remove pairwise
+<code class="xref doc docutils literal"><span class="pre">special_bonds</span></code> command can remove pairwise
 interactions between atoms in the same bond.  This
-is the default setting for the <tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt>
+is the default setting for the <code class="xref doc docutils literal"><span class="pre">special_bonds</span></code>
 command, and means those pairwise interactions do not appear in the
 neighbor list.  Because this fix uses the neighbor list, it also means
 those pairs will not be included in the coordination count.  One way
 to get around this, is to write a dump file, and use the
-<tt class="xref doc docutils literal"><span class="pre">rerun</span></tt> command to compute the coordination for snapshots
+<code class="xref doc docutils literal"><span class="pre">rerun</span></code> command to compute the coordination for snapshots
 in the dump file.  The rerun script can use a
-<tt class="xref doc docutils literal"><span class="pre">special_bonds</span></tt> command that includes all pairs in
+<code class="xref doc docutils literal"><span class="pre">special_bonds</span></code> command that includes all pairs in
 the neighbor list.</p>
 </div>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>If single <em>type1</em> keyword is specified (or if none are specified),
 or the <em>mix</em> keyword is used,
 this compute calculates a per-atom vector.  If multiple <em>typeN</em>
 keywords are specified, this compute calculates a per-atom array, with
 N columns.  These values can be accessed by any command that uses
-per-atom values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><em>Section_howto 15</em></a> for an overview of LIGGGHTS(R)-PUBLIC output
+per-atom values from a compute as input.  See <span class="xref std std-ref">Section_howto 15</span> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>The per-atom vector or array values will be a number &gt;= 0.0, as
 explained above.</p>
@@ -271,6 +298,9 @@ explained above.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -301,11 +331,13 @@ explained above.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

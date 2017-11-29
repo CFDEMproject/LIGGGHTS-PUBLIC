@@ -198,12 +198,11 @@ void DisplaceAtoms::command(int narg, char **arg)
   // makes atom result independent of what proc owns it via random->reset()
 
   if (style == RANDOM) {
-    RanPark *random = new RanPark(lmp,1);
-
     double dx = xscale*force->numeric(FLERR,arg[2]);
     double dy = yscale*force->numeric(FLERR,arg[3]);
     double dz = zscale*force->numeric(FLERR,arg[4]);
-    int seed = force->inumeric(FLERR,arg[5]);
+    RanPark *random = new RanPark(lmp, arg[5]);
+    int seed = random->getSeed();
     if (seed <= 0) error->all(FLERR,"Illegal displace_atoms random command");
 
     double **x = atom->x;

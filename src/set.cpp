@@ -50,7 +50,7 @@
 ------------------------------------------------------------------------- */
 
 #include <mpi.h>
-#include <math.h>
+#include <cmath>
 #include "math_extra.h"
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
 #include "math_extra_liggghts_superquadric.h"
@@ -92,8 +92,9 @@ enum{TYPE,TYPE_FRACTION,MOLECULE,X,Y,Z,CHARGE,MASS,SHAPE,LENGTH,
      DIPOLE,DIPOLE_RANDOM,QUAT,QUAT_RANDOM, QUAT_DIRECT, THETA,ANGMOM,
      DIAMETER,DENSITY,VOLUME,IMAGE,BOND,ANGLE,DIHEDRAL,IMPROPER,
      MESO_E,MESO_CV,MESO_RHO,INAME,DNAME,
-     VX,VY,VZ,OMEGAX,OMEGAY,OMEGAZ,PROPERTYPERATOM,ROUNDNESS,
-     ASPECTRATIO, INERTIAX, INERTIAY, INERTIAZ}; 
+     VX,VY,VZ,OMEGAX,OMEGAY,OMEGAZ,PROPERTYPERATOM,BLOCKINESS,
+     ASPECTRATIO, INERTIAX, INERTIAY, INERTIAZ,
+     SMD_MASS_DENSITY, SMD_CONTACT_RADIUS}; 
 
 #define BIG INT_MAX
 
@@ -284,7 +285,7 @@ void Set::command(int narg, char **arg)
       set(SHAPE);
       iarg += 4;
 
-    } else if (strcmp(arg[iarg],"roundness") == 0) {
+    } else if (strcmp(arg[iarg],"blockiness") == 0 or strcmp(arg[iarg],"roundness") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal set command");
       if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
       else xvalue = force->numeric(FLERR,arg[iarg+1]);
@@ -292,7 +293,9 @@ void Set::command(int narg, char **arg)
       else yvalue = force->numeric(FLERR,arg[iarg+2]);
       if (!atom->superquadric_flag)
         error->all(FLERR,"Cannot set this attribute for this atom style");
-      set(ROUNDNESS);
+      if(strcmp(arg[iarg],"roundness") == 0)
+        error->warning(FLERR,"Keyword 'roundness' will be deprecated in future, please use blockiness istead");
+      set(BLOCKINESS);
       iarg += 3;
     } else if (strcmp(arg[iarg],"aspect_ratio") == 0) {
       if (iarg+3 > narg) error->all(FLERR,"Illegal set command");
@@ -514,6 +517,24 @@ void Set::command(int narg, char **arg)
         error->all(FLERR,"Cannot set meso_rho for this atom style");
       set(MESO_RHO);
       iarg += 2;
+    } else if (strcmp(arg[iarg],"smd/mass/density") == 0) {
+          if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
+          if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
+          else dvalue = force->numeric(FLERR,arg[iarg+1]);
+          if (!atom->smd_flag)
+            error->all(FLERR,"Cannot set smd/mass/density for this atom style");
+          set(SMD_MASS_DENSITY);
+          iarg += 2;
+
+    } else if (strcmp(arg[iarg],"smd/contact/radius") == 0) {
+          if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
+          if (strstr(arg[iarg+1],"v_") == arg[iarg+1]) varparse(arg[iarg+1],1);
+          else dvalue = force->numeric(FLERR,arg[iarg+1]);
+          if (!atom->smd_flag)
+            error->all(FLERR,"Cannot set smd/contact/radius "
+                       "for this atom style");
+          set(SMD_CONTACT_RADIUS);
+          iarg += 2;
 
     } else if (strstr(arg[iarg],"i_") == arg[iarg]) {
       if (iarg+2 > narg) error->all(FLERR,"Illegal set command");
@@ -840,6 +861,11 @@ void Set::set(int keyword)
     else if (keyword == MESO_CV) atom->cv[i] = dvalue;
     else if (keyword == MESO_RHO) atom->rho[i] = dvalue;
 
+    else if (keyword == SMD_MASS_DENSITY) { 
+      // set mass from volume and supplied mass density
+      atom->rmass[i] = atom->vfrac[i] * dvalue;
+    }
+    else if (keyword == SMD_CONTACT_RADIUS) atom->contact_radius[i] = dvalue;
     // set shape of ellipsoidal particle
 
     else if (keyword == SHAPE) {
@@ -856,11 +882,11 @@ void Set::set(int keyword)
         atom->shape[i][0] = xvalue;
         atom->shape[i][1] = yvalue;
         atom->shape[i][2] = zvalue;
-        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
-        MathExtraLiggghtsNonspherical::volume_superquadric(atom->shape[i], atom->roundness[i], atom->volume+i); //re-calculate volume
-        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->roundness[i], atom->area+i);  //re-calculate surface area
+        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->blockiness[i], atom->radius+i); //re-calculate bounding sphere radius
+        MathExtraLiggghtsNonspherical::volume_superquadric(atom->shape[i], atom->blockiness[i], atom->volume+i); //re-calculate volume
+        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->blockiness[i], atom->area+i);  //re-calculate surface area
         atom->rmass[i] = atom->volume[i] * atom->density[i]; //re-calculate mass
-        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
+        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->blockiness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
 
       }
       #endif // SUPERQUADRIC_ACTIVE_FLAG
@@ -882,33 +908,33 @@ void Set::set(int keyword)
         double shape_[3]={1.0, 1.0, 1.0};
         double f_;
         double vol = atom->volume[i];
-        MathExtraLiggghtsNonspherical::volume_superquadric(shape_, atom->roundness[i], &f_);
+        MathExtraLiggghtsNonspherical::volume_superquadric(shape_, atom->blockiness[i], &f_);
         atom->shape[i][0] = cbrt(atom->volume[i] / (k1*k2*f_));
         atom->shape[i][1] = k1*atom->shape[i][0];
         atom->shape[i][2] = k2*atom->shape[i][0];
 
-        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
-        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->roundness[i], atom->area+i);  //re-calculate surface area
-        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
+        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->blockiness[i], atom->radius+i); //re-calculate bounding sphere radius
+        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->blockiness[i], atom->area+i);  //re-calculate surface area
+        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->blockiness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
       }
      else
       error->one(FLERR,"Cannot set shape for this type of atom");
     }
 #endif // SUPERQUADRIC_ACTIVE_FLAG
    //set roundness parameters for superquadric *
-    else if (keyword == ROUNDNESS) {
+    else if (keyword == BLOCKINESS) {
       if (xvalue < 2.0 || yvalue < 2.0)
-        error->one(FLERR,"Invalid roundness (<2) in set command");
+        error->one(FLERR,"Invalid blockiness (<2) in set command");
       if(0) {}
       #ifdef SUPERQUADRIC_ACTIVE_FLAG
       else if(avec_superquadric) {
-        atom->roundness[i][0] = xvalue;
-        atom->roundness[i][1] = yvalue;
-        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->roundness[i], atom->radius+i); //re-calculate bounding sphere radius
-        MathExtraLiggghtsNonspherical::volume_superquadric(atom->shape[i], atom->roundness[i], atom->volume+i); //re-calculate volume
-        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->roundness[i], atom->area+i); //re-calculate surface area
+        atom->blockiness[i][0] = xvalue;
+        atom->blockiness[i][1] = yvalue;
+        MathExtraLiggghtsNonspherical::bounding_sphere_radius_superquadric(atom->shape[i], atom->blockiness[i], atom->radius+i); //re-calculate bounding sphere radius
+        MathExtraLiggghtsNonspherical::volume_superquadric(atom->shape[i], atom->blockiness[i], atom->volume+i); //re-calculate volume
+        MathExtraLiggghtsNonspherical::area_superquadric(atom->shape[i], atom->blockiness[i], atom->area+i); //re-calculate surface area
         atom->rmass[i] = atom->density[i] * atom->volume[i]; //re-calculate mass
-        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
+        MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->blockiness[i], atom->density[i], atom->inertia[i]); //re-calculate inertia tensor
 
       }
       #endif // SUPERQUADRIC_ACTIVE_FLAG
@@ -980,7 +1006,7 @@ void Set::set(int keyword)
             #ifdef SUPERQUADRIC_ACTIVE_FLAG
             if (domain->dimension == 3) {
               atom->rmass[i] = atom->density[i] * atom->volume[i];
-              MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->roundness[i], atom->density[i], atom->inertia[i]);
+              MathExtraLiggghtsNonspherical::inertia_superquadric(atom->shape[i], atom->blockiness[i], atom->density[i], atom->inertia[i]);
             }
             else
               error->one(FLERR,"Superquadrics are implemented only in 3D");
@@ -1108,7 +1134,7 @@ void Set::setrandom(int keyword)
   AtomVecSuperquadric *avec_superquadric = (AtomVecSuperquadric *) atom->style_match("superquadric");
   #endif
 
-  RanPark *random = new RanPark(lmp,1);
+  RanPark *random = new RanPark(lmp, "12345787");
   double **x = atom->x;
   int seed = ivalue;
 

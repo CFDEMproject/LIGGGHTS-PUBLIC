@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>fix ave/spatial command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix ave/spatial command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_ave_spatial.txt" rel="nofollow"> View page source</a> 
+      <li>fix ave/spatial command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_ave_spatial.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>fix ave/spatial command<a class="headerlink" href="#fix-ave-spatial-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix ID group-ID ave/spatial Nevery Nrepeat Nfreq dim origin delta ... value1 value2 ... keyword args ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>fix ID group-ID ave/spatial Nevery Nrepeat Nfreq dim origin delta ... value1 value2 ... keyword args ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="fix.html"><em>fix</em></a> command</li>
@@ -166,13 +190,14 @@ delta = thickness of spatial bins in dim (distance units)
 <li>one or more input values can be listed</li>
 <li>value = vx, vy, vz, fx, fy, fz, density/mass, density/number, c_ID, c_ID[I], f_ID, f_ID[I], v_name</li>
 </ul>
-<div class="highlight-python"><pre>vx,vy,vz,fx,fy,fz = atom attribute (velocity, force component)
+<div class="highlight-python"><div class="highlight"><pre>vx,vy,vz,fx,fy,fz = atom attribute (velocity, force component)
 density/number, density/mass = number or mass density
 c_ID = per-atom vector calculated by a compute with ID
 c_ID[I] = Ith column of per-atom array calculated by a compute with ID
 f_ID = per-atom vector calculated by a fix with ID
 f_ID[I] = Ith column of per-atom array calculated by a fix with ID
-v_name = per-atom vector calculated by an atom-style variable with name</pre>
+v_name = per-atom vector calculated by an atom-style variable with name
+</pre></div>
 </div>
 <ul class="simple">
 <li>zero or more keyword/arg pairs may be appended</li>
@@ -206,11 +231,12 @@ v_name = per-atom vector calculated by an atom-style variable with name</pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>fix 1 all ave/spatial 10000 1 10000 z lower 0.02 c_myCentro units reduced &amp;
-                      title1 "My output values"
+<div class="highlight-python"><div class="highlight"><pre>fix 1 all ave/spatial 10000 1 10000 z lower 0.02 c_myCentro units reduced &amp;
+                      title1 &quot;My output values&quot;
 fix 1 flow ave/spatial 100 10 1000 y 0.0 1.0 vx vz norm sample file vel.profile
 fix 1 flow ave/spatial 100 5 1000 z lower 1.0 y 0.0 2.5 density/mass ave running
-fix 1 all ave/spatial 1000 1 1000 x 0 1e-3 y 0 1e-3 z 0 1e-3 f_tracer[0] file bin_data.dat std 124 126 samples_data.dat</pre>
+fix 1 all ave/spatial 1000 1 1000 x 0 1e-3 y 0 1e-3 z 0 1e-3 f_tracer[0] file bin_data.dat std 124 126 samples_data.dat
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -218,7 +244,7 @@ fix 1 all ave/spatial 1000 1 1000 x 0 1e-3 y 0 1e-3 z 0 1e-3 f_tracer[0] file bi
 <p>Use one or more per-atom vectors as inputs every few timesteps, bin
 their values spatially into 1d, 2d, or 3d bins based on current atom
 coordinates, and average the bin values over longer timescales.  The
-resulting bin averages can be used by other <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a> such as <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a file.</p>
+resulting bin averages can be used by other <span class="xref std std-ref">output commands</span> such as <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a file.</p>
 <p>The group specified with the command means only atoms within the group
 contribute to bin averages.  If the <em>region</em> keyword is used, the
 atom must be in both the group and the specified geometric
@@ -291,7 +317,7 @@ counted in the first/last bin in that dimension.</p>
 <p>For orthogonal simulation boxes, the bins are also layers, pencils, or
 boxes aligned with the xyz coordinate axes.  For triclinic
 (non-orthogonal) simulation boxes, the bins are so that they are
-parallel to the tilted faces of the simulation box.  See <a class="reference internal" href="Section_howto.html#howto-7"><em>this section</em></a> of the manual for a discussion of
+parallel to the tilted faces of the simulation box.  See <span class="xref std std-ref">this section</span> of the manual for a discussion of
 the geometry of triclinic boxes in LIGGGHTS(R)-PUBLIC.  As described there, a
 tilted simulation box has edge vectors a,b,c.  In that nomenclature,
 bins in the x dimension have faces with normals in the &#8220;b&#8221; cross &#8220;c&#8221;
@@ -411,9 +437,9 @@ file, assuming the <em>file</em> keyword was used.  LIGGGHTS(R)-PUBLIC uses defa
 values for each of these, so they do not need to be specified.
 If either of them is specified as &#8220;&#8221;, then the line is omitted</p>
 <p>By default, these header lines are as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Spatial-averaged data for fix ID and group name</span>
-<span class="c"># Timestep Number-of-bins</span>
-<span class="c"># Bin Coord1 Coord2 Coord3 Count value1 value2 ...</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Spatial-averaged data for fix ID and group name</span>
+<span class="c1"># Timestep Number-of-bins</span>
+<span class="c1"># Bin Coord1 Coord2 Coord3 Count value1 value2 ...</span>
 </pre></div>
 </div>
 <p>In the first line, ID and name are replaced with the fix-ID and group
@@ -434,7 +460,7 @@ For the calculation of the standard deviation the (known) true average is used i
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix computes a global array of values which can be accessed by
-various <a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a>.  The values can
+various <span class="xref std std-ref">output commands</span>.  The values can
 only be accessed on timesteps that are multiples of <em>Nfreq</em> since that
 is when averaging is performed.  The global array has # of rows =
 Nbins and # of columns = Ndim+1+Nvalues, where Ndim = 1,2,3 for
@@ -449,7 +475,7 @@ that the last dimension(s) vary fastest.  The array values calculated
 by this fix are &#8220;intensive&#8221;, since they are already normalized by the
 count of atoms in each bin.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
-the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <tt class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></tt>.</p>
+the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -472,6 +498,9 @@ and ave = one, title 1,2,3 = strings as described above.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -502,11 +531,13 @@ and ave = one, title 1,2,3 = strings as described above.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

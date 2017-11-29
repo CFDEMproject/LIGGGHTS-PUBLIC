@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>dump image command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>dump image command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/dump_image.txt" rel="nofollow"> View page source</a> 
+      <li>dump image command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/dump_image.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -150,7 +173,8 @@
 <h1>dump movie command<a class="headerlink" href="#dump-movie-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>dump ID group-ID style N file color diameter keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>dump ID group-ID style N file color diameter keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID = user-assigned name for the dump</li>
@@ -207,12 +231,13 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>dump d0 all image 100 dump.*.jpg type type
+<div class="highlight-python"><div class="highlight"><pre>dump d0 all image 100 dump.*.jpg type type
 dump d1 mobile image 500 snap.*.png element element ssao yes 123457 0.6
 dump d2 all image 200 img-*.ppm type type zoom 2.5 adiam 1.5 size 1280 720
 dump m0 all movie 1000 movie.mpg type type size 640 480
 dump m1 all movie 1000 movie.avi type type size 640 480
-dump m2 all movie 100 movie.m4v type type zoom 1.8 adiam v_value size 1280 720</pre>
+dump m2 all movie 100 movie.m4v type type zoom 1.8 adiam v_value size 1280 720
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -229,7 +254,7 @@ below.  Other dump styles store snapshots of numerical data asociated
 with atoms in various formats, as discussed on the <a class="reference internal" href="dump.html"><em>dump</em></a>
 doc page.</p>
 <p>Note that a set of images or a movie can be made after a simulation
-has been run, using the <tt class="xref doc docutils literal"><span class="pre">rerun</span></tt> command to read snapshots
+has been run, using the <code class="xref doc docutils literal"><span class="pre">rerun</span></code> command to read snapshots
 from an existing dump file, and using these dump commands in the rerun
 script to generate the images/movie.</p>
 <p>Here are two sample images, rendered as 1024x1024 JPG files.  Click to
@@ -255,7 +280,7 @@ framerate can be set using the <a class="reference internal" href="dump_modify.h
 <p>To write out JPEG and PNG format files, you must build LIGGGHTS(R)-PUBLIC with
 support for the corresponding JPEG or PNG library. To convert images
 into movies, LIGGGHTS(R)-PUBLIC has to be compiled with the -DLAMMPS_FFMPEG
-flag. See <a class="reference internal" href="Section_start.html#start-2-4"><em>this section</em></a> of the manual
+flag. See <span class="xref std std-ref">this section</span> of the manual
 for instructions on how to do this.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
@@ -290,7 +315,7 @@ atoms rendered in the image.  They can be any atom attribute defined
 for the <a class="reference internal" href="dump.html"><em>dump custom</em></a> command, including <em>type</em> and
 <em>element</em>.  This includes per-atom quantities calculated by a
 <a class="reference internal" href="compute.html"><em>compute</em></a>, <a class="reference internal" href="fix.html"><em>fix</em></a>, or <a class="reference internal" href="variable.html"><em>variable</em></a>,
-which are prefixed by &#8220;<a href="#id10"><span class="problematic" id="id11">c_</span></a>&#8221;, &#8220;<a href="#id12"><span class="problematic" id="id13">f_</span></a>&#8221;, or &#8220;<a href="#id14"><span class="problematic" id="id15">v_</span></a>&#8221; respectively.  Note that the
+which are prefixed by &#8220;<a href="#id9"><span class="problematic" id="id10">c_</span></a>&#8221;, &#8220;<a href="#id11"><span class="problematic" id="id12">f_</span></a>&#8221;, or &#8220;<a href="#id13"><span class="problematic" id="id14">v_</span></a>&#8221; respectively.  Note that the
 <em>diameter</em> setting can be overridden with a numeric value by the
 optional <em>adiam</em> keyword, in which case you can specify the <em>diameter</em>
 setting with any valid atom attribute.</p>
@@ -316,7 +341,7 @@ element it is, which in turn is specified by the element-to-type
 mapping specified by the &#8220;dump_modify element&#8221; command.  By default
 every atom type is C (carbon).  Every element has a color and diameter
 associated with it, which is the same as the colors and sizes used by
-the <a class="reference external" href="atomeye_">AtomEye</a> visualization package.</p>
+the <a class="reference external" href="http://mt.seas.upenn.edu/Archive/Graphics/A">AtomEye</a> visualization package.</p>
 <p>If other atom attributes are used for the <em>color</em> or <em>diameter</em>
 settings, they are interpreted in the following way.</p>
 <p>If &#8220;vx&#8221;, for example, is used as the <em>color</em> setting, then the color
@@ -425,7 +450,8 @@ plane perpendicular to the view vector implied by the <em>theta</em> and
 <em>pni</em> values, and which is also in the plane defined by the view
 vector and user-specified up vector.  Thus this internal vector is
 computed from the user-specified <em>up</em> vector as</p>
-<div class="highlight-python"><pre>up_internal = view cross (up cross view)</pre>
+<div class="highlight-python"><div class="highlight"><pre>up_internal = view cross (up cross view)
+</pre></div>
 </div>
 <p>This means the only restriction on the specified <em>up</em> vector is that
 it cannot be parallel to the <em>view</em> vector, implied by the <em>theta</em> and
@@ -489,8 +515,9 @@ or other movie file you can use:</p>
 </ol>
 </li>
 </ul>
-<div class="highlight-python"><pre>% convert *.jpg foo.gif
-% convert -loop 1 *.ppm foo.mpg</pre>
+<div class="highlight-python"><div class="highlight"><pre>% convert *.jpg foo.gif
+% convert -loop 1 *.ppm foo.mpg
+</pre></div>
 </div>
 <p>Animated GIF files from ImageMagick are unoptimized. You can use a
 program like gifsicle to optimize and massively shrink them.
@@ -504,7 +531,7 @@ inefficient compression and low quality.</p>
 </ul>
 <p>Select &#8220;Open Image Sequence&#8221; under the File menu Load the images into
 QuickTime to animate them Select &#8220;Export&#8221; under the File menu Save the
-movie as a QuickTime movie (<a href="#id8"><span class="problematic" id="id9">*</span></a>.mov) or in another format.  QuickTime
+movie as a QuickTime movie (<a href="#id7"><span class="problematic" id="id8">*</span></a>.mov) or in another format.  QuickTime
 can generate very high quality and efficiently compressed movie
 files. Some of the supported formats require to buy a license and some
 are not readable on all platforms until specific runtime libraries are
@@ -517,8 +544,9 @@ installed.</p>
 </ul>
 <p>FFmpeg is a command line tool that is available on many platforms and
 allows extremely flexible encoding and decoding of movies.</p>
-<div class="highlight-python"><pre>cat snap.*.jpg | ffmpeg -y -f image2pipe -c:v mjpeg -i - -b:v 2000k movie.m4v
-cat snap.*.ppm | ffmpeg -y -f image2pipe -c:v ppm -i - -b:v 2400k movie.avi</pre>
+<div class="highlight-python"><div class="highlight"><pre>cat snap.*.jpg | ffmpeg -y -f image2pipe -c:v mjpeg -i - -b:v 2000k movie.m4v
+cat snap.*.ppm | ffmpeg -y -f image2pipe -c:v ppm -i - -b:v 2400k movie.avi
+</pre></div>
 </div>
 <p>Frontends for FFmpeg exist for multiple platforms. For more
 information see the <a class="reference external" href="http://www.ffmpeg.org/">FFmpeg homepage</a></p>
@@ -537,15 +565,16 @@ Load the animated GIF file</p>
 movie. Both are available for multiple OSes and support a large
 variety of file formats and decoders.</li>
 </ul>
-<div class="highlight-python"><pre>% mplayer foo.mpg
-% ffplay bar.avi</pre>
+<div class="highlight-python"><div class="highlight"><pre>% mplayer foo.mpg
+% ffplay bar.avi
+</pre></div>
 </div>
 <ul class="simple">
 <li>c) Use the <a class="reference external" href="http://www.sandia.gov/~sjplimp/pizza.html">Pizza.py</a>
 <a class="reference external" href="http://www.sandia.gov/~sjplimp/pizza/doc/animate.html">animate tool</a>,
 which works directly on a series of image files.</li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">animate</span><span class="p">(</span><span class="s">&quot;foo*.jpg&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">animate</span><span class="p">(</span><span class="s2">&quot;foo*.jpg&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -571,7 +600,7 @@ PNG library.</p>
 <p>To write <em>movie</em> dumps, you must use the -DLAMMPS_FFMPEG switch when
 building LIGGGHTS(R)-PUBLIC and have the FFmpeg executable available on the
 machine where LIGGGHTS(R)-PUBLIC is being run.</p>
-<p>See the <a class="reference internal" href="Section_start.html#start-2-4"><em>Making LIGGGHTS(R)-PUBLIC</em></a> section of the
+<p>See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section of the
 documentation for details on how to configure and compile optional in
 LIGGGHTS(R)-PUBLIC.</p>
 </div>
@@ -605,6 +634,9 @@ LIGGGHTS(R)-PUBLIC.</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -634,11 +666,13 @@ LIGGGHTS(R)-PUBLIC.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

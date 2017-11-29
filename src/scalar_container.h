@@ -47,6 +47,8 @@
 #include "general_container.h"
 #include "memory.h"
 #include <limits>
+#include <cmath>
+#include <algorithm>
 
 namespace LAMMPS_NS
 {
@@ -202,7 +204,7 @@ namespace LAMMPS_NS
   {
       T maxim;
 
-      int nn = MathExtraLiggghts::min(to,this->size());
+      int nn = std::min(to,this->size());
 
       if(nn == 0)
         return  (std::numeric_limits<T>::min)();

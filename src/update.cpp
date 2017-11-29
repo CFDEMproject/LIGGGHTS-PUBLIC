@@ -458,6 +458,9 @@ void Update::reset_timestep(bigint newstep)
   if (ntimestep < 0) error->all(FLERR,"Timestep must be >= 0");
   if (ntimestep > MAXBIGINT) error->all(FLERR,"Too big a timestep");
 
+  atime += (ntimestep - atimestep) * dt;
+  if (atime < 0)
+      atime = 0;
   atimestep = ntimestep;
 
   output->reset_timestep(ntimestep);

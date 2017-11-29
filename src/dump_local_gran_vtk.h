@@ -116,8 +116,6 @@ class DumpLocalGranVTK : public Dump, public DumpVTK
   vtkSmartPointer<vtkMultiBlockDataSet> mbSet;
 
   char *filecurrent;
-  char *parallelfilecurrent;
-  char *multiname_ex;
 
   void setFileCurrent();
 };

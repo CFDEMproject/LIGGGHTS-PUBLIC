@@ -1,0 +1,57 @@
+23a34,27
+> # PROFILE:
+> #  "OFF"   : no profiling code generated
+> #  "ON"    : profiling code generated (-pg)
+> USE_PROFILE = "OFF"
+38a43,46
+> # ADVANCED SETTINGS
+> #
+> # Set and uncomment the variables in the following for a more fine grained control.
+> #
+49a58
+> # Warning: this is the only *_INC_USR that does not use -I
+51a61
+> # Warning: this is the only *_LIB_USR that does not use -L
+65c75
+< #CC_USR=/usr/bin/g++
+---
+> #CXX_USR=/usr/bin/g++
+93c103
+< #VTK_INC_USR=/path/to/vtk/include
+---
+> #VTK_INC_USR=-I/path/to/vtk/include
+95c105
+< #VTK_LIB_USR=/path/to/vtk/lib
+---
+> #VTK_LIB_USR=-L/path/to/vtk/lib
+97a108,113
+> # Appendix to the library names
+> # In general this is going to be dependent on the version of VTK that you have
+> # installed. In this case it is going to be detected automatically. In case of
+> # using a VTK version from a ParaView compilation, the appendix will be equal
+> # to pv-X.Y where X.Y is the ParaView version.
+> #VTK_APPENDIX_USR=pv-5.3
+102c118
+< #BOOST_INC_USR=/path/to/boost/include
+---
+> #BOOST_INC_USR=-I/path/to/boost/include
+107c123
+< #JPG_INC_USR=/path/to/jpeg/include
+---
+> #JPG_INC_USR=-I/path/to/jpeg/include
+109c125
+< #JPG_LIB_USR=/path/to/jpeg/lib
+---
+> #JPG_LIB_USR=-L/path/to/jpeg/lib
+116c132
+< #CONVEX_INC_USR=/path/to/libccd/include
+---
+> #CONVEX_INC_USR=-I/path/to/libccd/include
+138c134
+< #CONVEX_LIB_USR=/path/to/libccd/lib
+---
+> #CONVEX_LIB_USR=-L/path/to/libccd/lib
+127c143
+< MAKEFILE_USER_VERSION = "1.0"
+---
+> MAKEFILE_USER_VERSION = "1.1"

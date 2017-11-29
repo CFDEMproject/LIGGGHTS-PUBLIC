@@ -50,7 +50,7 @@
 #ifndef LMP_MATH_VECTOR_H
 #define LMP_MATH_VECTOR_H
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 
 #define VECTOR_NULL        {0, 0, 0}

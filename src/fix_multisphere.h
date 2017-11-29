@@ -43,6 +43,7 @@
 
 FixStyle(multisphere,FixMultisphere)
 FixStyle(multisphere/nointegration,FixMultisphere)
+FixStyle(concave,FixMultisphere)
 
 #else
 
@@ -119,6 +120,8 @@ class FixMultisphere : public Fix
 
       void write_restart(FILE *fp);
       void restart(char *buf);
+
+      int modify_param(int narg, char **arg);
 
       // *************************************
       #include "fix_multisphere_comm_I.h"
@@ -218,7 +221,14 @@ class FixMultisphere : public Fix
         reverse_comm();
       }
 
+      void set_add_dragforce(bool value)
+      {
+        add_dragforce_ = value;
+      }
+
      protected:
+
+      void ms_error(const char * file, int line,char const *errmsg);
 
       inline int map(int i)
       { return data().map(i); }
@@ -262,8 +272,16 @@ class FixMultisphere : public Fix
       bool allow_group_and_set_;
       bool allow_heatsource_;
 
+      double CAdd_;                 //Added mass coefficient
+      double fluidDensity_;         //fluid density
+
+      bool concave_;    
+
+      bool add_dragforce_; 
+
       inline int getMask(int ibody)
       { return 1; }
+
 };
 
 }

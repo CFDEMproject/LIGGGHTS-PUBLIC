@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>Compile LIGGGHTS(R)-PUBLIC for Windows &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>Compile LIGGGHTS(R)-PUBLIC for Windows</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/install_liggghts_windows.txt" rel="nofollow"> View page source</a> 
+      <li>Compile LIGGGHTS(R)-PUBLIC for Windows</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/install_liggghts_windows.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -155,21 +178,21 @@
 <p>All mentioned programs are available for free.</p>
 <div class="section" id="mpi">
 <h3>MPI:<a class="headerlink" href="#mpi" title="Permalink to this headline">¶</a></h3>
-<p>LIGGGHTS(R)-PUBLIC is a highly parallelized simulation engine. If you want to run simulations in parallel you have to install MPI (Message Passing Interface standard). We suggest to use the implementation of Microsoft, which is available <a class="reference external" href="msmpi_">here</a>. You need the binaries and the header files (included in the SDK). Please follow the instructions of the installer.</p>
+<p>LIGGGHTS(R)-PUBLIC is a highly parallelized simulation engine. If you want to run simulations in parallel you have to install MPI (Message Passing Interface standard). We suggest to use the implementation of Microsoft, which is available <a class="reference external" href="http://msdn.microsoft.com/en-us/library/bb524831%28v=vs.85%29.aspx">here</a>. You need the binaries and the header files (included in the SDK). Please follow the instructions of the installer.</p>
 </div>
 <div class="section" id="git">
 <h3>Git:<a class="headerlink" href="#git" title="Permalink to this headline">¶</a></h3>
-<p>GIT is an open-source version control system. We provide LIGGGHTS(R)-PUBLIC via <a class="reference external" href="gitHub_">github</a>. It is to your advantage to use any git program to keep your LIGGGHTS(R)-PUBLIC version up-to-date. We recommend to use <a class="reference external" href="gitbash_">git-scm</a> as it provides a minimum bash environment too.</p>
+<p>GIT is an open-source version control system. We provide LIGGGHTS(R)-PUBLIC via <a class="reference external" href="http://github.com">github</a>. It is to your advantage to use any git program to keep your LIGGGHTS(R)-PUBLIC version up-to-date. We recommend to use <a class="reference external" href="http://git-scm.com">git-scm</a> as it provides a minimum bash environment too.</p>
 <p>You can set up your GIT environment to use the SSH-Keys thus you don&#8217;t have to enter your user and password multiple times. Check the GIT GUI documentation for more details.</p>
 <p><strong>Important: Git-scm will ask during installation how it should handle newlines; please use &#8220;Checkout as-is, commit Unix-style line endings&#8221;.</strong></p>
 </div>
 <div class="section" id="python-or-cygwin">
 <h3>Python or Cygwin:<a class="headerlink" href="#python-or-cygwin" title="Permalink to this headline">¶</a></h3>
-<p>A python script updates the VS-project, thus you have to install either <a class="reference external" href="python_">python</a> or <a class="reference external" href="cygwin_">cygwin</a>. In case of cygwin you can use another GIT program, because cygwin provides also a bash environment. The description of the procedure assumes that you have installed cygwin.</p>
+<p>A python script updates the VS-project, thus you have to install either <a class="reference external" href="https://www.python.org/downloads/windows/">python</a> or <a class="reference external" href="https://www.cygwin.com/">cygwin</a>. In case of cygwin you can use another GIT program, because cygwin provides also a bash environment. The description of the procedure assumes that you have installed cygwin.</p>
 </div>
 <div class="section" id="visual-studio">
 <h3>Visual studio:<a class="headerlink" href="#visual-studio" title="Permalink to this headline">¶</a></h3>
-<p>To compile LIGGGHTS(R)-PUBLIC you need a development environment. You can download Microsoft Visual Studio Express (current version: Express 2013 with Update 4 for Windows Desktop) for free from <a class="reference external" href="vs_">www.visualstudio.com</a>. Therefore, you have to create an Microsoft account.</p>
+<p>To compile LIGGGHTS(R)-PUBLIC you need a development environment. You can download Microsoft Visual Studio Express (current version: Express 2013 with Update 4 for Windows Desktop) for free from <a class="reference external" href="http://www.visualstudio.com">www.visualstudio.com</a>. Therefore, you have to create an Microsoft account.</p>
 </div>
 <div class="section" id="vtk-support">
 <h3>VTK support:<a class="headerlink" href="#vtk-support" title="Permalink to this headline">¶</a></h3>
@@ -180,14 +203,14 @@
 <h2>Procedure:<a class="headerlink" href="#procedure" title="Permalink to this headline">¶</a></h2>
 <p>Basically the following steps have to be performed:</p>
 <ul class="simple">
-<li>download/clone your repository from <a class="reference external" href="gitHub_">github</a></li>
+<li>download/clone your repository from <a class="reference external" href="http://github.com">github</a></li>
 <li>update auto-generated header-files</li>
 <li>update your VS-project</li>
 <li>compile your LIGGGHTS(R)-PUBLIC version</li>
 </ul>
 <div class="section" id="download-clone-your-liggghts-r-public-version">
 <h3>Download/clone your LIGGGHTS(R)-PUBLIC version:<a class="headerlink" href="#download-clone-your-liggghts-r-public-version" title="Permalink to this headline">¶</a></h3>
-<p>In this tutorial we use the suggested <a class="reference external" href="gitbash_">git-scm</a>. You can use either the <em>Git GUI</em> or the <em>Git Bash</em>. In case of a bash you can follow the instructions in the documentation <a class="reference external" href="gitMan_">githubAccess_non-public</a>. Otherwise copy the link to your repository, for instance <em>https://github.com/CFDEMproject/LIGGGHTS-COMPANY.git</em>, into the <em>Git GUI</em> and save the repository at your computer, e.g. <em>C:/repositories/LIGGGHTS-COMPANY</em>.</p>
+<p>In this tutorial we use the suggested <a class="reference external" href="http://git-scm.com">git-scm</a>. You can use either the <em>Git GUI</em> or the <em>Git Bash</em>. In case of a bash you can follow the instructions in the documentation <a class="reference external" href="githubAccess_non-public.html">githubAccess_non-public</a>. Otherwise copy the link to your repository, for instance <em>https://github.com/CFDEMproject/LIGGGHTS-COMPANY.git</em>, into the <em>Git GUI</em> and save the repository at your computer, e.g. <em>C:/repositories/LIGGGHTS-COMPANY</em>.</p>
 <p>In the directory <em>LIGGGHTS-COMPANY/src/WINDOWS</em> you find an README, which describes the following steps in detail.</p>
 </div>
 <div class="section" id="update-auto-generated-header-files">
@@ -197,19 +220,22 @@
 </pre></div>
 </div>
 <p>Update the header files by</p>
-<div class="highlight-python"><pre>sh Make.sh styles
-sh Make.sh models</pre>
+<div class="highlight-python"><div class="highlight"><pre>sh Make.sh styles
+sh Make.sh models
+</pre></div>
 </div>
 <p>You can check the files by</p>
-<div class="highlight-python"><pre>ls style_*</pre>
+<div class="highlight-python"><div class="highlight"><pre>ls style_*
+</pre></div>
 </div>
 <p>which should output a list of style file headers.</p>
 </div>
 <div class="section" id="update-your-vs-project">
 <h3>Update your VS-project:<a class="headerlink" href="#update-your-vs-project" title="Permalink to this headline">¶</a></h3>
 <p>In order to update the Visual Studio project in die WINDOWS directory run following commands (still in cygwin):</p>
-<div class="highlight-python"><pre>cd WINDOWS
-python update_project.py LIGGGHTS.vcxproj</pre>
+<div class="highlight-python"><div class="highlight"><pre>cd WINDOWS
+python update_project.py LIGGGHTS.vcxproj
+</pre></div>
 </div>
 </div>
 <div class="section" id="compile-your-liggghts-r-public-version">
@@ -237,10 +263,12 @@ Assuming you use your cygwin, change to one example in your repository.</p>
 </pre></div>
 </div>
 <p>and start the simulation by</p>
-<div class="highlight-python"><pre>/cygdrive/c/repositories/LIGGGHTS-COMPANY/src/WINDOWS/Release/LIGGGHTS.exe -in in.chute_wear</pre>
+<div class="highlight-python"><div class="highlight"><pre>/cygdrive/c/repositories/LIGGGHTS-COMPANY/src/WINDOWS/Release/LIGGGHTS.exe -in in.chute_wear
+</pre></div>
 </div>
 <p>If you added the Release-folder to your PATH variable the command shortens to</p>
-<div class="highlight-python"><pre>LIGGGHTS.exe -in in.chute_wear</pre>
+<div class="highlight-python"><div class="highlight"><pre>LIGGGHTS.exe -in in.chute_wear
+</pre></div>
 </div>
 </div>
 </div>
@@ -252,6 +280,9 @@ Assuming you use your cygwin, change to one example in your repository.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -282,11 +313,13 @@ Assuming you use your cygwin, change to one example in your repository.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

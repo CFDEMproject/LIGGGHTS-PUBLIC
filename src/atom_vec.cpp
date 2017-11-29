@@ -52,6 +52,8 @@
 
 using namespace LAMMPS_NS;
 
+#define DELTA 16384
+#define DELTA_BONUS 8192
 /* ---------------------------------------------------------------------- */
 
 AtomVec::AtomVec(LAMMPS *lmp) : Pointers(lmp)
@@ -59,6 +61,7 @@ AtomVec::AtomVec(LAMMPS *lmp) : Pointers(lmp)
   nmax = 0;
   bonds_allow = angles_allow = dihedrals_allow = impropers_allow = 0;
   mass_type = dipole_type = 0;
+  forceclearflag = 0;
   size_data_bonus = 0;
   cudable = false;
 }
@@ -84,6 +87,27 @@ void AtomVec::init()
 
   if (lmp->cuda != NULL && cudable == false)
     error->all(FLERR,"USER-CUDA package requires a cuda enabled atom_style");
+}
+
+/* ----------------------------------------------------------------------
+   grow nmax so it is a multiple of DELTA
+------------------------------------------------------------------------- */
+
+void AtomVec::grow_nmax()
+{
+  nmax = nmax/DELTA * DELTA;
+  nmax += DELTA;
+}
+
+/* ----------------------------------------------------------------------
+   grow nmax_bonus so it is a multiple of DELTA_BONUS
+------------------------------------------------------------------------- */
+
+int AtomVec::grow_nmax_bonus(int nmax_bonus)
+{
+  nmax_bonus = nmax_bonus/DELTA_BONUS * DELTA_BONUS;
+  nmax_bonus += DELTA_BONUS;
+  return nmax_bonus;
 }
 
 /* ----------------------------------------------------------------------

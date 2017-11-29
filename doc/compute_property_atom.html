@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute property/atom command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute property/atom command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_property_atom.txt" rel="nofollow"> View page source</a> 
+      <li>compute property/atom command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_property_atom.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute property/atom command<a class="headerlink" href="#compute-property-atom-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute ID group-ID property/atom general_keyword general_values input1 input2 ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute ID group-ID property/atom general_keyword general_values input1 input2 ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>ID, group-ID are documented in <a class="reference internal" href="compute.html"><em>compute</em></a> command</li>
@@ -155,7 +179,7 @@
 <li>general_keywords general_values are documented in <a class="reference external" href="compute.html&quot;">compute</a></li>
 <li>input = one or more atom attributes</li>
 </ul>
-<div class="highlight-python"><pre>possible attributes = id, mol, type, mass,
+<div class="highlight-python"><div class="highlight"><pre>possible attributes = id, mol, type, mass,
                    x, y, z, xs, ys, zs, xu, yu, zu, ix, iy, iz,
                    vx, vy, vz, fx, fy, fz,
                       q, mux, muy, muz, mu,
@@ -167,9 +191,10 @@
                    corner1x, corner1y, corner1z,
                    corner2x, corner2y, corner2z,
                    corner3x, corner3y, corner3z,
-                      i_name, d_name</pre>
+                      i_name, d_name
+</pre></div>
 </div>
-<div class="highlight-python"><pre>id = atom ID
+<div class="highlight-python"><div class="highlight"><pre>id = atom ID
 mol = molecule ID
 type = atom type
 mass = atom mass
@@ -191,21 +216,23 @@ tqx,tqy,tqz = torque on finite-size particles
 end12x, end12y, end12z = end points of line segment
 coner123x, corner123y, corner123z = corner points of triangle
 i_name = custom integer vector with name
-d_name = custom integer vector with name</pre>
+d_name = custom integer vector with name
+</pre></div>
 </div>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute 1 all property/atom xs vx fx mux
+<div class="highlight-python"><div class="highlight"><pre>compute 1 all property/atom xs vx fx mux
 compute 2 all property/atom type
-compute 1 all property/atom ix iy iz</pre>
+compute 1 all property/atom ix iy iz
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Define a computation that simply stores atom attributes for each atom
 in the group.  This is useful so that the values can be used by other
-<a class="reference internal" href="Section_howto.html#howto-8"><em>output commands</em></a> that take computes as
+<span class="xref std std-ref">output commands</span> that take computes as
 inputs.  See for example, the <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a>,
 <a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a>, <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a>,
 <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>, and <a class="reference internal" href="variable.html"><em>atom-style variable</em></a> commands.</p>
@@ -231,16 +258,18 @@ line segment particles and define the end points of each line segment.</p>
 triangular particles and define the corner points of each triangle.</p>
 <p>The <em>i_name</em> and <em>d_name</em> attributes refer to custom integer and
 floating-point properties that have been added to each atom via the
-<tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt> command.  When that command
+<code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></code> command.  When that command
 is used specific names are given to each attribute which are what is
 specified as the &#8220;name&#8221; portion of <em>i_name</em> or <em>d_name</em>.</p>
-<p><strong>Output info:</strong></p>
+</div>
+<div class="section" id="output-info">
+<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
 <p>This compute calculates a per-atom vector or per-atom array depending
 on the number of input values.  If a single input is specified, a
 per-atom vector is produced.  If two or more inputs are specified, a
 per-atom array is produced where the number of columns = the number of
 inputs.  The vector or array can be accessed by any command that uses
-per-atom values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><em>this section</em></a> for an overview of LIGGGHTS(R)-PUBLIC output
+per-atom values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>The vector or array values will be in whatever <a class="reference internal" href="units.html"><em>units</em></a> the
 corresponding attribute is in, e.g. velocity units for vx, charge
@@ -254,12 +283,15 @@ units for q, etc.</p>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference internal" href="dump.html"><em>dump custom</em></a>, <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a>, <a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a>, <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>,
-<tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></tt></p>
+<code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></code></p>
 <p><strong>Default:</strong> none</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -290,11 +322,13 @@ units for q, etc.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

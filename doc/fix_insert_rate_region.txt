@@ -10,10 +10,10 @@ fix insert/rate/region command :h3
 
 [Syntax:]
 
-fix ID group-ID insert/rate/region   seed seed_value distributiontemplate dist-ID general_keywords general_values insert_rate_keywords insert_rate_values :pre
+fix ID group-ID insert/rate/region seed seed_value distributiontemplate dist-ID general_keywords general_values insert_rate_keywords insert_rate_values :pre
 
 ID, group-ID are documented in "fix"_fix.html command :ulb,l
-insert/pack and insert/stream = style names of these fix commands :l
+insert/rate/region = style names of these fix commands :l
 seed = obligatory keyword :l
 seed_value = random # seed (prime number greater 10000) :l
 distributiontemplate = obligatory keyword :l

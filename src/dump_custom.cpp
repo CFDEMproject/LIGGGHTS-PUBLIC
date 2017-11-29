@@ -49,7 +49,7 @@
     the GNU General Public License.
 ------------------------------------------------------------------------- */
 
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <string.h>
 #include "dump_custom.h"
@@ -84,7 +84,7 @@ enum{ID,MOL,TYPE,ELEMENT,MASS,
      DENSITY, RHO, P,
      SHAPEX, SHAPEY, SHAPEZ,
      QUAT1, QUAT2, QUAT3, QUAT4,
-     ROUNDNESS1, ROUNDNESS2,
+     BLOCKINESS1, BLOCKINESS2,
      INERTIAX, INERTIAY, INERTIAZ}; 
 enum{LT,LE,GT,GE,EQ,NEQ};
 enum{INT,DOUBLE,STRING};    // same as in DumpCFG
@@ -1299,15 +1299,19 @@ int DumpCustom::parse_fields(int narg, char **arg)
         error->all(FLERR,"Dumping an atom quantity that isn't allocated");
       pack_choice[i] = &DumpCustom::pack_quat4;
       vtype[i] = DOUBLE;
-    } else if (strcmp(arg[iarg],"roundness1") == 0) {
+    } else if (strcmp(arg[iarg],"blockiness1") == 0 or strcmp(arg[iarg],"roundness1") == 0) {
       if (!atom->superquadric_flag)
         error->all(FLERR,"Dumping an atom quantity that isn't allocated");
-      pack_choice[i] = &DumpCustom::pack_roundness1;
+      if(strcmp(arg[iarg],"roundness1") == 0)
+        error->warning(FLERR,"Keyword 'roundness1' will be deprecated in future, please use 'blockiness1' istead");
+      pack_choice[i] = &DumpCustom::pack_blockiness1;
       vtype[i] = DOUBLE;
-    } else if (strcmp(arg[iarg],"roundness2") == 0) {
+    } else if (strcmp(arg[iarg],"blockiness2") == 0 or strcmp(arg[iarg],"roundness2") == 0) {
       if (!atom->superquadric_flag)
         error->all(FLERR,"Dumping an atom quantity that isn't allocated");
-      pack_choice[i] = &DumpCustom::pack_roundness2;
+      if(strcmp(arg[iarg],"roundness2") == 0)
+        error->warning(FLERR,"Keyword 'roundness2' will be deprecated in future, please use 'blockiness2' istead");
+      pack_choice[i] = &DumpCustom::pack_blockiness2;
       vtype[i] = DOUBLE;
     } else if (strcmp(arg[iarg],"inertiax") == 0) {
       if (!atom->superquadric_flag)
@@ -1659,8 +1663,8 @@ int DumpCustom::modify_param(int narg, char **arg)
     else if (strcmp(arg[1],"quat2") == 0) thresh_array[nthresh] = QUAT2;
     else if (strcmp(arg[1],"quat3") == 0) thresh_array[nthresh] = QUAT3;
     else if (strcmp(arg[1],"quat4") == 0) thresh_array[nthresh] = QUAT4;
-    else if (strcmp(arg[1],"roundness1") == 0) thresh_array[nthresh] = ROUNDNESS1;
-    else if (strcmp(arg[1],"roundness2") == 0) thresh_array[nthresh] = ROUNDNESS2;
+    else if (strcmp(arg[1],"blockiness1") == 0) thresh_array[nthresh] = BLOCKINESS1;
+    else if (strcmp(arg[1],"blockiness2") == 0) thresh_array[nthresh] = BLOCKINESS2;
     else if (strcmp(arg[1],"inertiax") == 0) thresh_array[nthresh] = INERTIAX;
     else if (strcmp(arg[1],"inertiay") == 0) thresh_array[nthresh] = INERTIAY;
     else if (strcmp(arg[1],"inertiaz") == 0) thresh_array[nthresh] = INERTIAZ;
@@ -2744,24 +2748,24 @@ void DumpCustom::pack_quat4(int n)
 
 /* ---------------------------------------------------------------------- */
 
-void DumpCustom::pack_roundness1(int n)
+void DumpCustom::pack_blockiness1(int n)
 {
-  double **roundness = atom->roundness;
+  double **blockiness = atom->blockiness;
 
   for (int i = 0; i < nchoose; i++) {
-    buf[n] = roundness[clist[i]][0];
+    buf[n] = blockiness[clist[i]][0];
     n += size_one;
   }
 }
 
 /* ---------------------------------------------------------------------- */
 
-void DumpCustom::pack_roundness2(int n)
+void DumpCustom::pack_blockiness2(int n)
 {
-  double **roundness = atom->roundness;
+  double **blockiness = atom->blockiness;
 
   for (int i = 0; i < nchoose; i++) {
-    buf[n] = roundness[clist[i]][1];
+    buf[n] = blockiness[clist[i]][1];
     n += size_one;
   }
 }

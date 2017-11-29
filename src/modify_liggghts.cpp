@@ -41,6 +41,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <cmath>
+#include <algorithm>
 #include "modify.h"
 #include "style_compute.h"
 #include "style_fix.h"
@@ -519,16 +521,16 @@ void Modify::max_min_rad(double &maxrad,double &minrad)
     for (int i = 0; i < nfix; i++) {
       for (int j = 1; j <= ntypes; j++) {
         
-        maxrad = MathExtraLiggghts::max(maxrad,fix[i]->max_rad(j));
+        maxrad = std::max(maxrad,fix[i]->max_rad(j));
         if(modify->fix[i]->min_rad(j) > 0.)
-            minrad = MathExtraLiggghts::min(minrad,fix[i]->min_rad(j));
+            minrad = std::min(minrad,fix[i]->min_rad(j));
       }
     }
 
     if (radius) {
       for (int i = 0; i < nlocal; i++) {
-        maxrad = MathExtraLiggghts::max(maxrad,radius[i]);
-        minrad = MathExtraLiggghts::min(minrad,radius[i]);
+        maxrad = std::max(maxrad,radius[i]);
+        minrad = std::min(minrad,radius[i]);
       }
     }
 

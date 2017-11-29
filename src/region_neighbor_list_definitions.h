@@ -69,7 +69,7 @@ public:
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
   double shape[3];
   double quaternion[4];
-  double roundness[2];
+  double blockiness[2];
 #endif
 };
 
@@ -90,18 +90,18 @@ class Particle<false /*interpolation*/> : public ParticleBase
     quaternion[0] = 1.0;
     quaternion[1] = quaternion[2] = quaternion[3] = 0.0;
     shape[0] = shape[1] = shape[2] = radius;
-    roundness[0] = roundness[1] = 2.0;
+    blockiness[0] = blockiness[1] = 2.0;
 #endif
   }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  Particle(int _i,double * pos, double rad, double *quaternion_, double *shape_, double *roundness_, int,int,double,double,double) {
+  Particle(int _i,double * pos, double rad, double *quaternion_, double *shape_, double *blockiness_, int,int,double,double,double) {
       index = _i;
       LAMMPS_NS::vectorCopy3D(pos, x);
       radius = rad;
       LAMMPS_NS::vectorCopy4D(quaternion_, quaternion);
       LAMMPS_NS::vectorCopy3D(shape_, shape);
-      LAMMPS_NS::vectorCopy2D(roundness_, roundness);
+      LAMMPS_NS::vectorCopy2D(blockiness_, blockiness);
     }
 #endif
 };
@@ -128,18 +128,18 @@ class Particle<true /*interpolation*/> : public ParticleBase
     quaternion[0] = 1.0;
     quaternion[1] = quaternion[2] = quaternion[3] = 0.0;
     shape[0] = shape[1] = shape[2] = radius;
-    roundness[0] = roundness[1] = 2.0;
+    blockiness[0] = blockiness[1] = 2.0;
 #endif
   }
 
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-  Particle(int _i, double * pos, double rad, double *quaternion_, double *shape_, double *roundness_, int _ibin,int _quadrant,double _wx = -1.,double _wy = -1.,double _wz = -1.) {
+  Particle(int _i, double * pos, double rad, double *quaternion_, double *shape_, double *blockiness_, int _ibin,int _quadrant,double _wx = -1.,double _wy = -1.,double _wz = -1.) {
       index = _i;
       LAMMPS_NS::vectorCopy3D(pos, x);
       radius = rad;
       LAMMPS_NS::vectorCopy4D(quaternion_, quaternion);
       LAMMPS_NS::vectorCopy3D(shape_, shape);
-      LAMMPS_NS::vectorCopy2D(roundness_, roundness);
+      LAMMPS_NS::vectorCopy2D(blockiness_, blockiness);
 
       ibin = _ibin;
       quadrant_bitfield = _quadrant;

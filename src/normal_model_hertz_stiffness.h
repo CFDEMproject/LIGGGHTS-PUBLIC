@@ -49,7 +49,7 @@ NORMAL_MODEL(HERTZ_STIFFNESS,hertz/stiffness,4)
 #include "contact_models.h"
 #include "normal_model_base.h"
 #include "global_properties.h"
-#include <math.h>
+#include <cmath>
 
 namespace LIGGGHTS {
 namespace ContactModels
@@ -110,11 +110,8 @@ namespace ContactModels
       const double meff = sidata.meff;
       double reff = sidata.is_wall ? sidata.radi : (sidata.radi*sidata.radj/(sidata.radi+sidata.radj));
 #ifdef SUPERQUADRIC_ACTIVE_FLAG
-      if(sidata.is_non_spherical) {
-        if(sidata.is_wall)
-          reff = MathExtraLiggghtsNonspherical::get_effective_radius_wall(sidata, atom->roundness[sidata.i], error);
-        else
-          reff = MathExtraLiggghtsNonspherical::get_effective_radius(sidata, atom->roundness[sidata.i], atom->roundness[sidata.j], error);
+      if(sidata.is_non_spherical && atom->superquadric_flag) {
+          reff = sidata.reff;
       }
 #endif
 

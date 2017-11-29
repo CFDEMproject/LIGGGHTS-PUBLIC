@@ -1,0 +1,30 @@
+
+===============================================================
+Release notes for LIGGGHTS-PUBLIC, version 3.8.0 
+
+ (**) Alexander Podlozhnyuk (DCS Computing) has implemented a major new feature in LIGGGHTS: <strong> Superquadric shape particles </strong> . There is a new public tutorial to showcase how to use it
+ (**) Rahul Mohanty (P&G and University of Edinburgh) and Tomaz Zorec (University of Ljubljana) added an implementation of the Edinburgh contact model - currently there is no doc yet, this will hopefully be in the next release. 
+ (**) Rahul Mohanty (P&G and University of Edinburgh) also added an implementation of the Luding contact model - currently there is no doc yet, this will hopefully be in the next release. 
+ (**) Rahul Mohanty (P&G and University of Edinburgh) and Tomaz Zorec (University of Ljubljana) added an implementation of the Thornton/Ning contact model - currently there is no doc yet, this will hopefully be in the next release. 
+ Josef Kerbl (DCS) extended the feature (fflag & tflag) to deactivate forces or torques in x,y or z direction for multi-spheres 
+ Arno Mayrhofer and Christoph Kloss (DCS) fixed a potential segfault with mesh contact history. Thanks to Moritz Höfert (BASF) for providing a test case 
+ Josef Kerbl (DCS) fixed a bug in the argument parsing of compute/coord/atom. 
+ Josef Kerbl (DCS) updated fix/cfd/coupling/force to work with the new trackIO model from CFDEMcoupling. 
+ Arno Mayrhofer (DCS) and Josef Kerbl (DCS) fixed two issues in parallel reading of binary STL files. Thanks to user lesscharles for pointing out this issue.
+ Arno Mayrhofer (DCS) fixed an input issue to viblin. Thanks to user Weijing for pointing out this issue.
+ Arno Mayrhofer (DCS) fixed an input issue to vibrot. Thanks to user Weijing for pointing out this issue.
+ Arno Mayrhofer (DCS) fixed an issue related to the bounds of Y in CGS. Thanks to user hrvig for pointing out this issue.
+ Christoph Goniva (DCS) added 'additional mass' terms to multisphere integration. 
+ Andreas Aigner (DCS) fixed several compiler warnings 
+ Arno Mayrhofer & Josef Kerbl (DCS) changed max number of bins from MAX_INT to 8e6 
+ Arno Mayrhofer added a auto installation for vtk 8.0.1 
+ Arno Mayrhofer added the possibility to compile the libraries with make auto directly (without -f) 
+ Arno Mayrhofer updated Makefile.auto to add -rpath linking 
+ Arno Mayrhofer added clang compilation capability 
+ Josef Kerbl (DCS) made radius field in read_dump mandatory 
+ Arno Mayrhofer fixed an issue in the jpg compilation tests. Thanks to user JoG for reporting it. 
+ Arno Mayrhofer modified the numeric and inumeric input parsers to be able to handle Windows line endings 
+ Arno Mayrhofer added the capability for automatically creating output folders (all dumps and restart writing) 
+ Arno Mayrhofer rewrote the python documentation and renamed lammps to liggghts for python. Thanks to user AndresMM for reporting this issue. 
+ Enabled Superquadrics by default, NOOPT in USE_DEBUG renamed to FULL 
+

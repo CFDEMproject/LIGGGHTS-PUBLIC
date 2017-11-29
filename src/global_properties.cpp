@@ -362,15 +362,15 @@ namespace MODEL_PARAMS
       {
         if(strcmp(lmp->update->unit_style,"si") == 0  && Yi < 5e6)
           lmp->error->all(FLERR,"youngsModulus >= 5e6 required for SI units (use command 'soft_particles yes' to override)");
-        if(strcmp(lmp->update->unit_style,"cgs") == 0 && Yi < 5e5)
-          lmp->error->all(FLERR,"youngsModulus >= 5e5 required for CGS units (use command 'soft_particles yes' to override)");
+        if(strcmp(lmp->update->unit_style,"cgs") == 0 && Yi < 5e7)
+          lmp->error->all(FLERR,"youngsModulus >= 5e7 required for CGS units (use command 'soft_particles yes' to override)");
       }
       if(sanity_checks && !registry.getLAMMPS()->atom->get_properties()->allow_hard_particles())
       {
         if(strcmp(lmp->update->unit_style,"si") == 0  && Yi > 1e9)
           lmp->error->all(FLERR,"youngsModulus <= 1e9 required for SI units (use command 'hard_particles yes' to override)");
-        if(strcmp(lmp->update->unit_style,"cgs") == 0 && Yi > 1e8)
-          lmp->error->all(FLERR,"youngsModulus <= 1e8 required for CGS units (use command 'hard_particles yes' to override)");
+        if(strcmp(lmp->update->unit_style,"cgs") == 0 && Yi > 1e10)
+          lmp->error->all(FLERR,"youngsModulus <= 1e10 required for CGS units (use command 'hard_particles yes' to override)");
       }
 
       vec->data[i] = Yi;

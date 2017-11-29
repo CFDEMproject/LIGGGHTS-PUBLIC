@@ -68,6 +68,8 @@ class FixCfdCouplingForce : public Fix  {
 
  protected:
 
+  int iarg;
+
   void dont_use_force()
   { use_force_ = false; }
 
@@ -86,6 +88,7 @@ class FixCfdCouplingForce : public Fix  {
   bool use_stochastic_;
   bool use_virtualMass_;
   bool use_superquadric_;
+  bool use_id_;
 
  private:
   bool use_property_;

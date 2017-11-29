@@ -306,7 +306,7 @@
        // calculate maximum bounding radius of elements across all procs
        rBound_max = 0.;
        for(int i = 0; i < sizeLocal(); i++)
-           rBound_max = MathExtraLiggghts::max(this->rBound_(i),rBound_max);
+           rBound_max = std::max(this->rBound_(i),rBound_max);
        MPI_Max_Scalar(rBound_max,this->world);
 
        // mesh element ghost cutoff is element bounding radius plus half atom neigh cut
@@ -368,7 +368,7 @@
                    extent_acc += subhi_all[nextproc][dim] - sublo_all[nextproc][dim];
                }
 
-               maxneed_[dim] = MathExtraLiggghts::max(maxneed_[dim],need_this);
+               maxneed_[dim] = std::max(maxneed_[dim],need_this);
            }
 
            // limit maxneed for non-pbc

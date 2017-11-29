@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>print command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>print command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/print.txt" rel="nofollow"> View page source</a> 
+      <li>print command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/print.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -151,20 +174,22 @@
 <ul class="simple">
 <li>string = text string to print, which may contain variables</li>
 <li>zero or more keyword/value pairs may be appended</li>
-<li>keyword = <em>file</em> or <em>append</em> or <em>screen</em></li>
 </ul>
 <pre class="literal-block">
-<em>file</em> value = filename
-<em>append</em> value = filename
-<em>screen</em> value = <em>yes</em> or <em>no</em>
+keyword = <em>file</em> or <em>append</em> or <em>screen</em> or <em>newline</em>:l
+  <em>file</em> value = filename
+  <em>append</em> value = filename
+  <em>screen</em> value = <em>yes</em> or <em>no</em>
+  <em>newline</em> value = <em>yes</em> or <em>no</em>
 </pre>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>print "Done with equilibration" file info.dat
-print Vol=$v append info.dat screen no
-print "The system volume is now $v"
-print 'The system volume is now $v'</pre>
+<div class="highlight-python"><div class="highlight"><pre>print &quot;Done with equilibration&quot; file info.dat
+print Vol=$*volume* append info.dat screen no newline no
+print &quot;The system volume is now $v&quot;
+print &#39;The system volume is now $v&#39;
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -180,6 +205,9 @@ then the filename is appended to if it already exists, or created if
 it does not exist.</p>
 <p>If the <em>screen</em> keyword is used, output to the screen and logfile can
 be turned on or off as desired.</p>
+<p>If the <em>newline</em> keyword is used and its value set to <em>no</em> then no newline
+character will be printed at the end of the string. This can be useful if a
+string should be concatenated.</p>
 <p>If you want the print command to be executed multiple times (with
 changing variable values), there are 3 options.  First, consider using
 the <a class="reference internal" href="fix_print.html"><em>fix print</em></a> command, which will print a string
@@ -207,11 +235,14 @@ thermodynamic properties, global values calculated by a
 </div>
 <div class="section" id="default">
 <h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
-<p>The option defaults are no file output and screen = yes.</p>
+<p>The option defaults are no file output, screen = yes and newline = yes.</p>
 </div>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -242,11 +273,13 @@ thermodynamic properties, global values calculated by a
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

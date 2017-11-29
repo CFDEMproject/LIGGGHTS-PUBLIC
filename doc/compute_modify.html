@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -12,6 +11,8 @@
   <title>compute_modify command &mdash; LIGGGHTS v3.X documentation</title>
   
 
+  
+  
   
   
 
@@ -81,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -105,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -119,24 +125,41 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>compute_modify command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/compute_modify.txt" rel="nofollow"> View page source</a> 
+      <li>compute_modify command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/compute_modify.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -147,7 +170,8 @@
 <span id="index-0"></span><h1>compute_modify command<a class="headerlink" href="#compute-modify-command" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute_modify compute-ID keyword value ...</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute_modify compute-ID keyword value ...
+</pre></div>
 </div>
 <ul class="simple">
 <li>compute-ID = ID of the compute to modify</li>
@@ -165,8 +189,9 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><pre>compute_modify myTemp extra 0
-compute_modify newtemp dynamic yes extra 600</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute_modify myTemp extra 0
+compute_modify newtemp dynamic yes extra 600
+</pre></div>
 </div>
 </div>
 <div class="section" id="description">
@@ -179,12 +204,12 @@ temperature computation.  Only computes that compute a temperature use
 this option.  The default is 2 or 3 for <a class="reference internal" href="dimension.html"><em>2d or 3d systems</em></a> which is a correction factor for an ensemble
 of velocities with zero total linear momentum.  You can use a negative
 number for the <em>extra</em> parameter if you need to add
-degrees-of-freedom.  See the <tt class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/asphere</span></tt> command for an example.</p>
+degrees-of-freedom.  See the <code class="xref doc docutils literal"><span class="pre">compute</span> <span class="pre">temp/asphere</span></code> command for an example.</p>
 <p>The <em>dynamic</em> keyword determines whether the number of atoms N in the
 compute group is re-computed each time a temperature is computed.
 Only compute styles that compute a temperature use this option.  By
 default, N is assumed to be constant.  If you are adding atoms to the
-system (see the <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">pour</span></tt> or <tt class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">deposit</span></tt> commands) or expect atoms to be lost
+system (see the <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">pour</span></code> or <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">deposit</span></code> commands) or expect atoms to be lost
 (e.g. due to evaporation), then this option can be used to insure the
 temperature is correctly normalized.</p>
 <p>The <em>thermo</em> keyword determines whether the potential energy
@@ -211,6 +236,9 @@ defined with no extra keywords; otherwise it is <em>no</em>.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -241,11 +269,13 @@ defined with no extra keywords; otherwise it is <em>no</em>.</p>
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'',
+            URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

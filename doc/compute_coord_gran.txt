@@ -20,8 +20,6 @@ general_keywords general_values are documented in "compute"_compute.html" :ul
 
 compute 1 all coord/gran :pre
 
-
-
 [Description:]
 
 Define a computation that calculates the coordination number for each
