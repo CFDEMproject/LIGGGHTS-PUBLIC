@@ -39,6 +39,8 @@
     Copyright 2009-2012 JKU Linz
 ------------------------------------------------------------------------- */
 
+#ifdef LAMMPS_VTK
+
 #ifdef DUMP_CLASS
 
 DumpStyle(mesh/vtk,DumpMeshVTK)
@@ -87,3 +89,4 @@ private:
 
 #endif
 #endif
+#endif //LAMMPS_VTK

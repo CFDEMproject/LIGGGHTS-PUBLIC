@@ -42,6 +42,8 @@
     Felix Kleinfeldt (OVGU Magdeburg)
 ------------------------------------------------------------------------- */
 
+#ifdef LAMMPS_VTK
+
 #include <string.h>
 #include "dump_mesh_vtk.h"
 #include "tri_mesh.h"
@@ -523,3 +525,5 @@ void DumpMeshVTK::write_data(int n, double *mybuf)
     else
         DumpVTK::write_vtk_poly(polyData, vtk_file_format_, filecurrent);
 }
+
+#endif
