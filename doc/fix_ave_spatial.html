@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix ave/spatial command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>fix ave/spatial command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/fix_ave_spatial.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/fix_ave_spatial.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -244,7 +220,7 @@ fix 1 all ave/spatial 1000 1 1000 x 0 1e-3 y 0 1e-3 z 0 1e-3 f_tracer[0] file bi
 <p>Use one or more per-atom vectors as inputs every few timesteps, bin
 their values spatially into 1d, 2d, or 3d bins based on current atom
 coordinates, and average the bin values over longer timescales.  The
-resulting bin averages can be used by other <span class="xref std std-ref">output commands</span> such as <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a file.</p>
+resulting bin averages can be used by other <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a> such as <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a file.</p>
 <p>The group specified with the command means only atoms within the group
 contribute to bin averages.  If the <em>region</em> keyword is used, the
 atom must be in both the group and the specified geometric
@@ -317,7 +293,7 @@ counted in the first/last bin in that dimension.</p>
 <p>For orthogonal simulation boxes, the bins are also layers, pencils, or
 boxes aligned with the xyz coordinate axes.  For triclinic
 (non-orthogonal) simulation boxes, the bins are so that they are
-parallel to the tilted faces of the simulation box.  See <span class="xref std std-ref">this section</span> of the manual for a discussion of
+parallel to the tilted faces of the simulation box.  See <a class="reference internal" href="Section_howto.html#howto-7"><span>this section</span></a> of the manual for a discussion of
 the geometry of triclinic boxes in LIGGGHTS(R)-PUBLIC.  As described there, a
 tilted simulation box has edge vectors a,b,c.  In that nomenclature,
 bins in the x dimension have faces with normals in the &#8220;b&#8221; cross &#8220;c&#8221;
@@ -460,7 +436,7 @@ For the calculation of the standard deviation the (known) true average is used i
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix computes a global array of values which can be accessed by
-various <span class="xref std std-ref">output commands</span>.  The values can
+various <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.  The values can
 only be accessed on timesteps that are multiples of <em>Nfreq</em> since that
 is when averaging is performed.  The global array has # of rows =
 Nbins and # of columns = Ndim+1+Nvalues, where Ndim = 1,2,3 for
@@ -499,9 +475,6 @@ and ave = one, title 1,2,3 = strings as described above.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
@@ -533,11 +506,9 @@ and ave = one, title 1,2,3 = strings as described above.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

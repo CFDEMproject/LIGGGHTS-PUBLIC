@@ -28,7 +28,7 @@ END_RST -->
 2.6 "Running LIGGGHTS(R)-PUBLIC"_#start_6
 2.7 "Command-line options"_#start_7
 2.8 "Screen output"_#start_8 :all(b)
-<!--END_HTML_ONLY -->
+<!-- END_HTML_ONLY -->
 
 :line
 :line

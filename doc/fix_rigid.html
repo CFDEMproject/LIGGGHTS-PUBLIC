@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix rigid command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>fix rigid command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/fix_rigid.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/fix_rigid.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -503,7 +479,7 @@ supported by the rigid/npt and rigid/nph fixes to change the computes used
 to calculate the instantaneous pressure tensor. Note that the rigid/nvt fix
 does not use any external compute to compute instantaneous temperature.</p>
 <p>The  fixes compute a global
-scalar which can be accessed by various <span class="xref std std-ref">output commands</span>.  The scalar value calculated by
+scalar which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.  The scalar value calculated by
 these fixes is &#8220;intensive&#8221;.  The scalar is the current temperature of
 the collection of rigid bodies.  This is averaged over all rigid
 bodies and their translational and rotational degrees of freedom.  The
@@ -515,7 +491,7 @@ of freedom constrained by the <em>force</em> and <em>torque</em> keywords are
 removed from this calculation, but only for the <em>rigid</em> and
 <em>rigid/nve</em> fixes.</p>
 <p>This fix computes a global array
-of values which can be accessed by various <span class="xref std std-ref">output commands</span>.  The number of rows in the
+of values which can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.  The number of rows in the
 array is equal to the number of rigid bodies.  The number of columns
 is 15.  Thus for each rigid body, 15 values are stored: the xyz coords
 of the center of mass (COM), the xyz components of the COM velocity,
@@ -566,9 +542,6 @@ J Chem Phys, 116, 8649 (2002).</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
@@ -600,11 +573,9 @@ J Chem Phys, 116, 8649 (2002).</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

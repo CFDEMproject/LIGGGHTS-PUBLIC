@@ -23,7 +23,7 @@ END_RST -->
 11.1 "Common problems"_#err_1
 11.2 "Reporting bugs"_#err_2
 11.3 "Error & warning messages"_#err_3 :all(b)
-<!--END_HTML_ONLY -->
+<!-- END_HTML_ONLY -->
 
 :line
 :line

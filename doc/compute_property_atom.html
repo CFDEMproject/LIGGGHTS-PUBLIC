@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute property/atom command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>compute property/atom command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/compute_property_atom.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/compute_property_atom.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -232,7 +208,7 @@ compute 1 all property/atom ix iy iz
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Define a computation that simply stores atom attributes for each atom
 in the group.  This is useful so that the values can be used by other
-<span class="xref std std-ref">output commands</span> that take computes as
+<a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a> that take computes as
 inputs.  See for example, the <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a>,
 <a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a>, <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a>,
 <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>, and <a class="reference internal" href="variable.html"><em>atom-style variable</em></a> commands.</p>
@@ -261,15 +237,13 @@ floating-point properties that have been added to each atom via the
 <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">property/atom</span></code> command.  When that command
 is used specific names are given to each attribute which are what is
 specified as the &#8220;name&#8221; portion of <em>i_name</em> or <em>d_name</em>.</p>
-</div>
-<div class="section" id="output-info">
-<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
+<p><strong>Output info:</strong></p>
 <p>This compute calculates a per-atom vector or per-atom array depending
 on the number of input values.  If a single input is specified, a
 per-atom vector is produced.  If two or more inputs are specified, a
 per-atom array is produced where the number of columns = the number of
 inputs.  The vector or array can be accessed by any command that uses
-per-atom values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
+per-atom values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><span>this section</span></a> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>The vector or array values will be in whatever <a class="reference internal" href="units.html"><em>units</em></a> the
 corresponding attribute is in, e.g. velocity units for vx, charge
@@ -289,9 +263,6 @@ units for q, etc.</p>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -324,11 +295,9 @@ units for q, etc.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

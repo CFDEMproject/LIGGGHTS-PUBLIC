@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute voronoi/atom command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>compute voronoi/atom command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/compute_voronoi_atom.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/compute_voronoi_atom.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -285,20 +261,18 @@ systems.  Note that you define the z extent of the simulation box for
 2d simulations when using the <a class="reference internal" href="create_box.html"><em>create_box</em></a> or
 <a class="reference internal" href="read_data.html"><em>read_data</em></a> commands.</p>
 </div>
-</div>
-<div class="section" id="output-info">
-<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
+<p><strong>Output info:</strong></p>
 <p>This compute calculates a per-atom array with 2 columns.  The first
 column is the Voronoi volume, the second is the neighbor count, as
 described above.  These values can be accessed by any command that
-uses per-atom values from a compute as input.  See <span class="xref std std-ref">Section_howto 15</span> for an overview of LIGGGHTS(R)-PUBLIC output
+uses per-atom values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><span>Section_howto 15</span></a> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>The Voronoi cell volume will be in distance <a class="reference internal" href="units.html"><em>units</em></a> cubed.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
 <p>This compute is part of the VORONOI package.  It is only enabled if
-LIGGGHTS(R)-PUBLIC was built with that package.  See the <span class="xref std std-ref">Making LIGGGHTS(R)-PUBLIC</span> section for more info.</p>
+LIGGGHTS(R)-PUBLIC was built with that package.  See the <a class="reference internal" href="Section_start.html#start-3"><span>Making LIGGGHTS(R)-PUBLIC</span></a> section for more info.</p>
 </div>
 <div class="section" id="related-commands">
 <h2>Related commands<a class="headerlink" href="#related-commands" title="Permalink to this headline">¶</a></h2>
@@ -308,9 +282,6 @@ LIGGGHTS(R)-PUBLIC was built with that package.  See the <span class="xref std s
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -343,11 +314,9 @@ LIGGGHTS(R)-PUBLIC was built with that package.  See the <span class="xref std s
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

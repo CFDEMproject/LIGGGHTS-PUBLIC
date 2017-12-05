@@ -29,7 +29,7 @@ END_RST -->
 8.8 "Output from LIGGGHTS(R)-PUBLIC (thermo, dumps, computes, fixes, variables)"_#howto_8
 8.9 "Walls"_#howto_9
 8.10 "Library interface to LIGGGHTS(R)-PUBLIC"_#howto_10 :all(b)
-<!--END_HTML_ONLY -->
+<!-- END_HTML_ONLY -->
 
 The example input scripts included in the LIGGGHTS(R)-PUBLIC distribution and
 highlighted in "Section_example"_Section_example.html also show how to

@@ -26,7 +26,7 @@ END_RST -->
 10.4 "Testing the Python-LIGGGHTS(R)-PUBLIC interface"_#py_4
 10.5 "Using LIGGGHTS(R)-PUBLIC from Python"_#py_5
 10.6 "Example Python scripts that use LIGGGHTS(R)-PUBLIC"_#py_6 :ul
-<!--END_HTML_ONLY -->
+<!-- END_HTML_ONLY -->
 
 The LIGGGHTS(R)-PUBLIC distribution includes the file python/liggghts.py which wraps
 the library interface to LIGGGHTS(R)-PUBLIC.  This file makes it is possible to

@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -84,11 +82,19 @@
           
             
             
-              
-            
-            
-              <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="">1. Introduction</a></li>
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">1. Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-liggghts-r-public">1.1. What is LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#liggghts-public-vs-liggghts-premium">1.2. LIGGGHTS-PUBLIC VS. LIGGGHTS-PREMIUM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#history">1.3. History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#liggghts-r-public-features">1.4. LIGGGHTS(R)-PUBLIC features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#liggghts-r-public-general-features">1.5. LIGGGHTS(R)-PUBLIC General features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#liggghts-r-public-model-features-liggghts-public-features">1.6. LIGGGHTS(R)-PUBLIC Model features: LIGGGHTS-PUBLIC features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#liggghts-r-public-model-features-additional-features-for-liggghts-r-public">1.7. LIGGGHTS(R)-PUBLIC Model features: Additional features for LIGGGHTS(R)-PUBLIC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#open-source-distribution">1.8. Open source distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#acknowledgments-and-citations">1.9. Acknowledgments and citations</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_commands.html">4. Commands</a></li>
@@ -111,10 +117,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -123,45 +127,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>1. Introduction</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>1. Introduction</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/Section_intro.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/Section_intro.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
@@ -183,22 +170,215 @@
 describes what it means for LIGGGHTS(R)-PUBLIC to be an open-source code, and
 acknowledges the funding and people who have contributed to LIGGGHTS(R)-PUBLIC
 over the years.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#what-is-liggghts-r-public" id="id1">What is LIGGGHTS(R)-PUBLIC</a></li>
+<li><a class="reference internal" href="#liggghts-public-vs-liggghts-premium" id="id2">LIGGGHTS-PUBLIC VS. LIGGGHTS-PREMIUM</a></li>
+<li><a class="reference internal" href="#history" id="id3">History</a></li>
+<li><a class="reference internal" href="#liggghts-r-public-features" id="id4">LIGGGHTS(R)-PUBLIC features</a></li>
+<li><a class="reference internal" href="#liggghts-r-public-general-features" id="id5">LIGGGHTS(R)-PUBLIC General features</a></li>
+<li><a class="reference internal" href="#liggghts-r-public-model-features-liggghts-public-features" id="id6">LIGGGHTS(R)-PUBLIC Model features: LIGGGHTS-PUBLIC features</a></li>
+<li><a class="reference internal" href="#liggghts-r-public-model-features-additional-features-for-liggghts-r-public" id="id7">LIGGGHTS(R)-PUBLIC Model features: Additional features for LIGGGHTS(R)-PUBLIC</a></li>
+<li><a class="reference internal" href="#open-source-distribution" id="id8">Open source distribution</a></li>
+<li><a class="reference internal" href="#acknowledgments-and-citations" id="id9">Acknowledgments and citations</a></li>
+</ul>
+</div>
+<div class="section" id="what-is-liggghts-r-public">
+<span id="intro-1"></span><h2><a class="toc-backref" href="#id1">1.1. What is LIGGGHTS(R)-PUBLIC</a><a class="headerlink" href="#what-is-liggghts-r-public" title="Permalink to this headline">¶</a></h2>
+<p>LIGGGHTS(R)-PUBLIC is an Open Source Discrete Element Method Particle
+Simulation Software.</p>
+<p>Core developer and main author:
+Christoph Kloss, <a class="reference external" href="mailto:christoph&#46;kloss&#37;&#52;&#48;dcs-computing&#46;com">christoph<span>&#46;</span>kloss<span>&#64;</span>dcs-computing<span>&#46;</span>com</a></p>
+<p>LIGGGHTS(R)-PUBLIC is an Open Source Discrete Element Method Particle
+Simulation Software, distributed by DCS Computing GmbH, Linz, Austria.
+LIGGGHTS (R) and CFDEM(R) are registered trade marks of DCS Computing GmbH,
+the producer of the LIGGGHTS (R) software and the CFDEM(R)coupling software
+See <a class="reference external" href="http://www.cfdem.com/terms-trademark-policy">http://www.cfdem.com/terms-trademark-policy</a> for details.</p>
+<p>LIGGGHTS (R) stands for LAMMPS improved for general granular and
+granular heat transfer simulations.
+LAMMPS is a classical molecular dynamics simulator. It is widely
+used in the field of Molecular Dynamics. Thanks to physical and
+algorithmic analogies, LAMMPS offers basic functionalities for
+DEM simulations. LIGGGHTS (R) aims to improve those capability with
+the goal to apply it to industrial applications. LIGGGHTS® is currently
+used by a variety of research institutions world-wide. A number of Blue
+Chip companies in the fields of chemical, consumer goods, pharmaceutical,
+agricultural engineering, food production, steel production, mining,
+plastics production use LIGGGHTS (R) for improvement of production processes.
+LIGGGHTS(R)-PUBLIC runs efficiently on single-processor desktop or laptop
+machines, but is designed for parallel computers.  It will run on any
+parallel machine that compiles C++ and supports the <a class="reference external" href="http://www-unix.mcs.anl.gov/mpi">MPI</a>
+message-passing library.  This includes distributed- or shared-memory
+parallel machines.
+LIGGGHTS (R) can model systems with only a few particles up to millions or
+billions. LIGGGHTS (R) is designed to be easy to modify or extend with new
+capabilities, such as new force fields, atom types, boundary
+conditions, or diagnostics.  See <a class="reference internal" href="Section_modify.html"><em>Section_modify</em></a>
+for more details.</p>
+<p>LIGGGHTS(R)-PUBLIC is a freely-available open-source code, distributed under the
+terms of the <a class="reference external" href="http://www.gnu.org/copyleft/gpl.html">GNU Public License</a>, which means you can use or
+modify the code however you wish.  See <a class="reference internal" href="#intro-4"><span>this section</span></a> for a
+brief discussion of the open-source philosophy.</p>
+</div>
+<div class="section" id="liggghts-public-vs-liggghts-premium">
+<h2><a class="toc-backref" href="#id2">1.2. LIGGGHTS-PUBLIC VS. LIGGGHTS-PREMIUM</a><a class="headerlink" href="#liggghts-public-vs-liggghts-premium" title="Permalink to this headline">¶</a></h2>
+<p>There are 2 flavors of LIGGGHTS. This documentation may refer to
+LIGGGHTS as LIGGGHTS-PUBLIC or as LIGGGHTS-PREMIUM, where PREMIUM
+is the name of your company or institution</p>
+<p>LIGGGHTS-PUBLIC is the version of LIGGGHTS which is available for public
+download at this cite. It offers everything a researcher needs to do simulations:
+A large model portfolio, performance, and it is easy to understand and extend with
+new capabilities. It is periodically updated, and includes all the contributions
+from the community.
+LIGGGHTS-PREMIUM is a version with additional features for large-scale industrial
+application, available for industrial partner companies of CFDEM(R)project from all
+around the world, who have spent several million Euros for developing LIGGGHTS(R)-PUBLIC.
+The Premium version is made available to industrial partners and customers as part
+of a long-term collaboration involving development projects to further strengthen
+the model porfolio of CFDEM(R)project.</p>
+</div>
+<div class="section" id="history">
+<h2><a class="toc-backref" href="#id3">1.3. History</a><a class="headerlink" href="#history" title="Permalink to this headline">¶</a></h2>
+<p>As the sanme implies, some parts of LIGGGHTS(R)-PUBLIC are based on LAMMPS.
+LAMMPS is a classical molecular dynamics simulation code designed to
+run efficiently on parallel computers.  It was developed at Sandia
+National Laboratories, a US Department of Energy facility, with
+funding from the DOE.  It is an open-source code, distributed freely
+under the terms of the GNU Public License (GPL).
+The primary developers of LAMMPS are Steve Plimpton, Aidan
+Thompson, and Paul Crozier.  The LAMMPS WWW Site at
+<a class="reference external" href="http://lammps.sandia.gov">http://lammps.sandia.gov</a> has more information about LAMMPS.
+LAMMPS was originally developed under a US Department of Energy CRADA
+(Cooperative Research and Development Agreement) between two DOE labs
+and 3 companies.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="liggghts-r-public-features">
+<span id="intro-2"></span><h2><a class="toc-backref" href="#id4">1.4. LIGGGHTS(R)-PUBLIC features</a><a class="headerlink" href="#liggghts-r-public-features" title="Permalink to this headline">¶</a></h2>
+<p>In the most general sense, LIGGGHTS(R)-PUBLIC integrates Newton&#8217;s equations of
+motion for collections of atoms, molecules, or macroscopic particles
+that interact via short- or long-range forces with a variety of
+initial and/or boundary conditions.  For computational efficiency
+LIGGGHTS(R)-PUBLIC uses neighbor lists to keep track of nearby particles.  The
+lists are optimized for systems with particles that are repulsive at
+short distances, so that the local density of particles never becomes
+too large.  On parallel machines, LIGGGHTS(R)-PUBLIC uses spatial-decomposition
+techniques to partition the simulation domain into small 3d
+sub-domains, one of which is assigned to each processor.  Processors
+communicate and store &#8220;ghost&#8221; atom information for atoms that border
+their sub-domain.</p>
+</div>
+<div class="section" id="liggghts-r-public-general-features">
+<h2><a class="toc-backref" href="#id5">1.5. LIGGGHTS(R)-PUBLIC General features</a><a class="headerlink" href="#liggghts-r-public-general-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>runs on a single processor or in parallel</li>
+<li>distributed-memory message-passing parallelism (MPI)</li>
+<li>spatial-decomposition of simulation domain for parallelism</li>
+<li>open-source distribution</li>
+<li>highly portable C++</li>
+<li>optional libraries used: MPI</li>
+<li>easy to extend with new features and functionality</li>
+<li>runs from an input script</li>
+<li>syntax for defining and using variables and formulas</li>
+<li>syntax for looping over runs and breaking out of loops</li>
+<li>run one or multiple simulations simultaneously (in parallel) from one script</li>
+<li>output to the widely used, open source VTK data format</li>
+<li>build as library, invoke LIGGGHTS(R)-PUBLIC thru library interface or provided Python wrapper</li>
+<li>couple with other codes: LIGGGHTS(R)-PUBLIC calls other code, other code calls LIGGGHTS(R)-PUBLIC, umbrella code calls both</li>
+<li>a strong eco-system of fellow simulation engines for co-simulation, efficienty and tightly coupled via MPI.</li>
+<li>LIGGGHTS(R)-PUBLIC can be coupled to CFDEM(R)coupling for CFD-DEM simulations and Lagrange-Euler coupling in general</li>
+<li>LIGGGHTS(R)-PUBLIC can be coupled to the simulation engine ParScale for the modelling of intra-particle transport processes</li>
+</ul>
+</div>
+<div class="section" id="liggghts-r-public-model-features-liggghts-public-features">
+<h2><a class="toc-backref" href="#id6">1.6. LIGGGHTS(R)-PUBLIC Model features: LIGGGHTS-PUBLIC features</a><a class="headerlink" href="#liggghts-r-public-model-features-liggghts-public-features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>import and handling of complex geometries: STL walls and VTK tet volume meshes</li>
+<li>moving mesh feature with a varierty of motion schemes and a model for conveyor belts</li>
+<li>force and wear analysis on meshes as well as stress-controlled walls</li>
+<li>a variety of particle-particle contact implementations, including models for tangential history, non-spericity and cohesion</li>
+<li>interface to easily extend contact implementations</li>
+<li>heat conduction between particles</li>
+<li>particle insertion based on pre-defined volumes, meshes and particle streams from faces as well as particle growth and shrinkage</li>
+<li>flexible definition of particle distributions</li>
+<li>smoothed Particle Hydrodynamics (SPH) fluid models</li>
+</ul>
+</div>
+<div class="section" id="liggghts-r-public-model-features-additional-features-for-liggghts-r-public">
+<h2><a class="toc-backref" href="#id7">1.7. LIGGGHTS(R)-PUBLIC Model features: Additional features for LIGGGHTS(R)-PUBLIC</a><a class="headerlink" href="#liggghts-r-public-model-features-additional-features-for-liggghts-r-public" title="Permalink to this headline">¶</a></h2>
+<p>LIGGGHTS versions other than LIGGGHTS-PUBLIC have additional functionalities,
+which are all described in the doc pages for the different commands.</p>
+<hr class="docutils" />
+</div>
+<div class="section" id="open-source-distribution">
+<span id="intro-3"></span><h2><a class="toc-backref" href="#id8">1.8. Open source distribution</a><a class="headerlink" href="#open-source-distribution" title="Permalink to this headline">¶</a></h2>
+<p>LIGGGHTS(R)-PUBLIC comes with no warranty of any kind.  As each source file states
+in its header, it is a copyrighted code that is distributed free-of-
+charge, under the terms of the <a class="reference external" href="http://www.gnu.org/copyleft/gpl.html">GNU Public License</a> (GPL).  This
+is often referred to as open-source distribution - see
+<a class="reference external" href="http://www.gnu.org">www.gnu.org</a> or <a class="reference external" href="http://www.opensource.org">www.opensource.org</a> for more
+details.  The legal text of the GPL is in the LICENSE file that is
+included in the LIGGGHTS(R)-PUBLIC distribution.</p>
+<p>Here is a summary of what the GPL means for LIGGGHTS(R)-PUBLIC users:</p>
+<p>(1) Anyone is free to use, modify, or extend LIGGGHTS(R)-PUBLIC in any way they
+choose, including for commercial purposes.</p>
+<p>(2) If you distribute a modified version of LIGGGHTS(R)-PUBLIC, it must remain
+open-source, meaning you distribute it under the terms of the GPL.
+You must clearly annotate such a code as a derivative version of
+LIGGGHTS(R)-PUBLIC.</p>
+<p>(3) If you release any code that includes LIGGGHTS(R)-PUBLIC source code, then it
+must also be open-sourced, meaning you distribute it under the terms
+of the GPL.</p>
+<p>(4) If you give LIGGGHTS(R)-PUBLIC files to someone else, the GPL LICENSE file and
+source file headers (including the copyright and GPL notices) must
+remain part of the code.</p>
+<p>In the spirit of an open-source code, these are various ways you can
+contribute to making LIGGGHTS(R)-PUBLIC better. If you find an error, omission or bug
+in this manual or in the code, please
+<a class="reference external" href="http://http://www.cfdem.com/get-involved-contribute">see our website for more info</a>
+on how to get involved</p>
+<ul class="simple">
+<li>If you publish a paper using LIGGGHTS(R)-PUBLIC results, send the citation (and
+any cool pictures or movies if you like) to add to the Publications,
+Pictures, and Movies pages of the our website, with links
+and attributions back to you.</li>
+</ul>
+<hr class="docutils" />
+</div>
+<div class="section" id="acknowledgments-and-citations">
+<span id="intro-4"></span><h2><a class="toc-backref" href="#id9">1.9. Acknowledgments and citations</a><a class="headerlink" href="#acknowledgments-and-citations" title="Permalink to this headline">¶</a></h2>
+<p>LIGGGHTS(R)-PUBLIC development has been funded by a variety of sources:</p>
+<ul class="simple">
+<li>The by far largest part of funding has been contributed by a variety of companies in bi-laterial projects with DCS Computing</li>
+<li>The EU FP7 programmes NanoSim and T-MAPPP</li>
+<li>The Austrial funding agency FWF, www.fwf.at</li>
+<li>The Austrial funding agency FFG, www.ffg.at</li>
+<li>The early days of LIGGGHTS(R)-PUBLIC development have been funded by:</li>
+<li>Christian Doppler Forschungsgesellschaft, www.cdg.at</li>
+<li>Industrial partner of the CD Lab of Particulate Flow Modelling, JKU Linz</li>
+</ul>
+<p>As LIGGGHTS(R)-PUBLIC is based on LAMMPS, we also acknowledge the funding
+that helped creating LAMMPS.  LAMMPS development has been funded by the <a class="reference external" href="http://www.doe.gov">US Department of Energy</a> (DOE), through its CRADA, LDRD, ASCI, and Genomes-to-Life
+programs and its <a class="reference external" href="http://www.sc.doe.gov/ascr/home.html">OASCR</a> and <a class="reference external" href="http://www.er.doe.gov/production/ober/ober_top.html">OBER</a> offices. Also there was funding
+by the US Department of Energy&#8217;s Genomics:GTL program (<a class="reference external" href="http://www.doegenomestolife.org">www.doegenomestolife.org</a>) under the <a class="reference external" href="http://www.genomes2life.org">project</a>, &#8220;Carbon
+Sequestration in Synechococcus Sp.: From Molecular Machines to Hierarchical Modeling&#8221;.</p>
+<p>The following paper describe the basic parallel algorithms used in
+LIGGGHTS(R)-PUBLIC.  If you use LIGGGHTS(R)-PUBLIC results in your published work, please cite
+<a class="reference external" href="http://www.cfdem.com/citing-liggghtsr">this paper</a> and include a pointer to the <a class="reference external" href="http://www.cfdem.com">http://www.cfdem.com</a> site</p>
+</div>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Section_start.html" class="btn btn-neutral float-right" title="2. Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="Section_start.html" class="btn btn-neutral float-right" title="2. Getting Started" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="Manual.html" class="btn btn-neutral" title="LIGGGHTS(R)-PUBLIC Documentation, Version 3.X" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="Manual.html" class="btn btn-neutral" title="LIGGGHTS(R)-PUBLIC Documentation, Version 3.X" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -230,11 +410,9 @@ over the years.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

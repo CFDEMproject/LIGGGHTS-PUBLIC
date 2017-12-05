@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix heat/gran command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>fix heat/gran command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/fix_heat_gran_conduction.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/fix_heat_gran_conduction.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -266,9 +242,7 @@ statistically equivalent dynamics and system state.</p>
 <p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
 may not be available in LIGGGHTS(R)-PUBLIC.</p>
 </div>
-</div>
-<div class="section" id="output-info">
-<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
+<p><strong>Output info:</strong></p>
 <p>You can visualize the heat sources by accessing f_heatSource[0], and the
 heatFluxes by f_heatFlux[0] . With f_directionalHeatFlux[0], f_directionalHeatFlux[1]
 and f_directionalHeatFlux[2] you can access the conductive heat fluxes in x,y,z directions.
@@ -288,9 +262,7 @@ command or to calculate atom properties.</p>
 <p class="last"><em>store_contact_data yes</em> is required any heat conduction properties are
 used in the steady state detection through <code class="xref doc docutils literal"><span class="pre">fix</span> <span class="pre">ave/euler/custom</span></code>.</p>
 </div>
-</div>
-<div class="section" id="restart-fix-modify-run-start-stop-minimize-info">
-<h2>Restart, fix_modify, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
+<p><strong>Restart, fix_modify, run start/stop, minimize info:</strong></p>
 <p>The particle temperature and heat source is written is written to
 <a class="reference internal" href="restart.html"><em>binary restart files</em></a> so simulations can continue properly.
 None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options are relevant to this fix.</p>
@@ -316,9 +288,6 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -351,11 +320,9 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

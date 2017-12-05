@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix store/force command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>fix store/force command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/fix_store_force.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/fix_store_force.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -190,7 +166,7 @@
 timestep when the fix is invoked, as described below.  This is useful
 for storing forces before constraints or other boundary conditions are
 computed which modify the forces, so that unmodified forces can be
-<a class="reference internal" href="dump.html"><em>written to a dump file</em></a> or accessed by other <span class="xref std std-ref">output commands</span> that use per-atom quantities.</p>
+<a class="reference internal" href="dump.html"><em>written to a dump file</em></a> or accessed by other <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a> that use per-atom quantities.</p>
 <p>This fix is invoked at the point in the velocity-Verlet timestepping
 immediately after <a class="reference internal" href="pair_style.html"><em>pair</em></a>, <a class="reference internal" href="bond_style.html"><em>bond</em></a>
 forces have been calculated.  It is the point in the timestep when
@@ -215,7 +191,7 @@ before others.</p>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix produces a per-atom array which can be accessed by various
-<span class="xref std std-ref">output commands</span>.  The number of columns
+<a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.  The number of columns
 for each atom is 3, and the columns store the x,y,z forces on each
 atom.  The per-atom values be accessed on any timestep.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
@@ -234,9 +210,6 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -269,11 +242,9 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

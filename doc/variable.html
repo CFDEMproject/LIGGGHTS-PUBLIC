@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>variable command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>variable command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/variable.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/variable.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -293,7 +269,7 @@ is ignored.  This means variables can NOT be re-defined in an input
 script (with 2 exceptions, read further).  This is to allow an input
 script to be processed multiple times without resetting the variables;
 see the <a class="reference internal" href="jump.html"><em>jump</em></a> or <a class="reference internal" href="include.html"><em>include</em></a> commands.  It also
-means that using the <span class="xref std std-ref">command-line switch</span>
+means that using the <a class="reference internal" href="Section_start.html#start-7"><span>command-line switch</span></a>
 -var will override a corresponding index variable setting in the input
 script.</p>
 </div>
@@ -344,7 +320,7 @@ the 1st string is assigned to the variable.  Each time a
 string is assigned.  All processors assign the same string to the
 variable.</p>
 <p><em>Index</em> style variables with a single string value can also be set by
-using the command-line switch -var; see <span class="xref std std-ref">this section</span> for details.</p>
+using the command-line switch -var; see <a class="reference internal" href="Section_start.html#start-7"><span>this section</span></a> for details.</p>
 <p>The <em>loop</em> style is identical to the <em>index</em> style except that the
 strings are the integers from 1 to N inclusive, if only one argument N
 is specified.  This allows generation of a long list of runs
@@ -357,7 +333,7 @@ two arguments N1 and N2.  In this case the loop runs from N1 to N2
 inclusive, and the string N1 is initially assigned to the variable.
 N1 &lt;= N2 and N2 &gt;= 0 is required.</p>
 <p>For the <em>world</em> style, one or more strings are specified.  There must
-be one string for each processor partition or &#8220;world&#8221;.  See <span class="xref std std-ref">this section</span> of the manual for information on
+be one string for each processor partition or &#8220;world&#8221;.  See <a class="reference internal" href="Section_start.html#start-7"><span>this section</span></a> of the manual for information on
 running LIGGGHTS(R)-PUBLIC with multiple partitions via the &#8220;-partition&#8221;
 command-line switch.  This variable command assigns one string to each
 world.  All processors in the world are assigned the same string.  The
@@ -369,7 +345,7 @@ performing a parallel tempering simulation (see the
 different partitions.</p>
 <p>For the <em>universe</em> style, one or more strings are specified.  There
 must be at least as many strings as there are processor partitions or
-&#8220;worlds&#8221;.  See <span class="xref std std-ref">this page</span> for information
+&#8220;worlds&#8221;.  See <a class="reference internal" href="Section_start.html#start-7"><span>this page</span></a> for information
 on running LIGGGHTS(R)-PUBLIC with multiple partitions via the &#8220;-partition&#8221;
 command-line switch.  This variable command initially assigns one
 string to each world.  When a <a class="reference internal" href="next.html"><em>next</em></a> command is encountered
@@ -1067,9 +1043,6 @@ must have the same number of values.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
@@ -1101,11 +1074,9 @@ must have the same number of values.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

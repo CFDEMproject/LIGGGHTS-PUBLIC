@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix store/state command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>fix store/state command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/fix_store_state.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/fix_store_state.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -233,7 +209,7 @@ fix 2 all store/state 1000 vx vy vz
 time the fix is defined.  If <em>N</em> is 0, then the values are never
 updated, so this is a way of archiving an atom attribute at a given
 time for future use in a calculation or output.  See the discussion of
-<span class="xref std std-ref">output commands</span> that take fixes as
+<a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a> that take fixes as
 inputs.  And see for example, the <a class="reference internal" href="compute_reduce.html"><em>compute reduce</em></a>, <a class="reference internal" href="fix_ave_atom.html"><em>fix ave/atom</em></a>, <a class="reference internal" href="fix_ave_histo.html"><em>fix ave/histo</em></a>, <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a>,
 and <a class="reference internal" href="variable.html"><em>atom-style variable</em></a> commands.</p>
 <p>If <em>N</em> is not zero, then the attributes will be updated every <em>N</em>
@@ -269,7 +245,7 @@ fix.</p>
 <p>If a single input is specified, this fix produces a per-atom vector.
 If multiple inputs are specified, a per-atom array is produced where
 the number of columns for each atom is the number of inputs.  These
-can be accessed by various <span class="xref std std-ref">output commands</span>.  The per-atom values be
+can be accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.  The per-atom values be
 accessed on any timestep.</p>
 <p>No parameter of this fix can be used with the <em>start/stop</em> keywords of
 the <a class="reference internal" href="run.html"><em>run</em></a> command.  This fix is not invoked during <code class="xref doc docutils literal"><span class="pre">energy</span> <span class="pre">minimization</span></code>.</p>
@@ -290,9 +266,6 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -325,11 +298,9 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

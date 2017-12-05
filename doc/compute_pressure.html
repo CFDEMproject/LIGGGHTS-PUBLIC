@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute pressure command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>compute pressure command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/compute_pressure.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/compute_pressure.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -235,14 +211,12 @@ LIGGGHTS(R)-PUBLIC starts up, as if this command were in the input script:</p>
 </div>
 <p>where &#8220;thermo_temp&#8221; is the ID of a similarly defined compute of style
 &#8220;temp&#8221;.  See the &#8220;thermo_style&#8221; command for more details.</p>
-</div>
 <hr class="docutils" />
-<div class="section" id="output-info">
-<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
+<p><strong>Output info:</strong></p>
 <p>This compute calculates a global scalar (the pressure) and a global
 vector of length 6 (pressure tensor), which can be accessed by indices
 1-6.  These values can be used by any command that uses global scalar
-or vector values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
+or vector values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><span>this section</span></a> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>The scalar and vector values calculated by this compute are
 &#8220;intensive&#8221;.  The scalar and vector values will be in pressure
@@ -262,9 +236,6 @@ options.</p>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -297,11 +268,9 @@ options.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

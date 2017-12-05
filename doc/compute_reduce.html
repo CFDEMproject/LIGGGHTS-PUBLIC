@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute reduce command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>compute reduce command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/compute_reduce.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/compute_reduce.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -309,15 +285,13 @@ compute can be accessed by the <a class="reference internal" href="thermo_style.
 command with <a class="reference internal" href="thermo_modify.html"><em>thermo_modify norm yes</em></a> set as an
 option.  Or it can be accessed by a <a class="reference internal" href="variable.html"><em>variable</em></a> that
 divides by the appropriate atom count.</p>
-</div>
 <hr class="docutils" />
-<div class="section" id="output-info">
-<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
+<p><strong>Output info:</strong></p>
 <p>This compute calculates a global scalar if a single input value is
 specified or a global vector of length N where N is the number of
 inputs, and which can be accessed by indices 1 to N.  These values can
 be used by any command that uses global scalar or vector values from a
-compute as input.  See <span class="xref std std-ref">Section_howto 15</span>
+compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><span>Section_howto 15</span></a>
 for an overview of LIGGGHTS(R)-PUBLIC output options.</p>
 <p>All the scalar or vector values calculated by this compute are
 &#8220;intensive&#8221;, except when the <em>sum</em> mode is used on per-atom or local
@@ -338,9 +312,6 @@ quantities being reduced are in.</p>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -373,11 +344,9 @@ quantities being reduced are in.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

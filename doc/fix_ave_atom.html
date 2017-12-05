@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix ave/atom command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>fix ave/atom command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/fix_ave_atom.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/fix_ave_atom.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -202,7 +178,7 @@ fix 1 all ave/atom 10 20 1000 c_my_stress[1]
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Use one or more per-atom vectors as inputs every few timesteps, and
 average them atom by atom over longer timescales.  The resulting
-per-atom averages can be used by other <span class="xref std std-ref">output commands</span> such as the <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a> or <a class="reference internal" href="dump.html"><em>dump custom</em></a> commands.</p>
+per-atom averages can be used by other <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a> such as the <a class="reference internal" href="fix_ave_spatial.html"><em>fix ave/spatial</em></a> or <a class="reference internal" href="dump.html"><em>dump custom</em></a> commands.</p>
 <p>The group specified with the command means only atoms within the group
 have their averages computed.  Results are set to 0.0 for atoms not in
 the group.</p>
@@ -274,9 +250,9 @@ per-atom quantities to time average.</p>
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.  No global scalar or vector quantities are
-stored by this fix for access by various <span class="xref std std-ref">output commands</span>.</p>
+stored by this fix for access by various <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.</p>
 <p>This fix produces a per-atom vector or array which can be accessed by
-various <span class="xref std std-ref">output commands</span>.  A vector is
+various <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.  A vector is
 produced if only a single quantity is averaged by this fix.  If two or
 more quantities are averaged, then an array of values is produced.
 The per-atom values can only be accessed on timesteps that are
@@ -298,9 +274,6 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -333,11 +306,9 @@ the <a class="reference internal" href="run.html"><em>run</em></a> command.  Thi
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

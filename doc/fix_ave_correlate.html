@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix ave/correlate command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>fix ave/correlate command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/fix_ave_correlate.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/fix_ave_correlate.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -234,7 +210,7 @@ fix 1 all ave/correlate 1 50 10000 &amp;
 calculate time correlations bewteen them at varying time intervals,
 and average the correlation data over longer timescales.  The
 resulting correlation values can be time integrated by
-<a class="reference internal" href="variable.html"><em>variables</em></a> or used by other <span class="xref std std-ref">output commands</span> such as <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a file.</p>
+<a class="reference internal" href="variable.html"><em>variables</em></a> or used by other <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a> such as <a class="reference internal" href="thermo_style.html"><em>thermo_style custom</em></a>, and can also be written to a file.</p>
 <p>The group specified with this command is ignored.  However, note that
 specified values may represent calculations performed by computes and
 fixes which store their own &#8220;group&#8221; definitions.</p>
@@ -407,7 +383,7 @@ included in the variable formula or via the <em>prefactor</em> keyword.</p>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix computes a global array of values which can be accessed by
-various <span class="xref std std-ref">output commands</span>.  The values can
+various <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.  The values can
 only be accessed on timesteps that are multiples of <em>Nfreq</em> since that
 is when averaging is performed.  The global array has # of rows =
 <em>Nrepeat</em> and # of columns = Npair+2.  The first column has the time
@@ -458,9 +434,6 @@ output, title 1,2,3 = strings as described above, and prefactor = 1.0.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
@@ -492,11 +465,9 @@ output, title 1,2,3 = strings as described above, and prefactor = 1.0.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute rdf command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>compute rdf command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/compute_rdf.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/compute_rdf.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -269,9 +245,7 @@ example:</p>
 fix 1 all ave/time 100 1 100 c_myRDF file tmp.rdf mode vector
 </pre></div>
 </div>
-</div>
-<div class="section" id="output-info">
-<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
+<p><strong>Output info:</strong></p>
 <p>This compute calculates a global array with the number of rows =
 <em>Nbins</em>, and the number of columns = 1 + 2*Npairs, where Npairs is the
 number of I,J pairings specified.  The first column has the bin
@@ -279,7 +253,7 @@ coordinate (center of the bin), Each successive set of 2 columns has
 the g(r) and coord(r) values for a specific set of <em>itypeN</em> versus
 <em>jtypeN</em> interactions, as described above.  These values can be used
 by any command that uses a global values from a compute as input.  See
-<span class="xref std std-ref">Section_howto 15</span> for an overview of
+<a class="reference internal" href="Section_howto.html#howto-8"><span>Section_howto 15</span></a> for an overview of
 LIGGGHTS(R)-PUBLIC output options.</p>
 <p>The array values calculated by this compute are all &#8220;intensive&#8221;.</p>
 <p>The first column of array values will be in distance
@@ -310,9 +284,6 @@ change from zero to one at the location of the spike in g(r).</p>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -345,11 +316,9 @@ change from zero to one at the location of the spike in g(r).</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

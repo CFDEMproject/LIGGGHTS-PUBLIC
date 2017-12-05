@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>fix ave/histo command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>fix ave/histo command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/fix_ave_histo.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/fix_ave_histo.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -233,7 +209,7 @@ fix 1 all ave/histo 1 100 1000 -2.0 2.0 18 vx vy vz mode vector ave running beyo
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>Use one or more values as inputs every few timesteps, histogram them,
 and average the histogram over longer timescales.  The resulting
-histogram can be used by other <span class="xref std std-ref">output commands</span>, and can also be written to a
+histogram can be used by other <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>, and can also be written to a
 file.</p>
 <p>The group specified with this command is ignored for global and local
 input values.  For per-atom input values, only atoms in the group
@@ -412,7 +388,7 @@ the histogram.</p>
 <p>No information about this fix is written to <a class="reference internal" href="restart.html"><em>binary restart files</em></a>.  None of the <a class="reference internal" href="fix_modify.html"><em>fix_modify</em></a> options
 are relevant to this fix.</p>
 <p>This fix produces a global vector and global array which can be
-accessed by various <span class="xref std std-ref">output commands</span>.
+accessed by various <a class="reference internal" href="Section_howto.html#howto-8"><span>output commands</span></a>.
 The values can only be accessed on timesteps that are multiples of
 <em>Nfreq</em> since that is when a histogram is generated.  The global
 vector has 4 values:</p>
@@ -451,9 +427,6 @@ output, beyond = ignore, and title 1,2,3 = strings as described above.</p>
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
@@ -485,11 +458,9 @@ output, beyond = ignore, and title 1,2,3 = strings as described above.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

@@ -13,8 +13,6 @@
 
   
   
-  
-  
 
   
 
@@ -82,10 +80,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -109,10 +104,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="Manual.html">LIGGGHTS</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="Manual.html">LIGGGHTS</a>
       </nav>
 
 
@@ -121,45 +114,28 @@
         <div class="rst-content">
           
 
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="Manual.html">Docs</a> &raquo;</li>
+    <li><a href="Manual.html">Docs</a> &raquo;</li>
+      
+    <li>compute atom/molecule command</li>
+    <li class="wy-breadcrumbs-aside">
+      
         
-      <li>compute atom/molecule command</li>
-    
-    
-      <li class="wy-breadcrumbs-aside">
+          <a href="_sources/compute_atom_molecule.txt" rel="nofollow"> View page source</a> 
         
-            
-            <a href="_sources/compute_atom_molecule.txt" rel="nofollow"> View page source</a>
-          
           <a href="http://www.cfdem.com"> Website</a>
-          
-            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
-            
+        
+          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
           
         
-      </li>
-    
+      
+    </li>
   </ul>
-
-  
   <hr/>
   
 </div>
@@ -238,17 +214,15 @@ reference thermodynamic keywords and various per-atom attributes, or
 invoke other computes, fixes, or variables when they are evaluated, so
 this is a very general means of generating per-atom quantities to sum
 on a per-molecule basis.</p>
-</div>
 <hr class="docutils" />
-<div class="section" id="output-info">
-<h2>Output info<a class="headerlink" href="#output-info" title="Permalink to this headline">¶</a></h2>
+<p><strong>Output info:</strong></p>
 <p>This compute calculates a global vector or global array depending on
 the number of input values.  The length of the vector or number of
 rows in the array is the number of molecules.  If a single input is
 specified, a global vector is produced.  If two or more inputs are
 specified, a global array is produced where the number of columns =
 the number of inputs.  The vector or array can be accessed by any
-command that uses global values from a compute as input.  See <span class="xref std std-ref">this section</span> for an overview of LIGGGHTS(R)-PUBLIC output
+command that uses global values from a compute as input.  See <a class="reference internal" href="Section_howto.html#howto-8"><span>this section</span></a> for an overview of LIGGGHTS(R)-PUBLIC output
 options.</p>
 <p>All the vector or array values calculated by this compute are
 &#8220;extensive&#8221;.</p>
@@ -268,9 +242,6 @@ input quantities are in.</p>
 </div>
 
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -303,11 +274,9 @@ input quantities are in.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
-            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: ''
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

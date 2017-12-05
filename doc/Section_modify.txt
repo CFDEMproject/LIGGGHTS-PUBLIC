@@ -33,7 +33,7 @@ END_RST -->
 9.9 "Thermodynamic output options"_#mod_9
 9.10 "Variable options"_#mod_10
 9.11 "Submitting new features for inclusion in LIGGGHTS(R)-PUBLIC"_#mod_11 :all(b)
-<!--END_HTML_ONLY -->
+<!-- END_HTML_ONLY -->
 
 LIGGGHTS(R)-PUBLIC is designed in a modular fashion so as to be easy to modify and
 extend with new functionality.  In fact, about 75% of its source code

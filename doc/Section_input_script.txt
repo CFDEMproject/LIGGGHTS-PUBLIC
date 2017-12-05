@@ -24,7 +24,7 @@ END_RST -->
 3.2 "Parsing rules"_#inp_2
 3.3 "Input script structure"_#inp_3
 3.4 "An example input script"_#inp_4  :all(b)
-<!--END_HTML_ONLY -->
+<!-- END_HTML_ONLY -->
 
 :line
 :line

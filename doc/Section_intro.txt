@@ -26,7 +26,7 @@ END_RST -->
 1.2 "LIGGGHTS(R)-PUBLIC features"_#intro_2
 1.3 "Open source distribution"_#intro_3
 1.4 "Acknowledgments and citations"_#intro_4 :all(b)
-<!--END_HTML_ONLY -->
+<!-- END_HTML_ONLY -->
 
 :line
 :line
