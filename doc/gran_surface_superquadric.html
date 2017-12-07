@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -80,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -104,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -114,28 +121,45 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>gran surface superquadric model</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/gran_surface_superquadric.txt" rel="nofollow"> View page source</a> 
+      <li>gran surface superquadric model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/gran_surface_superquadric.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -161,7 +185,7 @@ surface superquadric [other model_type/model_name pairs as described <a class="r
 <div class="section" id="description">
 <h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
 <p>This is the surface model for smooth convex superquadric particles. For contact detection and force calculation algorithms see Podlozhnyuk et al (2017). Calculation of particle radius R1 and R2 in <a class="reference internal" href="gran_model_hertz.html"><em>Hertz</em></a> or <a class="reference internal" href="gran_model_hooke.html"><em>Hooke</em></a> model is based on mean or gaussian curvature radius at a contact point. The effective radius R* is limited by the factor of <em>curvatureLimitFactor</em> with respect to R* calculated using R1 and R2 as volume equivalent radii. If <em>curvatureLimitFactor=0</em> particle radii R1 and R2 are volume equivalent radii that don&#8217;t depend on the contact point.</p>
-<p>This model is used in the framework of SUPERQUADRIC simulations. For more information see also the <code class="xref doc docutils literal"><span class="pre">SUPERQUADRIC</span> <span class="pre">guide</span></code>.</p>
+<p>This model is used in the framework of SUPERQUADRIC simulations. For more information see also the <a class="reference internal" href="superquadric_simulations.html"><em>SUPERQUADRIC guide</em></a>.</p>
 </div>
 <div class="section" id="restrictions">
 <h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
@@ -186,6 +210,9 @@ is unknown.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -218,9 +245,11 @@ is unknown.</p>
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

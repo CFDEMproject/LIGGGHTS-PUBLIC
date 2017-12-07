@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -80,7 +82,10 @@
           
             
             
-                <ul>
+              
+            
+            
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="Section_intro.html">1. Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_start.html">2. Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Section_input_script.html">3. Input Script</a></li>
@@ -104,8 +109,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="Manual.html">LIGGGHTS</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="Manual.html">LIGGGHTS</a>
+        
       </nav>
 
 
@@ -114,28 +121,45 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="Manual.html">Docs</a> &raquo;</li>
-      
-    <li>fix particletemplate/superquadric command</li>
-    <li class="wy-breadcrumbs-aside">
-      
+    
+      <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-          <a href="_sources/fix_particletemplate_superquadric.txt" rel="nofollow"> View page source</a> 
+      <li>fix particletemplate/superquadric command</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
         
+            
+            <a href="_sources/fix_particletemplate_superquadric.txt" rel="nofollow"> View page source</a>
+          
           <a href="http://www.cfdem.com"> Website</a>
-        
-          <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+          
+            <a href="Section_commands.html#comm" rel="nofollow"> Commands</a>
+            
           
         
-      
-    </li>
+      </li>
+    
   </ul>
+
+  
   <hr/>
   
 </div>
@@ -180,7 +204,7 @@
 You can choose the atom type, density and radius of the particles.</p>
 <p>LIGGGHTS(R)-PUBLIC will throw an error if the particle volume is too small compared to machine precision.
 If you are sure you know what you are doing you can override the default limit of 1e-12.</p>
-<p>This model is used in the framework of SUPERQUADRIC simulations. For more information see also the <code class="xref doc docutils literal"><span class="pre">SUPERQUADRIC</span> <span class="pre">guide</span></code>.</p>
+<p>This model is used in the framework of SUPERQUADRIC simulations. For more information see also the <a class="reference internal" href="superquadric_simulations.html"><em>SUPERQUADRIC guide</em></a>.</p>
 </div>
 <div class="section" id="restart-fix-modify-output-run-start-stop-minimize-info">
 <h2>Restart, fix_modify, output, run start/stop, minimize info<a class="headerlink" href="#restart-fix-modify-output-run-start-stop-minimize-info" title="Permalink to this headline">¶</a></h2>
@@ -206,6 +230,9 @@ This fix is not invoked during <code class="xref doc docutils literal"><span cla
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
            </div>
           </div>
           <footer>
@@ -238,9 +265,11 @@ This fix is not invoked during <code class="xref doc docutils literal"><span cla
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
             VERSION:'v3.X',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: ''
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>

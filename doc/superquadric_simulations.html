@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>gran cohesion sjkr model &mdash; LIGGGHTS v3.X documentation</title>
+  <title>How-To for “SUPERQUADRIC” simulations in LIGGGHTS(R) &mdash; LIGGGHTS v3.X documentation</title>
   
 
   
@@ -141,13 +141,13 @@
     
       <li><a href="Manual.html">Docs</a> &raquo;</li>
         
-      <li>gran cohesion sjkr model</li>
+      <li>How-To for &#8220;SUPERQUADRIC&#8221; simulations in LIGGGHTS(R)</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/gran_cohesion_sjkr.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/superquadric_simulations.txt" rel="nofollow"> View page source</a>
           
           <a href="http://www.cfdem.com"> Website</a>
           
@@ -166,68 +166,53 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="gran-cohesion-sjkr-model">
-<span id="index-0"></span><h1>gran cohesion sjkr model<a class="headerlink" href="#gran-cohesion-sjkr-model" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="syntax">
-<h2>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre>cohesion sjkr
-</pre></div>
-</div>
-<ul class="simple">
-<li>zero or more keyword/value pairs may be appended to the end (after all models are specified)</li>
-</ul>
-<pre class="literal-block">
-<em>tangential_reduce</em> values = 'on' or 'off'
-  on = tangential model does not see normal force computed by this model
-  off = tangential model does see normal force computed by this model
-</pre>
-</div>
+  <div class="section" id="how-to-for-superquadric-simulations-in-liggghts-r">
+<h1>How-To for &#8220;SUPERQUADRIC&#8221; simulations in LIGGGHTS(R)<a class="headerlink" href="#how-to-for-superquadric-simulations-in-liggghts-r" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils" />
 <div class="section" id="description">
-<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p>This model can be used as part of <a class="reference internal" href="pair_gran.html"><em>pair gran</em></a> and
-<a class="reference internal" href="fix_wall_gran.html"><em>fix wall/gran</em></a></p>
-<p>The simplified JKR - Johnson-Kendall-Roberts (SJKR) model adds an additional normal force
-contribution. If two particle are in contact, it adds an additional normal force tending
-to maintain the contact, which writes</p>
-<p>F = k A,</p>
-<p>where A is the particle contact area and k is the cohesion energy density in J/m3.
-For <em>sjkr</em>, the sphere-sphere contact area is calculated as (<a class="reference external" href="http://mathworld.wolfram.com/Sphere-SphereIntersection.html">http://mathworld.wolfram.com/Sphere-SphereIntersection.html</a>)</p>
-<p>A = Pi/4 * ((dist-Ri-Rj)*(dist+Ri-Rj)*(dist-Ri+Rj)*(dist+Ri+Rj) )/(dist*dist)</p>
-<p>where dist is the distance between the particle centers.</p>
-<p>If you are using the SJKR model, you must also define the cohesion energy density:</p>
-<div class="highlight-python"><div class="highlight"><pre>fix id all property/global cohesionEnergyDensity peratomtypepair n_atomtypes value_11 value_12 .. value_21 value_22 .. .
-    (value_ij=value for the cohesion energy density (in Energy/Length3 units) between atom type i and j; n_atomtypes is the number of atom types you want to use in your simulation)
+<h2>Description:<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>This text describes how to perform &#8220;SUPERQUADRIC&#8221; simulations in LIGGGHTS(R).</p>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction:<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>&#8220;SUPERQUADRIC&#8221; simulations allow LIGGGHTS(R) to use superquadric bodies as particles.</p>
+</div>
+<div class="section" id="compilation">
+<h2>Compilation:<a class="headerlink" href="#compilation" title="Permalink to this headline">¶</a></h2>
+<p>To compile LIGGGHTS(R) with this feature the <a class="reference external" href="http://www.boost.org/">boost</a> library must be available on the system. On most LINUX-distributions a recent version can be installed via the package managment systems.</p>
+<p>Before starting the compilation, you have to enable the SUPERQUADRIC model in your Makefile. In case of Makefile.auto you can activate the model by settings the corresponding flag within your <em>src/MAKE/Makefile.user</em>. Otherwise you have to add following settings manually to your Makefile:</p>
+<div class="highlight-python"><div class="highlight"><pre>LMP_INC += -DSUPERQUADRIC_ACTIVE_FLAG -DNONSPHERICAL_ACTIVE_FLAG
+(in case of a non-system-wide boost installation)
+EXTRA_INC += -IPath/to/your/Boost/include
 </pre></div>
 </div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">You have to use atom styles beginning from 1, e.g. 1,2,3,...</p>
-</div>
-<p>The optional keyword <em>tangential_reduce</em> defines if the tangential force model should
-&#8220;see&#8221; the additional normal force excerted by this model. If it is &#8216;off&#8217; (which is default)
-then the tangential force model will be able to transmit a larger amount of tangential force
-If <em>tangential_reduce</em> = &#8216;on&#8217; then the tangential model will not take the normal force
-from this model into account, typically leading to a lower value of tangential force
-(via the Coulomb friction limit)</p>
-</div>
-<div class="section" id="restrictions">
-<h2>Restrictions<a class="headerlink" href="#restrictions" title="Permalink to this headline">¶</a></h2>
-<p>The cohesion model has been derived for the Hertzian Style, it may note be
-appropriate for the Hookean styles.</p>
-<p>It is not available for <a class="reference internal" href="atom_style.html"><em>atom_style</em></a> superquadric</p>
-<p><strong>Coarse-graining information:</strong></p>
-<p>Using <code class="xref doc docutils literal"><span class="pre">coarsegraining</span></code> in
-combination with this command should lead to
-statistically equivalent dynamics and system state.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last"><code class="xref doc docutils literal"><span class="pre">Coarsegraining</span></code> may or
-may not be available in LIGGGHTS(R)-PUBLIC.</p>
+<p class="last">Make sure that you add the definitions after the original assignments of LMP_INC and EXTRA_INC. Otherwise your changes will be overwritten.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">&#8220;Most Boost libraries are header-only: they consist entirely of header files containing templates and inline functions, and require no separately-compiled library binaries or special treatment when linking.&#8221; (<a class="reference external" href="http://www.boost.org/">link</a>)</p>
 </div>
 </div>
-<div class="section" id="default">
-<h2>Default<a class="headerlink" href="#default" title="Permalink to this headline">¶</a></h2>
-<p><em>tangential_reduce</em> = &#8216;off&#8217;</p>
+<div class="section" id="detailed-description">
+<h2>Detailed description:<a class="headerlink" href="#detailed-description" title="Permalink to this headline">¶</a></h2>
+<p>The overall simulation structure stays the same for SUPERQUADRIC simulations as used for standard LIGGGHTS(R) simulations. In order to create a SUPERQUADRIC simulation based on an existing case you have to perform following steps:</p>
+<ul class="simple">
+<li>Use <a class="reference internal" href="atom_style.html"><em>atom_style superquadric</em></a></li>
+<li>For contact models (pair_style gran as well as fix wall/gran) use <a class="reference internal" href="gran_surface_superquadric.html"><em>surface superquadric</em></a></li>
+<li>The SUPERQUADRIC model requires a special integrator, namly <a class="reference internal" href="fix_nve_superquadric.html"><em>fix nve/superquadric</em></a></li>
+<li>To define new SUPERQUADRIC particles use the <a class="reference internal" href="fix_particletemplate_superquadric.html"><em>fix particletemplate/superquadric</em></a></li>
+</ul>
+</div>
+<div class="section" id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h2>
+<p>The SUPERQUADRIC model uses the framework of LIGGGHT(R). Therefore, the parallel scalability is linear as LIGGGHTS(R) itself. Compared to standard LIGGGHTS(R), the calculation of contact points is computational expensive for superquadric bodies, which leads to a lower maximum number of particles per processor.</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="questions">
+<h2>Questions?<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h2>
+<p>If any questions remain, contact us.</p>
 </div>
 </div>
 
