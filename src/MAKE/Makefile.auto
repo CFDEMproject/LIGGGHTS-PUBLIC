@@ -1317,6 +1317,9 @@ EXTRA_ADDLIBS += $(PKG_ADDLIBS) $(PKG_SYSADDLIBS)
 # tr replaces the \n from the grep output to ,
 # sed removes the last , that is followed by EOL
 EXTRA_RPATH = -Wl,$(shell $(ECHO) $(EXTRA_LIB) | grep -oe '\-L[^ ]*' | sed 's/-L/-rpath,/g' | tr '\n' ',' | sed 's/,$$//')
+ifeq ($(EXTRA_RPATH),-Wl,)
+    EXTRA_RPATH=
+endif
 
 # Path to src files
 
