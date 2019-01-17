@@ -357,9 +357,9 @@ namespace ContactModels {
           const double enz = dz * rinv;
 
           // relative translational velocity
-          const double vr1 = v[i][0] - v[j][0];
-          const double vr2 = v[i][1] - v[j][1];
-          const double vr3 = v[i][2] - v[j][2];
+          const double vr1 = scdata.v_i[0] - scdata.v_j[0];
+          const double vr2 = scdata.v_i[1] - scdata.v_j[1];
+          const double vr3 = scdata.v_i[2] - scdata.v_j[2];
 
           // normal component
           const double vn = vr1 * enx + vr2 * eny + vr3 * enz;
