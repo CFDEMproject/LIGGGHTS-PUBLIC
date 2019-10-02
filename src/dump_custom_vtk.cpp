@@ -87,6 +87,8 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkHexahedron.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkMPI.h>
+#include <vtkMPICommunicator.h>
 #include <vtkMPIController.h>
 
 // For compatibility with new VTK generic data arrays (VTK >= 7.0)
@@ -163,8 +165,11 @@ DumpCustomVTK::DumpCustomVTK(LAMMPS *lmp, int narg, char **arg) :
 
     if (!vtkMultiProcessController::GetGlobalController())
     {
+        vtkMPICommunicatorOpaqueComm vtkWorldOpaqueComm(&world);
+        vtkMPICommunicator * vtkWorldComm = vtkMPICommunicator::New();
+        vtkWorldComm->InitializeExternal(&vtkWorldOpaqueComm);
         vtkMPIController *vtkController = vtkMPIController::New();
-        vtkController->Initialize();
+        vtkController->SetCommunicator(vtkWorldComm);
         vtkMultiProcessController::SetGlobalController(vtkController);
     }
 }
