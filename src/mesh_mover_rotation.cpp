@@ -172,8 +172,7 @@ MeshMoverRotateVariable::MeshMoverRotateVariable(LAMMPS *lmp,AbstractMesh *_mesh
     myvar1_ = input->variable->find(var1str_);
     if (myvar1_ < 0)
         error->all(FLERR,"Variable name 1 for fix move/mesh rotate/variable does not exist");
-
-    omega_ = input->variable->compute_equal(myvar1_);
+    omega_ = 0.;
     totalPhi_ = 0.;
 
     add_reference_point(point_);
@@ -202,6 +201,7 @@ void MeshMoverRotateVariable::setup()
     myvar1_ = input->variable->find(var1str_);
     if (myvar1_ < 0)
         error->all(FLERR,"Variable name 1 for fix move/mesh rotate dynamic does not exist");
+    omega_ = input->variable->compute_equal(myvar1_);
 }
 
 /* ---------------------------------------------------------------------- */
