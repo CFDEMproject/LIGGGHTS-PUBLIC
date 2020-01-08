@@ -82,7 +82,9 @@ using namespace FixConst;
 
 /* ---------------------------------------------------------------------- */
 
-Modify::Modify(LAMMPS *lmp) : Pointers(lmp)
+Modify::Modify(LAMMPS *lmp) :
+    Pointers(lmp),
+    n_timeflag(0)
 {
   nfix = maxfix = 0;
   n_pre_initial_integrate = n_initial_integrate = n_post_integrate = 0;
@@ -1111,6 +1113,8 @@ void Modify::clearstep_compute()
 
 void Modify::addstep_compute(bigint newstep)
 {
+  if (list_timeflag == nullptr)
+    list_init_compute();
   for (int icompute = 0; icompute < n_timeflag; icompute++)
     if (compute[list_timeflag[icompute]]->invoked_flag)
       compute[list_timeflag[icompute]]->addstep(newstep);
