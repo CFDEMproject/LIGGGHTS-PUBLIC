@@ -126,8 +126,8 @@ void CreateAtoms::command(int narg, char **arg)
     nrandom = force->inumeric(FLERR,arg[2]);
     if (seed_char)
         delete [] seed_char;
-    seed_char = new char [strlen(arg[2])+1];
-    strcpy(seed_char, arg[2]);
+    seed_char = new char [strlen(arg[3])+1];
+    strcpy(seed_char, arg[3]);
     if (strcmp(arg[4],"NULL") == 0) nregion = -1;
     else {
       nregion = domain->find_region(arg[4]);
