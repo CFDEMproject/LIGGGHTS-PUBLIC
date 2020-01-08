@@ -74,6 +74,8 @@
 #include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkXMLPUnstructuredGridWriter.h>
 #include <vtkMPIController.h>
+#include <vtkMPI.h>
+#include <vtkMPICommunicator.h>
 
 using namespace LAMMPS_NS;
 
@@ -142,8 +144,11 @@ DumpLocalGranVTK::DumpLocalGranVTK(LAMMPS *lmp, int narg, char **arg) :
 
     if (!vtkMultiProcessController::GetGlobalController())
     {
+        vtkMPICommunicatorOpaqueComm vtkWorldOpaqueComm(&world);
+        vtkMPICommunicator * vtkWorldComm = vtkMPICommunicator::New();
+        vtkWorldComm->InitializeExternal(&vtkWorldOpaqueComm);
         vtkMPIController *vtkController = vtkMPIController::New();
-        vtkController->Initialize();
+        vtkController->SetCommunicator(vtkWorldComm);
         vtkMultiProcessController::SetGlobalController(vtkController);
     }
 }

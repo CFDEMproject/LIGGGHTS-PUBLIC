@@ -56,6 +56,9 @@
 #include "comm.h"
 #include <stdint.h>
 #include <vtkXMLMultiBlockDataWriter.h>
+#include <vtkMPIController.h>
+#include <vtkMPI.h>
+#include <vtkMPICommunicator.h>
 
 using namespace LAMMPS_NS;
 
@@ -77,8 +80,11 @@ DumpMeshVTM::DumpMeshVTM(LAMMPS *lmp, int narg, char **arg) :
 
     if (!vtkMultiProcessController::GetGlobalController())
     {
+        vtkMPICommunicatorOpaqueComm vtkWorldOpaqueComm(&world);
+        vtkMPICommunicator * vtkWorldComm = vtkMPICommunicator::New();
+        vtkWorldComm->InitializeExternal(&vtkWorldOpaqueComm);
         vtkMPIController *vtkController = vtkMPIController::New();
-        vtkController->Initialize();
+        vtkController->SetCommunicator(vtkWorldComm);
         vtkMultiProcessController::SetGlobalController(vtkController);
     }
     vtkMPIController * controller = getLocalController();
