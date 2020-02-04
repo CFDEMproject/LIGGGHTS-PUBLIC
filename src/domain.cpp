@@ -141,7 +141,7 @@ Domain::Domain(LAMMPS *lmp) :
 
     prd[0] = prd[1] = prd[2] = 1.0;
     prd_half[0] = prd_half[1] = prd_half[2] = 0.5;
-    prd_lamda[0] = prd_lamda[1] = prd_lamda[2] = 0.0;
+    prd_lamda[0] = prd_lamda[1] = prd_lamda[2] = 1.0;
     prd_half_lamda[0] = prd_half_lamda[1] = prd_half_lamda[2] = 0.0;
 
     boxlo[0] = boxlo[1] = boxlo[2] = -0.5;

@@ -1486,8 +1486,10 @@ double Variable::evaluate(char *str, Tree **tree)
                        "Variable evaluation before simulation box is defined");
 
           int flag = output->thermo->evaluate_keyword(word,&value1);
-          if (flag)
+          if (flag) {
+            fprintf(screen, "word = %s\n", word);
             error->all(FLERR,"Invalid thermo keyword in variable formula");
+          }
           if (tree) {
             Tree *newtree = new Tree();
             newtree->type = VALUE;
@@ -3458,7 +3460,10 @@ void Variable::peratom2global(int flag, char *word,
       else if ((strcmp(word,"tqy") == 0) && atom->torque_flag) mine = atom->torque[index][1];
       else if ((strcmp(word,"tqz") == 0) && atom->torque_flag) mine = atom->torque[index][2]; 
       else if ((strcmp(word,"r") == 0) && atom->radius_flag) mine = atom->radius[index];
-
+      else if ((strcmp(word,"quat1") == 0) && atom->superquadric_flag) mine = atom->quaternion[index][0];
+      else if ((strcmp(word,"quat2") == 0) && atom->superquadric_flag) mine = atom->quaternion[index][1];
+      else if ((strcmp(word,"quat3") == 0) && atom->superquadric_flag) mine = atom->quaternion[index][2];
+      else if ((strcmp(word,"quat4") == 0) && atom->superquadric_flag) mine = atom->quaternion[index][3];
       else error->one(FLERR,"Invalid atom vector in variable formula");
 
     } else mine = vector[index*nstride];
@@ -3506,6 +3511,10 @@ int Variable::is_atom_vector(char *word)
   if ((strcmp(word,"tqz") == 0) && atom->torque_flag) return 1; 
   if ((strcmp(word,"r") == 0) && atom->radius_flag) return 1;
   if ((strcmp(word,"density") == 0) && atom->density_flag) return 1;
+  if ((strcmp(word,"quat1") == 0) && atom->superquadric_flag) return 1;
+  if ((strcmp(word,"quat2") == 0) && atom->superquadric_flag) return 1;
+  if ((strcmp(word,"quat3") == 0) && atom->superquadric_flag) return 1;
+  if ((strcmp(word,"quat4") == 0) && atom->superquadric_flag) return 1;
   return 0;
 }
 
@@ -3562,6 +3571,10 @@ void Variable::atom_vector(char *word, Tree **tree,
   else if ((strcmp(word,"tqx") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][0];
   else if ((strcmp(word,"tqy") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][1];
   else if ((strcmp(word,"tqz") == 0) && atom->torque_flag) newtree->array = &atom->torque[0][2]; 
+  else if ((strcmp(word,"quat1") == 0) && atom->superquadric_flag) newtree->array = &atom->quaternion[0][0];
+  else if ((strcmp(word,"quat2") == 0) && atom->superquadric_flag) newtree->array = &atom->quaternion[0][1];
+  else if ((strcmp(word,"quat3") == 0) && atom->superquadric_flag) newtree->array = &atom->quaternion[0][2];
+  else if ((strcmp(word,"quat4") == 0) && atom->superquadric_flag) newtree->array = &atom->quaternion[0][3];
   else if ((strcmp(word,"density") == 0) && atom->density_flag) {
     newtree->nstride = 1;
     newtree->array = atom->density;

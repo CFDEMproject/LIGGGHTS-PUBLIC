@@ -310,8 +310,9 @@ void FixMultisphereBreak::final_integrate()
     else
         error->all(FLERR,"Illegal call to FixMultisphereBreak::final_integrate()");
 
-    if (triggerName_ && update->ntimestep % modify->fix[triggerIdx_]->peratom_freq)
-        error->all(FLERR,"Fix used in fix multisphere/break not computed at compatible time");
+    if (triggerType_ == FIX)
+        if (triggerName_ && update->ntimestep % (modify->fix[triggerIdx_]->peratom_freq))
+            error->all(FLERR,"Fix used in fix multisphere/break not computed at compatible time");
 
     if (triggerName_ && triggerType_ == VARIABLE)
     {
