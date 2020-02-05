@@ -9,7 +9,10 @@ Syntax: python install.py [-h] [libdir] [pydir]
 """
 
 import sys,os # ,commands
-import subprocess as commands
+if sys.version_info[0] == 3:
+  import subprocess as commands
+else:
+  import commands
 
 if (len(sys.argv) > 1 and sys.argv[1] == "-h") or len(sys.argv) > 3:
   print(instructions)
