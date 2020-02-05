@@ -1,0 +1,53 @@
+# Simple example based on contactModels/in.newModels
+
+variable density equal 2500
+
+# Contact model example
+atom_style granular
+atom_modify map array
+boundary f f f
+newton off
+
+communicate single vel yes
+
+units si
+
+region reg block -0.05 0.05 -0.05 0.05 0.0 0.15 units box
+create_box 1 reg
+
+neighbor 0.002 bin
+neigh_modify delay 0
+
+# Material properties required for new pair styles
+fix m1 all property/global youngsModulus peratomtype 5.0e6
+fix m2 all property/global poissonsRatio peratomtype 0.3
+fix m3 all property/global coefficientRestitution peratomtypepair 1 0.95
+fix m4 all property/global coefficientFriction peratomtypepair 1 0.05
+fix m5 all property/global characteristicVelocity scalar 2.0
+
+# Pair Style
+pair_style gran model hertz tangential history
+pair_coeff * *
+
+timestep 1.0e-5
+
+fix grav all gravity 9.81 vector 0.0 0.0 -1.0
+
+# Region for Particle Insertion
+region bc cylinder z 0.0 0.0 0.045 0.00 0.15 units box
+
+fix pts1 all particletemplate/sphere 15485863 atom_type 1 density constant ${density} radius constant 0.0025
+fix pdd1 all particledistribution/discrete 15485867 1 pts1 1.0
+fix ins all insert/pack seed 32452843 distributiontemplate pdd1 vel constant 0.0 0.0 -0.5 &
+    insert_every once overlapcheck yes all_in yes particles_in_region 18 region bc
+
+fix integr all nve/sphere
+
+compute rke all erotate/sphere update_on_run_end yes
+thermo_style custom step time atoms ke c_rke cpu cpuremain
+thermo 1000
+thermo_modify lost ignore norm no
+
+run 500
+
+fix z0 all store/state 0 z
