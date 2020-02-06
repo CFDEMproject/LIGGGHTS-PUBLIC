@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# copy LAMMPS src/libliggghts.so and liggghts.py to system dirs
+# copy LIGGGHTS src/libliggghts.so and liggghts.py to system dirs
 
 instructions = """
 Syntax: python install.py [-h] [libdir] [pydir]
