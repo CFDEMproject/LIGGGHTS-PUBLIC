@@ -18,6 +18,9 @@ from ctypes import *
 
 class liggghts:
   def __init__(self,name="",cmdargs=None):
+    
+    # Check which python version is being used
+    self.pyVersion = sys.version_info
 
     # load libliggghts.so by default
     # if name = "g++", load libliggghts_g++.so
@@ -28,7 +31,7 @@ class liggghts:
     except:
       type,value,tb = sys.exc_info()
       traceback.print_exception(type,value,tb)
-      raise OSError,"Could not load LIGGGHTS dynamic library"
+      raise OSError("Could not load LIGGGHTS dynamic library")
 
     # create an instance of LAMMPS
     # don't know how to pass an MPI communicator from PyPar
@@ -55,12 +58,18 @@ class liggghts:
     self.lmp = None
 
   def file(self,file):
+    if self.pyVersion[0] == 3:
+      file = file.encode()
     self.lib.lammps_file(self.lmp,file)
 
   def command(self,cmd):
+    if self.pyVersion[0] == 3:
+      cmd = cmd.encode()
     self.lib.lammps_command(self.lmp,cmd)
 
   def extract_global(self,name,type):
+    if self.pyVersion[0] == 3:
+      name = name.encode()
     if type == 0:
       self.lib.lammps_extract_global.restype = POINTER(c_int)
     elif type == 1:
@@ -70,6 +79,8 @@ class liggghts:
     return ptr[0]
 
   def extract_atom(self,name,type):
+    if self.pyVersion[0] == 3:
+      name = name.encode()
     if type == 0:
       self.lib.lammps_extract_atom.restype = POINTER(c_int)
     elif type == 1:
@@ -82,40 +93,44 @@ class liggghts:
     ptr = self.lib.lammps_extract_atom(self.lmp,name)
     return ptr
 
-  def extract_compute(self,id,style,type):
+  def extract_compute(self,c_id,style,type):
+    if self.pyVersion[0] == 3:
+      c_id = c_id.encode()
     if type == 0:
       if style > 0: return None
       self.lib.lammps_extract_compute.restype = POINTER(c_double)
-      ptr = self.lib.lammps_extract_compute(self.lmp,id,style,type)
+      ptr = self.lib.lammps_extract_compute(self.lmp,c_id,style,type)
       return ptr[0]
     if type == 1:
       self.lib.lammps_extract_compute.restype = POINTER(c_double)
-      ptr = self.lib.lammps_extract_compute(self.lmp,id,style,type)
+      ptr = self.lib.lammps_extract_compute(self.lmp,c_id,style,type)
       return ptr
     if type == 2:
       self.lib.lammps_extract_compute.restype = POINTER(POINTER(c_double))
-      ptr = self.lib.lammps_extract_compute(self.lmp,id,style,type)
+      ptr = self.lib.lammps_extract_compute(self.lmp,c_id,style,type)
       return ptr
     return None
 
   # in case of global datum, free memory for 1 double via lammps_free()
   # double was allocated by library interface function
   
-  def extract_fix(self,id,style,type,i=0,j=0):
+  def extract_fix(self,f_id,style,type,i=0,j=0):
+    if self.pyVersion[0] == 3:
+      f_id = f_id.encode()
     if type == 0:
       if style > 0: return None
       self.lib.lammps_extract_fix.restype = POINTER(c_double)
-      ptr = self.lib.lammps_extract_fix(self.lmp,id,style,type,i,j)
+      ptr = self.lib.lammps_extract_fix(self.lmp,f_id,style,type,i,j)
       result = ptr[0]
       self.lib.lammps_free(ptr)
       return result
     if type == 1:
       self.lib.lammps_extract_fix.restype = POINTER(c_double)
-      ptr = self.lib.lammps_extract_fix(self.lmp,id,style,type,i,j)
+      ptr = self.lib.lammps_extract_fix(self.lmp,f_id,style,type,i,j)
       return ptr
     if type == 2:
       self.lib.lammps_extract_fix.restype = POINTER(POINTER(c_double))
-      ptr = self.lib.lammps_extract_fix(self.lmp,id,style,type,i,j)
+      ptr = self.lib.lammps_extract_fix(self.lmp,f_id,style,type,i,j)
       return ptr
     return None
 
@@ -124,6 +139,9 @@ class liggghts:
   # memory was allocated by library interface function
   
   def extract_variable(self,name,group,type):
+    if self.pyVersion[0] == 3:
+      name = name.encode()
+      group = group.encode()
     if type == 0:
       self.lib.lammps_extract_variable.restype = POINTER(c_double)
       ptr = self.lib.lammps_extract_variable(self.lmp,name,group)
@@ -150,6 +168,8 @@ class liggghts:
   # return vector of atom properties gathered across procs, ordered by atom ID
 
   def gather_atoms(self,name,type,count):
+    if self.pyVersion[0] == 3:
+      name = name.encode()
     natoms = self.lib.lammps_get_natoms(self.lmp)
     if type == 0:
       data = ((count*natoms)*c_int)()
@@ -164,4 +184,6 @@ class liggghts:
   # assume vector is of correct type and length, as created by gather_atoms()
 
   def scatter_atoms(self,name,type,count,data):
+    if self.pyVersion[0] == 3:
+      name = name.encode()
     self.lib.lammps_scatter_atoms(self.lmp,name,type,count,data)
