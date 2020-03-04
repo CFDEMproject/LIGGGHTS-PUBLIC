@@ -59,7 +59,7 @@ following the general_keyword/value pairs, zero or more model_keyword/model_valu
 [Examples:]
 
 fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15
-fix zwalls all wall/gran model hertz tangential history primitive type 1 zplane 0.15 surface superquadric
+fix zwalls all wall/gran model hertz tangential history surface superquadric primitive type 1 zplane 0.15 
 fix meshwalls all wall/gran model hertz tangential history mesh n_meshes 2 meshes cad1 cad2  :pre
 
 [Description:]
