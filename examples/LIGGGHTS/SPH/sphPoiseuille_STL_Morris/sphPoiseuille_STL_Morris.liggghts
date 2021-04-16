@@ -1,0 +1,108 @@
+# SPH example
+# Andreas Eitzlmayr (Institute for Process and Particle Engineering, TU Graz)
+# andreas.eitzlmayr@tugraz.at
+
+#variables
+variable      mass universe 8e-9
+variable      h universe 0.00024
+
+variable      lat equal $h/1.2 # = 0.0002
+variable      lathalf equal ${lat}*0.5
+variable      skin equal $h*0.25
+variable      eta equal 0.01*$h*$h
+
+variable      cs equal 10 # speed of sound
+variable      rho equal 1000. # density
+variable      rhoInit equal 1000. # initial density
+variable      gam equal 1. # Tait exponent
+variable      P0 equal 0 # Pa initial compression
+variable      B equal ${cs}^2*${rho}/${gam}. # Tait constant
+variable      mu equal 0.5# Pas
+variable      alpha equal 10*${mu}/(${rho}*${h}*${cs}) # artificial viscosity
+
+variable      r0 equal ${lathalf}
+variable      r0init equal ${r0}
+variable      D equal 0.01
+
+variable      z0 equal -0.0001 # min z
+variable      z1 equal 0.0009 # max z
+
+atom_style    sph 
+atom_modify   map array sort 0 0
+communicate   single vel yes
+dimension     3
+
+boundary      f p p   #periodic in y, z
+newton        off
+
+units         si
+lattice       sc ${lat}
+
+region        reg block -0.011 0.015 -0.0001 0.0049 ${z0} ${z1}  units box
+create_box    2 reg
+
+region        insertionRegionR block -0.0001 0.0049 -0.0001 0.0024 ${z0} ${z1}  units box
+region        insertionRegionL block -0.0001 0.0049 0.0024 0.0049 ${z0} ${z1}  units box
+
+create_atoms  1 region insertionRegionR
+create_atoms  2 region insertionRegionL
+
+mass          * ${mass}
+
+#selection der atom groups
+group         fluid1 type 1
+group         fluid2 type 2
+
+neighbor      ${skin} bin
+
+fix 	      	m1 all property/global speedOfSound peratomtype ${cs} ${cs}
+fix           m2 all property/global sl peratomtype $h $h
+
+#sph pair style
+pair_style 	  sph/morris/tensCorr cubicspline $h newton ${mu} tensCorr 0.2 ${lat}
+pair_coeff    * *
+
+#sph fixes
+# density
+fix           density all sph/density/continuity
+fix           corr all sph/density/corr shepard every 30
+set           group all meso_rho ${rhoInit}
+
+fix           integrity all sph/integrity every 200
+
+# pressure
+fix	      pressure all sph/pressure Tait ${B} ${rho} ${gam} ${P0}
+
+# Velocity gradients
+fix       vgrad all sph/velgrad every 200
+
+# STL boundaries
+fix	      LowerPlate all mesh/surface file meshes/plate.stl type 1 scale 1 move -0.0101 -0.0001 ${z0}
+fix	      UpperPlate all mesh/surface file meshes/plate.stl type 1 scale 1 move 0.0049 -0.0001 ${z0}
+
+fix	      LowerWall all wall/sph/general mesh n_meshes 1  meshes  LowerPlate store_force yes r0 ${r0}  D ${D}
+fix	      UpperWall all wall/sph/general mesh n_meshes 1  meshes  UpperPlate store_force yes r0 ${r0}  D ${D}
+
+# Mixing index
+fix       mixIdx all sph/mixidx every 200
+
+# time integration
+timestep  1e-6
+fix       integr all nve/sph
+
+# Body force
+fix       BodyForce all gravity 10 vector 0 -1 0
+
+# set sph kernels for all fix after all fixes are defined
+set       group all sphkernel cubicspline
+
+#output settings, include total thermal energy
+thermo_style	custom step atoms ke vol cpu
+thermo          200
+thermo_modify	lost ignore norm no
+compute_modify	thermo_temp dynamic yes
+
+dump	      dmp all custom 200 post/dump*.sph id type x y z ix iy iz vx vy vz fx fy fz p rho f_int f_dvdx[1] f_dvdx[2] f_dvdx[3] f_dvdy[1] f_dvdy[2] f_dvdy[3] f_dvdz[1] f_dvdz[2] f_dvdz[3] f_gamma f_omega f_mixidx
+dump	      dmpLowerPlate all mesh/stl 200 post/dmpLowerPlate*.stl LowerPlate
+dump	      dmpUpperPlate all mesh/stl 200 post/dmpUpperPlate*.stl UpperPlate
+run           30000

@@ -1,0 +1,6 @@
+vy Average = 6.6667e-05m/s
+integrity = 0.58319
+wall count = 2
+used gapmodel = 1
+dv/dx = -1.5543e-17
+mixing index = 1
