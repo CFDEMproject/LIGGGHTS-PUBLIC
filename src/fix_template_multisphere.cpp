@@ -425,7 +425,7 @@ void FixTemplateMultisphere::calc_inertia()
   moi_[1][0] = moi_[0][1];
   moi_[0][2] = (moi_[0][2]+moi_[2][0])/2.;
   moi_[2][0] = moi_[0][2];
-  moi_[2][1] = (moi_[2][1]+moi_[2][0])/2.;
+  moi_[2][1] = (moi_[2][1]+moi_[1][2])/2.;
   moi_[1][2] = moi_[2][1];
 }
 
