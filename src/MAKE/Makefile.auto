@@ -981,7 +981,7 @@ ifeq ($(USE_VTK), "ON")
                 endif
             endif
         endif
-        ifneq (, $(filter $(VTK_MAJOR_VERSION),7 8))
+        ifneq (, $(filter $(VTK_MAJOR_VERSION),7 8 9))
             VTKSET = 1
             VTK_ADDLIBS +=  -lvtkCommonCore$(VTK_APPENDIX) \
                             -lvtkIOCore$(VTK_APPENDIX) \
@@ -1009,6 +1009,11 @@ ifeq ($(USE_VTK), "ON")
                 endif
             endif
             ifeq ($(VTK_MAJOR_VERSION),8)
+                ifeq (, $(filter $(CXXVERSION),11 17))
+                    $(error VTK version $(VTK_VERSION) requires support for -std=c++11 or -std=c++17 in the compiler flags)
+                endif
+            endif
+            ifeq ($(VTK_MAJOR_VERSION),9)
                 ifeq (, $(filter $(CXXVERSION),11 17))
                     $(error VTK version $(VTK_VERSION) requires support for -std=c++11 or -std=c++17 in the compiler flags)
                 endif
