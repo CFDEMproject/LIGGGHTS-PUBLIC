@@ -207,7 +207,7 @@ namespace ContactModels {
       if(volBond1000 < 1e-14) return;
 
       const double rEff = radi*radj / (radi+radj);
-      const double contactAngleEff = 0.5 * contactAngle[itype] * contactAngle[jtype];
+      const double contactAngleEff = 0.5 * (contactAngle[itype] + contactAngle[jtype]);
 
       // capilar force
       // this is from Soulie et al, Intl. J Numerical and Analytical Methods in Geomechanics
@@ -306,7 +306,7 @@ namespace ContactModels {
       const double volBond1000 = volLiBond1000+volLjBond1000;
 
       const double rEff = radi*radj / (radi+radj);
-      const double contactAngleEff = 0.5 * contactAngle[itype] * contactAngle[jtype];
+      const double contactAngleEff = 0.5 * (contactAngle[itype] + contactAngle[jtype]);
       const double distMax = (1. + 0.5*contactAngleEff) * cbrt(volBond1000) *0.1;
 
       // check if liquid bridge exists
